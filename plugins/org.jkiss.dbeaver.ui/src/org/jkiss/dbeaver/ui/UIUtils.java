@@ -53,6 +53,7 @@ import org.eclipse.swt.dnd.Clipboard;
 import org.eclipse.swt.dnd.Transfer;
 import org.eclipse.swt.events.*;
 import org.eclipse.swt.graphics.*;
+import org.eclipse.swt.internal.DPIUtil;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.layout.RowData;
@@ -60,6 +61,7 @@ import org.eclipse.swt.layout.RowLayout;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.*;
 import org.eclipse.ui.dialogs.PreferencesUtil;
+import org.eclipse.ui.forms.widgets.ExpandableComposite;
 import org.eclipse.ui.handlers.IHandlerActivation;
 import org.eclipse.ui.handlers.IHandlerService;
 import org.eclipse.ui.internal.WorkbenchMessages;
@@ -172,11 +174,6 @@ public class UIUtils {
             }
             e.doit = newText.compareTo(MAX_LONG_STRING) <= 0;
         };
-    }
-
-    public static void createToolBarSeparator(Composite toolBar, int style) {
-        Label label = new Label(toolBar, SWT.NONE);
-        label.setImage(DBeaverIcons.getImage((style & SWT.HORIZONTAL) == SWT.HORIZONTAL ? UIIcon.SEPARATOR_H : UIIcon.SEPARATOR_V));
     }
 
     public static void createLabelSeparator(Composite toolBar, int style) {
@@ -684,7 +681,7 @@ public class UIUtils {
             label.setText(text);
             control = label;
         } else {
-            control = createInfoLink(parent, "<a href=\"#\">" + text + "</a>", callback).getParent();
+            control = createInfoLink(parent, createHrefText(text), callback).getParent();
         }
 
         if (gridStyle != SWT.NONE || hSpan > 1) {
@@ -694,6 +691,11 @@ public class UIUtils {
         }
 
         return control;
+    }
+
+    @NotNull
+    private static String createHrefText(@NotNull String text) {
+        return "<a href=\"#\">" + text + "</a>";
     }
 
     @NotNull
@@ -728,6 +730,14 @@ public class UIUtils {
         return link;
     }
 
+    public static void setInfoLinkText(@NotNull Control infoLink, @NotNull String text) {
+        if (infoLink instanceof Composite comp) {
+            Link link = UIUtils.getChildOfType(comp, Link.class);
+            if (link != null) {
+                link.setText(createHrefText(text));
+            }
+        }
+    }
     public static Text createLabelText(Composite parent, String label, String value) {
         return createLabelText(parent, label, value, SWT.BORDER);
     }
@@ -1160,6 +1170,28 @@ public class UIUtils {
         return new CustomSashForm(parent, style);
     }
 
+    /**
+     * Checks the style of the sash.
+     * <p>
+     * This method removes the {@link SWT#SMOOTH} style if the device zoom is not 100%,
+     * addressing the bug in the SWT implementation for Windows that causes the sash to
+     * operate on its bounds in pixels rather than points.
+     * <p>
+     * This method can later be removed when migrated to a newer version of Eclipse that includes a fix for this issue.
+     *
+     * @param style the style of the sash
+     * @return the modified style if necessary
+     * @see <a href="https://github.com/eclipse-platform/eclipse.platform.swt/issues/2329">https://github.com/eclipse-platform/eclipse.platform.swt/issues/2329</a>
+     */
+    public static int checkSashStyle(int style) {
+        // https://github.com/eclipse-platform/eclipse.platform.swt/issues/2329
+        if (DPIUtil.getDeviceZoom() != 100) {
+            return style & ~SWT.SMOOTH;
+        }
+
+        return style;
+    }
+
     @NotNull
     public static Button createPushButton(@NotNull Composite parent, @Nullable String label, @Nullable Image image) {
         return createPushButton(parent, label, image, null);
@@ -1238,7 +1270,9 @@ public class UIUtils {
         @Nullable SelectionListener selectionListener
     ) {
         Button button = new Button(parent, SWT.PUSH);
-        button.setText(label);
+        if (label != null) {
+            button.setText(label);
+        }
         button.setFont(JFaceResources.getDialogFont());
         if (icon != null) {
             button.setImage(DBeaverIcons.getImage(icon));
@@ -2225,12 +2259,21 @@ public class UIUtils {
         return BaseThemeSettings.instance.monospaceFont;
     }
 
-    public static <T extends Control> T getParentOfType(Control control, Class<T> parentType) {
+    public static <T extends Control> T getParentOfType(@NotNull Control control, @NotNull Class<T> parentType) {
         while (control != null) {
             if (parentType.isInstance(control)) {
                 return parentType.cast(control);
             }
             control = control.getParent();
+        }
+        return null;
+    }
+
+    public static <T extends Control> T getChildOfType(@NotNull Composite parent, @NotNull Class<T> childType) {
+        for (Control child : parent.getChildren()) {
+            if (childType.isInstance(child)) {
+                return childType.cast(child);
+            }
         }
         return null;
     }
@@ -2318,7 +2361,7 @@ public class UIUtils {
 
     public static void installAndUpdateMainFont(@NotNull Control control) {
         BaseThemeSettings.instance.addPropertyListener(
-            UIFonts.DBEAVER_FONTS_MAIN_FONT,
+            UIFonts.DBeaver.MAIN_FONT,
             s -> applyMainFont(control),
             control
         );
@@ -2349,7 +2392,7 @@ public class UIUtils {
     }
 
     private static boolean mainFontIsDefault() {
-        final FontData[] mainFontData = JFaceResources.getFontRegistry().getFontData(UIFonts.DBEAVER_FONTS_MAIN_FONT);
+        final FontData[] mainFontData = JFaceResources.getFontRegistry().getFontData(UIFonts.DBeaver.MAIN_FONT);
         final FontData[] defaultFontData = JFaceResources.getFontRegistry().getFontData(JFaceResources.DEFAULT_FONT);
         return Arrays.equals(mainFontData, defaultFontData);
     }
@@ -2483,5 +2526,79 @@ public class UIUtils {
         return Arrays.stream(display.getShells())
             .map(Widget::getData)
             .anyMatch(data -> data != null && clazz.isAssignableFrom(data.getClass()));
+    }
+
+    /**
+     * Creates an {@link ExpandableComposite} that paints a separator on top.
+     *
+     * @param parent         the parent
+     * @param style          the control style (as expected by SWT subclass)
+     * @param expansionStyle the style of the expansion widget (see {@link ExpandableComposite})
+     */
+    @NotNull
+    public static ExpandableComposite createExpandableCompositeWithSeparator(
+        @NotNull Composite parent,
+        int style,
+        int expansionStyle
+    ) {
+        // We have to use an anonymous class because "textLabel" has protected access
+        return new ExpandableComposite(parent, style, expansionStyle) {{
+            addPaintListener(e -> {
+                Rectangle bounds = getBounds();
+                Rectangle label = textLabel.getBounds();
+
+                e.gc.setForeground(Display.getDefault().getSystemColor(SWT.COLOR_WIDGET_NORMAL_SHADOW));
+                e.gc.drawLine(
+                    label.x + label.width + 6,
+                    label.y + label.height / 2,
+                    bounds.width,
+                    label.y + label.height / 2
+                );
+            });
+        }};
+    }
+
+    /**
+     * Sets width hint for a control with GridData.
+     * Creates new GridData with FILL_HORIZONTAL if not exists.
+     *
+     * @param widget Control to set width hint for
+     * @param widthHint Desired width in pixels
+     */
+    public static void setWidgetWidthHint(@NotNull Control widget, int widthHint) {
+        if (widget.isDisposed()) {
+            return;
+        }
+
+        Composite parent = widget.getParent();
+        if (parent == null || !(parent.getLayout() instanceof GridLayout)) {
+            return;
+        }
+
+        Object layoutData = widget.getLayoutData();
+        GridData gd;
+
+        if (layoutData instanceof GridData gridData) {
+            gd = gridData;
+        } else {
+            gd = new GridData(GridData.FILL_HORIZONTAL);
+            widget.setLayoutData(gd);
+        }
+
+        gd.widthHint = widthHint;
+    }
+
+    public static void setDefaultTextControlWidthHint(@NotNull Control widget) {
+        setWidgetWidthHint(widget, 150);
+    }
+
+    /**
+     * Makes the background of the specified control mimic the background of another control
+     */
+    public static void mimicControlBackground(@NotNull Composite control, @NotNull Control otherControl) {
+        control.addPaintListener(e -> {
+            e.gc.setBackground(otherControl.getBackground());
+            e.gc.fillRectangle(control.getClientArea());
+        });
     }
 }

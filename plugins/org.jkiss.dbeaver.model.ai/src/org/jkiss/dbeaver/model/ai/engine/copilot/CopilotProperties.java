@@ -17,43 +17,63 @@
 package org.jkiss.dbeaver.model.ai.engine.copilot;
 
 import com.google.gson.annotations.SerializedName;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.ai.engine.AIEngineProperties;
+import org.jkiss.dbeaver.model.ai.engine.AIModel;
 import org.jkiss.dbeaver.model.ai.utils.AIUtils;
+import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.meta.SecureProperty;
 import org.jkiss.dbeaver.model.secret.DBSSecretController;
 import org.jkiss.utils.CommonUtils;
 
 public class CopilotProperties implements AIEngineProperties {
+    private static final String COPILOT_ACCESS_TOKEN = "copilot.access.token";
+    private static final String GPT_MODEL = "gpt.model";
+    private static final String GPT_CONTEXT_WINDOW_SIZE = "gpt.contextWindowSize";
+    private static final String GPT_MODEL_TEMPERATURE = "gpt.model.temperature";
+    private static final String GPT_LOG_QUERY = "gpt.log.query";
+
+    @Nullable
     @SecureProperty
-    @SerializedName("copilot.access.token")
+    @SerializedName(COPILOT_ACCESS_TOKEN)
     private String token;
 
-    @SerializedName("gpt.model")
+    @Nullable
+    @SerializedName(GPT_MODEL)
     private String model;
 
-    @SerializedName("gpt.model.temperature")
+    @Nullable
+    @SerializedName(GPT_CONTEXT_WINDOW_SIZE)
+    private Integer contextWindowSize;
+
+    @SerializedName(GPT_MODEL_TEMPERATURE)
     private double temperature;
 
-    @SerializedName("gpt.log.query")
+    @SerializedName(GPT_LOG_QUERY)
     private boolean loggingEnabled;
 
+    @Nullable
+    @Property(order = 1, id = COPILOT_ACCESS_TOKEN, password = true)
     public String getToken() {
         return token;
     }
 
-    public void setToken(String token) {
+    public void setToken(@Nullable String token) {
         this.token = token;
     }
 
+    @Nullable
+    @Property(order = 2, id = GPT_MODEL)
     public String getModel() {
         return model;
     }
 
-    public void setModel(String model) {
+    public void setModel(@Nullable String model) {
         this.model = model;
     }
 
+    @Property(order = 3, id = GPT_MODEL_TEMPERATURE)
     public double getTemperature() {
         return temperature;
     }
@@ -62,6 +82,23 @@ public class CopilotProperties implements AIEngineProperties {
         this.temperature = temperature;
     }
 
+    @Nullable
+    @Property(order = 4, id = GPT_CONTEXT_WINDOW_SIZE)
+    public Integer getContextWindowSize() {
+        if (contextWindowSize != null) {
+            return contextWindowSize;
+        }
+
+        return CopilotModels.getModelByName(model)
+            .map(AIModel::contextWindowSize)
+            .orElse(null);
+    }
+
+    public void setContextWindowSize(@Nullable Integer contextWindowSize) {
+        this.contextWindowSize = contextWindowSize;
+    }
+
+    @Property(order = 5, id = GPT_LOG_QUERY)
     public boolean isLoggingEnabled() {
         return loggingEnabled;
     }
@@ -81,9 +118,11 @@ public class CopilotProperties implements AIEngineProperties {
      * Save secrets to the secret controller.
      */
     public void saveSecrets() throws DBException {
-        DBSSecretController.getGlobalSecretController().setPrivateSecretValue(
-            CopilotConstants.COPILOT_ACCESS_TOKEN, token
-        );
+        if (token != null) {
+            DBSSecretController.getGlobalSecretController().setPrivateSecretValue(
+                CopilotConstants.COPILOT_ACCESS_TOKEN, token
+            );
+        }
     }
 
     @Override

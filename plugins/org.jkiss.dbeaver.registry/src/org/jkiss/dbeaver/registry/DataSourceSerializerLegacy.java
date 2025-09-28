@@ -109,7 +109,7 @@ class DataSourceSerializerLegacy<T extends DataSourceDescriptor> implements Data
     }
 
     private static class DataSourcesParser implements SAXListener {
-        DataSourceRegistry registry;
+        DataSourceRegistry<?> registry;
         DataSourceDescriptor curDataSource;
         DBPDataSourceConfigurationStorage storage;
         boolean isDescription = false;
@@ -120,21 +120,21 @@ class DataSourceSerializerLegacy<T extends DataSourceDescriptor> implements Data
         private final DataSourceParseResults parseResults;
         private boolean passwordReadCanceled = false;
 
-        private DataSourcesParser(DataSourceRegistry registry, DBPDataSourceConfigurationStorage storage, DataSourceParseResults parseResults) {
+        private DataSourcesParser(DataSourceRegistry<?> registry, DBPDataSourceConfigurationStorage storage, DataSourceParseResults parseResults) {
             this.registry = registry;
             this.storage = storage;
             this.parseResults = parseResults;
         }
 
         @Override
-        public void saxStartElement(SAXReader reader, String namespaceURI, String localName, Attributes atts) {
+        public void saxStartElement(@NotNull SAXReader reader, @Nullable String namespaceURI, @NotNull String localName, @NotNull Attributes attributes) {
             isDescription = false;
             curCommand = null;
             switch (localName) {
                 case RegistryConstants.TAG_FOLDER: {
-                    String name = atts.getValue(RegistryConstants.ATTR_NAME);
-                    String description = atts.getValue(RegistryConstants.ATTR_DESCRIPTION);
-                    String parentFolder = atts.getValue(RegistryConstants.ATTR_PARENT);
+                    String name = attributes.getValue(RegistryConstants.ATTR_NAME);
+                    String description = attributes.getValue(RegistryConstants.ATTR_DESCRIPTION);
+                    String parentFolder = attributes.getValue(RegistryConstants.ATTR_PARENT);
                     DataSourceFolder parent = parentFolder == null ? null : registry.findFolderByPath(parentFolder, true, parseResults);
                     DataSourceFolder folder = parent == null ? registry.findFolderByPath(name, true, parseResults) : parent.getChild(name);
                     if (folder == null) {
@@ -147,13 +147,13 @@ class DataSourceSerializerLegacy<T extends DataSourceDescriptor> implements Data
                     break;
                 }
                 case RegistryConstants.TAG_DATA_SOURCE: {
-                    String name = atts.getValue(RegistryConstants.ATTR_NAME);
-                    String id = atts.getValue(RegistryConstants.ATTR_ID);
+                    String name = attributes.getValue(RegistryConstants.ATTR_NAME);
+                    String id = attributes.getValue(RegistryConstants.ATTR_ID);
                     if (id == null) {
                         // Support of old version without ID
                         id = name;
                     }
-                    String providerId = atts.getValue(RegistryConstants.ATTR_PROVIDER);
+                    String providerId = attributes.getValue(RegistryConstants.ATTR_PROVIDER);
                     DataSourceProviderDescriptor provider = DataSourceProviderRegistry.getInstance().getDataSourceProvider(providerId);
                     if (provider == null) {
                         log.warn("Can't find datasource provider " + providerId + " for datasource '" + name + "'");
@@ -161,7 +161,7 @@ class DataSourceSerializerLegacy<T extends DataSourceDescriptor> implements Data
                         reader.setListener(EMPTY_LISTENER);
                         return;
                     }
-                    String driverId = atts.getValue(RegistryConstants.ATTR_DRIVER);
+                    String driverId = attributes.getValue(RegistryConstants.ATTR_DRIVER);
                     DriverDescriptor driver = provider.getDriver(driverId);
                     if (driver == null) {
                         log.warn("Can't find driver " + driverId + " in datasource provider " + provider.getId() + " for datasource '" + name + "'. Create new driver");
@@ -185,30 +185,30 @@ class DataSourceSerializerLegacy<T extends DataSourceDescriptor> implements Data
                         curDataSource.clearFilters();
                     }
                     curDataSource.setName(name);
-                    curDataSource.setSavePassword(CommonUtils.getBoolean(atts.getValue(RegistryConstants.ATTR_SAVE_PASSWORD)));
+                    curDataSource.setSavePassword(CommonUtils.getBoolean(attributes.getValue(RegistryConstants.ATTR_SAVE_PASSWORD)));
 
                     DataSourceNavigatorSettings navSettings = curDataSource.getNavigatorSettings();
-                    navSettings.setShowSystemObjects(CommonUtils.getBoolean(atts.getValue(DataSourceSerializerModern.ATTR_NAVIGATOR_SHOW_SYSTEM_OBJECTS)));
-                    navSettings.setShowUtilityObjects(CommonUtils.getBoolean(atts.getValue(DataSourceSerializerModern.ATTR_NAVIGATOR_SHOW_UTIL_OBJECTS)));
-                    navSettings.setShowOnlyEntities(CommonUtils.getBoolean(atts.getValue(DataSourceSerializerModern.ATTR_NAVIGATOR_SHOW_ONLY_ENTITIES)));
-                    navSettings.setHideFolders(CommonUtils.getBoolean(atts.getValue(DataSourceSerializerModern.ATTR_NAVIGATOR_HIDE_FOLDERS)));
-                    navSettings.setHideSchemas(CommonUtils.getBoolean(atts.getValue(DataSourceSerializerModern.ATTR_NAVIGATOR_HIDE_SCHEMAS)));
-                    navSettings.setHideVirtualModel(CommonUtils.getBoolean(atts.getValue(DataSourceSerializerModern.ATTR_NAVIGATOR_HIDE_VIRTUAL)));
-                    navSettings.setMergeEntities(CommonUtils.getBoolean(atts.getValue(DataSourceSerializerModern.ATTR_NAVIGATOR_MERGE_ENTITIES)));
+                    navSettings.setShowSystemObjects(CommonUtils.getBoolean(attributes.getValue(DataSourceSerializerModern.ATTR_NAVIGATOR_SHOW_SYSTEM_OBJECTS)));
+                    navSettings.setShowUtilityObjects(CommonUtils.getBoolean(attributes.getValue(DataSourceSerializerModern.ATTR_NAVIGATOR_SHOW_UTIL_OBJECTS)));
+                    navSettings.setShowOnlyEntities(CommonUtils.getBoolean(attributes.getValue(DataSourceSerializerModern.ATTR_NAVIGATOR_SHOW_ONLY_ENTITIES)));
+                    navSettings.setHideFolders(CommonUtils.getBoolean(attributes.getValue(DataSourceSerializerModern.ATTR_NAVIGATOR_HIDE_FOLDERS)));
+                    navSettings.setHideSchemas(CommonUtils.getBoolean(attributes.getValue(DataSourceSerializerModern.ATTR_NAVIGATOR_HIDE_SCHEMAS)));
+                    navSettings.setHideVirtualModel(CommonUtils.getBoolean(attributes.getValue(DataSourceSerializerModern.ATTR_NAVIGATOR_HIDE_VIRTUAL)));
+                    navSettings.setMergeEntities(CommonUtils.getBoolean(attributes.getValue(DataSourceSerializerModern.ATTR_NAVIGATOR_MERGE_ENTITIES)));
 
-                    curDataSource.setConnectionReadOnly(CommonUtils.getBoolean(atts.getValue(RegistryConstants.ATTR_READ_ONLY)));
-                    final String folderPath = atts.getValue(RegistryConstants.ATTR_FOLDER);
+                    curDataSource.setConnectionReadOnly(CommonUtils.getBoolean(attributes.getValue(RegistryConstants.ATTR_READ_ONLY)));
+                    final String folderPath = attributes.getValue(RegistryConstants.ATTR_FOLDER);
                     if (folderPath != null) {
                         curDataSource.setFolder(registry.findFolderByPath(folderPath, true, parseResults));
                     }
-                    curDataSource.setLockPasswordHash(atts.getValue(RegistryConstants.ATTR_LOCK_PASSWORD));
+                    curDataSource.setLockPasswordHash(attributes.getValue(RegistryConstants.ATTR_LOCK_PASSWORD));
                     {
                         // Legacy filter settings
-                        String legacyCatalogFilter = atts.getValue(RegistryConstants.ATTR_FILTER_CATALOG);
+                        String legacyCatalogFilter = attributes.getValue(RegistryConstants.ATTR_FILTER_CATALOG);
                         if (!CommonUtils.isEmpty(legacyCatalogFilter)) {
                             curDataSource.updateObjectFilter(DBSCatalog.class.getName(), null, new DBSObjectFilter(legacyCatalogFilter, null));
                         }
-                        String legacySchemaFilter = atts.getValue(RegistryConstants.ATTR_FILTER_SCHEMA);
+                        String legacySchemaFilter = attributes.getValue(RegistryConstants.ATTR_FILTER_SCHEMA);
                         if (!CommonUtils.isEmpty(legacySchemaFilter)) {
                             curDataSource.updateObjectFilter(DBSSchema.class.getName(), null, new DBSObjectFilter(legacySchemaFilter, null));
                         }
@@ -226,34 +226,34 @@ class DataSourceSerializerLegacy<T extends DataSourceDescriptor> implements Data
                         if (CommonUtils.isEmpty(driver.getName())) {
                             if (driver instanceof DriverDescriptor) {
                                 // Broken driver - seems to be just created
-                                ((DriverDescriptor)driver).setName(atts.getValue(RegistryConstants.ATTR_URL));
+                                ((DriverDescriptor)driver).setName(attributes.getValue(RegistryConstants.ATTR_URL));
                                 ((DriverDescriptor)driver).setDriverClassName("java.sql.Driver");
                             }
                         }
                         DBPConnectionConfiguration config = curDataSource.getConnectionConfiguration();
-                        config.setHostName(atts.getValue(RegistryConstants.ATTR_HOST));
-                        config.setHostPort(atts.getValue(RegistryConstants.ATTR_PORT));
-                        config.setServerName(atts.getValue(RegistryConstants.ATTR_SERVER));
-                        config.setDatabaseName(atts.getValue(RegistryConstants.ATTR_DATABASE));
-                        config.setUrl(atts.getValue(RegistryConstants.ATTR_URL));
+                        config.setHostName(attributes.getValue(RegistryConstants.ATTR_HOST));
+                        config.setHostPort(attributes.getValue(RegistryConstants.ATTR_PORT));
+                        config.setServerName(attributes.getValue(RegistryConstants.ATTR_SERVER));
+                        config.setDatabaseName(attributes.getValue(RegistryConstants.ATTR_DATABASE));
+                        config.setUrl(attributes.getValue(RegistryConstants.ATTR_URL));
                         if (!passwordReadCanceled) {
-                            final String[] creds = readSecuredCredentials(atts, curDataSource, null);
+                            final String[] creds = readSecuredCredentials(attributes, curDataSource, null);
                             config.setUserName(creds[0]);
                             if (curDataSource.isSavePassword()) {
                                 config.setUserPassword(creds[1]);
                             }
                         }
-                        config.setClientHomeId(atts.getValue(RegistryConstants.ATTR_HOME));
+                        config.setClientHomeId(attributes.getValue(RegistryConstants.ATTR_HOME));
                         config.setConnectionType(
                             DataSourceProviderRegistry.getInstance().getConnectionType(
-                                CommonUtils.toString(atts.getValue(RegistryConstants.ATTR_TYPE)),
+                                CommonUtils.toString(attributes.getValue(RegistryConstants.ATTR_TYPE)),
                                 DBPConnectionType.DEFAULT_TYPE)
                         );
-                        String colorValue = atts.getValue(RegistryConstants.ATTR_COLOR);
+                        String colorValue = attributes.getValue(RegistryConstants.ATTR_COLOR);
                         if (!CommonUtils.isEmpty(colorValue)) {
                             config.setConnectionColor(colorValue);
                         }
-                        String keepAlive = atts.getValue(RegistryConstants.ATTR_KEEP_ALIVE);
+                        String keepAlive = attributes.getValue(RegistryConstants.ATTR_KEEP_ALIVE);
                         if (!CommonUtils.isEmpty(keepAlive)) {
                             try {
                                 config.setKeepAliveInterval(Integer.parseInt(keepAlive));
@@ -266,17 +266,17 @@ class DataSourceSerializerLegacy<T extends DataSourceDescriptor> implements Data
                 case RegistryConstants.TAG_BOOTSTRAP:
                     if (curDataSource != null) {
                         DBPConnectionConfiguration config = curDataSource.getConnectionConfiguration();
-                        if (atts.getValue(RegistryConstants.ATTR_AUTOCOMMIT) != null) {
-                            config.getBootstrap().setDefaultAutoCommit(CommonUtils.toBoolean(atts.getValue(RegistryConstants.ATTR_AUTOCOMMIT)));
+                        if (attributes.getValue(RegistryConstants.ATTR_AUTOCOMMIT) != null) {
+                            config.getBootstrap().setDefaultAutoCommit(CommonUtils.toBoolean(attributes.getValue(RegistryConstants.ATTR_AUTOCOMMIT)));
                         }
-                        if (atts.getValue(RegistryConstants.ATTR_TXN_ISOLATION) != null) {
-                            config.getBootstrap().setDefaultTransactionIsolation(CommonUtils.toInt(atts.getValue(RegistryConstants.ATTR_TXN_ISOLATION)));
+                        if (attributes.getValue(RegistryConstants.ATTR_TXN_ISOLATION) != null) {
+                            config.getBootstrap().setDefaultTransactionIsolation(CommonUtils.toInt(attributes.getValue(RegistryConstants.ATTR_TXN_ISOLATION)));
                         }
-                        if (!CommonUtils.isEmpty(atts.getValue(RegistryConstants.ATTR_DEFAULT_OBJECT))) {
-                            config.getBootstrap().setDefaultCatalogName(atts.getValue(RegistryConstants.ATTR_DEFAULT_OBJECT));
+                        if (!CommonUtils.isEmpty(attributes.getValue(RegistryConstants.ATTR_DEFAULT_OBJECT))) {
+                            config.getBootstrap().setDefaultCatalogName(attributes.getValue(RegistryConstants.ATTR_DEFAULT_OBJECT));
                         }
-                        if (atts.getValue(RegistryConstants.ATTR_IGNORE_ERRORS) != null) {
-                            config.getBootstrap().setIgnoreErrors(CommonUtils.toBoolean(atts.getValue(RegistryConstants.ATTR_IGNORE_ERRORS)));
+                        if (attributes.getValue(RegistryConstants.ATTR_IGNORE_ERRORS) != null) {
+                            config.getBootstrap().setIgnoreErrors(CommonUtils.toBoolean(attributes.getValue(RegistryConstants.ATTR_IGNORE_ERRORS)));
                         }
                     }
                     break;
@@ -286,11 +286,11 @@ class DataSourceSerializerLegacy<T extends DataSourceDescriptor> implements Data
                 case RegistryConstants.TAG_PROPERTY:
                     if (curNetworkHandler != null) {
                         curNetworkHandler.setProperty(
-                            atts.getValue(RegistryConstants.ATTR_NAME),
-                            atts.getValue(RegistryConstants.ATTR_VALUE));
+                            attributes.getValue(RegistryConstants.ATTR_NAME),
+                            attributes.getValue(RegistryConstants.ATTR_VALUE));
                     } else if (curDataSource != null) {
-                        final String propName = atts.getValue(RegistryConstants.ATTR_NAME);
-                        final String propValue = atts.getValue(RegistryConstants.ATTR_VALUE);
+                        final String propName = attributes.getValue(RegistryConstants.ATTR_NAME);
+                        final String propValue = attributes.getValue(RegistryConstants.ATTR_VALUE);
                         if (propName != null) {
                             if (propName.startsWith(DBConstants.INTERNAL_PROP_PREFIX)) {
                                 // Backward compatibility - internal properties are provider properties
@@ -304,32 +304,32 @@ class DataSourceSerializerLegacy<T extends DataSourceDescriptor> implements Data
                 case RegistryConstants.TAG_PROVIDER_PROPERTY:
                     if (curDataSource != null) {
                         curDataSource.getConnectionConfiguration().setProviderProperty(
-                            atts.getValue(RegistryConstants.ATTR_NAME),
-                            atts.getValue(RegistryConstants.ATTR_VALUE));
+                            attributes.getValue(RegistryConstants.ATTR_NAME),
+                            attributes.getValue(RegistryConstants.ATTR_VALUE));
                     }
                     break;
                 case RegistryConstants.TAG_EVENT:
                     if (curDataSource != null) {
-                        DBPConnectionEventType eventType = DBPConnectionEventType.valueOf(atts.getValue(RegistryConstants.ATTR_TYPE));
+                        DBPConnectionEventType eventType = DBPConnectionEventType.valueOf(attributes.getValue(RegistryConstants.ATTR_TYPE));
                         curCommand = new DBRShellCommand("");
-                        curCommand.setEnabled(CommonUtils.getBoolean(atts.getValue(RegistryConstants.ATTR_ENABLED)));
-                        curCommand.setShowProcessPanel(CommonUtils.getBoolean(atts.getValue(RegistryConstants.ATTR_SHOW_PANEL)));
-                        curCommand.setWaitProcessFinish(CommonUtils.getBoolean(atts.getValue(RegistryConstants.ATTR_WAIT_PROCESS)));
+                        curCommand.setEnabled(CommonUtils.getBoolean(attributes.getValue(RegistryConstants.ATTR_ENABLED)));
+                        curCommand.setShowProcessPanel(CommonUtils.getBoolean(attributes.getValue(RegistryConstants.ATTR_SHOW_PANEL)));
+                        curCommand.setWaitProcessFinish(CommonUtils.getBoolean(attributes.getValue(RegistryConstants.ATTR_WAIT_PROCESS)));
                         if (curCommand.isWaitProcessFinish()) {
-                            String timeoutString = atts.getValue(RegistryConstants.ATTR_WAIT_PROCESS_TIMEOUT);
+                            String timeoutString = attributes.getValue(RegistryConstants.ATTR_WAIT_PROCESS_TIMEOUT);
                             int timeoutMs = CommonUtils.toInt(timeoutString, DBRShellCommand.WAIT_PROCESS_TIMEOUT_FOREVER);
                             curCommand.setWaitProcessTimeoutMs(timeoutMs);
                         }
-                        curCommand.setTerminateAtDisconnect(CommonUtils.getBoolean(atts.getValue(RegistryConstants.ATTR_TERMINATE_AT_DISCONNECT)));
-                        curCommand.setPauseAfterExecute(CommonUtils.toInt(atts.getValue(RegistryConstants.ATTR_PAUSE_AFTER_EXECUTE)));
-                        curCommand.setWorkingDirectory(atts.getValue(RegistryConstants.ATTR_WORKING_DIRECTORY));
+                        curCommand.setTerminateAtDisconnect(CommonUtils.getBoolean(attributes.getValue(RegistryConstants.ATTR_TERMINATE_AT_DISCONNECT)));
+                        curCommand.setPauseAfterExecute(CommonUtils.toInt(attributes.getValue(RegistryConstants.ATTR_PAUSE_AFTER_EXECUTE)));
+                        curCommand.setWorkingDirectory(attributes.getValue(RegistryConstants.ATTR_WORKING_DIRECTORY));
                         curDataSource.getConnectionConfiguration().setEvent(eventType, curCommand);
                     }
                     break;
                 case RegistryConstants.TAG_CUSTOM_PROPERTY:
                     if (curDataSource != null) {
-                        String propName = atts.getValue(RegistryConstants.ATTR_NAME);
-                        String propValue = atts.getValue(RegistryConstants.ATTR_VALUE);
+                        String propName = attributes.getValue(RegistryConstants.ATTR_NAME);
+                        String propValue = attributes.getValue(RegistryConstants.ATTR_VALUE);
                         // Backward compatibility
                         switch (propName) {
                             case LEGACY_DEFAULT_AUTO_COMMIT:
@@ -351,7 +351,7 @@ class DataSourceSerializerLegacy<T extends DataSourceDescriptor> implements Data
                     break;
                 case RegistryConstants.TAG_NETWORK_HANDLER:
                     if (curDataSource != null) {
-                        String handlerId = atts.getValue(RegistryConstants.ATTR_ID);
+                        String handlerId = attributes.getValue(RegistryConstants.ATTR_ID);
                         NetworkHandlerDescriptor handlerDescriptor = NetworkHandlerRegistry.getInstance().getDescriptor(handlerId);
                         if (handlerDescriptor == null) {
                             log.warn("Can't find network handler '" + handlerId + "'");
@@ -359,10 +359,10 @@ class DataSourceSerializerLegacy<T extends DataSourceDescriptor> implements Data
                             return;
                         }
                         curNetworkHandler = new DBWHandlerConfiguration(handlerDescriptor, curDataSource);
-                        curNetworkHandler.setEnabled(CommonUtils.getBoolean(atts.getValue(RegistryConstants.ATTR_ENABLED)));
-                        curNetworkHandler.setSavePassword(CommonUtils.getBoolean(atts.getValue(RegistryConstants.ATTR_SAVE_PASSWORD)));
+                        curNetworkHandler.setEnabled(CommonUtils.getBoolean(attributes.getValue(RegistryConstants.ATTR_ENABLED)));
+                        curNetworkHandler.setSavePassword(CommonUtils.getBoolean(attributes.getValue(RegistryConstants.ATTR_SAVE_PASSWORD)));
                         if (!passwordReadCanceled) {
-                            final String[] creds = readSecuredCredentials(atts, curDataSource, "network/" + handlerId);
+                            final String[] creds = readSecuredCredentials(attributes, curDataSource, "network/" + handlerId);
                             curNetworkHandler.setUserName(creds[0]);
                             if (curNetworkHandler.isSavePassword()) {
                                 curNetworkHandler.setPassword(creds[1]);
@@ -374,32 +374,32 @@ class DataSourceSerializerLegacy<T extends DataSourceDescriptor> implements Data
                     break;
                 case RegistryConstants.TAG_FILTER:
                     if (curDataSource != null) {
-                        String typeName = atts.getValue(RegistryConstants.ATTR_TYPE);
-                        String objectID = atts.getValue(RegistryConstants.ATTR_ID);
+                        String typeName = attributes.getValue(RegistryConstants.ATTR_TYPE);
+                        String objectID = attributes.getValue(RegistryConstants.ATTR_ID);
                         if (typeName != null) {
                             curFilter = new DBSObjectFilter();
-                            curFilter.setName(atts.getValue(RegistryConstants.ATTR_NAME));
-                            curFilter.setDescription(atts.getValue(RegistryConstants.ATTR_DESCRIPTION));
-                            curFilter.setEnabled(CommonUtils.getBoolean(atts.getValue(RegistryConstants.ATTR_ENABLED), true));
+                            curFilter.setName(attributes.getValue(RegistryConstants.ATTR_NAME));
+                            curFilter.setDescription(attributes.getValue(RegistryConstants.ATTR_DESCRIPTION));
+                            curFilter.setEnabled(CommonUtils.getBoolean(attributes.getValue(RegistryConstants.ATTR_ENABLED), true));
                             curDataSource.updateObjectFilter(typeName, objectID, curFilter);
 
                         }
                     } else {
                         curFilter = new DBSObjectFilter();
-                        curFilter.setName(atts.getValue(RegistryConstants.ATTR_NAME));
-                        curFilter.setDescription(atts.getValue(RegistryConstants.ATTR_DESCRIPTION));
-                        curFilter.setEnabled(CommonUtils.getBoolean(atts.getValue(RegistryConstants.ATTR_ENABLED), true));
+                        curFilter.setName(attributes.getValue(RegistryConstants.ATTR_NAME));
+                        curFilter.setDescription(attributes.getValue(RegistryConstants.ATTR_DESCRIPTION));
+                        curFilter.setEnabled(CommonUtils.getBoolean(attributes.getValue(RegistryConstants.ATTR_ENABLED), true));
                         registry.addSavedFilter(curFilter);
                     }
                     break;
                 case RegistryConstants.TAG_INCLUDE:
                     if (curFilter != null) {
-                        curFilter.addInclude(CommonUtils.notEmpty(atts.getValue(RegistryConstants.ATTR_NAME)));
+                        curFilter.addInclude(CommonUtils.notEmpty(attributes.getValue(RegistryConstants.ATTR_NAME)));
                     }
                     break;
                 case RegistryConstants.TAG_EXCLUDE:
                     if (curFilter != null) {
-                        curFilter.addExclude(CommonUtils.notEmpty(atts.getValue(RegistryConstants.ATTR_NAME)));
+                        curFilter.addExclude(CommonUtils.notEmpty(attributes.getValue(RegistryConstants.ATTR_NAME)));
                     }
                     break;
                 case RegistryConstants.TAG_DESCRIPTION:
@@ -414,7 +414,7 @@ class DataSourceSerializerLegacy<T extends DataSourceDescriptor> implements Data
         }
 
         @Override
-        public void saxText(SAXReader reader, String data) {
+        public void saxText(@NotNull SAXReader reader, @NotNull String data) {
             if (isDescription && curDataSource != null) {
                 curDataSource.setDescription(data);
             } else if (curCommand != null) {
@@ -426,7 +426,7 @@ class DataSourceSerializerLegacy<T extends DataSourceDescriptor> implements Data
         }
 
         @Override
-        public void saxEndElement(SAXReader reader, String namespaceURI, String localName) {
+        public void saxEndElement(@NotNull SAXReader reader, @Nullable String namespaceURI, @NotNull String localName) {
             switch (localName) {
                 case RegistryConstants.TAG_DATA_SOURCE:
                     curDataSource = null;

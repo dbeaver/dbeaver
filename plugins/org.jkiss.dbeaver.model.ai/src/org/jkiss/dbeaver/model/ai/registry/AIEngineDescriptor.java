@@ -17,55 +17,83 @@
 package org.jkiss.dbeaver.model.ai.registry;
 
 import org.eclipse.core.runtime.IConfigurationElement;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.ai.engine.AIEngine;
-import org.jkiss.dbeaver.model.ai.engine.AIEngineFactory;
+import org.jkiss.dbeaver.model.ai.engine.AIEngineProperties;
 import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
-import org.jkiss.dbeaver.model.impl.PropertyDescriptor;
-import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.registry.RegistryConstants;
-import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
-
-import java.util.ArrayList;
-import java.util.List;
 
 public class AIEngineDescriptor extends AbstractDescriptor {
 
-    private final IConfigurationElement contributorConfig;
-    private final List<DBPPropertyDescriptor> properties = new ArrayList<>();
+    public static final String EXTENSION_ID = "com.dbeaver.ai.engine";
 
-    protected AIEngineDescriptor(IConfigurationElement contributorConfig) {
+    private final IConfigurationElement contributorConfig;
+    private final String id;
+    private final ObjectType objectType;
+    private final ObjectType propertiesType;
+    private final boolean supportsFunctions;
+
+    protected AIEngineDescriptor(@NotNull IConfigurationElement contributorConfig) {
         super(contributorConfig);
         this.contributorConfig = contributorConfig;
-        for (IConfigurationElement propGroup : ArrayUtils.safeArray(contributorConfig.getChildren(PropertyDescriptor.TAG_PROPERTY_GROUP))) {
-            properties.addAll(PropertyDescriptor.extractProperties(propGroup));
-        }
+        this.id = contributorConfig.getAttribute("id");
+        this.objectType = new ObjectType(contributorConfig, RegistryConstants.ATTR_CLASS);
+        this.supportsFunctions = CommonUtils.toBoolean(contributorConfig.getAttribute("supportsFunctions"));
+        this.propertiesType = new ObjectType(contributorConfig, "properties");
     }
 
+    @NotNull
     public String getId() {
-        return contributorConfig.getAttribute("id");
+        return id;
     }
 
+    @NotNull
     public String getLabel() {
         return contributorConfig.getAttribute("label");
     }
 
-    String getReplaces() {
+    @Nullable
+    public String getReplaces() {
         return contributorConfig.getAttribute("replaces");
+    }
+
+    @Nullable
+    public String getFallbacks() {
+        return contributorConfig.getAttribute("fallbacks");
     }
 
     public boolean isDefault() {
         return CommonUtils.toBoolean(contributorConfig.getAttribute("default"));
     }
 
-    public List<DBPPropertyDescriptor> getProperties() {
-        return properties;
+    public boolean isSupportsFunctions() {
+        return supportsFunctions;
     }
 
-    public AIEngine createInstance() throws DBException {
-        ObjectType objectType = new ObjectType(contributorConfig, RegistryConstants.ATTR_CLASS);
-        AIEngineFactory<?> instance = objectType.createInstance(AIEngineFactory.class);
-        return instance.createEngine(AISettingsRegistry.getInstance());
+    @NotNull
+    public Class<? extends AIEngineProperties> getPropertiesType() {
+        Class<? extends AIEngineProperties> propsClass = propertiesType.getObjectClass(AIEngineProperties.class);
+        if (propsClass == null) {
+            throw new IllegalStateException("AI properties class not specified (" + getId() + ")");
+        }
+        return propsClass;
+    }
+
+    @NotNull
+    public <T extends AIEngineProperties> T createPropertiesInstance() throws DBException {
+        return (T) propertiesType.createInstance(AIEngineProperties.class);
+    }
+
+    @NotNull
+    public ObjectType getEngineObjectType() {
+        return objectType;
+    }
+
+    @NotNull
+    public AIEngine createEngineInstance() throws DBException {
+        return objectType.createInstance(AIEngine.class);
     }
 }

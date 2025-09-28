@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -50,7 +50,7 @@ public class GreenplumUtils {
                 if (((GreenplumDataSource) table.getDataSource()).isGreenplumVersionAtLeast(6, 0)) {
                     try (JDBCResultSet dbResult = dbStat.executeQuery("SELECT distkey FROM pg_catalog.gp_distribution_policy WHERE localoid=" + table.getObjectId())) {
                         if (dbResult.next()) {
-                            return PostgreUtils.getIntVector(JDBCUtils.safeGetObject(dbResult, 1));
+                            return PostgreUtils.getIntVector(JDBCUtils.safeGetObject(dbResult, 1), table.getDataSource());
                         } else {
                             return null;
                         }
@@ -58,7 +58,7 @@ public class GreenplumUtils {
                 } else {
                     try (JDBCResultSet dbResult = dbStat.executeQuery("SELECT attrnums FROM pg_catalog.gp_distribution_policy WHERE localoid=" + table.getObjectId())) {
                         if (dbResult.next()) {
-                            return PostgreUtils.getIntVector(JDBCUtils.safeGetObject(dbResult, 1));
+                            return PostgreUtils.getIntVector(JDBCUtils.safeGetObject(dbResult, 1), table.getDataSource());
                         } else {
                             return null;
                         }

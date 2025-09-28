@@ -32,6 +32,7 @@ import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.erd.ERDUtils;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.rm.RMConstants;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.load.DatabaseLoadService;
@@ -209,7 +210,11 @@ public class ERDEditorEmbedded extends ERDEditorPart
         if (getEditorInput() == null) {
             return null;
         }
-        return getEditorInput().getNavigatorNode().getOwnerProject();
+        DBNDatabaseNode node = getEditorInput().getNavigatorNode();
+        if (node == null) {
+            return null;
+        }
+        return node.getOwnerProject();
     }
 
     @Override

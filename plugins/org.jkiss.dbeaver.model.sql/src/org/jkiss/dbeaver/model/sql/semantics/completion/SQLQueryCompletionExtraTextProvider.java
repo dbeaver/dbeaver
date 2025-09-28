@@ -24,6 +24,9 @@ import org.jkiss.dbeaver.model.sql.semantics.completion.SQLQueryCompletionItem.*
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryExprType;
 import org.jkiss.utils.CommonUtils;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class SQLQueryCompletionExtraTextProvider implements SQLQueryCompletionItemVisitor<String> {
 
     public static SQLQueryCompletionExtraTextProvider INSTANCE = new SQLQueryCompletionExtraTextProvider();
@@ -34,7 +37,8 @@ public class SQLQueryCompletionExtraTextProvider implements SQLQueryCompletionIt
     @NotNull
     @Override
     public String visitSubqueryAlias(@NotNull SQLRowsSourceAliasCompletionItem rowsSourceAlias) {
-        return rowsSourceAlias.sourceInfo.tableOrNull != null ? " - Table alias" : " - Subquery alias";
+        return (rowsSourceAlias.sourceInfo.tableOrNull != null ? " - Table alias" : " - Subquery alias")
+             + (rowsSourceAlias.isRelated ? " (related)" : "");
     }
 
     @Nullable
@@ -48,6 +52,13 @@ public class SQLQueryCompletionExtraTextProvider implements SQLQueryCompletionIt
         return typeName == null ? " - Composite attribute" : (" : " + typeName);
     }
 
+    @Nullable
+    @Override
+    public String visitSpecialCompositeField(@NotNull SQLSpecialCompositeFieldCompletionItem compositeField) {
+        String typeName = this.prepareTypeNameString(compositeField.memberInfo.type());
+        return typeName == null ? " - Pseudo composite attribute" : (" : " + typeName);
+    }
+
     @NotNull
     @Override
     public String visitColumnName(@NotNull SQLColumnNameCompletionItem columnName) {
@@ -58,7 +69,20 @@ public class SQLQueryCompletionExtraTextProvider implements SQLQueryCompletionIt
     @NotNull
     @Override
     public String visitTableName(@NotNull SQLTableNameCompletionItem tableName) {
-        return (DBUtils.isView(tableName.object) ? " - View " : " - Table ");
+        String tail;
+        if (tableName.isRelated || tableName.isUsed) {
+            List<String> tags = new ArrayList<>();
+            if (tableName.isRelated) {
+                tags.add("related");
+            }
+            if (tableName.isUsed) {
+                tags.add("used");
+            }
+            tail = "(" +  String.join(", ", tags) + ")";
+        } else {
+            tail = "";
+        }
+        return (DBUtils.isView(tableName.object) ? " - View " : " - Table ") + tail;
     }
 
     @Nullable

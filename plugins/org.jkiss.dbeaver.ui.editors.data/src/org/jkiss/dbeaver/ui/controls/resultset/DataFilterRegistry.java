@@ -109,7 +109,7 @@ class DataFilterRegistry {
                             restoredAttributes.add(attr);
                         }
                         while (!restoredAttributes.isEmpty()) {
-                            RestoredAttribute attr = restoredAttributes.remove(restoredAttributes.size() - 1);
+                            RestoredAttribute attr = restoredAttributes.removeLast();
                             RestoredAttribute boundParent = attr.getParentObject() == null
                                 ? null
                                 : boundAttrs.get(attr.getParentObject());
@@ -128,8 +128,7 @@ class DataFilterRegistry {
             @NotNull DBDAttributeConstraintBase savedConstraint
         ) {
             DBDAttributeConstraint constraint;
-            if (savedConstraint instanceof DBDAttributeConstraint) {
-                DBDAttributeConstraint savedAttrConstraint = (DBDAttributeConstraint) savedConstraint;
+            if (savedConstraint instanceof DBDAttributeConstraint savedAttrConstraint) {
                 if (savedAttrConstraint.getAttribute() instanceof RestoredAttribute) {
                     RestoredAttribute boundAttr = boundAttrs.get(savedAttrConstraint.getAttribute());
                     if (boundAttr != null) {
@@ -182,7 +181,7 @@ class DataFilterRegistry {
 
     static class SavedDataFilter {
 
-        private Map<String, DBDAttributeConstraintBase> constraints = new LinkedHashMap<>();
+        private final Map<String, DBDAttributeConstraintBase> constraints = new LinkedHashMap<>();
         private boolean anyConstraint; // means OR condition
         private String order;
         private String where;
@@ -293,7 +292,7 @@ class DataFilterRegistry {
         DBSObject[] path = DBUtils.getObjectPath(object, true);
         StringBuilder objName = new StringBuilder();
         for (DBSObject p : path) {
-            if (objName.length() > 0) objName.append(OBJ_PATH_DELIMITER);
+            if (!objName.isEmpty()) objName.append(OBJ_PATH_DELIMITER);
             objName.append(p.getName());
         }
         return objName.toString();
@@ -338,14 +337,13 @@ class DataFilterRegistry {
                 }
             }
 
-            if (attrsInfo.size() > 0) {
-                try (XMLBuilder.Element e = xml.startElement("flatten-attribute-bindings")) {
+            if (!attrsInfo.isEmpty()) {
+                try (var ignored = xml.startElement("flatten-attribute-bindings")) {
                     for (Entry<DBSAttributeBase, String> entry : attrsInfo.entrySet()) {
-                        try (XMLBuilder.Element ae = xml.startElement("attribute")) {
+                        try (var ignored1 = xml.startElement("attribute")) {
                             DBSAttributeBase attribute = entry.getKey();
                             xml.addAttribute("attrEntryId", entry.getValue());
-                            if (attribute instanceof DBDAttributeBinding) {
-                                DBDAttributeBinding binding = (DBDAttributeBinding) attribute;
+                            if (attribute instanceof DBDAttributeBinding binding) {
                                 DBDAttributeBinding parent = binding.getParentObject();
                                 if (parent != null) {
                                     xml.addAttribute("parentAttrEntryId", attrsInfo.get(parent));
@@ -390,10 +388,10 @@ class DataFilterRegistry {
             Path configFile = DBWorkbench.getPlatform().getLocalConfigurationFile(CONFIG_FILE);
             try (OutputStream out = Files.newOutputStream(configFile)) {
                 XMLBuilder xml = new XMLBuilder(out, GeneralUtils.UTF8_ENCODING);
-                xml.setButify(true);
-                try (final XMLBuilder.Element e = xml.startElement("data-filters")) {
+                xml.setBeautify(true);
+                try (var ignored = xml.startElement("data-filters")) {
                     for (Map.Entry<String, SavedDataFilter> entry : savedFilters.entrySet()) {
-                        try (final XMLBuilder.Element e2 = xml.startElement("filter")) {
+                        try (var ignored2 = xml.startElement("filter")) {
                             xml.addAttribute("objectId", entry.getKey());
                             SavedDataFilter sdf = entry.getValue();
                             xml.addAttribute("anyConstraint", sdf.anyConstraint);
@@ -401,7 +399,7 @@ class DataFilterRegistry {
                             if (!CommonUtils.isEmpty(sdf.where)) xml.addAttribute("where", sdf.where);
                             Map<DBSAttributeBase, String> attrsInfo = collectAttrsInfo(xml, sdf);
                             for (Map.Entry<String, DBDAttributeConstraintBase> attrCE : sdf.constraints.entrySet()) {
-                                try (final XMLBuilder.Element e3 = xml.startElement("constraint")) {
+                                try (var ignored3 = xml.startElement("constraint")) {
                                     xml.addAttribute("name", attrCE.getKey());
                                     DBDAttributeConstraintBase attrC = attrCE.getValue();
                                     if (!attrC.isVisible()) {
@@ -470,7 +468,7 @@ class DataFilterRegistry {
             @NotNull SAXReader reader,
             @Nullable String namespaceURI,
             @NotNull String localName,
-            @NotNull Attributes atts
+            @NotNull Attributes attributes
         ) throws XMLException {
             switch (localName) {
                 case "flatten-attribute-bindings": {
@@ -480,21 +478,21 @@ class DataFilterRegistry {
                 }
                 case "attribute": {
                     if (attrsInfo != null) {
-                        String attrEntryId = atts.getValue("attrEntryId");
-                        String parentAttrEntryId = atts.getValue("parentAttrEntryId");
+                        String attrEntryId = attributes.getValue("attrEntryId");
+                        String parentAttrEntryId = attributes.getValue("parentAttrEntryId");
 
                         RestoredAttribute parent = CommonUtils.isEmpty(parentAttrEntryId) ? null : attrsInfo.get(parentAttrEntryId);
                         
-                        attrsInfo.put(attrEntryId, new RestoredAttribute(parent, atts));
+                        attrsInfo.put(attrEntryId, new RestoredAttribute(parent, attributes));
                     }
                     break;
                 }
                 case "filter": {
                     curSavedDataFilter = new SavedDataFilter();
-                    curSavedDataFilter.anyConstraint = CommonUtils.toBoolean(atts.getValue("anyConstraint"));
-                    curSavedDataFilter.where = atts.getValue("where");
-                    curSavedDataFilter.order = atts.getValue("order");
-                    String objectId = atts.getValue("objectId");
+                    curSavedDataFilter.anyConstraint = CommonUtils.toBoolean(attributes.getValue("anyConstraint"));
+                    curSavedDataFilter.where = attributes.getValue("where");
+                    curSavedDataFilter.order = attributes.getValue("order");
+                    String objectId = attributes.getValue("objectId");
                     savedFilters.put(objectId, curSavedDataFilter);
                     attrsInfo = null;
                     break;
@@ -502,7 +500,7 @@ class DataFilterRegistry {
                 case "constraint": {
                     if (curSavedDataFilter != null) {
                         curSavedConstraint = null;
-                        String attrEntryId = atts.getValue("attrEntryId");
+                        String attrEntryId = attributes.getValue("attrEntryId");
                         if (CommonUtils.isNotEmpty(attrEntryId) && attrsInfo != null) {
                             DBSAttributeBase attr = attrsInfo.get(attrEntryId);
                             if (attr != null) {
@@ -512,15 +510,15 @@ class DataFilterRegistry {
                         if (curSavedConstraint == null) {
                             curSavedConstraint = new DBDAttributeConstraintBase();
                         }
-                        String name = atts.getValue("name");
-                        curSavedConstraint.setVisualPosition(CommonUtils.toInt(atts.getValue("pos")));
-                        if (atts.getValue("order") != null) {
-                            curSavedConstraint.setOrderPosition(CommonUtils.toInt(atts.getValue("order")));
-                            curSavedConstraint.setOrderDescending(CommonUtils.toBoolean(atts.getValue("orderDesc")));
+                        String name = attributes.getValue("name");
+                        curSavedConstraint.setVisualPosition(CommonUtils.toInt(attributes.getValue("pos")));
+                        if (attributes.getValue("order") != null) {
+                            curSavedConstraint.setOrderPosition(CommonUtils.toInt(attributes.getValue("order")));
+                            curSavedConstraint.setOrderDescending(CommonUtils.toBoolean(attributes.getValue("orderDesc")));
                         }
-                        curSavedConstraint.setCriteria(atts.getValue("criteria"));
-                        curSavedConstraint.setVisible(CommonUtils.getBoolean(atts.getValue("visible"), true));
-                        String operName = atts.getValue("operator");
+                        curSavedConstraint.setCriteria(attributes.getValue("criteria"));
+                        curSavedConstraint.setVisible(CommonUtils.getBoolean(attributes.getValue("visible"), true));
+                        String operName = attributes.getValue("operator");
                         if (!CommonUtils.isEmpty(operName)) {
                             try {
                                 curSavedConstraint.setOperator(DBCLogicalOperator.valueOf(operName));
@@ -528,7 +526,7 @@ class DataFilterRegistry {
                                 log.error(e);
                             }
                         }
-                        curSavedConstraint.setEntityAlias(atts.getValue("entity"));
+                        curSavedConstraint.setEntityAlias(attributes.getValue("entity"));
                         curSavedDataFilter.constraints.put(name, curSavedConstraint);
                     }
                     break;
@@ -541,7 +539,7 @@ class DataFilterRegistry {
                 }
                 case "option": {
                     if (curSavedConstraint != null) {
-                        curOptionName = CommonUtils.toString(atts.getValue("name"));
+                        curOptionName = CommonUtils.toString(attributes.getValue("name"));
                     }
                     break;
                 }
@@ -571,7 +569,7 @@ class DataFilterRegistry {
         }
 
         @Override
-        public void saxText(@Nullable SAXReader reader, @NotNull String data) throws XMLException {
+        public void saxText(@NotNull SAXReader reader, @NotNull String data) throws XMLException {
             if (isInValue) {
                 curSavedConstraint.setValue(GeneralUtils.deserializeObject(data));
             } else if (curOptionName != null) {

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,8 +17,10 @@
 package org.jkiss.dbeaver.ui.controls.resultset.panel.valueviewer;
 
 import org.eclipse.core.runtime.IAdaptable;
-import org.eclipse.jface.action.*;
-import org.eclipse.jface.dialogs.IDialogSettings;
+import org.eclipse.jface.action.Action;
+import org.eclipse.jface.action.ContributionItem;
+import org.eclipse.jface.action.GroupMarker;
+import org.eclipse.jface.action.IContributionManager;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.osgi.util.NLS;
@@ -44,6 +46,7 @@ import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.controls.resultset.*;
 import org.jkiss.dbeaver.ui.controls.resultset.handler.ResultSetHandlerMain;
 import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
+import org.jkiss.dbeaver.ui.css.CSSUtils;
 import org.jkiss.dbeaver.ui.data.IValueController;
 import org.jkiss.dbeaver.ui.data.IValueEditor;
 import org.jkiss.dbeaver.ui.data.IValueManager;
@@ -73,10 +76,6 @@ public class ValueViewerPanel implements IResultSetPanel, DBPAdaptable {
     private volatile boolean valueSaving;
     private IValueManager valueManager;
 
-    public static IDialogSettings getPanelSettings() {
-        return ResultSetUtils.getViewerSettings(SETTINGS_SECTION);
-    }
-
     public ValueViewerPanel() {
     }
 
@@ -95,9 +94,10 @@ public class ValueViewerPanel implements IResultSetPanel, DBPAdaptable {
                     true);
 
                 UIUtils.drawMessageOverControl(viewPlaceholder, e, ResultSetMessages.value_viewer_select_view_message, 0);
-                UIUtils.drawMessageOverControl(viewPlaceholder, e, NLS.bind(ResultSetMessages.value_viewer_hide_panel_message, hidePanelCmd), 20);
+                UIUtils.drawMessageOverControl(viewPlaceholder, e, NLS.bind(ResultSetMessages.value_viewer_hide_panel_message, hidePanelCmd), 30);
             }
         });
+        CSSUtils.setExcludeFromStyling(viewPlaceholder);
 
         viewPlaceholder.addDisposeListener(e -> disposeValueEditor());
         viewPlaceholder.addTraverseListener(this::handleTraverseEvent);
@@ -113,8 +113,7 @@ public class ValueViewerPanel implements IResultSetPanel, DBPAdaptable {
         });
 */
 
-        if (this.presentation instanceof ISelectionProvider) {
-            final ISelectionProvider selectionProvider = (ISelectionProvider) this.presentation;
+        if (this.presentation instanceof ISelectionProvider selectionProvider) {
             final ISelectionChangedListener selectionListener = event -> {
                 if (ValueViewerPanel.this.presentation.getController().getVisiblePanel() == ValueViewerPanel.this) {
                     refreshValue(false);
@@ -257,6 +256,7 @@ public class ValueViewerPanel implements IResultSetPanel, DBPAdaptable {
                     controller.lockActionsByFocus(control);
 
                     control.addTraverseListener(this::handleTraverseEvent);
+                    CSSUtils.setExcludeFromStyling(control);
                 }
 
                 if (showDictionaryView || singleLineEditor) {
@@ -370,9 +370,7 @@ public class ValueViewerPanel implements IResultSetPanel, DBPAdaptable {
         }
     }
 
-    private void fillToolBar(final IContributionManager contributionManager)
-    {
-        contributionManager.add(new Separator());
+    private void fillToolBar(final IContributionManager contributionManager) {
         if (valueManager != null) {
             try {
                 valueManager.contributeActions(contributionManager, previewController, valueEditor);

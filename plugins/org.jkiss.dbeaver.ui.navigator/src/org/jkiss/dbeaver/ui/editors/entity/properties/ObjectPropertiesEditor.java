@@ -34,6 +34,7 @@ import org.eclipse.ui.*;
 import org.eclipse.ui.internal.PartSite;
 import org.eclipse.ui.part.MultiPageEditorPart;
 import org.eclipse.ui.part.MultiPageEditorSite;
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
@@ -61,7 +62,6 @@ import org.jkiss.dbeaver.ui.controls.ObjectEditorPageControl;
 import org.jkiss.dbeaver.ui.controls.ProgressPageControl;
 import org.jkiss.dbeaver.ui.controls.folders.*;
 import org.jkiss.dbeaver.ui.css.CSSUtils;
-import org.jkiss.dbeaver.ui.css.DBStyles;
 import org.jkiss.dbeaver.ui.editors.*;
 import org.jkiss.dbeaver.ui.editors.entity.*;
 import org.jkiss.dbeaver.ui.internal.UINavigatorMessages;
@@ -122,10 +122,10 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
                 createPropertyRefreshAction(contributionManager);
             }
         };
-        CSSUtils.setCSSClass(pageControl, DBStyles.COLORED_BY_CONNECTION_TYPE);
+        CSSUtils.markConnectionTypeColor(pageControl);
         pageControl.setShowDivider(true);
 
-        mainComposite = new Composite(pageControl, SWT.NONE);
+        mainComposite = new ConComposite(pageControl, SWT.NONE);
         GridLayout gl = new GridLayout(1, false);
         gl.verticalSpacing = 5;
         gl.horizontalSpacing = 0;
@@ -150,15 +150,15 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
         try {
             TabbedFolderInfo[] folders = collectFolders(this);
             if (folders.length == 0) {
-                createPropertiesPanel(container);
+                propsPlaceholder = createPropertiesPanel(container);
+                propsPlaceholder.setLayoutData(new GridData(GridData.FILL_BOTH));
             } else {
                 Composite foldersParent = container;
                 if (hasPropertiesEditor() && DBWorkbench.getPlatform().getPreferenceStore().getBoolean(NavigatorPreferences.ENTITY_EDITOR_DETACH_INFO)) {
                     sashForm = UIUtils.createPartDivider(getSite().getPart(), container, SWT.VERTICAL);
                     sashForm.setLayoutData(new GridData(GridData.FILL_BOTH));
+                    propsPlaceholder = createPropertiesPanel(sashForm);
                     foldersParent = sashForm;
-
-                    createPropertiesPanel(sashForm);
                 }
                 createFoldersPanel(foldersParent, folders);
             }
@@ -184,15 +184,17 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
         }
     }
 
-    private void createPropertiesPanel(Composite container) {
-        // Main panel
-        propsPlaceholder = new Composite(container, SWT.NONE);
-        propsPlaceholder.setLayout(new FillLayout());
+    @NotNull
+    private Composite createPropertiesPanel(@NotNull Composite parent) {
+        Composite composite = new ConComposite(parent);
+        composite.setLayout(new FillLayout());
+        return composite;
     }
 
     private Composite createFoldersPanel(Composite parent, TabbedFolderInfo[] folders) {
         // Properties
-        Composite foldersPlaceholder = UIUtils.createPlaceholder(parent, 1, 0);
+        ConComposite foldersPlaceholder = new ConComposite(parent);
+        foldersPlaceholder.setGridLayout(1);
         foldersPlaceholder.setLayoutData(new GridData(GridData.FILL_BOTH));
 
         boolean single = folders.length < 4;
@@ -628,7 +630,7 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
             if (!extraCategories.isEmpty()) {
                 tabList.add(new TabbedFolderInfo(
                     PropertiesContributor.TAB_PROPERTIES,
-                    extraCategories.get(0) + (extraCategories.size() == 1 ? "" :" / ... "),
+                    extraCategories.getFirst() + (extraCategories.size() == 1 ? "" :" / ... "),
                     DBIcon.TREE_INFO,
                     String.join(", ", extraCategories),
                     false,
@@ -657,7 +659,7 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
     {
         monitor.beginTask("Collect tabs", 1);
         // Add all nested folders as tabs
-        if (node instanceof DBNDataSource && !((DBNDataSource)node).getDataSourceContainer().isConnected()) {
+        if (node instanceof DBNDataSource ds && !ds.getDataSourceContainer().isConnected()) {
             // Do not add children tabs
         } else if (node != null) {
             try {

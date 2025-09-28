@@ -24,7 +24,11 @@ import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
+import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.utils.BeanUtils;
+import org.jkiss.utils.CommonUtils;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 
 import java.sql.SQLException;
@@ -34,6 +38,7 @@ public class CubridSQLDialect extends GenericSQLDialect
 {
     public static final String CUBRID_DIALECT_ID = "cubrid";
     private static final Log log = Log.getLog(CubridSQLDialect.class);
+    private boolean isShard = false;
 
     private static final String[] CUBRID_KEYWORD = {
             "BIT", "CONNECT_BY_ISCYCLE", "CONNECT_BY_ISLEAF", "CONNECT_BY_ROOT", "CURRENT_DATE", "CURRENT_DATETIME", "CURRENT_TIME", "CURRENT_TIMESTAMP", "CURRENT_USER", "DATA_TYPE",
@@ -78,6 +83,7 @@ public class CubridSQLDialect extends GenericSQLDialect
             @NotNull JDBCDatabaseMetaData metaData) {
         super.initDriverSettings(session, dataSource, metaData);
         CubridDataSource source = (CubridDataSource) dataSource;
+        detectAndApplyShardSettings(session, source);
         source.setSupportMultiSchema(isSupportMultiSchema(session));
         source.setEOLVersion(isEOLVersion(session));
         for (String removeKeyWord : REMOVE_KEYWORD) {
@@ -120,6 +126,43 @@ public class CubridSQLDialect extends GenericSQLDialect
     }
 
     @Override
+    public boolean supportsAlterTableStatement() {
+        return !isShard;
+    }
+
+    public boolean isShard() {
+        return isShard;
+    }
+
+    public void setShard(boolean shard) {
+        this.isShard = shard;
+    }
+
+    private void detectAndApplyShardSettings(JDBCSession session, CubridDataSource source) {
+        try {
+            Object conn = session.getExecutionContext().getConnection(session.getProgressMonitor());
+            boolean shard = (boolean) BeanUtils.invokeObjectMethod(conn, "isShard");
+            if (!shard) return;
+
+            setShard(true);
+            source.setShard(true);
+
+            DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
+            String shardType = store.getString("shardType");
+            if (CommonUtils.isEmpty(shardType)) {
+                store.setValue("shardType", "SHARD ID");
+                store.setValue("shardVal", "0");
+            } else {
+                source.setShardType(shardType);
+                source.setShardVal(store.getString("shardVal"));
+            }
+        } catch (SQLException e) {
+            log.debug("Failed to get connection:", e);
+        } catch (Throwable e) {
+            log.debug("Failed to invoke isShard method:", e);
+        }
+    }
+
     public String getColumnTypeModifiers(@NotNull DBPDataSource dataSource, @NotNull DBSTypedObject column, @NotNull String typeName, @NotNull DBPDataKind dataKind) {
         if ("VARCHAR".equalsIgnoreCase(typeName)) {
             return "(" + column.getMaxLength() + ")";

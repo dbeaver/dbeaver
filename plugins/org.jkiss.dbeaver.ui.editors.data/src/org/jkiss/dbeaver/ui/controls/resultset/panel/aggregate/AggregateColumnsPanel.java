@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -40,6 +40,7 @@ import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.DataEditorFeatures;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.controls.ToolbarSeparatorContribution;
 import org.jkiss.dbeaver.ui.controls.resultset.*;
 import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
 
@@ -284,7 +285,7 @@ public class AggregateColumnsPanel implements IResultSetPanel {
             }
         }
 
-        IAggregateFunction[] funcs = funcMap.keySet().toArray(new IAggregateFunction[funcMap.size()]);
+        IAggregateFunction[] funcs = funcMap.keySet().toArray(new IAggregateFunction[0]);
         int[] funcCount = new int[funcs.length];
         for (Object element : values) {
             for (int i = 0; i < funcs.length; i++) {
@@ -321,12 +322,11 @@ public class AggregateColumnsPanel implements IResultSetPanel {
         aggregateTable.removeAll();
     }
 
-    private void fillToolBar(IContributionManager contributionManager)
-    {
+    private void fillToolBar(IContributionManager contributionManager) {
         contributionManager.add(new AddFunctionAction());
         contributionManager.add(new RemoveFunctionAction());
         contributionManager.add(new ResetFunctionsAction());
-        contributionManager.add(new Separator());
+        contributionManager.add(new ToolbarSeparatorContribution(true));
         contributionManager.add(new GroupByColumnsAction());
         contributionManager.add(new ValueTypeToggleAction());
     }
@@ -450,7 +450,7 @@ public class AggregateColumnsPanel implements IResultSetPanel {
         public void run() {
             StringBuilder result = new StringBuilder();
             for (TreeItem item : aggregateTable.getSelection()) {
-                if (result.length() > 0) result.append("\n");
+                if (!result.isEmpty()) result.append("\n");
                 if (item.getData() instanceof AggregateFunctionDescriptor) {
                     result.append(item.getText(1));
                 } else {
@@ -471,12 +471,12 @@ public class AggregateColumnsPanel implements IResultSetPanel {
             StringBuilder result = new StringBuilder();
             if (!groupByColumns) {
                 for (TreeItem item : aggregateTable.getItems()) {
-                    if (result.length() > 0) result.append("\n");
+                    if (!result.isEmpty()) result.append("\n");
                     result.append(item.getText(0)).append("=").append(item.getText(1));
                 }
             } else {
                 for (TreeItem item : aggregateTable.getItems()) {
-                    if (result.length() > 0) result.append("\n");
+                    if (!result.isEmpty()) result.append("\n");
                     result.append(item.getText(0));
                     for (TreeItem funcItem : item.getItems()) {
                         result.append("\n\t");
