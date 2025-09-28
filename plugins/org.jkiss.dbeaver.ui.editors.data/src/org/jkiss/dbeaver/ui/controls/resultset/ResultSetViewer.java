@@ -1226,7 +1226,7 @@ public class ResultSetViewer extends Viewer
 
     @Override
     public IResultSetPanel[] getActivePanels() {
-        return activePanels.values().toArray(new IResultSetPanel[0]);
+        return activePanels.values().stream().map(pi -> pi.panel).toArray(IResultSetPanel[]::new);
     }
 
     @Override
