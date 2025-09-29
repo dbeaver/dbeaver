@@ -74,8 +74,10 @@ public class PostgreDatabaseManager extends SQLObjectEditor<PostgreDatabase, Pos
     }
 
     @Override
-    protected void addObjectCreateActions(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext executionContext,
-                                          @NotNull List<DBEPersistAction> actions, @NotNull ObjectCreateCommand command,
+    protected void addObjectCreateActions(@NotNull DBRProgressMonitor monitor,
+                                          @NotNull DBCExecutionContext executionContext,
+                                          @NotNull List<DBEPersistAction> actions,
+                                          @NotNull ObjectCreateCommand command,
                                           @NotNull Map<String, Object> options)
         throws DBException {
         final PostgreDatabase database = command.getObject();
@@ -198,7 +200,7 @@ public class PostgreDatabaseManager extends SQLObjectEditor<PostgreDatabase, Pos
     /*
      * Throws if we cannot create DB because of connection settings
      */
-    private void verifyCanCreateDB(PostgreDatabase database) throws DBException {
+    private void verifyCanCreateDB(@NotNull PostgreDatabase database) throws DBException {
         DBPConnectionConfiguration configuration = database.getDataSource().getContainer().getActualConnectionConfiguration();
         if (!isReadDatabaseList(configuration)) {
             throw new DBException("""
@@ -208,9 +210,7 @@ public class PostgreDatabaseManager extends SQLObjectEditor<PostgreDatabase, Pos
         }
     }
 
-    // True if we need multiple databases
-    private boolean isReadDatabaseList(DBPConnectionConfiguration configuration) {
-        // It is configurable by default
+    private boolean isReadDatabaseList(@NotNull DBPConnectionConfiguration configuration) {
         return CommonUtils.getBoolean(configuration.getProviderProperty(PostgreConstants.PROP_SHOW_NON_DEFAULT_DB), false);
     }
 
