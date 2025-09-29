@@ -17,9 +17,11 @@
 package org.jkiss.dbeaver.ui.ai.preferences;
 
 import org.eclipse.core.runtime.IAdaptable;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IWorkbench;
@@ -30,12 +32,14 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.ai.AISettings;
+import org.jkiss.dbeaver.model.ai.engine.AIEngine;
 import org.jkiss.dbeaver.model.ai.engine.AIEngineProperties;
 import org.jkiss.dbeaver.model.ai.registry.AIEngineDescriptor;
 import org.jkiss.dbeaver.model.ai.registry.AIEngineRegistry;
 import org.jkiss.dbeaver.model.ai.registry.AISettingsManager;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.rm.RMConstants;
+import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.registry.configurator.UIPropertyConfiguratorDescriptor;
 import org.jkiss.dbeaver.registry.configurator.UIPropertyConfiguratorRegistry;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -147,6 +151,7 @@ public class AIPreferencePageMain extends AbstractPrefPage implements IWorkbench
             2);
 
         composite.setLayoutData(new GridData(GridData.FILL_BOTH));
+        createTestConnectionButton(composite);
 
         Composite serviceComposite = UIUtils.createComposite(composite, 2);
         serviceComposite.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
@@ -190,6 +195,36 @@ public class AIPreferencePageMain extends AbstractPrefPage implements IWorkbench
         performDefaults();
 
         return composite;
+    }
+
+    private void createTestConnectionButton(@NotNull Composite parent) {
+        Button aiConnectionTestButton = UIUtils.createPushButton(
+            parent,
+            AIUIMessages.gpt_preference_page_ai_connection_test_label,
+            AIUIMessages.gpt_preference_page_ai_connection_test_tooltip,
+            null,
+            SelectionListener.widgetSelectedAdapter(e -> {
+                String activeEngine = settings.activeEngine();
+                try (AIEngine selectedEngine = completionEngine.createEngineInstance()) {
+                    selectedEngine.getModels(new VoidProgressMonitor());
+                    DBWorkbench.getPlatformUI().showMessageBox(
+                        AIUIMessages.gpt_preference_page_ai_connection_test_connection_success_title,
+                        NLS.bind(AIUIMessages.gpt_preference_page_ai_connection_test_connection_success_message, activeEngine),
+                        false
+                    );
+                } catch (Exception ex) {
+                    DBWorkbench.getPlatformUI().showError(
+                        AIUIMessages.gpt_preference_page_ai_connection_test_connection_error_title,
+                        NLS.bind(AIUIMessages.gpt_preference_page_ai_connection_test_connection_error_message, activeEngine),
+                        ex
+                    );
+                }
+            })
+        );
+
+        GridData gd = new GridData(SWT.BEGINNING, SWT.CENTER, false, false);
+        gd.horizontalSpan = 2;
+        aiConnectionTestButton.setLayoutData(gd);
     }
 
     private void drawConfiguratorComposite(@NotNull String id, @NotNull Group engineGroup) {

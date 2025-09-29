@@ -40,7 +40,6 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.ui.UIServiceAuth;
 import org.jkiss.dbeaver.ui.IObjectPropertyConfigurator;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.ai.engine.AIConnectionTestSelectionAdapter;
 import org.jkiss.dbeaver.ui.ai.internal.AIUIMessages;
 import org.jkiss.dbeaver.ui.ai.model.ContextWindowSizeField;
 import org.jkiss.dbeaver.ui.ai.model.ModelSelectorField;
@@ -55,7 +54,6 @@ public class CopilotConfigurator implements IObjectPropertyConfigurator<AIEngine
     private Text temperatureText;
     private ContextWindowSizeField contextWindowSizeField;
     private ModelSelectorField modelSelectorField;
-    private ModelSelectorField.ModelListProvider modelListProvider;
     private Button logQueryCheck;
     private Text accessTokenText;
 
@@ -73,12 +71,8 @@ public class CopilotConfigurator implements IObjectPropertyConfigurator<AIEngine
         Composite composite = UIUtils.createComposite(parent, 3);
         composite.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         createConnectionParameters(composite);
-
-        createModelListProvider();
         createModelParameters(composite);
         createAdditionalSettings(composite);
-        createTestConnectionButton(composite);
-
         UIUtils.syncExec(this::applySettings);
     }
 
@@ -115,11 +109,12 @@ public class CopilotConfigurator implements IObjectPropertyConfigurator<AIEngine
         return true;
     }
 
-    private void createModelListProvider() {
-        modelListProvider = (monitor, forceRefresh) -> {
+    private void createModelParameters(@NotNull Composite parent) {
+        ModelSelectorField.ModelListProvider modelListProvider = (monitor, forceRefresh) -> {
             if (accessToken == null || accessToken.isEmpty()) {
                 throw new DBException("Access token is not set");
             }
+
             CopilotProperties properties = new CopilotProperties();
             properties.setToken(accessToken);
 
@@ -130,26 +125,24 @@ public class CopilotConfigurator implements IObjectPropertyConfigurator<AIEngine
                     .toList();
             }
         };
-    }
 
-    private void createModelParameters(@NotNull Composite parent) {
-            modelSelectorField = ModelSelectorField.builder()
-                .withParent(parent)
-                .withGridData(new GridData(GridData.FILL_HORIZONTAL))
-                .withSelectionListener(SelectionListener.widgetSelectedAdapter((e) -> {
-                    CopilotModels.getModelByName(modelSelectorField.getSelectedModel())
-                        .ifPresentOrElse(
-                            model -> {
-                                contextWindowSizeField.setValue(model.contextWindowSize());
-                                temperatureText.setText(String.valueOf(model.defaultTemperature()));
-                            }, () -> {
-                                contextWindowSizeField.setValue(null);
-                                temperatureText.setText("0.0");
-                            }
-                        );
-                }))
-                .withModelListSupplier(modelListProvider)
-                .build();
+        modelSelectorField = ModelSelectorField.builder()
+            .withParent(parent)
+            .withGridData(new GridData(GridData.FILL_HORIZONTAL))
+            .withSelectionListener(SelectionListener.widgetSelectedAdapter((e) -> {
+                CopilotModels.getModelByName(modelSelectorField.getSelectedModel())
+                    .ifPresentOrElse(
+                        model -> {
+                            contextWindowSizeField.setValue(model.contextWindowSize());
+                            temperatureText.setText(String.valueOf(model.defaultTemperature()));
+                        }, () -> {
+                            contextWindowSizeField.setValue(null);
+                            temperatureText.setText("0.0");
+                        }
+                    );
+            }))
+            .withModelListSupplier(modelListProvider)
+            .build();
 
         contextWindowSizeField = ContextWindowSizeField.builder()
             .withParent(parent)
@@ -180,19 +173,6 @@ public class CopilotConfigurator implements IObjectPropertyConfigurator<AIEngine
                 logQuery = logQueryCheck.getSelection();
             }
         });
-    }
-
-    private void createTestConnectionButton(@NotNull Composite parent) {
-        Button testConnectionButton = UIUtils.createPushButton(
-            parent,
-            AIUIMessages.gpt_preference_page_ai_connection_test_label,
-            null,
-            null,
-            new AIConnectionTestSelectionAdapter(modelSelectorField, modelListProvider));
-
-        GridData gd = new GridData(SWT.BEGINNING, SWT.CENTER, false, false);
-        gd.horizontalSpan = 2;
-        testConnectionButton.setLayoutData(gd);
     }
 
     private void applySettings() {

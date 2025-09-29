@@ -40,7 +40,6 @@ import org.jkiss.dbeaver.model.ai.registry.AIEngineDescriptor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.ui.IObjectPropertyConfigurator;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.ai.engine.AIConnectionTestSelectionAdapter;
 import org.jkiss.dbeaver.ui.ai.internal.AIUIMessages;
 import org.jkiss.dbeaver.ui.ai.model.CachedValue;
 import org.jkiss.dbeaver.ui.ai.model.ContextWindowSizeField;
@@ -64,7 +63,6 @@ public class OpenAiConfigurator<ENGINE extends AIEngineDescriptor, PROPERTIES ex
     @Nullable
     protected Text tokenText;
     private Text temperatureText;
-    private ModelSelectorField.ModelListProvider modelListProvider;
     private ModelSelectorField modelSelectorField;
     private ContextWindowSizeField contextWindowSizeField;
     private Button logQueryCheck;
@@ -81,12 +79,10 @@ public class OpenAiConfigurator<ENGINE extends AIEngineDescriptor, PROPERTIES ex
         composite.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         createConnectionParameters(composite);
 
-        createModelListProvider();
         createModelParameters(composite);
         createBaseUrlParameter(composite);
 
         createAdditionalSettings(composite);
-        createTestConnectionButton(composite);
     }
 
     @Override
@@ -143,7 +139,12 @@ public class OpenAiConfigurator<ENGINE extends AIEngineDescriptor, PROPERTIES ex
         modelSelectorField = ModelSelectorField.builder()
             .withParent(parent)
             .withGridData(new GridData(GridData.FILL_HORIZONTAL))
-            .withModelListSupplier(modelListProvider)
+            .withModelListSupplier(
+                (monitor, forceRefresh) -> modelsCache.get(monitor, forceRefresh).stream()
+                    .filter(it -> it.features().contains(AIModelFeature.CHAT))
+                    .map(AIModel::name)
+                    .toList()
+            )
             .withSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
                 OpenAIModels.getModelByName(modelSelectorField.getSelectedModel())
                     .ifPresentOrElse(
@@ -200,28 +201,6 @@ public class OpenAiConfigurator<ENGINE extends AIEngineDescriptor, PROPERTIES ex
         tokenText.setMessage("API access token");
         createURLInfoLink(parent);
     }
-
-    private void createModelListProvider() {
-        modelListProvider =
-            (monitor, forceRefresh) -> modelsCache.get(monitor, forceRefresh).stream()
-                .filter(it -> it.features().contains(AIModelFeature.CHAT))
-                .map(AIModel::name)
-                .toList();
-    }
-
-    private void createTestConnectionButton(@NotNull Composite parent) {
-        Button testConnectionButton = UIUtils.createPushButton(
-            parent,
-            AIUIMessages.gpt_preference_page_ai_connection_test_label,
-            null,
-            null,
-            new AIConnectionTestSelectionAdapter(modelSelectorField, modelListProvider));
-
-        GridData gd = new GridData(SWT.BEGINNING, SWT.CENTER, false, false);
-        gd.horizontalSpan = 2;
-        testConnectionButton.setLayoutData(gd);
-    }
-
 
     protected void createBaseUrlParameter(@NotNull Composite parent) {
         baseUrlText = UIUtils.createLabelText(
