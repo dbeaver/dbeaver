@@ -391,7 +391,7 @@ public class ValueViewerPanel extends ResultSetPanelBase implements DBPAdaptable
         }
         if (valueEditor != null && !valueEditor.isReadOnly()) {
             ActionContributionItem item = new ActionContributionItem(new SaveValueAction());
-            item.setMode(ActionContributionItem.MODE_FORCE_TEXT);
+            //item.setMode(ActionContributionItem.MODE_FORCE_TEXT);
             contributionManager.add(item);
         }
     }

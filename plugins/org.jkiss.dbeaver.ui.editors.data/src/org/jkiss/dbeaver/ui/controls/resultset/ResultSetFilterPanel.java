@@ -338,7 +338,7 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
             List<ResultSetViewer.HistoryStateItem> stateHistory = viewer.getStateHistory();
 
             filtersText.getText();
-            filtersText.setEnabled(supportsDataFilter);
+            filtersText.setEditable(supportsDataFilter);
             if (executePanel != null) {
                 executePanel.setEnabled(supportsDataFilter);
             }
