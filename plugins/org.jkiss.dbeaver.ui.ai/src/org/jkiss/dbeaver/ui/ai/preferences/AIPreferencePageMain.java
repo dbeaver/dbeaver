@@ -151,7 +151,6 @@ public class AIPreferencePageMain extends AbstractPrefPage implements IWorkbench
             2);
 
         composite.setLayoutData(new GridData(GridData.FILL_BOTH));
-        createTestConnectionButton(composite);
 
         Composite serviceComposite = UIUtils.createComposite(composite, 2);
         serviceComposite.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
@@ -194,37 +193,8 @@ public class AIPreferencePageMain extends AbstractPrefPage implements IWorkbench
         });
         performDefaults();
 
+        createTestConnectionButton(serviceComposite);
         return composite;
-    }
-
-    private void createTestConnectionButton(@NotNull Composite parent) {
-        Button aiConnectionTestButton = UIUtils.createPushButton(
-            parent,
-            AIUIMessages.gpt_preference_page_ai_connection_test_label,
-            AIUIMessages.gpt_preference_page_ai_connection_test_tooltip,
-            null,
-            SelectionListener.widgetSelectedAdapter(e -> {
-                String activeEngine = settings.activeEngine();
-                try (AIEngine selectedEngine = completionEngine.createEngineInstance()) {
-                    selectedEngine.getModels(new VoidProgressMonitor());
-                    DBWorkbench.getPlatformUI().showMessageBox(
-                        AIUIMessages.gpt_preference_page_ai_connection_test_connection_success_title,
-                        NLS.bind(AIUIMessages.gpt_preference_page_ai_connection_test_connection_success_message, activeEngine),
-                        false
-                    );
-                } catch (Exception ex) {
-                    DBWorkbench.getPlatformUI().showError(
-                        AIUIMessages.gpt_preference_page_ai_connection_test_connection_error_title,
-                        NLS.bind(AIUIMessages.gpt_preference_page_ai_connection_test_connection_error_message, activeEngine),
-                        ex
-                    );
-                }
-            })
-        );
-
-        GridData gd = new GridData(SWT.BEGINNING, SWT.CENTER, false, false);
-        gd.horizontalSpan = 2;
-        aiConnectionTestButton.setLayoutData(gd);
     }
 
     private void drawConfiguratorComposite(@NotNull String id, @NotNull Group engineGroup) {
@@ -252,6 +222,32 @@ public class AIPreferencePageMain extends AbstractPrefPage implements IWorkbench
                 e
             );
         }
+    }
+
+    private void createTestConnectionButton(@NotNull Composite parent) {
+        UIUtils.createPushButton(
+            parent,
+            AIUIMessages.gpt_preference_page_ai_connection_test_label,
+            AIUIMessages.gpt_preference_page_ai_connection_test_tooltip,
+            null,
+            SelectionListener.widgetSelectedAdapter(e -> {
+                String activeEngine = settings.activeEngine();
+                try (AIEngine selectedEngine = completionEngine.createEngineInstance()) {
+                    selectedEngine.getModels(new VoidProgressMonitor());
+                    DBWorkbench.getPlatformUI().showMessageBox(
+                        AIUIMessages.gpt_preference_page_ai_connection_test_connection_success_title,
+                        NLS.bind(AIUIMessages.gpt_preference_page_ai_connection_test_connection_success_message, activeEngine),
+                        false
+                    );
+                } catch (Exception ex) {
+                    DBWorkbench.getPlatformUI().showError(
+                        AIUIMessages.gpt_preference_page_ai_connection_test_connection_error_title,
+                        NLS.bind(AIUIMessages.gpt_preference_page_ai_connection_test_connection_error_message, activeEngine),
+                        ex
+                    );
+                }
+            })
+        );
     }
 
     @Override
