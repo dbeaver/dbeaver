@@ -48,6 +48,7 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.controls.ProgressLoaderVisualizer;
 import org.jkiss.dbeaver.ui.controls.resultset.handler.ResultSetHandlerSwitchContentViewer;
+import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
 import org.jkiss.dbeaver.ui.data.IStreamValueEditor;
 import org.jkiss.dbeaver.ui.data.IStreamValueManager;
 import org.jkiss.dbeaver.ui.data.IValueController;
@@ -57,7 +58,6 @@ import org.jkiss.dbeaver.utils.MimeTypes;
 import org.jkiss.dbeaver.utils.PrefUtils;
 import org.jkiss.utils.CommonUtils;
 
-import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 import java.util.*;
 
@@ -70,7 +70,7 @@ public class ContentPanelEditor extends BaseValueEditor<Control> implements IAda
 
     private static final String PROP_VALUE_MANAGER = "valueManager";
 
-    private static Map<String, String> valueToManagerMap = new HashMap<>();
+    private static final Map<String, String> valueToManagerMap = new HashMap<>();
 
     private Map<StreamValueManagerDescriptor, IStreamValueManager.MatchType> streamManagers;
     private volatile StreamValueManagerDescriptor curStreamManager;
@@ -103,7 +103,9 @@ public class ContentPanelEditor extends BaseValueEditor<Control> implements IAda
 
     @Override
     public void contributeActions(@NotNull IContributionManager manager, @NotNull IValueController controller) throws DBCException {
-        manager.add(new ContentTypeSwitchAction());
+        ActionContributionItem cfgItem = new ActionContributionItem(new ContentTypeSwitchAction());
+        cfgItem.setMode(ActionContributionItem.MODE_FORCE_TEXT);
+        manager.add(cfgItem);
         if (streamEditor != null) {
             streamEditor.contributeActions(manager, editorControl);
         } else {
@@ -117,8 +119,7 @@ public class ContentPanelEditor extends BaseValueEditor<Control> implements IAda
         primeEditorValue(value, true);
     }
 
-    protected void primeEditorValue(@Nullable final Object value, boolean loadInService) throws DBException
-    {
+    protected void primeEditorValue(@Nullable final Object value, boolean loadInService) throws DBException {
         final Object content = valueController.getValue();
         if (streamEditor == null) {
             // Editor not yet initialized
@@ -339,8 +340,7 @@ public class ContentPanelEditor extends BaseValueEditor<Control> implements IAda
         if (valueType instanceof DBDAttributeBinding) {
             valueType = ((DBDAttributeBinding) valueType).getAttribute();
         }
-        if (valueType instanceof DBSObject) {
-            DBSObject object = (DBSObject) valueType;
+        if (valueType instanceof DBSObject object) {
             valueId = DBUtils.getObjectFullName(object, DBPEvaluationContext.DDL);
             if (object.getParentObject() != null) {
                 valueId = DBUtils.getObjectFullName(object.getParentObject(), DBPEvaluationContext.DDL) + ":" + valueId;
@@ -406,16 +406,14 @@ public class ContentPanelEditor extends BaseValueEditor<Control> implements IAda
         private Menu menu;
 
         ContentTypeSwitchAction() {
-            super(null, Action.AS_DROP_DOWN_MENU);
+            super(ResultSetMessages.controls_resultset_viewer_action_view_as, Action.AS_DROP_DOWN_MENU);
             setImageDescriptor(DBeaverIcons.getImageDescriptor(UIIcon.PAGES));
             setToolTipText(EditorMessages.content_viewer_settings);
         }
 
         @Override
-        public void runWithEvent(Event event)
-        {
-            if (event.widget instanceof ToolItem) {
-                ToolItem toolItem = (ToolItem) event.widget;
+        public void runWithEvent(Event event) {
+            if (event.widget instanceof ToolItem toolItem) {
                 Menu menu = createMenu(toolItem);
                 Rectangle bounds = toolItem.getBounds();
                 Point point = toolItem.getParent().toDisplay(bounds.x, bounds.y + bounds.height);
@@ -470,8 +468,7 @@ public class ContentPanelEditor extends BaseValueEditor<Control> implements IAda
             for (MenuItem item : menu.getItems()) {
                 if (item.getSelection()) {
                     Object itemData = item.getData();
-                    if (itemData instanceof StreamValueManagerDescriptor) {
-                        StreamValueManagerDescriptor newManager = (StreamValueManagerDescriptor) itemData;
+                    if (itemData instanceof StreamValueManagerDescriptor newManager) {
                         if (newManager != curStreamManager) {
                             setCurrentStreamManager(newManager);
                         }
@@ -522,7 +519,7 @@ public class ContentPanelEditor extends BaseValueEditor<Control> implements IAda
         }
 
         @Override
-        public DBDContent evaluate(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
+        public DBDContent evaluate(DBRProgressMonitor monitor) {
             monitor.beginTask("Detect appropriate editor", 1);
             try {
                 monitor.subTask("Load LOB value");
@@ -568,7 +565,7 @@ public class ContentPanelEditor extends BaseValueEditor<Control> implements IAda
         }
 
         @Override
-        public DBDContent evaluate(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
+        public DBDContent evaluate(DBRProgressMonitor monitor) {
             monitor.beginTask("Detect appropriate editor", 1);
             try {
                 monitor.subTask("Prime LOB value");

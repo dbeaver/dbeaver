@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -49,6 +49,11 @@ public interface RMController extends DBPObjectController, DBPPingController {
      * Creates new shared project
      */
     RMProject createProject(@NotNull String name, @Nullable String description) throws DBException;
+
+    /**
+     * Update a shared project information.
+     */
+    RMProject updateProject(@NotNull String projectId, @NotNull RMProjectInfo projectInfo) throws DBException;
 
     /**
      * Deletes shared project
