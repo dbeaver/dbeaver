@@ -41,6 +41,7 @@ import org.jkiss.dbeaver.ui.controls.ToolbarSeparatorContribution;
 import org.jkiss.dbeaver.ui.controls.resultset.*;
 import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
 import org.jkiss.dbeaver.ui.controls.resultset.panel.ResultSetPanelBase;
+import org.jkiss.dbeaver.ui.internal.UIMessages;
 
 import java.math.BigDecimal;
 import java.text.DecimalFormat;
@@ -365,7 +366,7 @@ public class AggregateColumnsPanel extends ResultSetPanelBase {
 
     private class AddFunctionAction extends Action {
         public AddFunctionAction() {
-            super(ResultSetMessages.aggregate_columns_add_function_text, DBeaverIcons.getImageDescriptor(UIIcon.ADD));
+            super(UIMessages.button_add, DBeaverIcons.getImageDescriptor(UIIcon.ADD));
 
             setMenuCreator(new MenuCreator(widget -> createMenuManager()));
         }
