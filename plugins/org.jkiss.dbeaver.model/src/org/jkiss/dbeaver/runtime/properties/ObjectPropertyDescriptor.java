@@ -21,7 +21,6 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPConditionalProperty;
 import org.jkiss.dbeaver.model.DBPPersistedObject;
-import org.jkiss.dbeaver.model.dpi.DPIClientObject;
 import org.jkiss.dbeaver.model.exec.DBExecUtils;
 import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
 import org.jkiss.dbeaver.model.meta.*;
@@ -423,10 +422,6 @@ public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor
                 return null;
             }
         }
-        if (object instanceof DPIClientObject) {
-            log.debug("Read DPI property " + getId());
-        }
-
         Method getter = getGetter();
         Object[] params = getter.getParameterCount() > 0 ?
             new Object[getter.getParameterCount()] : null;
