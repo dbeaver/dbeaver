@@ -23,6 +23,9 @@ import org.jkiss.utils.CommonUtils;
 public interface OpenAIBaseProperties extends AIEngineProperties {
 
     @Nullable
+    String getBaseUrl();
+
+    @Nullable
     String getToken();
 
     @Nullable
@@ -34,6 +37,10 @@ public interface OpenAIBaseProperties extends AIEngineProperties {
     double getTemperature();
 
     boolean isLoggingEnabled();
+
+    default boolean isStreamingEnabled() {
+        return true;
+    }
 
     @Override
     default boolean isValidConfiguration() {

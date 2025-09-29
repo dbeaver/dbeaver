@@ -285,7 +285,7 @@ public class TabbedFolderPageProperties extends TabbedFolderPage implements IRef
         public Font getFont(Object element)
         {
             if (element instanceof DBPPropertyDescriptor && curPropertySource != null && ((DBPPropertyDescriptor) element).isEditable(curPropertySource.getEditableValue())) {
-                return BaseThemeSettings.instance.baseFontBold;
+                return BaseThemeSettings.instance.treeAndTableFontBold;
             }
             return null;
         }

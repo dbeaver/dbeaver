@@ -17,7 +17,6 @@
 
 package org.jkiss.dbeaver.core;
 
-import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.Plugin;
 import org.eclipse.ui.PlatformUI;
 import org.jkiss.code.NotNull;
@@ -70,7 +69,6 @@ public class DesktopPlatform extends BasePlatformImpl implements DBPPlatformDesk
 
     // The plug-in ID
     public static final String PLUGIN_ID = "org.jkiss.dbeaver.core"; //$NON-NLS-1$
-    public static final String DBEAVER_DATA_DIR = "DBeaverData";
 
     private static final String TEMP_PROJECT_NAME = ".dbeaver-temp"; //$NON-NLS-1$
     private static final String DBEAVER_CONFIG_FOLDER = "settings";
@@ -135,7 +133,9 @@ public class DesktopPlatform extends BasePlatformImpl implements DBPPlatformDesk
 
         // Create workspace
         getApplication().beforeWorkspaceInitialization();
-        this.workspace = getApplication().createWorkspace(this, ResourcesPlugin.getWorkspace());
+
+        this.workspace = getApplication().createWorkspace(this);
+
         // Init workspace in UI because it may need some UI interactions to initialize
         this.workspace.initializeProjects();
 

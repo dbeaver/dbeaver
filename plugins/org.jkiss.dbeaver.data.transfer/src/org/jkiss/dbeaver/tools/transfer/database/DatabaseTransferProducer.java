@@ -228,7 +228,6 @@ public class DatabaseTransferProducer implements IDataTransferProducer<DatabaseP
                     DBCSavepoint savepoint = null;
                     try {
                         AbstractExecutionSource transferSource = new AbstractExecutionSource(dataContainer, context, consumer);
-                        session.enableLogging(settings.isEnableQmLogging());
                         if (!selectiveExportFromUI && (newConnection || forceDataReadTransactions)) {
                             // Turn off auto-commit in source DB
                             // Auto-commit has to be turned off because some drivers allows to read LOBs and

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,6 +30,7 @@ import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.ByteNumberFormat;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.HttpConstants;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -129,18 +130,18 @@ public class WebUtils {
             httpConnection.setInstanceFollowRedirects(true);
             HttpURLConnection.setFollowRedirects(true);
             connection.setRequestProperty(
-                "User-Agent",  //$NON-NLS-1$
+                HttpConstants.HEADER_USER_AGENT,  //$NON-NLS-1$
                 GeneralUtils.getProductTitle());
             if (referrer != null) {
                 connection.setRequestProperty(
-                        "X-Referrer",  //$NON-NLS-1$
+                    HttpConstants.HEADER_X_REFERRER,  //$NON-NLS-1$
                         referrer);
             }
             if (authInfo != null && !CommonUtils.isEmpty(authInfo.getUserName())) {
                 // Set auth info
                 String encoded = Base64.getEncoder().encodeToString(
                     (authInfo.getUserName() + ":" + CommonUtils.notEmpty(authInfo.getUserPassword())).getBytes(GeneralUtils.UTF8_CHARSET));
-                connection.setRequestProperty("Authorization", "Basic " + encoded);
+                connection.setRequestProperty(HttpConstants.HEADER_AUTHORIZATION, "Basic " + encoded);
             }
         }
         if (headers != null) {

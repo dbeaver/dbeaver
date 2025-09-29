@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -109,7 +109,7 @@ public class AltibaseSchema extends GenericSchema implements DBPObjectStatistics
     }
     
     @Override
-    public List<AltibaseTable> getPhysicalTables(DBRProgressMonitor monitor) throws DBException {
+    public List<AltibaseTable> getPhysicalTables(@NotNull DBRProgressMonitor monitor) throws DBException {
         List<? extends GenericTableBase> tables = getTables(monitor);
         if (tables != null) {
             List<AltibaseTable> filtered = new ArrayList<>();
@@ -141,7 +141,7 @@ public class AltibaseSchema extends GenericSchema implements DBPObjectStatistics
     }
 
     @Override
-    public List<AltibaseView> getViews(DBRProgressMonitor monitor) throws DBException {
+    public List<AltibaseView> getViews(@NotNull DBRProgressMonitor monitor) throws DBException {
         List<? extends GenericTableBase> tables = getTables(monitor);
         if (tables != null) {
             List<AltibaseView> filtered = new ArrayList<>();
@@ -194,7 +194,7 @@ public class AltibaseSchema extends GenericSchema implements DBPObjectStatistics
         return null;
     }
     
-    public GenericTrigger getTableTrigger(DBRProgressMonitor monitor, String uniqueName) throws DBException {
+    public GenericTrigger getTableTrigger(@NotNull DBRProgressMonitor monitor, String uniqueName) throws DBException {
         for (GenericTrigger tableTrigger : CommonUtils.safeCollection(getTableTriggers(monitor))) {
             if (uniqueName.equals(tableTrigger.getName())) {
                 return tableTrigger;
