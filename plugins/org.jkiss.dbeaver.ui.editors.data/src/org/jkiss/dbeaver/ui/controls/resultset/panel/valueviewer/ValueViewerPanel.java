@@ -17,8 +17,10 @@
 package org.jkiss.dbeaver.ui.controls.resultset.panel.valueviewer;
 
 import org.eclipse.core.runtime.IAdaptable;
-import org.eclipse.jface.action.*;
-import org.eclipse.jface.dialogs.IDialogSettings;
+import org.eclipse.jface.action.Action;
+import org.eclipse.jface.action.ContributionItem;
+import org.eclipse.jface.action.GroupMarker;
+import org.eclipse.jface.action.IContributionManager;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.osgi.util.NLS;
@@ -74,10 +76,6 @@ public class ValueViewerPanel implements IResultSetPanel, DBPAdaptable {
     private volatile boolean valueSaving;
     private IValueManager valueManager;
 
-    public static IDialogSettings getPanelSettings() {
-        return ResultSetUtils.getViewerSettings(SETTINGS_SECTION);
-    }
-
     public ValueViewerPanel() {
     }
 
@@ -115,8 +113,7 @@ public class ValueViewerPanel implements IResultSetPanel, DBPAdaptable {
         });
 */
 
-        if (this.presentation instanceof ISelectionProvider) {
-            final ISelectionProvider selectionProvider = (ISelectionProvider) this.presentation;
+        if (this.presentation instanceof ISelectionProvider selectionProvider) {
             final ISelectionChangedListener selectionListener = event -> {
                 if (ValueViewerPanel.this.presentation.getController().getVisiblePanel() == ValueViewerPanel.this) {
                     refreshValue(false);
@@ -373,9 +370,7 @@ public class ValueViewerPanel implements IResultSetPanel, DBPAdaptable {
         }
     }
 
-    private void fillToolBar(final IContributionManager contributionManager)
-    {
-        contributionManager.add(new Separator());
+    private void fillToolBar(final IContributionManager contributionManager) {
         if (valueManager != null) {
             try {
                 valueManager.contributeActions(contributionManager, previewController, valueEditor);

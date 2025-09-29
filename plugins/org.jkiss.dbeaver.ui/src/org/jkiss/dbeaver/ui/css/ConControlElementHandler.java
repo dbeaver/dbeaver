@@ -46,8 +46,6 @@ public class ConControlElementHandler extends CSSPropertyBackgroundSWTHandler {
     ) throws Exception {
         Widget widget = SWTElementHelpers.getWidget(element);
 
-        super.applyCSSPropertyBackgroundColor(element, value, pseudo, engine);
-
         if (widget instanceof ToolBar toolBar) {
             // FIXME: it is a hack to set toolbar foreground explicitly.
             // FIXME: For some reason it remains default for dark theme (black on black)
@@ -69,7 +67,16 @@ public class ConControlElementHandler extends CSSPropertyBackgroundSWTHandler {
             if (newColor != null) {
                 ctrl.setBackground(newColor);
             }
+            return;
         }
+
+        if (widget instanceof ICSSBackgroundMimicControl textWidget) {
+            textWidget.setBackground(
+                textWidget.getOriginWidget().getBackground());
+            return;
+        }
+
+        super.applyCSSPropertyBackgroundColor(element, value, pseudo, engine);
     }
 
     private static boolean isExcludedFromStyling(Control ctrl) {
