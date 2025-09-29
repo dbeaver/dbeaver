@@ -26,7 +26,9 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.data.json.JSONUtils;
+import org.jkiss.utils.CommonUtils;
 
+import java.util.Arrays;
 import java.util.Map;
 import java.util.Objects;
 
@@ -83,6 +85,10 @@ public abstract class AIContextSettings {
 
     public void loadSettingsFromMap(Map<String, Object> dsConfig) {
         settings = GSON.fromJson(GSON.toJsonTree(dsConfig), PersistentSettings.class);
+        if (settings.objects != null) {
+            settings.objects = Arrays.stream(settings.objects)
+                .filter(o -> !CommonUtils.isEmpty(o)).toArray(String[]::new);
+        }
     }
 
     public void loadSettingsFromString(String dsConfig) {

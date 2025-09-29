@@ -307,7 +307,7 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
                 BlobFileConflictBehavior.OVERWRITE
             }[response.choiceIndex];
             
-            runtimeParameters.blobFileConflictPreviousChoice = (Integer) response.choiceIndex;
+            runtimeParameters.blobFileConflictPreviousChoice = response.choiceIndex;
             if (response.forAllChoiceIndex != null) {
                 runtimeParameters.blobFileConflictBehavior = behavior;
                 runtimeParameters.dontDropBlobFileConflictBehavior = response.forAllChoiceIndex == 0;
@@ -444,7 +444,7 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
                 DataFileConflictBehavior.OVERWRITE
             }[response.choiceIndex];
             
-            runtimeParameters.dataFileConflictPreviousChoice = (Integer) response.choiceIndex;
+            runtimeParameters.dataFileConflictPreviousChoice = response.choiceIndex;
             if (response.forAllChoiceIndex != null || settings.isUseSingleFile()) {
                 runtimeParameters.dataFileConflictBehavior = behavior;
             }
@@ -611,8 +611,8 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
     
     @Override
     public void setRuntimeParameters(Object runtimeParameters) {
-        if (runtimeParameters instanceof ConsumerRuntimeParameters) {
-            this.runtimeParameters = (ConsumerRuntimeParameters) runtimeParameters;
+        if (runtimeParameters instanceof ConsumerRuntimeParameters crp) {
+            this.runtimeParameters = crp;
         } else {
             throw new IllegalStateException("Unsupported stream transfer consumer runtime parameters " + runtimeParameters);
         }

@@ -44,6 +44,7 @@ public class DBeaverHeadlessApplication extends DesktopApplicationImpl {
         initializeApplicationServices();
     }
 
+    @NotNull
     @Override
     public Object start(IApplicationContext context) {
         DBPPlatform platform = DBWorkbench.getPlatform();
@@ -55,7 +56,7 @@ public class DBeaverHeadlessApplication extends DesktopApplicationImpl {
         }
         System.out.println("Starting headless test application " + application.getClass().getName());
 
-        return null;
+        return EXIT_OK;
     }
 
     @Override
@@ -80,14 +81,10 @@ public class DBeaverHeadlessApplication extends DesktopApplicationImpl {
         return DBeaverTestPlatformUI.class;
     }
 
+    @Nullable
     @Override
     public String getDefaultProjectName() {
         return "DBeaverTests";
-    }
-
-    @Override
-    public long getLastUserActivityTime() {
-        return -1;
     }
 
     @NotNull

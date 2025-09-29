@@ -737,6 +737,29 @@ public class DataSourceRegistry<T extends DataSourceDescriptor> implements DBPDa
         }
     }
 
+    /**
+     * Flushes all pending data source events. This is a blocking operation.
+     */
+    public void flushDataSourceEvents() {
+        final DBPEventListener[] listeners;
+        final DBPEvent[] events;
+        synchronized (dataSourceListeners) {
+            events = dataSourceEvents.toArray(new DBPEvent[0]);
+            dataSourceEvents.clear();
+
+            if (dataSourceListeners.isEmpty()) {
+                return;
+            }
+            listeners = dataSourceListeners.toArray(new DBPEventListener[0]);
+        }
+
+        for (DBPEvent event : events) {
+            for (DBPEventListener listener : listeners) {
+                listener.handleDataSourceEvent(event);
+            }
+        }
+    }
+
     @Nullable
     @Override
     public DBACredentialsProvider getAuthCredentialsProvider() {
@@ -1062,23 +1085,7 @@ public class DataSourceRegistry<T extends DataSourceDescriptor> implements DBPDa
 
         @Override
         protected IStatus run(IProgressMonitor monitor) {
-            final DBPEventListener[] listeners;
-            final DBPEvent[] events;
-            synchronized (dataSourceListeners) {
-                events = dataSourceEvents.toArray(new DBPEvent[0]);
-                dataSourceEvents.clear();
-
-                if (dataSourceListeners.isEmpty()) {
-                    return Status.OK_STATUS;
-                }
-                listeners = dataSourceListeners.toArray(new DBPEventListener[0]);
-            }
-
-            for (DBPEvent event : events) {
-                for (DBPEventListener listener : listeners) {
-                    listener.handleDataSourceEvent(event);
-                }
-            }
+            flushDataSourceEvents();
             return Status.OK_STATUS;
         }
     }

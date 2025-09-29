@@ -403,14 +403,13 @@
                     class="com.ingres.jdbc.IngresDriver"
                     sampleURL="jdbc:ingres://{host}:{port}/{database}"
                     defaultPort="II7"
-                    webURL="http://www.ingres.com/products/ingres-database/"
+                    webURL="https://www.actian.com/databases/ingres/"
                     description="Ingres Database"
                     supportedConfigurationTypes="MANUAL,URL"
                     iconBig="icons/ingres_icon_big.png"
                     categories="sql">
-                    <!-- We use direct jar path because Ingres metadata is broken #36021 -->
-                    <file type="jar" path="https://repo1.maven.org/maven2/com/ingres/jdbc/iijdbc/10.0-4.0.6/iijdbc-10.0-4.0.6.jar" bundle="!drivers.ingres"/>
-                    <file type="license" path="licenses/external/lgpl-3.0.txt"/>
+                    <file type="jar" path="maven:/com.ingres.jdbc:iijdbc:RELEASE[12.0-4.4.4]" bundle="!drivers.ingres"/>
+                    <file type="license" path="https://communities.actian.com/s/supportservices/policy/policy-license-terms"/>
                     <file type="jar" path="drivers/ingres" bundle="drivers.ingres"/>
 
                     <parameter name="supports-truncate" value="false"/>

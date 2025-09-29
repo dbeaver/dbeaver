@@ -244,10 +244,9 @@ public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor
     }
 
     @Override
-    public boolean isEditable(Object object)
-    {
+    public boolean isEditable(Object object) {
         final DBPPropertySource propertySource = getSource();
-        if (!(propertySource instanceof IPropertySourceEditable) || !((IPropertySourceEditable) propertySource).isEditable(object)) {
+        if (!(propertySource instanceof IPropertySourceEditable pse) || !pse.isEditable(object)) {
             return false;
         }
         // Read-only or non-updatable property for non-new object
@@ -257,7 +256,6 @@ public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor
     @Nullable
     @Override
     public String[] getFeatures() {
-
         List<String> features = Arrays.stream(propInfo.features())
             .collect(Collectors.toList());
 
@@ -291,49 +289,28 @@ public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor
 
     @Override
     public boolean hasFeature(@NotNull String feature) {
-
-        switch (feature) {
-            case DBConstants.PROP_FEATURE_REQUIRED:
-                return this.isRequired();
-            case DBConstants.PROP_FEATURE_SPECIFIC:
-                return this.isSpecific();
-            case DBConstants.PROP_FEATURE_OPTIONAL:
-                return this.isOptional();
-            case DBConstants.PROP_FEATURE_HIDDEN:
-                return this.isHidden();
-
-            case DBConstants.PROP_FEATURE_DATETME:
-                return this.isDateTime();
-            case DBConstants.PROP_FEATURE_NUMERIC:
-                return this.isNumeric();
-            case DBConstants.PROP_FEATURE_NAME:
-                return this.isNameProperty();
-
-            case DBConstants.PROP_FEATURE_MULTILINE:
-                return this.getLength() == PropertyLength.MULTILINE;
-            case DBConstants.PROP_FEATURE_EXPENSIVE:
-                return this.isExpensive();
-            case DBConstants.PROP_FEATURE_EDIT_POSSIBLE:
-                return this.isEditPossible();
-            case DBConstants.PROP_FEATURE_LINK_POSSIBLE:
-                return this.isLinkPossible();
-            case DBConstants.PROP_FEATURE_HREF:
-                return this.isHref();
-            case DBConstants.PROP_FEATURE_VIEWABLE:
-                return this.isViewable();
-            case DBConstants.PROP_FEATURE_PASSWORD:
-                return this.isPassword();
-            case DBConstants.PROP_FEATURE_NON_SECURED:
-                return this.isNonSecuredProperty();
-            case DBConstants.PROP_FEATURE_INFO:
-                return this.isInfo();
-        }
-
-        return ArrayUtils.contains(propInfo.features(), feature);
+        return switch (feature) {
+            case DBConstants.PROP_FEATURE_REQUIRED -> this.isRequired();
+            case DBConstants.PROP_FEATURE_SPECIFIC -> this.isSpecific();
+            case DBConstants.PROP_FEATURE_OPTIONAL -> this.isOptional();
+            case DBConstants.PROP_FEATURE_HIDDEN -> this.isHidden();
+            case DBConstants.PROP_FEATURE_DATETME -> this.isDateTime();
+            case DBConstants.PROP_FEATURE_NUMERIC -> this.isNumeric();
+            case DBConstants.PROP_FEATURE_NAME -> this.isNameProperty();
+            case DBConstants.PROP_FEATURE_MULTILINE -> this.getLength() == PropertyLength.MULTILINE;
+            case DBConstants.PROP_FEATURE_EXPENSIVE -> this.isExpensive();
+            case DBConstants.PROP_FEATURE_EDIT_POSSIBLE -> this.isEditPossible();
+            case DBConstants.PROP_FEATURE_LINK_POSSIBLE -> this.isLinkPossible();
+            case DBConstants.PROP_FEATURE_HREF -> this.isHref();
+            case DBConstants.PROP_FEATURE_VIEWABLE -> this.isViewable();
+            case DBConstants.PROP_FEATURE_PASSWORD -> this.isPassword();
+            case DBConstants.PROP_FEATURE_NON_SECURED -> this.isNonSecuredProperty();
+            case DBConstants.PROP_FEATURE_INFO -> this.isInfo();
+            default -> ArrayUtils.contains(propInfo.features(), feature);
+        };
     }
 
-    private boolean getEditableValue(Object object)
-    {
+    private boolean getEditableValue(Object object) {
         boolean isNew = isNewObject(object);
         String expr = isNew ? propInfo.editableExpr() : propInfo.updatableExpr();
         if (!expr.isEmpty()) {
@@ -352,13 +329,11 @@ public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor
         return propInfo.editable();
     }
 
-    private boolean isNewObject(Object object)
-    {
-        return object instanceof DBPPersistedObject && !((DBPPersistedObject) object).isPersisted();
+    private boolean isNewObject(Object object) {
+        return object instanceof DBPPersistedObject po && !po.isPersisted();
     }
 
-    public boolean isEditPossible(Object context)
-    {
+    public boolean isEditPossible(Object context) {
         String expr = propInfo.editableExpr();
         if (!CommonUtils.isEmpty(expr)) {
             return Boolean.TRUE.equals(evaluateExpression(context, expr));
@@ -387,8 +362,7 @@ public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor
 
     @NotNull
     @Override
-    public String getDisplayName()
-    {
+    public String getDisplayName() {
         if (labelProvider != null && getSource() != null) {
             Object editableValue = getSource().getEditableValue();
             if (editableValue == null) {
@@ -457,7 +431,7 @@ public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor
 
         InvocationSupplier<Object> readPropertyMethod = () -> {
             try {
-                return getGetter().invoke(finalObject, params);
+                return getter.invoke(finalObject, params);
             } catch (Exception e) {
                 throw new InvocationTargetException(e, e.getMessage());
             }
@@ -474,10 +448,11 @@ public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor
             Object[] finalResult = new Object[1];
             try {
                 progressMonitor.subTask("Read " + this.getDisplayName());
-
                 DBExecUtils.tryExecuteRecover(progressMonitor, dbsObject.getDataSource(), param -> {
                     try {
                         finalResult[0] = readPropertyMethod.get();
+                    } catch (InvocationTargetException e) {
+                        throw e;
                     } catch (Exception e) {
                         throw new InvocationTargetException(e);
                     }
@@ -627,11 +602,10 @@ public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor
     }
 
     @Override
-    public boolean equals(Object obj)
-    {
-        return obj instanceof ObjectPropertyDescriptor &&
-            propInfo.equals(((ObjectPropertyDescriptor)obj).propInfo) &&
-            CommonUtils.equalObjects(getGetter(), ((ObjectPropertyDescriptor)obj).getGetter());
+    public boolean equals(Object obj) {
+        return obj instanceof ObjectPropertyDescriptor opd &&
+            propInfo.equals(opd.propInfo) &&
+            CommonUtils.equalObjects(getGetter(), opd.getGetter());
     }
 
     private String getLocalizedString(String string, String type, String defaultValue, boolean warnMissing, String locale) {

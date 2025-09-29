@@ -60,7 +60,7 @@
                         supportedConfigurationTypes="MANUAL,URL"
                         categories="sql"
                         dialect="kingbase">
-                        <file type="jar" path="maven:/cn.com.kingbase:kingbase8:RELEASE[8.6.1]" bundle="!drivers.kingbase"/>
+                        <file type="jar" path="maven:/cn.com.kingbase:kingbase8:RELEASE[9.0.1]" bundle="!drivers.kingbase"/>
                         <parameter name="serverType" value="kingbase"/>
                         <property name="loginTimeout" value="20"/>
                         <property name="connectTimeout" value="20"/>

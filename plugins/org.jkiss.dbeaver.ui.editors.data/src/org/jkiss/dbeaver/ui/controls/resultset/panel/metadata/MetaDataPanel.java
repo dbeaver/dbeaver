@@ -54,7 +54,6 @@ import org.jkiss.dbeaver.ui.controls.resultset.panel.ResultSetPanelRefresher;
 import org.jkiss.dbeaver.ui.navigator.itemlist.DatabaseObjectListControl;
 import org.jkiss.utils.CommonUtils;
 
-import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
@@ -67,7 +66,6 @@ public class MetaDataPanel implements IResultSetPanel {
 
     public static final String PANEL_ID = "results-metadata";
 
-    private Composite panelContents;
     private Text filterTextBox;
     
     private IResultSetPresentation presentation;
@@ -81,7 +79,7 @@ public class MetaDataPanel implements IResultSetPanel {
 
     @Override
     public Control createContents(final IResultSetPresentation presentation, Composite parent) {
-        panelContents = UIUtils.createComposite(parent, 1);
+        Composite panelContents = UIUtils.createComposite(parent, 1);
         panelContents.setLayout(GridLayoutFactory.swtDefaults().create());
         
         Composite filterPanel = UIUtils.createComposite(panelContents, 2);
@@ -90,9 +88,7 @@ public class MetaDataPanel implements IResultSetPanel {
         filterTextBox = new Text(filterPanel, SWT.BORDER | SWT.SEARCH | SWT.ICON_CANCEL);
         filterTextBox.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         filterTextBox.setMessage(ResultSetMessages.panel_metadata_filter_hint);
-        filterTextBox.addModifyListener(e -> {
-            refresh(true);
-        });
+        filterTextBox.addModifyListener(e -> refresh(true));
         filterTextBox.addKeyListener(new KeyAdapter() {
             @Override
             public void keyPressed(KeyEvent e) {
@@ -245,11 +241,11 @@ public class MetaDataPanel implements IResultSetPanel {
                     StringBuilder text = new StringBuilder();
                     for (Object item : getItemsViewer().getStructuredSelection().toArray()) {
                         if (item instanceof DBDAttributeBinding) {
-                            if (text.length() > 0) text.append("\n");
+                            if (!text.isEmpty()) text.append("\n");
                             text.append(((DBDAttributeBinding) item).getName());
                         }
                     }
-                    if (text.length() == 0) {
+                    if (text.isEmpty()) {
                         return;
                     }
                     UIUtils.setClipboardContents(getDisplay(), TextTransfer.getInstance(), text.toString());
@@ -331,9 +327,7 @@ public class MetaDataPanel implements IResultSetPanel {
         }
 
         @Override
-        public Collection<DBDAttributeBinding> evaluate(DBRProgressMonitor monitor)
-            throws InvocationTargetException, InterruptedException
-        {
+        public Collection<DBDAttributeBinding> evaluate(DBRProgressMonitor monitor) {
             return curAttributes;
         }
     }

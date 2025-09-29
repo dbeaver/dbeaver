@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -112,7 +112,8 @@ public class HiveTable extends GenericTable implements DBPImageProvider, DBPName
 
         @NotNull
         @Override
-        protected JDBCStatement prepareObjectsStatement(JDBCSession session, GenericStructContainer owner, HiveTable forParent)
+        protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull GenericStructContainer owner, @Nullable
+        HiveTable forParent)
                 throws SQLException
         {
             JDBCPreparedStatement dbStat;
@@ -125,7 +126,9 @@ public class HiveTable extends GenericTable implements DBPImageProvider, DBPName
 
         @Nullable
         @Override
-        protected HiveIndex fetchObject(JDBCSession session, GenericStructContainer owner, HiveTable parent, String indexName, JDBCResultSet dbResult)
+        protected HiveIndex fetchObject(@NotNull JDBCSession session, @NotNull GenericStructContainer owner, @NotNull HiveTable parent, @NotNull
+        String indexName, @NotNull
+        JDBCResultSet dbResult)
         {
             String hiveIndexName = CommonUtils.notEmpty(JDBCUtils.safeGetString(dbResult, "idx_name")).trim();
             String comment = JDBCUtils.safeGetString(dbResult, "comment");
@@ -143,8 +146,8 @@ public class HiveTable extends GenericTable implements DBPImageProvider, DBPName
         @Nullable
         @Override
         protected GenericTableIndexColumn[] fetchObjectRow(
-                JDBCSession session,
-                HiveTable parent, HiveIndex index, JDBCResultSet dbResult)
+            @NotNull JDBCSession session,
+            @NotNull HiveTable parent, @NotNull HiveIndex index, @NotNull JDBCResultSet dbResult)
                 throws DBException
         {
             String columnNames = JDBCUtils.safeGetString(dbResult, "col_names");
@@ -169,7 +172,7 @@ public class HiveTable extends GenericTable implements DBPImageProvider, DBPName
         }
 
         @Override
-        protected void cacheChildren(DBRProgressMonitor monitor, HiveIndex index, List<GenericTableIndexColumn> rows)
+        protected void cacheChildren(@NotNull DBRProgressMonitor monitor, @NotNull HiveIndex index, @NotNull List<GenericTableIndexColumn> rows)
         {
             index.setColumns(rows);
         }
