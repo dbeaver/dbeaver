@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -147,7 +147,10 @@ public class RMProject extends RMObject {
 
     @Override
     public boolean equals(Object obj) {
-        return obj instanceof RMProject && CommonUtils.equalObjects(id, ((RMProject) obj).id);
+        return obj instanceof RMProject &&
+            CommonUtils.equalObjects(id, ((RMProject) obj).id) &&
+            CommonUtils.equalObjects(getName(), ((RMProject) obj).getName()) &&
+            CommonUtils.equalObjects(description, ((RMProject) obj).description);
     }
 
     public String[] getProjectPermissions() {
