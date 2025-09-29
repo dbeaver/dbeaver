@@ -69,6 +69,7 @@ import org.jkiss.dbeaver.ui.controls.resultset.handler.ResultSetHandlerMain;
 import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
 import org.jkiss.dbeaver.ui.controls.resultset.spreadsheet.SpreadsheetCommandHandler;
 import org.jkiss.dbeaver.ui.css.CSSUtils;
+import org.jkiss.dbeaver.ui.css.ICSSBackgroundMimicControl;
 import org.jkiss.dbeaver.ui.editors.TextEditorUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -127,7 +128,7 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
         CSSUtils.markConnectionTypeColor(this);
 
         GridLayout gl = new GridLayout(compactMode ? 2 : 4, false);
-        gl.marginHeight = 3;
+        gl.marginHeight = 0;
         gl.marginWidth = 3;
         this.setLayout(gl);
 
@@ -165,7 +166,6 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
             this.filtersTextViewer.setUndoManager(undoManager);
 
             GridData gd = new GridData(GridData.FILL_BOTH);
-            gd.verticalIndent = 1;
             this.filtersText.setLayoutData(gd);
             StyledTextUtils.fillDefaultStyledTextContextMenu(filtersText);
             StyledTextUtils.enableDND(this.filtersText);
@@ -197,7 +197,7 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
             this.filtersText.addModifyListener(new ModifyListener() {
                 @Override
                 public void modifyText(ModifyEvent e) {
-                    String filterText = filtersText.getText();
+                    filtersText.getText();
                     executePanel.setEnabled(true);
                     executePanel.redraw();
 //                    if (filtersClearButton != null) {
@@ -262,7 +262,7 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
 
         if (!compactMode) {
             filterToolbar = new ToolBar(this, SWT.HORIZONTAL | SWT.RIGHT);
-            filterToolbar.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING | GridData.VERTICAL_ALIGN_BEGINNING));
+            filterToolbar.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING | GridData.VERTICAL_ALIGN_CENTER));
             CSSUtils.markConnectionTypeColor(filterToolbar);
             filtersClearButton = new ToolItem(filterToolbar, SWT.NO_FOCUS | SWT.DROP_DOWN);
             filtersClearButton.setImage(DBeaverIcons.getImage(UIIcon.ERASE));
@@ -322,7 +322,7 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
             int historyPosition = viewer.getHistoryPosition();
             List<ResultSetViewer.HistoryStateItem> stateHistory = viewer.getStateHistory();
 
-            String filterText = filtersText.getText();
+            filtersText.getText();
             filtersText.setEnabled(supportsDataFilter);
             executePanel.setEnabled(supportsDataFilter);
             if (filtersClearButton != null) {
@@ -685,7 +685,7 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
         return null;
     }
 
-    private static class FilterPanel extends Canvas {
+    private class FilterPanel extends Canvas implements ICSSBackgroundMimicControl {
         protected boolean hover = false;
         FilterPanel(Composite parent, int style) {
             super(parent, style);
@@ -712,6 +712,12 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
                     redraw();
                 }
             });
+        }
+
+        @NotNull
+        @Override
+        public Control getOriginWidget() {
+            return filtersText;
         }
 
         protected void paintPanel(PaintEvent e) {
