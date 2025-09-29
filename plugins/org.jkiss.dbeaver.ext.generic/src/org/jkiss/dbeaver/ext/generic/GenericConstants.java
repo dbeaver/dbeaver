@@ -69,8 +69,6 @@ public class GenericConstants {
     public static final String PARAM_SUPPORTS_TRANSACTIONS_FOR_DDL = "supports-ddl-transactions";
     public static final String PARAM_READ_ONLY_DATA = "read-only-data";
     public static final String PARAM_READ_ONLY_META_DATA = "read-only-meta-data";
-    public static final String PARAM_SUPPORTS_CATALOG_SELECTION = "supports-catalog-selection";
-    public static final String PARAM_SUPPORTS_SCHEMA_SELECTION = "supports-schema-selection";
     public static final String PARAM_SUPPORTS_MULTI_INSERT = "supports-multi-insert";
     public static final String PARAM_SUPPORTS_EMBEDDED_DATABASE_CREATION = "supports-embedded-database-creation";
     public static final String PARAM_IDENTIFIER_QUOTES = "identifier-quotes";

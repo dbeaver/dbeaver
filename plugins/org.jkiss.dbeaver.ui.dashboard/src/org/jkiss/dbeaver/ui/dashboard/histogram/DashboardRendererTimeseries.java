@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,6 +22,7 @@ import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.axis.*;
+import org.jfree.chart.labels.StandardXYToolTipGenerator;
 import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.chart.plot.XYPlot;
 import org.jfree.chart.renderer.xy.XYItemRenderer;
@@ -47,6 +48,8 @@ import org.jkiss.dbeaver.ui.dashboard.model.DashboardItemContainer;
 import org.jkiss.dbeaver.ui.dashboard.model.DashboardItemViewSettings;
 
 import java.awt.*;
+import java.text.DateFormat;
+import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
@@ -77,7 +80,7 @@ public class DashboardRendererTimeseries extends DashboardRendererDatabaseChart 
             dataset,
             PlotOrientation.VERTICAL,
             true,
-            true,
+            false,
             false);
         histogramChart.setBorderVisible(false);
         histogramChart.setPadding(new RectangleInsets(0, 0, 0, 0));
@@ -96,6 +99,11 @@ public class DashboardRendererTimeseries extends DashboardRendererDatabaseChart 
         plot.setShadowGenerator(null);
 
         plot.setDrawingSupplier(new BaseChartDrawingSupplier());
+        plot.getRenderer().setDefaultToolTipGenerator(new StandardXYToolTipGenerator(
+            StandardXYToolTipGenerator.DEFAULT_TOOL_TIP_FORMAT,
+            DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT),
+            NumberFormat.getNumberInstance()
+        ));
 
         //XYItemRenderer renderer = new XYLine3DRenderer();
         //plot.setRenderer(renderer);

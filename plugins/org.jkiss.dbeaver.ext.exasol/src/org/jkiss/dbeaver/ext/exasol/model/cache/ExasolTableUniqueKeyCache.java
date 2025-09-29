@@ -1,7 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2016-2016 Karl Griesser (fullref@gmail.com)
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,7 +27,6 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCCompositeCache;
-import org.jkiss.dbeaver.model.impl.jdbc.exec.JDBCStatementImpl;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
 
@@ -119,7 +117,7 @@ public final class ExasolTableUniqueKeyCache
     @SuppressWarnings("rawtypes")
 	@NotNull
     @Override
-    protected JDBCStatement prepareObjectsStatement(JDBCSession session, ExasolSchema exasolSchema, ExasolTable forTable)
+    protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull ExasolSchema exasolSchema, @Nullable ExasolTable forTable)
         throws SQLException {
 
         String sql;
@@ -130,16 +128,21 @@ public final class ExasolTableUniqueKeyCache
         }
 
         JDBCStatement dbStat = session.createStatement();
-        
-        ((JDBCStatementImpl) dbStat).setQueryString(sql);
+        dbStat.setQueryString(sql);
 
         return dbStat;
 
     }
 
-    @Nullable
+    @NotNull
     @Override
-    protected ExasolTableUniqueKey fetchObject(JDBCSession session, ExasolSchema exasolSchema, ExasolTable exasolTable, String constName, JDBCResultSet dbResult) throws SQLException, DBException {
+    protected ExasolTableUniqueKey fetchObject(
+        @NotNull JDBCSession session,
+        @NotNull ExasolSchema exasolSchema,
+        @NotNull ExasolTable exasolTable,
+        @NotNull String constName,
+        @NotNull JDBCResultSet dbResult
+    ) throws DBException {
         //SQLs only return primary keys. no unique constraints in exasol
         DBSEntityConstraintType type = DBSEntityConstraintType.PRIMARY_KEY;
         return new ExasolTableUniqueKey(session.getProgressMonitor(), exasolTable, dbResult, type);
@@ -147,7 +150,12 @@ public final class ExasolTableUniqueKeyCache
 
     @Nullable
     @Override
-    protected ExasolTableKeyColumn[] fetchObjectRow(JDBCSession session, ExasolTable exasolTable, ExasolTableUniqueKey object, JDBCResultSet dbResult) throws SQLException, DBException {
+    protected ExasolTableKeyColumn[] fetchObjectRow(
+        @NotNull JDBCSession session,
+        @NotNull ExasolTable exasolTable,
+        @NotNull ExasolTableUniqueKey object,
+        @NotNull JDBCResultSet dbResult
+    ) throws DBException {
         String columnName = JDBCUtils.safeGetString(dbResult, "COLUMN_NAME");
         ExasolTableColumn tableColumn = exasolTable.getAttribute(session.getProgressMonitor(), columnName);
         if (tableColumn == null) {
@@ -167,7 +175,7 @@ public final class ExasolTableUniqueKeyCache
     }
 
     @Override
-    protected void cacheChildren(DBRProgressMonitor monitor, ExasolTableUniqueKey constraint, List<ExasolTableKeyColumn> rows) {
+    protected void cacheChildren(@NotNull DBRProgressMonitor monitor, @NotNull ExasolTableUniqueKey constraint, @NotNull List<ExasolTableKeyColumn> rows) {
         constraint.setAttributeReferences(rows);
     }
 

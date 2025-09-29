@@ -17,9 +17,11 @@
 package org.jkiss.dbeaver.ui.css;
 
 import org.eclipse.e4.ui.css.core.engine.CSSEngine;
+import org.eclipse.e4.ui.css.swt.dom.CompositeElement;
 import org.eclipse.e4.ui.css.swt.helpers.SWTElementHelpers;
 import org.eclipse.e4.ui.css.swt.properties.css2.CSSPropertyBackgroundSWTHandler;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.CCombo;
 import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.widgets.*;
@@ -42,8 +44,6 @@ public class ConControlElementHandler extends CSSPropertyBackgroundSWTHandler {
         String pseudo,
         CSSEngine engine
     ) throws Exception {
-        super.applyCSSPropertyBackgroundColor(element, value, pseudo, engine);
-
         Widget widget = SWTElementHelpers.getWidget(element);
 
         if (widget instanceof ToolBar toolBar) {
@@ -51,6 +51,11 @@ public class ConControlElementHandler extends CSSPropertyBackgroundSWTHandler {
             // FIXME: For some reason it remains default for dark theme (black on black)
             Color defForeground = UIStyles.getDefaultTextForeground();
             toolBar.setForeground(defForeground);
+            Color bgColor = CSSUtils.getCurrentEditorConnectionColor(widget);
+            if (bgColor != null) {
+                toolBar.setBackground(bgColor);
+            }
+            return;
         }
 
         if (widget instanceof Control ctrl &&
@@ -62,7 +67,16 @@ public class ConControlElementHandler extends CSSPropertyBackgroundSWTHandler {
             if (newColor != null) {
                 ctrl.setBackground(newColor);
             }
+            return;
         }
+
+        if (widget instanceof ICSSBackgroundMimicControl textWidget) {
+            textWidget.setBackground(
+                textWidget.getOriginWidget().getBackground());
+            return;
+        }
+
+        super.applyCSSPropertyBackgroundColor(element, value, pseudo, engine);
     }
 
     private static boolean isExcludedFromStyling(Control ctrl) {
@@ -74,6 +88,12 @@ public class ConControlElementHandler extends CSSPropertyBackgroundSWTHandler {
         }
         if (ctrl instanceof Button) {
             return !CommonUtils.isBitSet(ctrl.getStyle(), SWT.CHECK) && !CommonUtils.isBitSet(ctrl.getStyle(), SWT.RADIO);
+        }
+
+        if (CompositeElement.hasBackgroundOverriddenByCSS(ctrl)) {
+            if (ctrl instanceof Combo || ctrl instanceof CCombo) {
+                return true;
+            }
         }
 
         return false;

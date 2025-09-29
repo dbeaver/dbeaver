@@ -49,10 +49,7 @@ import org.jkiss.dbeaver.ui.dialogs.IWizardPageNavigable;
 import org.jkiss.dbeaver.ui.dialogs.MultiPageWizardDialog;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 
-import java.util.ArrayList;
-import java.util.EnumSet;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 
 /**
  * Task configuration wizard dialog
@@ -110,11 +107,11 @@ public class TaskConfigurationWizardDialog extends MultiPageWizardDialog {
 
     @NotNull
     @Override
-    protected EnumSet<PageCompletionMark> getShownCompletionMarks() {
+    protected Set<PageCompletionMark> getShownCompletionMarks() {
         if (getWizard().isCurrentTaskSaved()) {
             return EnumSet.noneOf(PageCompletionMark.class);
         } else {
-            return EnumSet.of(PageCompletionMark.COMPLETE, PageCompletionMark.CURRENT);
+            return EnumSet.of(PageCompletionMark.COMPLETE);
         }
     }
 

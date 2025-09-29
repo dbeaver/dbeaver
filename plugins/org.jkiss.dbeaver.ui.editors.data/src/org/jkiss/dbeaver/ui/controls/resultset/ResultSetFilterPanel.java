@@ -69,6 +69,7 @@ import org.jkiss.dbeaver.ui.controls.resultset.handler.ResultSetHandlerMain;
 import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
 import org.jkiss.dbeaver.ui.controls.resultset.spreadsheet.SpreadsheetCommandHandler;
 import org.jkiss.dbeaver.ui.css.CSSUtils;
+import org.jkiss.dbeaver.ui.css.ICSSBackgroundMimicControl;
 import org.jkiss.dbeaver.ui.editors.TextEditorUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -127,7 +128,7 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
         CSSUtils.markConnectionTypeColor(this);
 
         GridLayout gl = new GridLayout(compactMode ? 2 : 4, false);
-        gl.marginHeight = 3;
+        gl.marginHeight = 0;
         gl.marginWidth = 3;
         this.setLayout(gl);
 
@@ -165,7 +166,6 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
             this.filtersTextViewer.setUndoManager(undoManager);
 
             GridData gd = new GridData(GridData.FILL_BOTH);
-            gd.verticalIndent = 1;
             this.filtersText.setLayoutData(gd);
             StyledTextUtils.fillDefaultStyledTextContextMenu(filtersText);
             StyledTextUtils.enableDND(this.filtersText);
@@ -197,7 +197,7 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
             this.filtersText.addModifyListener(new ModifyListener() {
                 @Override
                 public void modifyText(ModifyEvent e) {
-                    String filterText = filtersText.getText();
+                    filtersText.getText();
                     executePanel.setEnabled(true);
                     executePanel.redraw();
 //                    if (filtersClearButton != null) {
@@ -262,7 +262,7 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
 
         if (!compactMode) {
             filterToolbar = new ToolBar(this, SWT.HORIZONTAL | SWT.RIGHT);
-            filterToolbar.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING | GridData.VERTICAL_ALIGN_BEGINNING));
+            filterToolbar.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING | GridData.VERTICAL_ALIGN_CENTER));
             CSSUtils.markConnectionTypeColor(filterToolbar);
             filtersClearButton = new ToolItem(filterToolbar, SWT.NO_FOCUS | SWT.DROP_DOWN);
             filtersClearButton.setImage(DBeaverIcons.getImage(UIIcon.ERASE));
@@ -322,7 +322,7 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
             int historyPosition = viewer.getHistoryPosition();
             List<ResultSetViewer.HistoryStateItem> stateHistory = viewer.getStateHistory();
 
-            String filterText = filtersText.getText();
+            filtersText.getText();
             filtersText.setEnabled(supportsDataFilter);
             executePanel.setEnabled(supportsDataFilter);
             if (filtersClearButton != null) {
@@ -356,7 +356,7 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
         filterComposite.setBackground(filtersText.getBackground());
 
         {
-            String displayName = getActiveSourceQueryNormalized();
+            String displayName = getActiveSourceQueryNormalized(true);
             if (prevQuery == null || !prevQuery.equals(displayName)) {
                 prevQuery = displayName;
             }
@@ -446,11 +446,13 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
     }
 
     @NotNull
-    private String getActiveSourceQuery() {
+    private String getActiveSourceQuery(boolean forUI) {
         String displayName;
         DBSDataContainer dataContainer = viewer.getDataContainer();
-        if (dataContainer instanceof DBSEntity && !viewer.getDataFilter().hasFilters()) {
+        if (forUI && dataContainer instanceof DBSEntity && !viewer.getDataFilter().hasFilters()) {
             displayName = ResultSetMessages.sql_editor_resultset_filter_panel_show_sql_label;
+        } else if (!forUI && dataContainer != null) {
+            displayName = dataContainer.getName();
         } else {
             displayName = viewer.getActiveQueryText();
         }
@@ -458,8 +460,8 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
     }
 
     @NotNull
-    private String getActiveSourceQueryNormalized() {
-        String displayName = getActiveSourceQuery();
+    private String getActiveSourceQueryNormalized(boolean forUI) {
+        String displayName = getActiveSourceQuery(forUI);
         Pattern mlCommentsPattern = Pattern.compile("/\\*.*\\*/", Pattern.DOTALL);
         Matcher m = mlCommentsPattern.matcher(displayName);
         if (m.find()) {
@@ -530,7 +532,7 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
             try {
                 DBCExecutionContext context = viewer.getExecutionContext();
                 if (context != null) {
-                    viewer.getFilterManager().saveQueryFilterValue(context, getActiveSourceQueryNormalized(), whereCondition);
+                    viewer.getFilterManager().saveQueryFilterValue(context, getActiveSourceQueryNormalized(false), whereCondition);
                 }
             } catch (Throwable e) {
                 log.debug("Error saving filter", e);
@@ -683,7 +685,7 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
         return null;
     }
 
-    private static class FilterPanel extends Canvas {
+    private class FilterPanel extends Canvas implements ICSSBackgroundMimicControl {
         protected boolean hover = false;
         FilterPanel(Composite parent, int style) {
             super(parent, style);
@@ -710,6 +712,12 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
                     redraw();
                 }
             });
+        }
+
+        @NotNull
+        @Override
+        public Control getOriginWidget() {
+            return filtersText;
         }
 
         protected void paintPanel(PaintEvent e) {
@@ -947,7 +955,7 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
             new TableColumn(historyTable, SWT.NONE);
 
             if (filtersHistory.isEmpty()) {
-                loadFiltersHistory(activeDisplayName);
+                loadFiltersHistory(getActiveSourceQueryNormalized(false));
             }
 
             if (filtersHistory.isEmpty()) {
@@ -997,7 +1005,7 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
                                     if (context != null) {
                                         viewer.getFilterManager().deleteQueryFilterValue(
                                             context,
-                                            getActiveSourceQueryNormalized(),
+                                            getActiveSourceQueryNormalized(true),
                                             filterValue
                                         );
                                     }

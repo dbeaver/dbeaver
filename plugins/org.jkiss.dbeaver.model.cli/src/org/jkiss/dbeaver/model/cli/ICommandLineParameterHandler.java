@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.model.cli;
 import org.apache.commons.cli.CommandLine;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
 
 public interface ICommandLineParameterHandler {
 
@@ -27,6 +28,6 @@ public interface ICommandLineParameterHandler {
         @NotNull String name,
         @Nullable String value,
         @NotNull CommandLineContext context
-    );
+    ) throws DBException;
 
 }

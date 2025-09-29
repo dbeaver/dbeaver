@@ -30,9 +30,14 @@ public class CommandLineContext implements AutoCloseable {
     @NotNull
     private final Map<String, Object> contextParameter = new LinkedHashMap<>();
     private final List<Runnable> closeHandlers = new ArrayList<>();
-
     @NotNull
     private final List<Object> results = new ArrayList<>();
+    @Nullable
+    private final ApplicationInstanceController instanceController;
+
+    public CommandLineContext(@Nullable ApplicationInstanceController instanceController) {
+        this.instanceController = instanceController;
+    }
 
     @NotNull
     public Map<String, Object> getContext() {
@@ -60,6 +65,12 @@ public class CommandLineContext implements AutoCloseable {
 
     public void addCloseHandler(@NotNull Runnable closeHandler) {
         closeHandlers.add(closeHandler);
+    }
+
+
+    @Nullable
+    public ApplicationInstanceController getInstanceController() {
+        return instanceController;
     }
 
     @Override

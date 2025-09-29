@@ -26,6 +26,7 @@ import org.jkiss.dbeaver.ext.postgresql.model.impls.PostgreServerExtensionBase;
 import org.jkiss.dbeaver.model.DBPErrorAssistant;
 import org.jkiss.dbeaver.model.DBPKeywordType;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
@@ -435,6 +436,11 @@ public class PostgreServerRedshift extends PostgreServerExtensionBase implements
         dialect.addExtraKeywords(REDSHIFT_EXTRA_KEYWORDS);
         dialect.addKeywords(Arrays.asList(REDSHIFT_OTHER_TYPES_FUNCTION), DBPKeywordType.OTHER);
         dialect.addExtraFunctions(REDSHIFT_FUNCTIONS_CONDITIONAL);
+    }
+
+    @Override
+    public void initDefaultSSLConfig(DBPConnectionConfiguration connectionInfo, Map<String, String> props) {
+        // Do not populate default PG properties like "ssl"
     }
 
     @Override

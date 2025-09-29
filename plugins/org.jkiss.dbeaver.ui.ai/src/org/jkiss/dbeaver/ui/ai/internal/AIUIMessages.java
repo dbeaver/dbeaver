@@ -16,13 +16,14 @@
  */
 package org.jkiss.dbeaver.ui.ai.internal;
 
-import org.jkiss.dbeaver.utils.NLS;
+import org.eclipse.osgi.util.NLS;
 
 public class AIUIMessages extends NLS {
     static final String BUNDLE_NAME = "org.jkiss.dbeaver.ui.ai.internal.AIUIMessages"; //$NON-NLS-1$
 
     public static String gpt_preference_page_checkbox_enable_ai_label;
     public static String gpt_preference_page_checkbox_enable_ai_tip;
+    public static String gpt_preference_page_selector_base_url;
     public static String gpt_preference_page_selector_token;
     public static String gpt_preference_page_token_info;
     public static String gpt_preference_page_completion_group;
