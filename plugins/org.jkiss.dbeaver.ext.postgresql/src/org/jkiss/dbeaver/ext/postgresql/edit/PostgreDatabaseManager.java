@@ -74,12 +74,13 @@ public class PostgreDatabaseManager extends SQLObjectEditor<PostgreDatabase, Pos
     }
 
     @Override
-    protected void addObjectCreateActions(@NotNull DBRProgressMonitor monitor,
-                                          @NotNull DBCExecutionContext executionContext,
-                                          @NotNull List<DBEPersistAction> actions,
-                                          @NotNull ObjectCreateCommand command,
-                                          @NotNull Map<String, Object> options)
-        throws DBException {
+    protected void addObjectCreateActions(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBCExecutionContext executionContext,
+        @NotNull List<DBEPersistAction> actions,
+        @NotNull ObjectCreateCommand command,
+        @NotNull Map<String, Object> options
+    ) throws DBException {
         final PostgreDatabase database = command.getObject();
         verifyCanCreateDB(database);
         StringBuilder sql = new StringBuilder();
