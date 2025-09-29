@@ -2591,4 +2591,14 @@ public class UIUtils {
     public static void setDefaultTextControlWidthHint(@NotNull Control widget) {
         setWidgetWidthHint(widget, 150);
     }
+
+    /**
+     * Makes the background of the specified control mimic the background of another control
+     */
+    public static void mimicControlBackground(@NotNull Composite control, @NotNull Control otherControl) {
+        control.addPaintListener(e -> {
+            e.gc.setBackground(otherControl.getBackground());
+            e.gc.fillRectangle(control.getClientArea());
+        });
+    }
 }
