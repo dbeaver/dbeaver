@@ -80,7 +80,7 @@ public class PostgeDatabaseManagerTest extends DBeaverUnitTest {
     }
 
     @Test
-    public void testAddObjectCreateActions_whenShowAllDBsEnabledShouldCreateDB() throws Exception {
+    public void whenShowAllDBsEnabledShouldCreateDB() throws Exception {
         //given
         var command = mock(SQLObjectEditor.ObjectCreateCommand.class);
         when(command.getObject()).thenReturn(object);
@@ -92,7 +92,7 @@ public class PostgeDatabaseManagerTest extends DBeaverUnitTest {
     }
 
     @Test
-    public void testAddObjectCreateActions_whenShowAllDBsDisabledShouldThrow() {
+    public void whenShowAllDBsDisabledShouldThrowInDBCreation() {
         //when
         var command = mock(SQLObjectEditor.ObjectCreateCommand.class);
         when(command.getObject()).thenReturn(object);
@@ -104,7 +104,7 @@ public class PostgeDatabaseManagerTest extends DBeaverUnitTest {
     }
 
     @Test
-    public void testAddObjectCreateActions_whenShowAllDBsNotSetShouldThrow() {
+    public void whenShowAllDBsNotSetShouldThrowInDBCreation() {
         //when
         var command = mock(SQLObjectEditor.ObjectCreateCommand.class);
         when(command.getObject()).thenReturn(object);
