@@ -205,9 +205,8 @@ public class PostgreDatabaseManager extends SQLObjectEditor<PostgreDatabase, Pos
         DBPConnectionConfiguration configuration = database.getDataSource().getContainer().getActualConnectionConfiguration();
         if (!isReadDatabaseList(configuration)) {
             throw new DBException("""
-                Cannot create DB, when show multiple databases is disabled
-                Please enable 'Show all databases' option in connection settings.
-                You may need to reconnect to the database.""");
+                Cannot create a database when multi-database mode is disabled.
+                Enable 'Show all databases' option in the connection settings.""");
         }
     }
 
