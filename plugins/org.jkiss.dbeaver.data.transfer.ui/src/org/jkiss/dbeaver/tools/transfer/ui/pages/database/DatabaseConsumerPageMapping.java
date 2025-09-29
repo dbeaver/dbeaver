@@ -266,7 +266,7 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
             mappingRules = UIUtils.createDialogButton(
                 buttonsPanel,
                 DTMessages.data_transfer_db_consumer_mapping_rules_button,
-                null,
+                UIIcon.CONFIGURATION,
                 DTMessages.data_transfer_db_consumer_mapping_rules_button_tip,
                 new SelectionAdapter() {
                     @Override

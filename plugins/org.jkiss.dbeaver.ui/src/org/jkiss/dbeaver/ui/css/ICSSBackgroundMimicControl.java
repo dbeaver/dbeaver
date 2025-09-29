@@ -14,37 +14,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.ai.engine.openai;
+package org.jkiss.dbeaver.ui.css;
 
-import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.model.ai.engine.AIEngineProperties;
-import org.jkiss.utils.CommonUtils;
+import org.eclipse.swt.graphics.Color;
+import org.eclipse.swt.widgets.Control;
+import org.jkiss.code.NotNull;
 
-public interface OpenAIBaseProperties extends AIEngineProperties {
+/**
+ * Widget which looks like a origin.
+ * E.g. it has to have the same background color as StyledText.
+ */
+public interface ICSSBackgroundMimicControl {
 
-    @Nullable
-    String getBaseUrl();
+    @NotNull
+    Control getOriginWidget();
 
-    @Nullable
-    String getToken();
-
-    @Nullable
-    String getModel();
-
-    @Nullable
-    Integer getContextWindowSize();
-
-    double getTemperature();
-
-    boolean isLoggingEnabled();
-
-    default boolean isStreamingEnabled() {
-        return true;
-    }
-
-    @Override
-    default boolean isValidConfiguration() {
-        return !CommonUtils.isEmpty(getToken());
-    }
+    void setBackground(Color background);
 
 }

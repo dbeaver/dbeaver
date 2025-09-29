@@ -21,12 +21,14 @@ import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Shell;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBDatabaseException;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.connection.DBPDriverLibrary;
+import org.jkiss.dbeaver.model.exec.DBCConnectException;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.registry.DataSourceProviderDescriptor;
 import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
@@ -234,9 +236,17 @@ public class DriverEditHelpers {
             DBPDataSource dataSource = error instanceof DBDatabaseException dbe ? dbe.getDataSource() : null;
             String title = NLS.bind(UIConnectionMessages.dialog_edit_driver_dialog_bad_configuration,
                 dataSource == null ? "<unknown driver>" : dataSource.getContainer().getDriver().getName());
-            new BadDriverConfigDialog(shell, title, message == null ? title : message, error).open();
+            new BadDriverConfigDialog(shell, title, message == null ? title : message, defineException(error)).open();
         };
         UIUtils.syncExec(runnable);
+    }
+
+    @NotNull
+    private static DBException defineException(@NotNull DBException error) {
+        return error instanceof DBCConnectException
+            && error.getCause() instanceof DBException cause
+            ? cause
+            : error;
     }
 
     static class BadDriverConfigDialog extends StandardErrorDialog {

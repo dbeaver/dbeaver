@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,10 @@
  */
 package org.jkiss.dbeaver.ui.controls.resultset.panel.grouping;
 
-import org.eclipse.jface.action.*;
+import org.eclipse.jface.action.Action;
+import org.eclipse.jface.action.IContributionManager;
+import org.eclipse.jface.action.IMenuCreator;
+import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.resource.ImageDescriptor;
@@ -35,12 +38,12 @@ import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.MenuCreator;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.controls.ToolbarSeparatorContribution;
 import org.jkiss.dbeaver.ui.controls.resultset.*;
 import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
-import java.util.Collections;
 import java.util.List;
 
 /**
@@ -174,10 +177,10 @@ public class GroupingPanel implements IResultSetPanel {
     {
         contributionManager.add(new DefaultSortingAction());
         contributionManager.add(new DuplicatesOnlyAction());
-        contributionManager.add(new Separator());
+        contributionManager.add(new ToolbarSeparatorContribution(true));
         contributionManager.add(new EditColumnsAction(getGroupingResultsContainer()));
         contributionManager.add(new DeleteColumnAction(getGroupingResultsContainer()));
-        contributionManager.add(new Separator());
+        contributionManager.add(new ToolbarSeparatorContribution(true));
         contributionManager.add(new ClearGroupingAction(getGroupingResultsContainer()));
     }
 
