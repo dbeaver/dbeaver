@@ -86,7 +86,7 @@ public class PostgreGeometryValueHandler extends JDBCAbstractValueHandler {
             if (((Geometry) value).getSRID() == 0) {
                 ((Geometry) value).setSRID(valueSRID);
             }
-            statement.setObject(paramIndex, getStringFromGeometry(session, (Geometry)value), Types.OTHER);
+            statement.setObject(paramIndex, getStringFromGeometry((Geometry)value), Types.OTHER);
         } else if (value.getClass().getName().equals(PostgreConstants.PG_GEOMETRY_CLASS)) {
             statement.setObject(paramIndex, value, Types.OTHER);
         } else {
@@ -118,13 +118,13 @@ public class PostgreGeometryValueHandler extends JDBCAbstractValueHandler {
         } else if (object instanceof Geometry geometry) {
             return new DBGeometry(geometry);
         } else if (object instanceof String value) {
-            return makeGeometryFromWKT(session, value);
+            return makeGeometryFromWKT(value);
         } else if (object.getClass().getName().equals(PostgreConstants.PG_GEOMETRY_CLASS)) {
             return makeGeometryFromPGGeometry(session, object);
         } else if (PostgreUtils.isPgObject(dataSource, object)) {
-            return makeGeometryFromWKT(session, CommonUtils.toString(PostgreUtils.extractPGObjectValue(object, dataSource)));
+            return makeGeometryFromWKT(CommonUtils.toString(PostgreUtils.extractPGObjectValue(object, dataSource)));
         } else {
-            return makeGeometryFromWKT(session, object.toString());
+            return makeGeometryFromWKT(object.toString());
         }
     }
 
@@ -172,7 +172,7 @@ public class PostgreGeometryValueHandler extends JDBCAbstractValueHandler {
                 final int srid = (Integer) BeanUtils.invokeObjectMethod(geometry, "getSrid");
 
                 // PostGIS JDBC uses StringBuffer instead of StringBuilder, yup
-                final StringBuffer sb = new StringBuffer(type);
+                final StringBuilder sb = new StringBuilder(type);
 
                 if (is3D) {
                     sb.append('Z');
@@ -195,14 +195,14 @@ public class PostgreGeometryValueHandler extends JDBCAbstractValueHandler {
                 return new DBGeometry(result);
             } catch (Throwable e) {
                 log.error("Error reading geometry from PGGeometry", e);
-                return makeGeometryFromWKT(session, geometry.toString());
+                return makeGeometryFromWKT(geometry.toString());
             }
         } catch (Throwable e) {
             throw new DBCException(e, session.getExecutionContext());
         }
     }
 
-    protected DBGeometry makeGeometryFromWKT(DBCSession session, String pgString) throws DBCException {
+    protected DBGeometry makeGeometryFromWKT(String pgString) throws DBCException {
         if (CommonUtils.isEmpty(pgString)) {
             return new DBGeometry();
         }
@@ -223,7 +223,7 @@ public class PostgreGeometryValueHandler extends JDBCAbstractValueHandler {
         }
     }
 
-    private String getStringFromGeometry(JDBCSession session, Geometry geometry) throws DBCException {
+    private String getStringFromGeometry(Geometry geometry) throws DBCException {
         // Use all possible dimensions (4 stands for XYZM) for the most verbose output (see DBGeometry#getString)
         final String strGeom = new WKTWriter(4).write(geometry);
         if (geometry.getSRID() > 0) {

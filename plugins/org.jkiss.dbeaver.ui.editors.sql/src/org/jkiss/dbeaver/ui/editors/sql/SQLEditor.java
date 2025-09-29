@@ -3198,11 +3198,10 @@ public class SQLEditor extends SQLEditorBase implements
         }
 
         DBPDataSourceContainer dsContainer = getDataSourceContainer();
-
+        DatabaseEditorUtils.setPartBackground(this, resultsSash);
         if (sqlEditorPanel != null) {
             DatabaseEditorUtils.setPartBackground(this, sqlEditorPanel);
         }
-
         if (resultTabs != null) {
             DatabaseEditorUtils.setPartBackground(this, resultTabs);
         }
