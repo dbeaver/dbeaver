@@ -161,8 +161,8 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBNLazyNode, DB
 
     @Override
     public String getNodeFullName() {
-        if (getObject() instanceof DBPQualifiedObject qObject) {
-            return qObject.getFullyQualifiedName(DBPEvaluationContext.UI);
+        if (getObject() instanceof DBPQualifiedObject qo) {
+            return qo.getFullyQualifiedName(DBPEvaluationContext.UI);
         } else {
             return super.getNodeFullName();
         }

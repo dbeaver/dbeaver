@@ -215,8 +215,7 @@ public abstract class AbstractSearchResultsPage <OBJECT_TYPE> extends Page imple
     }
 
     protected class SearchResultsControl extends NodeListControl {
-        public SearchResultsControl(@NotNull Composite resultsGroup)
-        {
+        public SearchResultsControl(@NotNull Composite resultsGroup) {
             super(resultsGroup,
                 SWT.SHEET,
                 getSite(),

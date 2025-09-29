@@ -281,8 +281,7 @@ public class ItemListControl extends NodeListControl
         }
 
         @Override
-        public Collection<DBNNode> evaluate(DBRProgressMonitor monitor)
-            throws InvocationTargetException {
+        public Collection<DBNNode> evaluate(@NotNull DBRProgressMonitor monitor) throws InvocationTargetException {
             try {
                 List<DBNNode> items = new ArrayList<>();
                 DBNNode parentNode = getRootNode();
@@ -349,8 +348,7 @@ public class ItemListControl extends NodeListControl
 
         private final ObjectColumn objectColumn;
 
-        public CellEditingSupport(ObjectColumn objectColumn)
-        {
+        public CellEditingSupport(ObjectColumn objectColumn) {
             super(getItemsViewer());
             this.objectColumn = objectColumn;
         }
@@ -452,8 +450,7 @@ public class ItemListControl extends NodeListControl
         }
 
         @Override
-        public Color getBackground(Object element)
-        {
+        public Color getBackground(Object element) {
             if (!(element instanceof DBNNode node)) {
                 return null;
             }

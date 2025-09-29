@@ -60,8 +60,8 @@ import java.util.Objects;
 public class ProgressPageControl extends ConComposite implements ISearchContextProvider, ICustomActionsProvider {
     private static final Log log = Log.getLog(ProgressPageControl.class);
 
-    private final static int PROGRESS_MIN = 0;
-    private final static int PROGRESS_MAX = 20;
+    private static final int PROGRESS_MIN = 0;
+    private static final int PROGRESS_MAX = 20;
 
     private boolean showDivider;
 
@@ -125,10 +125,6 @@ public class ProgressPageControl extends ConComposite implements ISearchContextP
         }
     }
 
-    public final Composite createProgressPanel() {
-        return createProgressPanel(this);
-    }
-
     public final void substituteProgressPanel(ProgressPageControl externalPageControl) {
         this.ownerPageControl = externalPageControl;
         if (this.ownerPageControl != null) {
@@ -183,6 +179,10 @@ public class ProgressPageControl extends ConComposite implements ISearchContextP
         container.setLayoutData(gd);
 
         return container;
+    }
+
+    public final Composite createProgressPanel() {
+        return createProgressPanel(this);
     }
 
     public Composite createProgressPanel(Composite container) {
