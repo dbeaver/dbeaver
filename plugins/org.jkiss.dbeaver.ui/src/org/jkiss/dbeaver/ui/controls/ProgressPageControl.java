@@ -52,16 +52,16 @@ import org.jkiss.dbeaver.ui.internal.UIMessages;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
+import java.util.Objects;
 
 /**
  * ProgressPageControl
  */
-public class ProgressPageControl extends ConComposite implements ISearchContextProvider, ICustomActionsProvider
-{
+public class ProgressPageControl extends ConComposite implements ISearchContextProvider, ICustomActionsProvider {
     private static final Log log = Log.getLog(ProgressPageControl.class);
 
-    private final static int PROGRESS_MIN = 0;
-    private final static int PROGRESS_MAX = 20;
+    private static final int PROGRESS_MIN = 0;
+    private static final int PROGRESS_MAX = 20;
 
     private boolean showDivider;
 
@@ -79,7 +79,7 @@ public class ProgressPageControl extends ConComposite implements ISearchContextP
     private String curSearchText;
     private volatile Job curSearchJob;
 
-    private Color searchNotFoundColor;
+    private final Color searchNotFoundColor;
     private ToolBarManager defaultToolbarManager;
     private ToolBarManager searchToolbarManager;
     private ToolBarManager customToolbarManager;
@@ -88,8 +88,8 @@ public class ProgressPageControl extends ConComposite implements ISearchContextP
 
     public ProgressPageControl(
         Composite parent,
-        int style)
-    {
+        int style
+    ) {
         super(parent, style);
         GridLayout layout = new GridLayout(1, false);
         if ((style & SWT.SHEET) != 0) {
@@ -98,26 +98,21 @@ public class ProgressPageControl extends ConComposite implements ISearchContextP
             layout.verticalSpacing = 0;
             layout.horizontalSpacing = 0;
         }
-        //layout.horizontalSpacing = 0;
-        //layout.verticalSpacing = 0;
         this.setLayout(layout);
         addDisposeListener(e -> disposeControl());
         searchNotFoundColor = UIStyles.getDefaultWidgetBackground();
     }
 
     @Override
-    public GridLayout getLayout()
-    {
-        return (GridLayout)super.getLayout();
+    public GridLayout getLayout() {
+        return (GridLayout) super.getLayout();
     }
 
-    public void setShowDivider(boolean showDivider)
-    {
+    public void setShowDivider(boolean showDivider) {
         this.showDivider = showDivider;
     }
 
-    public void setInfo(String info)
-    {
+    public void setInfo(String info) {
         if (!CommonUtils.isEmpty(info)) {
             this.curInfo = info;
         }
@@ -130,13 +125,7 @@ public class ProgressPageControl extends ConComposite implements ISearchContextP
         }
     }
 
-    public final Composite createProgressPanel()
-    {
-        return createProgressPanel(this);
-    }
-
-    public final void substituteProgressPanel(ProgressPageControl externalPageControl)
-    {
+    public final void substituteProgressPanel(ProgressPageControl externalPageControl) {
         this.ownerPageControl = externalPageControl;
         if (this.ownerPageControl != null) {
             this.ownerPageControl.setChildControl(this);
@@ -154,31 +143,26 @@ public class ProgressPageControl extends ConComposite implements ISearchContextP
     }
 
     private ProgressPageControl findOwnerPageControl(IWorkbenchPartSite site) {
-        if (site instanceof INestedEditorSite && ((INestedEditorSite) site).getFolderEditor() instanceof IProgressControlProvider) {
-            return ((IProgressControlProvider)((INestedEditorSite) site).getFolderEditor()).getProgressControl();
-        } else if (site instanceof MultiPageEditorSite && ((MultiPageEditorSite) site).getMultiPageEditor() instanceof IProgressControlProvider) {
-            return ((IProgressControlProvider)((MultiPageEditorSite) site).getMultiPageEditor()).getProgressControl();
+        if (site instanceof INestedEditorSite nes && nes.getFolderEditor() instanceof IProgressControlProvider pcp) {
+            return pcp.getProgressControl();
+        } else if (site instanceof MultiPageEditorSite mpe && mpe.getMultiPageEditor() instanceof IProgressControlProvider pcp) {
+            return pcp.getProgressControl();
         } else {
             return null;
         }
     }
 
-    private void setChildControl(ProgressPageControl progressPageControl)
-    {
+    private void setChildControl(ProgressPageControl progressPageControl) {
         if (progressPageControl == this.childPageControl) {
             return;
         }
-//        if (this.childPageControl != null && progressPageControl != null) {
-//            log.warn("Overwrite of child page control '" + this.childPageControl); //$NON-NLS-1$
-//        }
         this.childPageControl = progressPageControl;
         if (getProgressControl().progressBar == null) {
             hideControls(true);
         }
     }
 
-    private ProgressPageControl getProgressControl()
-    {
+    private ProgressPageControl getProgressControl() {
         return ownerPageControl != null ? ownerPageControl : this;
     }
 
@@ -186,9 +170,8 @@ public class ProgressPageControl extends ConComposite implements ISearchContextP
         return searchText;
     }
 
-    public Composite createContentContainer()
-    {
-        Composite container = new ConComposite(this, (getStyle() & SWT.SHEET) == SWT.SHEET ? SWT.NONE :  SWT.BORDER);
+    public Composite createContentContainer() {
+        Composite container = new ConComposite(this, (getStyle() & SWT.SHEET) == SWT.SHEET ? SWT.NONE : SWT.BORDER);
         container.setLayout(new FillLayout());
         GridData gd = new GridData(GridData.FILL_BOTH);
         gd.horizontalIndent = 0;
@@ -198,8 +181,11 @@ public class ProgressPageControl extends ConComposite implements ISearchContextP
         return container;
     }
 
-    public Composite createProgressPanel(Composite container)
-    {
+    public final Composite createProgressPanel() {
+        return createProgressPanel(this);
+    }
+
+    public Composite createProgressPanel(Composite container) {
         if (this.ownerPageControl != null) {
             throw new IllegalStateException("Can't create page control while substitution control already set"); //$NON-NLS-1$
         }
@@ -208,7 +194,7 @@ public class ProgressPageControl extends ConComposite implements ISearchContextP
             GridData gd = new GridData(GridData.FILL_HORIZONTAL);
             gd.heightHint = 1;
             separator.setLayoutData(gd);
-            separator.addPaintListener(e ->  {
+            separator.addPaintListener(e -> {
                 e.gc.setForeground(e.display.getSystemColor(SWT.COLOR_WIDGET_NORMAL_SHADOW));
                 e.gc.drawLine(e.x, e.y, e.x + e.width, e.y);
             });
@@ -272,8 +258,7 @@ public class ProgressPageControl extends ConComposite implements ISearchContextP
         UIUtils.updateContributionItems(customToolbarManager);
     }
 
-    private void hideControls(boolean showDefaultControls)
-    {
+    private void hideControls(boolean showDefaultControls) {
         if (searchControlsComposite == null || searchControlsComposite.isDisposed()) {
             return;
         }
@@ -288,8 +273,8 @@ public class ProgressPageControl extends ConComposite implements ISearchContextP
 
             // Create default controls toolbar
             if (showDefaultControls) {
-                ((GridLayout)searchControlsComposite.getLayout()).numColumns = 2;
-                ((GridLayout)searchControlsComposite.getLayout()).marginTop = 2;
+                ((GridLayout) searchControlsComposite.getLayout()).numColumns = 2;
+                ((GridLayout) searchControlsComposite.getLayout()).marginTop = 2;
                 defaultToolbarManager.removeAll();
                 if (isSearchPossible() && isSearchEnabled()) {
                     addSearchAction(defaultToolbarManager);
@@ -331,16 +316,16 @@ public class ProgressPageControl extends ConComposite implements ISearchContextP
             PlatformUI.getWorkbench(),
             IWorkbenchCommandConstants.EDIT_FIND_AND_REPLACE,
             UIMessages.controls_progress_page_toolbar_title,
-            UIIcon.SEARCH));
+            UIIcon.SEARCH
+        ));
     }
 
-    private void createProgressControls()
-    {
+    private void createProgressControls() {
         if (progressBar != null || customControlsComposite == null) {
             return;
         }
         hideControls(false);
-        ((GridLayout)searchControlsComposite.getLayout()).numColumns = 2;
+        ((GridLayout) searchControlsComposite.getLayout()).numColumns = 2;
         progressBar = new ProgressBar(searchControlsComposite, SWT.SMOOTH | SWT.HORIZONTAL);
         progressBar.setSize(300, 16);
         progressBar.setState(SWT.NORMAL);
@@ -355,8 +340,7 @@ public class ProgressPageControl extends ConComposite implements ISearchContextP
         stopButton.setToolTipText(UIMessages.controls_progress_page_progress_bar_cancel_tooltip);
         stopButton.addSelectionListener(new SelectionAdapter() {
             @Override
-            public void widgetSelected(SelectionEvent e)
-            {
+            public void widgetSelected(SelectionEvent e) {
                 // Cancel current job
                 if (cancelProgress()) {
                     if (!stopButton.isDisposed()) {
@@ -369,13 +353,12 @@ public class ProgressPageControl extends ConComposite implements ISearchContextP
         searchControlsComposite.getParent().layout();
     }
 
-    protected void createSearchControls()
-    {
+    protected void createSearchControls() {
         if (searchText != null) {
             return;
         }
         hideControls(false);
-        ((GridLayout)searchControlsComposite.getLayout()).numColumns = 2;
+        ((GridLayout) searchControlsComposite.getLayout()).numColumns = 2;
 
         searchControlsComposite.getParent().setRedraw(false);
         try {
@@ -411,19 +394,21 @@ public class ProgressPageControl extends ConComposite implements ISearchContextP
             });
             searchText.addModifyListener(e -> {
                 curSearchText = searchText.getText();
-                if (curSearchJob == null) {
-                    curSearchJob = new UIJob(UIMessages.controls_progress_page_job_search) {
-                        @Override
-                        public IStatus runInUIThread(IProgressMonitor monitor) {
-                            if (monitor.isCanceled()) {
-                                return Status.CANCEL_STATUS;
+                synchronized (this) {
+                    if (curSearchJob == null) {
+                        curSearchJob = new UIJob(UIMessages.controls_progress_page_job_search) {
+                            @Override
+                            public IStatus runInUIThread(IProgressMonitor monitor) {
+                                if (monitor.isCanceled()) {
+                                    return Status.CANCEL_STATUS;
+                                }
+                                performSearch(SearchType.NEXT);
+                                curSearchJob = null;
+                                return Status.OK_STATUS;
                             }
-                            performSearch(SearchType.NEXT);
-                            curSearchJob = null;
-                            return Status.OK_STATUS;
-                        }
-                    };
-                    curSearchJob.schedule(200);
+                        };
+                        curSearchJob.schedule(200);
+                    }
                 }
             });
 
@@ -431,16 +416,21 @@ public class ProgressPageControl extends ConComposite implements ISearchContextP
             if (searchToolbarManager == null) {
                 searchToolbarManager = new ToolBarManager(SWT.FLAT | SWT.HORIZONTAL);
                 searchToolbarManager.add(ActionUtils.makeCommandContribution(
-                        PlatformUI.getWorkbench(),
-                        IWorkbenchActionDefinitionIds.FIND_PREVIOUS,
-                        null,
-                        UIIcon.ARROW_UP));
+                    PlatformUI.getWorkbench(),
+                    IWorkbenchActionDefinitionIds.FIND_PREVIOUS,
+                    null,
+                    UIIcon.ARROW_UP
+                ));
                 searchToolbarManager.add(ActionUtils.makeCommandContribution(
-                        PlatformUI.getWorkbench(),
-                        IWorkbenchActionDefinitionIds.FIND_NEXT,
-                        null,
-                        UIIcon.ARROW_DOWN));
-                searchToolbarManager.add(new Action(UIMessages.controls_progress_page_action_close, UIUtils.getShardImageDescriptor(ISharedImages.IMG_ELCL_REMOVE)) {
+                    PlatformUI.getWorkbench(),
+                    IWorkbenchActionDefinitionIds.FIND_NEXT,
+                    null,
+                    UIIcon.ARROW_DOWN
+                ));
+                searchToolbarManager.add(new Action(
+                    UIMessages.controls_progress_page_action_close,
+                    UIUtils.getShardImageDescriptor(ISharedImages.IMG_ELCL_REMOVE)
+                ) {
                     @Override
                     public void run() {
                         cancelSearch(true);
@@ -455,8 +445,7 @@ public class ProgressPageControl extends ConComposite implements ISearchContextP
         }
     }
 
-    public void disposeControl()
-    {
+    public void disposeControl() {
         if (searchToolbarManager != null) {
             searchToolbarManager.dispose();
             searchToolbarManager = null;
@@ -471,13 +460,11 @@ public class ProgressPageControl extends ConComposite implements ISearchContextP
         }
     }
 
-    protected boolean cancelProgress()
-    {
+    protected boolean cancelProgress() {
         return false;
     }
 
-    protected ISearchExecutor getSearchRunner()
-    {
+    protected ISearchExecutor getSearchRunner() {
         if (childPageControl != null) {
             return childPageControl.getSearchRunner();
         }
@@ -485,31 +472,28 @@ public class ProgressPageControl extends ConComposite implements ISearchContextP
     }
 
     @Override
-    public boolean isSearchPossible()
-    {
+    public boolean isSearchPossible() {
         return getSearchRunner() != null;
     }
 
     @Override
-    public boolean isSearchEnabled()
-    {
+    public boolean isSearchEnabled() {
         return getProgressControl().progressBar == null;
     }
 
     @Override
-    public boolean performSearch(SearchType searchType)
-    {
+    public boolean performSearch(SearchType searchType) {
         return performSearch(searchType, true);
     }
 
     /**
      * Create search controls and perform search according to the searchType
-     * @param searchType is a type of search
+     *
+     * @param searchType             is a type of search
      * @param isSetFocusToSearchText defines if focus should be set to the search text area if searchType is {@link SearchType#NONE}
      * @return operation success indicator
      */
-    public boolean performSearch(SearchType searchType, boolean isSetFocusToSearchText)
-    {
+    public boolean performSearch(SearchType searchType, boolean isSetFocusToSearchText) {
         getProgressControl().createSearchControls();
         if (searchType == SearchType.NONE && isSetFocusToSearchText) {
             getProgressControl().searchText.setFocus();
@@ -530,9 +514,8 @@ public class ProgressPageControl extends ConComposite implements ISearchContextP
         }
     }
 
-    
-    private void cancelSearch(boolean hide)
-    {
+
+    private void cancelSearch(boolean hide) {
         if (curSearchJob != null) {
             curSearchJob.cancel();
             curSearchJob = null;
@@ -553,49 +536,21 @@ public class ProgressPageControl extends ConComposite implements ISearchContextP
         getProgressControl().hideControls(true);
     }
 
-    public void activate(boolean active)
-    {
+    public void activate(boolean active) {
         if (active) {
-            if (curInfo != null) {
-                setInfo(curInfo);
-            } else {
-                setInfo("");
-            }
+            setInfo(Objects.requireNonNullElse(curInfo, ""));
             if (this.ownerPageControl != null) {
                 this.ownerPageControl.setChildControl(this);
             }
         }
     }
 
-/*
-    public void run(boolean fork, boolean cancelable, final IRunnableWithProgress runnable) throws InvocationTargetException, InterruptedException
-    {
-        Job job = new Job("Progress") {
-            @Override
-            protected IStatus run(IProgressMonitor monitor)
-            {
-                try {
-                    runnable.run(monitor);
-                } catch (InvocationTargetException e) {
-                    return RuntimeUtils.makeExceptionStatus(e.getTargetException());
-                } catch (InterruptedException e) {
-                    // do nothing
-                }
-                return Status.OK_STATUS;
-            }
-        };
-        job.schedule();
-        job.join();
-    }
-*/
-
     private static class TaskInfo {
         final String name;
         final int totalWork;
         int progress;
 
-        private TaskInfo(String name, int totalWork)
-        {
+        private TaskInfo(String name, int totalWork) {
             this.name = name;
             this.totalWork = totalWork;
         }
@@ -608,12 +563,10 @@ public class ProgressPageControl extends ConComposite implements ISearchContextP
         private final java.util.List<TaskInfo> tasksRunning = new ArrayList<>();
 
         @Override
-        public DBRProgressMonitor overwriteMonitor(final DBRProgressMonitor monitor)
-        {
+        public DBRProgressMonitor overwriteMonitor(final DBRProgressMonitor monitor) {
             return new ProxyProgressMonitor(monitor) {
                 @Override
-                public void beginTask(final String name, int totalWork)
-                {
+                public void beginTask(final String name, int totalWork) {
                     super.beginTask(name, totalWork);
                     curStatus = name;
                     synchronized (tasksRunning) {
@@ -622,41 +575,37 @@ public class ProgressPageControl extends ConComposite implements ISearchContextP
                 }
 
                 @Override
-                public void done()
-                {
+                public void done() {
                     super.done();
                     curStatus = ""; //$NON-NLS-1$
                     synchronized (tasksRunning) {
                         if (tasksRunning.isEmpty()) {
                             log.warn("Task end when no tasks are running"); //$NON-NLS-1$
                         } else {
-                            tasksRunning.remove(tasksRunning.size() - 1);
+                            tasksRunning.removeLast();
                         }
                     }
                 }
 
                 @Override
-                public void subTask(String name)
-                {
+                public void subTask(String name) {
                     super.subTask(name);
                     curStatus = name;
                 }
 
                 @Override
-                public void worked(int work)
-                {
+                public void worked(int work) {
                     super.worked(work);
                     synchronized (tasksRunning) {
                         if (!tasksRunning.isEmpty()) {
-                            tasksRunning.get(tasksRunning.size() - 1).progress += work;
+                            tasksRunning.getLast().progress += work;
                         }
                     }
                 }
             };
         }
 
-        private TaskInfo getCurTaskInfo()
-        {
+        private TaskInfo getCurTaskInfo() {
             for (int i = tasksRunning.size() - 1; i >= 0; i--) {
                 if (tasksRunning.get(i).totalWork > 1) {
                     return tasksRunning.get(i);
@@ -666,14 +615,12 @@ public class ProgressPageControl extends ConComposite implements ISearchContextP
         }
 
         @Override
-        public boolean isCompleted()
-        {
+        public boolean isCompleted() {
             return completed;
         }
 
         @Override
-        public void visualizeLoading()
-        {
+        public void visualizeLoading() {
             if (!getProgressControl().isDisposed()) {
                 getProgressControl().createProgressControls();
                 synchronized (tasksRunning) {
@@ -700,8 +647,7 @@ public class ProgressPageControl extends ConComposite implements ISearchContextP
         }
 
         @Override
-        public void completeLoading(RESULT result)
-        {
+        public void completeLoading(RESULT result) {
             completed = true;
 
             if (ProgressPageControl.this.isDisposed()) {

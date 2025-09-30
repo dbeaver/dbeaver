@@ -14,30 +14,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-package org.jkiss.dbeaver.ui.controls.resultset;
+package org.jkiss.dbeaver.ui.controls.resultset.panel;
 
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Control;
-import org.jkiss.dbeaver.ui.editors.IActionContributor;
+import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.ui.controls.resultset.IResultSetPanel;
 
-/**
- * ResultSet panel.
- * RSV can embed multiple panels to provide additional visualization functionality
- */
-public interface IResultSetPanel extends IActionContributor {
+public abstract class ResultSetPanelBase implements IResultSetPanel {
 
-    Control createContents(IResultSetPresentation presentation, Composite parent);
+    @Override
+    public boolean needsSeparator() {
+        return false;
+    }
 
-    boolean isDirty();
+    protected void createActionsToolbar(@NotNull Composite parent) {
 
-    void activatePanel();
-
-    void deactivatePanel();
-
-    void setFocus();
-
-    void refresh(boolean force);
-
-    boolean needsSeparator();
+    }
 }
