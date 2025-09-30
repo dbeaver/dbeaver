@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -72,13 +72,18 @@ public class EditTaskConfigurationDialog extends BaseDialog
         this.state = task.getProperties();
     }
 
-    public EditTaskConfigurationDialog(Shell parentShell, @NotNull DBPProject project, @NotNull DBTTaskType taskType)
+    public EditTaskConfigurationDialog(
+        Shell parentShell,
+        @NotNull DBPProject project,
+        @NotNull DBTTaskType taskType,
+        @NotNull Map<String, Object> taskProperties
+    )
     {
         super(parentShell, TaskUIMessages.edit_task_config_dialog_title_create_task, DBIcon.TREE_TASK);
         this.task = null;
         this.project = project;
         this.taskType = taskType;
-        this.state = new LinkedHashMap<>();
+        this.state = new LinkedHashMap<>(taskProperties);
     }
 
     @Override

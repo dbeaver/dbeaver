@@ -307,7 +307,12 @@ public abstract class TaskConfigurationWizard<SETTINGS extends DBTTaskSettings> 
                 DBWorkbench.getPlatformUI().showError("No task type", "Can't find task type " + getTaskTypeId());
                 return false;
             }
-            EditTaskConfigurationDialog dialog = new EditTaskConfigurationDialog(getContainer().getShell(), getProject(), taskType);
+            EditTaskConfigurationDialog dialog = new EditTaskConfigurationDialog(
+                getContainer().getShell(),
+                getProject(),
+                taskType,
+                currentTask != null ? currentTask.getProperties() : Map.of()
+            );
             if (dialog.open() == IDialogConstants.OK_ID) {
                 setCurrentTask(currentTask = dialog.getTask());
             } else {

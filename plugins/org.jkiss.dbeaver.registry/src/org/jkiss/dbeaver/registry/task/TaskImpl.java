@@ -61,7 +61,6 @@ public class TaskImpl implements DBTTask, DBPNamedObject2 {
     private Map<String, Object> properties;
     private volatile List<DBTTaskRun> runs;
     private DBTTaskFolder taskFolder;
-    private Duration maxExecutionTime = Duration.ZERO;
 
     protected TaskImpl(
         @NotNull DBPProject project,
@@ -257,11 +256,19 @@ public class TaskImpl implements DBTTask, DBPNamedObject2 {
      */
     @NotNull
     public Duration getMaxExecutionTime() {
-        return maxExecutionTime;
+        if (properties.get(TaskConstants.TAG_MAX_EXEC_TIME) instanceof Long seconds && seconds != 0) {
+            return Duration.ofSeconds(seconds);
+        } else {
+            return Duration.ZERO;
+        }
     }
 
     public void setMaxExecutionTime(@NotNull Duration maxExecutionTime) {
-        this.maxExecutionTime = maxExecutionTime;
+        if (maxExecutionTime.isZero()) {
+            properties.remove(TaskConstants.TAG_MAX_EXEC_TIME);
+        } else {
+            properties.put(TaskConstants.TAG_MAX_EXEC_TIME, maxExecutionTime.toSeconds());
+        }
     }
 
     protected Path getTaskStatsFolder(boolean create) {
