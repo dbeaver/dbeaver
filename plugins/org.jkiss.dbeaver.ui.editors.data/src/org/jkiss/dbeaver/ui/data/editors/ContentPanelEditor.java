@@ -406,7 +406,9 @@ public class ContentPanelEditor extends BaseValueEditor<Control> implements IAda
         private Menu menu;
 
         ContentTypeSwitchAction() {
-            super(ResultSetMessages.controls_resultset_viewer_action_view_as, Action.AS_DROP_DOWN_MENU);
+            super(curStreamManager != null ?
+                curStreamManager.getLabel() : ResultSetMessages.controls_resultset_viewer_action_view_as,
+                Action.AS_DROP_DOWN_MENU);
             setImageDescriptor(DBeaverIcons.getImageDescriptor(UIIcon.PAGES));
             setToolTipText(EditorMessages.content_viewer_settings);
         }
