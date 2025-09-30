@@ -20,6 +20,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
+import org.jkiss.dbeaver.ext.postgresql.internal.PostgreSQLMessages;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataSource;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDatabase;
 import org.jkiss.dbeaver.model.DBConstants;
@@ -204,9 +205,7 @@ public class PostgreDatabaseManager extends SQLObjectEditor<PostgreDatabase, Pos
     private void verifyCanCreateDB(@NotNull PostgreDatabase database) throws DBException {
         DBPConnectionConfiguration configuration = database.getDataSource().getContainer().getActualConnectionConfiguration();
         if (!isReadDatabaseList(configuration)) {
-            throw new DBException("""
-                Cannot create a database when multi-database mode is disabled.
-                Enable 'Show all databases' option in the connection settings.""");
+            throw new DBException(PostgreSQLMessages.error_multi_database_mode_disabled_description);
         }
     }
 
