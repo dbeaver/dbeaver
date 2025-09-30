@@ -82,8 +82,7 @@ public class DataSourceToolbarUtils {
 
             for (MTrimElement element : topTrim.getChildren()) {
                 if (CONNECTION_SELECTOR_TOOLBAR_ID.equals(element.getElementId())) {
-                    if (element instanceof MElementContainer) {
-                        MElementContainer<? extends MUIElement> container = (MElementContainer<? extends MUIElement>) element;
+                    if (element instanceof MElementContainer<? extends MUIElement> container) {
                         Object widget = element.getWidget();
                         if (widget instanceof Composite controlsPanel) {
                             Control[] childControl = controlsPanel.getChildren();
