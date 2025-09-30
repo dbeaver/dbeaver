@@ -105,7 +105,7 @@ public class DBeaverCommandLine extends ApplicationCommandLine<IInstanceControll
         @Nullable IInstanceController controller,
         boolean uiActivated
     ) throws Exception {
-        CLIProcessResult result = super.executeCommandLineCommands(commandLine, controller, uiActivated);
+        CLIProcessResult result = super.executeCommandLineCommands(commandLine, controller, uiActivated, true);
         if (result.getPostAction() != CLIProcessResult.PostAction.UNKNOWN_COMMAND) {
             return result;
         }
