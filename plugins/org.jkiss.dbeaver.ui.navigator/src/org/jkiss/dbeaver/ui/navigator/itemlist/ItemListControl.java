@@ -29,11 +29,14 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.menus.CommandContributionItem;
 import org.eclipse.ui.part.MultiPageEditorPart;
 import org.eclipse.ui.part.MultiPageEditorSite;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPObjectStatisticsCollector;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.DBEObjectReorderer;
+import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseFolder;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
@@ -78,11 +81,11 @@ public class ItemListControl extends NodeListControl
     private CommandContributionItem createObjectCommand;
 
     public ItemListControl(
-        Composite parent,
+        @NotNull Composite parent,
         int style,
-        final IWorkbenchSite workbenchSite,
-        DBNNode node,
-        DBXTreeNode metaNode)
+        @NotNull IWorkbenchSite workbenchSite,
+        @NotNull DBNNode node,
+        @Nullable DBXTreeNode metaNode)
     {
         super(parent, style, workbenchSite, node, metaNode);
 
@@ -180,8 +183,8 @@ public class ItemListControl extends NodeListControl
         if (rootNode instanceof DBNDatabaseNode && rootNode.isPersisted()) {
             boolean hasReorder = false;
             List<Class<?>> childrenTypes = ((DBNDatabaseNode) rootNode).getChildrenTypes(null);
-            for (Class<?> chilType : childrenTypes) {
-                if (DBWorkbench.getPlatform().getEditorsRegistry().getObjectManager(chilType, DBEObjectReorderer.class) != null) {
+            for (Class<?> childType : childrenTypes) {
+                if (DBWorkbench.getPlatform().getEditorsRegistry().getObjectManager(childType, DBEObjectReorderer.class) != null) {
                     hasReorder = true;
                     break;
                 }
@@ -266,18 +269,17 @@ public class ItemListControl extends NodeListControl
 
     private class ItemLoadService extends DatabaseLoadService<Collection<DBNNode>> {
 
-        private DBXTreeNode metaNode;
+        private final DBXTreeNode metaNode;
 
-        ItemLoadService(DBXTreeNode metaNode)
-        {
-            super("Loading items", getRootNode() instanceof DBSWrapper ? (DBSWrapper)getRootNode() : null);
+        ItemLoadService(@Nullable DBXTreeNode metaNode) {
+            super(ModelMessages.model_navigator_load_.trim() +
+                ": " + getRootNode().getNodeDisplayName(),
+                getRootNode() instanceof DBSWrapper ? (DBSWrapper)getRootNode() : null);
             this.metaNode = metaNode;
         }
 
         @Override
-        public Collection<DBNNode> evaluate(DBRProgressMonitor monitor)
-            throws InvocationTargetException, InterruptedException
-        {
+        public Collection<DBNNode> evaluate(@NotNull DBRProgressMonitor monitor) throws InvocationTargetException {
             try {
                 List<DBNNode> items = new ArrayList<>();
                 DBNNode parentNode = getRootNode();
@@ -323,10 +325,9 @@ public class ItemListControl extends NodeListControl
                         break;
                     }
                     if (metaNode != null) {
-                        if (!(item instanceof DBNDatabaseNode)) {
+                        if (!(item instanceof DBNDatabaseNode dbNode)) {
                             continue;
                         }
-                        DBNDatabaseNode dbNode = (DBNDatabaseNode) item;
                         if (dbNode.getMeta() != metaNode && !dbNode.getDataSourceContainer().getNavigatorSettings().isHideFolders()) {
                             // Wrong meta. It is ok if folders are hidden
                             continue;
@@ -343,10 +344,9 @@ public class ItemListControl extends NodeListControl
 
     private class CellEditingSupport extends EditingSupport {
 
-        private ObjectColumn objectColumn;
+        private final ObjectColumn objectColumn;
 
-        public CellEditingSupport(ObjectColumn objectColumn)
-        {
+        public CellEditingSupport(ObjectColumn objectColumn) {
             super(getItemsViewer());
             this.objectColumn = objectColumn;
         }
@@ -448,12 +448,10 @@ public class ItemListControl extends NodeListControl
         }
 
         @Override
-        public Color getBackground(Object element)
-        {
-            if (!(element instanceof DBNNode)) {
+        public Color getBackground(Object element) {
+            if (!(element instanceof DBNNode node)) {
                 return null;
             }
-            DBNNode node = (DBNNode) element;
             if (node.isDisposed()) {
                 return null;
             }
@@ -472,36 +470,8 @@ public class ItemListControl extends NodeListControl
                     }
                 }
             }
-//            if (searcher instanceof SearcherHighligther && ((SearcherHighligther) searcher).hasObject(node)) {
-//                return searchHighlightColor;
-//            }
-/*
-            if (isNewObject(node)) {
-                final Object objectValue = getObjectValue(node);
-                final ObjectPropertyDescriptor prop = objectColumn.getProperty(objectValue);
-                if (prop != null && !prop.isEditable(objectValue)) {
-                    return null;//disabledCellColor;
-                }
-            }
-*/
             return null;
         }
     }
 
-    private class PackColumnsAction extends Action {
-        public PackColumnsAction() {
-            super("Pack columns", DBeaverIcons.getImageDescriptor(UIIcon.TREE_EXPAND));
-        }
-
-        @Override
-        public void run()
-        {
-            ColumnViewer itemsViewer = getItemsViewer();
-            if (itemsViewer instanceof TreeViewer) {
-                UIUtils.packColumns(((TreeViewer) itemsViewer).getTree());
-            } else {
-                UIUtils.packColumns(((TableViewer) itemsViewer).getTable());
-            }
-        }
-    }
 }
