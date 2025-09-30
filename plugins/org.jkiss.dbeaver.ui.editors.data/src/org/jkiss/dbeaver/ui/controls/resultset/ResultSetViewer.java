@@ -357,16 +357,6 @@ public class ResultSetViewer extends Viewer
                     }
                 });
 
-                this.panelToolBar = new ToolBarManager(SWT.HORIZONTAL | SWT.RIGHT | SWT.FLAT);
-                Composite trControl = new ConComposite(panelFolder, SWT.NONE);
-                trControl.setLayout(new FillLayout());
-                CSSUtils.setExcludeFromStyling(trControl);
-                ToolBar panelToolbarControl = this.panelToolBar.createControl(trControl);
-
-                UIUtils.mimicControlBackground(trControl, panelFolder);
-                this.panelToolBar.createControl(trControl);
-                this.panelFolder.setTopRight(trControl, SWT.RIGHT | SWT.WRAP);
-
                 this.panelFolder.addSelectionListener(new SelectionAdapter() {
                     @Override
                     public void widgetSelected(SelectionEvent e) {
