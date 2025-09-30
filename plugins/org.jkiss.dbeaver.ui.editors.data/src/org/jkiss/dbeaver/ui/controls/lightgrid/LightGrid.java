@@ -3327,7 +3327,6 @@ public abstract class LightGrid extends Canvas {
 
                     //showColumn(col);
                     showItem(row);
-                    redraw();
                 }
             } else {
                 return;
@@ -4459,7 +4458,6 @@ public abstract class LightGrid extends Canvas {
         }
 
         updateSelectionCache();
-        redraw();
     }
 
     /**
