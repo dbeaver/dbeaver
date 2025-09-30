@@ -38,6 +38,10 @@ public interface OpenAIBaseProperties extends AIEngineProperties {
 
     boolean isLoggingEnabled();
 
+    default boolean isStreamingEnabled() {
+        return true;
+    }
+
     @Override
     default boolean isValidConfiguration() {
         return !CommonUtils.isEmpty(getToken());
