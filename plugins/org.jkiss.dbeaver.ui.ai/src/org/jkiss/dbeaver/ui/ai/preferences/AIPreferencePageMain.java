@@ -229,7 +229,6 @@ public class AIPreferencePageMain extends AbstractPrefPage implements IWorkbench
             parent,
             AIUIMessages.gpt_preference_page_ai_connection_test_label,
             null,
-            null,
             SelectionListener.widgetSelectedAdapter(e -> {
                 performOk();
                 String activeEngine = settings.activeEngine();
