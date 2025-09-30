@@ -92,18 +92,21 @@ public abstract class ApplicationCommandLine<T extends ApplicationInstanceContro
     public CLIProcessResult executeCommandLineCommands(
         @Nullable CommandLine commandLine,
         @Nullable T controller,
-        boolean uiActivated
+        boolean uiActivated,
+        boolean supportNewInstance
     ) throws Exception {
         if (commandLine == null || (ArrayUtils.isEmpty(commandLine.getArgs()) && ArrayUtils.isEmpty(commandLine.getOptions()))) {
             return new CLIProcessResult(CLIProcessResult.PostAction.START_INSTANCE);
         }
 
-        for (CommandLineParameterDescriptor param : customParameters.values()) {
-            if (param.isExclusiveMode() && (commandLine.hasOption(param.getName()) || commandLine.hasOption(param.getLongName()))) {
-                if (param.isForceNewInstance()) {
-                    return new CLIProcessResult(CLIProcessResult.PostAction.START_INSTANCE);
+        if (supportNewInstance) {
+            for (CommandLineParameterDescriptor param : customParameters.values()) {
+                if (param.isExclusiveMode() && (commandLine.hasOption(param.getName()) || commandLine.hasOption(param.getLongName()))) {
+                    if (param.isForceNewInstance()) {
+                        return new CLIProcessResult(CLIProcessResult.PostAction.START_INSTANCE);
+                    }
+                    break;
                 }
-                break;
             }
         }
         if (commandLine.hasOption(PARAM_HELP)) {

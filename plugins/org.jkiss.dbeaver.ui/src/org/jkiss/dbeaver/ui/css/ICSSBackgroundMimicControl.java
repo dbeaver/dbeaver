@@ -14,30 +14,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.jkiss.dbeaver.ui.css;
 
-package org.jkiss.dbeaver.ui.controls.resultset;
-
-import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.widgets.Control;
-import org.jkiss.dbeaver.ui.editors.IActionContributor;
+import org.jkiss.code.NotNull;
 
 /**
- * ResultSet panel.
- * RSV can embed multiple panels to provide additional visualization functionality
+ * Widget which looks like a origin.
+ * E.g. it has to have the same background color as StyledText.
  */
-public interface IResultSetPanel extends IActionContributor {
+public interface ICSSBackgroundMimicControl {
 
-    Control createContents(IResultSetPresentation presentation, Composite parent);
+    @NotNull
+    Control getOriginWidget();
 
-    boolean isDirty();
+    void setBackground(Color background);
 
-    void activatePanel();
-
-    void deactivatePanel();
-
-    void setFocus();
-
-    void refresh(boolean force);
-
-    boolean needsSeparator();
 }
