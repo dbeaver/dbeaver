@@ -71,8 +71,15 @@ public class ConControlElementHandler extends CSSPropertyBackgroundSWTHandler {
         }
 
         if (widget instanceof ICSSBackgroundMimicControl textWidget) {
-            textWidget.setBackground(
-                textWidget.getOriginWidget().getBackground());
+            Color background = textWidget.getOriginWidget().getBackground();
+            if (background.getRed() == 255 && background.getGreen() == 255 && background.getBlue() == 255) {
+                // FIXME: hack of bug in Eclipse. By default StyledText background in white.
+                // Do not set white background in dark theme
+                if (UIStyles.isDarkTheme()) {
+                    return;
+                }
+            }
+            textWidget.setBackground(background);
             return;
         }
 

@@ -128,7 +128,6 @@ public class ItemListControl extends NodeListControl
             final MultiPageEditorPart editor = mes.getMultiPageEditor();
             if (editor instanceof EntityEditor) {
                 DatabaseEditorUtils.contributeStandardEditorActions(workbenchSite, contributionManager);
-                contributionManager.add(new Separator());
             }
         }
         super.fillCustomActions(contributionManager);
@@ -140,7 +139,6 @@ public class ItemListControl extends NodeListControl
         // Object operations
 
         if (rootNode instanceof DBNDatabaseFolder) {
-            contributionManager.add(new Separator());
             contributionManager.add(ActionUtils.makeCommandContribution(
                 workbenchSite,
                 NavigatorCommands.CMD_OBJECT_OPEN));
