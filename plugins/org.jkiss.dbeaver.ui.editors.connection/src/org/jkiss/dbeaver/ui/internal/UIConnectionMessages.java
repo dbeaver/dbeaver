@@ -153,6 +153,7 @@ public class UIConnectionMessages extends NLS {
     public static String dialog_driver_download_auto_page_driver_file_missing_text;
     public static String dialog_driver_download_auto_page_force_download;
     public static String dialog_driver_download_auto_page_force_download_tooltip;
+    public static String dialog_driver_download_auto_page_advanced_settings;
     public static String dialog_driver_download_auto_page_required_files;
     public static String dialog_driver_download_auto_page_change_driver_version_text;
     public static String dialog_driver_download_auto_page_obtain_driver_files_text;

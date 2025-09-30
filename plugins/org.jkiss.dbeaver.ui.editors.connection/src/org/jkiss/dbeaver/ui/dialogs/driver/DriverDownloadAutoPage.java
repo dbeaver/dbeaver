@@ -26,6 +26,7 @@ import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
+import org.eclipse.ui.forms.widgets.ExpandableComposite;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.connection.DBPDriverDependencies;
@@ -93,53 +94,12 @@ class DriverDownloadAutoPage extends DriverDownloadPage {
             });
         }
 
-        {
-            Group filesGroup = UIUtils.createControlGroup(
-                composite,
-                UIConnectionMessages.dialog_driver_download_auto_page_required_files,
-                1,
-                GridData.FILL_BOTH,
-                SWT.DEFAULT
-            );
-            filesGroup.setLayoutData(new GridData(GridData.FILL_BOTH));
+        final ExpandableComposite expander = new ExpandableComposite(composite, SWT.NONE);
+        expander.setLayoutData(new GridData(GridData.FILL, GridData.BEGINNING, false, false, 1, 1));
+        expander.setText(UIConnectionMessages.dialog_driver_download_auto_page_advanced_settings);
 
-            depsTree = new DriverDependenciesTree(
-                filesGroup,
-                new RunnableContextDelegate(getContainer()),
-                getWizard().getDependencies(),
-                driver,
-                driver.getDriverLibraries(),
-                true)
-            {
-                protected void setLibraryVersion(DriverLibraryMavenArtifact library, final String version) {
-                    String curVersion = library.getVersion();
-                    if (CommonUtils.equalObjects(curVersion, version)) {
-                        return;
-                    }
-                    library.setPreferredVersion(version);
-                    library.setForcedVersion(true);
-                    resolveLibraries();
-                }
-
-            };
-            Composite infoPanel = UIUtils.createComposite(filesGroup, 2);
-            infoPanel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-            Label label = new Label(infoPanel, SWT.NONE);
-            label.setText(UIConnectionMessages.dialog_driver_download_auto_page_change_driver_version_text);
-            label.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-            Button rtdButton = UIUtils.createDialogButton(infoPanel, UIMessages.button_reset_to_defaults,
-                SelectionListener.widgetSelectedAdapter(e -> {
-                    for (DBPDriverLibrary lib : depsTree.getLibraries()) {
-                        if (lib instanceof DriverLibraryMavenArtifact mavenArtifact) {
-                            mavenArtifact.setForcedVersion(false);
-                            mavenArtifact.resetVersion();
-                        }
-                    }
-                    this.resolveLibraries();
-                })
-            );
-            rtdButton.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
-        }
+        Composite advancedSettings = createAdvancedSettings(expander, driver);
+        expander.setClient(advancedSettings);
 
         if (!wizard.isForceDownload()) {
             Label infoText = new Label(composite, SWT.NONE);
@@ -150,6 +110,56 @@ class DriverDownloadAutoPage extends DriverDownloadPage {
         createLinksPanel(composite);
 
         setControl(composite);
+    }
+
+    private Group createAdvancedSettings(Composite composite, DBPDriver driver) {
+        Group filesGroup = UIUtils.createControlGroup(
+            composite,
+            UIConnectionMessages.dialog_driver_download_auto_page_required_files,
+            1,
+            GridData.FILL_BOTH,
+            SWT.DEFAULT
+        );
+        filesGroup.setLayoutData(new GridData(GridData.FILL_BOTH));
+
+        depsTree = new DriverDependenciesTree(
+            filesGroup,
+            new RunnableContextDelegate(getContainer()),
+            getWizard().getDependencies(),
+            driver,
+            driver.getDriverLibraries(),
+            true
+        ) {
+            protected void setLibraryVersion(DriverLibraryMavenArtifact library, final String version) {
+                String curVersion = library.getVersion();
+                if (CommonUtils.equalObjects(curVersion, version)) {
+                    return;
+                }
+                library.setPreferredVersion(version);
+                library.setForcedVersion(true);
+                resolveLibraries();
+            }
+
+        };
+        Composite infoPanel = UIUtils.createComposite(filesGroup, 2);
+        infoPanel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        Label label = new Label(infoPanel, SWT.NONE);
+        label.setText(UIConnectionMessages.dialog_driver_download_auto_page_change_driver_version_text);
+        label.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        Button rtdButton = UIUtils.createDialogButton(
+            infoPanel, UIMessages.button_reset_to_defaults,
+            SelectionListener.widgetSelectedAdapter(e -> {
+                for (DBPDriverLibrary lib : depsTree.getLibraries()) {
+                    if (lib instanceof DriverLibraryMavenArtifact mavenArtifact) {
+                        mavenArtifact.setForcedVersion(false);
+                        mavenArtifact.resetVersion();
+                    }
+                }
+                this.resolveLibraries();
+            })
+        );
+        rtdButton.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
+        return filesGroup;
     }
 
 
