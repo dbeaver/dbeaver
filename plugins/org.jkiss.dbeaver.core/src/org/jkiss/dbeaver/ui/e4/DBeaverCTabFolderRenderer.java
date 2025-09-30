@@ -105,7 +105,7 @@ public final class DBeaverCTabFolderRenderer extends CTabRendering implements IC
                     ? oldSelectedTabFillColors[0]
                     : parent.getSelectionBackground();
                 Color highlightColor = isDarkTheme ? UIStyles.lighten(color, 0.2f) : UIStyles.darken(color, 0.2f);
-                Color selectedColor = UIStyles.mix(highlightColor, fillColor, 0.2f);
+                Color selectedColor = UIStyles.mix(highlightColor, fillColor, 0.1f);
 
                 hotUnselectedTabsColorBackgroundField.set(this, isHot ? selectedColor : color);
                 selectedTabFillColorsField.set(this, new Color[]{selectedColor});
