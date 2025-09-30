@@ -29,10 +29,11 @@ public abstract class BaseCompletionEngine<PROPS extends AIEngineProperties> imp
             .getEngineConfiguration(getEngineId());
     }
 
-    public BaseCompletionEngine(@NotNull PROPS properties) throws DBException {
+    public BaseCompletionEngine(@NotNull PROPS properties) {
         this.properties = properties;
     }
 
+    @NotNull
     @Override
     public PROPS getProperties() {
         return properties;

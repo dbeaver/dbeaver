@@ -51,7 +51,7 @@ public interface AIEngine<PROPS extends AIEngineProperties> extends AutoCloseabl
      *
      * @param monitor  the progress monitor
      * @param request  the completion request
-     * @param listener
+     * @param listener chat listener
      * @throws TooManyRequestsException if the request limit is exceeded and the request can be retried
      * @throws DBException              if an error occurs
      */
@@ -61,9 +61,10 @@ public interface AIEngine<PROPS extends AIEngineProperties> extends AutoCloseabl
         @NotNull AIEngineResponseConsumer listener
     ) throws DBException;
 
+    @NotNull
     PROPS getProperties();
 
-    int getContextWindowSize(DBRProgressMonitor monitor) throws DBException;
+    int getContextWindowSize(@NotNull DBRProgressMonitor monitor) throws DBException;
 
     @Override
     void close() throws DBException;
