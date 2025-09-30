@@ -174,7 +174,7 @@ public class AIPreferencePageMain extends AbstractPrefPage implements IWorkbench
         }
 
         final Group engineGroup = UIUtils.createControlGroup(composite, "Engine Settings", 2, SWT.BORDER, 5);
-        engineGroup.setLayoutData(new GridData(GridData.FILL_BOTH));
+        engineGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         if (completionEngine != null) {
             drawConfiguratorComposite(this.settings.activeEngine(), engineGroup);
         }
@@ -193,7 +193,7 @@ public class AIPreferencePageMain extends AbstractPrefPage implements IWorkbench
         });
         performDefaults();
 
-        createTestConnectionButton(serviceComposite);
+        createTestConnectionButton(composite);
         return composite;
     }
 
@@ -228,9 +228,10 @@ public class AIPreferencePageMain extends AbstractPrefPage implements IWorkbench
         UIUtils.createPushButton(
             parent,
             AIUIMessages.gpt_preference_page_ai_connection_test_label,
-            AIUIMessages.gpt_preference_page_ai_connection_test_tooltip,
+            null,
             null,
             SelectionListener.widgetSelectedAdapter(e -> {
+                performOk();
                 String activeEngine = settings.activeEngine();
                 try (AIEngine selectedEngine = completionEngine.createEngineInstance()) {
                     selectedEngine.getModels(new VoidProgressMonitor());
