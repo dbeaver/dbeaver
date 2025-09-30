@@ -87,7 +87,7 @@ public final class OpenAIModels {
         if (DEPRECATED_MODELS.contains(lowerCaseModelName)) {
             return DEFAULT_MODEL;
         }
-        return lowerCaseModelName;
+        return modelName;
     }
 
     @NotNull

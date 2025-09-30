@@ -422,6 +422,7 @@ public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor
                 return null;
             }
         }
+
         Method getter = getGetter();
         Object[] params = getter.getParameterCount() > 0 ?
             new Object[getter.getParameterCount()] : null;
@@ -446,6 +447,7 @@ public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor
         if (progressMonitor != null && isLazy() && object instanceof DBSObject dbsObject) {
             Object[] finalResult = new Object[1];
             try {
+                progressMonitor.subTask("Read " + this.getDisplayName());
                 DBExecUtils.tryExecuteRecover(progressMonitor, dbsObject.getDataSource(), param -> {
                     try {
                         finalResult[0] = readPropertyMethod.get();
