@@ -46,12 +46,21 @@ public class ClassLoaderScriptSource implements SQLSchemaScriptSource {
 
     @NotNull
     @Override
-    public Reader openSchemaCreateScript(@NotNull DBRProgressMonitor monitor) throws IOException, DBException {
-        InputStream resource = classLoader.getResourceAsStream(createScriptPath);
+    public Reader openSchemaCreateScript(
+        @NotNull DBRProgressMonitor monitor,
+        @Nullable String specificPrefix
+    ) throws IOException, DBException {
+        String fileNameWithSpecificPrefix = createScriptPath + "_" + specificPrefix + ".sql";
+
+        InputStream resource = classLoader.getResourceAsStream(fileNameWithSpecificPrefix);
+        if (resource == null) {
+            resource = classLoader.getResourceAsStream(createScriptPath + ".sql");
+        }
+
         if (resource == null) {
             throw new IOException("Resource '" + createScriptPath + "' not found in " + this.classLoader.getClass().getName());
         }
-        log.info("Reading migration file: '" + createScriptPath + "'");
+        log.debug("Reading migration file: '" + createScriptPath + "'");
         return new InputStreamReader(resource);
     }
 
@@ -66,14 +75,14 @@ public class ClassLoaderScriptSource implements SQLSchemaScriptSource {
         String migrationFileNameWithSpecificPrefix = updateScriptPrefix + versionNumber + "_" + specificPrefix + ".sql";
         InputStream resource = classLoader.getResourceAsStream(migrationFileNameWithSpecificPrefix);
         if (resource != null) {
-            log.info("Reading migration file: '" + migrationFileNameWithSpecificPrefix + "'");
+            log.debug("Reading migration file: '" + migrationFileNameWithSpecificPrefix + "'");
             return new InputStreamReader(resource);
         }
 
         String migrationFileName = updateScriptPrefix + versionNumber + ".sql";
         resource = classLoader.getResourceAsStream(migrationFileName);
         if (resource != null) {
-            log.info("Reading migration file: '" + migrationFileName + "'");
+            log.debug("Reading migration file: '" + migrationFileName + "'");
             return new InputStreamReader(resource);
         }
         return null;

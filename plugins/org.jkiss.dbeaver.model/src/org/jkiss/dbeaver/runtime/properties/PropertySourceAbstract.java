@@ -25,6 +25,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPContextProvider;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.PropertyDescriptor;
+import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.model.preferences.DBPPropertyManager;
 import org.jkiss.dbeaver.model.preferences.DBPPropertySource;
@@ -347,11 +348,9 @@ public abstract class PropertySourceAbstract implements DBPPropertyManager, IPro
 
     private class PropertyValueLoadService extends AbstractLoadService<Map<ObjectPropertyDescriptor, Object>> {
 
-        public static final String TEXT_LOADING = "...";
-
         public PropertyValueLoadService()
         {
-            super(TEXT_LOADING);
+            super(ModelMessages.model_navigator_load_);
         }
 
         @Override
