@@ -29,6 +29,7 @@ import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.forms.events.ExpansionAdapter;
 import org.eclipse.ui.forms.events.ExpansionEvent;
 import org.eclipse.ui.forms.widgets.ExpandableComposite;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.connection.DBPDriverDependencies;
@@ -72,10 +73,21 @@ class DriverDownloadAutoPage extends DriverDownloadPage {
         final DriverDownloadWizard wizard = getWizard();
         final DBPDriver driver = wizard.getDriver();
 
+        UIUtils.resizeShell(parent.getShell());
+
         setMessage(NLS.bind(UIConnectionMessages.dialog_driver_download_auto_page_download_specific_driver_files, driver.getFullName()));
         initializeDialogUnits(parent);
-        final ExpandableComposite expander = new ExpandableComposite(parent, SWT.NONE);
-        expander.setLayoutData(new GridData(GridData.FILL, GridData.BEGINNING, false, false, 1, 1));
+
+        ExpandableComposite expander = createExpander(parent);
+
+        Control advancedSettings = createAdvancedSettings(expander);
+        expander.setClient(advancedSettings);
+
+        setControl(parent);
+    }
+
+    private ExpandableComposite createExpander(@NotNull Composite parent) {
+        ExpandableComposite expander = UIUtils.createExpandableCompositeWithSeparator(parent, SWT.NONE, ExpandableComposite.TWISTIE);
         expander.addExpansionListener(new ExpansionAdapter() {
             @Override
             public void expansionStateChanged(ExpansionEvent e) {
@@ -83,12 +95,10 @@ class DriverDownloadAutoPage extends DriverDownloadPage {
             }
         });
         expander.setText(UIConnectionMessages.dialog_driver_download_auto_page_advanced_settings);
-        expander.setClient(createAdvancedSettings(expander));
-
-        setControl(parent);
+        return expander;
     }
 
-    private Composite createAdvancedSettings(Composite parent) {
+    private Composite createAdvancedSettings(@NotNull Composite parent) {
         Composite composite = UIUtils.createPlaceholder(parent, 1);
         composite.setLayoutData(new GridData(GridData.FILL_BOTH));
         final DriverDownloadWizard wizard = getWizard();
