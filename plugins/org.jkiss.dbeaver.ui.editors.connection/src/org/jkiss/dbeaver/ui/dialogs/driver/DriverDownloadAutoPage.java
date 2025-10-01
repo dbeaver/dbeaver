@@ -26,6 +26,8 @@ import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
+import org.eclipse.ui.forms.events.ExpansionAdapter;
+import org.eclipse.ui.forms.events.ExpansionEvent;
 import org.eclipse.ui.forms.widgets.ExpandableComposite;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
@@ -74,6 +76,12 @@ class DriverDownloadAutoPage extends DriverDownloadPage {
         initializeDialogUnits(parent);
         final ExpandableComposite expander = new ExpandableComposite(parent, SWT.NONE);
         expander.setLayoutData(new GridData(GridData.FILL, GridData.BEGINNING, false, false, 1, 1));
+        expander.addExpansionListener(new ExpansionAdapter() {
+            @Override
+            public void expansionStateChanged(ExpansionEvent e) {
+                UIUtils.resizeShell(parent.getShell());
+            }
+        });
         expander.setText(UIConnectionMessages.dialog_driver_download_auto_page_advanced_settings);
         expander.setClient(createAdvancedSettings(expander));
 
