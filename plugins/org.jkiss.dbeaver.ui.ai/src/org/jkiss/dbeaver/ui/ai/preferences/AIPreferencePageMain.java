@@ -248,15 +248,21 @@ public class AIPreferencePageMain extends AbstractPrefPage implements IWorkbench
                         ),
                         false
                     );
-                } catch (DBException | InvocationTargetException | InterruptedException ex) {
-                    DBWorkbench.getPlatformUI().showError(
-                        AIUIMessages.gpt_preference_page_ai_connection_test_connection_error_title,
-                        NLS.bind(AIUIMessages.gpt_preference_page_ai_connection_test_connection_error_message, settings.activeEngine()),
-                        ex instanceof InvocationTargetException ? ex.getCause() : ex
-                    );
+                } catch (DBException | InterruptedException ex) {
+                    showConnectionErrorMessage(ex);
+                } catch (InvocationTargetException ex) {
+                    showConnectionErrorMessage(ex.getCause());
                 }
             })
 
+        );
+    }
+
+    private void showConnectionErrorMessage(Throwable ex) {
+        DBWorkbench.getPlatformUI().showError(
+            AIUIMessages.gpt_preference_page_ai_connection_test_connection_error_title,
+            NLS.bind(AIUIMessages.gpt_preference_page_ai_connection_test_connection_error_message, settings.activeEngine()),
+            ex
         );
     }
 
