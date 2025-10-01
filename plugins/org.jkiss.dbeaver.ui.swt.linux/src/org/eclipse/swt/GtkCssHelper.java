@@ -23,7 +23,7 @@ import org.eclipse.swt.internal.gtk3.GTK3;
 import org.eclipse.swt.internal.gtk4.GTK4;
 
 public final class GtkCssHelper {
-    private static final String SWT_THEMIG_FIXES_GTK = """
+    private static final String SWT_THEMING_FIXES_GTK = """
         check, radio {
         	margin: 0 2px;
         }
@@ -63,9 +63,9 @@ public final class GtkCssHelper {
         }
 
         if (GTK.GTK4) {
-            GTK4.gtk_css_provider_load_from_data(provider, Converter.wcsToMbcs(SWT_THEMIG_FIXES_GTK, true), -1);
+            GTK4.gtk_css_provider_load_from_data(provider, Converter.wcsToMbcs(SWT_THEMING_FIXES_GTK, true), -1);
         } else {
-            GTK3.gtk_css_provider_load_from_data(provider, Converter.wcsToMbcs(SWT_THEMIG_FIXES_GTK, true), -1, null);
+            GTK3.gtk_css_provider_load_from_data(provider, Converter.wcsToMbcs(SWT_THEMING_FIXES_GTK, true), -1, null);
         }
     }
 }
