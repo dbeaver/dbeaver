@@ -233,9 +233,11 @@ public class AIPreferencePageMain extends AbstractPrefPage implements IWorkbench
                 boolean isConfirm = UIUtils.confirmAction(
                     AIUIMessages.gpt_preference_page_ai_connection_test_confirmation_dialog_title,
                     AIUIMessages.gpt_preference_page_ai_connection_test_confirmation_dialog_message
-                    );
+                );
                 try {
-                    if (isConfirm) {
+                    if (!isConfirm) {
+                        return;
+                    }
                         performOk();
                         testConnection();
                         DBWorkbench.getPlatformUI().showMessageBox(
@@ -261,16 +263,13 @@ public class AIPreferencePageMain extends AbstractPrefPage implements IWorkbench
 
     private void testConnection() throws DBException, InterruptedException, InvocationTargetException {
         try (AIEngine selectedEngine = completionEngine.createEngineInstance()) {
-            UIUtils.getDialogRunnableContext().run(
-                true, true,
-                (m) -> {
-                    try {
-                        selectedEngine.getModels(m);
-                    } catch (DBException e) {
-                        throw new RuntimeException(e);
-                    }
+            UIUtils.getDialogRunnableContext().run(true, true, monitor -> {
+                try {
+                    selectedEngine.getModels(monitor);
+                } catch (DBException e) {
+                    throw new InvocationTargetException(e);
                 }
-            );
+            });
         }
     }
 
