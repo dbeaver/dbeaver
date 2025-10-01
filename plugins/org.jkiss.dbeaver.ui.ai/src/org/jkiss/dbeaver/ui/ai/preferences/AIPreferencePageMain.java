@@ -231,8 +231,8 @@ public class AIPreferencePageMain extends AbstractPrefPage implements IWorkbench
             null,
             SelectionListener.widgetSelectedAdapter(e -> {
                 boolean isConfirm = UIUtils.confirmAction(
-                    "Settings will be saved",
-                    "The current settings will be saved before testing the connection. Continue?"
+                    AIUIMessages.gpt_preference_page_ai_connection_test_confirmation_dialog_title,
+                    AIUIMessages.gpt_preference_page_ai_connection_test_confirmation_dialog_message
                     );
                 try {
                     if (isConfirm) {
@@ -262,7 +262,8 @@ public class AIPreferencePageMain extends AbstractPrefPage implements IWorkbench
     private void testConnection() throws DBException, InterruptedException, InvocationTargetException {
         try (AIEngine selectedEngine = completionEngine.createEngineInstance()) {
             UIUtils.getDialogRunnableContext().run(
-                true, true, (m) -> {
+                true, true,
+                (m) -> {
                     try {
                         selectedEngine.getModels(m);
                     } catch (DBException e) {

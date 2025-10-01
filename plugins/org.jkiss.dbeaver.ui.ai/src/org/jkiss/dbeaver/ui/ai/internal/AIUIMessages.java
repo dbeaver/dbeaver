@@ -48,6 +48,8 @@ public class AIUIMessages extends NLS {
     public static String gpt_preference_page_ai_query_confirm_rule_disable_autocommit;
 
     public static String gpt_preference_page_ai_connection_test_label;
+    public static String gpt_preference_page_ai_connection_test_confirmation_dialog_title;
+    public static String gpt_preference_page_ai_connection_test_confirmation_dialog_message;
     public static String gpt_preference_page_ai_connection_test_connection_success_title;
     public static String gpt_preference_page_ai_connection_test_connection_success_message;
     public static String gpt_preference_page_ai_connection_test_connection_error_title;
