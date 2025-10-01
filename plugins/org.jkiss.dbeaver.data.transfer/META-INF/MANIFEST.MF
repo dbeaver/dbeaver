@@ -23,7 +23,9 @@ Export-Package: org.jkiss.dbeaver.tools.sql,
  org.jkiss.dbeaver.tools.transfer.settings,
  org.jkiss.dbeaver.tools.transfer.task
 Require-Bundle: org.eclipse.core.expressions,
+ com.google.gson,
  org.jkiss.dbeaver.model,
  org.jkiss.dbeaver.model.sql,
- org.jkiss.dbeaver.registry
+ org.jkiss.dbeaver.registry,
+ org.jkiss.dbeaver.data.gis
 Automatic-Module-Name: org.jkiss.dbeaver.data.transfer

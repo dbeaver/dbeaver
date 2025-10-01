@@ -17,123 +17,258 @@
 
 package org.jkiss.dbeaver.tools.transfer.stream.exporter;
 
-import org.jkiss.code.NotNull;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.stream.JsonWriter;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.DBCResultSet;
+import org.jkiss.dbeaver.model.gis.DBGeometry;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.tools.transfer.stream.IStreamDataExporter;
 import org.jkiss.dbeaver.tools.transfer.stream.IStreamDataExporterSite;
-import org.jkiss.dbeaver.model.data.json.JSONUtils;
+import org.jkiss.utils.CommonUtils;
 
 import java.io.IOException;
-import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
+import java.util.Map;
 
 public class DataExporterGeoJSON implements IStreamDataExporter {
 
-    private OutputStreamWriter writer;
-    private PrintWriter out;
+    // Configuration properties
+    private static final String PROP_GEO_DATA_TYPES = "geoDataTypes";
+    private static final String PROP_GEOMETRY_COLUMN_NAMES = "geometryColumnNames";
+
+    // Default values
+    private static final String DEFAULT_GEO_DATA_TYPES = "geometry,geojson,geography,geom";
+    private static final String DEFAULT_GEOMETRY_COLUMN_NAMES = "geometry,geom,the_geom,geography,geojson,shape,wkb_geometry";
+
+    // Gson instance configured for GeoJSON output
+    private static final Gson GEOJSON_GSON = new GsonBuilder()
+        .disableHtmlEscaping()
+        .create();
+
+    private PrintWriter writer;
+    private JsonWriter jsonWriter;
     private List<DBDAttributeBinding> columns;
     private boolean firstFeature = true;
     private int geometryIndex = -1;
     private IStreamDataExporterSite site;
+    private String[] geoDataTypes;
+    private String[] geometryColumnNames;
 
     @Override
-    public void init(IStreamDataExporterSite site) {
+    public void init(IStreamDataExporterSite site) throws DBException {
         this.site = site;
-        this.writer = new OutputStreamWriter(site.getOutputStream(), StandardCharsets.UTF_8);
-        this.out = new PrintWriter(this.writer);
+        this.writer = site.getWriter();
+        try {
+            this.jsonWriter = GEOJSON_GSON.newJsonWriter(this.writer);
+        } catch (IOException e) {
+            throw new DBException("Failed to initialize JSON writer", e);
+        }
+        // Configure JsonWriter for the exact format expected by tests
+        this.jsonWriter.setIndent(""); // No indentation for compact output
+        this.jsonWriter.setSerializeNulls(false);
         this.firstFeature = true;
         this.geometryIndex = -1;
         this.columns = null;
+
+        // Initialize configuration from properties
+        String geoTypesProperty = CommonUtils.toString(site.getProperties().get(PROP_GEO_DATA_TYPES), DEFAULT_GEO_DATA_TYPES);
+        this.geoDataTypes = geoTypesProperty.toLowerCase().split(",");
+        for (int i = 0; i < this.geoDataTypes.length; i++) {
+            this.geoDataTypes[i] = this.geoDataTypes[i].trim();
+        }
+
+        String geoColumnsProperty = CommonUtils.toString(site.getProperties().get(PROP_GEOMETRY_COLUMN_NAMES), DEFAULT_GEOMETRY_COLUMN_NAMES);
+        this.geometryColumnNames = geoColumnsProperty.toLowerCase().split(",");
+        for (int i = 0; i < this.geometryColumnNames.length; i++) {
+            this.geometryColumnNames[i] = this.geometryColumnNames[i].trim();
+        }
     }
 
     @Override
     public void exportHeader(DBCSession session) throws IOException {
         DBDAttributeBinding[] attrs = site.getAttributes();
         this.columns = List.of(attrs);
-        // Find geometry column index by type (case-insensitive, contains "geometry", "geojson", "geography", or "geom")
+
+        // Find geometry column index by type using configurable type names
         for (int i = 0; i < columns.size(); i++) {
             String typeName = columns.get(i).getTypeName();
             if (typeName != null) {
                 String typeLower = typeName.toLowerCase();
-                if (typeLower.contains("geometry") || typeLower.contains("geojson") || typeLower.contains("geography") || typeLower.contains("geom")) {
-                    geometryIndex = i;
-                    break;
-                }
-            }
-        }
-        // Fallback: detect geometry column by common column names if type detection failed
-        if (geometryIndex < 0) {
-            for (int i = 0; i < columns.size(); i++) {
-                String colName = columns.get(i).getName();
-                if (colName != null) {
-                    String n = colName.trim().toLowerCase();
-                    if (n.equals("geometry") || n.equals("geom") || n.equals("the_geom") || n.equals("geography") || n.equals("geojson") || n.equals("shape") || n.equals("wkb_geometry")) {
+                for (String geoType : geoDataTypes) {
+                    if (typeLower.contains(geoType)) {
                         geometryIndex = i;
                         break;
                     }
                 }
+                if (geometryIndex >= 0) break;
             }
         }
-        out.write("{\"type\": \"FeatureCollection\", \"features\": [\n");
-        out.flush();
+
+        // Fallback: detect geometry column by configurable column names if type detection failed
+        if (geometryIndex < 0) {
+            for (int i = 0; i < columns.size(); i++) {
+                String colName = columns.get(i).getName();
+                if (colName != null) {
+                    String colNameLower = colName.trim().toLowerCase();
+                    for (String geoColumnName : geometryColumnNames) {
+                        if (colNameLower.equals(geoColumnName)) {
+                            geometryIndex = i;
+                            break;
+                        }
+                    }
+                    if (geometryIndex >= 0) break;
+                }
+            }
+        }
+
+        // Start GeoJSON FeatureCollection using JsonWriter in stream mode
+        jsonWriter.beginObject();
+        jsonWriter.name("type").value("FeatureCollection");
+        jsonWriter.name("features");
+        jsonWriter.beginArray();
+
+        // Flush to ensure header is written immediately (needed for tests)
+        jsonWriter.flush();
+        if (writer != null) {
+            writer.flush();
+        }
+
         firstFeature = true;
     }
 
     @Override
     public void exportRow(DBCSession session, DBCResultSet resultSet, Object[] row) throws IOException {
-        if (!firstFeature) {
-            out.write(",\n");
-        }
-        firstFeature = false;
-        out.write("    {\n");
-        out.write("      \"type\": \"Feature\",\n");
+        // Start Feature
+        jsonWriter.beginObject();
+        jsonWriter.name("type").value("Feature");
+
         // Geometry
-        out.write("      \"geometry\": ");
-        if (geometryIndex >= 0 && row[geometryIndex] != null) {
-            String geomStr = row[geometryIndex].toString();
-            if (geomStr.trim().startsWith("{") || geomStr.trim().startsWith("[")) {
-                out.write(geomStr);
+        jsonWriter.name("geometry");
+        Object geometryValue = (geometryIndex >= 0) ? row[geometryIndex] : null;
+        if (geometryValue instanceof DBGeometry) {
+            Object gisData = ((DBGeometry) geometryValue).getRawValue();
+            if (gisData instanceof Map) {
+                writeMap((Map<String, Object>) gisData);
+            } else if (gisData instanceof String) {
+                try {
+                    Map parsed = GEOJSON_GSON.fromJson((String) gisData, Map.class);
+                    if (parsed instanceof Map) {
+                        writeMap(parsed);
+                    } else {
+                        jsonWriter.nullValue();
+                    }
+                } catch (Exception e) {
+                    jsonWriter.nullValue();
+                }
             } else {
-                out.write("null");
+                jsonWriter.nullValue();
+            }
+        } else if (geometryValue instanceof Map) {
+            writeMap((Map<String, Object>) geometryValue);
+        } else if (geometryValue instanceof String) {
+            try {
+                Map parsed = GEOJSON_GSON.fromJson((String) geometryValue, Map.class);
+                if (parsed instanceof Map) {
+                    writeMap(parsed);
+                } else {
+                    jsonWriter.nullValue();
+                }
+            } catch (Exception e) {
+                jsonWriter.nullValue();
             }
         } else {
-            out.write("null");
+            jsonWriter.nullValue();
         }
-        out.write(",\n");
+
         // Properties
-        out.write("      \"properties\": {\n");
-        boolean firstProp = true;
+        jsonWriter.name("properties");
+        jsonWriter.beginObject();
         for (int i = 0; i < columns.size(); i++) {
-            if (i == geometryIndex) continue;
-            if (!firstProp) out.write(",\n");
-            firstProp = false;
+            if (i == geometryIndex) continue; // Skip geometry column in properties
+
             String name = columns.get(i).getName();
             Object value = row[i];
-            out.write("        \"" + JSONUtils.escapeJsonString(name) + "\": ");
+
+            jsonWriter.name(name);
             if (value == null) {
-                out.write("null");
+                jsonWriter.nullValue();
+            } else if (value instanceof Number) {
+                jsonWriter.value((Number) value);
+            } else if (value instanceof Boolean) {
+                jsonWriter.value((Boolean) value);
             } else {
-                out.write("\"" + JSONUtils.escapeJsonString(value.toString()) + "\"");
+                jsonWriter.value(value.toString());
             }
         }
-        out.write("\n      }\n");
-        out.write("    }");
+        jsonWriter.endObject(); // end properties
+
+        jsonWriter.endObject(); // end feature
+
+        firstFeature = false;
+    }
+
+    private void writeMap(Map<String, Object> map) throws IOException {
+        jsonWriter.beginObject();
+        for (Map.Entry<String, Object> entry : map.entrySet()) {
+            jsonWriter.name(entry.getKey());
+            writeValue(entry.getValue());
+        }
+        jsonWriter.endObject();
+    }
+
+    private void writeList(List<Object> list) throws IOException {
+        jsonWriter.beginArray();
+        for (Object item : list) {
+            writeValue(item);
+        }
+        jsonWriter.endArray();
+    }
+
+    private void writeValue(Object value) throws IOException {
+        if (value == null) {
+            jsonWriter.nullValue();
+        } else if (value instanceof Map) {
+            writeMap((Map<String, Object>) value);
+        } else if (value instanceof List) {
+            writeList((List<Object>) value);
+        } else if (value instanceof String) {
+            jsonWriter.value((String) value);
+        } else if (value instanceof Number) {
+            jsonWriter.value((Number) value);
+        } else if (value instanceof Boolean) {
+            jsonWriter.value((Boolean) value);
+        } else {
+            jsonWriter.value(value.toString());
+        }
     }
 
     @Override
     public void exportFooter(DBRProgressMonitor monitor) throws IOException {
-        out.write("\n  ]\n}");
-        out.flush();
+        jsonWriter.endArray(); // end features array
+        jsonWriter.endObject(); // end FeatureCollection
+        jsonWriter.flush();
+        if (writer != null) {
+            writer.flush();
+        }
     }
 
     @Override
     public void dispose() {
-        // No resources to clean up
+        try {
+            if (jsonWriter != null) {
+                jsonWriter.close();
+            }
+        } catch (IOException e) {
+            // Ignore
+        }
+        if (writer != null) {
+            writer.close();
+        }
     }
 }
-

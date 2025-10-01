@@ -34,19 +34,20 @@ import java.io.Writer;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.io.ByteArrayOutputStream;
+import java.io.PrintWriter;
 
 @RunnerProxy(MockitoJUnitRunner.Silent.class)
 public class DataExporterGeoJSONTest extends DBeaverUnitTest {
 
     private DataExporterGeoJSON dataExporterGeoJSON;
-    private ByteArrayOutputStream outputStream;
+    private StringWriter writer;
     private IStreamDataExporterSite site;
 
     @Before
     public void setUp() {
-        outputStream = new ByteArrayOutputStream();
+        writer = new StringWriter();
         site = Mockito.mock(IStreamDataExporterSite.class);
-        Mockito.when(site.getOutputStream()).thenReturn(outputStream);
+        Mockito.when(site.getWriter()).thenReturn(new PrintWriter(writer));
         dataExporterGeoJSON = new DataExporterGeoJSON();
         try {
             dataExporterGeoJSON.init(site);
@@ -72,8 +73,8 @@ public class DataExporterGeoJSONTest extends DBeaverUnitTest {
 
         try {
             dataExporterGeoJSON.exportHeader(Mockito.mock(DBCSession.class));
-            String result = outputStream.toString(StandardCharsets.UTF_8);
-            String expectedHeader = "{\"type\": \"FeatureCollection\", \"features\": [\n";
+            String result = writer.toString();
+            String expectedHeader = "{\"type\":\"FeatureCollection\",\"features\":[";
             Assert.assertEquals(expectedHeader, result);
         } catch (Exception e) {
             e.printStackTrace();
@@ -81,4 +82,3 @@ public class DataExporterGeoJSONTest extends DBeaverUnitTest {
         }
     }
 }
-
