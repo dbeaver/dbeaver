@@ -53,16 +53,16 @@ public class OpenAIClient implements Closeable {
     private static final String DATA_EVENT = "data: ";
     private static final String EVENT_EVENT = "event: ";
 
-    protected static final Duration TIMEOUT = Duration.ofSeconds(30);
-    protected static final Gson GSON = JSONUtils.GSON;
+    private static final Duration TIMEOUT = Duration.ofSeconds(30);
+    private static final Gson GSON = JSONUtils.GSON;
     public static final String EVENT_TYPE_RESPONSE_COMPLETED = "response.completed";
     public static final String EVENT_TYPE_ITEM_DONE = "response.output_item.done";
     public static final String EVENT_TYPE_ARGUMENTS_DELTA = "response.function_call_arguments.delta";
     public static final String EVENT_TYPE_TEXT_DELTA = "response.output_text.delta";
 
-    protected final String baseUrl;
-    protected final List<HttpRequestFilter> requestFilters;
-    protected final MonitoredHttpClient client = new MonitoredHttpClient(HttpClient.newBuilder().build());
+    private final String baseUrl;
+    private final List<HttpRequestFilter> requestFilters;
+    private final MonitoredHttpClient client = new MonitoredHttpClient(HttpClient.newBuilder().build());
 
     public OpenAIClient(
         @NotNull String baseUrl,
@@ -185,7 +185,7 @@ public class OpenAIClient implements Closeable {
     }
 
     @NotNull
-    protected static String serializeValue(@Nullable Object value) throws DBException {
+    private static String serializeValue(@Nullable Object value) throws DBException {
         try {
             return GSON.toJson(value);
         } catch (Exception e) {

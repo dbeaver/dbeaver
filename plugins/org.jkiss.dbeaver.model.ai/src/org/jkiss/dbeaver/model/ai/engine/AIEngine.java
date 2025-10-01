@@ -26,7 +26,7 @@ import java.util.List;
 /**
  * Completion engine
  */
-public interface AIEngine<PROPS extends AIEngineProperties> extends AutoCloseable {
+public interface AIEngine extends AutoCloseable {
 
     @NotNull
     List<AIModel> getModels(@NotNull DBRProgressMonitor monitor) throws DBException;
@@ -51,7 +51,7 @@ public interface AIEngine<PROPS extends AIEngineProperties> extends AutoCloseabl
      *
      * @param monitor  the progress monitor
      * @param request  the completion request
-     * @param listener chat listener
+     * @param listener
      * @throws TooManyRequestsException if the request limit is exceeded and the request can be retried
      * @throws DBException              if an error occurs
      */
@@ -61,10 +61,7 @@ public interface AIEngine<PROPS extends AIEngineProperties> extends AutoCloseabl
         @NotNull AIEngineResponseConsumer listener
     ) throws DBException;
 
-    @NotNull
-    PROPS getProperties();
-
-    int getContextWindowSize(@NotNull DBRProgressMonitor monitor) throws DBException;
+    int getContextWindowSize(DBRProgressMonitor monitor) throws DBException;
 
     @Override
     void close() throws DBException;
