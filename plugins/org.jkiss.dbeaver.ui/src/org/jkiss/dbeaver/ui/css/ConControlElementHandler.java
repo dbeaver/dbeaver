@@ -17,7 +17,6 @@
 package org.jkiss.dbeaver.ui.css;
 
 import org.eclipse.e4.ui.css.core.engine.CSSEngine;
-import org.eclipse.e4.ui.css.swt.dom.CompositeElement;
 import org.eclipse.e4.ui.css.swt.helpers.SWTElementHelpers;
 import org.eclipse.e4.ui.css.swt.properties.css2.CSSPropertyBackgroundSWTHandler;
 import org.eclipse.swt.SWT;
@@ -66,13 +65,20 @@ public class ConControlElementHandler extends CSSPropertyBackgroundSWTHandler {
             Color newColor = CSSUtils.getCurrentEditorConnectionColor(widget);
             if (newColor != null) {
                 ctrl.setBackground(newColor);
+                return;
             }
-            return;
         }
 
         if (widget instanceof ICSSBackgroundMimicControl textWidget) {
-            textWidget.setBackground(
-                textWidget.getOriginWidget().getBackground());
+            Color background = textWidget.getOriginWidget().getBackground();
+            if (background.getRed() == 255 && background.getGreen() == 255 && background.getBlue() == 255) {
+                // FIXME: hack of bug in Eclipse. By default StyledText background in white.
+                // Do not set white background in dark theme
+                if (UIStyles.isDarkTheme()) {
+                    return;
+                }
+            }
+            textWidget.setBackground(background);
             return;
         }
 
@@ -89,11 +95,8 @@ public class ConControlElementHandler extends CSSPropertyBackgroundSWTHandler {
         if (ctrl instanceof Button) {
             return !CommonUtils.isBitSet(ctrl.getStyle(), SWT.CHECK) && !CommonUtils.isBitSet(ctrl.getStyle(), SWT.RADIO);
         }
-
-        if (CompositeElement.hasBackgroundOverriddenByCSS(ctrl)) {
-            if (ctrl instanceof Combo || ctrl instanceof CCombo) {
-                return true;
-            }
+        if (ctrl instanceof Combo || ctrl instanceof CCombo) {
+            return true;
         }
 
         return false;
