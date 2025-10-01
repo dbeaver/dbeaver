@@ -17,10 +17,17 @@
 package org.jkiss.dbeaver.model.ai.impl;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.runtime.DBRRunnableWithReturn;
 
 public sealed interface MessageChunk {
     @NotNull
     String toRawString();
+
+    @Nullable
+    default DBRRunnableWithReturn<?> getCallback() {
+        return null;
+    }
 
     record Text(@NotNull String text) implements MessageChunk {
         @NotNull
@@ -35,6 +42,20 @@ public sealed interface MessageChunk {
         @Override
         public String toRawString() {
             return "```" + language + "\n" + text + "\n```";
+        }
+    }
+
+    record Link(@NotNull String text, @NotNull DBRRunnableWithReturn<?> callback) implements MessageChunk {
+        @Nullable
+        @Override
+        public DBRRunnableWithReturn<?> getCallback() {
+            return callback;
+        }
+
+        @NotNull
+        @Override
+        public String toRawString() {
+            return text;
         }
     }
 }

@@ -29,6 +29,13 @@ import org.jkiss.dbeaver.model.impl.app.BaseApplicationImpl;
  */
 public abstract class DesktopApplicationImpl extends BaseApplicationImpl implements DBPApplicationDesktop {
 
+    public static final String WORKSPACE_PLUGINS_FOLDER = ".plugins";
+    public static final String CORE_RUNTIME_PLUGIN_ID = "org.eclipse.core.runtime";
+    public static final String CORE_RESOURCES_PLUGIN_ID = "org.eclipse.core.resources";
+    public static final String CORE_FILESYSTEM_PLUGIN_ID = "org.eclipse.core.filesystem";
+
+    private boolean isForcedRestart = false;
+
     @NotNull
     @Override
     public DBPWorkspaceDesktop createWorkspace(@NotNull DBPPlatform platform) {
@@ -44,5 +51,16 @@ public abstract class DesktopApplicationImpl extends BaseApplicationImpl impleme
     public boolean isEnvironmentVariablesAccessible() {
         return true;
     }
+
+    // Dirty fix of pro#6833
+    // We should keep this flag somewhere in basic UI plugin
+    public boolean isForcedRestart() {
+        return isForcedRestart;
+    }
+
+    public void setIsForcedRestart(boolean isForcedRestart) {
+        this.isForcedRestart = isForcedRestart;
+    }
+
 
 }

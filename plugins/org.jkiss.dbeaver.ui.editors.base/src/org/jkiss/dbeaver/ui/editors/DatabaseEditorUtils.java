@@ -39,7 +39,7 @@ import org.jkiss.dbeaver.ui.editors.internal.EditorsMessages;
  */
 public class DatabaseEditorUtils {
 
-    // FIXME: should we just drop it?
+    // Associates editor with datasource
     public static void setPartBackground(IEditorPart editor, Composite composite) {
         if (composite == null || composite.isDisposed()) {
             return;
@@ -58,10 +58,10 @@ public class DatabaseEditorUtils {
         }
 
         DBPDataSourceContainer dsContainer = null;
-        if (editor instanceof DBPDataSourceContainerProvider) {
-            dsContainer = ((DBPDataSourceContainerProvider) editor).getDataSourceContainer();
-        } else if (editor instanceof DBPContextProvider) {
-            DBCExecutionContext context = ((DBPContextProvider) editor).getExecutionContext();
+        if (editor instanceof DBPDataSourceContainerProvider dscp) {
+            dsContainer = dscp.getDataSourceContainer();
+        } else if (editor instanceof DBPContextProvider cp) {
+            DBCExecutionContext context = cp.getExecutionContext();
             if (context != null) {
                 dsContainer = context.getDataSource().getContainer();
             }

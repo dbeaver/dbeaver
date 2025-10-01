@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -105,6 +105,12 @@ public class RMUtils {
         project.setType(RMProjectType.USER);
         project.setProjectPermissions(RMProjectPermission.DATA_SOURCES_EDIT.getAllPermissions().toArray(new String[0]));
         return project;
+    }
+
+    @NotNull
+    public static String makeProjectIdFromPath(Path path, RMProjectType type) {
+        String projectName = path.getFileName().toString();
+        return type.getPrefix() + "_" + projectName;
     }
 
 }

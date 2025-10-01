@@ -74,6 +74,7 @@ public class CubridDataSource extends GenericDataSource
     private String shardType = "SHARD ID";
     private String shardVal = "0";
     private CubridOutputReader outputReader = null;
+    private List<String> privilegeGroups;
 
     public CubridDataSource(
             @NotNull DBRProgressMonitor monitor,
@@ -94,6 +95,15 @@ public class CubridDataSource extends GenericDataSource
             return adapter.cast(outputReader);
         }
         return super.getAdapter(adapter);
+    }
+
+    public String getCurrentUser() {
+        return getContainer().getConnectionConfiguration().getUserName().toUpperCase();
+    }
+
+    public boolean isDBAGroup() {
+        return CubridConstants.DBA.equalsIgnoreCase(getCurrentUser())
+                || privilegeGroups.contains(CubridConstants.DBA);
     }
 
     @NotNull
@@ -203,6 +213,25 @@ public class CubridDataSource extends GenericDataSource
         return collationList;
     }
 
+    public void loadPrivilege(DBRProgressMonitor monitor) throws DBException {
+        privilegeGroups = new ArrayList<>();
+        try (JDBCSession session = DBUtils.openMetaSession(monitor, container, "Load privilege Group")) {
+            String query = "select db_user.name, user_group.name from db_user, table(groups) as groups_tb(user_group) where db_user.name = ?";
+            try (JDBCPreparedStatement dbStat = session.prepareStatement(query)) {
+                String currentUser = getContainer().getConnectionConfiguration().getUserName().toUpperCase();
+                dbStat.setString(1, currentUser);
+                try (JDBCResultSet dbResult = dbStat.executeQuery()) {
+                    while (dbResult.next()) {
+                        String groups = JDBCUtils.safeGetString(dbResult, "user_group.name");
+                        privilegeGroups.add(groups);
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            throw new DBException("Load privilege failed", e);
+        }
+    }
+
     public void loadCharsets(@NotNull DBRProgressMonitor monitor) throws DBException {
         charsets = new ArrayList<>();
         try (JDBCSession session = DBUtils.openMetaSession(monitor, container, "Load charsets")) {
@@ -245,6 +274,7 @@ public class CubridDataSource extends GenericDataSource
         if (!isEOLVersion()) {
             loadCharsets(monitor);
             loadCollations(monitor);
+            loadPrivilege(monitor);
         } else {
             DBWorkbench.getPlatformUI().showMessageBox(
                 "Connected CUBRID Info",

@@ -16,7 +16,7 @@
  */
 package org.jkiss.dbeaver.tools.compare.simple.messages;
 
-import org.jkiss.dbeaver.utils.NLS;
+import org.eclipse.osgi.util.NLS;
 
 public class CompareMessages extends NLS {
 

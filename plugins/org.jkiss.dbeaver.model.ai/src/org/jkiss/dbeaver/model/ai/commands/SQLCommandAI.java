@@ -22,9 +22,13 @@ import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.ai.*;
 import org.jkiss.dbeaver.model.ai.engine.AIDatabaseContext;
+import org.jkiss.dbeaver.model.ai.impl.MessageChunk;
+import org.jkiss.dbeaver.model.ai.prompt.AIPromptAbstract;
+import org.jkiss.dbeaver.model.ai.prompt.AIPromptGenerateSql;
 import org.jkiss.dbeaver.model.ai.registry.AIAssistantRegistry;
 import org.jkiss.dbeaver.model.ai.utils.AIUtils;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.exec.DBCMessageException;
 import org.jkiss.dbeaver.model.exec.output.DBCOutputSeverity;
 import org.jkiss.dbeaver.model.logical.DBSLogicalDataSource;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -100,27 +104,55 @@ public class SQLCommandAI implements SQLControlCommandHandler {
                     Set.of(completionSettings.getCustomObjectIds()))
             );
         }
-        final AIDatabaseContext aiContext = contextBuilder.build();
+        AIDatabaseContext dbContext = contextBuilder.build();
 
-        AICommandResult result = AIAssistantRegistry.getInstance()
-            .createAssistant(dataSourceContainer.getProject().getWorkspace())
-            .command(monitor, new AICommandRequest(prompt, aiContext));
+        AIPromptAbstract sysPromptBuilder = AIPromptGenerateSql.create(() -> dbContext.getDataSource());
 
-        String script = result.sql();
-        if (script == null) {
-            if (!CommonUtils.isEmpty(result.message())) {
-                throw new DBException(result.message());
+        AIAssistant assistant = AIAssistantRegistry.getInstance()
+            .createAssistant(dataSourceContainer.getProject().getWorkspace());
+
+        AIAssistantResponse result = assistant.generateText(
+            monitor,
+            dbContext,
+            sysPromptBuilder,
+            List.of(AIMessage.userMessage(prompt))
+        );
+        if (!result.isText()) {
+            return SQLControlResult.success();
+        }
+
+        AISqlFormatter sqlFormatter = AIAssistantRegistry.getInstance().getDescriptor().createSqlFormatter();
+        MessageChunk[] messageChunks = AITextUtils.processAndSplitCompletion(
+            monitor,
+            dbContext,
+            sqlFormatter,
+            result.getText()
+        );
+
+        String script = null;
+        StringBuilder messages = new StringBuilder();
+        for (MessageChunk chunk : messageChunks) {
+            if (chunk instanceof MessageChunk.Code code) {
+                script = code.text();
+            } else if (chunk instanceof MessageChunk.Text textChunk) {
+                messages.append(textChunk.text());
             }
-            throw new DBException("Empty AI response for '" + prompt + "'");
+        }
+
+        if (script == null) {
+            if (!messages.isEmpty()) {
+                throw new DBCMessageException(messages.toString());
+            }
+            throw new DBCMessageException("Empty AI response for '" + prompt + "'");
         }
 
         SQLDialect dialect = SQLUtils.getDialectFromObject(dataSource);
         if (!script.contains("\n") && SQLUtils.isCommentLine(dialect, script)) {
-            throw new DBException(script);
+            throw new DBCMessageException(script);
         }
 
         List<SQLScriptElement> scriptElements = SQLScriptParser.parseScript(dataSource, script);
-        if (!AIUtils.confirmExecutionIfNeeded(scriptElements, true)) {
+        if (!AIUtils.confirmExecutionIfNeeded(dataSource, scriptElements, true)) {
             return SQLControlResult.failure();
         }
         AIUtils.disableAutoCommitIfNeeded(
