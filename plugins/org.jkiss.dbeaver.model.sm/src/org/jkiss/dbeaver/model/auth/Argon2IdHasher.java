@@ -21,7 +21,6 @@ import org.bouncycastle.crypto.generators.Argon2BytesGenerator;
 import org.bouncycastle.crypto.params.Argon2Parameters;
 import org.jkiss.code.NotNull;
 
-import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.SecureRandom;
 import java.util.Base64;
@@ -53,7 +52,7 @@ public final class Argon2IdHasher {
         byte[] salt = new byte[SALT_LEN];
         RNG.nextBytes(salt);
 
-        byte[] hash = computeHash(password.getBytes(StandardCharsets.UTF_8), salt,
+        byte[] hash = computeHash(password.getBytes(), salt,
             ITERATIONS, MEMORY_KIB, PARALLELISM, HASH_LEN);
 
         Base64.Encoder b64 = Base64.getEncoder();
@@ -108,7 +107,7 @@ public final class Argon2IdHasher {
             throw new IllegalArgumentException("Unsupported Argon2 variant/version in PHC");
         }
         byte[] recomputed = computeHash(
-            rawPassword.getBytes(StandardCharsets.UTF_8),
+            rawPassword.getBytes(),
             parsed.salt,
             parsed.t,
             parsed.mKiB,
