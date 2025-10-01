@@ -39,7 +39,6 @@ import org.jkiss.dbeaver.model.ai.registry.AIEngineRegistry;
 import org.jkiss.dbeaver.model.ai.registry.AISettingsManager;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.rm.RMConstants;
-import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.registry.configurator.UIPropertyConfiguratorDescriptor;
 import org.jkiss.dbeaver.registry.configurator.UIPropertyConfiguratorRegistry;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -49,6 +48,7 @@ import org.jkiss.dbeaver.ui.ai.internal.AIUIMessages;
 import org.jkiss.dbeaver.ui.preferences.AbstractPrefPage;
 
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
@@ -230,24 +230,47 @@ public class AIPreferencePageMain extends AbstractPrefPage implements IWorkbench
             AIUIMessages.gpt_preference_page_ai_connection_test_label,
             null,
             SelectionListener.widgetSelectedAdapter(e -> {
-                performOk();
-                String activeEngine = settings.activeEngine();
-                try (AIEngine selectedEngine = completionEngine.createEngineInstance()) {
-                    selectedEngine.getModels(new VoidProgressMonitor());
-                    DBWorkbench.getPlatformUI().showMessageBox(
-                        AIUIMessages.gpt_preference_page_ai_connection_test_connection_success_title,
-                        NLS.bind(AIUIMessages.gpt_preference_page_ai_connection_test_connection_success_message, activeEngine),
-                        false
+                boolean isConfirm = UIUtils.confirmAction(
+                    "Settings will be saved",
+                    "The current settings will be saved before testing the connection. Continue?"
                     );
+                try {
+                    if (isConfirm) {
+                        performOk();
+                        testConnection();
+                        DBWorkbench.getPlatformUI().showMessageBox(
+                            AIUIMessages.gpt_preference_page_ai_connection_test_connection_success_title,
+                            NLS.bind(
+                                AIUIMessages.gpt_preference_page_ai_connection_test_connection_success_message,
+                                settings.activeEngine()
+                            ),
+                            false
+                        );
+                    }
                 } catch (Exception ex) {
                     DBWorkbench.getPlatformUI().showError(
                         AIUIMessages.gpt_preference_page_ai_connection_test_connection_error_title,
-                        NLS.bind(AIUIMessages.gpt_preference_page_ai_connection_test_connection_error_message, activeEngine),
+                        NLS.bind(AIUIMessages.gpt_preference_page_ai_connection_test_connection_error_message, settings.activeEngine()),
                         ex
                     );
                 }
             })
+
         );
+    }
+
+    private void testConnection() throws DBException, InterruptedException, InvocationTargetException {
+        try (AIEngine selectedEngine = completionEngine.createEngineInstance()) {
+            UIUtils.getDialogRunnableContext().run(
+                true, true, (m) -> {
+                    try {
+                        selectedEngine.getModels(m);
+                    } catch (DBException e) {
+                        throw new RuntimeException(e);
+                    }
+                }
+            );
+        }
     }
 
     @Override
