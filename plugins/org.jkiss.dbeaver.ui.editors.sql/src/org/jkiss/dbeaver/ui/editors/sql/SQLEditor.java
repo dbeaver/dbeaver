@@ -2173,7 +2173,7 @@ public class SQLEditor extends SQLEditorBase implements
      * Toggles editor/results maximization
      */
     public void toggleEditorMaximize() {
-        setEditorMaximized(resultsSash.getMaximizedControl() == null);
+        setEditorMaximized(!resultsSash.isUpHidden());
     }
 
     public void setEditorMaximized(boolean maximized) {
@@ -2181,10 +2181,10 @@ public class SQLEditor extends SQLEditorBase implements
             return;
         }
         if (maximized) {
-            resultsSash.setMaximizedControl(resultTabs);
+            resultsSash.hideUp();
             switchFocus(true);
         } else {
-            resultsSash.setMaximizedControl(null);
+            resultsSash.showUp();
             switchFocus(false);
         }
     }
