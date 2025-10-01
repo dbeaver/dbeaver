@@ -123,7 +123,7 @@ public class CopilotCompletionEngine extends BaseCompletionEngine<CopilotPropert
     }
 
     @Override
-    public int getContextWindowSize(@NotNull DBRProgressMonitor monitor) throws DBException {
+    public int getContextWindowSize(DBRProgressMonitor monitor) throws DBException {
         Integer contextWindowSize = properties.getContextWindowSize();
         if (contextWindowSize != null) {
             return contextWindowSize;

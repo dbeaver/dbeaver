@@ -65,8 +65,8 @@ public class ConControlElementHandler extends CSSPropertyBackgroundSWTHandler {
             Color newColor = CSSUtils.getCurrentEditorConnectionColor(widget);
             if (newColor != null) {
                 ctrl.setBackground(newColor);
+                return;
             }
-            return;
         }
 
         if (widget instanceof ICSSBackgroundMimicControl textWidget) {

@@ -40,7 +40,7 @@ public class AIAssistantImpl implements AIAssistant {
     private static final int MANY_REQUESTS_RETRIES = 3;
     private static final int MANY_REQUESTS_TIMEOUT = 500;
     public static final String LOG_INDENT = "\t";
-    private static final int MAX_FUNCTION_CALLS = 5;
+    protected static final int MAX_FUNCTION_CALLS = 5;
 
     protected final DBPWorkspace workspace;
 
@@ -50,11 +50,15 @@ public class AIAssistantImpl implements AIAssistant {
     public AIAssistantImpl(@NotNull DBPWorkspace workspace) {
         this.workspace = workspace;
         this.requestFactory = createRequestFactory();
+        this.sqlFormatter = createSqlFormatter();
+    }
+
+    protected AISqlFormatter createSqlFormatter() {
         try {
-            this.sqlFormatter = AIAssistantRegistry.getInstance().getDescriptor().createSqlFormatter();
+            return AIAssistantRegistry.getInstance().getDescriptor().createSqlFormatter();
         } catch (DBException e) {
             log.error("Error creating SQL formatter", e);
-            this.sqlFormatter = new SimpleSqlFormatterImpl();
+            return new SimpleSqlFormatterImpl();
         }
     }
 
@@ -77,20 +81,15 @@ public class AIAssistantImpl implements AIAssistant {
 
         AIEngineDescriptor engineDescriptor = getEngineDescriptor();
         try (AIEngine engine = engineDescriptor.createEngineInstance()) {
-            AIEngineRequest completionRequest = requestFactory.build(
+            AIEngineRequest completionRequest = buildAiEngineRequest(
                 monitor,
+                context,
+                systemGenerator,
+                messages,
                 engine,
-                engineDescriptor,
-                systemGenerator,
-                context,
-                messages
+                engineDescriptor
             );
-            AIFunctionContext functionContext = new AIFunctionContext(
-                monitor,
-                context,
-                systemGenerator,
-                messages
-            );
+            AIFunctionContext functionContext = createAiFunctionContext(monitor, context, systemGenerator, messages);
 
             AIEngineRequest request = completionRequest;
             for (int tryIndex = 0; tryIndex < MAX_FUNCTION_CALLS; tryIndex++) {
@@ -127,7 +126,41 @@ public class AIAssistantImpl implements AIAssistant {
     }
 
     @NotNull
-    protected static AIFunctionResult callFunction(
+    public AIEngineRequest buildAiEngineRequest(
+        @NotNull DBRProgressMonitor monitor,
+        @Nullable AIDatabaseContext context,
+        @NotNull AIPromptGenerator systemGenerator,
+        @NotNull List<AIMessage> messages,
+        AIEngine engine,
+        AIEngineDescriptor engineDescriptor
+    ) throws DBException {
+        return requestFactory.build(
+            monitor,
+            engine,
+            engineDescriptor,
+            systemGenerator,
+            context,
+            messages
+        );
+    }
+
+    @NotNull
+    private static AIFunctionContext createAiFunctionContext(
+        @NotNull DBRProgressMonitor monitor,
+        @Nullable AIDatabaseContext context,
+        @NotNull AIPromptGenerator systemGenerator,
+        @NotNull List<AIMessage> messages
+    ) {
+        return new AIFunctionContext(
+            monitor,
+            context,
+            systemGenerator,
+            messages
+        );
+    }
+
+    @NotNull
+    protected AIFunctionResult callFunction(
         @NotNull AIFunctionContext context,
         @NotNull AIFunctionCall functionCall
     ) throws DBException {
@@ -141,7 +174,7 @@ public class AIAssistantImpl implements AIAssistant {
         return registry.callFunction(context, function, functionCall.getArguments());
     }
 
-    protected static void checkAiEnablement() throws DBException {
+    protected void checkAiEnablement() throws DBException {
         if (AISettingsManager.getInstance().getSettings().isAiDisabled()) {
             throw new DBException("AI integration is disabled");
         }

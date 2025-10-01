@@ -201,7 +201,7 @@ public final class SQLSchemaManager {
         @NotNull Connection connection
     ) throws IOException, DBException, SQLException {
         log.debug("Create new schema " + schemaId);
-        try (Reader ddlStream = scriptSource.openSchemaCreateScript(monitor, targetDatabaseDialect.getDialectId())) {
+        try (Reader ddlStream = scriptSource.openSchemaCreateScript(monitor)) {
             executeScript(monitor, connection, ddlStream, false);
         }
         if (sqlInitialSchemaFiller != null) {

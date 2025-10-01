@@ -34,7 +34,7 @@ import java.util.List;
 
 public class OpenAIEngine<PROPS extends OpenAIBaseProperties> extends BaseCompletionEngine<PROPS> {
 
-    protected final DisposableLazyValue<OpenAIClient, DBException> openAiService = new DisposableLazyValue<>() {
+    private final DisposableLazyValue<OpenAIClient, DBException> openAiService = new DisposableLazyValue<>() {
         @NotNull
         @Override
         protected OpenAIClient initialize() throws DBException {
@@ -109,7 +109,7 @@ public class OpenAIEngine<PROPS extends OpenAIBaseProperties> extends BaseComple
     }
 
     @Override
-    public int getContextWindowSize(@NotNull DBRProgressMonitor monitor) throws DBException {
+    public int getContextWindowSize(DBRProgressMonitor monitor) throws DBException {
         Integer contextWindowSize = properties.getContextWindowSize();
         if (contextWindowSize != null) {
             return contextWindowSize;
