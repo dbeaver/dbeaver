@@ -75,24 +75,22 @@ class DriverDownloadAutoPage extends DriverDownloadPage {
         final DriverDownloadWizard wizard = getWizard();
         final DBPDriver driver = wizard.getDriver();
 
-        // Create a dedicated container for layout
         Composite container = new Composite(parent, SWT.NONE);
         container.setLayout(new GridLayout(1, false));
-        container.setLayoutData(new GridData(GridData.FILL_BOTH));
+        container.setLayoutData(new GridData(SWT.BEGINNING, SWT.CENTER, false, false));
 
         UIUtils.resizeShell(parent.getShell());
 
         setMessage(NLS.bind(UIConnectionMessages.dialog_driver_download_auto_page_download_specific_driver_files, driver.getFullName()));
         initializeDialogUnits(container);
 
-        setDescriptionLabel(container); // Add label to container
+        setDescriptionLabel(container);
 
-        ExpandableComposite expander = setExpander(container); // Add expander to container
-        expander.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        ExpandableComposite expander = setExpander(container);
         Control advancedSettings = setDetails(expander);
         expander.setClient(advancedSettings);
 
-        setControl(container); // Set container as control
+        setControl(container);
     }
 
     private ExpandableComposite setExpander(@NotNull Composite parent) {
@@ -104,6 +102,7 @@ class DriverDownloadAutoPage extends DriverDownloadPage {
             }
         });
         expander.setText(UIConnectionMessages.dialog_driver_download_auto_page_show_details);
+        expander.setLayoutData(new GridData(SWT.BEGINNING, SWT.CENTER, false, false));
         return expander;
     }
 
@@ -113,12 +112,12 @@ class DriverDownloadAutoPage extends DriverDownloadPage {
         UIUtils.createInfoLabel(
             parent,
             NLS.bind(UIConnectionMessages.dialog_driver_download_auto_page_driver_description, driverDescription)
-        );
+        ).setLayoutData(new GridData(SWT.BEGINNING, SWT.CENTER, false, false));
     }
 
     private Composite setDetails(@NotNull Composite parent) {
         Composite composite = UIUtils.createPlaceholder(parent, 1);
-        composite.setLayoutData(new GridData(GridData.FILL_BOTH));
+        composite.setLayoutData(new GridData(SWT.BEGINNING, SWT.CENTER, false, false));
         final DriverDownloadWizard wizard = getWizard();
         final DBPDriver driver = wizard.getDriver();
 
@@ -409,5 +408,4 @@ class DriverDownloadAutoPage extends DriverDownloadPage {
             }
         }
     }
-
 }
