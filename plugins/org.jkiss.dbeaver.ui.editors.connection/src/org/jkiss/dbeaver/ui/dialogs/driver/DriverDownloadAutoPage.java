@@ -111,10 +111,10 @@ class DriverDownloadAutoPage extends DriverDownloadPage {
     private void setDescriptionLabel(@NotNull Composite parent) {
         final DBPDriver driver = getWizard().getDriver();
         String driverDescription = Objects.requireNonNullElse(driver.getDescription(), driver.getFullName());
-
-        Label descriptionLabel = new Label(parent, SWT.WRAP);
-        descriptionLabel.setText(NLS.bind(UIConnectionMessages.dialog_driver_download_auto_page_driver_description, driverDescription));
-        descriptionLabel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        UIUtils.createInfoLabel(
+            parent,
+            NLS.bind(UIConnectionMessages.dialog_driver_download_auto_page_driver_description, driverDescription)
+        );
     }
 
     private Composite setDetails(@NotNull Composite parent) {
