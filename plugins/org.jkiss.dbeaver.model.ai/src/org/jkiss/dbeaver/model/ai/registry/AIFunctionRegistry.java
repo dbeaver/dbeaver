@@ -55,7 +55,7 @@ public class AIFunctionRegistry {
         for (IConfigurationElement ext : extElements) {
             if ("function".equals(ext.getName())) {
                 AIFunctionDescriptor descriptor = new AIFunctionDescriptor(ext);
-                descriptorMap.put(descriptor.getName(), descriptor);
+                descriptorMap.put(descriptor.getId(), descriptor);
             }
         }
     }

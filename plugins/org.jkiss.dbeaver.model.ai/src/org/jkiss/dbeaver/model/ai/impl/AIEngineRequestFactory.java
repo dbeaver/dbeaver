@@ -30,12 +30,14 @@ import org.jkiss.dbeaver.model.ai.engine.AIEngineRequest;
 import org.jkiss.dbeaver.model.ai.registry.AIEngineDescriptor;
 import org.jkiss.dbeaver.model.ai.registry.AIFunctionDescriptor;
 import org.jkiss.dbeaver.model.ai.registry.AIFunctionRegistry;
+import org.jkiss.dbeaver.model.ai.registry.AISettingsManager;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 public class AIEngineRequestFactory {
     private static final Log log = Log.getLog(AIEngineRequestFactory.class);
@@ -146,6 +148,10 @@ public class AIEngineRequestFactory {
                 functions.add(fd);
             }
         }
+
+        Set<String> enabledFunctions = AISettingsManager.getInstance().getSettings().getEnabledFunctions();
+        functions.removeIf(aiFunctionDescriptor -> !enabledFunctions.contains(aiFunctionDescriptor.getId()));
+
         request.setFunctions(functions);
     }
 
