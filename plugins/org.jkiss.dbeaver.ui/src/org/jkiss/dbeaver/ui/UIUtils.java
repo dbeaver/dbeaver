@@ -1270,7 +1270,9 @@ public class UIUtils {
         @Nullable SelectionListener selectionListener
     ) {
         Button button = new Button(parent, SWT.PUSH);
-        button.setText(label);
+        if (label != null) {
+            button.setText(label);
+        }
         button.setFont(JFaceResources.getDialogFont());
         if (icon != null) {
             button.setImage(DBeaverIcons.getImage(icon));
@@ -1722,7 +1724,7 @@ public class UIUtils {
     }
 
     public static Point drawMessageOverControl(Control control, GC gc, String message, int offset) {
-        Rectangle bounds = control.getBounds();
+        Rectangle bounds = getControlPaintBounds(control);
         Point textSize = gc.textExtent(message);
 
         if (textSize.x > bounds.width) {
@@ -1745,6 +1747,26 @@ public class UIUtils {
         }
 
         return textSize;
+    }
+
+    @NotNull
+    private static Rectangle getControlPaintBounds(@NotNull Control control) {
+        Rectangle bounds;
+        if (control instanceof Scrollable scrollable) {
+            bounds = scrollable.getClientArea();
+        } else {
+            bounds = control.getBounds();
+        }
+        if (control instanceof Tree tree) {
+            int height = tree.getHeaderHeight();
+            bounds.y += height;
+            bounds.height -= height;
+        } else if (control instanceof Table table) {
+            int height = table.getHeaderHeight();
+            bounds.y += height;
+            bounds.height -= height;
+        }
+        return bounds;
     }
 
     public static SharedTextColors getSharedTextColors() {
@@ -2359,7 +2381,7 @@ public class UIUtils {
 
     public static void installAndUpdateMainFont(@NotNull Control control) {
         BaseThemeSettings.instance.addPropertyListener(
-            UIFonts.DBEAVER_FONTS_MAIN_FONT,
+            UIFonts.DBeaver.MAIN_FONT,
             s -> applyMainFont(control),
             control
         );
@@ -2390,7 +2412,7 @@ public class UIUtils {
     }
 
     private static boolean mainFontIsDefault() {
-        final FontData[] mainFontData = JFaceResources.getFontRegistry().getFontData(UIFonts.DBEAVER_FONTS_MAIN_FONT);
+        final FontData[] mainFontData = JFaceResources.getFontRegistry().getFontData(UIFonts.DBeaver.MAIN_FONT);
         final FontData[] defaultFontData = JFaceResources.getFontRegistry().getFontData(JFaceResources.DEFAULT_FONT);
         return Arrays.equals(mainFontData, defaultFontData);
     }
@@ -2588,5 +2610,15 @@ public class UIUtils {
 
     public static void setDefaultTextControlWidthHint(@NotNull Control widget) {
         setWidgetWidthHint(widget, 150);
+    }
+
+    /**
+     * Makes the background of the specified control mimic the background of another control
+     */
+    public static void mimicControlBackground(@NotNull Composite control, @NotNull Control otherControl) {
+        control.addPaintListener(e -> {
+            e.gc.setBackground(otherControl.getBackground());
+            e.gc.fillRectangle(control.getClientArea());
+        });
     }
 }

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ext.generic.model;
 
 import org.jkiss.dbeaver.ext.generic.GenericConstants;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
+import org.jkiss.dbeaver.model.connection.DBPDriverConstants;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSourceInfo;
 import org.jkiss.utils.CommonUtils;
@@ -47,8 +48,14 @@ public class GenericDataSourceInfo extends JDBCDataSourceInfo {
         supportsTransactionsForDDL = CommonUtils.getBoolean(driver.getDriverParameter(GenericConstants.PARAM_SUPPORTS_TRANSACTIONS_FOR_DDL), true);
         setReadOnlyData(CommonUtils.getBoolean(driver.getDriverParameter(GenericConstants.PARAM_READ_ONLY_DATA), false));
         setReadOnlyMetaData(CommonUtils.getBoolean(driver.getDriverParameter(GenericConstants.PARAM_READ_ONLY_META_DATA), false));
-        supportsCatalogSelection = CommonUtils.getBoolean(driver.getDriverParameter(GenericConstants.PARAM_SUPPORTS_CATALOG_SELECTION), true);
-        supportsSchemaSelection = CommonUtils.getBoolean(driver.getDriverParameter(GenericConstants.PARAM_SUPPORTS_SCHEMA_SELECTION), true);
+        supportsCatalogSelection = CommonUtils.getBoolean(
+            driver.getDriverParameter(DBPDriverConstants.PARAM_SUPPORTS_CATALOG_SELECTION),
+            true
+        );
+        supportsSchemaSelection = CommonUtils.getBoolean(
+            driver.getDriverParameter(DBPDriverConstants.PARAM_SUPPORTS_SCHEMA_SELECTION),
+            true
+        );
         supportsNullableUniqueConstraints = false;
         supportsConstraints = CommonUtils.getBoolean(driver.getDriverParameter(GenericConstants.PARAM_SUPPORTS_CONSTRAINTS), true);
 
@@ -72,11 +79,11 @@ public class GenericDataSourceInfo extends JDBCDataSourceInfo {
             this.setSupportsStoredCode(CommonUtils.toBoolean(supportsStoredCode));
         }
 
-        final Object supportsCatalogSelection = driver.getDriverParameter(GenericConstants.PARAM_SUPPORTS_CATALOG_SELECTION);
+        final Object supportsCatalogSelection = driver.getDriverParameter(DBPDriverConstants.PARAM_SUPPORTS_CATALOG_SELECTION);
         if (supportsCatalogSelection != null) {
             this.supportsCatalogSelection = CommonUtils.toBoolean(supportsCatalogSelection);
         }
-        final Object supportSchemaSelection = driver.getDriverParameter(GenericConstants.PARAM_SUPPORTS_SCHEMA_SELECTION);
+        final Object supportSchemaSelection = driver.getDriverParameter(DBPDriverConstants.PARAM_SUPPORTS_SCHEMA_SELECTION);
         if (supportSchemaSelection != null) {
             this.supportsSchemaSelection = CommonUtils.toBoolean(supportSchemaSelection);
         }

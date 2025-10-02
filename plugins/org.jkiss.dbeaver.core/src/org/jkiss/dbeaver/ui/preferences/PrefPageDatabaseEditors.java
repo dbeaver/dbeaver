@@ -47,7 +47,6 @@ public class PrefPageDatabaseEditors extends AbstractPrefPage implements IWorkbe
     private Button disconnectOnEditorsClose;
     private Button refreshEditorOnOpen;
     private Button editorFullName;
-    private Button showTableGrid;
     private Button showPreviewOnSave;
     private Button syncEditorDataSourceWithNavigator;
 
@@ -104,10 +103,6 @@ public class PrefPageDatabaseEditors extends AbstractPrefPage implements IWorkbe
                 groupEditors,
                 CoreMessages.pref_page_ui_general_show_full_name_in_editor,
                 store.getBoolean(DBeaverPreferences.NAVIGATOR_EDITOR_FULL_NAME));
-            showTableGrid = UIUtils.createCheckbox(
-                groupEditors,
-                CoreMessages.pref_page_ui_general_show_table_grid,
-                store.getBoolean(NavigatorPreferences.NAVIGATOR_EDITOR_SHOW_TABLE_GRID));
             showPreviewOnSave = UIUtils.createCheckbox(
                 groupEditors,
                 CoreMessages.pref_page_ui_general_show_preview_on_save,
@@ -132,7 +127,6 @@ public class PrefPageDatabaseEditors extends AbstractPrefPage implements IWorkbe
         disconnectOnEditorsClose.setSelection(store.getDefaultBoolean(DBeaverPreferences.UI_DISCONNECT_ON_EDITORS_CLOSE));
         refreshEditorOnOpen.setSelection(store.getDefaultBoolean(NavigatorPreferences.NAVIGATOR_REFRESH_EDITORS_ON_OPEN));
         editorFullName.setSelection(store.getDefaultBoolean(DBeaverPreferences.NAVIGATOR_EDITOR_FULL_NAME));
-        showTableGrid.setSelection(store.getDefaultBoolean(NavigatorPreferences.NAVIGATOR_EDITOR_SHOW_TABLE_GRID));
         showPreviewOnSave.setSelection(store.getDefaultBoolean(NavigatorPreferences.NAVIGATOR_SHOW_SQL_PREVIEW));
         syncEditorDataSourceWithNavigator.setSelection(store.getDefaultBoolean(NavigatorPreferences.NAVIGATOR_SYNC_EDITOR_DATASOURCE));
     }
@@ -147,7 +141,6 @@ public class PrefPageDatabaseEditors extends AbstractPrefPage implements IWorkbe
         store.setValue(DBeaverPreferences.UI_DISCONNECT_ON_EDITORS_CLOSE, disconnectOnEditorsClose.getSelection());
         store.setValue(NavigatorPreferences.NAVIGATOR_REFRESH_EDITORS_ON_OPEN, refreshEditorOnOpen.getSelection());
         store.setValue(DBeaverPreferences.NAVIGATOR_EDITOR_FULL_NAME, editorFullName.getSelection());
-        store.setValue(NavigatorPreferences.NAVIGATOR_EDITOR_SHOW_TABLE_GRID, showTableGrid.getSelection());
         store.setValue(NavigatorPreferences.NAVIGATOR_SHOW_SQL_PREVIEW, showPreviewOnSave.getSelection());
         store.setValue(NavigatorPreferences.NAVIGATOR_SYNC_EDITOR_DATASOURCE, syncEditorDataSourceWithNavigator.getSelection());
 

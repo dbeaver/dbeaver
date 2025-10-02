@@ -25,7 +25,11 @@ import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.widgets.*;
+import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Table;
+import org.eclipse.swt.widgets.TableItem;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
@@ -62,7 +66,6 @@ import org.jkiss.utils.IOUtils;
 import java.io.File;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Path;
-import java.util.List;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -73,8 +76,8 @@ public class StreamProducerPageSettings extends DataTransferPageNodeSettings {
     private PropertyTreeViewer propsEditor;
     private PropertySourceCustom propertySource;
     private Table filesTable;
-    private ToolItem tiOpenLocal;
-    private ToolItem tiOpenRemote;
+    private Button tiOpenLocal;
+    private Button tiOpenRemote;
 
     public StreamProducerPageSettings() {
         super(DTMessages.data_transfer_wizard_page_input_files_name);
@@ -94,8 +97,6 @@ public class StreamProducerPageSettings extends DataTransferPageNodeSettings {
             Composite inputFilesGroup = UIUtils.createComposite(settingsDivider, 1);
             inputFilesGroup.setLayoutData(new GridData(GridData.FILL_BOTH));
 
-            UIUtils.createControlLabel(inputFilesGroup, DTMessages.data_transfer_wizard_settings_group_input_files);
-
             final Composite inputFilesTableGroup = new Composite(inputFilesGroup, SWT.NONE);
             inputFilesTableGroup.setLayout(GridLayoutFactory.fillDefaults().spacing(0, 0).create());
             inputFilesTableGroup.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
@@ -104,9 +105,12 @@ public class StreamProducerPageSettings extends DataTransferPageNodeSettings {
             boolean showRemoteFS = project != null && DBFUtils.supportsMultiFileSystems(project);
 
             {
-                final ToolBar toolbar = new ToolBar(inputFilesTableGroup, SWT.HORIZONTAL | SWT.FLAT | SWT.RIGHT);
+                final Composite toolbar = new Composite(inputFilesTableGroup, SWT.NONE);
+                toolbar.setLayout(new GridLayout(3, false));
+                UIUtils.createControlLabel(toolbar, DTMessages.data_transfer_wizard_settings_group_input_files);
+
                 {
-                    tiOpenLocal = UIUtils.createToolItem(
+                    tiOpenLocal = UIUtils.createPushButton(
                         toolbar,
                         UIMessages.text_with_open_dialog_browse,
                         UIMessages.text_with_open_dialog_browse,
@@ -115,7 +119,7 @@ public class StreamProducerPageSettings extends DataTransferPageNodeSettings {
                     );
                 }
                 if (showRemoteFS) {
-                    tiOpenRemote = UIUtils.createToolItem(
+                    tiOpenRemote = UIUtils.createPushButton(
                         toolbar,
                         UIMessages.text_with_open_dialog_browse_remote,
                         UIMessages.text_with_open_dialog_browse_remote,

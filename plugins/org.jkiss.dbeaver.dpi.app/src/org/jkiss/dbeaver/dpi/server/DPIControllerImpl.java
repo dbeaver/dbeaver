@@ -116,6 +116,12 @@ public class DPIControllerImpl implements DPIController {
         return dataSource;
     }
 
+    @NotNull
+    @Override
+    public Object createDriverInstance(@NotNull DPIDataSourceParameters parameters) throws DBException {
+        throw new DBException("Not implemented");
+    }
+
     @Override
     public void closeSession(@NotNull String sessionId) throws DBException {
         getSession(sessionId);

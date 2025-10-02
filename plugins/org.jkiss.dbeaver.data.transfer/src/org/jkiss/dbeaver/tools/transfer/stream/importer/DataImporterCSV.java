@@ -57,6 +57,7 @@ public class DataImporterCSV extends StreamImporterAbstract {
     private static final String PROP_NULL_STRING = "nullString";
     private static final String PROP_EMPTY_STRING_NULL = "emptyStringNull";
     private static final String PROP_ESCAPE_CHAR = "escapeChar";
+    private static final String PROP_STRICT_QUOTES = "strictQuotes";
     private static final String PROP_TRIM_WHITESPACES = "trimWhitespaces";
     public static final int READ_BUFFER_SIZE = 255 * 1024;
 
@@ -174,7 +175,8 @@ public class DataImporterCSV extends StreamImporterAbstract {
         if (CommonUtils.isEmpty(escapeChar)) {
             escapeChar = String.valueOf(CSVParser.NULL_CHARACTER);
         }
-        return new CSVReader(reader, delimiter.charAt(0), quoteChar.charAt(0), escapeChar.charAt(0));
+        boolean strictQuotes = CommonUtils.toBoolean(processorProperties.get(PROP_STRICT_QUOTES));
+        return new CSVReader(reader, delimiter.charAt(0), quoteChar.charAt(0), escapeChar.charAt(0), 0, strictQuotes);
     }
 
     private Reader openStreamReader(InputStream inputStream, Map<String, Object> processorProperties, boolean useBufferedStream) throws UnsupportedEncodingException {
