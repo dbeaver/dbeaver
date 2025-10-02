@@ -27,6 +27,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
+import java.util.List;
 
 /**
  * Script source which reads scripts from class loader
@@ -50,18 +51,19 @@ public class ClassLoaderScriptSource implements SQLSchemaScriptSource {
         @NotNull DBRProgressMonitor monitor,
         @Nullable String specificPrefix
     ) throws IOException, DBException {
-        String fileNameWithSpecificPrefix = createScriptPath + "_" + specificPrefix + ".sql";
+        List<String> attemptedPaths = specificPrefix == null ?
+            List.of(createScriptPath + ".sql") :
+            List.of(
+                createScriptPath + "_" + specificPrefix + ".sql",
+                createScriptPath + ".sql"
+            );
 
-        InputStream resource = classLoader.getResourceAsStream(fileNameWithSpecificPrefix);
-        if (resource == null) {
-            resource = classLoader.getResourceAsStream(createScriptPath + ".sql");
+        Reader reader = findScript(attemptedPaths.toArray(new String[0]));
+        if (reader == null) {
+            throw new IOException("Create script not found. Searched paths: " + String.join(", ", attemptedPaths));
         }
 
-        if (resource == null) {
-            throw new IOException("Resource '" + createScriptPath + "' not found in " + this.classLoader.getClass().getName());
-        }
-        log.debug("Reading migration file: '" + createScriptPath + "'");
-        return new InputStreamReader(resource);
+        return reader;
     }
 
     @Nullable
@@ -71,19 +73,26 @@ public class ClassLoaderScriptSource implements SQLSchemaScriptSource {
         int versionNumber,
         @Nullable String specificPrefix
     ) throws IOException, DBException {
+        List<String> attemptedPaths = specificPrefix == null ?
+            List.of(updateScriptPrefix + versionNumber + ".sql") :
+            List.of(
+                updateScriptPrefix + versionNumber + "_" + specificPrefix + ".sql",
+                updateScriptPrefix + versionNumber + ".sql"
+            );
 
-        String migrationFileNameWithSpecificPrefix = updateScriptPrefix + versionNumber + "_" + specificPrefix + ".sql";
-        InputStream resource = classLoader.getResourceAsStream(migrationFileNameWithSpecificPrefix);
-        if (resource != null) {
-            log.debug("Reading migration file: '" + migrationFileNameWithSpecificPrefix + "'");
-            return new InputStreamReader(resource);
-        }
+        return findScript(attemptedPaths.toArray(new String[0]));
+    }
 
-        String migrationFileName = updateScriptPrefix + versionNumber + ".sql";
-        resource = classLoader.getResourceAsStream(migrationFileName);
-        if (resource != null) {
-            log.debug("Reading migration file: '" + migrationFileName + "'");
-            return new InputStreamReader(resource);
+    @Nullable
+    public Reader findScript(
+        String... paths
+    ) {
+        for (String path : paths) {
+            InputStream resource = classLoader.getResourceAsStream(path);
+            if (resource != null) {
+                log.debug("Reading script file: '" + path + "'");
+                return new InputStreamReader(resource);
+            }
         }
         return null;
     }
