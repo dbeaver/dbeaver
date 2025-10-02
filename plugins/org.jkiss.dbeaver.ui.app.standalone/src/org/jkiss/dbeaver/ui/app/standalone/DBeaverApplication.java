@@ -24,11 +24,6 @@ import org.eclipse.jface.window.Window;
 import org.eclipse.osgi.service.datalocation.Location;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Resource;
-import org.eclipse.swt.internal.Converter;
-import org.eclipse.swt.internal.gtk.GDK;
-import org.eclipse.swt.internal.gtk.GTK;
-import org.eclipse.swt.internal.gtk3.GTK3;
-import org.eclipse.swt.internal.gtk4.GTK4;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.MessageBox;
@@ -64,7 +59,6 @@ import org.jkiss.dbeaver.registry.updater.VersionDescriptor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.ui.DBPPlatformUI;
 import org.jkiss.dbeaver.runtime.ui.console.ConsoleUserInterface;
-import org.jkiss.dbeaver.ui.app.standalone.internal.CoreApplicationActivator;
 import org.jkiss.dbeaver.ui.app.standalone.internal.WorkbenchPatcher;
 import org.jkiss.dbeaver.ui.app.standalone.rpc.DBeaverInstanceServer;
 import org.jkiss.dbeaver.ui.app.standalone.rpc.IInstanceController;
@@ -72,16 +66,12 @@ import org.jkiss.dbeaver.ui.app.standalone.update.VersionUpdateDialog;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.dbeaver.utils.SystemVariablesResolver;
-import org.jkiss.utils.ArrayUtils;
-import org.jkiss.utils.CommonUtils;
-import org.jkiss.utils.IOUtils;
-import org.jkiss.utils.StandardConstants;
+import org.jkiss.utils.*;
 import org.osgi.framework.Version;
 
 import java.io.*;
 import java.lang.reflect.Field;
 import java.net.URL;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.Properties;
@@ -499,51 +489,21 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
     }
 
     /**
-     * A copy of <a href="https://github.com/eclipse-platform/eclipse.platform.swt/blob/60de8f91c7c851fbfe562a1b21c18713a0528852/bundles/org.eclipse.swt/Eclipse%20SWT/gtk/org/eclipse/swt/graphics/Device.java#L752">org.eclipse.swt.graphics.Device#overrideThemeValues()</a>.
-     * Prevents radio buttons and checkboxes from being truncated on KDE when using the Breeze theme.
-     * <p>
-     * See <a href="https://github.com/dbeaver/dbeaver/issues/39248">https://github.com/dbeaver/dbeaver/issues/39248</a>
-     * <p>
-     * See <a href="https://github.com/eclipse-platform/eclipse.platform.swt/issues/1758">https://github.com/eclipse-platform/eclipse.platform.swt/issues/1758</a>
-     * <p>
-     * This fix can be removed after we migrate to Eclipse 2025-12. Hopefully, the fix included in the SWT itself will land
-     * with Eclipse.
+     * See {@code org.jkiss.dbeaver.ui.swt.linux}
      */
     private void overrideThemeValues() {
         if (!RuntimeUtils.isLinux() || System.getProperty("org.eclipse.swt.internal.gtk.noThemingFixes") != null) {
             return;
         }
-
-        String css;
-        try (InputStream is = CoreApplicationActivator.getDefault().getResource("css/swt_theming_fixes_gtk.css")) {
-            css = new String(is.readAllBytes(), StandardCharsets.UTF_8);
-        } catch (IOException e) {
-            log.debug("SWT Warning: Override of theme values failed. Reason: unable to load SWT theming fixes", e);
-            return;
-        }
-
-        long provider = GTK.gtk_css_provider_new();
-
-        if (GTK.GTK4) {
-            long display = GDK.gdk_display_get_default();
-            if (display == 0 || provider == 0) {
-                log.debug("SWT Warning: Override of theme values failed. Reason: could not acquire display or provider.");
-                return;
-            }
-            GTK4.gtk_style_context_add_provider_for_display(display, provider, GTK.GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
-        } else {
-            long screen = GDK.gdk_screen_get_default();
-            if (screen == 0 || provider == 0) {
-                log.debug("SWT Warning: Override of theme values failed. Reason: could not acquire screen or provider.");
-                return;
-            }
-            GTK3.gtk_style_context_add_provider_for_screen(screen, provider, GTK.GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
-        }
-
-        if (GTK.GTK4) {
-            GTK4.gtk_css_provider_load_from_data(provider, Converter.wcsToMbcs(css, true), -1);
-        } else {
-            GTK3.gtk_css_provider_load_from_data(provider, Converter.wcsToMbcs(css, true), -1, null);
+        try {
+            BeanUtils.invokeStaticMethod(
+                Class.forName("org.eclipse.swt.GtkCssHelper"),
+                "overrideThemeValues",
+                new Class[] {},
+                new Object[] {}
+            );
+        } catch (Throwable e) {
+            log.error("Error overriding theme values", e);
         }
     }
 
