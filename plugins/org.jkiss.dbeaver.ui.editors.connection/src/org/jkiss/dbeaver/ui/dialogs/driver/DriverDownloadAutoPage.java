@@ -25,6 +25,7 @@ import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.forms.events.ExpansionAdapter;
 import org.eclipse.ui.forms.events.ExpansionEvent;
@@ -55,6 +56,7 @@ import org.jkiss.utils.CommonUtils;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
+import java.util.Objects;
 import javax.net.ssl.SSLHandshakeException;
 
 class DriverDownloadAutoPage extends DriverDownloadPage {
@@ -73,20 +75,28 @@ class DriverDownloadAutoPage extends DriverDownloadPage {
         final DriverDownloadWizard wizard = getWizard();
         final DBPDriver driver = wizard.getDriver();
 
+        // Create a dedicated container for layout
+        Composite container = new Composite(parent, SWT.NONE);
+        container.setLayout(new GridLayout(1, false));
+        container.setLayoutData(new GridData(GridData.FILL_BOTH));
+
         UIUtils.resizeShell(parent.getShell());
 
         setMessage(NLS.bind(UIConnectionMessages.dialog_driver_download_auto_page_download_specific_driver_files, driver.getFullName()));
-        initializeDialogUnits(parent);
+        initializeDialogUnits(container);
 
-        ExpandableComposite expander = createExpander(parent);
+        setDescriptionLabel(container); // Add label to container
 
-        Control advancedSettings = createAdvancedSettings(expander);
+        ExpandableComposite expander = setExpander(container); // Add expander to container
+        expander.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        Control advancedSettings = setDetails(expander);
         expander.setClient(advancedSettings);
+        expander.pack();
 
-        setControl(parent);
+        setControl(container); // Set container as control
     }
 
-    private ExpandableComposite createExpander(@NotNull Composite parent) {
+    private ExpandableComposite setExpander(@NotNull Composite parent) {
         ExpandableComposite expander = UIUtils.createExpandableCompositeWithSeparator(parent, SWT.NONE, ExpandableComposite.TWISTIE);
         expander.addExpansionListener(new ExpansionAdapter() {
             @Override
@@ -94,11 +104,20 @@ class DriverDownloadAutoPage extends DriverDownloadPage {
                 UIUtils.resizeShell(parent.getShell());
             }
         });
-        expander.setText(UIConnectionMessages.dialog_driver_download_auto_page_advanced_settings);
+        expander.setText(UIConnectionMessages.dialog_driver_download_auto_page_show_details);
         return expander;
     }
 
-    private Composite createAdvancedSettings(@NotNull Composite parent) {
+    private void setDescriptionLabel(@NotNull Composite parent) {
+        final DBPDriver driver = getWizard().getDriver();
+        String driverDescription = Objects.requireNonNullElse(driver.getDescription(), driver.getFullName());
+
+        Label descriptionLabel = new Label(parent, SWT.WRAP);
+        descriptionLabel.setText(NLS.bind(UIConnectionMessages.dialog_driver_download_auto_page_driver_description, driverDescription));
+        descriptionLabel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+    }
+
+    private Composite setDetails(@NotNull Composite parent) {
         Composite composite = UIUtils.createPlaceholder(parent, 1);
         composite.setLayoutData(new GridData(GridData.FILL_BOTH));
         final DriverDownloadWizard wizard = getWizard();
