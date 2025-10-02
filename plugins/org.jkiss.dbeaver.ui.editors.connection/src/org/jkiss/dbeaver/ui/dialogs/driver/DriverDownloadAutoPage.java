@@ -25,7 +25,6 @@ import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.forms.events.ExpansionAdapter;
 import org.eclipse.ui.forms.events.ExpansionEvent;
@@ -75,11 +74,8 @@ class DriverDownloadAutoPage extends DriverDownloadPage {
         final DriverDownloadWizard wizard = getWizard();
         final DBPDriver driver = wizard.getDriver();
 
-        Composite container = new Composite(parent, SWT.NONE);
-        container.setLayout(new GridLayout(1, false));
-        container.setLayoutData(new GridData(SWT.BEGINNING, SWT.CENTER, false, false));
-
-        UIUtils.resizeShell(parent.getShell());
+        Composite container = UIUtils.createComposite(parent, 1);
+        container.setLayoutData(new GridData(SWT.FILL, SWT.TOP, false, false));
 
         setMessage(NLS.bind(UIConnectionMessages.dialog_driver_download_auto_page_download_specific_driver_files, driver.getFullName()));
         initializeDialogUnits(container);
@@ -91,6 +87,8 @@ class DriverDownloadAutoPage extends DriverDownloadPage {
         expander.setClient(advancedSettings);
 
         setControl(container);
+
+        UIUtils.resizeShell(parent.getShell());
     }
 
     private ExpandableComposite setExpander(@NotNull Composite parent) {
@@ -112,7 +110,7 @@ class DriverDownloadAutoPage extends DriverDownloadPage {
         UIUtils.createInfoLabel(
             parent,
             NLS.bind(UIConnectionMessages.dialog_driver_download_auto_page_driver_description, driverDescription)
-        ).setLayoutData(new GridData(SWT.BEGINNING, SWT.CENTER, false, false));
+        );
     }
 
     private Composite setDetails(@NotNull Composite parent) {
