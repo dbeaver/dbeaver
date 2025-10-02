@@ -17,7 +17,6 @@
 package org.jkiss.dbeaver.ui.dialogs.driver;
 
 import org.eclipse.jface.dialogs.IDialogConstants;
-import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.wizard.WizardDialog;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
@@ -33,7 +32,7 @@ import org.jkiss.dbeaver.ui.internal.UIConnectionMessages;
  */
 public class DriverDownloadDialog extends WizardDialog
 {
-    private static final String DIALOG_ID = "DBeaver.DriverDownloadDialog";//$NON-NLS-1$
+
     public static final int EDIT_DRIVER_BUTTON_ID = 2000;
 
     private boolean doDownload = false;
@@ -45,11 +44,6 @@ public class DriverDownloadDialog extends WizardDialog
         addPageChangedListener(event -> UIUtils.asyncExec(() -> getWizard().pageActivated(event.getSelectedPage())));
     }
 
-    @Override
-    protected IDialogSettings getDialogBoundsSettings()
-    {
-        return UIUtils.getDialogSettings(DIALOG_ID);
-    }
 
     DBPDriver getDriver() {
         return getWizard().getDriver();

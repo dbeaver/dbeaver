@@ -91,7 +91,6 @@ class DriverDownloadAutoPage extends DriverDownloadPage {
         expander.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         Control advancedSettings = setDetails(expander);
         expander.setClient(advancedSettings);
-        expander.pack();
 
         setControl(container); // Set container as control
     }
