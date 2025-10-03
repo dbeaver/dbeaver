@@ -102,8 +102,7 @@ public class ConnectionPageGeneral extends ConnectionWizardPage implements Navig
     private final List<FilterInfo> filters = new ArrayList<>();
     private Group filtersGroup;
 
-    ConnectionPageGeneral(ConnectionWizard wizard)
-    {
+    ConnectionPageGeneral(ConnectionWizard wizard) {
         super(PAGE_NAME);
         this.wizard = wizard;
         setTitle(CoreMessages.dialog_connection_edit_wizard_general);
@@ -115,8 +114,7 @@ public class ConnectionPageGeneral extends ConnectionWizardPage implements Navig
         filters.add(new FilterInfo(DBSEntityAttribute.class, CoreMessages.dialog_connection_wizard_final_filter_attributes));
     }
 
-    ConnectionPageGeneral(ConnectionWizard wizard, DataSourceDescriptor dataSourceDescriptor)
-    {
+    ConnectionPageGeneral(ConnectionWizard wizard, DataSourceDescriptor dataSourceDescriptor) {
         this(wizard);
         this.dataSourceDescriptor = dataSourceDescriptor;
         this.accessRestrictions = dataSourceDescriptor.getModifyPermission();
@@ -146,8 +144,7 @@ public class ConnectionPageGeneral extends ConnectionWizardPage implements Navig
     }
 
     @Override
-    public void activatePage()
-    {
+    public void activatePage() {
         if (this.navigatorSettings == null) {
             this.navigatorSettings = new DataSourceNavigatorSettings(getWizard().getSelectedNavigatorSettings());
         }
@@ -361,7 +358,9 @@ public class ConnectionPageGeneral extends ConnectionWizardPage implements Navig
                         if (!connectionTypeCombo.getItems().contains(curConType)) {
                             curConType = connectionTypeCombo.getItems().getFirst();
                         }
-                        setConnectionType(connectionTypeCombo, curConType);
+                        if (curConType != null) {
+                            setConnectionType(connectionTypeCombo, curConType);
+                        }
                         getWizard().firePropertyChangeEvent(
                             ConnectionWizard.PROP_CONNECTION_TYPE,
                             curConType,
@@ -608,13 +607,16 @@ public class ConnectionPageGeneral extends ConnectionWizardPage implements Navig
     }
 
     public static void setConnectionType(@NotNull CSmartCombo<DBPConnectionType> combo, @NotNull DBPConnectionType connectionType) {
-        for (int i = 0; i < combo.getItemCount(); i++) {
-            final DBPConnectionType item = combo.getItem(i);
-            if (item.getId().equals(connectionType.getId())) {
-                combo.select(i);
-                return;
+        // Run in async to set custom background in dark theme
+        UIUtils.asyncExec(() -> {
+            for (int i = 0; i < combo.getItemCount(); i++) {
+                final DBPConnectionType item = combo.getItem(i);
+                if (item.getId().equals(connectionType.getId())) {
+                    combo.select(i);
+                    return;
+                }
             }
-        }
+        });
     }
 
     public static void loadConnectionTypes(CSmartCombo <DBPConnectionType> connectionTypeCombo) {
@@ -631,12 +633,9 @@ public class ConnectionPageGeneral extends ConnectionWizardPage implements Navig
     }
 
     @Override
-    public void saveSettings(DBPDataSourceContainer dataSource) {
+    public void saveSettings(@NotNull DBPDataSourceContainer dataSource) {
         if (dataSourceDescriptor != null && !activated) {
             // No changes anyway
-            return;
-        }
-        if (dataSource == null) {
             return;
         }
         final DBPConnectionConfiguration confConfig = dataSource.getConnectionConfiguration();
@@ -691,7 +690,7 @@ public class ConnectionPageGeneral extends ConnectionWizardPage implements Navig
         }
     }
 
-    public void setDataSourceFolder(DBPDataSourceFolder dataSourceFolder) {
+    public void setDataSourceFolder(@Nullable DBPDataSourceFolder dataSourceFolder) {
         this.curDataSourceFolder = dataSourceFolder;
     }
 
