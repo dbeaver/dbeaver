@@ -82,24 +82,29 @@ class DriverDownloadAutoPage extends DriverDownloadPage {
 
         setDescriptionLabel(container);
         setExpander(container);
-        setControl(container);
+        setControl(parent);
     }
 
     private ExpandableComposite setExpander(@NotNull Composite parent) {
-        ExpandableComposite expander = UIUtils.createExpandableCompositeWithSeparator(parent, SWT.NONE, ExpandableComposite.TWISTIE);
+        ExpandableComposite expander = UIUtils.createExpandableCompositeWithSeparator(
+            parent,
+            SWT.NONE,
+            ExpandableComposite.TWISTIE | ExpandableComposite.COMPACT
+        );
+
         Composite details = setDetails(expander);
+
         expander.addExpansionListener(new ExpansionAdapter() {
             public void expansionStateChanged(ExpansionEvent e) {
-                if (e.getState()) {
-                    expander.setClient(details);
-                    UIUtils.resizeShell(parent.getShell());
-                }
+                parent.getShell().pack(true);
+                UIUtils.resizeShell(parent.getShell());
             }
         });
         expander.setText(UIConnectionMessages.dialog_driver_download_auto_page_show_details);
         expander.setLayoutData(
             GridDataFactory.fillDefaults().indent(0, 10).create()
         );
+        expander.setClient(details);
         return expander;
     }
 
