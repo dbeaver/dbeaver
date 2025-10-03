@@ -1415,8 +1415,10 @@ public class ResultSetViewer extends Viewer
         CTabItem activePanelTab = panelFolder.getSelection();
 
         if (!show) {
+            boolean panelHadFocus = activePanelTab != null && !activePanelTab.getControl().isDisposed()
+                && UIUtils.hasFocus(activePanelTab.getControl());
             viewerSash.setMaximizedControl(viewerSash.getChildren()[0]);
-            if (activePanelTab != null && !activePanelTab.getControl().isDisposed() && UIUtils.hasFocus(activePanelTab.getControl())) {
+            if (panelHadFocus) {
                 // Set focus to presentation
                 activePresentation.getControl().setFocus();
             }
