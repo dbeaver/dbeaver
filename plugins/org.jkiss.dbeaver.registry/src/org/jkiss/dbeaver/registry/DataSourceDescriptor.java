@@ -37,7 +37,6 @@ import org.jkiss.dbeaver.model.data.DBDDataFormatterProfile;
 import org.jkiss.dbeaver.model.data.DBDFormatSettings;
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
 import org.jkiss.dbeaver.model.data.json.JSONUtils;
-import org.jkiss.dbeaver.model.dpi.*;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.impl.SimpleExclusiveLock;
 import org.jkiss.dbeaver.model.impl.data.DefaultValueHandler;
@@ -158,7 +157,6 @@ public class DataSourceDescriptor
 
     private boolean temporary;
     private boolean hidden;
-    private boolean dpiEnabled;
 
     @NotNull
     private DataSourceNavigatorSettings navigatorSettings;
@@ -184,8 +182,6 @@ public class DataSourceDescriptor
     private transient final List<DBRProcessDescriptor> childProcesses = new ArrayList<>();
     private transient final List<DBPDataSourceTask> users = new ArrayList<>();
     private transient String clientApplicationName;
-    // DPI controller
-    private transient DPIProcessController dpiController;
 
     private transient final DBPExclusiveResource exclusiveLock = new SimpleExclusiveLock();
 
@@ -1049,10 +1045,9 @@ public class DataSourceDescriptor
         connecting = true;
         try {
             getDriver().validateFilesPresence(monitor, this);
-            if (isDetachedProcessEnabled() && !detachedProcess) {
-                // Open detached connection
-                succeeded = openDetachedConnection(monitor);
-            }
+
+            this.dataSource = openConnectionDetached(monitor, detachedProcess);
+            succeeded = this.dataSource != null;
             if (!succeeded) {
                 if (!detachedProcess) {
                     updateDataSourceObject(succeeded, DBPEvent.Action.BEFORE_CONNECT);
@@ -1079,66 +1074,9 @@ public class DataSourceDescriptor
         }
     }
 
-    public boolean isDetachedProcessEnabled() {
-        return dpiEnabled;
-    }
-
-    public void setDetachedProcessEnabled(boolean enabled) {
-        dpiEnabled = enabled;
-    }
-
-
-    private boolean openDetachedConnection(@NotNull DBRProgressMonitor monitor) {
-        try {
-            DPIProvider provider = GeneralUtils.adapt(this, DPIProvider.class);
-            if (provider == null) {
-                throw new DBException("DPI provider not available");
-            }
-            dpiController = provider.detachDatabaseProcess(monitor, this);
-            Map<String, String> credentials = new LinkedHashMap<>();
-            DPIController dpiClient = dpiController.getClient();
-            DPISession session = dpiClient.openSession();
-            if (session == null) {
-                throw new DBException("No session");
-            }
-            log.debug("New DPI session: " + session.getSessionId());
-            if (!(getRegistry() instanceof DataSourcePersistentRegistry persistentRegistry)) {
-                throw new DBException("Illegal registry " + getRegistry().getClass());
-            }
-            DataSourceConfigurationManagerBuffer buffer = new DataSourceConfigurationManagerBuffer();
-            persistentRegistry.saveConfigurationToManager(monitor,
-                buffer,
-                dsc -> dsc.equals(this)
-            );
-
-            String[] driverLibraries = getDriver().getDriverLibraries()
-                .stream()
-                .map(DBPDriverLibrary::getLocalFile)
-                .filter(Objects::nonNull)
-                .map(path -> path.toAbsolutePath().toString())
-                .toArray(String[]::new);
-            this.dataSource = dpiClient.openDataSource(
-                new DPIDataSourceParameters(
-                    session.getSessionId(),
-                    buffer.getStringData(),
-                    driverLibraries,
-                    credentials
-                )
-            );
-            log.debug("Opened data source: " + dataSource);
-        } catch (Exception e) {
-            log.error("Error opening DPI process", e);
-            closeDetachedProcess();
-            return false;
-        }
-        return true;
-    }
-
-    private void closeDetachedProcess() {
-        if (dpiController != null) {
-            dpiController.close();
-            dpiController = null;
-        }
+    @Nullable
+    protected DBPDataSource openConnectionDetached(@NotNull DBRProgressMonitor monitor, boolean detachedProcess) {
+        return null;
     }
 
     private boolean connect0(DBRProgressMonitor monitor, boolean initialize, boolean reflect) throws DBException {
@@ -1507,10 +1445,7 @@ public class DataSourceDescriptor
         connecting = true;
         releaseDataSourceUsers(monitor);
         try {
-            if (dpiController != null) {
-                closeDetachedProcess();
-                return true;
-            }
+            closeConnectionDetached();
             monitor.beginTask("Disconnect from '" + getName() + "'", 5 + dataSource.getAvailableInstances().size());
 
             processEvents(monitor, DBPConnectionEventType.BEFORE_DISCONNECT);
@@ -1588,6 +1523,10 @@ public class DataSourceDescriptor
             connecting = false;
             log.debug("Disconnected (" + getId() + ")");
         }
+    }
+
+    protected boolean closeConnectionDetached() {
+        return false;
     }
 
     private void releaseDataSourceUsers(DBRProgressMonitor monitor) {
@@ -1940,8 +1879,6 @@ public class DataSourceDescriptor
         this.connectionReadOnly = descriptor.connectionReadOnly;
         this.forceUseSingleConnection = descriptor.forceUseSingleConnection;
 
-        this.dpiEnabled = descriptor.dpiEnabled;
-
         this.navigatorSettings = new DataSourceNavigatorSettings(descriptor.getNavigatorSettings());
     }
 
@@ -1977,7 +1914,6 @@ public class DataSourceDescriptor
                 CommonUtils.equalObjects(this.originalDriver, source.originalDriver) &&
                 CommonUtils.equalObjects(this.driverSubstitution, source.driverSubstitution) &&
                 CommonUtils.equalObjects(this.connectionInfo, source.connectionInfo) &&
-                this.dpiEnabled == source.dpiEnabled &&
                 CommonUtils.equalObjects(this.filterMap, source.filterMap) &&
                 CommonUtils.equalObjects(this.formatterProfile, source.formatterProfile) &&
                 CommonUtils.equalObjects(this.clientHome, source.clientHome) &&

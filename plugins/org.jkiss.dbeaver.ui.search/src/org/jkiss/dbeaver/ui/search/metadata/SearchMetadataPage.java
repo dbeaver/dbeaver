@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -61,6 +61,8 @@ public class SearchMetadataPage extends AbstractSearchPage {
     private static final String PROP_SHOW_CONNECTED = "search.metadata.show-connected-only"; //$NON-NLS-1$
     private static final String PROP_SEARCH_IN_COMMENTS = "search.metadata.search-in-comments"; //$NON-NLS-1$
     private static final String PROP_SEARCH_IN_DEFINITIONS = "search.metadata.search-in-definitions"; //$NON-NLS-1$
+
+    private static final boolean CONNECT_ON_CLICK = true;
 
     private Table typesTable;
     private Combo searchText;
@@ -164,7 +166,7 @@ public class SearchMetadataPage extends AbstractSearchPage {
                     Object object = structSel.isEmpty() ? null : structSel.getFirstElement();
                     if (object instanceof DBNNode) {
                         for (DBNNode node = (DBNNode)object; node != null; node = node.getParentNode()) {
-                            if (node instanceof DBNDataSource) {
+                            if (node instanceof DBNDataSource && CONNECT_ON_CLICK) {
                                 DBNDataSource dsNode = (DBNDataSource) node;
                                 try {
                                     dsNode.initializeNode(null, status -> {

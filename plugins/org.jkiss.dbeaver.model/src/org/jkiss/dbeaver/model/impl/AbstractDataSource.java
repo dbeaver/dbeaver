@@ -97,4 +97,9 @@ public abstract class AbstractDataSource implements DBPDataSource, DBSObject {
     public void removeContextAttribute(String attributeName) {
         contextAttributes.remove(attributeName);
     }
+
+    @Override
+    public String toString() {
+        return "datasource id=" + getContainer().getId();
+    }
 }
