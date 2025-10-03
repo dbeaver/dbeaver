@@ -22,7 +22,6 @@ import org.eclipse.osgi.internal.framework.EquinoxContainer;
 import org.eclipse.osgi.internal.hookregistry.ClassLoaderHook;
 import org.eclipse.osgi.internal.hookregistry.HookRegistry;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
-import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPMessageType;
@@ -35,7 +34,6 @@ import org.osgi.framework.BundleContext;
 import org.osgi.framework.BundleEvent;
 import org.osgi.framework.hooks.bundle.EventHook;
 
-import java.io.InputStream;
 import java.lang.reflect.Field;
 import java.util.*;
 
@@ -134,10 +132,6 @@ public class CoreApplicationActivator extends AbstractUIPlugin {
     public void stop(BundleContext context) throws Exception {
         plugin = null;
         super.stop(context);
-    }
-
-    public InputStream getResource(@NotNull String name) {
-        return getClass().getClassLoader().getResourceAsStream(name);
     }
 
     public static CoreApplicationActivator getDefault() {
