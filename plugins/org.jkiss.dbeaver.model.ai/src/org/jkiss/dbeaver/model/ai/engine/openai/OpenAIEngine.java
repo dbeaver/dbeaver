@@ -47,7 +47,7 @@ public class OpenAIEngine<PROPS extends OpenAIBaseProperties> extends BaseComple
         }
     };
 
-    public OpenAIEngine(@NotNull PROPS properties) throws DBException {
+    public OpenAIEngine(@NotNull PROPS properties) {
         super(properties);
     }
 

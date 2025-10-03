@@ -47,7 +47,7 @@ public class CopilotCompletionEngine extends BaseCompletionEngine<CopilotPropert
     };
     private CopilotSessionToken sessionToken;
 
-    public CopilotCompletionEngine(@NotNull CopilotProperties properties) throws DBException {
+    public CopilotCompletionEngine(@NotNull CopilotProperties properties) {
         super(properties);
     }
 
