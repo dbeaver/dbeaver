@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.ui.dialogs.driver;
 
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.jface.dialogs.IDialogConstants;
+import org.eclipse.jface.layout.GridDataFactory;
 import org.eclipse.jface.wizard.WizardDialog;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
@@ -74,33 +75,31 @@ class DriverDownloadAutoPage extends DriverDownloadPage {
         final DriverDownloadWizard wizard = getWizard();
         final DBPDriver driver = wizard.getDriver();
 
-        Composite container = UIUtils.createComposite(parent, 1);
-        container.setLayoutData(new GridData(SWT.FILL, SWT.TOP, false, false));
+        Composite container = UIUtils.createPlaceholder(parent, 1);
 
         setMessage(NLS.bind(UIConnectionMessages.dialog_driver_download_auto_page_download_specific_driver_files, driver.getFullName()));
         initializeDialogUnits(container);
 
         setDescriptionLabel(container);
-
-        ExpandableComposite expander = setExpander(container);
-        Control advancedSettings = setDetails(expander);
-        expander.setClient(advancedSettings);
-
+        setExpander(container);
         setControl(container);
-
-        UIUtils.resizeShell(parent.getShell());
     }
 
     private ExpandableComposite setExpander(@NotNull Composite parent) {
         ExpandableComposite expander = UIUtils.createExpandableCompositeWithSeparator(parent, SWT.NONE, ExpandableComposite.TWISTIE);
+        Composite details = setDetails(expander);
         expander.addExpansionListener(new ExpansionAdapter() {
-            @Override
             public void expansionStateChanged(ExpansionEvent e) {
-                UIUtils.resizeShell(parent.getShell());
+                if (e.getState()) {
+                    expander.setClient(details);
+                    UIUtils.resizeShell(parent.getShell());
+                }
             }
         });
         expander.setText(UIConnectionMessages.dialog_driver_download_auto_page_show_details);
-        expander.setLayoutData(new GridData(SWT.BEGINNING, SWT.CENTER, false, false));
+        expander.setLayoutData(
+            GridDataFactory.fillDefaults().indent(0, 10).create()
+        );
         return expander;
     }
 
@@ -115,9 +114,10 @@ class DriverDownloadAutoPage extends DriverDownloadPage {
 
     private Composite setDetails(@NotNull Composite parent) {
         Composite composite = UIUtils.createPlaceholder(parent, 1);
-        composite.setLayoutData(new GridData(SWT.BEGINNING, SWT.CENTER, false, false));
-        final DriverDownloadWizard wizard = getWizard();
-        final DBPDriver driver = wizard.getDriver();
+        DriverDownloadWizard wizard = getWizard();
+        DBPDriver driver = wizard.getDriver();
+
+        int verticalIndentFirstRow = 10;
 
         if (!wizard.isForceDownload()) {
             Composite infoGroup = UIUtils.createPlaceholder(composite, 2, 5);
@@ -127,7 +127,9 @@ class DriverDownloadAutoPage extends DriverDownloadPage {
                 UIConnectionMessages.dialog_driver_download_auto_page_driver_file_missing_text,
                 driver.getFullName()
             ));
-            infoText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+            GridData infoGridData = new GridData(GridData.FILL_HORIZONTAL);
+            infoGridData.verticalIndent = verticalIndentFirstRow;
+            infoText.setLayoutData(infoGridData);
 
             final Button forceCheckbox = UIUtils.createCheckbox(
                 infoGroup,
@@ -135,7 +137,9 @@ class DriverDownloadAutoPage extends DriverDownloadPage {
                 wizard.isForceDownload()
             );
             forceCheckbox.setToolTipText(UIConnectionMessages.dialog_driver_download_auto_page_force_download_tooltip);
-            forceCheckbox.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END | GridData.VERTICAL_ALIGN_BEGINNING));
+            GridData forceCheckboxGridData = new GridData(GridData.HORIZONTAL_ALIGN_END | GridData.VERTICAL_ALIGN_BEGINNING);
+            forceCheckboxGridData.verticalIndent = verticalIndentFirstRow;
+            forceCheckbox.setLayoutData(forceCheckboxGridData);
             forceCheckbox.addSelectionListener(new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
