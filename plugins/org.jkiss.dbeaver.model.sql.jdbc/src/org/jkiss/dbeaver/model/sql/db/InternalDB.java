@@ -85,7 +85,7 @@ public abstract class InternalDB<T extends InternalDatabaseConfig> {
     public synchronized Connection getDatabaseConnection() throws DBCException {
         Connection connection = tryGetDatabaseConnection();
         if (connection == null) {
-            throw new DBCException("QMDB database not initialized");
+            throw new DBCException("Internal database not initialized (" + databaseConfig.getUrl() + ")");
         }
         return connection;
     }

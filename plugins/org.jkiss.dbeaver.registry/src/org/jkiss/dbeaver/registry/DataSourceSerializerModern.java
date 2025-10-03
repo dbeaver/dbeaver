@@ -613,31 +613,7 @@ public class DataSourceSerializerModern<T extends DataSourceDescriptor> implemen
                     dataSource.getConnectionConfiguration().setHandlers(Collections.emptyList());
                     dataSource.clearFilters();
                 }
-                dataSource.setName(JSONUtils.getString(conObject, RegistryConstants.ATTR_NAME));
-                dataSource.setDescription(JSONUtils.getString(conObject, RegistryConstants.TAG_DESCRIPTION));
-                dataSource.forceSetSharedCredentials(JSONUtils.getBoolean(conObject,
-                    RegistryConstants.ATTR_SHARED_CREDENTIALS));
-                dataSource.setSavePassword(JSONUtils.getBoolean(conObject, RegistryConstants.ATTR_SAVE_PASSWORD));
-                dataSource.setDriverSubstitution(DataSourceProviderRegistry.getInstance()
-                    .getDriverSubstitution(CommonUtils.notEmpty(JSONUtils.getString(conObject, ATTR_DRIVER_SUBSTITUTION))));
-                dataSource.setDetachedProcessEnabled(JSONUtils.getBoolean(conObject, ATTR_DPI_ENABLED));
-
-                DataSourceNavigatorSettings navSettings = dataSource.getNavigatorSettings();
-                navSettings.setShowSystemObjects(JSONUtils.getBoolean(conObject,
-                    DataSourceSerializerModern.ATTR_NAVIGATOR_SHOW_SYSTEM_OBJECTS));
-                navSettings.setShowUtilityObjects(JSONUtils.getBoolean(conObject,
-                    DataSourceSerializerModern.ATTR_NAVIGATOR_SHOW_UTIL_OBJECTS));
-                navSettings.setShowOnlyEntities(JSONUtils.getBoolean(conObject,
-                    DataSourceSerializerModern.ATTR_NAVIGATOR_SHOW_ONLY_ENTITIES));
-                navSettings.setHideFolders(JSONUtils.getBoolean(conObject, DataSourceSerializerModern.ATTR_NAVIGATOR_HIDE_FOLDERS));
-                navSettings.setHideSchemas(JSONUtils.getBoolean(conObject, DataSourceSerializerModern.ATTR_NAVIGATOR_HIDE_SCHEMAS));
-                navSettings.setHideVirtualModel(JSONUtils.getBoolean(conObject, DataSourceSerializerModern.ATTR_NAVIGATOR_HIDE_VIRTUAL));
-                navSettings.setMergeEntities(JSONUtils.getBoolean(conObject, DataSourceSerializerModern.ATTR_NAVIGATOR_MERGE_ENTITIES));
-
-                dataSource.setConnectionReadOnly(JSONUtils.getBoolean(conObject, RegistryConstants.ATTR_READ_ONLY));
-                final String folderPath = JSONUtils.getString(conObject, RegistryConstants.ATTR_FOLDER);
-                dataSource.setFolder(folderPath == null ? null : registry.findFolderByPath(folderPath, true, parseResults));
-                dataSource.setLockPasswordHash(CommonUtils.toString(conObject.get(RegistryConstants.ATTR_LOCK_PASSWORD)));
+                deserializeDataSource(parseResults, dataSource, conObject);
 
                 // Connection settings
                 {
@@ -843,6 +819,37 @@ public class DataSourceSerializerModern<T extends DataSourceDescriptor> implemen
         }
         return connectionConfigurationChanged;
 
+    }
+
+    protected void deserializeDataSource(@NotNull DataSourceParseResults parseResults, T dataSource, Map<String, Object> conObject) {
+        dataSource.setName(JSONUtils.getString(conObject, RegistryConstants.ATTR_NAME));
+        dataSource.setDescription(JSONUtils.getString(conObject, RegistryConstants.TAG_DESCRIPTION));
+        dataSource.forceSetSharedCredentials(JSONUtils.getBoolean(
+            conObject,
+            RegistryConstants.ATTR_SHARED_CREDENTIALS));
+        dataSource.setSavePassword(JSONUtils.getBoolean(conObject, RegistryConstants.ATTR_SAVE_PASSWORD));
+        dataSource.setDriverSubstitution(DataSourceProviderRegistry.getInstance()
+            .getDriverSubstitution(CommonUtils.notEmpty(JSONUtils.getString(conObject, ATTR_DRIVER_SUBSTITUTION))));
+
+        DataSourceNavigatorSettings navSettings = dataSource.getNavigatorSettings();
+        navSettings.setShowSystemObjects(JSONUtils.getBoolean(
+            conObject,
+            DataSourceSerializerModern.ATTR_NAVIGATOR_SHOW_SYSTEM_OBJECTS));
+        navSettings.setShowUtilityObjects(JSONUtils.getBoolean(
+            conObject,
+            DataSourceSerializerModern.ATTR_NAVIGATOR_SHOW_UTIL_OBJECTS));
+        navSettings.setShowOnlyEntities(JSONUtils.getBoolean(
+            conObject,
+            DataSourceSerializerModern.ATTR_NAVIGATOR_SHOW_ONLY_ENTITIES));
+        navSettings.setHideFolders(JSONUtils.getBoolean(conObject, DataSourceSerializerModern.ATTR_NAVIGATOR_HIDE_FOLDERS));
+        navSettings.setHideSchemas(JSONUtils.getBoolean(conObject, DataSourceSerializerModern.ATTR_NAVIGATOR_HIDE_SCHEMAS));
+        navSettings.setHideVirtualModel(JSONUtils.getBoolean(conObject, DataSourceSerializerModern.ATTR_NAVIGATOR_HIDE_VIRTUAL));
+        navSettings.setMergeEntities(JSONUtils.getBoolean(conObject, DataSourceSerializerModern.ATTR_NAVIGATOR_MERGE_ENTITIES));
+
+        dataSource.setConnectionReadOnly(JSONUtils.getBoolean(conObject, RegistryConstants.ATTR_READ_ONLY));
+        final String folderPath = JSONUtils.getString(conObject, RegistryConstants.ATTR_FOLDER);
+        dataSource.setFolder(folderPath == null ? null : registry.findFolderByPath(folderPath, true, parseResults));
+        dataSource.setLockPasswordHash(CommonUtils.toString(conObject.get(RegistryConstants.ATTR_LOCK_PASSWORD)));
     }
 
     /**
@@ -1117,7 +1124,6 @@ public class DataSourceSerializerModern<T extends DataSourceDescriptor> implemen
         if (!CommonUtils.isEmpty(lockPasswordHash)) {
             JSONUtils.field(json, RegistryConstants.ATTR_LOCK_PASSWORD, lockPasswordHash);
         }
-        if (dataSource.isDetachedProcessEnabled()) JSONUtils.field(json, ATTR_DPI_ENABLED, true);
 
         if (dataSource.hasSharedVirtualModel()) {
             JSONUtils.field(json, "virtual-model-id", dataSource.getVirtualModel().getId());
