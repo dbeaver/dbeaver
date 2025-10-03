@@ -88,6 +88,7 @@ public enum PostgrePrivilegeType implements DBAPrivilegeType {
         return false;
     }
 
+    @NotNull
     @Override
     public String getName() {
         return name();

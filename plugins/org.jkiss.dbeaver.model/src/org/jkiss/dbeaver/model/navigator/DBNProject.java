@@ -80,27 +80,31 @@ public class DBNProject extends DBNNode implements DBNNodeWithCache, DBNNodeExte
         return project.getId();
     }
 
+    @NotNull
     @Override
     public String getNodeDisplayName() {
         return project.getDisplayName();
     }
 
+    @Nullable
     @Override
     public String getNodeDescription() {
         return null;
     }
 
+    @NotNull
     @Override
-    public String getLocalizedName(String locale) {
+    public String getLocalizedName(@NotNull String locale) {
         return getNodeDisplayName();
     }
 
+    @NotNull
     @Override
     public String getNodeType() {
         return "project";
     }
 
-    @NotNull
+    @Nullable
     @Override
     public DBPImage getNodeIcon() {
         DBPImage image = DBIcon.PROJECT;
@@ -119,7 +123,7 @@ public class DBNProject extends DBNNode implements DBNNodeWithCache, DBNNodeExte
     }
 
     @Override
-    public <T> T getAdapter(Class<T> adapter) {
+    public <T> T getAdapter(@NotNull Class<T> adapter) {
         if (adapter == DBNProject.class) {
             return adapter.cast(this);
         }
@@ -132,6 +136,7 @@ public class DBNProject extends DBNNode implements DBNNodeWithCache, DBNNodeExte
         return project;
     }
 
+    @Nullable
     @Override
     public Throwable getLastLoadError() {
         return getProject().getDataSourceRegistry().getLastError();
@@ -143,7 +148,7 @@ public class DBNProject extends DBNNode implements DBNNodeWithCache, DBNNodeExte
     }
 
     @Override
-    public void rename(DBRProgressMonitor monitor, String newName) throws DBException {
+    public void rename(@NotNull DBRProgressMonitor monitor, @NotNull String newName) throws DBException {
         throw new DBCFeatureNotSupportedException("Project rename is not supported");
     }
 
@@ -180,8 +185,9 @@ public class DBNProject extends DBNNode implements DBNNodeWithCache, DBNNodeExte
     protected void filterChildren(List<DBNNode> children) {
     }
 
+    @Nullable
     @Override
-    public DBNNode refreshNode(DBRProgressMonitor monitor, Object source) throws DBException {
+    public DBNNode refreshNode(@NotNull DBRProgressMonitor monitor, @Nullable Object source) throws DBException {
         project.getDataSourceRegistry().refreshConfig();
         return this;
     }
@@ -264,6 +270,7 @@ public class DBNProject extends DBNNode implements DBNNodeWithCache, DBNNodeExte
         return project.getId();
     }
 
+    @NotNull
     @Deprecated
     @Override
     public String getNodeItemPath() {
@@ -280,6 +287,7 @@ public class DBNProject extends DBNNode implements DBNNodeWithCache, DBNNodeExte
         return true;
     }
 
+    @NotNull
     @Override
     public DBNNode[] getChildren(@NotNull DBRProgressMonitor monitor) throws DBException {
         if (children != null) {

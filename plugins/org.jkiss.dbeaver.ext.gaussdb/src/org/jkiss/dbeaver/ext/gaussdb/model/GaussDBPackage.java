@@ -99,6 +99,7 @@ public class GaussDBPackage implements PostgreObject, PostgreScriptObject, DBPSy
         return null;
     }
 
+    @NotNull
     @Override
     public String getName() {
         return this.name;
@@ -133,6 +134,7 @@ public class GaussDBPackage implements PostgreObject, PostgreScriptObject, DBPSy
         this.name = name;
     }
 
+    @NotNull
     @Override
     public String getObjectDefinitionText(@NotNull DBRProgressMonitor monitor, @NotNull Map<String, Object> options) throws DBException {
         if (CommonUtils.isEmpty(sourceDefinition)) {

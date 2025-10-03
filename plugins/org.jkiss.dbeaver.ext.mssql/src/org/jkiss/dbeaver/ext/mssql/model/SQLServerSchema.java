@@ -125,6 +125,7 @@ public class SQLServerSchema implements DBSSchema, DBPSaveableObject, DBPQualifi
         return database;
     }
 
+    @NotNull
     @Override
     @Property(viewable = true, editable = true, order = 1)
     public String getName() {
@@ -296,6 +297,7 @@ public class SQLServerSchema implements DBSSchema, DBPSaveableObject, DBPQualifi
         }
     }
 
+    @NotNull
     @Override
     public String getObjectDefinitionText(@NotNull DBRProgressMonitor monitor, @NotNull Map<String, Object> options) throws DBException {
         StringBuilder sql = new StringBuilder();
@@ -327,7 +329,7 @@ public class SQLServerSchema implements DBSSchema, DBPSaveableObject, DBPQualifi
     }
 
     @Override
-    public void collectObjectStatistics(DBRProgressMonitor monitor, boolean totalSizeOnly, boolean forceRefresh) throws DBException {
+    public void collectObjectStatistics(@NotNull DBRProgressMonitor monitor, boolean totalSizeOnly, boolean forceRefresh) throws DBException {
         if (hasTableStatistics && !forceRefresh) {
             return;
         }

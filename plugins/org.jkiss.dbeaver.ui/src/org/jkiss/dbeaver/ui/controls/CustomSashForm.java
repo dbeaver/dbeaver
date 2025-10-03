@@ -1,17 +1,6 @@
-/*******************************************************************************
- * Copyright (c) 2001, 2005 IBM Corporation and others.
- * All rights reserved. This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License v1.0
- * which accompanies this distribution, and is available at
- * http://www.eclipse.org/legal/epl-v10.html
- *
- * Contributors:
- *     IBM Corporation - initial API and implementation
- *     Sybase, Inc. - extended for DTP
- *******************************************************************************/
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,6 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.jkiss.dbeaver.ui.controls;
 /*
  *  CustomSashForm
@@ -736,7 +726,8 @@ public class CustomSashForm extends SashForm {
 
     protected void drawSashBorder(GC gc, SashInfo sashInfo) {
         gc.setForeground(arrowColor);
-        gc.setLineStyle(SWT.LINE_SOLID);
+        gc.setLineStyle(SWT.LINE_CUSTOM);
+        gc.setLineDash(new int[] { 2, 5 });
         Point s = sashInfo.sash.getSize();
         int[][] sashLocs = sashInfo.sashLocs;
         int lastLocIndex = sashLocs.length - 1;
@@ -748,6 +739,7 @@ public class CustomSashForm extends SashForm {
 
             gc.drawLine(0,  sashDim / 2, leftArrowPos, sashDim / 2);
             gc.drawLine(rightArrowPos,  sashDim / 2, s.x - 1, sashDim / 2);
+            gc.setLineStyle(SWT.LINE_SOLID);
             gc.drawRoundRectangle(leftArrowPos, 0, rightArrowPos - leftArrowPos, sashDim - 1, 3, 3);
         } else {
             int topArrowPos = sashLocs[0][3] - ARROW_MARGIN;
@@ -755,6 +747,7 @@ public class CustomSashForm extends SashForm {
 
             gc.drawLine(sashDim / 2, 0, sashDim / 2, topArrowPos);
             gc.drawLine(sashDim / 2, bottomArrowPos, sashDim / 2, s.y - 1);
+            gc.setLineStyle(SWT.LINE_SOLID);
             gc.drawRoundRectangle(0, topArrowPos, sashDim - 1, bottomArrowPos - topArrowPos, 3, 3);
         }
     }

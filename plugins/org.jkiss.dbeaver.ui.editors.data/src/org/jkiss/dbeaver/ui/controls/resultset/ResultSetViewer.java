@@ -1589,7 +1589,7 @@ public class ResultSetViewer extends Viewer
 
     @Nullable
     @Override
-    public <T> T getAdapter(Class<T> adapter)
+    public <T> T getAdapter(@NotNull Class<T> adapter)
     {
         if (UIUtils.isUIThread()) {
             if (UIUtils.hasFocus(filtersPanel)) {

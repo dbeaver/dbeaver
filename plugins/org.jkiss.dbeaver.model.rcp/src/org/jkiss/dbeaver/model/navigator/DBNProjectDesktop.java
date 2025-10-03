@@ -21,6 +21,7 @@ import org.eclipse.core.resources.IProjectDescription;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
@@ -54,6 +55,7 @@ public class DBNProjectDesktop extends DBNProject {
         return getProject().getEclipseProject();
     }
 
+    @Nullable
     @Override
     public String getNodeDescription() {
         IProject iProject = getEclipseProject();
@@ -71,7 +73,7 @@ public class DBNProjectDesktop extends DBNProject {
     }
 
     @Override
-    public <T> T getAdapter(Class<T> adapter) {
+    public <T> T getAdapter(@NotNull Class<T> adapter) {
         if (adapter == IResource.class) {
             return adapter.cast(getEclipseProject());
         }
@@ -79,7 +81,7 @@ public class DBNProjectDesktop extends DBNProject {
     }
 
     @Override
-    public void rename(DBRProgressMonitor monitor, String newName) throws DBException {
+    public void rename(@NotNull DBRProgressMonitor monitor, @NotNull String newName) throws DBException {
         GeneralUtils.validateResourceNameUnconditionally(newName);
 
         RCPProject project = getProject();
@@ -119,8 +121,9 @@ public class DBNProjectDesktop extends DBNProject {
         }
     }
 
+    @Nullable
     @Override
-    public DBNNode refreshNode(DBRProgressMonitor monitor, Object source) throws DBException {
+    public DBNNode refreshNode(@NotNull DBRProgressMonitor monitor, @Nullable Object source) throws DBException {
         NavigatorResources.refreshThisResource(monitor, this);
         return super.refreshNode(monitor, source);
     }

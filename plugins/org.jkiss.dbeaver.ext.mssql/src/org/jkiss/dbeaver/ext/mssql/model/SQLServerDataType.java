@@ -173,6 +173,7 @@ public class SQLServerDataType implements DBSDataType, SQLServerObject, DBPQuali
         return ((SQLServerDataSource) owner).getDefaultDatabase(new VoidProgressMonitor()); // Monitor is not significant here, so we can use Void monitor
     }
 
+    @NotNull
     @Override
     @Property(hidden = true, editable = true, updatable = true, order = -1)
     public String getObjectDefinitionText(@NotNull DBRProgressMonitor monitor, @NotNull Map<String, Object> options) throws DBCException {
@@ -295,7 +296,7 @@ public class SQLServerDataType implements DBSDataType, SQLServerObject, DBPQuali
 
     @NotNull
     @Override
-    public DBCLogicalOperator[] getSupportedOperators(DBSTypedObject attribute) {
+    public DBCLogicalOperator[] getSupportedOperators(@NotNull DBSTypedObject attribute) {
         return DBUtils.getDefaultOperators(this);
     }
 

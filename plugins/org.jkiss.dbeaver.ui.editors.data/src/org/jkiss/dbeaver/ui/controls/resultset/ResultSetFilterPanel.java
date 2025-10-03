@@ -699,7 +699,7 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
     }
 
     @Override
-    public <T> T getAdapter(Class<T> adapter) {
+    public <T> T getAdapter(@NotNull Class<T> adapter) {
         if (adapter == IUndoManager.class) {
             return adapter.cast(filtersTextViewer.getUndoManager());
         }
