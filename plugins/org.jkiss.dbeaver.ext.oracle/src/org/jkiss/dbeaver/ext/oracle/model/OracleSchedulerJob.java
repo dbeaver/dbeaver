@@ -639,6 +639,7 @@ public class OracleSchedulerJob extends OracleSchemaObject implements OracleStat
 
     }
 
+    @NotNull
     public DBSObjectState getObjectState() {
         DBSObjectState objectState;
 
@@ -661,7 +662,7 @@ public class OracleSchedulerJob extends OracleSchemaObject implements OracleStat
         return objectState;
     }
 
-    public void refreshObjectState(DBRProgressMonitor monitor) {
+    public void refreshObjectState(@NotNull DBRProgressMonitor monitor) {
         if (monitor != null) {
             monitor.beginTask("Load action for '" + this.getName() + "'...", 1);
             try (
@@ -723,6 +724,7 @@ public class OracleSchedulerJob extends OracleSchemaObject implements OracleStat
         };
     }
 
+    @NotNull
     @Override
     public String getObjectDefinitionText(@NotNull DBRProgressMonitor monitor, @NotNull Map<String, Object> options) throws DBException {
         if (CommonUtils.isEmpty(jobAction) && name.equals("NEW_SCHEDULER_JOB")) {

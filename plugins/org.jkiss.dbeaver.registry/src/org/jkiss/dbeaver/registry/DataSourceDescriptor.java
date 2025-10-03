@@ -409,7 +409,7 @@ public class DataSourceDescriptor
         return name;
     }
 
-    public void setName(String name) {
+    public void setName(@NotNull String name) {
         this.name = name;
     }
 
@@ -478,7 +478,7 @@ public class DataSourceDescriptor
     }
 
     @Override
-    public boolean hasModifyPermission(DBPDataSourcePermission permission) {
+    public boolean hasModifyPermission(@NotNull DBPDataSourcePermission permission) {
         if ((permission == DBPDataSourcePermission.PERMISSION_EDIT_DATA ||
             permission == DBPDataSourcePermission.PERMISSION_EDIT_METADATA) && connectionReadOnly) {
             return false;
@@ -490,6 +490,7 @@ public class DataSourceDescriptor
         }
     }
 
+    @NotNull
     @Override
     public List<DBPDataSourcePermission> getModifyPermission() {
         if (CommonUtils.isEmpty(this.connectionModifyRestrictions)) {
@@ -638,7 +639,7 @@ public class DataSourceDescriptor
     }
 
     @Override
-    public void setObjectFilter(Class<?> type, DBSObject parentObject, DBSObjectFilter filter) {
+    public void setObjectFilter(@NotNull Class<?> type, @Nullable DBSObject parentObject, @Nullable DBSObjectFilter filter) {
         FilterMapping filterMapping = getFilterMapping(type, parentObject, true);
         if (filterMapping != null) {
             // Update filter
@@ -704,6 +705,7 @@ public class DataSourceDescriptor
         }
     }
 
+    @Nullable
     @Override
     public DBPNativeClientLocation getClientHome() {
         if (clientHome == null && !CommonUtils.isEmpty(connectionInfo.getClientHomeId())) {
@@ -802,6 +804,7 @@ public class DataSourceDescriptor
         this.description = description;
     }
 
+    @Nullable
     public Date getConnectTime() {
         return connectTime;
     }
@@ -1030,7 +1033,7 @@ public class DataSourceDescriptor
         return lastConnectionError;
     }
 
-    public boolean connect(DBRProgressMonitor monitor, boolean initialize, boolean reflect) throws DBException {
+    public boolean connect(@NotNull DBRProgressMonitor monitor, boolean initialize, boolean reflect) throws DBException {
         if (connecting) {
             log.debug("Can't connect - connect/disconnect is in progress");
             return false;
@@ -1428,7 +1431,7 @@ public class DataSourceDescriptor
     }
 
     @Override
-    public boolean disconnect(final DBRProgressMonitor monitor) {
+    public boolean disconnect(@NotNull final DBRProgressMonitor monitor) {
         return disconnect(monitor, true);
     }
 
@@ -1573,7 +1576,7 @@ public class DataSourceDescriptor
     }
 
     @Override
-    public boolean reconnect(final DBRProgressMonitor monitor)
+    public boolean reconnect(@NotNull final DBRProgressMonitor monitor)
         throws DBException {
         return reconnect(monitor, true);
     }
@@ -1598,7 +1601,7 @@ public class DataSourceDescriptor
     }
 
     @Override
-    public void acquire(DBPDataSourceTask user) {
+    public void acquire(@NotNull DBPDataSourceTask user) {
         synchronized (users) {
             if (users.contains(user)) {
                 log.warn("Datasource user '" + user + "' already registered in datasource '" + getName() + "'");
@@ -1609,7 +1612,7 @@ public class DataSourceDescriptor
     }
 
     @Override
-    public void release(DBPDataSourceTask user) {
+    public void release(@NotNull DBPDataSourceTask user) {
         synchronized (users) {
             if (!users.remove(user)) {
                 if (!isDisposed()) {
@@ -1620,10 +1623,11 @@ public class DataSourceDescriptor
     }
 
     @Override
-    public void fireEvent(DBPEvent event) {
+    public void fireEvent(@NotNull DBPEvent event) {
         registry.notifyDataSourceListeners(event);
     }
 
+    @NotNull
     @Override
     public Map<String, String> getTags() {
         return new LinkedHashMap<>(tags);
@@ -1634,13 +1638,14 @@ public class DataSourceDescriptor
         this.tags.putAll(tags);
     }
 
+    @Nullable
     @Override
-    public String getTagValue(String tagName) {
+    public String getTagValue(@NotNull String tagName) {
         return tags.get(tagName);
     }
 
     @Override
-    public void setTagValue(String tagName, String tagValue) {
+    public void setTagValue(@NotNull String tagName, @Nullable String tagValue) {
         tags.put(tagName, tagValue);
     }
 
@@ -1964,12 +1969,14 @@ public class DataSourceDescriptor
         }
     }
 
+    @NotNull
     @Override
     public IVariableResolver getVariablesResolver(boolean actualConfig) {
         DBPConnectionConfiguration configuration = actualConfig ? getActualConnectionConfiguration() : getConnectionConfiguration();
         return new DataSourceVariableResolver(this, configuration);
     }
 
+    @NotNull
     @Override
     public DBPDataSourceContainer createCopy(DBPDataSourceRegistry forRegistry) {
         DataSourceDescriptor copy = new DataSourceDescriptor(this, forRegistry, true);
@@ -1977,6 +1984,7 @@ public class DataSourceDescriptor
         return copy;
     }
 
+    @NotNull
     @Override
     public DBPExclusiveResource getExclusiveLock() {
         return exclusiveLock;

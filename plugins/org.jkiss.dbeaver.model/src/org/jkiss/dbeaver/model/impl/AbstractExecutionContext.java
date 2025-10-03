@@ -133,6 +133,7 @@ public abstract class AbstractExecutionContext<DATASOURCE extends DBPDataSource>
         log.debug("Execution context closed (" + dataSource.getName() + ", " + this.id +  ")");
     }
 
+    @NotNull
     @Override
     public Map<String, ?> getContextAttributes() {
         return new LinkedHashMap<>(contextAttributes);
@@ -140,17 +141,17 @@ public abstract class AbstractExecutionContext<DATASOURCE extends DBPDataSource>
 
     @SuppressWarnings("unchecked")
     @Override
-    public <T> T getContextAttribute(String attributeName) {
+    public <T> T getContextAttribute(@NotNull String attributeName) {
         return (T) contextAttributes.get(attributeName);
     }
 
     @Override
-    public <T> void setContextAttribute(String attributeName, T attributeValue) {
+    public <T> void setContextAttribute(@NotNull String attributeName, @Nullable T attributeValue) {
         contextAttributes.put(attributeName, attributeValue);
     }
 
     @Override
-    public void removeContextAttribute(String attributeName) {
+    public void removeContextAttribute(@NotNull String attributeName) {
         contextAttributes.remove(attributeName);
     }
 

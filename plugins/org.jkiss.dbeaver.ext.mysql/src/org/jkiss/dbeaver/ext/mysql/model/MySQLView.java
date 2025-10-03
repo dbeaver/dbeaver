@@ -249,6 +249,7 @@ public class MySQLView extends MySQLTableBase implements DBSView
         return matcher.find() ? matcher.group(1) : null;
     }
 
+    @NotNull
     @Override
     @Property(hidden = true, editable = true, updatable = true, order = -1)
     public String getObjectDefinitionText(@NotNull DBRProgressMonitor monitor, @NotNull Map<String, Object> options) throws DBException

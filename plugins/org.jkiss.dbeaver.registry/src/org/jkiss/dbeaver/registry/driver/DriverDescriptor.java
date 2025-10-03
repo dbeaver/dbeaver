@@ -920,8 +920,8 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
         return providerDescriptor.getTreeDescriptor();
     }
 
-    public boolean isManagable() {
-        return getProviderDescriptor().isDriversManagable();
+    public boolean isManageable() {
+        return getProviderDescriptor().isDriversManageable();
     }
 
     @Override

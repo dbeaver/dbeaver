@@ -427,6 +427,7 @@ public class OracleDataSource extends JDBCDataSource implements DBPObjectStatist
         return new OracleDataSourceInfo(metaData);
     }
 
+    @NotNull
     @Override
     public ErrorType discoverErrorType(@NotNull Throwable error) {
         Throwable rootCause = CommonUtils.getRootCause(error);
@@ -632,6 +633,7 @@ public class OracleDataSource extends JDBCDataSource implements DBPObjectStatist
         return this;
     }
 
+    @Nullable
     @Override
     public Collection<OracleSchema> getChildren(@NotNull DBRProgressMonitor monitor)
         throws DBException {
@@ -659,7 +661,7 @@ public class OracleDataSource extends JDBCDataSource implements DBPObjectStatist
 
     @Nullable
     @Override
-    public <T> T getAdapter(Class<T> adapter) {
+    public <T> T getAdapter(@NotNull Class<T> adapter) {
         if (adapter == DBSStructureAssistant.class) {
             return adapter.cast(new OracleStructureAssistant(this));
         } else if (adapter == DBCServerOutputReader.class) {
@@ -722,11 +724,13 @@ public class OracleDataSource extends JDBCDataSource implements DBPObjectStatist
         return super.resolveDataKind(typeName, valueType);
     }
 
+    @NotNull
     @Override
     public Collection<? extends DBSDataType> getLocalDataTypes() {
         return dataTypeCache.getCachedObjects();
     }
 
+    @Nullable
     @Override
     public OracleDataType getLocalDataType(String typeName) {
         return dataTypeCache.getCachedObject(typeName);
@@ -924,7 +928,7 @@ public class OracleDataSource extends JDBCDataSource implements DBPObjectStatist
     }
 
     @Override
-    public void collectObjectStatistics(DBRProgressMonitor monitor, boolean totalSizeOnly, boolean forceRefresh) throws DBException {
+    public void collectObjectStatistics(@NotNull DBRProgressMonitor monitor, boolean totalSizeOnly, boolean forceRefresh) throws DBException {
         if (hasStatistics && !forceRefresh) {
             return;
         }

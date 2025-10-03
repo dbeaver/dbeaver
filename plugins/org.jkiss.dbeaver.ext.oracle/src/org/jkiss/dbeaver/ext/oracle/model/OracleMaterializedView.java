@@ -171,6 +171,7 @@ public class OracleMaterializedView extends OracleTableBase implements OracleSou
         return OracleSourceType.MATERIALIZED_VIEW;
     }
 
+    @NotNull
     @Override
     @Property(hidden = true, editable = true, updatable = true, order = -1)
     public String getObjectDefinitionText(@NotNull DBRProgressMonitor monitor, @NotNull Map<String, Object> options)
