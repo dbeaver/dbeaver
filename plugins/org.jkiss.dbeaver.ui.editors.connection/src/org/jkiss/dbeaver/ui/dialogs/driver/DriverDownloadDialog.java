@@ -124,14 +124,14 @@ public class DriverDownloadDialog extends WizardDialog
             shell = Display.getCurrent().getActiveShell();
         }
         DriverDownloadDialog dialog = new DriverDownloadDialog(shell, driver, dependencies, false, forceDownload);
-        dialog.setMinimumPageSize(100, 100);
+        dialog.setMinimumPageSize(0, 0);
         dialog.open();
         return dialog.doDownload;
     }
 
     public static boolean updateDriverFiles(Shell shell, DBPDriver driver, DBPDriverDependencies dependencies, boolean forceDownload) {
         DriverDownloadDialog dialog = new DriverDownloadDialog(shell, driver, dependencies, true, forceDownload);
-        dialog.setMinimumPageSize(100, 100);
+        dialog.setMinimumPageSize(0, 0);
         dialog.open();
         return dialog.doDownload;
     }
