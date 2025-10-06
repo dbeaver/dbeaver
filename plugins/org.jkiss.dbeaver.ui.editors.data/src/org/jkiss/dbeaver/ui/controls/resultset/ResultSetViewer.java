@@ -30,7 +30,10 @@ import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.viewers.*;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.custom.*;
+import org.eclipse.swt.custom.CTabFolder;
+import org.eclipse.swt.custom.CTabFolder2Adapter;
+import org.eclipse.swt.custom.CTabFolderEvent;
+import org.eclipse.swt.custom.CTabItem;
 import org.eclipse.swt.events.*;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Point;
@@ -84,10 +87,7 @@ import org.jkiss.dbeaver.runtime.jobs.DataSourceJob;
 import org.jkiss.dbeaver.tools.transfer.ui.internal.DTUIMessages;
 import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.actions.DisabledLabelAction;
-import org.jkiss.dbeaver.ui.controls.TabFolderReorder;
-import org.jkiss.dbeaver.ui.controls.ToolbarSeparatorContribution;
-import org.jkiss.dbeaver.ui.controls.VerticalButton;
-import org.jkiss.dbeaver.ui.controls.VerticalFolder;
+import org.jkiss.dbeaver.ui.controls.*;
 import org.jkiss.dbeaver.ui.controls.autorefresh.AutoRefreshControl;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetUtils.OrderingPolicy;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetUtils.OrderingStrategy;
@@ -168,7 +168,7 @@ public class ResultSetViewer extends Viewer
     private final IResultSetDecorator decorator;
     @Nullable
     private ResultSetFilterPanel filtersPanel;
-    private final SashForm viewerSash;
+    private final CustomSashForm viewerSash;
 
     private final VerticalFolder panelSwitchFolder;
     private CTabFolder panelFolder;
@@ -330,8 +330,11 @@ public class ResultSetViewer extends Viewer
         try {
             this.findReplaceTarget = new DynamicFindReplaceTarget();
 
-            this.viewerSash = new SashForm(this.viewerPanel, UIUtils.checkSashStyle(SWT.HORIZONTAL | SWT.SMOOTH));
-            this.viewerSash.setSashWidth(5);
+            this.viewerSash = UIUtils.createPartDivider(
+                getSite().getPart(),
+                this.viewerPanel,
+                UIUtils.checkSashStyle(SWT.HORIZONTAL | SWT.SMOOTH)
+            );
             this.viewerSash.setLayoutData(new GridData(GridData.FILL_BOTH));
             CSSUtils.markConnectionTypeColor(this.viewerSash);
 
@@ -1031,7 +1034,7 @@ public class ResultSetViewer extends Viewer
             }
         } else {
             if (viewerSash != null) {
-                viewerSash.setMaximizedControl(viewerSash.getChildren()[0]);
+                viewerSash.hideUp();
             }
         }
 
@@ -1412,8 +1415,10 @@ public class ResultSetViewer extends Viewer
         CTabItem activePanelTab = panelFolder.getSelection();
 
         if (!show) {
+            boolean panelHadFocus = activePanelTab != null && !activePanelTab.getControl().isDisposed()
+                && UIUtils.hasFocus(activePanelTab.getControl());
             viewerSash.setMaximizedControl(viewerSash.getChildren()[0]);
-            if (activePanelTab != null && !activePanelTab.getControl().isDisposed() && UIUtils.hasFocus(activePanelTab.getControl())) {
+            if (panelHadFocus) {
                 // Set focus to presentation
                 activePresentation.getControl().setFocus();
             }
@@ -1477,10 +1482,10 @@ public class ResultSetViewer extends Viewer
     }
 
     public void togglePanelsMaximize() {
-        if (this.viewerSash.getMaximizedControl() == null) {
-            this.viewerSash.setMaximizedControl(this.panelFolder);
+        if (!this.viewerSash.isUpHidden()) {
+            this.viewerSash.hideUp();
         } else {
-            this.viewerSash.setMaximizedControl(null);
+            this.viewerSash.showUp();
         }
     }
 
