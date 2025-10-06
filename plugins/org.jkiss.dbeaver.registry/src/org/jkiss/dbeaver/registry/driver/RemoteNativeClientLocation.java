@@ -38,6 +38,7 @@ public class RemoteNativeClientLocation implements DBPNativeClientLocation {
         this.driver = driver;
     }
 
+    @NotNull
     @Override
     public String getName() {
         return clientDescriptor.getId();

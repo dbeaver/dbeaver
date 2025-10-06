@@ -118,6 +118,7 @@ public class AltibaseDbLink extends AltibaseObject<GenericStructContainer> imple
         return (userMode == 0);
     }
 
+    @NotNull
     @Override
     public String getObjectDefinitionText(@NotNull DBRProgressMonitor monitor, @NotNull Map<String, Object> options) throws DBException {
         if (CommonUtils.isEmpty(ddl)) {
@@ -129,7 +130,7 @@ public class AltibaseDbLink extends AltibaseObject<GenericStructContainer> imple
     }
 
     @Override
-    public DBSObject refreshObject(DBRProgressMonitor monitor) throws DBException {
+    public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException {
         DBSObject dbsObject = null;
         
         // Non-schema DbLink

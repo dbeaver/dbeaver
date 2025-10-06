@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -118,7 +118,7 @@ public class SQLServerDatabase
     }
 
     @Override
-    public void setName(String newName) {
+    public void setName(@NotNull String newName) {
         name = newName;
     }
 
@@ -336,6 +336,7 @@ public class SQLServerDatabase
         return null;
     }
 
+    @Nullable
     @Override
     public Collection<SQLServerSchema> getChildren(@NotNull DBRProgressMonitor monitor) throws DBException {
         try {

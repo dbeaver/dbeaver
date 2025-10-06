@@ -80,7 +80,7 @@ public class AIAssistantImpl implements AIAssistant {
         checkAiEnablement();
 
         AIEngineDescriptor engineDescriptor = getEngineDescriptor();
-        try (AIEngine engine = engineDescriptor.createEngineInstance()) {
+        try (AIEngine<?> engine = engineDescriptor.createEngineInstance()) {
             AIEngineRequest completionRequest = buildAiEngineRequest(
                 monitor,
                 context,
@@ -131,8 +131,8 @@ public class AIAssistantImpl implements AIAssistant {
         @Nullable AIDatabaseContext context,
         @NotNull AIPromptGenerator systemGenerator,
         @NotNull List<AIMessage> messages,
-        AIEngine engine,
-        AIEngineDescriptor engineDescriptor
+        @NotNull AIEngine<?> engine,
+        @NotNull AIEngineDescriptor engineDescriptor
     ) throws DBException {
         return requestFactory.build(
             monitor,
@@ -191,7 +191,7 @@ public class AIAssistantImpl implements AIAssistant {
     }
 
     @NotNull
-    public AIEngine createEngine() throws DBException {
+    public AIEngine<?> createEngine() throws DBException {
         return AIEngineRegistry.getInstance().createEngine(getActiveEngineId());
     }
 
@@ -212,7 +212,7 @@ public class AIAssistantImpl implements AIAssistant {
 
     @NotNull
     protected AIEngineResponse requestCompletion(
-        @NotNull AIEngine engine,
+        @NotNull AIEngine<?> engine,
         @NotNull DBRProgressMonitor monitor,
         @NotNull AIEngineRequest request
     ) throws DBException {

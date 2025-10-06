@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -60,6 +60,7 @@ public class SQLQueryDataContainer implements DBSDataContainer, SQLQueryContaine
         return contextProvider.getExecutionContext();
     }
 
+    @NotNull
     @Override
     public String[] getSupportedFeatures() {
         return new String[] {FEATURE_DATA_SELECT, FEATURE_DATA_COUNT, FEATURE_DATA_FILTER};
@@ -221,7 +222,7 @@ public class SQLQueryDataContainer implements DBSDataContainer, SQLQueryContaine
         return getDataSource();
     }
 
-    @Nullable
+    @NotNull
     @Override
     public DBPDataSource getDataSource()
     {

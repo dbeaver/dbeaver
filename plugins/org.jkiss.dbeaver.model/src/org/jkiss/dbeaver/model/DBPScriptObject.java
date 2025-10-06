@@ -75,6 +75,7 @@ public interface DBPScriptObject extends DBPObject {
 
     Map<String, Object> EMPTY_OPTIONS = Map.of();
 
+    @NotNull
     String getObjectDefinitionText(@NotNull DBRProgressMonitor monitor, @NotNull Map<String, Object> options)
         throws DBException;
 

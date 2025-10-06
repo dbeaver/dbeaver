@@ -268,6 +268,7 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema>
         return PostgreConstants.SERIAL_TYPES.containsKey(getFullTypeName());
     }
 
+    @NotNull
     @Override
     public DBSDataType getBaseDataType() {
         String baseTypeName = PostgreConstants.SERIAL_TYPES.get(getFullTypeName());
@@ -359,6 +360,7 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema>
       return OID_TYPES;
     }
 
+    @NotNull
     @Override
     @Property(viewable = true, editable = true, order = 1)
     public String getName() {
@@ -584,7 +586,7 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema>
         return DBSEntityType.TYPE;
     }
 
-    @Nullable
+    @NotNull
     @Override
     public List<? extends DBSContextBoundAttribute> bindAttributesToContext(
         @NotNull DBRProgressMonitor monitor,
@@ -632,7 +634,7 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema>
 
     @NotNull
     @Override
-    public DBCLogicalOperator[] getSupportedOperators(DBSTypedObject attribute) {
+    public DBCLogicalOperator[] getSupportedOperators(@NotNull DBSTypedObject attribute) {
         if (dataKind == DBPDataKind.STRING) {
             if (typeCategory == PostgreTypeCategory.S || typeCategory == PostgreTypeCategory.E || typeCategory == PostgreTypeCategory.X) {
                 return new DBCLogicalOperator[]{
@@ -713,6 +715,7 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema>
         return null;
     }
 
+    @NotNull
     @Override
     public String getObjectDefinitionText(@NotNull DBRProgressMonitor monitor, @NotNull Map<String, Object> options) throws DBException {
         StringBuilder sql = new StringBuilder();

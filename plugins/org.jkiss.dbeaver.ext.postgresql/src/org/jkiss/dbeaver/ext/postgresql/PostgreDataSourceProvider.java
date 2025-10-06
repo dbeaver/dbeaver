@@ -69,8 +69,9 @@ public class PostgreDataSourceProvider extends JDBCDataSourceProvider implements
         return FEATURE_CATALOGS | FEATURE_SCHEMAS;
     }
 
+    @NotNull
     @Override
-    public String getConnectionURL(DBPDriver driver, DBPConnectionConfiguration connectionInfo) {
+    public String getConnectionURL(@NotNull DBPDriver driver, @NotNull DBPConnectionConfiguration connectionInfo) {
         DBPConnectionConfiguration configToUse = connectionInfo;
         String databaseName = connectionInfo.getDatabaseName();
 

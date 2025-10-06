@@ -217,6 +217,7 @@ public class OracleUser extends OracleGrantee implements DBAUser, DBSObjectLazy<
         return super.refreshObject(monitor);
     }
 
+    @NotNull
     @Override
     public String getObjectDefinitionText(@NotNull DBRProgressMonitor monitor, @NotNull Map<String, Object> options) throws DBException {
         StringBuilder sql = new StringBuilder();

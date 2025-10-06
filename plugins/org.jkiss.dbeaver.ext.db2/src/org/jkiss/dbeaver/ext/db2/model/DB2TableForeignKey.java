@@ -130,7 +130,7 @@ public class DB2TableForeignKey extends JDBCTableConstraint<DB2Table, DB2TableFo
     // Columns
     // -----------------
     @Override
-    public List<DB2TableForeignKeyColumn> getAttributeReferences(DBRProgressMonitor monitor) throws DBException {
+    public List<DB2TableForeignKeyColumn> getAttributeReferences(@Nullable DBRProgressMonitor monitor) throws DBException {
         return columns;
     }
 

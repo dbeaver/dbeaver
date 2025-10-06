@@ -146,6 +146,7 @@ public class OracleJavaClass extends OracleSchemaObject implements OracleSourceO
 
     }
 
+    @NotNull
     @Override
     public String getObjectDefinitionText(@NotNull DBRProgressMonitor monitor, @NotNull Map<String, Object> options) throws DBException {
         if (sourceCode != null) {

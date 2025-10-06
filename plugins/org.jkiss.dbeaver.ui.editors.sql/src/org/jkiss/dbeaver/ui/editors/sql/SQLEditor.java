@@ -4500,6 +4500,7 @@ public class SQLEditor extends SQLEditorBase implements
             return createQueryResultsDecorator();
         }
 
+        @NotNull
         @Override
         public String[] getSupportedFeatures() {
             if (dataContainer != null) {
@@ -4631,7 +4632,7 @@ public class SQLEditor extends SQLEditorBase implements
             return getDataSource();
         }
 
-        @Nullable
+        @NotNull
         @Override
         public DBPDataSource getDataSource() {
             return SQLEditor.this.getDataSource();
