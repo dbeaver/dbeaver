@@ -214,11 +214,26 @@ public class CustomSashForm extends SashForm {
         return weights.length == 2 && weights[1] == 0;
     }
 
+    public boolean isUpHidden() {
+        if (currentSashInfo == null || currentSashInfo.restoreWeight <= 0) {
+            return false;
+        }
+        int[] weights = getWeights();
+        return weights.length == 2 && weights[0] == 0;
+    }
+
     public void showDown() {
         if (currentSashInfo == null || currentSashInfo.restoreWeight <= 0) {
             hideDown();
         }
         downRestoreClicked(currentSashInfo);
+    }
+
+    public void showUp() {
+        if (currentSashInfo == null || currentSashInfo.restoreWeight <= 0) {
+            hideUp();
+        }
+        upRestoreClicked(currentSashInfo);
     }
 
     /**
