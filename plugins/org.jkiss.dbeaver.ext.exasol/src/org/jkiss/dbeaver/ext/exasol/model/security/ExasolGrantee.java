@@ -1,7 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2016-2016 Karl Griesser (fullref@gmail.com)
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -70,7 +69,8 @@ public abstract class ExasolGrantee
 		this.persisted = persisted;
 	}
 	
-	public abstract String getName(); 
+	@NotNull
+    public abstract String getName();
 
 	@Override
 	public boolean isPersisted()

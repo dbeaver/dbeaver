@@ -207,6 +207,7 @@ public class VerticaProjection extends JDBCTable<VerticaDataSource, VerticaSchem
         return description;
     }
 
+    @NotNull
     @Override
     public String getObjectDefinitionText(@NotNull DBRProgressMonitor monitor, @NotNull Map<String, Object> options) throws DBException {
         if (isPersisted()) {

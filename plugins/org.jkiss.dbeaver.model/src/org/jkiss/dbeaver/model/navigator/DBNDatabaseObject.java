@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,7 +39,7 @@ public class DBNDatabaseObject extends DBNDatabaseNode implements DBSObject {
     }
 
     @Override
-    public <T> T getAdapter(Class<T> adapter) {
+    public <T> T getAdapter(@NotNull Class<T> adapter) {
         if (adapter == DBSObject.class) {
             DBSObject databaseObject = getObject();
             return adapter.cast(databaseObject);
@@ -76,6 +76,7 @@ public class DBNDatabaseObject extends DBNDatabaseNode implements DBSObject {
         return this;
     }
 
+    @NotNull
     @Override
     public String getNodeFullName() {
         StringBuilder pathName = new StringBuilder();
@@ -105,8 +106,9 @@ public class DBNDatabaseObject extends DBNDatabaseNode implements DBSObject {
         return meta.getNodeTypeLabel(getDataSource(), null);
     }
 
+    @NotNull
     @Override
-    public String getLocalizedName(String locale) {
+    public String getLocalizedName(@NotNull String locale) {
         return meta.getNodeTypeLabel(getDataSource(), locale);
     }
 

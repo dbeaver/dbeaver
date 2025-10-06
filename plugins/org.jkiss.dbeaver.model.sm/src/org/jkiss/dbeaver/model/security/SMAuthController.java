@@ -25,12 +25,14 @@ import org.jkiss.dbeaver.model.auth.SMSessionType;
 import java.util.Map;
 
 public interface SMAuthController {
+    @NotNull
     SMAuthInfo authenticateAnonymousUser(
         @NotNull String appSessionId,
         @NotNull Map<String, Object> sessionParameters,
         @NotNull SMSessionType sessionType
     ) throws DBException;
 
+    @NotNull
     SMAuthInfo authenticate(
         @NotNull String appSessionId,
         @Nullable String previousSmSessionId,
@@ -43,6 +45,7 @@ public interface SMAuthController {
     ) throws DBException;
 
     @Deprecated(forRemoval = true)
+    @NotNull
     SMAuthInfo getAuthStatus(@NotNull String authId) throws DBException;
 
     @Nullable

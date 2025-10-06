@@ -137,6 +137,7 @@ public class AltibaseJob extends AltibaseGlobalObject implements DBPScriptObject
         return comment;
     }
 
+    @NotNull
     @Override
     public String getObjectDefinitionText(@NotNull DBRProgressMonitor monitor, @NotNull Map<String, Object> options) throws DBException {
         if (CommonUtils.isEmpty(ddl)) {
@@ -147,7 +148,7 @@ public class AltibaseJob extends AltibaseGlobalObject implements DBPScriptObject
     }
 
     @Override
-    public DBSObject refreshObject(DBRProgressMonitor monitor) throws DBException {
+    public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException {
         AltibaseDataSource dataSouce = getDataSource();
         return dataSouce.getJobCache().refreshObject(monitor, dataSouce, this);
     }

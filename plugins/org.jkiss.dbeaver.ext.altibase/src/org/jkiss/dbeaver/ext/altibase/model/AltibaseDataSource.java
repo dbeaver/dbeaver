@@ -183,7 +183,7 @@ public class AltibaseDataSource extends GenericDataSource implements DBPObjectSt
 
     @Nullable
     @Override
-    public <T> T getAdapter(Class<T> adapter) {
+    public <T> T getAdapter(@NotNull Class<T> adapter) {
         if (adapter == DBCServerOutputReader.class) {
             return adapter.cast(outputReader);
         } else if (adapter == DBCQueryPlanner.class) {
@@ -671,7 +671,7 @@ public class AltibaseDataSource extends GenericDataSource implements DBPObjectSt
     }
 
     @Override
-    public void collectObjectStatistics(DBRProgressMonitor monitor, boolean totalSizeOnly, boolean forceRefresh) throws DBException {
+    public void collectObjectStatistics(@NotNull DBRProgressMonitor monitor, boolean totalSizeOnly, boolean forceRefresh) throws DBException {
         if (hasStatistics && !forceRefresh) {
             return;
         }

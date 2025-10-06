@@ -99,7 +99,7 @@ public class ERDLogicalAssociation implements DBSEntityAssociation, DBSEntityRef
     }
 
     @Override
-    public List<? extends DBSEntityAttributeRef> getAttributeReferences(DBRProgressMonitor monitor)
+    public List<? extends DBSEntityAttributeRef> getAttributeReferences(@Nullable DBRProgressMonitor monitor)
     {
         return Collections.emptyList();
     }

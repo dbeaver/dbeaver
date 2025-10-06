@@ -469,7 +469,7 @@ public abstract class JDBCDataSource extends AbstractDataSource
         return jdbcFactory;
     }
 
-    @Nullable
+    @NotNull
     @Override
     public JDBCRemoteInstance getDefaultInstance() {
         return defaultRemoteInstance;
@@ -711,6 +711,7 @@ public abstract class JDBCDataSource extends AbstractDataSource
         return getLocalDataType(typeFullName);
     }
 
+    @Nullable
     @Override
     public DBSDataType getLocalDataType(int typeID) {
         for (DBSDataType dataType : getLocalDataTypes()) {
@@ -721,6 +722,7 @@ public abstract class JDBCDataSource extends AbstractDataSource
         return null;
     }
 
+    @NotNull
     @Override
     public String getDefaultDataTypeName(@NotNull DBPDataKind dataKind)
     {
@@ -805,6 +807,7 @@ public abstract class JDBCDataSource extends AbstractDataSource
     /////////////////////////////////////////////////
     // Error assistance
 
+    @NotNull
     @Override
     public ErrorType discoverErrorType(@NotNull Throwable error)
     {

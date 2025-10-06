@@ -421,6 +421,7 @@ public class OracleTablespace extends OracleGlobalObject implements DBPRefreshab
         }
     }
 
+    @NotNull
     @Override
     public String getObjectDefinitionText(@NotNull DBRProgressMonitor monitor, @NotNull Map<String, Object> options) throws DBException {
 
