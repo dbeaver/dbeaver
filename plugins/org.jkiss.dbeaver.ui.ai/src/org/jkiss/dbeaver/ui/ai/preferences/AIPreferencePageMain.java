@@ -278,7 +278,7 @@ public class AIPreferencePageMain extends AbstractPrefPage implements IWorkbench
             NLS.bind(AIUIMessages.gpt_preference_page_ai_connection_test_connection_error_message, engineId),
             ex
         );
-}
+    }
 
     @Override
     public void init(IWorkbench workbench) {
