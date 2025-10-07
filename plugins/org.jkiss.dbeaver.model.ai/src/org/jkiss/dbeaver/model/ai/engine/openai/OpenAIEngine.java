@@ -47,18 +47,8 @@ public class OpenAIEngine<PROPS extends OpenAIBaseProperties> extends BaseComple
         }
     };
 
-    public OpenAIEngine() throws DBException {
-        super();
-    }
-
-    public OpenAIEngine(PROPS properties) throws DBException {
+    public OpenAIEngine(@NotNull PROPS properties) {
         super(properties);
-    }
-
-    @NotNull
-    @Override
-    protected String getEngineId() {
-        return OpenAIConstants.OPENAI_ENGINE;
     }
 
     @NotNull
