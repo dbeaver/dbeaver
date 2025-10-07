@@ -22,6 +22,9 @@ import org.jkiss.dbeaver.ui.IObjectPropertyConfigurator;
 
 import java.util.Optional;
 
+/**
+ * AIIObjectPropertyConfigurator used to get a copy of current AIEngineProperties if present
+ */
 public interface AIIObjectPropertyConfigurator<ENGINE extends AIEngineDescriptor, PROPERTIES extends AIEngineProperties> extends
     IObjectPropertyConfigurator<ENGINE, PROPERTIES> {
 
