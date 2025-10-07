@@ -17,9 +17,11 @@
 package org.jkiss.dbeaver.ui.ai.preferences;
 
 import org.eclipse.core.runtime.IAdaptable;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IWorkbench;
@@ -30,6 +32,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.ai.AISettings;
+import org.jkiss.dbeaver.model.ai.engine.AIEngine;
 import org.jkiss.dbeaver.model.ai.engine.AIEngineProperties;
 import org.jkiss.dbeaver.model.ai.registry.AIEngineDescriptor;
 import org.jkiss.dbeaver.model.ai.registry.AIEngineRegistry;
@@ -45,6 +48,7 @@ import org.jkiss.dbeaver.ui.ai.internal.AIUIMessages;
 import org.jkiss.dbeaver.ui.preferences.AbstractPrefPage;
 
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
@@ -170,7 +174,7 @@ public class AIPreferencePageMain extends AbstractPrefPage implements IWorkbench
         }
 
         final Group engineGroup = UIUtils.createControlGroup(composite, "Engine Settings", 2, SWT.BORDER, 5);
-        engineGroup.setLayoutData(new GridData(GridData.FILL_BOTH));
+        engineGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         if (completionEngine != null) {
             drawConfiguratorComposite(this.settings.activeEngine(), engineGroup);
         }
@@ -189,6 +193,7 @@ public class AIPreferencePageMain extends AbstractPrefPage implements IWorkbench
         });
         performDefaults();
 
+        createTestConnectionButton(composite);
         return composite;
     }
 
@@ -218,6 +223,54 @@ public class AIPreferencePageMain extends AbstractPrefPage implements IWorkbench
             );
         }
     }
+
+
+    private void createTestConnectionButton(@NotNull Composite parent) {
+        UIUtils.createPushButton(
+            parent,
+            AIUIMessages.gpt_preference_page_ai_connection_test_label,
+            null,
+            SelectionListener.widgetSelectedAdapter(e -> {
+                try{
+                    testConnection();
+                    DBWorkbench.getPlatformUI().showMessageBox(
+                        AIUIMessages.gpt_preference_page_ai_connection_test_connection_success_title,
+                        NLS.bind(
+                            AIUIMessages.gpt_preference_page_ai_connection_test_connection_success_message,
+                            settings.activeEngine()
+                        ),
+                        false
+                    );
+                } catch (DBException | InterruptedException ex) {
+                    showConnectionErrorMessage(ex);
+                } catch (InvocationTargetException ex) {
+                    showConnectionErrorMessage(ex.getCause());
+                }
+            })
+
+        );
+    }
+
+    private void testConnection() throws DBException, InterruptedException, InvocationTargetException {
+        try (AIEngine selectedEngine = completionEngine.createEngineInstance()) {
+            UIUtils.getDialogRunnableContext().run(true, true, monitor -> {
+                try {
+                    selectedEngine.getModels(monitor);
+                } catch (DBException e) {
+                    throw new InvocationTargetException(e);
+                }
+            });
+        }
+    }
+
+
+private void showConnectionErrorMessage(Throwable ex) {
+    DBWorkbench.getPlatformUI().showError(
+        AIUIMessages.gpt_preference_page_ai_connection_test_connection_error_title,
+        NLS.bind(AIUIMessages.gpt_preference_page_ai_connection_test_connection_error_message, settings.activeEngine()),
+        ex
+    );
+}
 
     @Override
     public void init(IWorkbench workbench) {
