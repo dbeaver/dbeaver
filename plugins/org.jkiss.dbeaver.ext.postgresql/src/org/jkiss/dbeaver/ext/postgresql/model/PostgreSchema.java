@@ -165,7 +165,7 @@ public class PostgreSchema implements
     }
 
     @Override
-    public void setName(String newName) {
+    public void setName(@NotNull String newName) {
         this.name = newName;
     }
 
@@ -550,6 +550,7 @@ public class PostgreSchema implements
         return PostgreConstants.CATALOG_SCHEMA_NAME.equals(name);
     }
 
+    @NotNull
     @Override
     public String getObjectDefinitionText(@NotNull DBRProgressMonitor monitor, @NotNull Map<String, Object> options) throws DBException {
         StringBuilder sql = new StringBuilder();
@@ -655,7 +656,7 @@ public class PostgreSchema implements
     }
 
     @Override
-    public void collectObjectStatistics(DBRProgressMonitor monitor, boolean totalSizeOnly, boolean forceRefresh) throws DBException {
+    public void collectObjectStatistics(@NotNull DBRProgressMonitor monitor, boolean totalSizeOnly, boolean forceRefresh) throws DBException {
         if (!getDataSource().getServerType().supportsTableStatistics() || hasStatistics && !forceRefresh) {
             return;
         }
@@ -685,7 +686,7 @@ public class PostgreSchema implements
     }
 
     @Override
-    public boolean supportsObjectDefinitionOption(String option) {
+    public boolean supportsObjectDefinitionOption(@NotNull String option) {
         return DBPScriptObject.OPTION_INCLUDE_PERMISSIONS.equals(option) || DBPScriptObject.OPTION_INCLUDE_COMMENTS.equals(option)
                || DBPScriptObject.OPTION_INCLUDE_NESTED_OBJECTS.equals(option);
     }

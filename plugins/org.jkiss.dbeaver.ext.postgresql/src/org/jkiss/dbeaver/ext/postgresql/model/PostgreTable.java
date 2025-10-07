@@ -221,6 +221,7 @@ public abstract class PostgreTable extends PostgreTableReal
         return getSchema().getIndexes(monitor, this);
     }
 
+    @NotNull
     @Override
     public String getObjectDefinitionText(@NotNull DBRProgressMonitor monitor, @NotNull Map<String, Object> options) throws DBException {
         return DBStructUtils.generateTableDDL(monitor, this, options, false);
@@ -502,7 +503,7 @@ public abstract class PostgreTable extends PostgreTableReal
     }
 
     @Override
-    public boolean supportsObjectDefinitionOption(String option) {
+    public boolean supportsObjectDefinitionOption(@NotNull String option) {
         if (hasPartitions && DBPScriptObject.OPTION_INCLUDE_PARTITIONS.equals(option)) {
             return true;
         }

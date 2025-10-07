@@ -812,7 +812,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
      * @param item list item
      * @return object which will be examined for properties
      */
-    protected Object getObjectValue(OBJECT_TYPE item) {
+    protected Object getObjectValue(@NotNull OBJECT_TYPE item) {
         return item;
     }
 

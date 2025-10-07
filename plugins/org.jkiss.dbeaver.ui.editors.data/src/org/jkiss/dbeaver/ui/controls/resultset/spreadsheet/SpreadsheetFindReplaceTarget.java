@@ -178,8 +178,10 @@ class SpreadsheetFindReplaceTarget implements IFindReplaceTarget, IFindReplaceTa
         this.firstSearchInSession = true;
         Control control = owner.getControl();
         if (control != null && !control.isDisposed()) {
-            owner.getSpreadsheet().deselectAll();
-            owner.getSpreadsheet().selectCells(this.originalSelection);
+            Spreadsheet spreadsheet = owner.getSpreadsheet();
+            spreadsheet.deselectAll();
+            spreadsheet.selectCells(this.originalSelection);
+            spreadsheet.redraw();
         }
     }
 
@@ -197,8 +199,10 @@ class SpreadsheetFindReplaceTarget implements IFindReplaceTarget, IFindReplaceTa
         if (scope == null || scope.getLength() == 0) {
             owner.highlightRows(-1, -1, null);
             if (scope == null) {
-                owner.getSpreadsheet().deselectAll();
-                owner.getSpreadsheet().selectCells(this.originalSelection);
+                Spreadsheet spreadsheet = owner.getSpreadsheet();
+                spreadsheet.deselectAll();
+                spreadsheet.selectCells(this.originalSelection);
+                spreadsheet.redraw();
             }
         } else {
             owner.highlightRows(scope.getOffset(), scope.getLength(), scopeHighlightColor);

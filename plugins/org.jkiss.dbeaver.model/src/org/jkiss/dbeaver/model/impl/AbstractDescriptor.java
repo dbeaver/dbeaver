@@ -17,8 +17,6 @@
 package org.jkiss.dbeaver.model.impl;
 
 import org.apache.commons.jexl3.*;
-import org.apache.commons.jexl3.introspection.JexlPropertyGet;
-import org.apache.commons.jexl3.introspection.JexlPropertySet;
 import org.apache.commons.jexl3.introspection.JexlUberspect;
 import org.eclipse.core.expressions.*;
 import org.eclipse.core.runtime.CoreException;
@@ -31,8 +29,6 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPImage;
-import org.jkiss.dbeaver.model.dpi.DPIClientObject;
-import org.jkiss.dbeaver.model.runtime.LoggingProgressMonitor;
 import org.jkiss.utils.CommonUtils;
 import org.osgi.framework.Bundle;
 
@@ -52,65 +48,14 @@ public abstract class AbstractDescriptor {
 
     private static JexlEngine jexlEngine;
 
-    private static class DPIPropertyGetter implements JexlPropertyGet {
-        private final String propertyName;
 
-        private DPIPropertyGetter(String propertyName) {
-            this.propertyName = propertyName;
-        }
-
-        @Override
-        public Object invoke(Object obj) throws Exception {
-            if (obj instanceof DPIClientObject) {
-                return ((DPIClientObject) obj).dpiPropertyValue(new LoggingProgressMonitor(log), propertyName);
-            }
-            return null;
-        }
-
-        @Override
-        public Object tryInvoke(Object obj, Object key) {
-            try {
-                return invoke(obj);
-            } catch (Exception e) {
-                log.debug(e);
-            }
-            return null;
-        }
-
-        @Override
-        public boolean tryFailed(Object rval) {
-            return false;
-        }
-
-        @Override
-        public boolean isCacheable() {
-            return true;
-        }
-    }
-
-    ;
-    private static final JexlUberspect.PropertyResolver DPI_RESOLVER = new JexlUberspect.PropertyResolver() {
-        @Override
-        public JexlPropertyGet getPropertyGet(JexlUberspect uber, Object obj, Object identifier) {
-            if (identifier instanceof String && obj instanceof DPIClientObject) {
-                return new DPIPropertyGetter((String) identifier);
-            }
-            return null;
-        }
-
-        @Override
-        public JexlPropertySet getPropertySet(JexlUberspect uber, Object obj, Object identifier, Object arg) {
-            return null;
-        }
-    };
-    private static List<JexlUberspect.PropertyResolver> POJO = Collections.unmodifiableList(Arrays.asList(
+    private static final List<JexlUberspect.PropertyResolver> POJO = Collections.unmodifiableList(Arrays.asList(
         JexlUberspect.JexlResolver.PROPERTY,
         JexlUberspect.JexlResolver.MAP,
         JexlUberspect.JexlResolver.LIST,
         JexlUberspect.JexlResolver.DUCK,
         JexlUberspect.JexlResolver.FIELD,
-        JexlUberspect.JexlResolver.CONTAINER,
-        DPI_RESOLVER
+        JexlUberspect.JexlResolver.CONTAINER
     ));
 
     private static final JexlUberspect.ResolverStrategy JEXL_STRATEGY = (op, obj) -> {

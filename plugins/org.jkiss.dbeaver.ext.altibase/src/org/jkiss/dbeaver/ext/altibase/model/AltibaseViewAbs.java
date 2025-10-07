@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -59,7 +59,7 @@ public abstract class AltibaseViewAbs extends GenericView implements DBPStateful
     }
 
     @Override
-    public void refreshObjectState(DBRProgressMonitor monitor) throws DBCException {
+    public void refreshObjectState(@NotNull DBRProgressMonitor monitor) throws DBCException {
         try (JDBCSession session = DBUtils.openMetaSession(monitor, this, 
                 "Refresh state of view '" + this.getName() + "'")) {
             isValid = AltibaseUtils.getViewStatus(session, getTableType(), getSchemaName(), getName());

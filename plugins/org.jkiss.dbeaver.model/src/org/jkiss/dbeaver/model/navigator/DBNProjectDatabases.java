@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.model.navigator;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
@@ -75,6 +76,7 @@ public class DBNProjectDatabases extends DBNNode implements DBNContainer, DBPEve
         super.dispose(reflect);
     }
 
+    @NotNull
     @Override
     public String getNodeType() {
         return "datasources";
@@ -116,22 +118,26 @@ public class DBNProjectDatabases extends DBNNode implements DBNContainer, DBPEve
         return getNodeDisplayName();
     }
 
+    @NotNull
     @Override
     public String getNodeDisplayName()
     {
         return "Connections";
     }
 
+    @Nullable
     @Override
     public String getNodeDescription()
     {
         return getParentNode().getProject().getName() + ModelMessages.model_navigator__connections;
     }
 
+    @Nullable
     public DBNProject getParentNode() {
         return (DBNProject) super.getParentNode();
     }
 
+    @Nullable
     @Override
     public DBPImage getNodeIcon()
     {
@@ -145,6 +151,7 @@ public class DBNProjectDatabases extends DBNNode implements DBNContainer, DBPEve
         }
     }
 
+    @NotNull
     @Override
     public DBNNode[] getChildren(@NotNull DBRProgressMonitor monitor)
     {
@@ -179,14 +186,14 @@ public class DBNProjectDatabases extends DBNNode implements DBNContainer, DBPEve
     }
 
     @Override
-    public boolean supportsDrop(DBNNode otherNode) {
+    public boolean supportsDrop(@Nullable DBNNode otherNode) {
         return otherNode == null
             || otherNode instanceof DBNDataSource
             || otherNode instanceof DBNLocalFolder && ((DBNLocalFolder) otherNode).getDataSourceRegistry() == dataSourceRegistry;
     }
 
     @Override
-    public void dropNodes(DBRProgressMonitor monitor, Collection<DBNNode> nodes) throws DBException {
+    public void dropNodes(@NotNull DBRProgressMonitor monitor, @NotNull Collection<DBNNode> nodes) throws DBException {
         moveNodesToFolder(nodes, null);
     }
 
@@ -236,6 +243,7 @@ public class DBNProjectDatabases extends DBNNode implements DBNContainer, DBPEve
         return true;
     }
 
+    @NotNull
     @Deprecated
     @Override
     public String getNodeItemPath() {

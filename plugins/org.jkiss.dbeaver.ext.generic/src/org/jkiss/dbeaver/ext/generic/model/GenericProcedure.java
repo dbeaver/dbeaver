@@ -272,6 +272,7 @@ public class GenericProcedure extends AbstractProcedure<GenericDataSource, Gener
         this.source = source;
     }
 
+    @NotNull
     @Override
     public String getObjectDefinitionText(@NotNull DBRProgressMonitor monitor, @NotNull Map<String, Object> options) throws DBException {
         if (source == null) {

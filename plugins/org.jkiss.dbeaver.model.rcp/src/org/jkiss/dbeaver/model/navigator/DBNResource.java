@@ -21,6 +21,7 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.app.*;
@@ -77,6 +78,7 @@ public class DBNResource extends DBNNode implements DBNStreamData, DBNNodeWithCa
         return handler == null ? 0 : handler.getFeatures(resource);
     }
 
+    @NotNull
     @Override
     public String getNodeType() {
         return handler == null ? getResourceNodeType() : handler.getTypeName(resource);
@@ -86,6 +88,7 @@ public class DBNResource extends DBNNode implements DBNStreamData, DBNNodeWithCa
         return "resource";
     }
 
+    @NotNull
     @Override
     @Property(id = DBConstants.PROP_ID_NAME, viewable = true, order = 1)
     public String getNodeDisplayName() {
@@ -95,6 +98,7 @@ public class DBNResource extends DBNNode implements DBNStreamData, DBNNodeWithCa
         return resource.getName();
     }
 
+    @Nullable
     @Override
     public String getNodeDescription() {
         if (getOwnerProject().isVirtual()) {
@@ -104,7 +108,7 @@ public class DBNResource extends DBNNode implements DBNStreamData, DBNNodeWithCa
         return handler == null || resource == null ? null : handler.getResourceDescription(resource);
     }
 
-    @NotNull
+    @Nullable
     @Override
     public DBPImage getNodeIcon() {
         DBPImage iconImage = this.getResourceNodeIcon();
@@ -138,6 +142,7 @@ public class DBNResource extends DBNNode implements DBNStreamData, DBNNodeWithCa
         };
     }
 
+    @NotNull
     @Override
     public String getNodeTargetName() {
         IResource resource = getResource();
@@ -156,6 +161,7 @@ public class DBNResource extends DBNNode implements DBNStreamData, DBNNodeWithCa
         return resource instanceof IContainer;
     }
 
+    @NotNull
     @Override
     public DBNNode[] getChildren(@NotNull DBRProgressMonitor monitor) throws DBException {
         if (children == null && !monitor.isForceCacheUsage()) {
@@ -222,12 +228,13 @@ public class DBNResource extends DBNNode implements DBNStreamData, DBNNodeWithCa
     }
 
     @Override
-    public boolean isManagable() {
+    public boolean isManageable() {
         return true;
     }
 
+    @Nullable
     @Override
-    public DBNNode refreshNode(DBRProgressMonitor monitor, Object source) throws DBException {
+    public DBNNode refreshNode(@NotNull DBRProgressMonitor monitor, @Nullable Object source) throws DBException {
         if (children != null) {
 //            for (DBNNode child : children) {
 //                child.dispose(false);
@@ -238,6 +245,7 @@ public class DBNResource extends DBNNode implements DBNStreamData, DBNNodeWithCa
         return this;
     }
 
+    @NotNull
     @Deprecated
     @Override
     public String getNodeItemPath() {
@@ -265,7 +273,7 @@ public class DBNResource extends DBNNode implements DBNStreamData, DBNNodeWithCa
     }
 
     @Override
-    public void rename(DBRProgressMonitor monitor, String newName) throws DBException {
+    public void rename(@NotNull DBRProgressMonitor monitor, @NotNull String newName) throws DBException {
         try {
             if (newName.indexOf('.') == -1 && resource instanceof IFile) {
                 String ext = resource.getFileExtension();
@@ -286,7 +294,7 @@ public class DBNResource extends DBNNode implements DBNStreamData, DBNNodeWithCa
     }
 
     @Override
-    public boolean supportsDrop(DBNNode otherNode) {
+    public boolean supportsDrop(@Nullable DBNNode otherNode) {
         if (!(resource instanceof IFolder) || (getFeatures() & DBPResourceHandler.FEATURE_MOVE_INTO) == 0) {
             return false;
         }
@@ -302,7 +310,7 @@ public class DBNResource extends DBNNode implements DBNStreamData, DBNNodeWithCa
     }
 
     @Override
-    public void dropNodes(DBRProgressMonitor monitor, Collection<DBNNode> nodes) throws DBException {
+    public void dropNodes(@NotNull DBRProgressMonitor monitor, @NotNull Collection<DBNNode> nodes) throws DBException {
         monitor.beginTask("Copy files", nodes.size());
         try {
             if (!resource.exists()) {
@@ -415,7 +423,7 @@ public class DBNResource extends DBNNode implements DBNStreamData, DBNNodeWithCa
     }
 
     @Override
-    public <T> T getAdapter(Class<T> adapter) {
+    public <T> T getAdapter(@NotNull Class<T> adapter) {
         if (resource != null) {
             if (adapter.isAssignableFrom(resource.getClass())) {
                 return adapter.cast(resource);
@@ -434,6 +442,7 @@ public class DBNResource extends DBNNode implements DBNStreamData, DBNNodeWithCa
         return super.getAdapter(adapter);
     }
 
+    @NotNull
     @Override
     public String toString() {
         return resource == null ? super.toString() : resource.toString();

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -53,9 +53,13 @@ public interface DBSDataManipulator extends DBSDataContainer {
         void add(@NotNull Object[] attributeValues) throws DBCException;
 
         @NotNull
-        DBCStatistics execute(@NotNull DBCSession session, Map<String, Object> options) throws DBCException;
+        DBCStatistics execute(@NotNull DBCSession session, @NotNull Map<String, Object> options) throws DBCException;
 
-        void generatePersistActions(@NotNull DBCSession session, @NotNull List<DBEPersistAction> actions, Map<String, Object> options) throws DBCException;
+        void generatePersistActions(
+            @NotNull DBCSession session,
+            @NotNull List<DBEPersistAction> actions,
+            @NotNull Map<String, Object> options
+        ) throws DBCException;
 
         void close();
     }

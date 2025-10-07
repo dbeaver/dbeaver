@@ -2173,7 +2173,7 @@ public class SQLEditor extends SQLEditorBase implements
      * Toggles editor/results maximization
      */
     public void toggleEditorMaximize() {
-        setEditorMaximized(resultsSash.getMaximizedControl() == null);
+        setEditorMaximized(!resultsSash.isUpHidden());
     }
 
     public void setEditorMaximized(boolean maximized) {
@@ -2181,10 +2181,10 @@ public class SQLEditor extends SQLEditorBase implements
             return;
         }
         if (maximized) {
-            resultsSash.setMaximizedControl(resultTabs);
+            resultsSash.hideUp();
             switchFocus(true);
         } else {
-            resultsSash.setMaximizedControl(null);
+            resultsSash.showUp();
             switchFocus(false);
         }
     }
@@ -3199,6 +3199,12 @@ public class SQLEditor extends SQLEditorBase implements
 
         DBPDataSourceContainer dsContainer = getDataSourceContainer();
         DatabaseEditorUtils.setPartBackground(this, resultsSash);
+        if (sqlEditorPanel != null) {
+            DatabaseEditorUtils.setPartBackground(this, sqlEditorPanel);
+        }
+        if (resultTabs != null) {
+            DatabaseEditorUtils.setPartBackground(this, resultTabs);
+        }
 
         DBCExecutionContext executionContext = getExecutionContext();
         if (executionContext != null) {
@@ -4494,6 +4500,7 @@ public class SQLEditor extends SQLEditorBase implements
             return createQueryResultsDecorator();
         }
 
+        @NotNull
         @Override
         public String[] getSupportedFeatures() {
             if (dataContainer != null) {
@@ -4625,7 +4632,7 @@ public class SQLEditor extends SQLEditorBase implements
             return getDataSource();
         }
 
-        @Nullable
+        @NotNull
         @Override
         public DBPDataSource getDataSource() {
             return SQLEditor.this.getDataSource();

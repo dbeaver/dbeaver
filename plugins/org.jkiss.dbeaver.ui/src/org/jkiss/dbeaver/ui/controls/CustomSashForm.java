@@ -1,17 +1,6 @@
-/*******************************************************************************
- * Copyright (c) 2001, 2005 IBM Corporation and others.
- * All rights reserved. This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License v1.0
- * which accompanies this distribution, and is available at
- * http://www.eclipse.org/legal/epl-v10.html
- *
- * Contributors:
- *     IBM Corporation - initial API and implementation
- *     Sybase, Inc. - extended for DTP
- *******************************************************************************/
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,6 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.jkiss.dbeaver.ui.controls;
 /*
  *  CustomSashForm
@@ -224,11 +214,26 @@ public class CustomSashForm extends SashForm {
         return weights.length == 2 && weights[1] == 0;
     }
 
+    public boolean isUpHidden() {
+        if (currentSashInfo == null || currentSashInfo.restoreWeight <= 0) {
+            return false;
+        }
+        int[] weights = getWeights();
+        return weights.length == 2 && weights[0] == 0;
+    }
+
     public void showDown() {
         if (currentSashInfo == null || currentSashInfo.restoreWeight <= 0) {
             hideDown();
         }
         downRestoreClicked(currentSashInfo);
+    }
+
+    public void showUp() {
+        if (currentSashInfo == null || currentSashInfo.restoreWeight <= 0) {
+            hideUp();
+        }
+        upRestoreClicked(currentSashInfo);
     }
 
     /**
@@ -736,6 +741,8 @@ public class CustomSashForm extends SashForm {
 
     protected void drawSashBorder(GC gc, SashInfo sashInfo) {
         gc.setForeground(arrowColor);
+//        gc.setLineStyle(SWT.LINE_CUSTOM);
+//        gc.setLineDash(new int[] { 2, 5 });
         gc.setLineStyle(SWT.LINE_SOLID);
         Point s = sashInfo.sash.getSize();
         int[][] sashLocs = sashInfo.sashLocs;

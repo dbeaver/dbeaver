@@ -958,12 +958,12 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
         }
         @NotNull
         @Override
-        public DBCStatistics execute(@NotNull DBCSession session, Map<String, Object> options) throws DBCException {
+        public DBCStatistics execute(@NotNull DBCSession session, @NotNull Map<String, Object> options) throws DBCException {
             return new DBCStatistics();
         }
 
         @Override
-        public void generatePersistActions(@NotNull DBCSession session, @NotNull List<DBEPersistAction> actions, Map<String, Object> options) throws DBCException {
+        public void generatePersistActions(@NotNull DBCSession session, @NotNull List<DBEPersistAction> actions, @NotNull Map<String, Object> options) throws DBCException {
 
         }
 

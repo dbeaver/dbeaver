@@ -68,6 +68,7 @@ public class DamengUser implements DBAUser, DBPScriptObject, DBPObjectWithLongId
         return id;
     }
 
+    @NotNull
     @Override
     @Property(viewable = true, order = 2)
     public String getName() {
@@ -99,6 +100,7 @@ public class DamengUser implements DBAUser, DBPScriptObject, DBPObjectWithLongId
         return type;
     }
 
+    @NotNull
     @Override
     public String getObjectDefinitionText(@NotNull DBRProgressMonitor monitor, @NotNull Map<String, Object> options) throws DBException {
         return DamengUtils.getDDL(monitor, this, DamengConstants.ObjectType.USER, null);

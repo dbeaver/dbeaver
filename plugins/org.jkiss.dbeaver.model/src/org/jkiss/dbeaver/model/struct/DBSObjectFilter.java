@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -52,7 +52,7 @@ public class DBSObjectFilter {
         }
     }
 
-    public DBSObjectFilter(DBSObjectFilter filter) {
+    public DBSObjectFilter(@Nullable DBSObjectFilter filter) {
         if (filter != null) {
             this.name = filter.name;
             this.description = filter.description;
@@ -109,16 +109,17 @@ public class DBSObjectFilter {
         this.includePatterns = null;
     }
 
-    public void setInclude(List<String> include) {
+    public void setInclude(@Nullable List<String> include) {
         this.include = include;
         this.includePatterns = null;
     }
 
+    @Nullable
     public List<String> getExclude() {
         return exclude;
     }
 
-    public void addExclude(String name) {
+    public void addExclude(@NotNull String name) {
         if (exclude == null) {
             exclude = new ArrayList<>();
         }

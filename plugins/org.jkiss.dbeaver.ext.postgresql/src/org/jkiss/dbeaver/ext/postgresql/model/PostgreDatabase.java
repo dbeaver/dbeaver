@@ -282,7 +282,7 @@ public class PostgreDatabase extends JDBCRemoteInstance
     }
 
     @Override
-    public void setName(String newName) {
+    public void setName(@NotNull String newName) {
         this.name = newName;
     }
 
@@ -314,7 +314,7 @@ public class PostgreDatabase extends JDBCRemoteInstance
 
     @Override
     @Property(viewable = true, editable = true, updatable = true, length = PropertyLength.MULTILINE, order = 100)
-    public String getDescription(DBRProgressMonitor monitor) {
+    public String getDescription(@NotNull DBRProgressMonitor monitor) {
         if (!getDataSource().getServerType().supportsDatabaseDescription()) {
             return null;
         }
@@ -554,11 +554,13 @@ public class PostgreDatabase extends JDBCRemoteInstance
         return dataSource.resolveDataKind(typeName, typeID);
     }
 
+    @Nullable
     @Override
     public DBSDataType resolveDataType(@NotNull DBRProgressMonitor monitor, @NotNull String typeFullName) throws DBException {
         return PostgreUtils.resolveTypeFullName(monitor, this, typeFullName);
     }
 
+    @NotNull
     @Override
     public Collection<PostgreDataType> getLocalDataTypes() {
         synchronized (dataTypeCache) {
@@ -573,16 +575,19 @@ public class PostgreDatabase extends JDBCRemoteInstance
         return null;
     }
 
+    @Nullable
     @Override
     public PostgreDataType getLocalDataType(String typeName) {
         return getDataType(null, typeName);
     }
 
+    @Nullable
     @Override
     public DBSDataType getLocalDataType(int typeID) {
         return getDataType(new VoidProgressMonitor(), typeID);
     }
 
+    @NotNull
     @Override
     public String getDefaultDataTypeName(@NotNull DBPDataKind dataKind) {
         return PostgreUtils.getDefaultDataTypeName(dataKind);
@@ -836,6 +841,7 @@ public class PostgreDatabase extends JDBCRemoteInstance
         return schema.getTable(monitor, tableId);
     }
 
+    @Nullable
     @Override
     public Collection<? extends DBSObject> getChildren(@NotNull DBRProgressMonitor monitor) throws DBException {
         return getSchemas(monitor);
