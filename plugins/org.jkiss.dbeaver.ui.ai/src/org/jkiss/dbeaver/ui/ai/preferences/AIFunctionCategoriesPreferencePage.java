@@ -23,15 +23,17 @@ import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.ai.AISettings;
+import org.jkiss.dbeaver.model.ai.registry.AIFunctionCategoryDescriptor;
 import org.jkiss.dbeaver.model.ai.registry.AIFunctionDescriptor;
 import org.jkiss.dbeaver.model.ai.registry.AIFunctionRegistry;
 import org.jkiss.dbeaver.model.ai.registry.AISettingsManager;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.utils.CommonUtils;
 
 import java.util.*;
 
@@ -42,34 +44,32 @@ public class AIFunctionCategoriesPreferencePage extends PreferencePage implement
     public static final String PAGE_ID = "org.jkiss.dbeaver.preferences.ai.functions";
 
     private CheckboxTreeViewer treeViewer;
-    private Map<String, List<AIFunctionDescriptor>> categoryMap;
+    private Map<AIFunctionCategoryDescriptor, List<AIFunctionDescriptor>> categoryMap;
 
     @Override
     public void init(IWorkbench workbench) {
     }
 
     @Override
-    protected Control createContents(Composite parent) {
+    protected Composite createContents(Composite parent) {
         Composite composite = UIUtils.createPlaceholder(parent, 1, 5);
         composite.setLayoutData(new GridData(GridData.FILL_BOTH));
 
-        UIUtils.createLabel(composite, "Configure available AI functions:");
+        UIUtils.createLabel(composite, "Configure available AI function categories and functions:");
 
         treeViewer = new CheckboxTreeViewer(composite, SWT.BORDER | SWT.FULL_SELECTION);
         GridData gd = new GridData(GridData.FILL_BOTH);
-        gd.heightHint = 300;
+        gd.heightHint = 340;
         treeViewer.getTree().setLayoutData(gd);
 
         treeViewer.setContentProvider(new TreeContentProvider());
         treeViewer.setLabelProvider(new TreeLabelProvider());
+        treeViewer.setUseHashlookup(true);
 
         try {
             loadData();
-            log.debug("Loaded categories: " + categoryMap.keySet());
             treeViewer.setInput(categoryMap);
             updateCheckState();
-
-            // Expand all categories to see functions
             treeViewer.expandAll();
         } catch (Exception e) {
             log.error("Error loading AI functions", e);
@@ -80,7 +80,7 @@ public class AIFunctionCategoriesPreferencePage extends PreferencePage implement
             Object element = event.getElement();
             boolean checked = event.getChecked();
 
-            if (element instanceof String category) {
+            if (element instanceof AIFunctionCategoryDescriptor category) {
                 List<AIFunctionDescriptor> functions = categoryMap.get(category);
                 if (functions != null) {
                     for (AIFunctionDescriptor function : functions) {
@@ -89,26 +89,73 @@ public class AIFunctionCategoriesPreferencePage extends PreferencePage implement
                     treeViewer.setGrayed(category, false);
                 }
             } else if (element instanceof AIFunctionDescriptor function) {
-                updateCategoryState(function.getCategory());
+                AIFunctionCategoryDescriptor cat = findCategoryOf(function);
+                if (cat != null) {
+                    updateCategoryState(cat);
+                }
             }
         });
-
 
         return composite;
     }
 
-    private void updateCategoryState(String category) {
+    private void loadData() {
+        categoryMap = new LinkedHashMap<>();
+        AIFunctionRegistry registry = AIFunctionRegistry.getInstance();
+
+        Map<AIFunctionCategoryDescriptor, List<AIFunctionDescriptor>> byCat = registry.getFunctionsByCategory();
+        for (Map.Entry<AIFunctionCategoryDescriptor, List<AIFunctionDescriptor>> e : byCat.entrySet()) {
+            List<AIFunctionDescriptor> list = new ArrayList<>(e.getValue());
+            list.sort(Comparator.comparing(AIFunctionDescriptor::getName, String.CASE_INSENSITIVE_ORDER));
+            categoryMap.put(e.getKey(), list);
+        }
+    }
+
+    private void updateCheckState() {
+        AISettings settings = AISettingsManager.getInstance().getSettings();
+
+        Set<String> enabledCategories = settings.getEnabledFunctionCategories();
+        Set<String> enabledFunctions = settings.getEnabledFunctions();
+
+        for (Map.Entry<AIFunctionCategoryDescriptor, List<AIFunctionDescriptor>> entry : categoryMap.entrySet()) {
+            AIFunctionCategoryDescriptor category = entry.getKey();
+            List<AIFunctionDescriptor> functions = entry.getValue();
+
+            boolean allEnabled = true;
+            boolean anyEnabled = false;
+
+            for (AIFunctionDescriptor function : functions) {
+                boolean functionEnabled =
+                    enabledFunctions.contains(function.getId()) ||
+                        enabledCategories.contains(category.getId());
+
+                treeViewer.setChecked(function, functionEnabled);
+                anyEnabled |= functionEnabled;
+                if (!functionEnabled) {
+                    allEnabled = false;
+                }
+            }
+
+            treeViewer.setChecked(category, allEnabled);
+            treeViewer.setGrayed(category, anyEnabled && !allEnabled);
+        }
+    }
+
+    private void updateCategoryState(@NotNull AIFunctionCategoryDescriptor category) {
         List<AIFunctionDescriptor> functions = categoryMap.get(category);
-        if (functions == null) return;
+        if (functions == null || functions.isEmpty()) {
+            treeViewer.setChecked(category, false);
+            treeViewer.setGrayed(category, false);
+            return;
+        }
 
         boolean allChecked = true;
         boolean anyChecked = false;
 
         for (AIFunctionDescriptor function : functions) {
             boolean checked = treeViewer.getChecked(function);
-            if (checked) {
-                anyChecked = true;
-            } else {
+            anyChecked |= checked;
+            if (!checked) {
                 allChecked = false;
             }
         }
@@ -117,76 +164,14 @@ public class AIFunctionCategoriesPreferencePage extends PreferencePage implement
         treeViewer.setGrayed(category, anyChecked && !allChecked);
     }
 
-
-    private void loadData() {
-        categoryMap = new LinkedHashMap<>();
-
-        try {
-            AIFunctionRegistry registry = AIFunctionRegistry.getInstance();
-            List<AIFunctionDescriptor> allFunctions = registry.getAllFunctions();
-
-            log.debug("Found " + allFunctions.size() + " AI functions");
-
-            for (AIFunctionDescriptor function : allFunctions) {
-                String category = function.getCategory();
-                if (category == null || category.trim().isEmpty()) {
-                    category = "Other";
-                }
-
-                log.debug("Function: " + function.getName() + ", Category: " + category);
-                categoryMap.computeIfAbsent(category, k -> new ArrayList<>()).add(function);
-            }
-
-            categoryMap.entrySet().forEach(entry ->
-                entry.getValue().sort(Comparator.comparing(AIFunctionDescriptor::getName)));
-
-        } catch (Exception e) {
-            log.error("Failed to load AI functions", e);
-        }
-    }
-
-    private void updateCheckState() {
-        try {
-            AISettings settings = AISettingsManager.getInstance().getSettings();
-            Set<String> enabledCategories = settings.getEnabledFunctionCategories();
-            Set<String> enabledFunctions = settings.getEnabledFunctions();
-
-            for (Map.Entry<String, List<AIFunctionDescriptor>> entry : categoryMap.entrySet()) {
-                String category = entry.getKey();
-                List<AIFunctionDescriptor> functions = entry.getValue();
-
-                boolean allFunctionsEnabled = true;
-                boolean anyFunctionEnabled = false;
-
-                for (AIFunctionDescriptor function : functions) {
-                    boolean functionEnabled = enabledFunctions.contains(function.getId()) ||
-                        enabledCategories.contains(category);
-                    treeViewer.setChecked(function, functionEnabled);
-
-                    if (functionEnabled) {
-                        anyFunctionEnabled = true;
-                    } else {
-                        allFunctionsEnabled = false;
-                    }
-                }
-
-                treeViewer.setChecked(category, allFunctionsEnabled);
-                treeViewer.setGrayed(category, anyFunctionEnabled && !allFunctionsEnabled);
-            }
-        } catch (Exception e) {
-            log.error("Failed to update check state", e);
-        }
-    }
-
-
     @Override
     public boolean performOk() {
         try {
             Set<String> enabledCategories = new HashSet<>();
             Set<String> enabledFunctions = new HashSet<>();
 
-            for (Map.Entry<String, List<AIFunctionDescriptor>> entry : categoryMap.entrySet()) {
-                String category = entry.getKey();
+            for (Map.Entry<AIFunctionCategoryDescriptor, List<AIFunctionDescriptor>> entry : categoryMap.entrySet()) {
+                AIFunctionCategoryDescriptor category = entry.getKey();
                 List<AIFunctionDescriptor> functions = entry.getValue();
 
                 boolean allFunctionsChecked = true;
@@ -201,8 +186,8 @@ public class AIFunctionCategoriesPreferencePage extends PreferencePage implement
                     }
                 }
 
-                if (allFunctionsChecked && anyFunctionChecked) {
-                    enabledCategories.add(category);
+                if (anyFunctionChecked && allFunctionsChecked) {
+                    enabledCategories.add(category.getId());
                 }
             }
 
@@ -210,44 +195,51 @@ public class AIFunctionCategoriesPreferencePage extends PreferencePage implement
             settings.setEnabledFunctionCategories(enabledCategories);
             settings.setEnabledFunctions(enabledFunctions);
             AISettingsManager.getInstance().saveSettings(settings);
-
             return true;
         } catch (Exception e) {
-            log.error("Failed to save settings", e);
+            log.error("Failed to save AI function settings", e);
             return false;
         }
     }
 
-
     @Override
     protected void performDefaults() {
-        for (Map.Entry<String, List<AIFunctionDescriptor>> entry : categoryMap.entrySet()) {
-            String category = entry.getKey();
-            treeViewer.setChecked(category, false);
+        for (Map.Entry<AIFunctionCategoryDescriptor, List<AIFunctionDescriptor>> entry : categoryMap.entrySet()) {
+            AIFunctionCategoryDescriptor category = entry.getKey();
+            boolean enable = category.isEnabledByDefault();
+
+            treeViewer.setChecked(category, enable);
             treeViewer.setGrayed(category, false);
 
             for (AIFunctionDescriptor function : entry.getValue()) {
-                treeViewer.setChecked(function, false);
+                treeViewer.setChecked(function, enable);
             }
         }
         super.performDefaults();
     }
 
+    private AIFunctionCategoryDescriptor findCategoryOf(AIFunctionDescriptor f) {
+        String cid = f.getCategoryId();
+        if (CommonUtils.isEmpty(cid)) {
+            return null;
+        }
+        for (AIFunctionCategoryDescriptor c : categoryMap.keySet()) {
+            if (cid.equals(c.getId())) {
+                return c;
+            }
+        }
+        return null;
+    }
 
     private class TreeContentProvider implements ITreeContentProvider {
         @Override
         public Object[] getElements(Object inputElement) {
-            if (inputElement instanceof Map) {
-                @SuppressWarnings("unchecked")
-                Map<String, List<AIFunctionDescriptor>> map = (Map<String, List<AIFunctionDescriptor>>) inputElement;
-                return map.keySet().toArray();
-            }
-            return new Object[0];
+            return categoryMap.keySet().toArray();
         }
 
         @Override
         public Object[] getChildren(Object parentElement) {
-            if (parentElement instanceof String category && categoryMap != null) {
+            if (parentElement instanceof AIFunctionCategoryDescriptor category) {
                 List<AIFunctionDescriptor> functions = categoryMap.get(category);
                 return functions != null ? functions.toArray() : new Object[0];
             }
@@ -257,33 +249,26 @@ public class AIFunctionCategoriesPreferencePage extends PreferencePage implement
         @Override
         public Object getParent(Object element) {
             if (element instanceof AIFunctionDescriptor function) {
-                String category = function.getCategory();
-                return (category == null || category.trim().isEmpty()) ? "Other" : category;
+                return findCategoryOf(function);
             }
             return null;
         }
 
         @Override
         public boolean hasChildren(Object element) {
-            if (element instanceof String category && categoryMap != null) {
-                List<AIFunctionDescriptor> functions = categoryMap.get(category);
-                return functions != null && !functions.isEmpty();
-            }
-            return false;
+            return element instanceof AIFunctionCategoryDescriptor;
         }
     }
 
-    private class TreeLabelProvider extends LabelProvider {
+    private static class TreeLabelProvider extends LabelProvider {
         @Override
         public String getText(Object element) {
-            if (element instanceof String) {
-                return (String) element;
-            }
-            if (element instanceof AIFunctionDescriptor function) {
-                return function.getName();
+            if (element instanceof AIFunctionCategoryDescriptor c) {
+                return c.getName();
+            } else if (element instanceof AIFunctionDescriptor f) {
+                return f.getName();
             }
             return super.getText(element);
         }
     }
 }
-

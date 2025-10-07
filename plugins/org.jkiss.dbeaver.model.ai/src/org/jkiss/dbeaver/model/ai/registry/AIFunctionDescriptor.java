@@ -71,7 +71,7 @@ public class AIFunctionDescriptor extends AbstractDescriptor {
     private final DBPImage icon;
     private final boolean global;
     private final AIFunctionResult.FunctionType type;
-    private final String category;
+    private final String categoryId;
     private final Parameter[] parameters;
 
     public AIFunctionDescriptor(@NotNull IConfigurationElement config) {
@@ -82,7 +82,7 @@ public class AIFunctionDescriptor extends AbstractDescriptor {
         this.id = config.getAttribute("id");
         this.name = config.getAttribute("name");
         this.global = CommonUtils.toBoolean(config.getAttribute("global"));
-        this.category = config.getAttribute("category");
+        this.categoryId = config.getAttribute("categoryId");
         this.type = CommonUtils.valueOf(
             AIFunctionResult.FunctionType.class,
             config.getAttribute("type"),
@@ -142,7 +142,7 @@ public class AIFunctionDescriptor extends AbstractDescriptor {
     }
 
     public boolean isApplicable(@NotNull AIEngineDescriptor engine, @NotNull AIPromptGenerator prompt) {
-        return false;
+        return engine.isSupportsFunctions(); //just for the test
     }
 
     @Override
@@ -156,8 +156,7 @@ public class AIFunctionDescriptor extends AbstractDescriptor {
     }
 
     @Nullable
-    public String getCategory() {
-        return category;
+    public String getCategoryId() {
+        return categoryId;
     }
-
 }

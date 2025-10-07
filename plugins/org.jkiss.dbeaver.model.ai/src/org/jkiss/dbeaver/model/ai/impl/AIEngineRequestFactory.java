@@ -150,10 +150,15 @@ public class AIEngineRequestFactory {
         }
 
         Set<String> enabledFunctions = AISettingsManager.getInstance().getSettings().getEnabledFunctions();
-        functions.removeIf(aiFunctionDescriptor -> !enabledFunctions.contains(aiFunctionDescriptor.getId()));
+        Set<String> enabledFunctionCategories = AISettingsManager.getInstance().getSettings().getEnabledFunctionCategories();
+        functions.removeIf(aiFunctionDescriptor ->
+            !enabledFunctions.contains(aiFunctionDescriptor.getId()) &&
+                !enabledFunctionCategories.contains(aiFunctionDescriptor.getCategoryId())
+        );
 
         request.setFunctions(functions);
     }
+
 
     private static int getContextWindowSize(@NotNull DBRProgressMonitor monitor, @NotNull AIEngine engine) {
         try {

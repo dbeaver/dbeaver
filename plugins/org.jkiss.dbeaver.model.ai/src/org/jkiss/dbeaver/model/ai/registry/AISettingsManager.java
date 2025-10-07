@@ -157,6 +157,12 @@ public class AISettingsManager {
                 }
             }
 
+            if (settings.getEnabledFunctionCategories().isEmpty()) {
+                settings.setEnabledFunctionCategories(
+                    AIFunctionRegistry.getInstance().getDefaultEnabledCategoryIds()
+                );
+            }
+
             settings.setEngineConfigurations(engineConfigurationMap);
         }
         if (settings.activeEngine() == null || !settings.hasConfiguration(settings.activeEngine())) {
