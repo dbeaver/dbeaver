@@ -105,7 +105,8 @@ public interface IResultSetController extends IDataController, DBPContextProvide
 
     String getReadOnlyStatus();
 
-    String getAttributeReadOnlyStatus(DBDAttributeBinding attr, boolean checkEntity, boolean checkKey);
+    @Nullable
+    String getAttributeReadOnlyStatus(@NotNull DBDAttributeBinding attr, boolean checkEntity, boolean checkKey);
 
     boolean isPanelsVisible();
 
