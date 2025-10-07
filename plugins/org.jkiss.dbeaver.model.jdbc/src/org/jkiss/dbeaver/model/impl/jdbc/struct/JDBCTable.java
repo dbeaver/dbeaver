@@ -105,6 +105,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
         this.persisted = persisted;
     }
 
+    @NotNull
     @Override
     public String[] getSupportedFeatures()
     {

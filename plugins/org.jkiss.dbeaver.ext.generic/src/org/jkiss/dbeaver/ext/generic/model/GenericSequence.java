@@ -75,7 +75,7 @@ public class GenericSequence implements DBSSequence, DBPQualifiedObject, DBPName
     }
 
     @Override
-    public void setName(String name) {
+    public void setName(@NotNull String name) {
         this.name = name;
     }
 

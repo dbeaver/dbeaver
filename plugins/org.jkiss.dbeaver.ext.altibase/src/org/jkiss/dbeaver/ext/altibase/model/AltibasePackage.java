@@ -61,6 +61,7 @@ public class AltibasePackage extends GenericPackage implements DBPStatefulObject
         this.valid = this.valid && valid;
     }
 
+    @NotNull
     @Override
     public String getObjectDefinitionText(@NotNull DBRProgressMonitor monitor, @NotNull Map<String, Object> options) throws DBException {
         if (source == null) {
@@ -114,7 +115,7 @@ public class AltibasePackage extends GenericPackage implements DBPStatefulObject
     }
 
     @Override
-    public void refreshObjectState(DBRProgressMonitor monitor) throws DBCException {
+    public void refreshObjectState(@NotNull DBRProgressMonitor monitor) throws DBCException {
         try (JDBCSession session = DBUtils.openMetaSession(monitor, this, 
                 "Refresh state of package '" + this.getName() + "'")) {
             refreshState(session);

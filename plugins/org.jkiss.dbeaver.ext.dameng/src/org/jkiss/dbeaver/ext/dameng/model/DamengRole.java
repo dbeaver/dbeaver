@@ -73,6 +73,7 @@ public class DamengRole implements DBARole, DBPScriptObject, DBPObjectWithLongId
         return id;
     }
 
+    @NotNull
     @Override
     @Property(viewable = true, order = 2)
     public String getName() {
@@ -104,6 +105,7 @@ public class DamengRole implements DBARole, DBPScriptObject, DBPObjectWithLongId
         return dataSource;
     }
 
+    @NotNull
     @Override
     public String getObjectDefinitionText(@NotNull DBRProgressMonitor monitor, @NotNull Map<String, Object> options) throws DBException {
         return DamengUtils.getDDL(monitor, this, DamengConstants.ObjectType.ROLE, null);

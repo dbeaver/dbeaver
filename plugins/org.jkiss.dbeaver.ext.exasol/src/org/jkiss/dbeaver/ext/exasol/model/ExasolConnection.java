@@ -89,7 +89,8 @@ public class ExasolConnection
 
 	}
 
-	@Override
+	@NotNull
+    @Override
 	@Property(viewable = true, editable=true, order = 10)
 	public String getName()
 	{
@@ -97,7 +98,7 @@ public class ExasolConnection
 	}
 	
 	@Override
-	public void setName(String name)
+	public void setName(@NotNull String name)
 	{
 	    this.connectionName = name;
 	}
@@ -175,6 +176,7 @@ public class ExasolConnection
 		return this;
 	}
 
+	@NotNull
 	@Override
 	public String getObjectDefinitionText(@NotNull DBRProgressMonitor monitor, @NotNull Map<String, Object> options)
 			throws DBException

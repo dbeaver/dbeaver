@@ -86,6 +86,7 @@ public class DamengTableConstraint extends GenericUniqueKey implements DBPObject
         this.checkInfo = expression;
     }
 
+    @NotNull
     @Override
     public String getObjectDefinitionText(@NotNull DBRProgressMonitor monitor, @NotNull Map<String, Object> options) throws DBException {
         return DamengUtils.getDDL(monitor, this, DamengConstants.ObjectType.CONSTRAINT, this.getTable().getSchemaName());

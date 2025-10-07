@@ -188,7 +188,7 @@ public class PrefPageProjectResourceSettings extends AbstractPrefPage implements
         resourceTable.removeAll();
         DBPWorkspaceDesktop workspace = DBPPlatformDesktop.getInstance().getWorkspace();
         for (DBPResourceTypeDescriptor descriptor : ResourceTypeRegistry.getInstance().getResourceTypes()) {
-            if (!descriptor.isManagable()) {
+            if (!descriptor.isManageable()) {
                 continue;
             }
             TableItem item = new TableItem(resourceTable, SWT.NONE);

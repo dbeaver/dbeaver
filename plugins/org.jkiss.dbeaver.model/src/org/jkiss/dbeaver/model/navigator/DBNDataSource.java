@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -50,6 +50,7 @@ public class DBNDataSource extends DBNDatabaseNode implements DBNContainer, DBPA
         registerNode();
     }
 
+    @Nullable
     @Override
     public DBNNode getParentNode()
     {
@@ -107,23 +108,27 @@ public class DBNDataSource extends DBNDatabaseNode implements DBNContainer, DBPA
         return null;
     }
 
+    @NotNull
     @Override
     public String getNodeDisplayName() {
         return dataSource.getName();
     }
 
+    @Nullable
     @Override
     public String getNodeDescription()
     {
         return dataSource.getDescription();
     }
 
+    @NotNull
     @Override
     public String getNodeFullName()
     {
         return getNodeDisplayName();
     }
 
+    @NotNull
     @Deprecated
     @Override
     public String getNodeItemPath() {
@@ -131,7 +136,7 @@ public class DBNDataSource extends DBNDatabaseNode implements DBNContainer, DBPA
     }
 
     @Override
-    public boolean isManagable()
+    public boolean isManageable()
     {
         return true;
     }
@@ -159,6 +164,7 @@ public class DBNDataSource extends DBNDatabaseNode implements DBNContainer, DBPA
         return DBUtils.initDataSource(monitor, dataSource, onFinish);
     }
 
+    @Nullable
     @Override
     public DBPImage getNodeIcon() {
         DBPImage image = super.getNodeIcon();
@@ -192,7 +198,7 @@ public class DBNDataSource extends DBNDatabaseNode implements DBNContainer, DBPA
     }
 
     @Override
-    public <T> T getAdapter(Class<T> adapter) {
+    public <T> T getAdapter(@NotNull Class<T> adapter) {
         if (adapter == DBNDataSource.class) {
             return adapter.cast(this);
         } else if (DBPDataSourceContainer.class.isAssignableFrom(adapter)) {
@@ -215,7 +221,7 @@ public class DBNDataSource extends DBNDatabaseNode implements DBNContainer, DBPA
     }
 
     @Override
-    public void rename(DBRProgressMonitor monitor, String newName)
+    public void rename(@NotNull DBRProgressMonitor monitor, @NotNull String newName)
     {
         dataSource.setName(newName);
         dataSource.persistConfiguration();
@@ -238,14 +244,14 @@ public class DBNDataSource extends DBNDatabaseNode implements DBNContainer, DBPA
     }
 
     @Override
-    public boolean supportsDrop(DBNNode otherNode)
+    public boolean supportsDrop(@Nullable DBNNode otherNode)
     {
         return otherNode == null || otherNode instanceof DBNDataSource ||
             (otherNode instanceof DBNLocalFolder && ((DBNLocalFolder) otherNode).getFolder().canMoveTo(dataSource.getFolder()));
     }
 
     @Override
-    public void dropNodes(DBRProgressMonitor monitor, Collection<DBNNode> nodes) throws DBException
+    public void dropNodes(@NotNull DBRProgressMonitor monitor, @NotNull Collection<DBNNode> nodes) throws DBException
     {
         DBPDataSourceFolder folder = dataSource.getFolder();
         for (DBNNode node : nodes) {
@@ -270,7 +276,8 @@ public class DBNDataSource extends DBNDatabaseNode implements DBNContainer, DBPA
         return true;
     }
 
-    public DBNNode refreshNode(DBRProgressMonitor monitor, Object source) throws DBException
+    @Nullable
+    public DBNNode refreshNode(@NotNull DBRProgressMonitor monitor, @Nullable Object source) throws DBException
     {
         DBNNode node = super.refreshNode(monitor, source);
         if (node == this) {
@@ -285,6 +292,7 @@ public class DBNDataSource extends DBNDatabaseNode implements DBNContainer, DBPA
         clearNode(true);
     }
 
+    @NotNull
     @Override
     public String toString() {
         return dataSource.toString();

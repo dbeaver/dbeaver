@@ -163,9 +163,9 @@ public class DesktopPlatform extends BasePlatformImpl implements DBPPlatformDesk
 
         DesktopPlatform.setClosing(true);
         DBPApplication application = getApplication();
-        if (application instanceof DBPApplicationController) {
+        if (application instanceof DBPApplicationController ac) {
             // Shutdown in headless mode
-            ((DBPApplicationController) application).setHeadlessMode(true);
+            ac.setHeadlessMode(true);
         }
 
         DBRFeatureRegistry.getInstance().endTracking();

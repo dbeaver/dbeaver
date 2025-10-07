@@ -368,6 +368,7 @@ public class PostgreServerRedshift extends PostgreServerExtensionBase implements
         return new RedshiftSchemaCache();
     }
 
+    @NotNull
     @Override
     public ErrorType discoverErrorType(@NotNull Throwable error) {
         int errorCode = SQLState.getCodeFromException(error);

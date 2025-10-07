@@ -49,15 +49,17 @@ public interface DBSDataContainer extends DBSObject {
     long FLAG_FETCH_SEGMENT         = 1 << 4;
     long FLAG_REFRESH               = 1 << 8;
 
+    @NotNull
     DBPDataSource getDataSource();
 
     /**
      * Features supported by implementation
      * @return supported features
      */
+    @NotNull
     String[] getSupportedFeatures();
 
-    default boolean isFeatureSupported(String feature) {
+    default boolean isFeatureSupported(@NotNull String feature) {
         return ArrayUtils.contains(getSupportedFeatures(), feature);
     }
 

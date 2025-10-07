@@ -267,6 +267,7 @@ public class MySQLPartition extends MySQLTable implements DBSTablePartition {
         return checksum;
     }
 
+    @NotNull
     @Override
     public String getObjectDefinitionText(@NotNull DBRProgressMonitor monitor, @NotNull Map<String, Object> options) throws DBException {
         return table.getObjectDefinitionText(monitor, options);

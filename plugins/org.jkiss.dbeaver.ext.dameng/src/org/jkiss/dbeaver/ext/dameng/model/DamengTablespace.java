@@ -111,6 +111,7 @@ public class DamengTablespace implements DBPRefreshableObject, DBPObjectStatisti
         return id;
     }
 
+    @NotNull
     @Override
     @Property(viewable = true, order = 1)
     public String getName() {
@@ -219,6 +220,7 @@ public class DamengTablespace implements DBPRefreshableObject, DBPObjectStatisti
         return usedSize;
     }
 
+    @NotNull
     @Override
     public String getObjectDefinitionText(@NotNull DBRProgressMonitor monitor, @NotNull Map<String, Object> options) throws DBException {
         return DamengUtils.getDDL(monitor, this, DamengConstants.ObjectType.TABLESPACE, null);

@@ -144,6 +144,7 @@ public class GenericPackage extends GenericObjectContainer implements DBPQualifi
         DBUtils.orderObjects(procedures);
     }
 
+    @NotNull
     @Override
     public String getObjectDefinitionText(@NotNull DBRProgressMonitor monitor, @NotNull Map<String, Object> options) throws DBException {
         return null;

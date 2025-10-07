@@ -187,6 +187,7 @@ public class OracleJob extends OracleSchemaObject implements OracleSourceObject 
         return false;
     }
 
+    @NotNull
     @Override
     public String getObjectDefinitionText(@NotNull DBRProgressMonitor monitor, @NotNull Map<String, Object> options) throws DBException {
         if (job == 0) {
