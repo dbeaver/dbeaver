@@ -44,13 +44,14 @@ import org.jkiss.dbeaver.ui.ai.internal.AIUIMessages;
 import org.jkiss.dbeaver.ui.ai.model.CachedValue;
 import org.jkiss.dbeaver.ui.ai.model.ContextWindowSizeField;
 import org.jkiss.dbeaver.ui.ai.model.ModelSelectorField;
+import org.jkiss.dbeaver.ui.ai.preferences.AIIObjectPropertyConfigurator;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.List;
 import java.util.Locale;
 
 public class OpenAiConfigurator<ENGINE extends AIEngineDescriptor, PROPERTIES extends OpenAIProperties>
-    implements IObjectPropertyConfigurator<ENGINE, PROPERTIES> {
+    implements AIIObjectPropertyConfigurator<ENGINE, PROPERTIES> {
     private static final String API_KEY_URL = "https://platform.openai.com/account/api-keys";
     protected String baseUrl;
     protected volatile String token = "";

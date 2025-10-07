@@ -42,17 +42,14 @@ import org.jkiss.dbeaver.model.rm.RMConstants;
 import org.jkiss.dbeaver.registry.configurator.UIPropertyConfiguratorDescriptor;
 import org.jkiss.dbeaver.registry.configurator.UIPropertyConfiguratorRegistry;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
-import org.jkiss.dbeaver.ui.IObjectPropertyConfigurator;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.ai.internal.AIUIMessages;
 import org.jkiss.dbeaver.ui.preferences.AbstractPrefPage;
 
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
-import java.util.Comparator;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class AIPreferencePageMain extends AbstractPrefPage implements IWorkbenchPreferencePage, IWorkbenchPropertyPage {
     private static final Log log = Log.getLog(AIPreferencePageMain.class);
@@ -84,7 +81,7 @@ public class AIPreferencePageMain extends AbstractPrefPage implements IWorkbench
     }
 
     @Nullable
-    private IObjectPropertyConfigurator<AIEngineDescriptor, AIEngineProperties> createEngineConfigurator() {
+    private AIIObjectPropertyConfigurator<AIEngineDescriptor, AIEngineProperties> createEngineConfigurator() {
         UIPropertyConfiguratorDescriptor engineDescriptor =
             UIPropertyConfiguratorRegistry.getInstance().getDescriptor(completionEngine.getEngineObjectType().getImplName());
         if (engineDescriptor != null) {
@@ -201,7 +198,7 @@ public class AIPreferencePageMain extends AbstractPrefPage implements IWorkbench
         activeEngineConfiguratorPage = engineConfiguratorMapping.get(id);
 
         if (activeEngineConfiguratorPage == null) {
-            IObjectPropertyConfigurator<AIEngineDescriptor, AIEngineProperties> engineConfigurator
+            AIIObjectPropertyConfigurator<AIEngineDescriptor, AIEngineProperties> engineConfigurator
                 = createEngineConfigurator();
             if (engineConfigurator == null) {
                 log.error("Engine configurator not found for " + completionEngine.getId());
@@ -226,7 +223,7 @@ public class AIPreferencePageMain extends AbstractPrefPage implements IWorkbench
 
 
     private void createTestConnectionButton(@NotNull Composite parent) {
-        UIUtils.createPushButton(
+        Button testConnectionButton = UIUtils.createPushButton(
             parent,
             AIUIMessages.gpt_preference_page_ai_connection_test_label,
             null,
@@ -249,10 +246,17 @@ public class AIPreferencePageMain extends AbstractPrefPage implements IWorkbench
             })
 
         );
+
+        testConnectionButton.setEnabled(activeEngineConfiguratorPage.getCurrentProperties().isPresent());
     }
 
     private void testConnection() throws DBException, InterruptedException, InvocationTargetException {
-        try (AIEngine selectedEngine = completionEngine.createEngineInstance()) {
+        Optional<AIEngineProperties> currentProperties = activeEngineConfiguratorPage.getCurrentProperties();
+        try (
+            AIEngine selectedEngine = currentProperties.isPresent()
+                ? completionEngine.createEngineInstance(currentProperties.get())
+                : completionEngine.createEngineInstance()
+        ) {
             UIUtils.getDialogRunnableContext().run(true, true, monitor -> {
                 try {
                     selectedEngine.getModels(monitor);
@@ -278,10 +282,10 @@ private void showConnectionErrorMessage(Throwable ex) {
     }
 
     private static class EngineConfiguratorPage {
-        private final IObjectPropertyConfigurator<AIEngineDescriptor, AIEngineProperties> configurator;
+        private final AIIObjectPropertyConfigurator<AIEngineDescriptor, AIEngineProperties> configurator;
         private Composite composite;
 
-        EngineConfiguratorPage(IObjectPropertyConfigurator<AIEngineDescriptor, AIEngineProperties> configurator) {
+        EngineConfiguratorPage(@Nullable AIIObjectPropertyConfigurator<AIEngineDescriptor, AIEngineProperties> configurator) {
             this.configurator = configurator;
         }
 
@@ -307,6 +311,12 @@ private void showConnectionErrorMessage(Throwable ex) {
             if (configurator != null) {
                 configurator.saveSettings(settings);
             }
+        }
+
+        private Optional<AIEngineProperties> getCurrentProperties() {
+            return Optional
+                .ofNullable(configurator)
+                .flatMap(AIIObjectPropertyConfigurator::getCurrentProperties);
         }
     }
 

@@ -43,13 +43,14 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.ai.internal.AIUIMessages;
 import org.jkiss.dbeaver.ui.ai.model.ContextWindowSizeField;
 import org.jkiss.dbeaver.ui.ai.model.ModelSelectorField;
+import org.jkiss.dbeaver.ui.ai.preferences.AIIObjectPropertyConfigurator;
 import org.jkiss.utils.CommonUtils;
 
 import java.net.URI;
 import java.util.Locale;
 import java.util.concurrent.CompletableFuture;
 
-public class CopilotConfigurator implements IObjectPropertyConfigurator<AIEngineDescriptor, CopilotProperties> {
+public class CopilotConfigurator implements AIIObjectPropertyConfigurator<AIEngineDescriptor, CopilotProperties> {
 
     private Text temperatureText;
     private ContextWindowSizeField contextWindowSizeField;
