@@ -25,7 +25,7 @@ import java.util.Optional;
 public interface AIIObjectPropertyConfigurator<ENGINE extends AIEngineDescriptor, PROPERTIES extends AIEngineProperties> extends
     IObjectPropertyConfigurator<ENGINE, PROPERTIES> {
 
-    default Optional<PROPERTIES> getCurrentProperties() {
+    default Optional<AIEngineProperties> getCurrentProperties() {
         return Optional.empty();
     }
 }

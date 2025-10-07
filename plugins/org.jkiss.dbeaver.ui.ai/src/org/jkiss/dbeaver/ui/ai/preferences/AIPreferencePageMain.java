@@ -63,6 +63,7 @@ public class AIPreferencePageMain extends AbstractPrefPage implements IWorkbench
     private final Map<String, EngineConfiguratorPage> engineConfiguratorMapping = new HashMap<>();
     private EngineConfiguratorPage activeEngineConfiguratorPage;
     private Button enableAICheck;
+    private Button connectionTestButton;
 
     public AIPreferencePageMain() {
         this.settings = AISettingsManager.getInstance().getSettings();
@@ -219,11 +220,14 @@ public class AIPreferencePageMain extends AbstractPrefPage implements IWorkbench
                 e
             );
         }
+        if (Objects.nonNull(connectionTestButton)) {
+            connectionTestButton.setEnabled(activeEngineConfiguratorPage.getCurrentProperties().isPresent());
+        }
     }
 
 
     private void createTestConnectionButton(@NotNull Composite parent) {
-        Button testConnectionButton = UIUtils.createPushButton(
+        connectionTestButton = UIUtils.createPushButton(
             parent,
             AIUIMessages.gpt_preference_page_ai_connection_test_label,
             null,
@@ -244,10 +248,9 @@ public class AIPreferencePageMain extends AbstractPrefPage implements IWorkbench
                     showConnectionErrorMessage(ex.getCause());
                 }
             })
-
         );
 
-        testConnectionButton.setEnabled(activeEngineConfiguratorPage.getCurrentProperties().isPresent());
+        connectionTestButton.setEnabled(activeEngineConfiguratorPage.getCurrentProperties().isPresent());
     }
 
     private void testConnection() throws DBException, InterruptedException, InvocationTargetException {
@@ -268,7 +271,7 @@ public class AIPreferencePageMain extends AbstractPrefPage implements IWorkbench
     }
 
 
-private void showConnectionErrorMessage(Throwable ex) {
+    private void showConnectionErrorMessage(Throwable ex) {
     DBWorkbench.getPlatformUI().showError(
         AIUIMessages.gpt_preference_page_ai_connection_test_connection_error_title,
         NLS.bind(AIUIMessages.gpt_preference_page_ai_connection_test_connection_error_message, settings.activeEngine()),
