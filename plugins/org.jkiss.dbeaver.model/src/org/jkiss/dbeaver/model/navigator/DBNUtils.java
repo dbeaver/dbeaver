@@ -160,10 +160,6 @@ public class DBNUtils {
 
         Comparator<DBNNode> comparator = null;
 
-        if (prefStore.getBoolean(ModelPreferences.NAVIGATOR_SORT_ALPHABETICALLY)) {
-            comparator = NodeNameComparator.INSTANCE;
-        }
-
         if (prefStore.getBoolean(ModelPreferences.NAVIGATOR_SORT_FOLDERS_FIRST) || isMergedEntity(firstChild)) {
             comparator = NodeFolderComparator.INSTANCE.thenComparing((o1, o2) -> {
                 if (o1 instanceof DBNContainer && o2 instanceof DBNContainer) {
@@ -173,10 +169,16 @@ public class DBNUtils {
                 } else if (o2 instanceof DBNContainer) {
                     return -1;
                 }
-                return AlphanumericComparator.getInstance()
-                    .compare(o1.getNodeDisplayName(), o2.getNodeDisplayName());
+                return 0;
             });
         }
+
+        if (prefStore.getBoolean(ModelPreferences.NAVIGATOR_SORT_ALPHABETICALLY)) {
+            comparator = Objects.isNull(comparator)
+                ? NodeNameComparator.INSTANCE
+                : comparator.thenComparing(NodeNameComparator.INSTANCE);
+        }
+
         if (comparator != null) {
             Arrays.sort(children, comparator);
         }
@@ -274,7 +276,14 @@ public class DBNUtils {
 
         @Override
         public int compare(DBNNode node1, DBNNode node2) {
-            return node1.getNodeDisplayName().compareToIgnoreCase(node2.getNodeDisplayName());
+            boolean isIgnoreCase = DBWorkbench.getPlatform().getPreferenceStore().getBoolean(ModelPreferences.NAVIGATOR_SORT_IGNORE_CASE);
+            String node1Name = node1.getNodeDisplayName();
+            String node2Name = node2.getNodeDisplayName();
+            if (isIgnoreCase) {
+                node1Name = node1Name.toUpperCase();
+                node2Name = node2Name.toUpperCase();
+            }
+            return AlphanumericComparator.getInstance().compare(node1Name, node2Name);
         }
     }
 
