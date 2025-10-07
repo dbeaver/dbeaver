@@ -21,8 +21,7 @@ import org.jkiss.dbeaver.model.websocket.WSConstants;
 
 public class WSSessionTaskConfirmationRequestEvent extends WSAbstractSessionEvent {
 
-    public static final String ID = ""
-        + "";
+    public static final String ID = "cb_session_task_confirmation_request";
 
     private final String taskId;
     private final String title;
