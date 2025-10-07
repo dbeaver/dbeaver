@@ -29,6 +29,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Text;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.ai.engine.AIEngineProperties;
 import org.jkiss.dbeaver.model.ai.engine.AIModel;
 import org.jkiss.dbeaver.model.ai.engine.copilot.CopilotClient;
 import org.jkiss.dbeaver.model.ai.engine.copilot.CopilotCompletionEngine;
@@ -38,7 +39,6 @@ import org.jkiss.dbeaver.model.ai.registry.AIEngineDescriptor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.ui.UIServiceAuth;
-import org.jkiss.dbeaver.ui.IObjectPropertyConfigurator;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.ai.internal.AIUIMessages;
 import org.jkiss.dbeaver.ui.ai.model.ContextWindowSizeField;
@@ -48,6 +48,7 @@ import org.jkiss.utils.CommonUtils;
 
 import java.net.URI;
 import java.util.Locale;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
 public class CopilotConfigurator implements AIIObjectPropertyConfigurator<AIEngineDescriptor, CopilotProperties> {
@@ -244,5 +245,12 @@ public class CopilotConfigurator implements AIIObjectPropertyConfigurator<AIEngi
         } catch (InterruptedException e) {
             throw new DBException("Authorization was interrupted", e);
         }
+    }
+
+    @Override
+    public Optional<AIEngineProperties> getCurrentProperties() {
+        CopilotProperties copilotPropertiesCopy= new CopilotProperties();
+        saveSettings(copilotPropertiesCopy);
+        return Optional.of(copilotPropertiesCopy);
     }
 }

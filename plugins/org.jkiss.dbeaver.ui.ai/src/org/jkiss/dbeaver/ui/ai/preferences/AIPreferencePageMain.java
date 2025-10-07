@@ -232,20 +232,21 @@ public class AIPreferencePageMain extends AbstractPrefPage implements IWorkbench
             AIUIMessages.gpt_preference_page_ai_connection_test_label,
             null,
             SelectionListener.widgetSelectedAdapter(e -> {
+                String engineId = serviceCombo.getText();
                 try{
                     testConnection();
                     DBWorkbench.getPlatformUI().showMessageBox(
                         AIUIMessages.gpt_preference_page_ai_connection_test_connection_success_title,
                         NLS.bind(
                             AIUIMessages.gpt_preference_page_ai_connection_test_connection_success_message,
-                            settings.activeEngine()
+                            engineId
                         ),
                         false
                     );
                 } catch (DBException | InterruptedException ex) {
-                    showConnectionErrorMessage(ex);
+                    showConnectionErrorMessage(ex,engineId );
                 } catch (InvocationTargetException ex) {
-                    showConnectionErrorMessage(ex.getCause());
+                    showConnectionErrorMessage(ex.getCause(),engineId );
                 }
             })
         );
@@ -271,10 +272,10 @@ public class AIPreferencePageMain extends AbstractPrefPage implements IWorkbench
     }
 
 
-    private void showConnectionErrorMessage(Throwable ex) {
+    private void showConnectionErrorMessage(Throwable ex, String engineId) {
     DBWorkbench.getPlatformUI().showError(
         AIUIMessages.gpt_preference_page_ai_connection_test_connection_error_title,
-        NLS.bind(AIUIMessages.gpt_preference_page_ai_connection_test_connection_error_message, settings.activeEngine()),
+        NLS.bind(AIUIMessages.gpt_preference_page_ai_connection_test_connection_error_message, engineId),
         ex
     );
 }
