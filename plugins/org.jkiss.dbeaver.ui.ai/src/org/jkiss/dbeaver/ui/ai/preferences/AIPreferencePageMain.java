@@ -273,11 +273,11 @@ public class AIPreferencePageMain extends AbstractPrefPage implements IWorkbench
 
 
     private void showConnectionErrorMessage(Throwable ex, String engineId) {
-    DBWorkbench.getPlatformUI().showError(
-        AIUIMessages.gpt_preference_page_ai_connection_test_connection_error_title,
-        NLS.bind(AIUIMessages.gpt_preference_page_ai_connection_test_connection_error_message, engineId),
-        ex
-    );
+        DBWorkbench.getPlatformUI().showError(
+            AIUIMessages.gpt_preference_page_ai_connection_test_connection_error_title,
+            NLS.bind(AIUIMessages.gpt_preference_page_ai_connection_test_connection_error_message, engineId),
+            ex
+        );
 }
 
     @Override
