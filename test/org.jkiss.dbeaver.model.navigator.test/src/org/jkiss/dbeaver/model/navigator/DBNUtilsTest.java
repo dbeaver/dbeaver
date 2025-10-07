@@ -40,6 +40,31 @@ public class DBNUtilsTest extends DBeaverUnitTest {
         changedProperties.clear();
     }
 
+    @Test
+    public void sortChildrenNoSortAlphabeticallyAndWithFoldersFirstPropertyShouldNotBeSortedForNoFoldersChildren() {
+        // given
+        addProperty(ModelPreferences.NAVIGATOR_SORT_ALPHABETICALLY, false);
+        addProperty(ModelPreferences.NAVIGATOR_SORT_FOLDERS_FIRST, true);
+        List<String> givenNames = List.of("b", "a", "A", "C");
+        List<String> expectedNames = List.of("b", "a", "A", "C");
+        // when
+        var result = DBNUtils.filterNavigableChildren(getNamedNodes(givenNames), true);
+        // then
+        assertEquals(expectedNames, Arrays.stream(result).map(DBNNode::getNodeDisplayName).toList());
+    }
+
+    @Test
+    public void sortChildrenNoSortAlphabeticallyAndNoFoldersFirstPropertyShouldNotBeSorted() {
+        // given
+        addProperty(ModelPreferences.NAVIGATOR_SORT_ALPHABETICALLY, false);
+        addProperty(ModelPreferences.NAVIGATOR_SORT_FOLDERS_FIRST, false);
+        List<String> givenNames = List.of("b", "a", "A", "C");
+        List<String> expectedNames = List.of("b", "a", "A", "C");
+        // when
+        var result = DBNUtils.filterNavigableChildren(getNamedNodes(givenNames), true);
+        // then
+        assertEquals(expectedNames, Arrays.stream(result).map(DBNNode::getNodeDisplayName).toList());
+    }
 
     @Test
     public void sortChildrenWithSortAlphabeticallyAndNoFoldersFirstPropertyShouldIgnoreCase() {
@@ -114,19 +139,6 @@ public class DBNUtilsTest extends DBeaverUnitTest {
         addProperty(ModelPreferences.NAVIGATOR_SORT_FOLDERS_FIRST, true);
         List<String> givenNames = List.of("s2123456789123456789", "s1123456789123456789");
         List<String> expectedNames = List.of("s1123456789123456789", "s2123456789123456789");
-        // when
-        var result = DBNUtils.filterNavigableChildren(getNamedNodes(givenNames), true);
-        // then
-        assertEquals(expectedNames, Arrays.stream(result).map(DBNNode::getNodeDisplayName).toList());
-    }
-
-    @Test
-    public void sortChildrenWithSortAlphabeticallyAndWithFoldersFirstPropertyShouldNotBeSorted() {
-        // given
-        addProperty(ModelPreferences.NAVIGATOR_SORT_ALPHABETICALLY, false);
-        addProperty(ModelPreferences.NAVIGATOR_SORT_FOLDERS_FIRST, true);
-        List<String> givenNames = List.of("b", "a", "A", "C");
-        List<String> expectedNames = List.of("b", "a", "A", "C");
         // when
         var result = DBNUtils.filterNavigableChildren(getNamedNodes(givenNames), true);
         // then
