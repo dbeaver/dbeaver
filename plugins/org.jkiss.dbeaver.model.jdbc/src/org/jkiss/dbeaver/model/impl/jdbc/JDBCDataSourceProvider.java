@@ -47,11 +47,12 @@ public abstract class JDBCDataSourceProvider implements DBPDataSourceProvider {
 
     }
 
+    @NotNull
     @Override
     public DBPPropertyDescriptor[] getConnectionProperties(
-        DBRProgressMonitor monitor,
-        DBPDriver driver,
-        DBPConnectionConfiguration connectionInfo
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBPDriver driver,
+        @NotNull DBPConnectionConfiguration connectionInfo
     ) throws DBException {
         Collection<DBPPropertyDescriptor> props = null;
         if (driver.isInternalDriver()) {

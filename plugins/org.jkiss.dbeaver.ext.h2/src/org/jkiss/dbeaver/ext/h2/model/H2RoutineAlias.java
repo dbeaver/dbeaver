@@ -86,6 +86,7 @@ public class H2RoutineAlias extends GenericProcedure {
         return super.getFunctionResultType();
     }
 
+    @NotNull
     @Override
     public String getObjectDefinitionText(@NotNull DBRProgressMonitor monitor, @NotNull Map<String, Object> options) {
         StringBuilder sourceDDL = new StringBuilder(128);

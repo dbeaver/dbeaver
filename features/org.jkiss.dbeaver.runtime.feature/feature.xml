@@ -55,9 +55,6 @@
     <plugin id="org.jkiss.dbeaver.tasks.native" version="0.0.0" />
     <plugin id="org.jkiss.dbeaver.model.erd" version="0.0.0" />
 
-    <plugin id="org.jkiss.dbeaver.dpi.app" version="0.0.0" />
-    <plugin id="org.jkiss.dbeaver.dpi.model" version="0.0.0" />
-
     <!-- GIS -->
     <plugin id="org.jkiss.dbeaver.data.gis" version="0.0.0" />
     <plugin id="org.jkiss.bundle.gis" version="0.0.0" />

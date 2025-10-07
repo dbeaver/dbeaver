@@ -197,6 +197,7 @@ public class AltibaseSequence extends GenericSequence implements DBPScriptObject
         return sb.toString();
     }
 
+    @NotNull
     @Override
     public String getObjectDefinitionText(@NotNull DBRProgressMonitor monitor, @NotNull Map<String, Object> options) throws DBException {
         if (source == null) {

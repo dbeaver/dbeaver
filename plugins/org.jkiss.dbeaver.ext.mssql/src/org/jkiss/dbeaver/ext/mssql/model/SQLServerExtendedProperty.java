@@ -88,7 +88,7 @@ public class SQLServerExtendedProperty implements SQLServerObject, DBPUniqueObje
     }
 
     @Override
-    public void setName(String name) {
+    public void setName(@NotNull String name) {
         this.name = name;
     }
 
@@ -200,6 +200,7 @@ public class SQLServerExtendedProperty implements SQLServerObject, DBPUniqueObje
         return ddl.toString();
     }
 
+    @NotNull
     @Override
     public String getObjectDefinitionText(@NotNull DBRProgressMonitor monitor, @NotNull Map<String, Object> options) throws DBException {
         return getObjectDefinitionText(monitor, false, false);

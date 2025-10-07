@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.model;
 
 import org.eclipse.core.runtime.IAdaptable;
+import org.jkiss.code.NotNull;
 
 /**
  * Adaptable object
@@ -24,5 +25,5 @@ import org.eclipse.core.runtime.IAdaptable;
 public interface DBPAdaptable extends IAdaptable  {
 
     @Override
-    <T> T getAdapter(Class<T> adapter);
+    <T> T getAdapter(@NotNull Class<T> adapter);
 }

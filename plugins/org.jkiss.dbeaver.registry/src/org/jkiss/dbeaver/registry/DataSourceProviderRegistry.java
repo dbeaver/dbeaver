@@ -206,10 +206,10 @@ public class DataSourceProviderRegistry implements DBPDataSourceProviderRegistry
             }
 
             dataSourceProviders.sort((o1, o2) -> {
-                if (o1.isDriversManagable() && !o2.isDriversManagable()) {
+                if (o1.isDriversManageable() && !o2.isDriversManageable()) {
                     return 1;
                 }
-                if (o2.isDriversManagable() && !o1.isDriversManagable()) {
+                if (o2.isDriversManageable() && !o1.isDriversManageable()) {
                     return -1;
                 }
                 return o1.getName().compareToIgnoreCase(o2.getName());

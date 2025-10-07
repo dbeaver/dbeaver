@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -58,16 +58,18 @@ public interface DBACertificateStorage
         @NotNull DBPDataSourceContainer dataSource,
         @NotNull String certType) throws DBException;
 
-    KeyStore getKeyStore(DBPDataSourceContainer container, String certType) throws DBException;
+    @NotNull
+    KeyStore getKeyStore(@NotNull DBPDataSourceContainer container, @NotNull String certType) throws DBException;
 
     @NotNull
     Path getStorageFolder();
 
     @NotNull
-    Path getKeyStorePath(DBPDataSourceContainer dataSource, String certType);
+    Path getKeyStorePath(@NotNull DBPDataSourceContainer dataSource, @NotNull String certType);
 
     @NotNull
     char[] getKeyStorePassword(@NotNull DBPDataSourceContainer dataSource, @NotNull String certType);
 
-    String getKeyStoreType(DBPDataSourceContainer dataSource);
+    @NotNull
+    String getKeyStoreType(@NotNull DBPDataSourceContainer dataSource);
 }

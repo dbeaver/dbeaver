@@ -52,6 +52,7 @@ public class AltibaseProcedurePackaged extends AltibaseProcedureBase {
         this.pkgName = pkgName;
     }
 
+    @NotNull
     @Override
     public String getObjectDefinitionText(@NotNull DBRProgressMonitor monitor, @NotNull Map<String, Object> options) throws DBException {
         return "-- Unable to get package dependent object source";

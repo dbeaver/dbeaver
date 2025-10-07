@@ -84,6 +84,7 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBNLazyNode, DB
         super.dispose(reflect);
     }
 
+    @NotNull
     @Override
     public String getNodeType() {
         if (getObject() == null) {
@@ -93,6 +94,7 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBNLazyNode, DB
         return meta == null ? "" : meta.getNodeTypeLabel(getObject().getDataSource(), null); //$NON-NLS-1$
     }
 
+    @NotNull
     @Override
     public String getNodeDisplayName() {
         return getPlainNodeName(false, true);
@@ -159,6 +161,7 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBNLazyNode, DB
         }
     }
 
+    @NotNull
     @Override
     public String getNodeFullName() {
         if (getObject() instanceof DBPQualifiedObject qo) {
@@ -168,11 +171,13 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBNLazyNode, DB
         }
     }
 
+    @Nullable
     @Override
     public String getNodeDescription() {
         return getObject() == null ? null : getObject().getDescription();
     }
 
+    @Nullable
     @Override
     public DBPImage getNodeIcon() {
         final DBSObject object = getObject();
@@ -215,6 +220,7 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBNLazyNode, DB
         return false;
     }
 
+    @NotNull
     @Override
     public DBNDatabaseNode[] getChildren(@NotNull DBRProgressMonitor monitor) throws DBException {
         boolean needsLoad;
@@ -345,8 +351,9 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBNLazyNode, DB
      * @return real refreshed node or null if nothing was refreshed
      * @throws DBException on any internal exception
      */
+    @Nullable
     @Override
-    public DBNNode refreshNode(DBRProgressMonitor monitor, Object source) throws DBException {
+    public DBNNode refreshNode(@NotNull DBRProgressMonitor monitor, @Nullable Object source) throws DBException {
         if (isLocked()) {
             log.warn("Attempt to refresh locked node '" + getNodeDisplayName() + "'"); //$NON-NLS-1$ //$NON-NLS-2$
             return null;
@@ -869,6 +876,7 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBNLazyNode, DB
         return nodeId;
     }
 
+    @NotNull
     @Deprecated
     @Override
     public String getNodeItemPath() {

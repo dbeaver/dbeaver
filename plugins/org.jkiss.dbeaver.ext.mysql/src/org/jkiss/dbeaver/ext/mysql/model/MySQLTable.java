@@ -725,6 +725,7 @@ public class MySQLTable extends MySQLTableBase
         };
     }
 
+    @NotNull
     @Override
     public String getObjectDefinitionText(@NotNull DBRProgressMonitor monitor, @NotNull Map<String, Object> options) throws DBException {
         return getDDL(monitor, options);

@@ -102,6 +102,7 @@ public class OracleProcedureStandalone extends OracleProcedureBase<OracleSchema>
             this);
     }
 
+    @NotNull
     @Override
     @Property(hidden = true, editable = true, updatable = true, order = -1)
     public String getObjectDefinitionText(@NotNull DBRProgressMonitor monitor, @NotNull Map<String, Object> options) throws DBCException
