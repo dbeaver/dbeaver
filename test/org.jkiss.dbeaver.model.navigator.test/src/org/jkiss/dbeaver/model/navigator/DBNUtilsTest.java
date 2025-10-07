@@ -34,17 +34,49 @@ public class DBNUtilsTest extends DBeaverUnitTest {
     private final List<String> changedProperties = new ArrayList<>();
 
     @After
-    public void tearDown() throws Exception {
+    public void tearDown() {
         var prefStore = DBWorkbench.getPlatform().getPreferenceStore();
         changedProperties.forEach(prefStore::setToDefault);
         changedProperties.clear();
     }
 
     @Test
-    public void sortChildrenNoSortAlphabeticallyAndWithFoldersFirstPropertyShouldNotBeSortedForNoFoldersChildren() {
+    public void shouldNotSortByNameIfAlphabeticallyIfAlphabeticallyFalse() {
+        // given
+        addProperty(ModelPreferences.NAVIGATOR_SORT_ALPHABETICALLY, false);
+        addProperty(ModelPreferences.NAVIGATOR_SORT_FOLDERS_FIRST, false);
+        //then
+        assertRemainUnsorted();
+    }
+
+    @Test
+    public void shouldNotSortByNameIfAlphabeticallyFalseAndByFolderTrue() {
         // given
         addProperty(ModelPreferences.NAVIGATOR_SORT_ALPHABETICALLY, false);
         addProperty(ModelPreferences.NAVIGATOR_SORT_FOLDERS_FIRST, true);
+        //then
+        assertRemainUnsorted();
+    }
+
+    @Test
+    public void shouldSortIgnoreCaseWhenIgnoreCaseTrue(){
+        // given
+        addProperty(ModelPreferences.NAVIGATOR_SORT_IGNORE_CASE, true);
+        //then
+        assertCorrectSortingIgnoreCase(true);
+        assertCorrectSortingIgnoreCase(false);
+    }
+
+    @Test
+    public void shouldSortWithCaseWhenIgnoreCaseFalse(){
+        // given
+        addProperty(ModelPreferences.NAVIGATOR_SORT_IGNORE_CASE, false);
+        //then
+        assertCorrectSortingWithCase(true);
+        assertCorrectSortingWithCase(false);
+    }
+
+    private void assertRemainUnsorted() {
         List<String> givenNames = List.of("b", "a", "A", "C");
         List<String> expectedNames = List.of("b", "a", "A", "C");
         // when
@@ -53,93 +85,26 @@ public class DBNUtilsTest extends DBeaverUnitTest {
         assertEquals(expectedNames, Arrays.stream(result).map(DBNNode::getNodeDisplayName).toList());
     }
 
-    @Test
-    public void sortChildrenNoSortAlphabeticallyAndNoFoldersFirstPropertyShouldNotBeSorted() {
-        // given
-        addProperty(ModelPreferences.NAVIGATOR_SORT_ALPHABETICALLY, false);
-        addProperty(ModelPreferences.NAVIGATOR_SORT_FOLDERS_FIRST, false);
-        List<String> givenNames = List.of("b", "a", "A", "C");
-        List<String> expectedNames = List.of("b", "a", "A", "C");
-        // when
-        var result = DBNUtils.filterNavigableChildren(getNamedNodes(givenNames), true);
-        // then
-        assertEquals(expectedNames, Arrays.stream(result).map(DBNNode::getNodeDisplayName).toList());
+
+    private void assertCorrectSortingIgnoreCase(boolean isFoldersFirst) {
+        addProperty(ModelPreferences.NAVIGATOR_SORT_ALPHABETICALLY, true);
+        addProperty(ModelPreferences.NAVIGATOR_SORT_FOLDERS_FIRST, isFoldersFirst);
+
+        assertCorrectSortingIgnoreCase(List.of("a", "A", "b", "C"), List.of("b", "a", "A", "C"));
+        assertCorrectSortingIgnoreCase(List.of("s1", "s2", "s03", "s10"), List.of("s2", "s1", "s10", "s03"));
+        assertCorrectSortingIgnoreCase(List.of("s1123456789123456789", "s2123456789123456789"), List.of("s2123456789123456789", "s1123456789123456789"));
     }
 
-    @Test
-    public void sortChildrenWithSortAlphabeticallyAndNoFoldersFirstPropertyShouldIgnoreCase() {
-        // given
-        addProperty(ModelPreferences.NAVIGATOR_SORT_ALPHABETICALLY, true);
-        addProperty(ModelPreferences.NAVIGATOR_SORT_FOLDERS_FIRST, false);
-        List<String> givenNames = List.of("b", "a", "A", "C");
-        List<String> expectedNames = List.of("a", "A", "b", "C");
-        // when
-        var result = DBNUtils.filterNavigableChildren(getNamedNodes(givenNames), true);
-        // then
-        assertEquals(expectedNames, Arrays.stream(result).map(DBNNode::getNodeDisplayName).toList());
+    private void assertCorrectSortingWithCase(boolean isFoldersFirst) {
+        addProperty(ModelPreferences.NAVIGATOR_SORT_ALPHABETICALLY,  true);
+        addProperty(ModelPreferences.NAVIGATOR_SORT_FOLDERS_FIRST, isFoldersFirst);
+
+        assertCorrectSortingIgnoreCase(List.of("A", "C", "a", "b"), List.of("b", "a", "A", "C"));
+        assertCorrectSortingIgnoreCase(List.of("s1", "s2", "s03", "s10"), List.of("s2", "s1", "s10", "s03"));
+        assertCorrectSortingIgnoreCase(List.of("s1123456789123456789", "s2123456789123456789"), List.of("s2123456789123456789", "s1123456789123456789"));
     }
 
-    @Test
-    public void sortChildrenWithSortAlphabeticallyAndNoFoldersFirstPropertyShouldIgnoreCaseNumbersCase() {
-        // given
-        addProperty(ModelPreferences.NAVIGATOR_SORT_ALPHABETICALLY, true);
-        addProperty(ModelPreferences.NAVIGATOR_SORT_FOLDERS_FIRST, false);
-        List<String> givenNames = List.of("s2", "s1", "s10", "s03");
-        List<String> expectedNames = List.of("s1", "s2", "s03", "s10");
-        // when
-        var result = DBNUtils.filterNavigableChildren(getNamedNodes(givenNames), true);
-        // then
-        assertEquals(expectedNames, Arrays.stream(result).map(DBNNode::getNodeDisplayName).toList());
-    }
-
-    @Test
-    public void sortChildrenWithSortAlphabeticallyAndNoFoldersFirstPropertyShouldIgnoreCaseBigNumbersCase() {
-        // given
-        addProperty(ModelPreferences.NAVIGATOR_SORT_ALPHABETICALLY, true);
-        addProperty(ModelPreferences.NAVIGATOR_SORT_FOLDERS_FIRST, false);
-        List<String> givenNames = List.of("s2123456789123456789", "s1123456789123456789");
-        List<String> expectedNames = List.of("s1123456789123456789", "s2123456789123456789");
-        // when
-        var result = DBNUtils.filterNavigableChildren(getNamedNodes(givenNames), true);
-        // then
-        assertEquals(expectedNames, Arrays.stream(result).map(DBNNode::getNodeDisplayName).toList());
-    }
-
-
-    @Test
-    public void sortChildrenWithSortAlphabeticallyAndWithFoldersFirstPropertyShouldIgnoreCase() {
-        // given
-        addProperty(ModelPreferences.NAVIGATOR_SORT_ALPHABETICALLY, true);
-        addProperty(ModelPreferences.NAVIGATOR_SORT_FOLDERS_FIRST, true);
-        List<String> givenNames = List.of("b", "a", "A", "C");
-        List<String> expectedNames = List.of("a", "A", "b", "C");
-        // when
-        var result = DBNUtils.filterNavigableChildren(getNamedNodes(givenNames), true);
-        // then
-        assertEquals(expectedNames, Arrays.stream(result).map(DBNNode::getNodeDisplayName).toList());
-    }
-
-    @Test
-    public void sortChildrenWithSortAlphabeticallyAndWithFoldersFirstPropertyShouldIgnoreCaseNumbersCase() {
-        // given
-        addProperty(ModelPreferences.NAVIGATOR_SORT_ALPHABETICALLY, true);
-        addProperty(ModelPreferences.NAVIGATOR_SORT_FOLDERS_FIRST, true);
-        List<String> givenNames = List.of("s2", "s1", "s10", "s03");
-        List<String> expectedNames = List.of("s1", "s2", "s03", "s10");
-        // when
-        var result = DBNUtils.filterNavigableChildren(getNamedNodes(givenNames), true);
-        // then
-        assertEquals(expectedNames, Arrays.stream(result).map(DBNNode::getNodeDisplayName).toList());
-    }
-
-    @Test
-    public void sortChildrenWithSortAlphabeticallyAndWithFoldersFirstPropertyShouldIgnoreCaseBigNumbersCase() {
-        // given
-        addProperty(ModelPreferences.NAVIGATOR_SORT_ALPHABETICALLY, true);
-        addProperty(ModelPreferences.NAVIGATOR_SORT_FOLDERS_FIRST, true);
-        List<String> givenNames = List.of("s2123456789123456789", "s1123456789123456789");
-        List<String> expectedNames = List.of("s1123456789123456789", "s2123456789123456789");
-        // when
+    private void assertCorrectSortingIgnoreCase(List<String> expectedNames, List<String> givenNames) {
         var result = DBNUtils.filterNavigableChildren(getNamedNodes(givenNames), true);
         // then
         assertEquals(expectedNames, Arrays.stream(result).map(DBNNode::getNodeDisplayName).toList());
