@@ -128,6 +128,8 @@ public class UINavigatorMessages extends NLS {
     public static String pref_page_database_general_label_show_contents_in_tooltips_tip;
     public static String pref_page_database_general_label_order_elements_alphabetically;
     public static String pref_page_database_general_label_order_elements_alphabetically_tip;
+    public static String pref_page_database_general_label_sort_case_insensitive;
+    public static String pref_page_database_general_label_sort_case_insensitive_tip;
     public static String pref_page_database_general_label_folders_first;
     public static String pref_page_database_general_label_folders_first_tip;
     public static String pref_page_database_general_label_show_host_name;
