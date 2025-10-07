@@ -47,18 +47,8 @@ public class CopilotCompletionEngine extends BaseCompletionEngine<CopilotPropert
     };
     private CopilotSessionToken sessionToken;
 
-    public CopilotCompletionEngine() throws DBException {
-        super();
-    }
-
-    public CopilotCompletionEngine(CopilotProperties properties) throws DBException {
+    public CopilotCompletionEngine(@NotNull CopilotProperties properties) {
         super(properties);
-    }
-
-    @NotNull
-    @Override
-    protected String getEngineId() {
-        return CopilotConstants.COPILOT_ENGINE;
     }
 
     @NotNull

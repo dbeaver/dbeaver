@@ -17,17 +17,10 @@
 package org.jkiss.dbeaver.model.ai.engine;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.ai.registry.AISettingsManager;
 
 public abstract class BaseCompletionEngine<PROPS extends AIEngineProperties> implements AIEngine<PROPS> {
 
     protected final PROPS properties;
-
-    public BaseCompletionEngine() throws DBException {
-        this.properties = AISettingsManager.getInstance().getSettings()
-            .getEngineConfiguration(getEngineId());
-    }
 
     public BaseCompletionEngine(@NotNull PROPS properties) {
         this.properties = properties;
@@ -38,7 +31,4 @@ public abstract class BaseCompletionEngine<PROPS extends AIEngineProperties> imp
     public PROPS getProperties() {
         return properties;
     }
-
-    @NotNull
-    protected abstract String getEngineId();
 }

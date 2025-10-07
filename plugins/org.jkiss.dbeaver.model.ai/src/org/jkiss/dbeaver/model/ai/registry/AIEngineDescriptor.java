@@ -94,6 +94,11 @@ public class AIEngineDescriptor extends AbstractDescriptor {
 
     @NotNull
     public AIEngine createEngineInstance() throws DBException {
-        return objectType.createInstance(AIEngine.class);
+        return createEngineInstance(AISettingsManager.getInstance().getSettings().getEngineConfiguration(getId()));
+    }
+
+    @NotNull
+    public AIEngine createEngineInstance(@NotNull AIEngineProperties properties) throws DBException {
+        return objectType.createInstance(AIEngine.class, properties);
     }
 }
