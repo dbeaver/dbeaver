@@ -720,12 +720,12 @@ public class UIUtils {
             .grab(true, false).create());
         final Label imageLabel = new Label(composite, SWT.NONE);
         imageLabel.setImage(DBeaverIcons.getImage(DBIcon.SMALL_INFO));
-        imageLabel.setLayoutData(new GridData(SWT.BEGINNING, SWT.BEGINNING, false, false));
+        imageLabel.setLayoutData(new GridData(SWT.BEGINNING, SWT.CENTER, false, true));
 
         final Link link = new Link(composite, SWT.NONE);
         link.setText(text);
         link.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> callback.run()));
-        link.setLayoutData(GridDataFactory.fillDefaults().grab(true, false).create());
+        link.setLayoutData(new GridData(SWT.BEGINNING, SWT.CENTER, true, true));
 
         return link;
     }
