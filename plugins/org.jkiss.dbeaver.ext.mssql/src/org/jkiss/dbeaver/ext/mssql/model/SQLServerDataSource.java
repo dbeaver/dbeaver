@@ -137,6 +137,7 @@ public class SQLServerDataSource extends JDBCDataSource implements DBSInstanceCo
         return info;
     }
 
+    @NotNull
     @Override
     public ErrorType discoverErrorType(@NotNull Throwable error) {
         int errorCode = SQLState.getCodeFromException(error);
@@ -357,6 +358,7 @@ public class SQLServerDataSource extends JDBCDataSource implements DBSInstanceCo
         return getLocalDataType(valueType).getDataKind();
     }
 
+    @NotNull
     @Override
     public List<SQLServerDataType> getLocalDataTypes() {
         return dataTypeCache.getCachedObjects();
@@ -376,11 +378,13 @@ public class SQLServerDataSource extends JDBCDataSource implements DBSInstanceCo
         return sdt;
     }
 
+    @Nullable
     @Override
     public SQLServerDataType getLocalDataType(String typeName) {
         return dataTypeCache.getCachedObject(typeName);
     }
 
+    @Nullable
     @Override
     public SQLServerDataType getLocalDataType(int typeID) {
         DBSDataType dt = super.getLocalDataType(typeID);
@@ -390,6 +394,7 @@ public class SQLServerDataSource extends JDBCDataSource implements DBSInstanceCo
         return (SQLServerDataType) dt;
     }
 
+    @NotNull
     @Override
     public String getDefaultDataTypeName(@NotNull DBPDataKind dataKind) {
         return switch (dataKind) {
@@ -439,6 +444,7 @@ public class SQLServerDataSource extends JDBCDataSource implements DBSInstanceCo
         return ((SQLServerExecutionContext)getDefaultInstance().getDefaultContext(monitor, true)).getDefaultCatalog();
     }
 
+    @Nullable
     @Override
     public Collection<? extends DBSObject> getChildren(@NotNull DBRProgressMonitor monitor) throws DBException {
         return databaseCache.getAllObjects(monitor, this);
@@ -477,7 +483,7 @@ public class SQLServerDataSource extends JDBCDataSource implements DBSInstanceCo
     }
 
     @Override
-    public <T> T getAdapter(Class<T> adapter) {
+    public <T> T getAdapter(@NotNull Class<T> adapter) {
         if (adapter == DBSStructureAssistant.class) {
             return adapter.cast(new SQLServerStructureAssistant(this));
         } else if (adapter == DBAServerSessionManager.class) {
@@ -517,7 +523,7 @@ public class SQLServerDataSource extends JDBCDataSource implements DBSInstanceCo
     }
 
     @Override
-    public void collectObjectStatistics(DBRProgressMonitor monitor, boolean totalSizeOnly, boolean forceRefresh) throws DBException {
+    public void collectObjectStatistics(@NotNull DBRProgressMonitor monitor, boolean totalSizeOnly, boolean forceRefresh) throws DBException {
         if (hasStatistics && !forceRefresh) {
             return;
         }

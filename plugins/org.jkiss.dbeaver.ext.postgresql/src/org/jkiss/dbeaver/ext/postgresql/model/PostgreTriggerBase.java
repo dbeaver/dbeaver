@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -54,7 +54,7 @@ public abstract class PostgreTriggerBase implements DBSTrigger, DBPQualifiedObje
         return name;
     }
 
-    public void setName(String name) {
+    public void setName(@NotNull String name) {
         this.name = name;
     }
 
@@ -75,7 +75,7 @@ public abstract class PostgreTriggerBase implements DBSTrigger, DBPQualifiedObje
     public abstract PostgreProcedure getFunction(DBRProgressMonitor monitor) throws DBException;
 
     @Override
-    public boolean supportsObjectDefinitionOption(String option) {
+    public boolean supportsObjectDefinitionOption(@NotNull String option) {
         return DBPScriptObject.OPTION_INCLUDE_COMMENTS.equals(option);
     }
 }

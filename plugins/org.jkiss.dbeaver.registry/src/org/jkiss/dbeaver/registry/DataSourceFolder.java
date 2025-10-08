@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.registry;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPDataSourceFolder;
 import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
 import org.jkiss.utils.ArrayUtils;
@@ -48,10 +49,11 @@ public class DataSourceFolder implements DBPDataSourceFolder {
     }
 
     @Override
-    public void setName(String newName) {
+    public void setName(@NotNull String newName) {
         this.name = newName;
     }
 
+    @Nullable
     @Override
     public String getDescription() {
         return description;
@@ -61,12 +63,13 @@ public class DataSourceFolder implements DBPDataSourceFolder {
         this.description = description;
     }
 
+    @Nullable
     @Override
     public DataSourceFolder getParent() {
         return parent;
     }
 
-    public void setParent(DBPDataSourceFolder parent) {
+    public void setParent(@Nullable DBPDataSourceFolder parent) {
         if (this.parent != null) {
             this.parent.children.remove(this);
         }
@@ -76,18 +79,20 @@ public class DataSourceFolder implements DBPDataSourceFolder {
         }
     }
 
+    @NotNull
     @Override
     public DataSourceFolder[] getChildren() {
         return ArrayUtils.toArray(DataSourceFolder.class, children);
     }
 
+    @NotNull
     @Override
     public DBPDataSourceRegistry getDataSourceRegistry() {
         return registry;
     }
 
     @Override
-    public boolean canMoveTo(DBPDataSourceFolder folder) {
+    public boolean canMoveTo(@NotNull DBPDataSourceFolder folder) {
         return folder != this && !this.isParentOf(folder);
     }
 
@@ -109,6 +114,7 @@ public class DataSourceFolder implements DBPDataSourceFolder {
         return null;
     }
 
+    @NotNull
     @Override
     public String getFolderPath() {
         String path = null;

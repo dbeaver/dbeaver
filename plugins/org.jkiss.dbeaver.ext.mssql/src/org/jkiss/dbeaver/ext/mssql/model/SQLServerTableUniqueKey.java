@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ext.mssql.model;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -57,7 +58,7 @@ public class SQLServerTableUniqueKey extends JDBCTableConstraint<SQLServerTableB
     }
 
     @Override
-    public List<DBSTableConstraintColumn> getAttributeReferences(DBRProgressMonitor monitor) {
+    public List<DBSTableConstraintColumn> getAttributeReferences(@Nullable DBRProgressMonitor monitor) {
         if (!CommonUtils.isEmpty(columns)) {
             return new ArrayList<>(columns);
         }

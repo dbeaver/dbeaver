@@ -278,7 +278,7 @@ public class ExasolTable extends ExasolTableBase implements DBPScriptObject, DBP
     }
     
     @Override
-    public void refreshObjectState(DBRProgressMonitor monitor)
+    public void refreshObjectState(@NotNull DBRProgressMonitor monitor)
     		throws DBCException
     {
     	this.read(monitor);
@@ -387,11 +387,13 @@ public class ExasolTable extends ExasolTableBase implements DBPScriptObject, DBP
         return getContainer().getTableCache().getChildren(monitor, getContainer(), this);
     }
 
+    @NotNull
     @Override
     public String getObjectDefinitionText(@NotNull DBRProgressMonitor monitor, @NotNull Map<String, Object> options) throws DBException {
         return ExasolUtils.generateDDLforTable(monitor, this.getDataSource(), this);
     }
 
+    @NotNull
     @Override
     public DBSObjectState getObjectState() {
         // table can only be in state normal

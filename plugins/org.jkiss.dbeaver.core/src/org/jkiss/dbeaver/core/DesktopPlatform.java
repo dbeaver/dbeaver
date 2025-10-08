@@ -69,7 +69,6 @@ public class DesktopPlatform extends BasePlatformImpl implements DBPPlatformDesk
 
     // The plug-in ID
     public static final String PLUGIN_ID = "org.jkiss.dbeaver.core"; //$NON-NLS-1$
-    public static final String DBEAVER_DATA_DIR = "DBeaverData";
 
     private static final String TEMP_PROJECT_NAME = ".dbeaver-temp"; //$NON-NLS-1$
     private static final String DBEAVER_CONFIG_FOLDER = "settings";
@@ -164,9 +163,9 @@ public class DesktopPlatform extends BasePlatformImpl implements DBPPlatformDesk
 
         DesktopPlatform.setClosing(true);
         DBPApplication application = getApplication();
-        if (application instanceof DBPApplicationController) {
+        if (application instanceof DBPApplicationController ac) {
             // Shutdown in headless mode
-            ((DBPApplicationController) application).setHeadlessMode(true);
+            ac.setHeadlessMode(true);
         }
 
         DBRFeatureRegistry.getInstance().endTracking();

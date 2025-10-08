@@ -64,6 +64,7 @@ public abstract class MySQLTableConstraintBase extends JDBCTableConstraint<MySQL
         throw new DBException("Constraints DDL is read-only");
     }
 
+    @NotNull
     @Override
     public String getObjectDefinitionText(@NotNull DBRProgressMonitor monitor, @NotNull Map<String, Object> options) throws DBException {
         return DBStructUtils.generateObjectDDL(monitor, this, options, false);

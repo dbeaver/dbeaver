@@ -90,6 +90,7 @@ public class PostgreTableColumn extends PostgreAttribute<PostgreTableBase>
         return PostgreGeometryTypeHandler.getGeometryType(getTypeMod());
     }
 
+    @NotNull
     @Override
     public String getObjectDefinitionText(@NotNull DBRProgressMonitor monitor, @NotNull Map<String, Object> options) throws DBException {
         return DBStructUtils.generateObjectDDL(monitor, this, options, false);

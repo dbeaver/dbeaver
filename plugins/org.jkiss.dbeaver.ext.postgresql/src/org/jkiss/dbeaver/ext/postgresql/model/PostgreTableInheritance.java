@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -77,7 +77,7 @@ public class PostgreTableInheritance extends PostgreTableConstraintBase<PostgreT
 
     @Nullable
     @Override
-    public List<PostgreTableConstraintColumn> getAttributeReferences(DBRProgressMonitor monitor) throws DBException {
+    public List<PostgreTableConstraintColumn> getAttributeReferences(@Nullable DBRProgressMonitor monitor) throws DBException {
         return null;
     }
 
