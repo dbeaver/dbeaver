@@ -28,12 +28,10 @@ import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCRemoteInstance;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.Objects;
 
 public class BigQueryDataSource extends GenericDataSource {
 
@@ -106,16 +104,6 @@ public class BigQueryDataSource extends GenericDataSource {
     }
 
     protected boolean isSessionModeEnabled() {
-        if (DBWorkbench.getPlatform().getApplication().isMultiuser()) {
-            String propValue = getContainer()
-                .getConnectionConfiguration()
-                .getProviderProperty(BigQueryConstants.DRIVER_PROP_SESSION_MODE);
-            return CommonUtils.toBoolean(propValue, false);
-        } else {
-            String propValue = getContainer()
-                .getConnectionConfiguration()
-                .getProperty(BigQueryConstants.DRIVER_PROP_SESSION_MODE);
-            return Objects.equals(propValue, BigQueryConstants.DRIVER_PROP_SESSION_MODE_ENABLE_VALUE);
-        }
+        return false;
     }
 }

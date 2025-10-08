@@ -32,9 +32,6 @@ public class BigQueryConstants {
     public static final String DRIVER_PROP_OAUTH_PVT_KEYPATH = "OAuthPvtKeyPath";
     public static final String DRIVER_PROP_OAUTH_PVT_KEY = "OAuthPvtKey";
 
-    public static final String DRIVER_PROP_SESSION_MODE = "EnableSession";
-    public static final String DRIVER_PROP_SESSION_MODE_ENABLE_VALUE = "1";
-
     public static final String DRIVER_PROP_ACCOUNT = "OAuthServiceAcctEmail";
     public static final String DRIVER_PROP_PROJECT_ID = "ProjectId";
 
