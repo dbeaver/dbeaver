@@ -61,6 +61,7 @@ public class TaskImpl implements DBTTask, DBPNamedObject2 {
     private Map<String, Object> properties;
     private volatile List<DBTTaskRun> runs;
     private DBTTaskFolder taskFolder;
+    private Duration maxExecutionTime = Duration.ZERO;
 
     protected TaskImpl(
         @NotNull DBPProject project,
@@ -247,28 +248,14 @@ public class TaskImpl implements DBTTask, DBPNamedObject2 {
         return TaskConstants.TEMPORARY_ID.equals(id);
     }
 
-    /**
-     * A duration that represent the total execution time allocated for a task to finish. When expired, the task is terminated.
-     * <p>
-     * The duration must be ignored if it's not {@link Duration#isPositive()}.
-     *
-     * @return total execution time allocated for a task to finish
-     */
     @NotNull
+    @Override
     public Duration getMaxExecutionTime() {
-        if (properties.get(TaskConstants.TAG_MAX_EXEC_TIME) instanceof Long seconds && seconds != 0) {
-            return Duration.ofSeconds(seconds);
-        } else {
-            return Duration.ZERO;
-        }
+        return maxExecutionTime;
     }
 
     public void setMaxExecutionTime(@NotNull Duration maxExecutionTime) {
-        if (maxExecutionTime.isZero()) {
-            properties.remove(TaskConstants.TAG_MAX_EXEC_TIME);
-        } else {
-            properties.put(TaskConstants.TAG_MAX_EXEC_TIME, maxExecutionTime.toSeconds());
-        }
+        this.maxExecutionTime = maxExecutionTime;
     }
 
     protected Path getTaskStatsFolder(boolean create) {

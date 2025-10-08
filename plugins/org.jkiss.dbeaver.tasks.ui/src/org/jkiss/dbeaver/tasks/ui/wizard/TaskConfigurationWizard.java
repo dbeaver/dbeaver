@@ -311,7 +311,7 @@ public abstract class TaskConfigurationWizard<SETTINGS extends DBTTaskSettings> 
                 getContainer().getShell(),
                 getProject(),
                 taskType,
-                currentTask != null ? currentTask.getProperties() : Map.of()
+                currentTask != null ? currentTask.getMaxExecutionTime() : Duration.ZERO
             );
             if (dialog.open() == IDialogConstants.OK_ID) {
                 setCurrentTask(currentTask = dialog.getTask());
