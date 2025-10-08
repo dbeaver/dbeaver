@@ -27,6 +27,8 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.ui.DBeaverIcons;
+import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIStyles;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.utils.ArrayUtils;
@@ -61,7 +63,7 @@ public class CSmartCombo<ITEM_TYPE> extends Composite {
     private int visibleItemCount = 10;
     private Shell popup;
     private long disposeTime = -1;
-    private Button arrow;
+    private Label arrow;
     private boolean hasFocus;
     private Listener listener, filter;
     private Point sizeHint;
@@ -89,11 +91,8 @@ public class CSmartCombo<ITEM_TYPE> extends Composite {
         GridData gd = new GridData(GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_CENTER);
         this.text.setLayoutData(gd);
 
-        int arrowStyle = SWT.ARROW | SWT.DOWN;
-        if ((style & SWT.FLAT) != 0) {
-            arrowStyle |= SWT.FLAT;
-        }
-        this.arrow = new Button(this, arrowStyle);
+        this.arrow = new Label(this, SWT.NONE);
+        this.arrow.setImage(DBeaverIcons.getImage(UIIcon.TREE_COLLAPSE));
         gd = new GridData(GridData.FILL_VERTICAL | GridData.HORIZONTAL_ALIGN_END | GridData.VERTICAL_ALIGN_CENTER);
         this.arrow.setLayoutData(gd);
 
@@ -146,7 +145,7 @@ public class CSmartCombo<ITEM_TYPE> extends Composite {
             this.text.addListener(textEvent, this.listener);
         }
 
-        int[] arrowEvents = {SWT.Selection, SWT.FocusIn};
+        int[] arrowEvents = {SWT.MouseDown, SWT.MouseUp, SWT.FocusIn};
         for (int arrowEvent : arrowEvents) {
             this.arrow.addListener(arrowEvent, this.listener);
         }
@@ -705,7 +704,7 @@ public class CSmartCombo<ITEM_TYPE> extends Composite {
                 handleFocus(SWT.FocusIn);
                 break;
             }
-            case SWT.Selection: {
+            case SWT.MouseDown: {
                 if (!isDropped() && (System.currentTimeMillis() - disposeTime) > 200) {
                     dropDown(true);
                 }
