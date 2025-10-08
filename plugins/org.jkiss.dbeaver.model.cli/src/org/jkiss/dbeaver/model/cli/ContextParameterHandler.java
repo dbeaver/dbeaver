@@ -16,13 +16,24 @@
  */
 package org.jkiss.dbeaver.model.cli;
 
-public interface CLIConstants {
-    short EXIT_CODE_CONTINUE = -1;
-    short EXIT_CODE_OK = 0;
-    short EXIT_CODE_ERROR = 1;
-    short EXIT_CODE_ILLEGAL_ARGUMENTS = 2;
 
-    String PARAM_PROJECT = "project";
-    
-    String CONTEXT_PARAM_INPUT_FILE = "inputFile";
+import org.apache.commons.cli.CommandLine;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
+import org.jkiss.utils.CommonUtils;
+
+public class ContextParameterHandler implements ICommandLineParameterHandler {
+    @Override
+    public void handleParameter(
+        @NotNull CommandLine commandLine,
+        @NotNull String name,
+        @Nullable String value,
+        @NotNull CommandLineContext context
+    ) throws CLIException {
+        if (CommonUtils.isEmpty(value)) {
+            throw new CLIException("--" + name + " parameter is empty", CLIConstants.EXIT_CODE_ILLEGAL_ARGUMENTS);
+        }
+
+        context.setContextParameter(name, value);
+    }
 }
