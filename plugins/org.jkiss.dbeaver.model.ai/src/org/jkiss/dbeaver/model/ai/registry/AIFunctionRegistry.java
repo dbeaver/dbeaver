@@ -111,8 +111,6 @@ public class AIFunctionRegistry {
         @NotNull Map<String, Object> arguments
     ) throws DBException {
         AIFunction function = descriptor.createInstance();
-        AIFunctionResult x = function.callFunction(context, arguments);
-        System.out.println(x.getValue());
-        return x;
+        return function.callFunction(context, arguments);
     }
 }
