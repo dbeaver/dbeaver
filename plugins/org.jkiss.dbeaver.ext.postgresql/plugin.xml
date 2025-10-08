@@ -402,7 +402,7 @@
                     icon="icons/yellowbrick_icon.png"
                     iconBig="icons/yellowbrick_icon_big.png"
                     class="io.yellowbrick.jdbc.YellowbrickDriver"
-                    sampleURL="jdbc:yb://{host}[:{port}]/[{database}]"
+                    sampleURL="jdbc:postgresql://{host}[:{port}]/[{database}]"
                     useURL="true"
                     defaultPort="5432"
                     webURL="https://yellowbrick.com/"
