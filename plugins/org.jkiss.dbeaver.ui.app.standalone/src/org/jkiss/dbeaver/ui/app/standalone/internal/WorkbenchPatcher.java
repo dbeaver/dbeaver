@@ -119,7 +119,7 @@ public final class WorkbenchPatcher {
         try {
             patchWorkbenchXmi(path);
         } catch (Throwable e) {
-            log.error("Failed to patch workbench state file: " + path, e);
+            log.debug("Failed to patch workbench state file: " + path, e);
         }
     }
 
