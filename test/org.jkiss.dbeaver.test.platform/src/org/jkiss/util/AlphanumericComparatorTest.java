@@ -33,12 +33,12 @@ public class AlphanumericComparatorTest {
 
     @Test
     public void testAlphanumericComparator() {
-        alphanumericComparatorTest(comparator);
+        assertComparatorLowercaseCasesPass(comparator);
     }
 
     @Test
     public void testAlphanumericComparatorIgnoreCaseTestInsensitive() {
-        alphanumericComparatorTest(comparator::compareIgnoreCase);
+        assertComparatorLowercaseCasesPass(comparator::compareIgnoreCase);
     }
 
     @Test
@@ -478,7 +478,7 @@ public class AlphanumericComparatorTest {
         comparatorSortingTest(input, expected, comparator);
     }
 
-    private void alphanumericComparatorTest(@NotNull Comparator<? super CharSequence> comparator) {
+    private void assertComparatorLowercaseCasesPass(@NotNull Comparator<? super CharSequence> comparator) {
         comparatorSortingTest(
             List.of("img12", "img10", "img2", "img1", "img100_1", "img100_11", "img100", "img100_10", "img100_5"),
             List.of("img1", "img2", "img10", "img12", "img100", "img100_1", "img100_5", "img100_10", "img100_11"),
