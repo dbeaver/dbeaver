@@ -28,8 +28,14 @@ public class HelpUtils {
 
     public static final String GLOBAL_HELP_PREFIX = "https://dbeaver.com/docs/dbeaver/";
 
+    public static final String GITHUB_HELP_PREFIX = "https://github.com/dbeaver/dbeaver/wiki/";
+
     public static final String getHelpExternalReference(String topicId) {
         return GLOBAL_HELP_PREFIX + topicId;
+    }
+
+    public static String getHelpGitHubReference(String topicId) {
+        return GITHUB_HELP_PREFIX + topicId;
     }
 
 }
