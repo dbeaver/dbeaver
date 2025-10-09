@@ -22,21 +22,23 @@ import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 public class AlphanumericComparatorTest {
+    private final AlphanumericComparator comparator = AlphanumericComparator.getInstance();
 
     @Test
     public void testAlphanumericComparator() {
-        alphanumericComparatorTest(this::alphanumericComparatorTestImpl);
+        alphanumericComparatorTest(comparator);
     }
 
     @Test
     public void testAlphanumericComparatorIgnoreCaseTestInsensitive() {
-        alphanumericComparatorTest(this::alphanumericComparatorIgnoreCaseTestImpl);
+        alphanumericComparatorTest(comparator::compareIgnoreCase);
     }
 
     @Test
@@ -264,7 +266,7 @@ public class AlphanumericComparatorTest {
             "tb_2024062809552812364500_c"
         );
 
-        alphanumericComparatorTestImpl(input, expected);
+        comparatorSortingTest(input, expected, comparator);
     }
 
     @Test
@@ -473,72 +475,67 @@ public class AlphanumericComparatorTest {
             "tb_2024062809552812364500_c"
         );
 
-        alphanumericComparatorIgnoreCaseTestImpl(input, expected);
+        comparatorSortingTest(input, expected, comparator);
     }
 
-    private void alphanumericComparatorTest(AssertionMethod  assertionMethod) {
-        assertionMethod.assertCondition(
+    private void alphanumericComparatorTest(@NotNull Comparator<? super CharSequence> comparator) {
+        comparatorSortingTest(
             List.of("img12", "img10", "img2", "img1", "img100_1", "img100_11", "img100", "img100_10", "img100_5"),
-            List.of("img1", "img2", "img10", "img12", "img100", "img100_1", "img100_5", "img100_10", "img100_11")
+            List.of("img1", "img2", "img10", "img12", "img100", "img100_1", "img100_5", "img100_10", "img100_11"),
+            comparator
         );
-        assertionMethod.assertCondition(
+        comparatorSortingTest(
             List.of("file1000", "file100", "file10", "file2", "file1", "file11", "file200", "file20", "file2a", "file2b"),
-            List.of("file1", "file2", "file2a", "file2b", "file10", "file11", "file20", "file100", "file200", "file1000")
+            List.of("file1", "file2", "file2a", "file2b", "file10", "file11", "file20", "file100", "file200", "file1000"),
+            comparator
         );
-        assertionMethod.assertCondition(
+        comparatorSortingTest(
             List.of("doc10", "doc2", "doc20", "doc1", "doc3", "doc15", "doc4"),
-            List.of("doc1", "doc2", "doc3", "doc4", "doc10", "doc15", "doc20")
+            List.of("doc1", "doc2", "doc3", "doc4", "doc10", "doc15", "doc20"),
+            comparator
         );
-        assertionMethod.assertCondition(
+        comparatorSortingTest(
             List.of("page2", "page12", "page3", "page22", "page4", "page13", "page23"),
-            List.of("page2", "page3", "page4", "page12", "page13", "page22", "page23")
+            List.of("page2", "page3", "page4", "page12", "page13", "page22", "page23"),
+            comparator
         );
-        assertionMethod.assertCondition(
+        comparatorSortingTest(
             List.of("item-5", "item-1", "item-10", "item-2", "item-11", "item-3", "item-20", "item-15"),
-            List.of("item-1", "item-2", "item-3", "item-5", "item-10", "item-11", "item-15", "item-20")
+            List.of("item-1", "item-2", "item-3", "item-5", "item-10", "item-11", "item-15", "item-20"),
+            comparator
         );
-        assertionMethod.assertCondition(
+        comparatorSortingTest(
             List.of("abc123def45", "abc12def345", "abc1234def5", "abc12345def4", "abc1234def45", "abc12345def456"),
-            List.of("abc12def345", "abc123def45", "abc1234def5", "abc1234def45", "abc12345def4", "abc12345def456")
+            List.of("abc12def345", "abc123def45", "abc1234def5", "abc1234def45", "abc12345def4", "abc12345def456"),
+            comparator
         );
-        assertionMethod.assertCondition(
+        comparatorSortingTest(
             List.of("file01_v2", "file02_v1", "file10_v10", "file02_v10", "file10_v2", "file1_v10"),
-            List.of("file01_v2", "file1_v10", "file02_v1", "file02_v10", "file10_v2", "file10_v10")
+            List.of("file01_v2", "file1_v10", "file02_v1", "file02_v10", "file10_v2", "file10_v10"),
+            comparator
         );
-        assertionMethod.assertCondition(
+        comparatorSortingTest(
             List.of("chapter-2.1.1", "chapter-10.1.1", "chapter-2.1.10", "chapter-10.1.2", "chapter-2.1.2"),
-            List.of("chapter-2.1.1", "chapter-2.1.2", "chapter-2.1.10", "chapter-10.1.1", "chapter-10.1.2")
+            List.of("chapter-2.1.1", "chapter-2.1.2", "chapter-2.1.10", "chapter-10.1.1", "chapter-10.1.2"),
+            comparator
         );
-        assertionMethod.assertCondition(
+        comparatorSortingTest(
             List.of("item_1_2_3", "item_2_1_3", "item_1_10_3", "item_2_2_1", "item_1_2_10", "item_2_1_10", "item_1_10_1"),
-            List.of("item_1_2_3", "item_1_2_10", "item_1_10_1", "item_1_10_3", "item_2_1_3", "item_2_1_10", "item_2_2_1")
+            List.of("item_1_2_3", "item_1_2_10", "item_1_10_1", "item_1_10_3", "item_2_1_3", "item_2_1_10", "item_2_2_1"),
+            comparator
         );
     }
 
-    private void alphanumericComparatorTestImpl(
+    private void comparatorSortingTest(
         @NotNull Collection<? extends CharSequence> input,
-        @NotNull Collection<? extends CharSequence> expected
+        @NotNull Collection<? extends CharSequence> expected,
+        @NotNull Comparator<? super CharSequence> comparator
     ) {
         final ArrayList<? extends CharSequence> sorted = new ArrayList<>(input);
-        sorted.sort(AlphanumericComparator.getInstance());
+        sorted.sort(comparator);
 
         assertEquals(expected, sorted);
     }
 
-    private void alphanumericComparatorIgnoreCaseTestImpl(
-        @NotNull Collection<? extends CharSequence> input,
-        @NotNull Collection<? extends CharSequence> expected
-    ) {
-        final ArrayList<? extends CharSequence> sorted = new ArrayList<>(input);
-        sorted.sort(AlphanumericComparator.getInstance()::compareIgnoreCase);
 
-        assertEquals(expected, sorted);
-    }
-
-    private interface AssertionMethod {
-        void assertCondition(
-            @NotNull Collection<? extends CharSequence> input,
-            @NotNull Collection<? extends CharSequence> expected
-        );
-    }
 }
