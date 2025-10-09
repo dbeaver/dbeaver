@@ -37,7 +37,7 @@
                     <file type="jar" path="maven:/com.google.cloud:google-cloud-spanner-jdbc:RELEASE[2.15.5]" bundle="!drivers.spanner"/>
                     <file type="license" path="licenses/external/asl-2.0.txt"/>
                     <file type="jar" path="drivers/spanner" bundle="drivers.spanner"/>
-                    <file type="jar" path="drivers/google-jdbc-deps" bundle="drivers.spanner"/>
+                    <file type="jar" path="bundle:/org.jkiss.bundle.google-cloud" bundle="drivers.spanner"/>
                 </driver>
                 
                 <driver
