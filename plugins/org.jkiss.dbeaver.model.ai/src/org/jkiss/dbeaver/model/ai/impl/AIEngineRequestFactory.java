@@ -20,10 +20,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.ai.AIConstants;
-import org.jkiss.dbeaver.model.ai.AIMessage;
-import org.jkiss.dbeaver.model.ai.AIPromptGenerator;
-import org.jkiss.dbeaver.model.ai.AISchemaGenerationOptions;
+import org.jkiss.dbeaver.model.ai.*;
 import org.jkiss.dbeaver.model.ai.engine.AIDatabaseContext;
 import org.jkiss.dbeaver.model.ai.engine.AIEngine;
 import org.jkiss.dbeaver.model.ai.engine.AIEngineRequest;
@@ -149,8 +146,9 @@ public class AIEngineRequestFactory {
             }
         }
 
-        Set<String> enabledFunctions = AISettingsManager.getInstance().getSettings().getEnabledFunctions();
-        Set<String> enabledFunctionCategories = AISettingsManager.getInstance().getSettings().getEnabledFunctionCategories();
+        AISettings aiSettings = AISettingsManager.getInstance().getSettings();
+        Set<String> enabledFunctions = aiSettings.getEnabledFunctions();
+        Set<String> enabledFunctionCategories = aiSettings.getEnabledFunctionCategories();
         functions.removeIf(aiFunctionDescriptor ->
             !enabledFunctions.contains(aiFunctionDescriptor.getId()) &&
                 !enabledFunctionCategories.contains(aiFunctionDescriptor.getCategoryId())
