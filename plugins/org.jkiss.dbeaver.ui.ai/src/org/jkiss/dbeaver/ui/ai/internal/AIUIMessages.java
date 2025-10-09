@@ -50,6 +50,9 @@ public class AIUIMessages extends NLS {
     public static String confirm_meta_transfer_usage_title;
     public static String confirm_meta_transfer_usage_message;
 
+    public static String ai_suggestion_popup_title;
+    public static String ai_suggestion_popup_message;
+
     static {
         // initialize resource bundle
         NLS.initializeMessages(BUNDLE_NAME, AIUIMessages.class);
