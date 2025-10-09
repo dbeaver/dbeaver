@@ -27,14 +27,6 @@
             <keywordReference id="dbeaver.ai.pref"/>
             <keywordReference id="dbeaver.ai.config"/>
         </page>
-        <page
-            id="org.jkiss.dbeaver.preferences.ai.functions"
-            category="org.jkiss.dbeaver.preferences.ai"
-            class="org.jkiss.dbeaver.ui.ai.preferences.AIFunctionCategoriesPreferencePage"
-            name="%pref.page.ai.functions.name">
-            <keywordReference id="org.jkiss.dbeaver.core.keyword.dbeaver"/>
-            <keywordReference id="dbeaver.ai.pref"/>
-        </page>
     </extension>
     <extension point="org.eclipse.ui.propertyPages">
         <page id="org.jkiss.dbeaver.preferences.ai" class="org.jkiss.dbeaver.ui.ai.preferences.AIPreferencePageMain" name="%pref.page.ai.engines.name">

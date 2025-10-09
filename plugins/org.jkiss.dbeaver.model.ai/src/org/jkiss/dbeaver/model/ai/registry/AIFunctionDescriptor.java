@@ -96,6 +96,7 @@ public class AIFunctionDescriptor extends AbstractDescriptor {
         this.parameters = params.toArray(new Parameter[0]);
     }
 
+    @NotNull
     public String getId() {
         return id;
     }
@@ -142,7 +143,7 @@ public class AIFunctionDescriptor extends AbstractDescriptor {
     }
 
     public boolean isApplicable(@NotNull AIEngineDescriptor engine, @NotNull AIPromptGenerator prompt) {
-        return engine.isSupportsFunctions(); //just for the test
+        return false;
     }
 
     @Override

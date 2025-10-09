@@ -74,8 +74,8 @@ public class AIFunctionRegistry {
     }
 
     @NotNull
-    public Collection<AIFunctionCategoryDescriptor> getAllCategories() {
-        return categoriesById.values();
+    public List<AIFunctionCategoryDescriptor> getAllCategories() {
+        return new ArrayList<>(categoriesById.values());
     }
 
     @NotNull
