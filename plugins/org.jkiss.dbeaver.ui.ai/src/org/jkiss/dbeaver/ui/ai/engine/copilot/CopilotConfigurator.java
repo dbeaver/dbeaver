@@ -249,7 +249,7 @@ public class CopilotConfigurator implements AIIObjectPropertyConfigurator<AIEngi
 
     @Override
     public Optional<AIEngineProperties> getCurrentProperties() {
-        CopilotProperties copilotPropertiesCopy= new CopilotProperties();
+        CopilotProperties copilotPropertiesCopy = new CopilotProperties();
         saveSettings(copilotPropertiesCopy);
         return Optional.of(copilotPropertiesCopy);
     }

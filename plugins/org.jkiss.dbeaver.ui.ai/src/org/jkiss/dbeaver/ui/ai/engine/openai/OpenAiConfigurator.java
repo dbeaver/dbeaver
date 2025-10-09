@@ -258,7 +258,7 @@ public class OpenAiConfigurator<ENGINE extends AIEngineDescriptor, PROPERTIES ex
 
     @Override
     public Optional<AIEngineProperties> getCurrentProperties() {
-        OpenAIProperties  propertiesCopy = new OpenAIProperties();
+        OpenAIProperties propertiesCopy = new OpenAIProperties();
         propertiesCopy.setBaseUrl(baseUrl);
         propertiesCopy.setToken(token);
         propertiesCopy.setModel(modelSelectorField.getSelectedModel());
