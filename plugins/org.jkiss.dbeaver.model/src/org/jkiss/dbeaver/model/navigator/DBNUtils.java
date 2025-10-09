@@ -273,17 +273,14 @@ public class DBNUtils {
 
     private static class NodeNameComparator implements Comparator<DBNNode> {
         static NodeNameComparator INSTANCE = new NodeNameComparator();
+        private final DBPPreferenceStore prefStore = DBWorkbench.getPlatform().getPreferenceStore();
+        private final AlphanumericComparator alphanumericComparator = AlphanumericComparator.getInstance();
 
         @Override
         public int compare(DBNNode node1, DBNNode node2) {
-            boolean isIgnoreCase = DBWorkbench.getPlatform().getPreferenceStore().getBoolean(ModelPreferences.NAVIGATOR_SORT_IGNORE_CASE);
-            String node1Name = node1.getNodeDisplayName();
-            String node2Name = node2.getNodeDisplayName();
-            if (isIgnoreCase) {
-                node1Name = node1Name.toUpperCase();
-                node2Name = node2Name.toUpperCase();
-            }
-            return AlphanumericComparator.getInstance().compare(node1Name, node2Name);
+            return prefStore.getBoolean(ModelPreferences.NAVIGATOR_SORT_IGNORE_CASE)
+                ? alphanumericComparator.compareIgnoreCase(node1.getNodeDisplayName(), node2.getNodeDisplayName())
+                : alphanumericComparator.compare(node1.getNodeDisplayName(), node2.getNodeDisplayName());
         }
     }
 
