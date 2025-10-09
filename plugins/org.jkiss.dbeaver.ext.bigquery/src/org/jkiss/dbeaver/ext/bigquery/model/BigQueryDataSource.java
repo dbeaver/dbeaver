@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.LinkedHashMap;
@@ -75,6 +76,14 @@ public class BigQueryDataSource extends GenericDataSource {
         if (CommonUtils.isNotEmpty(additionalProjects)) {
             props.put(BigQueryConstants.DRIVER_PROP_ADDITIONAL_PROJECTS, additionalProjects);
         }
+
+        String product = GeneralUtils.getProductName()
+            .trim()
+            .replace(" ", "+")
+            .replace("/", "-");
+
+        String userAgent = product + "/" + GeneralUtils.getProductVersion() + " (GPN:DBeaver;)";
+        props.put("UserAgentEntry", userAgent);
         return props;
     }
 
