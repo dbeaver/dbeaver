@@ -233,7 +233,7 @@ public class AIPreferencePageMain extends AbstractPrefPage implements IWorkbench
             null,
             SelectionListener.widgetSelectedAdapter(e -> {
                 String engineId = serviceCombo.getText();
-                try{
+                try {
                     testConnection();
                     DBWorkbench.getPlatformUI().showMessageBox(
                         AIUIMessages.gpt_preference_page_ai_connection_test_connection_success_title,
@@ -244,9 +244,9 @@ public class AIPreferencePageMain extends AbstractPrefPage implements IWorkbench
                         false
                     );
                 } catch (DBException | InterruptedException ex) {
-                    showConnectionErrorMessage(ex,engineId );
+                    showConnectionErrorMessage(ex, engineId);
                 } catch (InvocationTargetException ex) {
-                    showConnectionErrorMessage(ex.getCause(),engineId );
+                    showConnectionErrorMessage(ex.getCause(), engineId);
                 }
             })
         );
