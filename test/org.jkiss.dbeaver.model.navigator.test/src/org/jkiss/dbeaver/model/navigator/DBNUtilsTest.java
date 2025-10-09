@@ -101,7 +101,10 @@ public class DBNUtilsTest extends DBeaverUnitTest {
 
         assertCorrectSortingIgnoreCase(List.of("A", "C", "a", "b"), List.of("b", "a", "A", "C"));
         assertCorrectSortingIgnoreCase(List.of("s1", "s2", "s03", "s10"), List.of("s2", "s1", "s10", "s03"));
-        assertCorrectSortingIgnoreCase(List.of("s1123456789123456789", "s2123456789123456789"), List.of("s2123456789123456789", "s1123456789123456789"));
+        assertCorrectSortingIgnoreCase(
+            List.of("s1123456789123456789", "s2123456789123456789"),
+            List.of("s2123456789123456789", "s1123456789123456789")
+        );
     }
 
     private void assertCorrectSortingIgnoreCase(List<String> expectedNames, List<String> givenNames) {
