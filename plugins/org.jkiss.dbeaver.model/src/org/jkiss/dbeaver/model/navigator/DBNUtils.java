@@ -149,7 +149,7 @@ public class DBNUtils {
 
         if (firstChild instanceof DBNDatabaseItem item && item.getObject() instanceof DBSTableColumn) {
             if (prefStore.getBoolean(ModelPreferences.NAVIGATOR_SORT_ALPHABETICALLY)) {
-                Arrays.sort(children, NodeNameComparator.INSTANCE);
+                Arrays.sort(children, new NodeNameComparator());
             }
             return;
         }
@@ -175,8 +175,8 @@ public class DBNUtils {
 
         if (prefStore.getBoolean(ModelPreferences.NAVIGATOR_SORT_ALPHABETICALLY)) {
             comparator = Objects.isNull(comparator)
-                ? NodeNameComparator.INSTANCE
-                : comparator.thenComparing(NodeNameComparator.INSTANCE);
+                ? new NodeNameComparator()
+                : comparator.thenComparing(new NodeNameComparator());
         }
 
         if (comparator != null) {
@@ -272,13 +272,17 @@ public class DBNUtils {
     }
 
     private static class NodeNameComparator implements Comparator<DBNNode> {
-        static NodeNameComparator INSTANCE = new NodeNameComparator();
-        private final DBPPreferenceStore prefStore = DBWorkbench.getPlatform().getPreferenceStore();
         private final AlphanumericComparator alphanumericComparator = AlphanumericComparator.getInstance();
+        private final boolean caseInsensitive;
+
+        public NodeNameComparator() {
+            caseInsensitive = DBWorkbench.getPlatform().getPreferenceStore().getBoolean(
+                ModelPreferences.NAVIGATOR_SORT_IGNORE_CASE);
+        }
 
         @Override
         public int compare(DBNNode node1, DBNNode node2) {
-            return prefStore.getBoolean(ModelPreferences.NAVIGATOR_SORT_IGNORE_CASE)
+            return caseInsensitive
                 ? alphanumericComparator.compareIgnoreCase(node1.getNodeDisplayName(), node2.getNodeDisplayName())
                 : alphanumericComparator.compare(node1.getNodeDisplayName(), node2.getNodeDisplayName());
         }
