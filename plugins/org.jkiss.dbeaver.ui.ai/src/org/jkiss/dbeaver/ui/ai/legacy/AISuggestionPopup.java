@@ -38,6 +38,7 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.ai.controls.ScopeSelectorControl;
+import org.jkiss.dbeaver.ui.ai.internal.AIUIMessages;
 import org.jkiss.dbeaver.ui.ai.preferences.AIPreferencePageMain;
 import org.jkiss.dbeaver.ui.dialogs.AbstractPopupPanel;
 import org.jkiss.dbeaver.utils.HelpUtils;
@@ -79,14 +80,14 @@ public class AISuggestionPopup extends AbstractPopupPanel {
         Composite hintPanel = UIUtils.createComposite(placeholder, 2);
         hintPanel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         Link hintLabel = new Link(hintPanel, SWT.NONE);
-        hintLabel.setText("Enter a text in a human language, it will be translated into SQL (<a>instructions</a>)");
+        hintLabel.setText(AIUIMessages.ai_suggestion_popup_message);
         GridData gd = new GridData(GridData.FILL_HORIZONTAL);
         gd.horizontalSpan = 2;
         hintLabel.setLayoutData(gd);
         hintLabel.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
-                UIUtils.openWebBrowser(HelpUtils.getHelpExternalReference("AI-Smart-Assistance"));
+                UIUtils.openWebBrowser(HelpUtils.getHelpGitHubReference("AI-Smart-Assistance-in-DBeaver-Community"));
             }
         });
 

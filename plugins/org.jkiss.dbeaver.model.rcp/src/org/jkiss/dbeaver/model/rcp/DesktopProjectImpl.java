@@ -59,7 +59,6 @@ public class DesktopProjectImpl extends BaseProjectImpl implements RCPProject, D
     private static final Log log = Log.getLog(DesktopProjectImpl.class);
 
     private static final String SETTINGS_FOLDER = ".settings";
-    private static final String PROJECT_FILE = ".project";
 
     private static final String EMPTY_PROJECT_TEMPLATE = """
         <?xml version="1.0" encoding="UTF-8"?>
