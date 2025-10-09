@@ -202,13 +202,15 @@ public class TabbedFolderPageForm extends TabbedFolderPage implements IRefreshab
                 formEditor.clearEditors();
             }
 
-            // Prepare property lists
-            ColumnLayout layout = new ColumnLayout();
-            layout.minNumColumns = 1;
-            layout.maxNumColumns = 3;
-            layout.horizontalSpacing = 10;
-            propertiesGroup.setLayout(layout);
-            propertiesGroup.addControlListener(ControlListener.controlResizedAdapter(e -> layoutPropertyColumns(propertiesGroup)));
+            if (firstInit) {
+                // Prepare property lists
+                ColumnLayout layout = new ColumnLayout();
+                layout.minNumColumns = 1;
+                layout.maxNumColumns = 3;
+                layout.horizontalSpacing = 10;
+                propertiesGroup.setLayout(layout);
+                propertiesGroup.addControlListener(ControlListener.controlResizedAdapter(e -> layoutProperties()));
+            }
 
             List<DBPPropertyDescriptor> sortedProps = new ArrayList<>(allProps);
             sortedProps.sort(Comparator
@@ -228,11 +230,7 @@ public class TabbedFolderPageForm extends TabbedFolderPage implements IRefreshab
                 }
             }
 
-            if (!firstInit) {
-                propertiesGroup.layout(true, true);
-            }
-
-            UIUtils.asyncExec(() -> layoutPropertyColumns(propertiesGroup));
+            layoutProperties();
         }
         for (Control x : propertiesGroup.getChildren()) {
             CSSUtils.markConnectionTypeColor(x);
@@ -252,6 +250,11 @@ public class TabbedFolderPageForm extends TabbedFolderPage implements IRefreshab
         } else {
             return 1000;
         }
+    }
+
+    private void layoutProperties() {
+        propertiesGroup.layout(true, true);
+        layoutPropertyColumns(propertiesGroup);
     }
 
     private static void layoutPropertyColumns(@NotNull Composite composite) {
