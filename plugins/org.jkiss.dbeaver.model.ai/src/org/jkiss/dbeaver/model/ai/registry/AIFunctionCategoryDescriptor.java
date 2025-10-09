@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.model.ai.registry;
 
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
 import org.jkiss.utils.CommonUtils;
 
@@ -35,14 +36,17 @@ public class AIFunctionCategoryDescriptor extends AbstractDescriptor {
         this.enabledByDefault = CommonUtils.toBoolean(cfg.getAttribute("enabledByDefault"));
     }
 
+    @NotNull
     public String getId() {
         return id;
     }
 
+    @NotNull
     public String getName() {
         return name;
     }
 
+    @Nullable
     public String getDescription() {
         return description;
     }
