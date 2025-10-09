@@ -529,7 +529,11 @@ public abstract class TaskConfigurationWizard<SETTINGS extends DBTTaskSettings> 
     }
 
     @NotNull
-    public TaskConfigurationWizardDialog createWizardDialog(@NotNull IWorkbenchWindow window, @Nullable IStructuredSelection selection) {
-        return new TaskConfigurationWizardDialog(window, this, selection);
+    public TaskConfigurationWizardDialog createWizardDialog(
+        @NotNull IWorkbenchWindow window,
+        @NotNull IStructuredSelection selection,
+        @NotNull Map<String, Object> options
+    ) {
+        return new TaskConfigurationWizardDialog(window, this, selection, options);
     }
 }

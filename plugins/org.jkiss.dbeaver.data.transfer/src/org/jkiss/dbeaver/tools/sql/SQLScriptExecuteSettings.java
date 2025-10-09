@@ -30,7 +30,6 @@ import org.jkiss.dbeaver.model.task.DBTTaskSettings;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.CommonUtils;
 
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -39,7 +38,7 @@ import java.util.Map;
 /**
  * SQLScriptExecuteSettings
  */
-public class SQLScriptExecuteSettings implements DBTTaskSettings<Path> {
+public class SQLScriptExecuteSettings implements DBTTaskSettings {
 
     private static final Log log = Log.getLog(SQLScriptExecuteSettings.class);
 

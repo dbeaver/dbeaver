@@ -21,6 +21,7 @@ import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.IPageChangedListener;
 import org.eclipse.jface.dialogs.PageChangedEvent;
 import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
@@ -62,24 +63,31 @@ public class TaskConfigurationWizardDialog extends MultiPageWizardDialog {
     private boolean editMode;
     private boolean selectorMode;
 
-    public TaskConfigurationWizardDialog(IWorkbenchWindow window, TaskConfigurationWizard<?> wizard) {
-        this(window, wizard, null);
+    public TaskConfigurationWizardDialog(
+        @NotNull IWorkbenchWindow window,
+        @NotNull TaskConfigurationWizard<?> wizard
+    ) {
+        this(window, wizard, StructuredSelection.EMPTY, Map.of());
     }
 
-    public TaskConfigurationWizardDialog(IWorkbenchWindow window, TaskConfigurationWizard<?> wizard, IStructuredSelection selection) {
+    @SuppressWarnings({"rawtypes", "unchecked"})
+    public TaskConfigurationWizardDialog(
+        @NotNull IWorkbenchWindow window,
+        @NotNull TaskConfigurationWizard<?> wizard,
+        @NotNull IStructuredSelection selection,
+        @NotNull Map<String, Object> options
+    ) {
         super(window, wizard, selection);
         setFinishButtonLabel(IDialogConstants.PROCEED_LABEL);
 
-        if (selection != null && !selection.isEmpty()) {
-            if (wizard.getSettings() instanceof DBTTaskSettingsInput) {
-                List<Object> inputObjects = new ArrayList<>();
-                for (Object so : selection.toArray()) {
-                    if (wizard.getTaskType().isObjectApplicable(so)) {
-                        inputObjects.add(so);
-                    }
+        if (!selection.isEmpty() && wizard.getSettings() instanceof DBTTaskSettingsInput input) {
+            List<Object> inputObjects = new ArrayList<>();
+            for (Object so : selection.toArray()) {
+                if (wizard.getTaskType().isObjectApplicable(so)) {
+                    inputObjects.add(so);
                 }
-                ((DBTTaskSettingsInput) wizard.getSettings()).loadSettingsFromInput(inputObjects);
             }
+            input.loadSettingsFromInput(inputObjects, options);
         }
 
         addPageChangedListener(new IPageChangedListener() {
@@ -92,7 +100,7 @@ public class TaskConfigurationWizardDialog extends MultiPageWizardDialog {
     }
 
     public TaskConfigurationWizardDialog(IWorkbenchWindow window) {
-        this(window, new NewTaskConfigurationWizard(), null);
+        this(window, new NewTaskConfigurationWizard(), StructuredSelection.EMPTY, Map.of());
     }
 
     @Override
@@ -313,8 +321,29 @@ public class TaskConfigurationWizardDialog extends MultiPageWizardDialog {
         @NotNull String taskTypeId,
         @NotNull IStructuredSelection selection
     ) {
-        return openNewTaskDialogImpl(window, project, taskTypeId, selection, false);
+        return openNewTaskDialog(window, project, taskTypeId, selection, Map.of());
     }
+
+    /**
+     * Opens new task dialog
+     *
+     * @param window - workbench window to get parent shell from
+     * @param project - project for task execution
+     * @param taskTypeId - task id
+     * @param selection - database objects to apply the task to
+     * @param options - additional options for the task
+     * @return the return code
+     */
+    public static int openNewTaskDialog(
+        @NotNull IWorkbenchWindow window,
+        @NotNull DBPProject project,
+        @NotNull String taskTypeId,
+        @NotNull IStructuredSelection selection,
+        @NotNull Map<String, Object> options
+    ) {
+        return openNewTaskDialogImpl(window, project, taskTypeId, selection, options, false);
+    }
+
 
     /**
      * Opens new task dialog for the tool
@@ -331,7 +360,7 @@ public class TaskConfigurationWizardDialog extends MultiPageWizardDialog {
         @NotNull String taskTypeId,
         @NotNull IStructuredSelection selection
     ) {
-        return openNewTaskDialogImpl(window, project, taskTypeId, selection, true);
+        return openNewTaskDialogImpl(window, project, taskTypeId, selection, Map.of(), true);
     }
 
     private static int openNewTaskDialogImpl(
@@ -339,6 +368,7 @@ public class TaskConfigurationWizardDialog extends MultiPageWizardDialog {
         @NotNull DBPProject project,
         @NotNull String taskTypeId,
         @NotNull IStructuredSelection selection,
+        @NotNull Map<String, Object> options,
         boolean isToolTask
     ) {
         TaskTypeDescriptor taskType = TaskRegistry.getInstance().getTaskType(taskTypeId);
@@ -355,7 +385,7 @@ public class TaskConfigurationWizardDialog extends MultiPageWizardDialog {
             DBTTaskConfigurator configurator = TaskUIRegistry.getInstance().createConfigurator(taskType);
             TaskConfigurationWizard<?> configWizard = configurator.createTaskConfigWizard(task);
             if (configWizard != null) {
-                TaskConfigurationWizardDialog dialog = configWizard.createWizardDialog(window, selection);
+                TaskConfigurationWizardDialog dialog = configWizard.createWizardDialog(window, selection, options);
                 return dialog.open();
             } else {
                 return IDialogConstants.ABORT_ID;

@@ -20,7 +20,6 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.data.json.JSONUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -51,7 +50,7 @@ import java.util.stream.Collectors;
 /**
  * DataTransferSettings
  */
-public class DataTransferSettings implements DBTTaskSettings<DBPObject> {
+public class DataTransferSettings implements DBTTaskSettings {
     private static final Log log = Log.getLog(DataTransferSettings.class);
 
     public static final int DEFAULT_THREADS_NUM = 1;
