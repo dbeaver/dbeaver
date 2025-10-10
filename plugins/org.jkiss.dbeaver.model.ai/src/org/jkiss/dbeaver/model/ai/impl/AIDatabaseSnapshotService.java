@@ -271,7 +271,7 @@ public class AIDatabaseSnapshotService {
      * Simple {@link StringBuilder} that stops accepting data once the specified
      * token limit (converted to characters) is reached.
      */
-    public static final class TokenBoundedStringBuilder {
+    public static class TokenBoundedStringBuilder {
         private static final int SAFE_MARGIN_TOKENS = 20;
 
         private final StringBuilder sb = new StringBuilder();
