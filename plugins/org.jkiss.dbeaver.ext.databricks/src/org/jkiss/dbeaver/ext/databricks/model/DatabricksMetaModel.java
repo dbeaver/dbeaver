@@ -84,13 +84,13 @@ public class DatabricksMetaModel extends GenericMetaModel implements DBCQueryTra
     @Nullable
     @Override
     public List<GenericSchema> loadSchemas(
-        JDBCSession session,
-        GenericDataSource dataSource,
-        GenericCatalog catalog
+        @NotNull JDBCSession session,
+        @NotNull GenericDataSource dataSource,
+        @Nullable GenericCatalog catalog
     ) throws DBException {
         List<GenericSchema> schemas = new ArrayList<>();
         try (JDBCPreparedStatement dbStat = session.prepareStatement(
-            "SHOW SCHEMAS IN " + catalog.getName()
+            "SHOW SCHEMAS" + (catalog == null ? "" : " IN " + catalog.getName())
         )) {
             dbStat.executeStatement();
             try (JDBCResultSet dbResult = dbStat.getResultSet()) {
