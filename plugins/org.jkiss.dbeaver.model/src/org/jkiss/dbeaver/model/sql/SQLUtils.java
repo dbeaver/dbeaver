@@ -1270,11 +1270,12 @@ public final class SQLUtils {
 
         final int n = sql.length();
         int i = 0;
+        boolean foundCode = false;
 
-        while (i < n) {
+        while (i < n && !foundCode) {
             i = skipWhitespaces(sql, i, n);
             if (i >= n) {
-                return i;
+                continue;
             }
 
             boolean noSl = true;
@@ -1295,31 +1296,33 @@ public final class SQLUtils {
                 continue;
             }
 
-            return i;
+            foundCode = true;
         }
 
         return i;
     }
 
-    private static int skipWhitespaces(@NotNull String sql, int i, int n) {
+    private static int skipWhitespaces(@NotNull String sql, final int idx, final int n) {
+        int i = idx;
         while (i < n && Character.isWhitespace(sql.charAt(i))) {
             i++;
         }
         return i;
     }
 
-    private static int skipToEol(@NotNull String s, int idx) {
+    private static int skipToEol(@NotNull String s, final int idx) {
         final int n = s.length();
-        while (idx < n) {
-            char c = s.charAt(idx++);
+        int i = idx;
+        while (i < n) {
+            char c = s.charAt(i++);
             if (c == LF) {
-                return idx;
+                return i;
             }
             if (c == CR) {
-                if (idx < n && s.charAt(idx) == LF) {
-                    idx++;
+                if (i < n && s.charAt(i) == LF) {
+                    i++;
                 }
-                return idx;
+                return i;
             }
         }
 
