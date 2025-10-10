@@ -47,6 +47,29 @@ import java.util.regex.Pattern;
  */
 public class MySQLProcedureManager extends SQLObjectEditor<MySQLProcedure, MySQLCatalog> {
 
+
+    private static final Pattern FQN_WITH_SCHEMA = Pattern.compile(
+        "^\\s*((`[^`]+`)|([\\w$]+))\\s*\\.\\s*((`[^`]+`)|([\\w$]+))\\s*$"
+    );
+
+    private static final Pattern CREATE_PROC_HEAD = Pattern.compile(
+        "^(\\s*CREATE\\s+(?:OR\\s+REPLACE\\s+)?(?:DEFINER\\s*=\\s*(?:`[^`]+`|[^\\s]+)\\s+)?PROCEDURE\\s+)"
+            +
+            "(?:(`[^`]+`|[\\w$]+)\\.)?"
+            +
+            "(`[^`]+`|[\\w$]+)",
+        Pattern.CASE_INSENSITIVE | Pattern.DOTALL
+    );
+
+    private static final String PROCEDURE_REPLACE_COMMENT = """
+        /*
+          MySQL does not support `CREATE OR REPLACE PROCEDURE`,
+          and DDL is non-transactional.\s
+          Therefore, we first create a temporary procedure to validate\s
+          the new definition before replacing the existing one.
+        */
+        """;
+
     @Nullable
     @Override
     public DBSObjectCache<MySQLCatalog, MySQLProcedure> getObjectsCache(MySQLProcedure object)
@@ -138,24 +161,6 @@ public class MySQLProcedureManager extends SQLObjectEditor<MySQLProcedure, MySQL
 
     }
 
-    private static final Pattern CREATE_PROC_HEAD = Pattern.compile(
-        "^(\\s*CREATE\\s+(?:OR\\s+REPLACE\\s+)?(?:DEFINER\\s*=\\s*(?:`[^`]+`|[^\\s]+)\\s+)?PROCEDURE\\s+)"
-            +
-            "(?:(`[^`]+`|[\\w$]+)\\.)?"
-            +
-            "(`[^`]+`|[\\w$]+)",
-        Pattern.CASE_INSENSITIVE | Pattern.DOTALL
-    );
-
-    private static final String PROCEDURE_REPLACE_COMMENT = """
-        /*
-          MySQL does not support `CREATE OR REPLACE PROCEDURE`,
-          and DDL is non-transactional.\s
-          Therefore, we first create a temporary procedure to validate\s
-          the new definition before replacing the existing one.
-        */
-        """;
-
     @NotNull
     private static String withNewProcName(
         @NotNull SQLDialect dialect,
@@ -171,11 +176,6 @@ public class MySQLProcedureManager extends SQLObjectEditor<MySQLProcedure, MySQL
         String head = m.group(1);
         return PROCEDURE_REPLACE_COMMENT + ddl.substring(0, start) + head + newFullName + ddl.substring(start + m.end());
     }
-
-
-    private static final Pattern FQN_WITH_SCHEMA = Pattern.compile(
-        "^\\s*((`[^`]+`)|([\\w$]+))\\s*\\.\\s*((`[^`]+`)|([\\w$]+))\\s*$"
-    );
 
     @Nullable
     static String extractSchema(String fullyQualifiedName) {
