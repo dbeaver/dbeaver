@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.ui.dialogs.driver;
 
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.jface.dialogs.IDialogConstants;
+import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.layout.GridDataFactory;
 import org.eclipse.jface.wizard.WizardDialog;
 import org.eclipse.osgi.util.NLS;
@@ -77,7 +78,8 @@ class DriverDownloadAutoPage extends DriverDownloadPage {
 
         Composite container = UIUtils.createPlaceholder(parent, 1);
 
-        setMessage(NLS.bind(UIConnectionMessages.dialog_driver_download_auto_page_download_specific_driver_files, driver.getFullName()));
+        setMessage(
+            NLS.bind(UIConnectionMessages.dialog_driver_download_auto_page_download_specific_driver_files, driver.getName()));
         initializeDialogUnits(container);
 
         setDescriptionLabel(container);
@@ -115,6 +117,57 @@ class DriverDownloadAutoPage extends DriverDownloadPage {
             parent,
             NLS.bind(UIConnectionMessages.dialog_driver_download_auto_page_driver_description, driverDescription)
         );
+    }
+
+    @Override
+    boolean performFinish() {
+        try {
+            getContainer().run(
+                true, true,
+                monitor -> downloadLibraryFiles(new DefaultProgressMonitor(monitor))
+            );
+        } catch (InvocationTargetException e) {
+            DBWorkbench.getPlatformUI().showError(
+                UIConnectionMessages.dialog_driver_download_auto_page_driver_download_error,
+                UIConnectionMessages.dialog_driver_download_auto_page_driver_download_error_msg,
+                e.getTargetException()
+            );
+        } catch (InterruptedException e) {
+            // ignore
+        }
+        return true;
+    }
+
+
+    @Override
+    void resolveLibraries() {
+        try {
+            if (!depsTree.loadLibDependencies()) {
+                setErrorMessage(UIConnectionMessages.dialog_driver_download_auto_page_cannot_resolve_libraries_text);
+            }
+        } catch (DBException e) {
+            if (!depsTree.handleDownloadError(e)) {
+                if (getContainer() instanceof WizardDialog) {
+                    ((WizardDialog) getContainer()).close();
+                }
+            }
+        }
+        depsTree.resizeTree();
+    }
+
+    @Override
+    public boolean isPageComplete() {
+        return true;
+    }
+
+    @Override
+    public void setMessage(String newMessage, int newType) {
+        super.setMessage(newMessage, newType);
+    }
+
+    @Override
+    protected IDialogSettings getDialogSettings() {
+        return super.getDialogSettings();
     }
 
     private Composite setDetails(@NotNull Composite parent) {
@@ -182,6 +235,11 @@ class DriverDownloadAutoPage extends DriverDownloadPage {
                 }
 
             };
+
+            GridData treeGridData = new GridData(SWT.FILL, SWT.FILL, true, true);
+            treeGridData.widthHint = 600;
+            depsTree.getTree().setLayoutData(treeGridData);
+
             Composite infoPanel = UIUtils.createComposite(filesGroup, 2);
             infoPanel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
             Label label = new Label(infoPanel, SWT.NONE);
@@ -212,40 +270,6 @@ class DriverDownloadAutoPage extends DriverDownloadPage {
         return composite;
     }
 
-
-    @Override
-    void resolveLibraries() {
-        try {
-            if (!depsTree.loadLibDependencies()) {
-                setErrorMessage(UIConnectionMessages.dialog_driver_download_auto_page_cannot_resolve_libraries_text);
-            }
-        } catch (DBException e) {
-            if (!depsTree.handleDownloadError(e)) {
-                if (getContainer() instanceof WizardDialog) {
-                    ((WizardDialog) getContainer()).close();
-                }
-            }
-        }
-        depsTree.resizeTree();
-    }
-
-    @Override
-    public boolean isPageComplete() {
-        return true;
-    }
-
-    @Override
-    boolean performFinish() {
-        try {
-            getContainer().run(true, true,
-                monitor -> downloadLibraryFiles(new DefaultProgressMonitor(monitor)));
-        } catch (InvocationTargetException e) {
-            DBWorkbench.getPlatformUI().showError(UIConnectionMessages.dialog_driver_download_auto_page_driver_download_error, UIConnectionMessages.dialog_driver_download_auto_page_driver_download_error_msg, e.getTargetException());
-        } catch (InterruptedException e) {
-            // ignore
-        }
-        return true;
-    }
 
     private void downloadLibraryFiles(final DBRProgressMonitor monitor) throws InterruptedException {
         if (!acceptDriverLicenses()) {
