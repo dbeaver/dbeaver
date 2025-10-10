@@ -14,9 +14,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.sql.schema;
+package org.jkiss.dbeaver.ui.ai.preferences;
 
-public enum UpdateSchemaResult {
-    CREATED,
-    UPDATED
+import org.jkiss.dbeaver.model.ai.engine.AIEngineProperties;
+import org.jkiss.dbeaver.model.ai.registry.AIEngineDescriptor;
+import org.jkiss.dbeaver.ui.IObjectPropertyConfigurator;
+
+import java.util.Optional;
+
+/**
+ * AIIObjectPropertyConfigurator used to get a copy of current AIEngineProperties if present
+ */
+public interface AIIObjectPropertyConfigurator<ENGINE extends AIEngineDescriptor, PROPERTIES extends AIEngineProperties> extends
+    IObjectPropertyConfigurator<ENGINE, PROPERTIES> {
+
+    default Optional<AIEngineProperties> getCurrentProperties() {
+        return Optional.empty();
+    }
 }

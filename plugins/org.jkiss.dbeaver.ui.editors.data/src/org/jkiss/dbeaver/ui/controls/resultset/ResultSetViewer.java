@@ -1944,7 +1944,7 @@ public class ResultSetViewer extends Viewer
             resultSetSize.addModifyListener(e -> {
                 DBSDataContainer dataContainer = getDataContainer();
                 int fetchSize = CommonUtils.toInt(resultSetSize.getText());
-                if (fetchSize <= 0) {
+                if (fetchSize > 0 && fetchSize < ResultSetPreferences.MIN_SEGMENT_SIZE) {
                     fetchSize = ResultSetPreferences.MIN_SEGMENT_SIZE;
                 }
                 if (dataContainer != null && dataContainer.getDataSource() != null) {
@@ -4356,7 +4356,7 @@ public class ResultSetViewer extends Viewer
         } else {
             size = getPreferenceStore().getInt(ModelPreferences.RESULT_SET_MAX_ROWS);
         }
-        if (size <= 0) {
+        if (size > 0 && size < ResultSetPreferences.MIN_SEGMENT_SIZE) {
             size = ResultSetPreferences.MIN_SEGMENT_SIZE;
         }
         return size;
