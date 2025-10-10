@@ -18,10 +18,10 @@
 package org.jkiss.dbeaver.ui.controls;
 
 import org.eclipse.jface.fieldassist.ComboContentAdapter;
+import org.eclipse.jface.layout.GridDataFactory;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.events.*;
-import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.layout.RowLayout;
@@ -41,17 +41,17 @@ import org.jkiss.dbeaver.model.preferences.DBPPropertySource;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.properties.ObjectPropertyDescriptor;
-import org.jkiss.dbeaver.ui.ConComposite;
-import org.jkiss.dbeaver.ui.DBeaverIcons;
-import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.contentassist.ContentAssistUtils;
 import org.jkiss.dbeaver.ui.contentassist.StringContentProposalProvider;
+import org.jkiss.dbeaver.ui.dialogs.EditTextDialog;
+import org.jkiss.dbeaver.ui.internal.UIMessages;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.BeanUtils;
 import org.jkiss.utils.CommonUtils;
 
-import java.util.List;
 import java.util.*;
+import java.util.List;
 
 /**
  * CustomFormEditor
@@ -331,17 +331,39 @@ public class CustomFormEditor {
                 Label label = UIUtils.createControlLabel(parent, propertyDisplayName);
                 label.setLayoutData(new GridData(GridData.VERTICAL_ALIGN_BEGINNING));
 
-                var editorHost = new ResizeableComposite(parent, SWT.VERTICAL);
-                editorHost.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
-                editorHost.addControlListener(ControlListener.controlResizedAdapter(e -> parent.layout(true, true)));
-
-                var editor = new Text(editorHost, SWT.MULTI | SWT.WRAP | SWT.BORDER | SWT.V_SCROLL | (readOnly ? SWT.READ_ONLY : SWT.NONE));
+                Text editor = new Text(parent, SWT.MULTI | SWT.WRAP | SWT.BORDER | SWT.V_SCROLL | (readOnly ? SWT.READ_ONLY : SWT.NONE));
                 editor.setText(objectValueToString(value));
 
-                int editorHeight = UIUtils.getTextHeight(editor);
-                editorHost.setMinSize(new Point(0, editorHeight));
-                editorHost.setPrefSize(new Point(0, editorHeight * 4));
-                editorHost.setContent(editor);
+                GridDataFactory.fillDefaults()
+                    .align(SWT.FILL, SWT.TOP)
+                    .grab(true, true)
+                    .hint(SWT.DEFAULT, UIUtils.getTextHeight(editor) * 3)
+                    .applyTo(editor);
+
+                HoverControlSupport.install(editor, (parent1, editor1) -> {
+                    ToolBar toolBar = new ToolBar(parent1, SWT.FLAT);
+                    ToolItem toolItem = new ToolItem(toolBar, SWT.PUSH);
+                    toolItem.setImage(DBeaverIcons.getImage(UIIcon.EDIT));
+                    toolItem.setToolTipText("Edit...");
+                    toolItem.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
+                        if (readOnly) {
+                            EditTextDialog.showText(
+                                editor.getShell(),
+                                UIMessages.edit_text_dialog_title_edit_value,
+                                editor.getText()
+                            );
+                        } else {
+                            String newValue = EditTextDialog.editText(
+                                editor.getShell(),
+                                UIMessages.edit_text_dialog_title_edit_value,
+                                editor.getText()
+                            );
+                            if (newValue != null) {
+                                editor.setText(newValue);
+                            }
+                        }
+                    }));
+                });
 
                 return editor;
             } else {
