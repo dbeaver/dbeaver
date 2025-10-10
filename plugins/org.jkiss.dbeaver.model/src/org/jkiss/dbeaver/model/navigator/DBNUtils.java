@@ -149,7 +149,7 @@ public class DBNUtils {
 
         if (firstChild instanceof DBNDatabaseItem item && item.getObject() instanceof DBSTableColumn) {
             if (prefStore.getBoolean(ModelPreferences.NAVIGATOR_SORT_ALPHABETICALLY)) {
-                Arrays.sort(children, NodeNameComparator.INSTANCE);
+                Arrays.sort(children, new NodeNameComparator());
             }
             return;
         }
@@ -160,10 +160,6 @@ public class DBNUtils {
 
         Comparator<DBNNode> comparator = null;
 
-        if (prefStore.getBoolean(ModelPreferences.NAVIGATOR_SORT_ALPHABETICALLY)) {
-            comparator = NodeNameComparator.INSTANCE;
-        }
-
         if (prefStore.getBoolean(ModelPreferences.NAVIGATOR_SORT_FOLDERS_FIRST) || isMergedEntity(firstChild)) {
             comparator = NodeFolderComparator.INSTANCE.thenComparing((o1, o2) -> {
                 if (o1 instanceof DBNContainer && o2 instanceof DBNContainer) {
@@ -173,10 +169,16 @@ public class DBNUtils {
                 } else if (o2 instanceof DBNContainer) {
                     return -1;
                 }
-                return AlphanumericComparator.getInstance()
-                    .compare(o1.getNodeDisplayName(), o2.getNodeDisplayName());
+                return 0;
             });
         }
+
+        if (prefStore.getBoolean(ModelPreferences.NAVIGATOR_SORT_ALPHABETICALLY)) {
+            comparator = Objects.isNull(comparator)
+                ? new NodeNameComparator()
+                : comparator.thenComparing(new NodeNameComparator());
+        }
+
         if (comparator != null) {
             Arrays.sort(children, comparator);
         }
@@ -270,11 +272,19 @@ public class DBNUtils {
     }
 
     private static class NodeNameComparator implements Comparator<DBNNode> {
-        static NodeNameComparator INSTANCE = new NodeNameComparator();
+        private final AlphanumericComparator alphanumericComparator = AlphanumericComparator.getInstance();
+        private final boolean caseInsensitive;
+
+        public NodeNameComparator() {
+            caseInsensitive = DBWorkbench.getPlatform().getPreferenceStore().getBoolean(
+                ModelPreferences.NAVIGATOR_SORT_IGNORE_CASE);
+        }
 
         @Override
         public int compare(DBNNode node1, DBNNode node2) {
-            return node1.getNodeDisplayName().compareToIgnoreCase(node2.getNodeDisplayName());
+            return caseInsensitive
+                ? alphanumericComparator.compareIgnoreCase(node1.getNodeDisplayName(), node2.getNodeDisplayName())
+                : alphanumericComparator.compare(node1.getNodeDisplayName(), node2.getNodeDisplayName());
         }
     }
 
