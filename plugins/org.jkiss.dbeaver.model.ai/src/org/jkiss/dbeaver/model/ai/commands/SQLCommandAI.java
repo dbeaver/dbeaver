@@ -164,7 +164,7 @@ public class SQLCommandAI implements SQLControlCommandHandler {
         scriptContext.getOutputWriter().println(AI_OUTPUT_SEVERITY, prompt + " ==> " + script + "\n");
 
         if (scriptElements.size() == 1) {
-            return SQLControlResult.transform(new SQLQuery(dataSource, script));
+            return SQLControlResult.transform(scriptElements.getFirst());
         } else {
             return SQLControlResult.transform(new SQLScript(dataSource, script, scriptElements));
         }
