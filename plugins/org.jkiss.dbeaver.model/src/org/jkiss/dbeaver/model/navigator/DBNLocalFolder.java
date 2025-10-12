@@ -141,13 +141,6 @@ public class DBNLocalFolder extends DBNNode implements DBNContainer
 */
     }
 
-    @NotNull
-    @Deprecated
-    @Override
-    public String getNodeItemPath() {
-        return makeLocalFolderItemPath(folder);
-    }
-
     @Nullable
     @Override
     public DBNProjectDatabases getParentNode() {

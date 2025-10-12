@@ -182,13 +182,6 @@ public class DBNRoot extends DBNNode implements DBNContainer, DBNNodeExtendable,
         }
     }
 
-    @NotNull
-    @Deprecated
-    @Override
-    public String getNodeItemPath() {
-        return "";
-    }
-
     @Nullable
     public DBNProject getProjectNode(@Nullable DBPProject project) {
         if (project == null) {

@@ -589,10 +589,10 @@ public class SearchMetadataPage extends AbstractSearchPage {
         Object[] nodes = ((IStructuredSelection)tree.getViewer().getSelection()).toArray();
         for (Object obj : nodes) {
             DBNNode node = (DBNNode) obj;
-            if (sourcesString.length() > 0) {
+            if (!sourcesString.isEmpty()) {
                 sourcesString.append("|"); //$NON-NLS-1$
             }
-            sourcesString.append(node.getNodeItemPath());
+            sourcesString.append(node.getNodeUri());
         }
         store.setValue(propName, sourcesString.toString());
     }

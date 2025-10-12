@@ -266,7 +266,7 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBNLazyNode, DB
         return false;
     }
 
-    void addChildItem(DBSObject object) {
+    void addChildItem(@NotNull DBSObject object) {
         DBXTreeNode metaChildren = getItemsMeta();
         if (metaChildren == null) {
             // There is no item meta. Maybe we are under some folder structure
@@ -274,7 +274,7 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBNLazyNode, DB
             metaChildren = getFolderMeta(object.getClass());
         }
         if (metaChildren != null) {
-            final DBNDatabaseItem newChild = new DBNDatabaseItem(this, metaChildren, object, false);
+            final DBNDatabaseItem newChild = new DBNDatabaseItem(this, metaChildren, object);
             synchronized (this) {
                 childNodes = ArrayUtils.add(DBNDatabaseNode.class, childNodes, newChild);
             }
@@ -637,11 +637,11 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBNLazyNode, DB
      * @throws DBException on any DB error
      */
     private boolean loadTreeItems(
-        DBRProgressMonitor monitor,
-        DBXTreeItem meta,
-        final DBNDatabaseNode[] oldListCmp,
-        final List<DBNDatabaseNode> toList,
-        Object source,
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBXTreeItem meta,
+        @Nullable DBNDatabaseNode[] oldListCmp,
+        @NotNull List<DBNDatabaseNode> toList,
+        @NotNull Object source,
         boolean showSystem,
         boolean hideFolders,
         boolean mergeEntities,
@@ -763,7 +763,7 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBNLazyNode, DB
             }
             if (!added) {
                 // Simply add new item
-                DBNDatabaseItem treeItem = new DBNDatabaseItem(this, meta, object, oldList != null);
+                DBNDatabaseItem treeItem = new DBNDatabaseItem(this, meta, object);
                 toList.add(treeItem);
             }
         }
@@ -871,42 +871,6 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBNLazyNode, DB
             nodeId += "_" + longObject.getObjectId();
         }
         return nodeId;
-    }
-
-    @NotNull
-    @Deprecated
-    @Override
-    public String getNodeItemPath() {
-        StringBuilder pathName = new StringBuilder(100);
-
-        for (DBNNode node = this; node instanceof DBNDatabaseNode; node = node.getParentNode()) {
-            if (node instanceof DBNDataSource) {
-                if (!pathName.isEmpty()) {
-                    pathName.insert(0, '/');
-                }
-                pathName.insert(0, node.getNodeItemPath());
-            } else if (node instanceof DBNDatabaseFolder dbFolder) {
-                if (!pathName.isEmpty()) {
-                    pathName.insert(0, '/');
-                }
-                DBXTreeFolder folderMeta = dbFolder.getMeta();
-                String type = folderMeta.getIdOrType();
-                if (CommonUtils.isEmpty(type)) {
-                    type = node.getName();
-                }
-                pathName.insert(0, type);
-            }
-            if (!(node instanceof DBNDatabaseItem) && !(node instanceof DBNDatabaseObject)) {
-                // skip folders
-                continue;
-            }
-
-            if (!pathName.isEmpty()) {
-                pathName.insert(0, '/');
-            }
-            pathName.insert(0, DBNUtils.encodeNodePath(node.getNodeDisplayName()));
-        }
-        return pathName.toString();
     }
 
     private void reloadChildren(DBRProgressMonitor monitor, Object source, boolean reflect)

@@ -260,13 +260,6 @@ public class DBNFileSystems extends DBNNode implements DBNNodeWithCache, DBPHidd
         }
     }
 
-    @NotNull
-    @Deprecated
-    @Override
-    public String getNodeItemPath() {
-        return NodePathType.ext.getPrefix() + ((DBNProject) getParentNode()).getProject().getId() + "/" + getName();
-    }
-
     @Override
     public boolean supportsRename() {
         return false;

@@ -35,15 +35,13 @@ import java.util.List;
 /**
  * DBNDataSource
  */
-public class DBNDataSource extends DBNDatabaseNode implements DBNContainer, DBPAdaptable
-{
+public class DBNDataSource extends DBNDatabaseNode implements DBNContainer, DBPAdaptable {
     private static final boolean USE_ICON_DECORATIONS = false; // Disabled in #9384
 
     private final DBPDataSourceContainer dataSource;
     private final DBXTreeNode treeRoot;
 
-    public DBNDataSource(@NotNull DBNNode parentNode, @NotNull DBPDataSourceContainer dataSource)
-    {
+    public DBNDataSource(@NotNull DBNNode parentNode, @NotNull DBPDataSourceContainer dataSource) {
         super(parentNode);
         this.dataSource = dataSource;
         this.treeRoot = dataSource.getDriver().getNavigatorRoot();
@@ -52,8 +50,7 @@ public class DBNDataSource extends DBNDatabaseNode implements DBNContainer, DBPA
 
     @Nullable
     @Override
-    public DBNNode getParentNode()
-    {
+    public DBNNode getParentNode() {
         DBPDataSourceFolder folder = dataSource.getFolder();
         if (folder != null) {
             DBNLocalFolder localFolder = ((DBNProjectDatabases) super.getParentNode()).getFolderNode(folder);
@@ -129,13 +126,6 @@ public class DBNDataSource extends DBNDatabaseNode implements DBNContainer, DBPA
     public String getNodeFullName()
     {
         return getNodeDisplayName();
-    }
-
-    @NotNull
-    @Deprecated
-    @Override
-    public String getNodeItemPath() {
-        return makeDataSourceItemPath(dataSource);
     }
 
     @Override

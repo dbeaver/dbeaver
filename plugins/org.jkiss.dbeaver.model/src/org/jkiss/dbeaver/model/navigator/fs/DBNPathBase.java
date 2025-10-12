@@ -210,13 +210,6 @@ public abstract class DBNPathBase extends DBNNode implements DBNLazyNode {
         return this;
     }
 
-    @NotNull
-    @Deprecated
-    @Override
-    public String getNodeItemPath() {
-        return getParentNode().getNodeItemPath() + "/" + getName();
-    }
-
     @Override
     public boolean supportsRename() {
         return true;

@@ -130,9 +130,9 @@ public class DBNProjectDatabases extends DBNNode implements DBNContainer, DBPEve
 
     @Nullable
     @Override
-    public String getNodeDescription()
-    {
-        return getParentNode().getProject().getName() + ModelMessages.model_navigator__connections;
+    public String getNodeDescription() {
+        DBNProject dbnProject = getParentNode();
+        return dbnProject == null ? null : dbnProject.getProject().getName() + ModelMessages.model_navigator__connections;
     }
 
     @Nullable
@@ -244,13 +244,6 @@ public class DBNProjectDatabases extends DBNNode implements DBNContainer, DBPEve
     @Override
     public boolean allowsOpen() {
         return true;
-    }
-
-    @NotNull
-    @Deprecated
-    @Override
-    public String getNodeItemPath() {
-        return getParentNode().getNodeItemPath() + "/" + getNodeDisplayName();
     }
 
     public DBNLocalFolder getFolderNode(DBPDataSourceFolder folder)

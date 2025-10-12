@@ -260,24 +260,6 @@ public abstract class DBNNode implements DBPNamedObject, DBPNamedObjectLocalized
     }
 
     /**
-     * Node item path in form [nodeType://]<path>
-     * nodeType can be 'resource', 'folder' or 'database'.
-     * If missing then 'database' will be used (backward compatibility).
-     * <p>
-     * For resources and folders path is just a hierarchy path divided with / (slash).
-     * <p>
-     * For database nodes path has form: type1=name1/type2=name2/...[/typeX]
-     * Where typeN is path element for particular database item, name is database object name.
-     *
-     * @return full item node path
-     * @deprecated the path is not unique and does not contain complete information to find the correct node
-     * use {@link #getNodeUri()} instead
-     */
-    @Deprecated
-    @NotNull
-    public abstract String getNodeItemPath();
-
-    /**
      * Node uri path in form [node://]<parentPath>/<path>
      *
      * @return a unique path to the node containing information about the reals hierarchy

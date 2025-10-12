@@ -49,7 +49,7 @@ import java.util.stream.Collectors;
  * DBNModel.
  * Contains all objects which are shown in navigator tree.
  * Also ties DBSObjects to thee model (DBNNode).
- *
+ * *
  * It's strongly recommended to not put the same DBSObject in tree model multiple times.
  * It will work but some actions will not work well
  * (e.g. TreeViewer sometimes update only first TreeItem corresponding to model certain model object).
@@ -65,16 +65,14 @@ public class DBNModel {
     public static class NodePath {
         DBNNode.NodePathType type;
         List<String> pathItems;
-        final boolean legacyFormat;
 
         NodePath(DBNNode.NodePathType type, List<String> pathItems) {
             this.type = type;
             this.pathItems = pathItems;
-            this.legacyFormat = type != DBNNode.NodePathType.node;
         }
 
         public String first() {
-            return pathItems.isEmpty() ? null : pathItems.get(0);
+            return pathItems.isEmpty() ? null : pathItems.getFirst();
         }
 
         @Override
@@ -206,7 +204,7 @@ public class DBNModel {
                 }
             }
             // Get just first one
-            return nodeList.get(0);
+            return nodeList.getFirst();
         } else {
             // Never be here
             throw new IllegalStateException();
@@ -277,9 +275,6 @@ public class DBNModel {
             return null;
         }
         NodePath nodePath = getNodePath(path);
-        if (nodePath.legacyFormat) {
-            return projectNode.getDatabases().getDataSource(nodePath.first());
-        }
         DBNProjectDatabases databaseRootNode = projectNode.getDatabases();
         int rootDbNodeIndex = nodePath.pathItems.indexOf(databaseRootNode.getNodeId());
         if (rootDbNodeIndex < 0) {
@@ -306,9 +301,6 @@ public class DBNModel {
     @Nullable
     public DBNNode getNodeByPath(@NotNull DBRProgressMonitor monitor, @NotNull String path) throws DBException {
         final NodePath nodePath = getNodePath(path);
-        if (nodePath.legacyFormat) {
-            return DBNLegacyUtils.legacyGetNodeByPath(monitor, this, nodePath);
-        }
         return findNodeByPath(monitor, getRoot(), nodePath, 0);
     }
 
@@ -325,9 +317,6 @@ public class DBNModel {
         }
         NodePath nodePath = getNodePath(path);
        
-        if (nodePath.legacyFormat) {
-            return DBNLegacyUtils.legacyGetNodeByPath(monitor, projectNode, nodePath);
-        }
         String projectNodePath = projectNode.getNodeUri();
         if (!path.startsWith(projectNodePath)) {
             throw new DBException("Node from another project");
@@ -356,9 +345,6 @@ public class DBNModel {
             expectedNodePathName = nodePath.pathItems.get(currentLevel);
         }
         DBNNode[] children = currentNode.getChildren(monitor);
-        if (children == null) {
-            return null;
-        }
 
         DBNNode detectedNode = null;
         for (DBNNode child : children) {
@@ -412,8 +398,7 @@ public class DBNModel {
     }
 
     @Nullable
-    public DBNDatabaseNode getParentNode(DBSObject object)
-    {
+    public DBNDatabaseNode getParentNode(DBSObject object) {
         DBNDatabaseNode node = getNodeByObject(object);
         if (node != null) {
             if (node.getParentNode() instanceof DBNDatabaseNode) {
@@ -432,8 +417,7 @@ public class DBNModel {
                 parentObject = part.getParentTable();
             }
         }
-        for (int i = 0; i < path.length; i++) {
-            DBSObject item = path[i];
+        for (DBSObject item : path) {
             node = getNodeByObject(item);
             if (node == null) {
                 // Parent node read
@@ -468,8 +452,7 @@ public class DBNModel {
         addNode(node, false);
     }
 
-    void addNode(DBNDatabaseNode node, boolean reflect)
-    {
+    void addNode(DBNDatabaseNode node, boolean reflect) {
         synchronized (nodeMap) {
             Object obj = nodeMap.get(node.getObject());
             if (obj == null) {
@@ -493,8 +476,7 @@ public class DBNModel {
         }
     }
 
-    void removeNode(DBNDatabaseNode node, boolean reflect)
-    {
+    void removeNode(DBNDatabaseNode node, boolean reflect) {
         boolean badNode = false;
         synchronized (nodeMap) {
             Object obj = nodeMap.get(node.getObject());
@@ -527,8 +509,7 @@ public class DBNModel {
         }
     }
 
-    public void addListener(INavigatorListener listener)
-    {
+    public void addListener(INavigatorListener listener) {
         synchronized (this.listeners) {
             if (this.listeners.contains(listener)) {
                 log.warn("Listener " + listener + " already registered in model");
@@ -539,8 +520,7 @@ public class DBNModel {
         }
     }
 
-    public void removeListener(INavigatorListener listener)
-    {
+    public void removeListener(INavigatorListener listener) {
         synchronized (this.listeners) {
             if (!this.listeners.remove(listener)) {
                 log.warn("Listener " + listener + " wasn't registered in model");
@@ -549,13 +529,11 @@ public class DBNModel {
         }
     }
 
-    public void fireNodeUpdate(Object source, DBNNode node, DBNEvent.NodeChange nodeChange)
-    {
+    public void fireNodeUpdate(Object source, DBNNode node, DBNEvent.NodeChange nodeChange) {
         this.fireNodeEvent(new DBNEvent(source, DBNEvent.Action.UPDATE, nodeChange, node));
     }
 
-    public void fireNodeEvent(final DBNEvent event)
-    {
+    public void fireNodeEvent(final DBNEvent event) {
         if (!isGlobal() || platform.isShuttingDown()) {
             return;
         }
@@ -564,8 +542,7 @@ public class DBNModel {
         }
     }
 
-    public static synchronized DBPImage getStateOverlayImage(DBPImage image, DBSObjectState state)
-    {
+    public static synchronized DBPImage getStateOverlayImage(DBPImage image, DBSObjectState state) {
         if (state == null) {
             // Empty state
             return image;
@@ -582,8 +559,7 @@ public class DBNModel {
         return new DBIconComposite(image, false, null, null, null, overlayImage);
     }
 
-    public static void updateConfigAndRefreshDatabases(DBNNode node)
-    {
+    public static void updateConfigAndRefreshDatabases(DBNNode node) {
         for (DBNNode parentNode = node; parentNode != null; parentNode = parentNode.getParentNode()) {
             if (parentNode instanceof DBNProjectDatabases projectDatabases) {
                 projectDatabases.getDataSourceRegistry().flushConfig();
