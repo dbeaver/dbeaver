@@ -69,7 +69,7 @@ public class DBNEmptyNode extends DBNNode
     @Override
     public DBNNode[] getChildren(@NotNull DBRProgressMonitor monitor)
     {
-        return null;
+        return new DBNNode[0];
     }
 
     @Override
@@ -82,7 +82,7 @@ public class DBNEmptyNode extends DBNNode
     @Deprecated
     @Override
     public String getNodeItemPath() {
-        return null;
+        return "";
     }
 
 }

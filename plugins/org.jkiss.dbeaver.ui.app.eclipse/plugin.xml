@@ -85,6 +85,11 @@
             <keywordReference id="org.jkiss.dbeaver.core.keyword.connection"/>
             <keywordReference id="org.jkiss.dbeaver.core.keyword.dbeaver"/>
         </page>
+        <page category="org.jkiss.dbeaver.preferences.main.connections" id="org.jkiss.dbeaver.preferences.globalNetworkProfiles" class="org.jkiss.dbeaver.ui.preferences.PrefPageGlobalProjectNetworkProfiles" name="%pref.page.name.network.profiles">
+            <keywordReference id="org.jkiss.dbeaver.core.keyword.connection"/>
+            <keywordReference id="org.jkiss.dbeaver.core.keyword.dbeaver"/>
+            <keywordReference id="org.jkiss.dbeaver.core.keyword.network.profiles"/>
+        </page>
         <page category="org.jkiss.dbeaver.preferences.drivers" id="org.jkiss.dbeaver.preferences.drivers.maven" class="org.jkiss.dbeaver.ui.preferences.PrefPageDriversMaven" name="%pref.page.name.drivers.maven">
             <keywordReference id="org.jkiss.dbeaver.core.keyword.connection"/>
             <keywordReference id="org.jkiss.dbeaver.core.keyword.dbeaver"/>

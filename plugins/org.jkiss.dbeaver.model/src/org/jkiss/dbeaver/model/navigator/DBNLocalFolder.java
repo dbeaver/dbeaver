@@ -74,12 +74,14 @@ public class DBNLocalFolder extends DBNNode implements DBNContainer
         return getNodeDisplayName();
     }
 
+    @Nullable
     @Override
     public Object getValueObject()
     {
         return folder;
     }
 
+    @NotNull
     @Override
     public String getChildrenType()
     {
@@ -208,6 +210,7 @@ public class DBNLocalFolder extends DBNNode implements DBNContainer
         return children;
     }
 
+    @Nullable
     @Override
     public Class<? extends DBSObject> getChildrenClass()
     {
