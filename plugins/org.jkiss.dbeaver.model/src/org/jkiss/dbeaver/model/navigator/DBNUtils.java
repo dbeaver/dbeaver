@@ -97,7 +97,7 @@ public class DBNUtils {
 
     public static DBNNode[] getNodeChildrenFiltered(DBRProgressMonitor monitor, DBNNode node, boolean forTree) throws DBException {
         DBNNode[] children = node.getChildren(monitor);
-        if (children != null && children.length > 0) {
+        if (children.length > 0) {
             children = filterNavigableChildren(children, forTree);
         }
         return children;
@@ -149,7 +149,7 @@ public class DBNUtils {
 
         if (firstChild instanceof DBNDatabaseItem item && item.getObject() instanceof DBSTableColumn) {
             if (prefStore.getBoolean(ModelPreferences.NAVIGATOR_SORT_ALPHABETICALLY)) {
-                Arrays.sort(children, NodeNameComparator.INSTANCE);
+                Arrays.sort(children, new NodeNameComparator());
             }
             return;
         }
@@ -160,10 +160,6 @@ public class DBNUtils {
 
         Comparator<DBNNode> comparator = null;
 
-        if (prefStore.getBoolean(ModelPreferences.NAVIGATOR_SORT_ALPHABETICALLY)) {
-            comparator = NodeNameComparator.INSTANCE;
-        }
-
         if (prefStore.getBoolean(ModelPreferences.NAVIGATOR_SORT_FOLDERS_FIRST) || isMergedEntity(firstChild)) {
             comparator = NodeFolderComparator.INSTANCE.thenComparing((o1, o2) -> {
                 if (o1 instanceof DBNContainer && o2 instanceof DBNContainer) {
@@ -173,10 +169,16 @@ public class DBNUtils {
                 } else if (o2 instanceof DBNContainer) {
                     return -1;
                 }
-                return AlphanumericComparator.getInstance()
-                    .compare(o1.getNodeDisplayName(), o2.getNodeDisplayName());
+                return 0;
             });
         }
+
+        if (prefStore.getBoolean(ModelPreferences.NAVIGATOR_SORT_ALPHABETICALLY)) {
+            comparator = Objects.isNull(comparator)
+                ? new NodeNameComparator()
+                : comparator.thenComparing(new NodeNameComparator());
+        }
+
         if (comparator != null) {
             Arrays.sort(children, comparator);
         }
@@ -234,8 +236,7 @@ public class DBNUtils {
             Class<?> expectedChildrenType = dbNode.getChildrenOrFolderClass(itemsMeta);
             if (expectedChildrenType != null) {
                 List<DBXTreeNode> childMetas = itemsMeta.getChildren(dbNode);
-                if (childMetas.size() == 1 && childMetas.get(0) instanceof DBXTreeItem nestedMeta) {
-                    Class<?> expectedNestedType = dbNode.getChildrenOrFolderClass(nestedMeta);
+                if (childMetas.size() == 1 && childMetas.getFirst() instanceof DBXTreeItem nestedMeta) {
                     DBNDatabaseNode[] nodeChildren = dbNode.getChildren(monitor);
                     if (nodeChildren.length > 0 &&
                         !expectedChildrenType.isInstance(nodeChildren[0].getObject()))
@@ -270,11 +271,19 @@ public class DBNUtils {
     }
 
     private static class NodeNameComparator implements Comparator<DBNNode> {
-        static NodeNameComparator INSTANCE = new NodeNameComparator();
+        private final AlphanumericComparator alphanumericComparator = AlphanumericComparator.getInstance();
+        private final boolean caseInsensitive;
+
+        public NodeNameComparator() {
+            caseInsensitive = DBWorkbench.getPlatform().getPreferenceStore().getBoolean(
+                ModelPreferences.NAVIGATOR_SORT_IGNORE_CASE);
+        }
 
         @Override
         public int compare(DBNNode node1, DBNNode node2) {
-            return node1.getNodeDisplayName().compareToIgnoreCase(node2.getNodeDisplayName());
+            return caseInsensitive
+                ? alphanumericComparator.compareIgnoreCase(node1.getNodeDisplayName(), node2.getNodeDisplayName())
+                : alphanumericComparator.compare(node1.getNodeDisplayName(), node2.getNodeDisplayName());
         }
     }
 
@@ -299,14 +308,14 @@ public class DBNUtils {
 
             @Override
             public Object get(String name) {
-                if (node instanceof DBNDatabaseNode) {
+                if (node instanceof DBNDatabaseNode dbNode) {
                     switch (name) {
                         case "object":
-                            return ((DBNDatabaseNode) node).getValueObject();
+                            return dbNode.getValueObject();
                         case "dataSource":
-                            return ((DBNDatabaseNode) node).getDataSource();
+                            return dbNode.getDataSource();
                         case "connected":
-                            return ((DBNDatabaseNode) node).getDataSource() != null;
+                            return dbNode.getDataSource() != null;
                     }
                 }
                 return null;
@@ -362,10 +371,10 @@ public class DBNUtils {
 
         DBSObject objectToOpen;
         if (entities.size() == 1) {
-            objectToOpen = entities.get(0);
+            objectToOpen = entities.getFirst();
         } else {
             if (entities.size() > 1) {
-                objectToOpen = entities.get(0).getParentObject();
+                objectToOpen = entities.getFirst().getParentObject();
             } else {
                 objectToOpen = dataSource;
             }
@@ -377,11 +386,11 @@ public class DBNUtils {
     }
 
     private static void getConnectionEntities(
-        DBRProgressMonitor monitor,
-        DBSObjectContainer container,
-        List<DBSEntity> entities
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBSObjectContainer container,
+        @NotNull List<DBSEntity> entities
     ) throws DBException {
-        for (DBSObject child : container.getChildren(monitor)) {
+        for (DBSObject child : CommonUtils.safeCollection(container.getChildren(monitor))) {
             if (child instanceof DBSEntity entity) {
                 entities.add(entity);
             } else if (child instanceof DBSObjectContainer oc) {

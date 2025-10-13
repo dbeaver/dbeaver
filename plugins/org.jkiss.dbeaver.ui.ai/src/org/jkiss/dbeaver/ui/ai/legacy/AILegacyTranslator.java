@@ -43,6 +43,7 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.ai.AIUIUtils;
 import org.jkiss.dbeaver.ui.ai.internal.AIFeatures;
+import org.jkiss.dbeaver.ui.ai.internal.AIUIMessages;
 import org.jkiss.dbeaver.ui.ai.preferences.AIPreferencePageMain;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditor;
 import org.jkiss.utils.CommonUtils;
@@ -97,7 +98,7 @@ public class AILegacyTranslator {
 
             AISuggestionPopup aiCompletionPopup = new AISuggestionPopup(
                 HandlerUtil.getActiveShell(event),
-                "AI smart completion",
+                AIUIMessages.ai_suggestion_popup_title,
                 lDataSource,
                 executionContext,
                 settings
