@@ -91,7 +91,7 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBNLazyNode, DB
             return "";
         }
         DBXTreeNode meta = getMeta();
-        return meta == null ? "" : meta.getNodeTypeLabel(getObject().getDataSource(), null); //$NON-NLS-1$
+        return meta.getNodeTypeLabel(getObject().getDataSource(), null); //$NON-NLS-1$
     }
 
     @NotNull
@@ -184,9 +184,7 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBNLazyNode, DB
         DBPImage image = DBValueFormatting.getObjectImage(object, false);
         if (image == null) {
             DBXTreeNode meta = getMeta();
-            if (meta != null) {
-                image = meta.getIcon(this);
-            }
+            image = meta.getIcon(this);
         }
         if (image != null && object instanceof DBPStatefulObject so) {
             image = DBNModel.getStateOverlayImage(image, so.getObjectState());
@@ -677,7 +675,7 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBNLazyNode, DB
         if (propertyValue == null) {
             return false;
         }
-        if (!(propertyValue instanceof Collection<?>)) {
+        if (!(propertyValue instanceof Collection<?> itemList)) {
             log.warn("Bad property '" + meta.getPropertyName() + "' value: " + propertyValue.getClass().getName()); //$NON-NLS-1$ //$NON-NLS-2$
             return false;
         }
@@ -687,7 +685,6 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBNLazyNode, DB
         if (filter != null && dataSource != null) {
             filter.setCaseSensitive(dataSource.getSQLDialect().hasCaseSensitiveFiltration());
         }
-        final Collection<?> itemList = (Collection<?>) propertyValue;
         if (itemList.isEmpty()) {
             return false;
         }
@@ -955,11 +952,9 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBNLazyNode, DB
 
     public DBXTreeItem getItemsMeta() {
         List<DBXTreeNode> metaChildren = getMeta().getChildren(this);
-        if (metaChildren != null) {
-            for (DBXTreeNode cn : metaChildren) {
-                if (cn instanceof DBXTreeItem treeItem) {
-                    return treeItem;
-                }
+        for (DBXTreeNode cn : metaChildren) {
+            if (cn instanceof DBXTreeItem treeItem) {
+                return treeItem;
             }
         }
         return null;
@@ -967,11 +962,9 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBNLazyNode, DB
 
     public DBXTreeFolder getFolderMeta(Class<?> childType) {
         List<DBXTreeNode> metaChildren = getMeta().getChildren(this);
-        if (metaChildren != null) {
-            for (DBXTreeNode cn : metaChildren) {
-                if (cn instanceof DBXTreeFolder treeFolder && childType.getName().equals(treeFolder.getType())) {
-                    return treeFolder;
-                }
+        for (DBXTreeNode cn : metaChildren) {
+            if (cn instanceof DBXTreeFolder treeFolder && childType.getName().equals(treeFolder.getType())) {
+                return treeFolder;
             }
         }
         return null;
@@ -1108,7 +1101,7 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBNLazyNode, DB
         for (DBNNode node = this; node != null; node = node.getParentNode()) {
             if (node instanceof DBNDatabaseNode dbNode) {
                 DBXTreeNode meta = dbNode.getMeta();
-                if (meta != null && meta.isVirtual()) {
+                if (meta.isVirtual()) {
                     return true;
                 }
             }
