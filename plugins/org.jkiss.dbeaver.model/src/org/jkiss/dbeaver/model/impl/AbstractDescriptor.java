@@ -163,6 +163,19 @@ public abstract class AbstractDescriptor {
             return implName;
         }
 
+        @NotNull
+        public Class<?> getImplClass() {
+            return getImplClass(Object.class);
+        }
+
+        @NotNull
+        public <T> Class<? extends T> getImplClass(Class<T> type) {
+            if (implClass == null) {
+                implClass = AbstractDescriptor.this.getImplClass(implName, type);
+            }
+            return (Class<? extends T>) implClass;
+        }
+
         @Nullable
         public Class<?> getObjectClass() {
             return getObjectClass(Object.class);
@@ -170,9 +183,6 @@ public abstract class AbstractDescriptor {
 
         @Nullable
         public <T> Class<? extends T> getObjectClass(Class<T> type) {
-            if (implName == null) {
-                return null;
-            }
             if (implClass == null) {
                 implClass = AbstractDescriptor.this.getObjectClass(implName, type);
             }
@@ -239,9 +249,6 @@ public abstract class AbstractDescriptor {
 
         @NotNull
         public <T> T createInstance(@NotNull Class<T> type) throws DBException {
-            if (implName == null) {
-                throw new DBException("No implementation class name set for '" + type.getName() + "'");
-            }
             Class<? extends T> objectClass = getObjectClass(type);
             if (objectClass == null) {
                 throw new DBException("Can't load class '" + getImplName() + "'");

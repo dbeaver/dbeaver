@@ -152,7 +152,7 @@ public class DataTransferProcessorDescriptor extends AbstractDescriptor implemen
     public IDataTransferProcessor getInstance() {
         try {
             processorType.checkObjectClass(IDataTransferProcessor.class);
-            Class<? extends IDataTransferProcessor> clazz = processorType.getObjectClass(IDataTransferProcessor.class);
+            Class<? extends IDataTransferProcessor> clazz = processorType.getImplClass(IDataTransferProcessor.class);
             return clazz.getConstructor().newInstance();
         } catch (Exception e) {
             throw new IllegalStateException("Can't instantiate data exporter", e);
@@ -172,11 +172,11 @@ public class DataTransferProcessorDescriptor extends AbstractDescriptor implemen
     }
 
     public boolean isAppendable() {
-        return IAppendableDataExporter.class.isAssignableFrom(processorType.getObjectClass());
+        return processorType.matchesType(IAppendableDataExporter.class);
     }
 
     public boolean isMulti() {
-        return IMultiStreamDataImporter.class.isAssignableFrom(processorType.getObjectClass());
+        return processorType.matchesType(IMultiStreamDataImporter.class);
     }
 
     public String getFullId() {

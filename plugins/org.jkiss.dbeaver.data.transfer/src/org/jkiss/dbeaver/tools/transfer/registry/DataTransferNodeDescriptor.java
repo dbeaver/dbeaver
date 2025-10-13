@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.tools.transfer.registry;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPImage;
@@ -112,6 +113,7 @@ public class DataTransferNodeDescriptor extends AbstractDescriptor
         return advanced;
     }
 
+    @Nullable
     public Class<? extends IDataTransferNode> getNodeClass()
     {
         return implType.getObjectClass(IDataTransferNode.class);
@@ -121,7 +123,7 @@ public class DataTransferNodeDescriptor extends AbstractDescriptor
     {
         implType.checkObjectClass(IDataTransferNode.class);
         try {
-            return implType.getObjectClass(IDataTransferNode.class).getDeclaredConstructor().newInstance();
+            return implType.getImplClass(IDataTransferNode.class).getDeclaredConstructor().newInstance();
         } catch (Throwable e) {
             throw new DBException("Can't create data transformer node", e);
         }
@@ -131,7 +133,7 @@ public class DataTransferNodeDescriptor extends AbstractDescriptor
     {
         settingsType.checkObjectClass(IDataTransferSettings.class);
         try {
-            return settingsType.getObjectClass(IDataTransferSettings.class).getDeclaredConstructor().newInstance();
+            return settingsType.getImplClass(IDataTransferSettings.class).getDeclaredConstructor().newInstance();
         } catch (Throwable e) {
             throw new DBException("Can't create node settings", e);
         }
