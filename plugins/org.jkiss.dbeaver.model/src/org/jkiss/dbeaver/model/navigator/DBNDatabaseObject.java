@@ -30,9 +30,9 @@ import org.jkiss.utils.CommonUtils;
  * DBNDatabaseObject
  */
 public class DBNDatabaseObject extends DBNDatabaseNode implements DBSObject {
-    private DBXTreeObject meta;
+    private final DBXTreeObject meta;
 
-    DBNDatabaseObject(DBNNode parent, DBXTreeObject meta) {
+    DBNDatabaseObject(@NotNull DBNNode parent, @NotNull DBXTreeObject meta) {
         super(parent);
         this.meta = meta;
         registerNode();
@@ -60,7 +60,7 @@ public class DBNDatabaseObject extends DBNDatabaseNode implements DBSObject {
     }
 
     @Override
-    protected boolean reloadObject(DBRProgressMonitor monitor, DBSObject object) {
+    protected boolean reloadObject(@NotNull DBRProgressMonitor monitor, DBSObject object) {
         // do nothing
         return false;
     }
@@ -87,7 +87,7 @@ public class DBNDatabaseObject extends DBNDatabaseNode implements DBSObject {
             }
             String parentName = parent.getNodeDisplayName();
             if (!CommonUtils.isEmpty(parentName)) {
-                if (pathName.length() > 0) {
+                if (!pathName.isEmpty()) {
                     pathName.insert(0, '.');
                 }
                 pathName.insert(0, parentName);
@@ -127,12 +127,10 @@ public class DBNDatabaseObject extends DBNDatabaseNode implements DBSObject {
     @Override
     public DBPDataSource getDataSource() {
         DBSObject parentObject = getParentObject();
-        return parentObject == null ? null : parentObject.getDataSource();
-    }
-
-    @Override
-    public boolean isPersisted() {
-        return true;
+        if (parentObject == null) {
+            throw new IllegalStateException("No parent database object for object node");
+        }
+        return parentObject.getDataSource();
     }
 
 }

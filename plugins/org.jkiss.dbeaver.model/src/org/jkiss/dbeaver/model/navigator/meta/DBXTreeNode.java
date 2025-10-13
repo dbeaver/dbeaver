@@ -304,17 +304,19 @@ public abstract class DBXTreeNode {
         if (!CommonUtils.isEmpty(extIcons) && context != null) {
             // Try to get some icon depending on it's condition
             for (DBXTreeIcon icon : extIcons) {
-                if (icon.getExpression() == null) {
+                JexlExpression iconExpression = icon.getExpression();
+                if (iconExpression == null) {
                     continue;
                 }
                 try {
-                    Object result = icon.getExpression().evaluate(DBNUtils.makeContext(context));
+                    Object result = iconExpression.evaluate(DBNUtils.makeContext(context));
                     if (Boolean.TRUE.equals(result)) {
                         return icon.getIcon();
                     }
                 } catch (JexlException e) {
                     // do nothing
-                    log.debug("Error evaluating node icon expression '" + icon.getExprString() + "' on node '" + context.getName() + "': " + GeneralUtils.getExpressionParseMessage(e));
+                    log.trace("Error evaluating node icon expression '" + icon.getExprString() +
+                        "' on node '" + context.getName() + "': " + GeneralUtils.getExpressionParseMessage(e));
                 }
             }
         }
