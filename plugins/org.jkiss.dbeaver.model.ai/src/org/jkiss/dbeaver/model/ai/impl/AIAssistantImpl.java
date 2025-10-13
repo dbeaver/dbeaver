@@ -106,7 +106,7 @@ public class AIAssistantImpl implements AIAssistant {
                         } else {
                             List<AIMessage> newMessages = new ArrayList<>(request.getMessages());
                             newMessages.add(new AIMessage(AIMessageType.USER, stringValue));
-                            AIEngineRequest newRequest = new AIEngineRequest(newMessages, false);
+                            AIEngineRequest newRequest = new AIEngineRequest(newMessages);
                             newRequest.setFunctions(request.getFunctions());
 
                             request = newRequest;
