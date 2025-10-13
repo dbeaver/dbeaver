@@ -25,6 +25,7 @@ import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
+import org.jkiss.dbeaver.model.edit.DBEPersistAction.ActionType;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.sql.edit.SQLObjectEditor;
@@ -137,13 +138,20 @@ public class MySQLProcedureManager extends SQLObjectEditor<MySQLProcedure, MySQL
                 extractSchema(procedure.getFullyQualifiedName(DBPEvaluationContext.DDL)), tempName
             );
 
-            String createTemp = withNewProcName(
+            String tempProcedure = replaceProcName(
                 procedure.getDataSource().getSQLDialect(),
                 procedure.getDeclaration(),
                 newFullName
             );
 
-            actions.add(new SQLDatabasePersistAction("Create procedure (temp)", createTemp, true));
+            actions.add(new SQLDatabasePersistAction("Create procedure (temp)",
+                tempProcedure, ActionType.NORMAL, true, true));
+
+            actions.add(new SQLDatabasePersistAction(
+                "Drop temp procedure",
+                "DROP " + procedure.getProcedureType() + " IF EXISTS " + newFullName,
+                ActionType.NORMAL, true, true
+            ));
 
             actions.add(
                 new SQLDatabasePersistAction("Drop procedure", "DROP "
@@ -153,16 +161,12 @@ public class MySQLProcedureManager extends SQLObjectEditor<MySQLProcedure, MySQL
 
             actions.add(new SQLDatabasePersistAction("Create procedure (final)", original, true));
 
-            actions.add(new SQLDatabasePersistAction(
-                "Drop temp procedure",
-                "DROP " + procedure.getProcedureType() + " IF EXISTS " + newFullName
-            ));
         }
 
     }
 
     @NotNull
-    private static String withNewProcName(
+    private static String replaceProcName(
         @NotNull SQLDialect dialect,
         @NotNull String ddl,
         @NotNull String newFullName
@@ -174,7 +178,7 @@ public class MySQLProcedureManager extends SQLObjectEditor<MySQLProcedure, MySQL
         }
 
         String head = m.group(1);
-        return PROCEDURE_REPLACE_COMMENT + ddl.substring(0, start) + head + newFullName + ddl.substring(start + m.end());
+        return ddl.substring(0, start) + head + newFullName + ddl.substring(start + m.end());
     }
 
     @Nullable

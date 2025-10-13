@@ -47,4 +47,8 @@ public interface DBEPersistAction {
 
     boolean isComplex();
 
+    default boolean isInternal() {
+        return false;
+    }
+
 }

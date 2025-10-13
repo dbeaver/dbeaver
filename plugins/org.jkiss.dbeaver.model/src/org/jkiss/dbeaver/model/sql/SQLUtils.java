@@ -879,7 +879,12 @@ public final class SQLUtils {
     }
 
     @NotNull
-    public static String generateScript(DBPDataSource dataSource, DBEPersistAction[] persistActions, boolean addComments)
+    public static String generateScript(DBPDataSource dataSource, DBEPersistAction[] persistActions, boolean addComments) {
+        return generateScript(dataSource, persistActions, addComments, false);
+    }
+
+    @NotNull
+    public static String generateScript(DBPDataSource dataSource, DBEPersistAction[] persistActions, boolean addComments, boolean withInternal)
     {
         final SQLDialect sqlDialect = SQLUtils.getDialectFromDataSource(dataSource);
         final String lineSeparator = GeneralUtils.getDefaultLineSeparator();
@@ -891,6 +896,9 @@ public final class SQLUtils {
         }
         if (persistActions != null) {
             for (DBEPersistAction action : persistActions) {
+                if (action.isInternal() && !withInternal) {
+                    continue;
+                }
                 String scriptLine = action.getScript();
                 if (CommonUtils.isEmpty(scriptLine)) {
                     continue;
@@ -1278,21 +1286,15 @@ public final class SQLUtils {
                 continue;
             }
 
-            boolean noSl = true;
-            for (int k = 0; k < slComments.length && noSl; k++) {
-                String sl = slComments[k];
-                if (sql.startsWith(sl, i)) {
-                    i = skipToEol(sql, i + sl.length());
-                    noSl = false;
-                }
-            }
-            if (!noSl) {
+            int j = consumeSingleLineAt(sql, i, slComments);
+            if (j != i) {
+                i = j;
                 continue;
             }
 
-            if (mlStart != null && sql.startsWith(mlStart, i)) {
-                int end = sql.indexOf(mlEnd, i + mlStart.length());
-                i = (end >= 0 ? end + mlEnd.length() : n);
+            j = consumeMultiLineAt(sql, i, mlStart, mlEnd);
+            if (j != i) {
+                i = j;
                 continue;
             }
 
@@ -1308,6 +1310,33 @@ public final class SQLUtils {
             i++;
         }
         return i;
+    }
+
+
+    private static int consumeSingleLineAt(@NotNull String sql, final int i, @NotNull String[] slComments) {
+        for (String sl: slComments) {
+            if (sql.startsWith(sl, i)) {
+                return skipToEol(sql, i + sl.length());
+            }
+        }
+        return i;
+    }
+
+    private static int consumeMultiLineAt(
+        @NotNull String sql,
+        final int i,
+        @Nullable String mlStart,
+        @Nullable String mlEnd
+    ) {
+        if (mlStart == null || mlEnd == null) {
+            return i;
+        }
+        if (!sql.startsWith(mlStart, i)) {
+            return i;
+        }
+
+        int end = sql.indexOf(mlEnd, i + mlStart.length());
+        return (end >= 0 ? end + mlEnd.length() : sql.length());
     }
 
     private static int skipToEol(@NotNull String s, final int idx) {
