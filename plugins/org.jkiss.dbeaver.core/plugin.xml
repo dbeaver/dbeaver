@@ -621,9 +621,12 @@
             <command commandId="org.jkiss.dbeaver.core.object.open">
                 <visibleWhen checkEnabled="true"/>
             </command>
-            <menu label="%menu.org.jkiss.dbeaver.core.connection.settings.label">
-                <dynamic id="org.jkiss.dbeaver.core.connection.settings" class="org.jkiss.dbeaver.ui.actions.datasource.ConnectionViewSettingsContributor">
-                </dynamic>
+            <menu label="%menu.org.jkiss.dbeaver.core.connection.settings.label"
+                  icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/misc/show_all_details.svg">
+
+                <dynamic id="org.jkiss.dbeaver.core.connection.settings"
+                         class="org.jkiss.dbeaver.ui.actions.datasource.ConnectionViewSettingsContributor"/>
+
                 <visibleWhen>
                     <with variable="selection">
                         <count value="1"/>
@@ -683,6 +686,16 @@
             </command>
             <command commandId="org.jkiss.dbeaver.core.show.in.explorer">
                 <visibleWhen checkEnabled="true"/>
+            </command>
+            <command commandId="org.eclipse.ui.file.properties">
+                <visibleWhen checkEnabled="true">
+                    <with variable="selection">
+                        <count value="1"/>
+                        <iterate operator="and">
+                            <adapt type="org.jkiss.dbeaver.model.navigator.DBNProject"/>
+                        </iterate>
+                    </with>
+                </visibleWhen>
             </command>
 
             <separator name="remote-files" visible="true"/>
@@ -888,14 +901,14 @@
             <separator name="additions" visible="true"/>
             <command commandId="org.eclipse.ui.navigate.collapseAll"/>
             <command commandId="org.jkiss.dbeaver.core.navigator.linkeditor"/>
-            <command commandId="org.jkiss.dbeaver.core.navigator.view.configure"/>
+            <command commandId="org.eclipse.ui.file.properties"/>
             <separator name="additions_end" visible="true"/>
             <command commandId="org.jkiss.dbeaver.core.project.refresh"/>
         </menuContribution>
 
         <!-- Project explorer menu & toolbar -->
         <menuContribution allPopups="false" locationURI="toolbar:org.jkiss.dbeaver.core.projectExplorer">
-            <command commandId="org.jkiss.dbeaver.core.navigator.view.configure"/>
+            <command commandId="org.eclipse.ui.file.properties"/>
             <command commandId="org.eclipse.ui.navigate.collapseAll"/>
             <command commandId="org.eclipse.ui.navigate.expandAll"/>
             <command commandId="org.jkiss.dbeaver.core.navigator.linkeditor"/>
@@ -1152,6 +1165,7 @@
         <keyword id="org.jkiss.dbeaver.core.keyword.pref.ui.notifications" label="%keyword.org.jkiss.dbeaver.core.keyword.pref.ui.notifications.label"/>
         <keyword id="org.jkiss.dbeaver.core.keyword.dbeaver" label="dbeaver beaver"/>
         <keyword id="org.jkiss.dbeaver.core.keyword.connection" label="%keyword.org.jkiss.dbeaver.core.keyword.connection"/>
+        <keyword id="org.jkiss.dbeaver.core.keyword.network.profiles" label="ssh proxy kubernetes ssm tunnel network profile"/>
         <keyword id="org.jkiss.dbeaver.core.keyword.pref.resultset.grid" label="%keyword.org.jkiss.dbeaver.core.keyword.pref.resultset.grid.label"/>
         <keyword id="org.jkiss.dbeaver.core.keyword.pref.resultset.plain.text" label="%keyword.org.jkiss.dbeaver.core.keyword.pref.resultset.plain.text.label"/>
         <keyword id="org.jkiss.dbeaver.core.keyword.database.connection" label="%keyword.org.jkiss.dbeaver.core.keyword.database.connection.label"/>
