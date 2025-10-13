@@ -398,11 +398,18 @@ public class SQLServerMetaModel extends GenericMetaModel implements DBCQueryTran
 
     @Nullable
     @Override
-    public List<GenericSchema> loadSchemas(JDBCSession session, GenericDataSource dataSource, GenericCatalog catalog) throws DBException {
+    public List<GenericSchema> loadSchemas(
+        @NotNull JDBCSession session,
+        @NotNull GenericDataSource dataSource,
+        @Nullable GenericCatalog catalog
+    ) throws DBException {
         boolean showAllSchemas = SQLServerUtils.isShowAllSchemas(dataSource);
         final DBSObjectFilter schemaFilters = dataSource.getContainer().getObjectFilter(GenericSchema.class, catalog, false);
 
-        String sysSchema = SQLServerUtils.getSystemSchemaFQN(dataSource, catalog.getName(), getSystemSchema());
+        String sysSchema = SQLServerUtils.getSystemSchemaFQN(
+            dataSource,
+            catalog == null ? null : catalog.getName(),
+            getSystemSchema());
         String sql;
         if (showAllSchemas) {
             if (getServerType() == ServerType.SQL_SERVER && dataSource.isServerVersionAtLeast(SQLServerConstants.SQL_SERVER_2005_VERSION_MAJOR ,0)) {
@@ -477,10 +484,16 @@ public class SQLServerMetaModel extends GenericMetaModel implements DBCQueryTran
     }
 
     @Override
-    public JDBCStatement prepareSequencesLoadStatement(@NotNull JDBCSession session, @NotNull GenericStructContainer container) throws SQLException {
+    public JDBCStatement prepareSequencesLoadStatement(
+        @NotNull JDBCSession session,
+        @NotNull GenericStructContainer container
+    ) throws SQLException {
         JDBCPreparedStatement dbStat = session.prepareStatement(
             "SELECT * FROM " +
-                SQLServerUtils.getSystemSchemaFQN(container.getDataSource(), container.getCatalog().getName(), getSystemSchema()) +
+                SQLServerUtils.getSystemSchemaFQN(
+                    container.getDataSource(),
+                    container.getCatalog() == null ? null : container.getCatalog().getName(),
+                    getSystemSchema()) +
                 ".sequences WHERE schema_name(schema_id)=?");
         dbStat.setString(1, container.getSchema().getName());
         return dbStat;
@@ -510,7 +523,10 @@ public class SQLServerMetaModel extends GenericMetaModel implements DBCQueryTran
     }
 
     @Override
-    public JDBCStatement prepareSynonymsLoadStatement(@NotNull JDBCSession session, @NotNull GenericStructContainer container) throws SQLException {
+    public JDBCStatement prepareSynonymsLoadStatement(
+        @NotNull JDBCSession session,
+        @NotNull GenericStructContainer container
+    ) throws SQLException {
         JDBCPreparedStatement dbStat = session.prepareStatement(
             "SELECT * FROM " + SQLServerUtils.getSystemSchemaFQN(container.getDataSource(), container.getCatalog().getName(), getSystemSchema()) + ".synonyms WHERE schema_name(schema_id)=?");
         dbStat.setString(1, container.getSchema().getName());
@@ -518,7 +534,11 @@ public class SQLServerMetaModel extends GenericMetaModel implements DBCQueryTran
     }
 
     @Override
-    public GenericSynonym createSynonymImpl(@NotNull JDBCSession session, @NotNull GenericStructContainer container, @NotNull JDBCResultSet dbResult) {
+    public GenericSynonym createSynonymImpl(
+        @NotNull JDBCSession session,
+        @NotNull GenericStructContainer container,
+        @NotNull JDBCResultSet dbResult
+    ) {
         String name = JDBCUtils.safeGetString(dbResult, "name");
         if (CommonUtils.isEmpty(name)) {
             return null;

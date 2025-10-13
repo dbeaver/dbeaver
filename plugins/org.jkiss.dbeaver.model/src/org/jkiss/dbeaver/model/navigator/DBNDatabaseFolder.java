@@ -69,11 +69,13 @@ public class DBNDatabaseFolder extends DBNDatabaseNode implements DBNContainer, 
         return this;
     }
 
+    @Nullable
     @Override
     public Object getValueObject() {
         return ((DBNDatabaseNode) getParentNode()).getValueObject();
     }
 
+    @NotNull
     @Override
     public String getChildrenType() {
         final List<DBXTreeNode> metaChildren = meta.getChildren(this);
@@ -125,6 +127,7 @@ public class DBNDatabaseFolder extends DBNDatabaseNode implements DBNContainer, 
         return getParentNode() != null && getParentNode().isPersisted();
     }
 
+    @Nullable
     @Override
     public Class<? extends DBSObject> getChildrenClass() {
         return getFolderChildrenClass(meta);

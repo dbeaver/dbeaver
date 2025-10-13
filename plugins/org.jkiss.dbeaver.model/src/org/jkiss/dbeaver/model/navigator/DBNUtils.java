@@ -97,7 +97,7 @@ public class DBNUtils {
 
     public static DBNNode[] getNodeChildrenFiltered(DBRProgressMonitor monitor, DBNNode node, boolean forTree) throws DBException {
         DBNNode[] children = node.getChildren(monitor);
-        if (children != null && children.length > 0) {
+        if (children.length > 0) {
             children = filterNavigableChildren(children, forTree);
         }
         return children;
@@ -236,8 +236,7 @@ public class DBNUtils {
             Class<?> expectedChildrenType = dbNode.getChildrenOrFolderClass(itemsMeta);
             if (expectedChildrenType != null) {
                 List<DBXTreeNode> childMetas = itemsMeta.getChildren(dbNode);
-                if (childMetas.size() == 1 && childMetas.get(0) instanceof DBXTreeItem nestedMeta) {
-                    Class<?> expectedNestedType = dbNode.getChildrenOrFolderClass(nestedMeta);
+                if (childMetas.size() == 1 && childMetas.getFirst() instanceof DBXTreeItem nestedMeta) {
                     DBNDatabaseNode[] nodeChildren = dbNode.getChildren(monitor);
                     if (nodeChildren.length > 0 &&
                         !expectedChildrenType.isInstance(nodeChildren[0].getObject()))
@@ -309,14 +308,14 @@ public class DBNUtils {
 
             @Override
             public Object get(String name) {
-                if (node instanceof DBNDatabaseNode) {
+                if (node instanceof DBNDatabaseNode dbNode) {
                     switch (name) {
                         case "object":
-                            return ((DBNDatabaseNode) node).getValueObject();
+                            return dbNode.getValueObject();
                         case "dataSource":
-                            return ((DBNDatabaseNode) node).getDataSource();
+                            return dbNode.getDataSource();
                         case "connected":
-                            return ((DBNDatabaseNode) node).getDataSource() != null;
+                            return dbNode.getDataSource() != null;
                     }
                 }
                 return null;
@@ -372,10 +371,10 @@ public class DBNUtils {
 
         DBSObject objectToOpen;
         if (entities.size() == 1) {
-            objectToOpen = entities.get(0);
+            objectToOpen = entities.getFirst();
         } else {
             if (entities.size() > 1) {
-                objectToOpen = entities.get(0).getParentObject();
+                objectToOpen = entities.getFirst().getParentObject();
             } else {
                 objectToOpen = dataSource;
             }
@@ -387,11 +386,11 @@ public class DBNUtils {
     }
 
     private static void getConnectionEntities(
-        DBRProgressMonitor monitor,
-        DBSObjectContainer container,
-        List<DBSEntity> entities
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBSObjectContainer container,
+        @NotNull List<DBSEntity> entities
     ) throws DBException {
-        for (DBSObject child : container.getChildren(monitor)) {
+        for (DBSObject child : CommonUtils.safeCollection(container.getChildren(monitor))) {
             if (child instanceof DBSEntity entity) {
                 entities.add(entity);
             } else if (child instanceof DBSObjectContainer oc) {

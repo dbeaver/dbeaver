@@ -40,7 +40,7 @@ public class DBNDataSource extends DBNDatabaseNode implements DBNContainer, DBPA
     private static final boolean USE_ICON_DECORATIONS = false; // Disabled in #9384
 
     private final DBPDataSourceContainer dataSource;
-    private DBXTreeNode treeRoot;
+    private final DBXTreeNode treeRoot;
 
     public DBNDataSource(@NotNull DBNNode parentNode, @NotNull DBPDataSourceContainer dataSource)
     {
@@ -79,29 +79,32 @@ public class DBNDataSource extends DBNDatabaseNode implements DBNContainer, DBPA
         return dataSource;
     }
 
+    @Nullable
     @Override
     public Object getValueObject()
     {
         return dataSource.getDataSource();
     }
 
+    @NotNull
     @Override
     public String getChildrenType() {
         final List<DBXTreeNode> metaChildren = treeRoot.getChildren(this);
         if (CommonUtils.isEmpty(metaChildren) || metaChildren.size() > 1) {
             return "?";
         } else {
-            return metaChildren.get(0).getChildrenTypeLabel(getDataSource(), null);
+            return metaChildren.getFirst().getChildrenTypeLabel(getDataSource(), null);
         }
     }
 
+    @Nullable
     @Override
     public Class<?> getChildrenClass() {
         final List<DBXTreeNode> metaChildren = treeRoot.getChildren(null); // Use null context because we don't need to filter nodes
         if (CommonUtils.isEmpty(metaChildren) || metaChildren.size() > 1) {
             return null;
         }
-        DBXTreeNode childNode = metaChildren.get(0);
+        DBXTreeNode childNode = metaChildren.getFirst();
         if (childNode instanceof DBXTreeItem) {
             return getChildrenClass((DBXTreeItem) childNode);
         }
@@ -244,15 +247,14 @@ public class DBNDataSource extends DBNDatabaseNode implements DBNContainer, DBPA
     }
 
     @Override
-    public boolean supportsDrop(@Nullable DBNNode otherNode)
-    {
+    public boolean supportsDrop(@Nullable DBNNode otherNode) {
         return otherNode == null || otherNode instanceof DBNDataSource ||
-            (otherNode instanceof DBNLocalFolder && ((DBNLocalFolder) otherNode).getFolder().canMoveTo(dataSource.getFolder()));
+            (dataSource.getFolder() != null && otherNode instanceof DBNLocalFolder oln &&
+                oln.getFolder().canMoveTo(dataSource.getFolder()));
     }
 
     @Override
-    public void dropNodes(@NotNull DBRProgressMonitor monitor, @NotNull Collection<DBNNode> nodes) throws DBException
-    {
+    public void dropNodes(@NotNull DBRProgressMonitor monitor, @NotNull Collection<DBNNode> nodes) {
         DBPDataSourceFolder folder = dataSource.getFolder();
         for (DBNNode node : nodes) {
             if (node instanceof DBNDataSource) {
