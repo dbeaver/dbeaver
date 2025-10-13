@@ -25,7 +25,7 @@ import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 
 /**
  * DBNDatabaseDynamicItem.
- *
+ * *
  * Dynamic items are not in the main navigator model. They are created dynamically as child nodes for complex
  * database objects references (e.g. table columns struct data type attributes).
  */
