@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -51,8 +51,8 @@ public class DataFormatterDescriptor extends AbstractDescriptor
         this.description = config.getAttribute("description");
         this.properties = PropertyDescriptor.extractPropertyGroups(config);
 
-        Class<?> objectClass = getObjectClass(config.getAttribute("sampleClass"));
         try {
+            Class<?> objectClass = getImplClass(config.getAttribute("sampleClass"));
             sample = (DBDDataFormatterSample)objectClass.getDeclaredConstructor().newInstance();
         } catch (Exception e) {
             log.error("Can't instantiate data formatter '" + getId() + "' sample");
