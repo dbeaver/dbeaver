@@ -18,6 +18,8 @@ package org.jkiss.dbeaver.ui.dialogs.driver;
 
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.jface.dialogs.IDialogConstants;
+import org.eclipse.jface.dialogs.IDialogSettings;
+import org.eclipse.jface.layout.GridDataFactory;
 import org.eclipse.jface.wizard.WizardDialog;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
@@ -26,6 +28,10 @@ import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
+import org.eclipse.ui.forms.events.ExpansionAdapter;
+import org.eclipse.ui.forms.events.ExpansionEvent;
+import org.eclipse.ui.forms.widgets.ExpandableComposite;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.connection.DBPDriverDependencies;
@@ -51,6 +57,7 @@ import org.jkiss.utils.CommonUtils;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
+import java.util.Objects;
 import javax.net.ssl.SSLHandshakeException;
 
 class DriverDownloadAutoPage extends DriverDownloadPage {
@@ -69,87 +76,66 @@ class DriverDownloadAutoPage extends DriverDownloadPage {
         final DriverDownloadWizard wizard = getWizard();
         final DBPDriver driver = wizard.getDriver();
 
-        setMessage(NLS.bind(UIConnectionMessages.dialog_driver_download_auto_page_download_specific_driver_files, driver.getFullName()));
-        initializeDialogUnits(parent);
+        Composite container = UIUtils.createPlaceholder(parent, 1);
 
-        Composite composite = UIUtils.createPlaceholder(parent, 1);
-        composite.setLayoutData(new GridData(GridData.FILL_BOTH));
+        setMessage(
+            NLS.bind(UIConnectionMessages.dialog_driver_download_auto_page_download_specific_driver_files, driver.getName()));
+        initializeDialogUnits(container);
 
-        if (!wizard.isForceDownload()) {
-            Composite infoGroup = UIUtils.createPlaceholder(composite, 2, 5);
-            infoGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-            Label infoText = new Label(infoGroup, SWT.NONE);
-            infoText.setText(NLS.bind(UIConnectionMessages.dialog_driver_download_auto_page_driver_file_missing_text, driver.getFullName()));
-            infoText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        setDescriptionLabel(container);
+        setExpander(container);
+        setControl(parent);
+    }
 
-            final Button forceCheckbox = UIUtils.createCheckbox(infoGroup, UIConnectionMessages.dialog_driver_download_auto_page_force_download, wizard.isForceDownload());
-            forceCheckbox.setToolTipText(UIConnectionMessages.dialog_driver_download_auto_page_force_download_tooltip);
-            forceCheckbox.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END | GridData.VERTICAL_ALIGN_BEGINNING));
-            forceCheckbox.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
-                    wizard.setForceDownload(forceCheckbox.getSelection());
-                }
-            });
-        }
+    private ExpandableComposite setExpander(@NotNull Composite parent) {
+        ExpandableComposite expander = UIUtils.createExpandableCompositeWithSeparator(
+            parent,
+            SWT.NONE,
+            ExpandableComposite.TWISTIE | ExpandableComposite.COMPACT
+        );
 
-        {
-            Group filesGroup = UIUtils.createControlGroup(
-                composite,
-                UIConnectionMessages.dialog_driver_download_auto_page_required_files,
-                1,
-                GridData.FILL_BOTH,
-                SWT.DEFAULT
+        Composite details = setDetails(expander);
+
+        expander.addExpansionListener(new ExpansionAdapter() {
+            public void expansionStateChanged(ExpansionEvent e) {
+                parent.getShell().pack(true);
+                UIUtils.resizeShell(parent.getShell());
+            }
+        });
+        expander.setText(UIConnectionMessages.dialog_driver_download_auto_page_show_details);
+        expander.setLayoutData(
+            GridDataFactory.fillDefaults().indent(0, 10).create()
+        );
+        expander.setClient(details);
+        return expander;
+    }
+
+    private void setDescriptionLabel(@NotNull Composite parent) {
+        final DBPDriver driver = getWizard().getDriver();
+        String driverDescription = Objects.requireNonNullElse(driver.getDescription(), driver.getFullName());
+        UIUtils.createInfoLabel(
+            parent,
+            NLS.bind(UIConnectionMessages.dialog_driver_download_auto_page_driver_description, driverDescription)
+        );
+    }
+
+    @Override
+    boolean performFinish() {
+        try {
+            getContainer().run(
+                true, true,
+                monitor -> downloadLibraryFiles(new DefaultProgressMonitor(monitor))
             );
-            filesGroup.setLayoutData(new GridData(GridData.FILL_BOTH));
-
-            depsTree = new DriverDependenciesTree(
-                filesGroup,
-                new RunnableContextDelegate(getContainer()),
-                getWizard().getDependencies(),
-                driver,
-                driver.getDriverLibraries(),
-                true)
-            {
-                protected void setLibraryVersion(DriverLibraryMavenArtifact library, final String version) {
-                    String curVersion = library.getVersion();
-                    if (CommonUtils.equalObjects(curVersion, version)) {
-                        return;
-                    }
-                    library.setPreferredVersion(version);
-                    library.setForcedVersion(true);
-                    resolveLibraries();
-                }
-
-            };
-            Composite infoPanel = UIUtils.createComposite(filesGroup, 2);
-            infoPanel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-            Label label = new Label(infoPanel, SWT.NONE);
-            label.setText(UIConnectionMessages.dialog_driver_download_auto_page_change_driver_version_text);
-            label.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-            Button rtdButton = UIUtils.createDialogButton(infoPanel, UIMessages.button_reset_to_defaults,
-                SelectionListener.widgetSelectedAdapter(e -> {
-                    for (DBPDriverLibrary lib : depsTree.getLibraries()) {
-                        if (lib instanceof DriverLibraryMavenArtifact mavenArtifact) {
-                            mavenArtifact.setForcedVersion(false);
-                            mavenArtifact.resetVersion();
-                        }
-                    }
-                    this.resolveLibraries();
-                })
+        } catch (InvocationTargetException e) {
+            DBWorkbench.getPlatformUI().showError(
+                UIConnectionMessages.dialog_driver_download_auto_page_driver_download_error,
+                UIConnectionMessages.dialog_driver_download_auto_page_driver_download_error_msg,
+                e.getTargetException()
             );
-            rtdButton.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
+        } catch (InterruptedException e) {
+            // ignore
         }
-
-        if (!wizard.isForceDownload()) {
-            Label infoText = new Label(composite, SWT.NONE);
-            infoText.setText(UIConnectionMessages.dialog_driver_download_auto_page_obtain_driver_files_text);
-            infoText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        }
-
-        createLinksPanel(composite);
-
-        setControl(composite);
+        return true;
     }
 
 
@@ -175,17 +161,115 @@ class DriverDownloadAutoPage extends DriverDownloadPage {
     }
 
     @Override
-    boolean performFinish() {
-        try {
-            getContainer().run(true, true,
-                monitor -> downloadLibraryFiles(new DefaultProgressMonitor(monitor)));
-        } catch (InvocationTargetException e) {
-            DBWorkbench.getPlatformUI().showError(UIConnectionMessages.dialog_driver_download_auto_page_driver_download_error, UIConnectionMessages.dialog_driver_download_auto_page_driver_download_error_msg, e.getTargetException());
-        } catch (InterruptedException e) {
-            // ignore
-        }
-        return true;
+    public void setMessage(String newMessage, int newType) {
+        super.setMessage(newMessage, newType);
     }
+
+    @Override
+    protected IDialogSettings getDialogSettings() {
+        return super.getDialogSettings();
+    }
+
+    private Composite setDetails(@NotNull Composite parent) {
+        Composite composite = UIUtils.createPlaceholder(parent, 1);
+        DriverDownloadWizard wizard = getWizard();
+        DBPDriver driver = wizard.getDriver();
+
+        int verticalIndentFirstRow = 10;
+
+        if (!wizard.isForceDownload()) {
+            Composite infoGroup = UIUtils.createPlaceholder(composite, 2, 5);
+            infoGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+            Label infoText = new Label(infoGroup, SWT.NONE);
+            infoText.setText(NLS.bind(
+                UIConnectionMessages.dialog_driver_download_auto_page_driver_file_missing_text,
+                driver.getFullName()
+            ));
+            GridData infoGridData = new GridData(GridData.FILL_HORIZONTAL);
+            infoGridData.verticalIndent = verticalIndentFirstRow;
+            infoText.setLayoutData(infoGridData);
+
+            final Button forceCheckbox = UIUtils.createCheckbox(
+                infoGroup,
+                UIConnectionMessages.dialog_driver_download_auto_page_force_download,
+                wizard.isForceDownload()
+            );
+            forceCheckbox.setToolTipText(UIConnectionMessages.dialog_driver_download_auto_page_force_download_tooltip);
+            GridData forceCheckboxGridData = new GridData(GridData.HORIZONTAL_ALIGN_END | GridData.VERTICAL_ALIGN_BEGINNING);
+            forceCheckboxGridData.verticalIndent = verticalIndentFirstRow;
+            forceCheckbox.setLayoutData(forceCheckboxGridData);
+            forceCheckbox.addSelectionListener(new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    wizard.setForceDownload(forceCheckbox.getSelection());
+                }
+            });
+        }
+
+        {
+            Group filesGroup = UIUtils.createControlGroup(
+                composite,
+                UIConnectionMessages.dialog_driver_download_auto_page_required_files,
+                1,
+                GridData.FILL_BOTH,
+                SWT.DEFAULT
+            );
+            filesGroup.setLayoutData(new GridData(GridData.FILL_BOTH));
+
+            depsTree = new DriverDependenciesTree(
+                filesGroup,
+                new RunnableContextDelegate(getContainer()),
+                getWizard().getDependencies(),
+                driver,
+                driver.getDriverLibraries(),
+                true
+            ) {
+                protected void setLibraryVersion(DriverLibraryMavenArtifact library, final String version) {
+                    String curVersion = library.getVersion();
+                    if (CommonUtils.equalObjects(curVersion, version)) {
+                        return;
+                    }
+                    library.setPreferredVersion(version);
+                    library.setForcedVersion(true);
+                    resolveLibraries();
+                }
+
+            };
+
+            GridData treeGridData = new GridData(SWT.FILL, SWT.FILL, true, true);
+            treeGridData.widthHint = 600;
+            depsTree.getTree().setLayoutData(treeGridData);
+
+            Composite infoPanel = UIUtils.createComposite(filesGroup, 2);
+            infoPanel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+            Label label = new Label(infoPanel, SWT.NONE);
+            label.setText(UIConnectionMessages.dialog_driver_download_auto_page_change_driver_version_text);
+            label.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+            Button rtdButton = UIUtils.createDialogButton(
+                infoPanel, UIMessages.button_reset_to_defaults,
+                SelectionListener.widgetSelectedAdapter(e -> {
+                    for (DBPDriverLibrary lib : depsTree.getLibraries()) {
+                        if (lib instanceof DriverLibraryMavenArtifact mavenArtifact) {
+                            mavenArtifact.setForcedVersion(false);
+                            mavenArtifact.resetVersion();
+                        }
+                    }
+                    this.resolveLibraries();
+                })
+            );
+            rtdButton.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
+        }
+
+        if (!wizard.isForceDownload()) {
+            Label infoText = new Label(composite, SWT.NONE);
+            infoText.setText(UIConnectionMessages.dialog_driver_download_auto_page_obtain_driver_files_text);
+            infoText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        }
+
+        createLinksPanel(composite);
+        return composite;
+    }
+
 
     private void downloadLibraryFiles(final DBRProgressMonitor monitor) throws InterruptedException {
         if (!acceptDriverLicenses()) {
@@ -355,5 +439,4 @@ class DriverDownloadAutoPage extends DriverDownloadPage {
             }
         }
     }
-
 }

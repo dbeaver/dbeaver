@@ -336,10 +336,6 @@ public abstract class NavigatorViewBase extends ViewPart
         return null;
     }
 
-    public void configureView() {
-
-    }
-
     @Override
     public void preferenceChange(PreferenceChangeEvent event) {
         String property = event.getProperty();
