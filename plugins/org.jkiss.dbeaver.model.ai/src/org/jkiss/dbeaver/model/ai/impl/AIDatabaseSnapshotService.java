@@ -51,8 +51,8 @@ public class AIDatabaseSnapshotService {
     public AIDatabaseSnapshotService() {
     }
 
-    @Nullable
-    public TokenBoundedStringBuilder createDbSnapshot(
+    @NotNull
+    public String createDbSnapshot(
         @NotNull DBRProgressMonitor monitor,
         @Nullable AIDatabaseContext aiDatabaseContext,
         @NotNull AISchemaGenerationOptions options
@@ -60,29 +60,29 @@ public class AIDatabaseSnapshotService {
         schemaGenerator = AIAssistantRegistry.getInstance().getDescriptor().createSchemaGenerator();
 
         if (aiDatabaseContext == null) {
-            return null;
+            return "";
         }
 
         Objects.requireNonNull(aiDatabaseContext.getScopeObject(), "Scope object is null");
         Objects.requireNonNull(aiDatabaseContext.getExecutionContext(), "Execution context is null");
 
-        var prompt = new TokenBoundedStringBuilder(options.maxDbSnapshotTokens(), false);
+        var prompt = new TokenBoundedStringBuilder(options.maxDbSnapshotTokens());
 
         if (appendContext(monitor, aiDatabaseContext, options, prompt, true)) {
-            return prompt;
+            return prompt.toString();
         }
 
         // --- fall-back -----------------------------------------------------
         AISchemaGenerationOptions fallback = buildFallbackOptions(options);
         if (options.equals(fallback)) {        // nothing else we can exclude
-            return prompt;
+            return prompt.toString();
         }
 
         LOG.warn("Context description is too long, generating partial description");
 
-        var partialPrompt = new TokenBoundedStringBuilder(options.maxDbSnapshotTokens(), true);
+        var partialPrompt = new TokenBoundedStringBuilder(options.maxDbSnapshotTokens());
         appendContext(monitor, aiDatabaseContext, fallback, partialPrompt, false);
-        return partialPrompt;
+        return partialPrompt.toString();
     }
 
     /**
@@ -270,16 +270,14 @@ public class AIDatabaseSnapshotService {
      * Simple {@link StringBuilder} that stops accepting data once the specified
      * token limit (converted to characters) is reached.
      */
-    public static class TokenBoundedStringBuilder {
+    private static final class TokenBoundedStringBuilder {
         private static final int SAFE_MARGIN_TOKENS = 20;
 
         private final StringBuilder sb = new StringBuilder();
         private final int maxChars;
-        private final boolean isTruncated;
 
-        TokenBoundedStringBuilder(int maxTokens, boolean isTruncated) {
+        TokenBoundedStringBuilder(int maxTokens) {
             this.maxChars = (maxTokens - SAFE_MARGIN_TOKENS) * DummyTokenCounter.TOKEN_TO_CHAR_RATIO;
-            this.isTruncated = isTruncated;
         }
 
         boolean append(@NotNull CharSequence chunk) {
@@ -288,10 +286,6 @@ public class AIDatabaseSnapshotService {
             }
             sb.append(chunk);
             return true;
-        }
-
-        boolean isTruncated() {
-            return isTruncated;
         }
 
         @Override
