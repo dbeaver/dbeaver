@@ -3,9 +3,9 @@ Fragment-Host: org.eclipse.swt
 Bundle-Name: SWT Linux extensions
 Bundle-Vendor: DBeaver Corp
 Bundle-SymbolicName: org.jkiss.dbeaver.ui.swt.linux;singleton:=true
-Bundle-Version: 1.0.25.qualifier
+Bundle-Version: 1.0.26.qualifier
 Bundle-ManifestVersion: 2
-Bundle-Release-Date: 20251020
+Bundle-Release-Date: 20251103
 Bundle-RequiredExecutionEnvironment: JavaSE-21
 Bundle-ActivationPolicy: lazy
 SWT-WS: gtk
