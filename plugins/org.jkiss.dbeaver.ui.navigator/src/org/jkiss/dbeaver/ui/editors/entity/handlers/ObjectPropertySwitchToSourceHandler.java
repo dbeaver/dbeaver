@@ -49,8 +49,7 @@ public class ObjectPropertySwitchToSourceHandler extends AbstractHandler {
     
     @Nullable
     public static String findSourceTextEditorId(@NotNull EntityEditor editor) {
-        ObjectPropertiesEditor part = (ObjectPropertiesEditor)editor.getPageEditor(EntityEditorDescriptor.DEFAULT_OBJECT_EDITOR_ID);
-        if (part != null) {
+        if (editor.getPageEditor(EntityEditorDescriptor.DEFAULT_OBJECT_EDITOR_ID) instanceof ObjectPropertiesEditor part) {
             List<EntityEditorDescriptor> descrs = EntityEditorsRegistry.getInstance().getEntityEditors(
                 editor.getDatabaseObject(), part, null);
             for (EntityEditorDescriptor descr : descrs) {

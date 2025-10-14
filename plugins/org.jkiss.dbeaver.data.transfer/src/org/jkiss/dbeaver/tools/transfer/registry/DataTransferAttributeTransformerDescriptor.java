@@ -84,8 +84,7 @@ public class DataTransferAttributeTransformerDescriptor extends AbstractDescript
         return properties;
     }
 
-    public IDataTransferAttributeTransformer createTransformer() throws DBException
-    {
+    public IDataTransferAttributeTransformer createTransformer() throws DBException {
         try {
             return implType.getImplClass(IDataTransferAttributeTransformer.class)
                 .getDeclaredConstructor().newInstance();

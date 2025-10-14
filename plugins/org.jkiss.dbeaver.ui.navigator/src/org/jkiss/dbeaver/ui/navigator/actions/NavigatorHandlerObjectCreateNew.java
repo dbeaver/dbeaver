@@ -151,8 +151,7 @@ public class NavigatorHandlerObjectCreateNew extends NavigatorHandlerObjectCreat
     }
 
     @Override
-    public void updateElement(UIElement element, Map parameters)
-    {
+    public void updateElement(UIElement element, Map parameters) {
         if (!updateUI) {
             return;
         }
@@ -251,11 +250,16 @@ public class NavigatorHandlerObjectCreateNew extends NavigatorHandlerObjectCreat
 
         if ((node instanceof DBNLocalFolder || node instanceof DBNProjectDatabases) && projectConnectionEditable) {
             IContributionItem item = makeCreateContributionItem(
-                site, DBPDataSourceContainer.class.getName(), ModelMessages.model_navigator_Connection, UIIcon.SQL_NEW_CONNECTION, false);
+                site,
+                DBPDataSourceContainer.class.getName(),
+                ModelMessages.model_navigator_Connection,
+                UIIcon.SQL_NEW_CONNECTION,
+                false
+            );
             createActions.add(item);
         }
-        if (node instanceof DBNDatabaseNode) {
-            addDatabaseNodeCreateItems(site, createActions, (DBNDatabaseNode) node);
+        if (node instanceof DBNDatabaseNode dbNode) {
+            addDatabaseNodeCreateItems(site, createActions, dbNode);
         }
 
         if ((node instanceof DBNLocalFolder || node instanceof DBNProjectDatabases || node instanceof DBNDataSource)
@@ -339,7 +343,11 @@ public class NavigatorHandlerObjectCreateNew extends NavigatorHandlerObjectCreat
         contextMenu.setVisible(true);
     }
 
-    private static void addDatabaseNodeCreateItems(@Nullable IWorkbenchPartSite site, List<IContributionItem> createActions, DBNDatabaseNode node) {
+    private static void addDatabaseNodeCreateItems(
+        @Nullable IWorkbenchPartSite site,
+        @NotNull List<IContributionItem> createActions,
+        @NotNull DBNDatabaseNode node
+    ) {
         if (node instanceof DBNDatabaseFolder dbFolder) {
             DBXTreeFolder folderMeta = dbFolder.getMeta();
             final List<DBXTreeNode> metaChildren = folderMeta.getChildren(node);
@@ -362,7 +370,7 @@ public class NavigatorHandlerObjectCreateNew extends NavigatorHandlerObjectCreat
                 String nodeType = metaChildren.getFirst().getChildrenTypeLabel(node.getDataSource(), null);
                 if (nodeClass != null && nodeType != null) {
                     if (isCreateSupported(node, nodeClass)) {
-                        DBPImage nodeIcon = node.getNodeIconDefault();//metaChildren.get(0).getIcon(node);
+                        DBPImage nodeIcon = node.getNodeIconDefault();
                         IContributionItem item = makeCreateContributionItem(
                             site, nodeClass.getName(), nodeType, nodeIcon, false);
                         createActions.add(item);
@@ -461,7 +469,7 @@ public class NavigatorHandlerObjectCreateNew extends NavigatorHandlerObjectCreat
     }
 
     private static boolean isCreateSupported(DBNNode parentNode, Class<?> objectClass) {
-        DBEObjectMaker<?,?> objectMaker = DBWorkbench.getPlatform().getEditorsRegistry().getObjectManager(
+        DBEObjectMaker<?, ?> objectMaker = DBWorkbench.getPlatform().getEditorsRegistry().getObjectManager(
             objectClass, DBEObjectMaker.class);
         return objectMaker != null && objectMaker.canCreateObject(
             parentNode instanceof DBNDatabaseNode dbNode ?

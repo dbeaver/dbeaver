@@ -104,8 +104,7 @@ public class EntityEditorDescriptor extends AbstractContextDescriptor {
     }
 
     @NotNull
-    public String getId()
-    {
+    public String getId() {
         return id;
     }
 

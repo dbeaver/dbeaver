@@ -110,8 +110,7 @@ public class DBNUtils {
     }
 
     @NotNull
-    public static DBNNode[] filterNavigableChildren(@NotNull DBNNode[] children, boolean forTree)
-    {
+    public static DBNNode[] filterNavigableChildren(@NotNull DBNNode[] children, boolean forTree) {
         if (ArrayUtils.isEmpty(children)) {
             return children;
         }
