@@ -149,7 +149,7 @@ public class EntityEditorDescriptor extends AbstractContextDescriptor {
 
     @NotNull
     public IEditorInput getNestedEditorInput(@NotNull IDatabaseEditorInput mainInput) {
-        if (inputFactoryType == null) {
+        if (inputFactoryType == null || inputFactoryType.getImplName() == null) {
             return mainInput;
         }
         try {

@@ -126,7 +126,7 @@ public abstract class AbstractDescriptor {
         private static final String ATTR_IF = "if";
         private static final String ATTR_FORCE_CHECK = "forceCheck";
 
-        @NotNull
+        @Nullable
         private final String implName;
         @Nullable
         private Class<?> implClass;
@@ -158,7 +158,7 @@ public abstract class AbstractDescriptor {
             }
         }
 
-        @NotNull
+        @Nullable
         public String getImplName() {
             return implName;
         }
@@ -170,6 +170,9 @@ public abstract class AbstractDescriptor {
 
         @NotNull
         public <T> Class<? extends T> getImplClass(Class<T> type) {
+            if (implName == null) {
+                throw new IllegalStateException("Class name not specified");
+            }
             if (implClass == null) {
                 implClass = AbstractDescriptor.this.getImplClass(implName, type);
             }
@@ -183,6 +186,9 @@ public abstract class AbstractDescriptor {
 
         @Nullable
         public <T> Class<? extends T> getObjectClass(Class<T> type) {
+            if (implName == null) {
+                return null;
+            }
             if (implClass == null) {
                 implClass = AbstractDescriptor.this.getObjectClass(implName, type);
             }
@@ -191,6 +197,9 @@ public abstract class AbstractDescriptor {
 
         public <T> void checkObjectClass(@NotNull Class<T> type) throws DBException {
             Class<? extends T> objectClass = getObjectClass(type);
+            if (implName == null) {
+                throw new DBException("Implementation class not specified");
+            }
             if (objectClass == null) {
                 throw new DBException("Class '" + implName + "' not found");
             }

@@ -127,6 +127,7 @@ public abstract class DataTypeAbstractDescriptor<DESCRIPTOR> extends AbstractDes
         return id;
     }
 
+    @NotNull
     @Override
     public DESCRIPTOR getInstance()
     {
