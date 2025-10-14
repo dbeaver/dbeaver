@@ -27,6 +27,8 @@ import org.jkiss.dbeaver.model.meta.SecureProperty;
 import org.jkiss.dbeaver.model.secret.DBSSecretController;
 import org.jkiss.utils.CommonUtils;
 
+import java.util.List;
+
 public class CopilotProperties implements AIEngineProperties {
     private static final String COPILOT_ACCESS_TOKEN = "copilot.access.token";
     private static final String GPT_MODEL = "gpt.model";
@@ -128,5 +130,10 @@ public class CopilotProperties implements AIEngineProperties {
     @Override
     public boolean isValidConfiguration() {
         return !CommonUtils.isEmpty(getToken());
+    }
+
+    @Override
+    public List<String> getConnectionPropertiesNames() {
+        return List.of(COPILOT_ACCESS_TOKEN);
     }
 }

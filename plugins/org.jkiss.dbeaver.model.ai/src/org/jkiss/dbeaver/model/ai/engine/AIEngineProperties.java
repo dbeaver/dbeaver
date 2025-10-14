@@ -18,6 +18,8 @@ package org.jkiss.dbeaver.model.ai.engine;
 
 import org.jkiss.dbeaver.DBException;
 
+import java.util.List;
+
 public interface AIEngineProperties {
 
     // Checks that properties have all required values
@@ -28,4 +30,6 @@ public interface AIEngineProperties {
     void resolveSecrets() throws DBException;
 
     void saveSecrets() throws DBException;
+
+    List<String> getConnectionPropertiesNames();
 }

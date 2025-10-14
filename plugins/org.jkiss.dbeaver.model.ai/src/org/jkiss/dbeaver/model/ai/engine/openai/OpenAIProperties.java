@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.model.meta.SecureProperty;
 import org.jkiss.dbeaver.model.secret.DBSSecretController;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 
+import java.util.List;
 import java.util.Map;
 
 public class OpenAIProperties implements OpenAIBaseProperties {
@@ -161,6 +162,11 @@ public class OpenAIProperties implements OpenAIBaseProperties {
         if (token != null) {
             DBSSecretController.getGlobalSecretController().setPrivateSecretValue(OpenAIConstants.GPT_API_TOKEN, token);
         }
+    }
+
+    @Override
+    public List<String> getConnectionPropertiesNames() {
+        return List.of(GPT_BASE_URL, GPT_TOKEN);
     }
 
     public static class OpenAIModelListProvider implements IPropertyValueListProvider<OpenAIProperties> {
