@@ -192,8 +192,7 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBNLazyNode, DB
         return !isDisposed() && this.getMeta().hasChildren(this, true);
     }
 
-    public boolean hasChildren(@NotNull DBRProgressMonitor monitor, @NotNull DBXTreeNode childType)
-        throws DBException {
+    public boolean hasChildren(@NotNull DBRProgressMonitor monitor, @NotNull DBXTreeNode childType) throws DBException {
         if (isDisposed()) {
             return false;
         }

@@ -49,8 +49,7 @@ public abstract class DataTypeAbstractDescriptor<DESCRIPTOR> extends AbstractDes
 
     protected DESCRIPTOR instance;
 
-    public DataTypeAbstractDescriptor(IConfigurationElement config, Class<DESCRIPTOR> instanceType)
-    {
+    public DataTypeAbstractDescriptor(@NotNull IConfigurationElement config, @NotNull Class<DESCRIPTOR> instanceType) {
         super(config);
         this.instanceType = instanceType;
 
@@ -129,9 +128,11 @@ public abstract class DataTypeAbstractDescriptor<DESCRIPTOR> extends AbstractDes
 
     @NotNull
     @Override
-    public DESCRIPTOR getInstance()
-    {
-        if (instance == null && implType != null) {
+    public DESCRIPTOR getInstance() {
+        if (instance == null) {
+            if (implType == null) {
+                throw new IllegalStateException("Data type implementation not specified");
+            }
             this.instance = createInstance();
         }
         return instance;
@@ -141,6 +142,7 @@ public abstract class DataTypeAbstractDescriptor<DESCRIPTOR> extends AbstractDes
         return supportedDataSources;
     }
 
+    @NotNull
     protected DESCRIPTOR createInstance() {
         try {
             return implType.createInstance(instanceType);

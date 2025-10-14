@@ -2037,11 +2037,11 @@ public final class DBUtils {
         if (container.getPreferenceStore().getBoolean(ModelPreferences.META_CLIENT_NAME_OVERRIDE)) {
             String appName = CommonUtils.notEmpty(
                 container.getPreferenceStore().getString(ModelPreferences.META_CLIENT_NAME_VALUE));
-            IVariableResolver cVarResolver = container.getVariablesResolver(false);
+            IVariableResolver varResolver = container.getVariablesResolver(false);
             return GeneralUtils.replaceVariables(appName, name -> switch (name) {
                 case DBConstants.VAR_CONTEXT_NAME -> context == null ? null : context.getContextName();
                 case DBConstants.VAR_CONTEXT_ID -> context == null ? null : String.valueOf(context.getContextId());
-                default -> cVarResolver.get(name);
+                default -> varResolver.get(name);
             });
         }
         final String productTitle = addVersion ? GeneralUtils.getProductTitle() : GeneralUtils.getProductName();
@@ -2246,7 +2246,11 @@ public final class DBUtils {
         @NotNull DBSAttributeBase attribute
     ) throws DBException {
         for (DBSEntityConstraint constraint : CommonUtils.safeCollection(dbsEntity.getConstraints(monitor))) {
-            DBSEntityAttributeRef constraintAttribute = getConstraintAttribute(monitor, ((DBSEntityReferrer) constraint), attribute.getName());
+            DBSEntityAttributeRef constraintAttribute = getConstraintAttribute(
+                monitor,
+                ((DBSEntityReferrer) constraint),
+                attribute.getName()
+            );
             if (constraintAttribute != null && constraintAttribute.getAttribute() == attribute) {
                 return constraint;
             }
