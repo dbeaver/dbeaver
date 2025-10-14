@@ -145,7 +145,11 @@ public class GenericMetaModel {
     }
 
     @Nullable
-    public List<GenericSchema> loadSchemas(JDBCSession session, GenericDataSource dataSource, GenericCatalog catalog)
+    public List<GenericSchema> loadSchemas(
+        @NotNull JDBCSession session,
+        @NotNull GenericDataSource dataSource,
+        @Nullable GenericCatalog catalog
+    )
         throws DBException
     {
         if (dataSource.isOmitSchema()) {

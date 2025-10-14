@@ -269,7 +269,7 @@ abstract class PostgresPermissionsEditor<T extends DBSObject>
 
         permissionTable.removeAll();
 
-        PostgrePrivilegeType[] supportedPrivilegeTypes = getSupportedPrivilegeTypes(objects.get(0));
+        PostgrePrivilegeType[] supportedPrivilegeTypes = getSupportedPrivilegeTypes(objects.getFirst());
         PostgrePrivilege objectPermissions = getObjectPermissions(selectedObjects[0]);
         for (PostgrePrivilegeType privilegeType : supportedPrivilegeTypes) {
             TableItem tableItem = new TableItem(permissionTable, SWT.LEFT);
@@ -316,7 +316,7 @@ abstract class PostgresPermissionsEditor<T extends DBSObject>
         LoadingJob.createService(
             new DatabaseLoadService<>("Load permissions", getExecutionContext()) {
                 @Override
-                public PermissionInfo evaluate(DBRProgressMonitor monitor) throws InvocationTargetException {
+                public PermissionInfo evaluate(@NotNull DBRProgressMonitor monitor) throws InvocationTargetException {
                     monitor.beginTask("Load privileges from database..", 1);
                     try {
                         monitor.subTask("Load " + getDatabaseObject().getName() + " privileges");
@@ -467,8 +467,8 @@ abstract class PostgresPermissionsEditor<T extends DBSObject>
                 if (element instanceof DBNNode && !(element instanceof DBNDatabaseNode)) {
                     return false;
                 }
-                if (element instanceof DBNDatabaseFolder) {
-                    final DBXTreeFolder meta = ((DBNDatabaseFolder) element).getMeta();
+                if (element instanceof DBNDatabaseFolder dbFolder) {
+                    final DBXTreeFolder meta = dbFolder.getMeta();
                     final Class<?> childType = meta.getSource().getObjectClass(meta.getType());
                     if (childType == null) {
                         return false;

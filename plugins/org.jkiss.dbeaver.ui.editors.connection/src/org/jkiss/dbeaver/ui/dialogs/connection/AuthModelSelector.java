@@ -154,8 +154,8 @@ public class AuthModelSelector extends Composite implements DBPEventListener {
             DataSourceProviderRegistry.getInstance().getApplicableAuthModels(activeDataSource.getDriver());
         this.allAuthModels.removeIf(o -> modelFilter != null && !modelFilter.isValidElement(o));
         this.allAuthModels.sort((Comparator<DBPAuthModelDescriptor>) (o1, o2) ->
-            o1.isDefaultModel() ? -1 :
-                o2.isDefaultModel() ? 1 :
+            o1.isDefaultModel() && !o2.isDefaultModel() ? -1 :
+                o2.isDefaultModel() && !o1.isDefaultModel() ? 1 :
                     o1.getName().compareTo(o2.getName()));
         if ((selectedAuthModel == null || !allAuthModels.contains(selectedAuthModel)) && !CommonUtils.isEmpty(defaultAuthModelId)) {
             // Set default to native
