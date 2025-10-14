@@ -26,6 +26,7 @@ import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCExecutionContext;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCRemoteInstance;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
@@ -41,6 +42,11 @@ public class BigQueryDataSource extends GenericDataSource {
         @NotNull GenericMetaModel metaModel
     ) throws DBException {
         super(monitor, container, metaModel, new BigQuerySQLDialect());
+    }
+
+    @Override
+    protected JDBCExecutionContext createExecutionContext(JDBCRemoteInstance instance, String type) throws DBCException {
+        return new BigQueryExecutionContext(instance, type);
     }
 
     @Override
@@ -106,5 +112,7 @@ public class BigQueryDataSource extends GenericDataSource {
         }
     }
 
-
+    protected boolean isSessionModeEnabled() {
+        return false;
+    }
 }
