@@ -123,7 +123,7 @@ public class MigrateConnectionWizard extends Wizard
             switch (choice) {
                 case YES_FOR_ALL -> changedConnections.forEach(c -> DataSourceHandler.reconnectDataSource(null, c));
                 case DECIDE_FOR_EACH -> changedConnections.forEach(this::reconnectAfterConfirm);
-                case NO_FOR_ALL -> {
+                default -> {
                     // do nothing
                 }
             }
@@ -157,6 +157,7 @@ public class MigrateConnectionWizard extends Wizard
         YES_FOR_ALL(CoreMessages.dialog_migrate_wizard_connection_changed_yes_for_all_button),
         NO_FOR_ALL(CoreMessages.dialog_migrate_wizard_connection_changed_no_for_all_button),
         DECIDE_FOR_EACH(CoreMessages.dialog_migrate_wizard_connection_changed_decide_for_each_button);
+
         final Reply reply;
 
         ReconnectChoice(String replyName) {
