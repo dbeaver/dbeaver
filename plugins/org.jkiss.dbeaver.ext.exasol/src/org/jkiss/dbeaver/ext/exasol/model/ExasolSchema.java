@@ -135,7 +135,7 @@ public class ExasolSchema extends ExasolGlobalObject implements DBSSchema, DBPNa
     }
     
     @Override
-    public void setName(String name) {
+    public void setName(@NotNull String name) {
         this.name = name;
     }
     
@@ -386,7 +386,8 @@ public class ExasolSchema extends ExasolGlobalObject implements DBSSchema, DBPNa
         return associationCache;
     }
 
-	@Override
+	@NotNull
+    @Override
 	public String getObjectDefinitionText(@NotNull DBRProgressMonitor monitor, @NotNull Map<String, Object> options)
 			throws DBException
 	{

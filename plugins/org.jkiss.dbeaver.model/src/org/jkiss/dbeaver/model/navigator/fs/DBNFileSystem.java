@@ -99,28 +99,33 @@ public class DBNFileSystem extends DBNNode implements DBNLazyNode
         super.dispose(reflect);
     }
 
+    @NotNull
     @Override
     public String getNodeType() {
         return NodePathType.dbvfs.name() + ".fileSystem";
     }
 
+    @NotNull
     @Override
     public String getNodeTypeLabel() {
         return ModelMessages.fs_file_system;
     }
 
+    @NotNull
     @Override
     @Property(id = DBConstants.PROP_ID_NAME, viewable = true, order = 1)
     public String getNodeDisplayName() {
         return fileSystem.getFileSystemDisplayName();
     }
 
+    @Nullable
     @Override
 //    @Property(viewable = false, order = 100)
     public String getNodeDescription() {
         return fileSystem.getDescription();
     }
 
+    @Nullable
     @Override
     public DBPImage getNodeIcon() {
         DBFFileSystemDescriptor provider = DBWorkbench.getPlatform().getFileSystemRegistry().getFileSystemProvider(
@@ -133,6 +138,7 @@ public class DBNFileSystem extends DBNNode implements DBNLazyNode
         return true;
     }
 
+    @Nullable
     @Override
     public DBNFileSystemRoot[] getChildren(@NotNull DBRProgressMonitor monitor) throws DBException {
         if (children == null && !monitor.isForceCacheUsage()) {
@@ -141,15 +147,20 @@ public class DBNFileSystem extends DBNNode implements DBNLazyNode
         return children;
     }
 
-    public DBNFileSystemRoot getChild(DBRProgressMonitor monitor, String name) throws DBException {
-        for (DBNFileSystemRoot root : getChildren(monitor)) {
-            if (root.getName().equals(name)) {
-                return root;
+    @Nullable
+    public DBNFileSystemRoot getChild(@NotNull DBRProgressMonitor monitor, @NotNull String name) throws DBException {
+        DBNFileSystemRoot[] roots = getChildren(monitor);
+        if (roots != null) {
+            for (DBNFileSystemRoot root : roots) {
+                if (root.getName().equals(name)) {
+                    return root;
+                }
             }
         }
         return null;
     }
 
+    @NotNull
     protected DBNFileSystemRoot[] readChildNodes(
         @NotNull DBRProgressMonitor monitor,
         @Nullable DBNFileSystemRoot[] mergeWith
@@ -196,12 +207,13 @@ public class DBNFileSystem extends DBNNode implements DBNLazyNode
     }
 
     @Override
-    public boolean isManagable() {
+    public boolean isManageable() {
         return true;
     }
 
+    @Nullable
     @Override
-    public DBNNode refreshNode(DBRProgressMonitor monitor, Object source) throws DBException {
+    public DBNNode refreshNode(@NotNull DBRProgressMonitor monitor, @Nullable Object source) throws DBException {
         if (children != null) {
             children = readChildNodes(monitor, children);
         }
@@ -209,6 +221,7 @@ public class DBNFileSystem extends DBNNode implements DBNLazyNode
         return this;
     }
 
+    @NotNull
     @Deprecated
     @Override
     public String getNodeItemPath() {
@@ -241,6 +254,7 @@ public class DBNFileSystem extends DBNNode implements DBNLazyNode
         fireNodeEvent(new DBNEvent(source, DBNEvent.Action.UPDATE, this));
     }
 
+    @NotNull
     @Override
     public String toString() {
         return fileSystem.getFileSystemDisplayName();

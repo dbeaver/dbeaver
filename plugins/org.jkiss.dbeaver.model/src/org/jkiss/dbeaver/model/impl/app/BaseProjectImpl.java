@@ -64,6 +64,7 @@ public abstract class BaseProjectImpl implements DBPProject, DBSSecretSubject {
     public static final String PROP_PROJECT_ID = "id";
     public static final String PROP_PROJECT_NAME = "name";
     public static final String PROP_PROJECT_DESCRIPTION = "description";
+    public static final String PROJECT_FILE = ".project";
 
     public enum ProjectFormat {
         UNKNOWN,    // Project is not open or corrupted

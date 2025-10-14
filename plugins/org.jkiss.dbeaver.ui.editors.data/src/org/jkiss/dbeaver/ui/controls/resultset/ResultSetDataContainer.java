@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -66,11 +66,13 @@ public class ResultSetDataContainer implements DBSDataContainer, DBPContextProvi
         return dataContainer.getParentObject();
     }
 
+    @NotNull
     @Override
     public DBPDataSource getDataSource() {
         return dataContainer.getDataSource();
     }
 
+    @NotNull
     @Override
     public String[] getSupportedFeatures() {
         return new String[] {FEATURE_DATA_SELECT, FEATURE_DATA_COUNT};
@@ -146,6 +148,7 @@ public class ResultSetDataContainer implements DBSDataContainer, DBPContextProvi
         }
     }
 
+    @NotNull
     @Override
     public String getName() {
         return dataContainer.getName();
@@ -157,7 +160,7 @@ public class ResultSetDataContainer implements DBSDataContainer, DBPContextProvi
     }
 
     @Override
-    public <T> T getAdapter(Class<T> adapter) {
+    public <T> T getAdapter(@NotNull Class<T> adapter) {
         Object result = GeneralUtils.adapt(dataContainer, adapter);
         if (result == null) {
             result = GeneralUtils.adapt(controller, adapter);

@@ -97,7 +97,7 @@ public class DriverManagerDialog extends HelpEnabledDialog implements ISelection
         {
             DBPDataSourceProviderDescriptor manProvider = null;
             for (DBPDataSourceProviderDescriptor provider : DataSourceProviderRegistry.getInstance().getEnabledDataSourceProviders()) {
-                if (provider.isDriversManagable()) {
+                if (provider.isDriversManageable()) {
                     if (manProvider != null) {
                         manProvider = null;
                         break;
@@ -334,10 +334,10 @@ public class DriverManagerDialog extends HelpEnabledDialog implements ISelection
     }
 
     private void updateButtons() {
-        newButton.setEnabled(onlyManagableProvider != null || (selectedProvider != null && selectedProvider.isDriversManagable()));
-        copyButton.setEnabled(selectedDriver != null && selectedDriver.isManagable());
+        newButton.setEnabled(onlyManagableProvider != null || (selectedProvider != null && selectedProvider.isDriversManageable()));
+        copyButton.setEnabled(selectedDriver != null && selectedDriver.isManageable());
         editButton.setEnabled(selectedDriver != null);
-        deleteButton.setEnabled(selectedDriver != null && selectedDriver.getProviderDescriptor().isDriversManagable());
+        deleteButton.setEnabled(selectedDriver != null && selectedDriver.getProviderDescriptor().isDriversManageable());
 
         if (selectedDriver != null) {
             descText.setText(CommonUtils.toString(selectedDriver.getDescription()));
@@ -365,7 +365,7 @@ public class DriverManagerDialog extends HelpEnabledDialog implements ISelection
     private void createDriver() {
         if (onlyManagableProvider != null || selectedProvider != null) {
             DataSourceProviderDescriptor provider = selectedProvider;
-            if (provider == null || !provider.isDriversManagable()) {
+            if (provider == null || !provider.isDriversManageable()) {
                 provider = onlyManagableProvider;
             }
             DriverEditDialog dialog = new DriverEditDialog(getShell(), provider, selectedCategory);

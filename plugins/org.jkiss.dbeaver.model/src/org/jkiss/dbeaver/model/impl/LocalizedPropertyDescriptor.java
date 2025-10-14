@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,8 +34,9 @@ public abstract class LocalizedPropertyDescriptor extends PropertyDescriptor imp
         bundle = getBundle(config);
     }
 
+    @NotNull
     @Override
-    public String getLocalizedName(String locale) {
+    public String getLocalizedName(@NotNull String locale) {
         try {
             return RuntimeUtils.getBundleLocalization(bundle, locale).getString(getPropertyId());
         } catch (Exception e) {
@@ -45,7 +46,7 @@ public abstract class LocalizedPropertyDescriptor extends PropertyDescriptor imp
 
     @Nullable
     @Override
-    public String getLocalizedDescription(String locale) {
+    public String getLocalizedDescription(@NotNull String locale) {
         try {
             return RuntimeUtils.getBundleLocalization(bundle, locale).getString(getPropertyId() + ".description");
         } catch (Exception e) {

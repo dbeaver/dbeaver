@@ -106,7 +106,8 @@ public class ExasolVirtualSchema extends ExasolSchema  {
 		return virtualSchemaParameterCache.getAllObjects(new VoidProgressMonitor(), this);
 	}
 
-	@Override
+	@NotNull
+    @Override
 	public String getObjectDefinitionText(@NotNull DBRProgressMonitor monitor, @NotNull Map<String, Object> options)
 			throws DBException
 	{

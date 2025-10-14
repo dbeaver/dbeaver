@@ -144,6 +144,7 @@ public class StreamEntityMapping implements DBSEntity, DBSDataContainer, DBPQual
         return dataSource;
     }
 
+    @NotNull
     @Override
     public String[] getSupportedFeatures() {
         return new String[] {FEATURE_DATA_SELECT};

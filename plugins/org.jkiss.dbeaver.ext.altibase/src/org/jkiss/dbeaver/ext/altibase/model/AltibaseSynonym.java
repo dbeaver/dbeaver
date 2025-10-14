@@ -120,6 +120,7 @@ public class AltibaseSynonym extends GenericSynonym implements DBPScriptObject {
         return ddl.toString();
     }
     
+    @NotNull
     @Override
     public String getObjectDefinitionText(@NotNull DBRProgressMonitor monitor, @NotNull Map<String, Object> options) throws DBException {
         if (CommonUtils.getOption(options, DBPScriptObject.OPTION_REFRESH)) {

@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ext.db2.model;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.db2.DB2Constants;
 import org.jkiss.dbeaver.ext.db2.editors.DB2SourceObject;
@@ -107,7 +108,7 @@ public class DB2TableCheckConstraint extends JDBCTableConstraint<DB2Table, DB2Ta
     // -----------------
 
     @Override
-    public List<DB2TableCheckConstraintColumn> getAttributeReferences(DBRProgressMonitor monitor) throws DBException {
+    public List<DB2TableCheckConstraintColumn> getAttributeReferences(@Nullable DBRProgressMonitor monitor) throws DBException {
         return columns;
     }
 
@@ -134,6 +135,7 @@ public class DB2TableCheckConstraint extends JDBCTableConstraint<DB2Table, DB2Ta
     public void refreshObjectState(@NotNull DBRProgressMonitor monitor) throws DBCException {
     }
 
+    @NotNull
     @Override
     public String getObjectDefinitionText(@NotNull DBRProgressMonitor monitor, @NotNull Map<String, Object> options) throws DBException {
         return SQLFormatUtils.formatSQL(getDataSource(), text);
