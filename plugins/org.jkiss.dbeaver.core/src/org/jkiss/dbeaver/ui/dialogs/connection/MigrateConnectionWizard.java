@@ -24,6 +24,7 @@ import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.jface.wizard.Wizard;
 import org.eclipse.jface.wizard.WizardPage;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
@@ -43,6 +44,9 @@ import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
 import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.actions.datasource.DataSourceHandler;
+import org.jkiss.dbeaver.ui.dialogs.MessageBoxBuilder;
+import org.jkiss.dbeaver.ui.dialogs.Reply;
 import org.jkiss.dbeaver.ui.dialogs.driver.DriverSelectViewer;
 
 import java.util.*;
@@ -105,12 +109,65 @@ public class MigrateConnectionWizard extends Wizard
         final List<DataSourceDescriptor> connections = pageConnections.getSelectedConnections();
         final DriverDescriptor targetDriver = pageDriver.selectedDriver;
 
+        List<DataSourceDescriptor> changedConnections = new ArrayList<>();
         for (DataSourceDescriptor conn : connections) {
+            if (!conn.getDriver().equals(targetDriver)) {
+                changedConnections.add(conn);
+            }
             conn.setDriver(targetDriver);
             conn.persistConfiguration();
         }
 
+        if (!changedConnections.isEmpty()) {
+            ReconnectChoice choice = reconnectAllQuestion(changedConnections.size());
+            switch (choice) {
+                case YES_FOR_ALL -> changedConnections.forEach(c -> DataSourceHandler.reconnectDataSource(null, c));
+                case DECIDE_FOR_EACH -> changedConnections.forEach(this::reconnectAfterConfirm);
+                case NO_FOR_ALL -> {
+                    // do nothing
+                }
+            }
+        }
         return true;
+    }
+
+    private void reconnectAfterConfirm(DataSourceDescriptor connection) {
+        if (UIUtils.confirmAction(
+            UIUtils.getActiveWorkbenchShell(),
+            CoreMessages.dialog_connection_edit_wizard_conn_change_title,
+            NLS.bind(CoreMessages.dialog_connection_edit_wizard_conn_change_question, connection.getName())
+        )) {
+            DataSourceHandler.reconnectDataSource(null, connection);
+        }
+    }
+
+    private ReconnectChoice reconnectAllQuestion(int numChangedConnections) {
+        Reply[] result = {null};
+        UIUtils.syncExec(() -> result[0] = MessageBoxBuilder.builder(UIUtils.getActiveWorkbenchShell())
+            .setTitle(CoreMessages.dialog_migrate_wizard_connection_changed_title)
+            .setMessage(NLS.bind(CoreMessages.dialog_migrate_wizard_connection_changed_message, numChangedConnections))
+            .setReplies(ReconnectChoice.YES_FOR_ALL.reply, ReconnectChoice.NO_FOR_ALL.reply, ReconnectChoice.DECIDE_FOR_EACH.reply)
+            .setDefaultReply(ReconnectChoice.YES_FOR_ALL.reply)
+            .setDefaultFocus(0)
+            .showMessageBox());
+        return ReconnectChoice.of(result[0]);
+    }
+
+    private enum ReconnectChoice {
+        YES_FOR_ALL(CoreMessages.dialog_migrate_wizard_connection_changed_yes_for_all_button),
+        NO_FOR_ALL(CoreMessages.dialog_migrate_wizard_connection_changed_no_for_all_button),
+        DECIDE_FOR_EACH(CoreMessages.dialog_migrate_wizard_connection_changed_decide_for_each_button);
+        final Reply reply;
+
+        ReconnectChoice(String replyName) {
+            this.reply = new Reply(replyName);
+        }
+
+        static ReconnectChoice of(Reply reply) {
+            return Arrays.stream(values()).filter(c -> c.reply.equals(reply))
+                .findFirst()
+                .orElseThrow();
+        }
     }
 
     class PageConnections extends WizardPage {
