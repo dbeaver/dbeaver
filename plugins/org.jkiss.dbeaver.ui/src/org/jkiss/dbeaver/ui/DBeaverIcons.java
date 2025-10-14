@@ -104,7 +104,7 @@ public class DBeaverIcons
     }
 
     @NotNull
-    public static ImageDescriptor getImageDescriptor(@NotNull DBPImage image) {
+    public static ImageDescriptor getImageDescriptor(@Nullable DBPImage image) {
         return getIconDescriptor(image, true).imageDescriptor; 
     }
 
