@@ -51,7 +51,8 @@ public class DBNUtils {
 
     private static final Log log = Log.getLog(DBNUtils.class);
 
-    public static DBNDatabaseNode getNodeByObject(DBSObject object) {
+    @Nullable
+    public static DBNDatabaseNode getNodeByObject(@NotNull DBSObject object) {
         DBNModel model = getNavigatorModel(object);
         return model == null ? null : model.getNodeByObject(object);
     }
@@ -95,16 +96,21 @@ public class DBNUtils {
         return null;
     }
 
-    public static DBNNode[] getNodeChildrenFiltered(DBRProgressMonitor monitor, DBNNode node, boolean forTree) throws DBException {
+    @NotNull
+    public static DBNNode[] getNodeChildrenFiltered(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBNNode node,
+        boolean forTree
+    ) throws DBException {
         DBNNode[] children = node.getChildren(monitor);
-        if (children != null && children.length > 0) {
+        if (children.length > 0) {
             children = filterNavigableChildren(children, forTree);
         }
         return children;
     }
 
-    public static DBNNode[] filterNavigableChildren(DBNNode[] children, boolean forTree)
-    {
+    @NotNull
+    public static DBNNode[] filterNavigableChildren(@NotNull DBNNode[] children, boolean forTree) {
         if (ArrayUtils.isEmpty(children)) {
             return children;
         }
@@ -128,7 +134,7 @@ public class DBNUtils {
         return result;
     }
 
-    private static void sortNodes(DBNNode[] children) {
+    private static void sortNodes(@NotNull DBNNode[] children) {
         if (children.length == 0) {
             return;
         }
@@ -184,14 +190,13 @@ public class DBNUtils {
         }
     }
 
-    private static boolean isMergedEntity(DBNNode node) {
+    private static boolean isMergedEntity(@NotNull DBNNode node) {
         return node instanceof DBNDatabaseNode dbNode &&
            dbNode.getObject() instanceof DBSEntity &&
            dbNode.getObject().getDataSource().getContainer().getNavigatorSettings().isMergeEntities();
     }
 
-    public static boolean isDefaultElement(Object element)
-    {
+    public static boolean isDefaultElement(@Nullable Object element) {
         if (element instanceof DBSWrapper wrapper) {
             DBSObject object = wrapper.getObject();
             if (object != null) {
@@ -217,18 +222,21 @@ public class DBNUtils {
         return divPos == -1 ? path : path.substring(divPos + 1);
     }
 
-    public static boolean isReadOnly(DBNNode node)
-    {
+    public static boolean isReadOnly(@NotNull DBNNode node) {
         return node instanceof DBNDatabaseNode dbNode &&
             !(node instanceof DBNDataSource) &&
             !dbNode.getDataSourceContainer().hasModifyPermission(DBPDataSourcePermission.PERMISSION_EDIT_METADATA);
     }
 
-    public static boolean isFolderNode(DBNNode node) {
+    public static boolean isFolderNode(@NotNull DBNNode node) {
         return node.allowsChildren();
     }
 
-    public static DBXTreeItem getValidItemsMeta(DBRProgressMonitor monitor, DBNDatabaseNode dbNode) throws DBException {
+    @Nullable
+    public static DBXTreeItem getValidItemsMeta(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBNDatabaseNode dbNode
+    ) throws DBException {
         DBXTreeItem itemsMeta = dbNode.getItemsMeta();
         if (itemsMeta != null && itemsMeta.isOptional()) {
             // Maybe we need nested item.
@@ -236,8 +244,7 @@ public class DBNUtils {
             Class<?> expectedChildrenType = dbNode.getChildrenOrFolderClass(itemsMeta);
             if (expectedChildrenType != null) {
                 List<DBXTreeNode> childMetas = itemsMeta.getChildren(dbNode);
-                if (childMetas.size() == 1 && childMetas.get(0) instanceof DBXTreeItem nestedMeta) {
-                    Class<?> expectedNestedType = dbNode.getChildrenOrFolderClass(nestedMeta);
+                if (childMetas.size() == 1 && childMetas.getFirst() instanceof DBXTreeItem nestedMeta) {
                     DBNDatabaseNode[] nodeChildren = dbNode.getChildren(monitor);
                     if (nodeChildren.length > 0 &&
                         !expectedChildrenType.isInstance(nodeChildren[0].getObject()))
@@ -304,19 +311,19 @@ public class DBNUtils {
         return null;
     }
 
-    public static JexlContext makeContext(final DBNNode node) {
+    public static JexlContext makeContext(@NotNull DBNNode node) {
         return new JexlContext() {
 
             @Override
             public Object get(String name) {
-                if (node instanceof DBNDatabaseNode) {
+                if (node instanceof DBNDatabaseNode dbNode) {
                     switch (name) {
                         case "object":
-                            return ((DBNDatabaseNode) node).getValueObject();
+                            return dbNode.getValueObject();
                         case "dataSource":
-                            return ((DBNDatabaseNode) node).getDataSource();
+                            return dbNode.getDataSource();
                         case "connected":
-                            return ((DBNDatabaseNode) node).getDataSource() != null;
+                            return dbNode.getDataSource() != null;
                     }
                 }
                 return null;
@@ -356,7 +363,7 @@ public class DBNUtils {
     }
 
 
-    public static void disposeNode(DBNNode node, boolean reflect) {
+    public static void disposeNode(@NotNull DBNNode node, boolean reflect) {
         node.dispose(reflect);
     }
 
@@ -372,10 +379,10 @@ public class DBNUtils {
 
         DBSObject objectToOpen;
         if (entities.size() == 1) {
-            objectToOpen = entities.get(0);
+            objectToOpen = entities.getFirst();
         } else {
             if (entities.size() > 1) {
-                objectToOpen = entities.get(0).getParentObject();
+                objectToOpen = entities.getFirst().getParentObject();
             } else {
                 objectToOpen = dataSource;
             }
@@ -387,11 +394,11 @@ public class DBNUtils {
     }
 
     private static void getConnectionEntities(
-        DBRProgressMonitor monitor,
-        DBSObjectContainer container,
-        List<DBSEntity> entities
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBSObjectContainer container,
+        @NotNull List<DBSEntity> entities
     ) throws DBException {
-        for (DBSObject child : container.getChildren(monitor)) {
+        for (DBSObject child : CommonUtils.safeCollection(container.getChildren(monitor))) {
             if (child instanceof DBSEntity entity) {
                 entities.add(entity);
             } else if (child instanceof DBSObjectContainer oc) {

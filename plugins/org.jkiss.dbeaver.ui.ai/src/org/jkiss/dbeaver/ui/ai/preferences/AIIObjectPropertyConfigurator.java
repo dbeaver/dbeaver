@@ -14,19 +14,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.jkiss.dbeaver.ui.ai.preferences;
 
-package org.jkiss.dbeaver.model.app;
+import org.jkiss.dbeaver.model.ai.engine.AIEngineProperties;
+import org.jkiss.dbeaver.model.ai.registry.AIEngineDescriptor;
+import org.jkiss.dbeaver.ui.IObjectPropertyConfigurator;
 
-import org.jkiss.code.NotNull;
+import java.util.Optional;
 
 /**
- * DBPRegistryDescriptor
+ * AIIObjectPropertyConfigurator used to get a copy of current AIEngineProperties if present
  */
-public interface DBPRegistryDescriptor<TYPE> {
-    @NotNull
-    String getId();
+public interface AIIObjectPropertyConfigurator<ENGINE extends AIEngineDescriptor, PROPERTIES extends AIEngineProperties> extends
+    IObjectPropertyConfigurator<ENGINE, PROPERTIES> {
 
-    @NotNull
-    TYPE getInstance();
-
+    default Optional<AIEngineProperties> getCurrentProperties() {
+        return Optional.empty();
+    }
 }
