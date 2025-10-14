@@ -537,6 +537,10 @@ public class TaskManagerImpl implements DBTTaskManager {
         saveConfiguration();
     }
 
+    protected void cancelJobIfNeeded(@NotNull TaskRunJob job) {
+        // does nothing.
+    }
+
     private void serializeTasks(@NotNull JsonWriter jsonWriter) throws IOException {
         jsonWriter.setIndent("\t");
         jsonWriter.beginObject();
@@ -589,7 +593,7 @@ public class TaskManagerImpl implements DBTTaskManager {
                 if (taskJob.isFinished() || taskJob.isCanceled()) {
                     continue;
                 }
-                taskJob.checkCanceledByTimeout();
+                cancelJobIfNeeded(taskJob);
             }
             schedule(TASK_SLEEP_TIME);
             return Status.OK_STATUS;

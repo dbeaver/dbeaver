@@ -16,22 +16,20 @@
  */
 package org.jkiss.dbeaver.tasks.ui.wizard;
 
-import org.eclipse.jface.action.Action;
-import org.eclipse.jface.action.MenuManager;
-import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.wizard.IWizardPage;
-import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Image;
-import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.*;
+import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Event;
+import org.eclipse.swt.widgets.Group;
 import org.eclipse.ui.*;
 import org.eclipse.ui.views.IViewDescriptor;
 import org.jkiss.code.NotNull;
@@ -43,29 +41,26 @@ import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.rm.RMConstants;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.model.task.*;
+import org.jkiss.dbeaver.registry.configurator.UIPropertyConfiguratorDescriptor;
+import org.jkiss.dbeaver.registry.configurator.UIPropertyConfiguratorRegistry;
 import org.jkiss.dbeaver.registry.task.TaskConstants;
-import org.jkiss.dbeaver.registry.task.TaskImpl;
 import org.jkiss.dbeaver.registry.task.TaskRegistry;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.tasks.ui.internal.TaskUIMessages;
 import org.jkiss.dbeaver.tasks.ui.registry.TaskUIRegistry;
-import org.jkiss.dbeaver.ui.ActionUtils;
-import org.jkiss.dbeaver.ui.DBeaverIcons;
-import org.jkiss.dbeaver.ui.UIIcon;
+import org.jkiss.dbeaver.ui.IObjectPropertyConfigurator;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.BaseWizard;
-import org.jkiss.dbeaver.ui.dialogs.DurationPickerDialog;
 import org.jkiss.dbeaver.ui.dialogs.IWizardPageActive;
 import org.jkiss.dbeaver.ui.dialogs.IWizardPageNavigable;
 import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
-import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.time.Duration;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 
+@SuppressWarnings("rawtypes")
 public abstract class TaskConfigurationWizard<SETTINGS extends DBTTaskSettings> extends BaseWizard implements IWorkbenchWizard {
 
     private static final Log log = Log.getLog(TaskConfigurationWizard.class);
@@ -75,7 +70,7 @@ public abstract class TaskConfigurationWizard<SETTINGS extends DBTTaskSettings> 
     private DBTTask currentTask;
     private IStructuredSelection currentSelection;
     private Button saveAsTaskButton;
-    private Button timeoutConfigurationButton;
+    private TaskConfigurationWIzardActionConfigurator<SETTINGS> actionsConfigurator;
 
     private Map<String, Object> variables;
     private boolean promptVariables;
@@ -353,7 +348,7 @@ public abstract class TaskConfigurationWizard<SETTINGS extends DBTTaskSettings> 
         return true;
     }
 
-    public void createTaskSaveButtons(Composite parent, int hSpan) {
+    public void createTaskActions(Composite parent, int hSpan) {
         if (!DBWorkbench.getPlatform().getWorkspace().hasRealmPermission(RMConstants.PERMISSION_DATABASE_DEVELOPER)) {
             return;
         }
@@ -391,31 +386,48 @@ public abstract class TaskConfigurationWizard<SETTINGS extends DBTTaskSettings> 
                 }
             });
 
-            IViewDescriptor taskViewDescriptor = PlatformUI.getWorkbench().getViewRegistry().find(TASKS_VIEW_ID);
-            if (taskViewDescriptor != null) {
-                layout.numColumns++;
+            layout.numColumns++;
+            Button taskViewButton = UIUtils.createDialogButton(
+                panel,
+                null,
+                null,
+                TaskUIMessages.task_config_wizard_link_open_tasks_view,
+                SelectionListener.widgetSelectedAdapter(e -> {
+                    try {
+                        UIUtils.getActiveWorkbenchWindow().getActivePage().showView(tasksViewDescriptor.getId());
+                    } catch (PartInitException e1) {
+                        DBWorkbench.getPlatformUI().showError("Show view", "Error opening database tasks view", e1);
+                    }
+                })
+            );
+            Image viewImage = tasksViewDescriptor.getImageDescriptor().createImage();
+            taskViewButton.setImage(viewImage);
+            taskViewButton.addDisposeListener(e -> viewImage.dispose());
+            taskViewButton.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
 
-                Button taskViewButton = UIUtils.createDialogButton(
-                    panel,
-                    null,
-                    null,
-                    TaskUIMessages.task_config_wizard_link_open_tasks_view,
-                    SelectionListener.widgetSelectedAdapter(e -> {
-                        try {
-                            UIUtils.getActiveWorkbenchWindow().getActivePage().showView(tasksViewDescriptor.getId());
-                        } catch (PartInitException e1) {
-                            DBWorkbench.getPlatformUI().showError("Show view", "Error opening database tasks view", e1);
-                        }
-                    })
-                );
-                Image viewImage = taskViewDescriptor.getImageDescriptor().createImage();
-                taskViewButton.setImage(viewImage);
-                taskViewButton.addDisposeListener(e -> viewImage.dispose());
-                taskViewButton.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
+            if (actionsConfigurator == null) {
+                IObjectPropertyConfigurator<?, ?> configurator = null;
+
+                UIPropertyConfiguratorDescriptor descriptor = UIPropertyConfiguratorRegistry.getInstance()
+                    .getDescriptor(TaskConfigurationWIzardActionConfigurator.class.getName());
+                if (descriptor != null) {
+                    try {
+                        configurator = descriptor.createConfigurator();
+                    } catch (DBException e) {
+                        log.debug("Error creating actions configurator", e);
+                    }
+                }
+
+                if (configurator instanceof TaskConfigurationWIzardActionConfigurator<?> configurator1) {
+                    @SuppressWarnings("unchecked")
+                    var actionsConfigurator = (TaskConfigurationWIzardActionConfigurator<SETTINGS>) configurator1;
+                    this.actionsConfigurator = actionsConfigurator;
+                }
             }
 
-            layout.numColumns++;
-            timeoutConfigurationButton = createTimeoutConfigurationButton(panel);
+            if (actionsConfigurator != null) {
+                actionsConfigurator.createControl(panel, this, this::updateTaskButtons);
+            }
         }
     }
 
@@ -447,124 +459,6 @@ public abstract class TaskConfigurationWizard<SETTINGS extends DBTTaskSettings> 
             }
         });
         promptTaskVariablesCheckbox.notifyListeners(SWT.Selection, new Event());
-    }
-
-    @NotNull
-    private Button createTimeoutConfigurationButton(@NotNull Composite parent) {
-        MenuManager manager = new MenuManager();
-
-        Button button = UIUtils.createDialogButton(
-            parent,
-            null,
-            SelectionListener.widgetSelectedAdapter(e -> {
-                Button button1 = (Button) e.widget;
-                Point location = button1.toDisplay(0, 0);
-                location.y += button1.getSize().y;
-
-                Menu menu = manager.createContextMenu(button1);
-                menu.setLocation(location);
-                menu.setVisible(true);
-            })
-        );
-        button.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
-        button.addDisposeListener(e -> manager.dispose());
-
-        Runnable updateButtonVisuals = () -> {
-            if (getCurrentTask() instanceof TaskImpl task && task.getMaxExecutionTime().isPositive()) {
-                button.setImage(DBeaverIcons.getImage(UIIcon.CLOCK_STOP));
-                button.setToolTipText(NLS.bind(
-                    TaskUIMessages.task_config_wizard_max_execution_time_set,
-                    RuntimeUtils.formatDuration(task.getMaxExecutionTime())
-                ));
-            } else {
-                button.setImage(DBeaverIcons.getImage(UIIcon.CLOCK_START));
-                button.setToolTipText(TaskUIMessages.task_config_wizard_max_execution_time_unset);
-            }
-        };
-
-        class CustomTimeoutAction extends Action {
-            public CustomTimeoutAction() {
-                super("Customize ...", AS_PUSH_BUTTON);
-            }
-
-            @Override
-            public void run() {
-                if (!(getCurrentTask() instanceof TaskImpl task)) {
-                    return;
-                }
-                DurationPickerDialog dialog = new DurationPickerDialog(
-                    getShell(),
-                    "Specify custom duration",
-                    task.getMaxExecutionTime()
-                );
-                if (dialog.open() == IDialogConstants.OK_ID) {
-                    task.setMaxExecutionTime(dialog.getDuration());
-                    updateButtonVisuals.run();
-                }
-            }
-        }
-
-        class PresetTimeoutAction extends Action {
-            private final Duration duration;
-
-            public PresetTimeoutAction(int index, @NotNull Duration duration) {
-                super(ActionUtils.getLabelWithIndexMnemonic(RuntimeUtils.formatDuration(duration), index), AS_RADIO_BUTTON);
-                this.duration = duration;
-            }
-
-            @Override
-            public void run() {
-                if (!(getCurrentTask() instanceof TaskImpl task)) {
-                    return;
-                }
-                task.setMaxExecutionTime(duration);
-                updateButtonVisuals.run();
-            }
-
-            @Override
-            public boolean isChecked() {
-                return getCurrentTask() instanceof TaskImpl task && task.getMaxExecutionTime().equals(duration);
-            }
-        }
-
-        class DisableTimeoutAction extends Action {
-            public DisableTimeoutAction() {
-                super("Disable timeout");
-            }
-
-            @Override
-            public void run() {
-                if (!(getCurrentTask() instanceof TaskImpl task)) {
-                    return;
-                }
-                task.setMaxExecutionTime(Duration.ZERO);
-                updateButtonVisuals.run();
-            }
-        }
-
-        manager.setRemoveAllWhenShown(true);
-        manager.addMenuListener(m -> {
-            m.add(new CustomTimeoutAction());
-            m.add(new Separator());
-
-            List<Duration> presets = List.of(Duration.ofMinutes(1), Duration.ofMinutes(5), Duration.ofMinutes(30), Duration.ofHours(1));
-            for (int i = 0; i < presets.size(); i++) {
-                m.add(new PresetTimeoutAction(i, presets.get(i)));
-            }
-
-            if (getCurrentTask() instanceof TaskImpl task && task.getMaxExecutionTime().isPositive()) {
-                Duration duration = task.getMaxExecutionTime();
-                if (!presets.contains(duration)) {
-                    m.add(new PresetTimeoutAction(presets.size(), duration));
-                }
-
-                m.add(new Separator());
-                m.add(new DisableTimeoutAction());
-            }
-        });
-
-        updateButtonVisuals.run();
-        return button;
     }
 
     private void configureVariables() {
@@ -603,8 +497,8 @@ public abstract class TaskConfigurationWizard<SETTINGS extends DBTTaskSettings> 
         if (saveAsTaskButton != null) {
             saveAsTaskButton.setEnabled(enable);
         }
-        if (timeoutConfigurationButton != null) {
-            timeoutConfigurationButton.setEnabled(enable);
+        if (actionsConfigurator != null) {
+            actionsConfigurator.enableActions(enable);
         }
         if (enable) {
             updateTaskButtons();
@@ -615,8 +509,8 @@ public abstract class TaskConfigurationWizard<SETTINGS extends DBTTaskSettings> 
         if (saveAsTaskButton != null) {
             saveAsTaskButton.setEnabled(canFinish() && getTaskType() != null);
         }
-        if (timeoutConfigurationButton != null) {
-            timeoutConfigurationButton.setEnabled(getCurrentTask() != null);
+        if (actionsConfigurator != null) {
+            actionsConfigurator.updateActions();
         }
     }
 

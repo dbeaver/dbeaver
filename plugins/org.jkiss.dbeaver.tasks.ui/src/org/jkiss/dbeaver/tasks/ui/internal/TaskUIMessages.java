@@ -77,9 +77,6 @@ public class TaskUIMessages extends NLS {
     public static String task_execute_handler_tool_warn_readonly_title;
     public static String task_execute_handler_tool_warn_readonly_message;
 
-    public static String task_config_wizard_max_execution_time_set;
-    public static String task_config_wizard_max_execution_time_unset;
-
     static {
         // initialize resource bundle
         NLS.initializeMessages(BUNDLE_NAME, TaskUIMessages.class);

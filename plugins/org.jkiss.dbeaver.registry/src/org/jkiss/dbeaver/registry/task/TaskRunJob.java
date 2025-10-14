@@ -200,18 +200,7 @@ public class TaskRunJob extends AbstractJob implements DBRRunnableContext {
         }
     }
 
-    /**
-     * Cancel task by time reached
-     */
-    public void checkCanceledByTimeout() {
-        Duration elapsedTime = getElapsedTime();
-        Duration maxExecutionTime = task.getMaxExecutionTime();
-        if (maxExecutionTime.isPositive() && elapsedTime.compareTo(maxExecutionTime) > 0) {
-            cancelByTimeout();
-        }
-    }
-
-    private void cancelByTimeout() {
+    public void cancelByTimeout() {
         canceledByTimeOut = true;
         cancel();
         activeMonitor.getNestedMonitor().setCanceled(true);
@@ -221,7 +210,12 @@ public class TaskRunJob extends AbstractJob implements DBRRunnableContext {
     }
 
     @NotNull
-    private Duration getElapsedTime() {
+    public Duration getElapsedTime() {
         return Duration.between(taskStartTime, Instant.now());
+    }
+
+    @NotNull
+    public TaskImpl getTask() {
+        return task;
     }
 }
