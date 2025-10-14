@@ -224,7 +224,6 @@ public class AIDatabaseSnapshotService {
             .withSendColumnTypes(false)
             .withSendForeignKeys(false)
             .withSendConstraints(false)
-            .withSendSampleData(false)
             .build();
     }
 
