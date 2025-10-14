@@ -28,6 +28,7 @@ public enum AIMessageType {
     ASSISTANT(false),
     FUNCTION(true),
     // Error messages
+    WARNING(true),
     ERROR(true);
 
     private final boolean isLocal;
