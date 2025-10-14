@@ -107,7 +107,7 @@ public abstract class DBNPathBase extends DBNNode implements DBNLazyNode {
         return rootNode != null && rootNode.getRoot().getFileSystem().isDirectory(getPath());
     }
 
-    @NotNull
+    @Nullable
     @Override
     public DBNNode[] getChildren(@NotNull DBRProgressMonitor monitor) throws DBException {
         if (children == null && isDirectory() && !monitor.isForceCacheUsage()) {
