@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,8 @@
 package org.jkiss.dbeaver.registry.expressions;
 
 import org.eclipse.core.runtime.IConfigurationElement;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.impl.AbstractContextDescriptor;
 
 /**
@@ -38,6 +40,7 @@ public class ExpressionNamespaceDescriptor extends AbstractContextDescriptor {
         this.implClass = new ObjectType(config.getAttribute("class"));
     }
 
+    @NotNull
     public String getId() {
         return id;
     }
@@ -46,6 +49,7 @@ public class ExpressionNamespaceDescriptor extends AbstractContextDescriptor {
         return description;
     }
 
+    @Nullable
     public Class<?> getImplClass() {
         return implClass.getObjectClass();
     }
