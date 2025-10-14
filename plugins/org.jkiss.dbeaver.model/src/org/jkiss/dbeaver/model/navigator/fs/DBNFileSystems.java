@@ -30,6 +30,7 @@ import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.navigator.*;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.utils.ArrayUtils;
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -116,7 +117,7 @@ public class DBNFileSystems extends DBNNode implements DBNNodeWithCache, DBPHidd
     }
 
     public DBNFileSystemRoot getRootFolder(@NotNull DBRProgressMonitor monitor, @NotNull String id) throws DBException {
-        for (DBNFileSystem fsNode : getChildren(monitor)) {
+        for (DBNFileSystem fsNode : ArrayUtils.safeArray(getChildren(monitor))) {
             DBNFileSystemRoot rootFolder = fsNode.getChild(monitor, id);
             if (rootFolder != null) {
                 return rootFolder;
@@ -125,7 +126,7 @@ public class DBNFileSystems extends DBNNode implements DBNNodeWithCache, DBPHidd
         return null;
     }
 
-    @NotNull
+    @Nullable
     @Override
     public DBNFileSystem[] getChildren(@NotNull DBRProgressMonitor monitor) throws DBException {
         if (children == null && !monitor.isForceCacheUsage()) {
