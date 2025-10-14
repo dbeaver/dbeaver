@@ -93,11 +93,6 @@ public class AIMessage {
     }
 
     @NotNull
-    public static AIMessage warningMessage(@NotNull String message) {
-        return new AIMessage(AIMessageType.WARNING, message);
-    }
-
-    @NotNull
     public static AIMessage errorMessage(@NotNull Throwable throwable) {
         return new AIMessage(AIMessageType.ERROR, CommonUtils.toString(CommonUtils.getAllExceptionMessages(throwable), "Unknown error"));
     }
