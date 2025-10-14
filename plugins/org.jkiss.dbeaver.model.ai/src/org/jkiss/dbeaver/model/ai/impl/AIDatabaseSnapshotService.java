@@ -147,8 +147,13 @@ public class AIDatabaseSnapshotService {
         }
 
         if (obj instanceof DBSEntity entity) {
-            String ddl = schemaGenerator.generateSchema(monitor, entity, execCtx, options, useFqn) + "\n";
-            return out.append(ddl);
+            try {
+                String ddl = schemaGenerator.generateSchema(monitor, entity, execCtx, options, useFqn) + "\n";
+                return out.append(ddl);
+            } catch (DBException e) {
+                LOG.warn("Failed to read metadata for entity '" + entity.getName() + "'", e);
+                return true;
+            }
         }
 
         if (obj instanceof DBSObjectContainer container) {
@@ -168,30 +173,51 @@ public class AIDatabaseSnapshotService {
     ) throws DBException {
 
         if (refreshCache) {
-            container.cacheStructure(
-                monitor,
-                DBSObjectContainer.STRUCT_ENTITIES | DBSObjectContainer.STRUCT_ATTRIBUTES
-            );
-        }
-
-        for (DBSObject child : container.getChildren(monitor)) {
-            if (shouldSkipObject(monitor, child)) {
-                continue;
-            }
-            if (!appendObjectDescription(
-                monitor,
-                out,
-                child,
-                execCtx,
-                options,
-                requiresFqn(child, execCtx),
-                refreshCache
-            )) {
-
-                LOG.warn("Object description is too long, truncated at: " + child.getName());
-                return false;
+            try {
+                container.cacheStructure(
+                    monitor,
+                    DBSObjectContainer.STRUCT_ENTITIES | DBSObjectContainer.STRUCT_ATTRIBUTES
+                );
+            } catch (DBException e) {
+                LOG.warn("Failed to cache for '" + container.getName() + "'. Proceeding.", e);
             }
         }
+
+        try {
+            Collection<? extends DBSObject> children = container.getChildren(monitor);
+            if (children == null) {
+                return true;
+            }
+            for (DBSObject child : children) {
+                if (shouldSkipObject(monitor, child)) {
+                    continue;
+                }
+                try {
+                    if (!appendObjectDescription(
+                        monitor,
+                        out,
+                        child,
+                        execCtx,
+                        options,
+                        requiresFqn(child, execCtx),
+                        refreshCache
+                    )) {
+                        LOG.warn("Object description is too long, truncated at: " + child.getName());
+                        return false;
+                    }
+                } catch (DBException e) {
+                    LOG.warn(
+                        "Failed to read metadata for child '" + child.getName()
+                            + "' of container '" + container.getName() + "'",
+                        e
+                    );
+                }
+            }
+        } catch (DBException e) {
+            LOG.warn("Failed to children for '" + container.getName() + "'", e);
+            return true;
+        }
+
         return true;
     }
 
