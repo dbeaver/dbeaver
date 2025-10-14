@@ -30,17 +30,14 @@ public final class AIEngineRequest {
     @NotNull
     private final List<AIMessage> messages;
     private final List<AIFunctionDescriptor> functions = new ArrayList<>();
+    private boolean wasPromptTruncated = false;
 
-    public AIEngineRequest(
-        @NotNull List<AIMessage> messages
-    ) {
+    public AIEngineRequest(@NotNull List<AIMessage> messages) {
         this.messages = messages;
     }
 
-    public AIEngineRequest(
-        @NotNull AIMessage message
-    ) {
-        this.messages = List.of(message);
+    public AIEngineRequest(@NotNull AIMessage message) {
+        this(List.of(message));
     }
 
     @NotNull
@@ -58,4 +55,11 @@ public final class AIEngineRequest {
         this.functions.addAll(functions);
     }
 
+    public void setWasPromptTruncated(boolean wasPromptTruncated) {
+        this.wasPromptTruncated = wasPromptTruncated;
+    }
+
+    public boolean wasPromptTruncated() {
+        return wasPromptTruncated;
+    }
 }

@@ -137,7 +137,7 @@ public class OpenAIEngine<PROPS extends OpenAIBaseProperties> extends BaseComple
             for (AIFunctionDescriptor fd : request.getFunctions()) {
                 OAITool tool = new OAITool();
                 tool.type = OAITool.TYPE_FUNCTION;
-                tool.name = fd.getName();
+                tool.name = fd.getId();
                 tool.description = fd.getDescription();
                 tool.parameters.type = OAIToolParameters.TYPE_OBJECT;
                 for (AIFunctionDescriptor.Parameter param : fd.getParameters()) {

@@ -20,22 +20,21 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.ai.AIConstants;
-import org.jkiss.dbeaver.model.ai.AIMessage;
-import org.jkiss.dbeaver.model.ai.AIPromptGenerator;
-import org.jkiss.dbeaver.model.ai.AISchemaGenerationOptions;
+import org.jkiss.dbeaver.model.ai.*;
 import org.jkiss.dbeaver.model.ai.engine.AIDatabaseContext;
 import org.jkiss.dbeaver.model.ai.engine.AIEngine;
 import org.jkiss.dbeaver.model.ai.engine.AIEngineRequest;
 import org.jkiss.dbeaver.model.ai.registry.AIEngineDescriptor;
 import org.jkiss.dbeaver.model.ai.registry.AIFunctionDescriptor;
 import org.jkiss.dbeaver.model.ai.registry.AIFunctionRegistry;
+import org.jkiss.dbeaver.model.ai.registry.AISettingsManager;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 public class AIEngineRequestFactory {
     private static final Log log = Log.getLog(AIEngineRequestFactory.class);
@@ -96,9 +95,14 @@ public class AIEngineRequestFactory {
         // Build DB snapshot
 
         String dbSnapshot = "";
+        boolean isContextTruncated = false;
         if (databaseContext != null && dbSnapshotTokenBudget > 0) {
             AISchemaGenerationOptions ddlOptions = buildOptions(dbSnapshotTokenBudget);
-            dbSnapshot = databaseSnapshotService.createDbSnapshot(monitor, databaseContext, ddlOptions);
+            AIDatabaseSnapshotService.TokenBoundedStringBuilder dbSnapshotBuilder = databaseSnapshotService.createDbSnapshot(monitor, databaseContext, ddlOptions);
+            if (dbSnapshotBuilder != null) {
+                dbSnapshot = dbSnapshotBuilder.toString();
+                isContextTruncated = dbSnapshotBuilder.isTruncated();
+            }
         }
 
         // Compose system message
@@ -125,6 +129,7 @@ public class AIEngineRequestFactory {
 
         List<AIMessage> truncated = chatTruncator.truncate(allMessages);
         AIEngineRequest request = new AIEngineRequest(truncated);
+        request.setWasPromptTruncated(isContextTruncated);
 
         determineRequestTools(monitor, engineDescriptor, systemPromptGenerator, request);
 
@@ -146,8 +151,18 @@ public class AIEngineRequestFactory {
                 functions.add(fd);
             }
         }
+
+        AISettings aiSettings = AISettingsManager.getInstance().getSettings();
+        Set<String> enabledFunctions = aiSettings.getEnabledFunctions();
+        Set<String> enabledFunctionCategories = aiSettings.getEnabledFunctionCategories();
+        functions.removeIf(aiFunctionDescriptor ->
+            !enabledFunctions.contains(aiFunctionDescriptor.getId()) &&
+                !enabledFunctionCategories.contains(aiFunctionDescriptor.getCategoryId())
+        );
+
         request.setFunctions(functions);
     }
+
 
     private static int getContextWindowSize(@NotNull DBRProgressMonitor monitor, @NotNull AIEngine engine) {
         try {
