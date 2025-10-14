@@ -131,7 +131,7 @@ public class MigrateConnectionWizard extends Wizard
         return true;
     }
 
-    private void reconnectAfterConfirm(DataSourceDescriptor connection) {
+    private void reconnectAfterConfirm(@NotNull DataSourceDescriptor connection) {
         if (UIUtils.confirmAction(
             UIUtils.getActiveWorkbenchShell(),
             CoreMessages.dialog_connection_edit_wizard_conn_change_title,
@@ -141,6 +141,7 @@ public class MigrateConnectionWizard extends Wizard
         }
     }
 
+    @NotNull
     private ReconnectChoice reconnectAllQuestion(int numChangedConnections) {
         Reply[] result = {null};
         UIUtils.syncExec(() -> result[0] = MessageBoxBuilder.builder(UIUtils.getActiveWorkbenchShell())
@@ -160,11 +161,12 @@ public class MigrateConnectionWizard extends Wizard
 
         final Reply reply;
 
-        ReconnectChoice(String replyName) {
+        ReconnectChoice(@NotNull String replyName) {
             this.reply = new Reply(replyName);
         }
 
-        static ReconnectChoice of(Reply reply) {
+        @NotNull
+        static ReconnectChoice of(@NotNull Reply reply) {
             return Arrays.stream(values()).filter(c -> c.reply.equals(reply))
                 .findFirst()
                 .orElseThrow();
