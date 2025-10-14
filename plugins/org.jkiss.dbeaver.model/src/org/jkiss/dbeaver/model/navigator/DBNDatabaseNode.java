@@ -138,20 +138,10 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBNLazyNode, DB
                 objectName = object.getClass().getName() + "@" + object.hashCode(); //$NON-NLS-1$
             }
         }
-/*
-        if (object instanceof DBPUniqueObject) {
-            String uniqueName = ((DBPUniqueObject) object).getUniqueName();
-            if (!uniqueName.equals(objectName)) {
-                if (uniqueName.startsWith(objectName)) {
-                    uniqueName = uniqueName.substring(objectName.length());
-                }
-                objectName += " (" + uniqueName + ")";
-            }
-        }
-*/
         return objectName;
     }
 
+    @Nullable
     @Override
     public String getNodeBriefInfo() {
         if (getObject() instanceof DBPToolTipObject ttObject) {
@@ -202,8 +192,7 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBNLazyNode, DB
         return !isDisposed() && this.getMeta().hasChildren(this, true);
     }
 
-    public boolean hasChildren(DBRProgressMonitor monitor, DBXTreeNode childType)
-        throws DBException {
+    public boolean hasChildren(@NotNull DBRProgressMonitor monitor, @NotNull DBXTreeNode childType) throws DBException {
         if (isDisposed()) {
             return false;
         }
@@ -251,11 +240,12 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBNLazyNode, DB
         // Do nothing
     }
 
+    @Nullable
     DBNDatabaseNode[] getChildNodes() {
         return childNodes;
     }
 
-    boolean hasChildItem(DBSObject object) {
+    boolean hasChildItem(@NotNull DBSObject object) {
         if (childNodes != null) {
             for (DBNDatabaseNode child : childNodes) {
                 if (child.getObject() == object) {
@@ -266,7 +256,7 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBNLazyNode, DB
         return false;
     }
 
-    void addChildItem(DBSObject object) {
+    void addChildItem(@NotNull DBSObject object) {
         DBXTreeNode metaChildren = getItemsMeta();
         if (metaChildren == null) {
             // There is no item meta. Maybe we are under some folder structure
@@ -284,7 +274,7 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBNLazyNode, DB
         }
     }
 
-    void removeChildItem(DBSObject object) {
+    void removeChildItem(@NotNull DBSObject object) {
         DBNNode childNode = null;
         synchronized (this) {
             if (!ArrayUtils.isEmpty(childNodes)) {
@@ -330,7 +320,7 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBNLazyNode, DB
         return locked || super.isLocked();
     }
 
-    public boolean initializeNode(DBRProgressMonitor monitor, DBRProgressListener onFinish) throws DBException {
+    public boolean initializeNode(@Nullable DBRProgressMonitor monitor, @Nullable DBRProgressListener onFinish) throws DBException {
         if (onFinish != null) {
             onFinish.onTaskFinished(Status.OK_STATUS);
         }
@@ -743,15 +733,11 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBNLazyNode, DB
                 for (Iterator<DBNDatabaseNode> iterator = oldList.iterator(); iterator.hasNext(); ) {
                     DBNDatabaseNode oldChild = iterator.next();
                     if (oldChild.getMeta() == meta && equalObjects(oldChild.getObject(), object)) {
-                        boolean updated = oldChild.reloadObject(monitor, object);
+                        oldChild.reloadObject(monitor, object);
 
                         if (oldChild.hasChildren(false) && !oldChild.needsInitialization()) {
                             // Refresh children recursive
                             oldChild.reloadChildren(monitor, source, reflect);
-                        }
-                        if (updated && reflect) {
-                            // FIXME: do not update all refreshed items in (it is too expensive)
-                            //getModel().fireNodeUpdate(source, oldChild, DBNEvent.NodeChange.REFRESH);
                         }
 
                         toList.add(oldChild);
@@ -763,7 +749,7 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBNLazyNode, DB
             }
             if (!added) {
                 // Simply add new item
-                DBNDatabaseItem treeItem = new DBNDatabaseItem(this, meta, object, oldList != null);
+                DBNDatabaseItem treeItem = new DBNDatabaseItem(this, meta, object, true);
                 toList.add(treeItem);
             }
         }

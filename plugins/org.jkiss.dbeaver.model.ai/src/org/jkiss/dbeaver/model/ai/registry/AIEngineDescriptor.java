@@ -75,11 +75,7 @@ public class AIEngineDescriptor extends AbstractDescriptor {
 
     @NotNull
     public Class<? extends AIEngineProperties> getPropertiesType() {
-        Class<? extends AIEngineProperties> propsClass = propertiesType.getObjectClass(AIEngineProperties.class);
-        if (propsClass == null) {
-            throw new IllegalStateException("AI properties class not specified (" + getId() + ")");
-        }
-        return propsClass;
+        return propertiesType.getImplClass(AIEngineProperties.class);
     }
 
     @NotNull
