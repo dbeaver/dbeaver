@@ -18,12 +18,11 @@ package org.jkiss.dbeaver.model.cli.command;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.cli.*;
 import picocli.CommandLine;
 
-public abstract class AbstractTopLevelCommand implements ICommandLineParameterHandler, Runnable, CommandLine.IExitCodeGenerator {
+public abstract class AbstractTopLevelCommand implements Runnable, CommandLine.IExitCodeGenerator {
     private final Log log = Log.getLog(getClass());
 
     @CommandLine.Option(names = {"-h", "--help"}, description = "Show help", usageHelp = true)
@@ -53,16 +52,6 @@ public abstract class AbstractTopLevelCommand implements ICommandLineParameterHa
         this.controller = controller;
         this.context = context;
         this.meta = meta;
-    }
-
-    @Override
-    public void handleParameter(
-        @NotNull CommandLine.ParseResult commandLine,
-        @NotNull String name,
-        @Nullable String value,
-        @NotNull CommandLineContext context
-    ) throws DBException {
-
     }
 
     @Override

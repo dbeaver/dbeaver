@@ -469,11 +469,8 @@
     </extension>
 
     <extension point="org.jkiss.dbeaver.commandLine">
-        <parameter name="translateSQL"
-            longName="translate-sql-script"
-            description="Translates sql script from one dialect to another."
+        <parameter name="translate-sql-script"
             exitAfterExecute="true"
-            hasArg="true"
             handler="org.jkiss.dbeaver.ui.app.standalone.cli.SQLTranslatorHandler"/>
         <parameter name="databaseList"
             longName="database-driver-list"
