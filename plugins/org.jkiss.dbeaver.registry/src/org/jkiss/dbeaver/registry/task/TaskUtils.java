@@ -36,10 +36,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class TaskUtils {
+    public static final ZoneId ZONE_ID_UTC = ZoneId.of("UTC");
+
     private static final DateTimeFormatter DISPLAY_DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-    private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter
-        .ofPattern("yyyyMMddHHmm['Z']")
-        .withZone(ZoneId.of("UTC"));
+    private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyyMMddHHmm['Z']").withZone(ZONE_ID_UTC);
 
     private static final Log log = Log.getLog(TaskUtils.class);
     static final String RUN_LOG_PREFIX = "run_";
