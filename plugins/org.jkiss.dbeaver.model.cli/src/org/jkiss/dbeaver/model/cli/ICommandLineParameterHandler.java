@@ -16,15 +16,15 @@
  */
 package org.jkiss.dbeaver.model.cli;
 
-import org.apache.commons.cli.CommandLine;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import picocli.CommandLine;
 
 public interface ICommandLineParameterHandler {
 
     void handleParameter(
-        @NotNull CommandLine commandLine,
+        @NotNull CommandLine.ParseResult commandLine,
         @NotNull String name,
         @Nullable String value,
         @NotNull CommandLineContext context

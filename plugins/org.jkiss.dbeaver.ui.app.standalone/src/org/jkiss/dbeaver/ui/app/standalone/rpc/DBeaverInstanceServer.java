@@ -17,7 +17,7 @@
 
 package org.jkiss.dbeaver.ui.app.standalone.rpc;
 
-import org.apache.commons.cli.CommandLine;
+
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -156,11 +156,8 @@ public class DBeaverInstanceServer extends ApplicationInstanceServer<IInstanceCo
     @NotNull
     @Override
     public CLIProcessResult handleCommandLine(@NotNull String[] args) {
-        CommandLine cmd = DBeaverCommandLine.getInstance().getCommandLine(args);
-
         try {
             return DBeaverCommandLine.getInstance().executeCommandLineCommands(
-                cmd,
                 this,
                 !DBeaverApplication.getInstance().isHeadlessMode()
             );

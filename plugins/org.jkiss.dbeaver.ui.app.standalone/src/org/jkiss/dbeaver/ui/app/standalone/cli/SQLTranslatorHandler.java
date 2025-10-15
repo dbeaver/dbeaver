@@ -16,7 +16,7 @@
  */
 package org.jkiss.dbeaver.ui.app.standalone.cli;
 
-import org.apache.commons.cli.CommandLine;
+
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.cli.CommandLineContext;
@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.model.sql.SQLModelPreferences;
 import org.jkiss.dbeaver.model.sql.translate.SQLQueryTranslator;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.IOUtils;
+import picocli.CommandLine;
 
 import java.io.FileReader;
 import java.io.IOException;
@@ -37,7 +38,12 @@ public class SQLTranslatorHandler implements ICommandLineParameterHandler {
     private static final Log log = Log.getLog(SQLTranslatorHandler.class);
 
     @Override
-    public void handleParameter(@NotNull CommandLine commandLine, @NotNull String name, String value, @NotNull CommandLineContext context) {
+    public void handleParameter(
+        @NotNull CommandLine.ParseResult commandLine,
+        @NotNull String name,
+        String value,
+        @NotNull CommandLineContext context
+    ) {
         String[] args = value.split(",");
         if (args.length != 2) {
             throw new IllegalStateException("Input parameter format: dialect,<input-file-path>");

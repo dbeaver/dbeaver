@@ -16,13 +16,20 @@
  */
 package org.jkiss.dbeaver.model.cli;
 
-public interface CLIConstants {
-    short EXIT_CODE_CONTINUE = -1;
-    short EXIT_CODE_OK = 0;
-    short EXIT_CODE_ERROR = 1;
-    short EXIT_CODE_ILLEGAL_ARGUMENTS = 2;
+public class CLIRunMeta {
+    private final boolean uiActivated;
+    private final boolean supportNewInstance;
 
-    String PARAM_PROJECT = "-project";
-    
-    String CONTEXT_PARAM_INPUT_FILE = "inputFile";
+    public CLIRunMeta(boolean uiActivated, boolean supportNewInstance) {
+        this.uiActivated = uiActivated;
+        this.supportNewInstance = supportNewInstance;
+    }
+
+    public boolean isSupportNewInstance() {
+        return supportNewInstance;
+    }
+
+    public boolean isUiActivated() {
+        return uiActivated;
+    }
 }

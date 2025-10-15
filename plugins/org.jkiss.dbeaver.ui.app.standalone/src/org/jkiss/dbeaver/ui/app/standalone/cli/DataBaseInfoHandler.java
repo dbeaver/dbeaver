@@ -20,7 +20,6 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.Strictness;
 import com.google.gson.stream.JsonWriter;
-import org.apache.commons.cli.CommandLine;
 import org.eclipse.core.runtime.Platform;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
@@ -32,6 +31,7 @@ import org.jkiss.dbeaver.registry.DataSourceProviderDescriptor;
 import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
 import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
 import org.jkiss.dbeaver.utils.GeneralUtils;
+import picocli.CommandLine;
 
 import java.io.IOException;
 import java.io.Writer;
@@ -64,7 +64,7 @@ public class DataBaseInfoHandler implements ICommandLineParameterHandler {
 
     @Override
     public void handleParameter(
-        @NotNull CommandLine commandLine,
+        @NotNull CommandLine.ParseResult commandLine,
         @NotNull String name,
         String directory,
         @NotNull CommandLineContext context

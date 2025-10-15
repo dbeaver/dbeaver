@@ -14,15 +14,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.cli;
+package org.jkiss.dbeaver.model.cli.option;
 
-public interface CLIConstants {
-    short EXIT_CODE_CONTINUE = -1;
-    short EXIT_CODE_OK = 0;
-    short EXIT_CODE_ERROR = 1;
-    short EXIT_CODE_ILLEGAL_ARGUMENTS = 2;
+import org.jkiss.code.Nullable;
+import picocli.CommandLine;
 
-    String PARAM_PROJECT = "-project";
-    
-    String CONTEXT_PARAM_INPUT_FILE = "inputFile";
+import java.nio.file.Path;
+
+public class InputFileOption {
+    @Nullable
+    @CommandLine.Option(
+        names = {"-in", "-input-file"},
+        description = "Argument value that can be written in the file."
+    )
+    private Path inputFile;
+
+    @Nullable
+    public Path getInputFile() {
+        return inputFile;
+    }
+
 }
