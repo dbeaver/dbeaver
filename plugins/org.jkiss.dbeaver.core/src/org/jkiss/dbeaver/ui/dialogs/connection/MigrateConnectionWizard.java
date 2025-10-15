@@ -32,7 +32,6 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableItem;
-import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPDataSourceContainerProvider;
@@ -46,8 +45,6 @@ import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.actions.datasource.DataSourceHandler;
-import org.jkiss.dbeaver.ui.dialogs.MessageBoxBuilder;
-import org.jkiss.dbeaver.ui.dialogs.Reply;
 import org.jkiss.dbeaver.ui.dialogs.driver.DriverSelectViewer;
 
 import java.util.*;
@@ -120,58 +117,16 @@ public class MigrateConnectionWizard extends Wizard
         }
 
         if (!changedConnections.isEmpty()) {
-            ReconnectChoice choice = reconnectAllQuestion(changedConnections.size());
-            switch (choice) {
-                case YES_FOR_ALL -> changedConnections.forEach(c -> DataSourceHandler.reconnectDataSource(null, c));
-                case DECIDE_FOR_EACH -> changedConnections.forEach(this::reconnectAfterConfirm);
-                default -> {
-                    // do nothing
-                }
+            boolean isReconnect = UIUtils.confirmAction(
+                UIUtils.getActiveWorkbenchShell(),
+                CoreMessages.dialog_migrate_wizard_connection_changed_title,
+                NLS.bind(NLS.bind(CoreMessages.dialog_migrate_wizard_connection_changed_message, changedConnections.size()))
+            );
+            if (isReconnect) {
+                changedConnections.forEach(c -> DataSourceHandler.reconnectDataSource(null, c));
             }
         }
         return true;
-    }
-
-    private void reconnectAfterConfirm(@NotNull DataSourceDescriptor connection) {
-        if (UIUtils.confirmAction(
-            UIUtils.getActiveWorkbenchShell(),
-            CoreMessages.dialog_connection_edit_wizard_conn_change_title,
-            NLS.bind(CoreMessages.dialog_connection_edit_wizard_conn_change_question, connection.getName())
-        )) {
-            DataSourceHandler.reconnectDataSource(null, connection);
-        }
-    }
-
-    @NotNull
-    private ReconnectChoice reconnectAllQuestion(int numChangedConnections) {
-        Reply[] result = {null};
-        UIUtils.syncExec(() -> result[0] = MessageBoxBuilder.builder(UIUtils.getActiveWorkbenchShell())
-            .setTitle(CoreMessages.dialog_migrate_wizard_connection_changed_title)
-            .setMessage(NLS.bind(CoreMessages.dialog_migrate_wizard_connection_changed_message, numChangedConnections))
-            .setReplies(ReconnectChoice.YES_FOR_ALL.reply, ReconnectChoice.NO_FOR_ALL.reply, ReconnectChoice.DECIDE_FOR_EACH.reply)
-            .setDefaultReply(ReconnectChoice.YES_FOR_ALL.reply)
-            .setDefaultFocus(0)
-            .showMessageBox());
-        return ReconnectChoice.of(result[0]);
-    }
-
-    private enum ReconnectChoice {
-        YES_FOR_ALL(CoreMessages.dialog_migrate_wizard_connection_changed_yes_for_all_button),
-        NO_FOR_ALL(CoreMessages.dialog_migrate_wizard_connection_changed_no_for_all_button),
-        DECIDE_FOR_EACH(CoreMessages.dialog_migrate_wizard_connection_changed_decide_for_each_button);
-
-        final Reply reply;
-
-        ReconnectChoice(@NotNull String replyName) {
-            this.reply = new Reply(replyName);
-        }
-
-        @NotNull
-        static ReconnectChoice of(@NotNull Reply reply) {
-            return Arrays.stream(values()).filter(c -> c.reply.equals(reply))
-                .findFirst()
-                .orElseThrow();
-        }
     }
 
     class PageConnections extends WizardPage {
