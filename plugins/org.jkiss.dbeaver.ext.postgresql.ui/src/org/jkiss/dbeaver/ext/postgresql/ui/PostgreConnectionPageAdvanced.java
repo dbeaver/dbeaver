@@ -52,6 +52,7 @@ public class PostgreConnectionPageAdvanced extends ConnectionPageAbstract {
     private Button readKeysWithColumns;
     private Button replaceLegacyTimezone;
     private Button usePreparedStatements;
+    private Button setSearchPathOnSelectSchema;
     private Combo ddPlainBehaviorCombo;
     private Combo ddTagBehaviorCombo;
 
@@ -172,6 +173,13 @@ public class PostgreConnectionPageAdvanced extends ConnectionPageAbstract {
                 PostgreMessages.dialog_setting_sql_dd_tag_tip,
                 SWT.DROP_DOWN | SWT.READ_ONLY
             );
+            setSearchPathOnSelectSchema = UIUtils.createCheckbox(
+                secureGroup,
+                PostgreMessages.dialog_setting_set_search_path_label,
+                PostgreMessages.dialog_setting_set_search_path_tip,
+                true,
+                2
+            );
             ddTagBehaviorCombo.add(PostgreMessages.dialog_setting_sql_dd_string);
             ddTagBehaviorCombo.add(PostgreMessages.dialog_setting_sql_dd_code_block);
         }
@@ -189,6 +197,7 @@ public class PostgreConnectionPageAdvanced extends ConnectionPageAbstract {
                 2
             );
         }
+
 
         setControl(cfgGroup);
 
@@ -243,6 +252,11 @@ public class PostgreConnectionPageAdvanced extends ConnectionPageAbstract {
                 connectionInfo.getProviderProperty(PostgreConstants.PROP_REPLACE_LEGACY_TIMEZONE),
                 globalPrefs.getBoolean(PostgreConstants.PROP_REPLACE_LEGACY_TIMEZONE)
             ));
+        setSearchPathOnSelectSchema.setSelection(
+            CommonUtils.getBoolean(
+                connectionInfo.getProviderProperty(PostgreConstants.PROP_SET_SEARCH_PATH_ON_SELECT),
+                false
+            ));
         if (usePreparedStatements != null) {
             usePreparedStatements.setSelection(
                 CommonUtils.getBoolean(connectionInfo.getProviderProperty(PostgreConstants.PROP_USE_PREPARED_STATEMENTS), false));
@@ -293,6 +307,11 @@ public class PostgreConnectionPageAdvanced extends ConnectionPageAbstract {
             String.valueOf(ddPlainBehaviorCombo.getSelectionIndex() == 0)
         );
         connectionCfg.setProviderProperty(PostgreConstants.PROP_DD_TAG_STRING, String.valueOf(ddTagBehaviorCombo.getSelectionIndex() == 0));
+
+        connectionCfg.setProviderProperty(
+            PostgreConstants.PROP_SET_SEARCH_PATH_ON_SELECT,
+            String.valueOf(setSearchPathOnSelectSchema.getSelection())
+        );
 
         saveConnectionURL(connectionCfg);
     }
