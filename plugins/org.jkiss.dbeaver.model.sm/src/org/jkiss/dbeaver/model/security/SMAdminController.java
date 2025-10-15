@@ -233,4 +233,18 @@ public interface SMAdminController extends SMController {
     @NotNull
     List<SMTeamMemberInfo> getTeamMembersInfo(@NotNull String teamId) throws DBException;
 
+    void setObjectSettings(
+        @NotNull String objectId,
+        @NotNull SMObjectType objectType,
+        @NotNull String subjectId,
+        @NotNull Map<String, Object> settings
+    ) throws DBException;
+
+    void deleteObjectSettings(
+        @NotNull String objectId,
+        @NotNull SMObjectType objectType,
+        @NotNull String subjectId,
+        @Nullable Set<String> settingIds
+    ) throws DBException;
+
 }

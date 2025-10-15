@@ -239,7 +239,8 @@ public interface SMController extends DBPObjectController, DBInternalDatabaseInf
     Map<String, Object> getObjectSettings(
         @NotNull String objectId,
         @NotNull SMObjectType objectType,
-        @Nullable String settingId
+        @Nullable String subjectId,
+        @Nullable Set<String> settingIds
     ) throws DBException;
 
     void setObjectSettings(
