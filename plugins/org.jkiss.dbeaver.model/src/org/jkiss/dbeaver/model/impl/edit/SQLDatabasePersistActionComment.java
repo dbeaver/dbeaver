@@ -28,6 +28,7 @@ public class SQLDatabasePersistActionComment extends SQLDatabasePersistAction {
         super("Comment",
             SQLUtils.getDialectFromDataSource(dataSource).getSingleLineComments()[0] + " " + comment,
             ActionType.COMMENT,
-            false, false);
+            false,
+            false);
     }
 }

@@ -62,15 +62,6 @@ public class MySQLProcedureManager extends SQLObjectEditor<MySQLProcedure, MySQL
         Pattern.CASE_INSENSITIVE | Pattern.DOTALL
     );
 
-    private static final String PROCEDURE_REPLACE_COMMENT = """
-        /*
-          MySQL does not support `CREATE OR REPLACE PROCEDURE`,
-          and DDL is non-transactional.\s
-          Therefore, we first create a temporary procedure to validate\s
-          the new definition before replacing the existing one.
-        */
-        """;
-
     @Nullable
     @Override
     public DBSObjectCache<MySQLCatalog, MySQLProcedure> getObjectsCache(MySQLProcedure object)

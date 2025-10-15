@@ -47,7 +47,11 @@ public interface DBEPersistAction {
 
     boolean isComplex();
 
-    default boolean isInternal() {
+    /**
+     * Returns whether this action should be hidden from the user interface.
+     * <p>Hidden actions are still executed but not displayed to the user.</p>
+     */
+    default boolean isHidden() {
         return false;
     }
 

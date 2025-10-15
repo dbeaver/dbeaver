@@ -310,11 +310,7 @@ public final class SQLUtils {
     }
 
     public static boolean isStringQuoted(DBSObject object, String string) {
-        return isStringQuoted(object.getDataSource().getSQLDialect(), string);
-    }
-
-    public static boolean isStringQuoted(SQLDialect dialect, String string) {
-        return dialect.isQuotedString(string);
+        return object.getDataSource().getSQLDialect().isQuotedString(string);
     }
 
     public static String quoteString(DBSObject object, String string)
@@ -324,12 +320,7 @@ public final class SQLUtils {
 
     public static String quoteString(DBPDataSource dataSource, String string)
     {
-        return quoteString(dataSource.getSQLDialect(), string);
-    }
-
-    public static String quoteString(SQLDialect dialect, String string)
-    {
-        return dialect.getQuotedString(string);
+        return dataSource.getSQLDialect().getQuotedString(string);
     }
 
     public static String escapeString(DBPDataSource dataSource, String string)
@@ -884,7 +875,7 @@ public final class SQLUtils {
     }
 
     @NotNull
-    public static String generateScript(DBPDataSource dataSource, DBEPersistAction[] persistActions, boolean addComments, boolean withInternal)
+    public static String generateScript(DBPDataSource dataSource, DBEPersistAction[] persistActions, boolean addComments, boolean includeHidden)
     {
         final SQLDialect sqlDialect = SQLUtils.getDialectFromDataSource(dataSource);
         final String lineSeparator = GeneralUtils.getDefaultLineSeparator();
@@ -896,7 +887,7 @@ public final class SQLUtils {
         }
         if (persistActions != null) {
             for (DBEPersistAction action : persistActions) {
-                if (action.isInternal() && !withInternal) {
+                if (action.isHidden() && !includeHidden) {
                     continue;
                 }
                 String scriptLine = action.getScript();

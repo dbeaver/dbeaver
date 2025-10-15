@@ -103,7 +103,7 @@ public class SQLDatabasePersistAction implements DBEPersistAction {
     }
 
     @Override
-    public boolean isInternal() {
+    public boolean isHidden() {
         return internal;
     }
 }
