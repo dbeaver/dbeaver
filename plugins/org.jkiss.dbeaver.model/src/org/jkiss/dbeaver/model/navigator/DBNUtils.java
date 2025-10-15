@@ -76,9 +76,14 @@ public class DBNUtils {
         return model == null ? null : model.getNodeByObject(monitor, object, addFiltered);
     }
 
-    public static DBNDatabaseNode getChildFolder(DBRProgressMonitor monitor, DBNDatabaseNode node, Class<?> folderType) {
+    @Nullable
+    public static DBNDatabaseNode getChildFolder(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBNDatabaseNode node,
+        @NotNull Class<?> folderType
+    ) {
         try {
-            for (DBNDatabaseNode childNode : node.getChildren(monitor)) {
+            for (DBNDatabaseNode childNode : ArrayUtils.safeArray(node.getChildren(monitor))) {
                 if (!(childNode instanceof DBNDatabaseFolder folder)) {
                     continue;
                 }
@@ -96,14 +101,14 @@ public class DBNUtils {
         return null;
     }
 
-    @NotNull
+    @Nullable
     public static DBNNode[] getNodeChildrenFiltered(
         @NotNull DBRProgressMonitor monitor,
         @NotNull DBNNode node,
         boolean forTree
     ) throws DBException {
         DBNNode[] children = node.getChildren(monitor);
-        if (children.length > 0) {
+        if (children != null && children.length > 0) {
             children = filterNavigableChildren(children, forTree);
         }
         return children;
@@ -246,7 +251,7 @@ public class DBNUtils {
                 List<DBXTreeNode> childMetas = itemsMeta.getChildren(dbNode);
                 if (childMetas.size() == 1 && childMetas.getFirst() instanceof DBXTreeItem nestedMeta) {
                     DBNDatabaseNode[] nodeChildren = dbNode.getChildren(monitor);
-                    if (nodeChildren.length > 0 &&
+                    if (nodeChildren != null && nodeChildren.length > 0 &&
                         !expectedChildrenType.isInstance(nodeChildren[0].getObject()))
                     {
                         // Note: We should've check expectedNestedType.isInstance(nodeChildren[0].getObject())

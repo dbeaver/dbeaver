@@ -66,10 +66,12 @@ public class AIFunctionDescriptor extends AbstractDescriptor {
 
     private final IConfigurationElement contributorConfig;
     private final ObjectType objectType;
+    private final String id;
     private final String name;
     private final DBPImage icon;
     private final boolean global;
     private final AIFunctionResult.FunctionType type;
+    private final String categoryId;
     private final Parameter[] parameters;
 
     public AIFunctionDescriptor(@NotNull IConfigurationElement config) {
@@ -77,8 +79,10 @@ public class AIFunctionDescriptor extends AbstractDescriptor {
         this.contributorConfig = config;
         this.objectType = new ObjectType(config, RegistryConstants.ATTR_CLASS);
         this.icon = iconToImage(config.getAttribute(RegistryConstants.ATTR_ICON));
+        this.id = config.getAttribute("id");
         this.name = config.getAttribute("name");
         this.global = CommonUtils.toBoolean(config.getAttribute("global"));
+        this.categoryId = config.getAttribute("categoryId");
         this.type = CommonUtils.valueOf(
             AIFunctionResult.FunctionType.class,
             config.getAttribute("type"),
@@ -90,6 +94,11 @@ public class AIFunctionDescriptor extends AbstractDescriptor {
             params.add(new Parameter(pe));
         }
         this.parameters = params.toArray(new Parameter[0]);
+    }
+
+    @NotNull
+    public String getId() {
+        return id;
     }
 
     @NotNull
@@ -129,7 +138,7 @@ public class AIFunctionDescriptor extends AbstractDescriptor {
         try {
             return objectType.createInstance(AIFunction.class);
         } catch (Exception e) {
-            throw new DBException("Error creating AI function " + getName(), e);
+            throw new DBException("Error creating AI function " + getId(), e);
         }
     }
 
@@ -139,11 +148,16 @@ public class AIFunctionDescriptor extends AbstractDescriptor {
 
     @Override
     public String toString() {
-        return "AI function: " + getName();
+        return "AI function: " + getId();
     }
 
     @NotNull
     public String getSignature() {
-        return getName();
+        return getId();
+    }
+
+    @Nullable
+    public String getCategoryId() {
+        return categoryId;
     }
 }

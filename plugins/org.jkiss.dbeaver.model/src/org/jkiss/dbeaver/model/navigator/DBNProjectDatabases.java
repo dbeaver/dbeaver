@@ -154,7 +154,7 @@ public class DBNProjectDatabases extends DBNNode implements DBNContainer, DBPEve
         }
     }
 
-    @NotNull
+    @Nullable
     @Override
     public DBNNode[] getChildren(@NotNull DBRProgressMonitor monitor)
     {

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -80,17 +80,17 @@ public class DBeaverIcons
         }
     }
 
-    private static Map<String, IconDescriptor> imageMap = new HashMap<>();
-    private static Map<String, IconDescriptor> compositeMap = new HashMap<>();
+    private static final Map<String, IconDescriptor> imageMap = new HashMap<>();
+    private static final Map<String, IconDescriptor> compositeMap = new HashMap<>();
     private static Image viewMenuImage;
 
     @NotNull
-    public static Image getImage(@NotNull DBPImage image) {
+    public static Image getImage(@Nullable DBPImage image) {
         return getIconDescriptor(image, true).image;
     }
 
     @NotNull
-    public static Image getImage(@NotNull DBPImage image, boolean useCache) {
+    public static Image getImage(@Nullable DBPImage image, boolean useCache) {
         return getIconDescriptor(image, useCache).image;
     }
 
@@ -104,12 +104,12 @@ public class DBeaverIcons
     }
 
     @NotNull
-    public static ImageDescriptor getImageDescriptor(@NotNull DBPImage image) {
+    public static ImageDescriptor getImageDescriptor(@Nullable DBPImage image) {
         return getIconDescriptor(image, true).imageDescriptor; 
     }
 
     @NotNull
-    private static IconDescriptor getIconDescriptor(DBPImage image, boolean useCache) {
+    private static IconDescriptor getIconDescriptor(@Nullable DBPImage image, boolean useCache) {
         if (image == null) {
             return getIconDescriptor(DBIcon.TYPE_UNKNOWN, useCache);
         } else if (image instanceof DBIconBinary) {
@@ -150,24 +150,24 @@ public class DBeaverIcons
             if (useLegacyOverlay) {
                 OverlayImageDescriptorLegacy ovrImage = new OverlayImageDescriptorLegacy(mainIcon.image.getImageData());
                 if (image.getTopLeft() != null)
-                    ovrImage.setTopLeft(accumulateDecorations(image, i -> i.getTopLeft()));
+                    ovrImage.setTopLeft(accumulateDecorations(image, DBIconComposite::getTopLeft));
                 if (image.getTopRight() != null)
-                    ovrImage.setTopRight(accumulateDecorations(image, i -> i.getTopRight()));
+                    ovrImage.setTopRight(accumulateDecorations(image, DBIconComposite::getTopRight));
                 if (image.getBottomLeft() != null)
-                    ovrImage.setBottomLeft(accumulateDecorations(image, i -> i.getBottomLeft()));
+                    ovrImage.setBottomLeft(accumulateDecorations(image, DBIconComposite::getBottomLeft));
                 if (image.getBottomRight() != null)
-                    ovrImage.setBottomRight(accumulateDecorations(image, i -> i.getBottomRight()));
+                    ovrImage.setBottomRight(accumulateDecorations(image, DBIconComposite::getBottomRight));
                 resultImage = ovrImage.createImage();
             } else {
                 OverlayImageDescriptor ovrImage = new OverlayImageDescriptor(mainIcon.imageDescriptor);
                 if (image.getTopLeft() != null)
-                    ovrImage.setTopLeft(accumulateDecorations(image, i -> i.getTopLeft()));
+                    ovrImage.setTopLeft(accumulateDecorations(image, DBIconComposite::getTopLeft));
                 if (image.getTopRight() != null)
-                    ovrImage.setTopRight(accumulateDecorations(image, i -> i.getTopRight()));
+                    ovrImage.setTopRight(accumulateDecorations(image, DBIconComposite::getTopRight));
                 if (image.getBottomLeft() != null)
-                    ovrImage.setBottomLeft(accumulateDecorations(image, i -> i.getBottomLeft()));
+                    ovrImage.setBottomLeft(accumulateDecorations(image, DBIconComposite::getBottomLeft));
                 if (image.getBottomRight() != null)
-                    ovrImage.setBottomRight(accumulateDecorations(image, i -> i.getBottomRight()));
+                    ovrImage.setBottomRight(accumulateDecorations(image, DBIconComposite::getBottomRight));
                 resultImage = ovrImage.createImage();
             }
             icon = new IconDescriptor(compositeId, resultImage);
