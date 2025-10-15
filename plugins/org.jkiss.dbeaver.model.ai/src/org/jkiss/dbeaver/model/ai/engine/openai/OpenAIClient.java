@@ -25,7 +25,6 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.ai.engine.AIEngineResponseChunk;
 import org.jkiss.dbeaver.model.ai.engine.AIEngineResponseConsumer;
 import org.jkiss.dbeaver.model.ai.engine.AIFunctionCall;
-import org.jkiss.dbeaver.model.ai.engine.TooManyRequestsException;
 import org.jkiss.dbeaver.model.ai.engine.openai.dto.*;
 import org.jkiss.dbeaver.model.ai.utils.AIHttpUtils;
 import org.jkiss.dbeaver.model.ai.utils.MonitoredHttpClient;
@@ -143,12 +142,30 @@ public class OpenAIClient implements Closeable {
         String body = response.body();
         if (response.statusCode() == 200) {
             return GSON.fromJson(body, OAIResponsesResponse.class);
-        } else if (response.statusCode() == 429) {
-            throw new TooManyRequestsException("Too many requests: " + body);
         } else {
-            throw new DBException("OpenAI request failed: " + response.statusCode() + ", body=" + body);
+            throw new DBException("OpenAI request failed: " + response.statusCode() + ", " + parseErrorMessage(body));
         }
     }
+
+    @NotNull
+    public static String parseErrorMessage(@NotNull String body) {
+        try {
+            Map<String, Object> errorResponse = GSON.fromJson(body, JSONUtils.MAP_TYPE_TOKEN);
+            if (errorResponse != null && errorResponse.containsKey("error")) {
+                Object errorObject = errorResponse.get("error");
+                if (errorObject instanceof Map error) {
+                    if (error.get("message") instanceof String message) {
+                        return message;
+                    }
+                }
+            }
+            return body;
+        } catch (JsonSyntaxException e) {
+            log.debug("Failed to parse error response: " + e.getMessage());
+            return body;
+        }
+    }
+
 
     public void createChatCompletionStream(
         @NotNull DBRProgressMonitor monitor,

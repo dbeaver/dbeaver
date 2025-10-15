@@ -18,16 +18,19 @@ package org.jkiss.dbeaver.model.ai.engine.copilot;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.JsonSyntaxException;
 import com.google.gson.Strictness;
 import com.google.gson.annotations.SerializedName;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.ai.engine.AIEngineResponseChunk;
 import org.jkiss.dbeaver.model.ai.engine.AIEngineResponseConsumer;
 import org.jkiss.dbeaver.model.ai.engine.copilot.dto.*;
 import org.jkiss.dbeaver.model.ai.utils.AIHttpUtils;
 import org.jkiss.dbeaver.model.ai.utils.MonitoredHttpClient;
+import org.jkiss.dbeaver.model.data.json.JSONUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.CommonUtils;
@@ -44,6 +47,8 @@ import java.util.Map;
 import java.util.concurrent.Future;
 
 public class CopilotClient implements AutoCloseable {
+    private static final Log log = Log.getLog(CopilotClient.class);
+
     private static final String DATA_EVENT = "data: ";
     private static final String DONE_EVENT = "[DONE]";
     private static final Duration TIMEOUT = Duration.ofSeconds(30);
@@ -290,7 +295,32 @@ public class CopilotClient implements AutoCloseable {
     }
 
     private static DBException mapHttpError(HttpResponse<String> response) {
-        return new DBException("HTTP error: " + response.statusCode() + " " + response.body());
+        return new DBException("Copilot request failed: " + response.statusCode() + ", " + parseErrorMessage(response.body()));
+    }
+
+    @NotNull
+    public static String parseErrorMessage(@NotNull String body) {
+        try {
+            Map<String, Object> errorResponse = GSON.fromJson(body, JSONUtils.MAP_TYPE_TOKEN);
+            if (errorResponse != null && errorResponse.containsKey("error")) {
+                Object errorObject = errorResponse.get("error");
+                if (errorObject instanceof Map error) {
+                    if (error.containsKey("message")) {
+                        return error.get("message").toString();
+                    }
+                }
+            }
+            if (errorResponse != null && errorResponse.containsKey("message")) {
+                Object messageObject = errorResponse.get("message");
+                if (messageObject instanceof String message) {
+                    return message;
+                }
+            }
+            return body;
+        } catch (JsonSyntaxException e) {
+            log.debug("Failed to parse error response: " + e.getMessage());
+            return body;
+        }
     }
 
     private record DeviceCodeRequest(
