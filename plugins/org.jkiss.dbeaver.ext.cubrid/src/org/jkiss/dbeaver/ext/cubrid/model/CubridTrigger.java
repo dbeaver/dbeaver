@@ -210,7 +210,7 @@ public class CubridTrigger extends GenericTableTrigger {
         }
     }
 
-    @Nullable
+    @NotNull
     @Override
     public String getObjectDefinitionText(@NotNull DBRProgressMonitor monitor, @NotNull Map<String, Object> options) throws DBException {
         if (persisted) {

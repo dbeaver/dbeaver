@@ -177,7 +177,7 @@ public abstract class OracleTableBase extends JDBCTable<OracleDataSource, Oracle
 
     @Nullable
     @Override
-    public String getDescription(DBRProgressMonitor monitor) {
+    public String getDescription(@NotNull DBRProgressMonitor monitor) {
         return getComment(monitor);
     }
 

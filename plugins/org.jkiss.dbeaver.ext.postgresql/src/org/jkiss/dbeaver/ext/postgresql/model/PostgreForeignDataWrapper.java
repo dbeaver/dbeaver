@@ -92,6 +92,7 @@ public class PostgreForeignDataWrapper extends PostgreInformation implements Pos
         return getDatabase().getProcedure(monitor, handlerSchemaId, validatorProcId);
     }
 
+    @NotNull
     @Override
     public String getObjectDefinitionText(@NotNull DBRProgressMonitor monitor, @NotNull Map<String, Object> options) throws DBException {
         PostgreProcedure handler = getHandler(monitor);

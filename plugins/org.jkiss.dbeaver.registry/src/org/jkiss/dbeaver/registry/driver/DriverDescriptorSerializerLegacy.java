@@ -324,7 +324,7 @@ public class DriverDescriptorSerializerLegacy extends DriverDescriptorSerializer
                         curDriver.resetDriverInstance();
                     }
 
-                    if (providedDrivers || curProvider.isDriversManagable()) {
+                    if (providedDrivers || curProvider.isDriversManageable()) {
                         String category = attributes.getValue(RegistryConstants.ATTR_CATEGORY);
                         if (!CommonUtils.isEmpty(category)) {
                             curDriver.setCategory(category);

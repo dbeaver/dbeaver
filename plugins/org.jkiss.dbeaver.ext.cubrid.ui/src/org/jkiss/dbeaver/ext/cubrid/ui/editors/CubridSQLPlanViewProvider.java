@@ -27,8 +27,8 @@ public class CubridSQLPlanViewProvider extends SQLPlanViewProviderSimple {
 
     @Override
     public void visualizeQueryPlan(Viewer viewer, SQLQuery query, DBCPlan plan) {
-        query.setText(((CubridPlanAnalyser) plan).getPlanQueryString());
-        fillPlan(query, plan);
-        showPlan(viewer, query, plan);
+        SQLQuery fullText = new SQLQuery(query.getDataSource(), ((CubridPlanAnalyser) plan).getPlanQueryString());
+        fillPlan(fullText, plan);
+        showPlan(viewer, fullText, plan);
     }
 }

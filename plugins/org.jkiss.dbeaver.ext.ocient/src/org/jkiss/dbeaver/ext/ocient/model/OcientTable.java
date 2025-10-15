@@ -37,6 +37,7 @@ public class OcientTable extends GenericTable {
         super(container, tableName, tableType, dbResult);
     }
 
+    @NotNull
     @Override
     @Property(hidden = true, order = -1)
     public String getObjectDefinitionText(@NotNull DBRProgressMonitor monitor, @NotNull Map<String, Object> options) throws DBException {

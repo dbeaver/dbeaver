@@ -65,6 +65,7 @@
                     <file type="jar" path="maven:/org.apache.httpcomponents.client5:httpclient5:RELEASE[5.3.1]" bundle="!drivers.clickhouse_com"/>
                     <file type="license" path="licenses/external/asl-2.0.txt"/>
                     <file type="jar" path="drivers/clickhouse_com" bundle="drivers.clickhouse_com"/>
+                    <file type="jar" path="bundle:/org.apache.commons.lang3" bundle="drivers.clickhouse_com"/>
                     <!-- Disable server timezone as it confuses during timestamp edit -->
                     <property name="@dbeaver-default-dataformat.type.timestamp.pattern" value="yyyy-MM-dd HH:mm:ss[.fffffffff]"/>
                     <property name="use_server_time_zone" value="false"/>

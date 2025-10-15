@@ -98,8 +98,9 @@ public class MySQLDataSourceProvider extends JDBCDataSourceProvider implements D
         return FEATURE_CATALOGS;
     }
 
+    @NotNull
     @Override
-    public String getConnectionURL(DBPDriver driver, DBPConnectionConfiguration connectionInfo) {
+    public String getConnectionURL(@NotNull DBPDriver driver, @NotNull DBPConnectionConfiguration connectionInfo) {
         if (connectionInfo.getConfigurationType() == DBPDriverConfigurationType.URL) {
             return connectionInfo.getUrl();
         }

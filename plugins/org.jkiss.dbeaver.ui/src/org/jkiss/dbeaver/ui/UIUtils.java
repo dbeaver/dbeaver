@@ -720,12 +720,12 @@ public class UIUtils {
             .grab(true, false).create());
         final Label imageLabel = new Label(composite, SWT.NONE);
         imageLabel.setImage(DBeaverIcons.getImage(DBIcon.SMALL_INFO));
-        imageLabel.setLayoutData(new GridData(SWT.BEGINNING, SWT.BEGINNING, false, false));
+        imageLabel.setLayoutData(new GridData(SWT.BEGINNING, SWT.CENTER, false, true));
 
         final Link link = new Link(composite, SWT.NONE);
         link.setText(text);
         link.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> callback.run()));
-        link.setLayoutData(GridDataFactory.fillDefaults().grab(true, false).create());
+        link.setLayoutData(new GridData(SWT.BEGINNING, SWT.CENTER, true, true));
 
         return link;
     }
@@ -1688,7 +1688,7 @@ public class UIUtils {
         return new RGB(r, g, b);
     }
 
-    public static boolean isParent(Control parent, Control child) {
+    public static boolean isParent(@NotNull Control parent, @Nullable Control child) {
         for (Control c = child; c != null; c = c.getParent()) {
             if (c == parent) {
                 return true;
@@ -1727,7 +1727,7 @@ public class UIUtils {
     }
 
     public static Point drawMessageOverControl(Control control, GC gc, String message, int offset) {
-        Rectangle bounds = control.getBounds();
+        Rectangle bounds = getControlPaintBounds(control);
         Point textSize = gc.textExtent(message);
 
         if (textSize.x > bounds.width) {
@@ -1750,6 +1750,26 @@ public class UIUtils {
         }
 
         return textSize;
+    }
+
+    @NotNull
+    private static Rectangle getControlPaintBounds(@NotNull Control control) {
+        Rectangle bounds;
+        if (control instanceof Scrollable scrollable) {
+            bounds = scrollable.getClientArea();
+        } else {
+            bounds = control.getBounds();
+        }
+        if (control instanceof Tree tree) {
+            int height = tree.getHeaderHeight();
+            bounds.y += height;
+            bounds.height -= height;
+        } else if (control instanceof Table table) {
+            int height = table.getHeaderHeight();
+            bounds.y += height;
+            bounds.height -= height;
+        }
+        return bounds;
     }
 
     public static SharedTextColors getSharedTextColors() {
@@ -2593,5 +2613,15 @@ public class UIUtils {
 
     public static void setDefaultTextControlWidthHint(@NotNull Control widget) {
         setWidgetWidthHint(widget, 150);
+    }
+
+    /**
+     * Makes the background of the specified control mimic the background of another control
+     */
+    public static void mimicControlBackground(@NotNull Composite control, @NotNull Control otherControl) {
+        control.addPaintListener(e -> {
+            e.gc.setBackground(otherControl.getBackground());
+            e.gc.fillRectangle(control.getClientArea());
+        });
     }
 }

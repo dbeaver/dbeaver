@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ext.mysql.model;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.mysql.MySQLConstants;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
@@ -69,7 +70,7 @@ public class MySQLTableConstraint extends MySQLTableConstraintBase {
     }
 
     @Override
-    public List<MySQLTableConstraintColumn> getAttributeReferences(DBRProgressMonitor monitor) {
+    public List<MySQLTableConstraintColumn> getAttributeReferences(@Nullable DBRProgressMonitor monitor) {
         return columns;
     }
 

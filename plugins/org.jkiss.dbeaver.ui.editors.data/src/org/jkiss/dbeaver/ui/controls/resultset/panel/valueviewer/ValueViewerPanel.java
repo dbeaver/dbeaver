@@ -18,7 +18,7 @@ package org.jkiss.dbeaver.ui.controls.resultset.panel.valueviewer;
 
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.jface.action.*;
-import org.eclipse.jface.dialogs.IDialogSettings;
+import org.eclipse.jface.layout.FillLayoutFactory;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.osgi.util.NLS;
@@ -31,6 +31,7 @@ import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
@@ -44,6 +45,7 @@ import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.controls.resultset.*;
 import org.jkiss.dbeaver.ui.controls.resultset.handler.ResultSetHandlerMain;
 import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
+import org.jkiss.dbeaver.ui.controls.resultset.panel.ResultSetPanelBase;
 import org.jkiss.dbeaver.ui.css.CSSUtils;
 import org.jkiss.dbeaver.ui.data.IValueController;
 import org.jkiss.dbeaver.ui.data.IValueEditor;
@@ -55,12 +57,11 @@ import org.jkiss.utils.CommonUtils;
 /**
  * RSV value view panel
  */
-public class ValueViewerPanel implements IResultSetPanel, DBPAdaptable {
+public class ValueViewerPanel extends ResultSetPanelBase implements DBPAdaptable {
 
     private static final Log log = Log.getLog(ValueViewerPanel.class);
 
     public static final String PANEL_ID = "value-view";
-    public static final String SETTINGS_SECTION = "panel-" + PANEL_ID;
 
     private static final String VALUE_VIEW_CONTROL_ID = "org.jkiss.dbeaver.ui.resultset.panel.valueView";
 
@@ -74,10 +75,6 @@ public class ValueViewerPanel implements IResultSetPanel, DBPAdaptable {
     private volatile boolean valueSaving;
     private IValueManager valueManager;
 
-    public static IDialogSettings getPanelSettings() {
-        return ResultSetUtils.getViewerSettings(SETTINGS_SECTION);
-    }
-
     public ValueViewerPanel() {
     }
 
@@ -86,7 +83,9 @@ public class ValueViewerPanel implements IResultSetPanel, DBPAdaptable {
         this.presentation = presentation;
 
         viewPlaceholder = new Composite(parent, SWT.NONE);
-        viewPlaceholder.setLayout(new FillLayout());
+        viewPlaceholder.setLayout(FillLayoutFactory.fillDefaults().margins(2, 2).create());
+        //new CompositeBorderPainter(this.viewPlaceholder);
+
         viewPlaceholder.addPaintListener(e -> {
             if (previewController == null && viewPlaceholder.getChildren().length == 0) {
                 e.gc.setForeground(UIStyles.getDefaultTextForeground());
@@ -115,8 +114,7 @@ public class ValueViewerPanel implements IResultSetPanel, DBPAdaptable {
         });
 */
 
-        if (this.presentation instanceof ISelectionProvider) {
-            final ISelectionProvider selectionProvider = (ISelectionProvider) this.presentation;
+        if (this.presentation instanceof ISelectionProvider selectionProvider) {
             final ISelectionChangedListener selectionListener = event -> {
                 if (ValueViewerPanel.this.presentation.getController().getVisiblePanel() == ValueViewerPanel.this) {
                     refreshValue(false);
@@ -161,6 +159,11 @@ public class ValueViewerPanel implements IResultSetPanel, DBPAdaptable {
     @Override
     public void contributeActions(IContributionManager manager) {
         fillToolBar(manager);
+    }
+
+    @Override
+    public boolean needsSeparator() {
+        return true;
     }
 
     private void refreshValue(boolean force) {
@@ -373,9 +376,7 @@ public class ValueViewerPanel implements IResultSetPanel, DBPAdaptable {
         }
     }
 
-    private void fillToolBar(final IContributionManager contributionManager)
-    {
-        contributionManager.add(new Separator());
+    private void fillToolBar(final IContributionManager contributionManager) {
         if (valueManager != null) {
             try {
                 valueManager.contributeActions(contributionManager, previewController, valueEditor);
@@ -390,32 +391,14 @@ public class ValueViewerPanel implements IResultSetPanel, DBPAdaptable {
             }
         }
         if (valueEditor != null && !valueEditor.isReadOnly()) {
-            contributionManager.add(
-                ActionUtils.makeCommandContribution(presentation.getController().getSite(), ValueViewCommandHandler.CMD_SAVE_VALUE));
-
-            contributionManager.add(
-                new Action(ResultSetMessages.value_viewer_auto_apply_action_text, Action.AS_CHECK_BOX) {
-                    {
-                        setImageDescriptor(DBeaverIcons.getImageDescriptor(UIIcon.AUTO_SAVE));
-                    }
-
-                    @Override
-                    public boolean isChecked() {
-                        return DBWorkbench.getPlatform().getPreferenceStore().getBoolean(ResultSetPreferences.RS_EDIT_AUTO_UPDATE_VALUE);
-                    }
-
-                    @Override
-                    public void run() {
-                        boolean newValue = !isChecked();
-                        DBWorkbench.getPlatform().getPreferenceStore().setValue(ResultSetPreferences.RS_EDIT_AUTO_UPDATE_VALUE, newValue);
-                        presentation.getController().updatePanelActions();
-                    }
-                });
+            ActionContributionItem item = new ActionContributionItem(new SaveValueAction());
+            //item.setMode(ActionContributionItem.MODE_FORCE_TEXT);
+            contributionManager.add(item);
         }
     }
 
     @Override
-    public <T> T getAdapter(Class<T> adapter) {
+    public <T> T getAdapter(@NotNull Class<T> adapter) {
         if (valueEditor != null) {
             if (adapter.isAssignableFrom(valueEditor.getClass())) {
                 return adapter.cast(valueEditor);
@@ -428,5 +411,50 @@ public class ValueViewerPanel implements IResultSetPanel, DBPAdaptable {
         return null;
     }
 
+
+    class SaveValueAction extends Action {
+        SaveValueAction() {
+            super(ResultSetMessages.controls_resultset_edit_save, Action.AS_DROP_DOWN_MENU);
+            setActionDefinitionId(ValueViewCommandHandler.CMD_SAVE_VALUE);
+            setImageDescriptor(DBeaverIcons.getImageDescriptor(UIIcon.SAVE));
+            setMenuCreator(new MenuCreator(widget -> {
+                MenuManager menuManager = new MenuManager();
+                menuManager.add(ActionUtils.makeCommandContribution(
+                    presentation.getController().getSite(),
+                    ValueViewCommandHandler.CMD_SAVE_VALUE));
+
+                menuManager.add(
+                    new Action(ResultSetMessages.value_viewer_auto_apply_action_text, Action.AS_CHECK_BOX) {
+                        {
+                            //setImageDescriptor(DBeaverIcons.getImageDescriptor(UIIcon.AUTO_SAVE));
+                        }
+
+                        @Override
+                        public boolean isChecked() {
+                            return DBWorkbench.getPlatform().getPreferenceStore().getBoolean(
+                                ResultSetPreferences.RS_EDIT_AUTO_UPDATE_VALUE);
+                        }
+
+                        @Override
+                        public void run() {
+                            boolean newValue = !isChecked();
+                            DBWorkbench.getPlatform().getPreferenceStore().setValue(
+                                ResultSetPreferences.RS_EDIT_AUTO_UPDATE_VALUE, newValue);
+                            presentation.getController().updatePanelActions();
+                        }
+                    });
+
+                return menuManager;
+            }));
+        }
+
+        @Override
+        public void run() {
+            ActionUtils.runCommand(
+                ValueViewCommandHandler.CMD_SAVE_VALUE,
+                presentation.getController().getSite());
+        }
+
+    }
 
 }

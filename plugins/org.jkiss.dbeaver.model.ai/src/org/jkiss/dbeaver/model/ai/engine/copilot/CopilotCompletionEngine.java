@@ -47,18 +47,8 @@ public class CopilotCompletionEngine extends BaseCompletionEngine<CopilotPropert
     };
     private CopilotSessionToken sessionToken;
 
-    public CopilotCompletionEngine() throws DBException {
-        super();
-    }
-
-    public CopilotCompletionEngine(CopilotProperties properties) throws DBException {
+    public CopilotCompletionEngine(@NotNull CopilotProperties properties) {
         super(properties);
-    }
-
-    @NotNull
-    @Override
-    protected String getEngineId() {
-        return CopilotConstants.COPILOT_ENGINE;
     }
 
     @NotNull
@@ -123,7 +113,7 @@ public class CopilotCompletionEngine extends BaseCompletionEngine<CopilotPropert
     }
 
     @Override
-    public int getContextWindowSize(DBRProgressMonitor monitor) throws DBException {
+    public int getContextWindowSize(@NotNull DBRProgressMonitor monitor) throws DBException {
         Integer contextWindowSize = properties.getContextWindowSize();
         if (contextWindowSize != null) {
             return contextWindowSize;
