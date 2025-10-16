@@ -16,14 +16,17 @@
  */
 package org.jkiss.dbeaver.model.ai.utils;
 
+import com.google.gson.JsonSyntaxException;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.ai.engine.TooManyRequestsException;
+import org.jkiss.dbeaver.model.data.json.JSONUtils;
 import org.jkiss.utils.HttpConstants;
 
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.http.HttpResponse;
+import java.util.Map;
 
 public final class AIHttpUtils {
 
@@ -77,4 +80,28 @@ public final class AIHttpUtils {
         };
     }
 
+
+    @NotNull
+    public static String parseErrorMessage(@NotNull String body) {
+        try {
+            Map<String, Object> errorResponse = JSONUtils.GSON.fromJson(body, JSONUtils.MAP_TYPE_TOKEN);
+            if (errorResponse != null && errorResponse.containsKey("error")) {
+                Object errorObject = errorResponse.get("error");
+                if (errorObject instanceof Map error) {
+                    if (error.containsKey("message")) {
+                        return error.get("message").toString();
+                    }
+                }
+            }
+            if (errorResponse != null && errorResponse.containsKey("message")) {
+                Object messageObject = errorResponse.get("message");
+                if (messageObject instanceof String message) {
+                    return message;
+                }
+            }
+            return body;
+        } catch (JsonSyntaxException e) {
+            return body;
+        }
+    }
 }

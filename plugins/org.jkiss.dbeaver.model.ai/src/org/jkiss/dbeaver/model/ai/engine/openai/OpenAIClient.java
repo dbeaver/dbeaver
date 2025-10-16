@@ -143,29 +143,9 @@ public class OpenAIClient implements Closeable {
         if (response.statusCode() == 200) {
             return GSON.fromJson(body, OAIResponsesResponse.class);
         } else {
-            throw new DBException("OpenAI request failed: " + response.statusCode() + ", " + parseErrorMessage(body));
+            throw new DBException("OpenAI request failed: " + response.statusCode() + ", " + AIHttpUtils.parseErrorMessage(body));
         }
     }
-
-    @NotNull
-    public static String parseErrorMessage(@NotNull String body) {
-        try {
-            Map<String, Object> errorResponse = GSON.fromJson(body, JSONUtils.MAP_TYPE_TOKEN);
-            if (errorResponse != null && errorResponse.containsKey("error")) {
-                Object errorObject = errorResponse.get("error");
-                if (errorObject instanceof Map error) {
-                    if (error.get("message") instanceof String message) {
-                        return message;
-                    }
-                }
-            }
-            return body;
-        } catch (JsonSyntaxException e) {
-            log.debug("Failed to parse error response: " + e.getMessage());
-            return body;
-        }
-    }
-
 
     public void createChatCompletionStream(
         @NotNull DBRProgressMonitor monitor,
