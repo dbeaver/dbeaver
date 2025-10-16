@@ -84,7 +84,7 @@ public class SQLQueryConnectionRealContext extends SQLQueryConnectionContext {
                 container,
                 this.executionContext,
                 objectName,
-                true,
+                false,
                 this.identifierDetector,
                 this.validateFunctions
             );

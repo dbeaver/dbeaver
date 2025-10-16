@@ -272,7 +272,20 @@ public class SQLServerSchema implements DBSSchema, DBPSaveableObject, DBPQualifi
 
     @Override
     public SQLServerTableBase getChild(@NotNull DBRProgressMonitor monitor, @NotNull String childName) throws DBException {
-        return tableCache.getObject(monitor, this, childName);
+        SQLServerTableBase object = tableCache.getObject(monitor, this, childName);
+        if (object != null) {
+            return object;
+        }
+        // tempdb tables have special naming convention. See SQLServerUtils.stripTempdbTableName
+        if (database.getName().equalsIgnoreCase(SQLServerConstants.TEMPDB_DATABASE)) {
+            for (SQLServerTableBase table : tableCache.getAllObjects(monitor, this)) {
+                String name = SQLServerUtils.stripTempdbTableName(table.getName());
+                if (name != null && name.equalsIgnoreCase(childName)) {
+                    return table;
+                }
+            }
+        }
+        return null;
     }
 
     @NotNull
