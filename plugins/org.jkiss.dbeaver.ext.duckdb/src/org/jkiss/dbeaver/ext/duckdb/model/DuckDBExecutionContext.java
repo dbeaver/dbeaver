@@ -73,8 +73,8 @@ public class DuckDBExecutionContext extends GenericExecutionContext {
                     activeCatalogName = currentCatalog;
                     changed = true;
                 }
-            } catch (Exception ignored) {
-                //ignored
+            } catch (Exception e) {
+                log.warn("Error while setting active catalog", e);
             }
         }
 
