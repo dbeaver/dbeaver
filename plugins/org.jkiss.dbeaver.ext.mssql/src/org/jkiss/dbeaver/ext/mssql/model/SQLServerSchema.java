@@ -278,7 +278,7 @@ public class SQLServerSchema implements DBSSchema, DBPSaveableObject, DBPQualifi
             return object;
         }
         // tempdb tables have special naming convention. See SQLServerUtils.stripTempdbTableName
-        if (database.getName().equalsIgnoreCase(SQLServerConstants.TEMPDB_DATABASE)) {
+        if (database.isTempDatabase()) {
             for (SQLServerTableTemp table : tableCache.getTypedObjects(monitor, this, SQLServerTableTemp.class)) {
                 if (table.getOriginalName().equalsIgnoreCase(childName)) {
                     return table;
