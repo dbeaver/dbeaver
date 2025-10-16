@@ -236,14 +236,14 @@ public interface SMAdminController extends SMController {
     void setObjectSettings(
         @NotNull String objectId,
         @NotNull SMObjectType objectType,
-        @NotNull String subjectId,
+        @Nullable String subjectId,
         @NotNull Map<String, Object> settings
     ) throws DBException;
 
     void deleteObjectSettings(
         @NotNull String objectId,
         @NotNull SMObjectType objectType,
-        @NotNull String subjectId,
+        @Nullable String subjectId,
         @Nullable Set<String> settingIds
     ) throws DBException;
 
