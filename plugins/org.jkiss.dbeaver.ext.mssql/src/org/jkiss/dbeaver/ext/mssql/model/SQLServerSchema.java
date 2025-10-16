@@ -120,6 +120,7 @@ public class SQLServerSchema implements DBSSchema, DBPSaveableObject, DBPQualifi
         return database.getDataSource();
     }
 
+    @NotNull
     @Property(viewable = false, editable = true, order = 10)
     public SQLServerDatabase getDatabase() {
         return database;
@@ -278,9 +279,8 @@ public class SQLServerSchema implements DBSSchema, DBPSaveableObject, DBPQualifi
         }
         // tempdb tables have special naming convention. See SQLServerUtils.stripTempdbTableName
         if (database.getName().equalsIgnoreCase(SQLServerConstants.TEMPDB_DATABASE)) {
-            for (SQLServerTableBase table : tableCache.getAllObjects(monitor, this)) {
-                String name = SQLServerUtils.stripTempdbTableName(table.getName());
-                if (name != null && name.equalsIgnoreCase(childName)) {
+            for (SQLServerTableTemp table : tableCache.getTypedObjects(monitor, this, SQLServerTableTemp.class)) {
+                if (table.getOriginalName().equalsIgnoreCase(childName)) {
                     return table;
                 }
             }
@@ -441,6 +441,12 @@ public class SQLServerSchema implements DBSSchema, DBPSaveableObject, DBPQualifi
             }
             String type = JDBCUtils.safeGetStringTrimmed(dbResult, "type");
             if (SQLServerObjectType.U.name().equals(type) || SQLServerObjectType.S.name().equals(type)) {
+                if (owner.getDatabase().isTempDatabase()) {
+                    String originalName = SQLServerUtils.stripTempdbTableName(name);
+                    if (originalName != null) {
+                        return new SQLServerTableTemp(owner, dbResult, name, originalName);
+                    }
+                }
                 return new SQLServerTable(owner, dbResult, name);
             } else if (SQLServerObjectType.TT.name().equals(type)) {
                 return new SQLServerTableType(owner, dbResult, name);
