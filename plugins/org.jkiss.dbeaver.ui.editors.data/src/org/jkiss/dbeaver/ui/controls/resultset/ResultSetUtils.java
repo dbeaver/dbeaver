@@ -176,11 +176,11 @@ public class ResultSetUtils
     }
 
     @NotNull
-    public static OrderingPolicy getOrderingPolicy(@NotNull IResultSetController controller) {
+    public static ModelPreferences.OrderingPolicy getOrderingPolicy(@NotNull IResultSetController controller) {
         return CommonUtils.valueOf(
-            OrderingPolicy.class,
+            ModelPreferences.OrderingPolicy.class,
             controller.getPreferenceStore().getString(ModelPreferences.RESULT_SET_ORDERING_POLICY),
-            OrderingPolicy.DEFAULT
+            ModelPreferences.OrderingPolicy.DEFAULT
         );
     }
 
