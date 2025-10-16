@@ -527,7 +527,7 @@ public class DesktopUI extends ConsoleUserInterface {
 
     @Override
     public void executeWithProgress(@NotNull Runnable runnable) {
-        UIExecutionQueue.queueExec(runnable);
+        UIUtils.syncExec(runnable);
     }
 
     @Override
