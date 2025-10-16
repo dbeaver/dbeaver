@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -74,8 +74,9 @@ public class DefaultCertificateStorage implements DBACertificateStorage {
         }
     }
 
+    @NotNull
     @Override
-    public KeyStore getKeyStore(DBPDataSourceContainer container, String certType) throws DBException {
+    public KeyStore getKeyStore(@NotNull DBPDataSourceContainer container, @NotNull String certType) throws DBException {
         try {
             Path ksFile = getKeyStorePath(container, certType);
             KeyStore ks = KeyStore.getInstance(KeyStore.getDefaultType());
@@ -242,7 +243,7 @@ public class DefaultCertificateStorage implements DBACertificateStorage {
     }
 
     @Override
-    public Path getKeyStorePath(DBPDataSourceContainer dataSource, String certType) {
+    public Path getKeyStorePath(@NotNull DBPDataSourceContainer dataSource, @NotNull String certType) {
         final UserDefinedKeystore userDefinedKeystore = getUserDefinedKeystore(dataSource, certType);
         if (userDefinedKeystore != null) {
             return userDefinedKeystore.file.toPath();
@@ -262,8 +263,9 @@ public class DefaultCertificateStorage implements DBACertificateStorage {
         }
     }
 
+    @NotNull
     @Override
-    public String getKeyStoreType(DBPDataSourceContainer dataSource) {
+    public String getKeyStoreType(@NotNull DBPDataSourceContainer dataSource) {
         return KeyStore.getDefaultType();
     }
 

@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.model.navigator;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
@@ -73,36 +74,42 @@ public class DBNLocalFolder extends DBNNode implements DBNContainer
         return getNodeDisplayName();
     }
 
+    @Nullable
     @Override
     public Object getValueObject()
     {
         return folder;
     }
 
+    @NotNull
     @Override
     public String getChildrenType()
     {
         return ModelMessages.model_navigator_Connection;
     }
 
+    @NotNull
     @Override
     public String getNodeType()
     {
         return "folder";
     }
 
+    @NotNull
     @Override
     public String getNodeDisplayName()
     {
         return folder.getName();
     }
 
+    @Nullable
     @Override
     public String getNodeDescription()
     {
         return folder.getDescription();
     }
 
+    @Nullable
     @Override
     public DBPImage getNodeIcon()
     {
@@ -134,12 +141,14 @@ public class DBNLocalFolder extends DBNNode implements DBNContainer
 */
     }
 
+    @NotNull
     @Deprecated
     @Override
     public String getNodeItemPath() {
         return makeLocalFolderItemPath(folder);
     }
 
+    @Nullable
     @Override
     public DBNProjectDatabases getParentNode() {
         return (DBNProjectDatabases)super.getParentNode();
@@ -172,6 +181,7 @@ public class DBNLocalFolder extends DBNNode implements DBNContainer
         }
     }
 
+    @Nullable
     @Override
     public DBNNode[] getChildren(@NotNull DBRProgressMonitor monitor)
     {
@@ -200,6 +210,7 @@ public class DBNLocalFolder extends DBNNode implements DBNContainer
         return children;
     }
 
+    @Nullable
     @Override
     public Class<? extends DBSObject> getChildrenClass()
     {
@@ -207,14 +218,14 @@ public class DBNLocalFolder extends DBNNode implements DBNContainer
     }
 
     @Override
-    public boolean supportsDrop(DBNNode otherNode)
+    public boolean supportsDrop(@Nullable DBNNode otherNode)
     {
         return otherNode == null || otherNode instanceof DBNDataSource ||
             (otherNode instanceof DBNLocalFolder && ((DBNLocalFolder) otherNode).getFolder().canMoveTo(getFolder()));
     }
 
     @Override
-    public void dropNodes(DBRProgressMonitor monitor, Collection<DBNNode> nodes) throws DBException {
+    public void dropNodes(@NotNull DBRProgressMonitor monitor, @NotNull Collection<DBNNode> nodes) throws DBException {
         for (DBNNode node : nodes) {
             if (node.getOwnerProject() == this.getOwnerProject()) {
                 if (node instanceof DBNDataSource) {
@@ -244,7 +255,7 @@ public class DBNLocalFolder extends DBNNode implements DBNContainer
     }
 
     @Override
-    public void rename(DBRProgressMonitor monitor, String newName) throws DBException
+    public void rename(@NotNull DBRProgressMonitor monitor, @NotNull String newName) throws DBException
     {
         GeneralUtils.validateResourceName(newName);
         getDataSourceRegistry().moveFolder(folder.getFolderPath(), generateNewFolderPath(folder.getParent(), newName));
@@ -271,10 +282,13 @@ public class DBNLocalFolder extends DBNNode implements DBNContainer
         return result;
     }
 
-    private void fillNestedDataSources(List<DBNDataSource> dataSources) {
-        for (DBNNode childFolder : getChildren(new VoidProgressMonitor())) {
-            if (childFolder instanceof DBNLocalFolder) {
-                ((DBNLocalFolder) childFolder).fillNestedDataSources(dataSources);
+    private void fillNestedDataSources(@NotNull List<DBNDataSource> dataSources) {
+        DBNNode[] children = getChildren(new VoidProgressMonitor());
+        if (children != null) {
+            for (DBNNode childFolder : children) {
+                if (childFolder instanceof DBNLocalFolder) {
+                    ((DBNLocalFolder) childFolder).fillNestedDataSources(dataSources);
+                }
             }
         }
         dataSources.addAll(getDataSources());
@@ -298,6 +312,7 @@ public class DBNLocalFolder extends DBNNode implements DBNContainer
         return NodePathType.folder.getPrefix() + projectId + "/" + folderPath;
     }
 
+    @NotNull
     @Override
     public String toString() {
         return folder.getFolderPath();

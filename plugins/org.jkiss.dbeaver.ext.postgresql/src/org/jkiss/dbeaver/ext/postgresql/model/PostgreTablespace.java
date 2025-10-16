@@ -97,6 +97,7 @@ public class PostgreTablespace extends PostgreInformation implements PostgreScri
         this.options = options;
     }
 
+    @NotNull
     @Override
     public String getObjectDefinitionText(@NotNull DBRProgressMonitor monitor, @NotNull Map<String, Object> options) throws DBException {
         StringBuilder sb = new StringBuilder("CREATE TABLESPACE ");

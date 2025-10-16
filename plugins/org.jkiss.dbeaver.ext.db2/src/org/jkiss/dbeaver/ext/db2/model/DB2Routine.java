@@ -219,6 +219,7 @@ public class DB2Routine extends DB2Object<DBSObject>
     // Source
     // -----------------
 
+    @NotNull
     @Override
     public String getObjectDefinitionText(@NotNull DBRProgressMonitor monitor, @NotNull Map<String, Object> options) throws DBException
     {

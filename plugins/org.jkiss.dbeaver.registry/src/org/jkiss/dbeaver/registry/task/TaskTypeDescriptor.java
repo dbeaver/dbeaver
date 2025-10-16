@@ -71,8 +71,9 @@ public class TaskTypeDescriptor extends DataSourceBindingDescriptor implements D
         return config.getAttribute(RegistryConstants.ATTR_NAME);
     }
 
+    @NotNull
     @Override
-    public String getLocalizedName(String locale) {
+    public String getLocalizedName(@NotNull String locale) {
         return config.getAttribute(RegistryConstants.ATTR_LABEL, locale);
     }
 
@@ -167,7 +168,7 @@ public class TaskTypeDescriptor extends DataSourceBindingDescriptor implements D
             return matchesEntityElements;
         }
         for (AbstractDescriptor.ObjectType ot : getObjectTypes()) {
-            if (DBSEntityElement.class.isAssignableFrom(ot.getObjectClass())) {
+            if (ot.matchesType(DBSEntityElement.class)) {
                 matchesEntityElements = true;
                 break;
             }

@@ -23,4 +23,6 @@ public interface CLIConstants {
     short EXIT_CODE_ILLEGAL_ARGUMENTS = 2;
 
     String PARAM_PROJECT = "project";
+    
+    String CONTEXT_PARAM_INPUT_FILE = "inputFile";
 }

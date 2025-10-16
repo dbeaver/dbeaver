@@ -73,7 +73,11 @@ public class HANAMetaModel extends GenericMetaModel
 
     @Nullable
     @Override
-    public List<GenericSchema> loadSchemas(JDBCSession session, GenericDataSource dataSource, GenericCatalog catalog) throws DBException {
+    public List<GenericSchema> loadSchemas(
+        @NotNull JDBCSession session,
+        @NotNull GenericDataSource dataSource,
+        @Nullable GenericCatalog catalog
+    ) throws DBException {
         List<GenericSchema> schemas = super.loadSchemas(session, dataSource, catalog);
         // throws exception if password or license expired
 

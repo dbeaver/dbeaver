@@ -724,7 +724,7 @@ public class DBVEntity extends DBVObject implements DBSEntity, DBPQualifiedObjec
     }
 
     @Override
-    public <T> T getAdapter(Class<T> adapter) {
+    public <T> T getAdapter(@NotNull Class<T> adapter) {
         return null;
     }
 

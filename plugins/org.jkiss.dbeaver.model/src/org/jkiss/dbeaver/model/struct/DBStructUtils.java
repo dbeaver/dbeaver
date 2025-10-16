@@ -201,8 +201,12 @@ public final class DBStructUtils {
         // Views: generate them after all tables.
         // TODO: find view dependencies and generate them in right order
         for (T table : viewList) {
-            sql.append(getObjectNameComment(table, ModelMessages.struct_utils_object_ddl_source));
-            addDDLLine(sql, DBStructUtils.getTableDDL(monitor, table, options, addComments));
+            String objectNameComment = getObjectNameComment(table, ModelMessages.struct_utils_object_ddl_source);
+            String tableDDL = DBStructUtils.getTableDDL(monitor, table, options, addComments);
+            if (!tableDDL.startsWith(objectNameComment)) {
+                sql.append(objectNameComment);
+            }
+            addDDLLine(sql, tableDDL);
         }
         monitor.done();
     }

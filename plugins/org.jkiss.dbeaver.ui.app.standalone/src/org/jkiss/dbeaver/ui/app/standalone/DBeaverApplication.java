@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.ui.app.standalone;
 
 import org.apache.commons.cli.CommandLine;
 import org.eclipse.core.runtime.Platform;
+import org.eclipse.core.runtime.preferences.ConfigurationScope;
 import org.eclipse.equinox.app.IApplication;
 import org.eclipse.equinox.app.IApplicationContext;
 import org.eclipse.jface.window.Window;
@@ -31,6 +32,7 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferenceConstants;
 import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.internal.WindowsDefenderConfigurator;
 import org.eclipse.ui.internal.WorkbenchPlugin;
 import org.eclipse.ui.internal.ide.ChooseWorkspaceDialog;
 import org.jkiss.code.NotNull;
@@ -44,7 +46,6 @@ import org.jkiss.dbeaver.core.DesktopPlatform;
 import org.jkiss.dbeaver.core.DesktopUI;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.app.DBPApplicationController;
-import org.jkiss.dbeaver.model.app.DBPApplicationDesktop;
 import org.jkiss.dbeaver.model.app.DBPPlatform;
 import org.jkiss.dbeaver.model.app.DBPWorkspace;
 import org.jkiss.dbeaver.model.cli.CLIProcessResult;
@@ -52,6 +53,7 @@ import org.jkiss.dbeaver.model.impl.app.BaseWorkspaceImpl;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.rcp.DesktopApplicationImpl;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.registry.ApplicationPolicyProvider;
 import org.jkiss.dbeaver.registry.BasePlatformImpl;
 import org.jkiss.dbeaver.registry.SWTBrowserRegistry;
 import org.jkiss.dbeaver.registry.timezone.TimezoneRegistry;
@@ -66,10 +68,7 @@ import org.jkiss.dbeaver.ui.app.standalone.update.VersionUpdateDialog;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.dbeaver.utils.SystemVariablesResolver;
-import org.jkiss.utils.ArrayUtils;
-import org.jkiss.utils.CommonUtils;
-import org.jkiss.utils.IOUtils;
-import org.jkiss.utils.StandardConstants;
+import org.jkiss.utils.*;
 import org.osgi.framework.Version;
 
 import java.io.*;
@@ -84,7 +83,7 @@ import java.util.stream.Stream;
 /**
  * This class controls all aspects of the application's execution
  */
-public class DBeaverApplication extends DesktopApplicationImpl implements DBPApplicationDesktop, DBPApplicationController {
+public class DBeaverApplication extends DesktopApplicationImpl implements DBPApplicationController {
 
     private static final Log log = Log.getLog(DBeaverApplication.class);
 
@@ -105,6 +104,7 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
 
     public static final String DEFAULT_WORKSPACE_FOLDER = "workspace6";
     public static final String DEFAULT_WORKSPACES_FILE = ".workspaces";
+    public static final String POLICY_WD_CHECK_SUPPRESS = "policy.wd.check.disabled"; //$NON-NLS-1$
 
     private static final String STARTUP_ACTIONS_FILE = "dbeaver-startup-actions.properties";
     private static final String RESET_USER_PREFERENCES = "reset_user_preferences";
@@ -467,7 +467,15 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
      * May be overrided in implementors
      */
     protected void initializeApplication() {
-
+        if (ApplicationPolicyProvider.getInstance().isPolicyEnabled(POLICY_WD_CHECK_SUPPRESS)) {
+            try {
+                WindowsDefenderConfigurator.savePreference(
+                    ConfigurationScope.INSTANCE,
+                    WindowsDefenderConfigurator.PREFERENCE_STARTUP_CHECK_SKIP, "true"); //$NON-NLS-1$
+            } catch (Exception e) {
+                log.debug(e);
+            }
+        }
     }
 
     private Display getDisplay() {
@@ -480,6 +488,7 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
             display = Display.getCurrent();
             if (display == null) {
                 display = PlatformUI.createDisplay();
+                overrideThemeValues();
             }
 
             // Check for resource leaks
@@ -488,6 +497,25 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
             addIdleListeners();
         }
         return display;
+    }
+
+    /**
+     * See {@code org.jkiss.dbeaver.ui.swt.linux}
+     */
+    private void overrideThemeValues() {
+        if (!RuntimeUtils.isLinux() || System.getProperty("org.eclipse.swt.internal.gtk.noThemingFixes") != null) {
+            return;
+        }
+        try {
+            BeanUtils.invokeStaticMethod(
+                Class.forName("org.eclipse.swt.GtkCssHelper"),
+                "overrideThemeValues",
+                new Class[] {},
+                new Object[] {}
+            );
+        } catch (Throwable e) {
+            log.error("Error overriding theme values", e);
+        }
     }
 
     private void addIdleListeners() {

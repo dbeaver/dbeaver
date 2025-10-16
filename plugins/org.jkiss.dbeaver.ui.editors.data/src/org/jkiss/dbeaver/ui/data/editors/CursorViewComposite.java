@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -190,6 +190,7 @@ public class CursorViewComposite extends Composite implements IResultSetContaine
 
     private class CursorDataContainer implements DBSDataContainer {
 
+        @NotNull
         @Override
         public String[] getSupportedFeatures()
         {
@@ -285,7 +286,7 @@ public class CursorViewComposite extends Composite implements IResultSetContaine
             return null;
         }
 
-        @Nullable
+        @NotNull
         @Override
         public DBPDataSource getDataSource()
         {

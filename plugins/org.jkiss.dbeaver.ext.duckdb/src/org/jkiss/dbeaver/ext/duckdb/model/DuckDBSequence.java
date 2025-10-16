@@ -82,6 +82,7 @@ public class DuckDBSequence extends GenericSequence implements DBPObjectWithLong
         return temporary;
     }
 
+    @NotNull
     @Override
     public String getObjectDefinitionText(@NotNull DBRProgressMonitor monitor, @NotNull Map<String, Object> options) {
         if (CommonUtils.isEmpty(sql)) {

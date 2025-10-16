@@ -191,7 +191,9 @@ public class PostgreTableColumnManager extends SQLTableColumnManager<PostgreTabl
             column = new PostgreTableColumn(table);
             column.setName(getNewColumnName(monitor, context, table));
             final PostgreDataType dataType = table.getDatabase().getDataType(monitor, PostgreOid.VARCHAR);
-            column.setDataType(dataType); //$NON-NLS-1$
+            if (dataType != null) {
+                column.setDataType(dataType);
+            }
             column.setOrdinalPosition(-1);
         }
         return column;
@@ -299,7 +301,7 @@ public class PostgreTableColumnManager extends SQLTableColumnManager<PostgreTabl
     }
 
     @Override
-    public boolean supportsObjectDefinitionOption(String option) {
+    public boolean supportsObjectDefinitionOption(@NotNull String option) {
         return DBPScriptObject.OPTION_INCLUDE_COMMENTS.equals(option);
     }
 

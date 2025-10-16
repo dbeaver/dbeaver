@@ -23,6 +23,7 @@ import com.google.gson.ToNumberPolicy;
 import com.google.gson.reflect.TypeToken;
 import org.eclipse.core.runtime.IAdaptable;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.ai.engine.AIEngineProperties;
 import org.jkiss.dbeaver.model.ai.registry.AIEngineDescriptor;
@@ -44,6 +45,59 @@ public class AISettings implements IAdaptable {
     private String activeEngine;
     private final Map<String, AIEngineProperties> engineConfigurations = new LinkedHashMap<>();
     private final Set<String> resolvedSecrets = new HashSet<>();
+    private final Set<String> enabledFunctionCategories = new HashSet<>();
+    private final Set<String> enabledFunctions = new HashSet<>();
+
+    public AISettings() {
+    }
+
+    @NotNull
+    public Set<String> getEnabledFunctions() {
+        return new HashSet<>(enabledFunctions);
+    }
+
+    public void setEnabledFunctions(@Nullable Set<String> functions) {
+        this.enabledFunctions.clear();
+        if (functions != null) {
+            this.enabledFunctions.addAll(functions);
+        }
+    }
+
+    public boolean isFunctionEnabled(@NotNull String functionId) {
+        return enabledFunctions.contains(functionId);
+    }
+
+    public void enableFunction(@NotNull String functionId) {
+        enabledFunctions.add(functionId);
+    }
+
+    public void disableFunction(@NotNull String functionId) {
+        enabledFunctions.remove(functionId);
+    }
+
+    @NotNull
+    public Set<String> getEnabledFunctionCategories() {
+        return new HashSet<>(enabledFunctionCategories);
+    }
+
+    public void setEnabledFunctionCategories(@Nullable Set<String> categories) {
+        this.enabledFunctionCategories.clear();
+        if (categories != null) {
+            this.enabledFunctionCategories.addAll(categories);
+        }
+    }
+
+    public boolean isFunctionCategoryEnabled(String category) {
+        return enabledFunctionCategories.contains(category);
+    }
+
+    public void enableFunctionCategory(@NotNull String category) {
+        enabledFunctionCategories.add(category);
+    }
+
+    public void disableFunctionCategory(@NotNull String category) {
+        enabledFunctionCategories.remove(category);
+    }
 
     private static final Gson GSON = new GsonBuilder()
         .setStrictness(Strictness.LENIENT)

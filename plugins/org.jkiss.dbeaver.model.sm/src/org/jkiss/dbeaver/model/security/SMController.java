@@ -65,6 +65,7 @@ public interface SMController extends DBPObjectController, DBInternalDatabaseInf
      * @return the user parameters
      * @throws DBException the db exception
      */
+    @NotNull
     Map<String, Object> getCurrentUserParameters() throws DBException;
 
     /**
@@ -114,6 +115,7 @@ public interface SMController extends DBPObjectController, DBInternalDatabaseInf
      * @return the string [ ]
      * @throws DBException the db exception
      */
+    @NotNull
     String[] getCurrentUserLinkedProviders() throws DBException;
 
     ///////////////////////////////////////////
@@ -132,7 +134,7 @@ public interface SMController extends DBPObjectController, DBInternalDatabaseInf
     ///////////////////////////////////////////
     // Sessions
 
-    boolean isSessionPersisted(String id) throws DBException;
+    boolean isSessionPersisted(@NotNull String id) throws DBException;
 
 
     /**
@@ -172,6 +174,7 @@ public interface SMController extends DBPObjectController, DBInternalDatabaseInf
     ///////////////////////////////////////////
     // Auth providers
 
+    @NotNull
     SMAuthProviderDescriptor[] getAvailableAuthProviders() throws DBException;
 
     /**
@@ -231,5 +234,24 @@ public interface SMController extends DBPObjectController, DBInternalDatabaseInf
 
     @NotNull
     String[] getTeamMembers(String teamId) throws DBException;
+
+    @NotNull
+    Map<String, Object> getObjectSettings(
+        @NotNull String objectId,
+        @NotNull SMObjectType objectType,
+        @Nullable String settingId
+    ) throws DBException;
+
+    void setObjectSettings(
+        @NotNull String objectId,
+        @NotNull SMObjectType objectType,
+        @NotNull Map<String, Object> settings
+    ) throws DBException;
+
+    void deleteObjectSettings(
+        @NotNull String objectId,
+        @NotNull SMObjectType objectType,
+        @Nullable Set<String> settingIds
+    ) throws DBException;
 
 }

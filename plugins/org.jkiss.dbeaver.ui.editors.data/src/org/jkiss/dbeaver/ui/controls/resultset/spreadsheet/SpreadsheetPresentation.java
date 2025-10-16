@@ -1505,7 +1505,7 @@ public class SpreadsheetPresentation extends AbstractPresentation
     }
 
     @Override
-    public <T> T getAdapter(Class<T> adapter) {
+    public <T> T getAdapter(@NotNull Class<T> adapter) {
         if (adapter == IPropertySheetPage.class) {
             // Show cell properties
             PropertyPageStandard page = new PropertyPageStandard();
@@ -2197,11 +2197,9 @@ public class SpreadsheetPresentation extends AbstractPresentation
         }
 
         @Override
-        public boolean isElementReadOnly(IGridColumn element) {
-            if (element.getElement() instanceof DBDAttributeBinding) {
-                return controller.getAttributeReadOnlyStatus(
-                    (DBDAttributeBinding) element.getElement(),
-                    true, true) != null;
+        public boolean isElementReadOnly(@NotNull IGridColumn element) {
+            if (element.getElement() instanceof DBDAttributeBinding binding) {
+                return controller.getAttributeReadOnlyStatus(binding, true, false) != null;
             }
             return false;
         }
