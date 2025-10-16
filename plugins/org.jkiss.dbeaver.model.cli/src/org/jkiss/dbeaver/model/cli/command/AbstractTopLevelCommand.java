@@ -25,15 +25,9 @@ import picocli.CommandLine;
 public abstract class AbstractTopLevelCommand implements Runnable, CommandLine.IExitCodeGenerator {
     private final Log log = Log.getLog(getClass());
 
-    @CommandLine.Option(names = {"-h", "--help"}, description = "Show help", usageHelp = true)
-    private boolean help;
-    @CommandLine.Option(names = {"-v", "--version"},
-        description = "Displays the app name, edition, and version in Major.Minor.Micro.Timestamp format", versionHelp = true)
-    private boolean version;
     @CommandLine.Option(names = {"-dump"},
         description = "Print instance thread dump")
     private boolean dump;
-
 
     @NotNull
     protected final CLIRunMeta meta;

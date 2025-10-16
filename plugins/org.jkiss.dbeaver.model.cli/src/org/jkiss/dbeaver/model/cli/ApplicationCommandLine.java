@@ -102,17 +102,31 @@ public abstract class ApplicationCommandLine<T extends ApplicationInstanceContro
                     }
                 }
             }
+
+            CommandLine.Model.CommandSpec commandForHelp = null;
             if (parseResult.isUsageHelpRequested()) {
-                CommandLine.Model.CommandSpec spec = parseResult.commandSpec();
-                CommandLine.Model.UsageMessageSpec helpSpec = spec.usageMessage();
+                commandForHelp = parseResult.commandSpec();
+            } else {
+                for (var sub : parseResult.subcommands()) {
+                    if (sub.isUsageHelpRequested()) {
+                        commandForHelp = sub.commandSpec();
+                        break;
+                    }
+                }
+            }
+
+            if (commandForHelp != null) {
+                CommandLine.Model.UsageMessageSpec helpSpec = commandForHelp.usageMessage();
                 helpSpec.header("dbeaver", GeneralUtils.getProductTitle(), "(C) 2010-2025 DBeaver Corp");
                 try (
                     var out = new StringWriter();
                     var print = new PrintWriter(out)
                 ) {
-                    var updatedCmd = new CommandLine(spec);
+                    var updatedCmd = new CommandLine(commandForHelp);
                     updatedCmd.usage(print);
-                    return new CLIProcessResult(CLIProcessResult.PostAction.SHUTDOWN, out.toString());
+                    String help = out.toString();
+                    System.out.println(help);
+                    return new CLIProcessResult(CLIProcessResult.PostAction.SHUTDOWN, help);
                 } catch (Exception e) {
                     log.error("Error handling command line: " + e.getMessage());
                     return new CLIProcessResult(CLIProcessResult.PostAction.ERROR, e.getMessage());
@@ -170,7 +184,7 @@ public abstract class ApplicationCommandLine<T extends ApplicationInstanceContro
                 log.warn("Class is not annotated '" + param.getImplClass().getName() + "'");
                 continue;
             }
-            cmd.addSubcommand(param.getName(), param.getImplClass());
+            cmd.addSubcommand(param.getImplClass());
         }
         cmd.setUnmatchedArgumentsAllowed(true);
         return cmd;

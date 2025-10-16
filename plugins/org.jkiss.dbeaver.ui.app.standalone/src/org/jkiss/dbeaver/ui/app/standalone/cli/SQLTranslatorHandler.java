@@ -33,7 +33,7 @@ import java.io.FileReader;
 import java.io.IOException;
 
 @CommandLine.Command(name = "-translate-sql-script", aliases = "translateSQL",
-    description = "Translate SQL script from one dialect to another")
+    description = "Translate SQL script from one dialect to another", mixinStandardHelpOptions = true)
 public class SQLTranslatorHandler extends AbstractCommandLineParameterHandler {
     private static final Log log = Log.getLog(SQLTranslatorHandler.class);
 
