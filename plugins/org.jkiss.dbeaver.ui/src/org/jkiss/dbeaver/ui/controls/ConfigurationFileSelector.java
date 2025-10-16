@@ -24,6 +24,8 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
  */
 public class ConfigurationFileSelector extends TextWithOpenFile {
 
+    private boolean allowFileContentEditor = true;
+
     public ConfigurationFileSelector(Composite parent, String title, String[] filterExt) {
         super(parent, title, filterExt);
     }
@@ -36,9 +38,14 @@ public class ConfigurationFileSelector extends TextWithOpenFile {
         super(parent, title, filterExt, binaryFile, secured);
     }
 
+    public ConfigurationFileSelector(Composite parent, String title, String[] filterExt, boolean binaryFile, boolean secured, boolean allowFileContentEditor) {
+        super(parent, title, filterExt, binaryFile, secured);
+        this.allowFileContentEditor = allowFileContentEditor;
+    }
+
     @Override
     protected boolean isShowFileContentEditor() {
-        return DBWorkbench.isDistributed();
+        return DBWorkbench.isDistributed() && allowFileContentEditor;
     }
 
 }
