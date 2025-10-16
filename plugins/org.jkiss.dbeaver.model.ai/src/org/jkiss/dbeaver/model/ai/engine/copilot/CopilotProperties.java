@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.model.ai.engine.copilot;
 
 import com.google.gson.annotations.SerializedName;
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.ai.engine.AIEngineProperties;
@@ -132,8 +133,15 @@ public class CopilotProperties implements AIEngineProperties {
         return !CommonUtils.isEmpty(getToken());
     }
 
+    @NotNull
     @Override
     public List<String> getConnectionPropertiesNames() {
         return List.of(COPILOT_ACCESS_TOKEN);
+    }
+
+    @Nullable
+    @Override
+    public String getModelPropertyName() {
+        return GPT_MODEL;
     }
 }

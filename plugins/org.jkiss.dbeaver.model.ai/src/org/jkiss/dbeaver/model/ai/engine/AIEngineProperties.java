@@ -16,6 +16,8 @@
  */
 package org.jkiss.dbeaver.model.ai.engine;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 
 import java.util.List;
@@ -31,5 +33,9 @@ public interface AIEngineProperties {
 
     void saveSecrets() throws DBException;
 
+    @NotNull
     List<String> getConnectionPropertiesNames();
+
+    @Nullable
+    String getModelPropertyName();
 }
