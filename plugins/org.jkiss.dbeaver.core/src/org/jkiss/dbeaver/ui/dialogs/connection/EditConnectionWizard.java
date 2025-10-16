@@ -34,6 +34,7 @@ import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
+import org.jkiss.dbeaver.model.connection.DBPDriverLibrary;
 import org.jkiss.dbeaver.model.connection.DBPDriverSubstitutionDescriptor;
 import org.jkiss.dbeaver.model.navigator.DBNBrowseSettings;
 import org.jkiss.dbeaver.model.secret.DBSSecretValue;
@@ -41,6 +42,7 @@ import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.registry.DataSourcePageDescriptor;
 import org.jkiss.dbeaver.registry.DataSourceViewDescriptor;
 import org.jkiss.dbeaver.registry.DataSourceViewRegistry;
+import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.IActionConstants;
 import org.jkiss.dbeaver.ui.IDialogPageProvider;
@@ -52,7 +54,11 @@ import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.security.MessageDigest;
+import java.util.List;
 import java.util.Locale;
+import java.util.Map;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 /**
  * Edit connection dialog
@@ -65,6 +71,8 @@ public class EditConnectionWizard extends ConnectionWizard {
     private final DataSourceDescriptor originalDataSource;
     @NotNull
     private final DataSourceDescriptor dataSource;
+    @NotNull
+    private final Map<String, String> originalDriverLibsIdVersion;
     @Nullable
     private ConnectionPageSettings pageSettings;
     private ConnectionPageGeneral pageGeneral;
@@ -77,6 +85,7 @@ public class EditConnectionWizard extends ConnectionWizard {
      */
     public EditConnectionWizard(@NotNull DataSourceDescriptor dataSource) {
         this.originalDataSource = dataSource;
+        this.originalDriverLibsIdVersion = getLibsIdVersion(dataSource);
         this.dataSource = dataSource.getRegistry().createDataSource(dataSource);
         this.dataSource.setId(dataSource.getId());
         if (!this.dataSource.isSavePassword()) {
@@ -98,6 +107,23 @@ public class EditConnectionWizard extends ConnectionWizard {
                 ));
             }
         });
+    }
+
+    @NotNull
+    private static Map<String, String> getLibsIdVersion(@NotNull DataSourceDescriptor dataSource) {
+        return getLibs(dataSource.getDriver())
+            .stream()
+            .collect(Collectors.toMap(
+                DBPDriverLibrary::getId,
+                l -> Objects.requireNonNullElse(l.getVersion(), "")
+            ));
+    }
+
+    @NotNull
+    private static List<? extends DBPDriverLibrary> getLibs(@NotNull DBPDriver driver) {
+        return driver instanceof DriverDescriptor
+            ? ((DriverDescriptor) driver).getEnabledDriverLibraries()
+            : driver.getDriverLibraries();
     }
 
     @NotNull
@@ -259,7 +285,7 @@ public class EditConnectionWizard extends ConnectionWizard {
         try {
             saveSettings(dsChanged);
 
-            if (dsCopy.equalSettings(dsChanged)) {
+            if (dsCopy.equalSettings(dsChanged) && isDriverLibsVersionsSame(dsChanged)) {
                 // No changes
                 return PersistResult.UNCHANGED;
             }
@@ -292,6 +318,11 @@ public class EditConnectionWizard extends ConnectionWizard {
         } else {
             return PersistResult.ERROR;
         }
+    }
+
+    private boolean isDriverLibsVersionsSame(@NotNull DataSourceDescriptor dsChangedSource) {
+        Map<String, String> currentLibs = getLibsIdVersion(dsChangedSource);
+        return Objects.equals(originalDriverLibsIdVersion, currentLibs);
     }
 
     /**
