@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Text;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ext.iotdb.model.IoTDBGrant;
 import org.jkiss.dbeaver.ext.iotdb.model.IoTDBPrivilege;
 import org.jkiss.dbeaver.ext.iotdb.model.IoTDBRelationalUser;
@@ -105,7 +106,7 @@ public class IoTDBUserEditorGeneral extends IoTDBUserEditorAbstract {
                 executionContext
             ) {
                 @Override
-                public List<IoTDBPrivilege> evaluate(DBRProgressMonitor monitor) throws InvocationTargetException {
+                public List<IoTDBPrivilege> evaluate(@NotNull DBRProgressMonitor monitor) throws InvocationTargetException {
                     IoTDBRelationalUser user = getDatabaseObject();
                     if (user == null) {
                         isLoaded = false;

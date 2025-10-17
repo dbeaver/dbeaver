@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -412,7 +412,7 @@ public abstract class ObjectACLEditor<PRIVILEGE extends DBAPrivilege, PRIVILEGE_
         LoadingJob.createService(
             new DatabaseLoadService<>("Load permissions", getExecutionContext()) {
                 @Override
-                public Collection<? extends DBAPrivilege> evaluate(DBRProgressMonitor monitor) throws InvocationTargetException {
+                public Collection<? extends DBAPrivilege> evaluate(@NotNull DBRProgressMonitor monitor) throws InvocationTargetException {
                     monitor.beginTask("Load privileges from database..", 1);
                     try {
                         monitor.subTask("Load " + getDatabaseObject().getName() + " privileges");
