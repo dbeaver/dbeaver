@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -120,7 +120,7 @@ public class MigrateConnectionWizard extends Wizard
             boolean isReconnect = UIUtils.confirmAction(
                 UIUtils.getActiveWorkbenchShell(),
                 CoreMessages.dialog_migrate_wizard_connection_changed_title,
-                NLS.bind(NLS.bind(CoreMessages.dialog_migrate_wizard_connection_changed_message, changedConnections.size()))
+                NLS.bind(CoreMessages.dialog_migrate_wizard_connection_changed_message, changedConnections.size())
             );
             if (isReconnect) {
                 changedConnections.forEach(c -> DataSourceHandler.reconnectDataSource(null, c));

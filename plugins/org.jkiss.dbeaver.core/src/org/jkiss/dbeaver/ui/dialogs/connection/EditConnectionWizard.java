@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -54,11 +54,10 @@ import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.security.MessageDigest;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Objects;
-import java.util.stream.Collectors;
 
 /**
  * Edit connection dialog
@@ -111,12 +110,11 @@ public class EditConnectionWizard extends ConnectionWizard {
 
     @NotNull
     private static Map<String, String> getLibsIdVersion(@NotNull DataSourceDescriptor dataSource) {
-        return getLibs(dataSource.getDriver())
-            .stream()
-            .collect(Collectors.toMap(
-                DBPDriverLibrary::getId,
-                l -> Objects.requireNonNullElse(l.getVersion(), "")
-            ));
+        Map<String, String> libs = new HashMap<>();
+        for (DBPDriverLibrary lib : getLibs(dataSource.getDriver())) {
+            libs.put(lib.getId(), lib.getVersion());
+        }
+        return libs;
     }
 
     @NotNull
