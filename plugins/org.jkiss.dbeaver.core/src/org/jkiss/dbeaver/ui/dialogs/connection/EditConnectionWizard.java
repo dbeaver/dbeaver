@@ -107,7 +107,7 @@ public class EditConnectionWizard extends ConnectionWizard {
     }
 
     @NotNull
-    private stataic Map<String, String> getLibsIdVersion(@NotNull DataSourceDescriptor dataSource) {
+    private static Map<String, String> getLibsIdVersion(@NotNull DataSourceDescriptor dataSource) {
         Map<String, String> libs = new HashMap<>();
         for (DBPDriverLibrary lib : dataSource.getDriver().getDriverLibraries()) {
             if (!lib.isDisabled()) {
