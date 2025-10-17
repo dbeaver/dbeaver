@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ui.editors.erd.part;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.load.AbstractLoadService;
 import org.jkiss.dbeaver.ui.editors.erd.internal.ERDUIMessages;
@@ -33,7 +34,7 @@ public class RearrangeDiagramService extends AbstractLoadService<EntityDiagram> 
     }
 
     @Override
-    public EntityDiagram evaluate(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
+    public EntityDiagram evaluate(@NotNull DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
         diagram.getDiagram().setDiagramMonitor(monitor);
         monitor.subTask(ERDUIMessages.erd_job_rearrange_diagram);
         diagram.rearrangeDiagram(monitor);
