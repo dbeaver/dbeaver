@@ -121,10 +121,10 @@ public class ConnectionPageNetworkHandler extends ConnectionWizardPage {
     @Override
     public void saveSettings(@NotNull DBPDataSourceContainer dataSource) {
         DBPConnectionConfiguration configuration = dataSource.getConnectionConfiguration();
+        configuration.setConfigProfile(getActiveProfile());
         if (handlerConfiguration == null) {
             return;
         }
-        configuration.setConfigProfile(getActiveProfile());
         if (handlerConfiguration.isEnabled()) {
             configurator.saveSettings(handlerConfiguration);
             configuration.updateHandler(handlerConfiguration);
