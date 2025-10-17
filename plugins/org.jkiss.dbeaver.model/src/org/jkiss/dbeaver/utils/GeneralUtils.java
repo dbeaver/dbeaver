@@ -977,9 +977,9 @@ public class GeneralUtils {
     @NotNull
     public static String makeStandardErrorMessage(@NotNull Throwable error) {
         if (error instanceof UnknownHostException) {
-            return "Unknown host '" + error.getMessage() + "'";
+            return "Unknown host " + CommonUtils.notEmpty(error.getMessage());
         } else if (error instanceof UnresolvedAddressException) {
-            return "Cannot resolve target address";
+            return "Cannot resolve target address " + CommonUtils.notEmpty(error.getMessage());
         } else if (error instanceof NullPointerException) {
             return "Internal error (NPE)";
         }

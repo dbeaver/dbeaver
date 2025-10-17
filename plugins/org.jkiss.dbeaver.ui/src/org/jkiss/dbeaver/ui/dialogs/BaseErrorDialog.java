@@ -166,8 +166,7 @@ public class BaseErrorDialog extends IconAndMessageDialog {
 
     protected StyledText createDropDownList(@NotNull Composite parent) {
         // create the list
-        detailsText = new StyledText(parent, SWT.BORDER | SWT.H_SCROLL | SWT.V_SCROLL
-            | SWT.MULTI);
+        detailsText = new StyledText(parent, SWT.BORDER | SWT.READ_ONLY | SWT.H_SCROLL | SWT.V_SCROLL | SWT.MULTI);
         // fill the list
         populateList();
         GridData data = new GridData(GridData.HORIZONTAL_ALIGN_FILL
