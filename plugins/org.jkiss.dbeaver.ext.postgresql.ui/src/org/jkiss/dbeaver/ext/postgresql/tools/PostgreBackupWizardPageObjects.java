@@ -29,9 +29,13 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.postgresql.PostgreMessages;
 import org.jkiss.dbeaver.ext.postgresql.PostgreUIUtils;
-import org.jkiss.dbeaver.ext.postgresql.model.*;
+import org.jkiss.dbeaver.ext.postgresql.model.PostgreDatabase;
+import org.jkiss.dbeaver.ext.postgresql.model.PostgreSchema;
+import org.jkiss.dbeaver.ext.postgresql.model.PostgreTableBase;
+import org.jkiss.dbeaver.ext.postgresql.model.PostgreTableContainer;
 import org.jkiss.dbeaver.ext.postgresql.tasks.PostgreDatabaseBackupInfo;
 import org.jkiss.dbeaver.model.DBIcon;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTable;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
@@ -44,8 +48,8 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.CustomSashForm;
 import org.jkiss.utils.CommonUtils;
 
-import java.util.List;
 import java.util.*;
+import java.util.List;
 
 
 class PostgreBackupWizardPageObjects extends AbstractNativeToolWizardPage<PostgreBackupWizard>
@@ -212,6 +216,7 @@ class PostgreBackupWizardPageObjects extends AbstractNativeToolWizardPage<Postgr
             exportViewsCheck.setSelection(true);
         }
         if (dataBase != null) {
+            setDescription(buildDescription(dataBase));
             boolean tablesLoaded = false;
             try {
                 for (PostgreSchema schema : dataBase.getSchemas(new VoidProgressMonitor())) {
@@ -235,6 +240,13 @@ class PostgreBackupWizardPageObjects extends AbstractNativeToolWizardPage<Postgr
                 log.error(e);
             }
         }
+    }
+
+    private String buildDescription(PostgreDatabase dataBase) {
+        DBPDataSourceContainer container = dataBase.getDataSource().getContainer();
+        StringBuilder bld = new StringBuilder(PostgreMessages.wizard_backup_page_object_description);
+        String description = DBUtils.buildConnectionDescription(container, dataBase.getName());
+        return bld.append("   ").append(description).toString();
     }
 
     private void updateCheckedTables() {

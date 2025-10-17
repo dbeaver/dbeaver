@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.app.DBPWorkspace;
+import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.data.*;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.exec.*;
@@ -2576,5 +2577,22 @@ public final class DBUtils {
         }
         return false;
     }
+
+    @NotNull
+    public static String buildConnectionDescription(@Nullable DBPDataSourceContainer container, @NotNull String databaseName) {
+        if (container == null) {
+            return databaseName;
+        }
+        DBPConnectionConfiguration connection = container.getConnectionConfiguration();
+        StringBuilder bld = new StringBuilder();
+        bld.append("[").append(container.getName()).append("] ")
+            .append("(").append(container.getDriver())
+            .append(" - ")
+            .append(connection.getHostName()).append(":").append(connection.getHostPort()).append("/").append(databaseName)
+            .append(")");
+
+        return bld.toString();
+    }
+
 
 }

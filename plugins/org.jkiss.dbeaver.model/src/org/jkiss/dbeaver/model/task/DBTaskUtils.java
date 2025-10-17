@@ -21,6 +21,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPTransactionIsolation;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
@@ -226,15 +227,25 @@ public class DBTaskUtils {
             Object dbObjectIdsObj = task.getProperties().get("databaseObjects");
             if (dbObjectIdsObj != null) {
                 List<String> dbObjectIds = (List<String>)dbObjectIdsObj;
-                dbObjectNames = dbObjectIds.stream().map(id -> DBUtils.getObjectNameFromId(id)).collect(Collectors.joining(", "));
+                dbObjectNames = dbObjectIds.stream()
+                    .map(id -> buildObjectName(task.getProject().getName(), id))
+                    .collect(Collectors.joining(", "));
             }
             messageBuilder.append(NLS.bind(messageOrNull, dbObjectNames, inputFile)).append("\n");
-            confirmationRequired |= true;
+            confirmationRequired = true;
         }
         confirmationRequired |= extraConfirmationsCollector.collect(messageBuilder, task); 
         return confirmationRequired;
     }
-    
+
+    @NotNull
+    private static String buildObjectName(@NotNull String project, @NotNull String objectId) {
+        String[] parts = objectId.split("/");
+        String databaseName = parts[parts.length - 1];
+        DBPDataSourceContainer container = DBUtils.findDataSource(project, parts[0]);
+        return DBUtils.buildConnectionDescription(container, databaseName);
+    }
+
     public static interface TaskConfirmationsCollector {
         boolean collect(StringBuilder messageBuilder, DBTTask task);
     }

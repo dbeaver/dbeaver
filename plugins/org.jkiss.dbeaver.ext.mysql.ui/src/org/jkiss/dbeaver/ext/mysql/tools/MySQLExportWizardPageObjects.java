@@ -42,8 +42,8 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.CustomSashForm;
 import org.jkiss.utils.CommonUtils;
 
-import java.util.List;
 import java.util.*;
+import java.util.List;
 
 
 class MySQLExportWizardPageObjects extends MySQLWizardPageSettings<MySQLExportWizard>
@@ -169,6 +169,7 @@ class MySQLExportWizardPageObjects extends MySQLWizardPageSettings<MySQLExportWi
             exportViewsCheck.setSelection(true);
         }
         if (dataSource != null) {
+            setDescription(buildDescription(dataSource));
             boolean tablesLoaded = false;
             for (MySQLCatalog catalog : dataSource.getCatalogs()) {
                 if (catalog.getName().equalsIgnoreCase(MySQLConstants.INFO_SCHEMA_NAME)) {
@@ -190,6 +191,13 @@ class MySQLExportWizardPageObjects extends MySQLWizardPageSettings<MySQLExportWi
             }
         }
         updateState();
+    }
+
+    @NotNull
+    private static String buildDescription(MySQLDataSource dataSource) {
+        return MySQLUIMessages.tools_db_export_wizard_page_objects_dialog_description
+            + "   "
+            + DBUtils.buildConnectionDescription(dataSource.getContainer(), dataSource.getName());
     }
 
     private void updateCheckedTables() {
