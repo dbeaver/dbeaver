@@ -41,6 +41,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTable;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
+import org.jkiss.dbeaver.model.task.DBTaskUtils;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.tasks.ui.nativetool.AbstractNativeToolWizardPage;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
@@ -245,7 +246,7 @@ class PostgreBackupWizardPageObjects extends AbstractNativeToolWizardPage<Postgr
     private String buildDescription(PostgreDatabase dataBase) {
         DBPDataSourceContainer container = dataBase.getDataSource().getContainer();
         StringBuilder bld = new StringBuilder(PostgreMessages.wizard_backup_page_object_description);
-        String description = DBUtils.buildConnectionDescription(container, dataBase.getName());
+        String description = DBTaskUtils.buildConnectionDescription(container, dataBase.getName());
         return bld.append("   ").append(description).toString();
     }
 

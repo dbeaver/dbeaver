@@ -36,6 +36,7 @@ import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.task.DBTaskUtils;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -197,7 +198,7 @@ class MySQLExportWizardPageObjects extends MySQLWizardPageSettings<MySQLExportWi
     private static String buildDescription(MySQLDataSource dataSource) {
         return MySQLUIMessages.tools_db_export_wizard_page_objects_dialog_description
             + "   "
-            + DBUtils.buildConnectionDescription(dataSource.getContainer(), dataSource.getName());
+            + DBTaskUtils.buildConnectionDescription(dataSource.getContainer(), dataSource.getName());
     }
 
     private void updateCheckedTables() {

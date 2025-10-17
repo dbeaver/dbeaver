@@ -24,6 +24,8 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPTransactionIsolation;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.app.DBPProject;
+import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContextDefaults;
 import org.jkiss.dbeaver.model.exec.DBCTransactionManager;
@@ -52,6 +54,9 @@ public class DBTaskUtils {
     public static final String TASK_VARIABLES = "taskVariables";
     public static final String TASK_PROMPT_VARIABLES = "promptTaskVariables";
     public static final String TASK_CONTEXT = "taskContext";
+
+    public static final String CONNECTION_DESCRIPTION_TEMPLATE = "[%s] (%s - %s:%s/%s)";
+
 
     @NotNull
     public static Map<String, Object> getVariables(@NotNull DBTTask task) {
@@ -228,7 +233,7 @@ public class DBTaskUtils {
             if (dbObjectIdsObj != null) {
                 List<String> dbObjectIds = (List<String>)dbObjectIdsObj;
                 dbObjectNames = dbObjectIds.stream()
-                    .map(id -> buildObjectName(task.getProject().getName(), id))
+                    .map(id -> buildObjectName(task.getProject(), id))
                     .collect(Collectors.joining(", "));
             }
             messageBuilder.append(NLS.bind(messageOrNull, dbObjectNames, inputFile)).append("\n");
@@ -239,14 +244,30 @@ public class DBTaskUtils {
     }
 
     @NotNull
-    private static String buildObjectName(@NotNull String project, @NotNull String objectId) {
-        String[] parts = objectId.split("/");
-        String databaseName = parts[parts.length - 1];
-        DBPDataSourceContainer container = DBUtils.findDataSource(project, parts[0]);
-        return DBUtils.buildConnectionDescription(container, databaseName);
+    private static String buildObjectName(@NotNull DBPProject project, @NotNull String objectId) {
+        DBPDataSourceContainer container = DBUtils.findDataSourceByObjectId(project, objectId);
+        String databaseName = DBUtils.getObjectNameFromId(objectId);
+        return buildConnectionDescription(container, databaseName);
     }
 
     public static interface TaskConfirmationsCollector {
         boolean collect(StringBuilder messageBuilder, DBTTask task);
     }
+
+    @NotNull
+    public static String buildConnectionDescription(@Nullable DBPDataSourceContainer container, @NotNull String databaseName) {
+        if (container == null) {
+            return databaseName;
+        }
+        DBPConnectionConfiguration connection = container.getConnectionConfiguration();
+
+        return CONNECTION_DESCRIPTION_TEMPLATE.formatted(container.getName(),
+            container.getDriver(),
+            connection.getHostName(),
+            connection.getHostPort(),
+            databaseName);
+    }
+
+
+
 }

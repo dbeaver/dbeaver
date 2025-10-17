@@ -27,7 +27,6 @@ import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.app.DBPWorkspace;
-import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.data.*;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.exec.*;
@@ -69,8 +68,6 @@ import java.util.*;
 public final class DBUtils {
 
     private static final Log log = Log.getLog(DBUtils.class);
-
-    public static final String CONNECTION_DESCRIPTION_TEMPLATE = "[%s] (%s - %s:%s/%s)";
 
     @NotNull
     public static String getQuotedIdentifier(@NotNull DBPNamedObject object) {
@@ -2578,20 +2575,6 @@ public final class DBUtils {
             }
         }
         return false;
-    }
-
-    @NotNull
-    public static String buildConnectionDescription(@Nullable DBPDataSourceContainer container, @NotNull String databaseName) {
-        if (container == null) {
-            return databaseName;
-        }
-        DBPConnectionConfiguration connection = container.getConnectionConfiguration();
-
-        return CONNECTION_DESCRIPTION_TEMPLATE.formatted(container.getName(),
-            container.getDriver(),
-            connection.getHostName(),
-            connection.getHostPort(),
-            databaseName);
     }
 
 }
