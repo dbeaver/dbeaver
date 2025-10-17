@@ -39,10 +39,6 @@ public class MonitoredHttpClient implements AutoCloseable {
     private final HttpClient client;
     private final ErrorMapper errorMapper;
 
-    public MonitoredHttpClient(@NotNull HttpClient client) {
-        this(client, MonitoredHttpClient::defaultErrorMapper);
-    }
-
     public MonitoredHttpClient(@NotNull HttpClient client, @NotNull ErrorMapper errorMapper) {
         this.client = client;
         this.errorMapper = errorMapper;
@@ -58,6 +54,7 @@ public class MonitoredHttpClient implements AutoCloseable {
      * The request is sent asynchronously and the method will block until the response is received.
      * The method will also check if the progress monitor is cancelled and cancel the request if it is.
      */
+    @NotNull
     public String send(
         DBRProgressMonitor monitor,
         HttpRequest request
@@ -125,10 +122,5 @@ public class MonitoredHttpClient implements AutoCloseable {
     @Override
     public void close() {
         client.close();
-    }
-
-    @NotNull
-    private static DBException defaultErrorMapper(int statusCode, @NotNull String body) {
-        return new AIHttpTransportException(statusCode, body);
     }
 }

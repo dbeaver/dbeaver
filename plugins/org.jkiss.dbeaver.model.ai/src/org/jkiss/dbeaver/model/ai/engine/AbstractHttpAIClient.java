@@ -16,13 +16,11 @@
  */
 package org.jkiss.dbeaver.model.ai.engine;
 
-import com.google.gson.JsonElement;
-import com.google.gson.JsonSyntaxException;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.ai.utils.AIHttpUtils;
 import org.jkiss.dbeaver.model.ai.utils.MonitoredHttpClient;
-import org.jkiss.dbeaver.model.data.json.JSONUtils;
 
 import java.net.http.HttpClient;
 
@@ -43,36 +41,8 @@ public abstract class AbstractHttpAIClient implements AutoCloseable {
     }
 
     @NotNull
-    protected DBException mapHttpError(int statusCode, @NotNull String body) {
-        return new DBException("AI request failed: " + statusCode + ", " + parseErrorMessage(body));
+    public DBException mapHttpError(int statusCode, @NotNull String body) {
+        log.debug("AI request failed: " + statusCode + ", " + body);
+        return new DBException("AI request failed: " + AIHttpUtils.parseErrorMessage(body));
     }
-
-    @NotNull
-    private static String parseErrorMessage(@NotNull String body) {
-        try {
-            JsonElement errorResponse = JSONUtils.GSON.fromJson(body, JsonElement.class);
-            if (errorResponse != null && errorResponse.isJsonObject()) {
-                if (errorResponse.getAsJsonObject().has("error")) {
-                    JsonElement errorElement = errorResponse.getAsJsonObject().get("error");
-                    if (errorElement.isJsonObject() && errorElement.getAsJsonObject().has("message")) {
-                        JsonElement messageElement = errorElement.getAsJsonObject().get("message");
-                        if (messageElement.isJsonPrimitive() && messageElement.getAsJsonPrimitive().isString()) {
-                            return messageElement.getAsString();
-                        }
-                    }
-                }
-                if (errorResponse.getAsJsonObject().has("message")) {
-                    JsonElement messageElement = errorResponse.getAsJsonObject().get("message");
-                    if (messageElement.isJsonPrimitive() && messageElement.getAsJsonPrimitive().isString()) {
-                        return messageElement.getAsString();
-                    }
-                }
-            }
-            return body;
-        } catch (JsonSyntaxException e) {
-            log.debug("Failed to parse error response: " + e.getMessage());
-            return body;
-        }
-    }
-
 }
