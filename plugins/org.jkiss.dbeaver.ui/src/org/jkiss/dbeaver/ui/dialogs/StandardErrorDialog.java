@@ -18,7 +18,6 @@
 package org.jkiss.dbeaver.ui.dialogs;
 
 import org.eclipse.core.runtime.IStatus;
-import org.eclipse.jface.dialogs.ErrorDialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.layout.GridDataFactory;
@@ -39,10 +38,9 @@ import org.jkiss.utils.CommonUtils;
 /**
  * StandardErrorDialog
  */
-public class StandardErrorDialog extends ErrorDialog implements BlockingPopupDialog {
+public class StandardErrorDialog extends BaseErrorDialog implements BlockingPopupDialog {
 
     private static final String DIALOG_ID = "DBeaver.StandardErrorDialog";//$NON-NLS-1$
-    private Text messageText;
     private boolean detailsVisible = false;
 
     private static final int MAX_AUTO_SIZE_X = 500;
@@ -111,7 +109,7 @@ public class StandardErrorDialog extends ErrorDialog implements BlockingPopupDia
         }
         // create message
         if (message != null) {
-            messageText = new Text(composite, SWT.READ_ONLY | SWT.BORDER | SWT.WRAP | SWT.V_SCROLL);
+            Text messageText = new Text(composite, SWT.READ_ONLY | SWT.BORDER | SWT.WRAP | SWT.V_SCROLL);
             messageText.setText(message);
             GridData gd = new GridData(GridData.FILL_BOTH);
             gd.minimumWidth = IDialogConstants.MINIMUM_MESSAGE_AREA_WIDTH;
