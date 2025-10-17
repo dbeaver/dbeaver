@@ -121,8 +121,8 @@ public class EditConnectionWizard extends ConnectionWizard {
 
     @NotNull
     private static List<? extends DBPDriverLibrary> getLibs(@NotNull DBPDriver driver) {
-        return driver instanceof DriverDescriptor
-            ? ((DriverDescriptor) driver).getEnabledDriverLibraries()
+        return driver instanceof DriverDescriptor driverDescriptor
+            ? driverDescriptor.getEnabledDriverLibraries()
             : driver.getDriverLibraries();
     }
 
@@ -322,7 +322,7 @@ public class EditConnectionWizard extends ConnectionWizard {
 
     private boolean isDriverLibsVersionsSame(@NotNull DataSourceDescriptor dsChangedSource) {
         Map<String, String> currentLibs = getLibsIdVersion(dsChangedSource);
-        return Objects.equals(originalDriverLibsIdVersion, currentLibs);
+        return originalDriverLibsIdVersion.equals(currentLibs);
     }
 
     /**
