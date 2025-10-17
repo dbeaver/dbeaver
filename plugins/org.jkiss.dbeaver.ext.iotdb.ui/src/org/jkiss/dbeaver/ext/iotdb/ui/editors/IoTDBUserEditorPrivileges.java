@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,6 +26,7 @@ import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.iotdb.model.IoTDBGrant;
 import org.jkiss.dbeaver.ext.iotdb.model.IoTDBPrivilege;
@@ -187,7 +188,7 @@ public class IoTDBUserEditorPrivileges extends IoTDBUserEditorAbstract {
             new DatabaseLoadService<List<String>>(
                     IoTDBUiMessages.editors_user_editor_privileges_service_load_tables, getExecutionContext()) {
                 @Override
-                public List<String> evaluate(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
+                public List<String> evaluate(@NotNull DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
                     if (selectedDatabase == null) {
                         return Collections.emptyList();
                     }
@@ -241,7 +242,7 @@ public class IoTDBUserEditorPrivileges extends IoTDBUserEditorAbstract {
                 executionContext
             ) {
                 @Override
-                public List<IoTDBPrivilege> evaluate(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
+                public List<IoTDBPrivilege> evaluate(@NotNull DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
                     IoTDBRelationalUser user = getDatabaseObject();
                     if (user == null) {
                         isLoaded = false;

@@ -636,7 +636,7 @@ public class SessionManagerViewer<SESSION_TYPE extends DBAServerSession>
         }
 
         @Override
-        public Collection<DBPObject> evaluate(DBRProgressMonitor monitor)
+        public Collection<DBPObject> evaluate(@NotNull DBRProgressMonitor monitor)
             throws InvocationTargetException, InterruptedException
         {
             if (curSession == null) {
