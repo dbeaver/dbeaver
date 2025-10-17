@@ -22,6 +22,7 @@ import com.google.gson.Strictness;
 import com.google.gson.annotations.SerializedName;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.ai.engine.AIEngineResponseChunk;
 import org.jkiss.dbeaver.model.ai.engine.AIEngineResponseConsumer;
 import org.jkiss.dbeaver.model.ai.engine.AbstractHttpAIClient;
@@ -38,6 +39,7 @@ import java.util.List;
 import java.util.concurrent.Future;
 
 public class CopilotClient extends AbstractHttpAIClient {
+    private static final Log log = Log.getLog(CopilotClient.class);
     private static final String DATA_EVENT = "data: ";
     private static final String DONE_EVENT = "[DONE]";
     private static final Duration TIMEOUT = Duration.ofSeconds(30);
@@ -198,6 +200,13 @@ public class CopilotClient extends AbstractHttpAIClient {
             listener::error,
             listener::close
         );
+    }
+
+    @NotNull
+    @Override
+    protected DBException mapHttpError(int statusCode, @NotNull String body) {
+        log.debug("Copilot request failed: " + statusCode + ", " + body);
+        return new DBException("Copilot request failed: " + AIHttpUtils.parseOpenAIStyleErrorMessage(body));
     }
 
     /**

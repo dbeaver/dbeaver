@@ -88,6 +88,13 @@ public class OpenAIClient extends AbstractHttpAIClient {
         return client.getHttpClient();
     }
 
+    @NotNull
+    @Override
+    protected DBException mapHttpError(int statusCode, @NotNull String body) {
+        log.debug("OpenAI request failed: " + statusCode + ", " + body);
+        return new DBException("OpenAI request failed: " + AIHttpUtils.parseOpenAIStyleErrorMessage(body));
+    }
+
     public static OpenAIClient createClient(String baseUrl, String token) {
         return new OpenAIClient(
             baseUrl,

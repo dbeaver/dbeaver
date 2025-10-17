@@ -47,8 +47,16 @@ public final class AIHttpUtils {
         }
     }
 
+    /**
+     * Parses an OpenAI-style error message from a JSON string.
+     * Extracts the "message" field from the "error" or root object of the JSON structure.
+     * If the parsing fails or no suitable message field is found, the original input string is returned.
+     *
+     * @param body the JSON string containing an OpenAI-style error message
+     * @return the extracted error message if present, otherwise the original input string
+     */
     @NotNull
-    public static String parseErrorMessage(@NotNull String body) {
+    public static String parseOpenAIStyleErrorMessage(@NotNull String body) {
         try {
             JsonElement errorResponse = JSONUtils.GSON.fromJson(body, JsonElement.class);
             if (errorResponse != null && errorResponse.isJsonObject()) {

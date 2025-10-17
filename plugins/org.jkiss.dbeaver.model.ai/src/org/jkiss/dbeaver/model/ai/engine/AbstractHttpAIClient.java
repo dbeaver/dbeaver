@@ -18,14 +18,11 @@ package org.jkiss.dbeaver.model.ai.engine;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.ai.utils.AIHttpUtils;
 import org.jkiss.dbeaver.model.ai.utils.MonitoredHttpClient;
 
 import java.net.http.HttpClient;
 
 public abstract class AbstractHttpAIClient implements AutoCloseable {
-    private static final Log log = Log.getLog(AbstractHttpAIClient.class);
     protected final MonitoredHttpClient client;
 
     public AbstractHttpAIClient() {
@@ -40,9 +37,13 @@ public abstract class AbstractHttpAIClient implements AutoCloseable {
         client.close();
     }
 
+    /**
+     * Maps an HTTP error response to a corresponding {@link DBException}.
+     *
+     * @param statusCode the HTTP status code of the error response
+     * @param body the body of the HTTP error response, not null
+     * @return a {@link DBException} that represents the mapped error, not null
+     */
     @NotNull
-    public DBException mapHttpError(int statusCode, @NotNull String body) {
-        log.debug("AI request failed: " + statusCode + ", " + body);
-        return new DBException("AI request failed: " + AIHttpUtils.parseErrorMessage(body));
-    }
+    protected abstract DBException mapHttpError(int statusCode, @NotNull String body);
 }
