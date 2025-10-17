@@ -30,6 +30,9 @@ import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 public class MonitoredHttpClient implements AutoCloseable {
+    /**
+     * Maps an HTTP status code and response body to a {@link DBException}.
+     */
     @FunctionalInterface
     public interface ErrorMapper {
         @NotNull
