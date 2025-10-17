@@ -32,7 +32,7 @@ public class SQLDatabasePersistAction implements DBEPersistAction {
     private final String script;
     private final ActionType type;
     private final boolean complex;
-    private final boolean internal;
+    private final boolean hidden;
 
     public SQLDatabasePersistAction(String title, String script)
     {
@@ -49,13 +49,13 @@ public class SQLDatabasePersistAction implements DBEPersistAction {
         this(title, script, type, false, false);
     }
 
-    public SQLDatabasePersistAction(String title, String script, ActionType type, boolean complex, boolean internal)
+    public SQLDatabasePersistAction(String title, String script, ActionType type, boolean complex, boolean hidden)
     {
         this.title = title;
         this.script = script;
         this.type = type;
         this.complex = complex;
-        this.internal = internal;
+        this.hidden = hidden;
     }
 
     public SQLDatabasePersistAction(String script)
@@ -104,6 +104,6 @@ public class SQLDatabasePersistAction implements DBEPersistAction {
 
     @Override
     public boolean isHidden() {
-        return internal;
+        return hidden;
     }
 }

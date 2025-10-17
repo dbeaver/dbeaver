@@ -66,7 +66,8 @@ public final class SQLUtils {
         Pattern.compile("\\bCREATE\\s+OR\\s+REPLACE\\b", Pattern.CASE_INSENSITIVE);
 
     private static final Pattern CREATE_HEAD =
-        Pattern.compile("^(\\s*CREATE\\s+)(?!OR\\s+REPLACE\\b)", Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
+        Pattern.compile("(?m)^(\\s*CREATE\\s+)(?!OR\\s+REPLACE\\b)",
+            Pattern.CASE_INSENSITIVE);
 
     public static String stripTransformations(String query)
     {
@@ -1250,13 +1251,34 @@ public final class SQLUtils {
     }
 
     @NotNull
-    public static String replaceCreateToCreateOrReplace(@NotNull String ddl) {
+    public static String replaceCreateToCreateOrReplace(@NotNull SQLDialect dialect, @NotNull String ddl) {
+        String[] slComments = dialect.getSingleLineComments();
+        Pair<String, String> ml = dialect.getMultiLineComments();
+        final String mlStart = ml == null ? null : ml.getFirst();
+        final String mlEnd   = ml == null ? null : ml.getSecond();
+        return replaceCreateToCreateOrReplace(ddl, mlStart, mlEnd, slComments);
+    }
+
+
+    @NotNull
+    public static String replaceCreateToCreateOrReplace(
+        @NotNull String ddl,
+        @Nullable String mlStart,
+        @Nullable String mlEnd,
+        @NotNull String[] slComments
+    ) {
         if (OR_REPLACE_PRESENT.matcher(ddl).find()) {
             return ddl;
         }
-        return CREATE_HEAD.matcher(ddl).replaceFirst("$1OR REPLACE ");
-    }
 
+        int off = skipLeadingComments(ddl, mlStart, mlEnd, slComments);
+
+        Matcher m = CREATE_HEAD.matcher(ddl);
+        if (m.find(off)) {
+            return m.replaceFirst("$1OR REPLACE ");
+        }
+        return ddl;
+    }
 
     public static int skipLeadingComments(
         @NotNull SQLDialect dialect,
@@ -1266,6 +1288,22 @@ public final class SQLUtils {
         Pair<String, String> ml = dialect.getMultiLineComments();
         final String mlStart = ml == null ? null : ml.getFirst();
         final String mlEnd   = ml == null ? null : ml.getSecond();
+        return skipLeadingComments(
+            sql,
+            mlStart,
+            mlEnd,
+            slComments
+        );
+
+    }
+
+    public static int skipLeadingComments(
+        @NotNull String sql,
+        @Nullable String mlStart,
+        @Nullable String mlEnd,
+        @NotNull String[] slComments
+
+    ) {
 
         final int n = sql.length();
         int i = 0;
@@ -1295,7 +1333,7 @@ public final class SQLUtils {
         return i;
     }
 
-    private static int skipWhitespaces(@NotNull String sql, final int idx, final int n) {
+    public static int skipWhitespaces(@NotNull String sql, final int idx, final int n) {
         int i = idx;
         while (i < n && Character.isWhitespace(sql.charAt(i))) {
             i++;
@@ -1305,7 +1343,7 @@ public final class SQLUtils {
 
 
     private static int consumeSingleLineAt(@NotNull String sql, final int i, @NotNull String[] slComments) {
-        for (String sl: slComments) {
+        for (String sl : slComments) {
             if (sql.startsWith(sl, i)) {
                 return skipToEol(sql, i + sl.length());
             }

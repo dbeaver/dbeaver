@@ -116,7 +116,9 @@ public class MySQLProcedureManager extends SQLObjectEditor<MySQLProcedure, MySQL
     private void createOrReplaceProcedureQuery(List<DBEPersistAction> actions, MySQLProcedure procedure)
     {
         if (procedure.getDataSource().isMariaDB()) {
-            String txt = SQLUtils.replaceCreateToCreateOrReplace(procedure.getDeclaration());
+            String txt = SQLUtils.replaceCreateToCreateOrReplace(procedure.getDataSource().getSQLDialect(),
+                procedure.getDeclaration());
+
             actions.add(new SQLDatabasePersistAction("Create procedure", txt, true));
         } else {
 
