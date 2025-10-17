@@ -231,7 +231,7 @@ public class DataFormatterProfile implements DBDDataFormatterProfile, DBPPrefere
         return formatter;
     }
 
-    private boolean isIdLike(DBSTypedObject type) {
+    private boolean isIdLike(@NotNull DBSTypedObject type) {
         DBPDataKind kind = type.getDataKind();
         if (kind != DBPDataKind.NUMERIC && kind != DBPDataKind.ROWID) {
             return false;
