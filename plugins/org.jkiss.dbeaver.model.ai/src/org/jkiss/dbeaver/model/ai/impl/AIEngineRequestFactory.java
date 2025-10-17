@@ -95,9 +95,14 @@ public class AIEngineRequestFactory {
         // Build DB snapshot
 
         String dbSnapshot = "";
+        boolean isContextTruncated = false;
         if (databaseContext != null && dbSnapshotTokenBudget > 0) {
             AISchemaGenerationOptions ddlOptions = buildOptions(dbSnapshotTokenBudget);
-            dbSnapshot = databaseSnapshotService.createDbSnapshot(monitor, databaseContext, ddlOptions);
+            AIDatabaseSnapshotService.TokenBoundedStringBuilder dbSnapshotBuilder = databaseSnapshotService.createDbSnapshot(monitor, databaseContext, ddlOptions);
+            if (dbSnapshotBuilder != null) {
+                dbSnapshot = dbSnapshotBuilder.toString();
+                isContextTruncated = dbSnapshotBuilder.isTruncated();
+            }
         }
 
         // Compose system message
@@ -124,6 +129,7 @@ public class AIEngineRequestFactory {
 
         List<AIMessage> truncated = chatTruncator.truncate(allMessages);
         AIEngineRequest request = new AIEngineRequest(truncated);
+        request.setWasPromptTruncated(isContextTruncated);
 
         determineRequestTools(monitor, engineDescriptor, systemPromptGenerator, request);
 
