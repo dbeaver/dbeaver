@@ -23,6 +23,7 @@ import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.layout.GridDataFactory;
 import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.GridData;
@@ -58,21 +59,23 @@ public class StandardErrorDialog extends BaseErrorDialog implements BlockingPopu
         if (message == null) {
             IStatus rootStatus = GeneralUtils.getRootStatus(status);
             if (rootStatus.getException() != null) {
-                String lastMessage = null;
-                for (Throwable e = rootStatus.getException(); e != null; e = e.getCause()) {
-                    if (e.getMessage() != null) {
-                        lastMessage = e.getMessage();
-                    }
-                }
+                String lastMessage = GeneralUtils.makeStandardErrorMessage(rootStatus.getException());
                 if (CommonUtils.isEmpty(lastMessage)) {
-                    lastMessage = rootStatus.getMessage();
+                    for (Throwable e = rootStatus.getException(); e != null; e = e.getCause()) {
+                        if (e.getMessage() != null) {
+                            lastMessage = e.getMessage();
+                        }
+                    }
                     if (CommonUtils.isEmpty(lastMessage)) {
-                        lastMessage = status.getMessage();
+                        lastMessage = rootStatus.getMessage();
                         if (CommonUtils.isEmpty(lastMessage)) {
-                            // No message at all. This may happen in case of NPE and other messageless errors.
-                            // Let's use exception name then
-                            if (rootStatus.getException() != null) {
-                                lastMessage = rootStatus.getException().getClass().getName();
+                            lastMessage = status.getMessage();
+                            if (CommonUtils.isEmpty(lastMessage)) {
+                                // No message at all. This may happen in case of NPE and other messageless errors.
+                                // Let's use exception name then
+                                if (rootStatus.getException() != null) {
+                                    lastMessage = rootStatus.getException().getClass().getName();
+                                }
                             }
                         }
                     }
@@ -93,11 +96,11 @@ public class StandardErrorDialog extends BaseErrorDialog implements BlockingPopu
         return UIUtils.getDialogSettings(DIALOG_ID);
     }
 
-    protected Control createDialogArea(Composite parent) {
+    protected Control createDialogArea(@NotNull Composite parent) {
         return createMessageArea(parent);
     }
 
-    protected Control createMessageArea(Composite composite) {
+    protected Control createMessageArea(@NotNull Composite composite) {
         // create composite
         // create image
         Image image = getImage();
@@ -149,17 +152,12 @@ public class StandardErrorDialog extends BaseErrorDialog implements BlockingPopu
     }
 
     @Override
-    protected List createDropDownList(Composite parent) {
+    protected StyledText createDropDownList(@NotNull Composite parent) {
         detailsVisible = true;
-        List dropDownList = super.createDropDownList(parent);
+        StyledText dropDownList = super.createDropDownList(parent);
         dropDownList.addDisposeListener(e -> {
             detailsVisible = false;
         });
-        int itemCount = dropDownList.getItemCount();
-        if (itemCount > 1 && dropDownList.getItem(itemCount - 2).equals(dropDownList.getItem(itemCount - 1))) {
-            // Remove last list item (dup)
-            dropDownList.remove(itemCount - 1);
-        }
         return dropDownList;
     }
 

@@ -22,11 +22,7 @@ import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.IconAndMessageDialog;
 import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.dnd.Clipboard;
-import org.eclipse.swt.dnd.TextTransfer;
-import org.eclipse.swt.dnd.Transfer;
-import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.events.SelectionListener;
+import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.GridData;
@@ -34,18 +30,17 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.ui.controls.StyledTextUtils;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.StringReader;
-import java.util.ArrayList;
+import java.util.Objects;
 
 /**
  * A dialog to display one or more errors to the user, as contained in an
  * <code>IStatus</code> object. If an error contains additional detailed
  * information then a Details button is automatically supplied, which shows or
  * hides an error details viewer when pressed by the user.
- *
+ * *
  * Originally copied from org.eclipse.jface.dialogs.ErrorDialog
  */
 public class BaseErrorDialog extends IconAndMessageDialog {
@@ -54,16 +49,14 @@ public class BaseErrorDialog extends IconAndMessageDialog {
 
     private Button detailsButton;
     private final String title;
-    private List list;
+    private StyledText detailsText;
     private boolean listCreated = false;
 
     /**
      * Filter mask for determining which status items to display.
      */
     private int displayMask = 0xFFFF;
-
     private IStatus status;
-    private Clipboard clipboard;
 
     private boolean shouldIncludeTopLevelErrorInDetails = false;
 
@@ -102,7 +95,7 @@ public class BaseErrorDialog extends IconAndMessageDialog {
     }
 
     @Override
-    protected void configureShell(Shell shell) {
+    protected void configureShell(@NotNull Shell shell) {
         super.configureShell(shell);
         shell.setText(title);
     }
@@ -171,36 +164,22 @@ public class BaseErrorDialog extends IconAndMessageDialog {
         return getErrorImage();
     }
 
-    protected List createDropDownList(@NotNull Composite parent) {
+    protected StyledText createDropDownList(@NotNull Composite parent) {
         // create the list
-        list = new List(parent, SWT.BORDER | SWT.H_SCROLL | SWT.V_SCROLL
+        detailsText = new StyledText(parent, SWT.BORDER | SWT.H_SCROLL | SWT.V_SCROLL
             | SWT.MULTI);
         // fill the list
-        populateList(list);
+        populateList();
         GridData data = new GridData(GridData.HORIZONTAL_ALIGN_FILL
             | GridData.GRAB_HORIZONTAL | GridData.VERTICAL_ALIGN_FILL
             | GridData.GRAB_VERTICAL);
         data.heightHint = 150;
         data.horizontalSpan = 2;
-        list.setLayoutData(data);
-        list.setFont(parent.getFont());
-        Menu copyMenu = new Menu(list);
-        MenuItem copyItem = new MenuItem(copyMenu, SWT.NONE);
-        copyItem.addSelectionListener(new SelectionListener() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                copyToClipboard();
-            }
-
-            @Override
-            public void widgetDefaultSelected(SelectionEvent e) {
-                copyToClipboard();
-            }
-        });
-        copyItem.setText(JFaceResources.getString("copy")); //$NON-NLS-1$
-        list.setMenu(copyMenu);
+        detailsText.setLayoutData(data);
+        detailsText.setFont(parent.getFont());
         listCreated = true;
-        return list;
+        StyledTextUtils.fillDefaultStyledTextContextMenu(detailsText);
+        return detailsText;
     }
 
     @Override
@@ -223,8 +202,8 @@ public class BaseErrorDialog extends IconAndMessageDialog {
         return dialog.open();
     }
 
-    private void populateList(@NotNull List listToPopulate) {
-        populateList(listToPopulate, status, 0, shouldIncludeTopLevelErrorInDetails);
+    private void populateList() {
+        populateList(status, 0, shouldIncludeTopLevelErrorInDetails);
     }
 
     private boolean listContentExists() {
@@ -232,7 +211,6 @@ public class BaseErrorDialog extends IconAndMessageDialog {
     }
 
     private void populateList(
-        List listToPopulate,
         IStatus buildingStatus,
         int nesting,
         boolean includeStatus
@@ -244,30 +222,32 @@ public class BaseErrorDialog extends IconAndMessageDialog {
         Throwable t = buildingStatus.getException();
         boolean incrementNesting = false;
 
+        String statusMessage = null;
         if (includeStatus) {
             StringBuilder sb = new StringBuilder();
             sb.append(NESTING_INDENT.repeat(Math.max(0, nesting)));
-            String message = buildingStatus.getMessage();
-            sb.append(message);
-            java.util.List<String> lines = readLines(sb.toString());
-            for (String line : lines) {
-                listToPopulate.add(line);
-            }
+            statusMessage = buildingStatus.getMessage();
+            sb.append(statusMessage.trim());
+            sb.append("\n");
+            detailsText.append(sb.toString());
             incrementNesting = true;
         }
 
         if (!(t instanceof CoreException) && t != null) {
             // Include low-level exception message
-            StringBuilder sb = new StringBuilder();
-            sb.append(NESTING_INDENT.repeat(Math.max(0, nesting)));
-            String message = t.getLocalizedMessage();
-            if (message == null) {
-                message = t.toString();
-            }
+            String message = GeneralUtils.makeStandardErrorMessage(t);
+            if (!Objects.equals(statusMessage, message)) {
+                StringBuilder sb = new StringBuilder();
+                sb.append(NESTING_INDENT.repeat(Math.max(0, nesting)));
+                if (message == null) {
+                    message = t.toString();
+                }
 
-            sb.append(message);
-            listToPopulate.add(sb.toString());
-            incrementNesting = true;
+                sb.append(message.trim());
+                sb.append("\n");
+                detailsText.append(sb.toString());
+                incrementNesting = true;
+            }
         }
 
         if (incrementNesting) {
@@ -280,48 +260,21 @@ public class BaseErrorDialog extends IconAndMessageDialog {
             // Only print the exception message if it is not contained in the
             // parent message
             if (message == null || !message.contains(eStatus.getMessage())) {
-                populateList(listToPopulate, eStatus, nesting, true);
+                populateList(eStatus, nesting, false);
             }
         }
 
         // Look for child status
         IStatus[] children = buildingStatus.getChildren();
         for (IStatus element : children) {
-            populateList(listToPopulate, element, nesting, true);
+            populateList(element, nesting, false);
         }
     }
 
-    private static java.util.List<String> readLines(final String s) {
-        java.util.List<String> lines = new ArrayList<>();
-        BufferedReader reader = new BufferedReader(new StringReader(s));
-        String line;
-        try {
-            while ((line = reader.readLine()) != null) {
-                if (!line.isEmpty()) {
-                    lines.add(line);
-                }
-            }
-        } catch (IOException e) {
-            // shouldn't get this
-        }
-        return lines;
-    }
-
-    /**
-     * This method checks if {@link #populateList(List, IStatus, int, boolean)}
-     * will add anything to the list.
-     *
-     * @param buildingStatus A status to be considered.
-     * @param includeStatus  This flag indicates if top level status should be placed on a
-     *                       list.
-     * @return true if any new content will be added to the list.
-     * @see #listContentExists(IStatus, boolean)
-     */
     private boolean listContentExists(
         IStatus buildingStatus,
         boolean includeStatus
     ) {
-
         if (!buildingStatus.matches(displayMask)) {
             return false;
         }
@@ -357,15 +310,6 @@ public class BaseErrorDialog extends IconAndMessageDialog {
         return result;
     }
 
-    /**
-     * Returns whether the given status object should be displayed.
-     *
-     * @param status a status object
-     * @param mask   a mask as per <code>IStatus.matches</code>
-     * @return <code>true</code> if the given status should be displayed, and
-     * <code>false</code> otherwise
-     * @see org.eclipse.core.runtime.IStatus#matches(int)
-     */
     protected static boolean shouldDisplay(@NotNull IStatus status, int mask) {
         IStatus[] children = status.getChildren();
         if (children == null || children.length == 0) {
@@ -387,12 +331,12 @@ public class BaseErrorDialog extends IconAndMessageDialog {
         boolean opened;
         Point windowSize = getShell().getSize();
         if (listCreated) {
-            list.dispose();
+            detailsText.dispose();
             listCreated = false;
             detailsButton.setText(IDialogConstants.SHOW_DETAILS_LABEL);
             opened = false;
         } else {
-            list = createDropDownList((Composite) getContents());
+            detailsText = createDropDownList((Composite) getContents());
             detailsButton.setText(IDialogConstants.HIDE_DETAILS_LABEL);
             getContents().getShell().layout();
             opened = true;
@@ -404,66 +348,6 @@ public class BaseErrorDialog extends IconAndMessageDialog {
         if ((opened && diffY > 0) || (!opened && diffY < 0)) {
             getShell().setSize(new Point(windowSize.x, windowSize.y + (diffY)));
         }
-    }
-
-    /**
-     * Put the details of the status of the error onto the stream.
-     */
-    private void populateCopyBuffer(
-        @NotNull IStatus buildingStatus,
-        @NotNull StringBuilder buffer,
-        int nesting
-    ) {
-        if (!buildingStatus.matches(displayMask)) {
-            return;
-        }
-        buffer.append(NESTING_INDENT.repeat(Math.max(0, nesting)));
-        buffer.append(buildingStatus.getMessage());
-        buffer.append("\n"); //$NON-NLS-1$
-
-        // Look for a nested core exception
-        Throwable t = buildingStatus.getException();
-        if (t instanceof CoreException ce) {
-            populateCopyBuffer(ce.getStatus(), buffer, nesting + 1);
-        } else if (t != null) {
-            // Include low-level exception message
-            buffer.append(NESTING_INDENT.repeat(Math.max(0, nesting)));
-            String message = t.getLocalizedMessage();
-            if (message == null) {
-                message = t.toString();
-            }
-            buffer.append(message);
-            buffer.append("\n"); //$NON-NLS-1$
-        }
-
-        IStatus[] children = buildingStatus.getChildren();
-        for (IStatus element : children) {
-            populateCopyBuffer(element, buffer, nesting + 1);
-        }
-    }
-
-    /**
-     * Copy the contents of the statuses to the clipboard.
-     */
-    private void copyToClipboard() {
-        if (clipboard != null) {
-            clipboard.dispose();
-        }
-        StringBuilder statusBuffer = new StringBuilder();
-        populateCopyBuffer(status, statusBuffer, 0);
-        clipboard = new Clipboard(list.getDisplay());
-        clipboard.setContents(
-            new Object[] {statusBuffer.toString()},
-            new Transfer[] {TextTransfer.getInstance()}
-        );
-    }
-
-    @Override
-    public boolean close() {
-        if (clipboard != null) {
-            clipboard.dispose();
-        }
-        return super.close();
     }
 
     protected final void showDetailsArea() {
@@ -490,9 +374,9 @@ public class BaseErrorDialog extends IconAndMessageDialog {
     }
 
     private void repopulateList() {
-        if (list != null && !list.isDisposed()) {
-            list.removeAll();
-            populateList(list);
+        if (detailsText != null && !detailsText.isDisposed()) {
+            detailsText.setText("");
+            populateList();
         }
     }
 

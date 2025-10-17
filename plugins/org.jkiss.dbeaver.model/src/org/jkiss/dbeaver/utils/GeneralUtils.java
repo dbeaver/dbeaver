@@ -42,8 +42,10 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.nio.channels.UnresolvedAddressException;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -638,11 +640,11 @@ public class GeneralUtils {
     }
 
     private static IStatus makeExceptionStatus(int severity, Throwable ex, boolean nested) {
-        if (ex instanceof InvocationTargetException) {
-            ex = ((InvocationTargetException) ex).getTargetException();
+        if (ex instanceof InvocationTargetException ite) {
+            ex = ite.getTargetException();
         }
-        if (ex instanceof CoreException) {
-            return ((CoreException) ex).getStatus();
+        if (ex instanceof CoreException ce) {
+            return ce.getStatus();
         }
         // Skip chain of nested DBExceptions. Show only last message
         while (ex.getCause() != null && ex.getMessage() != null && ex.getMessage().equals(ex.getCause().getMessage())) {
@@ -650,10 +652,10 @@ public class GeneralUtils {
         }
         Throwable cause = ex.getCause();
         SQLException nextError = null;
-        if (ex instanceof SQLException) {
-            nextError = ((SQLException) ex).getNextException();
-        } else if (cause instanceof SQLException) {
-            nextError = ((SQLException) cause).getNextException();
+        if (ex instanceof SQLException sqlException) {
+            nextError = sqlException.getNextException();
+        } else if (cause instanceof SQLException sqlException) {
+            nextError = sqlException.getNextException();
         }
         if (cause == null && nextError == null) {
             return new Status(
@@ -726,38 +728,6 @@ public class GeneralUtils {
             }
         }
         return text.toString();
-    }
-
-    /**
-     * Returns first non-null and non-empty message from this exception or it's cause
-     */
-    public static String getFirstMessage(Throwable ex) {
-        for (Throwable e = ex; e != null; e = e.getCause()) {
-            String message = e.getMessage();
-            if (!CommonUtils.isEmpty(message)) {
-                return message;
-            }
-        }
-        return null;
-    }
-
-    public static String getExceptionMessage(@NotNull Throwable ex) {
-/*
-        StringBuilder msg = new StringBuilder(*/
-        /*CommonUtils.getShortClassName(ex.getClass())*//*
-);
-        msg.append(ex.getClass().getSimpleName());
-        if (ex.getMessage() != null) {
-            msg.append(": ").append(ex.getMessage());
-        }
-        return msg.toString().trim();
-*/
-        try {
-            ex.getClass().getDeclaredMethod("toString");
-            return ex.toString();
-        } catch (NoSuchMethodException e) {
-            return ex.getMessage();
-        }
     }
 
     @NotNull
@@ -980,4 +950,40 @@ public class GeneralUtils {
     public static String normalizeLineEndings(@NotNull String text) {
         return text.replaceAll("(\r\n)|\r", "\n");
     }
+
+    /**
+     * Returns first non-null and non-empty message from this exception or it's cause
+     */
+    public static String getFirstMessage(Throwable ex) {
+        for (Throwable e = ex; e != null; e = e.getCause()) {
+            String message = makeStandardErrorMessage(e);
+            if (!CommonUtils.isEmpty(message)) {
+                return message;
+            }
+        }
+        return null;
+    }
+
+    public static String getExceptionMessage(@NotNull Throwable ex) {
+        try {
+            ex.getClass().getDeclaredMethod("toString");
+            return ex.toString();
+        } catch (NoSuchMethodException e) {
+            return makeStandardErrorMessage(ex);
+        }
+    }
+
+
+    @NotNull
+    public static String makeStandardErrorMessage(@NotNull Throwable error) {
+        if (error instanceof UnknownHostException) {
+            return "Unknown host '" + error.getMessage() + "'";
+        } else if (error instanceof UnresolvedAddressException) {
+            return "Cannot resolve target address";
+        } else if (error instanceof NullPointerException) {
+            return "Internal error (NPE)";
+        }
+        return error.getLocalizedMessage();
+    }
+
 }

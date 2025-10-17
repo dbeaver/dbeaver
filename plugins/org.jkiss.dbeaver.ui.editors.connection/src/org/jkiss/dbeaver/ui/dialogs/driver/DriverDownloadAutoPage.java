@@ -410,7 +410,7 @@ class DriverDownloadAutoPage extends DriverDownloadPage {
         }
 
         @Override
-        protected void createButtonsForButtonBar(Composite parent) {
+        protected void createButtonsForButtonBar(@NotNull Composite parent) {
             createButton(
                 parent,
                 IDialogConstants.ABORT_ID,

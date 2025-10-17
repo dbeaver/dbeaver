@@ -20,11 +20,10 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.utils.CommonUtils;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 
 /**
  * Connect job.
@@ -87,11 +86,7 @@ public class ConnectJob extends AbstractJob
         }
         catch (Throwable ex) {
             connectError = ex;
-            connectStatus = new Status(
-                IStatus.ERROR,
-                ModelPreferences.PLUGIN_ID,
-                CommonUtils.getAllExceptionMessages(ex),
-                ex);
+            connectStatus = GeneralUtils.makeExceptionStatus(ex);
         }
 
         return Status.OK_STATUS;
