@@ -42,7 +42,6 @@ import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.registry.DataSourcePageDescriptor;
 import org.jkiss.dbeaver.registry.DataSourceViewDescriptor;
 import org.jkiss.dbeaver.registry.DataSourceViewRegistry;
-import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.IActionConstants;
 import org.jkiss.dbeaver.ui.IDialogPageProvider;
@@ -55,7 +54,6 @@ import org.jkiss.utils.CommonUtils;
 
 import java.security.MessageDigest;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
@@ -109,19 +107,14 @@ public class EditConnectionWizard extends ConnectionWizard {
     }
 
     @NotNull
-    private static Map<String, String> getLibsIdVersion(@NotNull DataSourceDescriptor dataSource) {
+    private stataic Map<String, String> getLibsIdVersion(@NotNull DataSourceDescriptor dataSource) {
         Map<String, String> libs = new HashMap<>();
-        for (DBPDriverLibrary lib : getLibs(dataSource.getDriver())) {
-            libs.put(lib.getId(), lib.getVersion());
+        for (DBPDriverLibrary lib : dataSource.getDriver().getDriverLibraries()) {
+            if (!lib.isDisabled()) {
+                libs.put(lib.getId(), lib.getVersion());
+            }
         }
         return libs;
-    }
-
-    @NotNull
-    private static List<? extends DBPDriverLibrary> getLibs(@NotNull DBPDriver driver) {
-        return driver instanceof DriverDescriptor driverDescriptor
-            ? driverDescriptor.getEnabledDriverLibraries()
-            : driver.getDriverLibraries();
     }
 
     @NotNull
