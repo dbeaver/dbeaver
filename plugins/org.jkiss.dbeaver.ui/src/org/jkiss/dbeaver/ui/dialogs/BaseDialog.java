@@ -55,7 +55,7 @@ public class BaseDialog extends Dialog {
         this.title = title;
     }
 
-    @NotNull
+    @Nullable
     public DBPImage getImage() {
         return icon;
     }
