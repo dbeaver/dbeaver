@@ -19,18 +19,19 @@ package org.jkiss.dbeaver.ui.dialogs;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.jface.dialogs.IDialogConstants;
-import org.eclipse.jface.dialogs.IconAndMessageDialog;
+import org.eclipse.jface.layout.GridDataFactory;
 import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.custom.StyledText;
-import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.ui.controls.StyledTextUtils;
+import org.jkiss.dbeaver.model.DBIcon;
+import org.jkiss.dbeaver.model.DBPImage;
+import org.jkiss.dbeaver.ui.DBeaverIcons;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 
 import java.util.Objects;
@@ -43,13 +44,15 @@ import java.util.Objects;
  * *
  * Originally copied from org.eclipse.jface.dialogs.ErrorDialog
  */
-public class BaseErrorDialog extends IconAndMessageDialog {
+public class BaseErrorDialog extends BaseDialog {
 
     private static final String NESTING_INDENT = "  "; //$NON-NLS-1$
 
+    protected String message;
+
     private Button detailsButton;
     private final String title;
-    private StyledText detailsText;
+    private Text detailsText;
     private boolean listCreated = false;
 
     /**
@@ -59,6 +62,7 @@ public class BaseErrorDialog extends IconAndMessageDialog {
     private IStatus status;
 
     private boolean shouldIncludeTopLevelErrorInDetails = false;
+    private Composite detailPanel;
 
     public BaseErrorDialog(
         @NotNull Shell parentShell,
@@ -67,7 +71,7 @@ public class BaseErrorDialog extends IconAndMessageDialog {
         @NotNull IStatus status,
         int displayMask
     ) {
-        super(parentShell);
+        super(parentShell, dialogTitle, DBIcon.STATUS_ERROR);
         this.title = dialogTitle == null ? JFaceResources
             .getString("Problem_Occurred") : //$NON-NLS-1$
             dialogTitle;
@@ -77,13 +81,10 @@ public class BaseErrorDialog extends IconAndMessageDialog {
         this.displayMask = displayMask;
     }
 
-    /*
-     * Handles the pressing of the Ok or Details button in this dialog. If the
-     * Ok button was pressed then close this dialog. If the Details button was
-     * pressed then toggle the displaying of the error details area. Note that
-     * the Details button will only be visible if the error being displayed
-     * specifies child details.
-     */
+    protected Text getDetailsText() {
+        return detailsText;
+    }
+
     @Override
     protected void buttonPressed(int id) {
         if (id == IDialogConstants.DETAILS_ID) {
@@ -116,69 +117,68 @@ public class BaseErrorDialog extends IconAndMessageDialog {
     }
 
     @Override
-    protected Control createDialogArea(@NotNull Composite parent) {
-        // Create a composite with standard margins and spacing
-        // Add the messageArea to this composite so that as subclasses add widgets to the messageArea
-        // and dialogArea, the number of children of parent remains fixed and with consistent layout.
-        // Fixes bug #240135
-        Composite composite = new Composite(parent, SWT.NONE);
-        createMessageArea(composite);
-        GridLayout layout = new GridLayout();
-        layout.marginHeight = convertVerticalDLUsToPixels(IDialogConstants.VERTICAL_MARGIN);
-        layout.marginWidth = convertHorizontalDLUsToPixels(IDialogConstants.HORIZONTAL_MARGIN);
-        layout.verticalSpacing = convertVerticalDLUsToPixels(IDialogConstants.VERTICAL_SPACING);
-        layout.horizontalSpacing = convertHorizontalDLUsToPixels(IDialogConstants.HORIZONTAL_SPACING);
-        layout.numColumns = 2;
-        composite.setLayout(layout);
-        GridData childData = new GridData(GridData.FILL_BOTH);
-        childData.horizontalSpan = 2;
-        childData.grabExcessVerticalSpace = false;
-        composite.setLayoutData(childData);
-        composite.setFont(parent.getFont());
+    protected Composite createDialogArea(@NotNull Composite parent) {
+        Composite dialogArea = super.createDialogArea(parent);
+        dialogArea.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
-        return composite;
-    }
-
-    @Override
-    protected void createDialogAndButtonArea(@NotNull Composite parent) {
-        super.createDialogAndButtonArea(parent);
-        if (this.dialogArea instanceof Composite dialogComposite) {
-            // Create a label if there are no children to force a smaller layout
-            if (dialogComposite.getChildren().length == 0) {
-                new Label(dialogComposite, SWT.NULL);
-            }
+        // create composite
+        // create image
+        DBPImage image = getImage();
+        if (image != null) {
+            ((GridLayout) dialogArea.getLayout()).numColumns++;
+            Label imageLabel = new Label(dialogArea, SWT.NULL);
+            imageLabel.setImage(DBeaverIcons.getImage(image));
+            GridDataFactory.fillDefaults().align(SWT.CENTER, SWT.BEGINNING).applyTo(imageLabel);
         }
+        // create message
+        {
+            ((GridLayout) dialogArea.getLayout()).numColumns++;
+
+            Text messageText = new Text(dialogArea, SWT.READ_ONLY | SWT.BORDER | SWT.WRAP | SWT.V_SCROLL);
+            messageText.setText(message);
+            GridData gd = new GridData(GridData.FILL_HORIZONTAL);
+            gd.minimumWidth = IDialogConstants.MINIMUM_MESSAGE_AREA_WIDTH;
+
+            int rowCount = 10;//Math.min(message.split("\n").length, 10) + 1;
+            gd.heightHint = rowCount * UIUtils.getFontHeight(messageText);
+
+            //gd.heightHint = UIUtils.getFontHeight(composite) * 10;
+            //gd.grabExcessVerticalSpace = true;
+            gd.grabExcessHorizontalSpace = true;
+            messageText.setLayoutData(gd);
+        }
+        return dialogArea;
     }
 
     @Override
-    protected Image getImage() {
+    public DBPImage getImage() {
         if (status != null) {
             if (status.getSeverity() == IStatus.WARNING) {
-                return getWarningImage();
+                return DBIcon.STATUS_WARNING;
             }
             if (status.getSeverity() == IStatus.INFO) {
-                return getInfoImage();
+                return DBIcon.STATUS_INFO;
             }
         }
         // If it was not a warning or an error then return the error image
-        return getErrorImage();
+        return DBIcon.STATUS_ERROR;
     }
 
-    protected StyledText createDropDownList(@NotNull Composite parent) {
+    protected void createDropDownList(@NotNull Composite parent) {
         // create the list
-        detailsText = new StyledText(parent, SWT.BORDER | SWT.READ_ONLY | SWT.H_SCROLL | SWT.V_SCROLL | SWT.MULTI);
+        detailPanel = super.createDialogPanelWithMargins(parent);
+        detailsText = new Text(detailPanel, SWT.BORDER | SWT.READ_ONLY | SWT.H_SCROLL | SWT.V_SCROLL | SWT.MULTI);
         // fill the list
-        populateList();
         GridData data = new GridData(GridData.HORIZONTAL_ALIGN_FILL
             | GridData.GRAB_HORIZONTAL | GridData.VERTICAL_ALIGN_FILL
             | GridData.GRAB_VERTICAL);
-        data.heightHint = 150;
-        data.horizontalSpan = 2;
+        //data.horizontalSpan = ((GridLayout)parent.getLayout()).numColumns;
         detailsText.setLayoutData(data);
-        detailsText.setFont(parent.getFont());
+
+        populateList();
+
         listCreated = true;
-        StyledTextUtils.fillDefaultStyledTextContextMenu(detailsText);
-        return detailsText;
+        //StyledTextUtils.fillDefaultStyledTextContextMenu(detailsText);
     }
 
     @Override
@@ -190,19 +190,10 @@ public class BaseErrorDialog extends IconAndMessageDialog {
         return OK;
     }
 
-    public static int openError(Shell parent, String dialogTitle, String message, IStatus status) {
-        return openError(parent, dialogTitle, message, status,
-            IStatus.OK | IStatus.INFO | IStatus.WARNING | IStatus.ERROR
-        );
-    }
-
-    public static int openError(Shell parentShell, String title, String message, IStatus status, int displayMask) {
-        BaseErrorDialog dialog = new BaseErrorDialog(parentShell, title, message, status, displayMask);
-        return dialog.open();
-    }
-
     private void populateList() {
         populateList(status, 0, shouldIncludeTopLevelErrorInDetails);
+        int rowCount = 10;//Math.min(detailsText.getText().split("\n").length, 10) + 1;
+        ((GridData)detailsText.getLayoutData()).heightHint = rowCount * UIUtils.getFontHeight(detailsText);
     }
 
     private boolean listContentExists() {
@@ -330,14 +321,14 @@ public class BaseErrorDialog extends IconAndMessageDialog {
         boolean opened;
         Point windowSize = getShell().getSize();
         if (listCreated) {
-            detailsText.dispose();
+            detailPanel.dispose();
             listCreated = false;
             detailsButton.setText(IDialogConstants.SHOW_DETAILS_LABEL);
             opened = false;
         } else {
-            detailsText = createDropDownList((Composite) getContents());
+            createDropDownList(dialogArea.getParent());
             detailsButton.setText(IDialogConstants.HIDE_DETAILS_LABEL);
-            getContents().getShell().layout();
+            getShell().layout();
             opened = true;
         }
         Point newSize = getShell().computeSize(SWT.DEFAULT, SWT.DEFAULT);
@@ -351,8 +342,7 @@ public class BaseErrorDialog extends IconAndMessageDialog {
 
     protected final void showDetailsArea() {
         if (!listCreated) {
-            Control control = getContents();
-            if (control != null && !control.isDisposed()) {
+            if (dialogArea != null && !dialogArea.isDisposed()) {
                 toggleDetailsArea();
             }
         }
@@ -377,16 +367,6 @@ public class BaseErrorDialog extends IconAndMessageDialog {
             detailsText.setText("");
             populateList();
         }
-    }
-
-    @Override
-    protected int getColumnCount() {
-        return 3;
-    }
-
-    @Override
-    protected boolean isResizable() {
-        return true;
     }
 
 }

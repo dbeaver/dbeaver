@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.ui.dialogs;
 
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
+import org.eclipse.jface.widgets.WidgetFactory;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -78,9 +79,25 @@ public class BaseDialog extends Dialog
 
     @Override
     protected Composite createDialogArea(Composite parent) {
-        Composite dialogArea1 = (Composite) super.createDialogArea(parent);
+        dialogArea = createDialogPanelWithMargins(parent);
+        return getDialogArea();
+    }
 
-        return dialogArea1;
+    @NotNull
+    protected Composite createDialogPanelWithMargins(@NotNull Composite parent) {
+        GridLayout layout = new GridLayout();
+        layout.marginHeight = convertVerticalDLUsToPixels(IDialogConstants.VERTICAL_MARGIN);
+        layout.marginWidth = convertHorizontalDLUsToPixels(IDialogConstants.HORIZONTAL_MARGIN);
+        layout.verticalSpacing = convertVerticalDLUsToPixels(IDialogConstants.VERTICAL_SPACING);
+        layout.horizontalSpacing = convertHorizontalDLUsToPixels(IDialogConstants.HORIZONTAL_SPACING);
+        Composite composite = WidgetFactory.composite(SWT.NONE).layout(layout)
+            .layoutData(new GridData(GridData.FILL_BOTH)).create(parent);
+        applyDialogFont(composite);
+        return composite;
+    }
+
+    protected Composite getDialogArea() {
+        return (Composite) dialogArea;
     }
 
     @Override

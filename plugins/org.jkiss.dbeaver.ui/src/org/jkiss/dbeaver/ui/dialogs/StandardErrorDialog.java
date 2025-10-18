@@ -20,18 +20,13 @@ package org.jkiss.dbeaver.ui.dialogs;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.IDialogSettings;
-import org.eclipse.jface.layout.GridDataFactory;
 import org.eclipse.jface.resource.JFaceResources;
-import org.eclipse.swt.SWT;
-import org.eclipse.swt.custom.StyledText;
-import org.eclipse.swt.graphics.Image;
-import org.eclipse.swt.graphics.Point;
-import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.widgets.*;
+import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Shell;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.model.DBIcon;
-import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
@@ -96,53 +91,33 @@ public class StandardErrorDialog extends BaseErrorDialog implements BlockingPopu
         return UIUtils.getDialogSettings(DIALOG_ID);
     }
 
-    protected Control createDialogArea(@NotNull Composite parent) {
-        return createMessageArea(parent);
-    }
+    @Override
+    protected Control createContents(Composite parent) {
+        Control contents = super.createContents(parent);
 
-    protected Control createMessageArea(@NotNull Composite composite) {
-        // create composite
-        // create image
-        Image image = getImage();
-        if (image != null) {
-            imageLabel = new Label(composite, SWT.NULL);
-            image.setBackground(imageLabel.getBackground());
-            imageLabel.setImage(image);
-            GridDataFactory.fillDefaults().align(SWT.CENTER, SWT.BEGINNING).applyTo(imageLabel);
+        detailsVisible = getDialogBoundsSettings().getBoolean("showDetails");
+        if (detailsVisible) {
+            showDetailsArea();
         }
-        // create message
-        if (message != null) {
-            Text messageText = new Text(composite, SWT.READ_ONLY | SWT.BORDER | SWT.WRAP | SWT.V_SCROLL);
-            messageText.setText(message);
-            GridData gd = new GridData(GridData.FILL_BOTH);
-            gd.minimumWidth = IDialogConstants.MINIMUM_MESSAGE_AREA_WIDTH;
-            gd.heightHint = UIUtils.getFontHeight(composite) * 10;
-            gd.grabExcessVerticalSpace = true;
-            gd.grabExcessHorizontalSpace = true;
-            messageText.setLayoutData(gd);
-        }
-        return composite;
+
+        return contents;
     }
 
     @Override
     public void create() {
         super.create();
-        Point prefSize = getContents().computeSize(SWT.DEFAULT, SWT.DEFAULT);
-        Point actualSize = getShell().getSize();
-        if ((prefSize.x < MAX_AUTO_SIZE_X && prefSize.x > actualSize.x) ||
-            (prefSize.y < MAX_AUTO_SIZE_Y && prefSize.y > actualSize.y)) {
-            if (prefSize.x > actualSize.x) {
-                actualSize.x = prefSize.x;
-            }
-            if (prefSize.y > actualSize.y) {
-                actualSize.y = prefSize.y;
-            }
-            getShell().setSize(actualSize);
-        }
-        detailsVisible = getDialogBoundsSettings().getBoolean("showDetails");
-        if (detailsVisible) {
-            showDetailsArea();
-        }
+//        Point prefSize = getContents().computeSize(SWT.DEFAULT, SWT.DEFAULT);
+//        Point actualSize = getShell().getSize();
+//        if ((prefSize.x < MAX_AUTO_SIZE_X && prefSize.x > actualSize.x) ||
+//            (prefSize.y < MAX_AUTO_SIZE_Y && prefSize.y > actualSize.y)) {
+//            if (prefSize.x > actualSize.x) {
+//                actualSize.x = prefSize.x;
+//            }
+//            if (prefSize.y > actualSize.y) {
+//                actualSize.y = prefSize.y;
+//            }
+//            getShell().setSize(actualSize);
+//        }
         UIUtils.asyncExec(() -> {
             Button okButton = getButton(IDialogConstants.OK_ID);
             if (okButton != null) {
@@ -152,25 +127,12 @@ public class StandardErrorDialog extends BaseErrorDialog implements BlockingPopu
     }
 
     @Override
-    protected StyledText createDropDownList(@NotNull Composite parent) {
+    protected void createDropDownList(@NotNull Composite parent) {
         detailsVisible = true;
-        StyledText dropDownList = super.createDropDownList(parent);
-        dropDownList.addDisposeListener(e -> {
+        super.createDropDownList(parent);
+        getDetailsText().addDisposeListener(e -> {
             detailsVisible = false;
         });
-        return dropDownList;
-    }
-
-    public Image getErrorImage() {
-        return DBeaverIcons.getImage(DBIcon.STATUS_ERROR);
-    }
-
-    public Image getWarningImage() {
-        return DBeaverIcons.getImage(DBIcon.STATUS_WARNING);
-    }
-
-    public Image getInfoImage() {
-        return DBeaverIcons.getImage(DBIcon.STATUS_INFO);
     }
 
     @Override
