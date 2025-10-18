@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ext.postgresql.tools;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.CLabel;
 import org.eclipse.swt.custom.SashForm;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
@@ -65,6 +66,7 @@ class PostgreBackupWizardPageObjects extends AbstractNativeToolWizardPage<Postgr
     private PostgreDatabase dataBase;
     private Button exportViewsCheck;
     private Button fullSchemaBackupCheck;
+    private CLabel connInfo;
 
     PostgreBackupWizardPageObjects(PostgreBackupWizard wizard)
     {
@@ -80,6 +82,10 @@ class PostgreBackupWizardPageObjects extends AbstractNativeToolWizardPage<Postgr
 
         Group objectsGroup = UIUtils.createControlGroup(composite, PostgreMessages.wizard_backup_page_object_group_object, 1, GridData.FILL_HORIZONTAL, 0);
         objectsGroup.setLayoutData(new GridData(GridData.FILL_BOTH));
+
+        connInfo = new CLabel(objectsGroup, SWT.WRAP);
+        connInfo.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
+        connInfo.setImage(DBeaverIcons.getImage(DBIcon.DATABASE_DEFAULT));
 
         SashForm sash = new CustomSashForm(objectsGroup, SWT.VERTICAL);
         sash.setLayoutData(new GridData(GridData.FILL_BOTH));
@@ -217,7 +223,7 @@ class PostgreBackupWizardPageObjects extends AbstractNativeToolWizardPage<Postgr
             exportViewsCheck.setSelection(true);
         }
         if (dataBase != null) {
-            setDescription(buildDescription(dataBase));
+            connInfo.setText(DBTaskUtils.buildConnectionDescription(dataBase.getDataSource().getContainer(), dataBase.getName()));
             boolean tablesLoaded = false;
             try {
                 for (PostgreSchema schema : dataBase.getSchemas(new VoidProgressMonitor())) {
@@ -241,13 +247,6 @@ class PostgreBackupWizardPageObjects extends AbstractNativeToolWizardPage<Postgr
                 log.error(e);
             }
         }
-    }
-
-    private String buildDescription(PostgreDatabase dataBase) {
-        DBPDataSourceContainer container = dataBase.getDataSource().getContainer();
-        StringBuilder bld = new StringBuilder(PostgreMessages.wizard_backup_page_object_description);
-        String description = DBTaskUtils.buildConnectionDescription(container, dataBase.getName());
-        return bld.append("   ").append(description).toString();
     }
 
     private void updateCheckedTables() {

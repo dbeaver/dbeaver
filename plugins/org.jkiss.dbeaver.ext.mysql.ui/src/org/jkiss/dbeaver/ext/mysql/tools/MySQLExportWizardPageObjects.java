@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ext.mysql.tools;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.CLabel;
 import org.eclipse.swt.custom.SashForm;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
@@ -56,6 +57,7 @@ class MySQLExportWizardPageObjects extends MySQLWizardPageSettings<MySQLExportWi
 
     private MySQLCatalog curCatalog;
     private Button exportViewsCheck;
+    private CLabel connInfo;
 
     protected MySQLExportWizardPageObjects(MySQLExportWizard wizard)
     {
@@ -71,6 +73,11 @@ class MySQLExportWizardPageObjects extends MySQLWizardPageSettings<MySQLExportWi
 
         Group objectsGroup = UIUtils.createControlGroup(composite, MySQLUIMessages.tools_db_export_wizard_page_settings_group_objects, 1, GridData.FILL_HORIZONTAL, 0);
         objectsGroup.setLayoutData(new GridData(GridData.FILL_BOTH));
+
+        connInfo = new CLabel(objectsGroup, SWT.WRAP);
+        connInfo.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
+        connInfo.setImage(DBeaverIcons.getImage(DBIcon.DATABASE_DEFAULT));
+
 
         SashForm sash = new CustomSashForm(objectsGroup, SWT.VERTICAL);
         sash.setLayoutData(new GridData(GridData.FILL_BOTH));
@@ -170,7 +177,7 @@ class MySQLExportWizardPageObjects extends MySQLWizardPageSettings<MySQLExportWi
             exportViewsCheck.setSelection(true);
         }
         if (dataSource != null) {
-            setDescription(buildDescription(dataSource));
+            connInfo.setText(DBTaskUtils.buildConnectionDescription(dataSource.getContainer(), dataSource.getName()));
             boolean tablesLoaded = false;
             for (MySQLCatalog catalog : dataSource.getCatalogs()) {
                 if (catalog.getName().equalsIgnoreCase(MySQLConstants.INFO_SCHEMA_NAME)) {
@@ -192,13 +199,6 @@ class MySQLExportWizardPageObjects extends MySQLWizardPageSettings<MySQLExportWi
             }
         }
         updateState();
-    }
-
-    @NotNull
-    private static String buildDescription(MySQLDataSource dataSource) {
-        return MySQLUIMessages.tools_db_export_wizard_page_objects_dialog_description
-            + "   "
-            + DBTaskUtils.buildConnectionDescription(dataSource.getContainer(), dataSource.getName());
     }
 
     private void updateCheckedTables() {
