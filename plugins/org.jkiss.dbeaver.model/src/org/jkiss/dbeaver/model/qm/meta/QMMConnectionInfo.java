@@ -121,7 +121,7 @@ public class QMMConnectionInfo extends QMMObject implements QMMDataSourceInfo {
             if (!stat.isClosed()) {
                 DBCStatement statRef = stat.getReference();
                 String query = statRef == null ? "?" : statRef.getQueryString();
-                log.warn("Statement " + stat.getObjectId() + " (" + query + ") is not closed");
+                log.warn("Statement " + stat.getObjectId() + " (" + query + ") is not closed (" + stat.getConnection().connectionUrl + ")");
                 stat.close();
             }
         }
