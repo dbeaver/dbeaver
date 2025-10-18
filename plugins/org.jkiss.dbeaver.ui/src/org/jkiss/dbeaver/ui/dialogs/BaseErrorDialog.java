@@ -22,6 +22,7 @@ import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.layout.GridDataFactory;
 import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -33,6 +34,7 @@ import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
+import org.jkiss.utils.StringUtils;
 
 import java.util.Objects;
 
@@ -140,16 +142,23 @@ public class BaseErrorDialog extends BaseDialog {
             gd = new GridData(GridData.FILL_HORIZONTAL);
             gd.minimumWidth = IDialogConstants.MINIMUM_MESSAGE_AREA_WIDTH;
 
-            Point textSize = UIUtils.getTextSize(messageText, message);
-            textSize.x += 20;
             int fontHeight = UIUtils.getFontHeight(messageText);
-            gd.heightHint = Math.min(textSize.y, fontHeight + 10);
-            gd.widthHint = Math.min(textSize.x, 600);
-            if (textSize.x > 600) {
-                int rowCount = Math.min(message.split("\n").length, 10) + 2;
-                gd.heightHint = rowCount * fontHeight + 10;
+            int maxDialogWidth = fontHeight * 80;
+
+            Point textSize;
+            GC gc = new GC(messageText);
+            try {
+                gc.setFont(messageText.getFont());
+                double charsPerLine = (double) maxDialogWidth / gc.getFontMetrics().getAverageCharacterWidth();
+                String wrappedMessage = StringUtils.wrap(message, (int) charsPerLine);
+                textSize = gc.textExtent(wrappedMessage);
+            } finally {
+                gc.dispose();
             }
 
+            textSize.x += 20;
+            gd.heightHint = Math.min(textSize.y, fontHeight * 10);
+            gd.widthHint = Math.min(textSize.x, maxDialogWidth);
 
             //gd.heightHint = UIUtils.getFontHeight(composite) * 10;
             //gd.grabExcessVerticalSpace = true;
@@ -181,6 +190,7 @@ public class BaseErrorDialog extends BaseDialog {
         GridData data = new GridData(GridData.HORIZONTAL_ALIGN_FILL
             | GridData.GRAB_HORIZONTAL | GridData.VERTICAL_ALIGN_FILL
             | GridData.GRAB_VERTICAL);
+        data.widthHint = 100;
         //data.horizontalSpan = ((GridLayout)parent.getLayout()).numColumns;
         detailsText.setLayoutData(data);
 
