@@ -88,10 +88,10 @@ class DriverDownloadAutoPage extends DriverDownloadPage {
     }
 
     private ExpandableComposite setExpander(@NotNull Composite parent) {
-        ExpandableComposite expander = UIUtils.createExpandableCompositeWithSeparator(
+        ExpandableComposite expander = new ExpandableComposite(
             parent,
             SWT.NONE,
-            ExpandableComposite.TWISTIE | ExpandableComposite.COMPACT
+            ExpandableComposite.TWISTIE
         );
 
         Composite details = setDetails(expander);
