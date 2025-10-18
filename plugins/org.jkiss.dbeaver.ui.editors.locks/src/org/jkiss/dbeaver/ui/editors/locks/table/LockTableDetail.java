@@ -110,7 +110,7 @@ public class LockTableDetail extends DatabaseObjectListControl<DBAServerLockItem
         }
 
         @Override
-        public Collection<DBAServerLockItem> evaluate(DBRProgressMonitor monitor)
+        public Collection<DBAServerLockItem> evaluate(@NotNull DBRProgressMonitor monitor)
             throws InvocationTargetException, InterruptedException
         {
             try {
