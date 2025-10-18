@@ -1008,6 +1008,10 @@ public class GeneralUtils {
             return "Cannot resolve target address " + CommonUtils.notEmpty(error.getMessage());
         } else if (error instanceof NullPointerException) {
             return "Internal error (NPE)";
+        } else if (error instanceof ClassNotFoundException cnfe) {
+            return "Class not found: " + cnfe.getMessage();
+        } else if (error instanceof NoClassDefFoundError ncdf) {
+            return "Class definition not found: " + ncdf.getMessage();
         }
         return error.getLocalizedMessage();
     }
