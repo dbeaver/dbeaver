@@ -81,7 +81,7 @@ public class BaseDialog extends Dialog {
     @Override
     protected Composite createDialogArea(@NotNull Composite parent) {
         dialogArea = createDialogPanelWithMargins(parent);
-        return getDialogArea();
+        return (Composite) dialogArea;
     }
 
     @NotNull

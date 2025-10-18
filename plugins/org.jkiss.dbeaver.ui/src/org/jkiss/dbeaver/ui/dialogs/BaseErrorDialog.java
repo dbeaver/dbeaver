@@ -49,6 +49,8 @@ import java.util.Objects;
 public class BaseErrorDialog extends BaseDialog {
 
     private static final String NESTING_INDENT = "  "; //$NON-NLS-1$
+    public static final int DEFAULT_MESSAGE_WIDTH = 80;
+    private static final int DETAILS_MESSAGE_WIDTH = 130;
 
     protected String message;
 
@@ -105,10 +107,12 @@ public class BaseErrorDialog extends BaseDialog {
     }
 
     @Override
-    protected void createButtonsForButtonBar(@NotNull Composite parent) {
-        // create OK and Details buttons
-        createButton(parent, IDialogConstants.OK_ID, IDialogConstants.OK_LABEL, true);
-        createDetailsButton(parent);
+    protected void createButtonsForButtonBar(@NotNull Composite parent, int alignment) {
+        if (alignment == SWT.LEAD) {
+            createDetailsButton(parent);
+        } else {
+            createButton(parent, IDialogConstants.OK_ID, IDialogConstants.OK_LABEL, true);
+        }
     }
 
     protected void createDetailsButton(@NotNull Composite parent) {
@@ -140,31 +144,35 @@ public class BaseErrorDialog extends BaseDialog {
 
             Text messageText = new Text(dialogArea, SWT.READ_ONLY | SWT.WRAP | SWT.MULTI);
             messageText.setText(message);
-            gd = new GridData(GridData.FILL_HORIZONTAL);
-            gd.minimumWidth = IDialogConstants.MINIMUM_MESSAGE_AREA_WIDTH;
-
-            int fontHeight = UIUtils.getFontHeight(messageText);
-            int maxDialogWidth = fontHeight * 80;
-
-            Point textSize;
-            GC gc = new GC(messageText);
-            try {
-                gc.setFont(messageText.getFont());
-                double charsPerLine = (double) maxDialogWidth / gc.getFontMetrics().getAverageCharacterWidth();
-                String wrappedMessage = StringUtils.wrap(message, (int) charsPerLine);
-                textSize = gc.textExtent(wrappedMessage);
-            } finally {
-                gc.dispose();
-            }
-
-            textSize.x += 20;
-            gd.heightHint = Math.min(textSize.y, fontHeight * 10);
-            gd.widthHint = Math.min(textSize.x, maxDialogWidth);
-
-            gd.grabExcessHorizontalSpace = true;
-            messageText.setLayoutData(gd);
+            applyMessageSizes(messageText, false, DEFAULT_MESSAGE_WIDTH);
         }
         return dialogArea;
+    }
+
+    private void applyMessageSizes(@NotNull Text messageText, boolean fillVertical, int messageWidthHintChars) {
+        GridData gd = new GridData(fillVertical ? GridData.FILL_BOTH : GridData.FILL_HORIZONTAL);
+        gd.minimumWidth = IDialogConstants.MINIMUM_MESSAGE_AREA_WIDTH;
+
+        int fontHeight = UIUtils.getFontHeight(messageText);
+        int maxDialogWidth = fontHeight * messageWidthHintChars;
+
+        Point textSize;
+        GC gc = new GC(messageText);
+        try {
+            gc.setFont(messageText.getFont());
+            double charsPerLine = (double) maxDialogWidth / gc.getFontMetrics().getAverageCharacterWidth();
+            String wrappedMessage = StringUtils.wrap(messageText.getText(), (int) charsPerLine);
+            textSize = gc.textExtent(wrappedMessage);
+        } finally {
+            gc.dispose();
+        }
+
+        textSize.x += 20;
+        gd.heightHint = Math.min(textSize.y, fontHeight * 10);
+        gd.widthHint = Math.min(textSize.x, maxDialogWidth);
+
+        gd.grabExcessHorizontalSpace = true;
+        messageText.setLayoutData(gd);
     }
 
     @NotNull
@@ -195,6 +203,8 @@ public class BaseErrorDialog extends BaseDialog {
         detailsText.setLayoutData(data);
 
         populateList();
+
+        applyMessageSizes(detailsText, true, DETAILS_MESSAGE_WIDTH);
 
         listCreated = true;
         //StyledTextUtils.fillDefaultStyledTextContextMenu(detailsText);
@@ -332,31 +342,31 @@ public class BaseErrorDialog extends BaseDialog {
      * pressing the details button.
      */
     private void toggleDetailsArea() {
-        boolean opened;
+        boolean opened = false;
         Point windowSize = getShell().getSize();
         if (listCreated) {
             detailPanel.dispose();
             listCreated = false;
             detailsButton.setText(IDialogConstants.SHOW_DETAILS_LABEL);
-            opened = false;
-        } else {
-            createDropDownList(dialogArea.getParent());
+        } else if (getDialogArea() != null) {
+            createDropDownList(getDialogArea().getParent());
             detailsButton.setText(IDialogConstants.HIDE_DETAILS_LABEL);
-            getShell().layout();
             opened = true;
         }
         Point newSize = getShell().computeSize(SWT.DEFAULT, SWT.DEFAULT);
         int diffY = newSize.y - windowSize.y;
         // increase the dialog height if details were opened and such increase is necessary
         // decrease the dialog height if details were closed and empty space appeared
-        if ((opened && diffY > 0) || (!opened && diffY < 0)) {
+        if ((opened && diffY > 0)) {
+            UIUtils.resizeShell(getShell());
+        } else if (!opened && diffY < 0) {
             getShell().setSize(new Point(windowSize.x, windowSize.y + (diffY)));
         }
     }
 
     protected final void showDetailsArea() {
         if (!listCreated) {
-            if (dialogArea != null && !dialogArea.isDisposed()) {
+            if (getDialogArea() != null && !getDialogArea().isDisposed()) {
                 toggleDetailsArea();
             }
         }
