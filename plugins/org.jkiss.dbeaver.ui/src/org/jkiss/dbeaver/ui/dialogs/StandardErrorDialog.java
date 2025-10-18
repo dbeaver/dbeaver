@@ -92,6 +92,11 @@ public class StandardErrorDialog extends BaseErrorDialog implements BlockingPopu
     }
 
     @Override
+    protected int getDialogBoundsStrategy() {
+        return DIALOG_PERSISTLOCATION;
+    }
+
+    @Override
     protected Control createContents(Composite parent) {
         Control contents = super.createContents(parent);
 

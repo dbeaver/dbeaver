@@ -119,7 +119,8 @@ public class BaseErrorDialog extends BaseDialog {
     @Override
     protected Composite createDialogArea(@NotNull Composite parent) {
         Composite dialogArea = super.createDialogArea(parent);
-        dialogArea.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        GridData gd = new GridData(GridData.FILL_HORIZONTAL);
+        dialogArea.setLayoutData(gd);
 
         // create composite
         // create image
@@ -134,13 +135,21 @@ public class BaseErrorDialog extends BaseDialog {
         {
             ((GridLayout) dialogArea.getLayout()).numColumns++;
 
-            Text messageText = new Text(dialogArea, SWT.READ_ONLY | SWT.BORDER | SWT.WRAP | SWT.V_SCROLL);
+            Text messageText = new Text(dialogArea, SWT.READ_ONLY | SWT.WRAP | SWT.MULTI);
             messageText.setText(message);
-            GridData gd = new GridData(GridData.FILL_HORIZONTAL);
+            gd = new GridData(GridData.FILL_HORIZONTAL);
             gd.minimumWidth = IDialogConstants.MINIMUM_MESSAGE_AREA_WIDTH;
 
-            int rowCount = 10;//Math.min(message.split("\n").length, 10) + 1;
-            gd.heightHint = rowCount * UIUtils.getFontHeight(messageText);
+            Point textSize = UIUtils.getTextSize(messageText, message);
+            textSize.x += 20;
+            int fontHeight = UIUtils.getFontHeight(messageText);
+            gd.heightHint = Math.min(textSize.y, fontHeight + 10);
+            gd.widthHint = Math.min(textSize.x, 600);
+            if (textSize.x > 600) {
+                int rowCount = Math.min(message.split("\n").length, 10) + 2;
+                gd.heightHint = rowCount * fontHeight + 10;
+            }
+
 
             //gd.heightHint = UIUtils.getFontHeight(composite) * 10;
             //gd.grabExcessVerticalSpace = true;
@@ -167,7 +176,7 @@ public class BaseErrorDialog extends BaseDialog {
     protected void createDropDownList(@NotNull Composite parent) {
         // create the list
         detailPanel = super.createDialogPanelWithMargins(parent);
-        detailsText = new Text(detailPanel, SWT.BORDER | SWT.READ_ONLY | SWT.H_SCROLL | SWT.V_SCROLL | SWT.MULTI);
+        detailsText = new Text(detailPanel, SWT.BORDER | SWT.WRAP | SWT.READ_ONLY | SWT.V_SCROLL | SWT.MULTI);
         // fill the list
         GridData data = new GridData(GridData.HORIZONTAL_ALIGN_FILL
             | GridData.GRAB_HORIZONTAL | GridData.VERTICAL_ALIGN_FILL
