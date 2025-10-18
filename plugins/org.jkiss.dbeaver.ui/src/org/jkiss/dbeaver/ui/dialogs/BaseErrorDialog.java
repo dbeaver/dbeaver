@@ -60,7 +60,7 @@ public class BaseErrorDialog extends BaseDialog {
     /**
      * Filter mask for determining which status items to display.
      */
-    private int displayMask = 0xFFFF;
+    private final int displayMask;
     private IStatus status;
 
     private boolean shouldIncludeTopLevelErrorInDetails = false;
@@ -83,6 +83,7 @@ public class BaseErrorDialog extends BaseDialog {
         this.displayMask = displayMask;
     }
 
+    @Nullable
     protected Text getDetailsText() {
         return detailsText;
     }
@@ -118,6 +119,7 @@ public class BaseErrorDialog extends BaseDialog {
         }
     }
 
+    @NotNull
     @Override
     protected Composite createDialogArea(@NotNull Composite parent) {
         Composite dialogArea = super.createDialogArea(parent);
@@ -127,12 +129,11 @@ public class BaseErrorDialog extends BaseDialog {
         // create composite
         // create image
         DBPImage image = getImage();
-        if (image != null) {
-            ((GridLayout) dialogArea.getLayout()).numColumns++;
-            Label imageLabel = new Label(dialogArea, SWT.NULL);
-            imageLabel.setImage(DBeaverIcons.getImage(image));
-            GridDataFactory.fillDefaults().align(SWT.CENTER, SWT.BEGINNING).applyTo(imageLabel);
-        }
+        ((GridLayout) dialogArea.getLayout()).numColumns++;
+        Label imageLabel = new Label(dialogArea, SWT.NULL);
+        imageLabel.setImage(DBeaverIcons.getImage(image));
+        GridDataFactory.fillDefaults().align(SWT.CENTER, SWT.BEGINNING).applyTo(imageLabel);
+
         // create message
         {
             ((GridLayout) dialogArea.getLayout()).numColumns++;
@@ -160,14 +161,13 @@ public class BaseErrorDialog extends BaseDialog {
             gd.heightHint = Math.min(textSize.y, fontHeight * 10);
             gd.widthHint = Math.min(textSize.x, maxDialogWidth);
 
-            //gd.heightHint = UIUtils.getFontHeight(composite) * 10;
-            //gd.grabExcessVerticalSpace = true;
             gd.grabExcessHorizontalSpace = true;
             messageText.setLayoutData(gd);
         }
         return dialogArea;
     }
 
+    @NotNull
     @Override
     public DBPImage getImage() {
         if (status != null) {
@@ -220,22 +220,22 @@ public class BaseErrorDialog extends BaseDialog {
     }
 
     private void populateList(
-        IStatus buildingStatus,
+        @NotNull IStatus status,
         int nesting,
         boolean includeStatus
     ) {
-        if (!buildingStatus.matches(displayMask)) {
+        if (!status.matches(displayMask)) {
             return;
         }
 
-        Throwable t = buildingStatus.getException();
+        Throwable t = status.getException();
         boolean incrementNesting = false;
 
         String statusMessage = null;
         if (includeStatus) {
             StringBuilder sb = new StringBuilder();
             sb.append(NESTING_INDENT.repeat(Math.max(0, nesting)));
-            statusMessage = buildingStatus.getMessage();
+            statusMessage = status.getMessage();
             sb.append(statusMessage.trim());
             sb.append("\n");
             detailsText.append(sb.toString());
@@ -246,15 +246,10 @@ public class BaseErrorDialog extends BaseDialog {
             // Include low-level exception message
             String message = GeneralUtils.makeStandardErrorMessage(t);
             if (!Objects.equals(statusMessage, message)) {
-                StringBuilder sb = new StringBuilder();
-                sb.append(NESTING_INDENT.repeat(Math.max(0, nesting)));
-                if (message == null) {
-                    message = t.toString();
-                }
-
-                sb.append(message.trim());
-                sb.append("\n");
-                detailsText.append(sb.toString());
+                String sb = NESTING_INDENT.repeat(Math.max(0, nesting))
+                    + message.trim()
+                    + "\n";
+                detailsText.append(sb);
                 incrementNesting = true;
             }
         }
@@ -274,7 +269,7 @@ public class BaseErrorDialog extends BaseDialog {
         }
 
         // Look for child status
-        IStatus[] children = buildingStatus.getChildren();
+        IStatus[] children = status.getChildren();
         for (IStatus element : children) {
             populateList(element, nesting, false);
         }

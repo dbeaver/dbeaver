@@ -35,19 +35,18 @@ import org.jkiss.dbeaver.ui.UIUtils;
 /**
  * Base dialog with title and image
  */
-public class BaseDialog extends Dialog
-{
+public class BaseDialog extends Dialog {
 
     private String title;
     private DBPImage icon;
 
-    public BaseDialog(Shell parentShell, String title, @Nullable DBPImage icon)
-    {
+    public BaseDialog(@NotNull Shell parentShell, @NotNull String title, @Nullable DBPImage icon) {
         super(parentShell);
         this.title = title;
         this.icon = icon;
     }
 
+    @NotNull
     public String getTitle() {
         return title;
     }
@@ -56,11 +55,12 @@ public class BaseDialog extends Dialog
         this.title = title;
     }
 
+    @NotNull
     public DBPImage getImage() {
         return icon;
     }
 
-    public void setImage(DBPImage image)
+    public void setImage(@NotNull DBPImage image)
     {
         this.icon = image;
     }
@@ -71,14 +71,15 @@ public class BaseDialog extends Dialog
     }
 
     @Override
-    protected Control createContents(Composite parent) {
+    protected Control createContents(@NotNull Composite parent) {
         Control contents = super.createContents(parent);
         applyDialogFont(dialogArea);
         return contents;
     }
 
+    @NotNull
     @Override
-    protected Composite createDialogArea(Composite parent) {
+    protected Composite createDialogArea(@NotNull Composite parent) {
         dialogArea = createDialogPanelWithMargins(parent);
         return getDialogArea();
     }
@@ -96,13 +97,13 @@ public class BaseDialog extends Dialog
         return composite;
     }
 
+    @Nullable
     protected Composite getDialogArea() {
         return (Composite) dialogArea;
     }
 
     @Override
-    public void create()
-    {
+    public void create() {
         super.create();
         if (title != null) {
             getShell().setText(title);
@@ -113,8 +114,9 @@ public class BaseDialog extends Dialog
 
     }
 
+    @NotNull
     @Override
-    protected Control createButtonBar(Composite parent) {
+    protected Control createButtonBar(@NotNull Composite parent) {
         final Composite composite = UIUtils.createPlaceholder(parent, 2, 0);
         composite.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
 
