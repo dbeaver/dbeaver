@@ -52,6 +52,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Predicate;
 
 /**
@@ -73,7 +74,7 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
 
     private ProgressMonitorPart monitorPart;
     private SashForm wizardSash;
-    private volatile int runningOperations = 0;
+    private final AtomicInteger runningOperations = new AtomicInteger();
 
     private String finishButtonLabel = IDialogConstants.OK_LABEL;
     private final String closeButtonLabel = IDialogConstants.CLOSE_LABEL;
@@ -217,7 +218,7 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
                 if (selection.length > 0) {
                     Object newPage = selection[0].getData();
                     // If we are in long operation or target page is not navigable - flip back
-                    if (runningOperations > 0 ||
+                    if (runningOperations.get() > 0 ||
                         (newPage instanceof IWizardPageNavigable && !((IWizardPageNavigable) newPage).isPageNavigable()))
                     {
                         if (prevPage != null) {
@@ -265,6 +266,10 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
 
     }
 
+    protected boolean isShowTreeIcons() {
+        return true;
+    }
+
     private void changePage() {
         TreeItem[] selection = pagesTree.getSelection();
         if (selection.length != 1) {
@@ -276,7 +281,6 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
         }
 
         pageArea.setRedraw(false);
-        IWizard wizard = getWizard();
         try {
             GridData gd;
             if (prevPage != null && prevPage.getControl() != null) {
@@ -288,7 +292,6 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
                 }
             }
 
-            boolean pageCreated = false;
             IDialogPage page = (IDialogPage) newItem.getData();
             Control pageControl = page.getControl();
             if (pageControl == null) {
@@ -307,7 +310,6 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
                         pageControl.setLayoutData(gd);
                     }
                     gd.exclude = false;
-                    pageCreated = true;
                 }
             }
             if (pageControl != null) {
@@ -362,6 +364,9 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
     }
 
     public void setCompleteMarkAfterProgress() {
+        if (!isShowTreeIcons()) {
+            return;
+        }
         TreeItem[] selection = pagesTree.getSelection();
         if (selection.length != 1) {
             return;
@@ -480,8 +485,10 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
             if (!(item.getData() instanceof IDialogPage page)) {
                 continue;
             }
-            DBPImage itemImage = computePageIcon(page, currentPage, shownCompletionMarks::contains);
-            item.setImage(itemImage == null ? null : DBeaverIcons.getImage(itemImage));
+            if (isShowTreeIcons()) {
+                DBPImage itemImage = computePageIcon(page, currentPage, shownCompletionMarks::contains);
+                item.setImage(itemImage == null ? null : DBeaverIcons.getImage(itemImage));
+            }
             item.setForeground(computePageColor(page));
             updatePageCompleteMark(item);
         }
@@ -609,7 +616,7 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
     }
 
     public boolean close() {
-        if (runningOperations > 0) {
+        if (runningOperations.get() > 0) {
             return false;
         }
         if (wizard != null) {
@@ -630,10 +637,10 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
         ControlEnableState pageEnableState = isDisableControlsOnRun ? ControlEnableState.disable(wizardSash) : null;
         ControlEnableState buttonsEnableState = isDisableControlsOnRun ? ControlEnableState.disable(getButtonBar()) : null;
         try {
-            runningOperations++;
+            runningOperations.incrementAndGet();
             ModalContext.run(runnable, true, monitorPart, getShell().getDisplay());
         } finally {
-            runningOperations--;
+            runningOperations.decrementAndGet();
             if (buttonsEnableState != null) {
                 buttonsEnableState.restore();
             }
