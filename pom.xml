@@ -65,7 +65,7 @@
                         <environment>
                             <os>macosx</os>
                             <ws>cocoa</ws>
-                            <arch>x86_64</arch>
+                            <arch>aarch64</arch>
                         </environment>
                     </environments>
                 </configuration>
