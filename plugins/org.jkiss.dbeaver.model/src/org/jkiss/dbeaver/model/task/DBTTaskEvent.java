@@ -17,6 +17,8 @@
 
 package org.jkiss.dbeaver.model.task;
 
+import org.jkiss.code.NotNull;
+
 /**
  * Task event.
  * Fired whenever task is create/deleted/updated.
@@ -36,16 +38,18 @@ public class DBTTaskEvent {
     private final DBTTask task;
     private final Action action;
 
-    public DBTTaskEvent(DBTTask task, Action action) {
+    public DBTTaskEvent(@NotNull DBTTask task, @NotNull Action action) {
         this.task = task;
         this.action = action;
     }
 
+    @NotNull
     public Action getAction()
     {
         return action;
     }
 
+    @NotNull
     public DBTTask getTask() {
         return task;
     }

@@ -1203,7 +1203,7 @@ public class DataSourceDescriptor
                             DBExecUtils.finishContextInitiation(this);
                         }
                     } catch (Exception e) {
-                        throw new DBCException("Can't initialize tunnel", e);
+                        throw new DBCException("Error initializing tunnel", e);
                     }
                     monitor.worked(1);
                 }
