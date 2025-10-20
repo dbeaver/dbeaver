@@ -158,7 +158,7 @@ public class BaseDialog extends Dialog {
         final Composite composite = new Composite(parent, SWT.NONE);
         composite.setLayout(layout);
         composite.setLayoutData(data);
-        composite.setFont(parent.getFont());
+        //composite.setFont(parent.getFont());
 
         return composite;
     }

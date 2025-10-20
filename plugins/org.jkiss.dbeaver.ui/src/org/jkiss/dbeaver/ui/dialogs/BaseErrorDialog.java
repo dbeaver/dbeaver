@@ -34,6 +34,7 @@ import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
+import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.StringUtils;
 
 import java.util.Objects;
@@ -164,8 +165,11 @@ public class BaseErrorDialog extends BaseDialog {
             String wrappedMessage = StringUtils.wrap(messageText.getText(), (int) charsPerLine);
             textSize = gc.textExtent(wrappedMessage);
             //textSize.y = wrappedMessage.split("\n").length * messageText.getLineHeight();
-            textSize.y += fontHeight; // Just in case. On MacOS height should be a bit more to avoid truncation
+            textSize.y += 5; // Just in case. On MacOS height should be a bit more to avoid truncation
             textSize.x += fontHeight * 2;
+            if (RuntimeUtils.isMacOS()) {
+                textSize.x += fontHeight * 6;
+            }
 
         } finally {
             gc.dispose();
