@@ -60,8 +60,8 @@ import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.ReaderWriterLock.ExceptableFunction;
 
 import java.lang.reflect.InvocationTargetException;
-import java.util.*;
 import java.util.List;
+import java.util.*;
 
 /**
  * ReferenceValueEditor
@@ -648,7 +648,7 @@ public class ReferenceValueEditor {
         }
 
         @Override
-        public EnumValuesData evaluate(DBRProgressMonitor monitor) {
+        public EnumValuesData evaluate(@NotNull DBRProgressMonitor monitor) {
             if (editorSelector.isDisposed() || valueController.getExecutionContext() == null) {
                 return null;
             }

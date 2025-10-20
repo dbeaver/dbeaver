@@ -32,6 +32,7 @@ import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.part.EditorPart;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.load.AbstractLoadService;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -168,7 +169,7 @@ public class ProgressEditorPart extends EditorPart {
         }
 
         @Override
-        public IDatabaseEditorInput evaluate(DBRProgressMonitor monitor)
+        public IDatabaseEditorInput evaluate(@NotNull DBRProgressMonitor monitor)
             throws InvocationTargetException, InterruptedException
         {
             try {
