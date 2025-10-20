@@ -58,7 +58,6 @@ public class BaseErrorDialog extends BaseDialog {
     private Button detailsButton;
     private final String title;
     private Text detailsText;
-    private boolean listCreated = false;
 
     /**
      * Filter mask for determining which status items to display.
@@ -122,6 +121,15 @@ public class BaseErrorDialog extends BaseDialog {
                 IDialogConstants.SHOW_DETAILS_LABEL, false
             );
         }
+    }
+
+    @Override
+    protected Composite createContents(@NotNull Composite parent) {
+        Composite contents = (Composite) super.createContents(parent);
+
+        createDropDownList(contents);
+
+        return contents;
     }
 
     @NotNull
@@ -197,24 +205,27 @@ public class BaseErrorDialog extends BaseDialog {
         return DBIcon.STATUS_ERROR;
     }
 
+    protected boolean isDetailsVisible() {
+        return detailPanel.isVisible();
+    }
+
     protected void createDropDownList(@NotNull Composite parent) {
         // create the list
-        detailPanel = super.createDialogPanelWithMargins(parent);
+        detailPanel = super.createDialogPanelWithMargins(parent, true);
         detailsText = new Text(detailPanel, SWT.BORDER | SWT.WRAP | SWT.READ_ONLY | SWT.V_SCROLL | SWT.MULTI);
         // fill the list
         GridData data = new GridData(GridData.HORIZONTAL_ALIGN_FILL
             | GridData.GRAB_HORIZONTAL | GridData.VERTICAL_ALIGN_FILL
             | GridData.GRAB_VERTICAL);
         data.widthHint = 100;
+        detailPanel.setVisible(false);
+        ((GridData)detailPanel.getLayoutData()).exclude = true;
         //data.horizontalSpan = ((GridLayout)parent.getLayout()).numColumns;
         detailsText.setLayoutData(data);
 
         populateList();
 
         applyMessageSizes(detailsText, true, DETAILS_MESSAGE_WIDTH);
-
-        listCreated = true;
-        //StyledTextUtils.fillDefaultStyledTextContextMenu(detailsText);
     }
 
     @Override
@@ -350,32 +361,28 @@ public class BaseErrorDialog extends BaseDialog {
      */
     private void toggleDetailsArea() {
         boolean opened = false;
-        Point windowSize = getShell().getSize();
-        if (listCreated) {
-            detailPanel.dispose();
-            listCreated = false;
+        if (isDetailsVisible()) {
+            detailPanel.setVisible(false);
+            ((GridData)detailPanel.getLayoutData()).exclude = true;
             detailsButton.setText(IDialogConstants.SHOW_DETAILS_LABEL);
         } else if (getDialogArea() != null) {
-            createDropDownList(getDialogArea().getParent());
+            detailPanel.setVisible(true);
+            ((GridData)detailPanel.getLayoutData()).exclude = false;
             detailsButton.setText(IDialogConstants.HIDE_DETAILS_LABEL);
             opened = true;
         }
+        getShell().layout(true, true);
         Point newSize = getShell().computeSize(SWT.DEFAULT, SWT.DEFAULT);
-        int diffY = newSize.y - windowSize.y;
-        // increase the dialog height if details were opened and such increase is necessary
-        // decrease the dialog height if details were closed and empty space appeared
-        if ((opened && diffY > 0)) {
+        if (opened) {
             UIUtils.resizeShell(getShell());
-        } else if (!opened && diffY < 0) {
-            getShell().setSize(new Point(windowSize.x, windowSize.y + (diffY)));
+        } else {
+            getShell().setSize(new Point(newSize.x, newSize.y));
         }
     }
 
     protected final void showDetailsArea() {
-        if (!listCreated) {
-            if (getDialogArea() != null && !getDialogArea().isDisposed()) {
-                UIUtils.asyncExec(this::toggleDetailsArea);
-            }
+        if (!isDetailsVisible()) {
+            toggleDetailsArea();
         }
     }
 
@@ -388,9 +395,7 @@ public class BaseErrorDialog extends BaseDialog {
             this.status = status;
         }
         shouldIncludeTopLevelErrorInDetails = true;
-        if (listCreated) {
-            repopulateList();
-        }
+        repopulateList();
     }
 
     private void repopulateList() {

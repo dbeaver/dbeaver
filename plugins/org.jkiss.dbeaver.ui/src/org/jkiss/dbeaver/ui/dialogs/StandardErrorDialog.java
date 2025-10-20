@@ -23,7 +23,6 @@ import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Shell;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
@@ -37,10 +36,6 @@ import org.jkiss.utils.CommonUtils;
 public class StandardErrorDialog extends BaseErrorDialog implements BlockingPopupDialog {
 
     private static final String DIALOG_ID = "DBeaver.StandardErrorDialog";//$NON-NLS-1$
-    private boolean detailsVisible = false;
-
-    private static final int MAX_AUTO_SIZE_X = 500;
-    private static final int MAX_AUTO_SIZE_Y = 300;
 
     public StandardErrorDialog(
         @NotNull Shell parentShell,
@@ -97,12 +92,11 @@ public class StandardErrorDialog extends BaseErrorDialog implements BlockingPopu
     }
 
     @Override
-    protected Control createContents(Composite parent) {
-        Control contents = super.createContents(parent);
+    protected Composite createContents(@NotNull Composite parent) {
+        Composite contents = super.createContents(parent);
 
-        detailsVisible = getDialogBoundsSettings().getBoolean("showDetails");
-        if (detailsVisible) {
-            UIUtils.asyncExec(this::showDetailsArea);
+        if (getDialogBoundsSettings().getBoolean("showDetails")) {
+            this.showDetailsArea();
         }
 
         return contents;
@@ -132,17 +126,8 @@ public class StandardErrorDialog extends BaseErrorDialog implements BlockingPopu
     }
 
     @Override
-    protected void createDropDownList(@NotNull Composite parent) {
-        detailsVisible = true;
-        super.createDropDownList(parent);
-        getDetailsText().addDisposeListener(e -> {
-            detailsVisible = false;
-        });
-    }
-
-    @Override
     public boolean close() {
-        getDialogBoundsSettings().put("showDetails", detailsVisible);
+        getDialogBoundsSettings().put("showDetails", isDetailsVisible());
         return super.close();
     }
 

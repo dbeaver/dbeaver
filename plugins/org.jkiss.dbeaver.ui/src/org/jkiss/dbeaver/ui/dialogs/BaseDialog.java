@@ -80,16 +80,16 @@ public class BaseDialog extends Dialog {
     @NotNull
     @Override
     protected Composite createDialogArea(@NotNull Composite parent) {
-        dialogArea = createDialogPanelWithMargins(parent);
+        dialogArea = createDialogPanelWithMargins(parent, false);
         return (Composite) dialogArea;
     }
 
     @NotNull
-    protected Composite createDialogPanelWithMargins(@NotNull Composite parent) {
+    protected Composite createDialogPanelWithMargins(@NotNull Composite parent, boolean compact) {
         GridLayout layout = new GridLayout();
-        layout.marginHeight = convertVerticalDLUsToPixels(IDialogConstants.VERTICAL_MARGIN);
+        layout.marginHeight = convertVerticalDLUsToPixels(compact ? IDialogConstants.VERTICAL_MARGIN / 2 : IDialogConstants.VERTICAL_MARGIN);
         layout.marginWidth = convertHorizontalDLUsToPixels(IDialogConstants.HORIZONTAL_MARGIN);
-        layout.verticalSpacing = convertVerticalDLUsToPixels(IDialogConstants.VERTICAL_SPACING);
+        layout.verticalSpacing = convertVerticalDLUsToPixels(compact ? IDialogConstants.VERTICAL_SPACING / 2 : IDialogConstants.VERTICAL_SPACING);
         layout.horizontalSpacing = convertHorizontalDLUsToPixels(IDialogConstants.HORIZONTAL_SPACING);
         Composite composite = WidgetFactory.composite(SWT.NONE).layout(layout)
             .layoutData(new GridData(GridData.FILL_BOTH)).create(parent);
