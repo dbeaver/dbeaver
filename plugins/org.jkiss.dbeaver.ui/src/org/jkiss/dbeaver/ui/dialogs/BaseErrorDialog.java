@@ -163,11 +163,14 @@ public class BaseErrorDialog extends BaseDialog {
             double charsPerLine = (double) maxDialogWidth / gc.getFontMetrics().getAverageCharacterWidth();
             String wrappedMessage = StringUtils.wrap(messageText.getText(), (int) charsPerLine);
             textSize = gc.textExtent(wrappedMessage);
+            //textSize.y = wrappedMessage.split("\n").length * messageText.getLineHeight();
+            textSize.y += fontHeight; // Just in case. On MacOS height should be a bit more to avoid truncation
+            textSize.x += fontHeight * 2;
+
         } finally {
             gc.dispose();
         }
 
-        textSize.x += 20;
         gd.heightHint = Math.min(textSize.y, fontHeight * 10);
         gd.widthHint = Math.min(textSize.x, maxDialogWidth);
 
