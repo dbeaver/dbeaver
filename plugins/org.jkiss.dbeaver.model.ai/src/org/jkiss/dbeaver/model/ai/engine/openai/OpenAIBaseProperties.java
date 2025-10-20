@@ -29,9 +29,6 @@ public interface OpenAIBaseProperties extends AIEngineProperties {
     String getToken();
 
     @Nullable
-    String getModel();
-
-    @Nullable
     Integer getContextWindowSize();
 
     double getTemperature();

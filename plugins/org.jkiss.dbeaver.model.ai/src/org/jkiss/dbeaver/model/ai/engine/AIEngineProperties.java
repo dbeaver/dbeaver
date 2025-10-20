@@ -38,4 +38,9 @@ public interface AIEngineProperties {
 
     @Nullable
     String getModelPropertyName();
+
+    @Nullable
+    String getModel();
+
+    void setModel(@Nullable String modelId);
 }

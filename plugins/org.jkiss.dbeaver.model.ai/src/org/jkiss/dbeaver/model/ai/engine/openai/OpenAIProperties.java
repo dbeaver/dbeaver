@@ -100,6 +100,7 @@ public class OpenAIProperties implements OpenAIBaseProperties {
         return OpenAIModels.getEffectiveModelName(modelName);
     }
 
+    @Override
     public void setModel(@Nullable String model) {
         this.model = model;
     }

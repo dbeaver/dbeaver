@@ -67,11 +67,13 @@ public class CopilotProperties implements AIEngineProperties {
     }
 
     @Nullable
+    @Override
     @Property(order = 2, id = GPT_MODEL)
     public String getModel() {
         return model;
     }
 
+    @Override
     public void setModel(@Nullable String model) {
         this.model = model;
     }
