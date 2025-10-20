@@ -197,6 +197,15 @@ public class PrefPageProjectNetworkProfiles extends PrefPageNetworkProfiles impl
         }
     }
 
+    void setProjectMeta(@NotNull DBPProject projectMeta) {
+        this.projectMeta = projectMeta;
+    }
+
+    @NotNull
+    DBPProject getProjectMeta() {
+        return projectMeta;
+    }
+
     /**
      * Opens a property dialog for editing network profiles.
      *

@@ -6,7 +6,7 @@
          <meta.schema plugin="com.dbeaver.model.ai" id="com.dbeaver.ai.function" name="AI functions"/>
       </appInfo>
       <documentation>
-         AI assistants
+         AI functions for assistant functionality
       </documentation>
    </annotation>
 
@@ -25,7 +25,28 @@
 
    <element name="function">
       <complexType>
-         <attribute name="class" type="string">
+         <attribute name="id" type="string" use="required">
+            <annotation>
+               <documentation>
+                  Unique function identifier
+               </documentation>
+            </annotation>
+         </attribute>
+         <attribute name="name" type="string" use="required">
+            <annotation>
+               <documentation>
+                  Function name used by AI assistant
+               </documentation>
+            </annotation>
+         </attribute>
+         <attribute name="description" type="string">
+            <annotation>
+               <documentation>
+                  Function description for AI assistant
+               </documentation>
+            </annotation>
+         </attribute>
+         <attribute name="category" type="string">
             <annotation>
                <documentation>
                </documentation>

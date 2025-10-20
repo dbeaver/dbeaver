@@ -138,7 +138,7 @@ public class DBNFileSystem extends DBNNode implements DBNLazyNode
         return true;
     }
 
-    @NotNull
+    @Nullable
     @Override
     public DBNFileSystemRoot[] getChildren(@NotNull DBRProgressMonitor monitor) throws DBException {
         if (children == null && !monitor.isForceCacheUsage()) {
@@ -147,15 +147,20 @@ public class DBNFileSystem extends DBNNode implements DBNLazyNode
         return children;
     }
 
-    public DBNFileSystemRoot getChild(DBRProgressMonitor monitor, String name) throws DBException {
-        for (DBNFileSystemRoot root : getChildren(monitor)) {
-            if (root.getName().equals(name)) {
-                return root;
+    @Nullable
+    public DBNFileSystemRoot getChild(@NotNull DBRProgressMonitor monitor, @NotNull String name) throws DBException {
+        DBNFileSystemRoot[] roots = getChildren(monitor);
+        if (roots != null) {
+            for (DBNFileSystemRoot root : roots) {
+                if (root.getName().equals(name)) {
+                    return root;
+                }
             }
         }
         return null;
     }
 
+    @NotNull
     protected DBNFileSystemRoot[] readChildNodes(
         @NotNull DBRProgressMonitor monitor,
         @Nullable DBNFileSystemRoot[] mergeWith

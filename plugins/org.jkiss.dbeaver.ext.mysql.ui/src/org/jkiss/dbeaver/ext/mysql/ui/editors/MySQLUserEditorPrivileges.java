@@ -25,6 +25,7 @@ import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.mysql.model.*;
@@ -255,7 +256,7 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract
         LoadingJob.createService(
             new DatabaseLoadService<Collection<MySQLTableBase>>(MySQLUIMessages.editors_user_editor_privileges_service_load_tables, getExecutionContext()) {
                 @Override
-                public Collection<MySQLTableBase> evaluate(DBRProgressMonitor monitor)
+                public Collection<MySQLTableBase> evaluate(@NotNull DBRProgressMonitor monitor)
                     throws InvocationTargetException, InterruptedException {
                     if (selectedCatalog == null) {
                         return Collections.emptyList();
@@ -302,7 +303,7 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract
         LoadingJob.createService(
             new DatabaseLoadService<java.util.List<MySQLPrivilege>>(MySQLUIMessages.editors_user_editor_privileges_service_load_privileges, getExecutionContext()) {
                 @Override
-                public java.util.List<MySQLPrivilege> evaluate(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
+                public java.util.List<MySQLPrivilege> evaluate(@NotNull DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
                     try {
                         return getDatabaseObject().getDataSource().getPrivileges(monitor);
                     } catch (DBException e) {
