@@ -37,4 +37,13 @@ public class CubridMessages extends NLS {
     public static String pref_page_cubrid_group_dbms_output;
     public static String pref_page_cubrid_checkbox_enable_dbms_output;
     public static String pref_page_cubrid_label_buffer_size;
+    public static String dialog_connection_cubrid_properties;
+    public static String dialog_connection_cubrid_properties_description;
+    public static String dialog_connection_cubrid_properties_shard_setting;
+    public static String dialog_connection_cubrid_properties_shard_tooltip;
+    public static String dialog_connection_cubrid_properties_invalid_shard_id_title;
+    public static String dialog_connection_cubrid_properties_invalid_shard_id_message;
+    public static String dialog_connection_cubrid_properties_invalid_input_title;
+    public static String dialog_connection_cubrid_properties_invalid_input_message;
+
 }
