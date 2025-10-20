@@ -35,11 +35,9 @@ import org.jkiss.dbeaver.ext.mysql.tasks.MySQLDatabaseExportInfo;
 import org.jkiss.dbeaver.ext.mysql.ui.internal.MySQLUIMessages;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
-import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.task.DBTaskUtils;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -59,7 +57,6 @@ class MySQLExportWizardPageObjects extends MySQLWizardPageSettings<MySQLExportWi
 
     private MySQLCatalog curCatalog;
     private Button exportViewsCheck;
-    private CLabel connInfo;
 
     protected MySQLExportWizardPageObjects(MySQLExportWizard wizard)
     {
@@ -180,10 +177,7 @@ class MySQLExportWizardPageObjects extends MySQLWizardPageSettings<MySQLExportWi
         }
         if (dataSource != null) {
             DBPDataSourceContainer container = dataSource.getContainer();
-            connInfo.setToolTipText(DBTaskUtils.buildConnectionDescription(container, null));
-            connInfo.setText(container.getName());
-            DBPImage icon = container.getDriver().getIcon();
-            connInfo.setImage(DBeaverIcons.getImage(icon));
+            setConnectionInfo(container, null);
 
             boolean tablesLoaded = false;
             for (MySQLCatalog catalog : dataSource.getCatalogs()) {

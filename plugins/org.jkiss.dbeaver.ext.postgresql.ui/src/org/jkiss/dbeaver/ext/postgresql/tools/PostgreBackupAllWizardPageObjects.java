@@ -43,7 +43,6 @@ public class PostgreBackupAllWizardPageObjects extends AbstractNativeToolWizardP
 
     private PostgreDataSource dataSource;
     private Set<PostgreDatabase> checkedObjects = new HashSet<>();
-    private CLabel connInfo;
 
     protected PostgreBackupAllWizardPageObjects(PostgreBackupAllWizard wizard) {
         super(wizard, PostgreMessages.wizard_backup_all_page_global_backup_name);
@@ -134,7 +133,7 @@ public class PostgreBackupAllWizardPageObjects extends AbstractNativeToolWizardP
             }
         }
         if (dataSource != null) {
-            PostgreUIUtils.setConnectionInfo(connInfo, dataSource.getContainer(), null);
+            setConnectionInfo(dataSource.getContainer(), null);
 
             // Database list depends on connection setting
             for (PostgreDatabase database : dataSource.getDatabases()) {

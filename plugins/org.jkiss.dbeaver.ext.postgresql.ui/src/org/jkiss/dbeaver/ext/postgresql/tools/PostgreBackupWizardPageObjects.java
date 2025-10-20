@@ -64,7 +64,6 @@ class PostgreBackupWizardPageObjects extends AbstractNativeToolWizardPage<Postgr
     private PostgreDatabase dataBase;
     private Button exportViewsCheck;
     private Button fullSchemaBackupCheck;
-    private CLabel connInfo;
 
     PostgreBackupWizardPageObjects(PostgreBackupWizard wizard)
     {
@@ -221,7 +220,7 @@ class PostgreBackupWizardPageObjects extends AbstractNativeToolWizardPage<Postgr
             exportViewsCheck.setSelection(true);
         }
         if (dataBase != null) {
-            PostgreUIUtils.setConnectionInfo(connInfo, dataBase.getDataSource().getContainer(), dataBase.getName());
+            setConnectionInfo(dataBase.getDataSource().getContainer(), dataBase.getName());
 
             boolean tablesLoaded = false;
             try {
