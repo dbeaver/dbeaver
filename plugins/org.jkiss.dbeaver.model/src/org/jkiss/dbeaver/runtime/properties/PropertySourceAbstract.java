@@ -354,7 +354,7 @@ public abstract class PropertySourceAbstract implements DBPPropertyManager, IPro
         }
 
         @Override
-        public Map<ObjectPropertyDescriptor, Object> evaluate(DBRProgressMonitor monitor)
+        public Map<ObjectPropertyDescriptor, Object> evaluate(@NotNull DBRProgressMonitor monitor)
             throws InvocationTargetException
         {
             try {

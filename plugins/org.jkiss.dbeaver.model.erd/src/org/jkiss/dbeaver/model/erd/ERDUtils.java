@@ -143,10 +143,7 @@ public class ERDUtils
         try {
             diagram.getContentProvider().fillEntityFromObject(monitor, diagram, otherEntities, erdEntity);
         } catch (DBCException e) {
-            // Something goes wrong
-            DBWorkbench.getPlatformUI().showError(
-                "Can't create entity",
-                e.getMessage());
+            log.error("Can't create ERD entity from database entity " + entity, e);
             return null;
         }
         return erdEntity;

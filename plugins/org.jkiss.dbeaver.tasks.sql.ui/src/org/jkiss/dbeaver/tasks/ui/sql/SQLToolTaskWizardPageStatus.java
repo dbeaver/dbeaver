@@ -213,7 +213,7 @@ class SQLToolTaskWizardPageStatus extends ActiveWizardPage<SQLToolTaskWizard> im
         }
 
         @Override
-        public Collection<SQLToolStatistics> evaluate(DBRProgressMonitor monitor)
+        public Collection<SQLToolStatistics> evaluate(@NotNull DBRProgressMonitor monitor)
             throws InvocationTargetException, InterruptedException {
             try {
                 return Collections.emptyList();
