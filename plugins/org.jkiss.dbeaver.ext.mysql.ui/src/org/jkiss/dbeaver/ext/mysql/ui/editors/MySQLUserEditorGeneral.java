@@ -188,7 +188,7 @@ public class MySQLUserEditorGeneral extends MySQLUserEditorAbstract
                 executionContext
             ) {
                 @Override
-                public List<MySQLPrivilege> evaluate(DBRProgressMonitor monitor) throws InvocationTargetException {
+                public List<MySQLPrivilege> evaluate(@NotNull DBRProgressMonitor monitor) throws InvocationTargetException {
                     try {
                         MySQLUser user = getDatabaseObject();
                         if (user == null) {
