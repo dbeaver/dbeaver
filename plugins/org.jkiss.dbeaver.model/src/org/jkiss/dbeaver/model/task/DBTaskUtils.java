@@ -259,16 +259,6 @@ public class DBTaskUtils {
     }
 
     @NotNull
-    private static String buildObjectName(@NotNull DBPProject project, @NotNull String objectId) {
-        DBPDataSourceContainer container = DBUtils.findDataSourceByObjectId(project, objectId);
-        String databaseName = DBUtils.getObjectNameFromId(objectId);
-        if (container == null) {
-            return databaseName;
-        }
-        return buildConnectionDescription(container, databaseName);
-    }
-
-    @NotNull
     public static String buildConnectionDescription(@NotNull DBPDataSourceContainer container, @Nullable String databaseName) {
         DBPConnectionConfiguration connection = container.getConnectionConfiguration();
 
