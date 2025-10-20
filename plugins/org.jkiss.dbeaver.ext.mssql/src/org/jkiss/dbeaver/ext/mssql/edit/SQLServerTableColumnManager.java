@@ -142,7 +142,9 @@ public class SQLServerTableColumnManager extends SQLTableColumnManager<SQLServer
 
         final SQLServerTableColumn column = new SQLServerTableColumn(table);
         column.setName(getNewColumnName(monitor, context, table));
-        column.setDataType((SQLServerDataType) columnType);
+        if (columnType instanceof SQLServerDataType dt) {
+            column.setDataType(dt);
+        }
         column.setTypeName(columnType == null ? "varchar" : columnType.getName()); //$NON-NLS-1$
         column.setMaxLength(columnType != null && columnType.getDataKind() == DBPDataKind.STRING ? 100 : 0);
         column.setValueType(columnType == null ? Types.VARCHAR : columnType.getTypeID());
