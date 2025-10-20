@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ext.postgresql;
 
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.CLabel;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
@@ -25,7 +26,11 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataSource;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreObject;
 import org.jkiss.dbeaver.ext.postgresql.model.impls.PostgreServerPostgreSQL;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.DBPImage;
+import org.jkiss.dbeaver.model.task.DBTaskUtils;
 import org.jkiss.dbeaver.tasks.ui.nativetool.AbstractNativeToolWizard;
+import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
 
 public class PostgreUIUtils {
@@ -57,4 +62,17 @@ public class PostgreUIUtils {
             infoLabel.setLayoutData(gridData);
         }
     }
+
+    public static void setConnectionInfo(
+        @NotNull CLabel connInfo,
+        @NotNull DBPDataSourceContainer container,
+        @Nullable String dbName)
+    {
+        connInfo.setToolTipText(DBTaskUtils.buildConnectionDescription(container, dbName));
+        connInfo.setText(container.getName());
+        DBPImage icon = container.getDriver().getIcon();
+        connInfo.setImage(DBeaverIcons.getImage(icon));
+    }
+
+
 }

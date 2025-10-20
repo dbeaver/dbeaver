@@ -41,7 +41,6 @@ import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTable;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
-import org.jkiss.dbeaver.model.task.DBTaskUtils;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.tasks.ui.nativetool.AbstractNativeToolWizardPage;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
@@ -222,7 +221,8 @@ class PostgreBackupWizardPageObjects extends AbstractNativeToolWizardPage<Postgr
             exportViewsCheck.setSelection(true);
         }
         if (dataBase != null) {
-            connInfo.setText(DBTaskUtils.buildConnectionDescription(dataBase.getDataSource().getContainer(), dataBase.getName()));
+            PostgreUIUtils.setConnectionInfo(connInfo, dataBase.getDataSource().getContainer(), dataBase.getName());
+
             boolean tablesLoaded = false;
             try {
                 for (PostgreSchema schema : dataBase.getSchemas(new VoidProgressMonitor())) {

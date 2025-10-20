@@ -34,6 +34,8 @@ import org.jkiss.dbeaver.ext.mysql.model.MySQLTableBase;
 import org.jkiss.dbeaver.ext.mysql.tasks.MySQLDatabaseExportInfo;
 import org.jkiss.dbeaver.ext.mysql.ui.internal.MySQLUIMessages;
 import org.jkiss.dbeaver.model.DBIcon;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -177,7 +179,12 @@ class MySQLExportWizardPageObjects extends MySQLWizardPageSettings<MySQLExportWi
             exportViewsCheck.setSelection(true);
         }
         if (dataSource != null) {
-            connInfo.setText(DBTaskUtils.buildConnectionDescription(dataSource.getContainer(), dataSource.getName()));
+            DBPDataSourceContainer container = dataSource.getContainer();
+            connInfo.setToolTipText(DBTaskUtils.buildConnectionDescription(container, null));
+            connInfo.setText(container.getName());
+            DBPImage icon = container.getDriver().getIcon();
+            connInfo.setImage(DBeaverIcons.getImage(icon));
+
             boolean tablesLoaded = false;
             for (MySQLCatalog catalog : dataSource.getCatalogs()) {
                 if (catalog.getName().equalsIgnoreCase(MySQLConstants.INFO_SCHEMA_NAME)) {

@@ -55,7 +55,7 @@ public class DBTaskUtils {
     public static final String TASK_PROMPT_VARIABLES = "promptTaskVariables";
     public static final String TASK_CONTEXT = "taskContext";
 
-    public static final String CONNECTION_DESCRIPTION_TEMPLATE = "[%s] (%s - %s:%s/%s)";
+    public static final String CONNECTION_DESCRIPTION_TEMPLATE = "[%s] (%s - %s:%s%s)";
 
 
     @NotNull
@@ -229,25 +229,29 @@ public class DBTaskUtils {
             Optional<String> inputFileKey = task.getProperties().keySet().stream().filter(k -> k.contains("inputFile")).findFirst();
             String inputFile = inputFileKey.isPresent() ? task.getProperties().get(inputFileKey.get()).toString() : "file";
             String dbObjectNames = "";
+            String connectionInfo = "";
             Object dbObjectIdsObj = task.getProperties().get("databaseObjects");
             if (dbObjectIdsObj != null) {
                 List<String> dbObjectIds = (List<String>)dbObjectIdsObj;
                 dbObjectNames = dbObjectIds.stream()
-                    .map(id -> buildObjectName(task.getProject(), id))
+                    .map(DBUtils::getObjectNameFromId)
                     .collect(Collectors.joining(", "));
+
+                if (!((List<?>) dbObjectIdsObj).isEmpty()) {
+                    DBPDataSourceContainer container = DBUtils.findDataSourceByObjectId(
+                        task.getProject(),
+                        ((List<String>) dbObjectIdsObj).getFirst()
+                    );
+                    if (container != null) {
+                        connectionInfo =  DBTaskUtils.buildConnectionDescription(container, null);
+                    }
+                }
             }
-            messageBuilder.append(NLS.bind(messageOrNull, dbObjectNames, inputFile)).append("\n");
+            messageBuilder.append(NLS.bind(messageOrNull, connectionInfo + "\n" + dbObjectNames, inputFile)).append("\n");
             confirmationRequired = true;
         }
         confirmationRequired |= extraConfirmationsCollector.collect(messageBuilder, task); 
         return confirmationRequired;
-    }
-
-    @NotNull
-    private static String buildObjectName(@NotNull DBPProject project, @NotNull String objectId) {
-        DBPDataSourceContainer container = DBUtils.findDataSourceByObjectId(project, objectId);
-        String databaseName = DBUtils.getObjectNameFromId(objectId);
-        return buildConnectionDescription(container, databaseName);
     }
 
     public static interface TaskConfirmationsCollector {
@@ -255,19 +259,24 @@ public class DBTaskUtils {
     }
 
     @NotNull
-    public static String buildConnectionDescription(@Nullable DBPDataSourceContainer container, @NotNull String databaseName) {
+    private static String buildObjectName(@NotNull DBPProject project, @NotNull String objectId) {
+        DBPDataSourceContainer container = DBUtils.findDataSourceByObjectId(project, objectId);
+        String databaseName = DBUtils.getObjectNameFromId(objectId);
         if (container == null) {
             return databaseName;
         }
+        return buildConnectionDescription(container, databaseName);
+    }
+
+    @NotNull
+    public static String buildConnectionDescription(@NotNull DBPDataSourceContainer container, @Nullable String databaseName) {
         DBPConnectionConfiguration connection = container.getConnectionConfiguration();
 
         return CONNECTION_DESCRIPTION_TEMPLATE.formatted(container.getName(),
             container.getDriver(),
             connection.getHostName(),
             connection.getHostPort(),
-            databaseName);
+            CommonUtils.isEmpty(databaseName) ? "" : "/" + databaseName
+        );
     }
-
-
-
 }
