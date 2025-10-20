@@ -45,7 +45,7 @@ public abstract class ApplicationCommandLine<T extends ApplicationInstanceContro
         .create();
 
 
-    protected static final Map<String, CommandLineParameterDescriptor> customParameters = new LinkedHashMap<>();
+    protected static final Map<Class<?>, CommandLineParameterDescriptor> customParameters = new LinkedHashMap<>();
 
     static {
         IExtensionRegistry er = Platform.getExtensionRegistry();
@@ -55,7 +55,7 @@ public abstract class ApplicationCommandLine<T extends ApplicationInstanceContro
             if ("parameter".equals(ext.getName())) {
                 try {
                     CommandLineParameterDescriptor parameter = new CommandLineParameterDescriptor(ext);
-                    customParameters.put(parameter.getName(), parameter);
+                    customParameters.put(parameter.getImplClass(), parameter);
                 } catch (Exception e) {
                     log.error("Can't load contributed parameter", e);
                 }
@@ -94,7 +94,7 @@ public abstract class ApplicationCommandLine<T extends ApplicationInstanceContro
 
             if (supportNewInstance) {
                 for (CommandLineParameterDescriptor param : customParameters.values()) {
-                    if (param.isExclusiveMode() && find(parseResult, param.getName()) != null) {
+                    if (param.isExclusiveMode() && find(parseResult, param.getImplClass()) != null) {
                         if (param.isForceNewInstance()) {
                             return new CLIProcessResult(CLIProcessResult.PostAction.START_INSTANCE);
                         }
@@ -179,6 +179,7 @@ public abstract class ApplicationCommandLine<T extends ApplicationInstanceContro
         @NotNull CLIRunMeta runMeta
     ) {
         var cmd = new CommandLine(createTopLevelCommand(applicationInstanceController, context, runMeta));
+        cmd.setExecutionStrategy(new CommandLine.RunAll());
         for (CommandLineParameterDescriptor param : customParameters.values()) {
             if (param.getImplClass().getAnnotation(CommandLine.Command.class) == null) {
                 log.warn("Class is not annotated '" + param.getImplClass().getName() + "'");
@@ -201,12 +202,13 @@ public abstract class ApplicationCommandLine<T extends ApplicationInstanceContro
 
 
     @Nullable
-    protected CommandLine.ParseResult find(@NotNull CommandLine.ParseResult pr, @NotNull String name) {
-        if (pr.commandSpec().name().equals(name) || pr.hasMatchedOption(name)) {
+    protected CommandLine.ParseResult find(@NotNull CommandLine.ParseResult pr, @NotNull Class<?> clazz) {
+        Object commandObject = pr.commandSpec().userObject();
+        if (clazz.equals(commandObject.getClass())) {
             return pr;
         }
         for (var sub : pr.subcommands()) {
-            var found = find(sub, name);
+            var found = find(sub, clazz);
             if (found != null) {
                 return found;
             }

@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.cli.option;
+package org.jkiss.dbeaver.model.cli.model.option;
 
 import org.jkiss.code.Nullable;
 import picocli.CommandLine;

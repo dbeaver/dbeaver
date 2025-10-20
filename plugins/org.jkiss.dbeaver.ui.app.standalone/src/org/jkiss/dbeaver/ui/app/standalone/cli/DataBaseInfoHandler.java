@@ -42,7 +42,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
-@CommandLine.Command(name = "-database-driver-list", aliases = "-databaseList",
+@CommandLine.Command(name = "database-driver-list", aliases = {"-database-driver-list", "-databaseList"},
     description = "Show list of supported database drivers in json format.", mixinStandardHelpOptions = true)
 public class DataBaseInfoHandler extends AbstractCommandLineParameterHandler {
     private static final String OUTPUT_DATABASES_JSON = "database.drivers.json"; //$NON-NLS-1$

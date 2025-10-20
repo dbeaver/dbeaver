@@ -9,7 +9,8 @@ Bundle-RequiredExecutionEnvironment: JavaSE-21
 Bundle-ActivationPolicy: lazy
 Export-Package: org.jkiss.dbeaver.model.cli,
  org.jkiss.dbeaver.model.cli.registry,
- org.jkiss.dbeaver.model.cli.option,
+ org.jkiss.dbeaver.model.cli.model,
+ org.jkiss.dbeaver.model.cli.model.option,
  org.jkiss.dbeaver.model.cli.command
 Require-Bundle: org.jkiss.dbeaver.model;visibility:=reexport,
  picocli;visibility:=reexport,

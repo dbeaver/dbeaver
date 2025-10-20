@@ -22,7 +22,6 @@ import org.jkiss.utils.CommonUtils;
 import org.osgi.framework.Bundle;
 
 public class CommandLineParameterDescriptor {
-    private final String name;
     private final boolean exitAfterExecute;
     private final boolean exclusiveMode;
     private final boolean forceNewInstance;
@@ -30,7 +29,6 @@ public class CommandLineParameterDescriptor {
 
 
     public CommandLineParameterDescriptor(IConfigurationElement config) throws Exception {
-        this.name = config.getAttribute("name");
         this.exitAfterExecute = CommonUtils.toBoolean(config.getAttribute("exitAfterExecute"));
         this.exclusiveMode = CommonUtils.toBoolean(config.getAttribute("exclusiveMode"));
         this.forceNewInstance = CommonUtils.toBoolean(config.getAttribute("forceNewInstance"));
@@ -54,10 +52,5 @@ public class CommandLineParameterDescriptor {
     public Class<?> getImplClass() {
         return implClass;
     }
-
-    public String getName() {
-        return name;
-    }
-
 }
 

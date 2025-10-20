@@ -20,6 +20,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.cli.*;
+import org.jkiss.dbeaver.model.cli.model.CommandLineAuthenticator;
 import picocli.CommandLine;
 
 public abstract class AbstractTopLevelCommand implements Runnable, CommandLine.IExitCodeGenerator {
@@ -87,5 +88,10 @@ public abstract class AbstractTopLevelCommand implements Runnable, CommandLine.I
     @NotNull
     public CLIRunMeta getMeta() {
         return meta;
+    }
+
+    @Nullable
+    public CommandLineAuthenticator getAuthenticator() {
+        return null;
     }
 }

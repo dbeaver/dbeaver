@@ -18,7 +18,7 @@ package org.jkiss.dbeaver.model.cli;
 
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.cli.option.InputFileOption;
+import org.jkiss.dbeaver.model.cli.model.option.InputFileOption;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;

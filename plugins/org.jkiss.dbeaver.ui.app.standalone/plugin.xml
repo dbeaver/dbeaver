@@ -469,11 +469,10 @@
     </extension>
 
     <extension point="org.jkiss.dbeaver.commandLine">
-        <parameter name="translate-sql-script"
+        <parameter
             exitAfterExecute="true"
             handler="org.jkiss.dbeaver.ui.app.standalone.cli.SQLTranslatorHandler"/>
-        <parameter name="database-driver-list"
-            exitAfterExecute="true"
+        <parameter exitAfterExecute="true"
             hasArg="true"
             handler="org.jkiss.dbeaver.ui.app.standalone.cli.DataBaseInfoHandler"/>
     </extension>

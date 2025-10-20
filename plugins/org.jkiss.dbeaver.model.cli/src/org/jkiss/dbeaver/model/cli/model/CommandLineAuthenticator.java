@@ -14,25 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.cli.option;
+package org.jkiss.dbeaver.model.cli.model;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import picocli.CommandLine;
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.cli.CommandLineContext;
+import org.jkiss.dbeaver.model.cli.model.option.AuthenticateOptions;
 
-import java.nio.file.Path;
-
-public class FilesOptions extends InputFileOption {
-    //stdin file name
-
-    @Nullable
-    @CommandLine.Option(
-        names = {"-out", "-output-file"},
-        description = "Write the execution result to a file."
-    )
-    private Path outputFile;
-
-    @Nullable
-    public Path getOutputFile() {
-        return outputFile;
-    }
+public interface CommandLineAuthenticator {
+    void authenticate(@Nullable AuthenticateOptions options, @NotNull CommandLineContext context) throws DBException;
 }
