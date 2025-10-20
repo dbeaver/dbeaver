@@ -374,7 +374,7 @@ public class BaseErrorDialog extends BaseDialog {
     protected final void showDetailsArea() {
         if (!listCreated) {
             if (getDialogArea() != null && !getDialogArea().isDisposed()) {
-                toggleDetailsArea();
+                UIUtils.asyncExec(this::toggleDetailsArea);
             }
         }
     }
