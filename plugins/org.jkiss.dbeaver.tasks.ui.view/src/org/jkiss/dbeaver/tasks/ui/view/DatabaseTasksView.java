@@ -357,7 +357,7 @@ public class DatabaseTasksView extends ViewPart implements DBTTaskListener {
     }
 
     @Override
-    public void handleTaskEvent(DBTTaskEvent event) {
+    public void handleTaskEvent(@NotNull DBTTaskEvent event) {
         UIUtils.asyncExec(() -> {
             DBTTask task = event.getTask();
             switch (event.getAction()) {
@@ -379,7 +379,7 @@ public class DatabaseTasksView extends ViewPart implements DBTTaskListener {
     }
 
     @Override
-    public void handleTaskFolderEvent(DBTTaskFolderEvent event) {
+    public void handleTaskFolderEvent(@NotNull DBTTaskFolderEvent event) {
         UIUtils.asyncExec(() -> {
             DBTTaskFolder taskFolder = event.getTaskFolder();
             switch (event.getAction()) {
