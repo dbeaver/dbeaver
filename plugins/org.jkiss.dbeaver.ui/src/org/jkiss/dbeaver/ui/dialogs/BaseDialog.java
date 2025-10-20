@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.ui.dialogs;
 
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
+import org.eclipse.jface.widgets.WidgetFactory;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -34,19 +35,18 @@ import org.jkiss.dbeaver.ui.UIUtils;
 /**
  * Base dialog with title and image
  */
-public class BaseDialog extends Dialog
-{
+public class BaseDialog extends Dialog {
 
     private String title;
     private DBPImage icon;
 
-    public BaseDialog(Shell parentShell, String title, @Nullable DBPImage icon)
-    {
+    public BaseDialog(@NotNull Shell parentShell, @Nullable String title, @Nullable DBPImage icon) {
         super(parentShell);
         this.title = title;
         this.icon = icon;
     }
 
+    @NotNull
     public String getTitle() {
         return title;
     }
@@ -55,11 +55,12 @@ public class BaseDialog extends Dialog
         this.title = title;
     }
 
+    @Nullable
     public DBPImage getImage() {
         return icon;
     }
 
-    public void setImage(DBPImage image)
+    public void setImage(@NotNull DBPImage image)
     {
         this.icon = image;
     }
@@ -70,22 +71,39 @@ public class BaseDialog extends Dialog
     }
 
     @Override
-    protected Control createContents(Composite parent) {
+    protected Control createContents(@NotNull Composite parent) {
         Control contents = super.createContents(parent);
         applyDialogFont(dialogArea);
         return contents;
     }
 
+    @NotNull
     @Override
-    protected Composite createDialogArea(Composite parent) {
-        Composite dialogArea1 = (Composite) super.createDialogArea(parent);
+    protected Composite createDialogArea(@NotNull Composite parent) {
+        dialogArea = createDialogPanelWithMargins(parent, false);
+        return (Composite) dialogArea;
+    }
 
-        return dialogArea1;
+    @NotNull
+    protected Composite createDialogPanelWithMargins(@NotNull Composite parent, boolean compact) {
+        GridLayout layout = new GridLayout();
+        layout.marginHeight = convertVerticalDLUsToPixels(compact ? IDialogConstants.VERTICAL_MARGIN / 2 : IDialogConstants.VERTICAL_MARGIN);
+        layout.marginWidth = convertHorizontalDLUsToPixels(IDialogConstants.HORIZONTAL_MARGIN);
+        layout.verticalSpacing = convertVerticalDLUsToPixels(compact ? IDialogConstants.VERTICAL_SPACING / 2 : IDialogConstants.VERTICAL_SPACING);
+        layout.horizontalSpacing = convertHorizontalDLUsToPixels(IDialogConstants.HORIZONTAL_SPACING);
+        Composite composite = WidgetFactory.composite(SWT.NONE).layout(layout)
+            .layoutData(new GridData(GridData.FILL_BOTH)).create(parent);
+        applyDialogFont(composite);
+        return composite;
+    }
+
+    @Nullable
+    protected Composite getDialogArea() {
+        return (Composite) dialogArea;
     }
 
     @Override
-    public void create()
-    {
+    public void create() {
         super.create();
         if (title != null) {
             getShell().setText(title);
@@ -96,8 +114,9 @@ public class BaseDialog extends Dialog
 
     }
 
+    @NotNull
     @Override
-    protected Control createButtonBar(Composite parent) {
+    protected Control createButtonBar(@NotNull Composite parent) {
         final Composite composite = UIUtils.createPlaceholder(parent, 2, 0);
         composite.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
 
@@ -139,7 +158,7 @@ public class BaseDialog extends Dialog
         final Composite composite = new Composite(parent, SWT.NONE);
         composite.setLayout(layout);
         composite.setLayoutData(data);
-        composite.setFont(parent.getFont());
+        //composite.setFont(parent.getFont());
 
         return composite;
     }

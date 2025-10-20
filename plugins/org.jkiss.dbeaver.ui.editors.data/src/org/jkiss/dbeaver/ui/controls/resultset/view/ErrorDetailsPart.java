@@ -66,7 +66,7 @@ class ErrorDetailsPart {
         this.parent = parent;
         this.reason = reason;
 
-        parent.setLayout(GridLayoutFactory.fillDefaults().extendedMargins(5, 0, 0, 0).numColumns(2).create());
+        parent.setLayout(GridLayoutFactory.fillDefaults().extendedMargins(5, 0, 5, 5).numColumns(2).create());
 
         Label imageLabel = new Label(parent, SWT.NONE);
         imageLabel.setImage(getImage());
