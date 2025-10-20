@@ -102,7 +102,7 @@ public class StandardErrorDialog extends BaseErrorDialog implements BlockingPopu
 
         detailsVisible = getDialogBoundsSettings().getBoolean("showDetails");
         if (detailsVisible) {
-            showDetailsArea();
+            UIUtils.asyncExec(this::showDetailsArea);
         }
 
         return contents;
