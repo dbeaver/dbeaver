@@ -40,7 +40,7 @@ public class BaseDialog extends Dialog {
     private String title;
     private DBPImage icon;
 
-    public BaseDialog(@NotNull Shell parentShell, @NotNull String title, @Nullable DBPImage icon) {
+    public BaseDialog(@NotNull Shell parentShell, @Nullable String title, @Nullable DBPImage icon) {
         super(parentShell);
         this.title = title;
         this.icon = icon;
