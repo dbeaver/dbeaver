@@ -255,7 +255,7 @@ public class PostgreConnectionPageAdvanced extends ConnectionPageAbstract {
         setSearchPathOnSelectSchema.setSelection(
             CommonUtils.getBoolean(
                 connectionInfo.getProviderProperty(PostgreConstants.PROP_SET_SEARCH_PATH_ON_SELECT),
-                false
+                true
             ));
         if (usePreparedStatements != null) {
             usePreparedStatements.setSelection(
