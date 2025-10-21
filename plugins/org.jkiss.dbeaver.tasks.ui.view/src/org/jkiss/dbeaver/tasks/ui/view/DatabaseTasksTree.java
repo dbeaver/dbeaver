@@ -425,10 +425,13 @@ public class DatabaseTasksTree {
     }
 
     private void refreshTasks() {
+        DBPProject project = DBWorkbench.getPlatform().getWorkspace().getActiveProject();
+        if (project == null) {
+            return;
+        }
         allTasks.clear();
         allTasksFolders.clear();
 
-        DBPProject project = DBWorkbench.getPlatform().getWorkspace().getActiveProject();
         DBTTaskManager taskManager = project.getTaskManager();
         DBTTask[] tasks = taskManager.getAllTasks();
         if (tasks.length != 0) {

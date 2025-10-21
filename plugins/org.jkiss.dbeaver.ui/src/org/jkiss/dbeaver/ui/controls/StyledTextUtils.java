@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,19 +16,19 @@
  */
 package org.jkiss.dbeaver.ui.controls;
 
-import org.eclipse.jface.action.Action;
-import org.eclipse.jface.action.GroupMarker;
-import org.eclipse.jface.action.IContributionManager;
-import org.eclipse.jface.action.MenuManager;
+import org.eclipse.jface.action.*;
 import org.eclipse.jface.text.IFindReplaceTarget;
 import org.eclipse.swt.custom.ST;
 import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.dnd.*;
 import org.eclipse.swt.graphics.Point;
+import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IWorkbenchCommandConstants;
+import org.eclipse.ui.texteditor.FindReplaceAction;
 import org.eclipse.ui.texteditor.ITextEditorActionDefinitionIds;
 import org.jkiss.dbeaver.ui.ActionUtils;
-import org.jkiss.dbeaver.ui.editors.TextEditorUtils;
+
+import java.util.ResourceBundle;
 
 /**
  * StyledTextContentAdapter
@@ -84,8 +84,16 @@ public class StyledTextUtils {
         });
 
         IFindReplaceTarget stFindReplaceTarget = new StyledTextFindReplaceTarget(text);
-        menu.add(TextEditorUtils.createFindReplaceAction(text.getShell(), stFindReplaceTarget));
+        menu.add(createFindReplaceAction(text.getShell(), stFindReplaceTarget));
         menu.add(new GroupMarker("styled_text_additions"));
+    }
+
+    public static IAction createFindReplaceAction(Shell shell, IFindReplaceTarget target) {
+        return new FindReplaceAction(
+            ResourceBundle.getBundle("org.eclipse.ui.texteditor.ConstructedEditorMessages"),
+            "Editor.FindReplace.",
+            shell,
+            target);
     }
 
     public static class StyledTextAction extends Action {
