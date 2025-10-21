@@ -14,25 +14,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.cli;
+package org.jkiss.dbeaver.model.cli.model.option;
 
-import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.model.cli.command.AbstractTopLevelCommand;
-import org.jkiss.dbeaver.model.cli.model.option.EclipseHiddenOptionsForSubcommands;
 import picocli.CommandLine;
 
-public abstract class AbstractCommandLineParameterHandler implements Runnable {
-    /**
-     * Root command uses as context
-     */
-    @CommandLine.ParentCommand
-    private AbstractTopLevelCommand parent;
-    @CommandLine.Mixin
-    private EclipseHiddenOptionsForSubcommands eclipseHiddenOptions;
-
-
-    @NotNull
-    protected CommandLineContext context() {
-        return parent.getContext();
-    }
+/**
+ * Eclipse options, we do not process them,
+ * some properties were hidden and exists to avoid unmatched options error
+ */
+public class EclipseOptions {
+    // Eclipse options do nothing in our code
+    @CommandLine.Option(names = {"-nl"}, arity = "1", description = "Default locale")
+    private String nl;
+    @CommandLine.Option(names = {"-data"}, arity = "1", description = "Workspace location")
+    private String data;
+    @CommandLine.Option(names = {"-nosplash"}, description = "Hide splash screen on start")
+    private boolean noSplash;
 }

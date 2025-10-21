@@ -60,15 +60,7 @@ public class DBeaverTopLevelCommand extends AbstractTopLevelCommand {
     private boolean disconnectAll;
     @CommandLine.Option(names = {"-closeTabs"}, description = "Close all open editors")
     private boolean closeTabs;
-
-
-    // Eclipse options do nothing in our code
-    @CommandLine.Option(names = {"-nl"}, arity = "1", description = "Default locale")
-    private String nl;
-    @CommandLine.Option(names = {"-data"}, arity = "1", description = "Workspace location")
-    private String data;
-    @CommandLine.Option(names = {"-nosplash"}, description = "Hide splash screen on start")
-    private boolean noSplash;
+    
 
     @CommandLine.Option(names = {"-bringToFront"}, description = "Bring DBeaver window on top of other applications")
     private boolean bringToFront;

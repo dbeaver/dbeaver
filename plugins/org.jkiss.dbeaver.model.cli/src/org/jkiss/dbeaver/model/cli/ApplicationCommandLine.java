@@ -86,7 +86,13 @@ public abstract class ApplicationCommandLine<T extends ApplicationInstanceContro
                 context,
                 new CLIRunMeta(uiActivated, supportNewInstance)
             );
-            CommandLine.ParseResult parseResult = commandLine.parseArgs(args);
+            CommandLine.ParseResult parseResult;
+            try {
+                parseResult = commandLine.parseArgs(args);
+            } catch (CommandLine.UnmatchedArgumentException e) {
+                log.error(e.getMessage());
+                return new CLIProcessResult(CLIProcessResult.PostAction.ERROR, e.getMessage());
+            }
 
             if (commandLineIsEmpty(parseResult)) {
                 return new CLIProcessResult(CLIProcessResult.PostAction.START_INSTANCE);
@@ -125,7 +131,6 @@ public abstract class ApplicationCommandLine<T extends ApplicationInstanceContro
                     var updatedCmd = new CommandLine(commandForHelp);
                     updatedCmd.usage(print);
                     String help = out.toString();
-                    System.out.println(help);
                     return new CLIProcessResult(CLIProcessResult.PostAction.SHUTDOWN, help);
                 } catch (Exception e) {
                     log.error("Error handling command line: " + e.getMessage());
@@ -187,7 +192,7 @@ public abstract class ApplicationCommandLine<T extends ApplicationInstanceContro
             }
             cmd.addSubcommand(param.getImplClass());
         }
-        cmd.setUnmatchedArgumentsAllowed(true);
+        //        cmd.setUnmatchedArgumentsAllowed(true);
         return cmd;
     }
 
