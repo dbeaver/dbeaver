@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,9 +18,8 @@ package org.jkiss.dbeaver.ui.dialogs.driver;
 
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.wizard.WizardDialog;
-import org.eclipse.swt.SWT;
-import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.*;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.connection.DBPDriverDependencies;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -32,15 +31,19 @@ import org.jkiss.dbeaver.ui.internal.UIConnectionMessages;
 /**
  * DriverDownloadDialog
  */
-public class DriverDownloadDialog extends WizardDialog
-{
+public class DriverDownloadDialog extends WizardDialog {
 
     public static final int EDIT_DRIVER_BUTTON_ID = 2000;
 
     private boolean doDownload = false;
 
-    DriverDownloadDialog(Shell shell, DBPDriver driver, DBPDriverDependencies dependencies, boolean updateVersion, boolean forceDownload)
-    {
+    DriverDownloadDialog(
+        @NotNull Shell shell,
+        @NotNull DBPDriver driver,
+        @NotNull DBPDriverDependencies dependencies,
+        boolean updateVersion,
+        boolean forceDownload
+    ) {
         super(shell, new DriverDownloadWizard(driver, dependencies, updateVersion, forceDownload));
         getWizard().init(UIUtils.getActiveWorkbenchWindow().getWorkbench(), null);
         addPageChangedListener(event -> UIUtils.asyncExec(() -> getWizard().pageActivated(event.getSelectedPage())));
@@ -135,9 +138,9 @@ public class DriverDownloadDialog extends WizardDialog
         dialog.open();
         return dialog.doDownload;
     }
-
-    @Override
-    protected Point getInitialSize() {
-        return getShell().computeSize(SWT.DEFAULT, SWT.DEFAULT, true);
-    }
+//
+//    @Override
+//    protected Point getInitialSize() {
+//        return getShell().computeSize(SWT.DEFAULT, SWT.DEFAULT, true);
+//    }
 }
