@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -111,6 +111,9 @@ public abstract class CustomTableEditor implements MouseListener, TraverseListen
     }
 
     private void onFocusLost(Control editor) {
+        if (editor.isDisposed()) {
+            return;
+        }
         saveEditorValue(editor, columnIndex, tableEditor.getItem());
         if (!isProposalPopupActive()) {
             closeEditor();
@@ -123,7 +126,7 @@ public abstract class CustomTableEditor implements MouseListener, TraverseListen
 
     public void closeEditor() {
         Control editor = tableEditor.getEditor();
-        if (editor != null) {
+        if (editor != null && !editor.isDisposed()) {
             editor.dispose();
         }
     }
