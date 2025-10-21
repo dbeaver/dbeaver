@@ -1984,13 +1984,12 @@ public class ResultSetViewer extends Viewer
             CSSUtils.markConnectionTypeColor(rowCountLabel);
             rowCountLabel.setMessage("Row Count");
             rowCountLabel.setToolTipText("Calculates total row count in the current dataset");
-            Label separator = new Label(statusBar, SWT.NONE);
-            separator.setImage(DBeaverIcons.getImage(UIIcon.SEPARATOR_V));
-            CSSUtils.markConnectionTypeColor(separator);
+            //Label separator = new Label(statusBar, SWT.NONE);
+            //separator.setImage(DBeaverIcons.getImage(UIIcon.SEPARATOR_V));
+            //CSSUtils.markConnectionTypeColor(separator);
 
             selectionStatLabel = new Text(statusBar, SWT.READ_ONLY);
             selectionStatLabel.setToolTipText(ResultSetMessages.result_set_viewer_selection_stat_tooltip);
-            CSSUtils.markConnectionTypeColor(selectionStatLabel);
             selectionStatLabel.setText(" ");
 
 //            Label filler = new Label(statusComposite, SWT.NONE);
@@ -2003,7 +2002,6 @@ public class ResultSetViewer extends Viewer
                 RowData rd = new RowData();
                 rd.width = 50 * fontHeight;
                 statusLabel.setLayoutData(rd);
-                CSSUtils.markConnectionTypeColor(statusLabel);
             }
         }
 
