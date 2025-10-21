@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.registry.internal;
 
 import org.eclipse.core.runtime.Plugin;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.dbeaver.utils.SystemVariablesResolver;
 import org.jkiss.utils.CommonUtils;
@@ -33,20 +34,18 @@ public class RegistryActivator extends Plugin {
     }
 
     @Override
-    public void start(BundleContext context) throws Exception {
+    public void start(@NotNull BundleContext context) throws Exception {
         super.start(context);
 
 
         setJnaNativePath(context);
     }
 
-    private static void setJnaNativePath(BundleContext context) {
-        /*if (Platform.getOS().equals(Platform.OS_WIN32)) */
+    private static void setJnaNativePath(@NotNull BundleContext context) {
         {
-            // Set JNA library path (#19735)
             String installPath = SystemVariablesResolver.getInstallPath();
             Path pluginsPath = Path.of(installPath).resolve("plugins");
-            Bundle jnaBundle = Arrays.stream(context.getBundles()).filter(b -> b.getSymbolicName().equals("com.sun.jna"))
+            Bundle jnaBundle = Arrays.stream(context.getBundles()).filter(b -> "com.sun.jna".equals(b.getSymbolicName()))
                 .findFirst().orElse(null);
             if (jnaBundle != null) {
                 String location = jnaBundle.getLocation();
@@ -82,7 +81,7 @@ public class RegistryActivator extends Plugin {
     }
 
     @Override
-    public void stop(BundleContext context) throws Exception {
+    public void stop(@NotNull BundleContext context) throws Exception {
         super.stop(context);
     }
 
