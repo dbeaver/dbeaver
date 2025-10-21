@@ -86,8 +86,8 @@ import org.jkiss.utils.LongKeyMap;
 import java.lang.reflect.InvocationTargetException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.*;
 import java.util.List;
+import java.util.*;
 
 /**
  * QueryLogViewer
@@ -1230,7 +1230,7 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
         }
 
         @Override
-        public List<QMEvent> evaluate(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
+        public List<QMEvent> evaluate(@NotNull DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
             final List<QMEvent> events = new ArrayList<>();
             QMEventBrowser eventBrowser = QMUtils.getEventBrowser(currentSessionOnly);
             if (eventBrowser != null) {

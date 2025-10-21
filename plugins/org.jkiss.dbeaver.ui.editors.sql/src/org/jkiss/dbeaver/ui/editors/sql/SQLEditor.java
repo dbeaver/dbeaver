@@ -1358,9 +1358,7 @@ public class SQLEditor extends SQLEditorBase implements
             // prevent eclipse from overriding this CTabFolder's css class
             @Override
             public void setBackground(Color color) {
-                DBPDataSourceContainer dsContainer = getDataSourceContainer();
-                Color bgColor = dsContainer != null ? UIUtils.getConnectionColor(dsContainer.getConnectionConfiguration()) : null;
-                if (resultTabs != null && !resultTabs.isDisposed() && bgColor != null && !bgColor.equals(color)) {
+                if (resultTabs != null && !resultTabs.isDisposed()) {
                     UIUtils.asyncExec(() -> CSSUtils.markConnectionTypeColor(resultTabs));
                 } else {
                     super.setBackground(color);
