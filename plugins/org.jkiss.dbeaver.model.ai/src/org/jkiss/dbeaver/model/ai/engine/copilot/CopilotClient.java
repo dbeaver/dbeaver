@@ -21,29 +21,25 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.Strictness;
 import com.google.gson.annotations.SerializedName;
 import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.ai.engine.AIEngineResponseChunk;
 import org.jkiss.dbeaver.model.ai.engine.AIEngineResponseConsumer;
+import org.jkiss.dbeaver.model.ai.engine.AbstractHttpAIClient;
 import org.jkiss.dbeaver.model.ai.engine.copilot.dto.*;
 import org.jkiss.dbeaver.model.ai.utils.AIHttpUtils;
-import org.jkiss.dbeaver.model.ai.utils.MonitoredHttpClient;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.HttpConstants;
 
-import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.Future;
 
-public class CopilotClient implements AutoCloseable {
+public class CopilotClient extends AbstractHttpAIClient {
+    private static final Log log = Log.getLog(CopilotClient.class);
     private static final String DATA_EVENT = "data: ";
     private static final String DONE_EVENT = "[DONE]";
     private static final Duration TIMEOUT = Duration.ofSeconds(30);
@@ -61,9 +57,6 @@ public class CopilotClient implements AutoCloseable {
     private static final String CHAT_EDITOR_VERSION = "vscode/1.80.1"; // TODO replace after partnership
     private static final String DBEAVER_OAUTH_APP = "Iv1.b507a08c87ecfe98";
 
-    private final MonitoredHttpClient client = new MonitoredHttpClient(HttpClient.newBuilder().build());
-    private static Map<String, CopilotModel> models = new LinkedHashMap<>();
-
     /**
      * Request access to the user's account
      */
@@ -77,12 +70,7 @@ public class CopilotClient implements AutoCloseable {
             .POST(HttpRequest.BodyPublishers.ofString(GSON.toJson(deviceCodeRequest)))
             .build();
 
-        HttpResponse<String> response = client.send(monitor, request);
-        if (response.statusCode() == 200) {
-            return GSON.fromJson(response.body(), DeviceCodeResponse.class);
-        } else {
-            throw mapHttpError(response);
-        }
+        return GSON.fromJson(client.send(monitor, request), DeviceCodeResponse.class);
     }
 
     /**
@@ -112,11 +100,7 @@ public class CopilotClient implements AutoCloseable {
         Instant start = Instant.now();
 
         while (Instant.now().isBefore(start.plus(expiresIn)) && !monitor.isCanceled() && !cancellationToken.isCancelled()) {
-            var response = client.send(monitor, request);
-            if (response.statusCode() != 200) {
-                throw mapHttpError(response);
-            }
-            var body = GSON.fromJson(response.body(), AccessTokenResponse.class);
+            var body = GSON.fromJson(client.send(monitor, request), AccessTokenResponse.class);
             if (CommonUtils.isNotEmpty(body.accessToken())) {
                 return body.accessToken();
             }
@@ -153,12 +137,7 @@ public class CopilotClient implements AutoCloseable {
             .timeout(TIMEOUT)
             .build();
 
-        HttpResponse<String> response = client.send(monitor, request);
-        if (response.statusCode() == 200) {
-            return GSON.fromJson(response.body(), CopilotSessionToken.class);
-        } else {
-            throw mapHttpError(response);
-        }
+        return GSON.fromJson(client.send(monitor, request), CopilotSessionToken.class);
     }
 
     /**
@@ -178,12 +157,7 @@ public class CopilotClient implements AutoCloseable {
             .timeout(TIMEOUT)
             .build();
 
-        HttpResponse<String> response = client.send(monitor, request);
-        if (response.statusCode() == 200) {
-            return GSON.fromJson(response.body(), CopilotChatResponse.class);
-        } else {
-            throw mapHttpError(response);
-        }
+        return GSON.fromJson(client.send(monitor, request), CopilotChatResponse.class);
     }
 
     public void createChatCompletionStream(
@@ -228,33 +202,11 @@ public class CopilotClient implements AutoCloseable {
         );
     }
 
-    /**
-     * Retrieves the list of available model IDs. If the cache is empty or a refresh is forced,
-     * the method will load new models using the provided token and update the internal cache.
-     *
-     * @param monitor the progress monitor used to track the progress and detect cancellations
-     * @param token the authentication token used for accessing the models, can be null
-     * @param forceRefresh a flag indicating whether to force a refresh of the model cache
-     * @return a list of model IDs as strings. If no models are available, returns an empty list
-     */
-    public static List<String> getModels(@NotNull DBRProgressMonitor monitor, @Nullable String token, boolean forceRefresh) {
-        if ((models.isEmpty() || forceRefresh) && CommonUtils.isNotEmpty(token)) {
-            try (CopilotClient copilotClient = new CopilotClient()) {
-                List<CopilotModel> copilotModelList = copilotClient.loadModels(monitor, token);
-                models = copilotModelList.stream()
-                    .collect(LinkedHashMap::new, (map, model) -> map.put(model.id(), model), LinkedHashMap::putAll);
-            } catch (Exception ex) {
-                DBWorkbench.getPlatformUI().showError(
-                    "Error reading model list",
-                    "Failed to read Copilot model list",
-                    ex
-                );
-            }
-        }
-        if (models.isEmpty()) {
-            return List.of();
-        }
-        return models.keySet().stream().toList();
+    @NotNull
+    @Override
+    protected DBException mapHttpError(int statusCode, @NotNull String body) {
+        log.debug("Copilot request failed: " + statusCode + ", " + body);
+        return new DBException("Copilot request failed: " + AIHttpUtils.parseOpenAIStyleErrorMessage(body));
     }
 
     /**
@@ -275,22 +227,11 @@ public class CopilotClient implements AutoCloseable {
             .timeout(TIMEOUT)
             .build();
 
-        HttpResponse<String> response = client.send(monitor, request);
-        if (response.statusCode() == 200) {
-            CopilotModelList copilotModels = GSON.fromJson(response.body(), CopilotModelList.class);
-            return copilotModels.data().stream().filter(CopilotModel::isEnabled).toList();
-        } else {
-            throw new DBException("Request failed: status=" + response.statusCode() + ", body=" + response.body());
-        }
-    }
-
-    @Override
-    public void close() {
-        client.close();
-    }
-
-    private static DBException mapHttpError(HttpResponse<String> response) {
-        return new DBException("HTTP error: " + response.statusCode() + " " + response.body());
+        var response = client.send(monitor, request);
+        var models = GSON.fromJson(response, CopilotModelList.class);
+        return models.data().stream()
+            .filter(CopilotModel::isEnabled)
+            .toList();
     }
 
     private record DeviceCodeRequest(

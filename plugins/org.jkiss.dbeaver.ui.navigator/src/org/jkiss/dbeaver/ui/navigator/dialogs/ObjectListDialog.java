@@ -233,7 +233,7 @@ public class ObjectListDialog<T extends DBPObject> extends AbstractPopupPanel {
             return LoadingJob.createService(
                 new AbstractLoadService<>() {
                     @Override
-                    public Collection<T> evaluate(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
+                    public Collection<T> evaluate(@NotNull DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
                         objectReader.run(monitor);
                         return objectReader.getResult();
                     }

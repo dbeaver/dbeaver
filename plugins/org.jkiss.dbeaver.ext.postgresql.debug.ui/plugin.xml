@@ -40,7 +40,7 @@
         <factory adaptableType="org.jkiss.dbeaver.model.DBPDataSourceContainer" class="org.jkiss.dbeaver.ext.postgresql.debug.ui.internal.PostgreDebugUIAdapterFactory">
             <adapter type="org.jkiss.dbeaver.debug.ui.DBGEditorAdvisor"/>
         </factory>
-        <factory adaptableType="java.lang.Object" class="org.jkiss.dbeaver.ext.postgresql.debug.ui.internal.PostgreDebugObjectAdapterFactory">
+        <factory adaptableType="org.jkiss.dbeaver.ui.editors.entity.EntityEditor" class="org.jkiss.dbeaver.ext.postgresql.debug.ui.internal.PostgreDebugObjectAdapterFactory">
             <adapter type="org.jkiss.dbeaver.debug.DBGDebugObject"/>
         </factory>
     </extension>
