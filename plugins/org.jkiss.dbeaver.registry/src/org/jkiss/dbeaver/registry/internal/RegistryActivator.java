@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.registry.internal;
 
 import org.eclipse.core.runtime.Plugin;
+import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.dbeaver.utils.SystemVariablesResolver;
 import org.jkiss.utils.CommonUtils;
 import org.osgi.framework.Bundle;
@@ -36,7 +37,12 @@ public class RegistryActivator extends Plugin {
         super.start(context);
 
 
-        /*if (Platform.getOS().equals(Platform.OS_WIN32)) */{
+        setJnaNativePath(context);
+    }
+
+    private static void setJnaNativePath(BundleContext context) {
+        /*if (Platform.getOS().equals(Platform.OS_WIN32)) */
+        {
             // Set JNA library path (#19735)
             String installPath = SystemVariablesResolver.getInstallPath();
             Path pluginsPath = Path.of(installPath).resolve("plugins");
@@ -50,7 +56,25 @@ public class RegistryActivator extends Plugin {
                     String bundleFolderName = location.substring(divPos + 1);
                     Path jnaBundlePath = pluginsPath.resolve(bundleFolderName).resolve("com/sun/jna");
                     if (Files.exists(jnaBundlePath)) {
-                        System.setProperty("jna.boot.library.path", jnaBundlePath.toAbsolutePath().toString());
+                        String osName = null;
+                        if (RuntimeUtils.isMacOS()) {
+                            osName = "darwin";
+                        } else if (RuntimeUtils.isLinux()) {
+                            osName = "linux";
+                        } else if (RuntimeUtils.isWindows()) {
+                            osName = "win32";
+                        }
+                        String osArch = null;
+                        if (RuntimeUtils.isOSArchAMD64()) {
+                            osArch = "x86-64";
+                        } else if (RuntimeUtils.isOSArchAArch64()) {
+                            osArch = "aarch64";
+                        }
+                        if (osName != null && osArch != null) {
+                            System.setProperty(
+                                "jna.boot.library.path",
+                                jnaBundlePath.resolve(osName + "-" + osArch).toAbsolutePath().toString());
+                        }
                     }
                 }
             }
