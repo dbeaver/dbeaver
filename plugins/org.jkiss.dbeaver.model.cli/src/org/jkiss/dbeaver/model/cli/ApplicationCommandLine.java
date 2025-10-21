@@ -117,7 +117,7 @@ public abstract class ApplicationCommandLine<T extends ApplicationInstanceContro
 
             if (commandForHelp != null) {
                 CommandLine.Model.UsageMessageSpec helpSpec = commandForHelp.usageMessage();
-                helpSpec.header("dbeaver", GeneralUtils.getProductTitle(), "(C) 2010-2025 DBeaver Corp");
+                helpSpec.header(GeneralUtils.getProductTitle());
                 try (
                     var out = new StringWriter();
                     var print = new PrintWriter(out)
