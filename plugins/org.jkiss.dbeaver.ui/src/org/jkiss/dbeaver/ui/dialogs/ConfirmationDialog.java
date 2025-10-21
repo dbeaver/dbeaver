@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,7 +30,7 @@ import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.preferences.PreferenceStoreDelegate;
-import org.jkiss.dbeaver.ui.registry.ConfirmationRegistry;
+import org.jkiss.dbeaver.ui.registry.DesktopConfirmationRegistry;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -182,11 +182,11 @@ public class ConfirmationDialog extends MessageDialogWithToggle {
     }
 
     public static int confirmAction(@Nullable Shell shell, @NotNull String id, int type, @NotNull Object... args) {
-        return ConfirmationRegistry.getInstance().confirmAction(shell, id, type, -1, args);
+        return DesktopConfirmationRegistry.confirmAction(shell, id, type, -1, args);
     }
 
     public static int confirmAction(@Nullable Shell shell, int imageType, @NotNull String id, int type, @NotNull Object... args) {
-        return ConfirmationRegistry.getInstance().confirmAction(shell, id, type, imageType, args);
+        return DesktopConfirmationRegistry.confirmAction(shell, id, type, imageType, args);
     }
 
     public static String getSavedPreference(String id) {
