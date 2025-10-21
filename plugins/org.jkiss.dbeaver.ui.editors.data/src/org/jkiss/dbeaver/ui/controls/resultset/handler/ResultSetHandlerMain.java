@@ -75,6 +75,7 @@ import org.jkiss.dbeaver.ui.actions.ConnectionCommands;
 import org.jkiss.dbeaver.ui.contentassist.ContentAssistUtils;
 import org.jkiss.dbeaver.ui.contentassist.ContentProposalExt;
 import org.jkiss.dbeaver.ui.contentassist.SmartTextContentAdapter;
+import org.jkiss.dbeaver.ui.controls.StyledTextUtils;
 import org.jkiss.dbeaver.ui.controls.resultset.*;
 import org.jkiss.dbeaver.ui.controls.resultset.IResultSetController.RowPlacement;
 import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
@@ -82,14 +83,13 @@ import org.jkiss.dbeaver.ui.controls.resultset.spreadsheet.SpreadsheetPresentati
 import org.jkiss.dbeaver.ui.data.IValueController;
 import org.jkiss.dbeaver.ui.data.managers.BaseValueManager;
 import org.jkiss.dbeaver.ui.editors.MultiPageAbstractEditor;
-import org.jkiss.dbeaver.ui.editors.TextEditorUtils;
 import org.jkiss.dbeaver.ui.internal.UIMessages;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.Pair;
 
-import java.util.*;
 import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -451,7 +451,7 @@ public class ResultSetHandlerMain extends AbstractHandler implements IElementUpd
                 }
                 break;
             case IWorkbenchCommandConstants.EDIT_FIND_AND_REPLACE:
-                IAction action = TextEditorUtils.createFindReplaceAction(
+                IAction action = StyledTextUtils.createFindReplaceAction(
                     activeShell,
                     rsv.getAdapter(IFindReplaceTarget.class));
                 action.run();

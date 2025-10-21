@@ -18,24 +18,19 @@ package org.jkiss.dbeaver.ui.editors;
 
 import org.eclipse.e4.ui.css.swt.theme.ITheme;
 import org.eclipse.e4.ui.css.swt.theme.IThemeEngine;
-import org.eclipse.jface.action.IAction;
-import org.eclipse.jface.text.IFindReplaceTarget;
 import org.eclipse.swt.events.FocusEvent;
 import org.eclipse.swt.events.FocusListener;
 import org.eclipse.swt.widgets.Control;
-import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchPartSite;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.texteditor.AbstractTextEditor;
-import org.eclipse.ui.texteditor.FindReplaceAction;
 import org.jkiss.dbeaver.Log;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.ResourceBundle;
 
 /**
  * TextEditorUtils
@@ -116,14 +111,6 @@ public class TextEditorUtils {
                 activated[0] = false;
             }
         });
-    }
-
-    public static IAction createFindReplaceAction(Shell shell, IFindReplaceTarget target) {
-        return new FindReplaceAction(
-            ResourceBundle.getBundle("org.eclipse.ui.texteditor.ConstructedEditorMessages"),
-            "Editor.FindReplace.",
-            shell,
-            target);
     }
 
     public static boolean isDarkThemeEnabled() {

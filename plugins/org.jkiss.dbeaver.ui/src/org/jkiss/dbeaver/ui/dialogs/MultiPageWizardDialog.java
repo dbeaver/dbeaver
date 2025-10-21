@@ -331,7 +331,7 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
             prevPage = page;
             pageArea.layout();
             if (prevPage.getControl() != null) {
-                prevPage.getControl().setFocus();
+                //prevPage.getControl().setFocus();
             }
 
             if (page instanceof ActiveWizardPage<?> awp) {
