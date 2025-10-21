@@ -120,7 +120,6 @@ public abstract class ConnectionPageWithAuth extends ConnectionPageAbstract {
                     selectedAuthModel == null ? null : selectedAuthModel.getId());
                 authModelSelector.saveSettings(dataSource);
             }
-            return;
         }
 
         if (serviceConnectionEditor != null) {
