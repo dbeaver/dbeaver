@@ -672,6 +672,7 @@ public class DBeaverLauncher {
             String arg = args[i];
             if (arg.equals(PRODUCT) || arg.equals(DEV) ||
                 arg.equals(STARTUP) ||
+                arg.equals(OS) || arg.equals(WS) || arg.equals(ARCH) ||
                 arg.equals(ARG_ECLIPSE_KEYRING) || arg.equals(LAUNCHER)) {
                 i++;
                 continue;
