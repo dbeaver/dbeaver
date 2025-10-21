@@ -17,7 +17,6 @@
 package org.jkiss.dbeaver.registry.formatter;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.data.DBDDataFormatter;
 import org.jkiss.dbeaver.model.data.DBDDataFormatterProfile;
 import org.jkiss.dbeaver.model.impl.data.formatters.NumberFormatSample;
@@ -25,16 +24,16 @@ import org.jkiss.dbeaver.model.impl.preferences.SimplePreferenceStore;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceListener;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
-import org.jkiss.dbeaver.model.struct.*;
+import org.jkiss.dbeaver.model.struct.DBSTypedObject;
+import org.jkiss.dbeaver.model.struct.DBStructUtils;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableColumn;
 import org.jkiss.dbeaver.utils.PrefUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.IOException;
-import java.util.*;
-import java.util.stream.Stream;
+import java.util.HashMap;
+import java.util.Locale;
+import java.util.Map;
 
 /**
  * DataFormatterProfile
@@ -214,11 +213,13 @@ public class DataFormatterProfile implements DBDDataFormatterProfile, DBPPrefere
             formatterProps.putAll(props);
         }
 
-        if ("number".equalsIgnoreCase(typeId)) {
+        if (DBDDataFormatter.TYPE_NAME_NUMBER.equalsIgnoreCase(typeId)) {
             boolean excludeIds = CommonUtils.toBoolean(
                 formatterProps.getOrDefault(NumberFormatSample.PROP_EXCLUDE_ID_COLUMNS, false)
             );
-            if (excludeIds && type instanceof DBSTableColumn column && (isPrimaryKey(column) || isForeignKey(column))) {
+            if (excludeIds && type instanceof DBSTableColumn column
+                && (DBStructUtils.isPrimaryKey(column) || DBStructUtils.isForeignKey(column))) {
+
                 formatterProps.put(NumberFormatSample.PROP_USE_GROUPING, false);
             }
         }
@@ -229,65 +230,6 @@ public class DataFormatterProfile implements DBDDataFormatterProfile, DBPPrefere
         return formatter;
     }
 
-    static boolean isPrimaryKey(DBSTableColumn column) {
-        var monitor = new VoidProgressMonitor();
-        try {
-            return matchesColumnInRefs(
-                column,
-                referrers(column.getParentObject().getConstraints(monitor), DBSEntityConstraintType.PRIMARY_KEY),
-                monitor
-            );
-        } catch (DBException e) {
-            return false;
-        }
-    }
-
-    static boolean isForeignKey(DBSTableColumn column) {
-        var monitor = new VoidProgressMonitor();
-        try {
-            return matchesColumnInRefs(
-                column,
-                referrers(column.getParentObject().getAssociations(monitor), DBSEntityConstraintType.FOREIGN_KEY),
-                monitor
-            );
-        } catch (DBException e) {
-            return false;
-        }
-    }
-
-
-    private static boolean matchesColumnInRefs(
-        DBSTableColumn column,
-        Stream<DBSEntityReferrer> referrers,
-        DBRProgressMonitor monitor
-    ) {
-        return referrers
-            .flatMap(ref -> safeRefs(ref, monitor))
-            .anyMatch(r -> r.getAttribute() == column);
-    }
-
-
-    private static Stream<? extends DBSEntityAttributeRef> safeRefs(DBSEntityReferrer ref, DBRProgressMonitor monitor) {
-        try {
-            List<? extends DBSEntityAttributeRef> list = ref.getAttributeReferences(monitor);
-            return list == null ? Stream.empty() : list.stream();
-        } catch (DBException e) {
-            return Stream.empty();
-        }
-    }
-
-    private static Stream<DBSEntityReferrer> referrers(
-        Collection<? extends DBSEntityConstraint> refs,
-        DBSEntityConstraintType filter)  {
-
-        if (refs == null || refs.isEmpty()) {
-            return Stream.empty();
-        }
-        return refs.stream()
-            .filter(a -> a.getConstraintType() == filter)
-            .filter(DBSEntityReferrer.class::isInstance)
-            .map(DBSEntityReferrer.class::cast);
-    }
 
 
     public static void initDefaultPreferences(DBPPreferenceStore store, Locale locale)
