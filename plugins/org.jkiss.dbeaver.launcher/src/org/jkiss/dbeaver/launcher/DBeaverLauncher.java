@@ -657,6 +657,9 @@ public class DBeaverLauncher {
             // splash handling is done here, because the default case needs to know
             // the location of the boot plugin we are going to use
             handleSplash(bootPath);
+        } else {
+            passThruArgs = Stream.concat(Arrays.stream(passThruArgs), Arrays.stream(new String[] {NOSPLASH}))
+                .toArray(String[]::new);
         }
 
         beforeFwkInvocation();
