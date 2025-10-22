@@ -76,9 +76,9 @@ public abstract class ApplicationCommandLine<T extends ApplicationInstanceContro
     public CLIProcessResult executeCommandLineCommands(
         @Nullable T controller,
         boolean uiActivated,
-        boolean supportNewInstance
+        boolean supportNewInstance,
+        @NotNull String[] args
     ) throws Exception {
-        String[] args = Platform.getApplicationArgs();
         CLIProcessResult result;
         try (var context = new CommandLineContext(controller)) {
             CommandLine commandLine = initCommandLine(
@@ -131,6 +131,7 @@ public abstract class ApplicationCommandLine<T extends ApplicationInstanceContro
                     var updatedCmd = new CommandLine(commandForHelp);
                     updatedCmd.usage(print);
                     String help = out.toString();
+                    System.out.println(help);
                     return new CLIProcessResult(CLIProcessResult.PostAction.SHUTDOWN, help);
                 } catch (Exception e) {
                     log.error("Error handling command line: " + e.getMessage());

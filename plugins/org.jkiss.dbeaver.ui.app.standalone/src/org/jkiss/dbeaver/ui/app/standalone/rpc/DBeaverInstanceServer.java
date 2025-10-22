@@ -159,7 +159,8 @@ public class DBeaverInstanceServer extends ApplicationInstanceServer<IInstanceCo
         try {
             return DBeaverCommandLine.getInstance().executeCommandLineCommands(
                 this,
-                !DBeaverApplication.getInstance().isHeadlessMode()
+                !DBeaverApplication.getInstance().isHeadlessMode(),
+                args
             );
         } catch (Exception e) {
             return new CLIProcessResult(CLIProcessResult.PostAction.ERROR, "Error executing command: " + e.getMessage());

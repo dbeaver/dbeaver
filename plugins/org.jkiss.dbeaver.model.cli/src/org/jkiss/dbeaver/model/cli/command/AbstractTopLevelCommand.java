@@ -21,8 +21,8 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.cli.*;
 import org.jkiss.dbeaver.model.cli.model.CommandLineAuthenticator;
-import org.jkiss.dbeaver.model.cli.model.option.EclipseHiddenOptions;
 import org.jkiss.dbeaver.model.cli.model.option.EclipseOptions;
+import org.jkiss.dbeaver.model.cli.model.option.HiddenOptions;
 import picocli.CommandLine;
 
 public abstract class AbstractTopLevelCommand implements Runnable, CommandLine.IExitCodeGenerator {
@@ -35,7 +35,7 @@ public abstract class AbstractTopLevelCommand implements Runnable, CommandLine.I
     @CommandLine.Mixin
     private EclipseOptions eclipseOptions;
     @CommandLine.Mixin
-    private EclipseHiddenOptions eclipseHiddenOptions;
+    private HiddenOptions hiddenOptions;
 
     @NotNull
     protected final CLIRunMeta meta;

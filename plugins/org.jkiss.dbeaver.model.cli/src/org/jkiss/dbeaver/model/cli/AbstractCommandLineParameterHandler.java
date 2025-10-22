@@ -18,7 +18,7 @@ package org.jkiss.dbeaver.model.cli;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.cli.command.AbstractTopLevelCommand;
-import org.jkiss.dbeaver.model.cli.model.option.EclipseHiddenOptionsForSubcommands;
+import org.jkiss.dbeaver.model.cli.model.option.HiddenOptionsForSubcommands;
 import picocli.CommandLine;
 
 public abstract class AbstractCommandLineParameterHandler implements Runnable {
@@ -28,7 +28,7 @@ public abstract class AbstractCommandLineParameterHandler implements Runnable {
     @CommandLine.ParentCommand
     private AbstractTopLevelCommand parent;
     @CommandLine.Mixin
-    private EclipseHiddenOptionsForSubcommands eclipseHiddenOptions;
+    private HiddenOptionsForSubcommands eclipseHiddenOptions;
 
 
     @NotNull

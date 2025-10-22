@@ -22,12 +22,24 @@ import picocli.CommandLine;
  * Eclipse options, we do not process them,
  * properties hidden and exists to avoid unmatched options error
  */
-public class EclipseHiddenOptions {
+public class HiddenOptions {
+    @CommandLine.Option(names = {"-web-config"}, arity = "1", hidden = true)
+    private String webConfig;
+
+    @CommandLine.Option(names = {"-cli-mode"}, hidden = true)
+    private boolean cliMode;
+
+    @CommandLine.Option(names = {"-consoleLog"}, hidden = true)
+    private boolean consoleLog;
+
+    @CommandLine.Option(names = {"-registryMultiLanguage"}, hidden = true)
+    private boolean registryMultiLanguage;
+
     @CommandLine.Option(names = {"-product"}, arity = "1", hidden = true)
     private String product;
 
-    @CommandLine.Option(names = {"-dev"}, hidden = true)
-    private boolean dev;
+    @CommandLine.Option(names = {"-dev"}, arity = "1", hidden = true)
+    private String dev;
 
     @CommandLine.Option(names = {"-os"}, arity = "1", hidden = true)
     private String os;

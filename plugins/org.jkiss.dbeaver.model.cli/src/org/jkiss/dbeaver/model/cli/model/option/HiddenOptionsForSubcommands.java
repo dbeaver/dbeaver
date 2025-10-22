@@ -22,7 +22,7 @@ import picocli.CommandLine;
  * Eclipse options, we do not process them,
  * some properties were hidden and exists to avoid unmatched options error
  */
-public class EclipseHiddenOptionsForSubcommands extends EclipseHiddenOptions {
+public class HiddenOptionsForSubcommands extends HiddenOptions {
     // Eclipse options do nothing in our code
     @CommandLine.Option(names = {"-nl"}, hidden = true, arity = "1", description = "Default locale")
     private String nl;

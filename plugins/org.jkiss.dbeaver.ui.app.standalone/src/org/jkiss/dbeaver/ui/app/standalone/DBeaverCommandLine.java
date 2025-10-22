@@ -65,9 +65,10 @@ public class DBeaverCommandLine extends ApplicationCommandLine<IInstanceControll
      */
     public CLIProcessResult executeCommandLineCommands(
         @Nullable IInstanceController controller,
-        boolean uiActivated
+        boolean uiActivated,
+        String[] args
     ) throws Exception {
-        return executeCommandLineCommands(controller, uiActivated, true);
+        return executeCommandLineCommands(controller, uiActivated, true, args);
     }
 
 }
