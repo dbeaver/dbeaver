@@ -211,6 +211,7 @@ public class SQLiteTable extends GenericTable implements DBDPseudoAttributeConta
             if (Objects.nonNull(tableForeignKeys)) {
                 tableForeignKeys
                     .stream()
+                    .filter(fk -> fk instanceof SQLiteTableForeignKey)
                     .map(fk -> (SQLiteTableForeignKey) fk)
                     .filter(fk -> fk.refersToTable(this))
                     .forEach(list::add);
