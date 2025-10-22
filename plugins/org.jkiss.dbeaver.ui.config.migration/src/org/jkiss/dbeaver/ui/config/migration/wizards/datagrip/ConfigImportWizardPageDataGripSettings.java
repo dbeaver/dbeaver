@@ -17,7 +17,6 @@
 
 package org.jkiss.dbeaver.ui.config.migration.wizards.datagrip;
 
-import com.dbeaver.ui.config.migration.ImportEEConfigMessages;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
@@ -44,7 +43,7 @@ public class ConfigImportWizardPageDataGripSettings extends WizardPage {
     public ConfigImportWizardPageDataGripSettings() {
         super(ImportConfigMessages.config_import_wizard_custom_driver_settings);
         setTitle(ImportConfigMessages.config_import_wizard_custom_driver_import_settings_name);
-        setDescription(ImportEEConfigMessages.config_import_wizard_jetbrains_description);
+        setDescription(ImportConfigMessages.config_import_wizard_jetbrains_description);
     }
 
     @Override
