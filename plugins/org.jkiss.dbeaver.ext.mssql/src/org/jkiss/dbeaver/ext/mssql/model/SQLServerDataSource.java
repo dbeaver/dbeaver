@@ -57,7 +57,9 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Properties;
 
-public class SQLServerDataSource extends JDBCDataSource implements DBSInstanceContainer, DBPObjectStatisticsCollector, DBPAdaptable, DBCQueryTransformProviderExt {
+public class SQLServerDataSource
+    extends JDBCDataSource
+    implements DBSInstanceContainer, DBPObjectStatisticsCollector, DBPAdaptable, DBCQueryTransformProviderExt, DBSVisibilityScopeProvider {
 
     private static final Log log = Log.getLog(SQLServerDataSource.class);
     private static final String PROP_ENCRYPT_SSL = "encrypt";
@@ -585,7 +587,20 @@ public class SQLServerDataSource extends JDBCDataSource implements DBSInstanceCo
         }
         return !hasNextValExpr;
     }
-    
+
+    @NotNull
+    @Override
+    public List<DBSObjectContainer> getPublicScopes(@NotNull DBRProgressMonitor monitor) throws DBException {
+        var tempdb = getDatabase(monitor, SQLServerConstants.TEMPDB_DATABASE);
+        if (tempdb != null) {
+            var dbo = tempdb.getSchema(monitor, SQLServerConstants.DEFAULT_SCHEMA_NAME);
+            if (dbo != null) {
+                return List.of(dbo);
+            }
+        }
+        return List.of();
+    }
+
     public static class DatabaseCache extends JDBCObjectCache<SQLServerDataSource, SQLServerDatabase> {
         DatabaseCache() {
             setListOrderComparator(DBUtils.nameComparator());
