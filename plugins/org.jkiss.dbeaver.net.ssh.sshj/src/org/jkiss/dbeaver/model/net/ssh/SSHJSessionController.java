@@ -77,29 +77,49 @@ public class SSHJSessionController extends AbstractSessionController<SSHJSession
 
         try {
             client.connect(host.hostname(), host.port());
+        } catch (Exception e) {
+            throw new DBException("Error establishing SSHJ tunnel", e);
+        }
 
-            if (auth instanceof SSHAuthConfiguration.Password password && password.password() != null) {
+        if (auth instanceof SSHAuthConfiguration.Password password && password.password() != null) {
+            try {
                 client.authPassword(host.username(), password.password());
-            } else if (auth instanceof SSHAuthConfiguration.KeyFile key) {
-                if (CommonUtils.isEmpty(key.password())) {
+            } catch (Throwable e) {
+                throw new DBException("SSH password authentication failed", e);
+            }
+        } else if (auth instanceof SSHAuthConfiguration.KeyFile key) {
+            if (CommonUtils.isEmpty(key.password())) {
+                try {
                     client.authPublickey(host.username(), key.path());
-                } else {
-                    client.authPublickey(host.username(), client.loadKeys(key.path(), key.password().toCharArray()));
+                } catch (Throwable e) {
+                    throw new DBException("SSH public key authentication failed", e);
                 }
-            } else if (auth instanceof SSHAuthConfiguration.KeyData key) {
-                final PasswordFinder finder = CommonUtils.isEmpty(key.password())
-                    ? null
-                    : PasswordUtils.createOneOff(key.password().toCharArray());
+            } else {
+                try {
+                    client.authPublickey(host.username(), client.loadKeys(key.path(), key.password().toCharArray()));
+                } catch (Throwable e) {
+                    throw new DBException("SSH public key (encrypted) authentication failed", e);
+                }
+            }
+        } else if (auth instanceof SSHAuthConfiguration.KeyData key) {
+            final PasswordFinder finder = CommonUtils.isEmpty(key.password())
+                ? null
+                : PasswordUtils.createOneOff(key.password().toCharArray());
+            try {
                 client.authPublickey(host.username(), client.loadKeys(key.data(), null, finder));
-            } else if (auth instanceof SSHAuthConfiguration.Agent) {
-                final List<AuthMethod> methods = new ArrayList<>();
+            } catch (Throwable e) {
+                throw new DBException("SSH public key authentication failed", e);
+            }
+        } else if (auth instanceof SSHAuthConfiguration.Agent) {
+            final List<AuthMethod> methods = new ArrayList<>();
+            try {
                 for (Object identity : createAgentIdentityRepository().getIdentities()) {
                     methods.add(new DBeaverAuthAgent((Identity) identity));
                 }
                 client.auth(host.username(), methods);
+            } catch (Throwable e) {
+                throw new DBException("SSH agent authentication failed", e);
             }
-        } catch (Exception e) {
-            throw new DBException("Error establishing SSHJ tunnel", e);
         }
 
         return client;
