@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,13 +29,18 @@ import org.jkiss.utils.CommonUtils;
 public class DriverDownloadWizard extends Wizard implements IExportWizard {
 
 
-    private DBPDriver driver;
-    private DBPDriverDependencies dependencies;
-    private boolean updateVersion;
+    private final DBPDriver driver;
+    private final DBPDriverDependencies dependencies;
+    private final boolean updateVersion;
     private boolean forceDownload;
     private DriverDownloadPage downloadPage;
 
-    public DriverDownloadWizard(@NotNull DBPDriver driver, DBPDriverDependencies dependencies, boolean updateVersion, boolean forceDownload) {
+    public DriverDownloadWizard(
+        @NotNull DBPDriver driver,
+        @NotNull DBPDriverDependencies dependencies,
+        boolean updateVersion,
+        boolean forceDownload
+    ) {
         this.driver = driver;
         this.dependencies = dependencies;
         this.updateVersion = updateVersion;
