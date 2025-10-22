@@ -201,8 +201,10 @@ public class SQLiteTable extends GenericTable implements DBDPseudoAttributeConta
     }
 
     @Override
-    @NotNull
     public Collection<SQLiteTableForeignKey> getReferences(@NotNull DBRProgressMonitor monitor) throws DBException {
+        if (!isPersisted() || !getDataSource().getInfo().supportsReferentialIntegrity() || monitor.isForceCacheUsage()) {
+            return new ArrayList<>();
+        }
         List<SQLiteTableForeignKey> list = new ArrayList<>();
         for (GenericTableBase table : getDataSource().getTables(monitor)) {
             Collection<? extends GenericTableForeignKey> tableForeignKeys = table.getAssociations(monitor);
