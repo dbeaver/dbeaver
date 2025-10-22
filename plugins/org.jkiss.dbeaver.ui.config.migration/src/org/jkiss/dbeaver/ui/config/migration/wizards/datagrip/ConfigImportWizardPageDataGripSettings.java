@@ -20,24 +20,25 @@ package org.jkiss.dbeaver.ui.config.migration.wizards.datagrip;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
+import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.config.migration.ImportConfigMessages;
 import org.jkiss.dbeaver.ui.config.migration.datagrip.api.DataGripDataSourceConfigXmlService;
 import org.jkiss.dbeaver.ui.config.migration.datagrip.impl.DataGripDataSourceConfigXmlServiceImpl;
-import org.jkiss.dbeaver.ui.controls.TextWithOpenFile;
-import org.jkiss.dbeaver.ui.controls.TextWithOpenFolder;
-import org.jkiss.utils.CommonUtils;
+import org.jkiss.dbeaver.ui.dialogs.DialogUtils;
 
-import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.List;
 
 public class ConfigImportWizardPageDataGripSettings extends WizardPage {
 
-    private TextWithOpenFile filePathText;
+    private Combo filePathText;
     private Path inputFile;
     DataGripDataSourceConfigXmlService dataGripDataSourceConfigXmlService = DataGripDataSourceConfigXmlServiceImpl.INSTANCE;
 
@@ -50,16 +51,38 @@ public class ConfigImportWizardPageDataGripSettings extends WizardPage {
 
     @Override
     public void createControl(Composite parent) {
-        Composite placeholder = new Composite(parent, SWT.NONE);
-        placeholder.setLayout(new GridLayout(1, true));
+        Composite placeholder = UIUtils.createComposite(parent, 3);
 
-        UIUtils.createControlLabel(placeholder, ImportConfigMessages.config_import_wizard_custom_input_file);
-        filePathText = new TextWithOpenFolder(placeholder, ImportConfigMessages.config_import_wizard_custom_input_file_configuration);
+        filePathText = UIUtils.createLabelCombo(
+            placeholder,
+            ImportConfigMessages.config_import_wizard_custom_input_file_configuration,
+            SWT.DROP_DOWN | SWT.BORDER
+        );
         filePathText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        String str = dataGripDataSourceConfigXmlService.tryExtractRecentProjectPath();
-        filePathText.setText(replaceUserHomePath(str));
+        List<Path> configPaths = dataGripDataSourceConfigXmlService.tryExtractRecentProjectPath();
+        for (Path path : configPaths) {
+            filePathText.add(path.toString());
+        }
+        if (!configPaths.isEmpty()) {
+            filePathText.select(0);
+        }
         setInputFileAndUpdateButtons();
-        filePathText.getTextControl().addModifyListener(e -> setInputFileAndUpdateButtons());
+        filePathText.addModifyListener(e -> setInputFileAndUpdateButtons());
+        UIUtils.createPushButton(
+            placeholder,
+            "Project folder",
+            ImportConfigMessages.config_import_wizard_custom_input_file_configuration,
+            UIIcon.OPEN,
+            new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    String file = DialogUtils.openDirectoryDialog(getShell(), "JetBrains project directory", null);
+                    if (file != null) {
+                        filePathText.setText(file);
+                    }
+                }
+            }
+        );
         setControl(placeholder);
     }
 
@@ -86,13 +109,4 @@ public class ConfigImportWizardPageDataGripSettings extends WizardPage {
         return inputFile;
     }
 
-    private String replaceUserHomePath(String path) {
-        String[] split = path.split("\\$/");
-        if (split.length < 2) {
-            return path;
-        }
-        String pathFromUserHome = split[1];
-        String osDependencePath = CommonUtils.makeOsDependencePath(pathFromUserHome);
-        return System.getProperty("user.home") + File.separator + osDependencePath;
-    }
 }

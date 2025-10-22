@@ -37,6 +37,7 @@ import org.jkiss.utils.xml.XMLException;
 import org.jkiss.utils.xml.XMLUtils;
 import org.w3c.dom.*;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.nio.file.Files;
@@ -69,14 +70,37 @@ public class DataGripDataSourceConfigXmlServiceImpl implements DataGripDataSourc
         return uuidToDataSourceProps;
     }
 
+    @NotNull
     @Override
-    public @NotNull String tryExtractRecentProjectPath() {
+    public List<Path> tryExtractRecentProjectPath() {
         try {
-            return extractRecentProjectPath();
+            Path pathSuffixToFile = Path.of(DataGripConfigXMLConstant.IDEA_OPTIONS_FOLDER, DataGripConfigXMLConstant.RECENT_PROJECT_XML_FILENAME);
+            List<Path> pathToRecentProjectXmlList = getAllExistingPathsToFileFromFolder(getJetBrainsDirectory(), pathSuffixToFile);
+            List<Path> result = new ArrayList<>();
+            for (Path projectFile : pathToRecentProjectXmlList) {
+                String projectConfigPath = getRecentProjectPathFromXml(projectFile);
+                if (!CommonUtils.isEmpty(projectConfigPath)) {
+                    Path projectPath = Path.of(replaceUserHomePath(projectConfigPath));
+                    if (Files.exists(projectPath)) {
+                        result.add(projectPath);
+                    }
+                }
+            }
+            return result;
         } catch (Exception e) {
-            log.warn("Can't extract recent project path for Intelij idea", e);
+            log.warn("Can't extract recent project path for DataGrip", e);
         }
-        return "";
+        return List.of();
+    }
+
+    private String replaceUserHomePath(String path) {
+        String[] split = path.split("\\$/");
+        if (split.length < 2) {
+            return path;
+        }
+        String pathFromUserHome = split[1];
+        String osDependencePath = CommonUtils.makeOsDependencePath(pathFromUserHome);
+        return System.getProperty("user.home") + File.separator + osDependencePath;
     }
 
     @Override
@@ -126,17 +150,6 @@ public class DataGripDataSourceConfigXmlServiceImpl implements DataGripDataSourc
             }
             return result;
         }
-    }
-
-    private String extractRecentProjectPath() throws IOException, XMLException {
-        Path pathSuffixToFile = Path.of(DataGripConfigXMLConstant.IDEA_OPTIONS_FOLDER, DataGripConfigXMLConstant.RECENT_PROJECT_XML_FILENAME);
-        List<Path> pathToRecentProjectXmlList = getAllExistingPathsToFileFromFolder(getJetBrainsDirectory(),
-            pathSuffixToFile);
-        if (pathToRecentProjectXmlList.isEmpty()) {
-            return "";
-        }
-        Path pathToRecentProjectXml = getMostRecentFile(pathToRecentProjectXmlList);
-        return getRecentProjectPathFromXml(pathToRecentProjectXml);
     }
 
     private String getJetBrainsDirectory() {

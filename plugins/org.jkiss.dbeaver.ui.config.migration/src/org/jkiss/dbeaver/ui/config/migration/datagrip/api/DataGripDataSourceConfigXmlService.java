@@ -19,6 +19,8 @@ package org.jkiss.dbeaver.ui.config.migration.datagrip.api;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ui.config.migration.wizards.ImportConnectionInfo;
 
+import java.nio.file.Path;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -44,5 +46,6 @@ public interface DataGripDataSourceConfigXmlService {
      *
      * @return path to most recent project
      */
-    @NotNull String tryExtractRecentProjectPath();
+    @NotNull
+    List<Path> tryExtractRecentProjectPath();
 }
