@@ -17,7 +17,6 @@
 package org.jkiss.dbeaver.model.ai.engine.copilot;
 
 import com.google.gson.annotations.SerializedName;
-import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.ai.engine.AIEngineProperties;
@@ -28,11 +27,10 @@ import org.jkiss.dbeaver.model.meta.SecureProperty;
 import org.jkiss.dbeaver.model.secret.DBSSecretController;
 import org.jkiss.utils.CommonUtils;
 
-import java.util.List;
-
 public class CopilotProperties implements AIEngineProperties {
-    private static final String COPILOT_ACCESS_TOKEN = "copilot.access.token";
-    private static final String GPT_MODEL = "gpt.model";
+    public static final String COPILOT_ACCESS_TOKEN = "copilot.access.token";
+    public static final String GPT_MODEL = "gpt.model";
+
     private static final String GPT_CONTEXT_WINDOW_SIZE = "gpt.contextWindowSize";
     private static final String GPT_MODEL_TEMPERATURE = "gpt.model.temperature";
     private static final String GPT_LOG_QUERY = "gpt.log.query";
@@ -67,13 +65,11 @@ public class CopilotProperties implements AIEngineProperties {
     }
 
     @Nullable
-    @Override
     @Property(order = 2, id = GPT_MODEL)
     public String getModel() {
         return model;
     }
 
-    @Override
     public void setModel(@Nullable String model) {
         this.model = model;
     }
@@ -133,17 +129,5 @@ public class CopilotProperties implements AIEngineProperties {
     @Override
     public boolean isValidConfiguration() {
         return !CommonUtils.isEmpty(getToken());
-    }
-
-    @NotNull
-    @Override
-    public List<String> getConnectionPropertiesNames() {
-        return List.of(COPILOT_ACCESS_TOKEN);
-    }
-
-    @Nullable
-    @Override
-    public String getModelPropertyName() {
-        return GPT_MODEL;
     }
 }

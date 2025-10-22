@@ -17,7 +17,6 @@
 package org.jkiss.dbeaver.model.ai.engine.openai;
 
 import com.google.gson.annotations.SerializedName;
-import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.ai.AIConstants;
@@ -30,13 +29,13 @@ import org.jkiss.dbeaver.model.meta.SecureProperty;
 import org.jkiss.dbeaver.model.secret.DBSSecretController;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 
-import java.util.List;
 import java.util.Map;
 
 public class OpenAIProperties implements OpenAIBaseProperties {
-    private static final String GPT_BASE_URL = "gpt.base_url";
-    private static final String GPT_TOKEN = "gpt.token";
-    private static final String GPT_MODEL = "gpt.model";
+    public static final String GPT_BASE_URL = "gpt.base_url";
+    public static final String GPT_TOKEN = "gpt.token";
+    public static final String GPT_MODEL = "gpt.model";
+
     private static final String GPT_CONTEXT_WINDOW_SIZE = "gpt.contextWindowSize";
     private static final String GPT_MODEL_TEMPERATURE = "gpt.model.temperature";
     private static final String GPT_LOG_QUERY = "gpt.log.query";
@@ -68,6 +67,7 @@ public class OpenAIProperties implements OpenAIBaseProperties {
 
     @Nullable
     @Override
+    @Property(order = 1, id = GPT_BASE_URL)
     public String getBaseUrl() {
         return baseUrl;
     }
@@ -78,7 +78,7 @@ public class OpenAIProperties implements OpenAIBaseProperties {
 
     @Nullable
     @Override
-    @Property(order = 1, id = GPT_TOKEN, password = true)
+    @Property(order = 2, id = GPT_TOKEN, password = true)
     public String getToken() {
         return token;
     }
@@ -87,8 +87,7 @@ public class OpenAIProperties implements OpenAIBaseProperties {
         this.token = token;
     }
 
-    @Override
-    @Property(order = 2, id = GPT_MODEL, listProvider = OpenAIModelListProvider.class)
+    @Property(order = 3, id = GPT_MODEL, listProvider = OpenAIModelListProvider.class)
     public String getModel() {
         if (model != null) {
             return OpenAIModels.getEffectiveModelName(model);
@@ -100,13 +99,12 @@ public class OpenAIProperties implements OpenAIBaseProperties {
         return OpenAIModels.getEffectiveModelName(modelName);
     }
 
-    @Override
     public void setModel(@Nullable String model) {
         this.model = model;
     }
 
     @Override
-    @Property(order = 3, id = GPT_MODEL_TEMPERATURE)
+    @Property(order = 4, id = GPT_MODEL_TEMPERATURE)
     public double getTemperature() {
         if (temperature != null) {
             return temperature;
@@ -122,7 +120,7 @@ public class OpenAIProperties implements OpenAIBaseProperties {
     }
 
     @Override
-    @Property(order = 4, id = GPT_LOG_QUERY)
+    @Property(order = 5, id = GPT_LOG_QUERY)
     public boolean isLoggingEnabled() {
         if (loggingEnabled != null) {
             return loggingEnabled;
@@ -139,7 +137,7 @@ public class OpenAIProperties implements OpenAIBaseProperties {
 
     @Nullable
     @Override
-    @Property(order = 5, id = GPT_CONTEXT_WINDOW_SIZE, required = true)
+    @Property(order = 6, id = GPT_CONTEXT_WINDOW_SIZE, required = true)
     public Integer getContextWindowSize() {
         if (contextWindowSize != null) {
             return contextWindowSize;
@@ -164,18 +162,6 @@ public class OpenAIProperties implements OpenAIBaseProperties {
         if (token != null) {
             DBSSecretController.getGlobalSecretController().setPrivateSecretValue(OpenAIConstants.GPT_API_TOKEN, token);
         }
-    }
-
-    @NotNull
-    @Override
-    public List<String> getConnectionPropertiesNames() {
-        return List.of(GPT_BASE_URL, GPT_TOKEN);
-    }
-
-    @Nullable
-    @Override
-    public String getModelPropertyName() {
-        return GPT_MODEL;
     }
 
     public static class OpenAIModelListProvider implements IPropertyValueListProvider<OpenAIProperties> {
