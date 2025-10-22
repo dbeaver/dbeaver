@@ -31,6 +31,7 @@ import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 import org.eclipse.ui.IWorkbenchPropertyPage;
 import org.eclipse.ui.dialogs.PreferencesUtil;
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPContextProvider;
@@ -80,12 +81,13 @@ public abstract class TargetPrefPage extends AbstractPrefPage implements IWorkbe
     protected void createPreferenceHeader(Composite composite) {
     }
 
-    protected abstract void loadPreferences(DBPPreferenceStore store);
+    protected abstract void loadPreferences(@NotNull DBPPreferenceStore store);
 
-    protected abstract void savePreferences(DBPPreferenceStore store);
+    protected abstract void savePreferences(@NotNull DBPPreferenceStore store);
 
-    protected abstract void clearPreferences(DBPPreferenceStore store);
+    protected abstract void clearPreferences(@NotNull DBPPreferenceStore store);
 
+    @NotNull
     protected abstract String getPropertyPageID();
 
     @Nullable

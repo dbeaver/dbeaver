@@ -21,15 +21,14 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.*;
-import org.jkiss.dbeaver.model.ai.AIConstants;
-import org.jkiss.dbeaver.model.ai.AIQueryConfirmationRule;
-import org.jkiss.dbeaver.model.ai.AISettings;
+import org.jkiss.dbeaver.model.ai.*;
 import org.jkiss.dbeaver.model.ai.engine.AIEngineProperties;
 import org.jkiss.dbeaver.model.ai.internal.AIMessages;
 import org.jkiss.dbeaver.model.ai.registry.AIEngineDescriptor;
 import org.jkiss.dbeaver.model.ai.registry.AIEngineRegistry;
 import org.jkiss.dbeaver.model.ai.registry.AISettingsManager;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContextDefaults;
 import org.jkiss.dbeaver.model.exec.DBCTransactionManager;
 import org.jkiss.dbeaver.model.impl.DataSourceContextProvider;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -221,4 +220,29 @@ public final class AIUtils {
             .orElse(null);
         return new DataSourceContextProvider(dataSource);
     }
+
+    public static void updateScopeSettingsIfNeeded(
+        @NotNull AIContextSettings settings,
+        @NotNull DBPDataSourceContainer container,
+        @Nullable DBCExecutionContext executionContext
+    ) {
+        if (settings.getScope() != null || !container.isConnected()) {
+            return;
+        }
+        if (executionContext == null || executionContext.getContextDefaults() == null) {
+            // default scope
+            settings.setScope(AIDatabaseScope.CURRENT_DATABASE);
+            return;
+        }
+        DBCExecutionContextDefaults<?, ?> contextDefaults = executionContext.getContextDefaults();
+        if (contextDefaults.getDefaultSchema() != null || contextDefaults.supportsSchemaChange()) {
+            settings.setScope(AIDatabaseScope.CURRENT_SCHEMA);
+        } else if (contextDefaults.getDefaultCatalog() != null || contextDefaults.supportsCatalogChange()) {
+            settings.setScope(AIDatabaseScope.CURRENT_DATABASE);
+        } else {
+            settings.setScope(AIDatabaseScope.CURRENT_DATASOURCE);
+        }
+    }
+
+
 }
