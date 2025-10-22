@@ -139,9 +139,13 @@ public final class AIUtils {
             return true;
         }
         Set<SQLQueryCategory> queryCategories = SQLQueryCategory.categorizeScript(scriptElements);
-        boolean isDdlOrUnknown = queryCategories.contains(SQLQueryCategory.DDL) ||
-            queryCategories.contains(SQLQueryCategory.UNKNOWN);
-        if (isDdlOrUnknown && isConfirmationNeeded(AIConstants.AI_CONFIRM_DDL)) {
+        if (queryCategories.contains(SQLQueryCategory.UNKNOWN) && isConfirmationNeeded(AIConstants.AI_CONFIRM_OTHER)) {
+            String message = isCommand ? AIMessages.ai_execute_command_confirm_other_message :
+                AIMessages.ai_execute_query_confirm_other_message;
+            return confirmExecute(AIMessages.ai_execute_query_title, message, dataSource, scriptElements);
+        }
+
+        if (queryCategories.contains(SQLQueryCategory.DDL) && isConfirmationNeeded(AIConstants.AI_CONFIRM_DDL)) {
             String message = isCommand ? AIMessages.ai_execute_command_confirm_ddl_message :
                 AIMessages.ai_execute_query_confirm_ddl_message;
             return confirmExecute(AIMessages.ai_execute_query_title, message, dataSource, scriptElements);
