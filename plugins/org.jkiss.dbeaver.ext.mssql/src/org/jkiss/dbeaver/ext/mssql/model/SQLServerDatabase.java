@@ -64,6 +64,7 @@ public class SQLServerDatabase
 
     private final SQLServerDataSource dataSource;
     private final long databaseId;
+    private final boolean isTempDatabase;
     private boolean persisted;
     private String name;
     private String description;
@@ -82,6 +83,7 @@ public class SQLServerDatabase
         this.dataSource = dataSource;
         this.databaseId = JDBCUtils.safeGetLong(resultSet, "database_id");
         this.name = name;
+        this.isTempDatabase = name.equalsIgnoreCase(SQLServerConstants.TEMPDB_DATABASE);
         //this.description = JDBCUtils.safeGetString(resultSet, "description");
 
         this.persisted = true;
@@ -102,6 +104,7 @@ public class SQLServerDatabase
         this.dataSource = dataSource;
         this.databaseId = 0;
         this.persisted = false;
+        this.isTempDatabase = false;
     }
 
     @NotNull
@@ -175,6 +178,12 @@ public class SQLServerDatabase
         typesCache.clearCache();
     }
 
+    /**
+     * Whether this database represents the {@code tempdb} database.
+     */
+    public boolean isTempDatabase() {
+        return isTempDatabase;
+    }
 
     //////////////////////////////////////////////////
     // Data types
