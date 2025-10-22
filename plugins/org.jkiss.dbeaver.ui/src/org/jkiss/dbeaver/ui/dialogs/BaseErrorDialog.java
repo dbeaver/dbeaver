@@ -176,7 +176,7 @@ public class BaseErrorDialog extends BaseDialog {
             textSize.y += 5; // Just in case. On MacOS height should be a bit more to avoid truncation
             textSize.x += fontHeight * 2;
             if (RuntimeUtils.isMacOS()) {
-                textSize.x += fontHeight * 6;
+                textSize.x += fontHeight * 8;
             }
 
         } finally {
