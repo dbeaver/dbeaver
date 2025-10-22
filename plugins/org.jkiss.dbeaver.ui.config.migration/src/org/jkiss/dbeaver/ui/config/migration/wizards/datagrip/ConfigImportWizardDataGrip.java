@@ -18,7 +18,7 @@ package org.jkiss.dbeaver.ui.config.migration.wizards.datagrip;
 
 import org.jkiss.dbeaver.ui.config.migration.wizards.ConfigImportWizard;
 
-import java.io.File;
+import java.nio.file.Path;
 
 public class ConfigImportWizardDataGrip extends ConfigImportWizard {
 
@@ -38,7 +38,7 @@ public class ConfigImportWizardDataGrip extends ConfigImportWizard {
         super.addPages();
     }
 
-    public File getInputFile() {
+    public Path getInputFile() {
         return pageSettings.getInputFile();
     }
 

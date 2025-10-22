@@ -26,7 +26,8 @@ import org.jkiss.dbeaver.ui.config.migration.wizards.ConfigImportWizardPage;
 import org.jkiss.dbeaver.ui.config.migration.wizards.ImportConnectionInfo;
 import org.jkiss.dbeaver.ui.config.migration.wizards.ImportData;
 
-import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Map;
 
 
@@ -55,12 +56,12 @@ public class ConfigImportWizardPageDataGripConnections extends ConfigImportWizar
     private void tryLoadConnection(ImportData importData) throws Exception {
 
         ConfigImportWizardDataGrip wizard = (ConfigImportWizardDataGrip) getWizard();
-        File ideaDirectory = wizard.getInputFile();
-        if (!ideaDirectory.exists()) {
+        Path ideaDirectory = wizard.getInputFile();
+        if (!Files.exists(ideaDirectory)) {
             return;
         }
         Map<String, Map<String, String>> uuidToDataSourceProps = dataGripDataSourceConfigXmlService.buildIdeaConfigProps(
-                ideaDirectory.getPath());
+                ideaDirectory.toString());
         for (Map<String, String> dataSourceProps : uuidToDataSourceProps.values()) {
             ImportConnectionInfo connectionInfo = dataGripDataSourceConfigXmlService.buildIdeaConnectionFromProps(dataSourceProps);
             importData.addDriver(connectionInfo.getDriverInfo());

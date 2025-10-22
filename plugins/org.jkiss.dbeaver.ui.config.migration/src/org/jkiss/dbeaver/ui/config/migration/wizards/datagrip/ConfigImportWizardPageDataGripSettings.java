@@ -32,11 +32,13 @@ import org.jkiss.dbeaver.ui.controls.TextWithOpenFolder;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 public class ConfigImportWizardPageDataGripSettings extends WizardPage {
 
     private TextWithOpenFile filePathText;
-    private File inputFile;
+    private Path inputFile;
     DataGripDataSourceConfigXmlService dataGripDataSourceConfigXmlService = DataGripDataSourceConfigXmlServiceImpl.INSTANCE;
 
 
@@ -62,9 +64,12 @@ public class ConfigImportWizardPageDataGripSettings extends WizardPage {
     }
 
     private void setInputFileAndUpdateButtons() {
-        inputFile = new File(filePathText.getText());
-        if (!inputFile.exists()) {
-            setErrorMessage(NLS.bind(ImportConfigMessages.config_import_wizard_file_doesnt_exist_error, inputFile.getAbsolutePath()));
+        inputFile = Path.of(filePathText.getText());
+        if (!Files.exists(inputFile)) {
+            setErrorMessage(NLS.bind(
+                ImportConfigMessages.config_import_wizard_file_doesnt_exist_error,
+                inputFile.toAbsolutePath().toString()
+            ));
         } else {
             setErrorMessage(null);
         }
@@ -73,11 +78,11 @@ public class ConfigImportWizardPageDataGripSettings extends WizardPage {
 
     @Override
     public boolean isPageComplete() {
-        return inputFile != null && inputFile.exists();
+        return inputFile != null && Files.exists(inputFile);
     }
 
 
-    public File getInputFile() {
+    public Path getInputFile() {
         return inputFile;
     }
 

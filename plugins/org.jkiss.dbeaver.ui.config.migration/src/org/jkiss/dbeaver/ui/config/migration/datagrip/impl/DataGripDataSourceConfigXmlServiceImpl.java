@@ -115,7 +115,6 @@ public class DataGripDataSourceConfigXmlServiceImpl implements DataGripDataSourc
         try (Stream<Path> paths = Files.list(Paths.get(pathToIdeaFolder))) {
             List<Path> ideaFolders = paths
                 .filter(Files::isDirectory)
-                .filter(file -> file.getFileName().toString().toLowerCase().contains("idea"))
                 .toList();
 
             List<Path> result = new ArrayList<>();
