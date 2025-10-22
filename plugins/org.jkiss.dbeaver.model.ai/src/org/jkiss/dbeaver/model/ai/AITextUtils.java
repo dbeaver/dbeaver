@@ -48,6 +48,9 @@ public class AITextUtils {
     private static final Log log = Log.getLog(AITextUtils.class);
     public static final String SQL_LANGUAGE_ID = "sql";
 
+    private static final Pattern MARKDOWN_LINK_PARSER = Pattern.compile("\\[([^]]+)]\\(([^)]+)\\)");
+    private static final Pattern URL_PARSER = Pattern.compile("\\b(https?://|ftp://)[^\\s<>\"{}|\\\\^`\\[\\]]+");
+
     private AITextUtils() {
         // prevents instantiation
     }
@@ -166,16 +169,13 @@ public class AITextUtils {
         @NotNull List<MessageChunk> chunks,
         @NotNull String text
     ) {
-        final Pattern markdownLinkPattern = Pattern.compile("\\[([^]]+)]\\(([^)]+)\\)");
-        final Pattern urlPattern = Pattern.compile("\\b(https?://|ftp://)[^\\s<>\"{}|\\\\^`\\[\\]]+");
-
         List<LinkPosition> links = new ArrayList<>();
         StringBuilder buffer = new StringBuilder();
         int lastEnd = 0;
 
         List<MatchInfo> allMatches = new ArrayList<>();
 
-        Matcher markdownMatcher = markdownLinkPattern.matcher(text);
+        Matcher markdownMatcher = MARKDOWN_LINK_PARSER.matcher(text);
         while (markdownMatcher.find()) {
             allMatches.add(new MatchInfo(
                 markdownMatcher.start(),
@@ -186,7 +186,7 @@ public class AITextUtils {
             ));
         }
 
-        Matcher urlMatcher = urlPattern.matcher(text);
+        Matcher urlMatcher = URL_PARSER.matcher(text);
         while (urlMatcher.find()) {
             allMatches.add(new MatchInfo(
                 urlMatcher.start(),
