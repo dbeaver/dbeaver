@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,15 +17,12 @@
 package org.jkiss.dbeaver.ext.postgresql.debug.ui.internal;
 
 import org.eclipse.core.runtime.IAdapterFactory;
-import org.eclipse.jface.viewers.IStructuredSelection;
-import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.ui.IEditorPart;
 import org.jkiss.dbeaver.debug.DBGDebugObject;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreProcedure;
 import org.jkiss.dbeaver.ext.postgresql.ui.editors.PostgreSourceViewEditor;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.ui.editors.IDatabaseEditorInput;
-import org.jkiss.dbeaver.ui.navigator.INavigatorModelView;
 
 public class PostgreDebugObjectAdapterFactory implements IAdapterFactory {
 
@@ -45,12 +42,6 @@ public class PostgreDebugObjectAdapterFactory implements IAdapterFactory {
             }
             if (adaptableObject instanceof IDatabaseEditorInput dei && dei.getDatabaseObject() instanceof PostgreProcedure) {
                 return adapterType.cast(DEBUG_OBJECT);
-            }
-            if (false && adaptableObject instanceof INavigatorModelView nmv) {
-                Viewer navigatorViewer = nmv.getNavigatorViewer();
-                if (navigatorViewer != null) {
-                    adaptableObject = ((IStructuredSelection) navigatorViewer.getSelection()).getFirstElement();
-                }
             }
             if (adaptableObject instanceof DBNDatabaseNode databaseNode && databaseNode.getObject() instanceof PostgreProcedure) {
                 return adapterType.cast(DEBUG_OBJECT);

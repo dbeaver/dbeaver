@@ -88,10 +88,10 @@ class DriverDownloadAutoPage extends DriverDownloadPage {
     }
 
     private ExpandableComposite setExpander(@NotNull Composite parent) {
-        ExpandableComposite expander = UIUtils.createExpandableCompositeWithSeparator(
+        ExpandableComposite expander = new ExpandableComposite(
             parent,
             SWT.NONE,
-            ExpandableComposite.TWISTIE | ExpandableComposite.COMPACT
+            ExpandableComposite.TWISTIE
         );
 
         Composite details = setDetails(expander);
@@ -410,7 +410,7 @@ class DriverDownloadAutoPage extends DriverDownloadPage {
         }
 
         @Override
-        protected void createButtonsForButtonBar(Composite parent) {
+        protected void createButtonsForButtonBar(@NotNull Composite parent) {
             createButton(
                 parent,
                 IDialogConstants.ABORT_ID,

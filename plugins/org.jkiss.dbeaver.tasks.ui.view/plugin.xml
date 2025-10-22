@@ -268,6 +268,7 @@
 
     <extension point="org.eclipse.ui.bindings">
         <key commandId="org.jkiss.dbeaver.task.edit" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="Enter"/>
+        <key commandId="org.jkiss.dbeaver.task.edit" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="F4"/>
     </extension>
 
     <extension point="org.eclipse.ui.perspectiveExtensions">

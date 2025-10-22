@@ -182,7 +182,10 @@ public class AITextUtils {
         final List<DBSObject> output = new ArrayList<>();
 
         for (String id : ids) {
-            output.add(DBUtils.findObjectById(monitor, project, id));
+            DBSObject object = DBUtils.findObjectById(monitor, project, id);
+            if (object != null) {
+                output.add(object);
+            }
             monitor.worked(1);
         }
 
