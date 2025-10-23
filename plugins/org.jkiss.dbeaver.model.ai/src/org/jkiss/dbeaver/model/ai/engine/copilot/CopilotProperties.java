@@ -55,7 +55,7 @@ public class CopilotProperties implements AIEngineProperties {
     private boolean loggingEnabled;
 
     @Nullable
-    @Property(order = 1, id = COPILOT_ACCESS_TOKEN, password = true)
+    @Property(order = 1, id = COPILOT_ACCESS_TOKEN, password = true, required = true)
     public String getToken() {
         return token;
     }

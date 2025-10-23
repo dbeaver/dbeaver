@@ -67,7 +67,7 @@ public class OpenAIProperties implements OpenAIBaseProperties {
 
     @Nullable
     @Override
-    @Property(order = 1, id = GPT_BASE_URL)
+    @Property(order = 1, id = GPT_BASE_URL, required = true)
     public String getBaseUrl() {
         return baseUrl;
     }
@@ -78,7 +78,7 @@ public class OpenAIProperties implements OpenAIBaseProperties {
 
     @Nullable
     @Override
-    @Property(order = 2, id = GPT_TOKEN, password = true)
+    @Property(order = 2, id = GPT_TOKEN, password = true, required = true)
     public String getToken() {
         return token;
     }
