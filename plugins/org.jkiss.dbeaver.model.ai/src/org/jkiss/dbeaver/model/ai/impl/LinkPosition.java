@@ -14,21 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.struct;
+package org.jkiss.dbeaver.model.ai.impl;
 
-import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-
-import java.util.List;
-
-/**
- * Provides additional globally visible scopes
- */
-public interface DBSVisibilityScopeProvider {
-    /**
-     * Returns additional globally visible scopes, like information_schema
-     */
-    @NotNull
-    List<DBSObjectContainer> getPublicScopes(@NotNull DBRProgressMonitor monitor) throws DBException;
+public record LinkPosition(
+    int start,
+    int length,
+    String url
+) {
 }

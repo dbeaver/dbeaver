@@ -41,6 +41,8 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.text.SimpleDateFormat;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.Date;
 import java.util.Locale;
 import java.util.Objects;
@@ -63,8 +65,8 @@ public class TaskRunJob extends AbstractJob implements DBRRunnableContext {
     private DBRProgressMonitor activeMonitor;
     private DBTTaskRunStatus taskRunStatus = new DBTTaskRunStatus();
 
-    private long taskStartTime;
-    private long elapsedTime;
+    private Instant taskStartTime = Instant.now();
+    private Duration elapsedTime = Duration.ZERO;
     private Throwable taskError;
 
     private boolean canceledByTimeOut = false;
@@ -110,7 +112,7 @@ public class TaskRunJob extends AbstractJob implements DBRRunnableContext {
             } finally {
                 monitor.done();
              
-                taskRun.setRunDuration(elapsedTime);
+                taskRun.setRunDuration(elapsedTime.toMillis());
                 if (activeMonitor.isCanceled() || monitor.isCanceled()) {
                     taskRun.setErrorMessage("Canceled");
                     taskLog.info(String.format("Task '%s' (%s) cancelled after %s ms", task.getName(), task.getId(), elapsedTime));
@@ -181,14 +183,14 @@ public class TaskRunJob extends AbstractJob implements DBRRunnableContext {
 
         @Override
         public void taskStarted(@Nullable DBTTask task) {
-            taskStartTime = System.currentTimeMillis();
+            taskStartTime = Instant.now();
             parent.taskStarted(task);
         }
 
         @Override
         public void taskFinished(@Nullable DBTTask task, @Nullable Object result, @Nullable Throwable error, @Nullable Object settings) {
             parent.taskFinished(task, result, error, settings);
-            elapsedTime = System.currentTimeMillis() - taskStartTime;
+            elapsedTime = getElapsedTime();
             taskError = error;
         }
 
@@ -198,20 +200,22 @@ public class TaskRunJob extends AbstractJob implements DBRRunnableContext {
         }
     }
 
-    /**
-     * Cancel task by time reached
-     */
-    public void cancelByTimeReached() {
-        if (task.getMaxExecutionTime() > 0
-            && taskStartTime > 0
-            && (System.currentTimeMillis() - taskStartTime) > (task.getMaxExecutionTime() * 1000L)) {
-            canceledByTimeOut = true;
-            cancel();
-            activeMonitor.getNestedMonitor().setCanceled(true);
-            if (isRunDirectly()) {
-                canceling();
-            }
+    public void cancelByTimeout() {
+        canceledByTimeOut = true;
+        cancel();
+        activeMonitor.getNestedMonitor().setCanceled(true);
+        if (isRunDirectly()) {
+            canceling();
         }
     }
 
+    @NotNull
+    public Duration getElapsedTime() {
+        return Duration.between(taskStartTime, Instant.now());
+    }
+
+    @NotNull
+    public TaskImpl getTask() {
+        return task;
+    }
 }

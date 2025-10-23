@@ -23,7 +23,6 @@ import org.jkiss.dbeaver.model.connection.DBPDriverDependencies;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.ui.UIServiceDrivers;
 import org.jkiss.dbeaver.ui.UITask;
-import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.driver.DriverDownloadDialog;
 import org.jkiss.utils.CommonUtils;
 
@@ -42,7 +41,7 @@ public class UIServiceDriversImpl implements UIServiceDrivers {
             @Override
             protected Boolean runTask() {
                 return DriverDownloadDialog.downloadDriverFiles(
-                    UIUtils.getActiveWorkbenchShell(),
+                    null,
                     driver,
                     dependencies
                 );

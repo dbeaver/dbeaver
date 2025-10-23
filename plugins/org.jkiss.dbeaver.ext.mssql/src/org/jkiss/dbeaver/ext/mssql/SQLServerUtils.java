@@ -60,6 +60,9 @@ public class SQLServerUtils {
     private static final Pattern CROSS_DATABASE_QUERY_ERROR_PATTERN =
         Pattern.compile("Reference to database and/or server name in '([^']+)' is not supported in this version of SQL Server\\.");
 
+    private static final Pattern TEMPDB_TABLE_NAME_PATTERN =
+        Pattern.compile("^(#.*?)_*[0-9A-Z]{12}$");
+
     public static boolean isDriverSqlServer(DBPDriver driver) {
         return driver.getSampleURL().contains(":sqlserver");
     }
@@ -445,5 +448,30 @@ public class SQLServerUtils {
         }
 
         return e;
+    }
+
+    /**
+     * Attempts to extract the name part from a user-created {@code tempdb} table's name.
+     * <p>
+     * User-created temp tables have names padded to 128 characters with underscores, with a
+     * unique 6-byte hexadecimal number at the end:
+     *
+     * <pre>{@code
+     *     #name__ <122 more underscores> __000000000018
+     * }</pre>
+     * <p>
+     * This function will strip underscores and the tail number and return just {@code #name}.
+     *
+     * @param name name of a table in {@code tempdb} database
+     * @return a tripped table name, or {@code null} if the supplied name
+     * doesn't resemble a {@code tempdb}'s table name.
+     */
+    @Nullable
+    public static String stripTempdbTableName(@NotNull String name) {
+        Matcher matcher = TEMPDB_TABLE_NAME_PATTERN.matcher(name);
+        if (matcher.matches()) {
+            return matcher.group(1);
+        }
+        return null;
     }
 }
