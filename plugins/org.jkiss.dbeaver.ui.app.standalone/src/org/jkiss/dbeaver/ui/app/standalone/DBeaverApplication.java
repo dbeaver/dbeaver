@@ -48,6 +48,7 @@ import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.app.DBPApplicationController;
 import org.jkiss.dbeaver.model.app.DBPPlatform;
 import org.jkiss.dbeaver.model.app.DBPWorkspace;
+import org.jkiss.dbeaver.model.cli.CLIConstants;
 import org.jkiss.dbeaver.model.cli.CLIProcessResult;
 import org.jkiss.dbeaver.model.impl.app.BaseWorkspaceImpl;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
@@ -180,6 +181,14 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
     public Object start(IApplicationContext context) {
         instance = this;
 
+        var args = Platform.getApplicationArgs();
+        for (String arg : args) {
+            if (arg.equals(CLIConstants.COMMAND_REUSE_WORKSPACE)) {
+                reuseWorkspace = true;
+                args = ArrayUtils.remove(String.class, args, arg);
+                break;
+            }
+        }
         Location instanceLoc = Platform.getInstanceLocation();
 
         String defaultHomePath = getDefaultInstanceLocation();
@@ -229,7 +238,7 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
             headlessMode = true;
             try {
                 CLIProcessResult cliProcessResult = DBeaverCommandLine.getInstance()
-                    .executeCommandLineCommands(null, false, false, Platform.getApplicationArgs());
+                    .executeCommandLineCommands(null, false, false, args);
                 if (cliProcessResult.getPostAction() == CLIProcessResult.PostAction.SHUTDOWN) {
                     return IApplication.EXIT_OK;
                 }

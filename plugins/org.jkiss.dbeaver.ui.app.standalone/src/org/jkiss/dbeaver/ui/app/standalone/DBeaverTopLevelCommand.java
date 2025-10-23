@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ui.app.standalone;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.cli.CLIConstants;
 import org.jkiss.dbeaver.model.cli.CLIProcessResult;
 import org.jkiss.dbeaver.model.cli.CLIRunMeta;
 import org.jkiss.dbeaver.model.cli.CommandLineContext;
@@ -45,7 +46,7 @@ public class DBeaverTopLevelCommand extends AbstractTopLevelCommand {
         description = "Force creating new application instance (do not try to activate already running)"
     )
     private boolean newInstance;
-    @CommandLine.Option(names = {"-reuseWorkspace"}, description = "Force workspace reuse (do not show warnings)")
+    @CommandLine.Option(names = {CLIConstants.COMMAND_REUSE_WORKSPACE}, description = "Force workspace reuse (do not show warnings)")
     private boolean reuseWorkspace;
     @CommandLine.Option(names = {"-stop", "-quit"}, description = "Stop DBeaver running instance")
     private boolean stop;
@@ -89,10 +90,6 @@ public class DBeaverTopLevelCommand extends AbstractTopLevelCommand {
         if (newInstance) {
             context.setPostAction(CLIProcessResult.PostAction.START_INSTANCE);
             return;
-        }
-
-        if (reuseWorkspace && DBeaverApplication.instance != null) {
-            DBeaverApplication.instance.setReuseWorkspace(true);
         }
 
         if (!CommonUtils.isEmpty(variablesFile)) {

@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.model.cli.model.option;
 
+import org.jkiss.dbeaver.model.cli.CLIConstants;
 import picocli.CommandLine;
 
 /**
@@ -30,4 +31,6 @@ public class HiddenOptionsForSubcommands extends HiddenOptions {
     private String data;
     @CommandLine.Option(names = {"-nosplash"}, hidden = true, description = "Hide splash screen on start")
     private boolean noSplash;
+    @CommandLine.Option(names = {CLIConstants.COMMAND_REUSE_WORKSPACE}, hidden = true)
+    private boolean reuseWorkspace;
 }

@@ -22,6 +22,8 @@ public interface CLIConstants {
     short EXIT_CODE_ERROR = 1;
     short EXIT_CODE_ILLEGAL_ARGUMENTS = 2;
 
+    String COMMAND_REUSE_WORKSPACE = "-reuseWorkspace";
+
     String PARAM_PROJECT = "-project";
 
     String CONTEXT_PARAM_AUTHENTICATOR = "authenticator";
