@@ -79,6 +79,7 @@ public abstract class ApplicationCommandLine<T extends ApplicationInstanceContro
         boolean supportNewInstance,
         @NotNull String[] args
     ) throws Exception {
+        log.debug("Executing command line: " + String.join(" ", args));
         CLIProcessResult result;
         try (var context = new CommandLineContext(controller)) {
             CommandLine commandLine = initCommandLine(
@@ -89,6 +90,7 @@ public abstract class ApplicationCommandLine<T extends ApplicationInstanceContro
             CommandLine.ParseResult parseResult;
             try {
                 parseResult = commandLine.parseArgs(args);
+                log.debug("Parsed command line: " + parseResult.matchedOptions());
             } catch (CommandLine.UnmatchedArgumentException e) {
                 log.error(e.getMessage());
                 return new CLIProcessResult(CLIProcessResult.PostAction.ERROR, e.getMessage());
