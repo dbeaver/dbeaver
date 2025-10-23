@@ -91,7 +91,7 @@ class DriverDownloadAutoPage extends DriverDownloadPage {
         ExpandableComposite expander = new ExpandableComposite(
             parent,
             SWT.NONE,
-            ExpandableComposite.TWISTIE
+            ExpandableComposite.TWISTIE | ExpandableComposite.COMPACT
         );
 
         Composite details = setDetails(expander);

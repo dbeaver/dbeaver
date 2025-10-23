@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,6 +34,7 @@ import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
+import org.jkiss.dbeaver.model.connection.DBPDriverLibrary;
 import org.jkiss.dbeaver.model.connection.DBPDriverSubstitutionDescriptor;
 import org.jkiss.dbeaver.model.navigator.DBNBrowseSettings;
 import org.jkiss.dbeaver.model.secret.DBSSecretValue;
@@ -52,7 +53,9 @@ import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.security.MessageDigest;
+import java.util.HashMap;
 import java.util.Locale;
+import java.util.Map;
 
 /**
  * Edit connection dialog
@@ -65,6 +68,8 @@ public class EditConnectionWizard extends ConnectionWizard {
     private final DataSourceDescriptor originalDataSource;
     @NotNull
     private final DataSourceDescriptor dataSource;
+    @NotNull
+    private final Map<String, String> originalDriverLibsIdVersion;
     @Nullable
     private ConnectionPageSettings pageSettings;
     private ConnectionPageGeneral pageGeneral;
@@ -77,6 +82,7 @@ public class EditConnectionWizard extends ConnectionWizard {
      */
     public EditConnectionWizard(@NotNull DataSourceDescriptor dataSource) {
         this.originalDataSource = dataSource;
+        this.originalDriverLibsIdVersion = getLibsIdVersion(dataSource);
         this.dataSource = dataSource.getRegistry().createDataSource(dataSource);
         this.dataSource.setId(dataSource.getId());
         if (!this.dataSource.isSavePassword()) {
@@ -98,6 +104,17 @@ public class EditConnectionWizard extends ConnectionWizard {
                 ));
             }
         });
+    }
+
+    @NotNull
+    private static Map<String, String> getLibsIdVersion(@NotNull DataSourceDescriptor dataSource) {
+        Map<String, String> libs = new HashMap<>();
+        for (DBPDriverLibrary lib : dataSource.getDriver().getDriverLibraries()) {
+            if (!lib.isDisabled()) {
+                libs.put(lib.getId(), lib.getVersion());
+            }
+        }
+        return libs;
     }
 
     @NotNull
@@ -259,7 +276,7 @@ public class EditConnectionWizard extends ConnectionWizard {
         try {
             saveSettings(dsChanged);
 
-            if (dsCopy.equalSettings(dsChanged)) {
+            if (dsCopy.equalSettings(dsChanged) && isDriverLibsVersionsSame(dsChanged)) {
                 // No changes
                 return PersistResult.UNCHANGED;
             }
@@ -292,6 +309,11 @@ public class EditConnectionWizard extends ConnectionWizard {
         } else {
             return PersistResult.ERROR;
         }
+    }
+
+    private boolean isDriverLibsVersionsSame(@NotNull DataSourceDescriptor dsChangedSource) {
+        Map<String, String> currentLibs = getLibsIdVersion(dsChangedSource);
+        return originalDriverLibsIdVersion.equals(currentLibs);
     }
 
     /**
