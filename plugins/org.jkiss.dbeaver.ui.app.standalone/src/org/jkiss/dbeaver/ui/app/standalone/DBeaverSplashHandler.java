@@ -18,7 +18,6 @@
 package org.jkiss.dbeaver.ui.app.standalone;
 
 import org.eclipse.core.runtime.IProduct;
-import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.jface.resource.StringConverter;
 import org.eclipse.swt.SWT;
@@ -27,7 +26,6 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.branding.IProductConstants;
 import org.eclipse.ui.splash.BasicSplashHandler;
 import org.jkiss.dbeaver.utils.GeneralUtils;
-import org.jkiss.dbeaver.utils.RuntimeUtils;
 
 /**
  * @since 3.3
@@ -37,20 +35,6 @@ public class DBeaverSplashHandler extends BasicSplashHandler {
 
 	public static final int TOTAL_LOADING_TASKS = 20;
 	private static DBeaverSplashHandler instance;
-
-    public static IProgressMonitor getActiveMonitor()
-    {
-        if (instance == null) {
-            return null;
-        } else {
-            try {
-                return instance.getBundleProgressMonitor();
-            } catch (Exception e) {
-                e.printStackTrace(System.err);
-                return null;
-            }
-        }
-    }
 
     private Font normalFont;
     private Font boldFont;
@@ -64,30 +48,14 @@ public class DBeaverSplashHandler extends BasicSplashHandler {
     public void init(Shell splash) {
         super.init(splash);
 
-        // https://github.com/eclipse-platform/eclipse.platform.swt/issues/772
-        if (RuntimeUtils.isMacOS() && RuntimeUtils.isOSVersionAtLeast(14, 0, 0)) {
-            return;
-        }
-
         try {
             initVisualization();
-
-            getBundleProgressMonitor().beginTask("Loading", TOTAL_LOADING_TASKS);
         } catch (Exception e) {
             e.printStackTrace(System.err);
         }
 
     }
     
-    @Override
-    public IProgressMonitor getBundleProgressMonitor() {
-        // https://github.com/eclipse-platform/eclipse.platform.swt/issues/772
-        if (RuntimeUtils.isMacOS() && RuntimeUtils.isOSVersionAtLeast(14, 0, 0)) {
-            return null;
-        }
-        return super.getBundleProgressMonitor();
-    }
-
     private void initVisualization() {
         String progressRectString = null, messageRectString = null, foregroundColorString = null,
             versionCoordString = null, versionInfoSizeString = null;
@@ -147,26 +115,6 @@ public class DBeaverSplashHandler extends BasicSplashHandler {
             boldFont = null;
         }
         instance = null;
-    }
-
-	public static void showMessage(String message) {
-        IProgressMonitor activeMonitor = getActiveMonitor();
-		if (activeMonitor == null || message == null || message.isEmpty()) {
-			return;
-		}
-		if (message.startsWith(">") || message.startsWith("<")) {
-            message = message.substring(2);
-            int divPos = message.indexOf("[");
-            if (divPos != -1) {
-                message = message.substring(0, divPos);
-            }
-        }
-        try {
-            activeMonitor.setTaskName(message);
-            activeMonitor.worked(1);
-        } catch (Throwable e) {
-            e.printStackTrace(System.err);
-        }
     }
 
 }

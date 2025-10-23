@@ -50,9 +50,7 @@ import javax.swing.*;
 
 /**
  * The launcher for Eclipse.
- *
  * Copied from org.eclipse.equinox.launcher.Main
- *
  * <b>Note:</b> This class should not be referenced programmatically by
  * other Java code. This class exists only for the purpose of launching Eclipse
  * from the command line. To launch Eclipse programmatically, use
@@ -138,12 +136,6 @@ public class DBeaverLauncher {
         @Override
         public void run() {
             takeDownSplash();
-        }
-
-        public void updateSplash() {
-            if (bridge != null && !splashDown) {
-                bridge.updateSplash();
-            }
         }
     }
 
@@ -305,10 +297,6 @@ public class DBeaverLauncher {
     public static final String ARG_ECLIPSE_KEYRING = "-eclipse.keyring"; //$NON-NLS-1$
 
     private static final String DEFAULT_SECURE_STORAGE_FILENAME = ".eclipse/org.eclipse.equinox.security/secure_storage"; //$NON-NLS-1$
-    private static final String ENV_DATA_HOME_WIN = "APPDATA"; //$NON-NLS-1$
-    private static final String LOCATION_DATA_HOME_UNIX = "~/.local/share"; //$NON-NLS-1$
-    private static final String LOCATION_DATA_HOME_MAC = "~/Library"; //$NON-NLS-1$
-    private static final String DB_DATA_HOME = "@data.home"; //$NON-NLS-1$
 
     private static final String DBEAVER_CONFIG_FOLDER = "settings";
     private static final String DBEAVER_CONFIG_FILE = "global-settings.ini";
@@ -330,13 +318,6 @@ public class DBeaverLauncher {
     static class Identifier {
         private static final String DELIM = ". _-"; //$NON-NLS-1$
         private int major, minor, service;
-
-        Identifier(int major, int minor, int service) {
-            super();
-            this.major = major;
-            this.minor = minor;
-            this.service = service;
-        }
 
         /**
          * @throws NumberFormatException if cannot parse the major and minor version components
@@ -708,16 +689,18 @@ public class DBeaverLauncher {
         if (serverPort == null) {
             return new CommandLineExecuteResult(cliMode);
         }
-        //TODO auto-closable after full 21 java migration
+
         ExecutorService httpExecutor = Executors.newSingleThreadExecutor();
-        HttpClient client = HttpClient.newBuilder()
-            .executor(httpExecutor)
-            .cookieHandler(new CookieManager())
-            .sslContext(initCustomSslContext())
-            .build();
-        boolean shutdownApplication = false;
-        short exitCode = -1;
-        try {
+        try (
+            HttpClient client = HttpClient.newBuilder()
+                .executor(httpExecutor)
+                .cookieHandler(new CookieManager())
+                .sslContext(initCustomSslContext())
+                .build()
+        ) {
+            boolean shutdownApplication;
+            short exitCode = -1;
+
             HttpResponse.BodyHandler<String> stringBodyHandler =
                 response -> HttpResponse.BodySubscribers.ofString(StandardCharsets.UTF_8);
             String json = Arrays.stream(args)
@@ -779,10 +762,10 @@ public class DBeaverLauncher {
             if (e.getMessage() != null) {
                 System.out.println("Error during calling DBeaver server: " + e.getMessage());
             }
+            return new CommandLineExecuteResult(false, (short) -1);
         } finally {
             httpExecutor.shutdown();
         }
-        return new CommandLineExecuteResult(shutdownApplication || cliMode, exitCode);
     }
 
     /**
@@ -835,7 +818,7 @@ public class DBeaverLauncher {
             }
             return Integer.valueOf(portProperty);
         } catch (Exception e) {
-            e.printStackTrace();
+            log(e);
             return null;
         }
     }
@@ -883,10 +866,10 @@ public class DBeaverLauncher {
         try {
             method.invoke(clazz, passThruArgs, splashHandler);
         } catch (InvocationTargetException e) {
-            if (e.getTargetException() instanceof Error)
-                throw (Error) e.getTargetException();
-            else if (e.getTargetException() instanceof Exception)
-                throw (Exception) e.getTargetException();
+            if (e.getTargetException() instanceof Error error)
+                throw error;
+            else if (e.getTargetException() instanceof Exception exception)
+                throw exception;
             else
                 //could be a subclass of Throwable!
                 throw e;
@@ -1603,18 +1586,6 @@ public class DBeaverLauncher {
         if (hashCode < 0)
             hashCode = -(hashCode);
         return String.valueOf(hashCode);
-    }
-
-    /**
-     * Runs this launcher with the arguments specified in the given string.
-     *
-     * @param argString the arguments string
-     */
-    public static void main(String argString) {
-        ArrayList<String> list = new ArrayList<>(5);
-        for (StringTokenizer tokens = new StringTokenizer(argString, " "); tokens.hasMoreElements(); ) //$NON-NLS-1$
-            list.add(tokens.nextToken());
-        main(list.toArray(new String[0]));
     }
 
     /**
