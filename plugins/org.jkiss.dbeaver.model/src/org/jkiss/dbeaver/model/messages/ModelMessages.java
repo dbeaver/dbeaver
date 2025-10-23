@@ -261,6 +261,11 @@ public class ModelMessages extends NLS {
     public static String struct_utils_object_ddl_definition;
     public static String struct_utils_object_ddl_foreign_keys;
 
+    public static String duration_hours;
+    public static String duration_minutes;
+    public static String duration_seconds;
+    public static String duration_milliseconds;
+
     static {
         // initialize resource bundle
         NLS.initializeMessages(BUNDLE_NAME, ModelMessages.class);

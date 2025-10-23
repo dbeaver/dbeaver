@@ -32,6 +32,7 @@ import java.io.InputStream;
 import java.io.Writer;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.Duration;
 import java.time.ZonedDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -60,7 +61,7 @@ public class TaskImpl implements DBTTask, DBPNamedObject2 {
     private Map<String, Object> properties;
     private volatile List<DBTTaskRun> runs;
     private DBTTaskFolder taskFolder;
-    private int maxExecutionTime;
+    private Duration maxExecutionTime = Duration.ZERO;
 
     protected TaskImpl(
         @NotNull DBPProject project,
@@ -247,11 +248,13 @@ public class TaskImpl implements DBTTask, DBPNamedObject2 {
         return TaskConstants.TEMPORARY_ID.equals(id);
     }
 
-    public int getMaxExecutionTime() {
+    @NotNull
+    @Override
+    public Duration getMaxExecutionTime() {
         return maxExecutionTime;
     }
 
-    public void setMaxExecutionTime(int maxExecutionTime) {
+    public void setMaxExecutionTime(@NotNull Duration maxExecutionTime) {
         this.maxExecutionTime = maxExecutionTime;
     }
 
