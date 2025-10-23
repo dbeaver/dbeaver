@@ -91,7 +91,7 @@ public class TaskUtils {
     }
 
     @NotNull
-    private static ZonedDateTime toSystemZonedDateTime(@NotNull ZonedDateTime zonedDateTime) {
+    public static ZonedDateTime toSystemZonedDateTime(@NotNull ZonedDateTime zonedDateTime) {
         return zonedDateTime.withZoneSameInstant(ZoneId.systemDefault());
     }
 
