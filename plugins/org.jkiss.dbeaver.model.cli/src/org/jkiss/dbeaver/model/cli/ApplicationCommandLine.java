@@ -73,6 +73,10 @@ public abstract class ApplicationCommandLine<T extends ApplicationInstanceContro
         @NotNull CLIRunMeta runMeta
     );
 
+    /**
+     * @param supportNewInstance whether to support starting new instance, true if called from ApplicationInstanceController
+     */
+
     public CLIProcessResult executeCommandLineCommands(
         @Nullable T controller,
         boolean uiActivated,

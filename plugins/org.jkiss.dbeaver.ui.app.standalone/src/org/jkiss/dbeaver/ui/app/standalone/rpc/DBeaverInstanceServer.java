@@ -160,6 +160,7 @@ public class DBeaverInstanceServer extends ApplicationInstanceServer<IInstanceCo
             return DBeaverCommandLine.getInstance().executeCommandLineCommands(
                 this,
                 !DBeaverApplication.getInstance().isHeadlessMode(),
+                true,
                 args
             );
         } catch (Exception e) {

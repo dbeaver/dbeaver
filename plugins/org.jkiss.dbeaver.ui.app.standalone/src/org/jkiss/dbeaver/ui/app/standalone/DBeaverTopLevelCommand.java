@@ -38,7 +38,7 @@ import java.util.Properties;
 public class DBeaverTopLevelCommand extends AbstractTopLevelCommand {
     private static final Log log = Log.getLog(DBeaverTopLevelCommand.class);
 
-    @CommandLine.Option(names = {"-vars, -variablesFile"}, description = "Uses a specified configuration file for variable resolving")
+    @CommandLine.Option(names = {"-vars", "-variablesFile"}, description = "Uses a specified configuration file for variable resolving")
     private String variablesFile;
 
     @CommandLine.Option(names = {"-newInstance"},
@@ -50,10 +50,10 @@ public class DBeaverTopLevelCommand extends AbstractTopLevelCommand {
     @CommandLine.Option(names = {"-stop", "-quit"}, description = "Stop DBeaver running instance")
     private boolean stop;
 
-    @CommandLine.Option(names = {"-f, -file"}, arity = "1", split = ",", description = "Open a file")
+    @CommandLine.Option(names = {"-f", "-file"}, arity = "1", split = ",", description = "Open a file")
     private List<String> filesToOpen;
 
-    @CommandLine.Option(names = {"-con, -connect"}, arity = "1", split = ",", description = "Connects to a specified database")
+    @CommandLine.Option(names = {"-con", "-connect"}, arity = "1", split = ",", description = "Connects to a specified database")
     private List<String> connectionSpecs;
 
     @CommandLine.Option(names = {"-disconnectAll"}, description = "Disconnect from all databases")

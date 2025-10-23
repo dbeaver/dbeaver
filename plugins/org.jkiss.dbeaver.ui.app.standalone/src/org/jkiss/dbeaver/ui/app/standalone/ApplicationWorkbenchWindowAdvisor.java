@@ -284,6 +284,7 @@ public class ApplicationWorkbenchWindowAdvisor extends IDEWorkbenchWindowAdvisor
             DBeaverCommandLine.getInstance().executeCommandLineCommands(
                 DBeaverApplication.getInstance().getInstanceServer(),
                 true,
+                false,
                 Platform.getApplicationArgs()
             );
         } catch (Exception e) {

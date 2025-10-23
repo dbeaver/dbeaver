@@ -113,7 +113,7 @@ public class DesktopPlatform extends BasePlatformImpl implements DBPPlatformDesk
 
     protected void initialize() {
         long startTime = System.currentTimeMillis();
-        log.debug("Initialize desktop platform... AAAAAAA");
+        log.debug("Initialize desktop platform...");
         {
             this.language = PlatformLanguageRegistry.getInstance().getLanguage(Locale.getDefault());
             if (this.language == null) {

@@ -21,7 +21,6 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.cli.ApplicationCommandLine;
-import org.jkiss.dbeaver.model.cli.CLIProcessResult;
 import org.jkiss.dbeaver.model.cli.CLIRunMeta;
 import org.jkiss.dbeaver.model.cli.CommandLineContext;
 import org.jkiss.dbeaver.ui.app.standalone.rpc.IInstanceController;
@@ -58,17 +57,6 @@ public class DBeaverCommandLine extends ApplicationCommandLine<IInstanceControll
             INSTANCE = new DBeaverCommandLine();
         }
         return INSTANCE;
-    }
-
-    /**
-     * @return {@link CLIProcessResult.PostAction#SHUTDOWN} if called should exit after CLI processing
-     */
-    public CLIProcessResult executeCommandLineCommands(
-        @Nullable IInstanceController controller,
-        boolean uiActivated,
-        String[] args
-    ) throws Exception {
-        return executeCommandLineCommands(controller, uiActivated, true, args);
     }
 
 }

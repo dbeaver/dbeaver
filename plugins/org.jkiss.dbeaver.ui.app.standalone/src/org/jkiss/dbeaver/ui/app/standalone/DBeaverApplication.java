@@ -229,7 +229,7 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
             headlessMode = true;
             try {
                 CLIProcessResult cliProcessResult = DBeaverCommandLine.getInstance()
-                    .executeCommandLineCommands(null, false, Platform.getApplicationArgs());
+                    .executeCommandLineCommands(null, false, false, Platform.getApplicationArgs());
                 if (cliProcessResult.getPostAction() == CLIProcessResult.PostAction.SHUTDOWN) {
                     return IApplication.EXIT_OK;
                 }
