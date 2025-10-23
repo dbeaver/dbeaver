@@ -27,6 +27,7 @@ import java.util.Map;
 
 public class ConfirmationRegistry {
 
+    private static final String ELEMENT_ID = "confirmation";
     private static final String EXTENSION_ID = "org.jkiss.dbeaver.confirmations";
 
     private static ConfirmationRegistry instance;
@@ -35,7 +36,7 @@ public class ConfirmationRegistry {
 
     ConfirmationRegistry(@NotNull IExtensionRegistry registry) {
         for (IConfigurationElement element : registry.getConfigurationElementsFor(EXTENSION_ID)) {
-            if (ConfirmationDescriptor.ELEMENT_ID.equals(element.getName())) {
+            if (ELEMENT_ID.equals(element.getName())) {
                 final ConfirmationDescriptor descriptor = new ConfirmationDescriptor(element);
                 confirmations.put(descriptor.getId(), descriptor);
             }

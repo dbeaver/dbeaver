@@ -20,10 +20,11 @@ import org.eclipse.core.runtime.IConfigurationElement;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
+import org.jkiss.dbeaver.utils.RuntimeUtils;
 
 public class ConfirmationDescriptor extends AbstractDescriptor {
 
-    public static final String ELEMENT_ID = "confirmation";
+    private static final String GROUP_ID = "confirm";
 
     private final String id;
     private final String title;
@@ -68,7 +69,28 @@ public class ConfirmationDescriptor extends AbstractDescriptor {
         return group;
     }
 
+    @Nullable
     public String getToggleMessage() {
         return toggleMessage;
+    }
+
+    @NotNull
+    public String getLocalizedTitle(@NotNull String locale) {
+        try {
+            return RuntimeUtils.getBundleLocalization(getContributorBundle(), locale)
+                .getString(GROUP_ID + "." + getId() + ".title");
+        } catch (Exception e) {
+            return this.getTitle();
+        }
+    }
+
+    @NotNull
+    public String getLocalizedMessage(@NotNull String locale) {
+        try {
+            return RuntimeUtils.getBundleLocalization(getContributorBundle(), locale)
+                .getString(GROUP_ID + "." + getId() + ".message");
+        } catch (Exception e) {
+            return this.getMessage();
+        }
     }
 }
