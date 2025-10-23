@@ -24,7 +24,6 @@ import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.window.Window;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
-import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.PlatformUI;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
@@ -153,11 +152,14 @@ public class DatabaseNotificationSink {
 
         popup.open();
         final DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
-        String storedScreenReader = store.getString(ScreenReaderPreferences.PREF_SCREEN_READER_ACCESSIBILITY);
-        ScreenReader screenReader = ScreenReader.getScreenReader(storedScreenReader);
+        boolean isForceFocus = store.getBoolean(ScreenReaderPreferences.PREF_FORCE_FOCUS_ON_EDITOR);
         // set focus for all screen readers  
-        if (!screenReader.equals(ScreenReader.DEFAULT)) {
-            popup.setFocus();
+        if (isForceFocus) {
+            String storedScreenReader = store.getString(ScreenReaderPreferences.PREF_SCREEN_READER_ACCESSIBILITY);
+            ScreenReader screenReader = ScreenReader.getScreenReader(storedScreenReader);
+            if (!screenReader.equals(ScreenReader.DEFAULT)) {
+                popup.setFocus();
+            }
         }
     }
 
