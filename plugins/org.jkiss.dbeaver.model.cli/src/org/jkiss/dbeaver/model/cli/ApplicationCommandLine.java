@@ -148,6 +148,12 @@ public abstract class ApplicationCommandLine<T extends ApplicationInstanceContro
             }
 
             commandLine.execute(args);
+            if (commandLine.getExecutionExceptionHandler() instanceof ExceptionHandler exceptionHandler) {
+                Exception executionException = exceptionHandler.getException();
+                if (executionException != null) {
+                    throw executionException;
+                }
+            }
             CLIProcessResult.PostAction action = context.getPostAction() != null
                 ? context.getPostAction()
                 : CLIProcessResult.PostAction.UNKNOWN_COMMAND;
@@ -188,6 +194,8 @@ public abstract class ApplicationCommandLine<T extends ApplicationInstanceContro
     ) {
         var cmd = new CommandLine(createTopLevelCommand(applicationInstanceController, context, runMeta));
         cmd.setExecutionStrategy(new CommandLine.RunAll());
+        ExceptionHandler exceptionHandler = new ExceptionHandler();
+        cmd.setExecutionExceptionHandler(exceptionHandler);
         for (CommandLineParameterDescriptor param : customParameters.values()) {
             if (param.getImplClass().getAnnotation(CommandLine.Command.class) == null) {
                 log.warn("Class is not annotated '" + param.getImplClass().getName() + "'");
