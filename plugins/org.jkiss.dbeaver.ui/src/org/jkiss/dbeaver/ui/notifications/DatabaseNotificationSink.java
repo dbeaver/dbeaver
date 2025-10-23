@@ -153,9 +153,8 @@ public class DatabaseNotificationSink {
         popup.open();
         // set focus for all screen readers
         if (store.getBoolean(ScreenReaderPreferences.PREF_FORCE_FOCUS_ON_EDITOR)) {
-                popup.setFocus();
-            }
+            popup.setFocus();
         }
     }
-
 }
+
