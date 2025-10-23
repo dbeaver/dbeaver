@@ -34,8 +34,8 @@ import java.nio.file.StandardCopyOption;
 import java.security.CodeSource;
 import java.security.KeyStore;
 import java.security.ProtectionDomain;
-import java.util.List;
 import java.util.*;
+import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.regex.Matcher;
@@ -136,6 +136,14 @@ public class DBeaverLauncher {
         @Override
         public void run() {
             takeDownSplash();
+        }
+
+        @SuppressWarnings("unused")
+        public void updateSplash() {
+            // Called via reflection by org.eclipse.core.runtime.internal.adaptor.DefaultStartupMonitor.DefaultStartupMonitor
+            if (bridge != null && !splashDown) {
+                bridge.updateSplash();
+            }
         }
     }
 
