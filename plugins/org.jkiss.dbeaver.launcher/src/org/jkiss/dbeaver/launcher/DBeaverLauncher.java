@@ -27,7 +27,10 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.security.CodeSource;
 import java.security.KeyStore;
 import java.security.ProtectionDomain;
@@ -701,30 +704,17 @@ public class DBeaverLauncher {
         return true;
     }
 
-    private void writeDebugLog(Path workspacePath, String message) {
-        try {
-            Path debugLogPath = workspacePath.resolve("test-debug.log");
-            Files.writeString(debugLogPath, message + System.lineSeparator(), StandardOpenOption.CREATE, StandardOpenOption.APPEND);
-        } catch (IOException e) {
-            // ignore
-        }
-    }
-
     private CommandLineExecuteResult processCommandLineAsClient(String[] args, Path dbeaverDataDir) throws Exception {
         Path workspacePath = detectDefaultWorkspaceLocation(args, dbeaverDataDir);
-
-        writeDebugLog(workspacePath, "New instance: " + newInstance);
 
         if (args == null || args.length == 0 || newInstance) {
             return new CommandLineExecuteResult(cliMode);
         }
-        writeDebugLog(workspacePath, "Args: " + Arrays.toString(args));
-        writeDebugLog(workspacePath, "Detected workspace: " + workspacePath);
+
         if (Files.notExists(workspacePath)) {
             return new CommandLineExecuteResult(cliMode);
         }
         Integer serverPort = readDBeaverServerPort(workspacePath);
-        writeDebugLog(workspacePath, "Detected server port: " + (serverPort == null ? "null" : serverPort));
 
         if (serverPort == null) {
             return new CommandLineExecuteResult(cliMode);
@@ -799,7 +789,6 @@ public class DBeaverLauncher {
             }
             return new CommandLineExecuteResult(shutdownApplication || cliMode, exitCode);
         } catch (Exception e) {
-            writeDebugLog(workspacePath, "Error during calling DBeaver server:" + e.getMessage());
             if (e.getMessage() != null) {
                 System.out.println("Error during calling DBeaver server: " + e.getMessage());
             }
