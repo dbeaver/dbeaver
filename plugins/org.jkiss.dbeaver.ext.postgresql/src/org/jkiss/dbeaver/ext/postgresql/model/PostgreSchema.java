@@ -106,6 +106,7 @@ public class PostgreSchema implements
         dataTypeCache = new PostgreDataTypeCache();
     }
 
+    @NotNull
     @Override
     public List<DBSObjectContainer> getPublicScopes(@NotNull DBRProgressMonitor monitor) throws DBException {
         return List.of(
