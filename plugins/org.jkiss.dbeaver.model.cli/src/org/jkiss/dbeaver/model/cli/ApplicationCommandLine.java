@@ -83,7 +83,7 @@ public abstract class ApplicationCommandLine<T extends ApplicationInstanceContro
         boolean supportNewInstance,
         @NotNull String[] args
     ) throws Exception {
-        log.debug("Executing command line: " + String.join(" ", args));
+        log.trace("Executing command line: " + String.join(" ", args));
         CLIProcessResult result;
         try (var context = new CommandLineContext(controller)) {
             CommandLine commandLine = initCommandLine(
@@ -94,7 +94,6 @@ public abstract class ApplicationCommandLine<T extends ApplicationInstanceContro
             CommandLine.ParseResult parseResult;
             try {
                 parseResult = commandLine.parseArgs(args);
-                log.debug("Parsed command line: " + parseResult.matchedOptions());
             } catch (CommandLine.UnmatchedArgumentException e) {
                 log.error(e.getMessage());
                 return new CLIProcessResult(CLIProcessResult.PostAction.ERROR, e.getMessage());
@@ -104,16 +103,21 @@ public abstract class ApplicationCommandLine<T extends ApplicationInstanceContro
                 return new CLIProcessResult(CLIProcessResult.PostAction.START_INSTANCE);
             }
 
-            if (supportNewInstance) {
-                for (CommandLineParameterDescriptor param : customParameters.values()) {
-                    if (param.isExclusiveMode() && find(parseResult, param.getImplClass()) != null) {
-                        if (param.isForceNewInstance()) {
-                            return new CLIProcessResult(CLIProcessResult.PostAction.START_INSTANCE);
-                        }
-                        break;
-                    }
+            for (CommandLineParameterDescriptor descriptor : customParameters.values()) {
+                CommandLine.ParseResult cliCommand = findCommand(parseResult, descriptor.getImplClass());
+                if (cliCommand == null) {
+                    continue;
+                }
+                preprocessCommandLineParameter(
+                    descriptor,
+                    cliCommand,
+                    context
+                );
+                if (supportNewInstance && descriptor.isExclusiveMode() && descriptor.isForceNewInstance()) {
+                    return new CLIProcessResult(CLIProcessResult.PostAction.START_INSTANCE);
                 }
             }
+
 
             CommandLine.Model.CommandSpec commandForHelp = null;
             if (parseResult.isUsageHelpRequested()) {
@@ -190,6 +194,14 @@ public abstract class ApplicationCommandLine<T extends ApplicationInstanceContro
         return result;
     }
 
+    protected void preprocessCommandLineParameter(
+        @NotNull CommandLineParameterDescriptor descriptor,
+        @NotNull CommandLine.ParseResult cliCommand,
+        @NotNull CommandLineContext context
+    ) {
+
+    }
+
     @NotNull
     protected CommandLine initCommandLine(
         @Nullable T applicationInstanceController,
@@ -222,13 +234,13 @@ public abstract class ApplicationCommandLine<T extends ApplicationInstanceContro
 
 
     @Nullable
-    protected CommandLine.ParseResult find(@NotNull CommandLine.ParseResult pr, @NotNull Class<?> clazz) {
+    protected CommandLine.ParseResult findCommand(@NotNull CommandLine.ParseResult pr, @NotNull Class<?> clazz) {
         Object commandObject = pr.commandSpec().userObject();
         if (clazz.equals(commandObject.getClass())) {
             return pr;
         }
         for (var sub : pr.subcommands()) {
-            var found = find(sub, clazz);
+            var found = findCommand(sub, clazz);
             if (found != null) {
                 return found;
             }

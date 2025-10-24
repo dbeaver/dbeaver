@@ -113,7 +113,7 @@ public class DBeaverTopLevelCommand extends AbstractTopLevelCommand {
 
         if (stop) {
             instanceController.quit();
-            context.setPostAction(CLIProcessResult.PostAction.SHUTDOWN);
+            exitAfterExecute = true;
         }
 
 

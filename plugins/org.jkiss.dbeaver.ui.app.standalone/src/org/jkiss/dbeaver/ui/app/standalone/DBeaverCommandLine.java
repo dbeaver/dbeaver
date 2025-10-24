@@ -23,7 +23,9 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.cli.ApplicationCommandLine;
 import org.jkiss.dbeaver.model.cli.CLIRunMeta;
 import org.jkiss.dbeaver.model.cli.CommandLineContext;
+import org.jkiss.dbeaver.model.cli.registry.CommandLineParameterDescriptor;
 import org.jkiss.dbeaver.ui.app.standalone.rpc.IInstanceController;
+import picocli.CommandLine;
 
 /**
  * Command line processing.
@@ -59,4 +61,17 @@ public class DBeaverCommandLine extends ApplicationCommandLine<IInstanceControll
         return INSTANCE;
     }
 
+    @Override
+    protected void preprocessCommandLineParameter(
+        @NotNull CommandLineParameterDescriptor descriptor,
+        @NotNull CommandLine.ParseResult cliCommand,
+        @NotNull CommandLineContext context
+    ) {
+        super.preprocessCommandLineParameter(descriptor, cliCommand, context);
+        if (descriptor.isExclusiveMode()) {
+            if (DBeaverApplication.instance != null) {
+                DBeaverApplication.instance.setExclusiveMode(true);
+            }
+        }
+    }
 }

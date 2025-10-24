@@ -181,14 +181,7 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
     public Object start(IApplicationContext context) {
         instance = this;
 
-        var args = Platform.getApplicationArgs();
-        for (String arg : args) {
-            if (arg.equals(CLIConstants.COMMAND_REUSE_WORKSPACE)) {
-                reuseWorkspace = true;
-                args = ArrayUtils.remove(String.class, args, arg);
-                break;
-            }
-        }
+        var args = preprocessCommandLine();
         Location instanceLoc = Platform.getInstanceLocation();
 
         String defaultHomePath = getDefaultInstanceLocation();
@@ -345,6 +338,18 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
             display.dispose();
             display = null;
         }
+    }
+
+    private String[] preprocessCommandLine() {
+        var args = Platform.getApplicationArgs();
+        for (String arg : args) {
+            if (arg.equals(CLIConstants.COMMAND_REUSE_WORKSPACE)) {
+                reuseWorkspace = true;
+                args = ArrayUtils.remove(String.class, args, arg);
+                break;
+            }
+        }
+        return args;
     }
 
     private void markLocationReadOnly(Location instanceLoc) {
