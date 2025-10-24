@@ -16,15 +16,23 @@
  */
 package org.jkiss.dbeaver.model.cli;
 
-public interface CLIConstants {
-    short EXIT_CODE_CONTINUE = -1;
-    short EXIT_CODE_OK = 0;
-    short EXIT_CODE_ERROR = 1;
-    short EXIT_CODE_ILLEGAL_ARGUMENTS = 2;
+import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.model.cli.command.AbstractTopLevelCommand;
+import org.jkiss.dbeaver.model.cli.model.option.HiddenOptionsForSubcommands;
+import picocli.CommandLine;
 
-    String COMMAND_REUSE_WORKSPACE = "-reuseWorkspace";
+public abstract class AbstractCommandLineParameterHandler implements Runnable {
+    /**
+     * Root command uses as context
+     */
+    @CommandLine.ParentCommand
+    private AbstractTopLevelCommand parent;
+    @CommandLine.Mixin
+    private HiddenOptionsForSubcommands eclipseHiddenOptions;
 
-    String PARAM_PROJECT = "-project";
 
-    String CONTEXT_PARAM_AUTHENTICATOR = "authenticator";
+    @NotNull
+    protected CommandLineContext context() {
+        return parent.getContext();
+    }
 }

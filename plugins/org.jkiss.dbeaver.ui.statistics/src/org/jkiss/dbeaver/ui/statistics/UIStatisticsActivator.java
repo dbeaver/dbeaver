@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -44,8 +44,9 @@ public class UIStatisticsActivator extends AbstractUIPlugin {
     }
 
     public static boolean isTrackingEnabled() {
-        return DBWorkbench.getPlatform().getApplication().isStatisticsCollectionRequired()
-            || getDefault().getPreferences().getBoolean(PREF_FEATURE_TRACKING_ENABLED);
+        return DBWorkbench.isPlatformStarted() &&
+            (DBWorkbench.getPlatform().getApplication().isStatisticsCollectionRequired()
+            || getDefault().getPreferences().getBoolean(PREF_FEATURE_TRACKING_ENABLED));
     }
 
     public static void setTrackingEnabled(boolean enabled) {
