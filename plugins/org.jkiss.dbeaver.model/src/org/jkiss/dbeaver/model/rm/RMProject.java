@@ -16,6 +16,8 @@
  */
 package org.jkiss.dbeaver.model.rm;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.meta.IPropertyValueTransformer;
@@ -76,14 +78,11 @@ public class RMProject extends RMObject {
 
     @Property(viewable = true, order = 1)
     public String getDisplayName() {
-        switch (type) {
-            case GLOBAL:
-                return ModelMessages.project_shared_display_name;
-            case USER:
-                return ModelMessages.project_private_display_name;
-            default:
-                return getName();
-        }
+        return switch (type) {
+            case GLOBAL -> ModelMessages.project_shared_display_name;
+            case USER -> ModelMessages.project_private_display_name;
+            default -> getName();
+        };
     }
 
     @Override
@@ -174,12 +173,13 @@ public class RMProject extends RMObject {
     }
 
     public static class TimeRenderer implements IPropertyValueTransformer<RMProject, Object> {
+        @Nullable
         @Override
-        public Object transform(RMProject object, Object value) throws IllegalArgumentException {
-            if (!(value instanceof Long)) {
+        public Object transform(@NotNull RMProject object, @Nullable Object value) throws IllegalArgumentException {
+            if (!(value instanceof Long lv)) {
                 return value;
             }
-            return new SimpleDateFormat(DBConstants.DEFAULT_TIMESTAMP_FORMAT).format(new Date((Long) value));
+            return new SimpleDateFormat(DBConstants.DEFAULT_TIMESTAMP_FORMAT).format(new Date(lv));
         }
     }
 }

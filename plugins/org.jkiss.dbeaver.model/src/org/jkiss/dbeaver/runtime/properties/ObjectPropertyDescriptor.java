@@ -576,6 +576,7 @@ public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor
         return (propInfo.listProvider() != IPropertyValueListProvider.class);
     }
 
+    @Nullable
     @Override
     public Object[] getPossibleValues(Object object)
     {
