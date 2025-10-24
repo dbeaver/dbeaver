@@ -223,7 +223,7 @@ public class SQLiteTable extends GenericTable implements DBDPseudoAttributeConta
     public static class TableStrictTypingValidator implements IPropertyValueValidator<SQLiteTable, Object> {
 
         @Override
-        public boolean isValidValue(SQLiteTable object, Object value) throws IllegalArgumentException {
+        public boolean isValidValue(@NotNull SQLiteTable object, @Nullable Object value) throws IllegalArgumentException {
             return object.getDataSource() instanceof SQLiteDataSource dataSource &&
                 dataSource.supportsStrictTyping();
         }

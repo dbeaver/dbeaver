@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,6 +24,7 @@ import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.jface.wizard.Wizard;
 import org.eclipse.jface.wizard.WizardPage;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
@@ -43,6 +44,7 @@ import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
 import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.actions.datasource.DataSourceHandler;
 import org.jkiss.dbeaver.ui.dialogs.driver.DriverSelectViewer;
 
 import java.util.*;
@@ -105,11 +107,25 @@ public class MigrateConnectionWizard extends Wizard
         final List<DataSourceDescriptor> connections = pageConnections.getSelectedConnections();
         final DriverDescriptor targetDriver = pageDriver.selectedDriver;
 
+        List<DataSourceDescriptor> changedConnections = new ArrayList<>();
         for (DataSourceDescriptor conn : connections) {
+            if (!conn.getDriver().equals(targetDriver)) {
+                changedConnections.add(conn);
+            }
             conn.setDriver(targetDriver);
             conn.persistConfiguration();
         }
 
+        if (!changedConnections.isEmpty()) {
+            boolean isReconnect = UIUtils.confirmAction(
+                UIUtils.getActiveWorkbenchShell(),
+                CoreMessages.dialog_migrate_wizard_connection_changed_title,
+                NLS.bind(CoreMessages.dialog_migrate_wizard_connection_changed_message, changedConnections.size())
+            );
+            if (isReconnect) {
+                changedConnections.forEach(c -> DataSourceHandler.reconnectDataSource(null, c));
+            }
+        }
         return true;
     }
 
