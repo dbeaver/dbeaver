@@ -111,7 +111,8 @@ public abstract class ApplicationCommandLine<T extends ApplicationInstanceContro
                 preprocessCommandLineParameter(
                     descriptor,
                     cliCommand,
-                    context
+                    context,
+                    uiActivated
                 );
                 if (supportNewInstance && descriptor.isExclusiveMode() && descriptor.isForceNewInstance()) {
                     return new CLIProcessResult(CLIProcessResult.PostAction.START_INSTANCE);
@@ -197,7 +198,8 @@ public abstract class ApplicationCommandLine<T extends ApplicationInstanceContro
     protected void preprocessCommandLineParameter(
         @NotNull CommandLineParameterDescriptor descriptor,
         @NotNull CommandLine.ParseResult cliCommand,
-        @NotNull CommandLineContext context
+        @NotNull CommandLineContext context,
+        boolean uiActivated
     ) {
 
     }

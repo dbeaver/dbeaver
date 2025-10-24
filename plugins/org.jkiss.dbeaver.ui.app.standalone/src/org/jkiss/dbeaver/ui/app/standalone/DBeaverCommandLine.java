@@ -65,10 +65,11 @@ public class DBeaverCommandLine extends ApplicationCommandLine<IInstanceControll
     protected void preprocessCommandLineParameter(
         @NotNull CommandLineParameterDescriptor descriptor,
         @NotNull CommandLine.ParseResult cliCommand,
-        @NotNull CommandLineContext context
+        @NotNull CommandLineContext context,
+        boolean uiActivated
     ) {
-        super.preprocessCommandLineParameter(descriptor, cliCommand, context);
-        if (descriptor.isExclusiveMode()) {
+        super.preprocessCommandLineParameter(descriptor, cliCommand, context, uiActivated);
+        if (!uiActivated && descriptor.isExclusiveMode()) {
             if (DBeaverApplication.instance != null) {
                 DBeaverApplication.instance.setExclusiveMode(true);
             }
