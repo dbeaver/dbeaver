@@ -1241,7 +1241,7 @@ public final class SQLUtils {
      * Output: "(ARRAY, OBJECT)"
      * }</pre>
      */
-    public static String extractTypesOnly(@Nullable String sig) {
+    public static String extractProcedureParameterTypes(@Nullable String sig) {
         if (CommonUtils.isEmpty(sig)) {
             return "()";
         }

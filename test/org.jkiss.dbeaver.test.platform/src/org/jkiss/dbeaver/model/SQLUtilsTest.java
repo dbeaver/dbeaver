@@ -58,49 +58,49 @@ public class SQLUtilsTest extends DBeaverUnitTest {
     }
 
     @Test
-    public void extractTypesOnly_whenNullOrEmpty_thenParens() {
-        Assert.assertEquals("()", SQLUtils.extractTypesOnly(null));
-        Assert.assertEquals("()", SQLUtils.extractTypesOnly(""));
-        Assert.assertEquals("()", SQLUtils.extractTypesOnly("   "));
-        Assert.assertEquals("()", SQLUtils.extractTypesOnly("()"));
-        Assert.assertEquals("()", SQLUtils.extractTypesOnly("(   )"));
+    public void extractProcedureParameterTypes_whenNullOrEmpty_thenParens() {
+        Assert.assertEquals("()", SQLUtils.extractProcedureParameterTypes(null));
+        Assert.assertEquals("()", SQLUtils.extractProcedureParameterTypes(""));
+        Assert.assertEquals("()", SQLUtils.extractProcedureParameterTypes("   "));
+        Assert.assertEquals("()", SQLUtils.extractProcedureParameterTypes("()"));
+        Assert.assertEquals("()", SQLUtils.extractProcedureParameterTypes("(   )"));
     }
 
     @Test
-    public void extractTypesOnly_whenNamesPresent_thenRemoved() {
+    public void extractProcedureParameterTypes_whenNamesPresent_thenRemoved() {
         Assert.assertEquals("(NUMBER(38,0), VARCHAR)",
-            SQLUtils.extractTypesOnly("(a NUMBER(38,0), b VARCHAR)"));
+            SQLUtils.extractProcedureParameterTypes("(a NUMBER(38,0), b VARCHAR)"));
         Assert.assertEquals("(ARRAY, OBJECT)",
-            SQLUtils.extractTypesOnly("(x ARRAY, y OBJECT)"));
+            SQLUtils.extractProcedureParameterTypes("(x ARRAY, y OBJECT)"));
     }
 
     @Test
-    public void extractTypesOnly_whenNestedTypes_thenKeepInnerParens() {
+    public void extractTypesOnly_whenNestedProcedureParameterTypes_thenKeepInnerParens() {
         Assert.assertEquals("(DECIMAL(10,2), ARRAY(VARCHAR))",
-            SQLUtils.extractTypesOnly("(price DECIMAL(10,2), tags ARRAY(VARCHAR))"));
+            SQLUtils.extractProcedureParameterTypes("(price DECIMAL(10,2), tags ARRAY(VARCHAR))"));
         Assert.assertEquals("(ARRAY(OBJECT), VARIANT)",
-            SQLUtils.extractTypesOnly("(p ARRAY(OBJECT), v VARIANT)"));
+            SQLUtils.extractProcedureParameterTypes("(p ARRAY(OBJECT), v VARIANT)"));
     }
 
     @Test
-    public void extractTypesOnly_whenNoOuterParens_thenSingleType() {
+    public void extractProcedureParameterTypes_whenNoOuterParens_thenSingleType() {
         Assert.assertEquals("(NUMBER)",
-            SQLUtils.extractTypesOnly("id NUMBER"));
+            SQLUtils.extractProcedureParameterTypes("id NUMBER"));
         Assert.assertEquals("(ARRAY(VARCHAR))",
-            SQLUtils.extractTypesOnly("arr ARRAY(VARCHAR)"));
+            SQLUtils.extractProcedureParameterTypes("arr ARRAY(VARCHAR)"));
     }
 
     @Test
-    public void extractTypesOnly_whenWhitespaceAndCase_thenCanonicalUpper() {
+    public void extractProcedureParameterTypes_whenWhitespaceAndCase_thenCanonicalUpper() {
         Assert.assertEquals("(NUMBER, VARCHAR)",
-            SQLUtils.extractTypesOnly("(  a   number  ,   b   varchar  )"));
+            SQLUtils.extractProcedureParameterTypes("(  a   number  ,   b   varchar  )"));
         Assert.assertEquals("(ARRAY, OBJECT, VARIANT)",
-            SQLUtils.extractTypesOnly("( arr  array , obj   object , v   variant )"));
+            SQLUtils.extractProcedureParameterTypes("( arr  array , obj   object , v   variant )"));
     }
 
     @Test
-    public void extractTypesOnly_whenComplexSignature_thenCorrectSplit() {
+    public void extractProcedureParameterTypes_whenComplexSignature_thenCorrectSplit() {
         Assert.assertEquals("(DECIMAL(38,0), ARRAY(DECIMAL(10,2)), OBJECT)",
-            SQLUtils.extractTypesOnly("(a DECIMAL(38,0), b ARRAY(DECIMAL(10,2)), c OBJECT)"));
+            SQLUtils.extractProcedureParameterTypes("(a DECIMAL(38,0), b ARRAY(DECIMAL(10,2)), c OBJECT)"));
     }
 }
