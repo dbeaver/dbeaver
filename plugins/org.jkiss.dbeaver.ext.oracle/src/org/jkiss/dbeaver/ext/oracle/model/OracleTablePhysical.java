@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -387,7 +387,7 @@ public abstract class OracleTablePhysical extends OracleTableBase implements DBS
 
     public static class PartitionInfoValidator implements IPropertyCacheValidator<OracleTablePhysical> {
         @Override
-        public boolean isPropertyCached(OracleTablePhysical object, Object propertyId)
+        public boolean isPropertyCached(@NotNull OracleTablePhysical object, @NotNull Object propertyId)
         {
             return object.partitioned && object.partitionInfo != null;
         }
@@ -399,6 +399,7 @@ public abstract class OracleTablePhysical extends OracleTableBase implements DBS
         {
             return false;
         }
+        @Nullable
         @Override
         public Object[] getPossibleValues(OracleTablePhysical object)
         {
@@ -415,14 +416,14 @@ public abstract class OracleTablePhysical extends OracleTableBase implements DBS
 
     public static class PartitionedValueLoadValidator implements IPropertyCacheValidator<OracleTablePhysical> {
         @Override
-        public boolean isPropertyCached(OracleTablePhysical object, Object propertyId) {
+        public boolean isPropertyCached(@NotNull OracleTablePhysical object, @NotNull Object propertyId) {
             return object.partitionedBy != null;
         }
     }
 
     public static class PartitioningTablePropertyValidator implements IPropertyValueValidator<OracleTablePhysical, Object> {
         @Override
-        public boolean isValidValue(OracleTablePhysical object, Object value) throws IllegalArgumentException {
+        public boolean isValidValue(@NotNull OracleTablePhysical object, @Nullable Object value) throws IllegalArgumentException {
             return !(object instanceof OracleTablePartition) && (!object.isPersisted() || object.isPartitioned());
         }
     }
