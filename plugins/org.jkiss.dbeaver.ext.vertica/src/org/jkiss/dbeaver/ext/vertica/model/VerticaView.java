@@ -96,7 +96,7 @@ public class VerticaView extends GenericView implements DBPSystemObject, DBPObje
     public static class CommentsValidator implements IPropertyCacheValidator<VerticaView> {
 
         @Override
-        public boolean isPropertyCached(VerticaView object, Object propertyId) {
+        public boolean isPropertyCached(@NotNull VerticaView object, @NotNull Object propertyId) {
             return object.description != null;
         }
     }

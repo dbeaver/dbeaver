@@ -283,7 +283,7 @@ public class GenericConnectionPage extends ConnectionPageWithAuth implements IDi
             addControlToGroup(GROUP_PATH, buttonsPanel);
         }
 
-        if (isAuthEnabled()) {
+        {
             createAuthPanel(addrGroup, 4);
             addControlToGroup(GROUP_LOGIN, getAuthPanelComposite());
         }

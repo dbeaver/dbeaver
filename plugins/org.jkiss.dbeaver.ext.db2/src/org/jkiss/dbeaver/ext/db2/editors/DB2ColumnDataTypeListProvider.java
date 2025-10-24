@@ -1,7 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2013-2015 Denis Forveille (titou10.titou10@gmail.com)
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ext.db2.editors;
 
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.db2.model.DB2TableColumn;
 import org.jkiss.dbeaver.model.meta.IPropertyValueListProvider;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
@@ -38,6 +38,7 @@ public class DB2ColumnDataTypeListProvider implements IPropertyValueListProvider
         return false;
     }
 
+    @Nullable
     @Override
     public Object[] getPossibleValues(DB2TableColumn column)
     {
