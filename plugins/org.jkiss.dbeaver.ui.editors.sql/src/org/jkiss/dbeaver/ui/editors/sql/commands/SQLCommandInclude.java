@@ -44,6 +44,8 @@ import java.io.Reader;
 import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Objects;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * Control command handler
@@ -91,7 +93,7 @@ public class SQLCommandInclude implements SQLControlCommandHandler {
             throw new DBException("IO error reading file '" + fileName + "'", e);
         }
         final Path finalIncFile = incFile;
-        final boolean[] statusFlag = new boolean[1];
+        final AtomicReference<SQLControlResult> result = new AtomicReference<>();
         UIUtils.syncExec(() -> {
             try {
                 final IWorkbenchWindow workbenchWindow = UIUtils.getActiveWorkbenchWindow();
@@ -100,19 +102,20 @@ public class SQLCommandInclude implements SQLControlCommandHandler {
                 final IncludeScriptListener scriptListener = new IncludeScriptListener(
                     workbenchWindow,
                     sqlEditor,
-                    statusFlag);
+                    result
+                );
                 boolean execResult = sqlEditor.processSQL(false, true, null, scriptListener);
                 if (!execResult) {
-                    statusFlag[0] = true;
+                    result.set(SQLControlResult.failure());
                 }
             } catch (Throwable e) {
                 log.error(e);
-                statusFlag[0] = true;
+                result.set(SQLControlResult.failure());
             }
         });
 
         // Wait until script finished
-        while (!statusFlag[0]) {
+        while (Objects.isNull(result.get())) {
             try {
                 Thread.sleep(50);
             } catch (InterruptedException e) {
@@ -120,7 +123,7 @@ public class SQLCommandInclude implements SQLControlCommandHandler {
             }
         }
 
-        return SQLControlResult.success();
+        return result.get();
     }
 
     @NotNull
@@ -157,11 +160,16 @@ public class SQLCommandInclude implements SQLControlCommandHandler {
     private static class IncludeScriptListener implements SQLQueryListener {
         private final IWorkbenchWindow workbenchWindow;
         private final SQLEditor editor;
-        private final boolean[] statusFlag;
-        IncludeScriptListener(IWorkbenchWindow workbenchWindow, SQLEditor editor, boolean[] statusFlag) {
+        private final AtomicReference<SQLControlResult> result;
+
+        IncludeScriptListener(
+            @NotNull IWorkbenchWindow workbenchWindow,
+            @NotNull SQLEditor editor,
+            @NotNull AtomicReference<SQLControlResult> result
+        ) {
             this.workbenchWindow = workbenchWindow;
             this.editor = editor;
-            this.statusFlag = statusFlag;
+            this.result = result;
         }
 
         @Override
@@ -184,7 +192,7 @@ public class SQLCommandInclude implements SQLControlCommandHandler {
             if (editor.getActivePreferenceStore().getBoolean(SQLPreferenceConstants.CLOSE_INCLUDED_SCRIPT_AFTER_EXECUTION)) {
                 UIUtils.syncExec(() -> workbenchWindow.getActivePage().closeEditor(editor, false));
             }
-            statusFlag[0] = true;
+            result.set(hasErrors ? SQLControlResult.failure() : SQLControlResult.success());
         }
 
         @Override

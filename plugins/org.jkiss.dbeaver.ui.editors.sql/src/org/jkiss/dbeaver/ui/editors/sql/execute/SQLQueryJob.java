@@ -416,7 +416,7 @@ public class SQLQueryJob extends DataSourceJob
                 if (controlResult.getTransformed() != null) {
                     element = controlResult.getTransformed();
                 } else {
-                    return true;
+                    return controlResult.isSuccess();
                 }
             } catch (Throwable e) {
                 if (!(e instanceof DBException)) {

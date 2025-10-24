@@ -27,34 +27,43 @@ import org.jkiss.code.Nullable;
  *  - error: execution error will be shown in UI
  */
 public class SQLControlResult {
+    private final boolean isSuccess;
 
     @NotNull
     public static SQLControlResult success() {
-        return new SQLControlResult();
+        return new SQLControlResult(true);
     }
 
     @NotNull
     public static SQLControlResult failure() {
-        return new SQLControlResult();
+        return new SQLControlResult(false);
     }
 
     @NotNull
     public static SQLControlResult transform(@NotNull SQLScriptElement element) {
-        return new SQLControlResult(element);
+        return new SQLControlResult(element, true);
     }
 
     @Nullable
     private SQLScriptElement transformed;
 
-    private SQLControlResult() {
+
+    private SQLControlResult(boolean isSuccess) {
+        this.isSuccess = isSuccess;
     }
 
-    private SQLControlResult(@NotNull SQLScriptElement transformed) {
+    private SQLControlResult(@NotNull SQLScriptElement transformed, boolean isSuccess) {
         this.transformed = transformed;
+        this.isSuccess = isSuccess;
     }
 
     @Nullable
     public SQLScriptElement getTransformed() {
         return transformed;
     }
+
+    public boolean isSuccess() {
+        return isSuccess;
+    }
+
 }
