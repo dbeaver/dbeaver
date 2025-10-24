@@ -32,7 +32,7 @@ public class SQLUtilsTest extends DBeaverUnitTest {
         Assert.assertEquals("^A.C$", SQLUtils.makeRegexFromLike("A_C"));
         Assert.assertEquals("A.C", SQLUtils.makeRegexFromLike("%A_C%"));
     }
-    
+
     @Test
     public void fixLineFeedsTest() {
         Assert.assertEquals(
@@ -47,15 +47,13 @@ public class SQLUtilsTest extends DBeaverUnitTest {
     }
 
     @Test
-    public void makeGlobFromSqlLikePattern_whenWithNoSpecialSymbols_thenSuccess(){
-
+    public void makeGlobFromSqlLikePattern_whenWithNoSpecialSymbols_thenSuccess() {
         String source = "key1234";
         Assert.assertEquals(source, SQLUtils.makeGlobFromSqlLikePattern(source));
     }
 
     @Test
-    public void makeGlobFromSqlLikePattern_whenWithSpecialSymbols_thenSuccess(){
-
+    public void makeGlobFromSqlLikePattern_whenWithSpecialSymbols_thenSuccess() {
         Assert.assertEquals("key?*\\?*\\", SQLUtils.makeGlobFromSqlLikePattern("key_%?*\\"));
     }
 
