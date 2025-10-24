@@ -349,6 +349,7 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
                 break;
             }
         }
+        DBeaverCommandLine.getInstance().preprocessCommandLine(args);
         return args;
     }
 

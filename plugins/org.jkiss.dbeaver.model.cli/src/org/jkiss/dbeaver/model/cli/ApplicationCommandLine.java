@@ -108,12 +108,6 @@ public abstract class ApplicationCommandLine<T extends ApplicationInstanceContro
                 if (cliCommand == null) {
                     continue;
                 }
-                preprocessCommandLineParameter(
-                    descriptor,
-                    cliCommand,
-                    context,
-                    uiActivated
-                );
                 if (supportNewInstance && descriptor.isExclusiveMode() && descriptor.isForceNewInstance()) {
                     return new CLIProcessResult(CLIProcessResult.PostAction.START_INSTANCE);
                 }
@@ -193,6 +187,36 @@ public abstract class ApplicationCommandLine<T extends ApplicationInstanceContro
 
 
         return result;
+    }
+
+    @NotNull
+    public String[] preprocessCommandLine(@NotNull String[] args) {
+        try (var context = new CommandLineContext(null)) {
+            CommandLine commandLine = initCommandLine(
+                null,
+                context,
+                new CLIRunMeta(false, false)
+            );
+            commandLine.setUnmatchedArgumentsAllowed(true);
+            CommandLine.ParseResult parseResult;
+            parseResult = commandLine.parseArgs(args);
+            if (commandLineIsEmpty(parseResult)) {
+                return args;
+            }
+            for (CommandLineParameterDescriptor descriptor : customParameters.values()) {
+                CommandLine.ParseResult cliCommand = findCommand(parseResult, descriptor.getImplClass());
+                if (cliCommand == null) {
+                    continue;
+                }
+                preprocessCommandLineParameter(
+                    descriptor,
+                    cliCommand,
+                    context,
+                    false
+                );
+            }
+        }
+        return args;
     }
 
     protected void preprocessCommandLineParameter(
