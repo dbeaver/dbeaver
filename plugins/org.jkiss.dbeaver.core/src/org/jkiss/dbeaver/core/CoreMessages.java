@@ -154,6 +154,8 @@ public class CoreMessages extends NLS {
     public static String dialog_migrate_wizard_start_description;
     public static String dialog_migrate_wizard_start_title;
     public static String dialog_migrate_wizard_window_title;
+    public static String dialog_migrate_wizard_connection_changed_title;
+    public static String dialog_migrate_wizard_connection_changed_message;
     public static String dialog_new_connection_wizard_monitor_load_data_sources;
     public static String dialog_new_connection_wizard_start_description;
     public static String dialog_new_connection_wizard_start_title;
