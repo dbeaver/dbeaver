@@ -95,24 +95,8 @@ public class SQLCommandInclude implements SQLControlCommandHandler {
         UIUtils.syncExec(() -> {
             try {
                 final IWorkbenchWindow workbenchWindow = UIUtils.getActiveWorkbenchWindow();
-                for (IWorkbenchWindow window : PlatformUI.getWorkbench().getWorkbenchWindows()) {
-                    for (IWorkbenchPage page : window.getPages()) {
-                        for (IEditorReference editorReference : page.getEditorReferences()) {
-                            if (editorReference.getEditorInput() instanceof IncludeEditorInput includeInput) {
-                                if (includeInput.incFile.toAbsolutePath().toString().equals(finalIncFile.toAbsolutePath().toString())) {
-                                    UIUtils.syncExec(
-                                        () -> page.closeEditor(editorReference.getEditor(false), false));
-                                }
-                            }
-                        }
-                    }
-                }
-                final IncludeEditorInput input = new IncludeEditorInput(finalIncFile, fileContents);
-                SQLEditor sqlEditor = SQLEditorHandlerOpenEditor.openSQLConsole(
-                        workbenchWindow,
-                        new SQLNavigatorContext(scriptContext, true),
-                        input);
-                sqlEditor.reloadSyntaxRules();
+                closeDuplicatedEditors(finalIncFile);
+                SQLEditor sqlEditor = getSqlEditor(scriptContext, finalIncFile, fileContents, workbenchWindow);
                 final IncludeScriptListener scriptListener = new IncludeScriptListener(
                     workbenchWindow,
                     sqlEditor,
@@ -137,6 +121,37 @@ public class SQLCommandInclude implements SQLControlCommandHandler {
         }
 
         return SQLControlResult.success();
+    }
+
+    @NotNull
+    private SQLEditor getSqlEditor(
+        @NotNull SQLScriptContext scriptContext,
+        @NotNull Path finalIncFile,
+        @NotNull String fileContents,
+        @NotNull IWorkbenchWindow workbenchWindow
+    ) {
+        final IncludeEditorInput input = new IncludeEditorInput(finalIncFile, fileContents);
+        SQLEditor sqlEditor = SQLEditorHandlerOpenEditor.openSQLConsole(
+            workbenchWindow,
+                new SQLNavigatorContext(scriptContext, true),
+                input);
+        sqlEditor.reloadSyntaxRules();
+        return sqlEditor;
+    }
+
+    private void closeDuplicatedEditors(@NotNull Path finalIncFile) throws PartInitException {
+        for (IWorkbenchWindow window : PlatformUI.getWorkbench().getWorkbenchWindows()) {
+            for (IWorkbenchPage page : window.getPages()) {
+                for (IEditorReference editorReference : page.getEditorReferences()) {
+                    if (editorReference.getEditorInput() instanceof IncludeEditorInput includeInput) {
+                        if (includeInput.incFile.toAbsolutePath().toString().equals(finalIncFile.toAbsolutePath().toString())) {
+                            UIUtils.syncExec(
+                                () -> page.closeEditor(editorReference.getEditor(false), false));
+                        }
+                    }
+                }
+            }
+        }
     }
 
     private static class IncludeScriptListener implements SQLQueryListener {
