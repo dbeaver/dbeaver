@@ -295,6 +295,7 @@ public class PropertyDescriptor implements DBPPropertyDescriptor, IPropertyValue
         return ArrayUtils.isEmpty(validValues) || allowCustomValues;
     }
 
+    @Nullable
     @Override
     public Object[] getPossibleValues(Object object) {
         return validValues;

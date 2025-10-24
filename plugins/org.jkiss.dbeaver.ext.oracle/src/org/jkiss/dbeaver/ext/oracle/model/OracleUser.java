@@ -248,7 +248,7 @@ public class OracleUser extends OracleGrantee implements DBAUser, DBSObjectLazy<
 
     public static class ProfileReferenceValidator implements IPropertyCacheValidator<OracleUser> {
         @Override
-        public boolean isPropertyCached(OracleUser object, Object propertyId) {
+        public boolean isPropertyCached(@NotNull OracleUser object, @NotNull Object propertyId) {
             return
                 object.getLazyReference(propertyId) instanceof OracleUserProfile ||
                     object.getLazyReference(propertyId) == null ||
@@ -268,14 +268,14 @@ public class OracleUser extends OracleGrantee implements DBAUser, DBSObjectLazy<
 
     public static class OracleUserModifyValueValidator implements IPropertyValueValidator<OracleUser, Object> {
         @Override
-        public boolean isValidValue(OracleUser object, Object value) throws IllegalArgumentException {
+        public boolean isValidValue(@NotNull OracleUser object, @Nullable Object value) throws IllegalArgumentException {
             return object.getDataSource().supportsUserEdit();
         }
     }
 
     public static class OracleUserLockedValueValidator implements IPropertyValueValidator<OracleUser, Object> {
         @Override
-        public boolean isValidValue(OracleUser object, Object value) throws IllegalArgumentException {
+        public boolean isValidValue(@NotNull OracleUser object, @Nullable Object value) throws IllegalArgumentException {
             return object.getDataSource().supportsUserEdit() && CommonUtils.toBoolean(object.getDataSource().getContainer().getConnectionConfiguration()
                 .getProviderProperty(OracleConstants.PROP_ALWAYS_USE_DBA_VIEWS));
         }
@@ -283,7 +283,7 @@ public class OracleUser extends OracleGrantee implements DBAUser, DBSObjectLazy<
 
     public static class OracleUserPropertyValidator implements IPropertyValueValidator<OracleUser, Object> {
         @Override
-        public boolean isValidValue(OracleUser object, Object value) throws IllegalArgumentException {
+        public boolean isValidValue(@NotNull OracleUser object, @Nullable Object value) throws IllegalArgumentException {
             return CommonUtils.toBoolean(object.getDataSource().getContainer().getConnectionConfiguration()
                 .getProviderProperty(OracleConstants.PROP_ALWAYS_USE_DBA_VIEWS));
         }
@@ -291,7 +291,7 @@ public class OracleUser extends OracleGrantee implements DBAUser, DBSObjectLazy<
 
     public static class OracleUserPropertyHiddenValidator implements IPropertyValueValidator<OracleUser, Object> {
         @Override
-        public boolean isValidValue(OracleUser object, Object value) throws IllegalArgumentException {
+        public boolean isValidValue(@NotNull OracleUser object, @Nullable Object value) throws IllegalArgumentException {
             return !CommonUtils.toBoolean(object.getDataSource().getContainer().getConnectionConfiguration()
                 .getProviderProperty(OracleConstants.PROP_ALWAYS_USE_DBA_VIEWS));
         }

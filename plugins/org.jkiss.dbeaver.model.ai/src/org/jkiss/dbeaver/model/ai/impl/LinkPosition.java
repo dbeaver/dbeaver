@@ -14,16 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ext.oracle.model;
+package org.jkiss.dbeaver.model.ai.impl;
 
-import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.model.meta.IPropertyValueValidator;
-
-public class OracleTableNotPartitionPropertyValidator implements IPropertyValueValidator<OracleTableBase, Object> {
-
-    @Override
-    public boolean isValidValue(@NotNull OracleTableBase object, @Nullable Object value) throws IllegalArgumentException {
-        return !(object instanceof OracleTablePartition);
-    }
+public record LinkPosition(
+    int start,
+    int length,
+    String url
+) {
 }

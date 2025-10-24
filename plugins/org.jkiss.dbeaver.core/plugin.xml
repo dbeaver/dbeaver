@@ -42,7 +42,7 @@
             id="org.jkiss.dbeaver.ui.views.process.ProcessPropertyTester"
             namespace="org.jkiss.dbeaver.runtime.process"
             properties="running"
-            type="org.eclipse.ui.IWorkbenchPart"/>
+            type="org.jkiss.dbeaver.model.runtime.DBRProcessController"/>
         <propertyTester
             class="org.jkiss.dbeaver.ui.actions.ToolBarConfigurationPropertyTester"
             id="org.jkiss.dbeaver.ui.actions.ToolBarConfigurationPropertyTester"
@@ -423,7 +423,9 @@
         <handler commandId="org.jkiss.dbeaver.core.process.stop" class="org.jkiss.dbeaver.ui.views.process.ShellProcessStopHandler">
             <enabledWhen>
                 <with variable="activePart">
-                    <test property="org.jkiss.dbeaver.runtime.process.running"/>
+                    <instanceof value="org.jkiss.dbeaver.model.runtime.DBRProcessController">
+                        <test property="org.jkiss.dbeaver.runtime.process.running"/>
+                    </instanceof>
                 </with>
             </enabledWhen>
         </handler>

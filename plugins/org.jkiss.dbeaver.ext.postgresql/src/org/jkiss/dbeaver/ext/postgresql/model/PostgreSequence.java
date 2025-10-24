@@ -134,7 +134,7 @@ public class PostgreSequence extends PostgreTableBase implements DBSSequence, DB
 
     public static class AdditionalInfoValidator implements IPropertyCacheValidator<PostgreSequence> {
         @Override
-        public boolean isPropertyCached(PostgreSequence object, Object propertyId)
+        public boolean isPropertyCached(@NotNull PostgreSequence object, @NotNull Object propertyId)
         {
             return object.additionalInfo.loaded;
         }
@@ -363,7 +363,7 @@ public class PostgreSequence extends PostgreTableBase implements DBSSequence, DB
 
     public static class CacheAndCycleValidator implements IPropertyValueValidator<PostgreSequence, Object> {
         @Override
-        public boolean isValidValue(PostgreSequence object, Object value) throws IllegalArgumentException {
+        public boolean isValidValue(@NotNull PostgreSequence object, @Nullable Object value) throws IllegalArgumentException {
             return object.supportsCacheAndCycle();
         }
     }
