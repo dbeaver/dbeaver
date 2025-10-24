@@ -45,6 +45,8 @@ import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Objects;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
@@ -92,8 +94,41 @@ public class SQLCommandInclude implements SQLControlCommandHandler {
         } catch (IOException e) {
             throw new DBException("IO error reading file '" + fileName + "'", e);
         }
-        final Path finalIncFile = incFile;
-        final AtomicReference<SQLControlResult> result = new AtomicReference<>();
+
+        return getSqlControlResult(
+            scriptContext,
+            incFile,
+            fileContents
+        );
+    }
+
+    @NotNull
+    private SQLControlResult getSqlControlResult(
+        @NotNull SQLScriptContext scriptContext,
+        @NotNull Path finalIncFile,
+        @NotNull String fileContents
+    ) throws DBException {
+        try {
+            final CompletableFuture<SQLControlResult> result = getSqlControlResultCompletableFuture(
+                scriptContext,
+                finalIncFile,
+                fileContents
+            );
+            return result.get();
+        } catch (InterruptedException  e) {
+            return SQLControlResult.failure();
+        } catch (ExecutionException e) {
+            throw new DBException("Exception while included script execution", e.getCause());
+        }
+    }
+
+    @NotNull
+    private CompletableFuture<SQLControlResult> getSqlControlResultCompletableFuture(
+        @NotNull SQLScriptContext scriptContext,
+        @NotNull Path finalIncFile,
+        @NotNull String fileContents
+    ) {
+        final CompletableFuture<SQLControlResult> result = new CompletableFuture<>();
         UIUtils.syncExec(() -> {
             try {
                 final IWorkbenchWindow workbenchWindow = UIUtils.getActiveWorkbenchWindow();
@@ -106,24 +141,14 @@ public class SQLCommandInclude implements SQLControlCommandHandler {
                 );
                 boolean execResult = sqlEditor.processSQL(false, true, null, scriptListener);
                 if (!execResult) {
-                    result.set(SQLControlResult.failure());
+                    result.complete(SQLControlResult.failure());
                 }
             } catch (Throwable e) {
                 log.error(e);
-                result.set(SQLControlResult.failure());
+                result.complete(SQLControlResult.failure());
             }
         });
-
-        // Wait until script finished
-        while (Objects.isNull(result.get())) {
-            try {
-                Thread.sleep(50);
-            } catch (InterruptedException e) {
-                break;
-            }
-        }
-
-        return result.get();
+        return result;
     }
 
     @NotNull
@@ -160,12 +185,12 @@ public class SQLCommandInclude implements SQLControlCommandHandler {
     private static class IncludeScriptListener implements SQLQueryListener {
         private final IWorkbenchWindow workbenchWindow;
         private final SQLEditor editor;
-        private final AtomicReference<SQLControlResult> result;
+        private final CompletableFuture<SQLControlResult> result;
 
         IncludeScriptListener(
             @NotNull IWorkbenchWindow workbenchWindow,
             @NotNull SQLEditor editor,
-            @NotNull AtomicReference<SQLControlResult> result
+            @NotNull CompletableFuture<SQLControlResult> result
         ) {
             this.workbenchWindow = workbenchWindow;
             this.editor = editor;
@@ -192,7 +217,7 @@ public class SQLCommandInclude implements SQLControlCommandHandler {
             if (editor.getActivePreferenceStore().getBoolean(SQLPreferenceConstants.CLOSE_INCLUDED_SCRIPT_AFTER_EXECUTION)) {
                 UIUtils.syncExec(() -> workbenchWindow.getActivePage().closeEditor(editor, false));
             }
-            result.set(hasErrors ? SQLControlResult.failure() : SQLControlResult.success());
+            result.complete(hasErrors ? SQLControlResult.failure() : SQLControlResult.success());
         }
 
         @Override
