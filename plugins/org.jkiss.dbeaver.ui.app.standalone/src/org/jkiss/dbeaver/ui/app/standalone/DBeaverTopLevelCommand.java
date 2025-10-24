@@ -111,12 +111,9 @@ public class DBeaverTopLevelCommand extends AbstractTopLevelCommand {
 
         boolean exitAfterExecute = false;
 
-        if (!meta.isUiActivated()) {
-            // These command can't be executed locally
-            if (stop) {
-                instanceController.quit();
-                context.setPostAction(CLIProcessResult.PostAction.SHUTDOWN);
-            }
+        if (stop) {
+            instanceController.quit();
+            context.setPostAction(CLIProcessResult.PostAction.SHUTDOWN);
         }
 
 
