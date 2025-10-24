@@ -69,7 +69,7 @@ public class ExasolTable extends ExasolTableBase implements DBPScriptObject, DBP
     
     public static class AdditionalInfoValidator implements IPropertyCacheValidator<ExasolTable> {
         @Override
-        public boolean isPropertyCached(ExasolTable object, Object propertyId)
+        public boolean isPropertyCached(@NotNull ExasolTable object, @NotNull Object propertyId)
         {
             return object.getAdditionalInfo().isLoaded();
         }
