@@ -121,23 +121,39 @@ public class DefaultFormattingConfigurator implements IObjectPropertyConfigurato
     }
 
     protected void createQueryExecutionSettings(@NotNull Composite chatSettingsGroup) {
-        confirmSQLCombo = createConfirmQueryCombo(chatSettingsGroup, AIUIMessages.gpt_preference_page_ai_query_confirm_sql_label, AIUIMessages.gpt_preference_page_ai_query_confirm_sql_tip);
+        confirmSQLCombo = createConfirmQueryCombo(
+            chatSettingsGroup,
+            AIUIMessages.gpt_preference_page_ai_query_confirm_sql_label,
+            AIUIMessages.gpt_preference_page_ai_query_confirm_sql_tip
+        );
         confirmSQLCombo.add(AIUIMessages.gpt_preference_page_ai_query_confirm_rule_execute);
         confirmSQLCombo.add(AIUIMessages.gpt_preference_page_ai_query_confirm_rule_confirm);
         confirmSQLCombo.select(0);
 
-        confirmDMLCombo = createConfirmQueryCombo(chatSettingsGroup, AIUIMessages.gpt_preference_page_ai_query_confirm_dml_label, AIUIMessages.gpt_preference_page_ai_query_confirm_dml_tip);
+        confirmDMLCombo = createConfirmQueryCombo(
+            chatSettingsGroup,
+            AIUIMessages.gpt_preference_page_ai_query_confirm_dml_label,
+            AIUIMessages.gpt_preference_page_ai_query_confirm_dml_tip
+        );
         confirmDMLCombo.add(AIUIMessages.gpt_preference_page_ai_query_confirm_rule_execute);
         confirmDMLCombo.add(AIUIMessages.gpt_preference_page_ai_query_confirm_rule_confirm);
         confirmDMLCombo.add(AIUIMessages.gpt_preference_page_ai_query_confirm_rule_disable_autocommit);
         confirmDMLCombo.select(1);
 
-        confirmDDLCombo = createConfirmQueryCombo(chatSettingsGroup, AIUIMessages.gpt_preference_page_ai_query_confirm_ddl_label, AIUIMessages.gpt_preference_page_ai_query_confirm_ddl_tip);
+        confirmDDLCombo = createConfirmQueryCombo(
+            chatSettingsGroup,
+            AIUIMessages.gpt_preference_page_ai_query_confirm_ddl_label,
+            AIUIMessages.gpt_preference_page_ai_query_confirm_ddl_tip
+        );
         confirmDDLCombo.add(AIUIMessages.gpt_preference_page_ai_query_confirm_rule_execute);
         confirmDDLCombo.add(AIUIMessages.gpt_preference_page_ai_query_confirm_rule_confirm);
         confirmDDLCombo.select(1);
 
-        confirmOtherCombo = createConfirmQueryCombo(chatSettingsGroup, AIUIMessages.gpt_preference_page_ai_query_confirm_other_label, AIUIMessages.gpt_preference_page_ai_query_confirm_other_tip);
+        confirmOtherCombo = createConfirmQueryCombo(
+            chatSettingsGroup,
+            AIUIMessages.gpt_preference_page_ai_query_confirm_other_label,
+            AIUIMessages.gpt_preference_page_ai_query_confirm_other_tip
+        );
         confirmOtherCombo.add(AIUIMessages.gpt_preference_page_ai_query_confirm_rule_execute);
         confirmOtherCombo.add(AIUIMessages.gpt_preference_page_ai_query_confirm_rule_confirm);
         confirmOtherCombo.select(1);
