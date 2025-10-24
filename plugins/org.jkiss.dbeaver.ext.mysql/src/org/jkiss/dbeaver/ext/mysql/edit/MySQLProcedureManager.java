@@ -25,20 +25,42 @@ import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
+import org.jkiss.dbeaver.model.edit.DBEPersistAction.ActionType;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.sql.edit.SQLObjectEditor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.sql.SQLDialect;
+import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.cache.DBSObjectCache;
 import org.jkiss.utils.CommonUtils;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * MySQLProcedureManager
  */
 public class MySQLProcedureManager extends SQLObjectEditor<MySQLProcedure, MySQLCatalog> {
+
+
+    private static final Pattern FQN_WITH_SCHEMA = Pattern.compile(
+        "^\\s*((`[^`]+`)|([\\w$]+))\\s*\\.\\s*((`[^`]+`)|([\\w$]+))\\s*$"
+    );
+
+    private static final Pattern CREATE_PROC_HEAD = Pattern.compile(
+        "^(\\s*CREATE\\s+(?:OR\\s+REPLACE\\s+)?(?:DEFINER\\s*=\\s*(?:`[^`]+`|[^\\s]+)\\s+)?PROCEDURE\\s+)"
+            +
+            "(?:(`[^`]+`|[\\w$]+)\\.)?"
+            +
+            "(`[^`]+`|[\\w$]+)",
+        Pattern.CASE_INSENSITIVE | Pattern.DOTALL
+    );
 
     @Nullable
     @Override
@@ -93,11 +115,83 @@ public class MySQLProcedureManager extends SQLObjectEditor<MySQLProcedure, MySQL
 
     private void createOrReplaceProcedureQuery(List<DBEPersistAction> actions, MySQLProcedure procedure)
     {
-        actions.add(
-            new SQLDatabasePersistAction("Drop procedure", "DROP " + procedure.getProcedureType() + " IF EXISTS " + procedure.getFullyQualifiedName(DBPEvaluationContext.DDL))); //$NON-NLS-2$ //$NON-NLS-3$
-        actions.add(
-            new SQLDatabasePersistAction("Create procedure", procedure.getDeclaration(), true));
+        if (procedure.getDataSource().isMariaDB()) {
+            String txt = SQLUtils.replaceCreateToCreateOrReplace(procedure.getDataSource().getSQLDialect(),
+                procedure.getDeclaration());
+
+            actions.add(new SQLDatabasePersistAction("Create procedure", txt, true));
+        } else {
+
+            String original = procedure.getDeclaration();
+            String tempName = "tmp_proc_"
+                + DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss").format(LocalDateTime.now())
+                + "_" + UUID.randomUUID().toString().substring(0, 6);
+
+            String newFullName = buildFullName(
+                extractSchema(procedure.getFullyQualifiedName(DBPEvaluationContext.DDL)), tempName
+            );
+
+            String tempProcedure = replaceProcName(
+                procedure.getDataSource().getSQLDialect(),
+                procedure.getDeclaration(),
+                newFullName
+            );
+
+            actions.add(new SQLDatabasePersistAction("Create procedure (temp)",
+                tempProcedure, ActionType.NORMAL, true, true));
+
+            actions.add(new SQLDatabasePersistAction(
+                "Drop temp procedure",
+                "DROP " + procedure.getProcedureType() + " IF EXISTS " + newFullName,
+                ActionType.NORMAL, true, true
+            ));
+
+            actions.add(
+                new SQLDatabasePersistAction("Drop procedure", "DROP "
+                    + procedure.getProcedureType()
+                    + " IF EXISTS "
+                    + procedure.getFullyQualifiedName(DBPEvaluationContext.DDL))); //$NON-NLS-2$ //$NON-NLS-3$
+
+            actions.add(new SQLDatabasePersistAction("Create procedure (final)", original, true));
+
+        }
+
     }
+
+    @NotNull
+    private static String replaceProcName(
+        @NotNull SQLDialect dialect,
+        @NotNull String ddl,
+        @NotNull String newFullName
+    ) {
+        int start = SQLUtils.skipLeadingComments(dialect, ddl);
+        Matcher m = CREATE_PROC_HEAD.matcher(ddl.substring(start));
+        if (!m.find()) {
+            throw new IllegalArgumentException("CREATE PROCEDURE statement not recognized");
+        }
+
+        String head = m.group(1);
+        return ddl.substring(0, start) + head + newFullName + ddl.substring(start + m.end());
+    }
+
+    @Nullable
+    static String extractSchema(String fullyQualifiedName) {
+        Matcher m = FQN_WITH_SCHEMA.matcher(fullyQualifiedName);
+        if (m.find()) {
+            return m.group(1).trim();
+        }
+        return null;
+    }
+
+    @NotNull
+    static String buildFullName(@Nullable String schemaRaw, @NotNull String tempName) {
+        return (schemaRaw != null && !schemaRaw.isEmpty())
+            ? schemaRaw + "." + tempName
+            : tempName;
+    }
+
+
+
 
 }
 

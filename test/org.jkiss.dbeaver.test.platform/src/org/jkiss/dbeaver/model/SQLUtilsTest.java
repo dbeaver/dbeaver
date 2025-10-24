@@ -58,4 +58,83 @@ public class SQLUtilsTest extends DBeaverUnitTest {
 
         Assert.assertEquals("key?*\\?*\\", SQLUtils.makeGlobFromSqlLikePattern("key_%?*\\"));
     }
+
+    @Test
+    public void testSkipWhitespaces() {
+        String sql = "   SELECT * FROM dual";
+        int nextIndex = SQLUtils.skipWhitespaces(sql, 0, sql.length());
+        Assert.assertEquals(3, nextIndex);
+
+        sql = "\n\t  INSERT INTO t VALUES(1)";
+        nextIndex = SQLUtils.skipWhitespaces(sql, 0, sql.length());
+        Assert.assertEquals(4, nextIndex);
+
+        sql = "DELETE";
+        nextIndex = SQLUtils.skipWhitespaces(sql, 0, sql.length());
+        Assert.assertEquals(0, nextIndex);
+
+        sql = "  ";
+        nextIndex = SQLUtils.skipWhitespaces(sql, 0, sql.length());
+        Assert.assertEquals(sql.length(), nextIndex);
+    }
+
+    @Test
+    public void testSkipLeadingComments() {
+        String[] sl = {"--", "#"};
+        String mlStart = "/*";
+        String mlEnd = "*/";
+
+        Assert.assertEquals(0, SQLUtils.skipLeadingComments("SELECT 1", mlStart, mlEnd, sl));
+
+        Assert.assertEquals(6, SQLUtils.skipLeadingComments("  \n\t  SELECT 1", mlStart, mlEnd, sl));
+
+        String sql = "-- comment\nSELECT *";
+        Assert.assertEquals(sql.indexOf('S'), SQLUtils.skipLeadingComments(sql, mlStart, mlEnd, sl));
+
+        sql = "# hello\r\nSELECT *";
+        Assert.assertEquals(sql.indexOf('S'), SQLUtils.skipLeadingComments(sql, mlStart, mlEnd, sl));
+
+        sql = "/* block */SELECT *";
+        Assert.assertEquals(sql.indexOf('S'), SQLUtils.skipLeadingComments(sql, mlStart, mlEnd, sl));
+
+        sql = "  /* a */\n-- b\n\t/* c */   SELECT *";
+        Assert.assertEquals(sql.indexOf('S'), SQLUtils.skipLeadingComments(sql, mlStart, mlEnd, sl));
+
+        sql = "/* open only\nSELECT *";
+        Assert.assertEquals(sql.length(), SQLUtils.skipLeadingComments(sql, mlStart, mlEnd, sl));
+
+        sql = "  -- just comment\n  ";
+        Assert.assertEquals(sql.length(), SQLUtils.skipLeadingComments(sql, mlStart, mlEnd, sl));
+
+        Assert.assertEquals(0, SQLUtils.skipLeadingComments("'-- not comment' SELECT 1", mlStart, mlEnd, sl));
+
+        Assert.assertEquals(0, SQLUtils.skipLeadingComments("/* not treated */ SELECT", null, null, sl));
+
+        Assert.assertEquals(0, SQLUtils.skipLeadingComments("-- not treated\nSELECT", mlStart, mlEnd, new String[0]));
+    }
+
+    @Test
+    public void testReplaceCreateToCreateOrReplace() {
+
+        String[] sl = {"--", "#"};
+        String mlStart = "/*";
+        String mlEnd = "*/";
+
+        String ddl = "CREATE OR REPLACE FUNCTION f() RETURN INT";
+        Assert.assertEquals(ddl, SQLUtils.replaceCreateToCreateOrReplace(ddl, mlStart, mlEnd, sl));
+
+        ddl = "CREATE VIEW v AS SELECT 1";
+        Assert.assertEquals(
+            "CREATE OR REPLACE VIEW v AS SELECT 1",
+            SQLUtils.replaceCreateToCreateOrReplace(ddl, mlStart, mlEnd, sl)
+        );
+
+        ddl = "-- comment\nCREATE PROCEDURE p() BEGIN END";
+        Assert.assertEquals(
+            "-- comment\nCREATE OR REPLACE PROCEDURE p() BEGIN END",
+            SQLUtils.replaceCreateToCreateOrReplace(ddl, mlStart, mlEnd, sl)
+        );
+
+    }
+
 }
