@@ -129,7 +129,7 @@ public class MySQLCatalog implements
 
     public static class AdditionalInfoValidator implements IPropertyCacheValidator<MySQLCatalog> {
         @Override
-        public boolean isPropertyCached(MySQLCatalog object, Object propertyId)
+        public boolean isPropertyCached(@NotNull MySQLCatalog object, @NotNull Object propertyId)
         {
             return object.additionalInfo.loaded;
         }
@@ -1074,6 +1074,7 @@ public class MySQLCatalog implements
         {
             return false;
         }
+        @Nullable
         @Override
         public Object[] getPossibleValues(MySQLCatalog object)
         {
@@ -1087,6 +1088,7 @@ public class MySQLCatalog implements
         {
             return false;
         }
+        @Nullable
         @Override
         public Object[] getPossibleValues(MySQLCatalog object)
         {

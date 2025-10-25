@@ -340,8 +340,9 @@ public class PostgreTrigger extends PostgreTriggerBase implements DBSEntityEleme
     }
 
     public static class ColumnNameTransformer implements IPropertyValueTransformer {
+        @Nullable
         @Override
-        public Object transform(Object object, Object value) throws IllegalArgumentException {
+        public Object transform(@NotNull Object object, @Nullable Object value) throws IllegalArgumentException {
             if (value instanceof PostgreTableColumn[]) {
                 StringBuilder sb = new StringBuilder();
                 for (PostgreTableColumn col : (PostgreTableColumn[])value) {
