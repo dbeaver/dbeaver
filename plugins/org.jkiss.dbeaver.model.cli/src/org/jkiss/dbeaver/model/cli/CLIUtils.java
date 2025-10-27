@@ -16,32 +16,37 @@
  */
 package org.jkiss.dbeaver.model.cli;
 
-import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.cli.model.option.InputFileOption;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
-import java.nio.file.Path;
 
 public class CLIUtils {
     private static final Log log = Log.getLog(CLIUtils.class);
 
     @Nullable
-    public static String readValueFromFileOrSystemIn(@NotNull CommandLineContext context) throws CLIException {
-        String value;
-        Path inputFile = context.getContextParameter(CLIConstants.CONTEXT_PARAM_INPUT_FILE);
-        if (inputFile == null) {
+    public static String readValueFromFileOrSystemIn(@Nullable InputFileOption filesOptions) throws CLIException {
+        String value = null;
+        if (filesOptions == null || filesOptions.getInputFile() == null) {
             value = tryReadFromSystemIn();
-        } else {
-            if (Files.notExists(inputFile)) {
-                throw new CLIException("Input file does not exist: " + inputFile, CLIConstants.EXIT_CODE_ILLEGAL_ARGUMENTS);
+        } else if (filesOptions.getInputFile() != null) {
+            if (Files.notExists(filesOptions.getInputFile())) {
+                throw new CLIException(
+                    "Input file does not exist: " + filesOptions.getInputFile(),
+                    CLIConstants.EXIT_CODE_ILLEGAL_ARGUMENTS
+                );
             }
             try {
-                value = Files.readString(inputFile);
+                value = Files.readString(filesOptions.getInputFile());
             } catch (IOException e) {
-                throw new CLIException("Error reading GQL from input file: " + inputFile, e, CLIConstants.EXIT_CODE_ERROR);
+                throw new CLIException(
+                    "Error reading GQL from input file: " + filesOptions.getInputFile(),
+                    e,
+                    CLIConstants.EXIT_CODE_ERROR
+                );
             }
         }
         return value;

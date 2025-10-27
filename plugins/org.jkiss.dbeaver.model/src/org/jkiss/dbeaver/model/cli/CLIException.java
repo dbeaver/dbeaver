@@ -16,9 +16,7 @@
  */
 package org.jkiss.dbeaver.model.cli;
 
-import org.jkiss.dbeaver.DBException;
-
-public class CLIException extends DBException {
+public class CLIException extends RuntimeException {
     private final short exitCode;
 
     public CLIException(String message, short exitCode) {
