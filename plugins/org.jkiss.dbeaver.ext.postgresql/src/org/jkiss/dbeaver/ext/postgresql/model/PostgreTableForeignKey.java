@@ -220,6 +220,7 @@ public class PostgreTableForeignKey extends PostgreTableConstraintBase<PostgreTa
             return false;
         }
 
+        @Nullable
         @Override
         public Object[] getPossibleValues(PostgreTableForeignKey foreignKey)
         {

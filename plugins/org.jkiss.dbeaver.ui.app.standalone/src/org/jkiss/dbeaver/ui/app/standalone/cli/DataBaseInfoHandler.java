@@ -20,18 +20,17 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.Strictness;
 import com.google.gson.stream.JsonWriter;
-import org.apache.commons.cli.CommandLine;
 import org.eclipse.core.runtime.Platform;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.cli.CommandLineContext;
-import org.jkiss.dbeaver.model.cli.ICommandLineParameterHandler;
+import org.jkiss.dbeaver.model.cli.AbstractCommandLineParameterHandler;
 import org.jkiss.dbeaver.model.connection.DBPDriverLibrary;
 import org.jkiss.dbeaver.model.data.json.JSONUtils;
 import org.jkiss.dbeaver.registry.DataSourceProviderDescriptor;
 import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
 import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
 import org.jkiss.dbeaver.utils.GeneralUtils;
+import picocli.CommandLine;
 
 import java.io.IOException;
 import java.io.Writer;
@@ -43,7 +42,9 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
-public class DataBaseInfoHandler implements ICommandLineParameterHandler {
+@CommandLine.Command(name = "database-driver-list", aliases = {"-database-driver-list", "-databaseList"},
+    description = "Show list of supported database drivers in json format.", mixinStandardHelpOptions = true)
+public class DataBaseInfoHandler extends AbstractCommandLineParameterHandler {
     private static final String OUTPUT_DATABASES_JSON = "database.drivers.json"; //$NON-NLS-1$
     private static final String PRODUCT_ID_LABEL = "id"; //$NON-NLS-1$
     private static final String PRODUCT_NAME_LABEL = "name"; //$NON-NLS-1$
@@ -62,13 +63,11 @@ public class DataBaseInfoHandler implements ICommandLineParameterHandler {
         .serializeNulls()
         .create();
 
+    @CommandLine.Parameters(index = "0", description = "Export directory", arity = "1")
+    private String directory;
+
     @Override
-    public void handleParameter(
-        @NotNull CommandLine commandLine,
-        @NotNull String name,
-        String directory,
-        @NotNull CommandLineContext context
-    ) {
+    public void run() {
         Path path = Path.of(directory);
         if (!path.toFile().exists()) {
             log.error("Directory by path '" + directory + "' does not exists"); //$NON-NLS-1$
