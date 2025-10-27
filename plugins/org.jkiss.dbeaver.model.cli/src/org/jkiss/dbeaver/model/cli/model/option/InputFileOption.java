@@ -14,12 +14,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ui.screenreaders;
+package org.jkiss.dbeaver.model.cli.model.option;
 
-/**
- * Preferences of screen reader
- */
-public class ScreenReaderPreferences {
-    public static final String PREF_SCREEN_READER_ACCESSIBILITY = "screen.reader.accessibility"; //$NON-NLS-1$
-    public static final String PREF_FORCE_FOCUS_ON_EDITOR = "screen.reader.force.focus"; //$NON-NLS-1$
+import org.jkiss.code.Nullable;
+import picocli.CommandLine;
+
+import java.nio.file.Path;
+
+public class InputFileOption {
+    @Nullable
+    @CommandLine.Option(
+        names = {"-in", "-input-file"},
+        description = "Argument value that can be written in the file.",
+        arity = "1"
+    )
+    private Path inputFile;
+
+    @Nullable
+    public Path getInputFile() {
+        return inputFile;
+    }
+
 }

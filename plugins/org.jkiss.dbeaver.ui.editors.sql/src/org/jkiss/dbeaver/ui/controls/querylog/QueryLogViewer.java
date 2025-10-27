@@ -1135,13 +1135,14 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
         }
 
         @Override
-        protected void createButtonsForButtonBar(@NotNull Composite parent, int alignment) {
-            if (alignment == SWT.LEAD) {
-                createCopyButton(parent);
-                createExecuteButton(parent);
-            } else {
-                createButton(parent, IDialogConstants.OK_ID, IDialogConstants.OK_LABEL, true);
-            }
+        protected void createButtonsForLeftButtonBar(@NotNull Composite parent) {
+            createCopyButton(parent);
+            createExecuteButton(parent);
+        }
+
+        @Override
+        protected void createButtonsForButtonBar(@NotNull Composite parent) {
+            createButton(parent, IDialogConstants.OK_ID, IDialogConstants.OK_LABEL, true);
         }
 
         @Override

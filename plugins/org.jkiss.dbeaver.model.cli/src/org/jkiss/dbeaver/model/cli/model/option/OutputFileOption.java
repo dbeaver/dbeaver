@@ -14,12 +14,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ui.screenreaders;
+package org.jkiss.dbeaver.model.cli.model.option;
 
-/**
- * Preferences of screen reader
- */
-public class ScreenReaderPreferences {
-    public static final String PREF_SCREEN_READER_ACCESSIBILITY = "screen.reader.accessibility"; //$NON-NLS-1$
-    public static final String PREF_FORCE_FOCUS_ON_EDITOR = "screen.reader.force.focus"; //$NON-NLS-1$
+import org.jkiss.code.Nullable;
+import picocli.CommandLine;
+
+import java.nio.file.Path;
+
+public class OutputFileOption {
+    //stdin file name
+
+    @Nullable
+    @CommandLine.Option(
+        names = {"-out", "-output-file"},
+        description = "Write the execution result to a file."
+    )
+    private Path outputFile;
+
+    @Nullable
+    public Path getOutputFile() {
+        return outputFile;
+    }
 }
