@@ -113,7 +113,7 @@ public class SQLCommandInclude implements SQLControlCommandHandler {
                 fileContents
             );
             return result.get();
-        } catch (InterruptedException  e) {
+        } catch (InterruptedException e) {
             return SQLControlResult.failure();
         } catch (ExecutionException e) {
             throw new DBException("Exception while included script execution", e.getCause());
