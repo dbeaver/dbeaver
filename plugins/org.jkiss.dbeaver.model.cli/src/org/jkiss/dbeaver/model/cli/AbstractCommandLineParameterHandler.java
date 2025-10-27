@@ -14,12 +14,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ui.screenreaders;
+package org.jkiss.dbeaver.model.cli;
 
-/**
- * Preferences of screen reader
- */
-public class ScreenReaderPreferences {
-    public static final String PREF_SCREEN_READER_ACCESSIBILITY = "screen.reader.accessibility"; //$NON-NLS-1$
-    public static final String PREF_FORCE_FOCUS_ON_EDITOR = "screen.reader.force.focus"; //$NON-NLS-1$
+import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.model.cli.command.AbstractTopLevelCommand;
+import org.jkiss.dbeaver.model.cli.model.option.HiddenOptionsForSubcommands;
+import picocli.CommandLine;
+
+public abstract class AbstractCommandLineParameterHandler implements Runnable {
+    /**
+     * Root command uses as context
+     */
+    @CommandLine.ParentCommand
+    private AbstractTopLevelCommand parent;
+    @CommandLine.Mixin
+    private HiddenOptionsForSubcommands eclipseHiddenOptions;
+
+
+    @NotNull
+    protected CommandLineContext context() {
+        return parent.getContext();
+    }
 }

@@ -19,9 +19,7 @@ package org.jkiss.dbeaver.ext.sqlite.model;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ext.generic.model.GenericStructContainer;
-import org.jkiss.dbeaver.ext.generic.model.GenericTable;
-import org.jkiss.dbeaver.ext.generic.model.GenericUniqueKey;
+import org.jkiss.dbeaver.ext.generic.model.*;
 import org.jkiss.dbeaver.ext.sqlite.internal.SQLiteMessages;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBPNamedObject2;
@@ -41,9 +39,7 @@ import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableConstraint;
 
 import java.sql.SQLException;
-import java.util.Collection;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -202,6 +198,26 @@ public class SQLiteTable extends GenericTable implements DBDPseudoAttributeConta
     @Override
     public SQLiteTableForeignKey getAssociation(@NotNull DBRProgressMonitor monitor, String name) throws DBException {
         return (SQLiteTableForeignKey) super.getAssociation(monitor, name);
+    }
+
+    @Override
+    public Collection<SQLiteTableForeignKey> getReferences(@NotNull DBRProgressMonitor monitor) throws DBException {
+        if (!isPersisted() || !getDataSource().getInfo().supportsReferentialIntegrity() || monitor.isForceCacheUsage()) {
+            return new ArrayList<>();
+        }
+        List<SQLiteTableForeignKey> list = new ArrayList<>();
+        for (GenericTableBase table : getDataSource().getTables(monitor)) {
+            Collection<? extends GenericTableForeignKey> tableForeignKeys = table.getAssociations(monitor);
+            if (Objects.nonNull(tableForeignKeys)) {
+                tableForeignKeys
+                    .stream()
+                    .filter(fk -> fk instanceof SQLiteTableForeignKey)
+                    .map(fk -> (SQLiteTableForeignKey) fk)
+                    .filter(fk -> fk.refersToTable(this))
+                    .forEach(list::add);
+            }
+        }
+        return list;
     }
 
     public static class TableStrictTypingValidator implements IPropertyValueValidator<SQLiteTable, Object> {

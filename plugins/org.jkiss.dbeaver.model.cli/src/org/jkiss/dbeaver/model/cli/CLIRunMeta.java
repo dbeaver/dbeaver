@@ -14,12 +14,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ui.screenreaders;
+package org.jkiss.dbeaver.model.cli;
 
-/**
- * Preferences of screen reader
- */
-public class ScreenReaderPreferences {
-    public static final String PREF_SCREEN_READER_ACCESSIBILITY = "screen.reader.accessibility"; //$NON-NLS-1$
-    public static final String PREF_FORCE_FOCUS_ON_EDITOR = "screen.reader.force.focus"; //$NON-NLS-1$
+public class CLIRunMeta {
+    private final boolean uiActivated;
+    private final boolean supportNewInstance;
+
+    public CLIRunMeta(boolean uiActivated, boolean supportNewInstance) {
+        this.uiActivated = uiActivated;
+        this.supportNewInstance = supportNewInstance;
+    }
+
+    public boolean isSupportNewInstance() {
+        return supportNewInstance;
+    }
+
+    public boolean isUiActivated() {
+        return uiActivated;
+    }
 }
