@@ -33,6 +33,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.ai.engine.AIEngineProperties;
 import org.jkiss.dbeaver.model.ai.engine.AIModel;
 import org.jkiss.dbeaver.model.ai.engine.AIModelFeature;
+import org.jkiss.dbeaver.model.ai.engine.openai.OpenAIClient;
 import org.jkiss.dbeaver.model.ai.engine.openai.OpenAIEngine;
 import org.jkiss.dbeaver.model.ai.engine.openai.OpenAIModels;
 import org.jkiss.dbeaver.model.ai.engine.openai.OpenAIProperties;
@@ -88,7 +89,10 @@ public class OpenAiConfigurator<ENGINE extends AIEngineDescriptor, PROPERTIES ex
 
     @Override
     public void loadSettings(@NotNull PROPERTIES configuration) {
-        baseUrl = configuration.getBaseUrl();
+        baseUrl = CommonUtils.toString(configuration.getBaseUrl());
+        if (baseUrl.isEmpty()) {
+            baseUrl = OpenAIClient.OPENAI_ENDPOINT;
+        }
         token = CommonUtils.toString(configuration.getToken());
         modelSelectorField.setSelectedModel(
             CommonUtils.toString(configuration.getModel(), OpenAIModels.DEFAULT_MODEL)

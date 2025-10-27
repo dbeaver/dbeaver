@@ -168,7 +168,11 @@ public class OpenAIEngine<PROPS extends OpenAIBaseProperties> extends BaseComple
         if (token == null || token.isEmpty()) {
             throw new DBException("OpenAI API token is not set");
         }
-        return OpenAIClient.createClient(properties.getBaseUrl(), token);
+        String baseUrl = properties.getBaseUrl();
+        if (baseUrl == null || baseUrl.isEmpty()) {
+            baseUrl = OpenAIClient.OPENAI_ENDPOINT;
+        }
+        return OpenAIClient.createClient(baseUrl, token);
     }
 
     @Nullable
