@@ -263,6 +263,7 @@ public class SQLQueryJob extends DataSourceJob
                             isQueue);
 
                         boolean stopScript = false;
+                        boolean tryAgain = false;
                         switch (response) {
                             case STOP:
                                 // just stop execution
@@ -270,7 +271,7 @@ public class SQLQueryJob extends DataSourceJob
                                 break;
                             case RETRY:
                                 // just make it again
-                                this.schedule(100);
+                                tryAgain = true;
                                 break;
                             case IGNORE:
                                 // Just do nothing
@@ -282,6 +283,8 @@ public class SQLQueryJob extends DataSourceJob
 
                         if (stopScript) {
                             break;
+                        } else if (tryAgain) {
+                            continue;
                         }
                     }
 
