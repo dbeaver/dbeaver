@@ -34,8 +34,8 @@ import java.nio.file.StandardCopyOption;
 import java.security.CodeSource;
 import java.security.KeyStore;
 import java.security.ProtectionDomain;
-import java.util.List;
 import java.util.*;
+import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.regex.Matcher;
@@ -136,6 +136,14 @@ public class DBeaverLauncher {
         @Override
         public void run() {
             takeDownSplash();
+        }
+
+        @SuppressWarnings("unused")
+        public void updateSplash() {
+            // Called via reflection by org.eclipse.core.runtime.internal.adaptor.DefaultStartupMonitor.DefaultStartupMonitor
+            if (bridge != null && !splashDown) {
+                bridge.updateSplash();
+            }
         }
     }
 
@@ -590,6 +598,9 @@ public class DBeaverLauncher {
         processConfiguration();
         processGlobalConfiguration();
         Path dbeaverDataDir = getDataDirectory();
+        if (log == null) {
+            openLogFile();
+        }
         try {
             CommandLineExecuteResult commandLineExecuteResult = processCommandLineAsClient(passThruArgs, dbeaverDataDir);
             if (commandLineExecuteResult.shutdown()) {
@@ -634,12 +645,36 @@ public class DBeaverLauncher {
         //if (!checkConfigurationLocation(configurationLocation))
         //    return;
 
-        // splash handling is done here, because the default case needs to know
-        // the location of the boot plugin we are going to use
-        handleSplash(bootPath);
+        if (!hasAppParameters(passThruArgs)) {
+            // splash handling is done here, because the default case needs to know
+            // the location of the boot plugin we are going to use
+            handleSplash(bootPath);
+        } else {
+            passThruArgs = Stream.concat(Arrays.stream(passThruArgs), Arrays.stream(new String[] {NOSPLASH}))
+                .toArray(String[]::new);
+        }
 
         beforeFwkInvocation();
         invokeFramework(passThruArgs, bootPath);
+    }
+
+    // Verifies that args has any non-standard parameters
+    private boolean hasAppParameters(String[] args) {
+        for (int i = 0; i < args.length; i++) {
+            String arg = args[i];
+            if (arg.equals(PRODUCT) || arg.equals(DEV) ||
+                arg.equals(STARTUP) ||
+                arg.equals(OS) || arg.equals(WS) || arg.equals(ARCH) ||
+                arg.equals(ARG_ECLIPSE_KEYRING) || arg.equals(LAUNCHER)) {
+                i++;
+                continue;
+            }
+            if (arg.equals("-consoleLog")) {
+                continue;
+            }
+            return true;
+        }
+        return false;
     }
 
     private void checkCompatibleWindowsVersion() {
@@ -678,14 +713,17 @@ public class DBeaverLauncher {
     }
 
     private CommandLineExecuteResult processCommandLineAsClient(String[] args, Path dbeaverDataDir) throws Exception {
+        Path workspacePath = detectDefaultWorkspaceLocation(args, dbeaverDataDir);
+
         if (args == null || args.length == 0 || newInstance) {
             return new CommandLineExecuteResult(cliMode);
         }
-        Path workspacePath = detectDefaultWorkspaceLocation(args, dbeaverDataDir);
+
         if (Files.notExists(workspacePath)) {
             return new CommandLineExecuteResult(cliMode);
         }
         Integer serverPort = readDBeaverServerPort(workspacePath);
+
         if (serverPort == null) {
             return new CommandLineExecuteResult(cliMode);
         }

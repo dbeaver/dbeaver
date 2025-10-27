@@ -16,24 +16,25 @@
  */
 package org.jkiss.dbeaver.model.cli;
 
-
-import org.apache.commons.cli.CommandLine;
-import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.utils.CommonUtils;
+import picocli.CommandLine;
 
-public class ContextParameterHandler implements ICommandLineParameterHandler {
+public class ExceptionHandler implements CommandLine.IExecutionExceptionHandler {
+
+    @Nullable
+    private Exception exception;
+
+    public ExceptionHandler() {
+    }
+
     @Override
-    public void handleParameter(
-        @NotNull CommandLine commandLine,
-        @NotNull String name,
-        @Nullable String value,
-        @NotNull CommandLineContext context
-    ) throws CLIException {
-        if (CommonUtils.isEmpty(value)) {
-            throw new CLIException("--" + name + " parameter is empty", CLIConstants.EXIT_CODE_ILLEGAL_ARGUMENTS);
-        }
+    public int handleExecutionException(Exception e, CommandLine commandLine, CommandLine.ParseResult fullParseResult) throws Exception {
+        exception = e;
+        return CLIConstants.EXIT_CODE_ERROR;
+    }
 
-        context.setContextParameter(name, value);
+    @Nullable
+    public Exception getException() {
+        return exception;
     }
 }

@@ -19,10 +19,7 @@ package org.jkiss.dbeaver.ui.preferences;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.widgets.Combo;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Control;
-import org.eclipse.swt.widgets.Group;
+import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 import org.eclipse.ui.IWorkbenchPropertyPage;
@@ -37,6 +34,7 @@ public class PrefPageAccessibility extends AbstractPrefPage implements IWorkbenc
     public static final String PAGE_ID = "org.jkiss.dbeaver.preferences.user.interface.accessibility";
     private final DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
     private Combo cmbScreenReaderSupport;
+    private Button forceFocusCheckbox;
     private IAdaptable element;
 
     @Override
@@ -59,6 +57,7 @@ public class PrefPageAccessibility extends AbstractPrefPage implements IWorkbenc
             2,
             GridData.GRAB_HORIZONTAL,
             0);
+        createForceFocusCheckbox(composite);
         cmbScreenReaderSupport = UIUtils.createLabelCombo(
             accessibilityGroup,
             CoreMessages.pref_page_accessibility_screen_reader_msg,
@@ -67,13 +66,32 @@ public class PrefPageAccessibility extends AbstractPrefPage implements IWorkbenc
         return composite;
     }
 
+    private void createForceFocusCheckbox(Composite parent) {
+        forceFocusCheckbox = UIUtils.createCheckbox(
+            parent,
+            CoreMessages.pref_page_accessibility_force_focus_checkbox,
+            CoreMessages.pref_page_accessibility_force_focus_tooltip,
+            false,
+            2);
+    }
+
     private void initControls() {
         for (ScreenReader reader : ScreenReader.values()) {
             cmbScreenReaderSupport.add(reader.getScreenReaderName());
         }
+        initCombo();
+        initForceFocusCheckbox();
+    }
+
+    private void initCombo() {
         String storedScreenReader = store.getString(ScreenReaderPreferences.PREF_SCREEN_READER_ACCESSIBILITY);
         ScreenReader screenReader = ScreenReader.getScreenReader(storedScreenReader);
         cmbScreenReaderSupport.select(screenReader.ordinal());
+    }
+
+    private void initForceFocusCheckbox() {
+        boolean forceFocus = store.getBoolean(ScreenReaderPreferences.PREF_FORCE_FOCUS_ON_EDITOR);
+        forceFocusCheckbox.setSelection(forceFocus);
     }
 
     @Override
@@ -95,6 +113,7 @@ public class PrefPageAccessibility extends AbstractPrefPage implements IWorkbenc
     public boolean performOk() {
         ScreenReader screenReader = ScreenReader.getScreenReader(cmbScreenReaderSupport.getText());
         store.setValue(ScreenReaderPreferences.PREF_SCREEN_READER_ACCESSIBILITY, screenReader.name());
+        store.setValue(ScreenReaderPreferences.PREF_FORCE_FOCUS_ON_EDITOR, forceFocusCheckbox.getSelection());
         return true;
     }
 

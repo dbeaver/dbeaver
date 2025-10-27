@@ -35,6 +35,9 @@ public class CommandLineContext implements AutoCloseable {
     @Nullable
     private final ApplicationInstanceController instanceController;
 
+    @Nullable
+    private CLIProcessResult.PostAction postAction = null;
+
     public CommandLineContext(@Nullable ApplicationInstanceController instanceController) {
         this.instanceController = instanceController;
     }
@@ -67,6 +70,14 @@ public class CommandLineContext implements AutoCloseable {
         closeHandlers.add(closeHandler);
     }
 
+    @Nullable
+    public CLIProcessResult.PostAction getPostAction() {
+        return postAction;
+    }
+
+    public void setPostAction(@Nullable CLIProcessResult.PostAction postAction) {
+        this.postAction = postAction;
+    }
 
     @Nullable
     public ApplicationInstanceController getInstanceController() {
