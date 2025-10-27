@@ -186,6 +186,7 @@ public class PostgreExtension implements PostgreObject, PostgreScriptObject, DBP
         {
             return false;
         }
+        @Nullable
         @Override
         public Object[] getPossibleValues(PostgreExtension object)
         {

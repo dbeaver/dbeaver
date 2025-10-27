@@ -123,8 +123,8 @@ public class BaseDialog extends Dialog {
         final Composite leadingButtonsComposite = createButtonBarComposite(composite, SWT.LEAD);
         final Composite trailingButtonsComposite = createButtonBarComposite(composite, SWT.TRAIL);
 
-        createButtonsForButtonBar(leadingButtonsComposite, SWT.LEAD);
-        createButtonsForButtonBar(trailingButtonsComposite, SWT.TRAIL);
+        createButtonsForLeftButtonBar(leadingButtonsComposite);
+        createButtonsForButtonBar(trailingButtonsComposite);
 
         if (leadingButtonsComposite.getChildren().length == 0) {
             ((GridLayout) composite.getLayout()).numColumns -= 1;
@@ -139,10 +139,13 @@ public class BaseDialog extends Dialog {
         return composite;
     }
 
-    protected void createButtonsForButtonBar(@NotNull Composite parent, int alignment) {
-        if (alignment == SWT.TRAIL) {
-            createButtonsForButtonBar(parent);
-        }
+    protected void createButtonsForLeftButtonBar(@NotNull Composite parent) {
+
+    }
+
+    @Override
+    protected void createButtonsForButtonBar(@NotNull Composite parent) {
+        super.createButtonsForButtonBar(parent);
     }
 
     @NotNull
