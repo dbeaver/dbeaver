@@ -61,7 +61,7 @@ public abstract class OracleTableBase extends JDBCTable<OracleDataSource, Oracle
 
     public static class AdditionalInfoValidator implements IPropertyCacheValidator<OracleTableBase> {
         @Override
-        public boolean isPropertyCached(OracleTableBase object, Object propertyId) {
+        public boolean isPropertyCached(@NotNull OracleTableBase object, @NotNull Object propertyId) {
             return object.getAdditionalInfo().isLoaded() // for isLazy() check when property already loaded in the cache returns true
                 || object.getDataSource().dataTypeCache.isFullyCached();
         }
@@ -69,7 +69,7 @@ public abstract class OracleTableBase extends JDBCTable<OracleDataSource, Oracle
 
     public static class CommentsValidator implements IPropertyCacheValidator<OracleTableBase> {
         @Override
-        public boolean isPropertyCached(OracleTableBase object, Object propertyId)
+        public boolean isPropertyCached(@NotNull OracleTableBase object, @NotNull Object propertyId)
         {
             return object.comment != null;
         }
