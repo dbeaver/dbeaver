@@ -115,7 +115,7 @@ public class MySQLTableConstraint extends MySQLTableConstraintBase {
     public static class MySQLCheckConstraintsValueValidator implements IPropertyValueValidator<MySQLTableConstraint, Object> {
 
         @Override
-        public boolean isValidValue(MySQLTableConstraint object, Object value) throws IllegalArgumentException {
+        public boolean isValidValue(@NotNull MySQLTableConstraint object, @Nullable Object value) throws IllegalArgumentException {
             return object.getDataSource().supportsCheckConstraints();
         }
     }

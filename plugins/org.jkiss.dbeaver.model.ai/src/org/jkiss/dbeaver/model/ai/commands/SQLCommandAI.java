@@ -87,15 +87,18 @@ public class SQLCommandAI implements SQLControlCommandHandler {
                 throw new DBException("AI services restricted for '" + dataSourceContainer.getName() + "'");
             }
         }
-        AIDatabaseScope scope = completionSettings.getScope();
-        AIDatabaseContext.Builder contextBuilder = new AIDatabaseContext.Builder(lDataSource);
-        if (scope != null) {
-            contextBuilder.setScope(scope);
-        }
         DBCExecutionContext executionContext = scriptContext.getExecutionContext();
+        AIUtils.updateScopeSettingsIfNeeded(completionSettings, dataSourceContainer, executionContext);
+
+        AIDatabaseContext.Builder contextBuilder = new AIDatabaseContext.Builder(lDataSource);
         if (executionContext != null) {
             contextBuilder.setExecutionContext(executionContext);
         }
+        AIDatabaseScope scope = completionSettings.getScope();
+        if (scope != null) {
+            contextBuilder.setScope(scope);
+        }
+
         if (scope == AIDatabaseScope.CUSTOM && completionSettings.getCustomObjectIds() != null) {
             contextBuilder.setCustomEntities(
                 AITextUtils.loadCustomEntities(
@@ -106,7 +109,7 @@ public class SQLCommandAI implements SQLControlCommandHandler {
         }
         AIDatabaseContext dbContext = contextBuilder.build();
 
-        AIPromptAbstract sysPromptBuilder = AIPromptGenerateSql.create(() -> dbContext.getDataSource());
+        AIPromptAbstract sysPromptBuilder = AIPromptGenerateSql.create(dbContext::getDataSource);
 
         AIAssistant assistant = AIAssistantRegistry.getInstance()
             .createAssistant(dataSourceContainer.getProject().getWorkspace());

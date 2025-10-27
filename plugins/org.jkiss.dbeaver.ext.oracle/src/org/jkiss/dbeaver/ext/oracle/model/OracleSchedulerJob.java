@@ -824,7 +824,7 @@ public class OracleSchedulerJob extends OracleSchemaObject implements OracleStat
 
     public static class OracleSchedulerJobModifyValueValidator implements IPropertyValueValidator<OracleSchedulerJob, Object> {
         @Override
-        public boolean isValidValue(OracleSchedulerJob object, Object value) throws IllegalArgumentException {
+        public boolean isValidValue(@NotNull OracleSchedulerJob object, @Nullable Object value) throws IllegalArgumentException {
             return object.getDataSource().supportsSchedulerJobEdit();
         }
     }
