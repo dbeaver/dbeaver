@@ -646,6 +646,9 @@ public class CoreMessages extends NLS {
     public static String pref_page_accessibility_screen_reader_description;
     public static String pref_page_accessibility_screen_reader_group_lbl;
 
+    public static String pref_page_accessibility_force_focus_checkbox;
+    public static String pref_page_accessibility_force_focus_tooltip;
+
     static {
         // initialize resource bundle
         NLS.initializeMessages(BUNDLE_NAME, CoreMessages.class);

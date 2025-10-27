@@ -170,6 +170,7 @@ public class OpenAIProperties implements OpenAIBaseProperties {
             return false;
         }
 
+        @Nullable
         @Override
         public Object[] getPossibleValues(OpenAIProperties object) {
             return OpenAIModels.KNOWN_MODELS.entrySet().stream()

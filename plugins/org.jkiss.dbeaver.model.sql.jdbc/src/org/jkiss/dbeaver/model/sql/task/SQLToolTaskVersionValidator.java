@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,8 @@
  */
 package org.jkiss.dbeaver.model.sql.task;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
 import org.jkiss.dbeaver.model.meta.IPropertyValueValidator;
@@ -26,7 +28,7 @@ public abstract class SQLToolTaskVersionValidator<SETTINGS extends SQLToolExecut
         implements IPropertyValueValidator<SETTINGS, Object> {
 
     @Override
-    public boolean isValidValue(SETTINGS settings, Object value) throws IllegalArgumentException {
+    public boolean isValidValue(@NotNull SETTINGS settings, @Nullable Object value) throws IllegalArgumentException {
         if (!settings.getObjectList().isEmpty()) {
             DBPDataSource dataSource = settings.getObjectList().get(0).getDataSource();
             if (dataSource instanceof JDBCDataSource) {
