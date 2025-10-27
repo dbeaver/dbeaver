@@ -284,7 +284,12 @@ public class SQLQueryJob extends DataSourceJob
                         if (stopScript) {
                             break;
                         } else if (tryAgain) {
-                            continue;
+                            try {
+                                Thread.sleep(100);
+                                continue;
+                            } catch (InterruptedException ie) {
+                                break;
+                            }
                         }
                     }
 
