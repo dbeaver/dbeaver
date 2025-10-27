@@ -28,7 +28,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.*;
 import org.jkiss.dbeaver.model.sql.eval.ScriptVariablesResolver;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.editors.StringEditorInput;
+import org.jkiss.dbeaver.ui.editors.AbstractStorageEditorInput;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditor;
 import org.jkiss.dbeaver.ui.editors.sql.SQLPreferenceConstants;
 import org.jkiss.dbeaver.ui.editors.sql.handlers.SQLEditorHandlerOpenEditor;
@@ -157,7 +157,7 @@ public class SQLCommandInclude implements SQLControlCommandHandler {
         @NotNull IWorkbenchWindow workbenchWindow
     ) {
         final IncludeEditorInput input = new IncludeEditorInput(finalIncFile, fileContents);
-        SQLEditor sqlEditor = SQLEditorHandlerOpenEditor.openSQLConsole(
+        SQLEditor sqlEditor = SQLEditorHandlerOpenEditor.openUniqueSQLConsole(
             workbenchWindow,
                 new SQLNavigatorContext(scriptContext, true),
                 input);
@@ -212,10 +212,14 @@ public class SQLCommandInclude implements SQLControlCommandHandler {
 
         @Override
         public void onEndScript(DBCStatistics statistics, boolean hasErrors) {
-            if (editor.getActivePreferenceStore().getBoolean(SQLPreferenceConstants.CLOSE_INCLUDED_SCRIPT_AFTER_EXECUTION)) {
+            if (isShouldCloseIncludedScript(hasErrors)) {
                 UIUtils.syncExec(() -> workbenchWindow.getActivePage().closeEditor(editor, false));
             }
             result.complete(hasErrors ? SQLControlResult.failure() : SQLControlResult.success());
+        }
+
+        private boolean isShouldCloseIncludedScript(boolean hasErrors) {
+            return !hasErrors && editor.getActivePreferenceStore().getBoolean(SQLPreferenceConstants.CLOSE_INCLUDED_SCRIPT_AFTER_EXECUTION);
         }
 
         @Override
@@ -224,12 +228,12 @@ public class SQLCommandInclude implements SQLControlCommandHandler {
         }
     }
 
-    private static class IncludeEditorInput extends StringEditorInput implements IURIEditorInput {
+    private static class IncludeEditorInput extends AbstractStorageEditorInput implements IURIEditorInput {
 
         private final Path incFile;
 
         IncludeEditorInput(Path incFile, CharSequence value) {
-            super(incFile.getFileName().toString(), value, true, GeneralUtils.DEFAULT_ENCODING);
+            super(incFile.getFileName().toString(), value, false, GeneralUtils.DEFAULT_ENCODING);
             this.incFile = incFile;
         }
 

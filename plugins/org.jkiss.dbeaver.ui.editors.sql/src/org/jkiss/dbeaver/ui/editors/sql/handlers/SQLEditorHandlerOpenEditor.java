@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -279,16 +279,34 @@ public class SQLEditorHandlerOpenEditor extends AbstractDataSourceHandler {
         return openSQLEditor(workbenchWindow, sqlInput);
     }
 
+    public static SQLEditor openUniqueSQLConsole(IWorkbenchWindow workbenchWindow, SQLNavigatorContext context, IEditorInput sqlInput) {
+        EditorUtils.setInputDataSource(sqlInput, context);
+        return openSQLEditor(workbenchWindow, sqlInput, IWorkbenchPage.MATCH_NONE);
+    }
+
     private static SQLEditor openSQLEditor(
         IWorkbenchWindow workbenchWindow,
         IEditorInput sqlInput) {
+        boolean isConsole = sqlInput instanceof INonPersistentEditorInput;
+        return openSQLEditor(
+            workbenchWindow,
+            sqlInput,
+            isConsole ? IWorkbenchPage.MATCH_NONE : IWorkbenchPage.MATCH_INPUT
+        );
+    }
+
+    private static SQLEditor openSQLEditor(
+        IWorkbenchWindow workbenchWindow,
+        IEditorInput sqlInput,
+        int iworkbenchPage
+    ) {
         try {
-            boolean isConsole = sqlInput instanceof INonPersistentEditorInput;
             return (SQLEditor) workbenchWindow.getActivePage().openEditor(
                 sqlInput,
                 SQLEditor.class.getName(),
                 true,
-                isConsole ? IWorkbenchPage.MATCH_NONE : IWorkbenchPage.MATCH_INPUT);
+                iworkbenchPage
+            );
         } catch (PartInitException e) {
             DBWorkbench.getPlatformUI().showError("Can't open editor", null, e);
         }
