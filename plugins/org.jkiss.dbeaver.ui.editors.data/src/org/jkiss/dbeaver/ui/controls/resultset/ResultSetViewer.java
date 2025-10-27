@@ -2662,8 +2662,10 @@ public class ResultSetViewer extends Viewer
     }
 
     @Override
-    public boolean isReadOnly()
-    {
+    public boolean isReadOnly() {
+        if (ApplicationPolicyProvider.getInstance().isPolicyEnabled(ApplicationPolicyProvider.POLICY_DATA_EDIT)) {
+            return true;
+        }
         if (model.isUpdateInProgress() || !(activePresentation instanceof IResultSetEditor) ||
             (decorator.getDecoratorFeatures() & IResultSetDecorator.FEATURE_EDIT) == 0)
         {
