@@ -307,7 +307,7 @@ public class SelectDataSourceDialog extends AbstractPopupPanel {
         return ctl;
     }
 
-    protected Control createButtonBar(Composite parent) {
+    protected Control createButtonBar(@NotNull Composite parent) {
         Composite composite = new Composite(parent, SWT.NONE);
         GridLayout layout = new GridLayout(3, false);
         layout.marginWidth = convertHorizontalDLUsToPixels(IDialogConstants.HORIZONTAL_MARGIN);

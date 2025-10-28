@@ -1139,7 +1139,7 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema>
 
     public static class EnumTypeValidator implements IPropertyValueValidator<PostgreDataType, Object> {
         @Override
-        public boolean isValidValue(PostgreDataType object, Object value) throws IllegalArgumentException {
+        public boolean isValidValue(@NotNull PostgreDataType object, @Nullable Object value) throws IllegalArgumentException {
             return object.getTypeCategory() == PostgreTypeCategory.E;
         }
     }

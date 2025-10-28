@@ -161,7 +161,7 @@ public class EditConnectionDialog extends MultiPageWizardDialog {
         @Nullable Consumer<EditConnectionWizard> wizardConfigurer
     ) {
         EditConnectionDialog dialog = openDialogs.get(dataSource);
-        if (dialog != null) {
+        if (dialog != null && dialog.getShell() != null && !dialog.getShell().isDisposed()) {
             if (defaultPageName != null) {
                 dialog.showPage(defaultPageName);
             }

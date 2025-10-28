@@ -107,12 +107,13 @@ public class BaseErrorDialog extends BaseDialog {
     }
 
     @Override
-    protected void createButtonsForButtonBar(@NotNull Composite parent, int alignment) {
-        if (alignment == SWT.LEAD) {
-            createDetailsButton(parent);
-        } else {
-            createButton(parent, IDialogConstants.OK_ID, IDialogConstants.OK_LABEL, true);
-        }
+    protected void createButtonsForLeftButtonBar(@NotNull Composite parent) {
+        createDetailsButton(parent);
+    }
+
+    @Override
+    protected void createButtonsForButtonBar(@NotNull Composite parent) {
+        createButton(parent, IDialogConstants.OK_ID, IDialogConstants.OK_LABEL, true);
     }
 
     protected void createDetailsButton(@NotNull Composite parent) {
@@ -176,7 +177,7 @@ public class BaseErrorDialog extends BaseDialog {
             textSize.y += 5; // Just in case. On MacOS height should be a bit more to avoid truncation
             textSize.x += fontHeight * 2;
             if (RuntimeUtils.isMacOS()) {
-                textSize.x += fontHeight * 6;
+                textSize.x += fontHeight * 8;
             }
 
         } finally {

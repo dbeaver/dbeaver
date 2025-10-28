@@ -3,19 +3,5 @@
 
 <plugin>
     <extension-point id="org.jkiss.dbeaver.commandLine" name="Command line extension" schema="schema/org.jkiss.dbeaver.commandLine.exsd"/>
-
-    <extension point="org.jkiss.dbeaver.commandLine">
-        <parameter name="in"
-                   longName="input-file"
-                   description="Argument value that can be written in the file."
-                   hasArg="true"
-                   contextInitializer="true"
-                   handler="org.jkiss.dbeaver.model.cli.InputFileParameterHandler"/>
-        <parameter name="out"
-                   longName="output-file"
-                   description="Write the execution result to a file if supported."
-                   hasArg="true"
-                   contextInitializer="true"
-                   handler="org.jkiss.dbeaver.model.cli.OutputFileParameterHandler"/>
-    </extension>
+    
 </plugin>

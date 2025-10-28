@@ -233,6 +233,7 @@ public class SQLServerExtendedProperty implements SQLServerObject, DBPUniqueObje
             return false;
         }
 
+        @Nullable
         @Override
         public Object[] getPossibleValues(SQLServerExtendedProperty object) {
             return object.getDataSource().getLocalDataTypes().stream()

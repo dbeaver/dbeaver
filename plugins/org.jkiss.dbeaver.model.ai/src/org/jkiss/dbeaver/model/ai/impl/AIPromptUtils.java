@@ -52,7 +52,7 @@ public class AIPromptUtils {
                 if (ds instanceof JDBCDataSource) {
                     lines.add("JDBC driver: " + dsInfo.getDriverName() + " (" + dsInfo.getDriverVersion() + ")");
                 } else {
-                    lines.add("Java driver: " + driver.getFullName() + ")");
+                    lines.add("Java driver: " + driver.getFullName());
                 }
             }
 
