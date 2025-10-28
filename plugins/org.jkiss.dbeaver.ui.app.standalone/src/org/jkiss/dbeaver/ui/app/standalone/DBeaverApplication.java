@@ -16,7 +16,7 @@
  */
 package org.jkiss.dbeaver.ui.app.standalone;
 
-import org.apache.commons.cli.CommandLine;
+
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.preferences.ConfigurationScope;
 import org.eclipse.equinox.app.IApplication;
@@ -48,6 +48,7 @@ import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.app.DBPApplicationController;
 import org.jkiss.dbeaver.model.app.DBPPlatform;
 import org.jkiss.dbeaver.model.app.DBPWorkspace;
+import org.jkiss.dbeaver.model.cli.CLIConstants;
 import org.jkiss.dbeaver.model.cli.CLIProcessResult;
 import org.jkiss.dbeaver.model.impl.app.BaseWorkspaceImpl;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
@@ -180,19 +181,10 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
     public Object start(IApplicationContext context) {
         instance = this;
 
+        var args = preprocessCommandLine();
         Location instanceLoc = Platform.getInstanceLocation();
 
-        CommandLine commandLine = DBeaverCommandLine.getInstance().getCommandLine();
         String defaultHomePath = getDefaultInstanceLocation();
-        if (DBeaverCommandLine.getInstance()
-            .handleCommandLineAsClient(commandLine, defaultHomePath)
-            .getPostAction() == CLIProcessResult.PostAction.SHUTDOWN
-        ) {
-            if (!Log.isQuietMode()) {
-                System.err.println("Commands processed. Exit " + GeneralUtils.getProductName() + ".");
-            }
-            return IApplication.EXIT_OK;
-        }
 
         if (!isWorkspaceSwitchingAllowed() && !WORKSPACE_DIR_CURRENT.equals(defaultHomePath)) {
             log.error("Workspace switching is not allowed when participating in the early access program. Exiting "
@@ -237,8 +229,14 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
         // Custom parameters
         try {
             headlessMode = true;
-            CLIProcessResult cliProcessResult = DBeaverCommandLine.getInstance().handleCustomParameters(commandLine, null);
-            if (cliProcessResult.getPostAction() == CLIProcessResult.PostAction.SHUTDOWN) {
+            try {
+                CLIProcessResult cliProcessResult = DBeaverCommandLine.getInstance()
+                    .executeCommandLineCommands(null, false, false, args);
+                if (cliProcessResult.getPostAction() == CLIProcessResult.PostAction.SHUTDOWN) {
+                    return IApplication.EXIT_OK;
+                }
+            } catch (Exception e) {
+                log.error("Error processing command line parameters", e);
                 return IApplication.EXIT_OK;
             }
         } finally {
@@ -340,6 +338,19 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
             display.dispose();
             display = null;
         }
+    }
+
+    private String[] preprocessCommandLine() {
+        var args = Platform.getApplicationArgs();
+        for (String arg : args) {
+            if (arg.equals(CLIConstants.COMMAND_REUSE_WORKSPACE)) {
+                reuseWorkspace = true;
+                args = ArrayUtils.remove(String.class, args, arg);
+                break;
+            }
+        }
+        DBeaverCommandLine.getInstance().preprocessCommandLine(args);
+        return args;
     }
 
     private void markLocationReadOnly(Location instanceLoc) {

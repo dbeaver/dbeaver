@@ -200,7 +200,15 @@ public class ClickhouseDataSource extends GenericDataSource {
                 return type;
             }
         }
-        return super.resolveDataType(monitor, typeFullName);
+
+        DBSDataType type = super.resolveDataType(monitor, typeFullName);
+        if (type != null) {
+            return type;
+        }
+
+        // As a last resort, try to find the type without modifiers
+        String baseTypeName = ClickhouseTypeParser.getTypeNameWithoutModifiers(typeFullName);
+        return super.resolveDataType(monitor, baseTypeName);
     }
 
     @NotNull

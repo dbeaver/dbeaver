@@ -267,7 +267,7 @@ public abstract class GenericTableBase extends JDBCTable<GenericDataSource, Gene
     }
 
     @Override
-    public Collection<GenericTableForeignKey> getReferences(@NotNull DBRProgressMonitor monitor)
+    public Collection<? extends GenericTableForeignKey> getReferences(@NotNull DBRProgressMonitor monitor)
         throws DBException {
         if (getDataSource().getInfo().supportsReferentialIntegrity()) {
             return loadReferences(monitor);
