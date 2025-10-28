@@ -19,6 +19,8 @@ package org.jkiss.dbeaver.model.cli;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 
+import java.util.List;
+
 public class CLIProcessResult {
     public enum PostAction {
         START_INSTANCE(CLIConstants.EXIT_CODE_CONTINUE),
@@ -36,7 +38,7 @@ public class CLIProcessResult {
     private final PostAction postAction;
     private final short exitCode;
     @Nullable
-    private final String output;
+    private final List<String> output;
 
     public CLIProcessResult(@NotNull PostAction postAction) {
         this(postAction, null, postAction.defaultExitCode);
@@ -47,10 +49,14 @@ public class CLIProcessResult {
     }
 
     public CLIProcessResult(@NotNull PostAction postAction, @Nullable String output) {
+        this(postAction, output == null ? null : List.of(output), postAction.defaultExitCode);
+    }
+
+    public CLIProcessResult(@NotNull PostAction postAction, @Nullable List<String> output) {
         this(postAction, output, postAction.defaultExitCode);
     }
 
-    public CLIProcessResult(@NotNull PostAction postAction, @Nullable String output, short exitCode) {
+    public CLIProcessResult(@NotNull PostAction postAction, @Nullable List<String> output, short exitCode) {
         this.postAction = postAction;
         this.output = output;
         this.exitCode = exitCode;
@@ -62,7 +68,7 @@ public class CLIProcessResult {
     }
 
     @Nullable
-    public String getOutput() {
+    public List<String> getOutput() {
         return output;
     }
 

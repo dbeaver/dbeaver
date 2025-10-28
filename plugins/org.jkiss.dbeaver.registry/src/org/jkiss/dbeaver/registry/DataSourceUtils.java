@@ -16,10 +16,6 @@
  */
 package org.jkiss.dbeaver.registry;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.InstanceCreator;
-import com.google.gson.Strictness;
 import com.google.gson.reflect.TypeToken;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
@@ -35,8 +31,11 @@ import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.connection.DBPDriverConfigurationType;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
 import org.jkiss.dbeaver.model.net.DBWUtils;
+import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.secret.DBSSecretValue;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.runtime.properties.PropertySourceEditable;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -434,16 +433,27 @@ public class DataSourceUtils {
         return "......";
     }
 
-    public static void updateCredentialsFromProperties(@NotNull DBAAuthCredentials credentials, @NotNull Map<String, ?> properties) {
-        InstanceCreator<DBAAuthCredentials> credTypeAdapter = type -> credentials;
-        Gson credGson = new GsonBuilder()
-            .setStrictness(Strictness.LENIENT)
-            .registerTypeAdapter(credentials.getClass(), credTypeAdapter)
-            .create();
-
+    public static void updateCredentialsFromProperties(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBAAuthCredentials credentials,
+        @NotNull Map<String, ?> properties
+    ) {
         if (credentials instanceof DBAAuthCredentialsWithComplexProperties complexProperties) {
             complexProperties.updateCredentialsFromComplexProperties(properties);
         }
-        credGson.fromJson(credGson.toJsonTree(properties), credentials.getClass());
+        PropertySourceEditable editable = new PropertySourceEditable(credentials, credentials);
+        editable.collectProperties();
+        for (Map.Entry<String, ?> entry : properties.entrySet()) {
+            String propId = entry.getKey();
+            Object propValue = entry.getValue();
+            DBPPropertyDescriptor propDesc = editable.getProperty(propId);
+            if (propDesc != null) {
+                try {
+                    editable.setPropertyValue(monitor, propId, propValue);
+                } catch (Exception e) {
+                    log.error("Error setting credential property '" + propId + "'", e);
+                }
+            }
+        }
     }
 }
