@@ -279,8 +279,10 @@ public abstract class AbstractNativeToolWizard<SETTINGS extends AbstractNativeTo
 
     @NotNull
     @Override
-    public TaskConfigurationWizardDialog createWizardDialog(@NotNull IWorkbenchWindow window, @NotNull IStructuredSelection selection,
-                                                            @NotNull Map<String, Object> options
+    public TaskConfigurationWizardDialog createWizardDialog(
+        @NotNull IWorkbenchWindow window,
+        @NotNull IStructuredSelection selection,
+        @NotNull Map<String, Object> options
     ) {
         return new NativeToolWizardDialog(window, this, selection);
     }
