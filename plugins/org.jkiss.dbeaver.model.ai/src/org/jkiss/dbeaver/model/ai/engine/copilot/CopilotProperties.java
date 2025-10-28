@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.model.ai.engine.copilot;
 import com.google.gson.annotations.SerializedName;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.ai.AIConstants;
 import org.jkiss.dbeaver.model.ai.engine.AIEngineProperties;
 import org.jkiss.dbeaver.model.ai.engine.AIModel;
 import org.jkiss.dbeaver.model.ai.utils.AIUtils;
@@ -54,7 +55,7 @@ public class CopilotProperties implements AIEngineProperties {
     private boolean loggingEnabled;
 
     @Nullable
-    @Property(order = 1, id = COPILOT_ACCESS_TOKEN, password = true)
+    @Property(order = 1, id = COPILOT_ACCESS_TOKEN, password = true, features = AIConstants.AI_FEATURE_CONNECTION_PROPERTY)
     public String getToken() {
         return token;
     }
@@ -64,7 +65,7 @@ public class CopilotProperties implements AIEngineProperties {
     }
 
     @Nullable
-    @Property(order = 2, id = GPT_MODEL)
+    @Property(order = 2, id = GPT_MODEL, features = AIConstants.AI_FEATURE_MODEL_PROPERTY)
     public String getModel() {
         return model;
     }
