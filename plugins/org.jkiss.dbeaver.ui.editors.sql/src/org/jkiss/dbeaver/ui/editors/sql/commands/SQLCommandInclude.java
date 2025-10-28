@@ -19,7 +19,6 @@ package org.jkiss.dbeaver.ui.editors.sql.commands;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.ui.*;
-import org.eclipse.ui.ide.IDEEncoding;
 import org.eclipse.ui.part.FileEditorInput;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
@@ -55,10 +54,6 @@ public class SQLCommandInclude implements SQLControlCommandHandler {
 
     private static final Log log = Log.getLog(SQLCommandInclude.class);
 
-    public static String getResourceEncoding() {
-        String resourceEncoding = IDEEncoding.getResourceEncoding();
-        return CommonUtils.isEmpty(resourceEncoding) ? GeneralUtils.getDefaultFileEncoding() : resourceEncoding;
-    }
 
     @NotNull
     @Override
@@ -203,16 +198,15 @@ public class SQLCommandInclude implements SQLControlCommandHandler {
             if (isShouldCloseIncludedScript(hasErrors)) {
                 UIUtils.syncExec(() -> workbenchWindow.getActivePage().closeEditor(editor, false));
             }
-            result.complete(hasErrors ? SQLControlResult.failure() : SQLControlResult.success());
-        }
-
-        private boolean isShouldCloseIncludedScript(boolean hasErrors) {
-            return !hasErrors && editor.getActivePreferenceStore().getBoolean(SQLPreferenceConstants.CLOSE_INCLUDED_SCRIPT_AFTER_EXECUTION);
         }
 
         @Override
         public void onEndSqlJob(DBCSession session, SqlJobResult result) {
+            this.result.complete(result.equals(SqlJobResult.SUCCESS) ? SQLControlResult.failure() : SQLControlResult.success());
+        }
 
+        private boolean isShouldCloseIncludedScript(boolean hasErrors) {
+            return !hasErrors && editor.getActivePreferenceStore().getBoolean(SQLPreferenceConstants.CLOSE_INCLUDED_SCRIPT_AFTER_EXECUTION);
         }
     }
 
