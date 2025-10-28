@@ -39,6 +39,7 @@
             <propertyGroup label="%DateFormatter.number.general.label">
                 <property id="useGrouping" label="%DateFormatter.number.general.grouping.label" type="boolean" description="%DateFormatter.number.general.grouping.description"/>
                 <property id="groupingSize" label="%DateFormatter.number.general.groupingSize.label" type="integer" description="%DateFormatter.number.general.groupingSize.description"/>
+                <property id="excludeIdColumns" label="%DateFormatter.number.general.excludeIdColumns.label" type="boolean" description="%DateFormatter.number.general.excludeIdColumns.description"/>
                 <property id="maxIntegerDigits" label="%DateFormatter.number.general.maxIntDigits.label" type="integer" description="%DateFormatter.number.general.maxIntDigits.description"/>
                 <property id="minIntegerDigits" label="%DateFormatter.number.general.minIntDigits.label" type="integer" description="%DateFormatter.number.general.minIntDigits.description"/>
                 <property id="maxFractionDigits" label="%DateFormatter.number.general.maxFractDigits.label" type="integer" description="%DateFormatter.number.general.maxFractDigits.description"/>

@@ -1473,6 +1473,7 @@ public class PostgreDatabase extends JDBCRemoteInstance
         {
             return false;
         }
+        @Nullable
         @Override
         public Object[] getPossibleValues(PostgreDatabase object)
         {
@@ -1493,6 +1494,7 @@ public class PostgreDatabase extends JDBCRemoteInstance
             return false;
         }
 
+        @Nullable
         @Override
         public Object[] getPossibleValues(PostgreDatabase object)
         {
@@ -1513,6 +1515,7 @@ public class PostgreDatabase extends JDBCRemoteInstance
             return false;
         }
 
+        @Nullable
         @Override
         public Object[] getPossibleValues(PostgreDatabase object)
         {

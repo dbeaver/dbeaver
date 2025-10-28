@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,10 +39,10 @@ public interface DBECommandContext extends DBPContextProvider {
     boolean isDirty();
 
     @Nullable
-    DBECommand getUndoCommand();
+    DBECommand<?> getUndoCommand();
 
     @Nullable
-    DBECommand getRedoCommand();
+    DBECommand<?> getRedoCommand();
 
     void saveChanges(@NotNull DBRProgressMonitor monitor, @NotNull Map<String, Object> options) throws DBException;
 
@@ -61,19 +61,19 @@ public interface DBECommandContext extends DBPContextProvider {
     @NotNull
     Collection<DBPObject> getEditedObjects();
 
-    void addCommand(@NotNull DBECommand command, @Nullable DBECommandReflector reflector);
+    void addCommand(@NotNull DBECommand<?> command, @Nullable DBECommandReflector reflector);
 
-    void addCommand(DBECommand command, DBECommandReflector reflector, boolean execute);
+    void addCommand(@NotNull DBECommand<?> command, @Nullable DBECommandReflector reflector, boolean execute);
 
     //void addCommandBatch(List<DBECommand> commands, DBECommandReflector reflector, boolean execute);
 
-    void removeCommand(DBECommand<?> command);
+    void removeCommand(@NotNull DBECommand<?> command);
 
-    void updateCommand(DBECommand<?> command, DBECommandReflector commandReflector);
+    void updateCommand(@NotNull DBECommand<?> command, @Nullable DBECommandReflector commandReflector);
 
-    void addCommandListener(DBECommandListener listener);
+    void addCommandListener(@NotNull DBECommandListener listener);
 
-    void removeCommandListener(DBECommandListener listener);
+    void removeCommandListener(@NotNull DBECommandListener listener);
 
     Map<Object, Object> getUserParams();
 

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -47,11 +47,11 @@ public class SavePreviewDialog extends DetailsViewDialog {
 
     private static final String DIALOG_ID = "DBeaver.RSV.SavePreviewDialog";//$NON-NLS-1$
 
-    private ResultSetViewer viewer;
-    private boolean showCascadeSettings;
+    private final ResultSetViewer viewer;
+    private final boolean showCascadeSettings;
     private Object sqlPanel;
-    private ResultSetSaveSettings saveSettings;
-    private ResultSetSaveReport saveReport;
+    private final ResultSetSaveSettings saveSettings;
+    private final ResultSetSaveReport saveReport;
 
     public SavePreviewDialog(@NotNull ResultSetViewer viewer, boolean showCascadeSettings, @NotNull ResultSetSaveReport saveReport) {
         super(viewer.getControl().getShell(), "Preview changes", DBIcon.STATUS_WARNING);
@@ -138,14 +138,15 @@ public class SavePreviewDialog extends DetailsViewDialog {
     }
 
     @Override
-    protected void createButtonsForButtonBar(@NotNull Composite parent, int alignment) {
-        if (alignment == SWT.LEAD) {
-            createDetailsButton(parent);
-            ((GridData) detailsButton.getLayoutData()).horizontalAlignment = GridData.BEGINNING;
-        } else {
-            createButton(parent, IDialogConstants.OK_ID, UINavigatorMessages.dialog_filter_save_button, false);
-            createButton(parent, IDialogConstants.CANCEL_ID, IDialogConstants.CANCEL_LABEL, true);
-        }
+    protected void createButtonsForLeftButtonBar(@NotNull Composite parent) {
+        createDetailsButton(parent);
+        ((GridData) detailsButton.getLayoutData()).horizontalAlignment = GridData.BEGINNING;
+    }
+
+    @Override
+    protected void createButtonsForButtonBar(@NotNull Composite parent) {
+        createButton(parent, IDialogConstants.OK_ID, UINavigatorMessages.dialog_filter_save_button, false);
+        createButton(parent, IDialogConstants.CANCEL_ID, IDialogConstants.CANCEL_LABEL, true);
     }
 
     @Override

@@ -35,6 +35,7 @@ public class NumberFormatSample implements DBDDataFormatterSample {
     public static final String PROP_USE_TYPE_SCALE  ="useTypeScale";
     public static final String PROP_ROUNDING_MODE ="roundingMode";
     public static final String PROP_NATIVE_SPECIAL_VALUES = "nativeSpecialValues";
+    public static final String PROP_EXCLUDE_ID_COLUMNS = "excludeIdColumns";
 
     @Override
     public Map<String, Object> getDefaultProperties(Locale locale)
@@ -49,6 +50,7 @@ public class NumberFormatSample implements DBDDataFormatterSample {
         props.put(PROP_MIN_FRACT_DIGITS, tmp.getMinimumFractionDigits());
         props.put(PROP_USE_TYPE_SCALE, false);
         props.put(PROP_NATIVE_SPECIAL_VALUES, false);
+        props.put(PROP_EXCLUDE_ID_COLUMNS, false);
         // Use UNNECESSARY by default [#6493]
         // FIX: Use default. The problem in rounding was caused by float->double conversions.
         //props.put(PROP_ROUNDING_MODE, RoundingMode.UNNECESSARY.name());

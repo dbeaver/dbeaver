@@ -33,14 +33,12 @@ import org.jkiss.dbeaver.model.impl.sql.edit.struct.SQLTableManager;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.SubTaskProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLConstants;
 import org.jkiss.dbeaver.model.sql.SQLDataTypeConverter;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
-import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
-import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
-import org.jkiss.dbeaver.model.struct.rdb.DBSTable;
-import org.jkiss.dbeaver.model.struct.rdb.DBSView;
+import org.jkiss.dbeaver.model.struct.rdb.*;
 import org.jkiss.dbeaver.model.virtual.DBVUtils;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.utils.GeneralUtils;
@@ -48,6 +46,7 @@ import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.*;
+import java.util.stream.Stream;
 
 /**
  * DBUtils
@@ -628,4 +627,71 @@ public final class DBStructUtils {
 
         return null;
     }
+
+    public static boolean isPrimaryKey(@NotNull DBSTableColumn column) {
+        var monitor = new VoidProgressMonitor();
+        try {
+            return matchesColumnInRefs(
+                monitor,
+                column,
+                referrers(column.getParentObject().getConstraints(monitor), DBSEntityConstraintType.PRIMARY_KEY)
+            );
+        } catch (DBException e) {
+            log.debug("Error reading primary key constraints for column: " + column.getName(), e);
+            return false;
+        }
+    }
+
+    public static boolean isForeignKey(@NotNull DBSTableColumn column) {
+        var monitor = new VoidProgressMonitor();
+        try {
+            return matchesColumnInRefs(
+                monitor,
+                column,
+                referrers(column.getParentObject().getAssociations(monitor), DBSEntityConstraintType.FOREIGN_KEY)
+            );
+        } catch (DBException e) {
+            log.debug("Error reading foreign key associations for column: " + column.getName(), e);
+            return false;
+        }
+    }
+
+    private static boolean matchesColumnInRefs(
+        @Nullable DBRProgressMonitor monitor,
+        @NotNull DBSTableColumn column,
+        @NotNull Stream<DBSEntityReferrer> referrers
+    ) {
+        return referrers
+            .flatMap(ref -> safeRefs(monitor, ref))
+            .anyMatch(r -> r.getAttribute() == column);
+    }
+
+    @NotNull
+    private static Stream<? extends DBSEntityAttributeRef> safeRefs(
+        @Nullable DBRProgressMonitor monitor,
+        @NotNull DBSEntityReferrer ref
+    ) {
+        try {
+            List<? extends DBSEntityAttributeRef> refs = ref.getAttributeReferences(monitor);
+            return refs == null ? Stream.empty() : refs.stream();
+        } catch (DBException e) {
+            log.debug("Failed to read attribute references for constraint: " + ref.getName(), e);
+            return Stream.empty();
+        }
+    }
+
+    @NotNull
+    private static Stream<DBSEntityReferrer> referrers(
+        @Nullable Collection<? extends DBSEntityConstraint> refs,
+        @NotNull DBSEntityConstraintType filter)  {
+
+        if (refs == null || refs.isEmpty()) {
+            return Stream.empty();
+        }
+        return refs.stream()
+            .filter(a -> a.getConstraintType() == filter)
+            .filter(DBSEntityReferrer.class::isInstance)
+            .map(DBSEntityReferrer.class::cast);
+    }
+
 }
