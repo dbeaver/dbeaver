@@ -7,6 +7,7 @@
     <extension-point id="org.jkiss.dbeaver.sqlCommand" name="%extension-point.org.jkiss.dbeaver.sqlCommand.name" schema="schema/org.jkiss.dbeaver.sqlCommand.exsd"/>
     <extension-point id="org.jkiss.dbeaver.sqlDialect" name="%extension-point.org.jkiss.dbeaver.sqlDialect.name" schema="schema/org.jkiss.dbeaver.sqlDialect.exsd"/>
     <extension-point id="org.jkiss.dbeaver.sqlInsertMethod" name="%extension-point.org.jkiss.dbeaver.sqlInsertMethod" schema="schema/org.jkiss.dbeaver.sqlInsertMethod.exsd"/>
+    <extension-point id="org.jkiss.dbeaver.confirmations" name="SQL confirmations" schema="schema/org.jkiss.dbeaver.confirmations.exsd"/>
 
     <extension point="org.eclipse.core.runtime.preferences">
         <initializer class="org.jkiss.dbeaver.model.sql.internal.SQLModelPreferencesInitializer"/>
@@ -109,5 +110,43 @@
                           validValues="NEW,DEFAULT" defaultValue="NEW" type="string" scopes="global,user"/>
             </propertyGroup>
         </propertyGroup>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.confirmations">
+        <confirmation
+            id="dangerous_sql"
+            title="%confirm.dangerous_sql.title"
+            description="%confirm.dangerous_sql.tip"
+            message="%confirm.dangerous_sql.message"
+            toggleMessage="%confirm.sql.toggleMessage"
+            group="%confirm.sql.group.name"/>
+        <confirmation
+            id="drop_sql"
+            title="%confirm.drop_sql.title"
+            description="%confirm.drop_sql.tip"
+            message="%confirm.drop_sql.message"
+            toggleMessage="%confirm.sql.toggleMessage"
+            group="%confirm.sql.group.name"/>
+        <confirmation
+            id="close_running_query"
+            title="%confirm.close_running_query.title"
+            description="%confirm.close_running_query.tip"
+            message="%confirm.close_running_query.message"
+            toggleMessage="%confirm.sql.toggleMessage"
+            group="%confirm.sql.group.name"/>
+        <confirmation
+            id="close_result_tabs"
+            title="%confirm.close_result_tabs.title"
+            description="%confirm.close_result_tabs.tip"
+            message="%confirm.close_result_tabs.message"
+            toggleMessage="%confirm.sql.toggleMessage"
+            group="%confirm.sql.group.name"/>
+        <confirmation
+            id="save_sql_console"
+            title="%confirm.save_sql_console.title"
+            description="%confirm.save_sql_console.tip"
+            message="%confirm.save_sql_console.message"
+            toggleMessage="%confirm.sql.toggleMessage"
+            group="%confirm.sql.group.name"/>
     </extension>
 </plugin>
