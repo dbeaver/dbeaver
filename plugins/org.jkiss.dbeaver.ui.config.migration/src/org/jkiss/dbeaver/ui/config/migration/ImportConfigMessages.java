@@ -55,6 +55,7 @@ public class ImportConfigMessages extends NLS {
     public static String config_import_wizard_squirrel_description;
     public static String config_import_wizard_import_driver;
     public static String config_import_wizard_extract_url_parameters;
+    public static String config_import_wizard_jetbrains_description;
 
     static {
         // initialize resource bundle
