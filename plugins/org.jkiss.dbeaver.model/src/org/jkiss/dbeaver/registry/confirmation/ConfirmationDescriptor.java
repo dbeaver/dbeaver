@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,53 +14,34 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ui.registry;
+package org.jkiss.dbeaver.registry.confirmation;
 
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
-import org.jkiss.dbeaver.ui.internal.UIActivator;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
-
-import java.util.Locale;
-import java.util.ResourceBundle;
 
 public class ConfirmationDescriptor extends AbstractDescriptor {
 
-    private static final Log log = Log.getLog(ConfirmationDescriptor.class);
-
-    public static final String ELEMENT_ID = "confirmation";
+    private static final String GROUP_ID = "confirm";
 
     private final String id;
     private final String title;
     private final String description;
     private final String message;
-    private final String toggleMessage;
     private final String group;
+    private final String toggleMessage;
 
-    ConfirmationDescriptor(@NotNull IConfigurationElement config) {
+    protected ConfirmationDescriptor(@NotNull IConfigurationElement config) {
         super(config);
 
         this.id = config.getAttribute("id");
         this.title = config.getAttribute("title");
         this.description = config.getAttribute("description");
         this.message = config.getAttribute("message");
-        String toggleMessageStr = config.getAttribute("toggleMessage");
-        if ("default".equals(toggleMessageStr)) {
-            ResourceBundle resourceBundle = RuntimeUtils.getBundleLocalization(
-                UIActivator.getDefault().getBundle(), Locale.getDefault().getLanguage());
-            try {
-                toggleMessageStr = resourceBundle.getString("confirm.general.toggleMessage");
-            } catch (Exception e) {
-                log.debug(e);
-            }
-            this.toggleMessage = toggleMessageStr;
-        } else {
-            this.toggleMessage = toggleMessageStr;
-        }
         this.group = config.getAttribute("group");
+        this.toggleMessage = config.getAttribute("toggleMessage");
     }
 
     @NotNull
@@ -83,13 +64,33 @@ public class ConfirmationDescriptor extends AbstractDescriptor {
         return message;
     }
 
+    @NotNull
+    public String getGroup() {
+        return group;
+    }
+
     @Nullable
     public String getToggleMessage() {
         return toggleMessage;
     }
 
     @NotNull
-    public String getGroup() {
-        return group;
+    public String getLocalizedTitle(@NotNull String locale) {
+        try {
+            return RuntimeUtils.getBundleLocalization(getContributorBundle(), locale)
+                .getString(GROUP_ID + "." + getId() + ".title");
+        } catch (Exception e) {
+            return this.getTitle();
+        }
+    }
+
+    @NotNull
+    public String getLocalizedMessage(@NotNull String locale) {
+        try {
+            return RuntimeUtils.getBundleLocalization(getContributorBundle(), locale)
+                .getString(GROUP_ID + "." + getId() + ".message");
+        } catch (Exception e) {
+            return this.getMessage();
+        }
     }
 }
