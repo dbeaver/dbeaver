@@ -10,4 +10,6 @@ Bundle-RequiredExecutionEnvironment: JavaSE-21
 Bundle-Vendor: DBeaver Corp
 Bundle-Localization: OSGI-INF/l10n/bundle
 Automatic-Module-Name: org.jkiss.dbeaver.ext.athena
-Export-Package: org.jkiss.dbeaver.ext.athena.model
+Export-Package: org.jkiss.dbeaver.ext.athena,
+ org.jkiss.dbeaver.ext.athena.model
+
