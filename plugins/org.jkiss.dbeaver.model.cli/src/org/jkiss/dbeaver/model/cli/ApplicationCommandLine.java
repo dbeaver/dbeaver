@@ -25,6 +25,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.cli.command.AbstractTopLevelCommand;
+import org.jkiss.dbeaver.model.cli.model.option.HiddenOptions;
 import org.jkiss.dbeaver.model.cli.registry.CommandLineParameterDescriptor;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
@@ -99,6 +100,17 @@ public abstract class ApplicationCommandLine<T extends ApplicationInstanceContro
                 return new CLIProcessResult(CLIProcessResult.PostAction.ERROR, e.getMessage());
             }
 
+            if (parseResult.hasMatchedOption(HiddenOptions.PRODUCT_OPTION)) {
+                CommandLine.Model.OptionSpec optionSpec = parseResult.matchedOption(HiddenOptions.PRODUCT_OPTION);
+                if (optionSpec.isValueGettable()) {
+                    String productId = optionSpec.getValue().toString();
+                    if (CommonUtils.isNotEmpty(productId) && !CommonUtils.equalObjects(productId, Platform.getProduct().getId())) {
+                        log.error("Wrong product ID '" + productId + "'. Expected '" + Platform.getProduct().getId() + "'");
+                        return new CLIProcessResult(CLIProcessResult.PostAction.START_INSTANCE);
+                    }
+                }
+            }
+
             if (commandLineIsEmpty(parseResult)) {
                 return new CLIProcessResult(CLIProcessResult.PostAction.START_INSTANCE);
             }
@@ -136,7 +148,6 @@ public abstract class ApplicationCommandLine<T extends ApplicationInstanceContro
                     var updatedCmd = new CommandLine(commandForHelp);
                     updatedCmd.usage(print);
                     String help = out.toString();
-                    System.out.println(help);
                     return new CLIProcessResult(CLIProcessResult.PostAction.SHUTDOWN, help);
                 } catch (Exception e) {
                     log.error("Error handling command line: " + e.getMessage());
@@ -146,7 +157,6 @@ public abstract class ApplicationCommandLine<T extends ApplicationInstanceContro
 
             if (parseResult.isVersionHelpRequested()) {
                 String version = GeneralUtils.getLongProductTitle();
-                System.out.println(version);
                 return new CLIProcessResult(CLIProcessResult.PostAction.SHUTDOWN, version);
             }
 

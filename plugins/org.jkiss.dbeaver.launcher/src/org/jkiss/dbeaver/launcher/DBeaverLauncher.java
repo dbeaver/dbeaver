@@ -34,8 +34,8 @@ import java.nio.file.StandardCopyOption;
 import java.security.CodeSource;
 import java.security.KeyStore;
 import java.security.ProtectionDomain;
-import java.util.*;
 import java.util.List;
+import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.regex.Matcher;
@@ -792,7 +792,9 @@ public class DBeaverLauncher {
                     .replace("}\\\"", "}")
                     .replace("\\\\\\\\n", "\n")
                     .replace("\\\\n", "\n")
-                    .replace("\\n", "\n");
+                    .replace("\\n", "\n")
+                    .replace("\\r", "")
+                ;
                 System.out.println(output);
             }
             return new CommandLineExecuteResult(shutdownApplication || cliMode, exitCode);
