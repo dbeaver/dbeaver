@@ -16,9 +16,13 @@
  */
 package org.jkiss.dbeaver.ui.editors.sql.commands;
 
+import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.ui.*;
 import org.eclipse.ui.ide.IDEEncoding;
+import org.eclipse.ui.part.FileEditorInput;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -28,22 +32,19 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.*;
 import org.jkiss.dbeaver.model.sql.eval.ScriptVariablesResolver;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.editors.AbstractStorageEditorInput;
+import org.jkiss.dbeaver.ui.editors.IInMemoryEditorInput;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditor;
 import org.jkiss.dbeaver.ui.editors.sql.SQLPreferenceConstants;
 import org.jkiss.dbeaver.ui.editors.sql.handlers.SQLEditorHandlerOpenEditor;
 import org.jkiss.dbeaver.ui.editors.sql.handlers.SQLNavigatorContext;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
-import org.jkiss.utils.IOUtils;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.Reader;
 import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
@@ -85,32 +86,21 @@ public class SQLCommandInclude implements SQLControlCommandHandler {
             }
         }
 
-        final String fileContents;
-        try (InputStream is = Files.newInputStream(incFile)) {
-            Reader reader = new InputStreamReader(is, getResourceEncoding());
-            fileContents = IOUtils.readToString(reader);
-        } catch (IOException e) {
-            throw new DBException("IO error reading file '" + fileName + "'", e);
-        }
-
         return getSqlControlResult(
             scriptContext,
-            incFile,
-            fileContents
+            incFile
         );
     }
 
     @NotNull
     private SQLControlResult getSqlControlResult(
         @NotNull SQLScriptContext scriptContext,
-        @NotNull Path finalIncFile,
-        @NotNull String fileContents
+        @NotNull Path finalIncFile
     ) throws DBException {
         try {
             final CompletableFuture<SQLControlResult> result = getSqlControlResultCompletableFuture(
                 scriptContext,
-                finalIncFile,
-                fileContents
+                finalIncFile
             );
             return result.get();
         } catch (InterruptedException e) {
@@ -123,15 +113,14 @@ public class SQLCommandInclude implements SQLControlCommandHandler {
     @NotNull
     private CompletableFuture<SQLControlResult> getSqlControlResultCompletableFuture(
         @NotNull SQLScriptContext scriptContext,
-        @NotNull Path finalIncFile,
-        @NotNull String fileContents
+        @NotNull Path finalIncFile
     ) {
         final CompletableFuture<SQLControlResult> result = new CompletableFuture<>();
         UIUtils.syncExec(() -> {
             try {
                 final IWorkbenchWindow workbenchWindow = UIUtils.getActiveWorkbenchWindow();
                 closeDuplicatedEditors(finalIncFile);
-                SQLEditor sqlEditor = getSqlEditor(scriptContext, finalIncFile, fileContents, workbenchWindow);
+                SQLEditor sqlEditor = getSqlEditor(scriptContext, finalIncFile, workbenchWindow);
                 final IncludeScriptListener scriptListener = new IncludeScriptListener(
                     workbenchWindow,
                     sqlEditor,
@@ -153,10 +142,9 @@ public class SQLCommandInclude implements SQLControlCommandHandler {
     private SQLEditor getSqlEditor(
         @NotNull SQLScriptContext scriptContext,
         @NotNull Path finalIncFile,
-        @NotNull String fileContents,
         @NotNull IWorkbenchWindow workbenchWindow
     ) {
-        final IncludeEditorInput input = new IncludeEditorInput(finalIncFile, fileContents);
+        final IncludeEditorInput input = new IncludeEditorInput(finalIncFile);
         SQLEditor sqlEditor = SQLEditorHandlerOpenEditor.openUniqueSQLConsole(
             workbenchWindow,
                 new SQLNavigatorContext(scriptContext, true),
@@ -228,18 +216,36 @@ public class SQLCommandInclude implements SQLControlCommandHandler {
         }
     }
 
-    private static class IncludeEditorInput extends AbstractStorageEditorInput implements IURIEditorInput {
+    private static class IncludeEditorInput extends FileEditorInput implements IInMemoryEditorInput {
 
         private final Path incFile;
 
-        IncludeEditorInput(Path incFile, CharSequence value) {
-            super(incFile.getFileName().toString(), value, false, GeneralUtils.DEFAULT_ENCODING);
+        private final Map<String, Object> properties = new HashMap<>();
+
+        IncludeEditorInput(Path incFile) {
+            super(getFile(incFile));
             this.incFile = incFile;
+        }
+
+        private static IFile getFile(Path pathToFile) {
+            return ResourcesPlugin.getWorkspace().getRoot()
+                .getFileForLocation(org.eclipse.core.runtime.Path.fromOSString(pathToFile.toString()));
         }
 
         @Override
         public URI getURI() {
             return incFile.toUri();
+        }
+
+        @Nullable
+        @Override
+        public Object getProperty(@NotNull String name) {
+            return properties.get(name);
+        }
+
+        @Override
+        public void setProperty(@NotNull String name, @Nullable Object value) {
+            properties.put(name, value);
         }
     }
 }
