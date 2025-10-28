@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,6 +23,7 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dashboard.control.DashboardListControl;
 import org.jkiss.dbeaver.ui.dashboard.control.DashboardListViewer;
@@ -87,7 +88,7 @@ public class DashboardItemViewDialog extends AbstractPopupPanel {
     }
 
     @Override
-    protected Control createButtonBar(Composite parent) {
+    protected Control createButtonBar(@NotNull Composite parent) {
         return parent;
     }
 

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,8 +23,15 @@ import org.jkiss.dbeaver.model.struct.DBSEntityReferrer;
 import org.jkiss.dbeaver.model.struct.rdb.DBSForeignKeyDeferability;
 import org.jkiss.dbeaver.model.struct.rdb.DBSForeignKeyModifyRule;
 
+import java.util.Objects;
+
 public class SQLiteTableForeignKey extends GenericTableForeignKey {
     public SQLiteTableForeignKey(GenericTableBase table, String name, @Nullable String remarks, DBSEntityReferrer referencedKey, DBSForeignKeyModifyRule deleteRule, DBSForeignKeyModifyRule updateRule, DBSForeignKeyDeferability deferability, boolean persisted) {
         super(table, name, remarks, referencedKey, deleteRule, updateRule, deferability, persisted);
+    }
+
+    public boolean refersToTable(SQLiteTable table) {
+        GenericTableBase referencedTable = getReferencedTable();
+        return Objects.nonNull(referencedTable) && referencedTable.equals(table);
     }
 }
