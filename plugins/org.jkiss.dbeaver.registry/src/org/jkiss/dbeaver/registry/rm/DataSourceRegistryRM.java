@@ -27,14 +27,13 @@ import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.rm.RMController;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
-import org.jkiss.dbeaver.model.security.SMObjectType;
-import org.jkiss.dbeaver.registry.*;
-import org.jkiss.dbeaver.runtime.DBWorkbench;
-import org.jkiss.utils.CommonUtils;
+import org.jkiss.dbeaver.registry.DataSourceConfigurationManagerBuffer;
+import org.jkiss.dbeaver.registry.DataSourceDescriptor;
+import org.jkiss.dbeaver.registry.DataSourceFolder;
+import org.jkiss.dbeaver.registry.DataSourceRegistry;
 
 import java.nio.charset.StandardCharsets;
 import java.util.List;
-import java.util.Map;
 
 public class DataSourceRegistryRM<T extends DataSourceDescriptor> extends DataSourceRegistry<T> {
     private static final Log log = Log.getLog(DataSourceRegistryRM.class);
@@ -62,24 +61,6 @@ public class DataSourceRegistryRM<T extends DataSourceDescriptor> extends DataSo
     protected void persistDataSourceCreate(@NotNull DBPDataSourceContainer container) {
         if (getProject().isInMemory()) {
             return;
-        }
-        try {
-            Map<String, Object> objectSettings = rmController.getObjectSettings(
-                getRemoteProjectId(),
-                SMObjectType.project,
-                //fixme should be users default team
-                DBWorkbench.getPlatform().getWorkspace().getWorkspaceSession().getSessionPrincipal().getUserName(),
-                DataSourceNavigatorSettings.getSettingsKeySet()
-            );
-            if(!CommonUtils.isEmpty(objectSettings)) {
-                DataSourceNavigatorSettings dataSourceNavigatorSettings = new DataSourceNavigatorSettings();
-                dataSourceNavigatorSettings.loadSettings(objectSettings);
-                container.setNavigatorSettings(dataSourceNavigatorSettings);
-            }
-            lastError = null;
-        } catch (Exception e) {
-            lastError = e;
-            log.error("Unexpected error while trying to get default navigator settings for datasource saving", e);
         }
 
         DataSourceConfigurationManagerBuffer buffer = new DataSourceConfigurationManagerBuffer();

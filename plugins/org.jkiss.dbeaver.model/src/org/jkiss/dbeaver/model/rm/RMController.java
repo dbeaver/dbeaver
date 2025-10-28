@@ -21,11 +21,9 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPObjectController;
 import org.jkiss.dbeaver.model.app.DBPPingController;
-import org.jkiss.dbeaver.model.security.SMObjectType;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 /**
  * Resource manager API.
@@ -238,13 +236,4 @@ public interface RMController extends DBPObjectController, DBPPingController {
         @NotNull String resourcePath,
         @NotNull Map<String, Object> properties
     ) throws DBException;
-
-    @NotNull
-    Map<String, Object> getObjectSettings(
-        @NotNull String objectId,
-        @NotNull SMObjectType objectType,
-        @NotNull String subjectId,
-        @Nullable Set<String> settingIds
-    ) throws DBException;
-
 }
