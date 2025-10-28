@@ -1185,7 +1185,7 @@ public class SQLEditor extends SQLEditorBase implements
     }
 
     protected boolean canProcessQueries() {
-        if (ApplicationPolicyProvider.getInstance().isPolicyEnabled(ApplicationPolicyProvider.POLICY_SQL_EXECUTE)) {
+        if (ApplicationPolicyProvider.getInstance().isPolicyEnabled(ApplicationPolicyProvider.POLICY_SQL_EXECUTION)) {
             UIUtils.showMessageBox(
                 getSite().getShell(),
                 UIMessages.dialog_policy_sql_execution_title,
@@ -2754,10 +2754,6 @@ public class SQLEditor extends SQLEditorBase implements
         boolean newTab, boolean script, boolean executeFromPosition, SQLQueryTransformer transformer,
         @Nullable SQLQueryListener queryListener
     ) {
-        if (!canProcessQueries()) {
-            return false;
-        }
-
         IDocument document = getDocument();
         if (document == null) {
             setStatus(SQLEditorMessages.editors_sql_status_cant_obtain_document, DBPMessageType.ERROR);
@@ -2871,6 +2867,9 @@ public class SQLEditor extends SQLEditorBase implements
     ) {
         if (queries.isEmpty()) {
             // Nothing to process
+            return false;
+        }
+        if (!canProcessQueries()) {
             return false;
         }
 
