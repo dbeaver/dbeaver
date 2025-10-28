@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.connection.DBPNativeClientLocation;
+import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.meta.ComponentReference;
 import org.jkiss.dbeaver.model.runtime.*;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -45,6 +46,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.net.*;
 import java.nio.file.Path;
+import java.text.MessageFormat;
 import java.text.SimpleDateFormat;
 import java.time.Duration;
 import java.util.*;
@@ -212,6 +214,32 @@ public final class RuntimeUtils {
         } else {
             return String.format("%d.%ds", seconds, millis / 100);
         }
+    }
+
+    @NotNull
+    public static String formatDuration(@NotNull Duration duration) {
+        StringJoiner joiner = new StringJoiner(", ");
+
+        long hours = duration.toHours();
+        if (hours > 0) {
+            joiner.add(Lazy.DURATION_HOURS_FORMAT.format(new Object[]{hours}));
+        }
+
+        int minutes = duration.toMinutesPart();
+        if (minutes > 0) {
+            joiner.add(Lazy.DURATION_MINUTES_FORMAT.format(new Object[]{minutes}));
+        }
+
+        int seconds = duration.toSecondsPart();
+        if (seconds > 0) {
+            joiner.add(Lazy.DURATION_SECONDS_FORMAT.format(new Object[]{seconds}));
+        }
+
+        if (joiner.length() == 0) {
+            joiner.add(Lazy.DURATION_MILLISECONDS_FORMAT.format(new Object[]{duration.toMillis()}));
+        }
+
+        return joiner.toString();
     }
 
     @NotNull
@@ -782,6 +810,16 @@ public final class RuntimeUtils {
             } finally {
                 finished = true;
             }
+        }
+    }
+
+    private static class Lazy {
+        static final MessageFormat DURATION_HOURS_FORMAT = new MessageFormat(ModelMessages.duration_hours);
+        static final MessageFormat DURATION_MINUTES_FORMAT = new MessageFormat(ModelMessages.duration_minutes);
+        static final MessageFormat DURATION_SECONDS_FORMAT = new MessageFormat(ModelMessages.duration_seconds);
+        static final MessageFormat DURATION_MILLISECONDS_FORMAT = new MessageFormat(ModelMessages.duration_milliseconds);
+
+        private Lazy() {
         }
     }
 }

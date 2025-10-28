@@ -19,26 +19,37 @@ package org.jkiss.dbeaver.ui.controls;
 import org.eclipse.swt.widgets.Composite;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 
-/**
- * ConfigurationFileSelector
- */
 public class ConfigurationFileSelector extends TextWithOpenFile {
 
+    private final boolean allowFileContentEditor;
+
     public ConfigurationFileSelector(Composite parent, String title, String[] filterExt) {
-        super(parent, title, filterExt);
+        this(parent, title, filterExt, false, false, true);
     }
 
     public ConfigurationFileSelector(Composite parent, String title, String[] filterExt, boolean binaryFile) {
-        super(parent, title, filterExt, binaryFile);
+        this(parent, title, filterExt, binaryFile, false, true);
     }
 
     public ConfigurationFileSelector(Composite parent, String title, String[] filterExt, boolean binaryFile, boolean secured) {
+        this(parent, title, filterExt, binaryFile, secured, true);
+    }
+
+    public ConfigurationFileSelector(
+        Composite parent,
+        String title,
+        String[] filterExt,
+        boolean binaryFile,
+        boolean secured,
+        boolean allowFileContentEditor
+    ) {
         super(parent, title, filterExt, binaryFile, secured);
+        this.allowFileContentEditor = allowFileContentEditor;
     }
 
     @Override
     protected boolean isShowFileContentEditor() {
-        return DBWorkbench.isDistributed();
+        return DBWorkbench.isDistributed() && allowFileContentEditor;
     }
 
 }

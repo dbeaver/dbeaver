@@ -136,7 +136,7 @@ public class GenericExecutionContext extends JDBCExecutionContext implements DBC
         }
     }
 
-    void initDefaultsFrom(DBRProgressMonitor monitor, GenericExecutionContext context) throws DBCException {
+    public void initDefaultsFrom(DBRProgressMonitor monitor, GenericExecutionContext context) throws DBCException {
         GenericCatalog defaultCatalog = context.getDefaultCatalog();
         String entityName = null;
         if (defaultCatalog != null && context.supportsCatalogChange()) {
