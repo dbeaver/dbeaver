@@ -27,7 +27,11 @@ import org.jkiss.code.Nullable;
  *  - error: execution error will be shown in UI
  */
 public class SQLControlResult {
+
     private final boolean isSuccess;
+
+    @Nullable
+    private SQLScriptElement transformed;
 
     @NotNull
     public static SQLControlResult success() {
@@ -43,9 +47,6 @@ public class SQLControlResult {
     public static SQLControlResult transform(@NotNull SQLScriptElement element) {
         return new SQLControlResult(element, true);
     }
-
-    @Nullable
-    private SQLScriptElement transformed;
 
 
     private SQLControlResult(boolean isSuccess) {

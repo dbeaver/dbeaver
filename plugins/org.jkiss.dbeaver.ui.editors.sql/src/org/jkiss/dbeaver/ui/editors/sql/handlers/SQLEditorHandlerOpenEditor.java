@@ -274,19 +274,28 @@ public class SQLEditorHandlerOpenEditor extends AbstractDataSourceHandler {
         return openSQLConsole(workbenchWindow, context, sqlInput);
     }
 
-    public static SQLEditor openSQLConsole(IWorkbenchWindow workbenchWindow, SQLNavigatorContext context, IEditorInput sqlInput) {
+    public static SQLEditor openSQLConsole(
+        @NotNull IWorkbenchWindow workbenchWindow,
+        @NotNull SQLNavigatorContext context,
+        @NotNull IEditorInput sqlInput
+    ) {
         EditorUtils.setInputDataSource(sqlInput, context);
         return openSQLEditor(workbenchWindow, sqlInput);
     }
 
-    public static SQLEditor openUniqueSQLConsole(IWorkbenchWindow workbenchWindow, SQLNavigatorContext context, IEditorInput sqlInput) {
+    public static SQLEditor openUniqueSQLConsole(
+        @NotNull IWorkbenchWindow workbenchWindow,
+        @NotNull SQLNavigatorContext context,
+        @NotNull IEditorInput sqlInput
+    ) {
         EditorUtils.setInputDataSource(sqlInput, context);
         return openSQLEditor(workbenchWindow, sqlInput, IWorkbenchPage.MATCH_NONE);
     }
 
     private static SQLEditor openSQLEditor(
-        IWorkbenchWindow workbenchWindow,
-        IEditorInput sqlInput) {
+        @NotNull IWorkbenchWindow workbenchWindow,
+        @NotNull IEditorInput sqlInput
+    ) {
         boolean isConsole = sqlInput instanceof INonPersistentEditorInput;
         return openSQLEditor(
             workbenchWindow,
@@ -296,8 +305,8 @@ public class SQLEditorHandlerOpenEditor extends AbstractDataSourceHandler {
     }
 
     private static SQLEditor openSQLEditor(
-        IWorkbenchWindow workbenchWindow,
-        IEditorInput sqlInput,
+        @NotNull IWorkbenchWindow workbenchWindow,
+        @NotNull IEditorInput sqlInput,
         int iworkbenchPage
     ) {
         try {
