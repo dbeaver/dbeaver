@@ -39,7 +39,6 @@ import org.jkiss.dbeaver.model.ai.engine.openai.OpenAIModels;
 import org.jkiss.dbeaver.model.ai.engine.openai.OpenAIProperties;
 import org.jkiss.dbeaver.model.ai.registry.AIEngineDescriptor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.ui.IObjectPropertyConfigurator;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.ai.internal.AIUIMessages;
 import org.jkiss.dbeaver.ui.ai.model.CachedValue;
