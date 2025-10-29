@@ -129,4 +129,72 @@ public class SMAuthProviderCustomConfiguration {
     public SMAuthConfigurationReference getAuthConfigurationReference() {
         return new SMAuthConfigurationReference(getProvider(), getId());
     }
+
+    public static SMAuthProviderCustomConfigurationBuilder builder() {
+        return SMAuthProviderCustomConfigurationBuilder.aSMAuthProviderCustomConfiguration();
+    }
+
+    public static final class SMAuthProviderCustomConfigurationBuilder {
+        private String description;
+        private String id;
+        private String provider;
+        private String displayName;
+        private boolean disabled;
+        private String iconURL;
+        private Map<String, Object> parameters;
+
+        private SMAuthProviderCustomConfigurationBuilder() {
+        }
+
+        public static SMAuthProviderCustomConfigurationBuilder aSMAuthProviderCustomConfiguration() {
+            return new SMAuthProviderCustomConfigurationBuilder();
+        }
+
+        public SMAuthProviderCustomConfigurationBuilder description(String description) {
+            this.description = description;
+            return this;
+        }
+
+        public SMAuthProviderCustomConfigurationBuilder id(String id) {
+            this.id = id;
+            return this;
+        }
+
+        public SMAuthProviderCustomConfigurationBuilder provider(String provider) {
+            this.provider = provider;
+            return this;
+        }
+
+        public SMAuthProviderCustomConfigurationBuilder displayName(String displayName) {
+            this.displayName = displayName;
+            return this;
+        }
+
+        public SMAuthProviderCustomConfigurationBuilder disabled(boolean disabled) {
+            this.disabled = disabled;
+            return this;
+        }
+
+        public SMAuthProviderCustomConfigurationBuilder iconURL(String iconURL) {
+            this.iconURL = iconURL;
+            return this;
+        }
+
+        public SMAuthProviderCustomConfigurationBuilder parameters(Map<String, Object> parameters) {
+            this.parameters = parameters;
+            return this;
+        }
+
+        public SMAuthProviderCustomConfiguration build() {
+            SMAuthProviderCustomConfiguration sMAuthProviderCustomConfiguration = new SMAuthProviderCustomConfiguration();
+            sMAuthProviderCustomConfiguration.setDescription(description);
+            sMAuthProviderCustomConfiguration.setId(id);
+            sMAuthProviderCustomConfiguration.setProvider(provider);
+            sMAuthProviderCustomConfiguration.setDisplayName(displayName);
+            sMAuthProviderCustomConfiguration.setDisabled(disabled);
+            sMAuthProviderCustomConfiguration.setIconURL(iconURL);
+            sMAuthProviderCustomConfiguration.setParameters(parameters);
+            return sMAuthProviderCustomConfiguration;
+        }
+    }
 }
