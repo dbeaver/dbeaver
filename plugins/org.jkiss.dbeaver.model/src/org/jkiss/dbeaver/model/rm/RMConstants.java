@@ -41,6 +41,10 @@ public interface RMConstants {
     String PERMISSION_DATABASE_DEVELOPER = "database-developer";
     String PERMISSION_METADATA_EDITOR = "metadata-editor";
     String PERMISSION_SQL_GENERATOR = "sql-generator";
-    String GLOBAL_PERMISSION_DATA_EDITOR_COPY = "permission.data-editor.copy";
-    String GLOBAL_PERMISSION_DATA_EDITOR_EXPORT = "permission.data-editor.export";
+
+    String PERMISSION_SQL_SCRIPT_EXECUTION = "permission.sql.script.execution";
+    String PERMISSION_DATA_EDITOR_IMPORT = "permission.data-editor.import";
+    String PERMISSION_DATA_EDITOR_COPY = "permission.data-editor.copy";
+    String PERMISSION_DATA_EDITOR_EXPORT = "permission.data-editor.export";
+    String PERMISSION_DATA_EDITOR_EDITING = "permission.data-editor.editing";
 }

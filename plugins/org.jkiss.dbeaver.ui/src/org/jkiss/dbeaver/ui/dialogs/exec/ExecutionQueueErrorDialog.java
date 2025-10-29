@@ -21,6 +21,7 @@ import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Shell;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ui.dialogs.StandardErrorDialog;
 import org.jkiss.dbeaver.ui.internal.UIMessages;
 
@@ -29,13 +30,13 @@ import org.jkiss.dbeaver.ui.internal.UIMessages;
  */
 class ExecutionQueueErrorDialog extends StandardErrorDialog {
 
-    private boolean script;
+    private final boolean script;
 
     public ExecutionQueueErrorDialog(
-        Shell parentShell,
-        String dialogTitle,
-        String message,
-        IStatus status,
+        @NotNull Shell parentShell,
+        @NotNull String dialogTitle,
+        @Nullable String message,
+        @NotNull IStatus status,
         int displayMask,
         boolean script)
     {
@@ -68,7 +69,6 @@ class ExecutionQueueErrorDialog extends StandardErrorDialog {
                 UIMessages.button_skip_all,
                 false);
         }
-        createDetailsButton(parent);
     }
 
     @Override
