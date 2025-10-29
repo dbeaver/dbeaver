@@ -145,15 +145,20 @@ public class SQLCommandInclude implements SQLControlCommandHandler {
         for (IWorkbenchWindow window : PlatformUI.getWorkbench().getWorkbenchWindows()) {
             for (IWorkbenchPage page : window.getPages()) {
                 for (IEditorReference editorReference : page.getEditorReferences()) {
-                    if (editorReference.getEditorInput() instanceof IncludedEditorInput includeInput) {
-                        if (includeInput.getIncFile().toAbsolutePath().toString().equals(finalIncFile.toAbsolutePath().toString())) {
+                    if (isEditorForSameIncludedScript(editorReference, finalIncFile)) {
                             UIUtils.syncExec(
                                 () -> page.closeEditor(editorReference.getEditor(false), false));
-                        }
+
                     }
                 }
             }
         }
+    }
+
+    private boolean isEditorForSameIncludedScript(@NotNull IEditorReference editorReference, @NotNull Path finalIncFile)
+    throws PartInitException {
+        return editorReference.getEditorInput() instanceof IncludedEditorInput includeInput
+            && includeInput.getIncFile().toAbsolutePath().toString().equals(finalIncFile.toAbsolutePath().toString());
     }
 
     private static class IncludeScriptListener implements SQLQueryListener {
