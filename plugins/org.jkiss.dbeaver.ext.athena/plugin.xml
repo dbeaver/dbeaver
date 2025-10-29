@@ -23,7 +23,7 @@
                         label="Athena"
                         icon="icons/athena_icon.png"
                         iconBig="icons/athena_icon_big.png"
-                        class="com.simba.athena.jdbc.Driver"
+                        class="com.amazon.athena.jdbc.AthenaDriver"
                         sampleURL="jdbc:athena://AWSRegion={region};"
                         defaultPort="444"
                         customEndpoint="true"
