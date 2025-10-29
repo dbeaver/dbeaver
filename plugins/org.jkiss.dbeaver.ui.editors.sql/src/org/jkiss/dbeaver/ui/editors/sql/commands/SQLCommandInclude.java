@@ -16,12 +16,8 @@
  */
 package org.jkiss.dbeaver.ui.editors.sql.commands;
 
-import org.eclipse.core.resources.IFile;
-import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.ui.*;
-import org.eclipse.ui.part.FileEditorInput;
 import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -31,7 +27,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.*;
 import org.jkiss.dbeaver.model.sql.eval.ScriptVariablesResolver;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.editors.IInMemoryEditorInput;
+import org.jkiss.dbeaver.ui.editors.IncludedEditorInput;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditor;
 import org.jkiss.dbeaver.ui.editors.sql.SQLPreferenceConstants;
 import org.jkiss.dbeaver.ui.editors.sql.handlers.SQLEditorHandlerOpenEditor;
@@ -39,11 +35,8 @@ import org.jkiss.dbeaver.ui.editors.sql.handlers.SQLNavigatorContext;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
-import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
@@ -139,7 +132,7 @@ public class SQLCommandInclude implements SQLControlCommandHandler {
         @NotNull Path finalIncFile,
         @NotNull IWorkbenchWindow workbenchWindow
     ) {
-        final IncludeEditorInput input = new IncludeEditorInput(finalIncFile);
+        final IncludedEditorInput input = IncludedEditorInput.of(finalIncFile);
         SQLEditor sqlEditor = SQLEditorHandlerOpenEditor.openUniqueSQLConsole(
             workbenchWindow,
                 new SQLNavigatorContext(scriptContext, true),
@@ -152,8 +145,8 @@ public class SQLCommandInclude implements SQLControlCommandHandler {
         for (IWorkbenchWindow window : PlatformUI.getWorkbench().getWorkbenchWindows()) {
             for (IWorkbenchPage page : window.getPages()) {
                 for (IEditorReference editorReference : page.getEditorReferences()) {
-                    if (editorReference.getEditorInput() instanceof IncludeEditorInput includeInput) {
-                        if (includeInput.incFile.toAbsolutePath().toString().equals(finalIncFile.toAbsolutePath().toString())) {
+                    if (editorReference.getEditorInput() instanceof IncludedEditorInput includeInput) {
+                        if (includeInput.getIncFile().toAbsolutePath().toString().equals(finalIncFile.toAbsolutePath().toString())) {
                             UIUtils.syncExec(
                                 () -> page.closeEditor(editorReference.getEditor(false), false));
                         }
@@ -210,36 +203,4 @@ public class SQLCommandInclude implements SQLControlCommandHandler {
         }
     }
 
-    private static class IncludeEditorInput extends FileEditorInput implements IInMemoryEditorInput {
-
-        private final Path incFile;
-
-        private final Map<String, Object> properties = new HashMap<>();
-
-        IncludeEditorInput(Path incFile) {
-            super(getFile(incFile));
-            this.incFile = incFile;
-        }
-
-        private static IFile getFile(Path pathToFile) {
-            return ResourcesPlugin.getWorkspace().getRoot()
-                .getFileForLocation(org.eclipse.core.runtime.Path.fromOSString(pathToFile.toString()));
-        }
-
-        @Override
-        public URI getURI() {
-            return incFile.toUri();
-        }
-
-        @Nullable
-        @Override
-        public Object getProperty(@NotNull String name) {
-            return properties.get(name);
-        }
-
-        @Override
-        public void setProperty(@NotNull String name, @Nullable Object value) {
-            properties.put(name, value);
-        }
-    }
 }
