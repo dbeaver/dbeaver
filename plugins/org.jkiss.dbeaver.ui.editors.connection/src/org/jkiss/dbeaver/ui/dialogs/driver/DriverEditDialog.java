@@ -914,10 +914,6 @@ public class DriverEditDialog extends HelpEnabledDialog {
             return;
         }
 
-        if (oldDriver != null) {
-            driver.resetDriverInstance();
-        }
-
         super.okPressed();
     }
 
