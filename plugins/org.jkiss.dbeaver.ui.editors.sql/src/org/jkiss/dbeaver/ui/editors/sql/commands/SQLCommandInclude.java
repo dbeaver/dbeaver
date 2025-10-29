@@ -195,7 +195,7 @@ public class SQLCommandInclude implements SQLControlCommandHandler {
 
         @Override
         public void onEndSqlJob(DBCSession session, SqlJobResult result) {
-            this.result.complete(result.equals(SqlJobResult.SUCCESS) ? SQLControlResult.failure() : SQLControlResult.success());
+            this.result.complete(result.equals(SqlJobResult.SUCCESS) ? SQLControlResult.success() : SQLControlResult.failure());
         }
 
         private boolean isShouldCloseIncludedScript(boolean hasErrors) {
