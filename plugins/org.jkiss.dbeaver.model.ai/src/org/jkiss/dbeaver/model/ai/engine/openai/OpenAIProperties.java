@@ -68,7 +68,7 @@ public class OpenAIProperties implements OpenAIBaseProperties {
 
     @NotNull
     @Override
-    @Property(order = 2, id = GPT_BASE_URL)
+    @Property(order = 2)
     public String getBaseUrl() {
         if (baseUrl == null || baseUrl.isEmpty()) {
             return OpenAIClient.OPENAI_ENDPOINT;
@@ -82,7 +82,7 @@ public class OpenAIProperties implements OpenAIBaseProperties {
 
     @Nullable
     @Override
-    @Property(order = 1, id = GPT_TOKEN, password = true)
+    @Property(order = 1, password = true)
     public String getToken() {
         return token;
     }
@@ -93,7 +93,7 @@ public class OpenAIProperties implements OpenAIBaseProperties {
 
     @Nullable
     @Override
-    @Property(order = 3, id = GPT_MODEL, listProvider = OpenAIModelListProvider.class)
+    @Property(order = 3, listProvider = OpenAIModelListProvider.class)
     public String getModel() {
         if (model != null) {
             return OpenAIModels.getEffectiveModelName(model);
@@ -126,7 +126,7 @@ public class OpenAIProperties implements OpenAIBaseProperties {
     }
 
     @Override
-    @Property(order = 5, id = GPT_LOG_QUERY)
+    @Property(order = 5)
     public boolean isLoggingEnabled() {
         if (loggingEnabled != null) {
             return loggingEnabled;
