@@ -424,6 +424,7 @@ public class OracleSchema extends OracleGlobalObject implements
         return OracleTable.class;
     }
 
+    @NotNull
     @Override
     public List<DBSObjectContainer> getPublicScopes(@NotNull DBRProgressMonitor monitor) {
         return List.of(this.getDataSource().getPublicSchema());

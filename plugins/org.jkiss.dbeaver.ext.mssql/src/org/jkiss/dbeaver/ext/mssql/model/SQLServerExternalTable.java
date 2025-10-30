@@ -136,7 +136,7 @@ public class SQLServerExternalTable extends SQLServerTableBase {
 
     public static class AdditionalInfoValidator implements IPropertyCacheValidator<SQLServerExternalTable> {
         @Override
-        public boolean isPropertyCached(SQLServerExternalTable object, Object propertyId) {
+        public boolean isPropertyCached(@NotNull SQLServerExternalTable object, @NotNull Object propertyId) {
             return object.additionalInfo.loaded;
         }
     }

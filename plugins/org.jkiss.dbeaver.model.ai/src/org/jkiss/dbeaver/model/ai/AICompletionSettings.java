@@ -85,7 +85,7 @@ public class AICompletionSettings extends AIContextSettings {
         settings.scope = CommonUtils.valueOf(
             AIDatabaseScope.class,
             preferenceStore.getString(getParameterName(AI_META_SCOPE)),
-            AIDatabaseScope.CURRENT_SCHEMA);
+            null);
         String csString = preferenceStore.getString(getParameterName(AI_META_CUSTOM));
         settings.objects = CommonUtils.isEmpty(csString) ? new String[0] : csString.split(",");
     }

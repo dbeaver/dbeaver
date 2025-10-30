@@ -327,7 +327,7 @@ public class MetaDataPanel extends ResultSetPanelBase {
         }
 
         @Override
-        public Collection<DBDAttributeBinding> evaluate(DBRProgressMonitor monitor) {
+        public Collection<DBDAttributeBinding> evaluate(@NotNull DBRProgressMonitor monitor) {
             return curAttributes;
         }
     }

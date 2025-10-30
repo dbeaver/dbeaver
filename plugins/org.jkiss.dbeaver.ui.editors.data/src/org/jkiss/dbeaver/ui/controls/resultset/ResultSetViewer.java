@@ -108,6 +108,7 @@ import org.jkiss.dbeaver.ui.data.IValueController;
 import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
 import org.jkiss.dbeaver.ui.editors.data.internal.DataEditorsMessages;
 import org.jkiss.dbeaver.ui.editors.data.preferences.PrefPageResultSetMain;
+import org.jkiss.dbeaver.ui.internal.UIMessages;
 import org.jkiss.dbeaver.ui.navigator.NavigatorCommands;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.PrefUtils;
@@ -121,8 +122,8 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
-import java.util.List;
 import java.util.*;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 /**
@@ -1880,7 +1881,9 @@ public class ResultSetViewer extends Viewer
         }
         final IMenuService menuService = getSite().getService(IMenuService.class);
 
-        if (CommonUtils.isBitSet(decorator.getDecoratorFeatures(), IResultSetDecorator.FEATURE_EDIT)) {
+        if (CommonUtils.isBitSet(decorator.getDecoratorFeatures(), IResultSetDecorator.FEATURE_EDIT) &&
+            !ApplicationPolicyProvider.getInstance().isPolicyEnabled(ApplicationPolicyProvider.POLICY_DATA_EDIT)
+        ) {
             ToolBarManager editToolBarManager = new ToolBarManager(SWT.FLAT | SWT.HORIZONTAL | SWT.RIGHT);
             menuService.populateContributionManager(editToolBarManager, TOOLBAR_EDIT_CONTRIBUTION_ID);
             ToolBar editorToolBar = editToolBarManager.createControl(statusBar);
@@ -1968,7 +1971,7 @@ public class ResultSetViewer extends Viewer
                 protected ILoadService<String> createLoadService() {
                     return new DatabaseLoadService<>("Load row count", getExecutionContext()) {
                         @Override
-                        public String evaluate(DBRProgressMonitor monitor) throws InvocationTargetException {
+                        public String evaluate(@NotNull DBRProgressMonitor monitor) throws InvocationTargetException {
                             try {
                                 long rowCount = readRowCount(monitor);
                                 return ROW_COUNT_FORMAT.format(rowCount);
@@ -1984,13 +1987,12 @@ public class ResultSetViewer extends Viewer
             CSSUtils.markConnectionTypeColor(rowCountLabel);
             rowCountLabel.setMessage("Row Count");
             rowCountLabel.setToolTipText("Calculates total row count in the current dataset");
-            Label separator = new Label(statusBar, SWT.NONE);
-            separator.setImage(DBeaverIcons.getImage(UIIcon.SEPARATOR_V));
-            CSSUtils.markConnectionTypeColor(separator);
+            //Label separator = new Label(statusBar, SWT.NONE);
+            //separator.setImage(DBeaverIcons.getImage(UIIcon.SEPARATOR_V));
+            //CSSUtils.markConnectionTypeColor(separator);
 
             selectionStatLabel = new Text(statusBar, SWT.READ_ONLY);
             selectionStatLabel.setToolTipText(ResultSetMessages.result_set_viewer_selection_stat_tooltip);
-            CSSUtils.markConnectionTypeColor(selectionStatLabel);
             selectionStatLabel.setText(" ");
 
 //            Label filler = new Label(statusComposite, SWT.NONE);
@@ -2003,7 +2005,6 @@ public class ResultSetViewer extends Viewer
                 RowData rd = new RowData();
                 rd.width = 50 * fontHeight;
                 statusLabel.setLayoutData(rd);
-                CSSUtils.markConnectionTypeColor(statusLabel);
             }
         }
 
@@ -2159,9 +2160,13 @@ public class ResultSetViewer extends Viewer
         }
         boolean newRow = (curRow != null && curRow.getState() == ResultSetRow.STATE_ADDED);
         if (!newRow) {
-            return DBExecUtils.getAttributeReadOnlyStatus(
-                attr,
-                checkKey);
+            String status = DBExecUtils.getAttributeReadOnlyStatus(attr, checkKey);
+            if (status != null) {
+                return status;
+            }
+        }
+        if (ApplicationPolicyProvider.getInstance().isPolicyEnabled(ApplicationPolicyProvider.POLICY_DATA_EDIT)) {
+            return UIMessages.dialog_policy_data_edit_msg;
         }
         return null;
     }
@@ -2657,8 +2662,10 @@ public class ResultSetViewer extends Viewer
     }
 
     @Override
-    public boolean isReadOnly()
-    {
+    public boolean isReadOnly() {
+        if (ApplicationPolicyProvider.getInstance().isPolicyEnabled(ApplicationPolicyProvider.POLICY_DATA_EDIT)) {
+            return true;
+        }
         if (model.isUpdateInProgress() || !(activePresentation instanceof IResultSetEditor) ||
             (decorator.getDecoratorFeatures() & IResultSetDecorator.FEATURE_EDIT) == 0)
         {
