@@ -16,11 +16,6 @@
  */
 package org.jkiss.dbeaver.model.ai;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.Strictness;
-import com.google.gson.ToNumberPolicy;
-import com.google.gson.reflect.TypeToken;
 import org.eclipse.core.runtime.IAdaptable;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
@@ -30,7 +25,6 @@ import org.jkiss.dbeaver.model.ai.registry.AIEngineDescriptor;
 import org.jkiss.dbeaver.model.ai.registry.AIEngineRegistry;
 import org.jkiss.dbeaver.model.ai.registry.AISettingsManager;
 
-import java.lang.reflect.Type;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -97,22 +91,6 @@ public class AISettings implements IAdaptable {
 
     public void disableFunctionCategory(@NotNull String category) {
         enabledFunctionCategories.remove(category);
-    }
-
-    private static final Gson GSON = new GsonBuilder()
-        .setStrictness(Strictness.LENIENT)
-        .setObjectToNumberStrategy(ToNumberPolicy.LONG_OR_DOUBLE)
-        .create();
-
-    public static AIEngineProperties updatePropertiesFromMap(AIEngineProperties configuration, Map<String, Object> properties) {
-        Type type = new TypeToken<Map<String, Object>>() {
-        }.getType();
-
-        Map<String, Object> propMap = GSON.fromJson(GSON.toJson(configuration), type);
-        Map<String, Object> mergedMap = new LinkedHashMap<>(propMap);
-        mergedMap.putAll(properties);
-
-        return GSON.fromJson(GSON.toJsonTree(mergedMap), configuration.getClass());
     }
 
     public boolean isAiDisabled() {
