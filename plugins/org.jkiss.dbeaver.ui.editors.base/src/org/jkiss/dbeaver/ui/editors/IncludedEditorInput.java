@@ -19,6 +19,8 @@ package org.jkiss.dbeaver.ui.editors;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.ui.part.FileEditorInput;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 
 import java.net.URI;
 import java.nio.file.Path;
@@ -28,34 +30,37 @@ public class IncludedEditorInput extends FileEditorInput {
     private final Path incFile;
     private DatabaseEditorContext databaseEditorContext;
 
-    private IncludedEditorInput(IFile incIFile, Path incFile) {
+    private IncludedEditorInput(@NotNull IFile incIFile, @NotNull Path incFile) {
         super(incIFile);
         this.incFile = incFile;
     }
 
-    public static IncludedEditorInput of(Path incFile) {
+    public static IncludedEditorInput of(@NotNull Path incFile) {
         return new IncludedEditorInput(getFile(incFile), incFile);
     }
 
-    private static IFile getFile(Path pathToFile) {
+    private static IFile getFile(@NotNull Path pathToFile) {
         return ResourcesPlugin.getWorkspace().getRoot()
             .getFileForLocation(org.eclipse.core.runtime.Path.fromOSString(pathToFile.toString()));
     }
 
     @Override
+    @NotNull
     public URI getURI() {
         return incFile.toUri();
     }
 
+    @NotNull
     public Path getIncFile() {
         return incFile;
     }
 
+    @Nullable
     public DatabaseEditorContext getDatabaseEditorContext() {
         return databaseEditorContext;
     }
 
-    public void setDatabaseEditorContext(DatabaseEditorContext databaseEditorContext) {
+    public void setDatabaseEditorContext(@Nullable DatabaseEditorContext databaseEditorContext) {
         this.databaseEditorContext = databaseEditorContext;
     }
 }
