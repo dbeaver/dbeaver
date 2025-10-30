@@ -95,7 +95,9 @@ import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.model.struct.DBSInstance;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectState;
+import org.jkiss.dbeaver.registry.ApplicationPolicyProvider;
 import org.jkiss.dbeaver.registry.DataSourceUtils;
+import org.jkiss.dbeaver.registry.confirmation.ConfirmationConstants;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.jobs.DataSourceMonitorJob;
 import org.jkiss.dbeaver.runtime.ui.DBPPlatformUI.UserChoiceResponse;
@@ -135,6 +137,7 @@ import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLEditorCompletionContext;
 import org.jkiss.dbeaver.ui.editors.sql.variables.AssignVariableAction;
 import org.jkiss.dbeaver.ui.editors.sql.variables.SQLVariablesPanel;
 import org.jkiss.dbeaver.ui.editors.text.ScriptPositionColumn;
+import org.jkiss.dbeaver.ui.internal.UIMessages;
 import org.jkiss.dbeaver.ui.navigator.INavigatorModelView;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.PrefUtils;
@@ -150,8 +153,8 @@ import java.net.URI;
 import java.nio.file.Path;
 import java.text.SimpleDateFormat;
 import java.time.Duration;
-import java.util.List;
 import java.util.*;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 import java.util.regex.Matcher;
@@ -1180,6 +1183,19 @@ public class SQLEditor extends SQLEditorBase implements
 
     protected boolean isHideQueryText() {
         return false;
+    }
+
+    protected boolean canProcessQueries() {
+        if (ApplicationPolicyProvider.getInstance().isPolicyEnabled(ApplicationPolicyProvider.POLICY_SQL_EXECUTION)) {
+            UIUtils.showMessageBox(
+                getSite().getShell(),
+                UIMessages.dialog_policy_sql_execution_title,
+                UIMessages.dialog_policy_sql_execution_msg,
+                SWT.ICON_WARNING
+            );
+            return false;
+        }
+        return true;
     }
 
     private void onTextChange(ModifyEvent e) {
@@ -2590,6 +2606,10 @@ public class SQLEditor extends SQLEditorBase implements
     }
 
     public void explainQueryPlan() {
+        if (!canProcessQueries()) {
+            return;
+        }
+
         // Notify listeners
         synchronized (listeners) {
             for (SQLEditorListener listener : listeners) {
@@ -2850,6 +2870,9 @@ public class SQLEditor extends SQLEditorBase implements
             // Nothing to process
             return false;
         }
+        if (!canProcessQueries()) {
+            return false;
+        }
 
         final DBPDataSourceContainer container = getDataSourceContainer();
         if (checkSession) {
@@ -2919,7 +2942,7 @@ public class SQLEditor extends SQLEditorBase implements
                 if (ConfirmationDialog.confirmAction(
                     getSite().getShell(),
                     ConfirmationDialog.WARNING,
-                    isDropTable ? SQLPreferenceConstants.CONFIRM_DROP_SQL : SQLPreferenceConstants.CONFIRM_DANGER_SQL,
+                    isDropTable ? ConfirmationConstants.CONFIRM_DROP_SQL : ConfirmationConstants.CONFIRM_DANGER_SQL,
                     ConfirmationDialog.CONFIRM,
                     query.getType().name(),
                     targetName
@@ -3468,14 +3491,6 @@ public class SQLEditor extends SQLEditorBase implements
                 }
             );
         }
-    }
-
-    public boolean hasOnlyEmptyResultViews() {
-        return this.queryProcessors.isEmpty() || (
-            this.queryProcessors.stream().allMatch(qp -> qp.resultContainers.isEmpty() || (
-                qp.resultContainers.stream().allMatch(rc -> !rc.viewer.hasData())
-            ))
-        );
     }
 
     private boolean isContextChanged(DBPEvent event) {

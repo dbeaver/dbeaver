@@ -53,13 +53,22 @@
             <description>Custom connections format (CSV, XML)</description>
         </wizard>
         <wizard
-                category="org.jkiss.dbeaver.config.migration.third-party"
-                class="org.jkiss.dbeaver.ui.config.migration.wizards.sqlworkbench.ConfigImportWizardSqlWorkbench"
-                id="org.jkiss.dbeaver.config.migration.sqlworkbench"
-                name="MySQL Workbench"
-                icon="icons/mysql_workbench.png">
+            category="org.jkiss.dbeaver.config.migration.third-party"
+            class="org.jkiss.dbeaver.ui.config.migration.wizards.sqlworkbench.ConfigImportWizardSqlWorkbench"
+            id="org.jkiss.dbeaver.config.migration.sqlworkbench"
+            name="MySQL Workbench"
+            icon="icons/mysql_workbench.png">
             <description>MySQL Workbench</description>
         </wizard>
+        <wizard
+            category="org.jkiss.dbeaver.config.migration.third-party"
+            class="org.jkiss.dbeaver.ui.config.migration.wizards.datagrip.ConfigImportWizardDataGrip"
+            id="org.jkiss.dbeaver.config.migration.datagrip"
+            name="DataGrip and JetBrains IDEs"
+            icon="icons/idea.png">
+            <description>DataGrip and other JetBrains products</description>
+        </wizard>
+
     </extension>
 
 

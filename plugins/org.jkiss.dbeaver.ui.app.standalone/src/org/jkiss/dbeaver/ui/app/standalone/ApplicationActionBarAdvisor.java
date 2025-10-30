@@ -113,7 +113,7 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
                 patchSearchIcons(actionSet);
             } else {
                 if (ArrayUtils.contains(REDUNTANT_ACTIONS_SETS, actionSet.getId())) {
-                    log.debug("Disable Eclipse action set '" + actionSet.getId() + "'");
+                    log.trace("Disable Eclipse action set '" + actionSet.getId() + "'");
                     IExtension ext = actionSet.getConfigurationElement().getDeclaringExtension();
                     asr.removeExtension(ext, new Object[]{actionSet});
                 }
@@ -161,7 +161,7 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
     protected void makeActions(final IWorkbenchWindow window)
     {
         removeUnWantedActions();
-        log.debug("Create workbench actions");
+        log.trace("Create workbench actions");
 
         register(ActionFactory.SAVE.create(window));
         register(ActionFactory.SAVE_AS.create(window));

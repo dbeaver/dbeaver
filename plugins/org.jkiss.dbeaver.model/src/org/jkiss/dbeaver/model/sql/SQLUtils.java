@@ -1232,4 +1232,59 @@ public final class SQLUtils {
         actualIdentifierString = forceUnquotted ? unquottedIdentifier : dialect.getQuotedIdentifier(unquottedIdentifier, true, false);
         return actualIdentifierString;
     }
+
+    /**
+     * <p>Removes parameter names and preserves type details and nesting.</p>
+     *
+     * <pre>{@code
+     * Input : "(x ARRAY, y OBJECT)"
+     * Output: "(ARRAY, OBJECT)"
+     * }</pre>
+     */
+    public static String extractProcedureParameterTypes(@Nullable String sig) {
+        if (CommonUtils.isEmpty(sig)) {
+            return "()";
+        }
+        String s = sig.trim();
+        if (s.startsWith("(") && s.endsWith(")")) {
+            s = s.substring(1, s.length() - 1).trim();
+        }
+        if (s.isEmpty()) {
+            return "()";
+        }
+        List<String> parts = extractParts(s);
+        List<String> types = new ArrayList<>(parts.size());
+        for (String p : parts) {
+            int spaceIndex = p.lastIndexOf(' ');
+            String type = spaceIndex >= 0 ? p.substring(spaceIndex + 1) : p;
+            types.add(type.toUpperCase());
+        }
+        return "(" + String.join(", ", types) + ")";
+    }
+
+    @NotNull
+    private static List<String> extractParts(String s) {
+        List<String> parts = new ArrayList<>();
+        StringBuilder cur = new StringBuilder();
+        int depth = 0;
+        for (int i = 0; i < s.length(); i++) {
+            char c = s.charAt(i);
+            if (c == '(') {
+                depth++;
+            }
+            if (c == ')') {
+                depth = Math.max(0, depth - 1);
+            }
+            if (c == ',' && depth == 0) {
+                parts.add(cur.toString().trim());
+                cur.setLength(0);
+            } else {
+                cur.append(c);
+            }
+        }
+        if (!cur.isEmpty()) {
+            parts.add(cur.toString().trim());
+        }
+        return parts;
+    }
 }

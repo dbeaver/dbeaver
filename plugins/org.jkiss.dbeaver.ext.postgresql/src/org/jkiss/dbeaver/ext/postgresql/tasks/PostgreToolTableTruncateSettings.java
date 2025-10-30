@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ext.postgresql.tasks;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreTableBase;
 import org.jkiss.dbeaver.ext.postgresql.model.impls.PostgreServerExtensionBase;
 import org.jkiss.dbeaver.model.app.DBPProject;
@@ -102,21 +103,21 @@ public class PostgreToolTableTruncateSettings extends SQLToolExecuteSettings<Pos
 
     public static class PostgreSupportTruncateOptionOnlyValidator implements IPropertyValueValidator<PostgreToolTableTruncateSettings, Object> {
         @Override
-        public boolean isValidValue(PostgreToolTableTruncateSettings settings, Object value) throws IllegalArgumentException {
+        public boolean isValidValue(@NotNull PostgreToolTableTruncateSettings settings, @Nullable Object value) throws IllegalArgumentException {
             return isTruncateModeSupported(settings, PostgreServerExtensionBase.TRUNCATE_TOOL_MODE_SUPPORT_ONLY_ONE_TABLE);
         }
     }
 
     public static class PostgreSupportTruncateOptionIdentityValidator implements IPropertyValueValidator<PostgreToolTableTruncateSettings, Object> {
         @Override
-        public boolean isValidValue(PostgreToolTableTruncateSettings settings, Object value) throws IllegalArgumentException {
+        public boolean isValidValue(@NotNull PostgreToolTableTruncateSettings settings, @Nullable Object value) throws IllegalArgumentException {
             return isTruncateModeSupported(settings, PostgreServerExtensionBase.TRUNCATE_TOOL_MODE_SUPPORT_IDENTITIES);
         }
     }
 
     public static class PostgreSupportTruncateOptionCascadeValidator implements IPropertyValueValidator<PostgreToolTableTruncateSettings, Object> {
         @Override
-        public boolean isValidValue(PostgreToolTableTruncateSettings settings, Object value) throws IllegalArgumentException {
+        public boolean isValidValue(@NotNull PostgreToolTableTruncateSettings settings, @Nullable Object value) throws IllegalArgumentException {
             return isTruncateModeSupported(settings, PostgreServerExtensionBase.TRUNCATE_TOOL_MODE_SUPPORT_CASCADE);
         }
     }
