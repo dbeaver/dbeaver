@@ -32,6 +32,7 @@ public class SMAuthProviderCustomConfiguration {
     private boolean disabled;
     private String iconURL;
     private String description;
+    private boolean isDefault;
     private Map<String, Object> parameters = new LinkedHashMap<>();
 
     private SMAuthProviderCustomConfiguration() {
@@ -44,6 +45,7 @@ public class SMAuthProviderCustomConfiguration {
         this.disabled = src.disabled;
         this.iconURL = src.iconURL;
         this.description = src.description;
+        this.isDefault = src.isDefault;
         this.parameters = new LinkedHashMap<>(src.parameters);
     }
 
@@ -115,6 +117,15 @@ public class SMAuthProviderCustomConfiguration {
         this.parameters = parameters;
     }
 
+    public boolean isDefault() {
+        return isDefault;
+    }
+
+    public void setDefault(boolean aDefault) {
+        isDefault = aDefault;
+    }
+
+
     @Override
     public boolean equals(Object obj) {
         return obj instanceof SMAuthProviderCustomConfiguration &&
@@ -134,6 +145,7 @@ public class SMAuthProviderCustomConfiguration {
         return SMAuthProviderCustomConfigurationBuilder.aSMAuthProviderCustomConfiguration();
     }
 
+
     public static final class SMAuthProviderCustomConfigurationBuilder {
         private String description;
         private String id;
@@ -141,6 +153,7 @@ public class SMAuthProviderCustomConfiguration {
         private String displayName;
         private boolean disabled;
         private String iconURL;
+        private boolean isDefault;
         private Map<String, Object> parameters;
 
         private SMAuthProviderCustomConfigurationBuilder() {
@@ -180,6 +193,11 @@ public class SMAuthProviderCustomConfiguration {
             return this;
         }
 
+        public SMAuthProviderCustomConfigurationBuilder isDefault(boolean isDefault) {
+            this.isDefault = isDefault;
+            return this;
+        }
+
         public SMAuthProviderCustomConfigurationBuilder parameters(Map<String, Object> parameters) {
             this.parameters = parameters;
             return this;
@@ -194,6 +212,7 @@ public class SMAuthProviderCustomConfiguration {
             sMAuthProviderCustomConfiguration.setDisabled(disabled);
             sMAuthProviderCustomConfiguration.setIconURL(iconURL);
             sMAuthProviderCustomConfiguration.setParameters(parameters);
+            sMAuthProviderCustomConfiguration.isDefault = this.isDefault;
             return sMAuthProviderCustomConfiguration;
         }
     }
