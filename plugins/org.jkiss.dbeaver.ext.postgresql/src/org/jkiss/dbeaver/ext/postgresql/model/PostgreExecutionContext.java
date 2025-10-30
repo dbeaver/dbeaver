@@ -244,20 +244,13 @@ public class PostgreExecutionContext extends JDBCExecutionContext implements DBC
     }
 
     private void setSearchPath(DBRProgressMonitor monitor, String defSchemaName) throws DBCException {
-        List<String> newSearchPath = new ArrayList<>(getDefaultSearchPath());
-        int schemaIndex = newSearchPath.indexOf(defSchemaName);
-        /*if (schemaIndex == 0 || (schemaIndex == 1 && isUserFirstInPath(newSearchPath))) {
-            // Already default schema
+        List<String> newSearchPath = new ArrayList<>(getSearchPath());
+
+        if (newSearchPath.contains(defSchemaName)) {
             return;
-        } else*/
-        {
-            if (schemaIndex > 0) {
-                // Remove from previous position
-                newSearchPath.remove(schemaIndex);
-            }
-            // Add it first
-            newSearchPath.add(0, defSchemaName);
         }
+
+        newSearchPath.addFirst(defSchemaName);
 
         StringBuilder spString = new StringBuilder();
         for (String sp : newSearchPath) {
@@ -304,12 +297,15 @@ public class PostgreExecutionContext extends JDBCExecutionContext implements DBC
     }
 
     private void setSearchPath(String path) {
-        searchPath.clear();
-        searchPath.add(path);
-        if (!path.equals(activeUser)) {
+        if (searchPath.contains(path)) {
+            return;
+        }
+        searchPath.add(0, path);
+        if (activeUser != null && !searchPath.contains(activeUser)) {
             searchPath.add(activeUser);
         }
     }
+
 
     private void setSessionRole(@NotNull DBRProgressMonitor monitor) throws DBCException {
         final String roleName = getDataSource().getContainer().getConnectionConfiguration().getProviderProperty(PostgreConstants.PROP_CHOSEN_ROLE);
