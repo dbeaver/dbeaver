@@ -173,8 +173,6 @@ public class PostgreMessages extends NLS {
     public static String dialog_setting_connection_use_prepared_statements_tip;
     public static String dialog_setting_session_role;
     public static String dialog_setting_session_role_tip;
-    public static String dialog_setting_set_search_path_label;
-    public static String dialog_setting_set_search_path_tip;
 
     /* PostgreCreateRoleDialog */
     public static String dialog_create_role_title;
