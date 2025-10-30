@@ -91,6 +91,7 @@ public class OpenAIProperties implements OpenAIBaseProperties {
         this.token = token;
     }
 
+    @Nullable
     @Override
     @Property(order = 3, id = GPT_MODEL, listProvider = OpenAIModelListProvider.class)
     public String getModel() {
@@ -109,7 +110,7 @@ public class OpenAIProperties implements OpenAIBaseProperties {
     }
 
     @Override
-    @Property(order = 4, id = GPT_MODEL_TEMPERATURE)
+    @Property(order = 4)
     public double getTemperature() {
         if (temperature != null) {
             return temperature;
@@ -142,7 +143,7 @@ public class OpenAIProperties implements OpenAIBaseProperties {
 
     @Nullable
     @Override
-    @Property(order = 6, id = GPT_CONTEXT_WINDOW_SIZE, required = true)
+    @Property(order = 6, required = true)
     public Integer getContextWindowSize() {
         if (contextWindowSize != null) {
             return contextWindowSize;
