@@ -522,10 +522,12 @@ public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor
             } else {
                 if (argType == Boolean.TYPE || argType == Boolean.class && !(value instanceof Boolean)) {
                     value = CommonUtils.toBoolean(value);
-                } else if (argType == Long.TYPE) {
+                } else if (argType == Long.TYPE || argType == Long.class) {
                     value = CommonUtils.toLong(value);
-                } else if (argType == Integer.TYPE) {
+                } else if (argType == Integer.TYPE || argType == Integer.class) {
                     value = CommonUtils.toInt(value);
+                } else if (argType == Double.TYPE || argType == Double.class) {
+                    value = CommonUtils.toDouble(value);
                 }
             }
             setter.invoke(object, value);
