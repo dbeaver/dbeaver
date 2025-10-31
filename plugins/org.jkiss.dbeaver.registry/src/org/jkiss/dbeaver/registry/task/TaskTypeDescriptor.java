@@ -168,7 +168,7 @@ public class TaskTypeDescriptor extends DataSourceBindingDescriptor implements D
             return matchesEntityElements;
         }
         for (AbstractDescriptor.ObjectType ot : getObjectTypes()) {
-            if (DBSEntityElement.class.isAssignableFrom(ot.getObjectClass())) {
+            if (ot.matchesType(DBSEntityElement.class)) {
                 matchesEntityElements = true;
                 break;
             }

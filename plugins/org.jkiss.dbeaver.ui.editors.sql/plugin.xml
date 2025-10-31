@@ -780,7 +780,6 @@
         <key commandId="org.jkiss.dbeaver.core.sql.script.run.scriptNative" contextId="org.jkiss.dbeaver.ui.editors.sql.script.focused" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="ALT+N"/>
         <key commandId="org.jkiss.dbeaver.ui.editors.sql.run.scriptNew" contextId="org.jkiss.dbeaver.ui.editors.sql.script.focused" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+ALT+SHIFT+X"/>
         <key commandId="org.jkiss.dbeaver.ui.editors.sql.run.scriptFromPosition" contextId="org.jkiss.dbeaver.ui.editors.sql.script.focused" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="ALT+P"/>
-        <key commandId="org.jkiss.dbeaver.ui.editors.sql.run.count" contextId="org.jkiss.dbeaver.ui.editors.sql.script.focused" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+ALT+SHIFT+C"/>
         <key commandId="org.jkiss.dbeaver.ui.editors.sql.run.all.rows" contextId="org.jkiss.dbeaver.ui.editors.sql.script.focused" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+ALT+SHIFT+A"/>
         <key commandId="org.jkiss.dbeaver.ui.editors.sql.run.expression" contextId="org.jkiss.dbeaver.ui.editors.sql.script.focused" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+ALT+'"/>
         <key commandId="org.jkiss.dbeaver.ui.editors.sql.run.explain" contextId="org.jkiss.dbeaver.ui.editors.sql.script.focused" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+SHIFT+E"/>
@@ -1625,44 +1624,6 @@
         <generator id="ddlByResultSet" class="org.jkiss.dbeaver.ui.editors.sql.generator.SQLGeneratorDDLFromResultSet" label="CREATE" description="CREATE table" order="6">
             <objectType name="org.jkiss.dbeaver.ui.controls.resultset.IResultSetController"/>
         </generator>
-    </extension>
-
-    <extension point="org.jkiss.dbeaver.confirmations">
-        <confirmation
-                id="close_running_query"
-                title="%confirm.close_running_query.title"
-                description="%confirm.close_running_query.tip"
-                message="%confirm.close_running_query.message"
-                toggleMessage="%confirm.sql.toggleMessage"
-                group="%confirm.sql.group.name"/>
-        <confirmation
-                id="dangerous_sql"
-                title="%confirm.dangerous_sql.title"
-                description="%confirm.dangerous_sql.tip"
-                message="%confirm.dangerous_sql.message"
-                toggleMessage="%confirm.sql.toggleMessage"
-                group="%confirm.sql.group.name"/>
-        <confirmation
-                id="drop_sql"
-                title="%confirm.drop_sql.title"
-                description="%confirm.drop_sql.tip"
-                message="%confirm.drop_sql.message"
-                toggleMessage="%confirm.sql.toggleMessage"
-                group="%confirm.sql.group.name"/>
-        <confirmation
-                id="close_result_tabs"
-                title="%confirm.close_result_tabs.title"
-                description="%confirm.close_result_tabs.tip"
-                message="%confirm.close_result_tabs.message"
-                toggleMessage="%confirm.sql.toggleMessage"
-                group="%confirm.sql.group.name"/>
-        <confirmation
-                id="save_sql_console"
-                title="%confirm.save_sql_console.title"
-                description="%confirm.save_sql_console.tip"
-                message="%confirm.save_sql_console.message"
-                toggleMessage="%confirm.sql.toggleMessage"
-                group="%confirm.sql.group.name"/>
     </extension>
 
     <extension point="org.jkiss.dbeaver.toolBarConfiguration">

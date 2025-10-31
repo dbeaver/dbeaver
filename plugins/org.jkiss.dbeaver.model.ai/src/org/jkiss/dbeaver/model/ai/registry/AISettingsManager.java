@@ -44,6 +44,8 @@ public class AISettingsManager {
     private static final String AI_DISABLED_KEY = "aiDisabled";
     private static final String ACTIVE_ENGINE_KEY = "activeEngine";
     private static final String ENGINE_CONFIGURATIONS_KEY = "engineConfigurations";
+    private static final String ENABLED_FUNCTION_CATEGORIES_KEY = "enabledFunctionCategories";
+    private static final String ENABLED_FUNCTIONS_KEY = "enabledFunctions";
     public static final String ENGINE_PROPERTIES = "properties";
 
     private static AISettingsManager instance = null;
@@ -119,6 +121,18 @@ public class AISettingsManager {
             if (!configMap.isEmpty()) {
                 settings.setAiDisabled(JSONUtils.getBoolean(configMap, AI_DISABLED_KEY));
                 settings.setActiveEngine(JSONUtils.getString(configMap, ACTIVE_ENGINE_KEY));
+
+                List<String> enabledCategories = JSONUtils.getStringList(configMap, ENABLED_FUNCTION_CATEGORIES_KEY);
+                if (!enabledCategories.isEmpty()) {
+                    settings.setEnabledFunctionCategories(new HashSet<>(enabledCategories));
+                }
+
+                List<String> enabledFunctions = JSONUtils.getStringList(configMap, ENABLED_FUNCTIONS_KEY);
+                if (!enabledFunctions.isEmpty()) {
+                    settings.setEnabledFunctions(new HashSet<>(enabledFunctions));
+                }
+
+
                 Map<String, Object> ecRoot = JSONUtils.getObject(configMap, ENGINE_CONFIGURATIONS_KEY);
 
                 for (Map.Entry<String, Object> entry : ecRoot.entrySet()) {
@@ -141,6 +155,12 @@ public class AISettingsManager {
                         }
                     }
                 }
+            }
+
+            if (settings.getEnabledFunctionCategories().isEmpty()) {
+                settings.setEnabledFunctionCategories(
+                    AIFunctionRegistry.getInstance().getDefaultEnabledCategoryIds()
+                );
             }
 
             settings.setEngineConfigurations(engineConfigurationMap);
@@ -175,6 +195,25 @@ public class AISettingsManager {
             json.addProperty(AI_DISABLED_KEY, settings.isAiDisabled());
             json.addProperty(ACTIVE_ENGINE_KEY, settings.activeEngine());
 
+            Set<String> enabledCategories = settings.getEnabledFunctionCategories();
+            if (!enabledCategories.isEmpty()) {
+                JsonArray categoriesArray = new JsonArray();
+                for (String category : enabledCategories) {
+                    categoriesArray.add(category);
+                }
+                json.add(ENABLED_FUNCTION_CATEGORIES_KEY, categoriesArray);
+            }
+
+            Set<String> enabledFunctions = settings.getEnabledFunctions();
+            if (!enabledFunctions.isEmpty()) {
+                JsonArray functionsArray = new JsonArray();
+                for (String function : enabledFunctions) {
+                    functionsArray.add(function);
+                }
+                json.add(ENABLED_FUNCTIONS_KEY, functionsArray);
+            }
+
+
             JsonObject engineConfigurations = new JsonObject();
             for (Map.Entry<String, AIEngineProperties> configuration : settings.getEngineConfigurations().entrySet()) {
                 JsonElement savedProps = savePropsGson.toJsonTree(configuration.getValue());
@@ -200,6 +239,7 @@ public class AISettingsManager {
         }
         raiseChangedEvent(this);
     }
+
 
     @Nullable
     private static String loadConfig() throws DBException {

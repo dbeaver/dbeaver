@@ -25,7 +25,6 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
-import org.jkiss.dbeaver.model.app.DBPResourceHandler;
 import org.jkiss.dbeaver.model.rcp.RCPProject;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -39,11 +38,8 @@ import java.util.List;
 public class DBNProjectDesktop extends DBNProject {
     private static final Log log = Log.getLog(DBNProjectDesktop.class);
 
-    private final DBPResourceHandler handler;
-
-    public DBNProjectDesktop(DBNNode parentNode, RCPProject project, DBPResourceHandler handler) {
+    public DBNProjectDesktop(@NotNull DBNNode parentNode, @NotNull RCPProject project) {
         super(parentNode, project);
-        this.handler = handler;
     }
 
     @NotNull
@@ -74,7 +70,7 @@ public class DBNProjectDesktop extends DBNProject {
 
     @Override
     public <T> T getAdapter(@NotNull Class<T> adapter) {
-        if (adapter == IResource.class) {
+        if (adapter == IResource.class || adapter == IProject.class) {
             return adapter.cast(getEclipseProject());
         }
         return super.getAdapter(adapter);

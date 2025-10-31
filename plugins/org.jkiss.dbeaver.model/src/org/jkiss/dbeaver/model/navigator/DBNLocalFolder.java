@@ -74,12 +74,14 @@ public class DBNLocalFolder extends DBNNode implements DBNContainer
         return getNodeDisplayName();
     }
 
+    @Nullable
     @Override
     public Object getValueObject()
     {
         return folder;
     }
 
+    @NotNull
     @Override
     public String getChildrenType()
     {
@@ -179,7 +181,7 @@ public class DBNLocalFolder extends DBNNode implements DBNContainer
         }
     }
 
-    @NotNull
+    @Nullable
     @Override
     public DBNNode[] getChildren(@NotNull DBRProgressMonitor monitor)
     {
@@ -208,6 +210,7 @@ public class DBNLocalFolder extends DBNNode implements DBNContainer
         return children;
     }
 
+    @Nullable
     @Override
     public Class<? extends DBSObject> getChildrenClass()
     {
@@ -279,10 +282,13 @@ public class DBNLocalFolder extends DBNNode implements DBNContainer
         return result;
     }
 
-    private void fillNestedDataSources(List<DBNDataSource> dataSources) {
-        for (DBNNode childFolder : getChildren(new VoidProgressMonitor())) {
-            if (childFolder instanceof DBNLocalFolder) {
-                ((DBNLocalFolder) childFolder).fillNestedDataSources(dataSources);
+    private void fillNestedDataSources(@NotNull List<DBNDataSource> dataSources) {
+        DBNNode[] children = getChildren(new VoidProgressMonitor());
+        if (children != null) {
+            for (DBNNode childFolder : children) {
+                if (childFolder instanceof DBNLocalFolder) {
+                    ((DBNLocalFolder) childFolder).fillNestedDataSources(dataSources);
+                }
             }
         }
         dataSources.addAll(getDataSources());

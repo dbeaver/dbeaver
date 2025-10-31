@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.tools.transfer.registry;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.app.DBPRegistryDescriptor;
@@ -53,10 +54,10 @@ public class DataTransferProcessorDescriptor extends AbstractDescriptor implemen
     @NotNull
     private final DBPImage icon;
     private final DBPPropertyDescriptor[] properties;
-    private boolean isBinary;
-    private boolean isHTML;
+    private final boolean isBinary;
+    private final boolean isHTML;
 
-    DataTransferProcessorDescriptor(DataTransferNodeDescriptor node, IConfigurationElement config) {
+    DataTransferProcessorDescriptor(@NotNull DataTransferNodeDescriptor node, @NotNull IConfigurationElement config) {
         super(config);
         this.node = node;
         this.id = config.getAttribute("id");
@@ -83,22 +84,27 @@ public class DataTransferProcessorDescriptor extends AbstractDescriptor implemen
         return id;
     }
 
+    @NotNull
     public String getName() {
         return name;
     }
 
+    @Nullable
     public String getDescription() {
         return description;
     }
 
+    @Nullable
     public String getContentType() {
         return contentType;
     }
 
+    @Nullable
     public String getAppFileExtension() {
         return appFileExtension;
     }
 
+    @Nullable
     public String getAppName() {
         return appName;
     }
@@ -112,11 +118,13 @@ public class DataTransferProcessorDescriptor extends AbstractDescriptor implemen
         return icon;
     }
 
+    @NotNull
     public DBPPropertyDescriptor[] getProperties() {
         return properties;
     }
 
-    public DBPPropertyDescriptor getProperty(String name) {
+    @Nullable
+    public DBPPropertyDescriptor getProperty(@NotNull String name) {
         for (DBPPropertyDescriptor prop : properties) {
             if (prop.getId().equals(name)) {
                 return prop;
@@ -125,7 +133,7 @@ public class DataTransferProcessorDescriptor extends AbstractDescriptor implemen
         return null;
     }
 
-    boolean appliesToType(Class<?> objectType) {
+    boolean appliesToType(@NotNull Class<?> objectType) {
         if (sourceTypes.isEmpty()) {
             return true;
         }
@@ -137,7 +145,7 @@ public class DataTransferProcessorDescriptor extends AbstractDescriptor implemen
         return false;
     }
 
-    public boolean adaptsToType(IAdaptable adaptable) {
+    public boolean adaptsToType(@NotNull IAdaptable adaptable) {
         if (sourceTypes.isEmpty()) {
             return true;
         }
@@ -149,16 +157,18 @@ public class DataTransferProcessorDescriptor extends AbstractDescriptor implemen
         return false;
     }
 
+    @NotNull
     public IDataTransferProcessor getInstance() {
         try {
             processorType.checkObjectClass(IDataTransferProcessor.class);
-            Class<? extends IDataTransferProcessor> clazz = processorType.getObjectClass(IDataTransferProcessor.class);
+            Class<? extends IDataTransferProcessor> clazz = processorType.getImplClass(IDataTransferProcessor.class);
             return clazz.getConstructor().newInstance();
         } catch (Exception e) {
             throw new IllegalStateException("Can't instantiate data exporter", e);
         }
     }
 
+    @NotNull
     public DataTransferNodeDescriptor getNode() {
         return node;
     }
@@ -172,17 +182,18 @@ public class DataTransferProcessorDescriptor extends AbstractDescriptor implemen
     }
 
     public boolean isAppendable() {
-        return IAppendableDataExporter.class.isAssignableFrom(processorType.getObjectClass());
+        return processorType.matchesType(IAppendableDataExporter.class);
     }
 
     public boolean isMulti() {
-        return IMultiStreamDataImporter.class.isAssignableFrom(processorType.getObjectClass());
+        return processorType.matchesType(IMultiStreamDataImporter.class);
     }
 
     public String getFullId() {
         return node.getId() + ":" + getId();
     }
 
+    @NotNull
     public String getProcessorFileExtension() {
         DBPPropertyDescriptor extProperty = getProperty("extension");
         String ext = extProperty == null ? getAppFileExtension() : CommonUtils.toString(extProperty.getDefaultValue(), null);

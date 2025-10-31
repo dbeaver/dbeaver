@@ -105,7 +105,7 @@ public class VerticaTableColumn extends GenericTableColumn implements DBPObjectW
     public static class CommentsValidator implements IPropertyCacheValidator<VerticaTableColumn> {
 
         @Override
-        public boolean isPropertyCached(VerticaTableColumn object, Object propertyId)
+        public boolean isPropertyCached(@NotNull VerticaTableColumn object, @NotNull Object propertyId)
         {
             return object.description != null;
         }

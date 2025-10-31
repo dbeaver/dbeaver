@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -112,9 +112,9 @@ public class EntityEditorsRegistry {
             if (allDescriptors.size() > 1) {
                 // Determine the closes one
                 allDescriptors.sort(Comparator.comparingInt(
-                    o -> BeanUtils.getInheritanceDistance(object, o.getObjectTypes()[0].getObjectClass())));
+                    o -> BeanUtils.getInheritanceDistance(object, o.getObjectTypes()[0].getImplClass())));
             }
-            return allDescriptors.get(0);
+            return allDescriptors.getFirst();
         }
         return null;
     }

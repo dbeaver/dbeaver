@@ -517,6 +517,7 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
             return true;
         }
 
+        @Nullable
         @Override
         public Object[] getPossibleValues(PostgreAttribute<?> column) {
             List<PostgreDataType> types = new ArrayList<>();
@@ -545,6 +546,7 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
             return false;
         }
 
+        @Nullable
         @Override
         public Object[] getPossibleValues(PostgreAttribute object) {
             try {
@@ -563,7 +565,7 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
     public static class AttributeStorageValueValidator implements IPropertyValueValidator<PostgreAttribute, Object> {
 
         @Override
-        public boolean isValidValue(PostgreAttribute object, Object value) throws IllegalArgumentException {
+        public boolean isValidValue(@NotNull PostgreAttribute object, @Nullable Object value) throws IllegalArgumentException {
             return object.getTable() instanceof PostgreTable && object.getDataSource().getServerType().supportsAlterStorageStrategy();
         }
     }
@@ -574,6 +576,7 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
             return false;
         }
 
+        @Nullable
         @Override
         public Object[] getPossibleValues(PostgreAttribute object) {
             return PostgreAttributeStorage.getValues(object.getDataSource());

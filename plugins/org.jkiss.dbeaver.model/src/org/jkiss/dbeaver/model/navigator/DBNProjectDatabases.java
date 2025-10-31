@@ -93,18 +93,21 @@ public class DBNProjectDatabases extends DBNNode implements DBNContainer, DBPEve
         return dataSourceRegistry;
     }
 
+    @Nullable
     @Override
     public Object getValueObject()
     {
         return dataSourceRegistry;
     }
 
+    @NotNull
     @Override
     public String getChildrenType()
     {
         return ModelMessages.model_navigator_Connection;
     }
 
+    @Nullable
     @Override
     public Class<DBPDataSourceContainer> getChildrenClass()
     {
@@ -151,7 +154,7 @@ public class DBNProjectDatabases extends DBNNode implements DBNContainer, DBPEve
         }
     }
 
-    @NotNull
+    @Nullable
     @Override
     public DBNNode[] getChildren(@NotNull DBRProgressMonitor monitor)
     {

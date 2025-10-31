@@ -941,6 +941,7 @@ public class PostgreDatabase extends JDBCRemoteInstance
         return null;
     }
 
+    @Nullable
     public PostgreDataType getDataType(DBRProgressMonitor monitor, long typeId) {
         if (typeId <= 0) {
             return null;
@@ -1472,6 +1473,7 @@ public class PostgreDatabase extends JDBCRemoteInstance
         {
             return false;
         }
+        @Nullable
         @Override
         public Object[] getPossibleValues(PostgreDatabase object)
         {
@@ -1492,6 +1494,7 @@ public class PostgreDatabase extends JDBCRemoteInstance
             return false;
         }
 
+        @Nullable
         @Override
         public Object[] getPossibleValues(PostgreDatabase object)
         {
@@ -1512,6 +1515,7 @@ public class PostgreDatabase extends JDBCRemoteInstance
             return false;
         }
 
+        @Nullable
         @Override
         public Object[] getPossibleValues(PostgreDatabase object)
         {

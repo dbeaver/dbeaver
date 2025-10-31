@@ -102,7 +102,7 @@ public abstract class AbstractPopupPanel extends BaseDialog {
     }
 
     @Override
-    protected Control createButtonBar(Composite parent) {
+    protected Control createButtonBar(@NotNull Composite parent) {
         if (needsButtonBar()) {
             return super.createButtonBar(parent);
         } else {

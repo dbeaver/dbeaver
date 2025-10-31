@@ -29,7 +29,7 @@ public class DBNDatabaseItem extends DBNDatabaseNode {
     private final DBXTreeNode meta;
     private DBSObject object;
 
-    DBNDatabaseItem(DBNNode parent, DBXTreeNode meta, DBSObject object, boolean reflect) {
+    DBNDatabaseItem(@NotNull DBNNode parent, @NotNull DBXTreeNode meta, DBSObject object, boolean reflect) {
         super(parent);
         this.meta = meta;
         this.object = object;

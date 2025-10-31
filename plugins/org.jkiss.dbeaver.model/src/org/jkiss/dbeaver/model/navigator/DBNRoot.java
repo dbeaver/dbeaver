@@ -94,16 +94,19 @@ public class DBNRoot extends DBNNode implements DBNContainer, DBNNodeExtendable,
         return ModelMessages.model_navigator_Root;
     }
 
+    @Nullable
     @Override
     public Object getValueObject() {
         return this;
     }
 
+    @NotNull
     @Override
     public String getChildrenType() {
         return ModelMessages.model_navigator_Project;
     }
 
+    @Nullable
     @Override
     public Class<?> getChildrenClass() {
         return Object.class;
@@ -139,7 +142,7 @@ public class DBNRoot extends DBNNode implements DBNContainer, DBNNodeExtendable,
         return projects.length > 0 || !extraNodes.isEmpty();
     }
 
-    @NotNull
+    @Nullable
     @Override
     public DBNNode[] getChildren(@NotNull DBRProgressMonitor monitor) {
         if (extraNodes.isEmpty()) {
@@ -177,11 +180,6 @@ public class DBNRoot extends DBNNode implements DBNContainer, DBNNodeExtendable,
             }
             return this;
         }
-    }
-
-    @Override
-    public boolean allowsOpen() {
-        return true;
     }
 
     @NotNull

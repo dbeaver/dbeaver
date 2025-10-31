@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -80,7 +80,7 @@ public class H2Sequence extends GenericSequence {
     public static class H2SequenceFieldsValueValidator implements IPropertyValueValidator<H2Sequence, Object> {
 
         @Override
-        public boolean isValidValue(H2Sequence object, Object value) throws IllegalArgumentException {
+        public boolean isValidValue(@NotNull H2Sequence object, @Nullable Object value) throws IllegalArgumentException {
             return object.getDataSource().isServerVersionAtLeast(2, 0);
         }
     }

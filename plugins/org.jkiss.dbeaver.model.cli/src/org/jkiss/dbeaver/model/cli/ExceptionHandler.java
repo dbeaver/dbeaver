@@ -16,18 +16,25 @@
  */
 package org.jkiss.dbeaver.model.cli;
 
-import org.apache.commons.cli.CommandLine;
-import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.DBException;
+import picocli.CommandLine;
 
-public interface ICommandLineParameterHandler {
+public class ExceptionHandler implements CommandLine.IExecutionExceptionHandler {
 
-    void handleParameter(
-        @NotNull CommandLine commandLine,
-        @NotNull String name,
-        @Nullable String value,
-        @NotNull CommandLineContext context
-    ) throws DBException;
+    @Nullable
+    private Exception exception;
 
+    public ExceptionHandler() {
+    }
+
+    @Override
+    public int handleExecutionException(Exception e, CommandLine commandLine, CommandLine.ParseResult fullParseResult) throws Exception {
+        exception = e;
+        return CLIConstants.EXIT_CODE_ERROR;
+    }
+
+    @Nullable
+    public Exception getException() {
+        return exception;
+    }
 }

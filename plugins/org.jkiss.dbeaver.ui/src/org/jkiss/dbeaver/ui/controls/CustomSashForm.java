@@ -741,8 +741,9 @@ public class CustomSashForm extends SashForm {
 
     protected void drawSashBorder(GC gc, SashInfo sashInfo) {
         gc.setForeground(arrowColor);
-        gc.setLineStyle(SWT.LINE_CUSTOM);
-        gc.setLineDash(new int[] { 2, 5 });
+//        gc.setLineStyle(SWT.LINE_CUSTOM);
+//        gc.setLineDash(new int[] { 2, 5 });
+        gc.setLineStyle(SWT.LINE_SOLID);
         Point s = sashInfo.sash.getSize();
         int[][] sashLocs = sashInfo.sashLocs;
         int lastLocIndex = sashLocs.length - 1;
@@ -754,7 +755,6 @@ public class CustomSashForm extends SashForm {
 
             gc.drawLine(0,  sashDim / 2, leftArrowPos, sashDim / 2);
             gc.drawLine(rightArrowPos,  sashDim / 2, s.x - 1, sashDim / 2);
-            gc.setLineStyle(SWT.LINE_SOLID);
             gc.drawRoundRectangle(leftArrowPos, 0, rightArrowPos - leftArrowPos, sashDim - 1, 3, 3);
         } else {
             int topArrowPos = sashLocs[0][3] - ARROW_MARGIN;
@@ -762,7 +762,6 @@ public class CustomSashForm extends SashForm {
 
             gc.drawLine(sashDim / 2, 0, sashDim / 2, topArrowPos);
             gc.drawLine(sashDim / 2, bottomArrowPos, sashDim / 2, s.y - 1);
-            gc.setLineStyle(SWT.LINE_SOLID);
             gc.drawRoundRectangle(0, topArrowPos, sashDim - 1, bottomArrowPos - topArrowPos, 3, 3);
         }
     }

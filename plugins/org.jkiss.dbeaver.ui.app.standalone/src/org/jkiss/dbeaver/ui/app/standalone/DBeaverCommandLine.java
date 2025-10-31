@@ -16,22 +16,16 @@
  */
 package org.jkiss.dbeaver.ui.app.standalone;
 
-import org.apache.commons.cli.CommandLine;
+
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.cli.ApplicationCommandLine;
-import org.jkiss.dbeaver.model.cli.CLIProcessResult;
+import org.jkiss.dbeaver.model.cli.CLIRunMeta;
+import org.jkiss.dbeaver.model.cli.CommandLineContext;
 import org.jkiss.dbeaver.model.cli.registry.CommandLineParameterDescriptor;
-import org.jkiss.dbeaver.ui.actions.ConnectionCommands;
-import org.jkiss.dbeaver.ui.app.standalone.rpc.DBeaverInstanceServer;
 import org.jkiss.dbeaver.ui.app.standalone.rpc.IInstanceController;
-import org.jkiss.dbeaver.utils.SystemVariablesResolver;
-import org.jkiss.utils.ArrayUtils;
-import org.jkiss.utils.CommonUtils;
-
-import java.io.FileInputStream;
-import java.io.InputStream;
-import java.util.*;
+import picocli.CommandLine;
 
 /**
  * Command line processing.
@@ -45,49 +39,19 @@ import java.util.*;
 public class DBeaverCommandLine extends ApplicationCommandLine<IInstanceController> {
     private static final Log log = Log.getLog(DBeaverCommandLine.class);
 
-
-    public static final String PARAM_FILE = "f";
-    public static final String PARAM_CONFIG = "vars";
-    public static final String PARAM_STOP = "stop";
-    public static final String PARAM_CONNECT = "con";
-    public static final String PARAM_CLOSE_TABS = "closeTabs";
-    public static final String PARAM_DISCONNECT_ALL = "disconnectAll";
-    public static final String PARAM_REUSE_WORKSPACE = "reuseWorkspace";
-    public static final String PARAM_NEW_INSTANCE = "newInstance";
-    public static final String PARAM_BRING_TO_FRONT = "bringToFront";
-    public static final String PARAM_QUIET = "q";
-
     private static DBeaverCommandLine INSTANCE = null;
-
-    static {
-        ALL_OPTIONS.addOption(PARAM_CONFIG, "variablesFile", true, "Uses a specified configuration file for variable resolving")
-            .addOption(PARAM_FILE, "file", true, "Open a file")
-            .addOption(PARAM_STOP, "quit", false, "Stop DBeaver running instance")
-            .addOption(PARAM_CONNECT, "connect", true, "Connects to a specified database")
-            .addOption("p", "project", true, "Specify used project")
-            .addOption(PARAM_DISCONNECT_ALL, "disconnectAll", false, "Disconnect from all databases")
-            .addOption(PARAM_CLOSE_TABS, "closeTabs", false, "Close all open editors")
-            .addOption(PARAM_REUSE_WORKSPACE, PARAM_REUSE_WORKSPACE, false, "Force workspace reuse (do not show warnings)")
-            .addOption(
-                PARAM_NEW_INSTANCE,
-                PARAM_NEW_INSTANCE,
-                false,
-                "Force creating new application instance (do not try to activate already running)"
-            )
-            .addOption(PARAM_BRING_TO_FRONT, PARAM_BRING_TO_FRONT, false, "Bring DBeaver window on top of other applications")
-            .addOption(PARAM_QUIET, PARAM_QUIET, false, "Run quietly (do not print logs)")
-            // Eclipse options
-            .addOption("product", true, "Product id")
-            .addOption("nl", true, "National locale")
-            .addOption("data", true, "Data directory")
-            .addOption("nosplash", false, "No splash screen")
-            .addOption("showlocation", false, "Show location")
-            .addOption("registryMultiLanguage", false, "Multi-language mode")
-        ;
-    }
 
     private DBeaverCommandLine() {
         super();
+    }
+
+    @Override
+    protected DBeaverTopLevelCommand createTopLevelCommand(
+        @Nullable IInstanceController applicationInstanceController,
+        @NotNull CommandLineContext context,
+        @NotNull CLIRunMeta runMeta
+    ) {
+        return new DBeaverTopLevelCommand(applicationInstanceController, context, runMeta);
     }
 
     public synchronized static DBeaverCommandLine getInstance() {
@@ -97,131 +61,18 @@ public class DBeaverCommandLine extends ApplicationCommandLine<IInstanceControll
         return INSTANCE;
     }
 
-    /**
-     * @return {@link CLIProcessResult.PostAction#SHUTDOWN} if called should exit after CLI processing
-     */
-    public CLIProcessResult executeCommandLineCommands(
-        @Nullable CommandLine commandLine,
-        @Nullable IInstanceController controller,
+    @Override
+    protected void preprocessCommandLineParameter(
+        @NotNull CommandLineParameterDescriptor descriptor,
+        @NotNull CommandLine.ParseResult cliCommand,
+        @NotNull CommandLineContext context,
         boolean uiActivated
-    ) throws Exception {
-        CLIProcessResult result = super.executeCommandLineCommands(commandLine, controller, uiActivated, true);
-        if (result.getPostAction() != CLIProcessResult.PostAction.UNKNOWN_COMMAND) {
-            return result;
-        }
-        //must be checked in super method
-        Objects.requireNonNull(commandLine);
-
-
-        if (commandLine.hasOption(PARAM_NEW_INSTANCE)) {
-            // Do not try to execute commands in running instance
-            return new CLIProcessResult(CLIProcessResult.PostAction.START_INSTANCE);
-        }
-
-        if (commandLine.hasOption(PARAM_REUSE_WORKSPACE)) {
+    ) {
+        super.preprocessCommandLineParameter(descriptor, cliCommand, context, uiActivated);
+        if (!uiActivated && descriptor.isExclusiveMode()) {
             if (DBeaverApplication.instance != null) {
-                DBeaverApplication.instance.setReuseWorkspace(true);
+                DBeaverApplication.instance.setExclusiveMode(true);
             }
         }
-
-        {
-            //Set configuration file for SystemVariableResolver
-            String file = commandLine.getOptionValue(PARAM_CONFIG);
-            if (!CommonUtils.isEmpty(file)) {
-                try (InputStream stream = new FileInputStream(file)) {
-                    Properties properties = new Properties();
-                    properties.load(stream);
-                    SystemVariablesResolver.setConfiguration(properties);
-                } catch (Exception e) {
-                    log.error("Error parsing command line ", e);
-                    return new CLIProcessResult(CLIProcessResult.PostAction.START_INSTANCE);
-                }
-            }
-        }
-
-        if (controller == null) {
-            log.debug("Can't process commands because no running instance is present");
-            return new CLIProcessResult(CLIProcessResult.PostAction.START_INSTANCE);
-        }
-
-        boolean exitAfterExecute = false;
-        if (!uiActivated) {
-            // These command can't be executed locally
-            if (commandLine.hasOption(PARAM_STOP)) {
-                controller.quit();
-                return new CLIProcessResult(CLIProcessResult.PostAction.SHUTDOWN);
-            }
-        }
-
-        {
-            // Open files
-            String[] files = commandLine.getOptionValues(PARAM_FILE);
-            String[] fileArgs = commandLine.getArgs();
-            if (!ArrayUtils.isEmpty(files) || !ArrayUtils.isEmpty(fileArgs)) {
-                List<String> fileNames = new ArrayList<>();
-                if (!ArrayUtils.isEmpty(files)) {
-                    Collections.addAll(fileNames, files);
-                }
-                if (!ArrayUtils.isEmpty(fileArgs)) {
-                    Collections.addAll(fileNames, fileArgs);
-                }
-                controller.openExternalFiles(fileNames.toArray(new String[0]));
-                exitAfterExecute = true;
-            }
-        }
-        {
-            // Connect
-            String[] connectParams = commandLine.getOptionValues(PARAM_CONNECT);
-            if (!ArrayUtils.isEmpty(connectParams)) {
-                for (String cp : connectParams) {
-                    controller.openDatabaseConnection(cp);
-                }
-                exitAfterExecute = true;
-            }
-        }
-
-        if (commandLine.hasOption(PARAM_CLOSE_TABS)) {
-            controller.closeAllEditors();
-            exitAfterExecute = true;
-        }
-        if (commandLine.hasOption(PARAM_DISCONNECT_ALL)) {
-            controller.executeWorkbenchCommand(ConnectionCommands.CMD_DISCONNECT_ALL);
-            exitAfterExecute = true;
-        }
-        if (commandLine.hasOption(PARAM_BRING_TO_FRONT)) {
-            controller.bringToFront();
-            exitAfterExecute = true;
-        }
-
-        var postAction = exitAfterExecute ? CLIProcessResult.PostAction.SHUTDOWN : CLIProcessResult.PostAction.START_INSTANCE;
-        return new CLIProcessResult(postAction);
-    }
-
-    /**
-     * @return {@link CLIProcessResult.PostAction#SHUTDOWN} if called should exit after CLI processing
-     */
-    //TODO: we should never call this method?
-    public CLIProcessResult handleCommandLineAsClient(CommandLine commandLine, String instanceLoc) {
-        if (commandLine == null || (ArrayUtils.isEmpty(commandLine.getArgs()) && ArrayUtils.isEmpty(commandLine.getOptions()))) {
-            return new CLIProcessResult(CLIProcessResult.PostAction.START_INSTANCE);
-        }
-
-        // Reuse workspace if custom parameters are specified
-        for (CommandLineParameterDescriptor param : customParameters.values()) {
-            if (param.isExclusiveMode() && (commandLine.hasOption(param.getName()) || commandLine.hasOption(param.getLongName()))) {
-                if (DBeaverApplication.instance != null) {
-                    DBeaverApplication.instance.setExclusiveMode(true);
-                }
-                break;
-            }
-        }
-
-        try {
-            IInstanceController client = DBeaverInstanceServer.createClient(instanceLoc);
-            return executeCommandLineCommands(commandLine, client, false);
-        } catch (Throwable e) {
-            log.error("Error while calling remote server", e);
-        }
-        return new CLIProcessResult(CLIProcessResult.PostAction.START_INSTANCE);
     }
 }
