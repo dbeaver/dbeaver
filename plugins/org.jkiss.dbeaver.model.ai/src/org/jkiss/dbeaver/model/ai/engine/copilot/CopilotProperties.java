@@ -84,7 +84,6 @@ public class CopilotProperties implements AIEngineProperties {
             .orElse(0.0);
     }
 
-    @Override
     public void setTemperature(double temperature) {
         this.temperature = temperature;
     }
@@ -102,7 +101,6 @@ public class CopilotProperties implements AIEngineProperties {
             .orElse(null);
     }
 
-    @Override
     public void setContextWindowSize(@Nullable Integer contextWindowSize) {
         this.contextWindowSize = contextWindowSize;
     }
