@@ -19,7 +19,6 @@ package org.jkiss.dbeaver.model.ai.engine.copilot;
 import com.google.gson.annotations.SerializedName;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.ai.AIConstants;
 import org.jkiss.dbeaver.model.ai.engine.AIEngineProperties;
 import org.jkiss.dbeaver.model.ai.engine.AIModel;
 import org.jkiss.dbeaver.model.ai.utils.AIUtils;
@@ -74,15 +73,23 @@ public class CopilotProperties implements AIEngineProperties {
         this.model = model;
     }
 
+    @Override
     @Property(order = 3)
     public double getTemperature() {
-        return temperature;
+        if (temperature != 0.0) {
+            return temperature;
+        }
+        return CopilotModels.getModelByName(model)
+            .map(AIModel::defaultTemperature)
+            .orElse(0.0);
     }
 
+    @Override
     public void setTemperature(double temperature) {
         this.temperature = temperature;
     }
 
+    @Override
     @Nullable
     @Property(order = 4)
     public Integer getContextWindowSize() {
@@ -95,6 +102,7 @@ public class CopilotProperties implements AIEngineProperties {
             .orElse(null);
     }
 
+    @Override
     public void setContextWindowSize(@Nullable Integer contextWindowSize) {
         this.contextWindowSize = contextWindowSize;
     }
