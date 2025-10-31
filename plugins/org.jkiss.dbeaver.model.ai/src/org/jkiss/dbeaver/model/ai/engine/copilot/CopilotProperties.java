@@ -55,7 +55,7 @@ public class CopilotProperties implements AIEngineProperties {
     private boolean loggingEnabled;
 
     @Nullable
-    @Property(order = 1, id = COPILOT_ACCESS_TOKEN, password = true, features = AIConstants.AI_FEATURE_CONNECTION_PROPERTY)
+    @Property(order = 1, password = true)
     public String getToken() {
         return token;
     }
@@ -65,7 +65,7 @@ public class CopilotProperties implements AIEngineProperties {
     }
 
     @Nullable
-    @Property(order = 2, id = GPT_MODEL, features = AIConstants.AI_FEATURE_MODEL_PROPERTY)
+    @Property(order = 2)
     public String getModel() {
         return model;
     }
@@ -74,7 +74,7 @@ public class CopilotProperties implements AIEngineProperties {
         this.model = model;
     }
 
-    @Property(order = 3, id = GPT_MODEL_TEMPERATURE)
+    @Property(order = 3)
     public double getTemperature() {
         return temperature;
     }
@@ -84,7 +84,7 @@ public class CopilotProperties implements AIEngineProperties {
     }
 
     @Nullable
-    @Property(order = 4, id = GPT_CONTEXT_WINDOW_SIZE)
+    @Property(order = 4)
     public Integer getContextWindowSize() {
         if (contextWindowSize != null) {
             return contextWindowSize;
@@ -99,7 +99,7 @@ public class CopilotProperties implements AIEngineProperties {
         this.contextWindowSize = contextWindowSize;
     }
 
-    @Property(order = 5, id = GPT_LOG_QUERY)
+    @Property(order = 5)
     public boolean isLoggingEnabled() {
         return loggingEnabled;
     }
