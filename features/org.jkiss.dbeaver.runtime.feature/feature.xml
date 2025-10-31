@@ -19,6 +19,7 @@
     <plugin id="bcpkix" version="0.0.0" />
     <plugin id="bcutil" version="0.0.0" />
 
+    <plugin id="picocli" version="0.0.0" />
     <plugin id="org.antlr.antlr4-runtime" version="0.0.0" />
     <plugin id="com.github.jsqlparser" version="0.0.0" />
     <plugin id="org.apache.commons.jexl" version="0.0.0" />
