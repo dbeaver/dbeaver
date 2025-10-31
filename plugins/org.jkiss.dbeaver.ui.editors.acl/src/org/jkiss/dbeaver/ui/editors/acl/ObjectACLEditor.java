@@ -288,11 +288,11 @@ public abstract class ObjectACLEditor<PRIVILEGE extends DBAPrivilege, PRIVILEGE_
                     privilegeType == null ? null : new DBAPrivilegeType[] { privilegeType }),
                 new DBECommandReflector<DBAPrivilegeOwner, ACLCommandChangePrivilege>() {
                     @Override
-                    public void redoCommand(ACLCommandChangePrivilege cmd)
+                    public void redoCommand(@NotNull ACLCommandChangePrivilege cmd)
                     {
                     }
                     @Override
-                    public void undoCommand(ACLCommandChangePrivilege cmd)
+                    public void undoCommand(@NotNull ACLCommandChangePrivilege cmd)
                     {
                     }
                 });
