@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -289,7 +289,7 @@ public class MySQLUserManager extends AbstractObjectManager<MySQLUser> implement
 
     private class ReflectorRenameUser implements DBECommandReflector<MySQLUser, CommandRenameUser> {
         @Override
-        public void redoCommand(CommandRenameUser command) {
+        public void redoCommand(@NotNull CommandRenameUser command) {
             MySQLUser user = command.getObject();
             user.setUserName(command.getNewUserName());
             setHost(user, command.getNewHost());
@@ -308,7 +308,7 @@ public class MySQLUserManager extends AbstractObjectManager<MySQLUser> implement
         }
 
         @Override
-        public void undoCommand(CommandRenameUser command) {
+        public void undoCommand(@NotNull CommandRenameUser command) {
             MySQLUser user = command.getObject();
             user.setUserName(command.getOldUserName());
             setHost(user, command.getOldHost());

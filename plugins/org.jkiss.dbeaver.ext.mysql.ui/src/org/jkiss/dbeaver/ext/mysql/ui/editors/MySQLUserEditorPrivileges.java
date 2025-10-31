@@ -192,7 +192,7 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract
                         privilege),
                     new DBECommandReflector<MySQLUser, MySQLCommandGrantPrivilege>() {
                         @Override
-                        public void redoCommand(MySQLCommandGrantPrivilege mySQLCommandGrantPrivilege)
+                        public void redoCommand(@NotNull MySQLCommandGrantPrivilege mySQLCommandGrantPrivilege)
                         {
                             if (!privTable.isDisposed() && curCatalog == selectedCatalog && curTable == selectedTable) {
                                 privTable.checkPrivilege(privilege, isGrant);
@@ -200,7 +200,7 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract
                             updateLocalData(privilege, isGrant, withGrantOption, curCatalog, curTable);
                         }
                         @Override
-                        public void undoCommand(MySQLCommandGrantPrivilege mySQLCommandGrantPrivilege)
+                        public void undoCommand(@NotNull MySQLCommandGrantPrivilege mySQLCommandGrantPrivilege)
                         {
                             if (!privTable.isDisposed() && curCatalog == selectedCatalog && curTable == selectedTable) {
                                 privTable.checkPrivilege(privilege, !isGrant);
