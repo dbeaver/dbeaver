@@ -170,12 +170,12 @@ public class IoTDBUserEditorPrivileges extends IoTDBUserEditorAbstract {
                     new IoTDBCommandGrantPrivilege(getDatabaseObject(), tp, db, tb, privilege),
                     new DBECommandReflector<IoTDBRelationalUser, IoTDBCommandGrantPrivilege>() {
                         @Override
-                        public void redoCommand(IoTDBCommandGrantPrivilege command) {
+                        public void redoCommand(@NotNull IoTDBCommandGrantPrivilege command) {
                             // no-op
                         }
 
                         @Override
-                        public void undoCommand(IoTDBCommandGrantPrivilege command) {
+                        public void undoCommand(@NotNull IoTDBCommandGrantPrivilege command) {
                             // no-op
                         }
                     });
