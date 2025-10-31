@@ -34,12 +34,10 @@ import java.util.List;
  */
 public class PropertySourceCollection implements DBPPropertySource {
 
-    private List<DBPPropertyDescriptor> props = new ArrayList<>();
+    private final List<DBPPropertyDescriptor> props = new ArrayList<>();
+    private final List<Object> items;
 
-    private List<Object> items;
-
-    public PropertySourceCollection(Collection<?> collection)
-    {
+    public PropertySourceCollection(@NotNull Collection<?> collection) {
         items = new ArrayList<>(collection);
         for (int i = 0; i < items.size(); i++) {
             //props.addAll(ObjectPropertyDescriptor.extractAnnotations(this, item.getClass(), null));
@@ -47,48 +45,49 @@ public class PropertySourceCollection implements DBPPropertySource {
         }
     }
 
+    @NotNull
     @Override
     public Object getEditableValue()
     {
         return this;
     }
 
+    @NotNull
     @Override
     public DBPPropertyDescriptor[] getProperties() {
         return props.toArray(new DBPPropertyDescriptor[0]);
     }
 
+    @Nullable
     @Override
-    public Object getPropertyValue(@Nullable DBRProgressMonitor monitor, String id)
+    public Object getPropertyValue(@Nullable DBRProgressMonitor monitor, @NotNull String id)
     {
         return items.get(CommonUtils.toInt(id));
     }
 
     @Override
-    public boolean isPropertySet(String id)
+    public boolean isPropertySet(@NotNull String id)
     {
         return false;
     }
 
     @Override
-    public boolean isPropertyResettable(String id) {
+    public boolean isPropertyResettable(@NotNull String id) {
         return false;
     }
 
     @Override
-    public void resetPropertyValue(@Nullable DBRProgressMonitor monitor, String id)
-    {
+    public void resetPropertyValue(@Nullable DBRProgressMonitor monitor, @NotNull String id) {
 
     }
 
     @Override
-    public void resetPropertyValueToDefault(String id) {
+    public void resetPropertyValueToDefault(@NotNull String id) {
 
     }
 
     @Override
-    public void setPropertyValue(@Nullable DBRProgressMonitor monitor, String id, Object value)
-    {
+    public void setPropertyValue(@Nullable DBRProgressMonitor monitor, @NotNull String id, @Nullable Object value) {
     }
 
     @Override
@@ -100,7 +99,7 @@ public class PropertySourceCollection implements DBPPropertySource {
         private final String id;
         private final Object item;
 
-        private ItemPropertyDescriptor(String  id, Object item) {
+        private ItemPropertyDescriptor(@NotNull String  id, Object item) {
             this.id = id;
             this.item = item;
         }

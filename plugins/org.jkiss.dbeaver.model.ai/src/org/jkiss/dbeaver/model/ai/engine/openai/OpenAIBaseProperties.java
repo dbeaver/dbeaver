@@ -28,16 +28,6 @@ public interface OpenAIBaseProperties extends AIEngineProperties {
     @Nullable
     String getToken();
 
-    @Nullable
-    String getModel();
-
-    @Nullable
-    Integer getContextWindowSize();
-
-    double getTemperature();
-
-    boolean isLoggingEnabled();
-
     default boolean isStreamingEnabled() {
         return true;
     }
