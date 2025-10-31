@@ -269,7 +269,7 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
         // It sets main windows name and images
         getDisplay();
 
-        if (!RuntimeUtils.isMacOS() || !RuntimeUtils.isOSVersionAtLeast(14, 0, 0)) {
+        if (!RuntimeUtils.isMacOS() || RuntimeUtils.isOSVersionAtLeast(14, 0, 0)) {
             updateSplashHandler();
         }
 
