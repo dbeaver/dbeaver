@@ -628,12 +628,12 @@ public class MySQLCatalog implements
                 return new MySQLView(owner, dbResult);
             } else {
                 MySQLTable mySQLTable = new MySQLTable(owner, dbResult);
-                loadgetAdditionalInfoIfNeed(owner, mySQLTable);
+                loadAdditionalInfoIfNeed(owner, mySQLTable);
                 return mySQLTable;
             }
         }
 
-        private void loadgetAdditionalInfoIfNeed(@NotNull MySQLCatalog owner, @NotNull MySQLTable mySQLTable) {
+        private void loadAdditionalInfoIfNeed(@NotNull MySQLCatalog owner, @NotNull MySQLTable mySQLTable) {
             owner.getTableCache().getCachedObjects().stream()
                 .filter(t -> t.getName().equals(mySQLTable.getName()))
                 .filter(MySQLTable.class::isInstance)
