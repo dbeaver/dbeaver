@@ -634,11 +634,9 @@ public class MySQLCatalog implements
         }
 
         private void loadAdditionalInfoIfNeed(@NotNull MySQLCatalog owner, @NotNull MySQLTable mySQLTable) {
-            owner.getTableCache().getCachedObjects().stream()
-                .filter(t -> t.getName().equals(mySQLTable.getName()))
+            Optional.ofNullable(owner.getTableCache().getCachedObject(mySQLTable.getName()))
                 .filter(MySQLTable.class::isInstance)
                 .map(MySQLTable.class::cast)
-                .findFirst()
                 .ifPresent(t -> {
                     if (t.hasStatistics()) {
                         try {
