@@ -48,6 +48,18 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.sql.dialogs.ViewSQLDialog;
 import org.jkiss.dbeaver.ui.editors.sql.internal.SQLEditorMessages;
 import org.jkiss.utils.CommonUtils;
+import org.eclipse.core.resources.IFile;
+import org.eclipse.ui.PartInitException;
+import org.jkiss.dbeaver.ui.EditorsUI;
+import org.jkiss.dbeaver.ui.DBWorkbench;
+import org.jkiss.dbeaver.ui.editors.EditorUtils;
+import org.jkiss.dbeaver.ui.editors.sql.SQLEditor;
+import org.jkiss.dbeaver.ui.editors.sql.SQLEditorUtils;
+import org.eclipse.ui.part.FileEditorInput;
+import org.jkiss.dbeaver.model.app.DBPProject;
+import org.jkiss.dbeaver.model.app.DBPWorkspace;
+import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 
 class SQLGeneratorDialog extends ViewSQLDialog {
     private static final Log log = Log.getLog(SQLGeneratorDialog.class);
@@ -66,12 +78,23 @@ class SQLGeneratorDialog extends ViewSQLDialog {
             NLS.bind(SQLEditorMessages.sql_generator_dialog_title, context.getDataSource().getContainer().getName()),
             null, "");
         this.sqlGenerator = sqlGenerator;
+        private static final int EDIT_IN_SQL_EDITOR_ID = 0xEE17;
     }
 
-    @Override
+
+   @Override
     protected void createButtonsForButtonBar(Composite parent) {
         createRefreshButton(parent);
         super.createButtonsForButtonBar(parent);
+
+    
+        Button editBtn = createButton(
+            parent,
+            EDIT_IN_SQL_EDITOR_ID,
+            "Edit in SQL Editor",
+            false
+        );
+        editBtn.setEnabled(false);
     }
     
     @Override
@@ -143,6 +166,10 @@ class SQLGeneratorDialog extends ViewSQLDialog {
                             Button button = getButton(IDialogConstants.DETAILS_ID);
                             if (button != null) {
                                 button.setEnabled(true);
+                            }
+                            Button editBtn = getButton(EDIT_IN_SQL_EDITOR_ID);
+                            if (editBtn != null) {
+                                editBtn.setEnabled(true);
                             }
                         }
                     });
@@ -287,43 +314,99 @@ class SQLGeneratorDialog extends ViewSQLDialog {
     }
 
     @Override
-    protected void buttonPressed(int buttonId) {
-        if (buttonId == IDialogConstants.RETRY_ID) {
-            final AbstractJob job = new AbstractJob("Refresh metadata for SQL Generator") { //$NON-NLS-1$
-                @Override
-                protected IStatus run(DBRProgressMonitor monitor) {
-                    for (Object object : sqlGenerator.getObjects()) {
-                        if (object instanceof DBSObject) {
-                            DBSObject dbsObject = (DBSObject) object;
-                            try {
-                                DBNDatabaseNode dbnNode = DBNUtils.getNodeByObject(dbsObject);
-                                dbnNode.refreshNode(monitor, object);
-                                if (monitor.isCanceled()) {
-                                    break;
-                                }
-                                monitor.worked(1);
-                            } catch (Exception e) {
-                                log.error("Error refreshing object '" + dbsObject.getName() + "'", e); //$NON-NLS-1$ //$NON-NLS-2$
+protected void buttonPressed(int buttonId) {
+    if (buttonId == EDIT_IN_SQL_EDITOR_ID) {
+        String sql = getSQLText(); 
+        if (CommonUtils.isEmpty(sql)) {
+            super.buttonPressed(buttonId);
+            return;
+        }
+        try {
+            DBPWorkspace workspace = DBWorkbench.getPlatform().getWorkspace();
+            DBPProject activeProject = workspace.getActiveProject();
+            DBPDataSourceContainer container =
+                getExecutionContext() != null && getExecutionContext().getDataSource() != null
+                    ? getExecutionContext().getDataSource().getContainer()
+                    : null;
+
+            IFile scriptFile = SQLEditorUtils.createNewScript(
+                activeProject,
+                container,
+                "Generated-" + System.currentTimeMillis() + ".sql",
+                sql 
+            );
+
+            EditorUtils.openEditor(new FileEditorInput(scriptFile), SQLEditor.class);
+
+            close();
+        } catch (Throwable e) {
+            
+            try {
+                DBPWorkspace ws = DBWorkbench.getPlatform().getWorkspace();
+                DBPProject proj = ws.getActiveProject();
+                IFile scriptFile = SQLEditorUtils.createNewScript(
+                    proj,
+                    getExecutionContext() != null ? getExecutionContext().getDataSource().getContainer() : null
+                );
+                
+                var editorPart = EditorUtils.openEditor(new FileEditorInput(scriptFile), SQLEditor.class);
+                if (editorPart instanceof SQLEditor) {
+                    SQLEditor editor = (SQLEditor) editorPart;
+                    var doc = editor.getDocumentProvider().getDocument(editor.getEditorInput());
+                    doc.set(sql);
+                }
+                close();
+            } catch (Throwable ex) {
+                DBWorkbench.getPlatformUI().showError(
+                    "Open in SQL Editor",
+                    "Can't open generated SQL in the editor",
+                    ex
+                );
+            }
+        }
+        return;
+    }
+
+
+    if (buttonId == IDialogConstants.RETRY_ID) {
+        final AbstractJob job = new AbstractJob("Refresh metadata for SQL Generator") { //$NON-NLS-1$
+            @Override
+            protected IStatus run(DBRProgressMonitor monitor) {
+                for (Object object : sqlGenerator.getObjects()) {
+                    if (object instanceof DBSObject) {
+                        DBSObject dbsObject = (DBSObject) object;
+                        try {
+                            DBNDatabaseNode dbnNode = DBNUtils.getNodeByObject(dbsObject);
+                            dbnNode.refreshNode(monitor, object);
+                            if (monitor.isCanceled()) {
+                                break;
                             }
+                            monitor.worked(1);
+                        } catch (Exception e) {
+                            log.error("Error refreshing object '" + dbsObject.getName() + "'", e); //$NON-NLS-1$ //$NON-NLS-2$
                         }
                     }
-                    monitor.done();
-                    return Status.OK_STATUS;
                 }
-            };
-            job.addJobChangeListener(new JobChangeAdapter() {
-                public void done(IJobChangeEvent event) {
-                    UIUtils.syncExec(() -> {
-                        if (event.getResult() == Status.OK_STATUS) {
-                            startGenerateJob();
-                        }
-                    });
-                }
-            });
-            job.schedule();
-        }
-        super.buttonPressed(buttonId);
+                monitor.done();
+                return Status.OK_STATUS;
+            }
+        };
+        job.addJobChangeListener(new JobChangeAdapter() {
+            public void done(IJobChangeEvent event) {
+                UIUtils.syncExec(() -> {
+                    if (event.getResult() == Status.OK_STATUS) {
+                        startGenerateJob();
+                    }
+                });
+            }
+        });
+        job.schedule();
+        return;
     }
+
+    super.buttonPressed(buttonId);
+}
+
 
     private void startGenerateJob() {
         setSQLText("Loading DDL...");
@@ -332,6 +415,12 @@ class SQLGeneratorDialog extends ViewSQLDialog {
         if (button != null) {
             button.setEnabled(false);
         }
+       
+        Button editBtn = getButton(EDIT_IN_SQL_EDITOR_ID);
+        if (editBtn != null) {
+            editBtn.setEnabled(false);
+        }
+
         generateDDLJob.cancel();
         generateDDLJob.schedule();
     }
