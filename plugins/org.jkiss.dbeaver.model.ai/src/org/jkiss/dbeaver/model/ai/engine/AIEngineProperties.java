@@ -24,11 +24,7 @@ public interface AIEngineProperties {
 
     Integer getContextWindowSize();
 
-    void  setContextWindowSize(Integer contextWindowSize);
-
     double getTemperature();
-
-    void setTemperature(double temperature);
 
     // Checks that properties have all required values
     boolean isValidConfiguration();
