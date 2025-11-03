@@ -17,35 +17,21 @@
 package org.jkiss.dbeaver.ui.editors;
 
 import org.eclipse.core.resources.IFile;
-import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.ui.part.FileEditorInput;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 
 import java.net.URI;
 import java.nio.file.Path;
-import java.util.Objects;
 
 public class IncludedScriptFileEditorInput extends FileEditorInput {
 
     private final Path includedScriptFile;
     private DatabaseEditorContext databaseEditorContext;
 
-    public IncludedScriptFileEditorInput(@NotNull Path includedScriptFile) {
-        this(getFile(includedScriptFile), includedScriptFile);
-    }
-
-    private IncludedScriptFileEditorInput(@NotNull IFile incIFile, @NotNull Path includedScriptFile) {
+    public IncludedScriptFileEditorInput(@NotNull IFile incIFile, @NotNull Path includedScriptFile) {
         super(incIFile);
         this.includedScriptFile = includedScriptFile;
-    }
-
-    @NotNull
-    private static IFile getFile(@NotNull Path pathToFile) {
-        IFile foundFile = ResourcesPlugin.getWorkspace().getRoot()
-            .getFileForLocation(org.eclipse.core.runtime.Path.fromOSString(pathToFile.toString()));
-        Objects.requireNonNull(foundFile, "Cannot find workspace file for included script: " + pathToFile);
-        return foundFile;
     }
 
     @Override

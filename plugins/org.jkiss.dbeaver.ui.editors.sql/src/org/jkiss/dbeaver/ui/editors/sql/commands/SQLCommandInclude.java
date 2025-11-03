@@ -16,6 +16,8 @@
  */
 package org.jkiss.dbeaver.ui.editors.sql.commands;
 
+import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.ui.*;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
@@ -56,9 +58,24 @@ public class SQLCommandInclude implements SQLControlCommandHandler {
         @NotNull SQLScriptContext scriptContext
     ) throws DBException {
         String fileName = command.getParameter();
+        Path includedFile = identifyIncludedScriptFile(fileName, scriptContext);
+        verifyNoRecursiveInclusionIsPresent(scriptContext, includedFile, fileName);
+
+        return getSqlControlResult(
+            scriptContext,
+            includedFile
+        );
+    }
+
+    @NotNull
+    private Path identifyIncludedScriptFile(
+        @NotNull String fileName,
+        @NotNull SQLScriptContext scriptContext
+    ) throws DBException {
         if (CommonUtils.isEmpty(fileName)) {
             throw new DBException("Empty input file");
         }
+
         fileName = GeneralUtils.replaceVariables(fileName, new ScriptVariablesResolver(scriptContext), true).trim();
         fileName = DBUtils.getUnQuotedIdentifier(scriptContext.getExecutionContext().getDataSource(), fileName);
 
@@ -70,29 +87,32 @@ public class SQLCommandInclude implements SQLControlCommandHandler {
         if (!Files.exists(incFile)) {
             throw new DBException("File '" + fileName + "' not found");
         }
+        return incFile;
+    }
 
-        // Check for nested inclusion
+    private void verifyNoRecursiveInclusionIsPresent(
+        @NotNull SQLScriptContext scriptContext,
+        @NotNull Path includedFile,
+        @NotNull String fileName
+    ) throws DBException {
         for (SQLScriptContext sc = scriptContext; sc != null; sc = sc.getParentContext()) {
-            if (sc.getSourceFile() != null && sc.getSourceFile().equals(incFile)) {
+            if (sc.getSourceFile() != null && sc.getSourceFile().equals(includedFile)) {
                 throw new DBException("File '" + fileName + "' recursive inclusion");
             }
         }
-
-        return getSqlControlResult(
-            scriptContext,
-            incFile
-        );
     }
 
     @NotNull
     private SQLControlResult getSqlControlResult(
         @NotNull SQLScriptContext scriptContext,
-        @NotNull Path finalIncFile
+        @NotNull Path includedScriptFile
     ) throws DBException {
+        IFile workspaceIncludedScriptFile = getWorkspaceIncludedScriptFile(includedScriptFile);
         try {
             CompletableFuture<SQLControlResult> result = getSqlControlResultCompletableFuture(
                 scriptContext,
-                finalIncFile
+                includedScriptFile,
+                workspaceIncludedScriptFile
             );
             return result.get();
         } catch (InterruptedException e) {
@@ -103,17 +123,29 @@ public class SQLCommandInclude implements SQLControlCommandHandler {
     }
 
     @NotNull
+    private IFile getWorkspaceIncludedScriptFile(@NotNull Path pathToFile) throws DBException {
+        IFile foundFile = ResourcesPlugin.getWorkspace().getRoot()
+            .getFileForLocation(org.eclipse.core.runtime.Path.fromOSString(pathToFile.toString()));
+
+        if (foundFile == null) {
+            throw new DBException("Cannot find workspace file for included script:" + pathToFile);
+        }
+        return foundFile;
+    }
+
+    @NotNull
     private CompletableFuture<SQLControlResult> getSqlControlResultCompletableFuture(
         @NotNull SQLScriptContext scriptContext,
-        @NotNull Path finalIncFile
+        @NotNull Path includedScriptFile,
+        @NotNull IFile workspaceIncludedScriptFile
     ) {
         CompletableFuture<SQLControlResult> result = new CompletableFuture<>();
         UIUtils.syncExec(() -> {
             try {
-                final IWorkbenchWindow workbenchWindow = UIUtils.getActiveWorkbenchWindow();
-                closeDuplicatedEditors(finalIncFile);
-                SQLEditor sqlEditor = getSqlEditor(scriptContext, finalIncFile, workbenchWindow);
-                final IncludeScriptListener scriptListener = new IncludeScriptListener(
+                IWorkbenchWindow workbenchWindow = UIUtils.getActiveWorkbenchWindow();
+                closeDuplicatedEditors(includedScriptFile);
+                SQLEditor sqlEditor = getSqlEditor(scriptContext, includedScriptFile, workspaceIncludedScriptFile, workbenchWindow);
+                IncludeScriptListener scriptListener = new IncludeScriptListener(
                     workbenchWindow,
                     sqlEditor,
                     result
@@ -133,10 +165,11 @@ public class SQLCommandInclude implements SQLControlCommandHandler {
     @NotNull
     private SQLEditor getSqlEditor(
         @NotNull SQLScriptContext scriptContext,
-        @NotNull Path finalIncFile,
+        @NotNull Path includedScriptFile,
+        @NotNull IFile workspaceIncludedScriptFile,
         @NotNull IWorkbenchWindow workbenchWindow
     ) {
-        IncludedScriptFileEditorInput input = new IncludedScriptFileEditorInput(finalIncFile);
+        IncludedScriptFileEditorInput input = new IncludedScriptFileEditorInput(workspaceIncludedScriptFile, includedScriptFile);
         SQLEditor sqlEditor = SQLEditorHandlerOpenEditor.openNewSQLConsole(
             workbenchWindow,
             new SQLNavigatorContext(scriptContext, true),
@@ -146,11 +179,11 @@ public class SQLCommandInclude implements SQLControlCommandHandler {
         return sqlEditor;
     }
 
-    private void closeDuplicatedEditors(@NotNull Path finalIncFile) throws PartInitException {
+    private void closeDuplicatedEditors(@NotNull Path includedScriptFile) throws PartInitException {
         for (IWorkbenchWindow window : PlatformUI.getWorkbench().getWorkbenchWindows()) {
             for (IWorkbenchPage page : window.getPages()) {
                 for (IEditorReference editorReference : page.getEditorReferences()) {
-                    if (isEditorForSameIncludedScript(editorReference, finalIncFile)) {
+                    if (isEditorForSameIncludedScript(editorReference, includedScriptFile)) {
                             UIUtils.syncExec(
                                 () -> page.closeEditor(editorReference.getEditor(false), false));
 
@@ -160,10 +193,12 @@ public class SQLCommandInclude implements SQLControlCommandHandler {
         }
     }
 
-    private boolean isEditorForSameIncludedScript(@NotNull IEditorReference editorReference, @NotNull Path finalIncFile)
-    throws PartInitException {
+    private boolean isEditorForSameIncludedScript(
+        @NotNull IEditorReference editorReference,
+        @NotNull Path includedScriptFile
+    ) throws PartInitException {
         return editorReference.getEditorInput() instanceof IncludedScriptFileEditorInput includeInput
-            && includeInput.getIncludedScriptFile().toAbsolutePath().toString().equals(finalIncFile.toAbsolutePath().toString());
+            && includeInput.getIncludedScriptFile().toAbsolutePath().toString().equals(includedScriptFile.toAbsolutePath().toString());
     }
 
     private static class IncludeScriptListener implements SQLQueryListener {
