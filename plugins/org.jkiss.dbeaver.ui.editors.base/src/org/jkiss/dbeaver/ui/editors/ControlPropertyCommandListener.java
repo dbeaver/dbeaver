@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.DisposeEvent;
 import org.eclipse.swt.events.DisposeListener;
 import org.eclipse.swt.widgets.*;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.edit.DBECommandReflector;
 import org.jkiss.dbeaver.model.edit.prop.DBECommandProperty;
@@ -170,13 +171,13 @@ public class ControlPropertyCommandListener<OBJECT_TYPE extends DBSObject> {
                     final Object newValue = readWidgetValue();
                     DBECommandReflector<OBJECT_TYPE, DBECommandProperty<OBJECT_TYPE>> commandReflector = new DBECommandReflector<OBJECT_TYPE, DBECommandProperty<OBJECT_TYPE>>() {
                         @Override
-                        public void redoCommand(DBECommandProperty<OBJECT_TYPE> command)
+                        public void redoCommand(@NotNull DBECommandProperty<OBJECT_TYPE> command)
                         {
                             writeWidgetValue(command.getNewValue());
                         }
 
                         @Override
-                        public void undoCommand(DBECommandProperty<OBJECT_TYPE> command)
+                        public void undoCommand(@NotNull DBECommandProperty<OBJECT_TYPE> command)
                         {
                             writeWidgetValue(command.getOldValue());
                         }
