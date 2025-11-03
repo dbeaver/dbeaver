@@ -283,7 +283,23 @@ public class SQLEditorHandlerOpenEditor extends AbstractDataSourceHandler {
         return openSQLEditor(workbenchWindow, sqlInput);
     }
 
-    public static SQLEditor openUniqueSQLConsole(
+    /**
+     * Open a new SQL console editor.
+     * <p>
+     * This method always opens a new editor instance even if an editor with the same input
+     * is already opened. The provided {@code sqlInput} will be associated with the
+     * supplied SQLNavigatorContext using EditorUtils, and the editor will be opened with
+     * {@link IWorkbenchPage#MATCH_NONE} to avoid reusing existing editors.
+     * </p>
+     *
+     * @param workbenchWindow the workbench window used to open the editor (must not be null)
+     * @param context the navigator context that provides project and datasource information (must not be null)
+     * @param sqlInput the editor input to open (must not be null). May be an instance of
+     *                 {@link INonPersistentEditorInput} for transient consoles.
+     * @return the opened {@link SQLEditor} instance or {@code null} if the editor could not be opened
+     */
+    @Nullable
+    public static SQLEditor openNewSQLConsole(
         @NotNull IWorkbenchWindow workbenchWindow,
         @NotNull SQLNavigatorContext context,
         @NotNull IEditorInput sqlInput
@@ -307,14 +323,14 @@ public class SQLEditorHandlerOpenEditor extends AbstractDataSourceHandler {
     private static SQLEditor openSQLEditor(
         @NotNull IWorkbenchWindow workbenchWindow,
         @NotNull IEditorInput sqlInput,
-        int iworkbenchPage
+        int matchFlags
     ) {
         try {
             return (SQLEditor) workbenchWindow.getActivePage().openEditor(
                 sqlInput,
                 SQLEditor.class.getName(),
                 true,
-                iworkbenchPage
+                matchFlags
             );
         } catch (PartInitException e) {
             DBWorkbench.getPlatformUI().showError("Can't open editor", null, e);

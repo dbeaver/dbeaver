@@ -27,7 +27,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.*;
 import org.jkiss.dbeaver.model.sql.eval.ScriptVariablesResolver;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.editors.IncludedEditorInput;
+import org.jkiss.dbeaver.ui.editors.IncludedScriptFileEditorInput;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditor;
 import org.jkiss.dbeaver.ui.editors.sql.SQLPreferenceConstants;
 import org.jkiss.dbeaver.ui.editors.sql.handlers.SQLEditorHandlerOpenEditor;
@@ -50,7 +50,11 @@ public class SQLCommandInclude implements SQLControlCommandHandler {
 
     @NotNull
     @Override
-    public SQLControlResult handleCommand(@NotNull DBRProgressMonitor monitor, @NotNull SQLControlCommand command, @NotNull final SQLScriptContext scriptContext) throws DBException {
+    public SQLControlResult handleCommand(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull SQLControlCommand command,
+        @NotNull SQLScriptContext scriptContext
+    ) throws DBException {
         String fileName = command.getParameter();
         if (CommonUtils.isEmpty(fileName)) {
             throw new DBException("Empty input file");
@@ -68,7 +72,7 @@ public class SQLCommandInclude implements SQLControlCommandHandler {
         }
 
         // Check for nested inclusion
-        for (SQLScriptContext sc = scriptContext; sc != null ;sc = sc.getParentContext()) {
+        for (SQLScriptContext sc = scriptContext; sc != null; sc = sc.getParentContext()) {
             if (sc.getSourceFile() != null && sc.getSourceFile().equals(incFile)) {
                 throw new DBException("File '" + fileName + "' recursive inclusion");
             }
@@ -86,7 +90,7 @@ public class SQLCommandInclude implements SQLControlCommandHandler {
         @NotNull Path finalIncFile
     ) throws DBException {
         try {
-            final CompletableFuture<SQLControlResult> result = getSqlControlResultCompletableFuture(
+            CompletableFuture<SQLControlResult> result = getSqlControlResultCompletableFuture(
                 scriptContext,
                 finalIncFile
             );
@@ -103,7 +107,7 @@ public class SQLCommandInclude implements SQLControlCommandHandler {
         @NotNull SQLScriptContext scriptContext,
         @NotNull Path finalIncFile
     ) {
-        final CompletableFuture<SQLControlResult> result = new CompletableFuture<>();
+        CompletableFuture<SQLControlResult> result = new CompletableFuture<>();
         UIUtils.syncExec(() -> {
             try {
                 final IWorkbenchWindow workbenchWindow = UIUtils.getActiveWorkbenchWindow();
@@ -132,11 +136,12 @@ public class SQLCommandInclude implements SQLControlCommandHandler {
         @NotNull Path finalIncFile,
         @NotNull IWorkbenchWindow workbenchWindow
     ) {
-        final IncludedEditorInput input = IncludedEditorInput.of(finalIncFile);
-        SQLEditor sqlEditor = SQLEditorHandlerOpenEditor.openUniqueSQLConsole(
+        IncludedScriptFileEditorInput input = new IncludedScriptFileEditorInput(finalIncFile);
+        SQLEditor sqlEditor = SQLEditorHandlerOpenEditor.openNewSQLConsole(
             workbenchWindow,
-                new SQLNavigatorContext(scriptContext, true),
-                input);
+            new SQLNavigatorContext(scriptContext, true),
+            input
+        );
         sqlEditor.reloadSyntaxRules();
         return sqlEditor;
     }
@@ -157,8 +162,8 @@ public class SQLCommandInclude implements SQLControlCommandHandler {
 
     private boolean isEditorForSameIncludedScript(@NotNull IEditorReference editorReference, @NotNull Path finalIncFile)
     throws PartInitException {
-        return editorReference.getEditorInput() instanceof IncludedEditorInput includeInput
-            && includeInput.getIncFile().toAbsolutePath().toString().equals(finalIncFile.toAbsolutePath().toString());
+        return editorReference.getEditorInput() instanceof IncludedScriptFileEditorInput includeInput
+            && includeInput.getIncludedScriptFile().toAbsolutePath().toString().equals(finalIncFile.toAbsolutePath().toString());
     }
 
     private static class IncludeScriptListener implements SQLQueryListener {
@@ -200,7 +205,7 @@ public class SQLCommandInclude implements SQLControlCommandHandler {
 
         @Override
         public void onEndSqlJob(DBCSession session, SqlJobResult result) {
-            this.result.complete(result.equals(SqlJobResult.SUCCESS) ? SQLControlResult.success() : SQLControlResult.failure());
+            this.result.complete(result == SqlJobResult.SUCCESS ? SQLControlResult.success() : SQLControlResult.failure());
         }
 
         private boolean isShouldCloseIncludedScript(boolean hasErrors) {

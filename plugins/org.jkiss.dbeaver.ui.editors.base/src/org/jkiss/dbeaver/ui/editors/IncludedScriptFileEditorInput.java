@@ -24,35 +24,39 @@ import org.jkiss.code.Nullable;
 
 import java.net.URI;
 import java.nio.file.Path;
+import java.util.Objects;
 
-public class IncludedEditorInput extends FileEditorInput {
+public class IncludedScriptFileEditorInput extends FileEditorInput {
 
-    private final Path incFile;
+    private final Path includedScriptFile;
     private DatabaseEditorContext databaseEditorContext;
 
-    private IncludedEditorInput(@NotNull IFile incIFile, @NotNull Path incFile) {
+    public IncludedScriptFileEditorInput(@NotNull Path includedScriptFile) {
+        this(getFile(includedScriptFile), includedScriptFile);
+    }
+
+    private IncludedScriptFileEditorInput(@NotNull IFile incIFile, @NotNull Path includedScriptFile) {
         super(incIFile);
-        this.incFile = incFile;
+        this.includedScriptFile = includedScriptFile;
     }
 
-    public static IncludedEditorInput of(@NotNull Path incFile) {
-        return new IncludedEditorInput(getFile(incFile), incFile);
-    }
-
+    @NotNull
     private static IFile getFile(@NotNull Path pathToFile) {
-        return ResourcesPlugin.getWorkspace().getRoot()
+        IFile foundFile = ResourcesPlugin.getWorkspace().getRoot()
             .getFileForLocation(org.eclipse.core.runtime.Path.fromOSString(pathToFile.toString()));
+        Objects.requireNonNull(foundFile, "Cannot find workspace file for included script: " + pathToFile);
+        return foundFile;
     }
 
     @Override
     @NotNull
     public URI getURI() {
-        return incFile.toUri();
+        return includedScriptFile.toUri();
     }
 
     @NotNull
-    public Path getIncFile() {
-        return incFile;
+    public Path getIncludedScriptFile() {
+        return includedScriptFile;
     }
 
     @Nullable

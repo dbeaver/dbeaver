@@ -232,8 +232,8 @@ public class EditorUtils {
     public static DatabaseEditorContext getEditorContext(IEditorInput editorInput) {
         if (editorInput instanceof IInMemoryEditorInput) {
             return (DatabaseEditorContext) ((IInMemoryEditorInput) editorInput).getProperty(PROP_EDITOR_CONTEXT);
-        } else if (editorInput instanceof IncludedEditorInput) {
-            return ((IncludedEditorInput) editorInput).getDatabaseEditorContext();
+        } else if (editorInput instanceof IncludedScriptFileEditorInput) {
+            return ((IncludedScriptFileEditorInput) editorInput).getDatabaseEditorContext();
         }
         return null;
     }
@@ -382,8 +382,8 @@ public class EditorUtils {
             }
             return;
         }
-        if (editorInput instanceof IncludedEditorInput) {
-            ((IncludedEditorInput) editorInput).setDatabaseEditorContext(context);
+        if (editorInput instanceof IncludedScriptFileEditorInput) {
+            ((IncludedScriptFileEditorInput) editorInput).setDatabaseEditorContext(context);
         }
         IFile file = getFileFromInput(editorInput);
         if (file != null) {
