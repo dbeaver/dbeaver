@@ -288,8 +288,7 @@ public class SQLEditorHandlerOpenEditor extends AbstractDataSourceHandler {
      * <p>
      * This method always opens a new editor instance even if an editor with the same input
      * is already opened. The provided {@code sqlInput} will be associated with the
-     * supplied SQLNavigatorContext using EditorUtils, and the editor will be opened with
-     * {@link IWorkbenchPage#MATCH_NONE} to avoid reusing existing editors.
+     * supplied {@code context}.
      * </p>
      *
      * @param workbenchWindow the workbench window used to open the editor (must not be null)
