@@ -95,6 +95,7 @@ import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.model.struct.DBSInstance;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectState;
+import org.jkiss.dbeaver.registry.ApplicationPolicyProvider;
 import org.jkiss.dbeaver.registry.DataSourceUtils;
 import org.jkiss.dbeaver.registry.confirmation.ConfirmationConstants;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -136,6 +137,7 @@ import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLEditorCompletionContext;
 import org.jkiss.dbeaver.ui.editors.sql.variables.AssignVariableAction;
 import org.jkiss.dbeaver.ui.editors.sql.variables.SQLVariablesPanel;
 import org.jkiss.dbeaver.ui.editors.text.ScriptPositionColumn;
+import org.jkiss.dbeaver.ui.internal.UIMessages;
 import org.jkiss.dbeaver.ui.navigator.INavigatorModelView;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.PrefUtils;
@@ -1181,6 +1183,19 @@ public class SQLEditor extends SQLEditorBase implements
 
     protected boolean isHideQueryText() {
         return false;
+    }
+
+    protected boolean canProcessQueries() {
+        if (ApplicationPolicyProvider.getInstance().isPolicyEnabled(ApplicationPolicyProvider.POLICY_SQL_EXECUTION)) {
+            UIUtils.showMessageBox(
+                getSite().getShell(),
+                UIMessages.dialog_policy_sql_execution_title,
+                UIMessages.dialog_policy_sql_execution_msg,
+                SWT.ICON_WARNING
+            );
+            return false;
+        }
+        return true;
     }
 
     private void onTextChange(ModifyEvent e) {
@@ -2591,6 +2606,10 @@ public class SQLEditor extends SQLEditorBase implements
     }
 
     public void explainQueryPlan() {
+        if (!canProcessQueries()) {
+            return;
+        }
+
         // Notify listeners
         synchronized (listeners) {
             for (SQLEditorListener listener : listeners) {
@@ -2849,6 +2868,9 @@ public class SQLEditor extends SQLEditorBase implements
     ) {
         if (queries.isEmpty()) {
             // Nothing to process
+            return false;
+        }
+        if (!canProcessQueries()) {
             return false;
         }
 
@@ -3469,14 +3491,6 @@ public class SQLEditor extends SQLEditorBase implements
                 }
             );
         }
-    }
-
-    public boolean hasOnlyEmptyResultViews() {
-        return this.queryProcessors.isEmpty() || (
-            this.queryProcessors.stream().allMatch(qp -> qp.resultContainers.isEmpty() || (
-                qp.resultContainers.stream().allMatch(rc -> !rc.viewer.hasData())
-            ))
-        );
     }
 
     private boolean isContextChanged(DBPEvent event) {
