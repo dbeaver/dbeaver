@@ -14,47 +14,38 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.websocket.event.session;
+package org.jkiss.dbeaver.model.websocket.event.session.task;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.model.websocket.WSConstants;
 
-public class WSSessionTaskQueryConfirmationRequestEvent extends WSAbstractSessionEvent {
+import java.util.Map;
 
-    public static final String ID = "cb_session_task_query_confirmation_request";
-
-    private final String taskId;
-    private final String title;
-    private final String message;
+public class WSSessionTaskQueryParamsConfirmationEvent extends WSAbstractSessionTaskEvent {
+    private static final String ID = "cb_session_task_query_params_confirmation_request";
+    @NotNull
     private final String query;
+    @NotNull
+    private final Map<String, Object> parameters;
 
-    public WSSessionTaskQueryConfirmationRequestEvent(
+    public WSSessionTaskQueryParamsConfirmationEvent(
         @NotNull String taskId,
         @NotNull String title,
         @NotNull String message,
-        @NotNull String query
+        @NotNull String query,
+        @NotNull Map<String, Object> parameters
     ) {
-        super(ID, WSConstants.TOPIC_SESSION_TASK);
-        this.taskId = taskId;
-        this.title = title;
-        this.message = message;
+        super(ID, taskId, title, message);
         this.query = query;
+        this.parameters = parameters;
     }
 
-    public String getTaskId() {
-        return taskId;
-    }
-
-    public String getTitle() {
-        return title;
-    }
-
-    public String getMessage() {
-        return message;
-    }
-
+    @NotNull
     public String getQuery() {
         return query;
     }
 
+    @NotNull
+    public Map<String, Object> getParameters() {
+        return parameters;
+    }
 }

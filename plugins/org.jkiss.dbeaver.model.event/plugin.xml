@@ -75,12 +75,14 @@
         <event topicId="cb_user" id="cb_user_disabled" class="org.jkiss.dbeaver.model.websocket.event.WSUserDisabledEvent"/>
 
         <event topicId="cb_session_task" id="cb_session_task_info_updated"
-               class="org.jkiss.dbeaver.model.websocket.event.session.WSSessionTaskInfoEvent"/>
+               class="org.jkiss.dbeaver.model.websocket.event.session.task.WSSessionTaskInfoEvent"/>
 
         <event topicId="cb_session_task" id="cb_session_task_confirmation_request"
-               class="org.jkiss.dbeaver.model.websocket.event.session.WSSessionTaskConfirmationRequestEvent"/>
+               class="org.jkiss.dbeaver.model.websocket.event.session.task.WSSessionTaskConfirmationRequestEvent"/>
         <event topicId="cb_session_task" id="cb_session_task_query_confirmation_request"
-               class="org.jkiss.dbeaver.model.websocket.event.session.WSSessionTaskQueryConfirmationRequestEvent"/>
+               class="org.jkiss.dbeaver.model.websocket.event.session.task.WSSessionTaskQueryConfirmationRequestEvent"/>
+        <event topicId="cb_session_task" id="cb_session_task_query_params_confirmation_request"
+               class="org.jkiss.dbeaver.model.websocket.event.session.task.WSSessionTaskQueryParamsConfirmationEvent"/>
 
         <clientEvent id="cb_client_session_ping" class="org.jkiss.dbeaver.model.websocket.event.client.WSSessionPingClientEvent"/>
         <clientEvent id="cb_client_topic_subscribe" class="org.jkiss.dbeaver.model.websocket.event.client.WSSubscribeOnTopicClientEvent"/>
@@ -90,6 +92,8 @@
                      class="org.jkiss.dbeaver.model.websocket.event.client.WSUpdateActiveProjectsClientEvent"/>
         <clientEvent id="cb_client_session_task_confirmation"
                      class="org.jkiss.dbeaver.model.websocket.event.client.WSSessionTaskConfirmationEvent"/>
+        <clientEvent id="cb_client_session_task_with_parameters_confirmation"
+                     class="org.jkiss.dbeaver.model.websocket.event.client.WSSessionTaskWithParametersConfirmationEvent"/>
     </extension>
 
 </plugin>

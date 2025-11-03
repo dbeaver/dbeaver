@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,31 +14,30 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.websocket.event.session;
+package org.jkiss.dbeaver.model.websocket.event.session.task;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.websocket.WSConstants;
+import org.jkiss.dbeaver.model.websocket.event.session.WSAbstractSessionEvent;
 
-/**
- * Async task info event.
- */
-public class WSSessionTaskInfoEvent extends WSAbstractSessionEvent {
+public abstract class WSAbstractSessionTaskEvent extends WSAbstractSessionEvent {
     @NotNull
     private final String taskId;
-    @Nullable
-    private final String statusName;
-    private final boolean running;
+    @NotNull
+    private final String title;
+    @NotNull
+    private final String message;
 
-    public WSSessionTaskInfoEvent(
+    public WSAbstractSessionTaskEvent(
+        @NotNull String eventId,
         @NotNull String taskId,
-        @Nullable String statusName,
-        boolean running
+        @NotNull String title,
+        @NotNull String message
     ) {
-        super("cb_session_task_info_updated", WSConstants.TOPIC_SESSION_TASK);
+        super(eventId, WSConstants.TOPIC_SESSION_TASK);
         this.taskId = taskId;
-        this.statusName = statusName;
-        this.running = running;
+        this.title = title;
+        this.message = message;
     }
 
     @NotNull
@@ -46,12 +45,13 @@ public class WSSessionTaskInfoEvent extends WSAbstractSessionEvent {
         return taskId;
     }
 
-    @Nullable
-    public String getStatusName() {
-        return statusName;
+    @NotNull
+    public String getTitle() {
+        return title;
     }
 
-    public boolean isRunning() {
-        return running;
+    @NotNull
+    public String getMessage() {
+        return message;
     }
 }

@@ -14,39 +14,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.websocket.event.session;
+package org.jkiss.dbeaver.model.websocket.event.session.task;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.model.websocket.WSConstants;
 
-public class WSSessionTaskConfirmationRequestEvent extends WSAbstractSessionEvent {
-
-    public static final String ID = "cb_session_task_confirmation_request";
-
-    private final String taskId;
-    private final String title;
-    private final String message;
+public class WSSessionTaskConfirmationRequestEvent extends WSAbstractSessionTaskEvent {
+    private static final String ID = "cb_session_task_confirmation_request";
 
     public WSSessionTaskConfirmationRequestEvent(
         @NotNull String taskId,
         @NotNull String title,
         @NotNull String message
     ) {
-        super(ID, WSConstants.TOPIC_SESSION_TASK);
-        this.taskId = taskId;
-        this.title = title;
-        this.message = message;
-    }
-
-    public String getTaskId() {
-        return taskId;
-    }
-
-    public String getTitle() {
-        return title;
-    }
-
-    public String getMessage() {
-        return message;
+        super(ID, taskId, title, message);
     }
 }
