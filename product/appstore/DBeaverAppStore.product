@@ -9,7 +9,6 @@
     </configIni>
 
     <launcherArgs>
-        <programArgs>-nosplash</programArgs>
         <vmArgs>
             -XX:+IgnoreUnrecognizedVMOptions
             -Dosgi.requiredJavaVersion=21
