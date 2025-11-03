@@ -23,7 +23,7 @@
                         label="Athena"
                         icon="icons/athena_icon.png"
                         iconBig="icons/athena_icon_big.png"
-                        class="com.simba.athena.jdbc.Driver"
+                        class="com.amazon.athena.jdbc.AthenaDriver"
                         sampleURL="jdbc:athena://AWSRegion={region};"
                         defaultPort="444"
                         customEndpoint="true"
@@ -35,8 +35,8 @@
                         categories="sql,aws"
                         singleConnection="true">
                     <replace provider="generic" driver="aws_athena_42"/>
-                    <file type="jar" path="https://s3.amazonaws.com/athena-downloads/drivers/JDBC/SimbaAthenaJDBC-2.2.2.1000/AthenaJDBC42-2.2.2.1000.jar" bundle="!drivers.athena"/>
-                    <file type="license" path="https://s3.amazonaws.com/athena-downloads/drivers/JDBC/SimbaAthenaJDBC-2.2.2.1000/docs/LICENSE.txt" bundle="!drivers.athena"/>
+                    <file type="jar" path="https://downloads.athena.us-east-1.amazonaws.com/drivers/JDBC/3.6.0/athena-jdbc-3.6.0-lean-jar-and-separate-dependencies-jars.zip" bundle="!drivers.athena"/>
+                    <file type="license" path="https://downloads.athena.us-east-1.amazonaws.com/drivers/JDBC/3.6.0/LICENSE.txt" bundle="!drivers.athena"/>
 
                     <file type="jar" path="drivers/athena" bundle="drivers.athena"/>
                     <file type="license" path="drivers/athena/LICENSE.txt" bundle="drivers.athena"/>

@@ -124,8 +124,14 @@ public class UIMessages extends NLS {
     public static String label_choose;
     public static String dialog_policy_data_export_msg;
     public static String dialog_policy_data_export_title;
+    public static String dialog_policy_data_import_msg;
+    public static String dialog_policy_data_import_title;
     public static String dialog_policy_data_copy_title;
     public static String dialog_policy_data_copy_msg;
+    public static String dialog_policy_data_edit_title;
+    public static String dialog_policy_data_edit_msg;
+    public static String dialog_policy_sql_execution_title;
+    public static String dialog_policy_sql_execution_msg;
 
     public static String popup_open_browser_open_external_browser;
 

@@ -385,6 +385,7 @@ public abstract class NodeListControl extends ObjectListControl<DBNNode>
             return getCurrentListObject();
         }
 
+        @NotNull
         @Override
         public Object getEditableValue() {
             return getObjectValue(getCurrentListObject());
@@ -409,6 +410,7 @@ public abstract class NodeListControl extends ObjectListControl<DBNNode>
                 && DBWorkbench.getPlatform().getWorkspace().hasRealmPermission(RMConstants.PERMISSION_METADATA_EDITOR);
         }
 
+        @NotNull
         @Override
         public DBPPropertyDescriptor[] getProperties() {
             return getAllProperties().toArray(new DBPPropertyDescriptor[0]);
