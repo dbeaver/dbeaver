@@ -79,8 +79,7 @@ public class BaseErrorDialog extends BaseDialog {
         this.title = dialogTitle == null ? JFaceResources
             .getString("Problem_Occurred") : //$NON-NLS-1$
             dialogTitle;
-        this.message = message == null ? status.getMessage()
-            : JFaceResources.format("Reason", message, status.getMessage()); //$NON-NLS-1$
+        this.message = message == null ? status.getMessage() : message;
         this.status = status;
         this.displayMask = displayMask;
     }

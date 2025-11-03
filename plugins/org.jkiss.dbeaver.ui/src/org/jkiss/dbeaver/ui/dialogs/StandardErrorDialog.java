@@ -20,7 +20,6 @@ package org.jkiss.dbeaver.ui.dialogs;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.IDialogSettings;
-import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Shell;
@@ -75,7 +74,7 @@ public class StandardErrorDialog extends BaseErrorDialog implements BlockingPopu
                 this.message = CommonUtils.cutExtraLines(rootStatus.getMessage(), 20);
             }
         } else {
-            this.message = CommonUtils.cutExtraLines(JFaceResources.format("Reason", message, status.getMessage()), 20); //$NON-NLS-1$
+            this.message = CommonUtils.cutExtraLines(message, 20); //$NON-NLS-1$
         }
         // Truncate message to 64kb
         this.message = CommonUtils.truncateString(this.message, 64000);
