@@ -35,6 +35,7 @@ import org.jkiss.dbeaver.model.exec.jdbc.*;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
+import org.jkiss.dbeaver.model.impl.jdbc.exec.JDBCStatementImpl;
 import org.jkiss.dbeaver.model.impl.net.SSLHandlerTrustStoreImpl;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
@@ -43,6 +44,7 @@ import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectFilter;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.utils.BeanUtils;
 import org.jkiss.utils.CommonUtils;
 import org.osgi.framework.Version;
 
@@ -166,8 +168,52 @@ public class ClickhouseDataSource extends GenericDataSource {
         }
     }
 
+    @Override
+    protected void initializeContextState(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull JDBCExecutionContext context,
+        JDBCExecutionContext initFrom
+    ) throws DBException {
+        super.initializeContextState(monitor, context, initFrom);
+    }
+
     private void configureSession(@NotNull Properties properties) {
         properties.put(ClickhouseConstants.CLICKHOUSE_SETTING_SESSION_ID, "sess_" + UUID.randomUUID());
+        properties.put("replace_running_query", "true");
+    }
+
+    // Canceling
+    @Override
+    public void cancelStatementExecute(DBRProgressMonitor monitor, JDBCStatement statement) throws DBException {
+        try {
+            super.cancelStatementExecute(monitor, statement);
+        } catch (Throwable ex) {
+            if (ex.getMessage().contains("Code: 373")) {
+                fallbackForServerID(monitor, statement);
+            }
+        }
+    }
+
+    // same session_id will lead to impossibility of cancelling the query, because the session is already busy...
+    // So we need to temporarily create a new one
+    protected void fallbackForServerID(DBRProgressMonitor monitor, JDBCStatement statement) throws DBCException {
+        try (Connection connection = openConnection(monitor, statement.getConnection().getExecutionContext(), "Close Query")) {
+            try (Statement dbStat = connection.createStatement()) {
+                Statement original = ((JDBCStatementImpl) statement).getOriginal();
+                String getLastQueryId = (String) BeanUtils.invokeObjectDeclaredMethod(
+                    original,
+                    "getLastQueryId",
+                    new Class[0],
+                    new Object[0]
+                );
+                dbStat.execute("KILL QUERY WHERE query_id='%s'".formatted(getLastQueryId));
+                log.info("Query killed");
+            } catch (Throwable e) {
+                throw new DBCException("Error during cancelling query", e);
+            }
+        } catch (SQLException e) {
+            throw new DBCException("Error during cancelling query", e);
+        }
     }
 
     @Override
