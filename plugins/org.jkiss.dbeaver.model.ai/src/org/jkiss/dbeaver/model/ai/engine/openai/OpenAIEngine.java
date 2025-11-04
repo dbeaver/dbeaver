@@ -172,6 +172,9 @@ public class OpenAIEngine<PROPS extends OpenAIBaseProperties> extends BaseComple
         if (baseUrl == null || baseUrl.isEmpty()) {
             baseUrl = OpenAIClient.OPENAI_ENDPOINT;
         }
+        if (properties.isLegacyApi()) {
+
+        }
         return OpenAIClient.createClient(baseUrl, token);
     }
 
