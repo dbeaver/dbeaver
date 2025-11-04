@@ -233,6 +233,9 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
                 CLIProcessResult cliProcessResult = DBeaverCommandLine.getInstance()
                     .executeCommandLineCommands(null, false, false, args);
                 if (cliProcessResult.getPostAction() == CLIProcessResult.PostAction.SHUTDOWN) {
+                    if (CommonUtils.isNotEmpty(cliProcessResult.getOutput())) {
+                        System.out.println(cliProcessResult.getOutput());
+                    }
                     return IApplication.EXIT_OK;
                 }
             } catch (Exception e) {
