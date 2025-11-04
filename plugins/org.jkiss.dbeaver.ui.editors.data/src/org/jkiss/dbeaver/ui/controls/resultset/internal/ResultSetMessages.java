@@ -345,9 +345,6 @@ public class ResultSetMessages extends NLS {
     public static String pref_page_database_resultsets_label_order_mode_always_server;
     public static String pref_page_database_resultsets_label_order_policy;
     public static String pref_page_database_resultsets_label_order_policy_tip;
-    public static String pref_page_database_resultsets_label_order_policy_default;
-    public static String pref_page_database_resultsets_label_order_policy_primary_key_asc;
-    public static String pref_page_database_resultsets_label_order_policy_primary_key_desc;
     public static String pref_page_database_resultsets_label_fetch_size;
     public static String pref_page_database_resultsets_label_read_metadata;
     public static String pref_page_database_resultsets_label_read_references;

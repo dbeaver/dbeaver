@@ -18,10 +18,12 @@
 package org.jkiss.dbeaver;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.impl.preferences.BundlePreferenceStore;
+import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.qm.QMConstants;
 import org.jkiss.dbeaver.model.qm.QMObjectType;
@@ -36,6 +38,7 @@ import org.osgi.framework.Bundle;
 
 import java.util.Arrays;
 import java.util.Locale;
+import java.util.Objects;
 
 /**
  * Preferences constants
@@ -160,9 +163,31 @@ public final class ModelPreferences
     }
 
     public enum OrderingPolicy {
-        DEFAULT,
-        PRIMARY_KEY_ASC,
-        PRIMARY_KEY_DESC
+        DEFAULT(ModelMessages.database_resultsets_label_order_policy_default),
+        PRIMARY_KEY_ASC(ModelMessages.database_resultsets_label_order_policy_primary_key_asc),
+        PRIMARY_KEY_DESC(ModelMessages.database_resultsets_label_order_policy_primary_key_desc);
+
+        private final String label;
+
+        OrderingPolicy(String label) {
+            this.label = label;
+        }
+
+        @Override
+        public String toString() {
+            return label;
+        }
+
+        @NotNull
+        public static OrderingPolicy fromString(
+            @Nullable String orderPolicyLabel,
+            @NotNull OrderingPolicy fallback
+        ) {
+            return Arrays.stream(OrderingPolicy.values())
+                .filter(p -> Objects.equals(orderPolicyLabel, p.label))
+                .findFirst()
+                .orElse(fallback);
+        }
     }
 
     public static final String PLUGIN_ID = "org.jkiss.dbeaver.model";

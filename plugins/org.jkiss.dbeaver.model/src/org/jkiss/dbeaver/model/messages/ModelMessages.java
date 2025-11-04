@@ -266,6 +266,10 @@ public class ModelMessages extends NLS {
     public static String duration_seconds;
     public static String duration_milliseconds;
 
+    public static String database_resultsets_label_order_policy_default;
+    public static String database_resultsets_label_order_policy_primary_key_asc;
+    public static String database_resultsets_label_order_policy_primary_key_desc;
+
     static {
         // initialize resource bundle
         NLS.initializeMessages(BUNDLE_NAME, ModelMessages.class);

@@ -31,6 +31,7 @@ import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.ModelPreferences.OrderingPolicy;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -168,12 +169,7 @@ public class PrefPageResultSetMain extends TargetPrefPage
                 SWT.DROP_DOWN | SWT.READ_ONLY
             );
             for (OrderingPolicy policy : OrderingPolicy.values()) {
-                String text = switch (policy) {
-                    case DEFAULT -> ResultSetMessages.pref_page_database_resultsets_label_order_policy_default;
-                    case PRIMARY_KEY_ASC -> ResultSetMessages.pref_page_database_resultsets_label_order_policy_primary_key_asc;
-                    case PRIMARY_KEY_DESC -> ResultSetMessages.pref_page_database_resultsets_label_order_policy_primary_key_desc;
-                };
-                orderingPolicyCombo.add(text);
+                orderingPolicyCombo.add(policy.toString());
             }
 
             queryCancelTimeout = UIUtils.createLabelText(queriesGroup, ResultSetMessages.pref_page_database_general_label_result_set_cancel_timeout + UIMessages.label_ms, "0");
