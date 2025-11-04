@@ -424,6 +424,9 @@ public class SQLQueryJob extends DataSourceJob
                 if (controlResult.getTransformed() != null) {
                     element = controlResult.getTransformed();
                 } else {
+                    if (controlResult.isSuccess()) {
+                        lastGoodQuery = element;
+                    }
                     return controlResult.isSuccess();
                 }
             } catch (Throwable e) {
