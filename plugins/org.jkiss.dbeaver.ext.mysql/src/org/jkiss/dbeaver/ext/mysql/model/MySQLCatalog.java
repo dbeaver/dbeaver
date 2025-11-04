@@ -20,7 +20,6 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBDatabaseException;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.ext.mysql.MySQLConstants;
 import org.jkiss.dbeaver.model.*;
@@ -38,9 +37,11 @@ import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCStructLookupCache;
 import org.jkiss.dbeaver.model.meta.*;
 import org.jkiss.dbeaver.model.preferences.DBPPropertySource;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
-import org.jkiss.dbeaver.model.struct.*;
+import org.jkiss.dbeaver.model.struct.DBSEntity;
+import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
+import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.struct.DBSObjectFilter;
 import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
 import org.jkiss.dbeaver.model.struct.rdb.DBSIndexType;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureContainer;
@@ -61,8 +62,6 @@ public class MySQLCatalog implements
     DBSProcedureContainer, DBPObjectStatisticsCollector, DBPObjectStatistics,
     DBPScriptObject, DBPScriptObjectExt2
 {
-
-    private static final Log log = Log.getLog(MySQLCatalog.class);
 
     private final TableCache tableCache = new TableCache() {
         protected void detectCaseSensitivity(DBSObject object) {
@@ -627,25 +626,8 @@ public class MySQLCatalog implements
             if (tableType != null && tableType.contains("VIEW")) {
                 return new MySQLView(owner, dbResult);
             } else {
-                MySQLTable mySQLTable = new MySQLTable(owner, dbResult);
-                loadAdditionalInfoIfNeed(owner, mySQLTable);
-                return mySQLTable;
+                return new MySQLTable(owner, dbResult);
             }
-        }
-
-        private void loadAdditionalInfoIfNeed(@NotNull MySQLCatalog owner, @NotNull MySQLTable mySQLTable) {
-            Optional.ofNullable(owner.getTableCache().getCachedObject(mySQLTable.getName()))
-                .filter(MySQLTable.class::isInstance)
-                .map(MySQLTable.class::cast)
-                .ifPresent(t -> {
-                    if (t.hasStatistics()) {
-                        try {
-                            mySQLTable.getAdditionalInfo(new VoidProgressMonitor());
-                        } catch (DBCException e) {
-                            log.warn("Cannot load additional info", e);
-                        }
-                    }
-                });
         }
 
         @Override
@@ -1117,4 +1099,9 @@ public class MySQLCatalog implements
             }
         }
     }
+
+    void resetStatistics() {
+        this.hasStatistics = false;
+    }
+
 }
