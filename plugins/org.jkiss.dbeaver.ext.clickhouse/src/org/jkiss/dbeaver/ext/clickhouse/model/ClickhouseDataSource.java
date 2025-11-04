@@ -168,18 +168,8 @@ public class ClickhouseDataSource extends GenericDataSource {
         }
     }
 
-    @Override
-    protected void initializeContextState(
-        @NotNull DBRProgressMonitor monitor,
-        @NotNull JDBCExecutionContext context,
-        JDBCExecutionContext initFrom
-    ) throws DBException {
-        super.initializeContextState(monitor, context, initFrom);
-    }
-
     private void configureSession(@NotNull Properties properties) {
         properties.put(ClickhouseConstants.CLICKHOUSE_SETTING_SESSION_ID, "sess_" + UUID.randomUUID());
-        properties.put("replace_running_query", "true");
     }
 
     // Canceling
