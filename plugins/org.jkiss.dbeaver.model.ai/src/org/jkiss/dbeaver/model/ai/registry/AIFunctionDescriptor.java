@@ -77,7 +77,7 @@ public class AIFunctionDescriptor extends AbstractDescriptor {
                     log.error("Error on getting valid values from provider", e);
                 }
             }
-            return CommonUtils.isEmpty(validValues) ? null : validValues.split(", ");
+            return CommonUtils.isEmpty(validValues) ? null : validValues.split(",");
         }
     }
 
