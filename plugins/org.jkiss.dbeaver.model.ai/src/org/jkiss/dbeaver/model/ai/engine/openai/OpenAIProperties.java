@@ -92,6 +92,7 @@ public class OpenAIProperties implements OpenAIBaseProperties {
     }
 
     @Override
+    @Property(order = 7)
     public boolean isLegacyApi() {
         return useLegacyApi;
     }
