@@ -24,13 +24,10 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 /**
  * DBPPlatform
  */
-public interface DBPPlatformDesktop extends DBPPlatform, DBPPlatformEventManager {
+public interface DBPPlatformDesktop extends DBPPlatform, DBPPlatformEventManager, DBPPlatformLanguageManager {
 
     @NotNull
     DBPWorkspaceDesktop getWorkspace();
-
-    @NotNull
-    DBPPlatformLanguage getLanguage();
 
     @NotNull
     DBPExternalFileManager getExternalFileManager();
