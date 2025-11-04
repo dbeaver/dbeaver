@@ -1061,11 +1061,13 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
             return getCurrentListObject();
         }
 
+        @NotNull
         @Override
         public Object getEditableValue() {
             return getObjectValue(getCurrentListObject());
         }
 
+        @NotNull
         @Override
         public DBPPropertyDescriptor[] getProperties() {
             return getAllProperties().toArray(new DBPPropertyDescriptor[0]);
