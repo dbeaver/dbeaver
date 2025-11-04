@@ -25,8 +25,8 @@ public class InputFileOption {
     @Nullable
     @CommandLine.Option(
         names = {"-in", "-input-file"},
-        description = "Argument value that can be written in the file.",
-        arity = "1"
+        arity = "1",
+        description = "Argument value that can be written in the file."
     )
     private Path inputFile;
 

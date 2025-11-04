@@ -22,5 +22,4 @@ public interface CommandLineConstants {
     Pattern ACTION_PATTERN = Pattern.compile("\"postAction\"\s*:\s*\"([^,]*)\",");
     Pattern EXIT_CODE_PATTERN = Pattern.compile("\"exitCode\"\s*:\s*(\\d+),");
     Pattern OUTPUT_PATTERN = Pattern.compile("\"output\"\s*:\s*\"(.*?)\"}");
-
 }
