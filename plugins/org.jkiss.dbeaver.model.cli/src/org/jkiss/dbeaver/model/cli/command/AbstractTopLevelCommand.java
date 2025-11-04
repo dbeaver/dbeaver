@@ -59,14 +59,13 @@ public abstract class AbstractTopLevelCommand implements Runnable, CommandLine.I
     @Override
     public void run() {
         try {
-            if (!meta.isUiActivated() && dump) {
+            if (dump) {
                 if (controller == null) {
                     log.debug("Can't process commands because no running instance is present");
-                    context.setPostAction(CLIProcessResult.PostAction.START_INSTANCE);
+                    context.setPostAction(CLIProcessResult.PostAction.SHUTDOWN);
                     return;
                 }
                 String threadDump = controller.getThreadDump();
-                System.out.println(threadDump);
                 context.addResult(threadDump);
                 context.setPostAction(CLIProcessResult.PostAction.SHUTDOWN);
                 return;
