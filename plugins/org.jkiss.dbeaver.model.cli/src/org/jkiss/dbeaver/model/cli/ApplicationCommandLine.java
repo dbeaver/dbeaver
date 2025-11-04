@@ -95,8 +95,15 @@ public abstract class ApplicationCommandLine<T extends ApplicationInstanceContro
             try {
                 parseResult = commandLine.parseArgs(args);
             } catch (CommandLine.UnmatchedArgumentException e) {
-                log.error(e.getMessage());
-                return new CLIProcessResult(CLIProcessResult.PostAction.ERROR, e.getMessage());
+                String message;
+                if (!CommonUtils.isEmpty(e.getUnmatched())) {
+                    String command = e.getCommandLine().getCommandName();
+                    message = "Parameter(s) " + String.join(" ", e.getUnmatched()) + " cannot be specified after '" + command + "'";
+                } else {
+                    message = e.getMessage();
+                }
+                log.error(message);
+                return new CLIProcessResult(CLIProcessResult.PostAction.ERROR, message);
             }
 
             if (commandLineIsEmpty(parseResult)) {

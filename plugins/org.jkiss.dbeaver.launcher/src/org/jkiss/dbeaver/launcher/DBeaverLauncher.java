@@ -789,6 +789,7 @@ public class DBeaverLauncher {
                     .replace("\\\\\\\"", "\"")
                     .replace("\\\"", "\"")
                     .replace("\\\\\\\\t", "\t")
+                    .replace("\\\\t", "\t")
                     .replace("\\\"{", "{")
                     .replace("}\\\"", "}")
                     .replace("\\\\\\\\n", "\n")
@@ -2295,7 +2296,7 @@ public class DBeaverLauncher {
                 }
             }
         }
-        if (configuration != null && configuration.contains(Constants.ECLIPSE_PROPERTY_PRODUCT_ID)) {
+        if (configuration != null && configuration.containsKey(Constants.ECLIPSE_PROPERTY_PRODUCT_ID)) {
             productId = configuration.getProperty(Constants.ECLIPSE_PROPERTY_PRODUCT_ID);
         }
         // setup the path to the framework
