@@ -25,10 +25,7 @@ import org.jkiss.dbeaver.model.ai.registry.AIEngineDescriptor;
 import org.jkiss.dbeaver.model.ai.registry.AIEngineRegistry;
 import org.jkiss.dbeaver.model.ai.registry.AISettingsManager;
 
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 /**
  * AI global settings.
@@ -38,11 +35,28 @@ public class AISettings implements IAdaptable {
     private boolean aiDisabled;
     private String activeEngine;
     private final Map<String, AIEngineProperties> engineConfigurations = new LinkedHashMap<>();
+    private final Map<String, Object> properties = new LinkedHashMap<>();
     private final Set<String> resolvedSecrets = new HashSet<>();
-    private final Set<String> enabledFunctionCategories = new HashSet<>();
-    private final Set<String> enabledFunctions = new HashSet<>();
+    private final Set<String> enabledFunctionCategories = new LinkedHashSet<>();
+    private final Set<String> enabledFunctions = new LinkedHashSet<>();
 
     public AISettings() {
+    }
+
+    public Map<String, Object> getAllProperties() {
+        return properties;
+    }
+
+    public <T> T getProperty(@NotNull String name, @Nullable T defaultValue) {
+        return (T) properties.getOrDefault(name, defaultValue);
+    }
+
+    public void setProperty(@NotNull String name, @Nullable Object value) {
+        if (value == null) {
+            properties.remove(name);
+        } else {
+            properties.put(name, value);
+        }
     }
 
     @NotNull
