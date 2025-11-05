@@ -27,6 +27,7 @@ public class OutputFileOption {
     @Nullable
     @CommandLine.Option(
         names = {"-out", "-output-file"},
+        arity = "1",
         description = "Write the execution result to a file."
     )
     private Path outputFile;
