@@ -47,7 +47,9 @@
 
     <extension point="org.eclipse.ui.commands">
         <command id="org.jkiss.dbeaver.ui.ai.showCompletion" name="%command.org.jkiss.dbeaver.ui.ai.showCompletion.name" description="%command.org.jkiss.dbeaver.ui.ai.showCompletion.description" categoryId="org.jkiss.dbeaver.core.sql"/>
+        <command id="org.jkiss.dbeaver.ui.ai.configuration" name="%command.org.jkiss.dbeaver.ui.ai.configuration.name" description="%command.org.jkiss.dbeaver.ui.ai.configuration.description" categoryId="org.jkiss.dbeaver.core.sql"/>
     </extension>
+
     <extension point="org.eclipse.ui.menus">
         <menuContribution allPopups="false" locationURI="menu:SQLEditorMenu?after=query">
             <command commandId="org.jkiss.dbeaver.ui.ai.showCompletion">
@@ -109,6 +111,7 @@
     </extension>
     <extension point="org.eclipse.ui.handlers">
         <handler commandId="org.jkiss.dbeaver.ui.ai.showCompletion" class="org.jkiss.dbeaver.ui.ai.internal.AITranslateHandler"/>
+        <handler commandId="org.jkiss.dbeaver.ui.ai.configuration" class="org.jkiss.dbeaver.ui.ai.internal.AIConfigurationHandler"/>
     </extension>
 
     <extension point="org.eclipse.ui.bindings">

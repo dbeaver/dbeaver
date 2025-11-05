@@ -23,6 +23,8 @@ import picocli.CommandLine;
  * properties hidden and exists to avoid unmatched options error
  */
 public class HiddenOptions {
+    public static final String PRODUCT_OPTION = "-product";
+
     @CommandLine.Option(names = {"-web-config"}, arity = "1", hidden = true)
     private String webConfig;
 
@@ -35,7 +37,7 @@ public class HiddenOptions {
     @CommandLine.Option(names = {"-registryMultiLanguage"}, hidden = true)
     private boolean registryMultiLanguage;
 
-    @CommandLine.Option(names = {"-product"}, arity = "1", hidden = true)
+    @CommandLine.Option(names = {PRODUCT_OPTION}, arity = "1", hidden = true)
     private String product;
 
     @CommandLine.Option(names = {"-dev"}, arity = "1", hidden = true)
