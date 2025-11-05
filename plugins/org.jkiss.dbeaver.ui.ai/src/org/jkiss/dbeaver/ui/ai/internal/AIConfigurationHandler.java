@@ -14,22 +14,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.ai.engine.openai;
+package org.jkiss.dbeaver.ui.ai.internal;
 
-/**
- * OpenAI constants
- */
-public class OpenAIConstants {
-    public static final String DEFAULT_MODEL = "gpt-4o";
+import org.eclipse.core.commands.AbstractHandler;
+import org.eclipse.core.commands.ExecutionEvent;
+import org.eclipse.ui.handlers.HandlerUtil;
+import org.jkiss.dbeaver.ui.ai.AIUIUtils;
 
-    public static final String OPENAI_ENGINE = "openai";
-    public static final String GPT_API_TOKEN = "gpt.token";
-    public static final String GPT_MODEL = "gpt.model";
-    public static final String AI_TEMPERATURE = "gpt.model.temperature";
+public class AIConfigurationHandler extends AbstractHandler {
 
-    // Response endpoint
-    public static final String ENDPOINT_RESPONSES = "responses";
-    // Legacy API endpoint
-    public static final String ENDPOINT_CHAT = "chat/completions";
+    @Override
+    public Object execute(ExecutionEvent event) {
+        AIUIUtils.showPreferences(HandlerUtil.getActiveShell(event));
+        return null;
+    }
+
 }
-
