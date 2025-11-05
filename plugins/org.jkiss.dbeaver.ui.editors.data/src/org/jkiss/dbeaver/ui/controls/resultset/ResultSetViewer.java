@@ -47,7 +47,6 @@ import org.eclipse.ui.internal.WorkbenchImages;
 import org.eclipse.ui.menus.CommandContributionItem;
 import org.eclipse.ui.menus.CommandContributionItemParameter;
 import org.eclipse.ui.menus.IMenuService;
-import org.eclipse.ui.themes.ITheme;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -122,8 +121,8 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
-import java.util.*;
 import java.util.List;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 /**
@@ -484,8 +483,7 @@ public class ResultSetViewer extends Viewer
         UIUtils.applyMainFont(panelSwitchFolder);
 
         if (activePresentation instanceof AbstractPresentation abstractPresentation) {
-            ITheme currentTheme = PlatformUI.getWorkbench().getThemeManager().getCurrentTheme();
-            abstractPresentation.applyThemeSettings(currentTheme);
+            abstractPresentation.applyThemeSettings(UIUtils.getCurrentTheme());
         }
     }
 

@@ -29,7 +29,6 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.IWorkbenchPartSite;
-import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.contexts.IContextActivation;
 import org.eclipse.ui.contexts.IContextService;
 import org.eclipse.ui.themes.ITheme;
@@ -55,7 +54,6 @@ public abstract class AbstractPresentation implements IResultSetPresentation, IS
 
     private static final StructuredSelection EMPTY_SELECTION = new StructuredSelection();
 
-    @NotNull
     protected IResultSetController controller;
     private final List<ISelectionChangedListener> selectionChangedListenerList = new ArrayList<>();
 
@@ -85,7 +83,7 @@ public abstract class AbstractPresentation implements IResultSetPresentation, IS
     }
 
     protected void applyCurrentThemeSettings() {
-        applyThemeSettings(PlatformUI.getWorkbench().getThemeManager().getCurrentTheme());
+        applyThemeSettings(UIUtils.getCurrentTheme());
     }
 
     @Override
