@@ -465,9 +465,12 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
 
     @NotNull
     @Override
-    public ExecuteBatch deleteData(@NotNull DBCSession session, @NotNull final DBSAttributeBase[] keyAttributes, @NotNull final DBCExecutionSource source)
-    throws DBCException
-    {
+    public ExecuteBatch deleteData(
+        @NotNull DBCSession session,
+        @NotNull final DBSAttributeBase[] keyAttributes,
+        @NotNull final DBCExecutionSource source
+    ) throws DBCException {
+
         readRequiredMeta(session.getProgressMonitor());
 
         return new ExecuteBatchImpl(keyAttributes, null, false) {
