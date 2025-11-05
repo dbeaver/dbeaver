@@ -71,10 +71,12 @@ public class JDBCExecutionContext extends AbstractExecutionContext<JDBCDataSourc
 
         @Override
         public void lock(@NotNull Object owner) {
+            // no-op
         }
 
         @Override
         public void unlock(@NotNull Object owner) {
+            // no-op
         }
     };
 
