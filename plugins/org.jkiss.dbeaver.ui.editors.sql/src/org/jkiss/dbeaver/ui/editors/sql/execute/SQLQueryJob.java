@@ -32,6 +32,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Text;
+import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchPartSite;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
@@ -65,6 +66,7 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetPreferences;
 import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
 import org.jkiss.dbeaver.ui.dialogs.exec.ExecutionQueueErrorJob;
+import org.jkiss.dbeaver.ui.editors.IncludedScriptFileEditorInput;
 import org.jkiss.dbeaver.ui.editors.sql.SQLPreferenceConstants;
 import org.jkiss.dbeaver.ui.editors.sql.SQLPreferenceConstants.StatisticsTabOnExecutionBehavior;
 import org.jkiss.dbeaver.ui.editors.sql.SQLResultsConsumer;
@@ -256,7 +258,7 @@ public class SQLQueryJob extends DataSourceJob
                         }
                         // Ask to continue
                         log.error(lastError);
-                        boolean isQueue = queryNum < queries.size() - 1;
+                        boolean isQueue = isQueue();
                         DBPPlatformUI.UserResponse response = ExecutionQueueErrorJob.showError(
                             isQueue ? "SQL script execution" : "SQL query execution",
                             lastError,
@@ -360,6 +362,12 @@ public class SQLQueryJob extends DataSourceJob
                 }
             }
         }
+    }
+
+    private boolean isQueue() {
+        boolean isIncludedScript = partSite.getPart() instanceof IEditorPart ep &&
+            ep.getEditorInput() instanceof IncludedScriptFileEditorInput;
+        return isIncludedScript || queryNum < queries.size() - 1;
     }
 
     @NotNull
