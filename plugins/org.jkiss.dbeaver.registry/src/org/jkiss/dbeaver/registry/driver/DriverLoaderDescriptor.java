@@ -674,7 +674,7 @@ public class DriverLoaderDescriptor implements DBPDriverLoader {
      */
     @Override
     public boolean resolveDriverFiles(@NotNull Path targetFileLocation) {
-        List<? extends DBPDriverLibrary> libraries = getAllLibraries();
+        List<? extends DBPDriverLibrary> libraries = driver.getDriverLibraries();
         if (libraries.isEmpty()) {
             return false;
         }
