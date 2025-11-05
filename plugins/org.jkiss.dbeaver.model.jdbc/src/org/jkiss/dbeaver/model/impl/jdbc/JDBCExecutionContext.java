@@ -83,7 +83,7 @@ public class JDBCExecutionContext extends AbstractExecutionContext<JDBCDataSourc
     public JDBCExecutionContext(@NotNull JDBCRemoteInstance instance, String purpose) {
         super(instance.getDataSource(), purpose);
         this.instance = instance;
-        if (instance.getDataSource().getContainer().getDriver().isThreadSafeDriver()) {
+        if (!instance.getDataSource().getContainer().getDriver().isThreadSafeDriver()) {
             statementLock = new OwnershipLock();
         }
     }
