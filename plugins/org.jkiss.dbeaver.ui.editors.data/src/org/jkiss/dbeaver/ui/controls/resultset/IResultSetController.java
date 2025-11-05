@@ -41,7 +41,6 @@ import org.jkiss.dbeaver.ui.data.IDataController;
 
 import java.util.Collection;
 import java.util.List;
-import java.util.Map;
 
 /**
  * ResultSet controller.
@@ -61,28 +60,28 @@ public interface IResultSetController extends IDataController, DBPContextProvide
     String RESULTS_CONTEXT_ID = "org.jkiss.dbeaver.ui.context.resultset";
 
     enum ColumnOrder {
-        ASC,
-        DESC,
-        NONE;
+        ASC(ResultSetMessages.controls_resultset_viewer_sorting_order_ascending),
+        DESC(ResultSetMessages.controls_resultset_viewer_sorting_order_descending),
+        NONE(ResultSetMessages.controls_resultset_viewer_sorting_order_none);
 
-        public static class OrderToText {
-            private static final Map<ColumnOrder, String> nameToOrderMap = Map.of(
-                IResultSetController.ColumnOrder.NONE, ResultSetMessages.controls_resultset_viewer_sorting_order_none,
-                IResultSetController.ColumnOrder.ASC, ResultSetMessages.controls_resultset_viewer_sorting_order_ascending,
-                IResultSetController.ColumnOrder.DESC, ResultSetMessages.controls_resultset_viewer_sorting_order_descending
-            );
+        private final String text;
 
-            public static String getCorrespondingText(@NotNull IResultSetController.ColumnOrder order) {
-                return nameToOrderMap.getOrDefault(order, ResultSetMessages.controls_resultset_viewer_sorting_order_none);
+        ColumnOrder(String text) {
+            this.text = text;
+        }
+
+        @NotNull
+        public static IResultSetController.ColumnOrder get(int index) {
+            IResultSetController.ColumnOrder[] orders = IResultSetController.ColumnOrder.values();
+            if (index < 0 || index >= orders.length) {
+                return IResultSetController.ColumnOrder.NONE;
             }
+            return orders[index];
+        }
 
-            public static IResultSetController.ColumnOrder getCorrespondingOrder(int index) {
-                IResultSetController.ColumnOrder[] orders = IResultSetController.ColumnOrder.values();
-                if (index < 0 || index >= orders.length) {
-                    return IResultSetController.ColumnOrder.NONE;
-                }
-                return orders[index];
-            }
+        @NotNull
+        public String getText() {
+            return text;
         }
     }
 
