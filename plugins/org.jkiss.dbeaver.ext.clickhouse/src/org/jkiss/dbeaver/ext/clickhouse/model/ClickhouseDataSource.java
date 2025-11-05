@@ -176,9 +176,10 @@ public class ClickhouseDataSource extends GenericDataSource {
     @Override
     public void cancelStatementExecute(DBRProgressMonitor monitor, JDBCStatement statement) throws DBException {
         try {
+
             super.cancelStatementExecute(monitor, statement);
         } catch (Throwable ex) {
-            if (ex.getMessage().contains("Code: 373")) {
+            if (ex.getMessage().contains(ClickhouseConstants.SESSION_BUSY_ERROR_CODE_MESSAGE)) {
                 fallbackForServerID(monitor, statement);
             }
         }
@@ -186,22 +187,19 @@ public class ClickhouseDataSource extends GenericDataSource {
 
     // same session_id will lead to impossibility of cancelling the query, because the session is already busy...
     // So we need to temporarily create a new one
-    protected void fallbackForServerID(DBRProgressMonitor monitor, JDBCStatement statement) throws DBCException {
+    protected void fallbackForServerID(@NotNull DBRProgressMonitor monitor, @NotNull JDBCStatement statement) throws DBCException {
         try (Connection connection = openConnection(monitor, statement.getConnection().getExecutionContext(), "Close Query")) {
             try (Statement dbStat = connection.createStatement()) {
                 Statement original = ((JDBCStatementImpl) statement).getOriginal();
                 String getLastQueryId = (String) BeanUtils.invokeObjectDeclaredMethod(
                     original,
-                    "getLastQueryId",
+                    ClickhouseConstants.DRIVER_GET_LAST_QUERY_METHOD,
                     new Class[0],
                     new Object[0]
                 );
                 dbStat.execute("KILL QUERY WHERE query_id='%s'".formatted(getLastQueryId));
-                log.info("Query killed");
-            } catch (Throwable e) {
-                throw new DBCException("Error during cancelling query", e);
             }
-        } catch (SQLException e) {
+        } catch (Throwable e) {
             throw new DBCException("Error during cancelling query", e);
         }
     }
