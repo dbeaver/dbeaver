@@ -35,11 +35,14 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 
+import java.io.PrintStream;
 import java.lang.reflect.InvocationTargetException;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.SQLFeatureNotSupportedException;
 import java.sql.Savepoint;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.ReentrantLock;
 
 /**
@@ -64,22 +67,28 @@ public class JDBCExecutionContext extends AbstractExecutionContext<JDBCDataSourc
     private volatile Boolean autoCommit;
     private volatile Integer transactionIsolationLevel;
     private transient volatile boolean txnIsolationLevelReadInProgress;
-    private final ReentrantLock queryExecutionLock;
+    private OwnershipLock statementLock = new OwnershipLock() {
+
+        @Override
+        public void lock(@NotNull Object owner) {
+        }
+
+        @Override
+        public void unlock(@NotNull Object owner) {
+        }
+    };
 
     public JDBCExecutionContext(@NotNull JDBCRemoteInstance instance, String purpose) {
         super(instance.getDataSource(), purpose);
         this.instance = instance;
-        if (!instance.getDataSource().getContainer().getDriver().isThreadSafeDriver()) {
-            queryExecutionLock = new ReentrantLock();
-        } else {
-            queryExecutionLock = null;
+        if (instance.getDataSource().getContainer().getDriver().isThreadSafeDriver()) {
+            statementLock = new OwnershipLock();
         }
     }
 
     public JDBCExecutionContext(@NotNull JDBCRemoteInstance instance, boolean test) {
         super(instance.getDataSource(), "Test for " + instance);
         this.instance = instance;
-        queryExecutionLock = null;
     }
 
     @Override
@@ -275,6 +284,7 @@ public class JDBCExecutionContext extends AbstractExecutionContext<JDBCDataSourc
     @Override
     public void close() {
         closeContext(true);
+        statementLock.close();
     }
 
     private void closeContext(boolean removeContext) {
@@ -528,23 +538,109 @@ public class JDBCExecutionContext extends AbstractExecutionContext<JDBCDataSourc
         return dataSource.getName() + " - " + instance.getName() + " - " + getContextName();
     }
 
-    /**
-     * Acquires lock on connection level.
-     * Any other thread will wait until you release lock with @unlockQueryExecution
-     */
-    public void lockQueryExecution() {
-        if (this.queryExecutionLock != null) {
-            this.queryExecutionLock.lock();
-        }
+    public void lockStatementExecution(@NotNull DBCStatement stmt) {
+        statementLock.lock(stmt);
     }
 
-    /**
-     * Release lock. Must be called in finally.
-     */
-    public void unlockQueryExecution() {
-        if (this.queryExecutionLock != null) {
-            this.queryExecutionLock.unlock();
-        }
+    public void unlockStatementExecution(@NotNull DBCStatement stmt) {
+        statementLock.unlock(stmt);
     }
+
+    static class OwnershipLock {
+
+        private final ReentrantLock lock = new ReentrantLock(true);
+        private final Map<Long, LockInfo> traces = new ConcurrentHashMap<>();
+        private volatile boolean closed = false;
+
+
+        public void lock(@NotNull Object owner) {
+
+            if (closed) {
+                throw new IllegalStateException("Lock already closed");
+            }
+
+            long identity = getIdentity(owner);
+
+            if (lock.isHeldByCurrentThread() && traces.containsKey(identity)) {
+                traces.put(identity, new LockInfo(Thread.currentThread().getStackTrace()));
+                return;
+            }
+
+            try {
+                lock.lockInterruptibly();
+                if (closed) {
+                    lock.unlock();
+                    throw new IllegalStateException("Lock was closed while waiting for lock");
+                }
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                throw new IllegalStateException(
+                    "Thread " + Thread.currentThread().getName() + " was interrupted while waiting for lock", e
+                );
+            }
+            traces.put(identity, new LockInfo(Thread.currentThread().getStackTrace()));
+        }
+
+        public void unlock(@NotNull Object owner) {
+            long identity = getIdentity(owner);
+
+            if (!traces.containsKey(identity)) {
+                return;
+            }
+
+            if (lock.isHeldByCurrentThread()) {
+                traces.remove(identity);
+                lock.unlock();
+            } else {
+                if (traces.containsKey(identity)) {
+                    throw new IllegalMonitorStateException(
+                        "unlock() called from thread " + Thread.currentThread().getName() +
+                            " but owner " + owner + " belongs to another thread"
+                    );
+                }
+            }
+        }
+
+        private static long getIdentity(Object owner) {
+            return  ((long) System.identityHashCode(owner) << 32)
+                | (System.identityHashCode(Thread.currentThread()) & 0xffffffffL);
+        }
+
+        public void printActiveOwners(PrintStream stream) {
+            if (traces.isEmpty()) {
+                return;
+            }
+
+            stream.println("Lock held by " + traces.size() + " owner(s):");
+            long now = System.currentTimeMillis();
+
+            for (var info : traces.values()) {
+                long heldMs = now - info.timestamp;
+
+                stream.println("— Owner held for " + heldMs + " ms");
+                for (StackTraceElement el : info.trace) {
+                    stream.println("\tat " + el);
+                }
+                stream.println();
+            }
+        }
+
+        public void close() {
+            closed = true;
+        }
+
+        private static class LockInfo {
+            final StackTraceElement[] trace;
+            final long timestamp;
+
+            LockInfo(StackTraceElement[] trace) {
+                this.trace = trace;
+                this.timestamp = System.currentTimeMillis();
+            }
+        }
+
+
+    }
+
 
 }
