@@ -36,10 +36,12 @@ import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntityAssociation;
+import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
 import org.jkiss.dbeaver.ui.data.IDataController;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 /**
  * ResultSet controller.
@@ -61,7 +63,27 @@ public interface IResultSetController extends IDataController, DBPContextProvide
     enum ColumnOrder {
         ASC,
         DESC,
-        NONE
+        NONE;
+
+        public static class OrderToText {
+            private static final Map<ColumnOrder, String> nameToOrderMap = Map.of(
+                IResultSetController.ColumnOrder.NONE, ResultSetMessages.controls_resultset_viewer_sorting_order_none,
+                IResultSetController.ColumnOrder.ASC, ResultSetMessages.controls_resultset_viewer_sorting_order_ascending,
+                IResultSetController.ColumnOrder.DESC, ResultSetMessages.controls_resultset_viewer_sorting_order_descending
+            );
+
+            public static String getCorrespondingText(@NotNull IResultSetController.ColumnOrder order) {
+                return nameToOrderMap.getOrDefault(order, ResultSetMessages.controls_resultset_viewer_sorting_order_none);
+            }
+
+            public static IResultSetController.ColumnOrder getCorrespondingOrder(int index) {
+                IResultSetController.ColumnOrder[] orders = IResultSetController.ColumnOrder.values();
+                if (index < 0 || index >= orders.length) {
+                    return IResultSetController.ColumnOrder.NONE;
+                }
+                return orders[index];
+            }
+        }
     }
 
     enum RowPlacement {
