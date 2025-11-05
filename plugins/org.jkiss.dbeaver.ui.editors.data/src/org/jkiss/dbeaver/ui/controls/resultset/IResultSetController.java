@@ -71,15 +71,6 @@ public interface IResultSetController extends IDataController, DBPContextProvide
         }
 
         @NotNull
-        public static IResultSetController.ColumnOrder get(int index) {
-            IResultSetController.ColumnOrder[] orders = IResultSetController.ColumnOrder.values();
-            if (index < 0 || index >= orders.length) {
-                return IResultSetController.ColumnOrder.NONE;
-            }
-            return orders[index];
-        }
-
-        @NotNull
         public String getText() {
             return text;
         }
