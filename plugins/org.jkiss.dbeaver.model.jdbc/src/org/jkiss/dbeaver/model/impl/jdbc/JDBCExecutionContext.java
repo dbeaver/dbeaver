@@ -67,24 +67,14 @@ public class JDBCExecutionContext extends AbstractExecutionContext<JDBCDataSourc
     private volatile Boolean autoCommit;
     private volatile Integer transactionIsolationLevel;
     private transient volatile boolean txnIsolationLevelReadInProgress;
-    private OwnershipLock statementLock = new OwnershipLock() {
 
-        @Override
-        public void lock(@NotNull Object owner) {
-            // no-op
-        }
-
-        @Override
-        public void unlock(@NotNull Object owner) {
-            // no-op
-        }
-    };
+    private SingleThreadLock statementLock = SingleThreadLock.NoOpLock;
 
     public JDBCExecutionContext(@NotNull JDBCRemoteInstance instance, String purpose) {
         super(instance.getDataSource(), purpose);
         this.instance = instance;
         if (!instance.getDataSource().getContainer().getDriver().isThreadSafeDriver()) {
-            statementLock = new OwnershipLock();
+            statementLock = new SingleThreadLock();
         }
     }
 
@@ -548,7 +538,21 @@ public class JDBCExecutionContext extends AbstractExecutionContext<JDBCDataSourc
         statementLock.unlock(stmt);
     }
 
-    static class OwnershipLock {
+    static class SingleThreadLock {
+
+        public static final SingleThreadLock NoOpLock = new SingleThreadLock() {
+
+            @Override
+            public void lock(@NotNull Object owner) {
+                // no-op
+            }
+
+            @Override
+            public void unlock(@NotNull Object owner) {
+                // no-op
+            }
+        };
+
 
         private final ReentrantLock lock = new ReentrantLock(true);
         private final Map<Long, LockInfo> traces = new ConcurrentHashMap<>();
@@ -564,7 +568,7 @@ public class JDBCExecutionContext extends AbstractExecutionContext<JDBCDataSourc
             long identity = getIdentity(owner);
 
             if (lock.isHeldByCurrentThread() && traces.containsKey(identity)) {
-                traces.put(identity, new LockInfo(Thread.currentThread().getStackTrace()));
+                traces.put(identity, new LockInfo(Thread.currentThread()));
                 return;
             }
 
@@ -580,7 +584,7 @@ public class JDBCExecutionContext extends AbstractExecutionContext<JDBCDataSourc
                     "Thread " + Thread.currentThread().getName() + " was interrupted while waiting for lock", e
                 );
             }
-            traces.put(identity, new LockInfo(Thread.currentThread().getStackTrace()));
+            traces.put(identity, new LockInfo(Thread.currentThread()));
         }
 
         public void unlock(@NotNull Object owner) {
@@ -619,8 +623,12 @@ public class JDBCExecutionContext extends AbstractExecutionContext<JDBCDataSourc
             for (var info : traces.values()) {
                 long heldMs = now - info.timestamp;
 
-                stream.println("— Owner held for " + heldMs + " ms");
+                stream.println("— Owner ["  + info.thread.getName() + "] held for " + heldMs + " ms");
                 for (StackTraceElement el : info.trace) {
+                    stream.println("\tat " + el);
+                }
+                stream.println("Current: ");
+                for (StackTraceElement el : info.thread.getStackTrace()) {
                     stream.println("\tat " + el);
                 }
                 stream.println();
@@ -633,10 +641,12 @@ public class JDBCExecutionContext extends AbstractExecutionContext<JDBCDataSourc
 
         private static class LockInfo {
             final StackTraceElement[] trace;
+            final Thread thread;
             final long timestamp;
 
-            LockInfo(StackTraceElement[] trace) {
-                this.trace = trace;
+            LockInfo(Thread thread) {
+                this.thread = thread;
+                this.trace = thread.getStackTrace();
                 this.timestamp = System.currentTimeMillis();
             }
         }
