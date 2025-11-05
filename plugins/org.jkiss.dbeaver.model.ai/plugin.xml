@@ -19,7 +19,8 @@
             label="Github Copilot"
             class="org.jkiss.dbeaver.model.ai.engine.copilot.CopilotCompletionEngine"
             properties="org.jkiss.dbeaver.model.ai.engine.copilot.CopilotProperties"
-            supportsFunctions="true"/>
+            supportsFunctions="true"
+            fallbacks="copilot-pro"/>
     </extension>
 
     <extension point="com.dbeaver.ai.assistant">

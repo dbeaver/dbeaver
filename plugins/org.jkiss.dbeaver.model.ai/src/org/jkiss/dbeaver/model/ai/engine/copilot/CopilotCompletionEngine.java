@@ -31,13 +31,13 @@ import org.jkiss.utils.CommonUtils;
 import java.util.List;
 import java.util.Set;
 
-public class CopilotCompletionEngine extends BaseCompletionEngine<CopilotProperties> {
+public class CopilotCompletionEngine<P extends CopilotProperties> extends BaseCompletionEngine<P> {
 
-    private final DisposableLazyValue<CopilotClient, DBException> client = new DisposableLazyValue<>() {
+    protected final DisposableLazyValue<CopilotClient, DBException> client = new DisposableLazyValue<>() {
         @NotNull
         @Override
-        protected CopilotClient initialize() {
-            return new CopilotClient();
+        protected CopilotClient initialize() throws DBException {
+            return createClient();
         }
 
         @Override
@@ -47,7 +47,7 @@ public class CopilotCompletionEngine extends BaseCompletionEngine<CopilotPropert
     };
     private CopilotSessionToken sessionToken;
 
-    public CopilotCompletionEngine(@NotNull CopilotProperties properties) {
+    public CopilotCompletionEngine(@NotNull P properties) {
         super(properties);
     }
 
@@ -129,7 +129,7 @@ public class CopilotCompletionEngine extends BaseCompletionEngine<CopilotPropert
     }
 
     @NotNull
-    private CopilotSessionToken requestSessionToken(@NotNull DBRProgressMonitor monitor) throws DBException {
+    protected CopilotSessionToken requestSessionToken(@NotNull DBRProgressMonitor monitor) throws DBException {
         if (sessionToken != null) {
             return sessionToken;
         }
@@ -147,5 +147,14 @@ public class CopilotCompletionEngine extends BaseCompletionEngine<CopilotPropert
             properties.getModel(),
             OpenAIConstants.DEFAULT_MODEL
         );
+    }
+
+    protected CopilotClient createClient() throws DBException {
+        String token = properties.getToken();
+        if (token == null || token.isEmpty()) {
+            throw new DBException("Copilot API token is not set");
+        }
+
+        return new CopilotClient();
     }
 }
