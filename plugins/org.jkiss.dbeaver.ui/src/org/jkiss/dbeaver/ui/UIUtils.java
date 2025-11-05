@@ -65,10 +65,12 @@ import org.eclipse.ui.forms.widgets.ExpandableComposite;
 import org.eclipse.ui.handlers.IHandlerActivation;
 import org.eclipse.ui.handlers.IHandlerService;
 import org.eclipse.ui.internal.WorkbenchMessages;
+import org.eclipse.ui.internal.themes.WorkbenchThemeManager;
 import org.eclipse.ui.menus.CommandContributionItem;
 import org.eclipse.ui.preferences.IWorkbenchPreferenceContainer;
 import org.eclipse.ui.services.IServiceLocator;
 import org.eclipse.ui.swt.IFocusService;
+import org.eclipse.ui.themes.ITheme;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -2029,7 +2031,8 @@ public class UIUtils {
         return SHARED_TEXT_COLORS.getColor(rgb);
     }
 
-    public static Color getConnectionColor(DBPConnectionConfiguration connectionInfo) {
+    @Nullable
+    public static Color getConnectionColor(@NotNull DBPConnectionConfiguration connectionInfo) {
         String rgbString = connectionInfo.getConnectionColor();
         if (CommonUtils.isEmpty(rgbString)) {
             rgbString = connectionInfo.getConnectionType().getColor();
@@ -2040,7 +2043,8 @@ public class UIUtils {
         return getConnectionColorByRGB(rgbString);
     }
 
-    public static Color getConnectionTypeColor(DBPConnectionType connectionType) {
+    @Nullable
+    public static Color getConnectionTypeColor(@NotNull DBPConnectionType connectionType) {
         String rgbString = connectionType.getColor();
         if (CommonUtils.isEmpty(rgbString)) {
             return null;
@@ -2048,14 +2052,14 @@ public class UIUtils {
         return getConnectionColorByRGB(rgbString);
     }
 
-    public static Color getConnectionColorByRGB(String rgbStringOrId) {
+    @Nullable
+    public static Color getConnectionColorByRGB(@NotNull String rgbStringOrId) {
         if (rgbStringOrId.isEmpty()) {
             return null;
         }
         if (Character.isAlphabetic(rgbStringOrId.charAt(0))) {
             // Some color constant
-            RGB rgb = getActiveWorkbenchWindow().getWorkbench().getThemeManager().getCurrentTheme().getColorRegistry()
-                .getRGB(rgbStringOrId);
+            RGB rgb = getCurrentTheme().getColorRegistry().getRGB(rgbStringOrId);
             return SHARED_TEXT_COLORS.getColor(rgb);
         } else {
             Color connectionColor = SHARED_TEXT_COLORS.getColor(rgbStringOrId);
@@ -2071,7 +2075,8 @@ public class UIUtils {
     /**
      * Create centralized shell from default display
      */
-    public static Shell createCenteredShell(Shell parent) {
+    @NotNull
+    public static Shell createCenteredShell(@NotNull Shell parent) {
         final Rectangle bounds = parent.getBounds();
         final int x = bounds.x + bounds.width / 2 - 120;
         final int y = bounds.y + bounds.height / 2 - 170;
@@ -2080,7 +2085,7 @@ public class UIUtils {
         return shell;
     }
 
-    public static void centerShell(Shell parent, Shell shell) {
+    public static void centerShell(@Nullable Shell parent, @Nullable Shell shell) {
         if (parent == null || shell == null) {
             return;
         }
@@ -2092,7 +2097,8 @@ public class UIUtils {
         shell.setLocation(x, y);
     }
 
-    public static Image getShardImage(String id) {
+    @Nullable
+    public static Image getShardImage(@NotNull String id) {
         return PlatformUI.getWorkbench().getSharedImages().getImage(id);
     }
 
@@ -2194,8 +2200,14 @@ public class UIUtils {
         }
     }
 
+    @NotNull
     public static ColorRegistry getColorRegistry() {
-        return PlatformUI.getWorkbench().getThemeManager().getCurrentTheme().getColorRegistry();
+        return getCurrentTheme().getColorRegistry();
+    }
+
+    @NotNull
+    public static ITheme getCurrentTheme() {
+        return WorkbenchThemeManager.getInstance().getCurrentTheme();
     }
 
     public static Control createEmptyLabel(Composite parent, int horizontalSpan, int verticalSpan) {
