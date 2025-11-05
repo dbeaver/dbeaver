@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,16 +20,15 @@ import org.eclipse.jface.preference.PreferenceDialog;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.Button;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Spinner;
-import org.eclipse.swt.widgets.Text;
+import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.dialogs.PreferencesUtil;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.impl.net.SocksConstants;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
+import org.jkiss.dbeaver.registry.ApplicationPolicyProvider;
 import org.jkiss.dbeaver.registry.configurator.DBPConnectionEditIntention;
 import org.jkiss.dbeaver.ui.AbstractObjectPropertyConfigurator;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -76,6 +75,9 @@ public class SocksProxyConfiguratorUI extends AbstractObjectPropertyConfigurator
         passwordText = UIUtils.createLabelText(composite, UIConnectionMessages.dialog_connection_network_socket_label_password, "", SWT.BORDER | SWT.PASSWORD); //$NON-NLS-2$
         UIUtils.createEmptyLabel(composite,1, 1);
         savePasswordCheckbox = UIUtils.createCheckbox(composite, UIConnectionMessages.dialog_connection_auth_checkbox_save_password, false);
+        savePasswordCheckbox.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
+            passwordText.setEnabled(savePasswordCheckbox.getSelection());
+        }));
 
         UIUtils.createLink(parent, UIConnectionMessages.dialog_connection_open_global_network_preferences_link, new SelectionAdapter() {
             @Override
@@ -108,6 +110,12 @@ public class SocksProxyConfiguratorUI extends AbstractObjectPropertyConfigurator
         userNameText.setText(CommonUtils.notEmpty(configuration.getUserName()));
         passwordText.setText(CommonUtils.notEmpty(configuration.getPassword()));
         savePasswordCheckbox.setSelection(configuration.isSavePassword());
+
+        if (ApplicationPolicyProvider.getInstance().isPolicyEnabled(ApplicationPolicyProvider.POLICY_CREDENTIALS_EDIT)) {
+            savePasswordCheckbox.setEnabled(false);
+            savePasswordCheckbox.setSelection(false);
+            savePasswordCheckbox.notifyListeners(SWT.Selection, new Event());
+        }
     }
 
     @Override

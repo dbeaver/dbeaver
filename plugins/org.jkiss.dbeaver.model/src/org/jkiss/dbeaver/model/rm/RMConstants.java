@@ -76,4 +76,7 @@ public interface RMConstants {
      * @since 25.1.5
      */
     String PERMISSION_DATA_EDITOR_EDITING = "permission.data-editor.editing";
+
+    String APP_PUBLIC_CREDENTIALS_SAVE_ENABLED = "publicCredentialsSaveEnabled";
+    String APP_ADMIN_CREDENTIALS_SAVE_ENABLED = "adminCredentialsSaveEnabled";
 }
