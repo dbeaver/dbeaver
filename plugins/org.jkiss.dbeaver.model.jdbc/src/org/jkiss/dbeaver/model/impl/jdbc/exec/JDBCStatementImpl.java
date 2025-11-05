@@ -289,7 +289,7 @@ public class JDBCStatementImpl<STATEMENT extends Statement> extends AbstractStat
     protected void beforeExecute() {
         this.updateCount = -1;
         this.executeError = null;
-        this.connection.getExecutionContext().lockQueryExecution();
+        this.connection.getExecutionContext().lockStatementExecution(this);
         this.connection.setBlockThread(Thread.currentThread());
 
         if (isQMLoggingEnabled()) {
@@ -303,7 +303,6 @@ public class JDBCStatementImpl<STATEMENT extends Statement> extends AbstractStat
 
     protected void afterExecute() {
         this.connection.setBlockThread(null);
-        this.connection.getExecutionContext().unlockQueryExecution();
         if (JDBCUtils.LOG_JDBC_WARNINGS) {
             try {
                 JDBCUtils.reportWarnings(getSession(), this.getWarnings());
@@ -477,6 +476,9 @@ public class JDBCStatementImpl<STATEMENT extends Statement> extends AbstractStat
         } catch (Throwable e) {
             log.error("Can't close statement", e); //$NON-NLS-1$
         }
+
+        getConnection().getExecutionContext().unlockStatementExecution(this);
+
     }
 
     /// /////////////////////////////////

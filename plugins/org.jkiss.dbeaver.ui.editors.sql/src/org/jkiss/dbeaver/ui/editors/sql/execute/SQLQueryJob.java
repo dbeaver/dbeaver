@@ -995,6 +995,9 @@ public class SQLQueryJob extends DataSourceJob
 
     private boolean keepStatementOpen()
     {
+        if (getExecutionContext().getDataSource().getContainer().getDriver().isThreadSafeDriver()) {
+            return false;
+        }
         // Only in single query mode and if pref option set to true
         return queries.size() == 1 &&
             getDataSourceContainer().getPreferenceStore().getBoolean(ResultSetPreferences.KEEP_STATEMENT_OPEN);
