@@ -66,7 +66,7 @@ public interface IResultSetController extends IDataController, DBPContextProvide
 
         private final String text;
 
-        ColumnOrder(String text) {
+        ColumnOrder(@NotNull String text) {
             this.text = text;
         }
 
