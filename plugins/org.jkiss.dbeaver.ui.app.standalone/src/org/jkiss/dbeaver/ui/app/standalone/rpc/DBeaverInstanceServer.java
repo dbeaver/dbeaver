@@ -109,7 +109,7 @@ public class DBeaverInstanceServer extends ApplicationInstanceServer<IInstanceCo
             return null;
         }
 
-        final String port = properties.getProperty("port");
+        final String port = properties.getProperty(portPropertyName());
 
         if (CommonUtils.isEmptyTrimmed(port)) {
             log.error("No port specified for the instance controller to connect to");
