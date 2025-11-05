@@ -182,18 +182,23 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
         statistics.setQueryText(sqlQuery);
 
         monitor.subTask(ModelMessages.model_jdbc_fetch_table_data);
+        DBCStatement dbStat = null;
+        DBCResultSet dbResult = null;
+        boolean needFetchEnd = false;
 
-        try (DBCStatement dbStat = DBUtils.makeStatement(
-            source,
-            session,
-            DBCStatementType.SCRIPT,
-            sqlQuery,
-            firstRow,
-            maxRows))
-        {
+        try  {
             if (monitor.isCanceled()) {
                 return statistics;
             }
+
+            dbStat = DBUtils.makeStatement(
+                source,
+                session,
+                DBCStatementType.SCRIPT,
+                sqlQuery,
+                firstRow,
+                maxRows);
+
             if (dbStat instanceof JDBCStatement && (fetchSize > 0 || maxRows > 0)) {
                 DBExecUtils.setStatementFetchSize(dbStat, firstRow, maxRows, fetchSize);
             }
@@ -202,39 +207,50 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
             boolean executeResult = dbStat.executeStatement();
             statistics.setExecuteTime(System.currentTimeMillis() - startTime);
             if (executeResult) {
-                DBCResultSet dbResult = dbStat.openResultSet();
+                dbResult = dbStat.openResultSet();
                 if (dbResult != null && !monitor.isCanceled()) {
-                    try {
-                        dataReceiver.fetchStart(session, dbResult, firstRow, maxRows);
+                    needFetchEnd = true;
+                    dataReceiver.fetchStart(session, dbResult, firstRow, maxRows);
 
-                        DBFetchProgress fetchProgress = new DBFetchProgress(session.getProgressMonitor());
-                        while (dbResult.nextRow()) {
-                            if (fetchProgress.isCanceled() || (hasLimits && fetchProgress.isMaxRowsFetched(maxRows))) {
-                                // Fetch not more than max rows
-                                break;
-                            }
-                            dataReceiver.fetchRow(session, dbResult);
-                            fetchProgress.monitorRowFetch();
+                    DBFetchProgress fetchProgress = new DBFetchProgress(session.getProgressMonitor());
+                    while (dbResult.nextRow()) {
+                        if (fetchProgress.isCanceled() || (hasLimits && fetchProgress.isMaxRowsFetched(maxRows))) {
+                            // Fetch not more than max rows
+                            break;
                         }
-                        fetchProgress.dumpStatistics(statistics);
-                    } finally {
-                        // First - close cursor
-                        try {
-                            dbResult.close();
-                        } catch (Throwable e) {
-                            log.error("Error closing result set", e); //$NON-NLS-1$
-                        }
-                        // Then - signal that fetch was ended
-                        try {
-                            dataReceiver.fetchEnd(session, dbResult);
-                        } catch (Throwable e) {
-                            log.error("Error while finishing result set fetch", e); //$NON-NLS-1$
-                        }
+                        dataReceiver.fetchRow(session, dbResult);
+                        fetchProgress.monitorRowFetch();
                     }
+                    fetchProgress.dumpStatistics(statistics);
                 }
             }
             return statistics;
         } finally {
+            if (dbResult != null) {
+                // First - close cursor
+                try {
+                    dbResult.close();
+                } catch (Throwable e) {
+                    log.error("Error closing result set", e); //$NON-NLS-1$
+                }
+            }
+            if (dbStat != null) {
+                try {
+                    dbStat.close();
+                } catch (Throwable e) {
+                    log.error("Error closing statement", e);
+                }
+            }
+
+            if (needFetchEnd) {
+                // Then - signal that fetch was ended
+                try {
+                    dataReceiver.fetchEnd(session, dbResult);
+                } catch (Throwable e) {
+                    log.error("Error while finishing result set fetch", e); //$NON-NLS-1$
+                }
+            }
+
             dataReceiver.close();
         }
     }
