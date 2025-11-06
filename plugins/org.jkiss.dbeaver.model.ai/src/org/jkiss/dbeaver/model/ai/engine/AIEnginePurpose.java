@@ -14,26 +14,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.cli.model.option;
+package org.jkiss.dbeaver.model.ai.engine;
 
-import org.jkiss.code.Nullable;
-import picocli.CommandLine;
+import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.model.DBPNamedObject;
+import org.jkiss.dbeaver.model.DBPObjectWithDescription;
 
-import java.nio.file.Path;
+/**
+ * Purpose like: generate SQL, code completion, transcript, embedding
+ */
+public interface AIEnginePurpose extends DBPNamedObject, DBPObjectWithDescription {
 
-public class OutputFileOption {
-    //stdin file name
+    @NotNull
+    AIModelFeature[] getRequiredModelFeatures();
 
-    @Nullable
-    @CommandLine.Option(
-        names = {"-out", "-output-file"},
-        arity = "1",
-        description = "Write the execution result to a file."
-    )
-    private Path outputFile;
-
-    @Nullable
-    public Path getOutputFile() {
-        return outputFile;
-    }
 }

@@ -14,26 +14,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.cli.model.option;
+package org.jkiss.dbeaver.ui.ai.internal;
 
-import org.jkiss.code.Nullable;
-import picocli.CommandLine;
+import org.eclipse.core.commands.AbstractHandler;
+import org.eclipse.core.commands.ExecutionEvent;
+import org.eclipse.ui.handlers.HandlerUtil;
+import org.jkiss.dbeaver.ui.ai.AIUIUtils;
 
-import java.nio.file.Path;
+public class AIConfigurationHandler extends AbstractHandler {
 
-public class OutputFileOption {
-    //stdin file name
-
-    @Nullable
-    @CommandLine.Option(
-        names = {"-out", "-output-file"},
-        arity = "1",
-        description = "Write the execution result to a file."
-    )
-    private Path outputFile;
-
-    @Nullable
-    public Path getOutputFile() {
-        return outputFile;
+    @Override
+    public Object execute(ExecutionEvent event) {
+        AIUIUtils.showPreferences(HandlerUtil.getActiveShell(event));
+        return null;
     }
+
 }
