@@ -14,22 +14,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.ai.engine.openai;
+package org.jkiss.dbeaver.model.ai.engine;
+
+import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.model.DBPNamedObject;
+import org.jkiss.dbeaver.model.DBPObjectWithDescription;
 
 /**
- * OpenAI constants
+ * Purpose like: generate SQL, code completion, transcript, embedding
  */
-public class OpenAIConstants {
-    public static final String DEFAULT_MODEL = "gpt-4o";
+public interface AIEnginePurpose extends DBPNamedObject, DBPObjectWithDescription {
 
-    public static final String OPENAI_ENGINE = "openai";
-    public static final String GPT_API_TOKEN = "gpt.token";
-    public static final String GPT_MODEL = "gpt.model";
-    public static final String AI_TEMPERATURE = "gpt.model.temperature";
+    @NotNull
+    AIModelFeature[] getRequiredModelFeatures();
 
-    // Response endpoint
-    public static final String ENDPOINT_RESPONSES = "responses";
-    // Legacy API endpoint
-    public static final String ENDPOINT_CHAT = "chat/completions";
 }
-

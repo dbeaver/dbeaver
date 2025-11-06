@@ -33,6 +33,7 @@ import picocli.CommandLine;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 public abstract class ApplicationCommandLine<T extends ApplicationInstanceController> {
@@ -169,7 +170,7 @@ public abstract class ApplicationCommandLine<T extends ApplicationInstanceContro
                 var finalAction = action == CLIProcessResult.PostAction.UNKNOWN_COMMAND
                     ? CLIProcessResult.PostAction.SHUTDOWN
                     : action;
-                return new CLIProcessResult(finalAction, gson.toJson(context.getResults()));
+                return new CLIProcessResult(finalAction, context.getResults());
             }
             return new CLIProcessResult(action);
 
@@ -179,7 +180,7 @@ public abstract class ApplicationCommandLine<T extends ApplicationInstanceContro
             if (e instanceof CLIException cliException) {
                 result = new CLIProcessResult(
                     CLIProcessResult.PostAction.ERROR,
-                    output,
+                    List.of(output),
                     cliException.getExitCode()
                 );
             } else {

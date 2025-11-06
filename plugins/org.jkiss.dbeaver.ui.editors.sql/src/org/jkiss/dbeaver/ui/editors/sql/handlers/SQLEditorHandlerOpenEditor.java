@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -274,21 +274,63 @@ public class SQLEditorHandlerOpenEditor extends AbstractDataSourceHandler {
         return openSQLConsole(workbenchWindow, context, sqlInput);
     }
 
-    public static SQLEditor openSQLConsole(IWorkbenchWindow workbenchWindow, SQLNavigatorContext context, IEditorInput sqlInput) {
+    public static SQLEditor openSQLConsole(
+        @NotNull IWorkbenchWindow workbenchWindow,
+        @NotNull SQLNavigatorContext context,
+        @NotNull IEditorInput sqlInput
+    ) {
         EditorUtils.setInputDataSource(sqlInput, context);
         return openSQLEditor(workbenchWindow, sqlInput);
     }
 
+    /**
+     * Open a new SQL console editor.
+     * <p>
+     * This method always opens a new editor instance even if an editor with the same input
+     * is already opened. The provided {@code sqlInput} will be associated with the
+     * supplied {@code context}.
+     * </p>
+     *
+     * @param workbenchWindow the workbench window used to open the editor (must not be null)
+     * @param context the navigator context that provides project and datasource information (must not be null)
+     * @param sqlInput the editor input to open (must not be null). May be an instance of
+     *                 {@link INonPersistentEditorInput} for transient consoles.
+     * @return the opened {@link SQLEditor} instance or {@code null} if the editor could not be opened
+     */
+    @Nullable
+    public static SQLEditor openNewSQLConsole(
+        @NotNull IWorkbenchWindow workbenchWindow,
+        @NotNull SQLNavigatorContext context,
+        @NotNull IEditorInput sqlInput
+    ) {
+        EditorUtils.setInputDataSource(sqlInput, context);
+        return openSQLEditor(workbenchWindow, sqlInput, IWorkbenchPage.MATCH_NONE);
+    }
+
     private static SQLEditor openSQLEditor(
-        IWorkbenchWindow workbenchWindow,
-        IEditorInput sqlInput) {
+        @NotNull IWorkbenchWindow workbenchWindow,
+        @NotNull IEditorInput sqlInput
+    ) {
+        boolean isConsole = sqlInput instanceof INonPersistentEditorInput;
+        return openSQLEditor(
+            workbenchWindow,
+            sqlInput,
+            isConsole ? IWorkbenchPage.MATCH_NONE : IWorkbenchPage.MATCH_INPUT
+        );
+    }
+
+    private static SQLEditor openSQLEditor(
+        @NotNull IWorkbenchWindow workbenchWindow,
+        @NotNull IEditorInput sqlInput,
+        int matchFlags
+    ) {
         try {
-            boolean isConsole = sqlInput instanceof INonPersistentEditorInput;
             return (SQLEditor) workbenchWindow.getActivePage().openEditor(
                 sqlInput,
                 SQLEditor.class.getName(),
                 true,
-                isConsole ? IWorkbenchPage.MATCH_NONE : IWorkbenchPage.MATCH_INPUT);
+                matchFlags
+            );
         } catch (PartInitException e) {
             DBWorkbench.getPlatformUI().showError("Can't open editor", null, e);
         }
