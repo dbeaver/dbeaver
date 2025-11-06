@@ -36,6 +36,7 @@ import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntityAssociation;
+import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
 import org.jkiss.dbeaver.ui.data.IDataController;
 
 import java.util.Collection;
@@ -59,9 +60,20 @@ public interface IResultSetController extends IDataController, DBPContextProvide
     String RESULTS_CONTEXT_ID = "org.jkiss.dbeaver.ui.context.resultset";
 
     enum ColumnOrder {
-        ASC,
-        DESC,
-        NONE
+        ASC(ResultSetMessages.controls_resultset_viewer_sorting_order_ascending),
+        DESC(ResultSetMessages.controls_resultset_viewer_sorting_order_descending),
+        NONE(ResultSetMessages.controls_resultset_viewer_sorting_order_none);
+
+        private final String text;
+
+        ColumnOrder(@NotNull String text) {
+            this.text = text;
+        }
+
+        @NotNull
+        public String getText() {
+            return text;
+        }
     }
 
     enum RowPlacement {
