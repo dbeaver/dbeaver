@@ -20,14 +20,13 @@ import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.Plugin;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.DBConfigurationController;
 import org.jkiss.dbeaver.model.DBFileController;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
-import org.jkiss.dbeaver.model.app.DBPApplication;
-import org.jkiss.dbeaver.model.app.DBPApplicationConfigurator;
-import org.jkiss.dbeaver.model.app.DBPDataFormatterRegistry;
-import org.jkiss.dbeaver.model.app.DBPPlatform;
+import org.jkiss.dbeaver.model.app.*;
 import org.jkiss.dbeaver.model.connection.DBPDataSourceProviderRegistry;
 import org.jkiss.dbeaver.model.data.DBDRegistry;
 import org.jkiss.dbeaver.model.edit.DBERegistry;
@@ -42,7 +41,9 @@ import org.jkiss.dbeaver.model.task.DBTTaskController;
 import org.jkiss.dbeaver.registry.datatype.DataTypeProviderRegistry;
 import org.jkiss.dbeaver.registry.formatter.DataFormatterRegistry;
 import org.jkiss.dbeaver.registry.fs.FileSystemProviderRegistry;
+import org.jkiss.dbeaver.registry.language.PlatformLanguageRegistry;
 import org.jkiss.dbeaver.registry.network.NetworkHandlerRegistry;
+import org.jkiss.dbeaver.registry.settings.GlobalSettings;
 import org.jkiss.dbeaver.runtime.IPluginService;
 import org.jkiss.dbeaver.runtime.jobs.DataSourceMonitorJob;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
@@ -52,16 +53,13 @@ import org.osgi.framework.Bundle;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * BaseWorkspaceImpl.
  * Base implementation of DBeaver platform for all products
  */
-public abstract class BasePlatformImpl implements DBPPlatform, DBPApplicationConfigurator {
+public abstract class BasePlatformImpl implements DBPPlatform, DBPApplicationConfigurator, DBPPlatformLanguageManager {
 
     private static final Log log = Log.getLog(BasePlatformImpl.class);
 
@@ -72,6 +70,8 @@ public abstract class BasePlatformImpl implements DBPPlatform, DBPApplicationCon
 
     public static final String CONFIG_FOLDER = ".config";
     public static final String FILES_FOLDER = ".files";
+
+    private static final String DBEAVER_PROP_LANGUAGE = "nl";
 
     protected OSDescriptor localSystem;
 
@@ -85,6 +85,8 @@ public abstract class BasePlatformImpl implements DBPPlatform, DBPApplicationCon
 
     private SQLDialectMetadataRegistry sqlDialectRegistry;
 
+    private DBPPlatformLanguage platformLanguage;
+
     protected void initialize() {
         log.debug("Initialize base platform...");
 
@@ -96,6 +98,14 @@ public abstract class BasePlatformImpl implements DBPPlatform, DBPApplicationCon
                 ((AbstractPreferenceStore)ds.getPreferenceStore()).firePropertyChangeEvent(prefStore, event.getProperty(), event.getOldValue(), event.getNewValue());
             }
         });
+
+        {
+            this.platformLanguage = PlatformLanguageRegistry.getInstance().getLanguage(Locale.getDefault());
+            if (this.platformLanguage == null) {
+                log.debug("Language for locale '" + Locale.getDefault() + "' not found. Use default.");
+                this.platformLanguage = PlatformLanguageRegistry.getInstance().getLanguage(Locale.ENGLISH);
+            }
+        }
 
         // Navigator model
         this.navigatorModel = createNavigatorModel();
@@ -349,6 +359,25 @@ public abstract class BasePlatformImpl implements DBPPlatform, DBPApplicationCon
     @Override
     public DBPDataSourceProviderRegistry getDataSourceProviderRegistry() {
         return DataSourceProviderRegistry.getInstance();
+    }
+
+    @NotNull
+    @Override
+    public DBPPlatformLanguage getPlatformLanguage() {
+        return platformLanguage;
+    }
+
+    @Override
+    public void setPlatformLanguage(@NotNull DBPPlatformLanguage language) throws DBException {
+        if (CommonUtils.equalObjects(language, this.platformLanguage)) {
+            return;
+        }
+
+        GlobalSettings.getInstance().setGlobalProperty(DBEAVER_PROP_LANGUAGE, language.getCode());
+        this.platformLanguage = language;
+        // This property is fake. But we set it to trigger property change listener
+        // which will ask to restart workbench.
+        getPreferenceStore().setValue(ModelPreferences.PLATFORM_LANGUAGE, language.getCode());
     }
 
 }
