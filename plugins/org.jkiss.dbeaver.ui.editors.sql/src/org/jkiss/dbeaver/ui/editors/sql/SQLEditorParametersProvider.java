@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,7 +22,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.data.DBDDataReceiver;
 import org.jkiss.dbeaver.model.data.DBDDataReceiverInteractive;
-import org.jkiss.dbeaver.model.sql.SQLParametersProvider;
+import org.jkiss.dbeaver.model.sql.SQLParametersProviderBase;
 import org.jkiss.dbeaver.model.sql.SQLQuery;
 import org.jkiss.dbeaver.model.sql.SQLQueryParameter;
 import org.jkiss.dbeaver.model.sql.SQLScriptContext;
@@ -35,9 +35,9 @@ import java.util.function.Supplier;
 /**
  * SQL Editor params provider
  */
-public class SQLEditorParametersProvider implements SQLParametersProvider {
+public class SQLEditorParametersProvider extends SQLParametersProviderBase {
 
-    private IWorkbenchPartSite site;
+    private final IWorkbenchPartSite site;
 
     public SQLEditorParametersProvider(IWorkbenchPartSite site) {
         this.site = site;
@@ -45,45 +45,18 @@ public class SQLEditorParametersProvider implements SQLParametersProvider {
 
     @Nullable
     @Override
-    public Boolean prepareStatementParameters(
+    protected Boolean collectAndAssignVariables(
         @NotNull SQLScriptContext scriptContext,
         @NotNull SQLQuery sqlStatement,
         @NotNull List<SQLQueryParameter> parameters,
-        @NotNull Supplier<DBDDataReceiver> dataReceiverSupplier,
-        boolean useDefaults
+        @NotNull Supplier<DBDDataReceiver> dataReceiverSupplier
     ) {
-        for (SQLQueryParameter param : parameters) {
-            String paramName = param.getName();
-            Object defValue = useDefaults ? scriptContext.getParameterDefaultValue(paramName) : null;
-            if (defValue != null || scriptContext.hasVariable(paramName)) {
-                assignVariable(scriptContext, param, paramName, defValue);
-            } else {
-                paramName = param.getVarName();
-                defValue = useDefaults ? scriptContext.getParameterDefaultValue(paramName) : null;
-                if (defValue != null || scriptContext.hasVariable(paramName)) {
-                    assignVariable(scriptContext, param, paramName, defValue);
-                } else {
-                    if (!useDefaults) {
-                        param.setVariableSet(false);
-                    }
-                }
-            }
-        }
-        boolean allSet = true;
-        for (SQLQueryParameter param : parameters) {
-            if (!param.isVariableSet()) {
-                allSet = false;
-            }
-        }
-        if (allSet) {
-            return true;
-        }
-
         int paramsResult = UITask.run(() -> {
             SQLQueryParameterBindDialog dialog = new SQLQueryParameterBindDialog(
                 site,
                 sqlStatement,
-                parameters);
+                parameters
+            );
             final DBDDataReceiver dataReceiver = dataReceiverSupplier.get();
             try {
                 if (dataReceiver instanceof DBDDataReceiverInteractive dri) {
@@ -104,7 +77,7 @@ public class SQLEditorParametersProvider implements SQLParametersProvider {
                     String strValue = param.getValue();
                     if (scriptContext.hasVariable(param.getName())) {
                         scriptContext.setVariable(param.getName(), strValue);
-                    } else if (scriptContext.hasVariable(param.getVarName())){
+                    } else if (scriptContext.hasVariable(param.getVarName())) {
                         scriptContext.setVariable(param.getVarName(), strValue);
                     } else {
                         scriptContext.setParameterDefaultValue(param.getName(), strValue);
@@ -122,13 +95,5 @@ public class SQLEditorParametersProvider implements SQLParametersProvider {
         return false;
     }
 
-
-
-    private void assignVariable(@NotNull SQLScriptContext scriptContext, SQLQueryParameter param, String paramName, Object defValue) {
-        Object varValue = defValue != null ? defValue : scriptContext.getVariable(paramName);
-        String strValue = varValue == null ? null : varValue.toString();
-        param.setValue(strValue);
-        param.setVariableSet(true);
-    }
 
 }
