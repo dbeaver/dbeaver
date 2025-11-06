@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
 
 package org.jkiss.dbeaver.model.sql.registry;
 
+import org.eclipse.core.expressions.Expression;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPImage;
@@ -35,6 +36,7 @@ public class SQLCommandHandlerDescriptor extends AbstractContextDescriptor {
     private final String description;
     private final ObjectType implClass;
     private final DBPImage icon;
+    private final Expression enablementExpression;
 
     public SQLCommandHandlerDescriptor(IConfigurationElement config)
     {
@@ -44,11 +46,13 @@ public class SQLCommandHandlerDescriptor extends AbstractContextDescriptor {
         this.description = config.getAttribute("description");
         this.implClass = new ObjectType(config.getAttribute("class"));
         this.icon = iconToImage(config.getAttribute("icon"));
+        this.enablementExpression = getEnablementExpression(config);
     }
 
     public String getId() {
         return id;
     }
+
 
     public String getLabel() {
         return label;
@@ -60,6 +64,10 @@ public class SQLCommandHandlerDescriptor extends AbstractContextDescriptor {
 
     public DBPImage getIcon() {
         return icon;
+    }
+
+    public boolean isEnabled() {
+        return isExpressionTrue(enablementExpression, this);
     }
 
     public SQLControlCommandHandler createHandler()
