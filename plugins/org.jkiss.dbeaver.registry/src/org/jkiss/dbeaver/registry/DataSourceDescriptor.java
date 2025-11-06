@@ -1102,8 +1102,8 @@ public class DataSourceDescriptor
                 if (found == null) {
                     throw new DBException("Shared credentials with subject ID '" + forceSecretId + "' not found");
                 }
-            }
-            if (!CommonUtils.isEmpty(sharedCreds)) {
+                setSelectedSharedCredentials(found);
+            } else if (!CommonUtils.isEmpty(sharedCreds)) {
                 log.debug("Shared credentials not selected - use first one: " + sharedCreds.get(0).getDisplayName());
                 setSelectedSharedCredentials(sharedCreds.get(0));
                 monitor.subTask("Use first available shared credentials");
