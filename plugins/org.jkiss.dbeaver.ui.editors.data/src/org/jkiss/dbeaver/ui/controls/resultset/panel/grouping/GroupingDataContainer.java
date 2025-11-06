@@ -22,28 +22,27 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.data.DBDDataFilter;
-import org.jkiss.dbeaver.model.data.DBDDataReceiver;
+import org.jkiss.dbeaver.model.data.*;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLGroupingAttribute;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
-import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.ui.controls.resultset.IResultSetController;
 import org.jkiss.utils.ArrayUtils;
 
-import java.util.Arrays;
+import java.util.*;
 import java.util.stream.Collectors;
 
-public class GroupingDataContainer implements DBSDataContainer {
+public class GroupingDataContainer implements TransformerDataContainer {
 
     private static final Log log = Log.getLog(GroupingDataContainer.class);
 
     private IResultSetController parentController;
     private String query;
     private SQLGroupingAttribute[] attributes;
+    private final Map<Integer, List<DBDAttributeTransformer>> attributeBindingNumberToTransformer = new HashMap<>();
 
     public GroupingDataContainer(IResultSetController parentController) {
         this.parentController = parentController;
@@ -179,6 +178,17 @@ public class GroupingDataContainer implements DBSDataContainer {
 
     public void setGroupingAttributes(@Nullable SQLGroupingAttribute[] attributes) {
         this.attributes = attributes;
+    }
+
+    @NotNull
+    @Override
+    public List<DBDAttributeTransformer> findTransformerForBinding(@NotNull DBDAttributeBinding attributeBinding) {
+        return attributeBindingNumberToTransformer.getOrDefault(attributeBinding.getOrdinalPosition(), List.of());
+    }
+
+    public void addAttributeTransformer(int attributeIndex, @NotNull DBDAttributeTransformer transformer) {
+        attributeBindingNumberToTransformer
+            .computeIfAbsent(attributeIndex, k -> new ArrayList<>()).add(transformer);
     }
 
     @Nullable
