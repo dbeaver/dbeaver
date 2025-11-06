@@ -14,38 +14,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model;
+package org.jkiss.dbeaver.ui.ai.internal;
 
-public class DBPPage {
-    private int offset;
-    private int limit;
+import org.eclipse.core.commands.AbstractHandler;
+import org.eclipse.core.commands.ExecutionEvent;
+import org.eclipse.ui.handlers.HandlerUtil;
+import org.jkiss.dbeaver.ui.ai.AIUIUtils;
 
-    public DBPPage(int offset, int limit) {
-        this.offset = offset;
-        this.limit = limit;
-    }
-
-    public int getOffset() {
-        return offset;
-    }
-
-    public int getLimit() {
-        return limit;
-    }
-
-    public void setOffset(int offset) {
-        this.offset = offset;
-    }
-
-    public void setLimit(int limit) {
-        this.limit = limit;
-    }
+public class AIConfigurationHandler extends AbstractHandler {
 
     @Override
-    public String toString() {
-        return "DBPPage{" +
-            "limit=" + limit +
-            ", offset=" + offset +
-            '}';
+    public Object execute(ExecutionEvent event) {
+        AIUIUtils.showPreferences(HandlerUtil.getActiveShell(event));
+        return null;
     }
+
 }

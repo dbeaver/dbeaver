@@ -14,38 +14,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model;
+package org.jkiss.dbeaver.model.ai.engine;
 
-public class DBPPage {
-    private int offset;
-    private int limit;
+import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.model.DBPNamedObject;
+import org.jkiss.dbeaver.model.DBPObjectWithDescription;
 
-    public DBPPage(int offset, int limit) {
-        this.offset = offset;
-        this.limit = limit;
-    }
+/**
+ * Purpose like: generate SQL, code completion, transcript, embedding
+ */
+public interface AIEnginePurpose extends DBPNamedObject, DBPObjectWithDescription {
 
-    public int getOffset() {
-        return offset;
-    }
+    @NotNull
+    AIModelFeature[] getRequiredModelFeatures();
 
-    public int getLimit() {
-        return limit;
-    }
-
-    public void setOffset(int offset) {
-        this.offset = offset;
-    }
-
-    public void setLimit(int limit) {
-        this.limit = limit;
-    }
-
-    @Override
-    public String toString() {
-        return "DBPPage{" +
-            "limit=" + limit +
-            ", offset=" + offset +
-            '}';
-    }
 }
