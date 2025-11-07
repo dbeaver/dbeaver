@@ -36,4 +36,7 @@ public class ClickhouseConstants {
     public static final String DATA_TYPE_MAP = "Map";
     public static final String CLICKHOUSE_SETTING_SESSION_ID = "clickhouse_setting_session_id";
     public static final String CLICKHOUSE_SETTING_SESSION_TIMEOUT = "clickhouse_setting_session_timeout";
+    public static final String DRIVER_GET_LAST_QUERY_METHOD = "getLastQueryId";
+    public static final String SESSION_BUSY_ERROR_CODE_MESSAGE = "Code: 373";
+
 }

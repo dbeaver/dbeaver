@@ -31,12 +31,11 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCRemoteInstance;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.runtime.DBRRunnableWithResult;
+import org.jkiss.dbeaver.model.runtime.LocalCacheProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 
-import java.lang.reflect.InvocationTargetException;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -385,23 +384,15 @@ public class GenericExecutionContext extends JDBCExecutionContext implements DBC
                 } else if (dataSource.hasCatalogs()) {
                     List<GenericCatalog> catalogs = dataSource.getCatalogs();
                     if (catalogs.size() == 1) {
-                        DBRRunnableWithResult<GenericSchema> runnable = new DBRRunnableWithResult<>() {
-                            @Override
-                            public void run(DBRProgressMonitor monitor) throws InvocationTargetException {
-                                try {
-                                    this.result = catalogs.get(0).getSchema(monitor, selectedEntityName);
-                                } catch (DBException e) {
-                                    log.debug("Failed to obtain default schema from catalog", e);
-                                }
-                            }
-                        };
-                        RuntimeUtils.runTask(runnable, "Obtain default schema", Integer.MAX_VALUE);
-                        return runnable.getResult();
+                        try {
+                            return catalogs.getFirst().getSchema(
+                                new LocalCacheProgressMonitor(new VoidProgressMonitor()), selectedEntityName);
+                        } catch (DBException e) {
+                            log.debug("Error reading schema in the first catalog: " + e.getMessage());
+                        }
                     }
                 }
             }
-            // TODO should be removed apparently!!
-            //  consider enforcing contract on always setting both selectedEntityName and selectedEntityType
             if (dataSource.hasCatalogs()) {
                 if (dataSource.getSelectedEntityType() == null || dataSource.getSelectedEntityType().equals(GenericConstants.ENTITY_TYPE_CATALOG)) {
                     return dataSource.getCatalog(selectedEntityName);

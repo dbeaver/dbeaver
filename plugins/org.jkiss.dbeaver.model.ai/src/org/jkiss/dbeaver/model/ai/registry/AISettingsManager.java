@@ -43,6 +43,7 @@ public class AISettingsManager {
 
     private static final String AI_DISABLED_KEY = "aiDisabled";
     private static final String ACTIVE_ENGINE_KEY = "activeEngine";
+    private static final String PROPERTIES_KEY = "properties";
     private static final String ENGINE_CONFIGURATIONS_KEY = "engineConfigurations";
     private static final String ENABLED_FUNCTION_CATEGORIES_KEY = "enabledFunctionCategories";
     private static final String ENABLED_FUNCTIONS_KEY = "enabledFunctions";
@@ -121,6 +122,7 @@ public class AISettingsManager {
             if (!configMap.isEmpty()) {
                 settings.setAiDisabled(JSONUtils.getBoolean(configMap, AI_DISABLED_KEY));
                 settings.setActiveEngine(JSONUtils.getString(configMap, ACTIVE_ENGINE_KEY));
+                JSONUtils.getObject(configMap, PROPERTIES_KEY).forEach(settings::setProperty);
 
                 List<String> enabledCategories = JSONUtils.getStringList(configMap, ENABLED_FUNCTION_CATEGORIES_KEY);
                 if (!enabledCategories.isEmpty()) {
@@ -194,6 +196,13 @@ public class AISettingsManager {
             JsonObject json = new JsonObject();
             json.addProperty(AI_DISABLED_KEY, settings.isAiDisabled());
             json.addProperty(ACTIVE_ENGINE_KEY, settings.activeEngine());
+
+            JsonObject propertiesObject = new JsonObject();
+            for (Map.Entry<String, Object> property : settings.getAllProperties().entrySet()) {
+                JsonElement propValue = savePropsGson.toJsonTree(property.getValue());
+                propertiesObject.add(property.getKey(), propValue);
+            }
+            json.add(PROPERTIES_KEY, propertiesObject);
 
             Set<String> enabledCategories = settings.getEnabledFunctionCategories();
             if (!enabledCategories.isEmpty()) {

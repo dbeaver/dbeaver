@@ -17,6 +17,7 @@
 
 package org.jkiss.dbeaver.model.cli;
 
+import org.eclipse.core.runtime.Platform;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
@@ -61,7 +62,7 @@ public abstract class ApplicationInstanceServer<T extends ApplicationInstanceCon
 
         try (ByteArrayOutputStream os = new ByteArrayOutputStream()) {
             Properties props = new Properties();
-            props.setProperty("port", String.valueOf(server.getAddress().getPort()));
+            props.setProperty(portPropertyName(), String.valueOf(server.getAddress().getPort()));
             props.store(os, "DBeaver instance server properties");
             configFileChannel.write(ByteBuffer.wrap(os.toByteArray()));
         }
@@ -161,5 +162,9 @@ public abstract class ApplicationInstanceServer<T extends ApplicationInstanceCon
         public boolean isOpenConsole() {
             return openConsole;
         }
+    }
+
+    protected static String portPropertyName() {
+        return Platform.getProduct().getId() + ".port";
     }
 }
