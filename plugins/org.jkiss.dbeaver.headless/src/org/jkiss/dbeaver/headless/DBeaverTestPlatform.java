@@ -18,9 +18,11 @@
 package org.jkiss.dbeaver.headless;
 
 import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.Plugin;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.DBConfigurationController;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPExternalFileManager;
 import org.jkiss.dbeaver.model.app.*;
@@ -176,6 +178,12 @@ public class DBeaverTestPlatform extends BasePlatformImpl implements DBPPlatform
     @Override
     public DBPExternalFileManager getExternalFileManager() {
         return workspace;
+    }
+
+    @NotNull
+    @Override
+    public DBConfigurationController getPluginConfigurationController(@NotNull String pluginId) {
+        return getConfigurationController(Platform.getBundle(pluginId));
     }
 
     @Override
