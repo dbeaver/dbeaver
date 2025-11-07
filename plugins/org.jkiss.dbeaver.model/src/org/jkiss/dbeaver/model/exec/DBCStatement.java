@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.model.exec;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.DBPAutoCloser;
 import org.jkiss.dbeaver.model.DBPCloseableObject;
 import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.runtime.DBRBlockingObject;
@@ -26,7 +27,7 @@ import org.jkiss.dbeaver.model.runtime.DBRBlockingObject;
 /**
  * DBCStatement
  */
-public interface DBCStatement extends DBPObject, DBRBlockingObject, DBPCloseableObject {
+public interface DBCStatement extends DBPObject, DBRBlockingObject, DBPCloseableObject, DBPAutoCloser {
 
     /**
      * Statement's context

@@ -38,6 +38,8 @@ public interface DBDDataReceiver extends AutoCloseable {
 
     /**
      * Called after entire result set if fetched.
+     * WARN: It SHOULD be called after owner statement close. Because in fetchEnd additional queries/server reads may be performed.
+     * This may cause statement lock issues.
      * @throws DBCException on error
      * @param session execution context
      * @param resultSet    result set
@@ -56,4 +58,25 @@ public interface DBDDataReceiver extends AutoCloseable {
     default DBCStatistics getStatistics() {
         return new DBCStatistics();
     }
+
+    static void startFetchWorkflow(
+        @NotNull DBDDataReceiver dataReceiver,
+        @NotNull DBCSession session,
+        @NotNull DBCResultSet resultSet,
+        long offset,
+        long maxRows
+    ) throws DBCException {
+        dataReceiver.fetchStart(session, resultSet, offset, maxRows);
+        resultSet.getSourceStatement().autoCloseDependant(() -> {
+            try {
+                dataReceiver.fetchEnd(session, resultSet);
+            } catch (DBCException e) {
+                throw new IllegalStateException(e);
+            } finally {
+                dataReceiver.close();
+            }
+        });
+    }
+
+
 }

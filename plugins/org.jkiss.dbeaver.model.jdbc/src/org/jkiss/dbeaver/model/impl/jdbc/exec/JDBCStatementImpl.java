@@ -453,6 +453,9 @@ public class JDBCStatementImpl<STATEMENT extends Statement> extends AbstractStat
     // Close
     @Override
     public void close() {
+        try {
+            super.close();
+        } finally {
 /*
         // Do not check for warnings here
         // Sometimes warnings are cached in connection and as a result we got a lot of spam in log
@@ -465,20 +468,20 @@ public class JDBCStatementImpl<STATEMENT extends Statement> extends AbstractStat
         }
 */
 
-        if (isQMLoggingEnabled()) {
-            // Handle close
-            QMUtils.getDefaultHandler().handleStatementClose(this, updateCount);
+            if (isQMLoggingEnabled()) {
+                // Handle close
+                QMUtils.getDefaultHandler().handleStatementClose(this, updateCount);
+            }
+
+            // Close statement
+            try {
+                getOriginal().close();
+            } catch (Throwable e) {
+                log.error("Can't close statement", e); //$NON-NLS-1$
+            }
+
+            getConnection().getExecutionContext().unlockStatementExecution(this);
         }
-
-        // Close statement
-        try {
-            getOriginal().close();
-        } catch (Throwable e) {
-            log.error("Can't close statement", e); //$NON-NLS-1$
-        }
-
-        getConnection().getExecutionContext().unlockStatementExecution(this);
-
     }
 
     /// /////////////////////////////////
