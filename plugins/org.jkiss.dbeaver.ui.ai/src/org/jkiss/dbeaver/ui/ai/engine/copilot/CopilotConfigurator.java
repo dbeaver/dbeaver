@@ -70,7 +70,8 @@ public class CopilotConfigurator<ENGINE extends AIEngineDescriptor, PROPERTIES e
 
     protected final CachedValue<List<AIModel>> modelsCache = new CachedValue<>(this::fetchCopilotModels);
 
-    private List<AIModel> fetchCopilotModels(DBRProgressMonitor monitor) throws DBException {
+    @NotNull
+    private List<AIModel> fetchCopilotModels(@NotNull DBRProgressMonitor monitor) throws DBException {
         if (accessToken == null || accessToken.isEmpty()) {
             throw new DBException("Access token is not set");
         }
@@ -254,6 +255,7 @@ public class CopilotConfigurator<ENGINE extends AIEngineDescriptor, PROPERTIES e
         }
     }
 
+    @NotNull
     @Override
     public Optional<AIEngineProperties> getCurrentProperties() {
         CopilotProperties copilotPropertiesCopy = new CopilotProperties();
@@ -261,10 +263,11 @@ public class CopilotConfigurator<ENGINE extends AIEngineDescriptor, PROPERTIES e
         return Optional.of(copilotPropertiesCopy);
     }
 
-    protected <E extends CopilotCompletionEngine> E createEngine() {
+    @NotNull
+    protected CopilotCompletionEngine createEngine() {
         CopilotProperties properties = new CopilotProperties();
         properties.setToken(accessToken);
 
-        return (E) new CopilotCompletionEngine(properties);
+        return new CopilotCompletionEngine(properties);
     }
 }

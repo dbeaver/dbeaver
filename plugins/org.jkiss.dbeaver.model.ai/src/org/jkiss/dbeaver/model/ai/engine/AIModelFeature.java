@@ -19,5 +19,6 @@ package org.jkiss.dbeaver.model.ai.engine;
 public enum AIModelFeature {
     CHAT,
     STREAMING,
-    SPEECH_TO_TEXT, EMBEDDING,
+    SPEECH_TO_TEXT,
+    EMBEDDING,
 }
