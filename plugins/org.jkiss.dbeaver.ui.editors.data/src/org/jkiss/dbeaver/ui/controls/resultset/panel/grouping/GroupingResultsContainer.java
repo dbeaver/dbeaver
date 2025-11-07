@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.data.DBDDataFilter;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCStatistics;
+import org.jkiss.dbeaver.model.impl.data.transformers.PercentOfTotalGroupingAttributeTransformer;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.*;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
@@ -221,6 +222,7 @@ public class GroupingResultsContainer implements IResultSetContainer {
         var groupingQueryGenerator = new SQLGroupingQueryGenerator(dataSource, dbsDataContainer, dialect, syntaxManager, groupAttributes, groupFunctions, isShowDuplicatesOnly);
         dataContainer.setGroupingQuery(groupingQueryGenerator.generateGroupingQuery(queryText));
         dataContainer.setGroupingAttributes(groupAttributes.toArray(SQLGroupingAttribute[]::new));
+        addPercentageTransformer(presentation.getController().getModel());
         DBDDataFilter dataFilter;
         if (presentation.getController().getModel().isMetadataChanged()) {
             dataFilter = new DBDDataFilter();
@@ -261,6 +263,11 @@ public class GroupingResultsContainer implements IResultSetContainer {
         addGroupingFunctions(functions);
 
         resetDataFilters();
+    }
+
+    private void addPercentageTransformer(@NotNull ResultSetModel model) {
+        int defaultFunctionIndex = groupFunctions.indexOf(getDefaultFunction());
+        dataContainer.addAttributeTransformer(defaultFunctionIndex, new PercentOfTotalGroupingAttributeTransformer(model.getRowCount()));
     }
 
     private void resetDataFilters() {
