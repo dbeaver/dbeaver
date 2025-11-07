@@ -57,6 +57,7 @@ import java.util.*;
  */
 public abstract class ConnectionPageAbstract extends DialogPage implements IDataSourceConnectionEditor {
     public static final String PROP_DRIVER_SUBSTITUTION = "driver-substitution";
+    protected static final String CG_DISABLE_AS_READONLY = "DISABLE_AS_READONLY"; //$NON-NLS-1$
 
     protected static final String GROUP_CONNECTION_MODE = "connectionMode"; //$NON-NLS-1$
     protected static final String GROUP_CONNECTION = "connection"; //$NON-NLS-1$
@@ -445,9 +446,10 @@ public abstract class ConnectionPageAbstract extends DialogPage implements IData
             Set<Control> controls = propGroupMap.get(groupName);
             if (controls != null) {
                 for (Control control : controls) {
-                    control.setEnabled(enable);
-                    if (control instanceof Text text) {
+                    if (control instanceof Text text && Boolean.TRUE.equals(control.getData(CG_DISABLE_AS_READONLY))) {
                         text.setEditable(enable);
+                    } else {
+                        control.setEnabled(enable);
                     }
                     if (isHideNonApplicableControls()) {
                         UIUtils.setControlVisible(control, enable);

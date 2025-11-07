@@ -113,6 +113,7 @@ public class PostgreConnectionPage extends ConnectionPageWithAuth implements IDi
         gd.widthHint = 355;
         urlText.setLayoutData(gd);
         urlText.addModifyListener(e -> site.updateButtons());
+        urlText.setData(CG_DISABLE_AS_READONLY, true);
 
         final DBPDriver driver = site.getDriver();
         PostgreServerType serverType = getServerType(driver);
