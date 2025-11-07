@@ -125,7 +125,7 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
             );
             workspaceLanguage.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
             List<PlatformLanguageDescriptor> languages = PlatformLanguageRegistry.getInstance().getLanguages();
-            DBPPlatformLanguage pLanguage = DBPPlatformDesktop.getInstance().getLanguage();
+            DBPPlatformLanguage pLanguage = DBPPlatformDesktop.getInstance().getPlatformLanguage();
             for (int i = 0; i < languages.size(); i++) {
                 PlatformLanguageDescriptor lang = languages.get(i);
                 workspaceLanguage.add(lang.getLabel());
@@ -359,7 +359,7 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
             if (workspaceLanguage.getSelectionIndex() >= 0) {
                 PlatformLanguageDescriptor language = PlatformLanguageRegistry.getInstance().getLanguages()
                     .get(workspaceLanguage.getSelectionIndex());
-                DBPPlatformLanguage curLanguage = DBPPlatformDesktop.getInstance().getLanguage();
+                DBPPlatformLanguage curLanguage = DBPPlatformDesktop.getInstance().getPlatformLanguage();
 
                 try {
                     if (curLanguage != language) {
