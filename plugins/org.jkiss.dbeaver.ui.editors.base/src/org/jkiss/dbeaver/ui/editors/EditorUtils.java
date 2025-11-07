@@ -232,6 +232,8 @@ public class EditorUtils {
     public static DatabaseEditorContext getEditorContext(IEditorInput editorInput) {
         if (editorInput instanceof IInMemoryEditorInput) {
             return (DatabaseEditorContext) ((IInMemoryEditorInput) editorInput).getProperty(PROP_EDITOR_CONTEXT);
+        } else if (editorInput instanceof IncludedScriptFileEditorInput input) {
+            return input.getDatabaseEditorContext();
         }
         return null;
     }
@@ -379,6 +381,9 @@ public class EditorUtils {
                 }
             }
             return;
+        }
+        if (editorInput instanceof IncludedScriptFileEditorInput input) {
+            input.setDatabaseEditorContext(context);
         }
         IFile file = getFileFromInput(editorInput);
         if (file != null) {

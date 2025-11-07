@@ -53,10 +53,12 @@ import java.util.Optional;
 
 public class OpenAiConfigurator<ENGINE extends AIEngineDescriptor, PROPERTIES extends OpenAIProperties>
     implements AIIObjectPropertyConfigurator<ENGINE, PROPERTIES> {
+
     private static final String API_KEY_URL = "https://platform.openai.com/account/api-keys";
     protected String baseUrl;
     protected volatile String token = "";
     private String temperature = "0.0";
+    private boolean useLegacyApi;
     private boolean logQuery = false;
 
     @Nullable
@@ -67,6 +69,7 @@ public class OpenAiConfigurator<ENGINE extends AIEngineDescriptor, PROPERTIES ex
     private Text temperatureText;
     private ModelSelectorField modelSelectorField;
     private ContextWindowSizeField contextWindowSizeField;
+    private Button legacyApiCheck;
     private Button logQueryCheck;
 
     protected final CachedValue<List<AIModel>> modelsCache = new CachedValue<>(this::fetchOpenAiModels);
@@ -98,6 +101,7 @@ public class OpenAiConfigurator<ENGINE extends AIEngineDescriptor, PROPERTIES ex
             CommonUtils.toString(configuration.getModel(), OpenAIModels.DEFAULT_MODEL)
         );
         temperature = CommonUtils.toString(configuration.getTemperature(), "0.0");
+        useLegacyApi = configuration.isLegacyApi();
         logQuery = CommonUtils.toBoolean(configuration.isLoggingEnabled());
         applySettings();
 
@@ -113,6 +117,7 @@ public class OpenAiConfigurator<ENGINE extends AIEngineDescriptor, PROPERTIES ex
         configuration.setModel(modelSelectorField.getSelectedModel());
         configuration.setContextWindowSize(contextWindowSizeField.getValue());
         configuration.setTemperature(CommonUtils.toDouble(temperature));
+        configuration.setLegacyApi(useLegacyApi);
         configuration.setLoggingEnabled(logQuery);
     }
 
@@ -122,6 +127,16 @@ public class OpenAiConfigurator<ENGINE extends AIEngineDescriptor, PROPERTIES ex
     }
 
     protected void createAdditionalSettings(@NotNull Composite parent) {
+        legacyApiCheck = UIUtils.createCheckbox(
+            parent,
+            "Use legacy API",
+            "Use legacy OpenAI API (chat). May be useful if you use OpenAI compatible engine which doesn't support 'responses' API.",
+            false,
+            2
+        );
+        legacyApiCheck.addSelectionListener(SelectionListener.widgetSelectedAdapter(e ->
+            useLegacyApi = legacyApiCheck.getSelection()
+        ));
         logQueryCheck = UIUtils.createCheckbox(
             parent,
             "Write AI queries to debug log",
@@ -129,12 +144,9 @@ public class OpenAiConfigurator<ENGINE extends AIEngineDescriptor, PROPERTIES ex
             false,
             2
         );
-        logQueryCheck.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                logQuery = logQueryCheck.getSelection();
-            }
-        });
+        logQueryCheck.addSelectionListener(SelectionListener.widgetSelectedAdapter(e ->
+            logQuery = logQueryCheck.getSelection()
+        ));
     }
 
     protected void createModelParameters(@NotNull Composite parent) {
@@ -147,7 +159,7 @@ public class OpenAiConfigurator<ENGINE extends AIEngineDescriptor, PROPERTIES ex
                     .map(AIModel::name)
                     .toList()
             )
-            .withSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
+            .withSelectionListener(SelectionListener.widgetSelectedAdapter(e ->
                 OpenAIModels.getModelByName(modelSelectorField.getSelectedModel())
                     .ifPresentOrElse(
                         model -> {
@@ -157,9 +169,8 @@ public class OpenAiConfigurator<ENGINE extends AIEngineDescriptor, PROPERTIES ex
                             contextWindowSizeField.setValue(null);
                             temperatureText.setText("0.0");
                         }
-                    );
-            }))
-            .build();
+                    )))
+                .build();
 
         contextWindowSizeField = ContextWindowSizeField.builder()
             .withParent(parent)
@@ -245,6 +256,7 @@ public class OpenAiConfigurator<ENGINE extends AIEngineDescriptor, PROPERTIES ex
         }
 
         temperatureText.setText(temperature);
+        legacyApiCheck.setSelection(useLegacyApi);
         logQueryCheck.setSelection(logQuery);
     }
 
@@ -263,6 +275,7 @@ public class OpenAiConfigurator<ENGINE extends AIEngineDescriptor, PROPERTIES ex
         propertiesCopy.setModel(modelSelectorField.getSelectedModel());
         propertiesCopy.setContextWindowSize(contextWindowSizeField.getValue());
         propertiesCopy.setTemperature(CommonUtils.toDouble(temperature));
+        propertiesCopy.setLegacyApi(useLegacyApi);
         propertiesCopy.setLoggingEnabled(logQuery);
         return Optional.of(propertiesCopy);
     }

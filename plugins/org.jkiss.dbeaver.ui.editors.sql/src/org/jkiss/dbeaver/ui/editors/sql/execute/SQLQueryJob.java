@@ -32,6 +32,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Text;
+import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchPartSite;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
@@ -65,6 +66,7 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetPreferences;
 import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
 import org.jkiss.dbeaver.ui.dialogs.exec.ExecutionQueueErrorJob;
+import org.jkiss.dbeaver.ui.editors.IncludedScriptFileEditorInput;
 import org.jkiss.dbeaver.ui.editors.sql.SQLPreferenceConstants;
 import org.jkiss.dbeaver.ui.editors.sql.SQLPreferenceConstants.StatisticsTabOnExecutionBehavior;
 import org.jkiss.dbeaver.ui.editors.sql.SQLResultsConsumer;
@@ -256,13 +258,14 @@ public class SQLQueryJob extends DataSourceJob
                         }
                         // Ask to continue
                         log.error(lastError);
-                        boolean isQueue = queryNum < queries.size() - 1;
+                        boolean isQueue = isQueue();
                         DBPPlatformUI.UserResponse response = ExecutionQueueErrorJob.showError(
                             isQueue ? "SQL script execution" : "SQL query execution",
                             lastError,
                             isQueue);
 
                         boolean stopScript = false;
+                        boolean tryAgain = false;
                         switch (response) {
                             case STOP:
                                 // just stop execution
@@ -270,7 +273,7 @@ public class SQLQueryJob extends DataSourceJob
                                 break;
                             case RETRY:
                                 // just make it again
-                                this.schedule(100);
+                                tryAgain = true;
                                 break;
                             case IGNORE:
                                 // Just do nothing
@@ -282,6 +285,13 @@ public class SQLQueryJob extends DataSourceJob
 
                         if (stopScript) {
                             break;
+                        } else if (tryAgain) {
+                            try {
+                                Thread.sleep(100);
+                                continue;
+                            } catch (InterruptedException ie) {
+                                break;
+                            }
                         }
                     }
 
@@ -354,6 +364,12 @@ public class SQLQueryJob extends DataSourceJob
         }
     }
 
+    private boolean isQueue() {
+        boolean isIncludedScript = partSite.getPart() instanceof IEditorPart ep &&
+            ep.getEditorInput() instanceof IncludedScriptFileEditorInput;
+        return isIncludedScript || queryNum < queries.size() - 1;
+    }
+
     @NotNull
     private SqlJobResult getSqlJobResult() {
         if (queries.get(queries.size() - 1) == lastGoodQuery && lastError == null) {
@@ -416,7 +432,10 @@ public class SQLQueryJob extends DataSourceJob
                 if (controlResult.getTransformed() != null) {
                     element = controlResult.getTransformed();
                 } else {
-                    return true;
+                    if (controlResult.isSuccess()) {
+                        lastGoodQuery = element;
+                    }
+                    return controlResult.isSuccess();
                 }
             } catch (Throwable e) {
                 if (!(e instanceof DBException)) {
