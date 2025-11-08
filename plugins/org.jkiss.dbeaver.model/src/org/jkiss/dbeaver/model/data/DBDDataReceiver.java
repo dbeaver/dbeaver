@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.model.data;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.DBRuntimeException;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCResultSet;
 import org.jkiss.dbeaver.model.exec.DBCSession;
@@ -69,12 +70,10 @@ public interface DBDDataReceiver extends AutoCloseable {
     ) throws DBException {
         dataReceiver.fetchStart(session, resultSet, offset, maxRows);
         resultSet.getSourceStatement().autoCloseDependant(() -> {
-            try {
+            try (dataReceiver) {
                 dataReceiver.fetchEnd(session, resultSet);
             } catch (DBCException e) {
-                throw new IllegalStateException(e);
-            } finally {
-                dataReceiver.close();
+                throw new DBRuntimeException("Error while finishing result set fetching into " + dataReceiver, e);
             }
         });
     }

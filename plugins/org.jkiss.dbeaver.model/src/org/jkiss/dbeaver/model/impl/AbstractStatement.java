@@ -37,7 +37,7 @@ public abstract class AbstractStatement<SESSION extends DBCSession> implements D
 
     protected final SESSION connection;
     private DBCExecutionSource statementSource;
-    private DBPCloseableObject closeFinalizer;
+    private DBPCloseableObject executeFinalizer;
 
     public AbstractStatement(SESSION session) {
         this.connection = session;
@@ -76,17 +76,25 @@ public abstract class AbstractStatement<SESSION extends DBCSession> implements D
             QMUtils.getDefaultHandler().handleStatementClose(this, updateRowCount);
         }
 
-        if (this.closeFinalizer != null) {
-            this.closeFinalizer.close();
-        }
+        runCloseDependants();
     }
 
+    // Close dependants will be called AFTER the statement is close
     @Override
     public void autoCloseDependant(@NotNull DBPCloseableObject dependent) {
-        if (this.closeFinalizer != null) {
+        if (this.executeFinalizer != null) {
             log.error("Internal error: double set of close finalizer " + dependent);
         }
-        this.closeFinalizer = dependent;
+        this.executeFinalizer = dependent;
+    }
+
+    // Forcibly run close dependants
+    // May be needed if statement cannot be closed for some reason
+    public void runCloseDependants() throws DBException {
+        if (this.executeFinalizer != null) {
+            this.executeFinalizer.close();
+            this.executeFinalizer = null;
+        }
     }
 
 }

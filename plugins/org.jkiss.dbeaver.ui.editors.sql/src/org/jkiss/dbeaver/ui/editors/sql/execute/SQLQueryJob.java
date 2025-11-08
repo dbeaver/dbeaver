@@ -45,6 +45,7 @@ import org.jkiss.dbeaver.model.data.DBDDataFilter;
 import org.jkiss.dbeaver.model.data.DBDDataReceiver;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.impl.AbstractExecutionSource;
+import org.jkiss.dbeaver.model.impl.AbstractStatement;
 import org.jkiss.dbeaver.model.impl.local.StatResultSet;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.qm.QMUtils;
@@ -823,6 +824,10 @@ public class SQLQueryJob extends DataSourceJob
             //monitor.subTask("Close query");
             if (!keepStatementOpen()) {
                 closeStatement();
+            } else {
+                if (dbcStatement instanceof AbstractStatement<?> as) {
+                    as.runCloseDependants();
+                }
             }
         }
     }
@@ -912,13 +917,14 @@ public class SQLQueryJob extends DataSourceJob
         fetchQueryData(session, fakeResultSet, resultInfo, executeResult, dataReceiver, false);
     }
 
-    private boolean fetchQueryData(DBCSession session, DBCResultSet resultSet, SQLQueryResult result, SQLQueryResult.ExecuteResult executeResult, DBDDataReceiver dataReceiver, boolean updateStatistics)
-        throws DBException
-    {
-        if (dataReceiver == null) {
-            // No data pump - skip fetching stage
-            return false;
-        }
+    private boolean fetchQueryData(
+        @NotNull DBCSession session,
+        @Nullable DBCResultSet resultSet,
+        @Nullable SQLQueryResult result,
+        @NotNull SQLQueryResult.ExecuteResult executeResult,
+        @NotNull DBDDataReceiver dataReceiver,
+        boolean updateStatistics
+    ) throws DBException {
         if (resultSet == null) {
             return false;
         }
@@ -931,7 +937,7 @@ public class SQLQueryJob extends DataSourceJob
         monitor.subTask("Fetch result set");
         DBFetchProgress fetchProgress = new DBFetchProgress(session.getProgressMonitor());
 
-        dataReceiver.fetchStart(session, resultSet, rsOffset, rsMaxRows);
+        DBDDataReceiver.startFetchWorkflow(dataReceiver, session, resultSet, rsOffset, rsMaxRows);
 
         try {
             String sourceName = null;//resultSet.getResultSetName();
@@ -988,12 +994,6 @@ public class SQLQueryJob extends DataSourceJob
                     log.error("Error while closing resultset", e);
                 }
             }
-            try {
-                dataReceiver.fetchEnd(session, resultSet);
-            } catch (Throwable e) {
-                log.error("Error while handling end of result set fetch", e);
-            }
-            dataReceiver.close();
         }
 
         if (result != null) {
