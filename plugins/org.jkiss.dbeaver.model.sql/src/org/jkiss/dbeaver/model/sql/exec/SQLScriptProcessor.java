@@ -342,9 +342,9 @@ public class SQLScriptProcessor {
         monitor.subTask("Fetch result set");
         DBFetchProgress fetchProgress = new DBFetchProgress(session.getProgressMonitor());
 
-        dataReceiver.fetchStart(session, resultSet, 0, 0);
+        DBDDataReceiver.startFetchWorkflow(dataReceiver, session, resultSet, 0, 0);
 
-        try {
+        try (resultSet) {
             long fetchStartTime = System.currentTimeMillis();
 
             // Fetch all rows
@@ -353,18 +353,6 @@ public class SQLScriptProcessor {
                 fetchProgress.monitorRowFetch();
             }
             statistics.addFetchTime(System.currentTimeMillis() - fetchStartTime);
-        } finally {
-            try {
-                resultSet.close();
-            } catch (Throwable e) {
-                log.error("Error while closing resultset", e);
-            }
-            try {
-                dataReceiver.fetchEnd(session, resultSet);
-            } catch (Throwable e) {
-                log.error("Error while handling end of result set fetch", e);
-            }
-            dataReceiver.close();
         }
 
         statistics.setRowsFetched(fetchProgress.getRowCount());

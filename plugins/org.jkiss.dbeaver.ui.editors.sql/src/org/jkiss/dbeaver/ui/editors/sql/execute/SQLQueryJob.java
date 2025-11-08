@@ -105,7 +105,7 @@ public class SQLQueryJob extends DataSourceJob
     private DBDDataFilter dataFilter;
     private boolean connectionInvalidated = false;
 
-    private SQLScriptCommitType commitType;
+    private final SQLScriptCommitType commitType;
     private SQLScriptErrorHandling errorHandling;
     private boolean fetchResultSets;
     private long rsOffset;
@@ -166,7 +166,7 @@ public class SQLQueryJob extends DataSourceJob
 
     public SQLScriptElement getLastQuery()
     {
-        return queries.isEmpty() ? null : queries.get(0);
+        return queries.isEmpty() ? null : queries.getFirst();
     }
 
     public SQLScriptElement getLastGoodQuery() {
@@ -286,12 +286,8 @@ public class SQLQueryJob extends DataSourceJob
                         if (stopScript) {
                             break;
                         } else if (tryAgain) {
-                            try {
-                                Thread.sleep(100);
-                                continue;
-                            } catch (InterruptedException ie) {
-                                break;
-                            }
+                            RuntimeUtils.pause(100);
+                            continue;
                         }
                     }
 

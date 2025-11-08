@@ -58,6 +58,7 @@ public class JDBCStatementImpl<STATEMENT extends Statement> extends AbstractStat
 
     private long updateCount;
     private Throwable executeError;
+    private boolean closed;
 
     public JDBCStatementImpl(
         @NotNull JDBCSession connection,
@@ -190,6 +191,9 @@ public class JDBCStatementImpl<STATEMENT extends Statement> extends AbstractStat
 
     @Override
     public long getUpdateRowCount() throws DBCException {
+        if (closed) {
+            return updateCount;
+        }
         try {
             try {
                 return getLargeUpdateCount();
@@ -474,6 +478,7 @@ public class JDBCStatementImpl<STATEMENT extends Statement> extends AbstractStat
             closeError = e;
         }
 
+        this.closed = true;
         getConnection().getExecutionContext().unlockStatementExecution(this);
 
         try {
@@ -604,6 +609,9 @@ public class JDBCStatementImpl<STATEMENT extends Statement> extends AbstractStat
 
     @Override
     public int getUpdateCount() throws SQLException {
+        if (closed) {
+            return (int) updateCount;
+        }
         int uc = getOriginal().getUpdateCount();
         if (uc >= 0) {
             // Cache update count (for QM logging)
@@ -614,6 +622,9 @@ public class JDBCStatementImpl<STATEMENT extends Statement> extends AbstractStat
 
     @Override
     public long getLargeUpdateCount() throws SQLException {
+        if (closed) {
+            return updateCount;
+        }
         final long uc = getOriginal().getLargeUpdateCount();
         if (uc >= 0) {
             // Cache update count (for QM logging)

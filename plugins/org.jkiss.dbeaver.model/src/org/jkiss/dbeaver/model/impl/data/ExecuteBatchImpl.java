@@ -342,20 +342,11 @@ public abstract class ExecuteBatchImpl implements DBSDataManipulator.ExecuteBatc
         if (dbResult == null) {
             return;
         }
-        try {
-            keysReceiver.fetchStart(session, dbResult, -1, -1);
-            try {
-                while (dbResult.nextRow()) {
-                    keysReceiver.fetchRow(session, dbResult);
-                }
+        try (dbResult) {
+            DBDDataReceiver.startFetchWorkflow(keysReceiver, session, dbResult, -1, -1);
+            while (dbResult.nextRow()) {
+                keysReceiver.fetchRow(session, dbResult);
             }
-            finally {
-                keysReceiver.fetchEnd(session, dbResult);
-            }
-        }
-        finally {
-            DBUtils.closeSafely(dbResult);
-            keysReceiver.close();
         }
     }
 

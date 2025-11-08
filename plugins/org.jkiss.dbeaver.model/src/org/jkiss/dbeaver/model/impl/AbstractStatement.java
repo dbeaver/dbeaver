@@ -83,6 +83,9 @@ public abstract class AbstractStatement<SESSION extends DBCSession> implements D
 
     @Override
     public void autoCloseDependant(@NotNull DBPCloseableObject dependent) {
+        if (this.closeFinalizer != null) {
+            log.error("Internal error: double set of close finalizer " + dependent);
+        }
         this.closeFinalizer = dependent;
     }
 

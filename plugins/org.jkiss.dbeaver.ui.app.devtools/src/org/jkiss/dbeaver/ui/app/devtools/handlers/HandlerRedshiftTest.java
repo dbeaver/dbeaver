@@ -78,7 +78,7 @@ public class HandlerRedshiftTest extends AbstractHandler {
     @NotNull
     private static List<Thread> startThreads(DBCSession session) {
         List<Thread> startedThreads = new ArrayList<>();
-        for (int i = 0; i < 20; i++) {
+        for (int i = 0; i < 50; i++) {
             int finalI = i;
             Thread thread = new Thread("Thread " + finalI) {
                 @Override

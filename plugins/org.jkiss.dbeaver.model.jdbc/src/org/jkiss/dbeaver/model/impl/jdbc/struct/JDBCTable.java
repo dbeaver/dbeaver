@@ -204,8 +204,8 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
             if (executeResult) {
                 DBCResultSet dbResult = dbStat.openResultSet();
                 if (dbResult != null && !monitor.isCanceled()) {
-                    try {
-                        dataReceiver.fetchStart(session, dbResult, firstRow, maxRows);
+                    try (dbResult) {
+                        DBDDataReceiver.startFetchWorkflow(dataReceiver, session, dbResult, firstRow, maxRows);
 
                         DBFetchProgress fetchProgress = new DBFetchProgress(session.getProgressMonitor());
                         while (dbResult.nextRow()) {
@@ -217,25 +217,10 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
                             fetchProgress.monitorRowFetch();
                         }
                         fetchProgress.dumpStatistics(statistics);
-                    } finally {
-                        // First - close cursor
-                        try {
-                            dbResult.close();
-                        } catch (Throwable e) {
-                            log.error("Error closing result set", e); //$NON-NLS-1$
-                        }
-                        // Then - signal that fetch was ended
-                        try {
-                            dataReceiver.fetchEnd(session, dbResult);
-                        } catch (Throwable e) {
-                            log.error("Error while finishing result set fetch", e); //$NON-NLS-1$
-                        }
                     }
                 }
             }
             return statistics;
-        } finally {
-            dataReceiver.close();
         }
     }
 
