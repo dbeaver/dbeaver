@@ -50,15 +50,15 @@ public class WMIClass extends WMIContainer
 
     static final String ICON_LOCATION_PREFIX = "platform:/plugin/" + Activator.PLUGIN_ID + "/icons/";
 
-    private static DBPImage IMG_CLASS;
-    private static DBPImage IMG_CLASS_ABSTRACT;
-    private static DBPImage IMG_CLASS_FINAL;
-    private static DBPImage IMG_CLASS_ABSTRACT_FINAL;
-    private static DBPImage IMG_ASSOCIATION;
-    private static DBPImage IMG_ASSOCIATION_ABSTRACT;
+    private static final DBPImage IMG_CLASS;
+    private static final DBPImage IMG_CLASS_ABSTRACT;
+    private static final DBPImage IMG_CLASS_FINAL;
+    private static final DBPImage IMG_CLASS_ABSTRACT_FINAL;
+    private static final DBPImage IMG_ASSOCIATION;
+    private static final DBPImage IMG_ASSOCIATION_ABSTRACT;
 
-    private static DBIcon IMG_ABSTRACT_OVR = new DBIcon(ICON_LOCATION_PREFIX + "ovr_abstract.png");
-    private static DBIcon IMG_FINAL_OVR = new DBIcon(ICON_LOCATION_PREFIX + "ovr_final.png");
+    private static final DBIcon IMG_ABSTRACT_OVR = new DBIcon(ICON_LOCATION_PREFIX + "ovr_abstract.png");
+    private static final DBIcon IMG_FINAL_OVR = new DBIcon(ICON_LOCATION_PREFIX + "ovr_final.png");
 
     static {
         IMG_CLASS = DBIcon.TREE_CLASS;
@@ -69,7 +69,7 @@ public class WMIClass extends WMIContainer
         IMG_ASSOCIATION_ABSTRACT = new DBIconComposite(IMG_ASSOCIATION, false, null, IMG_ABSTRACT_OVR, null, null);
     }
 
-    private WMIClass superClass;
+    private final WMIClass superClass;
     private WMIObject classObject;
     private String name;
     private List<WMIClass> subClasses = null;
@@ -428,8 +428,7 @@ public class WMIClass extends WMIContainer
         long maxRows,
         long flags,
         int fetchSize
-    ) throws DBCException
-    {
+    ) throws DBException {
         DBCStatistics statistics = new DBCStatistics();
         try {
             long startTime = System.currentTimeMillis();
