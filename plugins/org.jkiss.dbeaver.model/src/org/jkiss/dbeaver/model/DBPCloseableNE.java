@@ -16,13 +16,15 @@
  */
 package org.jkiss.dbeaver.model;
 
-import org.jkiss.code.NotNull;
-
 /**
- * Implementor will close all passed Closable objects AFTER its own close
+ * Closable which doesn't throw errors
  */
-public interface DBPAutoCloser extends AutoCloseable {
+public interface DBPCloseableNE extends AutoCloseable {
 
-    void autoCloseDependant(@NotNull DBPCloseableObject dependent);
+    /**
+     * Closes object
+     */
+    @Override
+    void close();
 
 }

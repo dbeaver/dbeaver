@@ -24,6 +24,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
@@ -209,7 +210,7 @@ public class CursorViewComposite extends Composite implements IResultSetContaine
             long maxRows,
             long flags,
             int fetchSize
-        ) throws DBCException {
+        ) throws DBException {
             DBCStatistics statistics = new DBCStatistics();
             DBCResultSet resultSet = value == null ? null : value.openResultSet(session);
             if (resultSet == null) {

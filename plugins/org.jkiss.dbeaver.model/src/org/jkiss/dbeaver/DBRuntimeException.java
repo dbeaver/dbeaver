@@ -14,15 +14,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model;
 
-import org.jkiss.code.NotNull;
+package org.jkiss.dbeaver;
 
 /**
- * Implementor will close all passed Closable objects AFTER its own close
+ * DBRuntimeException
  */
-public interface DBPAutoCloser extends AutoCloseable {
+public class DBRuntimeException extends RuntimeException {
+    public DBRuntimeException(String message) {
+        super(message);
+    }
 
-    void autoCloseDependant(@NotNull DBPCloseableObject dependent);
+    public DBRuntimeException(String message, Throwable cause) {
+        super(message, cause);
+    }
+
+    public DBRuntimeException(Throwable cause) {
+        super(cause);
+    }
 
 }

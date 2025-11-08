@@ -18,13 +18,15 @@ package org.jkiss.dbeaver.model.impl;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPAutoCloser;
+import org.jkiss.dbeaver.model.DBPCloseableObject;
+import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionSource;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.DBCStatement;
-
-import java.io.Closeable;
+import org.jkiss.dbeaver.model.qm.QMUtils;
 
 /**
  * Manageable result set
@@ -35,7 +37,7 @@ public abstract class AbstractStatement<SESSION extends DBCSession> implements D
 
     protected final SESSION connection;
     private DBCExecutionSource statementSource;
-    private Closeable closeFinalizer;
+    private DBPCloseableObject closeFinalizer;
 
     public AbstractStatement(SESSION session) {
         this.connection = session;
@@ -57,19 +59,30 @@ public abstract class AbstractStatement<SESSION extends DBCSession> implements D
         this.statementSource = source;
     }
 
+    protected boolean isQMLoggingEnabled() {
+        return true;
+    }
+
     @Override
-    public void close() {
-        if (this.closeFinalizer != null) {
+    public void close() throws DBException {
+        if (isQMLoggingEnabled()) {
+            // Handle close
+            long updateRowCount = 0;
             try {
-                this.closeFinalizer.close();
-            } catch (Throwable e) {
-                log.error("Error during statement '" + this + "' close", e);
+                updateRowCount = getUpdateRowCount();
+            } catch (DBCException e) {
+                log.debug(e);
             }
+            QMUtils.getDefaultHandler().handleStatementClose(this, updateRowCount);
+        }
+
+        if (this.closeFinalizer != null) {
+            this.closeFinalizer.close();
         }
     }
 
     @Override
-    public void autoCloseDependant(@NotNull Closeable dependent) {
+    public void autoCloseDependant(@NotNull DBPCloseableObject dependent) {
         this.closeFinalizer = dependent;
     }
 

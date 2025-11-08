@@ -163,7 +163,7 @@ public class JDBCExecutionContext extends AbstractExecutionContext<JDBCDataSourc
 
             try {
                 this.initContextBootstrap(monitor, autoCommit);
-            } catch (DBCException e) {
+            } catch (DBException e) {
                 log.warn("Error while running context bootstrap", e);
             }
 

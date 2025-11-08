@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.model.exec;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPAutoCloser;
 import org.jkiss.dbeaver.model.DBPCloseableObject;
 import org.jkiss.dbeaver.model.DBPObject;
@@ -137,4 +138,6 @@ public interface DBCStatement extends DBPObject, DBRBlockingObject, DBPCloseable
     default boolean isStatementClosed() throws DBCException {
         return false;
     }
+
+    void close() throws DBException;
 }

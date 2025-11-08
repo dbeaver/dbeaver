@@ -92,7 +92,7 @@ public class GroupingDataContainer implements DBSDataContainer {
         long maxRows,
         long flags,
         int fetchSize
-    ) throws DBCException {
+    ) throws DBException {
         DBCStatistics statistics = new DBCStatistics();
         if (query == null) {
             statistics.addMessage("Empty query");

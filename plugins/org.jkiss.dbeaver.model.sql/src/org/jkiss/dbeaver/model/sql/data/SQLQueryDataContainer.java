@@ -82,7 +82,7 @@ public class SQLQueryDataContainer implements DBSDataContainer, SQLQueryContaine
         long maxRows,
         long flags,
         int fetchSize
-    ) throws DBCException
+    ) throws DBException
     {
         DBCStatistics statistics = new DBCStatistics();
         // Modify query (filters + parameters)

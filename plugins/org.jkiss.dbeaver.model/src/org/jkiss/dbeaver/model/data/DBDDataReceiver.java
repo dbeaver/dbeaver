@@ -18,6 +18,7 @@
 package org.jkiss.dbeaver.model.data;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCResultSet;
 import org.jkiss.dbeaver.model.exec.DBCSession;
@@ -31,10 +32,10 @@ import org.jkiss.dbeaver.model.exec.DBCStatistics;
 public interface DBDDataReceiver extends AutoCloseable {
 
     void fetchStart(@NotNull DBCSession session, @NotNull DBCResultSet resultSet, long offset, long maxRows)
-        throws DBCException;
+        throws DBException;
 
     void fetchRow(@NotNull DBCSession session, @NotNull DBCResultSet resultSet)
-        throws DBCException;
+        throws DBException;
 
     /**
      * Called after entire result set if fetched.
@@ -45,7 +46,7 @@ public interface DBDDataReceiver extends AutoCloseable {
      * @param resultSet    result set
      */
     void fetchEnd(@NotNull DBCSession session, @NotNull DBCResultSet resultSet)
-        throws DBCException;
+        throws DBException;
 
     /**
      * Called after entire result set is fetched and closed.
@@ -65,7 +66,7 @@ public interface DBDDataReceiver extends AutoCloseable {
         @NotNull DBCResultSet resultSet,
         long offset,
         long maxRows
-    ) throws DBCException {
+    ) throws DBException {
         dataReceiver.fetchStart(session, resultSet, offset, maxRows);
         resultSet.getSourceStatement().autoCloseDependant(() -> {
             try {

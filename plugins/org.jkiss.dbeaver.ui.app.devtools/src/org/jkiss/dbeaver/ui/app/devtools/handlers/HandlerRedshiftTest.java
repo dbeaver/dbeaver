@@ -22,6 +22,7 @@ import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.*;
@@ -84,7 +85,7 @@ public class HandlerRedshiftTest extends AbstractHandler {
                 public void run() {
                     try {
                         runQuery(session, finalI);
-                    } catch (DBCException e) {
+                    } catch (DBException e) {
                         e.printStackTrace();
                     }
                 }
@@ -95,7 +96,7 @@ public class HandlerRedshiftTest extends AbstractHandler {
         return startedThreads;
     }
 
-    private static void runQuery(DBCSession session, int index) throws DBCException {
+    private static void runQuery(DBCSession session, int index) throws DBException {
         //String query = "SELECT u.* FROM public.users AS u LIMIT 2 OFFSET %s".formatted(index * 2);
         String query = "SELECT 'hello world! - " + index + "'";
 

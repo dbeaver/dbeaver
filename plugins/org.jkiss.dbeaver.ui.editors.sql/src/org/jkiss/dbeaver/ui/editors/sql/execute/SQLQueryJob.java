@@ -664,7 +664,7 @@ public class SQLQueryJob extends DataSourceJob
         }
     }
 
-    private void executeStatement(@NotNull DBCSession session, SQLQuery sqlQuery, long startTime, SQLQueryResult curResult) throws DBCException {
+    private void executeStatement(@NotNull DBCSession session, SQLQuery sqlQuery, long startTime, SQLQueryResult curResult) throws DBException {
         AbstractExecutionSource source = new AbstractExecutionSource(dataContainer, session.getExecutionContext(), partSite.getPart(), sqlQuery);
         source.setScriptContext(scriptContext);
         final DBCStatement dbcStatement = DBUtils.makeStatement(
@@ -842,7 +842,7 @@ public class SQLQueryJob extends DataSourceJob
             if (dataReceiver != null && !(dataReceiver instanceof IDataTransferConsumer)) {
                 try {
                     fetchExecutionResult(session, dataReceiver, query);
-                } catch (DBCException e) {
+                } catch (DBException e) {
                     log.error("Error generating execution result stats", e);
                 }
             }
@@ -872,8 +872,7 @@ public class SQLQueryJob extends DataSourceJob
 
     }
 
-    private void fetchExecutionResult(@NotNull DBCSession session, @NotNull DBDDataReceiver dataReceiver, @NotNull SQLQuery query) throws DBCException
-    {
+    private void fetchExecutionResult(@NotNull DBCSession session, @NotNull DBDDataReceiver dataReceiver, @NotNull SQLQuery query) throws DBException {
         // Fetch fake result set
         StatResultSet fakeResultSet = new StatResultSet(session, curStatement);
         SQLQueryResult resultInfo = new SQLQueryResult(query);
@@ -918,7 +917,7 @@ public class SQLQueryJob extends DataSourceJob
     }
 
     private boolean fetchQueryData(DBCSession session, DBCResultSet resultSet, SQLQueryResult result, SQLQueryResult.ExecuteResult executeResult, DBDDataReceiver dataReceiver, boolean updateStatistics)
-        throws DBCException
+        throws DBException
     {
         if (dataReceiver == null) {
             // No data pump - skip fetching stage
@@ -1022,23 +1021,17 @@ public class SQLQueryJob extends DataSourceJob
             getDataSourceContainer().getPreferenceStore().getBoolean(ResultSetPreferences.KEEP_STATEMENT_OPEN);
     }
 
-    private void closeStatement()
-    {
+    private void closeStatement() {
         if (curStatement != null) {
             try {
                 for (DBCResultSet resultSet : curResultSets) {
-                    resultSet.close();
+                    DBUtils.closeSafely(resultSet);
                 }
             } finally {
                 curResultSets.clear();
 
-                try {
-                    curStatement.close();
-                } catch (Throwable e) {
-                    log.error("Error closing statement", e);
-                } finally {
-                    curStatement = null;
-                }
+                DBUtils.closeSafely(curStatement);
+                curStatement = null;
             }
         }
     }

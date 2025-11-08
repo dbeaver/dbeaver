@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.model.impl.jdbc.exec;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.DBRuntimeException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.exec.DBCException;
@@ -453,9 +454,6 @@ public class JDBCStatementImpl<STATEMENT extends Statement> extends AbstractStat
     // Close
     @Override
     public void close() {
-        try {
-            super.close();
-        } finally {
 /*
         // Do not check for warnings here
         // Sometimes warnings are cached in connection and as a result we got a lot of spam in log
@@ -468,19 +466,26 @@ public class JDBCStatementImpl<STATEMENT extends Statement> extends AbstractStat
         }
 */
 
-            if (isQMLoggingEnabled()) {
-                // Handle close
-                QMUtils.getDefaultHandler().handleStatementClose(this, updateCount);
-            }
+        // Close statement
+        Throwable closeError = null;
+        try {
+            getOriginal().close();
+        } catch (Throwable e) {
+            closeError = e;
+        }
 
-            // Close statement
-            try {
-                getOriginal().close();
-            } catch (Throwable e) {
-                log.error("Can't close statement", e); //$NON-NLS-1$
-            }
+        getConnection().getExecutionContext().unlockStatementExecution(this);
 
-            getConnection().getExecutionContext().unlockStatementExecution(this);
+        try {
+            super.close();
+        } catch (Throwable e) {
+            if (closeError != null) {
+                log.error("Error closing statement (suppressed", e);
+            }
+            throw new DBRuntimeException(e);
+        }
+        if (closeError != null) {
+            throw new DBRuntimeException(closeError);
         }
     }
 
