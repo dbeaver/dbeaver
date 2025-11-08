@@ -446,20 +446,12 @@ public class WMIClass extends WMIContainer
             sink.waitForFinish();
             WMIResultSet resultSet = new WMIResultSet(session, this, sink.getObjectList());
             long resultCount = 0;
-            try {
-                dataReceiver.fetchStart(session, resultSet, firstRow, maxRows);
+            try (resultSet) {
+                DBDDataReceiver.startFetchWorkflow(dataReceiver, session, resultSet, firstRow, maxRows);
                 while (resultSet.nextRow()) {
                     resultCount++;
                     dataReceiver.fetchRow(session, resultSet);
                 }
-            } finally {
-                try {
-                    dataReceiver.fetchEnd(session, resultSet);
-                } catch (DBCException e) {
-                    log.error("Error while finishing result set fetch", e); //$NON-NLS-1$
-                }
-                resultSet.close();
-                dataReceiver.close();
             }
             statistics.setFetchTime(System.currentTimeMillis() - startTime);
             statistics.setRowsFetched(resultCount);
