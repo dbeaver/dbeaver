@@ -441,19 +441,12 @@ public class WMIClass extends WMIContainer
                 sink,
                 WMIConstants.WBEM_FLAG_SHALLOW);
             statistics.setExecuteTime(System.currentTimeMillis() - startTime);
-            startTime = System.currentTimeMillis();
             sink.waitForFinish();
             WMIResultSet resultSet = new WMIResultSet(session, this, sink.getObjectList());
-            long resultCount = 0;
             try (resultSet) {
                 DBDDataReceiver.startFetchWorkflow(dataReceiver, session, resultSet, firstRow, maxRows);
-                while (resultSet.nextRow()) {
-                    resultCount++;
-                    dataReceiver.fetchRow(session, resultSet);
-                }
+                DBDDataReceiver.fetchRowsWithStatistics(dataReceiver, session, resultSet, statistics);
             }
-            statistics.setFetchTime(System.currentTimeMillis() - startTime);
-            statistics.setRowsFetched(resultCount);
             return statistics;
         } catch (WMIException e) {
             throw new DBCException(e, session.getExecutionContext());

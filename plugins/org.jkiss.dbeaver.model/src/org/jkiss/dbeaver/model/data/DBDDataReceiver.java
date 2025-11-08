@@ -20,10 +20,12 @@ package org.jkiss.dbeaver.model.data;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.DBRuntimeException;
+import org.jkiss.dbeaver.model.DBFetchProgress;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCResultSet;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.DBCStatistics;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 /**
  * Data receiver.
@@ -76,6 +78,22 @@ public interface DBDDataReceiver extends AutoCloseable {
                 throw new DBRuntimeException("Error while finishing result set fetching into " + dataReceiver, e);
             }
         });
+    }
+
+    static void fetchRowsWithStatistics(
+        @NotNull DBDDataReceiver dataReceiver,
+        @NotNull DBCSession session,
+        @NotNull DBCResultSet resultSet,
+        @NotNull DBCStatistics statistics
+    ) throws DBException {
+        DBRProgressMonitor progressMonitor = session.getProgressMonitor();
+        DBFetchProgress fetchProgress = new DBFetchProgress(progressMonitor);
+
+        while (!progressMonitor.isCanceled() && resultSet.nextRow()) {
+            dataReceiver.fetchRow(session, resultSet);
+            fetchProgress.monitorRowFetch();
+        }
+        fetchProgress.dumpStatistics(statistics);
     }
 
 
