@@ -35,7 +35,6 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 
-import java.io.PrintStream;
 import java.lang.reflect.InvocationTargetException;
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -68,7 +67,7 @@ public class JDBCExecutionContext extends AbstractExecutionContext<JDBCDataSourc
     private volatile Integer transactionIsolationLevel;
     private transient volatile boolean txnIsolationLevelReadInProgress;
 
-    private SingleThreadLock statementLock = SingleThreadLock.NoOpLock;
+    private StatementLock statementLock = NoOpLock.INSTANCE;
 
     public JDBCExecutionContext(@NotNull JDBCRemoteInstance instance, String purpose) {
         super(instance.getDataSource(), purpose);
@@ -538,29 +537,39 @@ public class JDBCExecutionContext extends AbstractExecutionContext<JDBCDataSourc
         statementLock.unlock(stmt);
     }
 
-    static class SingleThreadLock {
+    ///////////////////////
+    /// Statement locks
 
-        public static final SingleThreadLock NoOpLock = new SingleThreadLock() {
+    private interface StatementLock {
+        void lock(@NotNull Object owner);
+        void unlock(@NotNull Object owner);
+        void close();
+    }
 
-            @Override
-            public void lock(@NotNull Object owner) {
-                // no-op
-            }
+    private static class NoOpLock implements StatementLock {
+        private static final NoOpLock INSTANCE = new NoOpLock();
+        @Override
+        public void lock(@NotNull Object owner) {
+            // no-op
+        }
+        @Override
+        public void unlock(@NotNull Object owner) {
+            // no-op
+        }
+        @Override
+        public void close() {
+            // no-op
+        }
+    }
 
-            @Override
-            public void unlock(@NotNull Object owner) {
-                // no-op
-            }
-        };
-
-
+    // Used for non-thread-safe drivers
+    // All statements and their result sets are executed/fetched consequently
+    private static class SingleThreadLock implements StatementLock {
         private final ReentrantLock lock = new ReentrantLock(true);
         private final Map<Long, LockInfo> traces = new ConcurrentHashMap<>();
         private volatile boolean closed = false;
 
-
         public void lock(@NotNull Object owner) {
-
             if (closed) {
                 throw new IllegalStateException("Lock already closed");
             }
@@ -610,29 +619,6 @@ public class JDBCExecutionContext extends AbstractExecutionContext<JDBCDataSourc
         private static long getIdentity(Object owner) {
             return  ((long) System.identityHashCode(owner) << 32)
                 | (System.identityHashCode(Thread.currentThread()) & 0xffffffffL);
-        }
-
-        public void printActiveOwners(PrintStream stream) {
-            if (traces.isEmpty()) {
-                return;
-            }
-
-            stream.println("Lock held by " + traces.size() + " owner(s):");
-            long now = System.currentTimeMillis();
-
-            for (var info : traces.values()) {
-                long heldMs = now - info.timestamp;
-
-                stream.println("— Owner ["  + info.thread.getName() + "] held for " + heldMs + " ms");
-                for (StackTraceElement el : info.trace) {
-                    stream.println("\tat " + el);
-                }
-                stream.println("Current: ");
-                for (StackTraceElement el : info.thread.getStackTrace()) {
-                    stream.println("\tat " + el);
-                }
-                stream.println();
-            }
         }
 
         public void close() {
