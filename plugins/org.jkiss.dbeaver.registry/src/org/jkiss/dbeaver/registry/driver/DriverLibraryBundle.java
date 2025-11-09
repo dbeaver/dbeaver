@@ -18,6 +18,9 @@ package org.jkiss.dbeaver.registry.driver;
 
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.Platform;
+import org.eclipse.osgi.container.ModuleWire;
+import org.eclipse.osgi.container.ModuleWiring;
+import org.eclipse.osgi.internal.framework.EquinoxBundle;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
@@ -29,10 +32,12 @@ import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.FrameworkUtil;
 
-import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collection;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Set;
 
 /**
  * DriverLibraryBundle
@@ -142,10 +147,53 @@ public class DriverLibraryBundle extends DriverLibraryAbstract {
         return null;
     }
 
+    private static class BundleDeps {
+        final Set<ModuleWiring> wirings = new LinkedHashSet<>();
+    }
+
     @Nullable
     @Override
-    public Collection<? extends DBPDriverLibrary> getDependencies(@NotNull DBRProgressMonitor monitor) throws IOException {
+    public Collection<? extends DBPDriverLibrary> getDependencies(@NotNull DBRProgressMonitor monitor) {
+        Bundle curBundle = findBundle();
+        if (curBundle != null) {
+            if (curBundle instanceof EquinoxBundle eb) {
+                BundleDeps deps = new BundleDeps();
+                ModuleWiring wiring = eb.getModule().getCurrentRevision().getWiring();
+                if (wiring != null) {
+                    collectModuleWirings(wiring, deps, true);
+                }
+                if (!deps.wirings.isEmpty()) {
+                    return deps.wirings.stream()
+                        .map(w -> new DriverLibraryBundle(driver, PATH_PREFIX + w.getBundle().getSymbolicName()))
+                        .toList();
+                }
+            }
+
+            return null;
+        }
         return null;
+    }
+
+    private static void collectModuleWirings(
+        @NotNull ModuleWiring wiring,
+        @NotNull BundleDeps processConfig,
+        boolean addDependencies
+    ) {
+        if (processConfig.wirings.contains(wiring)) {
+            return;
+        }
+        if (addDependencies) {
+            List<ModuleWire> requiredModuleWires = wiring.getRequiredModuleWires("osgi.wiring.bundle");
+            for (ModuleWire dWire : requiredModuleWires) {
+                ModuleWiring providerWiring = dWire.getProviderWiring();
+                processConfig.wirings.add(providerWiring);
+                collectModuleWirings(providerWiring, processConfig, true);
+            }
+//            for (ModuleWire dWire : wiring.getRequiredModuleWires("osgi.wiring.package")) {
+//                ModuleWiring providerWiring = dWire.getProviderWiring();
+//                collectModuleWirings(providerWiring, processConfig, true);
+//            }
+        }
     }
 
     @NotNull
