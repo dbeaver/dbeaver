@@ -15,19 +15,22 @@
  * limitations under the License.
  */
 
-package org.jkiss.dbeaver.model.runtime;
-
-import org.jkiss.dbeaver.DBException;
-
-import java.lang.reflect.InvocationTargetException;
+package org.jkiss.dbeaver;
 
 /**
- * Runnable with parameter
+ * DBRuntimeException
  */
-@FunctionalInterface
-public interface DBRRunnableParametrized<T> {
+public class DBRuntimeException extends RuntimeException {
+    public DBRuntimeException(String message) {
+        super(message);
+    }
 
-    void run(T param)
-        throws DBException, InvocationTargetException, InterruptedException;
+    public DBRuntimeException(String message, Throwable cause) {
+        super(message, cause);
+    }
+
+    public DBRuntimeException(Throwable cause) {
+        super(cause);
+    }
 
 }

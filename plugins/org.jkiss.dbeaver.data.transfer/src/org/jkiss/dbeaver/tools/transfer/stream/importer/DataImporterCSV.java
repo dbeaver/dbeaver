@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.model.DBFetchProgress;
 import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.data.DBDDataReceiver;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.DBCSession;
@@ -221,7 +222,7 @@ public class DataImporterCSV extends StreamImporterAbstract {
             LocalStatement localStatement = new LocalStatement(producerSession, "SELECT * FROM Stream");
             StreamTransferResultSet resultSet = new StreamTransferResultSet(producerSession, localStatement, entityMapping);
 
-            consumer.fetchStart(producerSession, resultSet, -1, -1);
+            DBDDataReceiver.startFetchWorkflow(consumer, producerSession, resultSet, -1, -1);
 
             applyTransformHints(resultSet, consumer, properties, PROP_TIMESTAMP_FORMAT, PROP_TIMESTAMP_ZONE);
 
@@ -294,12 +295,6 @@ public class DataImporterCSV extends StreamImporterAbstract {
                 }
             } catch (IOException e) {
                 throw new DBException("IO error reading CSV", e);
-            } finally {
-                try {
-                    consumer.fetchEnd(producerSession, resultSet);
-                } finally {
-                    consumer.close();
-                }
             }
         }
 

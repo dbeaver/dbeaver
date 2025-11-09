@@ -14,20 +14,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.jkiss.dbeaver.model;
 
-package org.jkiss.dbeaver.model.runtime;
-
-import org.jkiss.dbeaver.DBException;
-
-import java.lang.reflect.InvocationTargetException;
+import org.jkiss.code.NotNull;
 
 /**
- * Runnable with parameter
+ * Implementor will close all passed Closable objects AFTER its own close
  */
-@FunctionalInterface
-public interface DBRRunnableParametrized<T> {
+public interface DBPAutoCloser extends AutoCloseable {
 
-    void run(T param)
-        throws DBException, InvocationTargetException, InterruptedException;
+    void autoCloseDependant(@NotNull DBPCloseableObject dependent);
 
 }
