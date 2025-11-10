@@ -90,6 +90,7 @@ public class OracleUtils {
                 }
             }
 
+            final boolean separateIndexes = CommonUtils.getOption(options, DBPScriptObject.OPTION_DDL_SEPARATE_CONSTRAINTS_STATEMENTS, false);
             if (dataSource.isAtLeastV9()) {
                 try {
                     // Do not add semicolon in the end
@@ -101,7 +102,7 @@ public class OracleUtils {
                                 "DBMS_METADATA.SET_TRANSFORM_PARAM(DBMS_METADATA.SESSION_TRANSFORM,'TABLESPACE'," + ddlFormat.isShowTablespace() + ");\n" +
                                 "DBMS_METADATA.SET_TRANSFORM_PARAM(DBMS_METADATA.SESSION_TRANSFORM,'SEGMENT_ATTRIBUTES'," + ddlFormat.isShowSegments() + ");\n" +
                                 "DBMS_METADATA.SET_TRANSFORM_PARAM(DBMS_METADATA.SESSION_TRANSFORM,'EMIT_SCHEMA'," + CommonUtils.getOption(options, DBPScriptObject.OPTION_FULLY_QUALIFIED_NAMES, true) + ");\n" +
-                                "DBMS_METADATA.SET_TRANSFORM_PARAM(DBMS_METADATA.SESSION_TRANSFORM, 'CONSTRAINTS',true);\n" +
+                                "DBMS_METADATA.SET_TRANSFORM_PARAM(DBMS_METADATA.SESSION_TRANSFORM, 'CONSTRAINTS'," + !separateIndexes + ");\n" +
                                 "DBMS_METADATA.SET_TRANSFORM_PARAM(DBMS_METADATA.SESSION_TRANSFORM, 'REF_CONSTRAINTS'," + !CommonUtils.getOption(options, DBPScriptObject.OPTION_DDL_SEPARATE_FOREIGN_KEYS_STATEMENTS, true) + ");\n" +
                             "end;");
                 } catch (SQLException e) {
@@ -132,7 +133,7 @@ public class OracleUtils {
 
             if (monitor.isCanceled()) return ddl;
 
-            if (!CommonUtils.isEmpty(object.getIndexes(monitor))) {
+            if (!CommonUtils.isEmpty(object.getIndexes(monitor)) && separateIndexes) {
                 // Add index info to main DDL. For some reasons, GET_DDL returns columns, constraints, but not indexes
                 ddl += invokeDBMSMetadataGetDependentDDL(session, schema, object, DBMSMetaDependentObjectType.INDEX);
             }
