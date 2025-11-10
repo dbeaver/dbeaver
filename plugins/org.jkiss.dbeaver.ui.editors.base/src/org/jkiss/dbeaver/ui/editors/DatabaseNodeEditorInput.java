@@ -50,6 +50,8 @@ public class DatabaseNodeEditorInput extends DatabaseEditorInput<DBNDatabaseNode
         this.nodeName = dbnDatabaseNode.getNodeDisplayName();
     }
 
+    @Nullable
+    @Override
     public String getNodePath() {
         return nodePath;
     }
