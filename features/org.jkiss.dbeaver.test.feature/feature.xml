@@ -25,4 +25,5 @@
     <plugin id="org.jkiss.dbeaver.ext.generic.test" version="0.0.0"/>
     <plugin id="org.jkiss.dbeaver.model.ai.test" version="0.0.0"/>
     <plugin id="org.jkiss.dbeaver.model.navigator.test" version="0.0.0"/>
+    <plugin id="org.jkiss.dbeaver.model.sql.test" version="0.0.0"/>
 </feature>
