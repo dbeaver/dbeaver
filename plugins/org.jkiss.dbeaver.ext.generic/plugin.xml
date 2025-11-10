@@ -256,9 +256,9 @@
                     supportsDistributedMode="false"
                     categories="sql,embedded">
 
-                    <file type="jar" path="maven:/org.apache.derby:derby:RELEASE[10.16.1.1]" bundle="!drivers.derby"/>
-                    <file type="jar" path="maven:/org.apache.derby:derbytools:RELEASE[10.16.1.1]" bundle="!drivers.derby"/>
-                    <file type="jar" path="maven:/org.apache.derby:derbyshared:RELEASE[10.16.1.1]" bundle="!drivers.derby"/>
+                    <file type="jar" path="maven:/org.apache.derby:derby:RELEASE[10.17.1.0]" bundle="!drivers.derby"/>
+                    <file type="jar" path="maven:/org.apache.derby:derbytools:RELEASE[10.17.1.0]" bundle="!drivers.derby"/>
+                    <file type="jar" path="maven:/org.apache.derby:derbyshared:RELEASE[10.17.1.0]" bundle="!drivers.derby"/>
                     <file type="license" path="licenses/external/asl-2.0.txt"/>
                     <file type="jar" path="drivers/derby" bundle="drivers.derby"/>
 
@@ -285,10 +285,10 @@
                     supportedConfigurationTypes="MANUAL,URL"
                     categories="sql">
 
-                    <file type="jar" path="maven:/org.apache.derby:derby:RELEASE[10.16.1.1]" bundle="!drivers.derby"/>
-                    <file type="jar" path="maven:/org.apache.derby:derbyclient:RELEASE[10.16.1.1]" bundle="!drivers.derby"/>
-                    <file type="jar" path="maven:/org.apache.derby:derbytools:RELEASE[10.16.1.1]" bundle="!drivers.derby"/>
-                    <file type="jar" path="maven:/org.apache.derby:derbyshared:RELEASE[10.16.1.1]" bundle="!drivers.derby"/>
+                    <file type="jar" path="maven:/org.apache.derby:derby:RELEASE[10.17.1.0]" bundle="!drivers.derby"/>
+                    <file type="jar" path="maven:/org.apache.derby:derbyclient:RELEASE[10.17.1.0]" bundle="!drivers.derby"/>
+                    <file type="jar" path="maven:/org.apache.derby:derbytools:RELEASE[10.17.1.0]" bundle="!drivers.derby"/>
+                    <file type="jar" path="maven:/org.apache.derby:derbyshared:RELEASE[10.17.1.0]" bundle="!drivers.derby"/>
                     <file type="license" path="licenses/external/asl-2.0.txt"/>
                     <file type="jar" path="drivers/derby" bundle="drivers.derby"/>
 
