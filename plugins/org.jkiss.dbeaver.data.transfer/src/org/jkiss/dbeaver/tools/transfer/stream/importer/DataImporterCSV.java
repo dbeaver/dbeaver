@@ -155,13 +155,6 @@ public class DataImporterCSV extends StreamImporterAbstract {
         return columnsInfo;
     }
 
-    private int roundToNextPowerOf2(int value) {
-        int power = 1;
-        while(power < value)
-            power*=2;
-        return power;
-    }
-
     private HeaderPosition getHeaderPosition(Map<String, Object> processorProperties) {
         return CommonUtils.valueOf(HeaderPosition.class, CommonUtils.toString(processorProperties.get(PROP_HEADER)), HeaderPosition.top);
     }
@@ -208,7 +201,12 @@ public class DataImporterCSV extends StreamImporterAbstract {
     }
 
     @Override
-    public void runImport(@NotNull DBRProgressMonitor monitor, @NotNull DBPDataSource streamDataSource, @NotNull InputStream inputStream, @NotNull IDataTransferConsumer consumer) throws DBException {
+    public void runImport(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBPDataSource streamDataSource,
+        @NotNull InputStream inputStream,
+        @NotNull IDataTransferConsumer<?, ?> consumer
+    ) throws DBException {
         IStreamDataImporterSite site = getSite();
         StreamEntityMapping entityMapping = site.getSourceObject();
         Map<String, Object> properties = site.getProcessorProperties();
