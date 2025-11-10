@@ -34,8 +34,8 @@ import java.nio.file.StandardCopyOption;
 import java.security.CodeSource;
 import java.security.KeyStore;
 import java.security.ProtectionDomain;
-import java.util.List;
 import java.util.*;
+import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.regex.Matcher;
@@ -251,6 +251,8 @@ public class DBeaverLauncher {
     private static final String PROP_VMARGS = "eclipse.vmargs"; //$NON-NLS-1$
     private static final String PROP_COMMANDS = "eclipse.commands"; //$NON-NLS-1$
     private static final String PROP_ECLIPSESECURITY = "eclipse.security"; //$NON-NLS-1$
+
+    public static final String PROP_TMP_DIR = "java.io.tmpdir";
 
     // Suffix for location properties - see LocationManager.
     private static final String READ_ONLY_AREA_SUFFIX = ".readOnly"; //$NON-NLS-1$
@@ -602,6 +604,7 @@ public class DBeaverLauncher {
         if (log == null) {
             openLogFile();
         }
+        patchTempDirIfNeeded();
         try {
             CommandLineExecuteResult commandLineExecuteResult = processCommandLineAsClient(passThruArgs, dbeaverDataDir);
             if (commandLineExecuteResult.shutdown()) {
@@ -676,6 +679,24 @@ public class DBeaverLauncher {
             return true;
         }
         return false;
+    }
+
+    /**
+     * Patches the {@code java.io.tmpdir} property and sets it to a well-known
+     * location if its value cannot be parsed due to whatever reason, let it
+     * be a syntax error, or invalid characters. In such a case, it's set
+     * to {@code DBeaverData/.temp}.
+     */
+    private void patchTempDirIfNeeded() {
+        var tmpDir = System.getProperty(PROP_TMP_DIR, "");
+        try {
+            var ignored = Path.of(tmpDir);
+        } catch (Exception e) {
+            var newTmpDir = getDataDirectory().resolve("temp").toAbsolutePath().toString();
+            System.setProperty(PROP_TMP_DIR, newTmpDir);
+            System.err.println("Error parsing the value of '" + PROP_TMP_DIR + "' (" + tmpDir + "): " + e.getMessage());
+            System.err.println("Overriding temporary directory to " + newTmpDir);
+        }
     }
 
     private void checkCompatibleWindowsVersion() {
