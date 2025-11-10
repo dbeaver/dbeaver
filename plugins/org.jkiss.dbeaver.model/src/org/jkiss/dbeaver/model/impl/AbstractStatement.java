@@ -35,21 +35,25 @@ public abstract class AbstractStatement<SESSION extends DBCSession> implements D
 
     private static final Log log = Log.getLog(AbstractStatement.class);
 
+    @NotNull
     protected final SESSION connection;
+    @Nullable
     private DBCExecutionSource statementSource;
+    @Nullable
     private DBPCloseableObject executeFinalizer;
 
-    public AbstractStatement(SESSION session) {
+    public AbstractStatement(@NotNull SESSION session) {
         this.connection = session;
     }
 
     @Override
+    @NotNull
     public SESSION getSession() {
         return connection;
     }
 
-    @Nullable
     @Override
+    @Nullable
     public DBCExecutionSource getStatementSource() {
         return statementSource;
     }

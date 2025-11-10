@@ -124,12 +124,14 @@ public class JDBCResultSetImpl extends AbstractResultSet<JDBCSession, JDBCStatem
         return original;
     }
 
+    @NotNull
     @Override
     public JDBCSession getSession()
     {
         return session;
     }
 
+    @NotNull
     @Override
     public JDBCStatement getSourceStatement() {
         return statement;
