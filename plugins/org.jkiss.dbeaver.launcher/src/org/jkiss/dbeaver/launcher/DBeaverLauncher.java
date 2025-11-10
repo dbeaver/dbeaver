@@ -692,11 +692,11 @@ public class DBeaverLauncher {
         try {
             var ignored = Path.of(tmpDir);
         } catch (Exception e) {
-            var newTmpDir = getDataDirectory().resolve("temp").toAbsolutePath().toString();
-            System.setProperty(PROP_TMP_DIR, newTmpDir);
             System.err.println("Error parsing the value of '" + PROP_TMP_DIR + "' (" + tmpDir + "): " + e.getMessage());
-            System.err.println("Overriding temporary directory to " + newTmpDir);
         }
+        var newTmpDir = getDataDirectory().resolve("temp").toAbsolutePath().toString();
+        System.setProperty(PROP_TMP_DIR, newTmpDir);
+        System.err.println("Overriding temporary directory to " + newTmpDir);
     }
 
     private void checkCompatibleWindowsVersion() {
