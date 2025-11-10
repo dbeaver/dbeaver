@@ -498,7 +498,7 @@
                     icon="icons/redshift_icon.png"
                     iconBig="icons/redshift_icon_big.png"
                     category="AWS"
-                    class="com.amazon.redshift.jdbc42.Driver"
+                    class="com.amazon.redshift.Driver"
                     sampleURL="jdbc:redshift://{host}:{port}/{database}"
                     useURL="true"
                     defaultPort="5439"
@@ -515,9 +515,8 @@
                     <replace provider="generic" driver="aws_redshift"/>
                     <replace provider="generic" driver="aws_redshift_42"/>
 
-                    <file type="jar" path="maven:/com.amazon.redshift:redshift-jdbc42:RELEASE[2.1.0.8]" load-optional-dependencies="true" bundle="!drivers.redshift"/>
+                    <file type="jar" path="maven:/com.amazon.redshift:redshift-jdbc42:RELEASE[2.2.0]" load-optional-dependencies="true" bundle="!drivers.redshift"/>
                     <file type="license" path="licenses/external/pg.txt"/>
-                    <file type="jar" path="drivers/redshift-stable" bundle="drivers.redshift-stable"/>
 
                     <parameter name="serverType" value="redshift"/>
                     <property name="loginTimeout" value="20"/>
