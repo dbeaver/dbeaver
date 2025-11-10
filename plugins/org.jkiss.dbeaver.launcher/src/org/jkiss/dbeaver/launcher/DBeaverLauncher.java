@@ -243,7 +243,7 @@ public class DBeaverLauncher {
 
     private static final String PROP_EXITCODE = "eclipse.exitcode"; //$NON-NLS-1$
     private static final String PROP_EXITDATA = "eclipse.exitdata"; //$NON-NLS-1$
-    public static final String PROP_LAUNCHER = "eclipse.launcher"; //$NON-NLS-1$
+    private static final String PROP_LAUNCHER = "eclipse.launcher"; //$NON-NLS-1$
     private static final String PROP_LAUNCHER_NAME = "eclipse.launcher.name"; //$NON-NLS-1$
     private static final String PROP_LOG_INCLUDE_COMMAND_LINE = "eclipse.log.include.commandline"; //$NON-NLS-1$
 
@@ -252,7 +252,7 @@ public class DBeaverLauncher {
     private static final String PROP_COMMANDS = "eclipse.commands"; //$NON-NLS-1$
     private static final String PROP_ECLIPSESECURITY = "eclipse.security"; //$NON-NLS-1$
 
-    public static final String PROP_TMP_DIR = "java.io.tmpdir";
+    private static final String PROP_TMP_DIR = "java.io.tmpdir";
 
     // Suffix for location properties - see LocationManager.
     private static final String READ_ONLY_AREA_SUFFIX = ".readOnly"; //$NON-NLS-1$
