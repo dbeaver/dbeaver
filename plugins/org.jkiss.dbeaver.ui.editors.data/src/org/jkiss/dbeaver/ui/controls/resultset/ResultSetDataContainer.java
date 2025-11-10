@@ -28,6 +28,7 @@ import org.jkiss.dbeaver.model.data.*;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.impl.data.AttributeMetaDataProxy;
 import org.jkiss.dbeaver.model.impl.local.LocalResultSetMeta;
+import org.jkiss.dbeaver.model.impl.local.LocalStatement;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.utils.GeneralUtils;
@@ -214,23 +215,27 @@ public class ResultSetDataContainer implements DBSDataContainer, DBPContextProvi
     private class ModelResultSet implements DBCResultSet, DBCResultFiltered {
 
         private final DBCSession session;
+        private DBCStatement localStatement;
         private final long flags;
         private ResultSetRow curRow;
         private CustomResultSetMeta meta;
 
         ModelResultSet(DBCSession session, long flags) {
             this.session = session;
+            this.localStatement = new LocalStatement(session, "");
             this.flags = flags;
         }
 
+        @NotNull
         @Override
         public DBCSession getSession() {
             return session;
         }
 
+        @NotNull
         @Override
         public DBCStatement getSourceStatement() {
-            return null;
+            return localStatement;
         }
 
         @Override
