@@ -91,6 +91,8 @@ public class DBPConnectionConfiguration implements DBPObject {
             // {VARIABLE_PASSWORD, "database password (plain)"},  see dbeaver/pro#1861
         });
 
+    public static final String PROP_SECRET_SUBJECT_ID = "shared.credentials.default.subject";
+
     private static final Log log = Log.getLog(DBPConnectionConfiguration.class);
 
     private String hostName;
