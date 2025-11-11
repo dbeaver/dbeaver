@@ -2931,29 +2931,21 @@ public class SQLEditor extends SQLEditorBase implements
             scriptContext = createScriptContext();
         }
 
-        final boolean isSingleQuery = !forceScript && (queries.size() == 1);
-        if (isSingleQuery && queries.getFirst() instanceof SQLQuery query) {
-            boolean isDropTable = query.isDropTableDangerous();
-            if (query.isDeleteUpdateDangerous() || isDropTable) {
-                String targetName = "multiple tables";
-                if (query.getEntityMetadata(false) != null) {
-                    targetName = query.getEntityMetadata(false).getEntityName();
-                }
-                if (ConfirmationDialog.confirmAction(
-                    getSite().getShell(),
-                    ConfirmationDialog.WARNING,
-                    isDropTable ? ConfirmationConstants.CONFIRM_DROP_SQL_ID : ConfirmationConstants.CONFIRM_DANGER_SQL_ID,
-                    ConfirmationDialog.CONFIRM,
-                    query.getType().name(),
-                    targetName
-                ) != IDialogConstants.OK_ID
-                ) {
-                    return false;
-                }
+        List<String> dropQueriesTarget = getDropQueriesTarget(queries);
+        if (!dropQueriesTarget.isEmpty()) {
+            if (showDropQueriesConfirmation(dropQueriesTarget) != IDialogConstants.OK_ID) {
+                return false;
+            }
+        }
+        List<SQLQuery> dangerousQueries = getDangerousQueries(queries);
+        if (!dangerousQueries.isEmpty()) {
+            boolean isConfirmExecuteScript = showDangerousQueriesConfirmation(dangerousQueries);
+            if (!isConfirmExecuteScript) {
+                return false;
             }
         }
 
-
+        final boolean isSingleQuery = !forceScript && (queries.size() == 1);
         if (!isHideQueryText() && resultsSash.getMaximizedControl() != null) {
             resultsSash.setMaximizedControl(null);
         }
@@ -3078,6 +3070,71 @@ public class SQLEditor extends SQLEditorBase implements
             localFile,
             new OutputLogWriter(),
             new SQLEditorParametersProvider(getSite())
+        );
+    }
+
+    @NotNull
+    private List<String> getDropQueriesTarget(@NotNull List<SQLScriptElement> queries) {
+        return queries
+            .stream()
+            .filter(q -> q instanceof SQLQuery)
+            .map(q -> (SQLQuery) q)
+            .flatMap(q -> q.getDropType().stream())
+            .toList();
+    }
+
+    @NotNull
+    private List<SQLQuery> getDangerousQueries(@NotNull List<SQLScriptElement> queries) {
+        return queries
+            .stream()
+            .filter(q -> q instanceof SQLQuery)
+            .map(q -> (SQLQuery) q)
+            .filter(SQLQuery::isDeleteUpdateDangerous)
+            .toList();
+    }
+
+    private int showDropQueriesConfirmation(@NotNull List<String> dropTargets) {
+        if (dropTargets.size() > 1) {
+            return 1;
+        } else {
+            String targetName = dropTargets.getFirst();
+            return ConfirmationDialog.confirmAction(
+                getSite().getShell(),
+                ConfirmationDialog.WARNING,
+                ConfirmationConstants.CONFIRM_DROP_SQL,
+                ConfirmationDialog.CONFIRM,
+                targetName
+            );
+        }
+    }
+
+    private boolean showDangerousQueriesConfirmation(@NotNull List<SQLQuery> dangerousQueries) {
+        if (dangerousQueries.size() == 1) {
+            return createDangerousQueryDialog(dangerousQueries.getFirst(), ConfirmationDialog.QUESTION) == IDialogConstants.YES_ID;
+        }
+        for (SQLQuery dangerousQuery : dangerousQueries) {
+            int dialogResult = createDangerousQueryDialog(dangerousQuery, ConfirmationDialog.QUESTION_WITH_YES_TO_ALL);
+            if (dialogResult == IDialogConstants.YES_TO_ALL_ID) {
+                return true;
+            } else if (dialogResult != IDialogConstants.YES_ID) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private int createDangerousQueryDialog(@NotNull SQLQuery dangerousQuery, int dialogType) {
+        String targetName = "multiple rows";
+        if (dangerousQuery.getEntityMetadata(false) != null) {
+            targetName = dangerousQuery.getEntityMetadata(false).getEntityName();
+        }
+        return ConfirmationDialog.confirmAction(
+            getSite().getShell(),
+            ConfirmationDialog.WARNING,
+            ConfirmationConstants.CONFIRM_DANGER_SQL,
+            dialogType,
+            dangerousQuery.getType().name(),
+            targetName
         );
     }
 
