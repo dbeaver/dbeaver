@@ -393,6 +393,9 @@ public class DesktopProjectImpl extends BaseProjectImpl implements RCPProject, D
 
     @Override
     public void updateProjectNature() {
+        if (!isRegistryLoaded()) {
+            return;
+        }
         try {
             IProject eclipseProject = this.getEclipseProject();
             if (eclipseProject != null) {
