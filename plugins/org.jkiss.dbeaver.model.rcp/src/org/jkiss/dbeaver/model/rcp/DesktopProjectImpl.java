@@ -393,9 +393,6 @@ public class DesktopProjectImpl extends BaseProjectImpl implements RCPProject, D
 
     @Override
     public void updateProjectNature() {
-        if (DBWorkbench.getPlatform().getApplication().isMultiuser()) {
-            return;
-        }
         try {
             IProject eclipseProject = this.getEclipseProject();
             if (eclipseProject != null) {
