@@ -1087,9 +1087,23 @@ public class DataSourceDescriptor
 
         resolveSecretsIfNeeded();
 
-        if (isSharedCredentials() && !isSharedCredentialsSelected()) {
+        String forceSecretId = getPreferenceStore().getString(DBPConnectionConfiguration.PROP_SECRET_SUBJECT_ID);
+        if (isSharedCredentials() && (!isSharedCredentialsSelected() || CommonUtils.isNotEmpty(forceSecretId))) {
             var sharedCreds = listSharedCredentialFromCache();
-            if (!CommonUtils.isEmpty(sharedCreds)) {
+            if (CommonUtils.isNotEmpty(forceSecretId)) {
+                DBSSecretValue found = null;
+                for (DBSSecretValue secret : sharedCreds) {
+                    if (forceSecretId.equals(secret.getSubjectId())) {
+                        log.debug("Shared credentials forced by preference - use: " + secret.getDisplayName());
+                        found = secret;
+                        break;
+                    }
+                }
+                if (found == null) {
+                    throw new DBException("Shared credentials with subject ID '" + forceSecretId + "' not found");
+                }
+                setSelectedSharedCredentials(found);
+            } else if (!CommonUtils.isEmpty(sharedCreds)) {
                 log.debug("Shared credentials not selected - use first one: " + sharedCreds.get(0).getDisplayName());
                 setSelectedSharedCredentials(sharedCreds.get(0));
                 monitor.subTask("Use first available shared credentials");
