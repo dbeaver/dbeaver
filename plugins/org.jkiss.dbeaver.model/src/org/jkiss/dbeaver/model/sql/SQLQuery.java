@@ -54,7 +54,6 @@ import org.jkiss.utils.CommonUtils;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -507,12 +506,12 @@ public class SQLQuery implements SQLScriptElement {
         return false;
     }
 
-    @NotNull
-    public Optional<String> getDropType() {
+    public boolean isDropDangerous() {
         parseQuery();
-        return statement instanceof Drop dropStatement
-            ? Optional.ofNullable(dropStatement.getType())
-            : Optional.empty();
+        return statement != null &&
+            statement instanceof Drop dropStatement &&
+            dropStatement.getName() != null
+            && dropStatement.getType() != null;
     }
 
     public boolean isModifying() {
