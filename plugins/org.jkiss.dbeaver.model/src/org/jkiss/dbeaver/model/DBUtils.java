@@ -80,6 +80,14 @@ public final class DBUtils {
         }
     }
 
+    public static void closeSafely(@NotNull AutoCloseable object) {
+        try {
+            object.close();
+        } catch (Exception e) {
+            log.error("Error when closing object '" + object + "'", e);
+        }
+    }
+
     /**
      * Get object name in quotes if they are needed.
      *
@@ -2509,7 +2517,7 @@ public final class DBUtils {
         @NotNull DBCExecutionSource source,
         @NotNull DBCSession session,
         @NotNull SQLQuery query
-    ) throws DBCException {
+    ) throws DBException {
         try (DBCStatement dbStatement = makeStatement(source, session, DBCStatementType.SCRIPT, query, 0, 0)) {
             if (dbStatement.executeStatement()) {
                 try (DBCResultSet rs = dbStatement.openResultSet()) {
