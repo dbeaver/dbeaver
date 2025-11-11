@@ -189,6 +189,8 @@ public class ObjectEditorPageControl extends ProgressPageControl {
                     } catch (InterruptedException e) {
                         // ignore
                         break;
+                    } catch (Exception e) {
+                        log.error(e);
                     }
                 }
             }
