@@ -2543,7 +2543,7 @@ public class UIUtils {
      * @return closeable object that will enable redraw when closed
      */
     @NotNull
-    public static DBPCloseableObject disableRedraw(@NotNull Control control) {
+    public static DBPCloseableNE disableRedraw(@NotNull Control control) {
         control.setRedraw(false);
         return () -> control.setRedraw(true);
     }

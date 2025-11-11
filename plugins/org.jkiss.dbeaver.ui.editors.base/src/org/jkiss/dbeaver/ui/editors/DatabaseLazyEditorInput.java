@@ -151,6 +151,8 @@ public class DatabaseLazyEditorInput implements IDatabaseEditorInput, ILazyEdito
         return nodeName;
     }
 
+    @Nullable
+    @Override
     public String getNodePath() {
         return nodePath;
     }
