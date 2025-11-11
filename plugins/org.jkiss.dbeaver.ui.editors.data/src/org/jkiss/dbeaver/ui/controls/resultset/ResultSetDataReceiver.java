@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -43,7 +43,7 @@ class ResultSetDataReceiver implements DBDDataReceiver, DBDDataReceiverInteracti
 
     private static final Log log = Log.getLog(ResultSetDataReceiver.class);
 
-    private ResultSetViewer resultSetViewer;
+    private final ResultSetViewer resultSetViewer;
     private int columnsCount;
     private DBDAttributeBinding[] metaColumns;
     private List<Object[]> rows = new ArrayList<>();
@@ -55,9 +55,9 @@ class ResultSetDataReceiver implements DBDDataReceiver, DBDDataReceiverInteracti
     private boolean paused;
 
     // Attribute fetching errors. Collect them to avoid tons of similar error in log
-    private Map<DBCAttributeMetaData, List<String>> attrErrors = new HashMap<>();
+    private final Map<DBCAttributeMetaData, List<String>> attrErrors = new HashMap<>();
     // All (unique) errors happened during fetch
-    private List<Throwable> errorList = new ArrayList<>();
+    private final List<Throwable> errorList = new ArrayList<>();
     private int focusRow;
     private DBSDataContainer targetDataContainer;
     
@@ -157,18 +157,13 @@ class ResultSetDataReceiver implements DBDDataReceiver, DBDDataReceiverInteracti
         if (!nextSegmentRead) {
             if (metaColumns != null) {
                 try {
-                    // Read locators' metadata
-                    DBSEntity entity = null;
                     DBSDataContainer dataContainer = getDataContainer();
-                    if (dataContainer instanceof DBSEntity) {
-                        entity = (DBSEntity) dataContainer;
-                    }
+                    // Read locators' metadata
+                    DBSEntity entity = dataContainer instanceof DBSEntity e ? e : null;
                     DBExecUtils.bindAttributes(session, entity, resultSet, metaColumns, rows);
                 } catch (Throwable e) {
                     errorList.add(e);
                 }
-            } else {
-                // fetchStart was failed
             }
         }
 
