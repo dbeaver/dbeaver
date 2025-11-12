@@ -90,7 +90,6 @@ public class OracleUtils {
                 }
             }
 
-            final boolean separateIndexes = CommonUtils.getOption(options, DBPScriptObject.OPTION_DDL_SEPARATE_CONSTRAINTS_STATEMENTS, false);
             if (dataSource.isAtLeastV9()) {
                 try {
                     // Do not add semicolon in the end
@@ -102,8 +101,8 @@ public class OracleUtils {
                                 "DBMS_METADATA.SET_TRANSFORM_PARAM(DBMS_METADATA.SESSION_TRANSFORM,'TABLESPACE'," + ddlFormat.isShowTablespace() + ");\n" +
                                 "DBMS_METADATA.SET_TRANSFORM_PARAM(DBMS_METADATA.SESSION_TRANSFORM,'SEGMENT_ATTRIBUTES'," + ddlFormat.isShowSegments() + ");\n" +
                                 "DBMS_METADATA.SET_TRANSFORM_PARAM(DBMS_METADATA.SESSION_TRANSFORM,'EMIT_SCHEMA'," + CommonUtils.getOption(options, DBPScriptObject.OPTION_FULLY_QUALIFIED_NAMES, true) + ");\n" +
-                                "DBMS_METADATA.SET_TRANSFORM_PARAM(DBMS_METADATA.SESSION_TRANSFORM, 'CONSTRAINTS'," + !separateIndexes + ");\n" +
-                                "DBMS_METADATA.SET_TRANSFORM_PARAM(DBMS_METADATA.SESSION_TRANSFORM, 'REF_CONSTRAINTS'," + !CommonUtils.getOption(options, DBPScriptObject.OPTION_DDL_SEPARATE_FOREIGN_KEYS_STATEMENTS, true) + ");\n" +
+                                "DBMS_METADATA.SET_TRANSFORM_PARAM(DBMS_METADATA.SESSION_TRANSFORM,'CONSTRAINTS',true);\n" +
+                                "DBMS_METADATA.SET_TRANSFORM_PARAM(DBMS_METADATA.SESSION_TRANSFORM,'REF_CONSTRAINTS'," + !CommonUtils.getOption(options, DBPScriptObject.OPTION_DDL_SEPARATE_FOREIGN_KEYS_STATEMENTS, true) + ");\n" +
                             "end;");
                 } catch (SQLException e) {
                     log.error("Can't apply DDL transform parameters", e);
@@ -133,9 +132,9 @@ public class OracleUtils {
 
             if (monitor.isCanceled()) return ddl;
 
-            if (!CommonUtils.isEmpty(object.getIndexes(monitor)) && separateIndexes) {
+            if (!CommonUtils.isEmpty(object.getIndexes(monitor))) {
                 // Add index info to main DDL. For some reasons, GET_DDL returns columns, constraints, but not indexes
-                ddl += invokeDBMSMetadataGetDependentDDL(session, schema, object, DBMSMetaDependentObjectType.INDEX);
+                ddl += invokeDBMSMetadataGetDependentIndexDDL(session, schema, object, false);
             }
 
             if (monitor.isCanceled()) return ddl;
@@ -237,6 +236,54 @@ public class OracleUtils {
             // No dependent index DDL or something went wrong
             log.debug("Error reading dependent DDL '" + dependentObjectType +
                 "' for '" + object.getFullyQualifiedName(DBPEvaluationContext.DDL) + "': " + e.getMessage());
+        }
+        return ddl;
+    }
+
+    private static String invokeDBMSMetadataGetDependentIndexDDL(JDBCSession session, OracleSchema schema, OracleTableBase object, boolean all) {
+        String ddl = "";
+        final String query = """
+            WITH constraint_indexes AS (
+                SELECT index_name
+                FROM ALL_CONSTRAINTS
+                WHERE owner = NVL(?, SYS_CONTEXT('USERENV','CURRENT_SCHEMA'))
+                  AND table_name = ?
+                  AND constraint_type IN ('P', 'U')
+                  AND index_name IS NOT NULL
+            )
+            SELECT DBMS_METADATA.GET_DDL('INDEX', i.index_name, i.owner) AS ddl
+            FROM ALL_INDEXES i
+            WHERE i.table_owner = NVL(?, SYS_CONTEXT('USERENV','CURRENT_SCHEMA'))
+              AND i.table_name = ?
+              AND i.generated = 'N'
+              AND (
+                  ? = 0
+                  OR
+                  (? = 1 AND i.index_name NOT IN (SELECT index_name FROM constraint_indexes))
+              )
+            """;
+        try (JDBCPreparedStatement dbStat = session.prepareStatement(query)) {
+            String schemaName = schema == null ? null : schema.getName();
+            int allIndexes = all ? 0 : 1;
+            dbStat.setString(1, schemaName);
+            dbStat.setString(2, object.getName());
+            dbStat.setString(3, schemaName);
+            dbStat.setString(4, object.getName());
+            dbStat.setInt(5, allIndexes);
+            dbStat.setInt(6, allIndexes);
+            try (JDBCResultSet dbResult = dbStat.executeQuery()) {
+                StringBuilder ddlBuilder = new StringBuilder();
+                while (dbResult.next()) {
+                    String indexDDL = dbResult.getString(1);
+                    if (indexDDL != null) {
+                        ddlBuilder.append("\n\n").append(indexDDL.trim());
+                    }
+                }
+                ddl = ddlBuilder.toString();
+            }
+        } catch (Exception e) {
+            log.debug("Error reading dependent DDL 'INDEX' for '"
+                + object.getFullyQualifiedName(DBPEvaluationContext.DDL) + "': " + e.getMessage());
         }
         return ddl;
     }
