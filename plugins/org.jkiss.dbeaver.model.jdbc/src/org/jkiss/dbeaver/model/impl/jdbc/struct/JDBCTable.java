@@ -130,7 +130,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
         long maxRows,
         long flags,
         int fetchSize
-    ) throws DBCException {
+    ) throws DBException {
         DBCStatistics statistics = new DBCStatistics();
         boolean hasLimits = firstRow >= 0 && maxRows > 0;
 
@@ -204,8 +204,8 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
             if (executeResult) {
                 DBCResultSet dbResult = dbStat.openResultSet();
                 if (dbResult != null && !monitor.isCanceled()) {
-                    try {
-                        dataReceiver.fetchStart(session, dbResult, firstRow, maxRows);
+                    try (dbResult) {
+                        DBDDataReceiver.startFetchWorkflow(dataReceiver, session, dbResult, firstRow, maxRows);
 
                         DBFetchProgress fetchProgress = new DBFetchProgress(session.getProgressMonitor());
                         while (dbResult.nextRow()) {
@@ -217,25 +217,10 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
                             fetchProgress.monitorRowFetch();
                         }
                         fetchProgress.dumpStatistics(statistics);
-                    } finally {
-                        // First - close cursor
-                        try {
-                            dbResult.close();
-                        } catch (Throwable e) {
-                            log.error("Error closing result set", e); //$NON-NLS-1$
-                        }
-                        // Then - signal that fetch was ended
-                        try {
-                            dataReceiver.fetchEnd(session, dbResult);
-                        } catch (Throwable e) {
-                            log.error("Error while finishing result set fetch", e); //$NON-NLS-1$
-                        }
                     }
                 }
             }
             return statistics;
-        } finally {
-            dataReceiver.close();
         }
     }
 
@@ -294,7 +279,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
     // Count
 
     @Override
-    public long countData(@NotNull DBCExecutionSource source, @NotNull DBCSession session, @Nullable DBDDataFilter dataFilter, long flags) throws DBCException
+    public long countData(@NotNull DBCExecutionSource source, @NotNull DBCSession session, @Nullable DBDDataFilter dataFilter, long flags) throws DBException
     {
         DBRProgressMonitor monitor = session.getProgressMonitor();
         String asteriskString = getDataSource().getSQLDialect().getDefaultGroupAttribute();
@@ -354,7 +339,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
     @NotNull
     @Override
     public ExecuteBatch insertData(@NotNull DBCSession session, @NotNull final DBSAttributeBase[] attributes, @Nullable DBDDataReceiver keysReceiver, @NotNull final DBCExecutionSource source, @NotNull Map<String, Object> options)
-        throws DBCException
+    throws DBCException
     {
         readRequiredMeta(session.getProgressMonitor());
 
@@ -376,7 +361,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
         @NotNull final DBSAttributeBase[] updateAttributes,
         @NotNull final DBSAttributeBase[] keyAttributes,
         @Nullable DBDDataReceiver keysReceiver, @NotNull final DBCExecutionSource source)
-        throws DBCException
+    throws DBCException
     {
         if (useUpsert(session)) {
             return insertData(
@@ -465,9 +450,12 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
 
     @NotNull
     @Override
-    public ExecuteBatch deleteData(@NotNull DBCSession session, @NotNull final DBSAttributeBase[] keyAttributes, @NotNull final DBCExecutionSource source)
-        throws DBCException
-    {
+    public ExecuteBatch deleteData(
+        @NotNull DBCSession session,
+        @NotNull final DBSAttributeBase[] keyAttributes,
+        @NotNull final DBCExecutionSource source
+    ) throws DBCException {
+
         readRequiredMeta(session.getProgressMonitor());
 
         return new ExecuteBatchImpl(keyAttributes, null, false) {
@@ -703,7 +691,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
         boolean caseInsensitiveSearch,
         int maxResults,
         int offset)
-        throws DBException
+    throws DBException
     {
         if (keyColumn.getParentObject() != this) {
             throw new IllegalArgumentException("Bad key column argument");
@@ -913,7 +901,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
             }
         }
     }
-    
+
     @NotNull
     @Override
     public DBSDictionaryAccessor getDictionaryAccessor(
@@ -931,7 +919,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
 
     @NotNull
     @Override
-    public DBCStatistics truncateData(@NotNull DBCSession session, @NotNull DBCExecutionSource source) throws DBCException {
+    public DBCStatistics truncateData(@NotNull DBCSession session, @NotNull DBCExecutionSource source) throws DBException {
         if (!isTruncateSupported()) {
             try (ExecuteBatch batch = deleteData(session, new DBSAttributeBase[0], source)) {
                 batch.add(new Object[0]);
@@ -1005,7 +993,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
      * @throws DBCException on error
      */
     private void readRequiredMeta(DBRProgressMonitor monitor)
-        throws DBCException
+    throws DBCException
     {
         if (!getDataSource().getContainer().isExtraMetadataReadEnabled()) {
             return;
@@ -1033,13 +1021,13 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
     private static class AttrInfo<T> {
         public final T attr;
         public final DBDValueHandler handler;
-        
+
         public AttrInfo(T attr, DBDValueHandler handler) {
             this.attr = attr;
             this.handler = handler;
         }
     }
-    
+
     protected class DictionaryAccessor implements DBSDictionaryAccessor {
         private final List<AttrInfo<DBDAttributeValue>> restAttrsInfo;
         private final DBSEntityAttribute keyColumn;
@@ -1072,7 +1060,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
             this.isKeyComparable = ArrayUtils.contains(DBUtils.getAttributeOperators(keyColumn), DBCLogicalOperator.LESS);
 
             this.session = DBUtils.openUtilSession(monitor, JDBCTable.this, "Load attribute values count");
-            
+
             {
                 List<DBDAttributeConstraint> constraints = new ArrayList<>();
                 List<AttrInfo<DBDAttributeValue>> restKeysInfo = new ArrayList<>();
@@ -1089,7 +1077,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
                 this.restAttrsInfo = List.copyOf(restKeysInfo);
                 this.filter = new DBDDataFilter(constraints);
             }
-            
+
             this.descAttributesInfo = descAttributes == null ? Collections.emptyList() : descAttributes.stream()
                 .map(a -> new AttrInfo<>(a, DBUtils.findValueHandler(session, a))).collect(Collectors.toList());
         }
@@ -1114,7 +1102,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
             }
             return paramPos;
         }
-        
+
         @NotNull
         @Override
         public List<DBDLabelValuePair> getValueEntry(@NotNull Object keyValue) throws DBException {
@@ -1131,7 +1119,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
                 return readValues(dbStat);
             }
         }
-        
+
         @NotNull
         @Override
         public List<DBDLabelValuePair> getValues(long offset, int pageSize) throws DBException {
@@ -1189,7 +1177,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
         @Override
         public List<DBDLabelValuePair> getSimilarValuesNear(
             @NotNull Object pattern, boolean caseInsensitive, boolean byDesc,
-            Object value, boolean isPreceeding, 
+            Object value, boolean isPreceeding,
             long offset, long maxResults
         ) throws DBException {
             DBDDataFilter filter = new DBDDataFilter(this.filter);
@@ -1208,7 +1196,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
                 return readValues(dbStat);
             }
         }
-        
+
         @NotNull
         private StringBuilder prepareQueryString(@NotNull DBDDataFilter filter) throws DBException {
             StringBuilder query = new StringBuilder();
@@ -1226,9 +1214,9 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
             if (!filter.getConstraints().isEmpty()) {
                 query.append(" WHERE ");
             }
-            
+
             getDataSource().getSQLDialect().getQueryGenerator().appendConditionString(filter, getDataSource(), null, query, false);
-            
+
             return query;
         }
 
@@ -1278,7 +1266,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
         private DBDDataFilter prepareByPatternCondition(@NotNull Object pattern, boolean caseInsensitive, boolean byDesc) {
             DBDDataFilter filter = new DBDDataFilter();
             filter.setAnyConstraint(true);
-            
+
             List<DBDAttributeConstraint> constraints = filter.getConstraints();
             DBDAttributeConstraint keyConstraint = new DBDAttributeConstraint(keyColumn, constraints.size());
             if (keyColumn.getDataKind() == DBPDataKind.STRING) {
@@ -1313,10 +1301,10 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
 
             return filter;
         }
-        
+
         private void bindPattern(@NotNull DBCStatement dbStat, @NotNull Object pattern, boolean byDesc, int bindAt) throws DBCException {
             int paramPos = bindAt;
-            
+
             if (keyColumn.getDataKind() == DBPDataKind.STRING) {
                 keyValueHandler.bindValueObject(session, dbStat, keyColumn, paramPos++, "%" + pattern + "%");
             } else if (keyColumn.getDataKind() == DBPDataKind.NUMERIC) {
@@ -1326,7 +1314,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
             } else if (pattern instanceof CharSequence) {
                 keyValueHandler.bindValueObject(session, dbStat, keyColumn, paramPos++, pattern);
             }
-            
+
             if (byDesc && pattern instanceof CharSequence) {
                 for (var a : descAttributesInfo) {
                     if (a.attr.getDataKind() == DBPDataKind.STRING) {
@@ -1344,7 +1332,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
                     "%" + pattern + "%");
             }
         }
-        
+
         private void appendSortingClause(@NotNull StringBuilder query, boolean isPreceeding) {
             if (isKeyComparable() || sortByDesc) {
                 query.append(" ORDER BY ");

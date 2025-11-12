@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,8 @@
 package org.jkiss.dbeaver.model.impl;
 
 import org.eclipse.core.runtime.IConfigurationElement;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -31,9 +33,10 @@ import java.util.List;
 public abstract class AbstractContextDescriptor extends AbstractDescriptor {
     private static final String OBJECT_TYPE = "objectType";
 
+    @NotNull
     private final ObjectType[] objectTypes;
 
-    public AbstractContextDescriptor(IConfigurationElement config) {
+    public AbstractContextDescriptor(@NotNull IConfigurationElement config) {
         super(config.getContributor().getName());
 
         List<ObjectType> objectTypes = new ArrayList<>();
@@ -47,7 +50,7 @@ public abstract class AbstractContextDescriptor extends AbstractDescriptor {
         this.objectTypes = objectTypes.toArray(new ObjectType[0]);
     }
 
-    public AbstractContextDescriptor(String pluginId) {
+    public AbstractContextDescriptor(@NotNull String pluginId) {
         super(pluginId);
         this.objectTypes = new ObjectType[0];
     }
@@ -56,15 +59,16 @@ public abstract class AbstractContextDescriptor extends AbstractDescriptor {
         return objectTypes.length > 0;
     }
 
+    @NotNull
     public ObjectType[] getObjectTypes() {
         return objectTypes;
     }
 
-    public boolean appliesTo(DBPObject object) {
+    public boolean appliesTo(@NotNull DBPObject object) {
         return appliesTo(object, null);
     }
 
-    public boolean matchesType(Class<? extends DBSObject> objectClass) {
+    public boolean matchesType(@NotNull Class<? extends DBSObject> objectClass) {
         for (ObjectType objectType : objectTypes) {
             if (objectType.matchesType(objectClass)) {
                 return true;
@@ -73,7 +77,7 @@ public abstract class AbstractContextDescriptor extends AbstractDescriptor {
         return false;
     }
 
-    public boolean appliesTo(DBPObject object, Object context) {
+    public boolean appliesTo(@NotNull DBPObject object, @Nullable Object context) {
         if (object instanceof DBSObject) {
             object = DBUtils.getPublicObject((DBSObject) object);
         }
@@ -89,7 +93,8 @@ public abstract class AbstractContextDescriptor extends AbstractDescriptor {
         return false;
     }
 
-    protected Object adaptType(DBPObject object) {
+    @Nullable
+    protected Object adaptType(@NotNull DBPObject object) {
         return null;
     }
 }
