@@ -211,6 +211,8 @@ public class StreamProducerPageSettings extends DataTransferPageNodeSettings {
                             } else {
                                 updateSingleConsumer(new VoidProgressMonitor(), pipe, path);
                                 item.setText(0, DBFUtils.convertPathToString(path));
+                                reloadPipes();
+                                updatePageCompletion();
                             }
                         } catch (Exception e) {
                             DBWorkbench.getPlatformUI().showError(
