@@ -54,7 +54,6 @@ import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 
-import java.lang.reflect.InvocationTargetException;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Objects;
@@ -318,21 +317,17 @@ public class DatabaseLazyEditorInput implements IDatabaseEditorInput, ILazyEdito
 
             final DBNNode[] editorNodeResult = new DBNNode[1];
             DBExecUtils.tryExecuteRecover(monitor, dataSource, param -> {
-                try {
-                    // FIXME: DBNModel#getNodeByObject should ensure that the project is loaded, not the caller
-                    navigatorModel.ensureProjectLoaded(project);
-                    DBNDataSource dsNode = (DBNDataSource) navigatorModel.getNodeByObject(monitor, this.dataSourceContainer, true);
-                    if (dsNode == null) {
-                        throw new DBException("Datasource '" + this.dataSourceContainer.getName() + "' navigator node not found");
-                    }
-
-                    dsNode.initializeNode(monitor, null);
-
-                    editorNodeResult[0] = navigatorModel.getNodeByPath(
-                        monitor, project, nodePath);
-                } catch (Exception e) {
-                    throw new InvocationTargetException(e);
+                // FIXME: DBNModel#getNodeByObject should ensure that the project is loaded, not the caller
+                navigatorModel.ensureProjectLoaded(project);
+                DBNDataSource dsNode = (DBNDataSource) navigatorModel.getNodeByObject(monitor, this.dataSourceContainer, true);
+                if (dsNode == null) {
+                    throw new DBException("Datasource '" + this.dataSourceContainer.getName() + "' navigator node not found");
                 }
+
+                dsNode.initializeNode(monitor, null);
+
+                editorNodeResult[0] = navigatorModel.getNodeByPath(
+                    monitor, project, nodePath);
             });
             DBNNode node = editorNodeResult[0];
             if (node == null) {

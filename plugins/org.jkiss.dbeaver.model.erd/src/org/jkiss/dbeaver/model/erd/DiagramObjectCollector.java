@@ -29,7 +29,6 @@ import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTablePartition;
 import org.jkiss.utils.CommonUtils;
 
-import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 
 /**
@@ -236,13 +235,8 @@ public class DiagramObjectCollector {
         //boolean showViews = ERDUIActivator.getDefault().getPreferenceStore().getBoolean(ERDUIConstants.PREF_DIAGRAM_SHOW_VIEWS);
 
         try {
-            DBExecUtils.tryExecuteRecover(monitor, roots.get(0).getDataSource(), monitor1 -> {
-                try {
-                    collector.generateDiagramObjects(monitor1, roots, settings);
-                } catch (Exception e) {
-                    throw new InvocationTargetException(e);
-                }
-            });
+            DBExecUtils.tryExecuteRecover(monitor, roots.getFirst().getDataSource(), monitor1 ->
+                collector.generateDiagramObjects(monitor1, roots, settings));
         } catch (Exception e) {
             log.error(e);
         }
