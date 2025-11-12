@@ -281,9 +281,10 @@ public class ConnectionPageGeneral extends ConnectionWizardPage implements Navig
     }
 
     @Override
-    public void deactivatePage()
-    {
-        saveSettings(dataSourceDescriptor);
+    public void deactivatePage() {
+        if (dataSourceDescriptor != null) {
+            saveSettings(dataSourceDescriptor);
+        }
     }
 
     @Override
