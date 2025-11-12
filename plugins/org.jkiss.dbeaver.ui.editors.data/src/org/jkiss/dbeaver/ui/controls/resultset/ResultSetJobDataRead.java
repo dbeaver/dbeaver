@@ -114,16 +114,16 @@ abstract class ResultSetJobDataRead extends ResultSetJobAbstract implements ILoa
 
         progressMonitor.beginTask("Read data", 1);
         if (!getDataSourceContainer().isExtraMetadataReadEnabled()) {
-            monitor = new LocalCacheProgressMonitor(monitor);
+            progressMonitor = new LocalCacheProgressMonitor(monitor);
         }
 
         try (DBCSession session = getExecutionContext().openSession(
-            monitor,
+            progressMonitor,
             dataFilter != null && dataFilter.hasFilters() ? DBCExecutionPurpose.USER_FILTERED : DBCExecutionPurpose.USER,
             NLS.bind(ResultSetMessages.controls_rs_pump_job_context_name, dataContainer.toString())))
         {
             progressMonitor.subTask("Read data from container");
-            DBExecUtils.tryExecuteRecover(monitor, session.getDataSource(), monitor1 -> {
+            DBExecUtils.tryExecuteRecover(progressMonitor, session.getDataSource(), monitor1 -> {
                 try {
                     statistics = dataContainer.readData(
                         executionSource,

@@ -111,6 +111,8 @@ public class SQLCommandAI implements SQLControlCommandHandler {
 
         AIPromptAbstract sysPromptBuilder = AIPromptGenerateSql.create(dbContext::getDataSource);
 
+        monitor.subTask("Generate SQL from prompt");
+
         AIAssistant assistant = AIAssistantRegistry.getInstance()
             .createAssistant(dataSourceContainer.getProject().getWorkspace());
 
@@ -123,6 +125,8 @@ public class SQLCommandAI implements SQLControlCommandHandler {
         if (!result.isText()) {
             return SQLControlResult.success();
         }
+
+        monitor.subTask("Process generated SQL");
 
         AISqlFormatter sqlFormatter = AIAssistantRegistry.getInstance().getDescriptor().createSqlFormatter();
         MessageChunk[] messageChunks = AITextUtils.processAndSplitCompletion(
