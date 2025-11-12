@@ -694,7 +694,7 @@ public class DBeaverLauncher {
         } catch (Exception e) {
             System.err.println("Error parsing the value of '" + PROP_TMP_DIR + "' (" + tmpDir + "): " + e.getMessage());
         }
-        var newTmpDir = Path.of("C:/DBeaverTemp").toString();
+        var newTmpDir = Path.of("C:/Users/はいздрасти/AppData/Roaming/DBeaverData/temp").toString();
         System.setProperty(PROP_TMP_DIR, newTmpDir);
         System.err.println("Overriding temporary directory to " + newTmpDir);
     }
