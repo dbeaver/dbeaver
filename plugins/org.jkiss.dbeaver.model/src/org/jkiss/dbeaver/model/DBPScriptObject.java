@@ -62,7 +62,6 @@ public interface DBPScriptObject extends DBPObject {
     String OPTION_SKIP_INDEXES = "ddl.skipIndexes"; //$NON-NLS-1$
     String OPTION_SKIP_DROPS = "ddl.skipDrops"; //$NON-NLS-1$
 
-    String OPTION_DDL_SEPARATE_CONSTRAINTS_STATEMENTS = "ddl.separateIndexKeys"; //$NON-NLS-1$
     String OPTION_DDL_SEPARATE_FOREIGN_KEYS_STATEMENTS = "ddl.separateForeignKeys"; //$NON-NLS-1$
 
     String OPTION_INCLUDE_NESTED_OBJECTS = "ddl.includeNestedObjects"; //$NON-NLS-1$
