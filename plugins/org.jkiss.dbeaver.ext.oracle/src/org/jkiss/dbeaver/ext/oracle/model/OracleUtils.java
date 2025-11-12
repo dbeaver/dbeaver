@@ -118,7 +118,7 @@ public class OracleUtils {
 
             if (monitor.isCanceled()) return ddl;
 
-            if (!CommonUtils.isEmpty(object.getConstraints(monitor)) && 
+            if (!CommonUtils.isEmpty(object.getConstraints(monitor)) &&
                 !CommonUtils.getOption(options, DBPScriptObject.OPTION_DDL_SKIP_FOREIGN_KEYS) &&
                 CommonUtils.getOption(options, DBPScriptObject.OPTION_DDL_SEPARATE_FOREIGN_KEYS_STATEMENTS)) {
                 ddl += invokeDBMSMetadataGetDependentDDL(session, schema, object, DBMSMetaDependentObjectType.REF_CONSTRAINT);
@@ -134,7 +134,7 @@ public class OracleUtils {
 
             if (!CommonUtils.isEmpty(object.getIndexes(monitor))) {
                 // Add index info to main DDL. For some reasons, GET_DDL returns columns, constraints, but not indexes
-                ddl += invokeDBMSMetadataGetDependentIndexDDL(session, schema, object, false);
+                ddl += invokeDBMSMetadataGetDependentIndexDDL(session, schema, object);
             }
 
             if (monitor.isCanceled()) return ddl;
@@ -240,37 +240,29 @@ public class OracleUtils {
         return ddl;
     }
 
-    private static String invokeDBMSMetadataGetDependentIndexDDL(JDBCSession session, OracleSchema schema, OracleTableBase object, boolean all) {
+    private static String invokeDBMSMetadataGetDependentIndexDDL(JDBCSession session, OracleSchema schema, OracleTableBase object) {
         String ddl = "";
         final String query = """
-            WITH constraint_indexes AS (
-                SELECT index_name
-                FROM ALL_CONSTRAINTS
-                WHERE owner = NVL(?, SYS_CONTEXT('USERENV','CURRENT_SCHEMA'))
-                  AND table_name = ?
-                  AND constraint_type IN ('P', 'U')
-                  AND index_name IS NOT NULL
-            )
             SELECT DBMS_METADATA.GET_DDL('INDEX', i.index_name, i.owner) AS ddl
             FROM ALL_INDEXES i
             WHERE i.table_owner = NVL(?, SYS_CONTEXT('USERENV','CURRENT_SCHEMA'))
               AND i.table_name = ?
               AND i.generated = 'N'
-              AND (
-                  ? = 0
-                  OR
-                  (? = 1 AND i.index_name NOT IN (SELECT index_name FROM constraint_indexes))
+              AND i.index_name NOT IN (
+                  SELECT c.index_name
+                  FROM ALL_CONSTRAINTS c
+                  WHERE c.owner = NVL(?, SYS_CONTEXT('USERENV','CURRENT_SCHEMA'))
+                    AND c.table_name = ?
+                    AND c.constraint_type IN ('P', 'U')
+                    AND c.index_name IS NOT NULL
               )
             """;
         try (JDBCPreparedStatement dbStat = session.prepareStatement(query)) {
             String schemaName = schema == null ? null : schema.getName();
-            int allIndexes = all ? 0 : 1;
             dbStat.setString(1, schemaName);
             dbStat.setString(2, object.getName());
             dbStat.setString(3, schemaName);
             dbStat.setString(4, object.getName());
-            dbStat.setInt(5, allIndexes);
-            dbStat.setInt(6, allIndexes);
             try (JDBCResultSet dbResult = dbStat.executeQuery()) {
                 StringBuilder ddlBuilder = new StringBuilder();
                 while (dbResult.next()) {
