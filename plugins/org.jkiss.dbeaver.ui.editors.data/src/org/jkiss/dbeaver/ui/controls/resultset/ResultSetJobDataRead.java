@@ -85,10 +85,10 @@ abstract class ResultSetJobDataRead extends ResultSetJobAbstract implements ILoa
     }
 
     @Override
-    protected IStatus run(DBRProgressMonitor monitor) {
+    protected IStatus run(@NotNull DBRProgressMonitor monitor) {
         error = null;
         final ProgressLoaderVisualizer<Object> visualizer = new ProgressLoaderVisualizer<>(this, progressControl);
-        DBRProgressMonitor progressMonitor = visualizer.overwriteMonitor(monitor);
+        monitor = visualizer.overwriteMonitor(monitor);
 
         new PumpVisualizer(visualizer).schedule(PROGRESS_VISUALIZE_PERIOD * 2);
 
@@ -112,18 +112,18 @@ abstract class ResultSetJobDataRead extends ResultSetJobAbstract implements ILoa
         final DBSDataContainer dataContainer = executionSource.getDataContainer();
         final DBDDataFilter dataFilter = executionSource.getUseDataFilter();
 
-        progressMonitor.beginTask("Read data", 1);
+        monitor.beginTask("Read data", 1);
         if (!getDataSourceContainer().isExtraMetadataReadEnabled()) {
-            progressMonitor = new LocalCacheProgressMonitor(monitor);
+            monitor = new LocalCacheProgressMonitor(monitor);
         }
 
         try (DBCSession session = getExecutionContext().openSession(
-            progressMonitor,
+            monitor,
             dataFilter != null && dataFilter.hasFilters() ? DBCExecutionPurpose.USER_FILTERED : DBCExecutionPurpose.USER,
             NLS.bind(ResultSetMessages.controls_rs_pump_job_context_name, dataContainer.toString())))
         {
-            progressMonitor.subTask("Read data from container");
-            DBExecUtils.tryExecuteRecover(progressMonitor, session.getDataSource(), monitor1 -> {
+            monitor.subTask("Read data from container");
+            DBExecUtils.tryExecuteRecover(monitor, session.getDataSource(), monitor1 -> {
                 try {
                     statistics = dataContainer.readData(
                         executionSource,
@@ -142,7 +142,7 @@ abstract class ResultSetJobDataRead extends ResultSetJobAbstract implements ILoa
             error = e;
         } finally {
             visualizer.completeLoading(null);
-            progressMonitor.done();
+            monitor.done();
         }
 
         return Status.OK_STATUS;
