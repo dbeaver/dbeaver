@@ -37,6 +37,7 @@ import org.eclipse.ui.ide.IDE;
 import org.eclipse.ui.texteditor.ITextEditor;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.app.DBPPlatformDesktop;
@@ -586,7 +587,7 @@ public class EditorUtils {
                         RuntimeUtils.runTask(monitor -> {
                             try (DBCSession session = executionContext.openSession(monitor, DBCExecutionPurpose.UTIL, "Rollback editor transaction")) {
                                 txnManager.rollback(session, null);
-                            } catch (DBCException e) {
+                            } catch (DBException e) {
                                 throw new InvocationTargetException(e);
                             }
                         }, "End editor transaction", 5000);

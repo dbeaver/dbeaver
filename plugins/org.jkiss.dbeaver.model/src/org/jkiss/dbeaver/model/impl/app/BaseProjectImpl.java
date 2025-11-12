@@ -698,4 +698,10 @@ public abstract class BaseProjectImpl implements DBPProject, DBSSecretSubject {
         return fileNotEmpty;
     }
 
+    // Called by model itself when some project-dependent entities change their state
+    // E.g. when we save/load datasource registry
+    // By default does nothing
+    public void updateProjectNature() {
+
+    }
 }
