@@ -46,6 +46,7 @@ import org.jkiss.dbeaver.model.data.DBDDataReceiver;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.impl.AbstractExecutionSource;
 import org.jkiss.dbeaver.model.impl.AbstractStatement;
+import org.jkiss.dbeaver.model.impl.local.LocalStatement;
 import org.jkiss.dbeaver.model.impl.local.StatResultSet;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.qm.QMUtils;
@@ -875,46 +876,51 @@ public class SQLQueryJob extends DataSourceJob
 
     private void fetchExecutionResult(@NotNull DBCSession session, @NotNull DBDDataReceiver dataReceiver, @NotNull SQLQuery query) throws DBException {
         // Fetch fake result set
-        StatResultSet fakeResultSet = new StatResultSet(session, curStatement);
-        SQLQueryResult resultInfo = new SQLQueryResult(query);
-        SQLQueryResult.ExecuteResult executeResult = resultInfo.addExecuteResult(true);
+        try (LocalStatement statStatement = new LocalStatement(session, "statistics")) {
+            try (StatResultSet fakeResultSet = new StatResultSet(session, statStatement)) {
+                SQLQueryResult resultInfo = new SQLQueryResult(query);
+                SQLQueryResult.ExecuteResult executeResult = resultInfo.addExecuteResult(true);
 
-        if (statistics.getStatementsCount() > 1) {
-            // Multiple statements - show script statistics
-            fakeResultSet.addColumn("Queries", DBPDataKind.NUMERIC);
-            fakeResultSet.addColumn("Updated Rows", DBPDataKind.NUMERIC);
-            fakeResultSet.addColumn("Execute time", DBPDataKind.NUMERIC);
-            fakeResultSet.addColumn("Fetch time", DBPDataKind.NUMERIC);
-            fakeResultSet.addColumn("Total time", DBPDataKind.NUMERIC);
-            fakeResultSet.addColumn("Start time", DBPDataKind.DATETIME);
-            fakeResultSet.addColumn("Finish time", DBPDataKind.DATETIME);
-            fakeResultSet.addRow(
-                statistics.getStatementsCount(),
-                statistics.getRowsUpdated() < 0 ? 0 : statistics.getRowsUpdated(),
-                RuntimeUtils.formatExecutionTime(statistics.getExecuteTime()),
-                RuntimeUtils.formatExecutionTime(statistics.getFetchTime()),
-                RuntimeUtils.formatExecutionTime(statistics.getTotalTime()),
-                new SimpleDateFormat(DBConstants.DEFAULT_TIMESTAMP_FORMAT).format(new Date(statistics.getStartTime())),
-                new SimpleDateFormat(DBConstants.DEFAULT_TIMESTAMP_FORMAT).format(new Date()));
-            executeResult.setResultSetName(SQLEditorMessages.editors_sql_statistics);
-        } else {
-            // Single statement - reorder fields to prioritize the important ones
-            // Important fields like "Updated Rows" and "Execute time" are now displayed before the query text for easier access.
-            long updateCount = statistics.getRowsUpdated();
-            fakeResultSet.addColumn("Updated Rows", DBPDataKind.NUMERIC);
-            fakeResultSet.addColumn("Execute time", DBPDataKind.NUMERIC);
-            fakeResultSet.addColumn("Start time", DBPDataKind.DATETIME);
-            fakeResultSet.addColumn("Finish time", DBPDataKind.DATETIME);
-            fakeResultSet.addColumn("Query", DBPDataKind.STRING);
-            fakeResultSet.addRow(
-                    updateCount,
-                    RuntimeUtils.formatExecutionTime(statistics.getExecuteTime()),
-                    new Date(statistics.getStartTime()),
-                    new Date(),
-                    query.getText());
-            executeResult.setResultSetName(SQLEditorMessages.editors_sql_data_grid);
+                if (statistics.getStatementsCount() > 1) {
+                    // Multiple statements - show script statistics
+                    fakeResultSet.addColumn("Queries", DBPDataKind.NUMERIC);
+                    fakeResultSet.addColumn("Updated Rows", DBPDataKind.NUMERIC);
+                    fakeResultSet.addColumn("Execute time", DBPDataKind.NUMERIC);
+                    fakeResultSet.addColumn("Fetch time", DBPDataKind.NUMERIC);
+                    fakeResultSet.addColumn("Total time", DBPDataKind.NUMERIC);
+                    fakeResultSet.addColumn("Start time", DBPDataKind.DATETIME);
+                    fakeResultSet.addColumn("Finish time", DBPDataKind.DATETIME);
+                    fakeResultSet.addRow(
+                        statistics.getStatementsCount(),
+                        statistics.getRowsUpdated() < 0 ? 0 : statistics.getRowsUpdated(),
+                        RuntimeUtils.formatExecutionTime(statistics.getExecuteTime()),
+                        RuntimeUtils.formatExecutionTime(statistics.getFetchTime()),
+                        RuntimeUtils.formatExecutionTime(statistics.getTotalTime()),
+                        new SimpleDateFormat(DBConstants.DEFAULT_TIMESTAMP_FORMAT).format(new Date(statistics.getStartTime())),
+                        new SimpleDateFormat(DBConstants.DEFAULT_TIMESTAMP_FORMAT).format(new Date())
+                    );
+                    executeResult.setResultSetName(SQLEditorMessages.editors_sql_statistics);
+                } else {
+                    // Single statement - reorder fields to prioritize the important ones
+                    // Important fields like "Updated Rows" and "Execute time" are now displayed before the query text for easier access.
+                    long updateCount = statistics.getRowsUpdated();
+                    fakeResultSet.addColumn("Updated Rows", DBPDataKind.NUMERIC);
+                    fakeResultSet.addColumn("Execute time", DBPDataKind.NUMERIC);
+                    fakeResultSet.addColumn("Start time", DBPDataKind.DATETIME);
+                    fakeResultSet.addColumn("Finish time", DBPDataKind.DATETIME);
+                    fakeResultSet.addColumn("Query", DBPDataKind.STRING);
+                    fakeResultSet.addRow(
+                        updateCount,
+                        RuntimeUtils.formatExecutionTime(statistics.getExecuteTime()),
+                        new Date(statistics.getStartTime()),
+                        new Date(),
+                        query.getText()
+                    );
+                    executeResult.setResultSetName(SQLEditorMessages.editors_sql_data_grid);
+                }
+                fetchQueryData(session, fakeResultSet, resultInfo, executeResult, dataReceiver, false);
+            }
         }
-        fetchQueryData(session, fakeResultSet, resultInfo, executeResult, dataReceiver, false);
     }
 
     private boolean fetchQueryData(
