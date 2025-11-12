@@ -14,16 +14,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.ai.engine.openai.dto;
 
-import com.google.gson.annotations.SerializedName;
+package org.jkiss.dbeaver;
 
-public class OAIToolParameter {
+/**
+ * DBRuntimeException
+ */
+public class DBRuntimeException extends RuntimeException {
+    public DBRuntimeException(String message) {
+        super(message);
+    }
 
-    public String type;
-    public String description;
-    public String required;
-    @SerializedName("enum")
-    public String[] enumItems;
+    public DBRuntimeException(String message, Throwable cause) {
+        super(message, cause);
+    }
+
+    public DBRuntimeException(Throwable cause) {
+        super(cause);
+    }
 
 }

@@ -86,4 +86,7 @@ public interface DBCSession extends DBPCloseableObject, DBDFormatSettings {
      * @param enable enable
      */
     void enableLogging(boolean enable);
+
+    // Session close doesn't throw exceptions
+    void close();
 }

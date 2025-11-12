@@ -110,6 +110,7 @@ public abstract class ApplicationCommandLine<T extends ApplicationInstanceContro
             if (commandLineIsEmpty(parseResult)) {
                 return new CLIProcessResult(CLIProcessResult.PostAction.START_INSTANCE);
             }
+            validateCommandLineParameters(parseResult);
 
             for (CommandLineParameterDescriptor descriptor : customParameters.values()) {
                 CommandLine.ParseResult cliCommand = findCommand(parseResult, descriptor.getImplClass());
@@ -193,6 +194,10 @@ public abstract class ApplicationCommandLine<T extends ApplicationInstanceContro
 
 
         return result;
+    }
+
+    protected void validateCommandLineParameters(@NotNull CommandLine.ParseResult parseResult) throws CLIException {
+
     }
 
     @NotNull
