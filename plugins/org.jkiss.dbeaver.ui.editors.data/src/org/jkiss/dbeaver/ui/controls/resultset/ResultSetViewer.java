@@ -5199,7 +5199,7 @@ public class ResultSetViewer extends Viewer
         }
 
         @Override
-        protected IStatus run(DBRProgressMonitor monitor) {
+        protected IStatus run(@NotNull DBRProgressMonitor monitor) {
             if (!acquireDataReadLock()) {
                 // Must run finalizer in any case
                 if (finalizer != null) {
