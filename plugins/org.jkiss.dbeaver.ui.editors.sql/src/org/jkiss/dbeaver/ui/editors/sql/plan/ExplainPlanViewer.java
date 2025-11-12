@@ -400,8 +400,7 @@ public class ExplainPlanViewer extends Viewer implements IAdaptable
         }
 
         @Override
-        public DBCPlan evaluate(@NotNull DBRProgressMonitor monitor)
-            throws InvocationTargetException {
+        public DBCPlan evaluate(@NotNull DBRProgressMonitor monitor) throws InvocationTargetException {
             try {
                 DBCQueryPlannerConfiguration configuration = makeExplainPlanConfiguration(monitor, planner);
                 if (configuration == null) {
@@ -410,14 +409,10 @@ public class ExplainPlanViewer extends Viewer implements IAdaptable
 
                 DBExecUtils.tryExecuteRecover(monitor, executionContext.getDataSource(), param -> {
                     try (DBCSession session = executionContext.openSession(monitor, DBCExecutionPurpose.UTIL, "Explain '" + query + "'")) {
-                        try {
-                            if (savedQueryId != null && planner instanceof DBCSavedQueryPlanner) {
-                                plan = ((DBCSavedQueryPlanner) planner).readSavedQueryExecutionPlan(session, savedQueryId);
-                            } else {
-                                plan = planner.planQueryExecution(session, query, configuration);
-                            }
-                        } catch (DBException e) {
-                            throw new InvocationTargetException(e);
+                        if (savedQueryId != null && planner instanceof DBCSavedQueryPlanner) {
+                            plan = ((DBCSavedQueryPlanner) planner).readSavedQueryExecutionPlan(session, savedQueryId);
+                        } else {
+                            plan = planner.planQueryExecution(session, query, configuration);
                         }
                     }
                 });
