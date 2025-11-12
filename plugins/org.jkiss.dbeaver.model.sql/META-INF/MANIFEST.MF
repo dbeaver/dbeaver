@@ -39,6 +39,7 @@ Export-Package: org.jkiss.dbeaver.model.sql,
  org.jkiss.dbeaver.model.text.parser,
  org.jkiss.dbeaver.model.text.parser.rules
 Require-Bundle: org.eclipse.core.runtime,
+ org.eclipse.core.expressions,
  com.google.gson,
  org.eclipse.text;visibility:=reexport,
  org.jkiss.dbeaver.model;visibility:=reexport,

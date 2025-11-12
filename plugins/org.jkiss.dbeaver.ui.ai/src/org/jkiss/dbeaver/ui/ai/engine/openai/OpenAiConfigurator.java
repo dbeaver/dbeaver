@@ -165,9 +165,11 @@ public class OpenAiConfigurator<ENGINE extends AIEngineDescriptor, PROPERTIES ex
                         model -> {
                             contextWindowSizeField.setValue(model.contextWindowSize());
                             temperatureText.setText(String.valueOf(model.defaultTemperature()));
+                            temperatureText.setEnabled(OpenAIModels.isTemperatureEditable(model));
                         }, () -> {
                             contextWindowSizeField.setValue(null);
                             temperatureText.setText("0.0");
+                            temperatureText.setEnabled(true);
                         }
                     )))
                 .build();
