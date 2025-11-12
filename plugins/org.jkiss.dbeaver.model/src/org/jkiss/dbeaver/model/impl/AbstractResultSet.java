@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,7 @@
  */
 package org.jkiss.dbeaver.model.impl;
 
-import org.jkiss.dbeaver.Log;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.data.DBDValueMeta;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCResultSet;
@@ -28,23 +28,25 @@ import org.jkiss.dbeaver.model.exec.DBCStatement;
  */
 public abstract class AbstractResultSet<SESSION extends DBCSession, STATEMENT extends DBCStatement> implements DBCResultSet {
 
-    private static final Log log = Log.getLog(AbstractResultSet.class);
-
+    @NotNull
     protected final SESSION session;
+    @NotNull
     protected STATEMENT statement;
 
-    protected AbstractResultSet(SESSION session, STATEMENT statement) {
+    protected AbstractResultSet(@NotNull SESSION session, @NotNull STATEMENT statement) {
         this.session = session;
         this.statement = statement;
     }
 
 
     @Override
+    @NotNull
     public SESSION getSession() {
         return session;
     }
 
     @Override
+    @NotNull
     public STATEMENT getSourceStatement() {
         return statement;
     }

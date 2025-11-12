@@ -34,7 +34,14 @@
     </extension>
 
     <extension point="org.jkiss.dbeaver.sqlCommand">
-        <command id="ai" class="org.jkiss.dbeaver.model.ai.commands.SQLCommandAI" label="Execute prompt" description="Execute quary in human language by using AI translator"/>
+        <command id="ai" class="org.jkiss.dbeaver.model.ai.commands.SQLCommandAI" label="Execute prompt" description="Execute quary in human language by using AI translator">
+            <enabledWhen>
+                <and>
+                    <reference definitionId="org.jkiss.dbeaver.core.ai.completion.enabled.by.user"/>
+                    <reference definitionId="org.jkiss.dbeaver.core.ai.completion.enabled.by.policy"/>
+                </and>
+            </enabledWhen>
+        </command>
     </extension>
 
 </plugin>
