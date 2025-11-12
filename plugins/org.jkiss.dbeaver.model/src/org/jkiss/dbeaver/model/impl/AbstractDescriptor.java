@@ -185,7 +185,7 @@ public abstract class AbstractDescriptor {
         }
 
         @Nullable
-        public <T> Class<? extends T> getObjectClass(Class<T> type) {
+        public <T> Class<? extends T> getObjectClass(@NotNull Class<T> type) {
             if (implName == null) {
                 return null;
             }

@@ -191,56 +191,59 @@ public class DBExecUtils {
                     break;
                 } catch (InvocationTargetException e) {
                     lastError = e.getTargetException();
-                    if (!recoverEnabled || recoveryState.recoveryFailed) {
-                        // Can't recover
-                        break;
-                    }
-                    DBPErrorAssistant.ErrorType errorType = discoverErrorType(dataSource, lastError);
-                    if (errorType != DBPErrorAssistant.ErrorType.TRANSACTION_ABORTED && errorType != DBPErrorAssistant.ErrorType.CONNECTION_LOST) {
-                        // Some other error
-                        break;
-                    }
-                    DBRProgressMonitor monitor;
-                    if (param instanceof DBRProgressMonitor) {
-                        monitor = (DBRProgressMonitor) param;
-                    } else if (param instanceof DBCSession) {
-                        monitor = ((DBCSession) param).getProgressMonitor();
-                    } else {
-                        monitor = new VoidProgressMonitor();
-                    }
-                    if (!monitor.isCanceled()) {
-
-                        if (errorType == DBPErrorAssistant.ErrorType.TRANSACTION_ABORTED) {
-                            // Transaction aborted
-                            DBCExecutionContext executionContext = null;
-                            if (lastError instanceof DBCException) {
-                                executionContext = ((DBCException) lastError).getExecutionContext();
-                            }
-                            if (executionContext != null) {
-                                log.debug("Invalidate context [" + executionContext.getDataSource().getContainer().getName() + "/" + executionContext.getContextName() + "] transactions");
-                            } else {
-                                log.debug("Invalidate datasource [" + dataSource.getContainer().getName() + "] transactions");
-                            }
-                            InvalidateJob.invalidateTransaction(monitor, dataSource, executionContext);
-                        } else {
-                            // Do not recover if connection was canceled
-                            log.debug("Invalidate datasource '" + dataSource.getContainer().getName() + "' connections...");
-                            InvalidateJob.invalidateDataSource(
-                                monitor,
-                                dataSource,
-                                false,
-                                true,
-                                new DefaultInvalidationFeedbackHandler()
-                            );
-                            if (i < tryCount - 1) {
-                                log.error("Operation failed. Retry count remains = " + (tryCount - i - 1), lastError);
-                            }
-                        }
-                    }
                 } catch (InterruptedException e) {
                     log.error("Operation interrupted");
                     return false;
+                } catch (Exception e) {
+                    lastError = e;
                 }
+                if (!recoverEnabled || recoveryState.recoveryFailed) {
+                    // Can't recover
+                    break;
+                }
+                DBPErrorAssistant.ErrorType errorType = discoverErrorType(dataSource, lastError);
+                if (errorType != DBPErrorAssistant.ErrorType.TRANSACTION_ABORTED && errorType != DBPErrorAssistant.ErrorType.CONNECTION_LOST) {
+                    // Some other error
+                    break;
+                }
+                DBRProgressMonitor monitor;
+                if (param instanceof DBRProgressMonitor) {
+                    monitor = (DBRProgressMonitor) param;
+                } else if (param instanceof DBCSession) {
+                    monitor = ((DBCSession) param).getProgressMonitor();
+                } else {
+                    monitor = new VoidProgressMonitor();
+                }
+                if (!monitor.isCanceled()) {
+
+                    if (errorType == DBPErrorAssistant.ErrorType.TRANSACTION_ABORTED) {
+                        // Transaction aborted
+                        DBCExecutionContext executionContext = null;
+                        if (lastError instanceof DBCException) {
+                            executionContext = ((DBCException) lastError).getExecutionContext();
+                        }
+                        if (executionContext != null) {
+                            log.debug("Invalidate context [" + executionContext.getDataSource().getContainer().getName() + "/" + executionContext.getContextName() + "] transactions");
+                        } else {
+                            log.debug("Invalidate datasource [" + dataSource.getContainer().getName() + "] transactions");
+                        }
+                        InvalidateJob.invalidateTransaction(monitor, dataSource, executionContext);
+                    } else {
+                        // Do not recover if connection was canceled
+                        log.debug("Invalidate datasource '" + dataSource.getContainer().getName() + "' connections...");
+                        InvalidateJob.invalidateDataSource(
+                            monitor,
+                            dataSource,
+                            false,
+                            true,
+                            new DefaultInvalidationFeedbackHandler()
+                        );
+                        if (i < tryCount - 1) {
+                            log.error("Operation failed. Retry count remains = " + (tryCount - i - 1), lastError);
+                        }
+                    }
+                }
+
             }
             if (lastError != null) {
                 recoveryState.recoveryFailed = true;
@@ -274,7 +277,12 @@ public class DBExecUtils {
         }
     }
 
-    public static void executeScript(DBRProgressMonitor monitor, DBCExecutionContext executionContext, String jobName, List<DBEPersistAction> persistActions) {
+    public static void executeScript(
+        DBRProgressMonitor monitor,
+        DBCExecutionContext executionContext,
+        String jobName,
+        List<DBEPersistAction> persistActions
+    ) throws DBException {
         try (DBCSession session = executionContext.openSession(monitor, DBCExecutionPurpose.UTIL, jobName)) {
             executeScript(session, persistActions.toArray(new DBEPersistAction[0]));
         }
@@ -326,7 +334,7 @@ public class DBExecUtils {
         }
     }
 
-    public static void executePersistActions(DBCSession session, DBEPersistAction[] persistActions) throws DBCException {
+    public static void executePersistActions(DBCSession session, DBEPersistAction[] persistActions) throws DBException {
         DBRProgressMonitor monitor = session.getProgressMonitor();
         monitor.beginTask(session.getTaskTitle(), persistActions.length);
         try {
@@ -344,7 +352,7 @@ public class DBExecUtils {
         }
     }
 
-    public static void executePersistAction(DBCSession session, DBEPersistAction action) throws DBCException {
+    public static void executePersistAction(DBCSession session, DBEPersistAction action) throws DBException {
         if (action instanceof SQLDatabasePersistActionComment) {
             return;
         }
@@ -352,8 +360,7 @@ public class DBExecUtils {
         if (script == null) {
             action.afterExecute(session, null);
         } else {
-            DBCStatement dbStat = DBUtils.createStatement(session, script, false);
-            try {
+            try (DBCStatement dbStat = DBUtils.createStatement(session, script, false)) {
                 action.beforeExecute(session);
                 dbStat.executeStatement();
                 if (action instanceof SQLDatabasePersistAction) {
@@ -364,8 +371,6 @@ public class DBExecUtils {
             } catch (DBCException e) {
                 action.afterExecute(session, e);
                 throw e;
-            } finally {
-                dbStat.close();
             }
         }
     }
@@ -394,7 +399,14 @@ public class DBExecUtils {
         return false;
     }
 
-    public static void setExecutionContextDefaults(DBRProgressMonitor monitor, DBPDataSource dataSource, DBCExecutionContext executionContext, @Nullable String newInstanceName, @Nullable String curInstanceName, @Nullable String newObjectName) throws DBException {
+    public static void setExecutionContextDefaults(
+        DBRProgressMonitor monitor,
+        DBPDataSource dataSource,
+        DBCExecutionContext executionContext,
+        @Nullable String newInstanceName,
+        @Nullable String curInstanceName,
+        @Nullable String newObjectName
+    ) throws DBException {
         DBSObjectContainer rootContainer = DBUtils.getAdapter(DBSObjectContainer.class, dataSource);
         if (rootContainer == null) {
             return;

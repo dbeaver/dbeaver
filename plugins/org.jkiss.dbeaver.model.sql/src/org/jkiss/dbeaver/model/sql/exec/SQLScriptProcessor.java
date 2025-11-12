@@ -234,7 +234,7 @@ public class SQLScriptProcessor {
         return lastError == null || errorHandling == SQLScriptErrorHandling.IGNORE;
     }
 
-    private void executeStatement(@NotNull DBCSession session, SQLQuery sqlQuery, long startTime) throws DBCException {
+    private void executeStatement(@NotNull DBCSession session, SQLQuery sqlQuery, long startTime) throws DBException {
         SQLQueryDataContainer dataContainer = new SQLQueryDataContainer(() -> executionContext, sqlQuery, scriptContext, log);
         DBCExecutionSource source = new AbstractExecutionSource(dataContainer, session.getExecutionContext(), this, sqlQuery);
         final DBCStatement statement = DBUtils.makeStatement(
@@ -330,8 +330,7 @@ public class SQLScriptProcessor {
         }
     }
 
-    private boolean fetchQueryData(DBCSession session, DBCResultSet resultSet, DBDDataReceiver dataReceiver)
-        throws DBCException {
+    private boolean fetchQueryData(DBCSession session, DBCResultSet resultSet, DBDDataReceiver dataReceiver) throws DBException {
         if (dataReceiver == null) {
             // No data pump - skip fetching stage
             return false;
@@ -343,9 +342,9 @@ public class SQLScriptProcessor {
         monitor.subTask("Fetch result set");
         DBFetchProgress fetchProgress = new DBFetchProgress(session.getProgressMonitor());
 
-        dataReceiver.fetchStart(session, resultSet, 0, 0);
+        DBDDataReceiver.startFetchWorkflow(dataReceiver, session, resultSet, 0, 0);
 
-        try {
+        try (resultSet) {
             long fetchStartTime = System.currentTimeMillis();
 
             // Fetch all rows
@@ -354,18 +353,6 @@ public class SQLScriptProcessor {
                 fetchProgress.monitorRowFetch();
             }
             statistics.addFetchTime(System.currentTimeMillis() - fetchStartTime);
-        } finally {
-            try {
-                resultSet.close();
-            } catch (Throwable e) {
-                log.error("Error while closing resultset", e);
-            }
-            try {
-                dataReceiver.fetchEnd(session, resultSet);
-            } catch (Throwable e) {
-                log.error("Error while handling end of result set fetch", e);
-            }
-            dataReceiver.close();
         }
 
         statistics.setRowsFetched(fetchProgress.getRowCount());
