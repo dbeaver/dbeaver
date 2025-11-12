@@ -14,16 +14,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.ai.engine.openai.dto;
+package org.jkiss.dbeaver.model;
 
-import com.google.gson.annotations.SerializedName;
+import org.jkiss.code.NotNull;
 
-public class OAIToolParameter {
+/**
+ * Implementor will close all passed Closable objects AFTER its own close
+ */
+public interface DBPAutoCloser extends AutoCloseable {
 
-    public String type;
-    public String description;
-    public String required;
-    @SerializedName("enum")
-    public String[] enumItems;
+    void autoCloseDependant(@NotNull DBPCloseableObject dependent);
 
 }
