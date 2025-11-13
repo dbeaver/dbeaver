@@ -31,8 +31,11 @@ import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.ui.controls.resultset.IResultSetController;
 import org.jkiss.utils.ArrayUtils;
+import org.jkiss.utils.Pair;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 import java.util.stream.Collectors;
 
 public class GroupingDataContainer implements TransformerDataContainer {
@@ -42,7 +45,8 @@ public class GroupingDataContainer implements TransformerDataContainer {
     private IResultSetController parentController;
     private String query;
     private SQLGroupingAttribute[] attributes;
-    private final Map<Integer, List<DBDAttributeTransformer>> attributeBindingNumberToTransformer = new HashMap<>();
+    @Nullable
+    private Pair<Integer, DBDAttributeTransformer> attributeBindingNumberToTransformer;
 
     public GroupingDataContainer(IResultSetController parentController) {
         this.parentController = parentController;
@@ -183,12 +187,19 @@ public class GroupingDataContainer implements TransformerDataContainer {
     @NotNull
     @Override
     public List<DBDAttributeTransformer> findTransformerForBinding(@NotNull DBDAttributeBinding attributeBinding) {
-        return attributeBindingNumberToTransformer.getOrDefault(attributeBinding.getOrdinalPosition(), List.of());
+        DBDAttributeTransformer transformer = attributeBindingNumberToTransformer != null
+            && attributeBindingNumberToTransformer.getFirst().equals(attributeBinding.getOrdinalPosition())
+            ? attributeBindingNumberToTransformer.getSecond()
+            : null;
+        return transformer != null ? Collections.singletonList(transformer) : Collections.emptyList();
     }
 
-    public void addAttributeTransformer(int attributeIndex, @NotNull DBDAttributeTransformer transformer) {
-        attributeBindingNumberToTransformer
-            .computeIfAbsent(attributeIndex, k -> new ArrayList<>()).add(transformer);
+    public void setAttributeTransformer(int attributeIndex, @NotNull DBDAttributeTransformer transformer) {
+        attributeBindingNumberToTransformer = Pair.of(attributeIndex, transformer);
+    }
+
+    public void removeAttributeTransformer() {
+        attributeBindingNumberToTransformer = null;
     }
 
     @Nullable
