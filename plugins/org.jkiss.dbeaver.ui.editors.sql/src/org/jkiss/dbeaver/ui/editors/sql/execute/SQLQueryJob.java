@@ -278,9 +278,11 @@ public class SQLQueryJob extends DataSourceJob
                                 tryAgain = true;
                                 break;
                             case IGNORE:
-                                // Just do nothing
+                                // ignore error
+                                lastError = null;
                                 break;
                             case IGNORE_ALL:
+                                lastError = null;
                                 errorHandling = SQLScriptErrorHandling.IGNORE;
                                 break;
                         }

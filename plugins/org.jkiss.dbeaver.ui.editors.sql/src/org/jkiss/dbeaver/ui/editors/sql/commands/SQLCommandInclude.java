@@ -16,8 +16,8 @@
  */
 package org.jkiss.dbeaver.ui.editors.sql.commands;
 
-import org.eclipse.core.resources.IFile;
-import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.core.filesystem.EFS;
+import org.eclipse.core.filesystem.IFileStore;
 import org.eclipse.ui.*;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
@@ -107,12 +107,11 @@ public class SQLCommandInclude implements SQLControlCommandHandler {
         @NotNull SQLScriptContext scriptContext,
         @NotNull Path includedScriptFile
     ) throws DBException {
-        IFile workspaceIncludedScriptFile = getWorkspaceIncludedScriptFile(includedScriptFile);
+        IncludedScriptFileEditorInput editorInput = getInputForEditor(includedScriptFile);
         try {
             CompletableFuture<SQLControlResult> result = getSqlControlResultCompletableFuture(
                 scriptContext,
-                includedScriptFile,
-                workspaceIncludedScriptFile
+                editorInput
             );
             return result.get();
         } catch (InterruptedException e) {
@@ -123,28 +122,23 @@ public class SQLCommandInclude implements SQLControlCommandHandler {
     }
 
     @NotNull
-    private IFile getWorkspaceIncludedScriptFile(@NotNull Path pathToFile) throws DBException {
-        IFile foundFile = ResourcesPlugin.getWorkspace().getRoot()
-            .getFileForLocation(org.eclipse.core.runtime.Path.fromOSString(pathToFile.toString()));
-
-        if (foundFile == null) {
-            throw new DBException("Cannot find workspace file for included script:" + pathToFile);
-        }
-        return foundFile;
+    private IncludedScriptFileEditorInput getInputForEditor(@NotNull Path pathToFile) {
+        IFileStore fileStore = EFS.getLocalFileSystem().getStore(pathToFile.toUri());
+        IncludedScriptFileEditorInput input = new IncludedScriptFileEditorInput(fileStore, pathToFile);
+        return input;
     }
 
     @NotNull
     private CompletableFuture<SQLControlResult> getSqlControlResultCompletableFuture(
         @NotNull SQLScriptContext scriptContext,
-        @NotNull Path includedScriptFile,
-        @NotNull IFile workspaceIncludedScriptFile
+        @NotNull IncludedScriptFileEditorInput input
     ) {
         CompletableFuture<SQLControlResult> result = new CompletableFuture<>();
         UIUtils.syncExec(() -> {
             try {
                 IWorkbenchWindow workbenchWindow = UIUtils.getActiveWorkbenchWindow();
-                closeDuplicatedEditors(includedScriptFile);
-                SQLEditor sqlEditor = getSqlEditor(scriptContext, includedScriptFile, workspaceIncludedScriptFile, workbenchWindow);
+                closeDuplicatedEditors(input.getIncludedScriptFile());
+                SQLEditor sqlEditor = getSqlEditor(scriptContext, input, workbenchWindow);
                 IncludeScriptListener scriptListener = new IncludeScriptListener(
                     workbenchWindow,
                     sqlEditor,
@@ -165,11 +159,9 @@ public class SQLCommandInclude implements SQLControlCommandHandler {
     @NotNull
     private SQLEditor getSqlEditor(
         @NotNull SQLScriptContext scriptContext,
-        @NotNull Path includedScriptFile,
-        @NotNull IFile workspaceIncludedScriptFile,
+        @NotNull IncludedScriptFileEditorInput input,
         @NotNull IWorkbenchWindow workbenchWindow
     ) {
-        IncludedScriptFileEditorInput input = new IncludedScriptFileEditorInput(workspaceIncludedScriptFile, includedScriptFile);
         SQLEditor sqlEditor = SQLEditorHandlerOpenEditor.openNewSQLConsole(
             workbenchWindow,
             new SQLNavigatorContext(scriptContext, true),

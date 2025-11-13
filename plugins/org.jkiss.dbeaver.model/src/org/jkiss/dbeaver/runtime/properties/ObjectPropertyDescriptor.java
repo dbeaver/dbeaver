@@ -448,15 +448,8 @@ public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor
             Object[] finalResult = new Object[1];
             try {
                 progressMonitor.subTask("Read " + this.getDisplayName());
-                DBExecUtils.tryExecuteRecover(progressMonitor, dbsObject.getDataSource(), param -> {
-                    try {
-                        finalResult[0] = readPropertyMethod.get();
-                    } catch (InvocationTargetException e) {
-                        throw e;
-                    } catch (Exception e) {
-                        throw new InvocationTargetException(e);
-                    }
-                });
+                DBExecUtils.tryExecuteRecover(progressMonitor, dbsObject.getDataSource(), param ->
+                    finalResult[0] = readPropertyMethod.get());
             } catch (Exception e) {
                 throw new InvocationTargetException(e);
             }

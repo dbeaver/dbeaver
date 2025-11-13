@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.model.exec.DBCExecutionSource;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.DBCStatement;
 import org.jkiss.dbeaver.model.qm.QMUtils;
+import org.jkiss.utils.ArrayUtils;
 
 /**
  * Manageable result set
@@ -40,7 +41,7 @@ public abstract class AbstractStatement<SESSION extends DBCSession> implements D
     @Nullable
     private DBCExecutionSource statementSource;
     @Nullable
-    private DBPCloseableObject executeFinalizer;
+    private DBPCloseableObject[] executeFinalizer;
 
     public AbstractStatement(@NotNull SESSION session) {
         this.connection = session;
@@ -86,18 +87,42 @@ public abstract class AbstractStatement<SESSION extends DBCSession> implements D
     // Close dependants will be called AFTER the statement is close
     @Override
     public void autoCloseDependant(@NotNull DBPCloseableObject dependent) {
-        if (this.executeFinalizer != null) {
-            log.error("Internal error: double set of close finalizer " + dependent);
+        if (this.executeFinalizer == null) {
+            this.executeFinalizer = new DBPCloseableObject[] { dependent };
+        } else {
+            this.executeFinalizer = ArrayUtils.add(DBPCloseableObject.class, executeFinalizer, dependent);
         }
-        this.executeFinalizer = dependent;
     }
 
     // Forcibly run close dependants
     // May be needed if statement cannot be closed for some reason
     public void runCloseDependants() throws DBException {
         if (this.executeFinalizer != null) {
-            this.executeFinalizer.close();
-            this.executeFinalizer = null;
+            try {
+                if (executeFinalizer.length == 1) {
+                    this.executeFinalizer[0].close();
+                } else {
+                    Throwable firstError = null;
+                    for (DBPCloseableObject co : this.executeFinalizer) {
+                        try {
+                            co.close();
+                        } catch (Throwable e) {
+                            if (firstError == null) {
+                                firstError = e;
+                            }
+                        }
+                    }
+                    if (firstError != null) {
+                        if (firstError instanceof DBException dbe) {
+                            throw dbe;
+                        } else {
+                            throw new DBException("Internal error during statement close", firstError);
+                        }
+                    }
+                }
+            } finally {
+                this.executeFinalizer = null;
+            }
         }
     }
 
