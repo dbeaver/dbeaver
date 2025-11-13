@@ -19,7 +19,6 @@ package org.jkiss.dbeaver.registry;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.Plugin;
 import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
@@ -200,47 +199,51 @@ public abstract class BasePlatformImpl implements DBPPlatform, DBPApplicationCon
 
     @NotNull
     @Override
-    public DBConfigurationController getConfigurationController() {
-        return getPluginConfigurationController(null);
-    }
-    
-    @NotNull
-    @Override
-    public DBConfigurationController getProductConfigurationController() {
-        return getConfigurationController(getProductPlugin().getBundle());
-    }
-    
-    @NotNull
-    @Override
-    public DBConfigurationController getPluginConfigurationController(@Nullable String pluginId) {
-        return getConfigurationController(CommonUtils.isEmpty(pluginId) ? null : Platform.getBundle(pluginId));
-    }
-    
-    private DBConfigurationController getConfigurationController(@Nullable Bundle bundle) {
-        DBConfigurationController controller = bundle == null ? defaultConfigurationController : configurationControllerByPlugin.get(bundle);
-        if (controller == null) {
-            controller = createConfigurationController(bundle);
-            if (bundle == null) {
-                defaultConfigurationController = controller;
-            } else {
-                configurationControllerByPlugin.put(bundle, controller);
+    public synchronized DBConfigurationController getConfigurationController() {
+        if (defaultConfigurationController == null) {
+            Plugin productPlugin = getProductPlugin();
+            if (productPlugin == null) {
+                throw new IllegalStateException("Product plugin not found");
             }
+            if (getApplication() instanceof DBPApplicationConfigurator appConfigurator) {
+                defaultConfigurationController = appConfigurator.createConfigurationController(productPlugin.getBundle().getSymbolicName());
+            } else {
+                LocalConfigurationController controller = new LocalConfigurationController(getLocalWorkspaceConfigFolder());
+                Path pluginStateLocation = RuntimeUtils.getPluginStateLocation(productPlugin);
+                if (Files.exists(pluginStateLocation)) {
+                    controller.setLegacyConfigFolder(pluginStateLocation);
+                }
+                defaultConfigurationController = controller;
+            }
+        }
+        return defaultConfigurationController;
+    }
+
+    protected DBConfigurationController getConfigurationController(@NotNull Bundle bundle) {
+        DBConfigurationController controller = configurationControllerByPlugin.get(bundle);
+        if (controller == null) {
+            controller = createConfigurationControllerForBundle(bundle);
+            configurationControllerByPlugin.put(bundle, controller);
         }
         return controller;
     }
 
     @NotNull
     @Override
-    public DBConfigurationController createConfigurationController(@Nullable String pluginId) {
-        return createConfigurationController(pluginId == null ? null : Platform.getBundle(pluginId));
+    public DBConfigurationController createConfigurationController(@NotNull String pluginId) {
+        Bundle bundle = Platform.getBundle(pluginId);
+        if (bundle == null) {
+            throw new IllegalStateException("Bundle '" + pluginId + "' not found");
+        }
+        return createConfigurationControllerForBundle(bundle);
     }
 
     @NotNull
-    private DBConfigurationController createConfigurationController(@Nullable Bundle bundle) {
+    protected DBConfigurationController createConfigurationControllerForBundle(@NotNull Bundle bundle) {
         DBPApplication application = getApplication();
-        if (application instanceof DBPApplicationConfigurator) {
+        if (application instanceof DBPApplicationConfigurator appConfigurator) {
             String pluginBundleName = bundle == null ? null : bundle.getSymbolicName();
-            return ((DBPApplicationConfigurator) application).createConfigurationController(pluginBundleName);
+            return appConfigurator.createConfigurationController(pluginBundleName);
         } else if (bundle == null) {
             LocalConfigurationController controller = new LocalConfigurationController(
                 getLocalWorkspaceConfigFolder()
