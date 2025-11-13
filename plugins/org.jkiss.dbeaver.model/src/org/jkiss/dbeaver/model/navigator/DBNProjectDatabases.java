@@ -271,8 +271,10 @@ public class DBNProjectDatabases extends DBNNode implements DBNContainer, DBPEve
         }
     }
 
-    public List<DBNDataSource> getDataSources() {
-        return dataSources;
+    public DBNDataSource[] getDataSources() {
+        synchronized (dataSources) {
+            return dataSources.toArray(new DBNDataSource[0]);
+        }
     }
 
     public DBNDataSource getDataSource(String id) {

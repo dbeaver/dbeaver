@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -134,20 +134,16 @@ class PostgreFDWConfigWizardPageFinal extends ActiveWizardPage<PostgreFDWConfigW
             getWizard().getRunnableContext().run(true, true, monitor -> {
                 try {
                     DBExecUtils.tryExecuteRecover(monitor, dataSource, param -> {
-                        try {
-                            monitor.beginTask("Generate FDW script", 2);
-                            monitor.subTask("Read actions");
-                            List<DBEPersistAction> actions = getWizard().generateScript(monitor);
-                            monitor.subTask("Generate script");
-                            script.append(
-                                SQLUtils.generateScript(
-                                    dataSource,
-                                    actions.toArray(new DBEPersistAction[0]),
-                                    false));
-                            monitor.done();
-                        } catch (DBException e) {
-                            throw new InvocationTargetException(e);
-                        }
+                        monitor.beginTask("Generate FDW script", 2);
+                        monitor.subTask("Read actions");
+                        List<DBEPersistAction> actions = getWizard().generateScript(monitor);
+                        monitor.subTask("Generate script");
+                        script.append(
+                            SQLUtils.generateScript(
+                                dataSource,
+                                actions.toArray(new DBEPersistAction[0]),
+                                false));
+                        monitor.done();
                     });
                 } catch (DBException e) {
                     throw new InvocationTargetException(e);

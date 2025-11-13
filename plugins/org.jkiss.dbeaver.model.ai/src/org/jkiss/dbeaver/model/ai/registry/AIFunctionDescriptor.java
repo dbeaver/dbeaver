@@ -20,11 +20,13 @@ import org.eclipse.core.runtime.IConfigurationElement;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.ai.AIFunction;
 import org.jkiss.dbeaver.model.ai.AIFunctionResult;
 import org.jkiss.dbeaver.model.ai.AIPromptGenerator;
 import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
+import org.jkiss.dbeaver.model.meta.IPropertyValueListProvider;
 import org.jkiss.dbeaver.registry.RegistryConstants;
 import org.jkiss.utils.CommonUtils;
 
@@ -35,7 +37,8 @@ public class AIFunctionDescriptor extends AbstractDescriptor {
 
     public static final String EXTENSION_ID = "com.dbeaver.ai.function";
 
-    public static class Parameter {
+    public class Parameter {
+        private static final Log log = Log.getLog(Parameter.class);
         private final IConfigurationElement config;
 
         Parameter(@NotNull IConfigurationElement config) {
@@ -57,10 +60,24 @@ public class AIFunctionDescriptor extends AbstractDescriptor {
             return config.getAttribute("description");
         }
 
+        public boolean isRequired() {
+            return CommonUtils.getBoolean(config.getAttribute("required"));
+        }
+
         @Nullable
         public String[] getValidValues() {
             String validValues = config.getAttribute("validValues");
-            return CommonUtils.isEmpty(validValues) ? null : validValues.split(", ");
+            if (CommonUtils.isEmpty(validValues) && CommonUtils.isNotEmpty(config.getAttribute("validValuesProvider"))) {
+                ObjectType validValuesProvider = new ObjectType(config, "validValuesProvider");
+                try {
+                    var provider = validValuesProvider.createInstance(IPropertyValueListProvider.class);
+                    Object[] validObjects = provider.getPossibleValues(this);
+                    return (String[]) validObjects;
+                } catch (DBException e) {
+                    log.error("Error on getting valid values from provider", e);
+                }
+            }
+            return CommonUtils.isEmpty(validValues) ? null : validValues.split(",");
         }
     }
 

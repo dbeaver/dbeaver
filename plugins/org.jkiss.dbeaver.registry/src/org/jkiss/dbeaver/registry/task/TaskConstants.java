@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,7 +35,5 @@ public class TaskConstants {
 
     static final String TAG_PARENT = "parent";
     static final String TAG_MAX_EXEC_TIME = "maxExecutionTime";
-
-    public static final int DEFAULT_MAX_EXECUTION_TIME = 300;
 
 }

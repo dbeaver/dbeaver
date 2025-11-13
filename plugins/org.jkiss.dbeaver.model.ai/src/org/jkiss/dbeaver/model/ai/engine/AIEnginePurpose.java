@@ -14,26 +14,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.cli;
+package org.jkiss.dbeaver.model.ai.engine;
 
-
-import org.apache.commons.cli.CommandLine;
 import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
-import org.jkiss.utils.CommonUtils;
+import org.jkiss.dbeaver.model.DBPNamedObject;
+import org.jkiss.dbeaver.model.DBPObjectWithDescription;
 
-public class ContextParameterHandler implements ICommandLineParameterHandler {
-    @Override
-    public void handleParameter(
-        @NotNull CommandLine commandLine,
-        @NotNull String name,
-        @Nullable String value,
-        @NotNull CommandLineContext context
-    ) throws CLIException {
-        if (CommonUtils.isEmpty(value)) {
-            throw new CLIException("--" + name + " parameter is empty", CLIConstants.EXIT_CODE_ILLEGAL_ARGUMENTS);
-        }
+/**
+ * Purpose like: generate SQL, code completion, transcript, embedding
+ */
+public interface AIEnginePurpose extends DBPNamedObject, DBPObjectWithDescription {
 
-        context.setContextParameter(name, value);
-    }
+    @NotNull
+    AIModelFeature[] getRequiredModelFeatures();
+
 }

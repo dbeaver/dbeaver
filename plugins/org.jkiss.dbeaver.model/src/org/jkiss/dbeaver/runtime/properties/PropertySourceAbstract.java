@@ -119,19 +119,21 @@ public abstract class PropertySourceAbstract implements DBPPropertyManager, IPro
         return sourceObject;
     }
 
+    @NotNull
     @Override
     public Object getEditableValue()
     {
         return object;
     }
 
+    @NotNull
     @Override
     public DBPPropertyDescriptor[] getProperties() {
         return props.toArray(new DBPPropertyDescriptor[0]);
     }
 
     @Override
-    public boolean isPropertySet(String id) {
+    public boolean isPropertySet(@NotNull String id) {
         Object value = propValues.get(id);
         if (value instanceof ObjectPropertyDescriptor opd) {
             return isPropertySet(getEditableValue(), opd);
@@ -150,8 +152,9 @@ public abstract class PropertySourceAbstract implements DBPPropertyManager, IPro
         }
     }
 
+    @Nullable
     @Override
-    public final Object getPropertyValue(@Nullable DBRProgressMonitor monitor, final String id) {
+    public final Object getPropertyValue(@Nullable DBRProgressMonitor monitor, @NotNull final String id) {
         Object value = propValues.get(id);
         if (value instanceof ObjectPropertyDescriptor opd) {
             value = getPropertyValue(monitor, getEditableValue(), opd, true);
@@ -221,7 +224,7 @@ public abstract class PropertySourceAbstract implements DBPPropertyManager, IPro
     }
 
     @Override
-    public boolean isPropertyResettable(String id) {
+    public boolean isPropertyResettable(@NotNull String id) {
         Object value = propValues.get(id);
         if (value instanceof ObjectPropertyDescriptor opd) {
             return isPropertyResettable(getEditableValue(), opd);
@@ -238,7 +241,7 @@ public abstract class PropertySourceAbstract implements DBPPropertyManager, IPro
     }
 
     @Override
-    public final void resetPropertyValue(@Nullable DBRProgressMonitor monitor, String id) {
+    public final void resetPropertyValue(@Nullable DBRProgressMonitor monitor, @NotNull String id) {
         Object value = propValues.get(id);
         if (value instanceof ObjectPropertyDescriptor) {
             resetPropertyValue(monitor, getEditableValue(), (ObjectPropertyDescriptor) value);
@@ -253,12 +256,12 @@ public abstract class PropertySourceAbstract implements DBPPropertyManager, IPro
     }
 
     @Override
-    public void resetPropertyValueToDefault(String id) {
+    public void resetPropertyValueToDefault(@NotNull String id) {
         throw new UnsupportedOperationException("Cannot reset property in non-editable property source");
     }
 
     @Override
-    public final void setPropertyValue(@Nullable DBRProgressMonitor monitor, String id, Object value)
+    public final void setPropertyValue(@Nullable DBRProgressMonitor monitor, @NotNull String id, @Nullable Object value)
     {
         Object prop = propValues.get(id);
         if (prop instanceof ObjectPropertyDescriptor) {
@@ -270,14 +273,16 @@ public abstract class PropertySourceAbstract implements DBPPropertyManager, IPro
     }
 
     @Override
-    public void setPropertyValue(@Nullable DBRProgressMonitor monitor, @NotNull Object object, @NotNull ObjectPropertyDescriptor prop, @Nullable
-    Object value)
-    {
+    public void setPropertyValue(
+        @Nullable DBRProgressMonitor monitor,
+        @NotNull Object object,
+        @NotNull ObjectPropertyDescriptor prop,
+        @Nullable Object value
+    ) {
         throw new UnsupportedOperationException("Cannot update property in non-editable property source");
     }
 
-    public boolean collectProperties()
-    {
+    public boolean collectProperties() {
         lazyValues.clear();
         props.clear();
         propValues.clear();

@@ -188,7 +188,7 @@ public class OracleTableColumn extends JDBCTableColumn<OracleTableBase> implemen
 
     public static class CommentLoadValidator implements IPropertyCacheValidator<OracleTableColumn> {
         @Override
-        public boolean isPropertyCached(OracleTableColumn object, Object propertyId)
+        public boolean isPropertyCached(@NotNull OracleTableColumn object, @NotNull Object propertyId)
         {
             return object.comment != null;
         }
@@ -241,6 +241,7 @@ public class OracleTableColumn extends JDBCTableColumn<OracleTableBase> implemen
             return false;
         }
 
+        @Nullable
         @Override
         public Object[] getPossibleValues(OracleTableColumn column)
         {

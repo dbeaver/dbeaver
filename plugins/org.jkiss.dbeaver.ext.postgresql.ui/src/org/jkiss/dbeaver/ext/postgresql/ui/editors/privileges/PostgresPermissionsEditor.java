@@ -217,11 +217,11 @@ abstract class PostgresPermissionsEditor<T extends DBSObject>
             ),
             new DBECommandReflector<PostgrePrivilegeOwner, PostgreCommandGrantPrivilege>() {
                 @Override
-                public void redoCommand(PostgreCommandGrantPrivilege cmd) {
+                public void redoCommand(@NotNull PostgreCommandGrantPrivilege cmd) {
                 }
 
                 @Override
-                public void undoCommand(PostgreCommandGrantPrivilege cmd) {
+                public void undoCommand(@NotNull PostgreCommandGrantPrivilege cmd) {
                 }
             });
     }

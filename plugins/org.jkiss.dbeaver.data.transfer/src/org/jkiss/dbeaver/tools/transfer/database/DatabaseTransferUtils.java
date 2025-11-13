@@ -549,7 +549,7 @@ public class DatabaseTransferUtils {
         }
     }
 
-    public static void executeDDL(DBCSession session, DBEPersistAction[] actions) throws DBCException {
+    public static void executeDDL(DBCSession session, DBEPersistAction[] actions) throws DBException {
         if (actions.length == 0) {
             return;
         }
