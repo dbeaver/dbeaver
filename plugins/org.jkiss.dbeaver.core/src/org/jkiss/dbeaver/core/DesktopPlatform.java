@@ -17,14 +17,12 @@
 
 package org.jkiss.dbeaver.core;
 
-import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.Plugin;
 import org.eclipse.ui.PlatformUI;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.DBConfigurationController;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPExternalFileManager;
 import org.jkiss.dbeaver.model.app.*;
@@ -50,7 +48,6 @@ import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.dbeaver.utils.SystemVariablesResolver;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.StandardConstants;
-import org.osgi.framework.Bundle;
 
 import java.io.File;
 import java.io.IOException;
@@ -320,16 +317,5 @@ public class DesktopPlatform extends BasePlatformImpl implements DBPPlatformDesk
     public boolean isShuttingDown() {
         return isClosing();
     }
-
-    @NotNull
-    @Override
-    public DBConfigurationController getPluginConfigurationController(@NotNull String pluginId) {
-        Bundle bundle = Platform.getBundle(pluginId);
-        if (bundle == null) {
-            throw new IllegalStateException("Bundle '" + pluginId + "' not found");
-        }
-        return getConfigurationController(bundle);
-    }
-
 
 }
