@@ -119,8 +119,8 @@ import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.File;
-import java.util.List;
 import java.util.*;
+import java.util.List;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
@@ -410,6 +410,10 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
     }
 
     public abstract boolean isReadOnly();
+
+    public boolean isERD() {
+        return true;
+    }
 
     public void setEditMode(boolean editMode) {
         if (editModeComposite != null) {
