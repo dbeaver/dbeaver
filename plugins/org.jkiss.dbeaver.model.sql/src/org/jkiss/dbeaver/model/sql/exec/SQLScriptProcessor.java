@@ -30,7 +30,6 @@ import org.jkiss.dbeaver.model.sql.*;
 import org.jkiss.dbeaver.model.sql.data.SQLQueryDataContainer;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 
-import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 
 /**
@@ -214,12 +213,8 @@ public class SQLScriptProcessor {
                 statistics.setQueryText(sqlQuery.getText());
 
                 DBExecUtils.tryExecuteRecover(session, session.getDataSource(), param -> {
-                    try {
-                        long execStartTime = System.currentTimeMillis();
-                        executeStatement(session, sqlQuery, execStartTime);
-                    } catch (Throwable e) {
-                        throw new InvocationTargetException(e);
-                    }
+                    long execStartTime = System.currentTimeMillis();
+                    executeStatement(session, sqlQuery, execStartTime);
                 });
             } catch (Throwable ex) {
                 if (!(ex instanceof DBException)) {
