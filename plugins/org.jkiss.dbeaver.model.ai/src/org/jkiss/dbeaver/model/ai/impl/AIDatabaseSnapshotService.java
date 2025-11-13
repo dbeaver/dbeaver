@@ -148,7 +148,7 @@ public class AIDatabaseSnapshotService {
 
         if (obj instanceof DBSEntity entity) {
             try {
-                String ddl = schemaGenerator.generateSchema(monitor, entity, execCtx, options, useFqn) + "\n";
+                String ddl = schemaGenerator.generateSchema(monitor, entity, options, useFqn) + "\n";
                 return out.append(ddl);
             } catch (DBException e) {
                 LOG.warn("Failed to read metadata for entity '" + entity.getName() + "'", e);
