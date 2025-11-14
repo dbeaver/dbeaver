@@ -40,9 +40,9 @@ import java.util.function.Supplier;
 
 public class AutoRefreshControl {
 
-    private Control parent;
-    private String controlId;
-    private DBRRunnableWithProgress runnable;
+    private final Control parent;
+    private final String controlId;
+    private final DBRRunnableWithProgress runnable;
     private AutoRefreshJob autoRefreshJob;
     private RefreshSettings refreshSettings;
     private volatile boolean autoRefreshEnabled = false;
@@ -99,6 +99,14 @@ public class AutoRefreshControl {
         this.autoRefreshEnabled = enable;
         scheduleAutoRefresh(false);
         updateAutoRefreshToolbar();
+    }
+
+    public void dispose() {
+        this.autoRefreshEnabled = false;
+        if (autoRefreshJob != null) {
+            autoRefreshJob.cancel();
+            autoRefreshJob = null;
+        }
     }
 
     public synchronized void enableControls(boolean enable) {
@@ -237,7 +245,7 @@ public class AutoRefreshControl {
 
                     int defaultInterval = getRefreshSettings().getRefreshInterval();
                     if (defaultInterval > 0 && !presetList.contains(defaultInterval)) {
-                        presetList.add(0, defaultInterval);
+                        presetList.addFirst(defaultInterval);
                     }
 
                     for (int i = 0; i < presetList.size(); i++) {

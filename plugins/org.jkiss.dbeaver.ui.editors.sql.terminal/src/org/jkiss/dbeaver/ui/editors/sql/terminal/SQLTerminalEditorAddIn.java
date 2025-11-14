@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,7 +27,6 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
-import org.jkiss.dbeaver.model.runtime.RunnableWithResult;
 import org.jkiss.dbeaver.model.sql.SQLQueryResult;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
@@ -96,15 +95,11 @@ public class SQLTerminalEditorAddIn implements SQLEditorAddIn {
     @Nullable
     @Override
     public PrintWriter getServerOutputConsumer() {
-        return UIUtils.syncExec(new RunnableWithResult<>() {
-            public PrintWriter runWithResult() {
-                if (editor.getActivePreferenceStore().getBoolean(SQLTerminalPreferencesConstants.SHOW_SERVER_OUTPUT) && isTerminalViewEnabled()) {
-                    return obtainViewContext().view.getOutputWriter();
-                } else {
-                    return null;
-                }
-            }
-        });
+        if (editor.getActivePreferenceStore().getBoolean(SQLTerminalPreferencesConstants.SHOW_SERVER_OUTPUT) && isTerminalViewEnabled()) {
+            return obtainViewContext().view.getOutputWriter();
+        } else {
+            return null;
+        }
     }
         
     private class TerminalViewContext {
@@ -124,8 +119,7 @@ public class SQLTerminalEditorAddIn implements SQLEditorAddIn {
                 @Override
                 public void close(CTabFolderEvent event) {
                     Widget item = event.item;
-                    if (item instanceof CTabItem) {
-                        CTabItem cTab = (CTabItem) item;
+                    if (item instanceof CTabItem cTab) {
                         if (cTab.getData() instanceof SQLTerminalView) {
                             setConsoleViewEnabled(false);
                         }
@@ -134,8 +128,7 @@ public class SQLTerminalEditorAddIn implements SQLEditorAddIn {
             });
             tabItem.addDisposeListener(e -> {
                 Object item = e.getSource();
-                if (item instanceof CTabItem) {
-                    CTabItem cTab = (CTabItem) item;
+                if (item instanceof CTabItem cTab) {
                     if (cTab.getData() instanceof SQLTerminalView) {
                         setConsoleViewEnabled(false);
                     }
@@ -159,8 +152,8 @@ public class SQLTerminalEditorAddIn implements SQLEditorAddIn {
     @NotNull
     private TerminalViewContext obtainViewContext() {
         if (viewContext == null && isTerminalViewEnabled()) {
-            viewContext = new TerminalViewContext();
-        } 
+            UIUtils.syncExec(() -> viewContext = new TerminalViewContext());
+        }
         return viewContext;
     }
     

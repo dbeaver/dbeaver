@@ -1896,13 +1896,6 @@ public class ResultSetViewer extends Viewer
             toolbarList.add(navToolBarManager);
         }
         {
-            ToolBarManager configToolBarManager = new ToolBarManager(SWT.FLAT | SWT.HORIZONTAL | SWT.RIGHT);
-            ToolBar configToolBar = configToolBarManager.createControl(statusBar);
-            CSSUtils.markConnectionTypeColor(configToolBar);
-            toolbarList.add(configToolBarManager);
-        }
-
-        {
             ToolBarManager addToolBarManager = new ToolBarManager(SWT.FLAT | SWT.HORIZONTAL | SWT.RIGHT);
             if (!ApplicationPolicyProvider.getInstance().isPolicyEnabled(ApplicationPolicyProvider.POLICY_DATA_EXPORT)) {
                 menuService.populateContributionManager(addToolBarManager, TOOLBAR_EXPORT_CONTRIBUTION_ID);
@@ -2145,7 +2138,7 @@ public class ResultSetViewer extends Viewer
             }
         }
         toolbarList.clear();
-        autoRefreshControl.enableAutoRefresh(false);
+        autoRefreshControl.dispose();
     }
 
     @Override
