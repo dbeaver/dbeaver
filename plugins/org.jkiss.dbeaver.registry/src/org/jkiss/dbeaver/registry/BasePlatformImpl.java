@@ -219,7 +219,7 @@ public abstract class BasePlatformImpl implements DBPPlatform, DBPApplicationCon
         return defaultConfigurationController;
     }
 
-    protected DBConfigurationController getConfigurationController(@NotNull Bundle bundle) {
+    public DBConfigurationController getConfigurationController(@NotNull Bundle bundle) {
         DBConfigurationController controller = configurationControllerByPlugin.get(bundle);
         if (controller == null) {
             controller = createConfigurationControllerForBundle(bundle);
