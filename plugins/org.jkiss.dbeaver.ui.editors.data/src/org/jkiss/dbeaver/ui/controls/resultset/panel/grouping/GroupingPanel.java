@@ -174,6 +174,7 @@ public class GroupingPanel extends ResultSetPanelBase {
         sortAction.setMode(ActionContributionItem.MODE_FORCE_TEXT);
         contributionManager.add(sortAction);
         contributionManager.add(new DuplicatesOnlyAction());
+        contributionManager.add(new PercentFromTotalAction());
         contributionManager.add(new ToolbarSeparatorContribution(true));
         contributionManager.add(new EditColumnsAction(getGroupingResultsContainer()));
         contributionManager.add(new DeleteColumnAction(getGroupingResultsContainer()));
@@ -359,6 +360,43 @@ public class GroupingPanel extends ResultSetPanelBase {
             } catch (DBException e) {
                 DBWorkbench.getPlatformUI().showError(ResultSetMessages.grouping_panel_error_title, ResultSetMessages.grouping_panel_error_change_duplicate_presentation_message, e);
             }
+        }
+    }
+
+    class PercentFromTotalAction extends Action {
+        PercentFromTotalAction() {
+            super(ResultSetMessages.grouping_panel_show_percent_of_total_tip, Action.AS_CHECK_BOX);
+            updateImage();
+        }
+
+        @Override
+        public boolean isChecked() {
+            DBPDataSource dataSource = getGroupingResultsContainer().getDataContainer().getDataSource();
+            return dataSource != null && dataSource.getContainer().getPreferenceStore()
+                .getBoolean(ResultSetPreferences.RS_GROUPING_SHOW_PERCENT_OF_TOTAL_ROWS);
+        }
+
+        @Override
+        public void run() {
+            boolean newValue = !isChecked();
+            DBPDataSource dataSource = getGroupingResultsContainer().getDataContainer().getDataSource();
+            if (dataSource == null) {
+                return;
+            }
+            dataSource.getContainer().getPreferenceStore().setValue(ResultSetPreferences.RS_GROUPING_SHOW_PERCENT_OF_TOTAL_ROWS, newValue);
+            try {
+                getGroupingResultsContainer().rebuildGrouping();
+            } catch (DBException e) {
+                DBWorkbench.getPlatformUI().showError(
+                    ResultSetMessages.grouping_panel_error_title,
+                    ResultSetMessages.grouping_panel_error_show_percent_of_total_message,
+                    e
+                );
+            }
+        }
+
+        private void updateImage() {
+            setImageDescriptor(DBeaverIcons.getImageDescriptor(UIIcon.DBEAVER_LOGO_SMALL));
         }
     }
 

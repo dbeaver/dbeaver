@@ -226,7 +226,7 @@ public class GroupingResultsContainer implements IResultSetContainer {
             dialect,
             syntaxManager,
             groupAttributes,
-            getGroupFunctionsWithExtraColumns(),
+            getGroupFunctionsWithExtraColumns(dataSource),
             isShowDuplicatesOnly
         );
         dataContainer.setGroupingQuery(groupingQueryGenerator.generateGroupingQuery(queryText));
@@ -273,16 +273,19 @@ public class GroupingResultsContainer implements IResultSetContainer {
         resetDataFilters();
     }
 
-    private List<String> getGroupFunctionsWithExtraColumns() {
-        return addPercentageColumn(presentation.getController().getModel());
+    private List<String> getGroupFunctionsWithExtraColumns(@NotNull DBPDataSource dataSource) {
+        boolean isShowTotalPercentColumn = dataSource.getContainer().getPreferenceStore()
+            .getBoolean(ResultSetPreferences.RS_GROUPING_SHOW_PERCENT_OF_TOTAL_ROWS);
+        return isShowTotalPercentColumn ?
+            addPercentageColumn(presentation.getController().getModel())
+            : getGroupFunctions();
     }
 
     private List<String> addPercentageColumn(@NotNull ResultSetModel model) {
         List<String> allGroupFunctions = new ArrayList<>(getGroupFunctions());
         String function = getDefaultFunction();
         allGroupFunctions.add(function);
-        int lastAttributeIndex = getGroupAttributes().size() - 1; // problem with 0 indexing;
-        int percentFunctionOrderInStatement = lastAttributeIndex + allGroupFunctions.lastIndexOf(function);
+        int percentFunctionOrderInStatement = getGroupAttributes().size() + allGroupFunctions.size() - 1;
         dataContainer.setAttributeTransformer(
             percentFunctionOrderInStatement,
             new PercentOfTotalGroupingAttributeTransformer(model.getRowCount())

@@ -37,6 +37,7 @@ public final class ResultSetPreferences {
     public static final String RS_EDIT_REFRESH_AFTER_UPDATE = "resultset.edit.refreshAfterUpdate"; //$NON-NLS-1$
     public static final String RS_GROUPING_DEFAULT_SORTING = "resultset.grouping.defaultSorting"; //$NON-NLS-1$
     public static final String RS_GROUPING_SHOW_DUPLICATES_ONLY = "resultset.grouping.showDuplicatesOnly"; //$NON-NLS-1$
+    public static final String RS_GROUPING_SHOW_PERCENT_OF_TOTAL_ROWS = "resultset.grouping.showPercentOfTotal"; //$NON-NLS-1$
 
     public static final String RESULT_SET_AUTO_FETCH_NEXT_SEGMENT = "resultset.autofetch.next.segment"; //$NON-NLS-1$
     public static final String RESULT_SET_AUTOMATIC_ROW_COUNT = "resultset.automatic.row.count"; //$NON-NLS-1$
