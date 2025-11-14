@@ -2942,7 +2942,7 @@ public class SQLEditor extends SQLEditorBase implements
                 if (ConfirmationDialog.confirmAction(
                     getSite().getShell(),
                     ConfirmationDialog.WARNING,
-                    isDropTable ? ConfirmationConstants.CONFIRM_DROP_SQL : ConfirmationConstants.CONFIRM_DANGER_SQL,
+                    isDropTable ? ConfirmationConstants.CONFIRM_DROP_SQL_ID : ConfirmationConstants.CONFIRM_DANGER_SQL_ID,
                     ConfirmationDialog.CONFIRM,
                     query.getType().name(),
                     targetName

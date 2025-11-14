@@ -2506,8 +2506,6 @@ public final class DBUtils {
                     dataFilter,
                     DBSDataContainer.FLAG_NONE);
                 result[0] = rowCount;
-            } catch (DBCException e) {
-                throw new InvocationTargetException(e);
             }
         });
         return result[0];

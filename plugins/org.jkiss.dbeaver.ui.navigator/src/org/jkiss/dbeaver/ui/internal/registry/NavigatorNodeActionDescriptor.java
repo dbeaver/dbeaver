@@ -19,7 +19,6 @@ package org.jkiss.dbeaver.ui.internal.registry;
 import org.eclipse.core.expressions.Expression;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.impl.AbstractContextDescriptor;
 import org.jkiss.dbeaver.ui.navigator.INavigatorNodeActionHandler;
@@ -61,7 +60,7 @@ public class NavigatorNodeActionDescriptor extends AbstractContextDescriptor {
         return order;
     }
 
-    public boolean appliesTo(@Nullable DBPObject object) {
+    public boolean appliesTo(@NotNull DBPObject object) {
         return object != null && isExpressionTrue(enablementExpression, object) && appliesTo(object, null);
     }
 
