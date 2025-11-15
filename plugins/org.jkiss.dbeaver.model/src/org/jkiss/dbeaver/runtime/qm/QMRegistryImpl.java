@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,6 @@
 package org.jkiss.dbeaver.runtime.qm;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.qm.*;
 import org.jkiss.dbeaver.model.qm.filters.QMCursorFilter;
@@ -46,7 +45,7 @@ public class QMRegistryImpl implements QMRegistry {
     private QMMCollectorImpl metaHandler;
     private final List<QMExecutionHandler> handlers = new ArrayList<>();
     private QMEventBrowser eventBrowser;
-    private DefaultEventBrowser defaultEventBrowser = new DefaultEventBrowser();
+    private final DefaultEventBrowser defaultEventBrowser = new DefaultEventBrowser();
 
     public QMRegistryImpl() {
         defaultHandler = (QMExecutionHandler) Proxy.newProxyInstance(
@@ -146,7 +145,7 @@ public class QMRegistryImpl implements QMRegistry {
                 if (method.getReturnType() == Void.TYPE && method.getName().startsWith("handle")) {
                     QMExecutionHandler[] handlersCopy;
                     synchronized (handlers) {
-                        handlersCopy = handlers.toArray(new QMExecutionHandler[handlers.size()]);
+                        handlersCopy = handlers.toArray(new QMExecutionHandler[0]);
                     }
                     for (QMExecutionHandler handler : handlersCopy) {
                         try {
@@ -174,10 +173,7 @@ public class QMRegistryImpl implements QMRegistry {
     private class DefaultEventBrowser implements QMEventBrowser {
         @NotNull
         @Override
-        public QMEventCursor getQueryHistoryCursor(
-            @NotNull QMCursorFilter cursorFilter)
-            throws DBException
-        {
+        public QMEventCursor getQueryHistoryCursor(@NotNull QMCursorFilter cursorFilter) {
             List<QMMetaEvent> pastEvents = metaHandler.getPastEvents();
             Collections.reverse(pastEvents);
             var criteria = cursorFilter.getCriteria();
