@@ -232,16 +232,8 @@ public class DataSourceUtils {
 
         if (dsId != null) {
             dataSource = dsRegistry.getDataSource(dsId);
-            if (dataSource == null) {
-                log.error("Datasource '" + dsId + "' not found in project '" + project.getName() + "'");
-                return null;
-            }
         } else if (dsName != null) {
             dataSource = dsRegistry.findDataSourceByName(dsName);
-            if (dataSource == null) {
-                log.error("Datasource '" + dsName + "' not found in project '" + project.getName() + "'");
-                return null;
-            }
         }
         if (dataSource == null && dsIdOrName != null) {
             dataSource = dsRegistry.getDataSource(dsIdOrName);
