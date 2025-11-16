@@ -26,7 +26,6 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.WorkspaceConfigEventManager;
-import org.jkiss.dbeaver.model.app.DBPPlatformDesktop;
 import org.jkiss.dbeaver.model.connection.DBPDataSourceProviderDescriptor;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.dashboard.DBDashboardContext;
@@ -99,11 +98,11 @@ public class DashboardRegistry {
                 .loadConfigurationFile(CONFIG_FILE_NAME);
             if (CommonUtils.isEmpty(configContent) && !DBWorkbench.isDistributed()) {
                 // Backward compatibility
-                configContent = DBPPlatformDesktop.getInstance()
+                configContent = DBWorkbench.getPlatform()
                     .getPluginConfigurationController(DashboardConstants.DASHBOARDS_LEGACY_PLUGIN_ID)
                     .loadConfigurationFile(CONFIG_FILE_NAME);
                 if (CommonUtils.isEmpty(configContent)) {
-                    configContent = DBPPlatformDesktop.getInstance()
+                    configContent = DBWorkbench.getPlatform()
                         .getPluginConfigurationController(DashboardConstants.DASHBOARDS_LEGACY_PLUGIN_ID2)
                         .loadConfigurationFile(CONFIG_FILE_NAME);
                 }
