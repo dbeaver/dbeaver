@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ui.app.standalone;
 
 
+import org.eclipse.core.net.proxy.IProxyService;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.preferences.ConfigurationScope;
 import org.eclipse.equinox.app.IApplication;
@@ -470,6 +471,8 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
      * May be overrided in implementors
      */
     protected void initializeApplication() {
+        activateProxyService();
+
         if (ApplicationPolicyProvider.getInstance().isPolicyEnabled(POLICY_WD_CHECK_SUPPRESS)) {
             try {
                 WindowsDefenderConfigurator.savePreference(
@@ -480,6 +483,15 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
             }
         }
     }
+
+    private static void activateProxyService() {
+        try {
+            log.debug("Proxy service '" + IProxyService.class.getName() + "' loaded");
+        } catch (Throwable e) {
+            log.debug("Proxy service not found");
+        }
+    }
+
 
     private Display getDisplay() {
         if (display == null) {

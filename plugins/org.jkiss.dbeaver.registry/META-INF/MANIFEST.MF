@@ -24,7 +24,6 @@ Export-Package: org.jkiss.dbeaver.registry,
  org.jkiss.dbeaver.registry.updater
 Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.core.expressions,
- org.eclipse.core.net,
  org.eclipse.equinox.security,
  org.objectweb.asm,
  com.google.gson,
