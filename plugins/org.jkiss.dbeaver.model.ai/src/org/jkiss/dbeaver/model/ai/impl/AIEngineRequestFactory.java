@@ -31,8 +31,10 @@ import org.jkiss.dbeaver.model.ai.registry.AISettingsManager;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -155,12 +157,24 @@ public class AIEngineRequestFactory {
         AISettings aiSettings = AISettingsManager.getInstance().getSettings();
         Set<String> enabledFunctions = aiSettings.getEnabledFunctions();
         Set<String> enabledFunctionCategories = aiSettings.getEnabledFunctionCategories();
-        functions.removeIf(aiFunctionDescriptor ->
+
+        List<AIFunctionDescriptor> selectedFunctions = new ArrayList<>(functions);
+        selectedFunctions.removeIf(aiFunctionDescriptor ->
             !enabledFunctions.contains(aiFunctionDescriptor.getId()) &&
                 !enabledFunctionCategories.contains(aiFunctionDescriptor.getCategoryId())
         );
 
-        request.setFunctions(functions);
+        Set<String> requiredByDeps = resolveFunctionDependencies(selectedFunctions);
+
+        if (!requiredByDeps.isEmpty()) {
+            for (AIFunctionDescriptor f : functions) {
+                if (requiredByDeps.contains(f.getId())) {
+                    selectedFunctions.add(f);
+                }
+            }
+        }
+
+        request.setFunctions(selectedFunctions);
     }
 
 
@@ -183,5 +197,43 @@ public class AIEngineRequestFactory {
             .withSendColumnTypes(prefs.getBoolean(AIConstants.AI_SEND_TYPE_INFO))
             .build();
 
+    }
+
+    /**
+     * Resolves transitive dependencies for the given list of already selected function descriptors.
+     */
+    @NotNull
+    private static Set<String> resolveFunctionDependencies(@NotNull List<AIFunctionDescriptor> selected) {
+        Set<String> result = new HashSet<>();
+        // visiting — defend from cycling
+        Set<String> visiting = new HashSet<>();
+        for (AIFunctionDescriptor fd : selected) {
+            collectDeps(fd, result, visiting);
+        }
+        return result;
+    }
+
+    private static void collectDeps(
+        @NotNull AIFunctionDescriptor fd,
+        @NotNull Set<String> result,
+        @NotNull Set<String> visiting
+    ) {
+        String[] deps = fd.getDependsOnIds();
+        for (String depId : deps) {
+            if (CommonUtils.isEmpty(depId)) {
+                continue;
+            }
+            if (!result.add(depId)) {
+                continue;
+            }
+            if (!visiting.add(depId)) {
+                continue;
+            }
+            AIFunctionDescriptor dep = AIFunctionRegistry.getInstance().getFunction(depId);
+            if (dep != null) {
+                collectDeps(dep, result, visiting);
+            }
+            visiting.remove(depId);
+        }
     }
 }

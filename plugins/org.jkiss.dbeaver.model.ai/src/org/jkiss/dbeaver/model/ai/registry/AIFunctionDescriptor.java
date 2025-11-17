@@ -87,7 +87,9 @@ public class AIFunctionDescriptor extends AbstractDescriptor {
     private final String name;
     private final DBPImage icon;
     private final boolean global;
+    private final boolean hideFromPrefs;
     private final AIFunctionResult.FunctionType type;
+    private final String[] dependsOnIds;
     private final String categoryId;
     private final Parameter[] parameters;
 
@@ -99,7 +101,9 @@ public class AIFunctionDescriptor extends AbstractDescriptor {
         this.id = config.getAttribute("id");
         this.name = config.getAttribute("name");
         this.global = CommonUtils.toBoolean(config.getAttribute("global"));
+        this.hideFromPrefs = CommonUtils.toBoolean(config.getAttribute("hideFromPrefs"));
         this.categoryId = config.getAttribute("categoryId");
+        this.dependsOnIds = CommonUtils.splitString(config.getAttribute("dependsOn"), ',').toArray(new String[0]);
         this.type = CommonUtils.valueOf(
             AIFunctionResult.FunctionType.class,
             config.getAttribute("type"),
@@ -145,9 +149,18 @@ public class AIFunctionDescriptor extends AbstractDescriptor {
         return global;
     }
 
+    public boolean isHideFromPrefs() {
+        return hideFromPrefs;
+    }
+
     @NotNull
     public Parameter[] getParameters() {
         return parameters;
+    }
+
+    @NotNull
+    public String[] getDependsOnIds() {
+        return dependsOnIds;
     }
 
     @NotNull
