@@ -39,6 +39,7 @@ public class OpenAIProperties implements OpenAIBaseProperties {
     private static final String GPT_CONTEXT_WINDOW_SIZE = "gpt.contextWindowSize";
     private static final String GPT_MODEL_TEMPERATURE = "gpt.model.temperature";
     private static final String GPT_LOG_QUERY = "gpt.log.query";
+    private static final String GPT_LEGACY_API = "gpt.api.legacy";
 
     @Nullable
     @SerializedName(GPT_BASE_URL)
@@ -63,12 +64,15 @@ public class OpenAIProperties implements OpenAIBaseProperties {
     @SerializedName(GPT_LOG_QUERY)
     private Boolean loggingEnabled;
 
+    @SerializedName(GPT_LEGACY_API)
+    private boolean useLegacyApi;
+
     public OpenAIProperties() {
     }
 
     @NotNull
     @Override
-    @Property(order = 2, id = GPT_BASE_URL)
+    @Property(order = 2)
     public String getBaseUrl() {
         if (baseUrl == null || baseUrl.isEmpty()) {
             return OpenAIClient.OPENAI_ENDPOINT;
@@ -82,17 +86,28 @@ public class OpenAIProperties implements OpenAIBaseProperties {
 
     @Nullable
     @Override
-    @Property(order = 1, id = GPT_TOKEN, password = true)
+    @Property(order = 1, password = true)
     public String getToken() {
         return token;
+    }
+
+    @Override
+    @Property(order = 7)
+    public boolean isLegacyApi() {
+        return useLegacyApi;
+    }
+
+    public void setLegacyApi(boolean useLegacyApi) {
+        this.useLegacyApi = useLegacyApi;
     }
 
     public void setToken(@Nullable String token) {
         this.token = token;
     }
 
+    @Nullable
     @Override
-    @Property(order = 3, id = GPT_MODEL, listProvider = OpenAIModelListProvider.class)
+    @Property(order = 3, listProvider = OpenAIModelListProvider.class)
     public String getModel() {
         if (model != null) {
             return OpenAIModels.getEffectiveModelName(model);
@@ -109,7 +124,7 @@ public class OpenAIProperties implements OpenAIBaseProperties {
     }
 
     @Override
-    @Property(order = 4, id = GPT_MODEL_TEMPERATURE)
+    @Property(order = 4)
     public double getTemperature() {
         if (temperature != null) {
             return temperature;
@@ -125,7 +140,7 @@ public class OpenAIProperties implements OpenAIBaseProperties {
     }
 
     @Override
-    @Property(order = 5, id = GPT_LOG_QUERY)
+    @Property(order = 5)
     public boolean isLoggingEnabled() {
         if (loggingEnabled != null) {
             return loggingEnabled;
@@ -142,7 +157,7 @@ public class OpenAIProperties implements OpenAIBaseProperties {
 
     @Nullable
     @Override
-    @Property(order = 6, id = GPT_CONTEXT_WINDOW_SIZE, required = true)
+    @Property(order = 6, required = true)
     public Integer getContextWindowSize() {
         if (contextWindowSize != null) {
             return contextWindowSize;

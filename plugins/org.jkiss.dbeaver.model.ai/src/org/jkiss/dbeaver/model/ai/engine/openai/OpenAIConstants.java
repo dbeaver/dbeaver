@@ -26,5 +26,10 @@ public class OpenAIConstants {
     public static final String GPT_API_TOKEN = "gpt.token";
     public static final String GPT_MODEL = "gpt.model";
     public static final String AI_TEMPERATURE = "gpt.model.temperature";
+
+    // Response endpoint
+    public static final String ENDPOINT_RESPONSES = "responses";
+    // Legacy API endpoint
+    public static final String ENDPOINT_CHAT = "chat/completions";
 }
 

@@ -368,44 +368,50 @@ public abstract class OracleTableBase extends JDBCTable<OracleDataSource, Oracle
             @NotNull JDBCSession session,
             @NotNull OracleTableBase tableBase) throws SQLException {
 
-            boolean hasDBA = tableBase.getDataSource()
+            final boolean hasDBA = tableBase.getDataSource()
                 .isViewAvailable(session.getProgressMonitor(), OracleConstants.SCHEMA_SYS, OracleConstants.VIEW_DBA_TAB_PRIVS);
 
-            final JDBCPreparedStatement dbStat = session.prepareStatement(
-                """
+            final String ownerColTab = hasDBA ? "OWNER" : "TABLE_SCHEMA";
+
+            final String commonTabExpr = hasDBA ? "p.COMMON" : "CAST(NULL AS VARCHAR2(3))";
+            final String typeTabExpr   = hasDBA ? "p.TYPE"   : "CAST('TABLE' AS VARCHAR2(10))";
+            final String commonColExpr = hasDBA ? "p.COMMON" : "CAST(NULL AS VARCHAR2(3))";
+            final String typeColExpr   = "CAST('COLUMN' AS VARCHAR2(10))";
+
+            final String tabView = hasDBA ? "DBA_TAB_PRIVS" : "ALL_TAB_PRIVS";
+            final String colView = hasDBA ? "DBA_COL_PRIVS" : "ALL_COL_PRIVS";
+
+            final JDBCPreparedStatement dbStat = session.prepareStatement("""
                 SELECT
                     p.GRANTEE,
-                    p.OWNER,
+                    p.%s,
                     p.TABLE_NAME,
                     NULL AS COLUMN_NAME,
                     p.GRANTOR,
                     p.PRIVILEGE,
                     p.GRANTABLE,
                     p.HIERARCHY,
-                    p.COMMON,
-                    p.TYPE
+                    %s AS COMMON,
+                    %s AS TYPE
                 FROM %s p
                 WHERE p.%s = ? AND p.TABLE_NAME = ?
-                UNION
+                UNION ALL
                 SELECT
                     p.GRANTEE,
-                    p.OWNER,
+                    p.%s,
                     p.TABLE_NAME,
                     p.COLUMN_NAME,
                     p.GRANTOR,
                     p.PRIVILEGE,
                     p.GRANTABLE,
                     NULL AS HIERARCHY,
-                    p.COMMON,
-                    '%s' AS TYPE
+                    %s AS COMMON,
+                    %s AS TYPE
                 FROM %s p
-                WHERE p.OWNER = ? AND p.TABLE_NAME = ?
+                WHERE p.%s = ? AND p.TABLE_NAME = ?
                 """.formatted(
-                        hasDBA ? "DBA_TAB_PRIVS" : "ALL_TAB_PRIVS",
-                        hasDBA ? "OWNER" : "TABLE_SCHEMA",
-                        OraclePrivTableColumn.COLUMN_TYPE,
-                        hasDBA ? "DBA_COL_PRIVS" : "ALL_COL_PRIVS"
-                    )
+                    ownerColTab, commonTabExpr, typeTabExpr, tabView, ownerColTab,
+                    ownerColTab, commonColExpr, typeColExpr, colView, ownerColTab)
             );
             dbStat.setString(1, tableBase.getSchema().getName());
             dbStat.setString(2, tableBase.getName());

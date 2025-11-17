@@ -17,28 +17,25 @@
 package org.jkiss.dbeaver.model.impl;
 
 import org.eclipse.core.runtime.IConfigurationElement;
-import org.eclipse.core.runtime.Platform;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPNamedObjectLocalized;
 import org.jkiss.dbeaver.model.DBPObjectWithDescriptionLocalized;
-import org.jkiss.dbeaver.utils.RuntimeUtils;
-import org.osgi.framework.Bundle;
 
 public abstract class LocalizedPropertyDescriptor extends PropertyDescriptor implements DBPNamedObjectLocalized, DBPObjectWithDescriptionLocalized {
 
-    private transient final Bundle bundle;
+    private transient final IConfigurationElement config;
 
     public LocalizedPropertyDescriptor(String category, IConfigurationElement config) {
         super(category, config);
-        bundle = getBundle(config);
+        this.config = config;
     }
 
     @NotNull
     @Override
     public String getLocalizedName(@NotNull String locale) {
         try {
-            return RuntimeUtils.getBundleLocalization(bundle, locale).getString(getPropertyId());
+            return config.getAttribute(ATTR_LABEL, locale);
         } catch (Exception e) {
             return this.getName();
         }
@@ -48,24 +45,9 @@ public abstract class LocalizedPropertyDescriptor extends PropertyDescriptor imp
     @Override
     public String getLocalizedDescription(@NotNull String locale) {
         try {
-            return RuntimeUtils.getBundleLocalization(bundle, locale).getString(getPropertyId() + ".description");
+            return config.getAttribute(ATTR_DESCRIPTION, locale);
         } catch (Exception e) {
             return this.getDescription();
         }
-    }
-
-    public String getPropertyId() {
-        return this.getId();
-    }
-
-    @NotNull
-    private Bundle getBundle(@NotNull IConfigurationElement config) {
-        final Bundle bundle;
-        String bundleName = config.getContributor().getName();
-        bundle = Platform.getBundle(bundleName);
-        if (bundle == null) {
-            throw new IllegalStateException("Bundle '" + bundleName + "' not found");
-        }
-        return bundle;
     }
 }

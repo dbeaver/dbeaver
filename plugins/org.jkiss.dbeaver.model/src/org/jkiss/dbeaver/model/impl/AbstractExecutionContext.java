@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.model.impl;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.connection.DBPConnectionBootstrap;
@@ -93,7 +94,7 @@ public abstract class AbstractExecutionContext<DATASOURCE extends DBPDataSource>
      * Executes bootstrap queries and other init functions.
      * This function must be called by all implementations.
      */
-    protected boolean initContextBootstrap(@NotNull DBRProgressMonitor monitor, boolean autoCommit) throws DBCException
+    protected boolean initContextBootstrap(@NotNull DBRProgressMonitor monitor, boolean autoCommit) throws DBException
     {
         // Notify QM
         QMUtils.getDefaultHandler().handleContextOpen(this, !autoCommit);
