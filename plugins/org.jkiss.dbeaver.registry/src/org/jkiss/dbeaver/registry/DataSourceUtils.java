@@ -104,127 +104,127 @@ public class DataSourceUtils {
         Map<String, String> authProperties = new HashMap<>();
         Map<String, String> advancedProperties = new HashMap<>();
         DBPDataSourceFolder folder = null;
-        String dsId = null, dsName = null;
+        String dsId = null, dsName = null, dsIdOrName = null;
 
-        DBPDataSourceRegistry dsRegistry = project == null ? null : project.getDataSourceRegistry();
-        if (dsRegistry == null) {
-            log.debug("No datasource registry for project '" + project.getName() + "'");
-            return null;
-        }
+        DBPDataSourceRegistry dsRegistry = project.getDataSourceRegistry();
 
         String[] conParams = connectionSpec.split("\\|");
-        for (String cp : conParams) {
-            int divPos = cp.indexOf('=');
-            if (divPos == -1) {
-                continue;
-            }
-            String paramName = cp.substring(0, divPos);
-            String paramValue = cp.substring(divPos + 1);
-            switch (paramName) {
-                case PARAM_ID:
-                    dsId = paramValue;
-                    break;
-                case PARAM_DRIVER:
-                    driverName = paramValue;
-                    break;
-                case PARAM_NAME:
-                    dsName = paramValue;
-                    break;
-                case PARAM_URL:
-                    url = paramValue;
-                    break;
-                case PARAM_HOST:
-                    host = paramValue;
-                    break;
-                case PARAM_PORT:
-                    port = paramValue;
-                    break;
-                case PARAM_SERVER:
-                    server = paramValue;
-                    break;
-                case PARAM_DATABASE:
-                    database = paramValue;
-                    break;
-                case PARAM_USER:
-                    user = paramValue;
-                    break;
-                case PARAM_PASSWORD:
-                    password = paramValue;
-                    break;
-                case PARAM_AUTH_MODEL:
-                    authModelId = paramValue;
-                    break;
-                case PARAM_SAVE_PASSWORD:
-                    savePassword = CommonUtils.toBoolean(paramValue);
-                    break;
-                case PARAM_SHOW_SYSTEM_OBJECTS:
-                    showSystemObjects = CommonUtils.toBoolean(paramValue);
-                    break;
-                case PARAM_SHOW_UTILITY_OBJECTS:
-                    showUtilityObjects = CommonUtils.toBoolean(paramValue);
-                    break;
-                case PARAM_SHOW_ONLY_ENTITIES:
-                    showOnlyEntities = CommonUtils.toBoolean(paramValue);
-                    break;
-                case PARAM_HIDE_FOLDERS:
-                    hideFolders = CommonUtils.toBoolean(paramValue);
-                    break;
-                case PARAM_HIDE_SCHEMAS:
-                    hideSchemas = CommonUtils.toBoolean(paramValue);
-                    break;
-                case PARAM_MERGE_ENTITIES:
-                    mergeEntities = CommonUtils.toBoolean(paramValue);
-                    break;
-                case PARAM_FOLDER:
-                    folder = dsRegistry.getFolder(paramValue);
-                    break;
-                case PARAM_AUTO_COMMIT:
-                    autoCommit = CommonUtils.toBoolean(paramValue);
-                    break;
-                case PARAM_CREATE:
-                    createNewDataSource = CommonUtils.toBoolean(paramValue);
-                    if (parameterHandler != null) {
-                        parameterHandler.setParameter(paramName, paramValue);
-                    }
-                    break;
-                case PARAM_SAVE:
-                    isTemporary = !CommonUtils.toBoolean(paramValue);
-                    break;
-                default:
-                    boolean handled = false;
-                    if (paramName.length() > PREFIX_PROP.length() && paramName.startsWith(PREFIX_PROP)) {
-                        paramName = paramName.substring(PREFIX_PROP.length());
-                        conProperties.put(paramName, paramValue);
-                        handled = true;
-                    } else if (paramName.length() > PREFIX_AUTH_PROP.length() && paramName.startsWith(PREFIX_AUTH_PROP)) {
-                        paramName = paramName.substring(PREFIX_AUTH_PROP.length());
-                        authProperties.put(paramName, paramValue);
-                        handled = true;
-                    } else if (paramName.length() > PREFIX_HANDLER.length() && paramName.startsWith(PREFIX_HANDLER)) {
-                        // network handler prop
-                        paramName = paramName.substring(PREFIX_HANDLER.length());
-                        divPos = paramName.indexOf('.');
-                        if (divPos == -1) {
-                            log.debug("Wrong handler parameter: '" + paramName + "'");
-                            continue;
+        if (conParams.length == 1 && conParams[0].indexOf('=') == -1) {
+            dsIdOrName = conParams[0];
+        } else {
+            for (String cp : conParams) {
+                int divPos = cp.indexOf('=');
+                if (divPos == -1) {
+                    continue;
+                }
+                String paramName = cp.substring(0, divPos);
+                String paramValue = cp.substring(divPos + 1);
+                switch (paramName) {
+                    case PARAM_ID:
+                        dsId = paramValue;
+                        break;
+                    case PARAM_DRIVER:
+                        driverName = paramValue;
+                        break;
+                    case PARAM_NAME:
+                        dsName = paramValue;
+                        break;
+                    case PARAM_URL:
+                        url = paramValue;
+                        break;
+                    case PARAM_HOST:
+                        host = paramValue;
+                        break;
+                    case PARAM_PORT:
+                        port = paramValue;
+                        break;
+                    case PARAM_SERVER:
+                        server = paramValue;
+                        break;
+                    case PARAM_DATABASE:
+                        database = paramValue;
+                        break;
+                    case PARAM_USER:
+                        user = paramValue;
+                        break;
+                    case PARAM_PASSWORD:
+                        password = paramValue;
+                        break;
+                    case PARAM_AUTH_MODEL:
+                        authModelId = paramValue;
+                        break;
+                    case PARAM_SAVE_PASSWORD:
+                        savePassword = CommonUtils.toBoolean(paramValue);
+                        break;
+                    case PARAM_SHOW_SYSTEM_OBJECTS:
+                        showSystemObjects = CommonUtils.toBoolean(paramValue);
+                        break;
+                    case PARAM_SHOW_UTILITY_OBJECTS:
+                        showUtilityObjects = CommonUtils.toBoolean(paramValue);
+                        break;
+                    case PARAM_SHOW_ONLY_ENTITIES:
+                        showOnlyEntities = CommonUtils.toBoolean(paramValue);
+                        break;
+                    case PARAM_HIDE_FOLDERS:
+                        hideFolders = CommonUtils.toBoolean(paramValue);
+                        break;
+                    case PARAM_HIDE_SCHEMAS:
+                        hideSchemas = CommonUtils.toBoolean(paramValue);
+                        break;
+                    case PARAM_MERGE_ENTITIES:
+                        mergeEntities = CommonUtils.toBoolean(paramValue);
+                        break;
+                    case PARAM_FOLDER:
+                        folder = dsRegistry.getFolder(paramValue);
+                        break;
+                    case PARAM_AUTO_COMMIT:
+                        autoCommit = CommonUtils.toBoolean(paramValue);
+                        break;
+                    case PARAM_CREATE:
+                        createNewDataSource = CommonUtils.toBoolean(paramValue);
+                        if (parameterHandler != null) {
+                            parameterHandler.setParameter(paramName, paramValue);
                         }
-                        String handlerId = paramName.substring(0, divPos);
-                        paramName = paramName.substring(divPos + 1);
-                        Map<String, String> handlerPopMap = handlerProps.computeIfAbsent(handlerId, k -> new HashMap<>());
-                        handlerPopMap.put(paramName, paramValue);
-                        handled = true;
-                    } else if (paramName.startsWith(PREFIX_ADVANCED_PROP)) {
-                        String suffix = paramName.substring(PREFIX_ADVANCED_PROP.length());
-                        if (!suffix.isEmpty()) {
-                            advancedProperties.put(suffix, paramValue);
+                        break;
+                    case PARAM_SAVE:
+                        isTemporary = !CommonUtils.toBoolean(paramValue);
+                        break;
+                    default:
+                        boolean handled = false;
+                        if (paramName.length() > PREFIX_PROP.length() && paramName.startsWith(PREFIX_PROP)) {
+                            paramName = paramName.substring(PREFIX_PROP.length());
+                            conProperties.put(paramName, paramValue);
                             handled = true;
+                        } else if (paramName.length() > PREFIX_AUTH_PROP.length() && paramName.startsWith(PREFIX_AUTH_PROP)) {
+                            paramName = paramName.substring(PREFIX_AUTH_PROP.length());
+                            authProperties.put(paramName, paramValue);
+                            handled = true;
+                        } else if (paramName.length() > PREFIX_HANDLER.length() && paramName.startsWith(PREFIX_HANDLER)) {
+                            // network handler prop
+                            paramName = paramName.substring(PREFIX_HANDLER.length());
+                            divPos = paramName.indexOf('.');
+                            if (divPos == -1) {
+                                log.debug("Wrong handler parameter: '" + paramName + "'");
+                                continue;
+                            }
+                            String handlerId = paramName.substring(0, divPos);
+                            paramName = paramName.substring(divPos + 1);
+                            Map<String, String> handlerPopMap = handlerProps.computeIfAbsent(handlerId, k -> new HashMap<>());
+                            handlerPopMap.put(paramName, paramValue);
+                            handled = true;
+                        } else if (paramName.startsWith(PREFIX_ADVANCED_PROP)) {
+                            String suffix = paramName.substring(PREFIX_ADVANCED_PROP.length());
+                            if (!suffix.isEmpty()) {
+                                advancedProperties.put(suffix, paramValue);
+                                handled = true;
+                            }
+                        } else if (parameterHandler != null) {
+                            handled = parameterHandler.setParameter(paramName, paramValue);
                         }
-                    } else if (parameterHandler != null) {
-                        handled = parameterHandler.setParameter(paramName, paramValue);
-                    }
-                    if (!handled) {
-                        log.debug("Unknown connection parameter '" + paramName + "'");
-                    }
+                        if (!handled) {
+                            log.debug("Unknown connection parameter '" + paramName + "'");
+                        }
+                }
             }
         }
 
@@ -232,10 +232,18 @@ public class DataSourceUtils {
 
         if (dsId != null) {
             dataSource = dsRegistry.getDataSource(dsId);
-        }
-
-        if (dsName != null) {
+        } else if (dsName != null) {
             dataSource = dsRegistry.findDataSourceByName(dsName);
+        }
+        if (dataSource == null && dsIdOrName != null) {
+            dataSource = dsRegistry.getDataSource(dsIdOrName);
+            if (dataSource == null) {
+                dataSource = dsRegistry.findDataSourceByName(dsIdOrName);
+            }
+            if (dataSource == null) {
+                log.error("Datasource '" + dsIdOrName + "' not found in project '" + project.getName() + "'");
+                return null;
+            }
         }
 
         if (dataSource != null) {

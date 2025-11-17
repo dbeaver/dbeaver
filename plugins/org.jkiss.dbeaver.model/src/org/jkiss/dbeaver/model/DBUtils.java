@@ -2299,6 +2299,13 @@ public final class DBUtils {
                 return ot.getTypeName();
             }
         }
+        if (object instanceof DBSSchema) {
+            return "Schema";
+        } else if (object instanceof DBSCatalog) {
+            return "Catalog";
+        } else if (object instanceof DBSEntity) {
+            return "Entity";
+        }
         return "Object";
     }
 
