@@ -52,7 +52,6 @@ import org.jkiss.dbeaver.tools.transfer.registry.DataTransferEventProcessorDescr
 import org.jkiss.dbeaver.tools.transfer.registry.DataTransferRegistry;
 import org.jkiss.utils.CommonUtils;
 
-import java.lang.reflect.InvocationTargetException;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -451,13 +450,8 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
                 do {
                     retryInsert = false;
                     try {
-                        DBExecUtils.tryExecuteRecover(targetSession, targetSession.getDataSource(), param -> {
-                            try {
-                                statistics.accumulate(executeBatch.execute(targetSession, options));
-                            } catch (Throwable e) {
-                                throw new InvocationTargetException(e);
-                            }
-                        });
+                        DBExecUtils.tryExecuteRecover(targetSession, targetSession.getDataSource(), param ->
+                            statistics.accumulate(executeBatch.execute(targetSession, options)));
                     } catch (Throwable e) {
                         if (ignoreDuplicateRowsErrors && (e.getCause() instanceof SQLException)) {
                             DBPErrorAssistant.ErrorType errorType = DBExecUtils.discoverErrorType(targetSession.getDataSource(), e.getCause());
