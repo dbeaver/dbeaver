@@ -1837,6 +1837,21 @@ public class UIUtils {
         return workbenchWindow;
     }
 
+    /**
+     * Returns {@link IWorkbenchWindow} that contains the given control.
+     *
+     * @param control the SWT control (must not be null)
+     * @return the corresponding {@link IWorkbenchWindow}, or {@code null} if none found
+     */
+    @Nullable
+    public static IWorkbenchWindow findWorkbenchWindow(@NotNull Control control) {
+        Shell shell = control.getShell();
+        return Arrays.stream(PlatformUI.getWorkbench().getWorkbenchWindows())
+            .filter(w -> w.getShell() == shell)
+            .findFirst()
+            .orElse(null);
+    }
+
     @Nullable
     public static Shell getActiveWorkbenchShell() {
         if (PlatformUI.isWorkbenchRunning()) {
