@@ -228,4 +228,13 @@
         </propertyGroup>
     </extension>
 
+    <extension point="org.eclipse.core.expressions.propertyTesters">
+        <propertyTester
+            class="org.jkiss.dbeaver.model.impl.GlobalPropertyTester"
+            id="org.jkiss.dbeaver.model.impl.GlobalPropertyTester"
+            namespace="org.jkiss.dbeaver.core.global"
+            properties="standalone,distributed,bundleInstalled,hasPreference,hasEnvVariable"
+            type="java.lang.Object"/>
+    </extension>
+
 </plugin>
