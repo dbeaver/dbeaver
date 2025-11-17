@@ -29,7 +29,7 @@ public abstract class AbstractTopLevelCommand implements Runnable, CommandLine.I
     private final Log log = Log.getLog(getClass());
 
     @CommandLine.Option(names = {"-dump"},
-        description = "Print instance thread dump")
+        description = "Print instance thread dump.")
     private boolean dump;
 
     @CommandLine.Mixin

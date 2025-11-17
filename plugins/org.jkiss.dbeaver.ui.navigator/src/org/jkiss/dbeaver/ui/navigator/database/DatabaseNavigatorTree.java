@@ -56,7 +56,6 @@ import org.jkiss.dbeaver.registry.RuntimeProjectPropertiesConstant;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.controls.ProgressPainter;
-import org.jkiss.dbeaver.ui.internal.UINavigatorMessages;
 import org.jkiss.dbeaver.ui.navigator.INavigatorFilter;
 import org.jkiss.dbeaver.ui.navigator.INavigatorItemRenderer;
 import org.jkiss.dbeaver.ui.navigator.NavigatorPreferences;
@@ -986,17 +985,20 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
             if (navigatorFilter instanceof DatabaseNavigatorTreeFilter) {
                 ((GridLayout) parent.getLayout()).numColumns++;
 
-                IWorkbenchWindow workbenchWindow = UIUtils.getActiveWorkbenchWindow();
-
-                ToolBarManager filterManager = new ToolBarManager();
+                final ToolBarManager filterManager = new ToolBarManager();
                 filterManager.add(new Separator(IWorkbenchActionConstants.MB_ADDITIONS));
+
+                IWorkbenchWindow workbenchWindow = UIUtils.findWorkbenchWindow(parent);
+                if (workbenchWindow == null) {
+                    workbenchWindow = UIUtils.getActiveWorkbenchWindow();
+                }
+
                 final IMenuService menuService = workbenchWindow.getService(IMenuService.class);
                 if (menuService != null) {
                     menuService.populateContributionManager(filterManager, FILTER_TOOLBAR_CONTRIBUTION_ID);
                 }
 
                 filterManager.createControl(parent);
-
                 parent.addDisposeListener(e -> filterManager.dispose());
             }
 
