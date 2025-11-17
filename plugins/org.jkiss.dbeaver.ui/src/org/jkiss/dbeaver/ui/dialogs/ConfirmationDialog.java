@@ -29,6 +29,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
+import org.jkiss.dbeaver.registry.confirmation.ConfirmationConstants;
 import org.jkiss.dbeaver.registry.confirmation.ConfirmationDescriptor;
 import org.jkiss.dbeaver.registry.confirmation.ConfirmationRegistry;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -48,8 +49,6 @@ import java.util.ResourceBundle;
 public class ConfirmationDialog extends MessageDialogWithToggle {
 
     private static final Log log = Log.getLog(UIStyles.class);
-
-    public static final String PREF_KEY_PREFIX = "org.jkiss.dbeaver.core.confirm."; //$NON-NLS-1$
 
     private final boolean hideToggle;
 
@@ -93,7 +92,7 @@ public class ConfirmationDialog extends MessageDialogWithToggle {
      */
     @Nullable
     public static Boolean getPersistedState(@NotNull String id, int kind) {
-        String key = ConfirmationDialog.PREF_KEY_PREFIX + id;
+        String key = ConfirmationConstants.CONFIRM_PREF_KEY_PREFIX + id;
         DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
 
         if (ConfirmationDialog.ALWAYS.equals(store.getString(key))) {
@@ -218,13 +217,13 @@ public class ConfirmationDialog extends MessageDialogWithToggle {
             NLS.bind(descriptor.getMessage(), args),
             toggleMessage != null ? NLS.bind(toggleMessage, args) : null,
             false,
-            ConfirmationDialog.PREF_KEY_PREFIX + id
+            ConfirmationConstants.CONFIRM_PREF_KEY_PREFIX + id
         );
     }
 
     public static String getSavedPreference(String id) {
         DBPPreferenceStore prefStore = DBWorkbench.getPlatform().getPreferenceStore();
-        return prefStore.getString(PREF_KEY_PREFIX + id);
+        return prefStore.getString(ConfirmationConstants.CONFIRM_PREF_KEY_PREFIX + id);
     }
 
     @Override

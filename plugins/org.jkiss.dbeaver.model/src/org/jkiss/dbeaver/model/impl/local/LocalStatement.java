@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCResultSet;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.impl.AbstractStatement;
+import org.jkiss.dbeaver.model.qm.QMUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 /**
@@ -35,6 +36,10 @@ public class LocalStatement extends AbstractStatement<DBCSession>
     public LocalStatement(DBCSession session, String text) {
         super(session);
         this.text = text;
+
+        if (isQMLoggingEnabled()) {
+            QMUtils.getDefaultHandler().handleStatementOpen(this);
+        }
     }
 
     @Override

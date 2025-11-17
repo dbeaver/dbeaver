@@ -278,9 +278,10 @@ public abstract class NodeListControl extends ObjectListControl<DBNNode>
         return nodeMeta;
     }
 
+    @NotNull
     @Override
     protected Object getObjectValue(@NotNull DBNNode item) {
-        if (item instanceof DBSWrapper wrapper) {
+        if (item instanceof DBSWrapper wrapper && wrapper.getObject() != null) {
             return wrapper.getObject();
         } else if (item instanceof DBNObjectNode node) {
             return node.getNodeObject();
@@ -288,6 +289,7 @@ public abstract class NodeListControl extends ObjectListControl<DBNNode>
         return item;
     }
 
+    @Nullable
     @Override
     protected DBPImage getObjectImage(DBNNode item) {
         return item.getNodeIconDefault();
@@ -350,6 +352,7 @@ public abstract class NodeListControl extends ObjectListControl<DBNNode>
         }
     }
 
+    @NotNull
     @Override
     protected ObjectViewerRenderer createRenderer() {
         return new NodeRenderer();
