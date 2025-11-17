@@ -62,39 +62,39 @@
         </handler>
         <handler commandId="org.jkiss.dbeaver.ui.dashboard.create" class="org.jkiss.dbeaver.ui.dashboard.navigator.HandlerDashboardCreate">
             <enabledWhen>
-                <test property="org.jkiss.dbeaver.core.global.hasPermission" value="database-developer"/>
+                <test property="org.jkiss.dbeaver.core.global.ui.hasPermission" value="database-developer"/>
             </enabledWhen>
         </handler>
         <handler commandId="org.jkiss.dbeaver.ui.dashboard.delete" class="org.jkiss.dbeaver.ui.dashboard.navigator.HandlerDashboardDelete">
             <enabledWhen>
-                <test property="org.jkiss.dbeaver.core.global.hasPermission" value="database-developer"/>
+                <test property="org.jkiss.dbeaver.core.global.ui.hasPermission" value="database-developer"/>
             </enabledWhen>
         </handler>
 
         <handler commandId="org.jkiss.dbeaver.ui.dashboard.configure" class="org.jkiss.dbeaver.ui.dashboard.navigator.HandlerDashboardConfiguration">
             <enabledWhen>
-                <test property="org.jkiss.dbeaver.core.global.hasPermission" value="database-developer"/>
+                <test property="org.jkiss.dbeaver.core.global.ui.hasPermission" value="database-developer"/>
             </enabledWhen>
         </handler>
         <handler commandId="org.jkiss.dbeaver.ui.chart.refresh" class="org.jkiss.dbeaver.ui.dashboard.navigator.HandlerDashboardResetItem">
             <enabledWhen>
-                <test property="org.jkiss.dbeaver.core.global.hasPermission" value="configuration-manager"/>
+                <test property="org.jkiss.dbeaver.core.global.ui.hasPermission" value="configuration-manager"/>
             </enabledWhen>
         </handler>
         <handler commandId="org.jkiss.dbeaver.ui.dashboard.add" class="org.jkiss.dbeaver.ui.dashboard.navigator.HandlerDashboardAddItem">
             <enabledWhen>
-                <test property="org.jkiss.dbeaver.core.global.hasPermission" value="configuration-manager"/>
+                <test property="org.jkiss.dbeaver.core.global.ui.hasPermission" value="configuration-manager"/>
             </enabledWhen>
         </handler>
         <handler commandId="org.jkiss.dbeaver.ui.dashboard.catalog.show" class="org.jkiss.dbeaver.ui.dashboard.navigator.HandlerDashboardShowCatalog">
             <enabledWhen>
-                <test property="org.jkiss.dbeaver.core.global.hasPermission" value="configuration-manager"/>
+                <test property="org.jkiss.dbeaver.core.global.ui.hasPermission" value="configuration-manager"/>
             </enabledWhen>
         </handler>
         <handler commandId="org.jkiss.dbeaver.ui.dashboard.remove" class="org.jkiss.dbeaver.ui.dashboard.navigator.HandlerDashboardRemoveItem">
             <enabledWhen>
                 <and>
-                    <test property="org.jkiss.dbeaver.core.global.hasPermission" value="configuration-manager"/>
+                    <test property="org.jkiss.dbeaver.core.global.ui.hasPermission" value="configuration-manager"/>
                 </and>
             </enabledWhen>
         </handler>
@@ -109,7 +109,7 @@
             <command commandId="org.jkiss.dbeaver.ui.dashboard.open" style="pulldown" id="org.jkiss.dbeaver.menu.dashboards">
                 <visibleWhen>
                     <and>
-                        <test property="org.jkiss.dbeaver.core.global.hasPermission" value="database-developer"/>
+                        <test property="org.jkiss.dbeaver.core.global.ui.hasPermission" value="database-developer"/>
                         <reference definitionId="DBeaverPerspectiveActive"/>
                     </and>
                 </visibleWhen>
@@ -118,7 +118,7 @@
 
         <menuContribution allPopups="false" locationURI="menu:dataSourceMenu?after=tools">
             <command commandId="org.jkiss.dbeaver.ui.dashboard.open">
-                <visibleWhen checkEnabled="true"><test property="org.jkiss.dbeaver.core.global.hasPermission" value="database-developer"/></visibleWhen>
+                <visibleWhen checkEnabled="true"><test property="org.jkiss.dbeaver.core.global.ui.hasPermission" value="database-developer"/></visibleWhen>
             </command>
         </menuContribution>
 
@@ -153,7 +153,7 @@
                             <adapt type="org.eclipse.core.resources.IFolder">
                                 <and>
                                     <test property="org.jkiss.dbeaver.core.resource.type" value="dashboard folder"/>
-                                    <test property="org.jkiss.dbeaver.core.global.currentProjectResourceEditable"/>
+                                    <test property="org.jkiss.dbeaver.core.global.ui.currentProjectResourceEditable"/>
                                 </and>
                             </adapt>
                         </iterate>
