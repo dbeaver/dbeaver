@@ -23,10 +23,7 @@ import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDValueRow;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 /**
  * Row data
@@ -37,6 +34,8 @@ public class ResultSetRow implements DBDValueRow {
     public static final byte STATE_ADDED = 2;
     public static final byte STATE_REMOVED = 3;
 
+    private final Map<DBDAttributeBinding, ChangedValue> changes = new HashMap<>();
+
     public static class ColorInfo {
         @Nullable
         public Color rowForeground;
@@ -46,8 +45,8 @@ public class ResultSetRow implements DBDValueRow {
         public Color[] cellFgColors;
         @Nullable
         public Color[] cellBgColors;
-    }
 
+    }
     // Physical row number
     private int rowNumber;
     // Row number in grid
@@ -56,7 +55,6 @@ public class ResultSetRow implements DBDValueRow {
     @NotNull
     public Object[] values;
 
-    private final Map<DBDAttributeBinding, ChangedValue> changes = new HashMap<>();
     // Row state
     private byte state;
     @Nullable
@@ -173,7 +171,7 @@ public class ResultSetRow implements DBDValueRow {
         }
 
         public boolean isSameValue(@Nullable Object currentValue) {
-            return currentValue == value;
+            return Objects.equals(currentValue, value);
         }
     }
 }
