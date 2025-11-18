@@ -17,7 +17,6 @@
 
 package org.jkiss.dbeaver.model.cli;
 
-import org.eclipse.core.runtime.Platform;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
@@ -165,6 +164,6 @@ public abstract class ApplicationInstanceServer<T extends ApplicationInstanceCon
     }
 
     protected static String portPropertyName() {
-        return Platform.getProduct().getId() + ".port";
+        return "port";
     }
 }
