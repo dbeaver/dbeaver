@@ -416,11 +416,7 @@ public class DataSourceUtils {
                 return hostText;
             }
 
-            if (CommonUtils.isNotEmpty(serverName)) {
-                return serverName;
-            }
-
-            return "";
+            return CommonUtils.notEmpty(serverName);
         } else {
             return cfg.getUrl();
         }
