@@ -495,8 +495,8 @@
                 <driver
                     id="postgres-redshift-jdbc"
                     label="Redshift"
-                    icon="icons/redshift_icon.png"
-                    iconBig="icons/redshift_icon_big.png"
+                    icon="icons/redshift_icon.svg"
+                    iconBig="icons/redshift_icon_big.svg"
                     category="AWS"
                     class="com.amazon.redshift.Driver"
                     sampleURL="jdbc:redshift://{host}:{port}/{database}"
