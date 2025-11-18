@@ -156,7 +156,7 @@ class ResultSetPersister {
             // If we have complex values then leave only nested elements attributes
             for (Map.Entry<DBDAttributeBinding, ResultSetRow.ChangedValue> change : row.getChanges()) {
                 if (change.getValue().value() instanceof DBDAttributeBinding ab && attrRefs.contains(ab)) {
-                    row.getChange(ab).ifPresent(value -> changes.put(ab, value));
+                    row.getChange(ab).ifPresent(valueWrapper -> changes.put(ab, valueWrapper.value()));
                 }
             }
         } else {
@@ -166,7 +166,7 @@ class ResultSetPersister {
                     continue;
                 }
                 if (change.getValue().value() instanceof DBDAttributeBinding ab) {
-                    row.getChange(ab).ifPresent(value -> changes.put(change.getKey(), value));
+                    row.getChange(ab).ifPresent(valueWrapper -> changes.put(change.getKey(), valueWrapper.value()));
                 } else {
                     changes.put(change.getKey(), change.getValue().value());
                 }

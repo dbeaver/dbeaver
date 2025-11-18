@@ -532,7 +532,7 @@ public class ResultSetModel implements DBDResultSetModel {
                 if (origValue instanceof DBDAttributeBinding refAttr) {
                     // We reset top attribute value
                     attr = refAttr;
-                    origValue = row.getChange(attr).orElse(null);
+                    origValue = row.getChange(attr).map(ResultSetRow.ChangedValue::value).orElse(null);
                     rowIndexes = null;
                 }
                 updateCellValue(
