@@ -58,6 +58,7 @@ public class RuntimeUtilsTest extends DBeaverUnitTest {
         Assert.assertEquals("1s", RuntimeUtils.formatExecutionTime(Duration.ofSeconds(1)));
         Assert.assertEquals("0.5s", RuntimeUtils.formatExecutionTime(Duration.ofMillis(500)));
         Assert.assertEquals("0.025s", RuntimeUtils.formatExecutionTime(Duration.ofMillis(25)));
+        Assert.assertEquals("0.001s", RuntimeUtils.formatExecutionTime(Duration.ofMillis(1)));
         Assert.assertEquals("10s", RuntimeUtils.formatExecutionTime(Duration.ofSeconds(10)));
         Assert.assertEquals("1m 1s", RuntimeUtils.formatExecutionTime(Duration.ofMinutes(1).plusSeconds(1)));
         Assert.assertEquals("1m 0s", RuntimeUtils.formatExecutionTime(Duration.ofMinutes(1)));
