@@ -89,6 +89,8 @@ public class EditorUtils {
 
     public static final String COLORS_AND_FONTS_PAGE_ID = "org.eclipse.ui.preferencePages.ColorsAndFonts"; //$NON-NLS-1$
 
+    private static final String ZWNBSP = "\uFEFF";
+
     private static final Log log = Log.getLog(EditorUtils.class);
 
     /**
@@ -612,7 +614,9 @@ public class EditorUtils {
     public static List<Path> openExternalFiles(@NotNull String[] fileNames, @Nullable DBPDataSourceContainer currentContainer) {
         log.debug("Open external file(s) [" + Arrays.toString(fileNames) + "]");
         List<Path> openedFiles = new ArrayList<>();
-        Path[] filePaths = Arrays.stream(fileNames).map(Path::of).toArray(Path[]::new);
+        Path[] filePaths = Arrays.stream(fileNames)
+            .map(fName -> fName.replaceAll(ZWNBSP, ""))
+            .map(Path::of).toArray(Path[]::new);
         openFileEditors(filePaths, currentContainer, openedFiles);
 
         return openedFiles;
@@ -631,6 +635,10 @@ public class EditorUtils {
     ) {
         Map<FileTypeHandlerDescriptor, List<Path>> filesByHandler = new LinkedHashMap<>();
         for (Path path : fileNames) {
+            if (Files.isDirectory(path)) {
+                log.error("Can't open directory '" + path + "'");
+                continue;
+            }
             if (Files.exists(path)) {
                 String fileExtension = IOUtils.getFileExtension(path);
                 FileTypeHandlerDescriptor handler = CommonUtils.isEmpty(fileExtension) ?
