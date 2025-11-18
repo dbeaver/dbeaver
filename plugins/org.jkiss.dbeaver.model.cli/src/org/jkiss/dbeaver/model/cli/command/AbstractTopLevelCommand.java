@@ -32,6 +32,23 @@ public abstract class AbstractTopLevelCommand implements Runnable, CommandLine.I
         description = "Print instance thread dump.")
     private boolean dump;
 
+
+    @CommandLine.Option(
+        names = {"-h", "-help", "--help"},
+        description = "Show this help message and exit.",
+        usageHelp = true,
+        scope = CommandLine.ScopeType.INHERIT
+    )
+    private boolean help;
+
+    @CommandLine.Option(
+        names = {"-V", "--version"},
+        description = "Print version information and exit.",
+        versionHelp = true,
+        scope = CommandLine.ScopeType.INHERIT
+    )
+    private boolean version;
+
     @CommandLine.Option(names = {"-v", "--debug-logs"},
         description = "Show verbose debug logs.")
     private boolean debugLogs;
