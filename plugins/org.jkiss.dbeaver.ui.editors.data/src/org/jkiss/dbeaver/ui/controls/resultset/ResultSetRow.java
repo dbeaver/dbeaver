@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,8 +23,10 @@ import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDValueRow;
 
-import java.util.IdentityHashMap;
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 /**
  * Row data
@@ -53,8 +55,8 @@ public class ResultSetRow implements DBDValueRow {
     // Column values
     @NotNull
     public Object[] values;
-    @Nullable
-    public Map<DBDAttributeBinding, Object> changes;
+
+    private final Map<DBDAttributeBinding, ChangedValue> changes = new HashMap<>();
     // Row state
     private byte state;
     @Nullable
@@ -74,7 +76,19 @@ public class ResultSetRow implements DBDValueRow {
     }
 
     public boolean isChanged() {
-        return changes != null && !changes.isEmpty();
+        return !changes.isEmpty();
+    }
+
+    public boolean isChanged(@Nullable DBDAttributeBinding attr) {
+        return attr != null && changes.containsKey(attr);
+    }
+
+    public int getChangesCount() {
+        return changes.size();
+    }
+
+    public Collection<DBDAttributeBinding> getChangedAttributes() {
+        return changes.keySet();
     }
 
     @Override
@@ -102,33 +116,36 @@ public class ResultSetRow implements DBDValueRow {
         this.state = state;
     }
 
-    public boolean isChanged(DBDAttributeBinding attr) {
-        return changes != null && changes.containsKey(attr);
+    public void addChange(@NotNull DBDAttributeBinding attr, @Nullable Object oldValue) {
+        changes.put(attr, new ChangedValue(oldValue));
     }
 
-    public void addChange(DBDAttributeBinding attr, @Nullable Object oldValue) {
-        if (changes == null) {
-            changes = new IdentityHashMap<>();
-        }
-        changes.put(attr, oldValue);
+
+    @NotNull
+    public Optional<ChangedValue> getChange(@NotNull DBDAttributeBinding attr) {
+        return Optional.ofNullable(changes.get(attr));
     }
 
-    public void resetChange(DBDAttributeBinding attr) {
-        assert changes != null;
+    public Iterable<Map.Entry<DBDAttributeBinding, ChangedValue>> getChanges() {
+        return () -> changes.entrySet().iterator();
+    }
+
+    public void clearChange(@NotNull DBDAttributeBinding attr) {
         changes.remove(attr);
-        if (changes.isEmpty()) {
-            changes = null;
-        }
+        // We reset entire row changes. Cleanup all references on the same top attribute
+        changes.entrySet().removeIf(entry -> attr.equals(entry.getValue().value()));
+    }
+
+    public void clearChanges() {
+        changes.clear();
     }
 
     void release() {
         for (Object value : values) {
             DBUtils.releaseValue(value);
         }
-        if (changes != null) {
-            for (Object oldValue : changes.values()) {
-                DBUtils.releaseValue(oldValue);
-            }
+        for (Object oldValue : changes.values()) {
+            DBUtils.releaseValue(oldValue);
         }
     }
 
@@ -147,5 +164,16 @@ public class ResultSetRow implements DBDValueRow {
 
         }
         return super.equals(obj);
+    }
+
+    public record ChangedValue(@Nullable Object value) {
+        @NotNull
+        private static ChangedValue empty() {
+            return new ChangedValue(null);
+        }
+
+        public boolean isSameValue(@Nullable Object currentValue) {
+            return currentValue == value;
+        }
     }
 }
