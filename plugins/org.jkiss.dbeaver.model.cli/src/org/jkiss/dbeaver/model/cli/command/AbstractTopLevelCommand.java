@@ -32,6 +32,12 @@ public abstract class AbstractTopLevelCommand implements Runnable, CommandLine.I
         description = "Print instance thread dump.")
     private boolean dump;
 
+    @CommandLine.Option(names = {"--debug-logs"},
+        description = "Enable debug logging.",
+        scope = CommandLine.ScopeType.INHERIT
+    )
+    private boolean debugLogs;
+
     @CommandLine.Mixin
     private EclipseOptions eclipseOptions;
     @CommandLine.Mixin
@@ -58,6 +64,9 @@ public abstract class AbstractTopLevelCommand implements Runnable, CommandLine.I
 
     @Override
     public void run() {
+        if (debugLogs) {
+            Log.setLogHandler(null);
+        }
         try {
             if (dump) {
                 if (controller == null) {
