@@ -165,10 +165,6 @@ public class ResultSetRow implements DBDValueRow {
     }
 
     public record ChangedValue(@Nullable Object value) {
-        @NotNull
-        private static ChangedValue empty() {
-            return new ChangedValue(null);
-        }
 
         public boolean isSameValue(@Nullable Object currentValue) {
             return Objects.equals(currentValue, value);
