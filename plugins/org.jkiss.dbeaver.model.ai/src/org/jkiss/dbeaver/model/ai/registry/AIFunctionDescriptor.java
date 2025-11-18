@@ -89,7 +89,7 @@ public class AIFunctionDescriptor extends AbstractDescriptor {
     private final boolean global;
     private final boolean hideFromPrefs;
     private final AIFunctionResult.FunctionType type;
-    private final String[] dependsOnIds;
+    private final String[] dependsOn;
     private final String categoryId;
     private final Parameter[] parameters;
 
@@ -103,7 +103,7 @@ public class AIFunctionDescriptor extends AbstractDescriptor {
         this.global = CommonUtils.toBoolean(config.getAttribute("global"));
         this.hideFromPrefs = CommonUtils.toBoolean(config.getAttribute("hideFromPrefs"));
         this.categoryId = config.getAttribute("categoryId");
-        this.dependsOnIds = CommonUtils.splitString(config.getAttribute("dependsOn"), ',').toArray(new String[0]);
+        this.dependsOn = CommonUtils.splitString(config.getAttribute("dependsOn"), ',').toArray(new String[0]);
         this.type = CommonUtils.valueOf(
             AIFunctionResult.FunctionType.class,
             config.getAttribute("type"),
@@ -149,7 +149,7 @@ public class AIFunctionDescriptor extends AbstractDescriptor {
         return global;
     }
 
-    public boolean isHideFromPrefs() {
+    public boolean isHidden() {
         return hideFromPrefs;
     }
 
@@ -159,8 +159,8 @@ public class AIFunctionDescriptor extends AbstractDescriptor {
     }
 
     @NotNull
-    public String[] getDependsOnIds() {
-        return dependsOnIds;
+    public String[] getDependsOn() {
+        return dependsOn;
     }
 
     @NotNull

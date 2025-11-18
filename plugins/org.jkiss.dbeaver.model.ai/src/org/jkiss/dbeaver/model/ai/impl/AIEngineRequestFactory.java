@@ -24,10 +24,7 @@ import org.jkiss.dbeaver.model.ai.*;
 import org.jkiss.dbeaver.model.ai.engine.AIDatabaseContext;
 import org.jkiss.dbeaver.model.ai.engine.AIEngine;
 import org.jkiss.dbeaver.model.ai.engine.AIEngineRequest;
-import org.jkiss.dbeaver.model.ai.registry.AIEngineDescriptor;
-import org.jkiss.dbeaver.model.ai.registry.AIFunctionDescriptor;
-import org.jkiss.dbeaver.model.ai.registry.AIFunctionRegistry;
-import org.jkiss.dbeaver.model.ai.registry.AISettingsManager;
+import org.jkiss.dbeaver.model.ai.registry.*;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -154,6 +151,14 @@ public class AIEngineRequestFactory {
             }
         }
 
+        AIPromptGeneratorDescriptor currentPromptGenerator = null;
+        for (AIPromptGeneratorDescriptor promptGeneratorDescriptor : AIPromptGeneratorRegistry.getInstance().getAllPromptGenerator()) {
+            if (systemPromptGenerator.generatorId().equals(promptGeneratorDescriptor.getId())) {
+                currentPromptGenerator = promptGeneratorDescriptor;
+                break;
+            }
+        }
+
         AISettings aiSettings = AISettingsManager.getInstance().getSettings();
         Set<String> enabledFunctions = aiSettings.getEnabledFunctions();
         Set<String> enabledFunctionCategories = aiSettings.getEnabledFunctionCategories();
@@ -164,7 +169,7 @@ public class AIEngineRequestFactory {
                 !enabledFunctionCategories.contains(aiFunctionDescriptor.getCategoryId())
         );
 
-        Set<String> requiredByDeps = resolveFunctionDependencies(selectedFunctions);
+        Set<String> requiredByDeps = resolveDependencies(selectedFunctions, currentPromptGenerator);
 
         if (!requiredByDeps.isEmpty()) {
             for (AIFunctionDescriptor f : functions) {
@@ -203,37 +208,32 @@ public class AIEngineRequestFactory {
      * Resolves transitive dependencies for the given list of already selected function descriptors.
      */
     @NotNull
-    private static Set<String> resolveFunctionDependencies(@NotNull List<AIFunctionDescriptor> selected) {
+    private static Set<String> resolveDependencies(@NotNull List<AIFunctionDescriptor> selected, @Nullable AIPromptGeneratorDescriptor pg) {
         Set<String> result = new HashSet<>();
-        // visiting — defend from cycling
-        Set<String> visiting = new HashSet<>();
         for (AIFunctionDescriptor fd : selected) {
-            collectDeps(fd, result, visiting);
+            collectDependencies(fd.getDependsOn(), result);
+        }
+        if (pg != null) {
+            collectDependencies(pg.getDependsOn(), result);
         }
         return result;
     }
 
-    private static void collectDeps(
-        @NotNull AIFunctionDescriptor fd,
-        @NotNull Set<String> result,
-        @NotNull Set<String> visiting
+    private static void collectDependencies(
+        @NotNull String[] dependencies,
+        @NotNull Set<String> result
     ) {
-        String[] deps = fd.getDependsOnIds();
-        for (String depId : deps) {
+        for (String depId : dependencies) {
             if (CommonUtils.isEmpty(depId)) {
                 continue;
             }
             if (!result.add(depId)) {
                 continue;
             }
-            if (!visiting.add(depId)) {
-                continue;
-            }
             AIFunctionDescriptor dep = AIFunctionRegistry.getInstance().getFunction(depId);
             if (dep != null) {
-                collectDeps(dep, result, visiting);
+                collectDependencies(dep.getDependsOn(), result);
             }
-            visiting.remove(depId);
         }
     }
 }
