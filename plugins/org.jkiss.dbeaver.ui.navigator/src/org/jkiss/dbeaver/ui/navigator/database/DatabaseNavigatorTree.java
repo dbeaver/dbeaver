@@ -982,7 +982,7 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
         protected Composite createFilterControls(Composite parent) {
             super.createFilterControls(parent);
 
-            if (navigatorFilter instanceof DatabaseNavigatorTreeFilter) {
+            if (navigatorFilter instanceof DatabaseNavigatorTreeFilter dnf && !dnf.isConnectionsOnly()) {
                 ((GridLayout) parent.getLayout()).numColumns++;
 
                 final ToolBarManager filterManager = new ToolBarManager();

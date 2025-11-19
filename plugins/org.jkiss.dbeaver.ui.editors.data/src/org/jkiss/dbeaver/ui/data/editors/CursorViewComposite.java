@@ -226,23 +226,36 @@ public class CursorViewComposite extends Composite implements IResultSetContaine
             }
             try (resultSet) {
                 long startTime = System.currentTimeMillis();
-                DBDDataReceiver.startFetchWorkflow(dataReceiver, session, resultSet, firstRow, maxRows);
-                long rowCount = 0;
-                while (resultSet.nextRow()) {
-                    if (monitor.isCanceled()) {
-                        // Fetch not more than max rows
-                        break;
-                    }
-                    dataReceiver.fetchRow(session, resultSet);
-                    rowCount++;
-                    if (rowCount >= maxRows) {
-                        break;
-                    }
-                    if (rowCount % 100 == 0) {
-                        monitor.subTask(rowCount + ResultSetMessages.dialog_cursor_view_monitor_rows_fetched);
-                        monitor.worked(100);
-                    }
+                // FIXME: we cannot use fetch workflow because statement is not closed
+                // until user close data viewer
+                //DBDDataReceiver.startFetchWorkflow(dataReceiver, session, resultSet, firstRow, maxRows);
+                dataReceiver.fetchStart(session, resultSet, firstRow, maxRows);
+                long rowCount;
+                try {
+                    rowCount = 0;
+                    while (resultSet.nextRow()) {
+                        if (monitor.isCanceled()) {
+                            // Fetch not more than max rows
+                            break;
+                        }
+                        dataReceiver.fetchRow(session, resultSet);
+                        rowCount++;
+                        if (rowCount >= maxRows) {
+                            break;
+                        }
+                        if (rowCount % 100 == 0) {
+                            monitor.subTask(rowCount + ResultSetMessages.dialog_cursor_view_monitor_rows_fetched);
+                            monitor.worked(100);
+                        }
 
+                    }
+                } finally {
+                    try {
+                        dataReceiver.fetchEnd(session, resultSet);
+                    } catch (DBCException e) {
+                        log.error("Error while finishing result set fetch", e); //$NON-NLS-1$
+                    }
+                    dataReceiver.close();
                 }
                 statistics.setFetchTime(System.currentTimeMillis() - startTime);
                 statistics.setRowsFetched(rowCount);
