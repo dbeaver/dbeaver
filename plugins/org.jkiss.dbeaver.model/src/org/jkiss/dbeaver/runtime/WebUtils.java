@@ -186,7 +186,6 @@ public class WebUtils {
         DBPAuthInfo authInfo
     ) throws IOException, InterruptedException {
         monitor.subTask("Download file '" + externalURL + "'");
-
         try (final OutputStream outputStream = Files.newOutputStream(localFile)) {
             return downloadRemoteFile(monitor, taskName, externalURL, outputStream, authInfo);
         }

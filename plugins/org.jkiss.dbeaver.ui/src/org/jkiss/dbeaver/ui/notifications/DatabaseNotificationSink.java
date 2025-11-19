@@ -24,12 +24,10 @@ import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.window.Window;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
-import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.PlatformUI;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
-import org.jkiss.dbeaver.ui.screenreaders.ScreenReader;
 import org.jkiss.dbeaver.ui.screenreaders.ScreenReaderPreferences;
 
 import java.util.*;
@@ -138,12 +136,13 @@ public class DatabaseNotificationSink {
         if (popup != null) {
             popup.close();
         }
+        final DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
 
         Shell shell = new Shell(PlatformUI.getWorkbench().getDisplay());
         popup = new DatabaseNotificationPopup(shell);
         popup.setFadingEnabled(false);
 
-        popup.setDelayClose(DBWorkbench.getPlatform().getPreferenceStore().getInt(ModelPreferences.NOTIFICATIONS_CLOSE_DELAY_TIMEOUT));
+        popup.setDelayClose(store.getInt(ModelPreferences.NOTIFICATIONS_CLOSE_DELAY_TIMEOUT));
 
         List<AbstractNotification> toDisplay = new ArrayList<>(currentlyNotifying);
         Collections.sort(toDisplay);
@@ -152,13 +151,10 @@ public class DatabaseNotificationSink {
         popup.setBlockOnOpen(false);
 
         popup.open();
-        final DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
-        String storedScreenReader = store.getString(ScreenReaderPreferences.PREF_SCREEN_READER_ACCESSIBILITY);
-        ScreenReader screenReader = ScreenReader.getScreenReader(storedScreenReader);
-        // set focus for all screen readers  
-        if (!screenReader.equals(ScreenReader.DEFAULT)) {
+        // set focus for all screen readers
+        if (store.getBoolean(ScreenReaderPreferences.PREF_FORCE_FOCUS_ON_EDITOR)) {
             popup.setFocus();
         }
     }
-
 }
+

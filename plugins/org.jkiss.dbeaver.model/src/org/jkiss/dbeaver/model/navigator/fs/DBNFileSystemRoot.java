@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.model.navigator.fs;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBConstants;
@@ -68,22 +69,26 @@ public class DBNFileSystemRoot extends DBNPathBase implements DBNLazyNode
         return false;
     }
 
+    @NotNull
     @Override
     public String getNodeType() {
         return NodePathType.dbvfs.name() + ".folder";
     }
 
+    @NotNull
     @Override
     public String getNodeTypeLabel() {
         return ModelMessages.fs_folder;
     }
 
+    @NotNull
     @Override
     @Property(id = DBConstants.PROP_ID_NAME, viewable = true, order = 1)
     public String getNodeDisplayName() {
         return root.getName();
     }
 
+    @Nullable
     @Override
     public DBPImage getNodeIcon() {
         return DBIcon.TREE_FOLDER_CONSTRAINT;
@@ -94,8 +99,9 @@ public class DBNFileSystemRoot extends DBNPathBase implements DBNLazyNode
         return true;
     }
 
+    @Nullable
     @Override
-    public DBNNode refreshNode(DBRProgressMonitor monitor, Object source) throws DBException {
+    public DBNNode refreshNode(@NotNull DBRProgressMonitor monitor, @Nullable Object source) throws DBException {
         this.path = null;
         return super.refreshNode(monitor, source);
     }
@@ -119,13 +125,14 @@ public class DBNFileSystemRoot extends DBNPathBase implements DBNLazyNode
     }
 
     @Override
-    public <T> T getAdapter(Class<T> adapter) {
+    public <T> T getAdapter(@NotNull Class<T> adapter) {
         if (adapter.isInstance(root)) {
             return adapter.cast(root);
         }
         return super.getAdapter(adapter);
     }
 
+    @NotNull
     @Override
     public String toString() {
         return root.getRootId() + "@" + root.getFileSystem().getId() + "->" + super.toString();

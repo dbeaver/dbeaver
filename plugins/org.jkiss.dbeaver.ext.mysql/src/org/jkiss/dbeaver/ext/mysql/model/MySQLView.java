@@ -100,7 +100,7 @@ public class MySQLView extends MySQLTableBase implements DBSView
 
     public static class AdditionalInfoValidator implements IPropertyCacheValidator<MySQLView> {
         @Override
-        public boolean isPropertyCached(MySQLView object, Object propertyId)
+        public boolean isPropertyCached(@NotNull MySQLView object, @NotNull Object propertyId)
         {
             return object.additionalInfo.loaded;
         }
@@ -249,6 +249,7 @@ public class MySQLView extends MySQLTableBase implements DBSView
         return matcher.find() ? matcher.group(1) : null;
     }
 
+    @NotNull
     @Override
     @Property(hidden = true, editable = true, updatable = true, order = -1)
     public String getObjectDefinitionText(@NotNull DBRProgressMonitor monitor, @NotNull Map<String, Object> options) throws DBException

@@ -30,6 +30,7 @@ import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.navigator.*;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.utils.ArrayUtils;
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -53,6 +54,7 @@ public class DBNFileSystems extends DBNNode implements DBNNodeWithCache, DBPHidd
         this.disposeFileSystems();
     }
 
+    @NotNull
     @Override
     public String getNodeType() {
         return NodePathType.dbvfs.name();
@@ -64,11 +66,13 @@ public class DBNFileSystems extends DBNNode implements DBNNodeWithCache, DBPHidd
         return NodePathType.dbvfs.name();
     }
 
+    @NotNull
     @Override
     public String getNodeTypeLabel() {
         return ModelMessages.fs_root;
     }
 
+    @NotNull
     @Override
     @Property(id = DBConstants.PROP_ID_NAME, viewable = true, order = 1)
     public String getNodeDisplayName() {
@@ -81,12 +85,14 @@ public class DBNFileSystems extends DBNNode implements DBNNodeWithCache, DBPHidd
         return NodePathType.dbvfs.name();
     }
 
+    @Nullable
     @Override
 //    @Property(viewable = false, order = 100)
     public String getNodeDescription() {
         return "All virtual file systems";
     }
 
+    @Nullable
     @Override
     public DBPImage getNodeIcon() {
         return DBIcon.TREE_FILE;
@@ -111,7 +117,7 @@ public class DBNFileSystems extends DBNNode implements DBNNodeWithCache, DBPHidd
     }
 
     public DBNFileSystemRoot getRootFolder(@NotNull DBRProgressMonitor monitor, @NotNull String id) throws DBException {
-        for (DBNFileSystem fsNode : getChildren(monitor)) {
+        for (DBNFileSystem fsNode : ArrayUtils.safeArray(getChildren(monitor))) {
             DBNFileSystemRoot rootFolder = fsNode.getChild(monitor, id);
             if (rootFolder != null) {
                 return rootFolder;
@@ -120,6 +126,7 @@ public class DBNFileSystems extends DBNNode implements DBNNodeWithCache, DBPHidd
         return null;
     }
 
+    @Nullable
     @Override
     public DBNFileSystem[] getChildren(@NotNull DBRProgressMonitor monitor) throws DBException {
         if (children == null && !monitor.isForceCacheUsage()) {
@@ -227,12 +234,13 @@ public class DBNFileSystems extends DBNNode implements DBNNodeWithCache, DBPHidd
     }
 
     @Override
-    public boolean isManagable() {
+    public boolean isManageable() {
         return true;
     }
 
+    @Nullable
     @Override
-    public DBNNode refreshNode(DBRProgressMonitor monitor, Object source) throws DBException {
+    public DBNNode refreshNode(@NotNull DBRProgressMonitor monitor, @Nullable Object source) throws DBException {
         refreshFileSystems(monitor);
         return this;
     }
@@ -253,6 +261,7 @@ public class DBNFileSystems extends DBNNode implements DBNNodeWithCache, DBPHidd
         }
     }
 
+    @NotNull
     @Deprecated
     @Override
     public String getNodeItemPath() {
@@ -269,6 +278,7 @@ public class DBNFileSystems extends DBNNode implements DBNNodeWithCache, DBPHidd
         return true;
     }
 
+    @NotNull
     @Override
     public String toString() {
         return "FileSystems(" + getOwnerProject().getName()  +")";

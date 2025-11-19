@@ -61,6 +61,8 @@ public class DBConstants {
     // Misc
     public static final String IS_WINDOWS_STORE_APP = "dbeaver.windows.store.app";
 
+    public static final String DEFAULT_PROJECT_NAME = "General";
+
     public static final int METADATA_FETCH_SIZE = 1000;
 
     public static final String DATA_SOURCE_PROPERTY_USER = "user"; //NON-NLS-1

@@ -163,6 +163,7 @@ public class PostgreExtension implements PostgreObject, PostgreScriptObject, DBP
         return database;
     }
 
+    @NotNull
     @Override
     public String getObjectDefinitionText(@NotNull DBRProgressMonitor monitor, @NotNull Map<String, Object> options) throws DBException {
         String lineBreak = System.getProperty(StandardConstants.ENV_LINE_SEPARATOR);
@@ -185,6 +186,7 @@ public class PostgreExtension implements PostgreObject, PostgreScriptObject, DBP
         {
             return false;
         }
+        @Nullable
         @Override
         public Object[] getPossibleValues(PostgreExtension object)
         {

@@ -30,7 +30,10 @@ import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.viewers.*;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.custom.*;
+import org.eclipse.swt.custom.CTabFolder;
+import org.eclipse.swt.custom.CTabFolder2Adapter;
+import org.eclipse.swt.custom.CTabFolderEvent;
+import org.eclipse.swt.custom.CTabItem;
 import org.eclipse.swt.events.*;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Point;
@@ -44,7 +47,6 @@ import org.eclipse.ui.internal.WorkbenchImages;
 import org.eclipse.ui.menus.CommandContributionItem;
 import org.eclipse.ui.menus.CommandContributionItemParameter;
 import org.eclipse.ui.menus.IMenuService;
-import org.eclipse.ui.themes.ITheme;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -84,10 +86,7 @@ import org.jkiss.dbeaver.runtime.jobs.DataSourceJob;
 import org.jkiss.dbeaver.tools.transfer.ui.internal.DTUIMessages;
 import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.actions.DisabledLabelAction;
-import org.jkiss.dbeaver.ui.controls.TabFolderReorder;
-import org.jkiss.dbeaver.ui.controls.ToolbarSeparatorContribution;
-import org.jkiss.dbeaver.ui.controls.VerticalButton;
-import org.jkiss.dbeaver.ui.controls.VerticalFolder;
+import org.jkiss.dbeaver.ui.controls.*;
 import org.jkiss.dbeaver.ui.controls.autorefresh.AutoRefreshControl;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetUtils.OrderingPolicy;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetUtils.OrderingStrategy;
@@ -108,6 +107,7 @@ import org.jkiss.dbeaver.ui.data.IValueController;
 import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
 import org.jkiss.dbeaver.ui.editors.data.internal.DataEditorsMessages;
 import org.jkiss.dbeaver.ui.editors.data.preferences.PrefPageResultSetMain;
+import org.jkiss.dbeaver.ui.internal.UIMessages;
 import org.jkiss.dbeaver.ui.navigator.NavigatorCommands;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.PrefUtils;
@@ -168,11 +168,10 @@ public class ResultSetViewer extends Viewer
     private final IResultSetDecorator decorator;
     @Nullable
     private ResultSetFilterPanel filtersPanel;
-    private final SashForm viewerSash;
+    private final CustomSashForm viewerSash;
 
     private final VerticalFolder panelSwitchFolder;
     private CTabFolder panelFolder;
-    private ToolBarManager panelToolBar;
 
     private final VerticalFolder presentationSwitchFolder;
     private final Composite presentationPanel;
@@ -193,8 +192,7 @@ public class ResultSetViewer extends Viewer
     private final List<ResultSetPanelDescriptor> availablePanels = new ArrayList<>();
 
     private final Map<ResultSetPresentationDescriptor, PresentationSettings> presentationSettings = new HashMap<>();
-    private final Map<String, IResultSetPanel> activePanels = new HashMap<>();
-    //private final Map<String, ToolBarManager> activeToolBars = new HashMap<>();
+    private final Map<String, PanelInfo> activePanels = new HashMap<>();
 
     @NotNull
     private final IResultSetContainer container;
@@ -275,6 +273,7 @@ public class ResultSetViewer extends Viewer
 
         this.mainPanel = new ConComposite(parent);
         this.mainPanel.setGridLayout(supportsPanels ? 3 : 2);
+        ((GridLayout) this.mainPanel.getLayout()).verticalSpacing = 0;
 
         this.autoRefreshControl = new AutoRefreshControl(
             this.mainPanel, ResultSetViewer.class.getSimpleName(), monitor -> refreshData(null));
@@ -331,8 +330,11 @@ public class ResultSetViewer extends Viewer
         try {
             this.findReplaceTarget = new DynamicFindReplaceTarget();
 
-            this.viewerSash = new SashForm(this.viewerPanel, UIUtils.checkSashStyle(SWT.HORIZONTAL | SWT.SMOOTH));
-            this.viewerSash.setSashWidth(5);
+            this.viewerSash = UIUtils.createPartDivider(
+                getSite().getPart(),
+                this.viewerPanel,
+                UIUtils.checkSashStyle(SWT.HORIZONTAL | SWT.SMOOTH)
+            );
             this.viewerSash.setLayoutData(new GridData(GridData.FILL_BOTH));
             CSSUtils.markConnectionTypeColor(this.viewerSash);
 
@@ -358,11 +360,6 @@ public class ResultSetViewer extends Viewer
                     }
                 });
 
-                this.panelToolBar = new ToolBarManager(SWT.HORIZONTAL | SWT.RIGHT | SWT.FLAT);
-                Composite trControl = new ConComposite(panelFolder, SWT.NONE);
-                trControl.setLayout(new FillLayout());
-                ToolBar panelToolbarControl = this.panelToolBar.createControl(trControl);
-                this.panelFolder.setTopRight(trControl, SWT.RIGHT | SWT.WRAP);
                 this.panelFolder.addSelectionListener(new SelectionAdapter() {
                     @Override
                     public void widgetSelected(SelectionEvent e) {
@@ -486,8 +483,7 @@ public class ResultSetViewer extends Viewer
         UIUtils.applyMainFont(panelSwitchFolder);
 
         if (activePresentation instanceof AbstractPresentation abstractPresentation) {
-            ITheme currentTheme = PlatformUI.getWorkbench().getThemeManager().getCurrentTheme();
-            abstractPresentation.applyThemeSettings(currentTheme);
+            abstractPresentation.applyThemeSettings(UIUtils.getCurrentTheme());
         }
     }
 
@@ -1036,7 +1032,7 @@ public class ResultSetViewer extends Viewer
 
             }
         } else {
-            if (viewerSash != null) {
+            if (viewerSash != null && viewerSash.getWeights().length > 1) {
                 viewerSash.setMaximizedControl(viewerSash.getChildren()[0]);
             }
         }
@@ -1205,28 +1201,18 @@ public class ResultSetViewer extends Viewer
 
     @Override
     public IResultSetPanel getVisiblePanel() {
-        return isPanelsVisible() ? activePanels.get(getPresentationSettings().activePanelId) : null;
+        PanelInfo panelInfo = isPanelsVisible() ? activePanels.get(getPresentationSettings().activePanelId) : null;
+        return panelInfo == null ? null : panelInfo.panel;
     }
 
-/*
-    String getActivePanelId() {
-        return getPresentationSettings().activePanelId;
+    @Nullable
+    ResultSetFilterPanel getFiltersPanel() {
+        return filtersPanel;
     }
-
-    void closeActivePanel() {
-        CTabItem activePanelItem = panelFolder.getSelection();
-        if (activePanelItem != null) {
-            activePanelItem.dispose();
-        }
-        if (panelFolder.getItemCount() <= 0) {
-            showPanels(false, true, true);
-        }
-    }
-*/
 
     @Override
     public IResultSetPanel[] getActivePanels() {
-        return activePanels.values().toArray(new IResultSetPanel[0]);
+        return activePanels.values().stream().map(pi -> pi.panel).toArray(IResultSetPanel[]::new);
     }
 
     @Override
@@ -1240,15 +1226,15 @@ public class ResultSetViewer extends Viewer
 
         PresentationSettings presentationSettings = getPresentationSettings();
 
-        IResultSetPanel panel = activePanels.get(id);
-        if (panel != null) {
+        PanelInfo panelInfo = activePanels.get(id);
+        if (panelInfo != null) {
             CTabItem panelTab = getPanelTab(id);
             if (panelTab != null) {
                 if (setActive) {
                     panelFolder.setSelection(panelTab);
                     presentationSettings.activePanelId = id;
                     if (showPanels) {
-                        panel.setFocus();
+                        panelInfo.panel.setFocus();
                     }
                     //panelTab.getControl().setFocus();
                 }
@@ -1263,18 +1249,41 @@ public class ResultSetViewer extends Viewer
             log.debug("Panel '" + id + "' not found");
             return false;
         }
+        IResultSetPanel panel;
         try {
             panel = panelDescriptor.createInstance();
         } catch (DBException e) {
             DBWorkbench.getPlatformUI().showError("Can't show panel", "Can't create panel '" + id + "'", e);
             return false;
         }
-        activePanels.put(id, panel);
+        panelInfo = new PanelInfo(panelDescriptor, panel);
+
+        activePanels.put(id, panelInfo);
 
         // Create control and tab item
         panelFolder.setRedraw(false);
         try {
-            Control panelControl = panel.createContents(activePresentation, panelFolder);
+            Composite panelComposite = UIUtils.createComposite(panelFolder, 1);
+            ((GridLayout) panelComposite.getLayout()).verticalSpacing = 0;
+
+            // Toolbar
+            GridLayout layout = new GridLayout(2, false);
+            layout.marginWidth = 0;
+            layout.marginHeight = 0;
+            layout.verticalSpacing = 0;
+            Composite trControl = new ConComposite(panelComposite, SWT.NONE);
+            trControl.setLayout(layout);
+            trControl.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+            if (panel.needsSeparator()) {
+                new Label(panelComposite, SWT.SEPARATOR | SWT.HORIZONTAL).setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+            }
+
+            // Content placeholder
+            Composite panelPH = new Composite(panelComposite, SWT.NONE);
+            panelPH.setLayoutData(new GridData(GridData.FILL_BOTH));
+            panelPH.setLayout(new FillLayout());
+
+            panel.createContents(activePresentation, panelPH);
 
             boolean firstPanel = panelFolder.getItemCount() == 0;
             CTabItem panelTab = new CTabItem(panelFolder, SWT.CLOSE);
@@ -1282,7 +1291,7 @@ public class ResultSetViewer extends Viewer
             panelTab.setText(panelDescriptor.getLabel());
             panelTab.setImage(DBeaverIcons.getImage(panelDescriptor.getIcon()));
             panelTab.setToolTipText(panelDescriptor.getDescription());
-            panelTab.setControl(panelControl);
+            panelTab.setControl(panelComposite);
             UIUtils.disposeControlOnItemDispose(panelTab);
 
             if (setActive || firstPanel) {
@@ -1290,6 +1299,19 @@ public class ResultSetViewer extends Viewer
             }
             if (showPanels) {
                 panel.setFocus();
+            }
+
+            {
+                panelInfo.actionToolBar = new ToolBarManager(SWT.HORIZONTAL | SWT.RIGHT | SWT.FLAT);
+                panel.contributeActions(panelInfo.actionToolBar);
+                ToolBar toolBar = panelInfo.actionToolBar.createControl(trControl);
+                toolBar.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+            }
+            {
+                ToolBarManager panelToolBar = new ToolBarManager(SWT.HORIZONTAL | SWT.RIGHT | SWT.FLAT);
+                addDefaultPanelActions(panelToolBar);
+                ToolBar toolBar = panelToolBar.createControl(trControl);
+                toolBar.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
             }
         } finally {
             panelFolder.setRedraw(true);
@@ -1316,7 +1338,7 @@ public class ResultSetViewer extends Viewer
             }
         }
         if (settings.enabledPanelIds.isEmpty() && !availablePanels.isEmpty()) {
-            settings.enabledPanelIds.add(availablePanels.get(0).getId());
+            settings.enabledPanelIds.add(availablePanels.getFirst().getId());
         }
         if (!settings.enabledPanelIds.contains(settings.activePanelId)) {
             settings.activePanelId = null;
@@ -1340,18 +1362,18 @@ public class ResultSetViewer extends Viewer
     private void setActivePanel(String panelId) {
         PresentationSettings settings = getPresentationSettings();
         settings.activePanelId = panelId;
-        IResultSetPanel panel = activePanels.get(panelId);
+        PanelInfo panel = activePanels.get(panelId);
         if (panel != null) {
-            panel.activatePanel();
+            panel.panel.activatePanel();
             updatePanelActions();
             savePresentationSettings();
         }
     }
 
     private void removePanel(String panelId) {
-        IResultSetPanel panel = activePanels.remove(panelId);
+        PanelInfo panel = activePanels.remove(panelId);
         if (panel != null) {
-            panel.deactivatePanel();
+            panel.panel.deactivatePanel();
         }
         getPresentationSettings().enabledPanelIds.remove(panelId);
         if (activePanels.isEmpty()) {
@@ -1392,8 +1414,10 @@ public class ResultSetViewer extends Viewer
         CTabItem activePanelTab = panelFolder.getSelection();
 
         if (!show) {
+            boolean panelHadFocus = activePanelTab != null && !activePanelTab.getControl().isDisposed()
+                && UIUtils.hasFocus(activePanelTab.getControl());
             viewerSash.setMaximizedControl(viewerSash.getChildren()[0]);
-            if (activePanelTab != null && !activePanelTab.getControl().isDisposed() && UIUtils.hasFocus(activePanelTab.getControl())) {
+            if (panelHadFocus) {
                 // Set focus to presentation
                 activePresentation.getControl().setFocus();
             }
@@ -1457,10 +1481,10 @@ public class ResultSetViewer extends Viewer
     }
 
     public void togglePanelsMaximize() {
-        if (this.viewerSash.getMaximizedControl() == null) {
-            this.viewerSash.setMaximizedControl(this.panelFolder);
+        if (!this.viewerSash.isUpHidden()) {
+            this.viewerSash.hideUp();
         } else {
-            this.viewerSash.setMaximizedControl(null);
+            this.viewerSash.showUp();
         }
     }
 
@@ -1495,8 +1519,10 @@ public class ResultSetViewer extends Viewer
         return items;
     }
 
-    private void addDefaultPanelActions() {
-        panelToolBar.add(new Action(ResultSetMessages.result_set_view_menu_text, WorkbenchImages.getImageDescriptor(IWorkbenchGraphicConstants.IMG_LCL_VIEW_MENU)) {
+    private void addDefaultPanelActions(ToolBarManager panelToolBar) {
+        panelToolBar.add(new Action(
+            ResultSetMessages.result_set_view_menu_text,
+            WorkbenchImages.getImageDescriptor(IWorkbenchGraphicConstants.IMG_LCL_VIEW_MENU)) {
             @Override
             public void run() {
                 ToolBar tb = panelToolBar.getControl();
@@ -1567,7 +1593,7 @@ public class ResultSetViewer extends Viewer
 
     @Nullable
     @Override
-    public <T> T getAdapter(Class<T> adapter)
+    public <T> T getAdapter(@NotNull Class<T> adapter)
     {
         if (UIUtils.isUIThread()) {
             if (UIUtils.hasFocus(filtersPanel)) {
@@ -1654,17 +1680,20 @@ public class ResultSetViewer extends Viewer
         if (statusBar == null || statusBar.isDisposed()) {
             return;
         }
-        if (statusBar != null) statusBar.setRedraw(false);
+        if (statusBar != null) {
+            statusBar.setRedraw(false);
+        }
         try {
             for (ToolBarManager tb : toolbarList) {
                 UIUtils.updateContributionItems(tb);
             }
-            if (panelToolBar != null) {
-                UIUtils.updateContributionItems(panelToolBar);
+            if (statusBar != null) {
+                statusBar.layout(true, true);
             }
-            if (statusBar != null) statusBar.layout(true, true);
         } finally {
-            if (statusBar != null) statusBar.setRedraw(true);
+            if (statusBar != null) {
+                statusBar.setRedraw(true);
+            }
         }
     }
 
@@ -1850,7 +1879,9 @@ public class ResultSetViewer extends Viewer
         }
         final IMenuService menuService = getSite().getService(IMenuService.class);
 
-        if (CommonUtils.isBitSet(decorator.getDecoratorFeatures(), IResultSetDecorator.FEATURE_EDIT)) {
+        if (CommonUtils.isBitSet(decorator.getDecoratorFeatures(), IResultSetDecorator.FEATURE_EDIT) &&
+            !ApplicationPolicyProvider.getInstance().isPolicyEnabled(ApplicationPolicyProvider.POLICY_DATA_EDIT)
+        ) {
             ToolBarManager editToolBarManager = new ToolBarManager(SWT.FLAT | SWT.HORIZONTAL | SWT.RIGHT);
             menuService.populateContributionManager(editToolBarManager, TOOLBAR_EDIT_CONTRIBUTION_ID);
             ToolBar editorToolBar = editToolBarManager.createControl(statusBar);
@@ -1880,9 +1911,7 @@ public class ResultSetViewer extends Viewer
             addToolBarManager.add(new GroupMarker(TOOLBAR_GROUP_PRESENTATIONS));
             addToolBarManager.add(new Separator(TOOLBAR_GROUP_ADDITIONS));
 
-            if (menuService != null) {
-                menuService.populateContributionManager(addToolBarManager, TOOLBAR_CONTRIBUTION_ID);
-            }
+            menuService.populateContributionManager(addToolBarManager, TOOLBAR_CONTRIBUTION_ID);
             ToolBar addToolBar = addToolBarManager.createControl(statusBar);
             CSSUtils.markConnectionTypeColor(addToolBar);
             toolbarList.add(addToolBarManager);
@@ -1940,7 +1969,7 @@ public class ResultSetViewer extends Viewer
                 protected ILoadService<String> createLoadService() {
                     return new DatabaseLoadService<>("Load row count", getExecutionContext()) {
                         @Override
-                        public String evaluate(DBRProgressMonitor monitor) throws InvocationTargetException {
+                        public String evaluate(@NotNull DBRProgressMonitor monitor) throws InvocationTargetException {
                             try {
                                 long rowCount = readRowCount(monitor);
                                 return ROW_COUNT_FORMAT.format(rowCount);
@@ -1956,13 +1985,12 @@ public class ResultSetViewer extends Viewer
             CSSUtils.markConnectionTypeColor(rowCountLabel);
             rowCountLabel.setMessage("Row Count");
             rowCountLabel.setToolTipText("Calculates total row count in the current dataset");
-            Label separator = new Label(statusBar, SWT.NONE);
-            separator.setImage(DBeaverIcons.getImage(UIIcon.SEPARATOR_V));
-            CSSUtils.markConnectionTypeColor(separator);
+            //Label separator = new Label(statusBar, SWT.NONE);
+            //separator.setImage(DBeaverIcons.getImage(UIIcon.SEPARATOR_V));
+            //CSSUtils.markConnectionTypeColor(separator);
 
             selectionStatLabel = new Text(statusBar, SWT.READ_ONLY);
             selectionStatLabel.setToolTipText(ResultSetMessages.result_set_viewer_selection_stat_tooltip);
-            CSSUtils.markConnectionTypeColor(selectionStatLabel);
             selectionStatLabel.setText(" ");
 
 //            Label filler = new Label(statusComposite, SWT.NONE);
@@ -1975,7 +2003,6 @@ public class ResultSetViewer extends Viewer
                 RowData rd = new RowData();
                 rd.width = 50 * fontHeight;
                 statusLabel.setLayoutData(rd);
-                CSSUtils.markConnectionTypeColor(statusLabel);
             }
         }
 
@@ -2131,9 +2158,13 @@ public class ResultSetViewer extends Viewer
         }
         boolean newRow = (curRow != null && curRow.getState() == ResultSetRow.STATE_ADDED);
         if (!newRow) {
-            return DBExecUtils.getAttributeReadOnlyStatus(
-                attr,
-                checkKey);
+            String status = DBExecUtils.getAttributeReadOnlyStatus(attr, checkKey);
+            if (status != null) {
+                return status;
+            }
+        }
+        if (ApplicationPolicyProvider.getInstance().isPolicyEnabled(ApplicationPolicyProvider.POLICY_DATA_EDIT)) {
+            return UIMessages.dialog_policy_data_edit_msg;
         }
         return null;
     }
@@ -2178,7 +2209,7 @@ public class ResultSetViewer extends Viewer
         }
         // Save current state in history
         while (historyPosition < stateHistory.size() - 1) {
-            stateHistory.remove(stateHistory.size() - 1);
+            stateHistory.removeLast();
         }
         curState = new HistoryStateItem(
             dataContainer,
@@ -2380,11 +2411,10 @@ public class ResultSetViewer extends Viewer
             if (endTime instanceof LocalDateTime) {
                 return NLS.bind(
                     ResultSetMessages.controls_resultset_viewer_status_rows_time,
-                    new Object[]{
-                        RuntimeUtils.formatExecutionTime(totalTime),
-                        DateTimeFormatter.ISO_DATE.format(((LocalDateTime) endTime)),
-                        DateTimeFormatter.ISO_TIME.format(((LocalDateTime) endTime)),
-                    });
+                    RuntimeUtils.formatExecutionTime(totalTime),
+                    DateTimeFormatter.ISO_DATE.format(((LocalDateTime) endTime)),
+                    DateTimeFormatter.ISO_TIME.format(((LocalDateTime) endTime))
+                );
             } else {
                 return NLS.bind(
                     ResultSetMessages.controls_resultset_viewer_status_rows_time_long,
@@ -2397,20 +2427,18 @@ public class ResultSetViewer extends Viewer
             if (endTime instanceof LocalDateTime) {
                 return NLS.bind(
                     ResultSetMessages.controls_resultset_viewer_status_rows_time_fetch,
-                    new Object[]{
-                        RuntimeUtils.formatExecutionTime(totalTime),
-                        RuntimeUtils.formatExecutionTime(fetchTime),
-                        DateTimeFormatter.ISO_DATE.format(((LocalDateTime) endTime)),
-                        DateTimeFormatter.ISO_TIME.format(((LocalDateTime) endTime)),
-                    });
+                    RuntimeUtils.formatExecutionTime(totalTime),
+                    RuntimeUtils.formatExecutionTime(fetchTime),
+                    DateTimeFormatter.ISO_DATE.format(((LocalDateTime) endTime)),
+                    DateTimeFormatter.ISO_TIME.format(((LocalDateTime) endTime))
+                );
             } else {
                 return NLS.bind(
                     ResultSetMessages.controls_resultset_viewer_status_rows_time_fetch_long,
-                    new Object[]{
-                        RuntimeUtils.formatExecutionTime(totalTime),
-                        RuntimeUtils.formatExecutionTime(fetchTime),
-                        endTime,
-                    });
+                    RuntimeUtils.formatExecutionTime(totalTime),
+                    RuntimeUtils.formatExecutionTime(fetchTime),
+                    endTime
+                );
             }
         }
     }
@@ -2632,8 +2660,10 @@ public class ResultSetViewer extends Viewer
     }
 
     @Override
-    public boolean isReadOnly()
-    {
+    public boolean isReadOnly() {
+        if (ApplicationPolicyProvider.getInstance().isPolicyEnabled(ApplicationPolicyProvider.POLICY_DATA_EDIT)) {
+            return true;
+        }
         if (model.isUpdateInProgress() || !(activePresentation instanceof IResultSetEditor) ||
             (decorator.getDecoratorFeatures() & IResultSetDecorator.FEATURE_EDIT) == 0)
         {
@@ -2715,7 +2745,7 @@ public class ResultSetViewer extends Viewer
         MenuManager columnMenu = new MenuManager();
         ResultSetRow currentRow = getCurrentRow();
 
-        fillOrderingsMenu(columnMenu, curAttribute, currentRow);
+        fillOrderingsMenu(columnMenu, curAttribute);
         fillFiltersMenu(columnMenu, curAttribute, currentRow);
 
         final Menu contextMenu = columnMenu.createContextMenu(getActivePresentation().getControl());
@@ -2907,7 +2937,7 @@ public class ResultSetViewer extends Viewer
                         DBeaverIcons.getImageDescriptor(UIIcon.SORT),
                         MENU_ID_ORDER); //$NON-NLS-1$
                     orderMenu.setRemoveAllWhenShown(true);
-                    orderMenu.addMenuListener(manager1 -> fillOrderingsMenu(manager1, attr, row));
+                    orderMenu.addMenuListener(manager1 -> fillOrderingsMenu(manager1, attr));
                     manager.add(orderMenu);
                 }
                 {
@@ -2982,7 +3012,7 @@ public class ResultSetViewer extends Viewer
                 null,
                 MENU_ID_VIRTUAL_MODEL); //$NON-NLS-1$
             viewMenu.setRemoveAllWhenShown(true);
-            viewMenu.addMenuListener(manager1 -> fillVirtualModelMenu(manager1, attr, row, valueController));
+            viewMenu.addMenuListener(manager1 -> fillVirtualModelMenu(manager1, attr));
             manager.add(viewMenu);
         }
 
@@ -3201,7 +3231,10 @@ public class ResultSetViewer extends Viewer
         };
     }
 
-    private void fillVirtualModelMenu(@NotNull IMenuManager vmMenu, @Nullable DBDAttributeBinding attr, @Nullable ResultSetRow row, ResultSetValueController valueController) {
+    private void fillVirtualModelMenu(
+        @NotNull IMenuManager vmMenu,
+        @Nullable DBDAttributeBinding attr
+    ) {
         final DBPDataSource dataSource = getDataSource();
         if (dataSource == null) {
             return;
@@ -3571,8 +3604,11 @@ public class ResultSetViewer extends Viewer
         }
     }
 
-    private void fillFiltersMenu(@NotNull IMenuManager filtersMenu, @Nullable DBDAttributeBinding attribute, @Nullable ResultSetRow row)
-    {
+    private void fillFiltersMenu(
+        @NotNull IMenuManager filtersMenu,
+        @Nullable DBDAttributeBinding attribute,
+        @Nullable ResultSetRow row
+    ) {
         if (attribute != null && supportsDataFilter()) {
             {
                 filtersMenu.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_FILTER_MENU_DISTINCT));
@@ -3637,8 +3673,10 @@ public class ResultSetViewer extends Viewer
         filtersMenu.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_FILTER_EDIT_SETTINGS));
     }
 
-    private void fillOrderingsMenu(@NotNull IMenuManager filtersMenu, @Nullable DBDAttributeBinding attribute, @Nullable ResultSetRow row)
-    {
+    private void fillOrderingsMenu(
+        @NotNull IMenuManager filtersMenu,
+        @Nullable DBDAttributeBinding attribute
+    ) {
         if (attribute != null) {
             filtersMenu.add(new Separator());
             filtersMenu.add(new OrderByAttributeAction(this, attribute, ColumnOrder.ASC));
@@ -3783,9 +3821,13 @@ public class ResultSetViewer extends Viewer
         navigateEntity(monitor, newWindow, targetEntity, constraints);
     }
 
-    private void createFilterConstraint(@NotNull List<? extends DBDValueRow> rows, DBDAttributeBinding attrBinding, DBDAttributeConstraint constraint) {
+    private void createFilterConstraint(
+        @NotNull List<? extends DBDValueRow> rows,
+        @NotNull DBDAttributeBinding attrBinding,
+        @NotNull DBDAttributeConstraint constraint
+    ) {
         if (rows.size() == 1) {
-            Object keyValue = model.getCellValue(new ResultSetCellLocation(attrBinding, (ResultSetRow) rows.get(0)));
+            Object keyValue = model.getCellValue(new ResultSetCellLocation(attrBinding, (ResultSetRow) rows.getFirst()));
             constraint.setOperator(DBCLogicalOperator.EQUALS);
             constraint.setValue(keyValue);
         } else {
@@ -3890,21 +3932,23 @@ public class ResultSetViewer extends Viewer
 
     @Override
     public void updatePanelActions() {
-        ToolBar toolBar = panelToolBar.getControl();
+        PanelInfo panelInfo = isPanelsVisible() ? activePanels.get(getPresentationSettings().activePanelId) : null;
+        if (panelInfo == null || panelInfo.actionToolBar == null) {
+            return;
+        }
+        ToolBarManager actionToolBar = panelInfo.actionToolBar;
+        ToolBar toolBar = actionToolBar.getControl();
         toolBar.setRedraw(false);
-        IResultSetPanel visiblePanel = getVisiblePanel();
-        panelToolBar.removeAll();
-        if (visiblePanel != null) {
-            visiblePanel.contributeActions(panelToolBar);
+        try {
+            IResultSetPanel visiblePanel = getVisiblePanel();
+            actionToolBar.removeAll();
+            if (visiblePanel != null) {
+                visiblePanel.contributeActions(actionToolBar);
+            }
+            actionToolBar.update(true);
+        } finally {
+            toolBar.setRedraw(true);
         }
-        addDefaultPanelActions();
-        panelToolBar.update(false);
-
-        if (this.panelFolder != null) {
-            Point toolBarSize = toolBar.getParent().computeSize(SWT.DEFAULT, SWT.DEFAULT);
-            this.panelFolder.setTabHeight(toolBarSize.y);
-        }
-        toolBar.setRedraw(true);
     }
 
     @Override
@@ -4420,7 +4464,7 @@ public class ResultSetViewer extends Viewer
                             schedule(50);
                         } else {
                             if (!dataPumpJobQueue.isEmpty()) {
-                                ResultSetJobAbstract curJob = dataPumpJobQueue.get(0);
+                                ResultSetJobAbstract curJob = dataPumpJobQueue.getFirst();
                                 dataPumpJobQueue.remove(curJob);
                                 curJob.schedule();
                             }
@@ -5107,7 +5151,7 @@ public class ResultSetViewer extends Viewer
         }
     }
 
-    static class PresentationSettings {
+    static final class PresentationSettings {
         PresentationSettings() {
         }
 
@@ -5116,6 +5160,17 @@ public class ResultSetViewer extends Viewer
         int panelRatio;
         boolean panelsVisible;
         boolean verticalLayout;
+    }
+
+    private static class PanelInfo {
+        private ResultSetPanelDescriptor descriptor;
+        private IResultSetPanel panel;
+        private ToolBarManager actionToolBar;
+
+        public PanelInfo(ResultSetPanelDescriptor descriptor, IResultSetPanel panel) {
+            this.descriptor = descriptor;
+            this.panel = panel;
+        }
     }
 
     private class ResultSetDataPumpJob extends ResultSetJobDataRead {
@@ -5144,7 +5199,7 @@ public class ResultSetViewer extends Viewer
         }
 
         @Override
-        protected IStatus run(DBRProgressMonitor monitor) {
+        protected IStatus run(@NotNull DBRProgressMonitor monitor) {
             if (!acquireDataReadLock()) {
                 // Must run finalizer in any case
                 if (finalizer != null) {

@@ -21,7 +21,6 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPConditionalProperty;
 import org.jkiss.dbeaver.model.DBPPersistedObject;
-import org.jkiss.dbeaver.model.dpi.DPIClientObject;
 import org.jkiss.dbeaver.model.exec.DBExecUtils;
 import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
 import org.jkiss.dbeaver.model.meta.*;
@@ -423,9 +422,6 @@ public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor
                 return null;
             }
         }
-        if (object instanceof DPIClientObject) {
-            log.debug("Read DPI property " + getId());
-        }
 
         Method getter = getGetter();
         Object[] params = getter.getParameterCount() > 0 ?
@@ -451,15 +447,9 @@ public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor
         if (progressMonitor != null && isLazy() && object instanceof DBSObject dbsObject) {
             Object[] finalResult = new Object[1];
             try {
-                DBExecUtils.tryExecuteRecover(progressMonitor, dbsObject.getDataSource(), param -> {
-                    try {
-                        finalResult[0] = readPropertyMethod.get();
-                    } catch (InvocationTargetException e) {
-                        throw e;
-                    } catch (Exception e) {
-                        throw new InvocationTargetException(e);
-                    }
-                });
+                progressMonitor.subTask("Read " + this.getDisplayName());
+                DBExecUtils.tryExecuteRecover(progressMonitor, dbsObject.getDataSource(), param ->
+                    finalResult[0] = readPropertyMethod.get());
             } catch (Exception e) {
                 throw new InvocationTargetException(e);
             }
@@ -525,10 +515,12 @@ public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor
             } else {
                 if (argType == Boolean.TYPE || argType == Boolean.class && !(value instanceof Boolean)) {
                     value = CommonUtils.toBoolean(value);
-                } else if (argType == Long.TYPE) {
+                } else if (argType == Long.TYPE || argType == Long.class) {
                     value = CommonUtils.toLong(value);
-                } else if (argType == Integer.TYPE) {
+                } else if (argType == Integer.TYPE || argType == Integer.class) {
                     value = CommonUtils.toInt(value);
+                } else if (argType == Double.TYPE || argType == Double.class) {
+                    value = CommonUtils.toDouble(value);
                 }
             }
             setter.invoke(object, value);
@@ -579,6 +571,7 @@ public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor
         return (propInfo.listProvider() != IPropertyValueListProvider.class);
     }
 
+    @Nullable
     @Override
     public Object[] getPossibleValues(Object object)
     {

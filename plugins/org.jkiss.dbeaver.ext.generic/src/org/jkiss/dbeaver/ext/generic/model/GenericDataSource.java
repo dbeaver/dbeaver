@@ -681,6 +681,7 @@ public class GenericDataSource extends JDBCDataSource implements DBPTermProvider
         return container.getTable(monitor, tableName);
     }
 
+    @Nullable
     @Override
     public Collection<? extends DBSObject> getChildren(@NotNull DBRProgressMonitor monitor)
         throws DBException
@@ -780,7 +781,7 @@ public class GenericDataSource extends JDBCDataSource implements DBPTermProvider
     }
 
     @Override
-    public <T> T getAdapter(Class<T> adapter) {
+    public <T> T getAdapter(@NotNull Class<T> adapter) {
         if (adapter == DBSStructureAssistant.class) {
             return adapter.cast(new GenericStructureAssistant(this));
         } else if (adapter == DBCQueryPlanner.class) {
@@ -827,16 +828,19 @@ public class GenericDataSource extends JDBCDataSource implements DBPTermProvider
         return dataTypeCache.getAllObjects(monitor, this);
     }
 
+    @NotNull
     @Override
     public Collection<? extends DBSDataType> getLocalDataTypes() {
         return dataTypeCache.getCachedObjects();
     }
 
+    @Nullable
     @Override
     public DBSDataType getLocalDataType(@Nullable String typeName) {
         return dataTypeCache.getCachedObject(typeName);
     }
 
+    @Nullable
     @Override
     public DBSDataType getLocalDataType(int typeID) {
         return dataTypeCache.getCachedObject(typeID);

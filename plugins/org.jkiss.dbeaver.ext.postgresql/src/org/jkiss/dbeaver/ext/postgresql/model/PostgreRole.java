@@ -200,7 +200,7 @@ public class PostgreRole implements
     }
 
     @Override
-    public void setName(String newName) {
+    public void setName(@NotNull String newName) {
         this.name = newName;
     }
 
@@ -383,7 +383,7 @@ public class PostgreRole implements
     }
 
     @Override
-    public boolean supportsObjectDefinitionOption(String option) {
+    public boolean supportsObjectDefinitionOption(@NotNull String option) {
         return DBPScriptObject.OPTION_INCLUDE_PERMISSIONS.equals(option);
     }
 
@@ -392,6 +392,7 @@ public class PostgreRole implements
 
     }
 
+    @NotNull
     @Override
     public String getObjectDefinitionText(@NotNull DBRProgressMonitor monitor, @NotNull Map<String, Object> options) throws DBException {
         final String lineBreak = System.lineSeparator();
@@ -779,49 +780,49 @@ public class PostgreRole implements
 
     public static class PostgreRoleCanBeSuperUserValidator implements IPropertyValueValidator<PostgreRole, Object> {
         @Override
-        public boolean isValidValue(PostgreRole object, Object value) throws IllegalArgumentException {
+        public boolean isValidValue(@NotNull PostgreRole object, @Nullable Object value) throws IllegalArgumentException {
             return object.getDataSource().getServerType().supportsSuperusers();
         }
     }
 
     public static class PostgreRoleInheritValidator implements IPropertyValueValidator<PostgreRole, Object> {
         @Override
-        public boolean isValidValue(PostgreRole object, Object value) throws IllegalArgumentException {
+        public boolean isValidValue(@NotNull PostgreRole object, @Nullable Object value) throws IllegalArgumentException {
             return object.getDataSource().getServerType().supportsInheritance();
         }
     }
 
     public static class PostgreRoleCanCreateDBValidator implements IPropertyValueValidator<PostgreRole, Object> {
         @Override
-        public boolean isValidValue(PostgreRole object, Object value) throws IllegalArgumentException {
+        public boolean isValidValue(@NotNull PostgreRole object, @Nullable Object value) throws IllegalArgumentException {
             return object.getDataSource().getServerType().supportsRolesWithCreateDBAbility();
         }
     }
 
     public static class RoleCanBeReplicationValidator implements IPropertyValueValidator<PostgreRole, Object> {
         @Override
-        public boolean isValidValue(PostgreRole object, Object value) throws IllegalArgumentException {
+        public boolean isValidValue(@NotNull PostgreRole object, @Nullable Object value) throws IllegalArgumentException {
             return object.getDataSource().getServerType().supportsRoleReplication();
         }
     }
 
     public static class RoleCanBypassRLSValidator implements IPropertyValueValidator<PostgreRole, Object> {
         @Override
-        public boolean isValidValue(PostgreRole object, Object value) throws IllegalArgumentException {
+        public boolean isValidValue(@NotNull PostgreRole object, @Nullable Object value) throws IllegalArgumentException {
             return object.getDataSource().getServerType().supportsRoleBypassRLS();
         }
     }
 
     public static class PersistenceUserValidator implements IPropertyValueValidator<PostgreRole, Object> {
         @Override
-        public boolean isValidValue(PostgreRole object, Object value) throws IllegalArgumentException {
+        public boolean isValidValue(@NotNull PostgreRole object, @Nullable Object value) throws IllegalArgumentException {
             return !object.isPersisted();
         }
     }
 
     public static class CommentsOnRolesSupportedValidator implements IPropertyValueValidator<PostgreRole, Object> {
         @Override
-        public boolean isValidValue(PostgreRole object, Object value) throws IllegalArgumentException {
+        public boolean isValidValue(@NotNull PostgreRole object, @Nullable Object value) throws IllegalArgumentException {
             return object.getDataSource().getServerType().supportsCommentsOnRole();
         }
     }

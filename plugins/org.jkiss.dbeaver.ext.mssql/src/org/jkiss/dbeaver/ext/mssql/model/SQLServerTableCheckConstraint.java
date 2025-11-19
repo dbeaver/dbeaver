@@ -87,6 +87,7 @@ public class SQLServerTableCheckConstraint extends AbstractTableConstraint<SQLSe
         this.definition = expression;
     }
 
+    @NotNull
     @Override
     public String getObjectDefinitionText(@NotNull DBRProgressMonitor monitor, @NotNull Map<String, Object> options) throws DBException {
         return getCheckConstraintDefinition();
@@ -94,7 +95,7 @@ public class SQLServerTableCheckConstraint extends AbstractTableConstraint<SQLSe
 
     @Nullable
     @Override
-    public List<DBSTableConstraintColumn> getAttributeReferences(DBRProgressMonitor monitor) throws DBException {
+    public List<DBSTableConstraintColumn> getAttributeReferences(@Nullable DBRProgressMonitor monitor) throws DBException {
         return null;
     }
 

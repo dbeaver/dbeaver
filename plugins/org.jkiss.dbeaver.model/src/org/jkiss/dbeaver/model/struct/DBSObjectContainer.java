@@ -52,6 +52,7 @@ public interface DBSObjectContainer extends DBSObject
      * @throws DBException on any DB error
      * @param monitor progress monitor
      */
+    @Nullable
     Collection<? extends DBSObject> getChildren(@NotNull DBRProgressMonitor monitor) throws DBException;
 
     /**

@@ -177,10 +177,9 @@ public class ResultSetHandlerOpenWith extends AbstractHandler implements IElemen
                     tempFile.toFile().deleteOnExit();
 
                     IDataTransferProcessor processorInstance = processor.getInstance();
-                    if (!(processorInstance instanceof IStreamDataExporter)) {
+                    if (!(processorInstance instanceof IStreamDataExporter exporter)) {
                         return Status.CANCEL_STATUS;
                     }
-                    IStreamDataExporter exporter = (IStreamDataExporter) processorInstance;
 
                     StreamTransferConsumer consumer = new StreamTransferConsumer();
                     StreamConsumerSettings settings = new StreamConsumerSettings();

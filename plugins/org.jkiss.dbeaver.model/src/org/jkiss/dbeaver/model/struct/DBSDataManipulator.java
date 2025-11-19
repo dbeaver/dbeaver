@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.model.struct;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.data.DBDDataReceiver;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.exec.DBCException;
@@ -53,9 +54,13 @@ public interface DBSDataManipulator extends DBSDataContainer {
         void add(@NotNull Object[] attributeValues) throws DBCException;
 
         @NotNull
-        DBCStatistics execute(@NotNull DBCSession session, Map<String, Object> options) throws DBCException;
+        DBCStatistics execute(@NotNull DBCSession session, @NotNull Map<String, Object> options) throws DBException;
 
-        void generatePersistActions(@NotNull DBCSession session, @NotNull List<DBEPersistAction> actions, Map<String, Object> options) throws DBCException;
+        void generatePersistActions(
+            @NotNull DBCSession session,
+            @NotNull List<DBEPersistAction> actions,
+            @NotNull Map<String, Object> options
+        ) throws DBException;
 
         void close();
     }
@@ -67,7 +72,7 @@ public interface DBSDataManipulator extends DBSDataContainer {
         @Nullable DBDDataReceiver keysReceiver,
         @NotNull DBCExecutionSource source,
         @NotNull Map<String, Object> options)
-        throws DBCException;
+        throws DBException;
 
     @NotNull
     ExecuteBatch updateData(
@@ -76,19 +81,19 @@ public interface DBSDataManipulator extends DBSDataContainer {
         @NotNull DBSAttributeBase[] keyAttributes,
         @Nullable DBDDataReceiver keysReceiver,
         @NotNull DBCExecutionSource source)
-        throws DBCException;
+        throws DBException;
 
     @NotNull
     ExecuteBatch deleteData(
         @NotNull DBCSession session,
         @NotNull DBSAttributeBase[] keyAttributes,
         @NotNull DBCExecutionSource source)
-        throws DBCException;
+        throws DBException;
 
     @NotNull
     DBCStatistics truncateData(
         @NotNull DBCSession session,
         @NotNull DBCExecutionSource source)
-        throws DBCException;
+        throws DBException;
 
 }

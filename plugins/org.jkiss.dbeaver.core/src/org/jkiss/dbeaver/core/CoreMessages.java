@@ -154,6 +154,8 @@ public class CoreMessages extends NLS {
     public static String dialog_migrate_wizard_start_description;
     public static String dialog_migrate_wizard_start_title;
     public static String dialog_migrate_wizard_window_title;
+    public static String dialog_migrate_wizard_connection_changed_title;
+    public static String dialog_migrate_wizard_connection_changed_message;
     public static String dialog_new_connection_wizard_monitor_load_data_sources;
     public static String dialog_new_connection_wizard_start_description;
     public static String dialog_new_connection_wizard_start_title;
@@ -269,7 +271,6 @@ public class CoreMessages extends NLS {
 
     public static String model_navigator_Description;
     public static String model_navigator_load_;
-    public static String model_navigator_load_items_;
     public static String model_navigator_Model_root;
     public static String model_navigator_Project;
     public static String model_navigator_resource_exception_already_exists;
@@ -644,6 +645,9 @@ public class CoreMessages extends NLS {
     public static String pref_page_accessibility_screen_reader_msg;
     public static String pref_page_accessibility_screen_reader_description;
     public static String pref_page_accessibility_screen_reader_group_lbl;
+
+    public static String pref_page_accessibility_force_focus_checkbox;
+    public static String pref_page_accessibility_force_focus_tooltip;
 
     static {
         // initialize resource bundle

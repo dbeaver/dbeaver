@@ -89,6 +89,7 @@ public class DataSourceAuthModelDescriptor extends DataSourceBindingDescriptor i
         for (IConfigurationElement libConfig : config.getChildren(RegistryConstants.TAG_FILE)) {
             DriverLibraryAbstract lib = DriverLibraryAbstract.createFromConfig(null, libConfig);
             if (lib != null) {
+                lib.setCustom(false);
                 libraries.add(lib);
             }
         }
