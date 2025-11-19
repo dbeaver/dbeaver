@@ -18,6 +18,10 @@ package org.jkiss.dbeaver.registry.confirmation;
 
 public class ConfirmationConstants {
 
-    public static final String CONFIRM_DANGER_SQL = "dangerous_sql"; //$NON-NLS-1$
-    public static final String CONFIRM_DROP_SQL = "drop_sql"; //$NON-NLS-1$
+    public static final String CONFIRM_PREF_KEY_PREFIX = "org.jkiss.dbeaver.core.confirm."; //$NON-NLS-1$
+    public static final String CONFIRM_DANGER_SQL_ID = "dangerous_sql"; //$NON-NLS-1$
+    public static final String CONFIRM_DROP_SQL_ID = "drop_sql"; //$NON-NLS-1$
+    public static final String CONFIRM_DANGER_SQL_KEY = CONFIRM_PREF_KEY_PREFIX + CONFIRM_DANGER_SQL_ID; //$NON-NLS-1$
+    public static final String CONFIRM_DROP_SQL_KEY = CONFIRM_PREF_KEY_PREFIX + CONFIRM_DROP_SQL_ID; //$NON-NLS-1$
+
 }

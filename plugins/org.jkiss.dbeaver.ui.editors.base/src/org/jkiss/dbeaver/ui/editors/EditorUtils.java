@@ -37,6 +37,7 @@ import org.eclipse.ui.ide.IDE;
 import org.eclipse.ui.texteditor.ITextEditor;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.app.DBPPlatformDesktop;
@@ -232,6 +233,8 @@ public class EditorUtils {
     public static DatabaseEditorContext getEditorContext(IEditorInput editorInput) {
         if (editorInput instanceof IInMemoryEditorInput) {
             return (DatabaseEditorContext) ((IInMemoryEditorInput) editorInput).getProperty(PROP_EDITOR_CONTEXT);
+        } else if (editorInput instanceof IncludedScriptFileEditorInput input) {
+            return input.getDatabaseEditorContext();
         }
         return null;
     }
@@ -379,6 +382,9 @@ public class EditorUtils {
                 }
             }
             return;
+        }
+        if (editorInput instanceof IncludedScriptFileEditorInput input) {
+            input.setDatabaseEditorContext(context);
         }
         IFile file = getFileFromInput(editorInput);
         if (file != null) {
@@ -581,7 +587,7 @@ public class EditorUtils {
                         RuntimeUtils.runTask(monitor -> {
                             try (DBCSession session = executionContext.openSession(monitor, DBCExecutionPurpose.UTIL, "Rollback editor transaction")) {
                                 txnManager.rollback(session, null);
-                            } catch (DBCException e) {
+                            } catch (DBException e) {
                                 throw new InvocationTargetException(e);
                             }
                         }, "End editor transaction", 5000);
