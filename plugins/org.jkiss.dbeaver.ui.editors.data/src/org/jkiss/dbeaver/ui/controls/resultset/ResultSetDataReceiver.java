@@ -186,6 +186,7 @@ class ResultSetDataReceiver implements DBDDataReceiver, DBDDataReceiverInteracti
         hasMoreData = maxRows > 0 && tmpRows.size() >= maxRows;
         monitor.done();
 
+        monitor.subTask("Update presentation");
         UIUtils.syncExec(() -> {
             // Push data into viewer
             if (resultSetViewer.getControl().isDisposed()) {
