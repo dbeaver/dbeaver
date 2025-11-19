@@ -22,6 +22,7 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IViewSite;
 import org.eclipse.ui.PartInitException;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.navigator.DBNEmptyNode;
@@ -39,6 +40,7 @@ import org.jkiss.dbeaver.ui.navigator.INavigatorFilter;
 import org.jkiss.dbeaver.ui.navigator.SimpleNavigatorTreeFilter;
 import org.jkiss.dbeaver.ui.navigator.database.DatabaseBrowserView;
 import org.jkiss.dbeaver.ui.navigator.database.DatabaseNavigatorTree;
+import org.jkiss.dbeaver.ui.navigator.database.DatabaseNavigatorTreeFilterObjectType;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -102,6 +104,12 @@ public class FileSystemExplorerView extends DatabaseBrowserView {
         viewer.getTree().setHeaderVisible(true);
 
         UIExecutionQueue.queueExec(() -> createColumns(viewer));
+    }
+
+    @NotNull
+    @Override
+    protected DatabaseNavigatorTreeFilterObjectType getDefaultFilterType() {
+        return DatabaseNavigatorTreeFilterObjectType.file;
     }
 
     @Override
