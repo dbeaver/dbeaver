@@ -3121,7 +3121,7 @@ public class SQLEditor extends SQLEditorBase implements
         return ConfirmationDialog.confirmAction(
             getSite().getShell(),
             ConfirmationDialog.WARNING,
-            ConfirmationConstants.CONFIRM_DROP_SQL,
+            ConfirmationConstants.CONFIRM_DROP_SQL_ID,
             dialogType,
             dropQuery.getText()
         );
@@ -3135,7 +3135,7 @@ public class SQLEditor extends SQLEditorBase implements
         return ConfirmationDialog.confirmAction(
             getSite().getShell(),
             ConfirmationDialog.WARNING,
-            ConfirmationConstants.CONFIRM_DANGER_SQL,
+            ConfirmationConstants.CONFIRM_DANGER_SQL_ID,
             dialogType,
             dangerousQuery.getType().name(),
             targetName
