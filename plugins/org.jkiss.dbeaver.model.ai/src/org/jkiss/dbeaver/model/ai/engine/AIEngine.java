@@ -32,6 +32,14 @@ public interface AIEngine<PROPS extends AIEngineProperties> extends AutoCloseabl
     List<AIModel> getModels(@NotNull DBRProgressMonitor monitor) throws DBException;
 
     /**
+     * Indicates whether the engine provides model metadata such as context window size.
+     * @return true if the engine provides model metadata, false otherwise
+     */
+    default boolean providesModelMetadata() {
+        return true;
+    }
+
+    /**
      * Requests completions from the completion engine.
      *
      * @param monitor the progress monitor
@@ -68,4 +76,5 @@ public interface AIEngine<PROPS extends AIEngineProperties> extends AutoCloseabl
 
     @Override
     void close() throws DBException;
+
 }
