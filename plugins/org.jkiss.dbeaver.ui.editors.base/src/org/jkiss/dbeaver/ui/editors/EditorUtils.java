@@ -69,6 +69,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
+import java.util.stream.Stream;
 
 /**
  * EditorUtils
@@ -614,8 +615,12 @@ public class EditorUtils {
     public static List<Path> openExternalFiles(@NotNull String[] fileNames, @Nullable DBPDataSourceContainer currentContainer) {
         log.debug("Open external file(s) [" + Arrays.toString(fileNames) + "]");
         List<Path> openedFiles = new ArrayList<>();
-        Path[] filePaths = Arrays.stream(fileNames)
-            .map(fName -> fName.replaceAll(ZWNBSP, ""))
+        Stream<String> fileNameStream = Arrays.stream(fileNames);
+        if (RuntimeUtils.isMacOS()) {
+            // On macOS files can be opened via Finder with ZWNBSP characters in the file name
+            fileNameStream = fileNameStream.map(fName -> fName.replaceAll(ZWNBSP, ""));
+        }
+        Path[] filePaths = fileNameStream
             .map(Path::of).toArray(Path[]::new);
         openFileEditors(filePaths, currentContainer, openedFiles);
 
