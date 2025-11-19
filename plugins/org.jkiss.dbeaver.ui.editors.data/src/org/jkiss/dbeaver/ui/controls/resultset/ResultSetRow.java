@@ -23,7 +23,10 @@ import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDValueRow;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Objects;
 
 /**
  * Row data
@@ -119,9 +122,9 @@ public class ResultSetRow implements DBDValueRow {
     }
 
 
-    @NotNull
-    public Optional<ChangedValue> getChange(@NotNull DBDAttributeBinding attr) {
-        return Optional.ofNullable(changes.get(attr));
+    @Nullable
+    public ChangedValue getChange(@NotNull DBDAttributeBinding attr) {
+        return changes.get(attr);
     }
 
     public Iterable<Map.Entry<DBDAttributeBinding, ChangedValue>> getChanges() {

@@ -463,7 +463,7 @@ public class ResultSetModel implements DBDResultSetModel {
             updateChanges = false;
         }
 
-        Optional<ResultSetRow.ChangedValue> oldHistoricValue = row.getChange(topAttribute);
+        boolean isOldHistoricValueAbsent = row.getChange(topAttribute) == null;
         Object currentValue = row.values[rootIndex];
         Object valueToEdit = currentValue;
 
@@ -477,7 +477,7 @@ public class ResultSetModel implements DBDResultSetModel {
 
         if (currentValue instanceof DBDValue) {
             // It is complex
-            if (updateChanges && oldHistoricValue.isEmpty()) {
+            if (updateChanges && isOldHistoricValueAbsent) {
                 // Save original to history and create a copy
                 if (currentValue instanceof DBDValueCloneable vc) {
                     try {
@@ -491,7 +491,7 @@ public class ResultSetModel implements DBDResultSetModel {
                 row.addChange(topAttribute, currentValue);
             }
         } else {
-            if (updateChanges && oldHistoricValue.isEmpty()) {
+            if (updateChanges && isOldHistoricValueAbsent) {
                 row.addChange(topAttribute, currentValue);
             }
         }
@@ -528,11 +528,14 @@ public class ResultSetModel implements DBDResultSetModel {
         } else if (row.isChanged(attr)) {
             DBUtils.resetValue(getCellValue(attr, row, rowIndexes, false));
             try {
-                Object origValue = row.getChange(attr).get().value();
+                Object origValue = row.getChange(attr).value();
                 if (origValue instanceof DBDAttributeBinding refAttr) {
                     // We reset top attribute value
                     attr = refAttr;
-                    origValue = row.getChange(attr).map(ResultSetRow.ChangedValue::value).orElse(null);
+                    origValue = Optional
+                        .ofNullable(row.getChange(attr))
+                        .map(ResultSetRow.ChangedValue::value)
+                        .orElse(null);
                     rowIndexes = null;
                 }
                 updateCellValue(
