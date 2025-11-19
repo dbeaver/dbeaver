@@ -3104,13 +3104,13 @@ public class SQLEditor extends SQLEditorBase implements
             return false;
         }
         if (dangerousQueries.size() == 1) {
-            return dialogCreator.apply(dangerousQueries.getFirst(), ConfirmationDialog.QUESTION) != IDialogConstants.YES_ID;
+            return dialogCreator.apply(dangerousQueries.getFirst(), ConfirmationDialog.CONFIRM) != IDialogConstants.OK_ID;
         }
         for (SQLQuery query : dangerousQueries) {
-            int dialogResult = dialogCreator.apply(query, ConfirmationDialog.QUESTION_WITH_YES_TO_ALL);
+            int dialogResult = dialogCreator.apply(query, ConfirmationDialog.CONFIRM_WITH_YES_TO_ALL);
             if (dialogResult == IDialogConstants.YES_TO_ALL_ID) {
                 return false;
-            } else if (dialogResult != IDialogConstants.YES_ID) {
+            } else if (dialogResult != IDialogConstants.OK_ID) {
                 return true;
             }
         }
