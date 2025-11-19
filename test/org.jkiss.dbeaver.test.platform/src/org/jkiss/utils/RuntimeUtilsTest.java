@@ -48,12 +48,17 @@ public class RuntimeUtilsTest extends DBeaverUnitTest {
 
     @Test
     public void testFormatExecutionTime() {
+        // NOTE: Depends on the localization!
+        Assume.assumeTrue(Locale.getDefault().equals(Locale.ENGLISH));
+
         Assert.assertEquals("1h 0m 0s", RuntimeUtils.formatExecutionTime(Duration.ofHours(1)));
         Assert.assertEquals("1h 1m 1s", RuntimeUtils.formatExecutionTime(Duration.ofHours(1).plusMinutes(1).plusSeconds(1)));
         Assert.assertEquals("1h 1m 0s", RuntimeUtils.formatExecutionTime(Duration.ofHours(1).plusMinutes(1).plusMillis(500)));
         Assert.assertEquals("11h 41m 9s", RuntimeUtils.formatExecutionTime(Duration.ofSeconds(42069)));
-        Assert.assertEquals("1.0s", RuntimeUtils.formatExecutionTime(Duration.ofSeconds(1)));
+        Assert.assertEquals("1s", RuntimeUtils.formatExecutionTime(Duration.ofSeconds(1)));
         Assert.assertEquals("0.5s", RuntimeUtils.formatExecutionTime(Duration.ofMillis(500)));
+        Assert.assertEquals("0.025s", RuntimeUtils.formatExecutionTime(Duration.ofMillis(25)));
+        Assert.assertEquals("0.001s", RuntimeUtils.formatExecutionTime(Duration.ofMillis(1)));
         Assert.assertEquals("10s", RuntimeUtils.formatExecutionTime(Duration.ofSeconds(10)));
         Assert.assertEquals("1m 1s", RuntimeUtils.formatExecutionTime(Duration.ofMinutes(1).plusSeconds(1)));
         Assert.assertEquals("1m 0s", RuntimeUtils.formatExecutionTime(Duration.ofMinutes(1)));

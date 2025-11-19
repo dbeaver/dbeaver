@@ -46,6 +46,8 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.net.*;
 import java.nio.file.Path;
+import java.text.DecimalFormat;
+import java.text.Format;
 import java.text.MessageFormat;
 import java.text.SimpleDateFormat;
 import java.time.Duration;
@@ -212,7 +214,7 @@ public final class RuntimeUtils {
         } else if (seconds >= 10) {
             return String.format("%ds", seconds);
         } else {
-            return String.format("%d.%ds", seconds, millis / 100);
+            return Lazy.EXECUTION_SECONDS_FORMAT.format(seconds + millis * 0.001);
         }
     }
 
@@ -814,10 +816,11 @@ public final class RuntimeUtils {
     }
 
     private static class Lazy {
-        static final MessageFormat DURATION_HOURS_FORMAT = new MessageFormat(ModelMessages.duration_hours);
-        static final MessageFormat DURATION_MINUTES_FORMAT = new MessageFormat(ModelMessages.duration_minutes);
-        static final MessageFormat DURATION_SECONDS_FORMAT = new MessageFormat(ModelMessages.duration_seconds);
-        static final MessageFormat DURATION_MILLISECONDS_FORMAT = new MessageFormat(ModelMessages.duration_milliseconds);
+        static final Format DURATION_HOURS_FORMAT = new MessageFormat(ModelMessages.duration_hours);
+        static final Format DURATION_MINUTES_FORMAT = new MessageFormat(ModelMessages.duration_minutes);
+        static final Format DURATION_SECONDS_FORMAT = new MessageFormat(ModelMessages.duration_seconds);
+        static final Format DURATION_MILLISECONDS_FORMAT = new MessageFormat(ModelMessages.duration_milliseconds);
+        static final Format EXECUTION_SECONDS_FORMAT = new DecimalFormat("#.###s");
 
         private Lazy() {
         }

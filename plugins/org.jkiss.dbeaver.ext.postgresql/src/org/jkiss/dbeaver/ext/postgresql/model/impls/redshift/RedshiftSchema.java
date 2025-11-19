@@ -46,6 +46,11 @@ public class RedshiftSchema extends PostgreSchema {
     }
 
     @Override
+    public boolean isSystem() {
+        return super.isSystem() || "catalog_history".equals(getName());
+    }
+
+    @Override
     public String getTableColumnsQueryExtraParameters(PostgreTableContainer owner, PostgreTableBase forTable) {
         return ",format_encoding(a.attencodingtype::integer) AS \"encoding\"";
     }

@@ -394,8 +394,11 @@ public class DataSourceUtils {
     public static String getDataSourceAddressText(DBPDataSourceContainer dataSourceContainer) {
         if (dataSourceContainer.getDriver().isCustomEndpointInformation()) {
             DBPDataSourceProvider dataSourceProvider = dataSourceContainer.getDriver().getDataSourceProvider();
-            if (dataSourceProvider instanceof DBPInformationProvider) {
-                String objectInformation = ((DBPInformationProvider) dataSourceProvider).getObjectInformation(dataSourceContainer, DBPInformationProvider.INFO_TARGET_ADDRESS);
+            if (dataSourceProvider instanceof DBPInformationProvider dbpInformationProvider) {
+                String objectInformation = dbpInformationProvider.getObjectInformation(
+                    dataSourceContainer,
+                    DBPInformationProvider.INFO_TARGET_ADDRESS
+                );
                 if (!CommonUtils.isEmpty(objectInformation)) {
                     return objectInformation;
                 }
@@ -405,10 +408,15 @@ public class DataSourceUtils {
         if (cfg.getConfigurationType() == DBPDriverConfigurationType.MANUAL) {
             String hostText = DBWUtils.getTargetTunnelHostName(dataSourceContainer, cfg);
             String hostPort = cfg.getHostPort();
-            if (!CommonUtils.isEmpty(hostPort)) {
+            String serverName = cfg.getServerName();
+            if (CommonUtils.isNotEmpty(hostPort)) {
                 return hostText + ":" + hostPort;
             }
-            return hostText;
+            if (CommonUtils.isNotEmpty(hostText)) {
+                return hostText;
+            }
+
+            return CommonUtils.notEmpty(serverName);
         } else {
             return cfg.getUrl();
         }
