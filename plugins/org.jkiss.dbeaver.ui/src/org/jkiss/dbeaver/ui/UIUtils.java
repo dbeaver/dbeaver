@@ -1884,8 +1884,7 @@ public class UIUtils {
      * Runs task in Eclipse progress service.
      * NOTE: this call can't be canceled if it will block in IO
      */
-    public static void runInProgressService(final DBRRunnableWithProgress runnable)
-    throws InvocationTargetException, InterruptedException {
+    public static void runInProgressService(final DBRRunnableWithProgress runnable) throws InvocationTargetException, InterruptedException {
         getDefaultRunnableContext().run(true, true, runnable);
     }
 
