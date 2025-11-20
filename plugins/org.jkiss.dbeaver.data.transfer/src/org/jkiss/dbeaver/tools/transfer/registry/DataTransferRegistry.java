@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -95,15 +95,21 @@ public class DataTransferRegistry {
         return instance;
     }
 
-    public List<DataTransferNodeDescriptor> getAvailableProducers(Collection<DBSObject> sourceObjects) {
+    @NotNull
+    public List<DataTransferNodeDescriptor> getAvailableProducers(@NotNull Collection<DBSObject> sourceObjects) {
         return getAvailableNodes(DataTransferNodeDescriptor.NodeType.PRODUCER, sourceObjects);
     }
 
-    public List<DataTransferNodeDescriptor> getAvailableConsumers(Collection<DBSObject> sourceObjects) {
+    @NotNull
+    public List<DataTransferNodeDescriptor> getAvailableConsumers(@NotNull Collection<DBSObject> sourceObjects) {
         return getAvailableNodes(DataTransferNodeDescriptor.NodeType.CONSUMER, sourceObjects);
     }
 
-    List<DataTransferNodeDescriptor> getAvailableNodes(DataTransferNodeDescriptor.NodeType nodeType, Collection<DBSObject> sourceObjects) {
+    @NotNull
+    List<DataTransferNodeDescriptor> getAvailableNodes(
+        @NotNull DataTransferNodeDescriptor.NodeType nodeType,
+        @NotNull Collection<DBSObject> sourceObjects
+    ) {
         List<DataTransferNodeDescriptor> result = new ArrayList<>();
         for (DataTransferNodeDescriptor node : nodes) {
             if (node.getNodeType() == nodeType) {
@@ -118,7 +124,8 @@ public class DataTransferRegistry {
         return result;
     }
 
-    public List<DataTransferNodeDescriptor> getNodes(DataTransferNodeDescriptor.NodeType nodeType) {
+    @NotNull
+    public List<DataTransferNodeDescriptor> getNodes(@NotNull DataTransferNodeDescriptor.NodeType nodeType) {
         List<DataTransferNodeDescriptor> result = new ArrayList<>();
         for (DataTransferNodeDescriptor node : nodes) {
             if (node.getNodeType() == nodeType) {
@@ -128,16 +135,18 @@ public class DataTransferRegistry {
         return result;
     }
 
-    public DataTransferNodeDescriptor getNodeByType(Class<? extends IDataTransferNode> type) {
+    @Nullable
+    public DataTransferNodeDescriptor getNodeByType(@NotNull Class<? extends IDataTransferNode> type) {
         for (DataTransferNodeDescriptor node : nodes) {
-            if (node.getNodeClass().equals(type)) {
+            if (type.equals(node.getNodeClass())) {
                 return node;
             }
         }
         return null;
     }
 
-    public DataTransferNodeDescriptor getNodeById(String id) {
+    @Nullable
+    public DataTransferNodeDescriptor getNodeById(@NotNull String id) {
         for (DataTransferNodeDescriptor node : nodes) {
             if (node.getId().equals(id)) {
                 return node;
@@ -146,7 +155,8 @@ public class DataTransferRegistry {
         return null;
     }
 
-    public DataTransferProcessorDescriptor getProcessor(String processorFullId) {
+    @Nullable
+    public DataTransferProcessorDescriptor getProcessor(@NotNull String processorFullId) {
         String[] idParts = processorFullId.split(":");
         if (idParts.length == 2) {
             DataTransferNodeDescriptor node = getNodeById(idParts[0]);
@@ -158,7 +168,9 @@ public class DataTransferRegistry {
     }
 
     @Nullable
-    public List<DataTransferProcessorDescriptor> getAvailableProcessors(Class<? extends IDataTransferNode> nodeType, Class<?> objectType) {
+    public List<DataTransferProcessorDescriptor> getAvailableProcessors(
+        @NotNull Class<? extends IDataTransferNode<?>> nodeType,
+        @NotNull Class<?> objectType) {
         for (DataTransferNodeDescriptor node : nodes) {
             if (node.getNodeClass() == nodeType) {
                 if (node.appliesToType(objectType)) {
@@ -179,7 +191,8 @@ public class DataTransferRegistry {
         return transformers.get(id);
     }
 
-    public DataTransferAttributeTransformerDescriptor getAttributeTransformerByName(String tName) {
+    @Nullable
+    public DataTransferAttributeTransformerDescriptor getAttributeTransformerByName(@NotNull String tName) {
         return transformers.values().stream().filter(t -> t.getName().equals(tName)).findFirst().orElse(null);
     }
 

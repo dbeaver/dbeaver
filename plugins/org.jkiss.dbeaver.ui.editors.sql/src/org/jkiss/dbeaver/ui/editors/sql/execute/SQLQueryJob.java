@@ -278,9 +278,11 @@ public class SQLQueryJob extends DataSourceJob
                                 tryAgain = true;
                                 break;
                             case IGNORE:
-                                // Just do nothing
+                                // ignore error
+                                lastError = null;
                                 break;
                             case IGNORE_ALL:
+                                lastError = null;
                                 errorHandling = SQLScriptErrorHandling.IGNORE;
                                 break;
                         }
@@ -1013,9 +1015,8 @@ public class SQLQueryJob extends DataSourceJob
         return true;
     }
 
-    private boolean keepStatementOpen()
-    {
-        if (getExecutionContext().getDataSource().getContainer().getDriver().isThreadSafeDriver()) {
+    private boolean keepStatementOpen() {
+        if (!getExecutionContext().getDataSource().getContainer().getDriver().isThreadSafeDriver()) {
             return false;
         }
         // Only in single query mode and if pref option set to true

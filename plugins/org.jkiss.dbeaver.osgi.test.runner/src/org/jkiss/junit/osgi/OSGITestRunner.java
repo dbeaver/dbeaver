@@ -83,6 +83,7 @@ public class OSGITestRunner extends BlockJUnit4ClassRunner {
     private Bundle testBundle;
     private String appRegistryName;
     private String appBundleName;
+    private Set<String> forceDependencies;
     private String[] args;
     private Object runnerProxy = null;
 
@@ -130,6 +131,8 @@ public class OSGITestRunner extends BlockJUnit4ClassRunner {
             this.appRegistryName = annotation.registryName();
             this.appBundleName = annotation.bundleName();
             this.args = annotation.args();
+            this.forceDependencies = Arrays.stream(annotation.forceDependencies()).collect(Collectors.toSet());
+
         } else {
             throw new IllegalArgumentException("Application not found");
         }
@@ -338,7 +341,14 @@ public class OSGITestRunner extends BlockJUnit4ClassRunner {
         });
         // Install all bundles from the directory
         for (String bundleFile : ManifestElement.getArrayFromList(props.getProperty("osgi.bundles"))) {
-            if (bundleFile.contains(".app") && !bundleFile.contains(appBundleName) && !bundleFile.contains("org.eclipse")) {
+            if (
+                //TODO research why app bundles skipped
+                bundleFile.contains(".app")
+                    && !bundleFile.contains(appBundleName)
+                    && !bundleFile.contains("org.eclipse")
+                    && forceDependencies.stream().noneMatch(bundleFile::contains)
+
+            ) {
                 continue;
             }
             Matcher matcher = startLevel.matcher(bundleFile);

@@ -256,12 +256,12 @@ public class PostgreExecutionContext extends JDBCExecutionContext implements DBC
                 newSearchPath.remove(schemaIndex);
             }
             // Add it first
-            newSearchPath.add(0, defSchemaName);
+            newSearchPath.addFirst(defSchemaName);
         }
 
         StringBuilder spString = new StringBuilder();
         for (String sp : newSearchPath) {
-            if (spString.length() > 0) spString.append(",");
+            if (!spString.isEmpty()) spString.append(",");
             spString.append(DBUtils.getQuotedIdentifier(getDataSource(), sp));
         }
         try (JDBCSession session = openSession(monitor, DBCExecutionPurpose.UTIL, "Change search path")) {
@@ -278,7 +278,7 @@ public class PostgreExecutionContext extends JDBCExecutionContext implements DBC
     }
 
     private static boolean isUserFirstInPath(List<String> newSearchPath) {
-        return !newSearchPath.isEmpty() && newSearchPath.get(0).equals(PostgreConstants.USER_VARIABLE);
+        return !newSearchPath.isEmpty() && newSearchPath.getFirst().equals(PostgreConstants.USER_VARIABLE);
     }
 
     private void setUserInTheEndOfThePath(List<String> searchPath) {
@@ -286,7 +286,7 @@ public class PostgreExecutionContext extends JDBCExecutionContext implements DBC
             return;
         }
         if (isUserFirstInPath(searchPath)) {
-            searchPath.remove(0);
+            searchPath.removeFirst();
             searchPath.add(PostgreConstants.USER_VARIABLE);
         } else {
             int userIndex = -1;

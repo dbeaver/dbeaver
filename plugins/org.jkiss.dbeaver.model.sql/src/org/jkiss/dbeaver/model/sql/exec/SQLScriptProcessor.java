@@ -30,7 +30,6 @@ import org.jkiss.dbeaver.model.sql.*;
 import org.jkiss.dbeaver.model.sql.data.SQLQueryDataContainer;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 
-import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 
 /**
@@ -51,7 +50,8 @@ public class SQLScriptProcessor {
     private final DBCStatistics totalStatistics = new DBCStatistics();
 
     private int fetchSize;
-    private int maxRows;
+    private long offset;
+    private long maxRows;
     private long fetchFlags;
     private SQLScriptCommitType commitType = SQLScriptCommitType.AUTOCOMMIT;
     private SQLScriptErrorHandling errorHandling = SQLScriptErrorHandling.STOP_ROLLBACK;
@@ -73,7 +73,11 @@ public class SQLScriptProcessor {
         this.fetchSize = fetchSize;
     }
 
-    public void setMaxRows(int maxRows) {
+    public void setOffset(long offset) {
+        this.offset = offset;
+    }
+
+    public void setMaxRows(long maxRows) {
         this.maxRows = maxRows;
     }
 
@@ -214,12 +218,8 @@ public class SQLScriptProcessor {
                 statistics.setQueryText(sqlQuery.getText());
 
                 DBExecUtils.tryExecuteRecover(session, session.getDataSource(), param -> {
-                    try {
-                        long execStartTime = System.currentTimeMillis();
-                        executeStatement(session, sqlQuery, execStartTime);
-                    } catch (Throwable e) {
-                        throw new InvocationTargetException(e);
-                    }
+                    long execStartTime = System.currentTimeMillis();
+                    executeStatement(session, sqlQuery, execStartTime);
                 });
             } catch (Throwable ex) {
                 if (!(ex instanceof DBException)) {
@@ -242,7 +242,7 @@ public class SQLScriptProcessor {
             session,
             DBCStatementType.SCRIPT,
             sqlQuery,
-            0,
+            offset,
             maxRows
         );
         DBExecUtils.setStatementFetchSize(statement, 0, maxRows, fetchSize);

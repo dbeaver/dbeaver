@@ -390,11 +390,7 @@ public class EntityEditor extends MultiPageDatabaseEditor
         }
         try {
             DBExecUtils.tryExecuteRecover(monitor, executionContext.getDataSource(), param -> {
-                try {
-                    commandContext.saveChanges(monitor, options);
-                } catch (DBException e) {
-                    throw new InvocationTargetException(e);
-                }
+                commandContext.saveChanges(monitor, options);
             });
         } catch (DBException e) {
             error = e;

@@ -465,7 +465,7 @@
             <enabledWhen>
                 <with variable="activePart">
                     <and>
-                        <test property="org.jkiss.dbeaver.core.global.currentProjectResourceEditable"/>
+                        <test property="org.jkiss.dbeaver.core.global.ui.currentProjectResourceEditable"/>
                     </and>
                 </with>
             </enabledWhen>
@@ -517,7 +517,7 @@
                             <adapt type="org.eclipse.core.resources.IFolder">
                                 <and>
                                     <test property="org.jkiss.dbeaver.core.resource.type" value="diagram folder"/>
-                                    <test property="org.jkiss.dbeaver.core.global.currentProjectResourceEditable"/>
+                                    <test property="org.jkiss.dbeaver.core.global.ui.currentProjectResourceEditable"/>
                                 </and>
                             </adapt>
                         </iterate>
@@ -547,7 +547,7 @@
                         <iterate operator="and">
                             <and>
                                 <adapt type="org.jkiss.dbeaver.model.struct.DBSEntity"/>
-                                <test property="org.jkiss.dbeaver.core.global.currentProjectResourceEditable"/>
+                                <test property="org.jkiss.dbeaver.core.global.ui.currentProjectResourceEditable"/>
                             </and>
                         </iterate>
                     </with>

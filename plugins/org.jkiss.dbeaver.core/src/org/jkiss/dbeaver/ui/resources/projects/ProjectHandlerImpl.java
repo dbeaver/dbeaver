@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,7 +24,7 @@ import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.rcp.RCPProject;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.actions.GlobalPropertyTester;
+import org.jkiss.dbeaver.ui.actions.GlobalUIPropertyTester;
 import org.jkiss.dbeaver.ui.dialogs.MultiPageWizardDialog;
 import org.jkiss.dbeaver.ui.project.EditProjectWizard;
 import org.jkiss.dbeaver.ui.resources.AbstractResourceHandler;
@@ -43,7 +43,7 @@ public class ProjectHandlerImpl extends AbstractResourceHandler {
     @Override
     public int getFeatures(IResource resource) {
         int features = FEATURE_CREATE_FOLDER;
-        if (GlobalPropertyTester.canManageProjects()) {
+        if (GlobalUIPropertyTester.canManageProjects()) {
             features |= FEATURE_RENAME;
             DBPProject activeProject = DBWorkbench.getPlatform().getWorkspace().getActiveProject();
             if (!(activeProject instanceof RCPProject rcpProject) || resource != rcpProject.getEclipseProject()) {
