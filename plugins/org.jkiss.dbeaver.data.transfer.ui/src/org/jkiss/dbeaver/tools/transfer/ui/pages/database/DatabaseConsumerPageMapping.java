@@ -1325,23 +1325,19 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
                 }
             }
 
-            getWizard().getRunnableContext().run(
-                true, true, monitor -> {
-                    for (DBSObjectContainer container : containersToCache) {
-                        try {
-                            container.cacheStructure(monitor, DBSObjectContainer.STRUCT_ATTRIBUTES);
-                        } catch (DBException e) {
-                            errors.add(e);
-                            log.debug(
-                                "Error structure for container '" +
-                                    DBUtils.getObjectFullName(container, DBPEvaluationContext.UI) + "'",
-                                e
-                            );
-                        }
+            getWizard().getRunnableContext().run(true, true, monitor -> {
+                for (DBSObjectContainer container : containersToCache) {
+                    try {
+                        container.cacheStructure(monitor, DBSObjectContainer.STRUCT_ATTRIBUTES);
+                    } catch (DBException e) {
+                        errors.add(e);
+                        log.debug(
+                            "Error structure for container '" +
+                                DBUtils.getObjectFullName(container, DBPEvaluationContext.UI) + "'",
+                            e
+                        );
                     }
                 }
-            );
-            getWizard().getRunnableContext().run(true, true, monitor -> {
                 for (DataTransferPipe pipe : getWizard().getSettings().getDataPipes()) {
                     if (pipe.getProducer() == null || !(pipe.getProducer().getDatabaseObject() instanceof DBSDataContainer sourceDataContainer)) {
                         continue;
