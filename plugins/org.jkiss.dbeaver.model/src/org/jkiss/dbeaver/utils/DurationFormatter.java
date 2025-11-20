@@ -39,10 +39,10 @@ import java.util.StringJoiner;
  * </ul>
  */
 public final class DurationFormatter {
-    private static final Format LONG_HOURS_FORMAT = new MessageFormat(ModelMessages.duration_hours);
-    private static final Format LONG_MINUTES_FORMAT = new MessageFormat(ModelMessages.duration_minutes);
-    private static final Format LONG_SECONDS_FORMAT = new MessageFormat(ModelMessages.duration_seconds);
-    private static final Format LONG_MILLISECONDS_FORMAT = new MessageFormat(ModelMessages.duration_milliseconds);
+    private static final Format LONG_HOURS_FORMAT = new MessageFormat(ModelMessages.duration_formatter_hours);
+    private static final Format LONG_MINUTES_FORMAT = new MessageFormat(ModelMessages.duration_formatter_minutes);
+    private static final Format LONG_SECONDS_FORMAT = new MessageFormat(ModelMessages.duration_formatter_seconds);
+    private static final Format LONG_MILLISECONDS_FORMAT = new MessageFormat(ModelMessages.duration_formatter_milliseconds);
     private static final Format SHORT_SECONDS_FORMAT = new DecimalFormat("#.#s");
     private static final Format MEDIUM_SECONDS_FORMAT = new DecimalFormat("#.###s");
 

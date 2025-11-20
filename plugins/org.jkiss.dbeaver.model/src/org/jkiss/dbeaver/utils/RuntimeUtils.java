@@ -29,7 +29,6 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.connection.DBPNativeClientLocation;
-import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.meta.ComponentReference;
 import org.jkiss.dbeaver.model.runtime.*;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -46,9 +45,6 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.net.*;
 import java.nio.file.Path;
-import java.text.DecimalFormat;
-import java.text.Format;
-import java.text.MessageFormat;
 import java.text.SimpleDateFormat;
 import java.time.Duration;
 import java.util.*;
@@ -772,17 +768,6 @@ public final class RuntimeUtils {
             } finally {
                 finished = true;
             }
-        }
-    }
-
-    private static class Lazy {
-        static final Format DURATION_HOURS_FORMAT = new MessageFormat(ModelMessages.duration_hours);
-        static final Format DURATION_MINUTES_FORMAT = new MessageFormat(ModelMessages.duration_minutes);
-        static final Format DURATION_SECONDS_FORMAT = new MessageFormat(ModelMessages.duration_seconds);
-        static final Format DURATION_MILLISECONDS_FORMAT = new MessageFormat(ModelMessages.duration_milliseconds);
-        static final Format EXECUTION_SECONDS_FORMAT = new DecimalFormat("#.###s");
-
-        private Lazy() {
         }
     }
 }
