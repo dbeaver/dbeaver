@@ -26,7 +26,6 @@ import org.jkiss.dbeaver.model.ai.AISettings;
 import org.jkiss.dbeaver.model.ai.engine.AIEngineProperties;
 import org.jkiss.dbeaver.model.ai.engine.openai.OpenAIConstants;
 import org.jkiss.dbeaver.model.app.DBPApplication;
-import org.jkiss.dbeaver.model.auth.SMSessionPersistent;
 import org.jkiss.dbeaver.model.data.json.JSONUtils;
 import org.jkiss.dbeaver.model.rm.RMConstants;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -87,11 +86,7 @@ public class AISettingsManager {
     }
 
     private AISettingsHolder getSettingsHolder() {
-        if (DBWorkbench.getPlatform().getWorkspace().getWorkspaceSession() instanceof SMSessionPersistent session) {
-            return AISettingsSessionHolder.getForSession(session);
-        } else {
-            return AISettingsLocalHolder.INSTANCE;
-        }
+        return AISettingsLocalHolder.INSTANCE;
     }
 
     @NotNull
@@ -292,62 +287,6 @@ public class AISettingsManager {
         void reset();
     }
 
-    private static class AISettingsSessionHolder implements AISettingsHolder {
-        private static final Map<SMSessionPersistent, AISettingsSessionHolder> holderBySession
-            = Collections.synchronizedMap(new WeakHashMap<>());
-
-        private final SMSessionPersistent session;
-
-        private volatile AISettings mruSettings = null;
-        private volatile boolean settingsReadInProgress = false;
-
-        private AISettingsSessionHolder(SMSessionPersistent session) {
-            this.session = session;
-        }
-
-        public static AISettingsHolder getForSession(SMSessionPersistent session) {
-            return holderBySession.computeIfAbsent(session, AISettingsSessionHolder::new);
-        }
-
-        public static void resetAll() {
-            holderBySession.clear();
-        }
-
-        @Override
-        public synchronized AISettings getSettings() {
-            AISettings mruSettings = this.mruSettings;
-            AISettings sharedSettings = this.session.getAttribute(AISettings.class.getName());
-            if (mruSettings == null || !mruSettings.equals(sharedSettings)) {
-                if (settingsReadInProgress) {
-                    // FIXME: it is a hack. Settings loading may cause infinite recursion because
-                    // conf loading shows UI which may re-ask settings
-                    // The fix is to disable UI during config read? But this lead to UI freeze..
-                    return new AISettings();
-                }
-                settingsReadInProgress = true;
-                try {
-                    // if current context is not initialized or was invalidated, then reload settings for this session
-                    this.setSettings(mruSettings = loadSettingsFromConfig());
-                } finally {
-                    settingsReadInProgress = false;
-                }
-            }
-            return mruSettings;
-        }
-
-        @Override
-        public synchronized void setSettings(AISettings mruSettings) {
-            this.mruSettings = mruSettings;
-            this.session.setAttribute(AISettings.class.getName(), mruSettings);
-        }
-
-        @Override
-        public synchronized void reset() {
-            // session contexts are not differentiated for now, so simply invalidate all of them
-            resetAll();
-        }
-    }
-
     private static class AISettingsLocalHolder implements AISettingsHolder {
         public static final AISettingsHolder INSTANCE = new AISettingsLocalHolder();
 
@@ -355,11 +294,19 @@ public class AISettingsManager {
 
         @Override
         public synchronized AISettings getSettings() {
-            AISettings settings = this.settings;
             if (settings == null) {
-                // if current context is not initialized or was invalidated, then reload settings
-                this.settings = settings = loadSettingsFromConfig();
+                AISettings loaded = loadSettingsFromConfig();
+                // This check prevents redundant reloading of settings by the same thread.
+                // Reason: loadSettingsFromConfig() may initiate loading of other bundles,
+                // which could lead subsequently to calls back into this method to
+                // modify the settings during initialization, leading to multiple
+                // loads and potential inconsistencies without this safeguard.
+
+                if (settings == null) {
+                    settings = loaded;
+                }
             }
+
             return settings;
         }
 
@@ -373,6 +320,4 @@ public class AISettingsManager {
             this.settings = null;
         }
     }
-
-
 }

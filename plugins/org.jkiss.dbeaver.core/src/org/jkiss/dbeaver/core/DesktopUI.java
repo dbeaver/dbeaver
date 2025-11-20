@@ -71,7 +71,6 @@ import org.jkiss.dbeaver.ui.views.process.ShellProcessView;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
-import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -527,16 +526,8 @@ public class DesktopUI extends ConsoleUserInterface {
     }
 
     @Override
-    public void executeWithProgress(@NotNull Runnable runnable) {
+    public void executeInMainThread(@NotNull Runnable runnable) {
         UIUtils.syncExec(runnable);
-    }
-
-    @Override
-    public void executeWithProgress(@NotNull DBRRunnableWithProgress runnable) throws InvocationTargetException, InterruptedException {
-        // FIXME: we need to run with progress service bu we can't change active control focus
-        // Otherwise it breaks some functions (e.g. data editor value save as it handles focus events).
-        // so we can use runInProgressServie function
-        runnable.run(new VoidProgressMonitor());
     }
 
     /**
@@ -651,6 +642,10 @@ public class DesktopUI extends ConsoleUserInterface {
         return UIUtils.runWithMonitor(runnable);
     }
 
+    @Override
+    public <T> T runWithProgress(@NotNull DBRRunnableWithReturn<T> runnable) throws DBException {
+        return UIUtils.runWithDialog(runnable);
+    }
 
     @NotNull
     @Override
