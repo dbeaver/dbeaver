@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.model.rm;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
 
 import java.util.List;
@@ -29,15 +30,15 @@ public class RMEventManager {
 
     private static final List<RMEventListener> listeners = new CopyOnWriteArrayList<>();
 
-    public static synchronized void addEventListener(RMEventListener listener) {
+    public static synchronized void addEventListener(@NotNull RMEventListener listener) {
         listeners.add(listener);
     }
 
-    public static synchronized void removeEventListener(RMEventListener listener) {
+    public static synchronized void removeEventListener(@NotNull RMEventListener listener) {
         listeners.remove(listener);
     }
 
-    public static void fireEvent(RMEvent event) {
+    public static void fireEvent(@NotNull RMEvent event) {
         for (var listener : listeners) {
             try {
                 listener.handleRMEvent(event);

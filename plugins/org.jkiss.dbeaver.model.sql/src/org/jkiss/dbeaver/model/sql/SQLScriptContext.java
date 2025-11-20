@@ -271,7 +271,10 @@ public class SQLScriptContext implements DBCScriptContext {
     }
 
     @NotNull
-    public SQLControlResult executeControlCommand(DBRProgressMonitor monitor, SQLControlCommand command) throws DBException {
+    public SQLControlResult executeControlCommand(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull SQLControlCommand command
+    ) throws DBException {
         if (command.isEmptyCommand()) {
             return SQLControlResult.success();
         }

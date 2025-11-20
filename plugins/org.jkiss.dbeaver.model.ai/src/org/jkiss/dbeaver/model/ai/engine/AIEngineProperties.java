@@ -20,6 +20,12 @@ import org.jkiss.dbeaver.DBException;
 
 public interface AIEngineProperties {
 
+    String getModel();
+
+    Integer getContextWindowSize();
+
+    double getTemperature();
+
     // Checks that properties have all required values
     boolean isValidConfiguration();
 
@@ -28,4 +34,5 @@ public interface AIEngineProperties {
     void resolveSecrets() throws DBException;
 
     void saveSecrets() throws DBException;
+
 }

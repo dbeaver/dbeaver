@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -53,7 +53,6 @@ import org.jkiss.dbeaver.ui.controls.resultset.ResultSetViewer;
 import org.jkiss.dbeaver.ui.data.IValueEditor;
 import org.jkiss.utils.CommonUtils;
 
-import java.lang.reflect.InvocationTargetException;
 import java.sql.Timestamp;
 import java.util.List;
 import java.util.*;
@@ -354,8 +353,6 @@ class GenericFilterValueEdit {
                             showRowCount,
                             true,
                             caseInsensitiveSearch);
-                    } catch (DBException e) {
-                        throw new InvocationTargetException(e);
                     }
                 });
                 return result;
@@ -369,8 +366,6 @@ class GenericFilterValueEdit {
                 DBExecUtils.tryExecuteRecover(monitor, attributeEnumerable.getDataSource(), param -> {
                     try (DBCSession session = DBUtils.openUtilSession(monitor, attributeEnumerable, "Read count of distinct values")) {
                         result[0] = attributeEnumerable.getDistinctValuesCount(session);
-                    } catch (DBException e) {
-                        throw new InvocationTargetException(e);
                     }
                 });
 
@@ -396,8 +391,6 @@ class GenericFilterValueEdit {
                             caseInsensitiveSearch,
                             MAX_MULTI_VALUES
                         ));
-                    } catch (DBException e) {
-                        throw new InvocationTargetException(e);
                     }
                 });
                 return result;
