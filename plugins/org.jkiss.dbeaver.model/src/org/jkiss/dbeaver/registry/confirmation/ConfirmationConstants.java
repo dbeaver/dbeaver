@@ -14,20 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.cli;
+package org.jkiss.dbeaver.registry.confirmation;
 
-import org.apache.commons.cli.CommandLine;
-import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.DBException;
+public class ConfirmationConstants {
 
-public interface ICommandLineParameterHandler {
-
-    void handleParameter(
-        @NotNull CommandLine commandLine,
-        @NotNull String name,
-        @Nullable String value,
-        @NotNull CommandLineContext context
-    ) throws DBException;
+    public static final String CONFIRM_PREF_KEY_PREFIX = "org.jkiss.dbeaver.core.confirm."; //$NON-NLS-1$
+    public static final String CONFIRM_DANGER_SQL_ID = "dangerous_sql"; //$NON-NLS-1$
+    public static final String CONFIRM_DROP_SQL_ID = "drop_sql"; //$NON-NLS-1$
+    public static final String CONFIRM_DANGER_SQL_KEY = CONFIRM_PREF_KEY_PREFIX + CONFIRM_DANGER_SQL_ID; //$NON-NLS-1$
+    public static final String CONFIRM_DROP_SQL_KEY = CONFIRM_PREF_KEY_PREFIX + CONFIRM_DROP_SQL_ID; //$NON-NLS-1$
 
 }

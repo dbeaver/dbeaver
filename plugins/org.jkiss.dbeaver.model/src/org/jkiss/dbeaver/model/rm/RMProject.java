@@ -16,7 +16,10 @@
  */
 package org.jkiss.dbeaver.model.rm;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBConstants;
+import org.jkiss.dbeaver.model.DBPObjectWithDescription;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.meta.IPropertyValueTransformer;
 import org.jkiss.dbeaver.model.meta.Property;
@@ -29,7 +32,7 @@ import java.util.Date;
 /**
  * Resource manager API
  */
-public class RMProject extends RMObject {
+public class RMProject extends RMObject implements DBPObjectWithDescription {
 
     private static final RMProjectType[] SHARED_PROJECTS = {RMProjectType.GLOBAL, RMProjectType.SHARED};
 
@@ -45,13 +48,13 @@ public class RMProject extends RMObject {
     }
 
     public RMProject(
-        String id,
-        String name,
-        String description,
-        RMProjectType type,
-        Long createTime,
-        String creator,
-        String[] projectPermissions
+        @NotNull String id,
+        @NotNull String name,
+        @Nullable String description,
+        @NotNull RMProjectType type,
+        @NotNull Long createTime,
+        @NotNull String creator,
+        @Nullable String[] projectPermissions
     ) {
         super(name);
         this.id = id;
@@ -62,28 +65,27 @@ public class RMProject extends RMObject {
         this.projectPermissions = projectPermissions;
     }
 
-    public RMProject(String name) {
+    public RMProject(@NotNull String name) {
         super(name);
+        this.id = name;
     }
 
+    @NotNull
     public String getId() {
         return id;
     }
 
-    public void setId(String id) {
+    public void setId(@NotNull String id) {
         this.id = id;
     }
 
     @Property(viewable = true, order = 1)
     public String getDisplayName() {
-        switch (type) {
-            case GLOBAL:
-                return ModelMessages.project_shared_display_name;
-            case USER:
-                return ModelMessages.project_private_display_name;
-            default:
-                return getName();
-        }
+        return switch (type) {
+            case GLOBAL -> ModelMessages.project_shared_display_name;
+            case USER -> ModelMessages.project_private_display_name;
+            default -> getName();
+        };
     }
 
     @Override
@@ -146,7 +148,7 @@ public class RMProject extends RMObject {
     }
 
     @Override
-    public boolean equals(Object obj) {
+    public boolean equals(@NotNull Object obj) {
         return obj instanceof RMProject &&
             CommonUtils.equalObjects(id, ((RMProject) obj).id) &&
             CommonUtils.equalObjects(getName(), ((RMProject) obj).getName()) &&
@@ -174,12 +176,13 @@ public class RMProject extends RMObject {
     }
 
     public static class TimeRenderer implements IPropertyValueTransformer<RMProject, Object> {
+        @Nullable
         @Override
-        public Object transform(RMProject object, Object value) throws IllegalArgumentException {
-            if (!(value instanceof Long)) {
+        public Object transform(@NotNull RMProject object, @Nullable Object value) throws IllegalArgumentException {
+            if (!(value instanceof Long lv)) {
                 return value;
             }
-            return new SimpleDateFormat(DBConstants.DEFAULT_TIMESTAMP_FORMAT).format(new Date((Long) value));
+            return new SimpleDateFormat(DBConstants.DEFAULT_TIMESTAMP_FORMAT).format(new Date(lv));
         }
     }
 }

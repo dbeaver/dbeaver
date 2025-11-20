@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -57,7 +57,9 @@ public class SQLCommandsRegistry
             // Load functions
             if (TAG_COMMAND.equals(ext.getName())) {
                 SQLCommandHandlerDescriptor commandDescriptor = new SQLCommandHandlerDescriptor(ext);
-                this.commandHandlers.put(commandDescriptor.getId(), commandDescriptor);
+                if (commandDescriptor.isEnabled()) {
+                    this.commandHandlers.put(commandDescriptor.getId(), commandDescriptor);
+                }
             }
             if (TAG_PRAGMA.equals(ext.getName())) {
                 final SQLPragmaHandlerDescriptor descriptor = new SQLPragmaHandlerDescriptor(ext);

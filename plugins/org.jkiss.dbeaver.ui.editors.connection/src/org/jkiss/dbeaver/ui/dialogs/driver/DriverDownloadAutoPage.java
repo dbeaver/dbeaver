@@ -88,7 +88,7 @@ class DriverDownloadAutoPage extends DriverDownloadPage {
     }
 
     private ExpandableComposite setExpander(@NotNull Composite parent) {
-        ExpandableComposite expander = UIUtils.createExpandableCompositeWithSeparator(
+        ExpandableComposite expander = new ExpandableComposite(
             parent,
             SWT.NONE,
             ExpandableComposite.TWISTIE | ExpandableComposite.COMPACT
@@ -104,7 +104,7 @@ class DriverDownloadAutoPage extends DriverDownloadPage {
         });
         expander.setText(UIConnectionMessages.dialog_driver_download_auto_page_show_details);
         expander.setLayoutData(
-            GridDataFactory.fillDefaults().indent(0, 10).create()
+            GridDataFactory.fillDefaults().grab(true, true).indent(0, 10).create()
         );
         expander.setClient(details);
         return expander;
@@ -172,6 +172,7 @@ class DriverDownloadAutoPage extends DriverDownloadPage {
 
     private Composite setDetails(@NotNull Composite parent) {
         Composite composite = UIUtils.createPlaceholder(parent, 1);
+        composite.setLayoutData(new GridData(GridData.FILL_BOTH));
         DriverDownloadWizard wizard = getWizard();
         DBPDriver driver = wizard.getDriver();
 
@@ -410,7 +411,7 @@ class DriverDownloadAutoPage extends DriverDownloadPage {
         }
 
         @Override
-        protected void createButtonsForButtonBar(Composite parent) {
+        protected void createButtonsForButtonBar(@NotNull Composite parent) {
             createButton(
                 parent,
                 IDialogConstants.ABORT_ID,

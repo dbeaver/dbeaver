@@ -75,6 +75,7 @@ import org.jkiss.dbeaver.ui.actions.ConnectionCommands;
 import org.jkiss.dbeaver.ui.contentassist.ContentAssistUtils;
 import org.jkiss.dbeaver.ui.contentassist.ContentProposalExt;
 import org.jkiss.dbeaver.ui.contentassist.SmartTextContentAdapter;
+import org.jkiss.dbeaver.ui.controls.StyledTextUtils;
 import org.jkiss.dbeaver.ui.controls.resultset.*;
 import org.jkiss.dbeaver.ui.controls.resultset.IResultSetController.RowPlacement;
 import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
@@ -82,14 +83,13 @@ import org.jkiss.dbeaver.ui.controls.resultset.spreadsheet.SpreadsheetPresentati
 import org.jkiss.dbeaver.ui.data.IValueController;
 import org.jkiss.dbeaver.ui.data.managers.BaseValueManager;
 import org.jkiss.dbeaver.ui.editors.MultiPageAbstractEditor;
-import org.jkiss.dbeaver.ui.editors.TextEditorUtils;
 import org.jkiss.dbeaver.ui.internal.UIMessages;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.Pair;
 
-import java.util.*;
 import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -380,7 +380,7 @@ public class ResultSetHandlerMain extends AbstractHandler implements IElementUpd
                 }
 
                 for (DBDAttributeBinding attr : attrs) {
-                    if (buffer.length() > 0) {
+                    if (!buffer.isEmpty()) {
                         buffer.append(settings.getColumnDelimiter());
                     }
                     String colName = attr.getLabel();
@@ -409,7 +409,7 @@ public class ResultSetHandlerMain extends AbstractHandler implements IElementUpd
                     settings = configDialog.copySettings;
                 }
                 for (ResultSetRow row : selectedRows) {
-                    if (buffer.length() > 0) {
+                    if (!buffer.isEmpty()) {
                         buffer.append(settings.getRowDelimiter());
                     }
                     buffer.append(row.getVisualNumber() + 1);
@@ -451,7 +451,7 @@ public class ResultSetHandlerMain extends AbstractHandler implements IElementUpd
                 }
                 break;
             case IWorkbenchCommandConstants.EDIT_FIND_AND_REPLACE:
-                IAction action = TextEditorUtils.createFindReplaceAction(
+                IAction action = StyledTextUtils.createFindReplaceAction(
                     activeShell,
                     rsv.getAdapter(IFindReplaceTarget.class));
                 action.run();
@@ -593,7 +593,7 @@ public class ResultSetHandlerMain extends AbstractHandler implements IElementUpd
             }
             case CMD_ZOOM_IN:
             case CMD_ZOOM_OUT: {
-                FontRegistry fontRegistry= rsv.getSite().getWorkbenchWindow().getWorkbench().getThemeManager().getCurrentTheme().getFontRegistry();
+                FontRegistry fontRegistry = UIUtils.getCurrentTheme().getFontRegistry();
                 Font font = fontRegistry.get(presentation.getFontId());
                 if (font != null) {
                     FontData[] fondData= font.getFontData();
@@ -616,8 +616,7 @@ public class ResultSetHandlerMain extends AbstractHandler implements IElementUpd
             case CMD_SELECT_ROW_COLOR: {
                 if (activePart != null) {
                     ResultSetViewer resultSetViewer = activePart.getAdapter(ResultSetViewer.class);
-                    if (presentation instanceof SpreadsheetPresentation) {
-                        SpreadsheetPresentation ssp = (SpreadsheetPresentation) presentation;
+                    if (presentation instanceof SpreadsheetPresentation ssp) {
                         UIUtils.asyncExec(() -> {
                             ColorDialog dialog = new ColorDialog(UIUtils.createCenteredShell(resultSetViewer.getControl().getShell()));
                             RGB color = dialog.open();
@@ -804,7 +803,7 @@ public class ResultSetHandlerMain extends AbstractHandler implements IElementUpd
                     boolean ys = y.startsWith(pattern);
                     return (xs ^ ys) ? (xs ? -1 : 1) : x.compareToIgnoreCase(y);
                 });
-                return entries.toArray(new IContentProposal[entries.size()]);
+                return entries.toArray(new IContentProposal[0]);
             }
         };
         InputDialog dialog = new InputDialog(

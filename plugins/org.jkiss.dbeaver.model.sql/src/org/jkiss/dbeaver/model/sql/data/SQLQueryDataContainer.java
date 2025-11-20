@@ -82,7 +82,7 @@ public class SQLQueryDataContainer implements DBSDataContainer, SQLQueryContaine
         long maxRows,
         long flags,
         int fetchSize
-    ) throws DBCException
+    ) throws DBException
     {
         DBCStatistics statistics = new DBCStatistics();
         // Modify query (filters + parameters)
@@ -156,9 +156,9 @@ public class SQLQueryDataContainer implements DBSDataContainer, SQLQueryContaine
                     monitor.subTask("Fetch result set");
                     DBFetchProgress fetchProgress = new DBFetchProgress(session.getProgressMonitor());
 
-                    dataReceiver.fetchStart(session, resultSet, firstRow, maxRows);
+                    DBDDataReceiver.startFetchWorkflow(dataReceiver, session, resultSet, firstRow, maxRows);
 
-                    try {
+                    try (resultSet) {
                         long fetchStartTime = System.currentTimeMillis();
 
                         // Fetch all rows
@@ -167,19 +167,6 @@ public class SQLQueryDataContainer implements DBSDataContainer, SQLQueryContaine
                             fetchProgress.monitorRowFetch();
                         }
                         statistics.addFetchTime(System.currentTimeMillis() - fetchStartTime);
-                    }
-                    finally {
-                        try {
-                            resultSet.close();
-                        } catch (Throwable e) {
-                            log.error("Error while closing resultset", e);
-                        }
-                        try {
-                            dataReceiver.fetchEnd(session, resultSet);
-                        } catch (Throwable e) {
-                            log.error("Error while handling end of result set fetch", e);
-                        }
-                        dataReceiver.close();
                     }
 
                     if (executeResult != null) {
