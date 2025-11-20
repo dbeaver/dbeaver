@@ -212,7 +212,7 @@ public abstract class ApplicationCommandLine<T extends ApplicationInstanceContro
             CommandLine.ParseResult parseResult;
             parseResult = commandLine.parseArgs(args);
             if (commandLineIsEmpty(parseResult)) {
-                return args;
+                return new String[0];
             }
             for (CommandLineParameterDescriptor descriptor : customParameters.values()) {
                 CommandLine.ParseResult cliCommand = findCommand(parseResult, descriptor.getImplClass());
@@ -262,11 +262,15 @@ public abstract class ApplicationCommandLine<T extends ApplicationInstanceContro
 
 
     protected boolean commandLineIsEmpty(@Nullable CommandLine.ParseResult commandLine) {
-        return commandLine == null || (
-            CommonUtils.isEmpty(commandLine.matchedArgs())
-                && CommonUtils.isEmpty(commandLine.matchedOptions())
-                && CommonUtils.isEmpty(commandLine.subcommands())
-        );
+        if (commandLine == null) {
+            return true;
+        }
+        var noArgs = commandLine.matchedArgs()
+            .stream().allMatch(CommandLine.Model.ArgSpec::hidden);
+
+        var noOptions = commandLine.matchedOptions()
+            .stream().allMatch(CommandLine.Model.ArgSpec::hidden);
+        return noArgs && noOptions && CommonUtils.isEmpty(commandLine.subcommands());
     }
 
 

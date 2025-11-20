@@ -28,13 +28,15 @@ import picocli.CommandLine;
 public abstract class AbstractTopLevelCommand implements Runnable, CommandLine.IExitCodeGenerator {
     private final Log log = Log.getLog(getClass());
 
+    public static final String HELP_OPTION = "--help";
+
     @CommandLine.Option(names = {"-dump"},
         description = "Print instance thread dump.")
     private boolean dump;
 
 
     @CommandLine.Option(
-        names = {"-h", "-help", "--help"},
+        names = {"-h", "-help", HELP_OPTION},
         description = "Show this help message and exit.",
         usageHelp = true,
         scope = CommandLine.ScopeType.INHERIT
