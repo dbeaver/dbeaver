@@ -31,6 +31,7 @@ import org.jkiss.dbeaver.model.navigator.registry.DBNRegistry;
 import org.jkiss.dbeaver.model.rm.RMConstants;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.CommonUtils;
 
 import java.nio.file.Path;
@@ -62,9 +63,12 @@ public class DBNProject extends DBNNode implements DBNNodeWithCache, DBNNodeExte
 
     public DBNProjectDatabases getDatabases() {
         try {
-            for (DBNNode db : getChildren(new VoidProgressMonitor())) {
-                if (db instanceof DBNProjectDatabases databases) {
-                    return databases;
+            DBNNode[] dbNodes = getChildren(new VoidProgressMonitor());
+            if (dbNodes != null) {
+                for (DBNNode db : dbNodes) {
+                    if (db instanceof DBNProjectDatabases databases) {
+                        return databases;
+                    }
                 }
             }
         } catch (DBException e) {
@@ -79,27 +83,31 @@ public class DBNProject extends DBNNode implements DBNNodeWithCache, DBNNodeExte
         return project.getId();
     }
 
+    @NotNull
     @Override
     public String getNodeDisplayName() {
         return project.getDisplayName();
     }
 
+    @Nullable
     @Override
     public String getNodeDescription() {
         return null;
     }
 
+    @NotNull
     @Override
-    public String getLocalizedName(String locale) {
+    public String getLocalizedName(@NotNull String locale) {
         return getNodeDisplayName();
     }
 
+    @NotNull
     @Override
     public String getNodeType() {
         return "project";
     }
 
-    @NotNull
+    @Nullable
     @Override
     public DBPImage getNodeIcon() {
         DBPImage image = DBIcon.PROJECT;
@@ -118,7 +126,7 @@ public class DBNProject extends DBNNode implements DBNNodeWithCache, DBNNodeExte
     }
 
     @Override
-    public <T> T getAdapter(Class<T> adapter) {
+    public <T> T getAdapter(@NotNull Class<T> adapter) {
         if (adapter == DBNProject.class) {
             return adapter.cast(this);
         }
@@ -131,6 +139,7 @@ public class DBNProject extends DBNNode implements DBNNodeWithCache, DBNNodeExte
         return project;
     }
 
+    @Nullable
     @Override
     public Throwable getLastLoadError() {
         return getProject().getDataSourceRegistry().getLastError();
@@ -138,11 +147,11 @@ public class DBNProject extends DBNNode implements DBNNodeWithCache, DBNNodeExte
 
     @Override
     public boolean supportsRename() {
-        return !project.isVirtual();
+        return DBWorkbench.isDistributed() || !project.isVirtual();
     }
 
     @Override
-    public void rename(DBRProgressMonitor monitor, String newName) throws DBException {
+    public void rename(@NotNull DBRProgressMonitor monitor, @NotNull String newName) throws DBException {
         throw new DBCFeatureNotSupportedException("Project rename is not supported");
     }
 
@@ -179,8 +188,9 @@ public class DBNProject extends DBNNode implements DBNNodeWithCache, DBNNodeExte
     protected void filterChildren(List<DBNNode> children) {
     }
 
+    @Nullable
     @Override
-    public DBNNode refreshNode(DBRProgressMonitor monitor, Object source) throws DBException {
+    public DBNNode refreshNode(@NotNull DBRProgressMonitor monitor, @Nullable Object source) throws DBException {
         project.getDataSourceRegistry().refreshConfig();
         return this;
     }
@@ -263,6 +273,7 @@ public class DBNProject extends DBNNode implements DBNNodeWithCache, DBNNodeExte
         return project.getId();
     }
 
+    @NotNull
     @Deprecated
     @Override
     public String getNodeItemPath() {
@@ -279,6 +290,7 @@ public class DBNProject extends DBNNode implements DBNNodeWithCache, DBNNodeExte
         return true;
     }
 
+    @Nullable
     @Override
     public DBNNode[] getChildren(@NotNull DBRProgressMonitor monitor) throws DBException {
         if (children != null) {

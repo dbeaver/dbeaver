@@ -145,7 +145,11 @@ public class GenericMetaModel {
     }
 
     @Nullable
-    public List<GenericSchema> loadSchemas(JDBCSession session, GenericDataSource dataSource, GenericCatalog catalog)
+    public List<GenericSchema> loadSchemas(
+        @NotNull JDBCSession session,
+        @NotNull GenericDataSource dataSource,
+        @Nullable GenericCatalog catalog
+    )
         throws DBException
     {
         if (dataSource.isOmitSchema()) {
@@ -1077,7 +1081,7 @@ public class GenericMetaModel {
     }
 
     @NotNull
-    public GenericTrigger createTableTriggerImpl(
+    public GenericTrigger<?> createTableTriggerImpl(
         @NotNull JDBCSession session,
         @NotNull GenericStructContainer genericStructContainer,
         @NotNull GenericTableBase genericTableBase,

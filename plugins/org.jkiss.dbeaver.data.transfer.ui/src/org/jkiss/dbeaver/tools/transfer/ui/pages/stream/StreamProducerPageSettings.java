@@ -21,10 +21,9 @@ import org.eclipse.jface.dialogs.IMessageProvider;
 import org.eclipse.jface.layout.GridLayoutFactory;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.SashForm;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
@@ -35,6 +34,7 @@ import org.jkiss.dbeaver.model.navigator.fs.DBNPathBase;
 import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
+import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataManipulator;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
@@ -52,15 +52,16 @@ import org.jkiss.dbeaver.tools.transfer.stream.StreamTransferProducer;
 import org.jkiss.dbeaver.tools.transfer.ui.internal.DTUIMessages;
 import org.jkiss.dbeaver.tools.transfer.ui.pages.DataTransferPageNodeSettings;
 import org.jkiss.dbeaver.ui.*;
+import org.jkiss.dbeaver.ui.controls.CustomTableEditor;
 import org.jkiss.dbeaver.ui.dialogs.DialogUtils;
 import org.jkiss.dbeaver.ui.internal.UIMessages;
 import org.jkiss.dbeaver.ui.properties.PropertyTreeViewer;
 import org.jkiss.dbeaver.utils.HelpUtils;
 import org.jkiss.utils.CommonUtils;
-import org.jkiss.utils.IOUtils;
 
 import java.io.File;
 import java.lang.reflect.InvocationTargetException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.*;
@@ -73,8 +74,8 @@ public class StreamProducerPageSettings extends DataTransferPageNodeSettings {
     private PropertyTreeViewer propsEditor;
     private PropertySourceCustom propertySource;
     private Table filesTable;
-    private ToolItem tiOpenLocal;
-    private ToolItem tiOpenRemote;
+    private Button tiOpenLocal;
+    private Button tiOpenRemote;
 
     public StreamProducerPageSettings() {
         super(DTMessages.data_transfer_wizard_page_input_files_name);
@@ -94,8 +95,6 @@ public class StreamProducerPageSettings extends DataTransferPageNodeSettings {
             Composite inputFilesGroup = UIUtils.createComposite(settingsDivider, 1);
             inputFilesGroup.setLayoutData(new GridData(GridData.FILL_BOTH));
 
-            UIUtils.createControlLabel(inputFilesGroup, DTMessages.data_transfer_wizard_settings_group_input_files);
-
             final Composite inputFilesTableGroup = new Composite(inputFilesGroup, SWT.NONE);
             inputFilesTableGroup.setLayout(GridLayoutFactory.fillDefaults().spacing(0, 0).create());
             inputFilesTableGroup.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
@@ -104,9 +103,12 @@ public class StreamProducerPageSettings extends DataTransferPageNodeSettings {
             boolean showRemoteFS = project != null && DBFUtils.supportsMultiFileSystems(project);
 
             {
-                final ToolBar toolbar = new ToolBar(inputFilesTableGroup, SWT.HORIZONTAL | SWT.FLAT | SWT.RIGHT);
+                final Composite toolbar = new Composite(inputFilesTableGroup, SWT.NONE);
+                toolbar.setLayout(new GridLayout(3, false));
+                UIUtils.createControlLabel(toolbar, DTMessages.data_transfer_wizard_settings_group_input_files);
+
                 {
-                    tiOpenLocal = UIUtils.createToolItem(
+                    tiOpenLocal = UIUtils.createPushButton(
                         toolbar,
                         UIMessages.text_with_open_dialog_browse,
                         UIMessages.text_with_open_dialog_browse,
@@ -115,7 +117,7 @@ public class StreamProducerPageSettings extends DataTransferPageNodeSettings {
                     );
                 }
                 if (showRemoteFS) {
-                    tiOpenRemote = UIUtils.createToolItem(
+                    tiOpenRemote = UIUtils.createPushButton(
                         toolbar,
                         UIMessages.text_with_open_dialog_browse_remote,
                         UIMessages.text_with_open_dialog_browse_remote,
@@ -171,28 +173,57 @@ public class StreamProducerPageSettings extends DataTransferPageNodeSettings {
                 UIUtils.createTableColumn(filesTable, SWT.LEFT, DTUIMessages.data_transfer_wizard_final_column_target);
             }
 
-            {
-                filesTable.addSelectionListener(new SelectionAdapter() {
-                    @Override
-                    public void widgetSelected(SelectionEvent e) {
-                        updateBrowseButtons();
-                    }
-
-                    @Override
-                    public void widgetDefaultSelected(SelectionEvent e) {
-                        DataTransferPipe pipe = (DataTransferPipe) filesTable.getSelection()[0].getData();
-                        if (pipe.getProducer() instanceof StreamTransferProducer stp) {
-                            Action action;
-                            if (stp.getInputFile() != null) {
-                                action = new SelectInputFileAction(!IOUtils.isLocalPath(stp.getInputFile()));
-                            } else {
-                                action = new SelectInputFileAction(false);
-                            }
-                            action.run();
+            new CustomTableEditor(filesTable) {
+                @Override
+                protected Control createEditor(Table table, int index, TableItem item) {
+                    Text text = new Text(table, SWT.BORDER);
+                    DataTransferPipe pipe = (DataTransferPipe) item.getData();
+                    if (pipe.getProducer() instanceof StreamTransferProducer stp) {
+                        Path inputFile = stp.getInputFile();
+                        if (inputFile != null) {
+                            text.setText(DBFUtils.convertPathToString(inputFile));
                         }
                     }
-                });
-            }
+                    text.setSelection(0, text.getCharCount());
+                    return text;
+                }
+
+                @Override
+                protected void saveEditorValue(Control control, int index, TableItem item) {
+                    if (control instanceof Text text) {
+                        if (text.getData("saved") != null) {
+                            // Avoid double-apply on Mac
+                            return;
+                        }
+                        text.setData("saved", true);
+                        DataTransferPipe pipe = (DataTransferPipe) item.getData();
+                        String fileName = text.getText();
+                        text.dispose();
+                        if (fileName.isBlank()) {
+                            return;
+                        }
+                        try {
+                            Path path = DBFUtils.resolvePathFromString(new VoidProgressMonitor(), pipe.getConsumer().getProject(), fileName);
+                            if (!Files.exists(path)) {
+                                DBWorkbench.getPlatformUI().showError(
+                                    DTUIMessages.stream_producer_column_mapping_error_title,
+                                    "File '" + fileName + "' doesn't exist");
+                            } else {
+                                updateSingleConsumer(new VoidProgressMonitor(), pipe, path);
+                                item.setText(0, DBFUtils.convertPathToString(path));
+                                reloadPipes();
+                                updatePageCompletion();
+                            }
+                        } catch (Exception e) {
+                            DBWorkbench.getPlatformUI().showError(
+                                DTUIMessages.stream_producer_column_mapping_error_title,
+                                "Error resolving file",
+                                e);
+                        }
+                    }
+                }
+            };
+            filesTable.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> updateBrowseButtons()));
         }
 
         {
@@ -235,7 +266,9 @@ public class StreamProducerPageSettings extends DataTransferPageNodeSettings {
                 SWT.OPEN,
                 false,
                 extensions,
-                pipe.getConsumer().getObjectName());
+                pipe.getProducer() instanceof StreamTransferProducer stp ?
+                    DBFUtils.convertPathToString(stp.getInputFile()) :
+                    pipe.getProducer().getObjectName());
             if (selected != null) {
                 initializer = monitor -> updateSingleConsumer(monitor, pipe, selected.getPath());
             }
@@ -273,7 +306,7 @@ public class StreamProducerPageSettings extends DataTransferPageNodeSettings {
         updatePageCompletion();
     }
 
-    private void updateSingleConsumer(DBRProgressMonitor monitor, DataTransferPipe pipe, Path path) {
+    private void updateSingleConsumer(@NotNull DBRProgressMonitor monitor, @NotNull DataTransferPipe pipe, @NotNull Path path) {
         final StreamProducerSettings producerSettings = getWizard().getPageSettings(this, StreamProducerSettings.class);
 
         final StreamTransferProducer oldProducer = pipe.getProducer() instanceof StreamTransferProducer stp ? stp : null;

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -56,7 +56,7 @@ public class CubridView extends GenericView
     }
 
     @Override
-    public void setName(String name) {
+    public void setName(@NotNull String name) {
         super.setName(name != null ? name.toLowerCase() : null);
     }
 
@@ -85,9 +85,13 @@ public class CubridView extends GenericView
         }
     }
 
+    public boolean isEnableSchema() {
+        return getDataSource().getSupportMultiSchema() || getDataSource().isDBAGroup();
+    }
+
     @NotNull
     @Override
-    @Property(viewable = true, editable = true, updatable = true, listProvider = OwnerListProvider.class, labelProvider = GenericSchema.SchemaNameTermProvider.class, order = 2)
+    @Property(viewable = true, editableExpr = "object.enableSchema", updatableExpr = "object.enableSchema", listProvider = OwnerListProvider.class, labelProvider = GenericSchema.SchemaNameTermProvider.class, order = 2)
     public GenericSchema getSchema() {
         return owner;
     }
@@ -101,10 +105,10 @@ public class CubridView extends GenericView
     @NotNull
     @Override
     public String getFullyQualifiedName(@NotNull DBPEvaluationContext context) {
-        if (this.isSystem()) {
+        if (this.isSystem() || !getDataSource().getSupportMultiSchema()) {
             return DBUtils.getFullQualifiedName(getDataSource(), this);
         } else {
-            return DBUtils.getFullQualifiedName(getDataSource(), this.getSchema(), this);
+            return DBUtils.getQuotedIdentifier(this.getSchema()) + "." + DBUtils.getFullQualifiedName(getDataSource(), this);
         }
     }
 
@@ -116,7 +120,7 @@ public class CubridView extends GenericView
             return false;
         }
 
-        @NotNull
+        @Nullable
         @Override
         public Object[] getPossibleValues(@NotNull CubridView object) {
             return object.getDataSource().getSchemas().toArray();

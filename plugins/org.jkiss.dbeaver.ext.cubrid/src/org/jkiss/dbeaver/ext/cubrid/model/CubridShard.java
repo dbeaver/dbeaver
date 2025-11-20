@@ -16,6 +16,8 @@
  */
 package org.jkiss.dbeaver.ext.cubrid.model;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.cubrid.CubridConstants;
 import org.jkiss.dbeaver.model.DBPToolTipObject;
 import org.jkiss.dbeaver.model.meta.IPropertyValueListProvider;
@@ -34,6 +36,7 @@ public class CubridShard implements DBSObject, DBPToolTipObject
         this.shardVal = shardVal;
     }
 
+    @NotNull
     @Override
     public String getName() {
         return getType();
@@ -89,6 +92,7 @@ public class CubridShard implements DBSObject, DBPToolTipObject
             return true;
         }
 
+        @Nullable
         @Override
         public Object[] getPossibleValues(CubridShard object) {
             return CubridConstants.SHARD_TYPE;

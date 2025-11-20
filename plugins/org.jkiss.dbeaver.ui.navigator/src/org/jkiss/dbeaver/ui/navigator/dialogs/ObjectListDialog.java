@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,6 +31,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Shell;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.DBPImageProvider;
@@ -233,7 +234,7 @@ public class ObjectListDialog<T extends DBPObject> extends AbstractPopupPanel {
             return LoadingJob.createService(
                 new AbstractLoadService<>() {
                     @Override
-                    public Collection<T> evaluate(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
+                    public Collection<T> evaluate(@NotNull DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
                         objectReader.run(monitor);
                         return objectReader.getResult();
                     }
@@ -259,14 +260,16 @@ public class ObjectListDialog<T extends DBPObject> extends AbstractPopupPanel {
             return new ObjectLabelProvider(objectColumn);
         }
 
+        @NotNull
         @Override
-        protected Object getObjectValue(T item) {
+        protected Object getObjectValue(@NotNull T item) {
             if (item instanceof DBSWrapper) {
                 return ((DBSWrapper) item).getObject();
             }
             return super.getObjectValue(item);
         }
 
+        @Nullable
         @Override
         protected DBPImage getObjectImage(T item) {
             if (item instanceof DBNNode node) {

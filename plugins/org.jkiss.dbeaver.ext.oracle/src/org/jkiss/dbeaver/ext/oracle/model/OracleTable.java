@@ -340,6 +340,9 @@ public class OracleTable extends OracleTablePhysical implements DBPScriptObject,
         throws DBException
     {
         List<OracleTableForeignKey> refs = new ArrayList<>();
+        if (monitor.isForceCacheUsage()) {
+            return refs;
+        }
         // This is dummy implementation
         // Get references from this schema only
         final Collection<OracleTableForeignKey> allForeignKeys =
@@ -422,6 +425,7 @@ public class OracleTable extends OracleTablePhysical implements DBPScriptObject,
         super.appendSelectSource(monitor, query, tableAlias, rowIdAttribute);
     }
 
+    @NotNull
     @Override
     public String getObjectDefinitionText(@NotNull DBRProgressMonitor monitor, @NotNull Map<String, Object> options) throws DBException {
         return getDDL(monitor, OracleDDLFormat.getCurrentFormat(getDataSource()), options);
@@ -533,7 +537,7 @@ public class OracleTable extends OracleTablePhysical implements DBPScriptObject,
     }
 
     @Override
-    public boolean supportsObjectDefinitionOption(String option) {
+    public boolean supportsObjectDefinitionOption(@NotNull String option) {
         return ArrayUtils.contains(supportedOptions, option);
     }
 }

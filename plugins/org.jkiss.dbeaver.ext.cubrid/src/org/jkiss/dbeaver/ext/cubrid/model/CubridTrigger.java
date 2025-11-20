@@ -204,13 +204,13 @@ public class CubridTrigger extends GenericTableTrigger {
     @Override
     public String getFullyQualifiedName(@NotNull DBPEvaluationContext context) {
         if (getTable().getDataSource().getSupportMultiSchema()) {
-            return DBUtils.getFullQualifiedName(getDataSource(), getTable().getSchema(), this);
+            return DBUtils.getQuotedIdentifier(getTable().getSchema()) + "." + DBUtils.getFullQualifiedName(getDataSource(), this);
         } else {
             return DBUtils.getFullQualifiedName(getDataSource(), this);
         }
     }
 
-    @Nullable
+    @NotNull
     @Override
     public String getObjectDefinitionText(@NotNull DBRProgressMonitor monitor, @NotNull Map<String, Object> options) throws DBException {
         if (persisted) {
@@ -225,9 +225,9 @@ public class CubridTrigger extends GenericTableTrigger {
                 ddl.append(getEvent());
             } else {
                 ddl.append(getEvent());
-                ddl.append(" ON ").append(getTable().getUniqueName());
+                ddl.append(" ON ").append(getTable().getFullyQualifiedName(DBPEvaluationContext.DDL));
                 if (getEvent().contains("UPDATE") && getTargetColumn() != null) {
-                    ddl.append("(" + getTargetColumn() + ")");
+                    ddl.append("(" + DBUtils.getQuotedIdentifier(getDataSource(), getTargetColumn()) + ")");
                 }
                 if (getCondition() != null) {
                     ddl.append("\nIF ").append(getCondition());
@@ -258,6 +258,7 @@ public class CubridTrigger extends GenericTableTrigger {
             return false;
         }
 
+        @Nullable
         @Override
         public Object[] getPossibleValues(CubridTrigger object) {
             return object.columnList.toArray();
@@ -271,6 +272,7 @@ public class CubridTrigger extends GenericTableTrigger {
             return false;
         }
 
+        @Nullable
         @Override
         public Object[] getPossibleValues(CubridTrigger object) {
             return CubridConstants.EVENT_OPTION;
@@ -284,6 +286,7 @@ public class CubridTrigger extends GenericTableTrigger {
             return false;
         }
 
+        @Nullable
         @Override
         public Object[] getPossibleValues(CubridTrigger object) {
             return CubridConstants.ACTION_TIME_OPTION;
@@ -297,6 +300,7 @@ public class CubridTrigger extends GenericTableTrigger {
             return false;
         }
 
+        @Nullable
         @Override
         public Object[] getPossibleValues(CubridTrigger object) {
             return CubridConstants.ACTION_TYPE_OPTION;

@@ -19,19 +19,26 @@ package org.jkiss.dbeaver.model.ai.impl;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.ai.AIConstants;
-import org.jkiss.dbeaver.model.ai.AIDdlGenerationOptions;
-import org.jkiss.dbeaver.model.ai.AIMessage;
+import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.ai.*;
 import org.jkiss.dbeaver.model.ai.engine.AIDatabaseContext;
+import org.jkiss.dbeaver.model.ai.engine.AIEngine;
 import org.jkiss.dbeaver.model.ai.engine.AIEngineRequest;
+import org.jkiss.dbeaver.model.ai.registry.AIEngineDescriptor;
+import org.jkiss.dbeaver.model.ai.registry.AIFunctionDescriptor;
+import org.jkiss.dbeaver.model.ai.registry.AIFunctionRegistry;
+import org.jkiss.dbeaver.model.ai.registry.AISettingsManager;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 public class AIEngineRequestFactory {
+    private static final Log log = Log.getLog(AIEngineRequestFactory.class);
+
     // Section header used before the DB snapshot inside the system prompt
     private static final String DB_SNAPSHOT_SECTION_HEADER = "Database snapshot:\n";
 
@@ -57,12 +64,16 @@ public class AIEngineRequestFactory {
 
     public AIEngineRequest build(
         @NotNull DBRProgressMonitor monitor,
-        @NotNull String systemPrompt,
-        @Nullable AIDatabaseContext aiDatabaseContext,
-        @NotNull List<AIMessage> messages,
-        int maxContextWindowSize
+        @NotNull AIEngine engine,
+        @NotNull AIEngineDescriptor engineDescriptor,
+        @NotNull AIPromptGenerator systemPromptGenerator,
+        @Nullable AIDatabaseContext databaseContext,
+        @NotNull List<AIMessage> messages
     ) throws DBException {
+        String systemPrompt = systemPromptGenerator.build();
+
         // Tokens available for user/system/chat history after we reserve reply + overhead
+        int maxContextWindowSize = getContextWindowSize(monitor, engine);
         int availableContextTokens = maxContextWindowSize - REPLY_TOKEN_RESERVE - OVERHEAD_TOKEN_RESERVE;
         if (availableContextTokens < 0) {
             availableContextTokens = 0; // clamp, just in case caller gave a tiny window
@@ -84,9 +95,14 @@ public class AIEngineRequestFactory {
         // Build DB snapshot
 
         String dbSnapshot = "";
-        if (aiDatabaseContext != null && dbSnapshotTokenBudget > 0) {
-            AIDdlGenerationOptions ddlOptions = buildOptions(dbSnapshotTokenBudget);
-            dbSnapshot = databaseSnapshotService.createDbSnapshot(monitor, aiDatabaseContext, ddlOptions);
+        boolean isContextTruncated = false;
+        if (databaseContext != null && dbSnapshotTokenBudget > 0) {
+            AISchemaGenerationOptions ddlOptions = buildOptions(dbSnapshotTokenBudget);
+            AIDatabaseSnapshotService.TokenBoundedStringBuilder dbSnapshotBuilder = databaseSnapshotService.createDbSnapshot(monitor, databaseContext, ddlOptions);
+            if (dbSnapshotBuilder != null) {
+                dbSnapshot = dbSnapshotBuilder.toString();
+                isContextTruncated = dbSnapshotBuilder.isTruncated();
+            }
         }
 
         // Compose system message
@@ -112,13 +128,56 @@ public class AIEngineRequestFactory {
         allMessages.addAll(messages);
 
         List<AIMessage> truncated = chatTruncator.truncate(allMessages);
-        return new AIEngineRequest(truncated);
+        AIEngineRequest request = new AIEngineRequest(truncated);
+        request.setWasPromptTruncated(isContextTruncated);
+
+        determineRequestTools(monitor, engineDescriptor, systemPromptGenerator, request);
+
+        return request;
     }
 
-    protected AIDdlGenerationOptions buildOptions(int dbSnapshotTokenBudget) {
+    protected void determineRequestTools(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull AIEngineDescriptor engineDescriptor,
+        @NotNull AIPromptGenerator systemPromptGenerator,
+        @NotNull AIEngineRequest request
+    ) {
+        if (!engineDescriptor.isSupportsFunctions()) {
+            return;
+        }
+        List<AIFunctionDescriptor> functions = new ArrayList<>();
+        for (AIFunctionDescriptor fd : AIFunctionRegistry.getInstance().getAllFunctions()) {
+            if (fd.isGlobal() || fd.isApplicable(engineDescriptor, systemPromptGenerator)) {
+                functions.add(fd);
+            }
+        }
+
+        AISettings aiSettings = AISettingsManager.getInstance().getSettings();
+        Set<String> enabledFunctions = aiSettings.getEnabledFunctions();
+        Set<String> enabledFunctionCategories = aiSettings.getEnabledFunctionCategories();
+        functions.removeIf(aiFunctionDescriptor ->
+            !enabledFunctions.contains(aiFunctionDescriptor.getId()) &&
+                !enabledFunctionCategories.contains(aiFunctionDescriptor.getCategoryId())
+        );
+
+        request.setFunctions(functions);
+    }
+
+
+    private static int getContextWindowSize(@NotNull DBRProgressMonitor monitor, @NotNull AIEngine engine) {
+        try {
+            return engine.getContextWindowSize(monitor);
+        } catch (DBException e) {
+            log.debug("Cannot determine engine " + engine + " context window size. Set to default " +
+                AIConstants.DEFAULT_CONTEXT_WINDOW_SIZE, e);
+            return AIConstants.DEFAULT_CONTEXT_WINDOW_SIZE;
+        }
+    }
+
+    protected AISchemaGenerationOptions buildOptions(int dbSnapshotTokenBudget) {
         DBPPreferenceStore prefs = DBWorkbench.getPlatform().getPreferenceStore();
 
-        return AIDdlGenerationOptions.builder()
+        return AISchemaGenerationOptions.builder()
             .withMaxDbSnapshotTokens(dbSnapshotTokenBudget)
             .withSendObjectComment(prefs.getBoolean(AIConstants.AI_SEND_DESCRIPTION))
             .withSendColumnTypes(prefs.getBoolean(AIConstants.AI_SEND_TYPE_INFO))

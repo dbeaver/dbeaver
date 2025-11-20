@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,7 +31,6 @@ import org.eclipse.ui.*;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPKeywordType;
 import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.navigator.DBNModel;
@@ -48,7 +47,6 @@ import org.jkiss.dbeaver.model.struct.DBSObjectReference;
 import org.jkiss.dbeaver.ui.AbstractPartListener;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditor;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase;
-import org.jkiss.dbeaver.ui.editors.sql.dialogs.SuggestionInformationControl;
 import org.jkiss.dbeaver.ui.editors.sql.util.AnnotationsInformationView;
 import org.jkiss.dbeaver.ui.editors.sql.util.ObjectInformationView;
 import org.jkiss.dbeaver.ui.editors.sql.util.SQLAnnotationHover;
@@ -60,8 +58,6 @@ import java.util.Set;
 import java.util.stream.IntStream;
 
 public class SQLInformationProvider implements IInformationProvider, IInformationProviderExtension, IInformationProviderExtension2 {
-
-    private static final Log log = Log.getLog(SQLInformationProvider.class);
 
     private static final Set<SQLQuerySymbolClass> ignoredSymbolClassDescription = Set.of(
         SQLQuerySymbolClass.ERROR,
@@ -426,14 +422,6 @@ public class SQLInformationProvider implements IInformationProvider, IInformatio
                 this.annotationsInfoView.show();
             }
             super.setVisible(visible);
-        }
-
-        @Override
-        public void dispose() {
-            if (this.objectInformationView != null) {
-                this.objectInformationView.dispose();
-            }
-            super.dispose();
         }
     }
 }

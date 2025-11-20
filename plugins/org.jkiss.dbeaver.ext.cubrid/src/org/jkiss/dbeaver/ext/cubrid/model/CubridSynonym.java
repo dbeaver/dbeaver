@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,6 +21,8 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.generic.model.GenericStructContainer;
 import org.jkiss.dbeaver.ext.generic.model.GenericSynonym;
+import org.jkiss.dbeaver.model.DBPEvaluationContext;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
@@ -83,6 +85,12 @@ public class CubridSynonym extends GenericSynonym
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    @NotNull
+    @Override
+    public String getFullyQualifiedName(@NotNull DBPEvaluationContext context) {
+        return DBUtils.getQuotedIdentifier(this.getOwner()) + "." + DBUtils.getFullQualifiedName(getDataSource(), this);
     }
 
 }

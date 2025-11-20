@@ -49,8 +49,9 @@ public class SnowflakeDataSourceProvider extends JDBCDataSourceProvider {
         return FEATURE_CATALOGS | FEATURE_SCHEMAS;
     }
 
+    @NotNull
     @Override
-    public String getConnectionURL(DBPDriver driver, DBPConnectionConfiguration connectionInfo)
+    public String getConnectionURL(@NotNull DBPDriver driver, @NotNull DBPConnectionConfiguration connectionInfo)
     {
         StringBuilder url = new StringBuilder();
         url.append("jdbc:snowflake://").append(connectionInfo.getHostName());

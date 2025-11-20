@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,39 +22,38 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.CommonUtils;
 
 import java.nio.file.Path;
-import java.util.Objects;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 public class RMUtils {
 
     public static final String USER_PROJECTS_FOLDER = "user-projects";
     public static final String SHARED_PROJECTS_FOLDER = "shared-projects";
 
+    @NotNull
     public static Path getRootPath() {
         return DBWorkbench.getPlatform().getWorkspace().getAbsolutePath();
     }
 
+    @NotNull
     public static Path getUserProjectsPath() {
         return getRootPath().resolve(USER_PROJECTS_FOLDER);
     }
 
+    @NotNull
     public static Path getSharedProjectsPath() {
         return getRootPath().resolve(SHARED_PROJECTS_FOLDER);
     }
 
     @NotNull
-    public static Path getProjectPath(RMProject project) {
-        switch (project.getType()) {
-            case GLOBAL:
-                return getRootPath().resolve(DBWorkbench.getPlatform().getApplication().getDefaultProjectName());
-            case SHARED:
-                return getSharedProjectsPath().resolve(project.getName());
-            default:
-                return getUserProjectsPath().resolve(project.getName());
-        }
+    public static Path getProjectPath(@NotNull RMProject project) {
+        Path folder = switch (project.getType()) {
+            case GLOBAL -> getRootPath();
+            case SHARED -> getSharedProjectsPath();
+            default -> getUserProjectsPath();
+        };
+        return folder.resolve(project.getName());
     }
 
+    @NotNull
     public static String getProjectName(@NotNull String projectId) throws DBException {
         int divPos = projectId.indexOf("_");
         if (divPos <= 0) {
@@ -92,19 +91,19 @@ public class RMUtils {
         }
     }
 
-    public static Set<String> parseProjectPermissions(Set<String> permissions) {
-        return permissions.stream()
-            .map(RMProjectPermission::fromPermission).filter(Objects::nonNull)
-            .flatMap(permission -> permission.getAllPermissions().stream())
-            .collect(Collectors.toSet());
-    }
-
+    @NotNull
     public static RMProject createAnonymousProject() {
         RMProject project = new RMProject("anonymous");
         project.setId("anonymous");
         project.setType(RMProjectType.USER);
         project.setProjectPermissions(RMProjectPermission.DATA_SOURCES_EDIT.getAllPermissions().toArray(new String[0]));
         return project;
+    }
+
+    @NotNull
+    public static String makeProjectIdFromPath(@NotNull Path path, @NotNull RMProjectType type) {
+        String projectName = path.getFileName().toString();
+        return type.getPrefix() + "_" + projectName;
     }
 
 }

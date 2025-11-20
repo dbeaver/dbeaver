@@ -155,7 +155,7 @@ public class PostgreTrigger extends PostgreTriggerBase implements DBSEntityEleme
         return name;
     }
 
-    public void setName(String name) {
+    public void setName(@NotNull String name) {
         this.name = name;
     }
 
@@ -252,6 +252,7 @@ public class PostgreTrigger extends PostgreTriggerBase implements DBSEntityEleme
         return table.getDatabase();
     }
 
+    @NotNull
     @Property(hidden = true, editable = true, updatable = true, order = -1)
     public String getObjectDefinitionText(@NotNull DBRProgressMonitor monitor, @NotNull Map<String, Object> options) throws DBException {
         StringBuilder ddl = new StringBuilder();
@@ -339,8 +340,9 @@ public class PostgreTrigger extends PostgreTriggerBase implements DBSEntityEleme
     }
 
     public static class ColumnNameTransformer implements IPropertyValueTransformer {
+        @Nullable
         @Override
-        public Object transform(Object object, Object value) throws IllegalArgumentException {
+        public Object transform(@NotNull Object object, @Nullable Object value) throws IllegalArgumentException {
             if (value instanceof PostgreTableColumn[]) {
                 StringBuilder sb = new StringBuilder();
                 for (PostgreTableColumn col : (PostgreTableColumn[])value) {

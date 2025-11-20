@@ -30,30 +30,35 @@ import org.eclipse.swt.widgets.Text;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.ai.engine.AIEngine;
+import org.jkiss.dbeaver.model.ai.engine.AIEngineProperties;
 import org.jkiss.dbeaver.model.ai.engine.AIModel;
 import org.jkiss.dbeaver.model.ai.engine.AIModelFeature;
-import org.jkiss.dbeaver.model.ai.engine.LegacyAISettings;
 import org.jkiss.dbeaver.model.ai.engine.openai.OpenAIClient;
-import org.jkiss.dbeaver.model.ai.engine.openai.OpenAICompletionEngine;
+import org.jkiss.dbeaver.model.ai.engine.openai.OpenAIEngine;
 import org.jkiss.dbeaver.model.ai.engine.openai.OpenAIModels;
 import org.jkiss.dbeaver.model.ai.engine.openai.OpenAIProperties;
+import org.jkiss.dbeaver.model.ai.registry.AIEngineDescriptor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.ui.IObjectPropertyConfigurator;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.ai.internal.AIUIMessages;
+import org.jkiss.dbeaver.ui.ai.model.CachedValue;
+import org.jkiss.dbeaver.ui.ai.model.ContextWindowSizeField;
+import org.jkiss.dbeaver.ui.ai.model.ModelSelectorField;
+import org.jkiss.dbeaver.ui.ai.preferences.AIIObjectPropertyConfigurator;
 import org.jkiss.utils.CommonUtils;
-import org.jkiss.utils.function.ThrowableFunction;
 
 import java.util.List;
 import java.util.Locale;
+import java.util.Optional;
 
-public class OpenAiConfigurator<ENGINE extends AIEngine, PROPERTIES extends OpenAIProperties>
-    implements IObjectPropertyConfigurator<ENGINE, LegacyAISettings<PROPERTIES>> {
+public class OpenAiConfigurator<ENGINE extends AIEngineDescriptor, PROPERTIES extends OpenAIProperties>
+    implements AIIObjectPropertyConfigurator<ENGINE, PROPERTIES> {
+
     private static final String API_KEY_URL = "https://platform.openai.com/account/api-keys";
     protected String baseUrl;
     protected volatile String token = "";
     private String temperature = "0.0";
+    private boolean useLegacyApi;
     private boolean logQuery = false;
 
     @Nullable
@@ -64,6 +69,7 @@ public class OpenAiConfigurator<ENGINE extends AIEngine, PROPERTIES extends Open
     private Text temperatureText;
     private ModelSelectorField modelSelectorField;
     private ContextWindowSizeField contextWindowSizeField;
+    private Button legacyApiCheck;
     private Button logQueryCheck;
 
     protected final CachedValue<List<AIModel>> modelsCache = new CachedValue<>(this::fetchOpenAiModels);
@@ -71,7 +77,7 @@ public class OpenAiConfigurator<ENGINE extends AIEngine, PROPERTIES extends Open
     @Override
     public void createControl(
         @NotNull Composite parent,
-        AIEngine object,
+        AIEngineDescriptor object,
         @NotNull Runnable propertyChangeListener
     ) {
         Composite composite = UIUtils.createComposite(parent, 3);
@@ -82,44 +88,55 @@ public class OpenAiConfigurator<ENGINE extends AIEngine, PROPERTIES extends Open
         createBaseUrlParameter(composite);
 
         createAdditionalSettings(composite);
-        UIUtils.syncExec(this::applySettings);
     }
 
     @Override
-    public void loadSettings(@NotNull LegacyAISettings<PROPERTIES> configuration) {
-        baseUrl = CommonUtils.toString(configuration.getProperties().getBaseUrl());
+    public void loadSettings(@NotNull PROPERTIES configuration) {
+        baseUrl = CommonUtils.toString(configuration.getBaseUrl());
         if (baseUrl.isEmpty()) {
             baseUrl = OpenAIClient.OPENAI_ENDPOINT;
         }
-        token = CommonUtils.toString(configuration.getProperties().getToken());
+        token = CommonUtils.toString(configuration.getToken());
         modelSelectorField.setSelectedModel(
-            CommonUtils.toString(configuration.getProperties().getModel(), OpenAIModels.DEFAULT_MODEL)
+            CommonUtils.toString(configuration.getModel(), OpenAIModels.DEFAULT_MODEL)
         );
-        temperature = CommonUtils.toString(configuration.getProperties().getTemperature(), "0.0");
-        logQuery = CommonUtils.toBoolean(configuration.getProperties().isLoggingEnabled());
+        temperature = CommonUtils.toString(configuration.getTemperature(), "0.0");
+        useLegacyApi = configuration.isLegacyApi();
+        logQuery = CommonUtils.toBoolean(configuration.isLoggingEnabled());
         applySettings();
 
-        contextWindowSizeField.setValue(configuration.getProperties().getContextWindowSize());
+        contextWindowSizeField.setValue(configuration.getContextWindowSize());
 
         modelSelectorField.refreshModelListSilently(false);
     }
 
     @Override
-    public void saveSettings(@NotNull LegacyAISettings<PROPERTIES> configuration) {
-        configuration.getProperties().setBaseUrl(baseUrl);
-        configuration.getProperties().setToken(token);
-        configuration.getProperties().setModel(modelSelectorField.getSelectedModel());
-        configuration.getProperties().setContextWindowSize(contextWindowSizeField.getValue());
-        configuration.getProperties().setTemperature(CommonUtils.toDouble(temperature));
-        configuration.getProperties().setLoggingEnabled(logQuery);
+    public void saveSettings(@NotNull PROPERTIES configuration) {
+        configuration.setBaseUrl(baseUrl);
+        configuration.setToken(token);
+        configuration.setModel(modelSelectorField.getSelectedModel());
+        configuration.setContextWindowSize(contextWindowSizeField.getValue());
+        configuration.setTemperature(CommonUtils.toDouble(temperature));
+        configuration.setLegacyApi(useLegacyApi);
+        configuration.setLoggingEnabled(logQuery);
     }
 
     @Override
-    public void resetSettings(@NotNull LegacyAISettings<PROPERTIES> openAIPropertiesLegacyAISettings) {
+    public void resetSettings(@NotNull PROPERTIES openAIPropertiesLegacyAISettings) {
 
     }
 
     protected void createAdditionalSettings(@NotNull Composite parent) {
+        legacyApiCheck = UIUtils.createCheckbox(
+            parent,
+            "Use legacy API",
+            "Use legacy OpenAI API (chat). May be useful if you use OpenAI compatible engine which doesn't support 'responses' API.",
+            false,
+            2
+        );
+        legacyApiCheck.addSelectionListener(SelectionListener.widgetSelectedAdapter(e ->
+            useLegacyApi = legacyApiCheck.getSelection()
+        ));
         logQueryCheck = UIUtils.createCheckbox(
             parent,
             "Write AI queries to debug log",
@@ -127,12 +144,9 @@ public class OpenAiConfigurator<ENGINE extends AIEngine, PROPERTIES extends Open
             false,
             2
         );
-        logQueryCheck.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                logQuery = logQueryCheck.getSelection();
-            }
-        });
+        logQueryCheck.addSelectionListener(SelectionListener.widgetSelectedAdapter(e ->
+            logQuery = logQueryCheck.getSelection()
+        ));
     }
 
     protected void createModelParameters(@NotNull Composite parent) {
@@ -145,19 +159,20 @@ public class OpenAiConfigurator<ENGINE extends AIEngine, PROPERTIES extends Open
                     .map(AIModel::name)
                     .toList()
             )
-            .withSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
+            .withSelectionListener(SelectionListener.widgetSelectedAdapter(e ->
                 OpenAIModels.getModelByName(modelSelectorField.getSelectedModel())
                     .ifPresentOrElse(
                         model -> {
                             contextWindowSizeField.setValue(model.contextWindowSize());
                             temperatureText.setText(String.valueOf(model.defaultTemperature()));
+                            temperatureText.setEnabled(OpenAIModels.isTemperatureEditable(model));
                         }, () -> {
                             contextWindowSizeField.setValue(null);
                             temperatureText.setText("0.0");
+                            temperatureText.setEnabled(true);
                         }
-                    );
-            }))
-            .build();
+                    )))
+                .build();
 
         contextWindowSizeField = ContextWindowSizeField.builder()
             .withParent(parent)
@@ -182,7 +197,7 @@ public class OpenAiConfigurator<ENGINE extends AIEngine, PROPERTIES extends Open
         properties.setToken(token);
         properties.setBaseUrl(baseUrl);
 
-        try (OpenAICompletionEngine<OpenAIProperties> engine = new OpenAICompletionEngine<>(properties)) {
+        try (OpenAIEngine<OpenAIProperties> engine = new OpenAIEngine<>(properties)) {
             return engine.getModels(monitor);
         }
     }
@@ -243,6 +258,7 @@ public class OpenAiConfigurator<ENGINE extends AIEngine, PROPERTIES extends Open
         }
 
         temperatureText.setText(temperature);
+        legacyApiCheck.setSelection(useLegacyApi);
         logQueryCheck.setSelection(logQuery);
     }
 
@@ -253,24 +269,16 @@ public class OpenAiConfigurator<ENGINE extends AIEngine, PROPERTIES extends Open
             && contextWindowSizeField.isComplete();
     }
 
-    protected static class CachedValue<T> {
-        private volatile T value;
-
-        private final ThrowableFunction<DBRProgressMonitor, T, DBException> supplier;
-
-        protected CachedValue(ThrowableFunction<DBRProgressMonitor, T, DBException> supplier) {
-            this.supplier = supplier;
-        }
-
-        public T get(DBRProgressMonitor monitor, boolean refresh) throws DBException {
-            if (value == null || refresh) {
-                synchronized (this) {
-                    if (value == null || refresh) {
-                        value = supplier.apply(monitor);
-                    }
-                }
-            }
-            return value;
-        }
+    @Override
+    public Optional<AIEngineProperties> getCurrentProperties() {
+        OpenAIProperties propertiesCopy = new OpenAIProperties();
+        propertiesCopy.setBaseUrl(baseUrl);
+        propertiesCopy.setToken(token);
+        propertiesCopy.setModel(modelSelectorField.getSelectedModel());
+        propertiesCopy.setContextWindowSize(contextWindowSizeField.getValue());
+        propertiesCopy.setTemperature(CommonUtils.toDouble(temperature));
+        propertiesCopy.setLegacyApi(useLegacyApi);
+        propertiesCopy.setLoggingEnabled(logQuery);
+        return Optional.of(propertiesCopy);
     }
 }

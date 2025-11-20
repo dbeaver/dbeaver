@@ -42,7 +42,7 @@
             id="org.jkiss.dbeaver.ui.views.process.ProcessPropertyTester"
             namespace="org.jkiss.dbeaver.runtime.process"
             properties="running"
-            type="org.eclipse.ui.IWorkbenchPart"/>
+            type="org.jkiss.dbeaver.model.runtime.DBRProcessController"/>
         <propertyTester
             class="org.jkiss.dbeaver.ui.actions.ToolBarConfigurationPropertyTester"
             id="org.jkiss.dbeaver.ui.actions.ToolBarConfigurationPropertyTester"
@@ -119,7 +119,7 @@
 
     <extension point="org.eclipse.ui.commandImages">
         <image commandId="org.jkiss.dbeaver.core.new.connection" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/database_connect.svg"/>
-        <image commandId="org.jkiss.dbeaver.core.new.connection.from.url" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/connection/database_icon.png"/>
+        <image commandId="org.jkiss.dbeaver.core.new.connection.from.url" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/connection/database_icon.svg"/>
         <image commandId="org.jkiss.dbeaver.core.navigator.bookmark.add" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/bookmark.svg"/>
 
         <image commandId="org.jkiss.dbeaver.core.connect" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/connect.svg"/>
@@ -203,14 +203,14 @@
         <handler commandId="org.jkiss.dbeaver.core.new.connection" class="org.jkiss.dbeaver.ui.actions.datasource.DataSourceCreateHandler">
             <enabledWhen>
                 <with variable="activePart">
-                    <test property="org.jkiss.dbeaver.core.global.canCreateConnection"/>
+                    <test property="org.jkiss.dbeaver.core.global.ui.canCreateConnection"/>
                 </with>
             </enabledWhen>
         </handler>
         <handler commandId="org.jkiss.dbeaver.core.new.connection.from.url" class="org.jkiss.dbeaver.ui.actions.datasource.DataSourceCreateFromUrlHandler">
             <enabledWhen>
                 <with variable="activePart">
-                    <test property="org.jkiss.dbeaver.core.global.canCreateConnection"/>
+                    <test property="org.jkiss.dbeaver.core.global.ui.canCreateConnection"/>
                 </with>
             </enabledWhen>
         </handler>
@@ -278,7 +278,7 @@
         <handler commandId="org.jkiss.dbeaver.core.disconnectProject" class="org.jkiss.dbeaver.ui.actions.datasource.DataSourceDisconnectProjectHandler">
             <enabledWhen>
                 <with variable="selection">
-                    <test property="org.jkiss.dbeaver.core.global.hasMultipleProjects"/>
+                    <test property="org.jkiss.dbeaver.core.global.ui.hasMultipleProjects"/>
                 </with>
             </enabledWhen>
         </handler>
@@ -303,8 +303,8 @@
                 <and>
                     <reference definitionId="org.jkiss.dbeaver.core.ui.editor.transactional"/>
                     <or>
-                        <test property="org.jkiss.dbeaver.core.global.hasPermission" value="admin"/>
-                        <test property="org.jkiss.dbeaver.core.global.hasPermission" value="database-developer"/>
+                        <test property="org.jkiss.dbeaver.core.global.ui.hasPermission" value="admin"/>
+                        <test property="org.jkiss.dbeaver.core.global.ui.hasPermission" value="database-developer"/>
                     </or>
                 </and>
             </enabledWhen>
@@ -423,7 +423,9 @@
         <handler commandId="org.jkiss.dbeaver.core.process.stop" class="org.jkiss.dbeaver.ui.views.process.ShellProcessStopHandler">
             <enabledWhen>
                 <with variable="activePart">
-                    <test property="org.jkiss.dbeaver.runtime.process.running"/>
+                    <instanceof value="org.jkiss.dbeaver.model.runtime.DBRProcessController">
+                        <test property="org.jkiss.dbeaver.runtime.process.running"/>
+                    </instanceof>
                 </with>
             </enabledWhen>
         </handler>
@@ -432,7 +434,7 @@
         <handler commandId="org.jkiss.dbeaver.ui.tools.menu" class="org.jkiss.dbeaver.ui.actions.datasource.ToolsContextMenuHandler">
             <activeWhen>
                 <and>
-                    <test property="org.jkiss.dbeaver.core.global.hasPermission" value="database-developer"/>
+                    <test property="org.jkiss.dbeaver.core.global.ui.hasPermission" value="database-developer"/>
                     <or>
                         <reference definitionId="org.jkiss.dbeaver.core.ui.navigator.part"/>
                         <reference definitionId="org.jkiss.dbeaver.core.ui.datasource.part"/>
@@ -452,10 +454,10 @@
 
                 <separator name="driverGroup" visible="true"/>
                 <command commandId="org.jkiss.dbeaver.core.new.connection">
-                    <visibleWhen checkEnabled="true"><test property="org.jkiss.dbeaver.core.global.canCreateConnection"/></visibleWhen>
+                    <visibleWhen checkEnabled="true"><test property="org.jkiss.dbeaver.core.global.ui.canCreateConnection"/></visibleWhen>
                 </command>
                 <command commandId="org.jkiss.dbeaver.core.new.connection.from.url">
-                    <visibleWhen checkEnabled="true"><test property="org.jkiss.dbeaver.core.global.canCreateConnection"/></visibleWhen>
+                    <visibleWhen checkEnabled="true"><test property="org.jkiss.dbeaver.core.global.ui.canCreateConnection"/></visibleWhen>
                 </command>
                 <command commandId="org.jkiss.dbeaver.core.driver.manager">
                     <visibleWhen checkEnabled="true"/>
@@ -506,7 +508,7 @@
                 <command commandId="org.jkiss.dbeaver.core.new.connection" id="org.jkiss.dbeaver.core.menu.newConnection" style="pulldown">
                     <visibleWhen checkEnabled="true">
                         <and>
-                            <test property="org.jkiss.dbeaver.core.global.canCreateConnection"/>
+                            <test property="org.jkiss.dbeaver.core.global.ui.canCreateConnection"/>
                             <reference definitionId="org.jkiss.dbeaver.core.ui.toolbar.general.visible"/>
                         </and>
                     </visibleWhen>
@@ -621,16 +623,19 @@
             <command commandId="org.jkiss.dbeaver.core.object.open">
                 <visibleWhen checkEnabled="true"/>
             </command>
-            <menu label="%menu.org.jkiss.dbeaver.core.connection.settings.label">
-                <dynamic id="org.jkiss.dbeaver.core.connection.settings" class="org.jkiss.dbeaver.ui.actions.datasource.ConnectionViewSettingsContributor">
-                </dynamic>
+            <menu label="%menu.org.jkiss.dbeaver.core.connection.settings.label"
+                  icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/misc/show_all_details.svg">
+
+                <dynamic id="org.jkiss.dbeaver.core.connection.settings"
+                         class="org.jkiss.dbeaver.ui.actions.datasource.ConnectionViewSettingsContributor"/>
+
                 <visibleWhen>
                     <with variable="selection">
                         <count value="1"/>
                         <iterate operator="and">
                             <adapt type="org.jkiss.dbeaver.model.navigator.DBNDataSource">
                                 <and>
-                                    <test property="org.jkiss.dbeaver.core.global.hasPermission" value="database-developer"/>
+                                    <test property="org.jkiss.dbeaver.core.global.ui.hasPermission" value="database-developer"/>
                                     <test property="org.jkiss.dbeaver.core.datasource.editable"/>
                                 </and>
                             </adapt>
@@ -683,6 +688,16 @@
             </command>
             <command commandId="org.jkiss.dbeaver.core.show.in.explorer">
                 <visibleWhen checkEnabled="true"/>
+            </command>
+            <command commandId="org.eclipse.ui.file.properties">
+                <visibleWhen checkEnabled="true">
+                    <with variable="selection">
+                        <count value="1"/>
+                        <iterate operator="and">
+                            <adapt type="org.jkiss.dbeaver.model.navigator.DBNProject"/>
+                        </iterate>
+                    </with>
+                </visibleWhen>
             </command>
 
             <separator name="remote-files" visible="true"/>
@@ -888,14 +903,14 @@
             <separator name="additions" visible="true"/>
             <command commandId="org.eclipse.ui.navigate.collapseAll"/>
             <command commandId="org.jkiss.dbeaver.core.navigator.linkeditor"/>
-            <command commandId="org.jkiss.dbeaver.core.navigator.view.configure"/>
+            <command commandId="org.eclipse.ui.file.properties"/>
             <separator name="additions_end" visible="true"/>
             <command commandId="org.jkiss.dbeaver.core.project.refresh"/>
         </menuContribution>
 
         <!-- Project explorer menu & toolbar -->
         <menuContribution allPopups="false" locationURI="toolbar:org.jkiss.dbeaver.core.projectExplorer">
-            <command commandId="org.jkiss.dbeaver.core.navigator.view.configure"/>
+            <command commandId="org.eclipse.ui.file.properties"/>
             <command commandId="org.eclipse.ui.navigate.collapseAll"/>
             <command commandId="org.eclipse.ui.navigate.expandAll"/>
             <command commandId="org.jkiss.dbeaver.core.navigator.linkeditor"/>
@@ -1152,6 +1167,7 @@
         <keyword id="org.jkiss.dbeaver.core.keyword.pref.ui.notifications" label="%keyword.org.jkiss.dbeaver.core.keyword.pref.ui.notifications.label"/>
         <keyword id="org.jkiss.dbeaver.core.keyword.dbeaver" label="dbeaver beaver"/>
         <keyword id="org.jkiss.dbeaver.core.keyword.connection" label="%keyword.org.jkiss.dbeaver.core.keyword.connection"/>
+        <keyword id="org.jkiss.dbeaver.core.keyword.network.profiles" label="ssh proxy kubernetes ssm tunnel network profile"/>
         <keyword id="org.jkiss.dbeaver.core.keyword.pref.resultset.grid" label="%keyword.org.jkiss.dbeaver.core.keyword.pref.resultset.grid.label"/>
         <keyword id="org.jkiss.dbeaver.core.keyword.pref.resultset.plain.text" label="%keyword.org.jkiss.dbeaver.core.keyword.pref.resultset.plain.text.label"/>
         <keyword id="org.jkiss.dbeaver.core.keyword.database.connection" label="%keyword.org.jkiss.dbeaver.core.keyword.database.connection.label"/>
@@ -1195,7 +1211,7 @@
     </extension>
 
     <extension point="org.jkiss.dbeaver.pluginService">
-        <service class="org.jkiss.dbeaver.ui.actions.GlobalPropertyTester$ResourceListener"/>
+        <service class="org.jkiss.dbeaver.ui.actions.GlobalUIPropertyTester$ResourceListener"/>
         <service class="org.jkiss.dbeaver.ui.actions.DataSourcePropertyTester$QMService"/>
     </extension>
 

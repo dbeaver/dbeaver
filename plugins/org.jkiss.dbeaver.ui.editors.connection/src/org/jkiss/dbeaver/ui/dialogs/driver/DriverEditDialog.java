@@ -228,7 +228,7 @@ public class DriverEditDialog extends HelpEnabledDialog {
     }
 
     private void createMainTab(CTabFolder group) {
-        boolean isReadOnly = !provider.isDriversManagable();
+        boolean isReadOnly = !provider.isDriversManageable();
         int advStyle = isReadOnly ? SWT.READ_ONLY : SWT.NONE;
 
         Composite propsGroup = new Composite(group, SWT.NONE);
@@ -266,7 +266,7 @@ public class DriverEditDialog extends HelpEnabledDialog {
             providerCombo.setLayoutData(gd);
             if (newDriver) {
                 for (DataSourceProviderDescriptor provider : DataSourceProviderRegistry.getInstance().getDataSourceProviders()) {
-                    if (provider.isDriversManagable()) {
+                    if (provider.isDriversManageable()) {
                         providerCombo.addItem(provider);
                     }
                 }
@@ -450,7 +450,7 @@ public class DriverEditDialog extends HelpEnabledDialog {
                 UIWidgets.fillDefaultTreeContextMenu(manager, libTable.getTree()));
 
             // Find driver class
-            boolean isReadOnly = !provider.isDriversManagable();
+            boolean isReadOnly = !provider.isDriversManageable();
 
             Composite findClassGroup = new Composite(libsListGroup, SWT.TOP);
             findClassGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
@@ -794,7 +794,7 @@ public class DriverEditDialog extends HelpEnabledDialog {
                 hasDownloads = true;
             }
         }
-        findClassButton.setEnabled(provider.isDriversManagable() && hasFiles);
+        findClassButton.setEnabled(provider.isDriversManageable() && hasFiles);
         if (updateVersionButton != null) {
             updateVersionButton.setEnabled(hasDownloads);
         }
@@ -894,6 +894,12 @@ public class DriverEditDialog extends HelpEnabledDialog {
             } catch (DBException e) {
                 DBWorkbench.getPlatformUI().showError("Error saving driver", "Driver libraries sync failed", e);
                 return;
+            }
+        } else {
+            // We have to reset the driver instance here to clear the old classloader with old libraries
+            // For distributed mode it is done in syncDriverLibraries method
+            if (oldDriver != null) {
+                driver.resetDriverInstance();
             }
         }
 

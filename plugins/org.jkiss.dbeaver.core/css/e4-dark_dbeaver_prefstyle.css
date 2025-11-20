@@ -2,7 +2,7 @@
         preferences:
             'org.jkiss.dbeaver.txn.color.committed.background=11,60,0'
             'org.jkiss.dbeaver.txn.color.reverted.background=72,19,5'
-            'org.jkiss.dbeaver.txn.color.transaction.background=4,84,113'
+            'org.jkiss.dbeaver.txn.color.transaction.background=82,52,0'
 
             'org.jkiss.dbeaver.hex.editor.color.caret=80,80,80'
             'org.jkiss.dbeaver.hex.editor.color.text=255,255,255'
@@ -66,4 +66,21 @@ IEclipsePreferences#org-eclipse-ui-editors:org-eclipse-ui-themes {
 
 .EditorStack, .MPartStack {
     swt-tab-renderer: url('bundleclass://org.jkiss.dbeaver.core/org.jkiss.dbeaver.ui.e4.DBeaverCTabFolderRenderer');
+}
+
+#org-eclipse-ui-editorss CTabFolder.coloredByConnectionType {
+    swt-tab-renderer: url('bundleclass://org.jkiss.dbeaver.core/org.jkiss.dbeaver.ui.e4.DBeaverCTabFolderRenderer');
+
+    /* Workaround for org.eclipse.e4.ui.workbench.renderers.swt.CTabRendering.TAB_OUTLINE_WIDTH */
+    padding: 0px -1px -1px -1px;
+
+    swt-inner-keyline-color: COLOR-WIDGET-BACKGROUND;
+    swt-outer-keyline-color: COLOR-WIDGET-BORDER;
+    swt-tab-outline: COLOR-WIDGET-NORMAL-SHADOW;
+
+    swt-selected-tabs-background: '#org-eclipse-ui-workbench-ACTIVE_TAB_BG_START' '#org-eclipse-ui-workbench-ACTIVE_TAB_BG_END' 100%;
+    swt-unselected-tabs-color: '#org-eclipse-ui-workbench-INACTIVE_TAB_BG_START' '#org-eclipse-ui-workbench-INACTIVE_TAB_BG_END' 100%;
+    swt-unselected-hot-tab-color-background: '#org-eclipse-ui-workbench-ACTIVE_TAB_BG_START'; /* Can't use gradient on Windows; it resolves to pure white color */
+
+    swt-corner-radius: 6;
 }

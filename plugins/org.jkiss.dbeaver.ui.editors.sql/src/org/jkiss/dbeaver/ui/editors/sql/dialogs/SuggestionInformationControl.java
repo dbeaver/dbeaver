@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,11 +20,9 @@ import org.eclipse.jface.text.AbstractInformationControl;
 import org.eclipse.jface.text.IInformationControlExtension2;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Shell;
-import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ui.editors.sql.util.ObjectInformationView;
 
 public class SuggestionInformationControl extends AbstractInformationControl implements IInformationControlExtension2 {
-    private static final Log log = Log.getLog(SuggestionInformationControl.class);
 
     private ObjectInformationView objectInformationView;
 
@@ -49,9 +47,4 @@ public class SuggestionInformationControl extends AbstractInformationControl imp
         this.objectInformationView.setInput(input);
     }
 
-    @Override
-    public void dispose() {
-        this.objectInformationView.dispose();
-        super.dispose();
-    }
 }

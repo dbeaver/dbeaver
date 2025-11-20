@@ -22,31 +22,39 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.ai.engine.AIEngineProperties;
 import org.jkiss.dbeaver.model.ai.engine.AIModel;
 import org.jkiss.dbeaver.model.ai.utils.AIUtils;
+import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.meta.SecureProperty;
 import org.jkiss.dbeaver.model.secret.DBSSecretController;
 import org.jkiss.utils.CommonUtils;
 
 public class CopilotProperties implements AIEngineProperties {
+    private static final String COPILOT_ACCESS_TOKEN = "copilot.access.token";
+    private static final String GPT_MODEL = "gpt.model";
+    private static final String GPT_CONTEXT_WINDOW_SIZE = "gpt.contextWindowSize";
+    private static final String GPT_MODEL_TEMPERATURE = "gpt.model.temperature";
+    private static final String GPT_LOG_QUERY = "gpt.log.query";
+
     @Nullable
     @SecureProperty
-    @SerializedName("copilot.access.token")
+    @SerializedName(COPILOT_ACCESS_TOKEN)
     private String token;
 
     @Nullable
-    @SerializedName("gpt.model")
+    @SerializedName(GPT_MODEL)
     private String model;
 
     @Nullable
-    @SerializedName("gpt.contextWindowSize")
+    @SerializedName(GPT_CONTEXT_WINDOW_SIZE)
     private Integer contextWindowSize;
 
-    @SerializedName("gpt.model.temperature")
+    @SerializedName(GPT_MODEL_TEMPERATURE)
     private double temperature;
 
-    @SerializedName("gpt.log.query")
+    @SerializedName(GPT_LOG_QUERY)
     private boolean loggingEnabled;
 
     @Nullable
+    @Property(order = 1, password = true)
     public String getToken() {
         return token;
     }
@@ -56,6 +64,7 @@ public class CopilotProperties implements AIEngineProperties {
     }
 
     @Nullable
+    @Property(order = 2)
     public String getModel() {
         return model;
     }
@@ -64,7 +73,24 @@ public class CopilotProperties implements AIEngineProperties {
         this.model = model;
     }
 
+    @Override
+    @Property(order = 3)
+    public double getTemperature() {
+        if (temperature != 0.0) {
+            return temperature;
+        }
+        return CopilotModels.getModelByName(model)
+            .map(AIModel::defaultTemperature)
+            .orElse(0.0);
+    }
+
+    public void setTemperature(double temperature) {
+        this.temperature = temperature;
+    }
+
+    @Override
     @Nullable
+    @Property(order = 4)
     public Integer getContextWindowSize() {
         if (contextWindowSize != null) {
             return contextWindowSize;
@@ -79,14 +105,7 @@ public class CopilotProperties implements AIEngineProperties {
         this.contextWindowSize = contextWindowSize;
     }
 
-    public double getTemperature() {
-        return temperature;
-    }
-
-    public void setTemperature(double temperature) {
-        this.temperature = temperature;
-    }
-
+    @Property(order = 5)
     public boolean isLoggingEnabled() {
         return loggingEnabled;
     }

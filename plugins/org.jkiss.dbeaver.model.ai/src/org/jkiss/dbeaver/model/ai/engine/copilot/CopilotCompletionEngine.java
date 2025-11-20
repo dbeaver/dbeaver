@@ -18,9 +18,8 @@ package org.jkiss.dbeaver.model.ai.engine.copilot;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.ai.AIMessageType;
 import org.jkiss.dbeaver.model.ai.engine.*;
-import org.jkiss.dbeaver.model.ai.engine.copilot.dto.CopilotChatChunk;
 import org.jkiss.dbeaver.model.ai.engine.copilot.dto.CopilotChatRequest;
 import org.jkiss.dbeaver.model.ai.engine.copilot.dto.CopilotMessage;
 import org.jkiss.dbeaver.model.ai.engine.copilot.dto.CopilotSessionToken;
@@ -31,10 +30,8 @@ import org.jkiss.utils.CommonUtils;
 
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.Flow;
 
-public class CopilotCompletionEngine extends BaseCompletionEngine {
-    private static final Log log = Log.getLog(CopilotCompletionEngine.class);
+public class CopilotCompletionEngine extends BaseCompletionEngine<CopilotProperties> {
 
     private final DisposableLazyValue<CopilotClient, DBException> client = new DisposableLazyValue<>() {
         @NotNull
@@ -48,13 +45,10 @@ public class CopilotCompletionEngine extends BaseCompletionEngine {
             disposedValue.close();
         }
     };
+    private CopilotSessionToken sessionToken;
 
-    private final CopilotProperties properties;
-
-    private volatile CopilotSessionToken sessionToken;
-
-    public CopilotCompletionEngine(CopilotProperties properties) {
-        this.properties = properties;
+    public CopilotCompletionEngine(@NotNull CopilotProperties properties) {
+        super(properties);
     }
 
     @NotNull
@@ -76,7 +70,7 @@ public class CopilotCompletionEngine extends BaseCompletionEngine {
     ) throws DBException {
         CopilotChatRequest chatRequest = CopilotChatRequest.builder()
             .withModel(getModelName())
-            .withMessages(request.messages().stream().map(CopilotMessage::from).toList())
+            .withMessages(request.getMessages().stream().map(CopilotMessage::from).toList())
             .withTemperature(properties.getTemperature())
             .withStream(false)
             .withIntent(false)
@@ -90,18 +84,19 @@ public class CopilotCompletionEngine extends BaseCompletionEngine {
             .map(it -> it.message().content())
             .toList();
 
-        return new AIEngineResponse(choices);
+        return new AIEngineResponse(AIMessageType.ASSISTANT, choices);
     }
 
     @NotNull
     @Override
-    public Flow.Publisher<AIEngineResponseChunk> requestCompletionStream(
+    public void requestCompletionStream(
         @NotNull DBRProgressMonitor monitor,
-        @NotNull AIEngineRequest request
+        @NotNull AIEngineRequest request,
+        @NotNull AIEngineResponseConsumer listener
     ) throws DBException {
         CopilotChatRequest chatRequest = CopilotChatRequest.builder()
             .withModel(getModelName())
-            .withMessages(request.messages().stream().map(CopilotMessage::from).toList())
+            .withMessages(request.getMessages().stream().map(CopilotMessage::from).toList())
             .withTemperature(properties.getTemperature())
             .withStream(true)
             .withIntent(false)
@@ -109,44 +104,16 @@ public class CopilotCompletionEngine extends BaseCompletionEngine {
             .withN(1)
             .build();
 
-        Flow.Publisher<CopilotChatChunk> chunkPublisher = client.getInstance().createChatCompletionStream(
+        client.getInstance().createChatCompletionStream(
             monitor,
             requestSessionToken(monitor).token(),
-            chatRequest
-        );
-
-
-        return subscriber -> chunkPublisher.subscribe(
-            new Flow.Subscriber<>() {
-                @Override
-                public void onSubscribe(Flow.Subscription subscription) {
-                    subscriber.onSubscribe(subscription);
-                }
-
-                @Override
-                public void onNext(CopilotChatChunk chunk) {
-                    List<String> choices = chunk.choices().stream()
-                        .takeWhile(it -> it.delta().content() != null)
-                        .map(it -> it.delta().content())
-                        .toList();
-                    subscriber.onNext(new AIEngineResponseChunk(choices));
-                }
-
-                @Override
-                public void onError(Throwable throwable) {
-                    subscriber.onError(throwable);
-                }
-
-                @Override
-                public void onComplete() {
-                    subscriber.onComplete();
-                }
-            }
+            chatRequest,
+            listener
         );
     }
 
     @Override
-    public int getContextWindowSize(DBRProgressMonitor monitor) throws DBException {
+    public int getContextWindowSize(@NotNull DBRProgressMonitor monitor) throws DBException {
         Integer contextWindowSize = properties.getContextWindowSize();
         if (contextWindowSize != null) {
             return contextWindowSize;
@@ -161,18 +128,18 @@ public class CopilotCompletionEngine extends BaseCompletionEngine {
         client.dispose();
     }
 
+    @NotNull
     private CopilotSessionToken requestSessionToken(@NotNull DBRProgressMonitor monitor) throws DBException {
         if (sessionToken != null) {
             return sessionToken;
         }
 
         synchronized (this) {
-            if (sessionToken != null) {
-                return sessionToken;
+            if (sessionToken == null) {
+                sessionToken = client.getInstance().requestSessionToken(monitor, properties.getToken());
             }
-
-            return client.getInstance().requestSessionToken(monitor, properties.getToken());
         }
+        return sessionToken;
     }
 
     public String getModelName() throws DBException {

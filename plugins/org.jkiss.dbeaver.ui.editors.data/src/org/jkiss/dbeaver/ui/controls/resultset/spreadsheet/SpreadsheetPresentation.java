@@ -1505,7 +1505,7 @@ public class SpreadsheetPresentation extends AbstractPresentation
     }
 
     @Override
-    public <T> T getAdapter(Class<T> adapter) {
+    public <T> T getAdapter(@NotNull Class<T> adapter) {
         if (adapter == IPropertySheetPage.class) {
             // Show cell properties
             PropertyPageStandard page = new PropertyPageStandard();
@@ -2197,11 +2197,9 @@ public class SpreadsheetPresentation extends AbstractPresentation
         }
 
         @Override
-        public boolean isElementReadOnly(IGridColumn element) {
-            if (element.getElement() instanceof DBDAttributeBinding) {
-                return controller.getAttributeReadOnlyStatus(
-                    (DBDAttributeBinding) element.getElement(),
-                    true, true) != null;
+        public boolean isElementReadOnly(@NotNull IGridColumn element) {
+            if (element.getElement() instanceof DBDAttributeBinding binding) {
+                return controller.getAttributeReadOnlyStatus(binding, true, false) != null;
             }
             return false;
         }
@@ -3086,13 +3084,13 @@ public class SpreadsheetPresentation extends AbstractPresentation
                 final String typeName = attributeBinding.getFullTypeName();
                 final String description = attributeBinding.getDescription();
                 StringBuilder tip = new StringBuilder();
-                tip.append("Column: ");
+                tip.append(SpreadsheetMessages.tooltip_column).append(": ");
                 tip.append(name).append(" ").append(typeName);
                 if (attributeBinding.isRequired()) {
                     tip.append(" NOT NULL");
                 }
                 if (!CommonUtils.isEmpty(description)) {
-                    tip.append("\nDescription: ").append(description);
+                    tip.append("\n").append(SpreadsheetMessages.tooltip_description).append(": ").append(description);
                 }
                 // Add hints
                 ResultSetHintContext hintContext = controller.getModel().getHintContext();

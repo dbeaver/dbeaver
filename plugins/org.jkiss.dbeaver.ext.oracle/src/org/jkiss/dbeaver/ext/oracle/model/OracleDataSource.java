@@ -369,7 +369,19 @@ public class OracleDataSource extends JDBCDataSource implements DBPObjectStatist
                             JDBCUtils.executeSQL(session, "ALTER SESSION SET \"_optimizer_push_pred_cost_based\" = FALSE");
                             JDBCUtils.executeSQL(session, "ALTER SESSION SET \"_optimizer_squ_bottomup\" = FALSE");
                             JDBCUtils.executeSQL(session, "ALTER SESSION SET \"_optimizer_cost_based_transformation\" = 'OFF'");
-                            String optimiserVersion = null;
+
+                            String optimizerVersion = connectionInfo.getProviderProperty(OracleConstants.PROP_USE_META_OPTIMIZER_VERSION);
+                            if (CommonUtils.isEmpty(optimizerVersion) && isServerVersionAtLeast(10, 2)) {
+                                optimizerVersion = OracleConstants.OPTIMIZER_VERSION_DEFAULT;
+                            }
+                            if (!CommonUtils.isEmpty(optimizerVersion)) {
+                                JDBCUtils.executeSQL(
+                                    session,
+                                    "ALTER SESSION SET OPTIMIZER_FEATURES_ENABLE='"+ optimizerVersion + "'"
+                                );
+                            }
+
+                            /*String optimiserVersion = null;
                             if (isServerVersionAtLeast(23, 1)) {
                                 optimiserVersion = "23.1.0";
                             } else if (isServerVersionAtLeast(19, 1)) {
@@ -383,7 +395,7 @@ public class OracleDataSource extends JDBCDataSource implements DBPObjectStatist
                             }
                             if (optimiserVersion != null) {
                                 JDBCUtils.executeSQL(session, "ALTER SESSION SET OPTIMIZER_FEATURES_ENABLE='%s'".formatted(optimiserVersion));
-                            }
+                            }*/
                         } catch (SQLException e) {
                             log.warn("Can't set session optimizer parameters", e);
                         }
@@ -415,6 +427,7 @@ public class OracleDataSource extends JDBCDataSource implements DBPObjectStatist
         return new OracleDataSourceInfo(metaData);
     }
 
+    @NotNull
     @Override
     public ErrorType discoverErrorType(@NotNull Throwable error) {
         Throwable rootCause = CommonUtils.getRootCause(error);
@@ -620,6 +633,7 @@ public class OracleDataSource extends JDBCDataSource implements DBPObjectStatist
         return this;
     }
 
+    @Nullable
     @Override
     public Collection<OracleSchema> getChildren(@NotNull DBRProgressMonitor monitor)
         throws DBException {
@@ -647,7 +661,7 @@ public class OracleDataSource extends JDBCDataSource implements DBPObjectStatist
 
     @Nullable
     @Override
-    public <T> T getAdapter(Class<T> adapter) {
+    public <T> T getAdapter(@NotNull Class<T> adapter) {
         if (adapter == DBSStructureAssistant.class) {
             return adapter.cast(new OracleStructureAssistant(this));
         } else if (adapter == DBCServerOutputReader.class) {
@@ -710,11 +724,13 @@ public class OracleDataSource extends JDBCDataSource implements DBPObjectStatist
         return super.resolveDataKind(typeName, valueType);
     }
 
+    @NotNull
     @Override
     public Collection<? extends DBSDataType> getLocalDataTypes() {
         return dataTypeCache.getCachedObjects();
     }
 
+    @Nullable
     @Override
     public OracleDataType getLocalDataType(String typeName) {
         return dataTypeCache.getCachedObject(typeName);
@@ -912,7 +928,7 @@ public class OracleDataSource extends JDBCDataSource implements DBPObjectStatist
     }
 
     @Override
-    public void collectObjectStatistics(DBRProgressMonitor monitor, boolean totalSizeOnly, boolean forceRefresh) throws DBException {
+    public void collectObjectStatistics(@NotNull DBRProgressMonitor monitor, boolean totalSizeOnly, boolean forceRefresh) throws DBException {
         if (hasStatistics && !forceRefresh) {
             return;
         }

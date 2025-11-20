@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -88,21 +88,25 @@ public class DBNRoot extends DBNNode implements DBNContainer, DBNNodeExtendable,
         return model;
     }
 
+    @NotNull
     @Override
     public String getNodeType() {
         return ModelMessages.model_navigator_Root;
     }
 
+    @Nullable
     @Override
     public Object getValueObject() {
         return this;
     }
 
+    @NotNull
     @Override
     public String getChildrenType() {
         return ModelMessages.model_navigator_Project;
     }
 
+    @Nullable
     @Override
     public Class<?> getChildrenClass() {
         return Object.class;
@@ -115,16 +119,19 @@ public class DBNRoot extends DBNNode implements DBNContainer, DBNNodeExtendable,
         return super.getName();
     }
 
+    @NotNull
     @Override
     public String getNodeDisplayName() {
         return "#root"; //$NON-NLS-1$
     }
 
+    @Nullable
     @Override
     public String getNodeDescription() {
         return ModelMessages.model_navigator_Model_root;
     }
 
+    @Nullable
     @Override
     public DBPImage getNodeIcon() {
         return null;
@@ -135,6 +142,7 @@ public class DBNRoot extends DBNNode implements DBNContainer, DBNNodeExtendable,
         return projects.length > 0 || !extraNodes.isEmpty();
     }
 
+    @Nullable
     @Override
     public DBNNode[] getChildren(@NotNull DBRProgressMonitor monitor) {
         if (extraNodes.isEmpty()) {
@@ -161,8 +169,9 @@ public class DBNRoot extends DBNNode implements DBNContainer, DBNNodeExtendable,
         return extraNodes;
     }
 
+    @Nullable
     @Override
-    public DBNNode refreshNode(DBRProgressMonitor monitor, Object source) throws DBException {
+    public DBNNode refreshNode(@NotNull DBRProgressMonitor monitor, @Nullable Object source) throws DBException {
         if (this.getParentNode() != null) {
             return this.getParentNode().refreshNode(monitor, source);
         } else {
@@ -173,11 +182,7 @@ public class DBNRoot extends DBNNode implements DBNContainer, DBNNodeExtendable,
         }
     }
 
-    @Override
-    public boolean allowsOpen() {
-        return true;
-    }
-
+    @NotNull
     @Deprecated
     @Override
     public String getNodeItemPath() {

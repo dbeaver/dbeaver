@@ -95,7 +95,9 @@ import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.model.struct.DBSInstance;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectState;
+import org.jkiss.dbeaver.registry.ApplicationPolicyProvider;
 import org.jkiss.dbeaver.registry.DataSourceUtils;
+import org.jkiss.dbeaver.registry.confirmation.ConfirmationConstants;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.jobs.DataSourceMonitorJob;
 import org.jkiss.dbeaver.runtime.ui.DBPPlatformUI.UserChoiceResponse;
@@ -135,6 +137,7 @@ import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLEditorCompletionContext;
 import org.jkiss.dbeaver.ui.editors.sql.variables.AssignVariableAction;
 import org.jkiss.dbeaver.ui.editors.sql.variables.SQLVariablesPanel;
 import org.jkiss.dbeaver.ui.editors.text.ScriptPositionColumn;
+import org.jkiss.dbeaver.ui.internal.UIMessages;
 import org.jkiss.dbeaver.ui.navigator.INavigatorModelView;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.PrefUtils;
@@ -425,11 +428,11 @@ public class SQLEditor extends SQLEditorBase implements
 
     @Override
     public boolean setDataSourceContainer(@Nullable DBPDataSourceContainer container) {
-        if (!datasourceChanged && curDataSource != null) {
-            datasourceChanged = true;
-        }
         if (container == dataSourceContainer) {
             return false;
+        }
+        if (!datasourceChanged && curDataSource != null) {
+            datasourceChanged = true;
         }
 
         // Release ds container
@@ -888,7 +891,7 @@ public class SQLEditor extends SQLEditorBase implements
                 }
 
                 monitor.subTask("Close context " + context.getContextName());
-                context.close();
+                DBUtils.closeSafely(context);
 
             } finally {
                 monitor.done();
@@ -1182,6 +1185,19 @@ public class SQLEditor extends SQLEditorBase implements
         return false;
     }
 
+    protected boolean canProcessQueries() {
+        if (ApplicationPolicyProvider.getInstance().isPolicyEnabled(ApplicationPolicyProvider.POLICY_SQL_EXECUTION)) {
+            UIUtils.showMessageBox(
+                getSite().getShell(),
+                UIMessages.dialog_policy_sql_execution_title,
+                UIMessages.dialog_policy_sql_execution_msg,
+                SWT.ICON_WARNING
+            );
+            return false;
+        }
+        return true;
+    }
+
     private void onTextChange(ModifyEvent e) {
         if (getActivePreferenceStore().getBoolean(SQLPreferenceConstants.AUTO_SAVE_ON_CHANGE)) {
             doScriptAutoSave();
@@ -1358,9 +1374,7 @@ public class SQLEditor extends SQLEditorBase implements
             // prevent eclipse from overriding this CTabFolder's css class
             @Override
             public void setBackground(Color color) {
-                DBPDataSourceContainer dsContainer = getDataSourceContainer();
-                Color bgColor = dsContainer != null ? UIUtils.getConnectionColor(dsContainer.getConnectionConfiguration()) : null;
-                if (resultTabs != null && !resultTabs.isDisposed() && bgColor != null && !bgColor.equals(color)) {
+                if (resultTabs != null && !resultTabs.isDisposed()) {
                     UIUtils.asyncExec(() -> CSSUtils.markConnectionTypeColor(resultTabs));
                 } else {
                     super.setBackground(color);
@@ -2173,7 +2187,7 @@ public class SQLEditor extends SQLEditorBase implements
      * Toggles editor/results maximization
      */
     public void toggleEditorMaximize() {
-        setEditorMaximized(resultsSash.getMaximizedControl() == null);
+        setEditorMaximized(!resultsSash.isUpHidden());
     }
 
     public void setEditorMaximized(boolean maximized) {
@@ -2181,10 +2195,10 @@ public class SQLEditor extends SQLEditorBase implements
             return;
         }
         if (maximized) {
-            resultsSash.setMaximizedControl(resultTabs);
+            resultsSash.hideUp();
             switchFocus(true);
         } else {
-            resultsSash.setMaximizedControl(null);
+            resultsSash.showUp();
             switchFocus(false);
         }
     }
@@ -2512,7 +2526,7 @@ public class SQLEditor extends SQLEditorBase implements
         StringBuilder tip = new StringBuilder();
         tip
             .append(NLS.bind(SQLEditorMessages.sql_editor_title_tooltip_path, scriptPath))
-            .append("\n").append(NLS.bind(SQLEditorMessages.sql_editor_title_tooltip_connecton, dataSourceContainer.getName()))
+            .append("\n").append(NLS.bind(SQLEditorMessages.sql_editor_title_tooltip_connection, dataSourceContainer.getName()))
             .append("\n").append(NLS.bind(SQLEditorMessages.sql_editor_title_tooltip_type, dataSourceContainer.getDriver().getFullName()))
             .append("\n")
             .append(NLS.bind(SQLEditorMessages.sql_editor_title_tooltip_url, dataSourceContainer.getConnectionConfiguration().getUrl()));
@@ -2592,6 +2606,10 @@ public class SQLEditor extends SQLEditorBase implements
     }
 
     public void explainQueryPlan() {
+        if (!canProcessQueries()) {
+            return;
+        }
+
         // Notify listeners
         synchronized (listeners) {
             for (SQLEditorListener listener : listeners) {
@@ -2852,6 +2870,9 @@ public class SQLEditor extends SQLEditorBase implements
             // Nothing to process
             return false;
         }
+        if (!canProcessQueries()) {
+            return false;
+        }
 
         final DBPDataSourceContainer container = getDataSourceContainer();
         if (checkSession) {
@@ -2921,7 +2942,7 @@ public class SQLEditor extends SQLEditorBase implements
                 if (ConfirmationDialog.confirmAction(
                     getSite().getShell(),
                     ConfirmationDialog.WARNING,
-                    isDropTable ? SQLPreferenceConstants.CONFIRM_DROP_SQL : SQLPreferenceConstants.CONFIRM_DANGER_SQL,
+                    isDropTable ? ConfirmationConstants.CONFIRM_DROP_SQL_ID : ConfirmationConstants.CONFIRM_DANGER_SQL_ID,
                     ConfirmationDialog.CONFIRM,
                     query.getType().name(),
                     targetName
@@ -3198,11 +3219,10 @@ public class SQLEditor extends SQLEditorBase implements
         }
 
         DBPDataSourceContainer dsContainer = getDataSourceContainer();
-
+        DatabaseEditorUtils.setPartBackground(this, resultsSash);
         if (sqlEditorPanel != null) {
             DatabaseEditorUtils.setPartBackground(this, sqlEditorPanel);
         }
-
         if (resultTabs != null) {
             DatabaseEditorUtils.setPartBackground(this, resultTabs);
         }
@@ -4493,6 +4513,7 @@ public class SQLEditor extends SQLEditorBase implements
             return createQueryResultsDecorator();
         }
 
+        @NotNull
         @Override
         public String[] getSupportedFeatures() {
             if (dataContainer != null) {
@@ -4522,7 +4543,7 @@ public class SQLEditor extends SQLEditorBase implements
             long maxRows,
             long flags,
             int fetchSize
-        ) throws DBCException {
+        ) throws DBException {
             if (dataContainer != null) {
                 return dataContainer.readData(source, session, dataReceiver, dataFilter, firstRow, maxRows, flags, fetchSize);
             }
@@ -4585,8 +4606,7 @@ public class SQLEditor extends SQLEditorBase implements
             @NotNull DBCSession session,
             @Nullable DBDDataFilter dataFilter,
             long flags
-        )
-        throws DBCException {
+        ) throws DBException {
             if (dataContainer != null) {
                 return dataContainer.countData(source, session, dataFilter, DBSDataContainer.FLAG_NONE);
             }
@@ -4624,7 +4644,7 @@ public class SQLEditor extends SQLEditorBase implements
             return getDataSource();
         }
 
-        @Nullable
+        @NotNull
         @Override
         public DBPDataSource getDataSource() {
             return SQLEditor.this.getDataSource();
@@ -5066,7 +5086,7 @@ public class SQLEditor extends SQLEditorBase implements
             public String getEmptyDataDescription() {
                 String execQuery = ActionUtils.findCommandDescription(SQLEditorCommands.CMD_EXECUTE_STATEMENT, getSite(), true);
                 String execScript = ActionUtils.findCommandDescription(SQLEditorCommands.CMD_EXECUTE_SCRIPT, getSite(), true);
-                return NLS.bind(ResultSetMessages.sql_editor_resultset_filter_panel_control_execute_to_see_reslut, execQuery, execScript);
+                return NLS.bind(ResultSetMessages.sql_editor_resultset_filter_panel_control_execute_to_see_result, execQuery, execScript);
             }
         };
     }

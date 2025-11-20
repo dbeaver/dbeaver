@@ -40,10 +40,11 @@ import org.jkiss.dbeaver.model.impl.app.BaseProjectImpl;
 import org.jkiss.dbeaver.model.impl.app.BaseWorkspaceImpl;
 import org.jkiss.dbeaver.model.navigator.DBNModel;
 import org.jkiss.dbeaver.model.task.DBTTaskManager;
-import org.jkiss.dbeaver.registry.DesktopDataSourceRegistry;
+import org.jkiss.dbeaver.registry.DataSourceRegistry;
 import org.jkiss.dbeaver.registry.task.TaskConstants;
 import org.jkiss.dbeaver.registry.task.TaskManagerImpl;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.IOUtils;
 
@@ -59,7 +60,6 @@ public class DesktopProjectImpl extends BaseProjectImpl implements RCPProject, D
     private static final Log log = Log.getLog(DesktopProjectImpl.class);
 
     private static final String SETTINGS_FOLDER = ".settings";
-    private static final String PROJECT_FILE = ".project";
 
     private static final String EMPTY_PROJECT_TEMPLATE = """
         <?xml version="1.0" encoding="UTF-8"?>
@@ -189,7 +189,7 @@ public class DesktopProjectImpl extends BaseProjectImpl implements RCPProject, D
 
     @NotNull
     protected DBPDataSourceRegistry createDataSourceRegistry() {
-        return new DesktopDataSourceRegistry<>(this);
+        return new DataSourceRegistry<>(this);
     }
 
     @Nullable
@@ -391,4 +391,32 @@ public class DesktopProjectImpl extends BaseProjectImpl implements RCPProject, D
         }
     }
 
+    @Override
+    public void updateProjectNature() {
+        if (!isRegistryLoaded()) {
+            return;
+        }
+        try {
+            IProject eclipseProject = this.getEclipseProject();
+            if (eclipseProject != null) {
+                final IProjectDescription description = eclipseProject.getDescription();
+                if (description != null) {
+                    String[] natureIds = description.getNatureIds();
+                    if (getDataSourceRegistry() instanceof DataSourceRegistry<?> dsr && dsr.getDataSourceCount() > 0) {
+                        // Add nature
+                        if (!ArrayUtils.contains(natureIds, DBeaverNature.NATURE_ID)) {
+                            description.setNatureIds(ArrayUtils.add(String.class, natureIds, DBeaverNature.NATURE_ID));
+                            try {
+                                eclipseProject.setDescription(description, new NullProgressMonitor());
+                            } catch (CoreException e) {
+                                log.debug("Can't set project nature", e);
+                            }
+                        }
+                    }
+                }
+            }
+        } catch (Exception e) {
+            log.debug(e);
+        }
+    }
 }

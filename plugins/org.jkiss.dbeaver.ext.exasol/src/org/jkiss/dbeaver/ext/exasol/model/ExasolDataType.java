@@ -209,7 +209,7 @@ public class ExasolDataType extends ExasolObject<DBSObject> implements DBSDataTy
 
     @NotNull
     @Override
-    public DBCLogicalOperator[] getSupportedOperators(DBSTypedObject attribute) {
+    public DBCLogicalOperator[] getSupportedOperators(@NotNull DBSTypedObject attribute) {
         return DBUtils.getDefaultOperators(this);
     }
 

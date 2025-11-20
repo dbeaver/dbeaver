@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.ui.preferences;
 
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IWorkbench;
@@ -49,13 +50,13 @@ import java.util.Locale;
 /**
  * PrefPageDatabaseNavigator
  */
-public class PrefPageDatabaseNavigator extends AbstractPrefPage implements IWorkbenchPreferencePage, IWorkbenchPropertyPage
-{
+public class PrefPageDatabaseNavigator extends AbstractPrefPage implements IWorkbenchPreferencePage, IWorkbenchPropertyPage {
     public static final String PAGE_ID = "org.jkiss.dbeaver.preferences.navigator"; //$NON-NLS-1$
 
     private Button expandOnConnectCheck;
     private Button restoreFilterCheck;
     private Text restoreStateDepthText;
+    private Button sortAlphabeticallyCheck;
     private Button sortCaseInsensitiveCheck;
     private Button sortFoldersFirstCheck;
     private Button showConnectionHostCheck;
@@ -68,6 +69,7 @@ public class PrefPageDatabaseNavigator extends AbstractPrefPage implements IWork
     private Button showObjectTipsCheck;
     private Button showToolTipsCheck;
     private Button showContentsInToolTipsContents;
+    private Button showTableGrid;
 
     private Button showResourceFolderPlaceholdersCheck;
     private Button groupByDriverCheck;
@@ -156,13 +158,26 @@ public class PrefPageDatabaseNavigator extends AbstractPrefPage implements IWork
             // TODO: remove or enable this setting
             groupByDriverCheck.setEnabled(false);
 
-            sortCaseInsensitiveCheck = UIUtils.createCheckbox(
+            sortAlphabeticallyCheck = UIUtils.createCheckbox(
                 navigatorGroup,
                 UINavigatorMessages.pref_page_database_general_label_order_elements_alphabetically,
                 UINavigatorMessages.pref_page_database_general_label_order_elements_alphabetically_tip,
                 false,
                 2
             );
+            sortCaseInsensitiveCheck = UIUtils.createCheckbox(
+                navigatorGroup,
+                UINavigatorMessages.pref_page_database_general_label_sort_case_insensitive,
+                UINavigatorMessages.pref_page_database_general_label_sort_case_insensitive_tip,
+                false,
+                2
+            );
+            sortAlphabeticallyCheck.addSelectionListener(
+                SelectionListener.widgetSelectedAdapter(e -> {
+                    boolean isAlphabetical = sortAlphabeticallyCheck.getSelection();
+                    sortCaseInsensitiveCheck.setSelection(isAlphabetical);
+                    sortCaseInsensitiveCheck.setEnabled(isAlphabetical);
+                }));
 
             colorAllNodesCheck = UIUtils.createCheckbox(
                 navigatorGroup,
@@ -193,6 +208,12 @@ public class PrefPageDatabaseNavigator extends AbstractPrefPage implements IWork
                 false,
                 2
             );
+            showTableGrid = UIUtils.createCheckbox(
+                navigatorGroup,
+                UINavigatorMessages.pref_page_ui_general_show_table_grid,
+                UINavigatorMessages.pref_page_ui_general_show_table_grid,
+                false,
+                1);
         }
 
         {
@@ -296,11 +317,18 @@ public class PrefPageDatabaseNavigator extends AbstractPrefPage implements IWork
                 ? store.getDefaultBoolean(NavigatorPreferences.NAVIGATOR_GROUP_BY_DRIVER)
                 : store.getBoolean(NavigatorPreferences.NAVIGATOR_GROUP_BY_DRIVER)
         );
-        sortCaseInsensitiveCheck.setSelection(
+        sortAlphabeticallyCheck.setSelection(
             useDefaultValues
                 ? store.getDefaultBoolean(ModelPreferences.NAVIGATOR_SORT_ALPHABETICALLY)
                 : store.getBoolean(ModelPreferences.NAVIGATOR_SORT_ALPHABETICALLY)
         );
+        sortCaseInsensitiveCheck.setSelection(
+            useDefaultValues
+                ? store.getDefaultBoolean(ModelPreferences.NAVIGATOR_SORT_IGNORE_CASE)
+                : store.getBoolean(ModelPreferences.NAVIGATOR_SORT_IGNORE_CASE)
+        );
+        sortCaseInsensitiveCheck.setEnabled(sortAlphabeticallyCheck.getSelection());
+
         colorAllNodesCheck.setSelection(
             useDefaultValues
                 ? store.getDefaultBoolean(NavigatorPreferences.NAVIGATOR_COLOR_ALL_NODES)
@@ -321,6 +349,11 @@ public class PrefPageDatabaseNavigator extends AbstractPrefPage implements IWork
                 ? store.getDefaultBoolean(NavigatorPreferences.NAVIGATOR_SHOW_CONTENTS_IN_TOOLTIP)
                 : store.getBoolean(NavigatorPreferences.NAVIGATOR_SHOW_CONTENTS_IN_TOOLTIP)
         );
+        showTableGrid.setSelection(
+            useDefaultValues
+                ? store.getDefaultBoolean(NavigatorPreferences.NAVIGATOR_EDITOR_SHOW_TABLE_GRID)
+                : store.getBoolean(NavigatorPreferences.NAVIGATOR_EDITOR_SHOW_TABLE_GRID)
+        );
         expandOnConnectCheck.setSelection(
             useDefaultValues
                 ? store.getDefaultBoolean(NavigatorPreferences.NAVIGATOR_EXPAND_ON_CONNECT)
@@ -330,11 +363,6 @@ public class PrefPageDatabaseNavigator extends AbstractPrefPage implements IWork
             useDefaultValues
                 ? store.getDefaultBoolean(NavigatorPreferences.NAVIGATOR_RESTORE_FILTER)
                 : store.getBoolean(NavigatorPreferences.NAVIGATOR_RESTORE_FILTER)
-        );
-        showContentsInToolTipsContents.setSelection(
-            useDefaultValues
-                ? store.getDefaultBoolean(NavigatorPreferences.NAVIGATOR_SHOW_CONTENTS_IN_TOOLTIP)
-                : store.getBoolean(NavigatorPreferences.NAVIGATOR_SHOW_CONTENTS_IN_TOOLTIP)
         );
         longListFetchSizeText.setText(
             useDefaultValues
@@ -394,7 +422,9 @@ public class PrefPageDatabaseNavigator extends AbstractPrefPage implements IWork
         store.setValue(NavigatorPreferences.NAVIGATOR_SHOW_OBJECT_TIPS, showObjectTipsCheck.getSelection());
         store.setValue(NavigatorPreferences.NAVIGATOR_SHOW_TOOLTIPS, showToolTipsCheck.getSelection());
         store.setValue(NavigatorPreferences.NAVIGATOR_SHOW_CONTENTS_IN_TOOLTIP, showContentsInToolTipsContents.getSelection());
-        store.setValue(ModelPreferences.NAVIGATOR_SORT_ALPHABETICALLY, sortCaseInsensitiveCheck.getSelection());
+        store.setValue(NavigatorPreferences.NAVIGATOR_EDITOR_SHOW_TABLE_GRID, showTableGrid.getSelection());
+        store.setValue(ModelPreferences.NAVIGATOR_SORT_ALPHABETICALLY, sortAlphabeticallyCheck.getSelection());
+        store.setValue(ModelPreferences.NAVIGATOR_SORT_IGNORE_CASE, sortCaseInsensitiveCheck.getSelection());
         store.setValue(ModelPreferences.NAVIGATOR_SORT_FOLDERS_FIRST, sortFoldersFirstCheck.getSelection());
         store.setValue(NavigatorPreferences.NAVIGATOR_SHOW_CHILD_COUNT, showChildCountCheck.getSelection());
         store.setValue(NavigatorPreferences.NAVIGATOR_SHOW_CONNECTION_HOST_NAME, showConnectionHostCheck.getSelection());
@@ -438,19 +468,13 @@ public class PrefPageDatabaseNavigator extends AbstractPrefPage implements IWork
             }
             return false;
         });
-        editors.sort(Comparator.comparing(editor -> {
-            switch (editor.getPosition()) {
-                case EntityEditorDescriptor.POSITION_PROPS:
-                    return -2;
-                case EntityEditorDescriptor.POSITION_START:
-                    return -1;
-                case EntityEditorDescriptor.POSITION_END:
-                    return 1;
-                default:
-                    return 0;
-            }
+        editors.sort(Comparator.comparing(editor -> switch (editor.getPosition()) {
+            case EntityEditorDescriptor.POSITION_PROPS -> -2;
+            case EntityEditorDescriptor.POSITION_START -> -1;
+            case EntityEditorDescriptor.POSITION_END -> 1;
+            default -> 0;
         }));
-        editors.add(0, editorsRegistry.getDefaultEditor());
+        editors.addFirst(editorsRegistry.getDefaultEditor());
         return editors;
     }
 

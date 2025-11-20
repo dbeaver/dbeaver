@@ -20,9 +20,7 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
-import org.eclipse.jface.resource.FontDescriptor;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.GridData;
@@ -48,9 +46,11 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSTable;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableColumn;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.properties.PropertyCollector;
+import org.jkiss.dbeaver.ui.BaseThemeSettings;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.SubEditorSite;
 import org.jkiss.dbeaver.ui.navigator.itemlist.ItemListControl;
+import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
@@ -63,7 +63,6 @@ public class ObjectInformationView {
 
     private Composite infoComposite;
     private Object input;
-    private Font boldFont;
     private Composite tableComposite;
     private Composite mainComposite;
     private ItemListControl itemListControl;
@@ -81,10 +80,6 @@ public class ObjectInformationView {
         this.tableComposite = UIUtils.createPlaceholder(this.mainComposite, 1);
         this.tableComposite.setLayoutData(mainGridData);
 
-        final FontDescriptor fontDescriptor = FontDescriptor.createFrom(parent.getFont());
-
-        this.boldFont = fontDescriptor.setStyle(SWT.BOLD).createFont(parent.getDisplay());
-
         return this.mainComposite;
     }
 
@@ -94,10 +89,10 @@ public class ObjectInformationView {
 
     public void setInput(@NotNull Object input) {
         this.input = input;
-        if (input instanceof DBPNamedObject && !infoComposite.isDisposed() && !tableComposite.isDisposed()) {
-            createMetadataFields((DBPNamedObject) input);
-            if (input instanceof DBSTable) {
-                createTreeControl((DBSTable) input);
+        if (input instanceof DBPNamedObject namedObject && !infoComposite.isDisposed() && !tableComposite.isDisposed()) {
+            createMetadataFields(namedObject);
+            if (input instanceof DBSTable table) {
+                createTreeControl(table);
             }
         }
 
@@ -117,9 +112,9 @@ public class ObjectInformationView {
         AbstractJob resolveObject = new AbstractJob("Resolving object") {
             @Override
             protected IStatus run(DBRProgressMonitor monitor) {
-                if (input instanceof DBSObjectReference) {
+                if (input instanceof DBSObjectReference objectReference) {
                     try {
-                        targetObject[0] = ((DBSObjectReference) input).resolveObject(monitor);
+                        targetObject[0] = objectReference.resolveObject(monitor);
                     } catch (DBException e) {
                         log.error("Error resolving object", e);
                         return Status.CANCEL_STATUS;
@@ -141,7 +136,7 @@ public class ObjectInformationView {
                         int maxWidth = 0;
                         GC gc = new GC(metadataComposite);
                         try {
-                            gc.setFont(boldFont);
+                            gc.setFont(BaseThemeSettings.instance.baseFontBold);
                             for (DBPPropertyDescriptor descriptor : collector.getProperties()) {
                                 String propertyString = DBInfoUtils.getPropertyString(collector, descriptor);
                                 if (CommonUtils.isEmpty(propertyString) || !descriptor.hasFeature(DBConstants.PROP_FEATURE_VIEWABLE)) {
@@ -151,7 +146,7 @@ public class ObjectInformationView {
                                 placeholder.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
                                 Label label = new Label(placeholder, SWT.READ_ONLY);
                                 label.setText(descriptor.getDisplayName() + ":");
-                                label.setFont(boldFont);
+                                label.setFont(BaseThemeSettings.instance.baseFontBold);
                                 Text valueText = new Text(placeholder, SWT.READ_ONLY);
                                 valueText.setText(propertyString);
                                 maxWidth = Math.max(maxWidth, gc.stringExtent(label.getText()).x + gc.stringExtent(valueText.getText()).x);
@@ -163,10 +158,12 @@ public class ObjectInformationView {
                         infoComposite.layout(true, true);
                         mainComposite.layout(true, true);
                         UIUtils.asyncExec(() -> {
-                            Shell shell = mainComposite.getShell();
-                            Point sz = shell.getMinimumSize();
-                            shell.setMinimumSize(sz.x + extraWidth, sz.y + metadataComposite.getSize().y);
-                            mainComposite.getShell().layout(true, true);
+                            if (!mainComposite.isDisposed()) {
+                                Shell shell = mainComposite.getShell();
+                                Point sz = shell.getMinimumSize();
+                                shell.setMinimumSize(sz.x + extraWidth, sz.y + metadataComposite.getSize().y);
+                                mainComposite.getShell().layout(true, true);
+                            }
                         });
                     }
                 });
@@ -238,16 +235,11 @@ public class ObjectInformationView {
                         UIUtils.asyncExec(() -> {
                             Shell shell = tableComposite.getShell();
                             Point sz = shell.getMinimumSize();
-                            Point letterExtent;
-                            GC gc = new GC(shell);
-                            try {
-                                gc.setFont(boldFont);
-                                letterExtent = gc.stringExtent("X");
-                            } finally {
-                                gc.dispose();
-                            }
                             int extraHeight = ((Table) itemListControl.getItemsViewer().getControl()).getHeaderHeight();
-                            shell.setMinimumSize(sz.x, Math.min(sz.y + letterExtent.y * columnNodeList.size() + extraHeight, 600));
+                            shell.setMinimumSize(sz.x,
+                                Math.min(
+                                    sz.y + UIUtils.getFontHeight(BaseThemeSettings.instance.baseFontBold) * columnNodeList.size()
+                                        + extraHeight, 600));
                             tableComposite.getShell().layout(true, true);
                         });
                     }
@@ -266,15 +258,17 @@ public class ObjectInformationView {
             return Collections.emptyList();
         }
         List<DBNNode> children = new ArrayList<>();
-        for (DBNNode child : node.getChildren(monitor)) {
-            if (child instanceof DBNDatabaseFolder) {
-                Class<? extends DBSObject> childrenClass = ((DBNDatabaseFolder) child).getChildrenClass();
+        for (DBNNode child : ArrayUtils.safeArray(node.getChildren(monitor))) {
+            if (child instanceof DBNDatabaseFolder databaseFolder) {
+                Class<? extends DBSObject> childrenClass = databaseFolder.getChildrenClass();
                 if (childrenClass != null && DBSTableColumn.class.isAssignableFrom(childrenClass)) {
                     if (itemListControl != null && !itemListControl.isDisposed()) {
                         itemListControl.setRootNode(child);
                     }
                     DBNNode[] folderChildren = child.getChildren(monitor);
-                    children.addAll(List.of(folderChildren));
+                    if (folderChildren != null) {
+                        children.addAll(List.of(folderChildren));
+                    }
                 }
             } else {
                 children.add(child);
@@ -283,7 +277,4 @@ public class ObjectInformationView {
         return children;
     }
 
-    public void dispose() {
-        boldFont.dispose();
-    }
 }

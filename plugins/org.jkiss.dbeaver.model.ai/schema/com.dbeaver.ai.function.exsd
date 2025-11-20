@@ -1,0 +1,57 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!-- Schema file written by PDE -->
+<schema targetNamespace="com.dbeaver.model.ai" xmlns="http://www.w3.org/2001/XMLSchema">
+   <annotation>
+      <appInfo>
+         <meta.schema plugin="com.dbeaver.model.ai" id="com.dbeaver.ai.function" name="AI functions"/>
+      </appInfo>
+      <documentation>
+         AI functions for assistant functionality
+      </documentation>
+   </annotation>
+
+   <element name="extension">
+      <annotation>
+         <appInfo>
+            <meta.element />
+         </appInfo>
+      </annotation>
+      <complexType>
+         <sequence>
+            <element ref="function" minOccurs="0" maxOccurs="unbounded"/>
+         </sequence>
+      </complexType>
+   </element>
+
+   <element name="function">
+      <complexType>
+         <attribute name="id" type="string" use="required">
+            <annotation>
+               <documentation>
+                  Unique function identifier
+               </documentation>
+            </annotation>
+         </attribute>
+         <attribute name="name" type="string" use="required">
+            <annotation>
+               <documentation>
+                  Function name used by AI assistant
+               </documentation>
+            </annotation>
+         </attribute>
+         <attribute name="description" type="string">
+            <annotation>
+               <documentation>
+                  Function description for AI assistant
+               </documentation>
+            </annotation>
+         </attribute>
+         <attribute name="category" type="string">
+            <annotation>
+               <documentation>
+               </documentation>
+            </annotation>
+         </attribute>
+      </complexType>
+   </element>
+</schema>

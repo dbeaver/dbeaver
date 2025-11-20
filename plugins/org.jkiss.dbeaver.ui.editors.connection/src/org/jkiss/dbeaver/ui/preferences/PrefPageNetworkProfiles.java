@@ -49,8 +49,8 @@ import org.jkiss.dbeaver.ui.internal.UIConnectionMessages;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
-import java.util.List;
 import java.util.*;
+import java.util.List;
 
 /**
  * PrefPageNetworkProfiles
@@ -403,7 +403,8 @@ public abstract class PrefPageNetworkProfiles extends AbstractPrefPage {
                 return;
             }
 
-            for (DBWNetworkProfile profile : getDefaultNetworkProfiles()) {
+            List<DBWNetworkProfile> profiles = getDefaultNetworkProfiles();
+            for (DBWNetworkProfile profile : profiles) {
                 if (secretController != null) {
                     try {
                         profile.resolveSecrets(secretController);
@@ -416,11 +417,6 @@ public abstract class PrefPageNetworkProfiles extends AbstractPrefPage {
                 item.setText(profile.getProfileName());
                 item.setImage(DBeaverIcons.getImage(DBIcon.TYPE_DOCUMENT));
                 item.setData(profile);
-                if (selectedProfile == null) {
-                    selectedProfile = profile;
-                    profilesTable.select(0);
-                    updateSelectedProfile(selectedProfile);
-                }
 
                 for (NetworkHandlerDescriptor nhd : allHandlers) {
                     HandlerBlock handlerBlock = configurations.get(nhd);
@@ -430,8 +426,17 @@ public abstract class PrefPageNetworkProfiles extends AbstractPrefPage {
                     }
                 }
             }
+
+            int profileIndex = profiles.indexOf(selectedProfile);
+            if (profileIndex < 0 && !profiles.isEmpty()) {
+                selectedProfile = profiles.getFirst();
+                profilesTable.select(0);
+            } else if (profileIndex != profilesTable.getSelectionIndex()) {
+                profilesTable.select(profileIndex);
+            }
+
+            profilesTable.notifyListeners(SWT.Selection, new Event());
         }
-        updateControlsState();
     }
 
     @Override

@@ -16,7 +16,7 @@
  */
 package org.jkiss.dbeaver.tasks.ui.internal;
 
-import org.jkiss.dbeaver.utils.NLS;
+import org.eclipse.osgi.util.NLS;
 
 public class TaskUIMessages extends NLS {
     static final String BUNDLE_NAME = "org.jkiss.dbeaver.tasks.ui.internal.TaskUIMessages"; //$NON-NLS-1$
@@ -76,10 +76,6 @@ public class TaskUIMessages extends NLS {
     public static String task_execute_handler_tool_error_apply_message;
     public static String task_execute_handler_tool_warn_readonly_title;
     public static String task_execute_handler_tool_warn_readonly_message;
-
-    public static String task_config_wizard_page_task_advanced_label;
-    public static String task_config_wizard_page_task_max_exec_time;
-    public static String task_config_wizard_page_task_max_exec_time_descr;
 
     static {
         // initialize resource bundle

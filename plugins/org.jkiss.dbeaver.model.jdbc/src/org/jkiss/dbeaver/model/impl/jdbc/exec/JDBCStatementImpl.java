@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,9 +19,11 @@ package org.jkiss.dbeaver.model.impl.jdbc.exec;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.DBRuntimeException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.exec.DBCException;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCObjectSupplier;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
@@ -56,19 +58,28 @@ public class JDBCStatementImpl<STATEMENT extends Statement> extends AbstractStat
 
     private long updateCount;
     private Throwable executeError;
+    private boolean closed;
 
-    public JDBCStatementImpl(@NotNull JDBCSession connection, @NotNull STATEMENT original, boolean disableLogging)
-    {
+    public JDBCStatementImpl(
+        @NotNull JDBCSession connection,
+        @NotNull JDBCObjectSupplier<STATEMENT> original,
+        @Nullable String queryString,
+        boolean disableLogging
+    ) throws SQLException {
         super(connection);
-        this.original = original;
         this.disableLogging = disableLogging;
+        this.query = queryString;
+
         if (isQMLoggingEnabled()) {
             QMUtils.getDefaultHandler().handleStatementOpen(this);
         }
+
+        // We signal statement pen BEFORE we get actual one
+        // because opening a statement may take a time and we have to measure it
+        this.original = original.get();
     }
 
-    protected STATEMENT getOriginal()
-    {
+    public STATEMENT getOriginal() {
         return original;
     }
 
@@ -77,54 +88,49 @@ public class JDBCStatementImpl<STATEMENT extends Statement> extends AbstractStat
     }
 
 
-    protected void startBlock()
-    {
+    protected void startBlock() {
         this.connection.getProgressMonitor().startBlock(
             this, null/*this.query == null ? "?" : JDBCUtils.limitQueryLength(query, 200)*/);
     }
 
-    protected void endBlock()
-    {
+    protected void endBlock() {
         connection.getProgressMonitor().endBlock();
     }
 
     @Override
-    public void cancelBlock(@NotNull DBRProgressMonitor monitor, @Nullable Thread blockThread)
-        throws DBException
-    {
+    public void cancelBlock(
+        @NotNull DBRProgressMonitor monitor,
+        @Nullable Thread blockThread
+    ) throws DBException {
         getConnection().getDataSource().cancelStatementExecute(monitor, this);
     }
 
     @NotNull
     @Override
-    public JDBCSession getConnection()
-    {
+    public JDBCSession getConnection() {
         return connection;
     }
 
     ////////////////////////////////////////////////////////////////////
     // DBC Statement overrides
-    ////////////////////////////////////////////////////////////////////
+
+    /// /////////////////////////////////////////////////////////////////
 
     @Nullable
     @Override
-    public String getQueryString()
-    {
+    public String getQueryString() {
         return query;
     }
 
     @Override
-    public void setQueryString(@Nullable String query)
-    {
+    public void setQueryString(@Nullable String query) {
         this.query = query;
     }
 
     @Override
-    public boolean executeStatement()
-        throws DBCException
-    {
+    public boolean executeStatement() throws DBCException {
         try {
-//            return SecurityManagerUtils.wrapDriverActions(connection.getDataSource().getContainer(), () -> execute(query));
+            //            return SecurityManagerUtils.wrapDriverActions(connection.getDataSource().getContainer(), () -> execute(query));
             return execute(query);
         } catch (Throwable e) {
             throw new DBSQLException(query, e, connection.getExecutionContext());
@@ -132,26 +138,25 @@ public class JDBCStatementImpl<STATEMENT extends Statement> extends AbstractStat
     }
 
     @Override
-    public void addToBatch() throws DBCException
-    {
+    public void addToBatch() throws DBCException {
         try {
             addBatch(query);
-        }
-        catch (SQLException e) {
+        } catch (SQLException e) {
             throw new DBCException(e, connection.getExecutionContext());
         }
     }
 
     @Override
-    public long[] executeStatementBatch() throws DBCException
-    {
+    public long[] executeStatementBatch() throws DBCException {
         try {
             try {
                 return this.executeLargeBatch();
             } catch (SQLFeatureNotSupportedException | UnsupportedOperationException | IncompatibleClassChangeError e) {
                 int[] result = this.executeBatch();
                 long[] longResult = new long[result.length];
-                for (int i = 0; i < result.length; i++) longResult[i] = result[i];
+                for (int i = 0; i < result.length; i++) {
+                    longResult[i] = result[i];
+                }
                 return longResult;
             }
         } catch (Throwable e) {
@@ -161,37 +166,34 @@ public class JDBCStatementImpl<STATEMENT extends Statement> extends AbstractStat
 
     @Nullable
     @Override
-    public JDBCResultSet openResultSet() throws DBCException
-    {
+    public JDBCResultSet openResultSet() throws DBCException {
         // Some driver perform real RS fetch at this moment.
         // So let's start the block
         this.startBlock();
         try {
             return getResultSet();
-        }
-        catch (SQLException e) {
+        } catch (SQLException e) {
             throw new DBCException(e, connection.getExecutionContext());
-        }
-        finally {
+        } finally {
             this.endBlock();
         }
     }
 
     @Nullable
     @Override
-    public JDBCResultSet openGeneratedKeysResultSet()
-        throws DBCException
-    {
+    public JDBCResultSet openGeneratedKeysResultSet() throws DBCException {
         try {
             return makeResultSet(getOriginal().getGeneratedKeys());
-        }
-        catch (SQLException e) {
+        } catch (SQLException e) {
             throw new DBCException(e, connection.getExecutionContext());
         }
     }
 
     @Override
     public long getUpdateRowCount() throws DBCException {
+        if (closed) {
+            return updateCount;
+        }
         try {
             try {
                 return getLargeUpdateCount();
@@ -204,9 +206,7 @@ public class JDBCStatementImpl<STATEMENT extends Statement> extends AbstractStat
     }
 
     @Override
-    public boolean nextResults()
-        throws DBCException
-    {
+    public boolean nextResults() throws DBCException {
         try {
             return getOriginal().getMoreResults();
         } catch (SQLException e) {
@@ -215,24 +215,22 @@ public class JDBCStatementImpl<STATEMENT extends Statement> extends AbstractStat
     }
 
     @Override
-    public void setLimit(long offset, long limit) throws DBCException
-    {
+    public void setLimit(long offset, long limit) throws DBCException {
         int totalRows;
         if (offset <= 0) {
             // Just set max row num
-            totalRows = (int)limit;
+            totalRows = (int) limit;
             this.rsMaxRows = limit;
         } else {
             // Remember limit values - we'll use them in resultset fetch routine
             this.rsOffset = offset;
             this.rsMaxRows = limit;
-            totalRows = limit > 0 ? (int)(offset + limit) : -1;
+            totalRows = limit > 0 ? (int) (offset + limit) : -1;
         }
         if (totalRows > 0 && connection.getDataSource().getInfo().supportsResultSetLimit()) {
             try {
                 setMaxRows(totalRows);
-            }
-            catch (SQLException e) {
+            } catch (SQLException e) {
                 // [JDBC:ODBC] Probably setMaxRows is not supported. Just log this error
                 // We'll use rsOffset and rsMaxRows anyway
                 log.debug(getOriginal().getClass().getName() + ".setMaxRows not supported?", e);
@@ -241,9 +239,7 @@ public class JDBCStatementImpl<STATEMENT extends Statement> extends AbstractStat
     }
 
     @Nullable
-    protected JDBCResultSet makeResultSet(@Nullable ResultSet resultSet)
-        throws SQLException
-    {
+    protected JDBCResultSet makeResultSet(@Nullable ResultSet resultSet) throws SQLException {
         if (resultSet == null) {
             return null;
         }
@@ -259,29 +255,25 @@ public class JDBCStatementImpl<STATEMENT extends Statement> extends AbstractStat
         return dbResult;
     }
 
-    protected JDBCResultSet createResultSetImpl(ResultSet resultSet)
-        throws SQLException
-    {
-        return connection.getDataSource().getJdbcFactory().createResultSet(connection, this, resultSet, null, disableLogging);
+    protected JDBCResultSet createResultSetImpl(ResultSet resultSet) throws SQLException {
+        return connection.getDataSource().getJdbcFactory().createResultSet(connection, this, resultSet, disableLogging);
     }
 
     ////////////////////////////////////////////////////////////////////
     // Statement overrides
-    ////////////////////////////////////////////////////////////////////
 
-    protected boolean handleExecuteResult(boolean result)
-    {
+    /// /////////////////////////////////////////////////////////////////
+
+    protected boolean handleExecuteResult(boolean result) {
         return result;
     }
 
-    protected int handleExecuteResult(int result)
-    {
+    protected int handleExecuteResult(int result) {
         updateCount = result;
         return result;
     }
 
-    protected SQLException handleExecuteError(Throwable ex)
-    {
+    protected SQLException handleExecuteError(Throwable ex) {
         executeError = ex;
         if (connection.getDataSource().getContainer().getPreferenceStore().getBoolean(ModelPreferences.QUERY_ROLLBACK_ON_ERROR)) {
             try {
@@ -302,7 +294,7 @@ public class JDBCStatementImpl<STATEMENT extends Statement> extends AbstractStat
     protected void beforeExecute() {
         this.updateCount = -1;
         this.executeError = null;
-        this.connection.getExecutionContext().lockQueryExecution();
+        this.connection.getExecutionContext().lockStatementExecution(this);
         this.connection.setBlockThread(Thread.currentThread());
 
         if (isQMLoggingEnabled()) {
@@ -316,7 +308,6 @@ public class JDBCStatementImpl<STATEMENT extends Statement> extends AbstractStat
 
     protected void afterExecute() {
         this.connection.setBlockThread(null);
-        this.connection.getExecutionContext().unlockQueryExecution();
         if (JDBCUtils.LOG_JDBC_WARNINGS) {
             try {
                 JDBCUtils.reportWarnings(getSession(), this.getWarnings());
@@ -331,13 +322,10 @@ public class JDBCStatementImpl<STATEMENT extends Statement> extends AbstractStat
         }
     }
 
-    ////////////////////////////////////
+    /// /////////////////////////////////
     // Executions
-
     @Override
-    public boolean execute(String sql)
-        throws SQLException
-    {
+    public boolean execute(@NotNull String sql) throws SQLException {
         setQueryString(sql);
         this.beforeExecute();
         try {
@@ -351,9 +339,7 @@ public class JDBCStatementImpl<STATEMENT extends Statement> extends AbstractStat
 
     @Nullable
     @Override
-    public JDBCResultSet executeQuery(String sql)
-        throws SQLException
-    {
+    public JDBCResultSet executeQuery(@NotNull String sql) throws SQLException {
         setQueryString(sql);
         this.beforeExecute();
         try {
@@ -366,9 +352,7 @@ public class JDBCStatementImpl<STATEMENT extends Statement> extends AbstractStat
     }
 
     @Override
-    public int executeUpdate(String sql)
-        throws SQLException
-    {
+    public int executeUpdate(String sql) throws SQLException {
         setQueryString(sql);
         this.beforeExecute();
         try {
@@ -381,9 +365,7 @@ public class JDBCStatementImpl<STATEMENT extends Statement> extends AbstractStat
     }
 
     @Override
-    public int[] executeBatch()
-        throws SQLException
-    {
+    public int[] executeBatch() throws SQLException {
         this.beforeExecute();
         try {
             return getOriginal().executeBatch();
@@ -395,9 +377,7 @@ public class JDBCStatementImpl<STATEMENT extends Statement> extends AbstractStat
     }
 
     @Override
-    public int executeUpdate(String sql, int autoGeneratedKeys)
-        throws SQLException
-    {
+    public int executeUpdate(String sql, int autoGeneratedKeys) throws SQLException {
         setQueryString(sql);
         this.beforeExecute();
         try {
@@ -410,9 +390,7 @@ public class JDBCStatementImpl<STATEMENT extends Statement> extends AbstractStat
     }
 
     @Override
-    public int executeUpdate(String sql, int[] columnIndexes)
-        throws SQLException
-    {
+    public int executeUpdate(String sql, int[] columnIndexes) throws SQLException {
         setQueryString(sql);
         this.beforeExecute();
         try {
@@ -425,9 +403,7 @@ public class JDBCStatementImpl<STATEMENT extends Statement> extends AbstractStat
     }
 
     @Override
-    public int executeUpdate(String sql, String[] columnNames)
-        throws SQLException
-    {
+    public int executeUpdate(String sql, String[] columnNames) throws SQLException {
         setQueryString(sql);
         this.beforeExecute();
         try {
@@ -440,9 +416,7 @@ public class JDBCStatementImpl<STATEMENT extends Statement> extends AbstractStat
     }
 
     @Override
-    public boolean execute(String sql, int autoGeneratedKeys)
-        throws SQLException
-    {
+    public boolean execute(String sql, int autoGeneratedKeys) throws SQLException {
         setQueryString(sql);
         this.beforeExecute();
         try {
@@ -455,9 +429,7 @@ public class JDBCStatementImpl<STATEMENT extends Statement> extends AbstractStat
     }
 
     @Override
-    public boolean execute(String sql, int[] columnIndexes)
-        throws SQLException
-    {
+    public boolean execute(String sql, int[] columnIndexes) throws SQLException {
         setQueryString(sql);
         this.beforeExecute();
         try {
@@ -470,9 +442,7 @@ public class JDBCStatementImpl<STATEMENT extends Statement> extends AbstractStat
     }
 
     @Override
-    public boolean execute(String sql, String[] columnNames)
-        throws SQLException
-    {
+    public boolean execute(String sql, String[] columnNames) throws SQLException {
         setQueryString(sql);
         this.beforeExecute();
         try {
@@ -484,12 +454,10 @@ public class JDBCStatementImpl<STATEMENT extends Statement> extends AbstractStat
         }
     }
 
-    ////////////////////////////////////
+    /// /////////////////////////////////
     // Close
-
     @Override
-    public void close()
-    {
+    public void close() {
 /*
         // Do not check for warnings here
         // Sometimes warnings are cached in connection and as a result we got a lot of spam in log
@@ -502,105 +470,90 @@ public class JDBCStatementImpl<STATEMENT extends Statement> extends AbstractStat
         }
 */
 
-        if (isQMLoggingEnabled()) {
-            // Handle close
-            QMUtils.getDefaultHandler().handleStatementClose(this, updateCount);
-        }
-
         // Close statement
+        Throwable closeError = null;
         try {
             getOriginal().close();
+        } catch (Throwable e) {
+            closeError = e;
         }
-        catch (Throwable e) {
-            log.error("Can't close statement", e); //$NON-NLS-1$
+
+        this.closed = true;
+        getConnection().getExecutionContext().unlockStatementExecution(this);
+
+        try {
+            super.close();
+        } catch (Throwable e) {
+            if (closeError != null) {
+                log.error("Error closing statement (suppressed", e);
+            }
+            throw new DBRuntimeException(e);
+        }
+        if (closeError != null) {
+            throw new DBRuntimeException(closeError);
         }
     }
 
-    ////////////////////////////////////
+    /// /////////////////////////////////
     // Other
-
     @Override
-    public int getMaxFieldSize()
-        throws SQLException
-    {
+    public int getMaxFieldSize() throws SQLException {
         return getOriginal().getMaxFieldSize();
     }
 
     @Override
-    public void setMaxFieldSize(int max)
-        throws SQLException
-    {
+    public void setMaxFieldSize(int max) throws SQLException {
         getOriginal().setMaxFieldSize(max);
     }
 
     @Override
-    public int getMaxRows()
-        throws SQLException
-    {
+    public int getMaxRows() throws SQLException {
         return getOriginal().getMaxRows();
     }
 
     @Override
-    public void setMaxRows(int max)
-        throws SQLException
-    {
+    public void setMaxRows(int max) throws SQLException {
         getOriginal().setMaxRows(max);
     }
 
     @Override
-    public void setEscapeProcessing(boolean enable)
-        throws SQLException
-    {
+    public void setEscapeProcessing(boolean enable) throws SQLException {
         getOriginal().setEscapeProcessing(enable);
     }
 
     @Override
-    public int getQueryTimeout()
-        throws SQLException
-    {
+    public int getQueryTimeout() throws SQLException {
         return getOriginal().getQueryTimeout();
     }
 
     @Override
-    public void setQueryTimeout(int seconds)
-        throws SQLException
-    {
+    public void setQueryTimeout(int seconds) throws SQLException {
         getOriginal().setQueryTimeout(seconds);
     }
 
     @Override
-    public void cancel()
-        throws SQLException
-    {
+    public void cancel() throws SQLException {
         getOriginal().cancel();
     }
 
     @Override
-    public SQLWarning getWarnings()
-        throws SQLException
-    {
+    public SQLWarning getWarnings() throws SQLException {
         return getOriginal().getWarnings();
     }
 
     @Override
-    public void clearWarnings()
-        throws SQLException
-    {
+    public void clearWarnings() throws SQLException {
         getOriginal().clearWarnings();
     }
 
     @Override
-    public void setCursorName(String name)
-        throws SQLException
-    {
+    public void setCursorName(String name) throws SQLException {
         getOriginal().setCursorName(name);
     }
 
     @Nullable
     @Override
-    public JDBCResultSet getResultSet()
-        throws SQLException
-    {
+    public JDBCResultSet getResultSet() throws SQLException {
         return makeResultSet(getOriginal().getResultSet());
     }
 
@@ -655,8 +608,10 @@ public class JDBCStatementImpl<STATEMENT extends Statement> extends AbstractStat
     }
 
     @Override
-    public int getUpdateCount() throws SQLException
-    {
+    public int getUpdateCount() throws SQLException {
+        if (closed) {
+            return (int) updateCount;
+        }
         int uc = getOriginal().getUpdateCount();
         if (uc >= 0) {
             // Cache update count (for QM logging)
@@ -667,6 +622,9 @@ public class JDBCStatementImpl<STATEMENT extends Statement> extends AbstractStat
 
     @Override
     public long getLargeUpdateCount() throws SQLException {
+        if (closed) {
+            return updateCount;
+        }
         final long uc = getOriginal().getLargeUpdateCount();
         if (uc >= 0) {
             // Cache update count (for QM logging)
@@ -676,94 +634,68 @@ public class JDBCStatementImpl<STATEMENT extends Statement> extends AbstractStat
     }
 
     @Override
-    public boolean getMoreResults()
-        throws SQLException
-    {
+    public boolean getMoreResults() throws SQLException {
         return getOriginal().getMoreResults();
     }
 
     @Override
-    public void setFetchDirection(int direction)
-        throws SQLException
-    {
+    public void setFetchDirection(int direction) throws SQLException {
         getOriginal().setFetchDirection(direction);
     }
 
     @Override
-    public int getFetchDirection()
-        throws SQLException
-    {
+    public int getFetchDirection() throws SQLException {
         return getOriginal().getFetchDirection();
     }
 
     @Override
-    public void setFetchSize(int rows)
-        throws SQLException
-    {
+    public void setFetchSize(int rows) throws SQLException {
         getOriginal().setFetchSize(rows);
     }
 
     @Override
-    public int getFetchSize()
-        throws SQLException
-    {
+    public int getFetchSize() throws SQLException {
         return getOriginal().getFetchSize();
     }
 
     @Override
-    public int getResultSetConcurrency()
-        throws SQLException
-    {
+    public int getResultSetConcurrency() throws SQLException {
         return getOriginal().getResultSetConcurrency();
     }
 
     @Override
-    public int getResultSetType()
-        throws SQLException
-    {
+    public int getResultSetType() throws SQLException {
         return getOriginal().getResultSetType();
     }
 
     @Override
-    public void addBatch(String sql)
-        throws SQLException
-    {
+    public void addBatch(String sql) throws SQLException {
         getOriginal().addBatch(sql);
     }
 
     @Override
-    public void clearBatch()
-        throws SQLException
-    {
+    public void clearBatch() throws SQLException {
         getOriginal().clearBatch();
     }
 
     @Override
-    public boolean getMoreResults(int current)
-        throws SQLException
-    {
+    public boolean getMoreResults(int current) throws SQLException {
         return getOriginal().getMoreResults(current);
     }
 
     @Nullable
     @Override
-    public ResultSet getGeneratedKeys()
-        throws SQLException
-    {
+    public ResultSet getGeneratedKeys() throws SQLException {
         return makeResultSet(getOriginal().getGeneratedKeys());
     }
 
     @Override
-    public int getResultSetHoldability()
-        throws SQLException
-    {
+    public int getResultSetHoldability() throws SQLException {
         return getOriginal().getResultSetHoldability();
     }
 
     @Override
-    public boolean isClosed()
-        throws SQLException
-    {
+    public boolean isClosed() throws SQLException {
         return getOriginal().isClosed();
     }
 
@@ -777,16 +709,12 @@ public class JDBCStatementImpl<STATEMENT extends Statement> extends AbstractStat
     }
 
     @Override
-    public void setPoolable(boolean poolable)
-        throws SQLException
-    {
+    public void setPoolable(boolean poolable) throws SQLException {
         getOriginal().setPoolable(poolable);
     }
 
     @Override
-    public boolean isPoolable()
-        throws SQLException
-    {
+    public boolean isPoolable() throws SQLException {
         return getOriginal().isPoolable();
     }
 
@@ -801,16 +729,12 @@ public class JDBCStatementImpl<STATEMENT extends Statement> extends AbstractStat
     }
 
     @Override
-    public <T> T unwrap(Class<T> iface)
-        throws SQLException
-    {
+    public <T> T unwrap(Class<T> iface) throws SQLException {
         return getOriginal().unwrap(iface);
     }
 
     @Override
-    public boolean isWrapperFor(Class<?> iface)
-        throws SQLException
-    {
+    public boolean isWrapperFor(Class<?> iface) throws SQLException {
         return getOriginal().isWrapperFor(iface);
     }
 

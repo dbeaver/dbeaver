@@ -724,7 +724,7 @@ public class DBVEntity extends DBVObject implements DBSEntity, DBPQualifiedObjec
     }
 
     @Override
-    public <T> T getAdapter(Class<T> adapter) {
+    public <T> T getAdapter(@NotNull Class<T> adapter) {
         return null;
     }
 
@@ -737,8 +737,8 @@ public class DBVEntity extends DBVObject implements DBSEntity, DBPQualifiedObjec
     @Override
     public DBSDictionaryAccessor getDictionaryAccessor(
         @NotNull DBRProgressMonitor monitor,
-        List<DBDAttributeValue> precedingKeys,
         @NotNull DBSEntityAttribute keyColumn,
+        @Nullable List<DBDAttributeValue> restColumns,
         boolean sortAsc,
         boolean sortByDesc
     ) throws DBException {
@@ -746,8 +746,8 @@ public class DBVEntity extends DBVObject implements DBSEntity, DBPQualifiedObjec
         if (realEntity instanceof DBSDictionary) {
             return ((DBSDictionary) realEntity).getDictionaryAccessor(
                 monitor,
-                    precedingKeys,
                 keyColumn,
+                restColumns,
                 sortAsc,
                 sortByDesc
             );
