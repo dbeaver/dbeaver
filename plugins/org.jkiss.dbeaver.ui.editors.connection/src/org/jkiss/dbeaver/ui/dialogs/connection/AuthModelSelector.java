@@ -191,6 +191,7 @@ public class AuthModelSelector extends Composite implements DBPEventListener {
                 currentConfig.setUserPassword(newConfig.getUserPassword());
                 currentConfig.setUrl(newConfig.getUrl());
                 currentConfig.setAuthProperties(newConfig.getAuthProperties());
+                currentConfig.setProviderProperties(newConfig.getProviderProperties());
 
                 if (authModelConfigurator != null && !isDisposed()) {
                     authModelConfigurator.loadSettings(activeDataSource);
