@@ -13,7 +13,7 @@
                 id="athena"
                 parent="generic"
                 label="Athena"
-                icon="icons/athena_icon.png"
+                icon="icons/athena_icon.svg"
                 dialect="aws_athena">
             <drivers managable="true">
 
@@ -21,8 +21,8 @@
                 <driver
                         id="aws_athena_jdbc_simba"
                         label="Athena"
-                        icon="icons/athena_icon.png"
-                        iconBig="icons/athena_icon_big.png"
+                        icon="icons/athena_icon.svg"
+                        iconBig="icons/athena_icon_big.svg"
                         class="com.amazon.athena.jdbc.AthenaDriver"
                         sampleURL="jdbc:athena://AWSRegion={region};"
                         defaultPort="444"
@@ -66,7 +66,8 @@
     </extension>
 
     <extension point="org.jkiss.dbeaver.sqlDialect">
-        <dialect id="aws_athena" parent="generic" class="org.jkiss.dbeaver.ext.athena.model.AthenaSQLDialect" label="Athena" description="AWS Athena dialect." icon="icons/athena_icon.png">
+        <dialect id="aws_athena" parent="generic" class="org.jkiss.dbeaver.ext.athena.model.AthenaSQLDialect" label="Athena"
+                 description="AWS Athena dialect." icon="icons/athena_icon.svg">
         </dialect>
     </extension>
 
