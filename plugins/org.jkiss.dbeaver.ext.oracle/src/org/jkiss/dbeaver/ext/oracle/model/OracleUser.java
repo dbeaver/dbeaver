@@ -222,29 +222,61 @@ public class OracleUser extends OracleGrantee implements DBAUser, DBSObjectLazy<
     public String getObjectDefinitionText(@NotNull DBRProgressMonitor monitor, @NotNull Map<String, Object> options) throws DBException {
         StringBuilder sql = new StringBuilder();
         sql.append("-- DROP USER ").append(DBUtils.getQuotedIdentifier(this)).append(";\n\n");
-        try (final JDBCSession session = DBUtils.openMetaSession(monitor, this, "Load definition for USER '" + this.name + "'")) {
-            String userDDL = OracleUtils.fetchDDL(session, "USER", DBUtils.getQuotedIdentifier(this));
+
+        try (JDBCSession session = DBUtils.openMetaSession(
+            monitor,
+            this,
+            "Load definition for USER '" + this.name + "'"
+        )) {
+            String userDDL = OracleUtils.fetchDDL(session, "USER", this.getName());
             OracleUtils.addDDLLine(sql, userDDL);
+
             if (getDataSource().isAtLeastV10()) {
+                OracleUtils.addMultiStatementDDL(
+                    sql,
+                    OracleUtils.invokeDBMSMetadataGetGrantedDDL(
+                        session,
+                        this,
+                        OracleUtils.DBMSMetaGrantedObjectType.SYSTEM_GRANT
+                    )
+                );
+
+                OracleUtils.addMultiStatementDDL(
+                    sql,
+                    OracleUtils.invokeDBMSMetadataGetGrantedDDL(
+                        session,
+                        this,
+                        OracleUtils.DBMSMetaGrantedObjectType.ROLE_GRANT
+                    )
+                );
+
+                OracleUtils.addMultiStatementDDL(
+                    sql,
+                    OracleUtils.invokeDBMSMetadataGetGrantedDDL(
+                        session,
+                        this,
+                        OracleUtils.DBMSMetaGrantedObjectType.OBJECT_GRANT
+                    )
+                );
+
+                // PL/SQL-block
                 OracleUtils.addDDLLine(
                     sql,
-                    OracleUtils.invokeDBMSMetadataGetGrantedDDL(session, this, OracleUtils.DBMSMetaGrantedObjectType.SYSTEM_GRANT)
+                    OracleUtils.invokeDBMSMetadataGetGrantedDDL(
+                        session,
+                        this,
+                        OracleUtils.DBMSMetaGrantedObjectType.TABLESPACE_QUOTA
+                    )
                 );
-                OracleUtils.addDDLLine(
-                    sql,
-                    OracleUtils.invokeDBMSMetadataGetGrantedDDL(session, this, OracleUtils.DBMSMetaGrantedObjectType.ROLE_GRANT)
-                );
-                OracleUtils.addDDLLine(
-                    sql,
-                    OracleUtils.invokeDBMSMetadataGetGrantedDDL(session, this, OracleUtils.DBMSMetaGrantedObjectType.OBJECT_GRANT)
-                );
+
+                OracleUtils.appendDefaultRolesDDL(session, this, sql);
             }
         } catch (SQLException e) {
             throw new DBException("Failed of getting Oracle user definition", e);
         }
+
         return sql.toString();
     }
-
 
     public static class ProfileReferenceValidator implements IPropertyCacheValidator<OracleUser> {
         @Override

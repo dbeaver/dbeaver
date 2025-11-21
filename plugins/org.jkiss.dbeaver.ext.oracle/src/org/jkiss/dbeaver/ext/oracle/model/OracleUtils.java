@@ -248,12 +248,14 @@ public class OracleUtils {
      *     <li><b>SYSTEM_GRANT</b> - System-level privileges granted to a user or role (e.g., CREATE SESSION).</li>
      *     <li><b>ROLE_GRANT</b> - Roles granted to a user or another role.</li>
      *     <li><b>OBJECT_GRANT</b> - Object-level privileges (e.g., SELECT, INSERT on specific tables or views).</li>
+     *     <li><b>TABLESPACE_QUOTA</b> - Tablespace quotas granted to a user or role (e.g., QUOTA 100M / UNLIMITED ON a tablespace).</li>
      * </ul>
      */
     public enum DBMSMetaGrantedObjectType {
         SYSTEM_GRANT,
         ROLE_GRANT,
-        OBJECT_GRANT
+        OBJECT_GRANT,
+        TABLESPACE_QUOTA
     }
 
     /**
@@ -621,4 +623,80 @@ public class OracleUtils {
 
 		return result.toString();
 	}
+
+    public static void addMultiStatementDDL(
+        @NotNull StringBuilder sql,
+        @Nullable String ddl
+    ) {
+        if (CommonUtils.isEmpty(ddl)) {
+            return;
+        }
+
+        String[] lines = ddl.trim().split("\\r?\\n");
+        boolean hasStatements = false;
+
+        for (String line : lines) {
+            String trimmed = line.trim();
+            if (CommonUtils.isEmpty(trimmed)) {
+                continue;
+            }
+
+            hasStatements = true;
+
+            if (!trimmed.endsWith(";")) {
+                trimmed = trimmed + ";";
+            }
+
+            sql.append(trimmed).append("\n");
+        }
+
+        if (hasStatements) {
+            sql.append("\n");
+        }
+    }
+
+    public static void appendDefaultRolesDDL(
+        @NotNull JDBCSession session,
+        @NotNull OracleGrantee grantee,
+        @NotNull StringBuilder sql
+    ) {
+        List<String> defaultRoles = new ArrayList<>();
+
+        try (JDBCPreparedStatement dbStat = session.prepareStatement(
+            "SELECT GRANTED_ROLE " +
+                "FROM DBA_ROLE_PRIVS " +
+                "WHERE GRANTEE = ? AND DEFAULT_ROLE = 'YES' " +
+                "ORDER BY GRANTED_ROLE"
+        )) {
+            dbStat.setString(1, grantee.getName());
+            try (JDBCResultSet rs = dbStat.executeQuery()) {
+                while (rs.next()) {
+                    String role = rs.getString(1);
+                    if (!CommonUtils.isEmpty(role)) {
+                        defaultRoles.add(role);
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            log.debug("Error reading default roles for '" + grantee.getName() + "': " + e.getMessage());
+            return;
+        }
+
+        if (defaultRoles.isEmpty()) {
+            return;
+        }
+
+        sql.append("\nALTER USER ")
+            .append(DBUtils.getQuotedIdentifier(grantee.getDataSource(), grantee.getName()))
+            .append(" DEFAULT ROLE ");
+
+        for (int i = 0; i < defaultRoles.size(); i++) {
+            if (i > 0) {
+                sql.append(", ");
+            }
+            sql.append(DBUtils.getQuotedIdentifier(grantee.getDataSource(), defaultRoles.get(i)));
+        }
+
+        sql.append(";\n");
+    }
 }
