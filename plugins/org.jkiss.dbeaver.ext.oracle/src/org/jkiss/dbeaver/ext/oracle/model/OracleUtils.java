@@ -49,10 +49,7 @@ import java.io.Reader;
 import java.io.StringWriter;
 import java.sql.Clob;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.StringTokenizer;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -656,30 +653,20 @@ public class OracleUtils {
     }
 
     public static void appendDefaultRolesDDL(
-        @NotNull JDBCSession session,
+        @NotNull DBRProgressMonitor monitor,
         @NotNull OracleGrantee grantee,
         @NotNull StringBuilder sql
-    ) {
+    ) throws DBException {
+        Collection<OraclePrivRole> rolePrivs = grantee.getRolePrivs(monitor);
         List<String> defaultRoles = new ArrayList<>();
 
-        try (JDBCPreparedStatement dbStat = session.prepareStatement(
-            "SELECT GRANTED_ROLE " +
-                "FROM DBA_ROLE_PRIVS " +
-                "WHERE GRANTEE = ? AND DEFAULT_ROLE = 'YES' " +
-                "ORDER BY GRANTED_ROLE"
-        )) {
-            dbStat.setString(1, grantee.getName());
-            try (JDBCResultSet rs = dbStat.executeQuery()) {
-                while (rs.next()) {
-                    String role = rs.getString(1);
-                    if (!CommonUtils.isEmpty(role)) {
-                        defaultRoles.add(role);
-                    }
+        for (OraclePrivRole rolePriv : rolePrivs) {
+            if (rolePriv.isDefaultRole()) {
+                Object role = rolePriv.getRole(monitor);
+                if (role instanceof OracleRole oracleRole) {
+                    defaultRoles.add(oracleRole.getName());
                 }
             }
-        } catch (SQLException e) {
-            log.debug("Error reading default roles for '" + grantee.getName() + "': " + e.getMessage());
-            return;
         }
 
         if (defaultRoles.isEmpty()) {

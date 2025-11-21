@@ -269,7 +269,7 @@ public class OracleUser extends OracleGrantee implements DBAUser, DBSObjectLazy<
                     )
                 );
 
-                OracleUtils.appendDefaultRolesDDL(session, this, sql);
+                OracleUtils.appendDefaultRolesDDL(monitor, this, sql);
             }
         } catch (SQLException e) {
             throw new DBException("Failed of getting Oracle user definition", e);
