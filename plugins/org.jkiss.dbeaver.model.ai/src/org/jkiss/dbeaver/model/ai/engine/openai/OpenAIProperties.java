@@ -157,7 +157,7 @@ public class OpenAIProperties implements OpenAIBaseProperties {
 
     @Nullable
     @Override
-    @Property(order = 6, required = true)
+    @Property(order = 6)
     public Integer getContextWindowSize() {
         if (contextWindowSize != null) {
             return contextWindowSize;
