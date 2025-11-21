@@ -5175,7 +5175,7 @@ public class SQLEditor extends SQLEditorBase implements
         return tabName;
     }
 
-    private class SQLEditorQueryListener implements SQLQueryListener {
+    public class SQLEditorQueryListener implements SQLQueryListener {
         private final QueryProcessor queryProcessor;
         private boolean scriptMode;
         private long lastUIUpdateTime;
@@ -5460,6 +5460,10 @@ public class SQLEditor extends SQLEditorBase implements
             if (extListener != null) {
                 extListener.onEndSqlJob(session, result);
             }
+        }
+
+        public void redrawEditor() {
+            showResultsPanel(false);
         }
     }
 
