@@ -49,8 +49,10 @@ public abstract class AbstractTopLevelCommand implements Runnable, CommandLine.I
     )
     private boolean version;
 
-    @CommandLine.Option(names = {"-v", "--debug-logs"},
-        description = "Show verbose debug logs.")
+    @CommandLine.Option(names = {"--debug-logs"},
+        description = "Enable debug logging.",
+        scope = CommandLine.ScopeType.INHERIT
+    )
     private boolean debugLogs;
 
     @CommandLine.Mixin

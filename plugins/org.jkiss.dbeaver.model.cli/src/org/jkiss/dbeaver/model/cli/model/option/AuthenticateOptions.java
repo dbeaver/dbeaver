@@ -21,7 +21,7 @@ import picocli.CommandLine;
 
 public class AuthenticateOptions {
     @Nullable
-    @CommandLine.Option(names = {"-token", "--access-token"}, description = "Access token", required = false)
+    @CommandLine.Option(names = {"-token", "--access-token"}, arity = "1", description = "Access token", required = false)
     private String accessToken;
 
 
