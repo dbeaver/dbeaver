@@ -68,10 +68,10 @@ public class ERDPreferencePage extends AbstractPrefPage implements IWorkbenchPre
     private Spinner spinnerGridWidth;
     private Spinner spinnerGridHeight;
 
-    private List<Button> visibilityButtons = new ArrayList<>();
-    private List<Button> styleButtons = new ArrayList<>();
-    private ERDConnectionRouterRegistry routerRegistry = ERDConnectionRouterRegistry.getInstance();
-    private ERDNotationRegistry notationRegistry = ERDNotationRegistry.getInstance();
+    private final List<Button> visibilityButtons = new ArrayList<>();
+    private final List<Button> styleButtons = new ArrayList<>();
+    private final ERDConnectionRouterRegistry routerRegistry = ERDConnectionRouterRegistry.getInstance();
+    private final ERDNotationRegistry notationRegistry = ERDNotationRegistry.getInstance();
     private List<ERDConnectionRouterDescriptor> routerDescriptors = new ArrayList<>();
     private List<ERDNotationDescriptor> notationDescriptors = new ArrayList<>();
     
@@ -116,11 +116,7 @@ public class ERDPreferencePage extends AbstractPrefPage implements IWorkbenchPre
             routingType.add(descriptor.getName());
         }
         ERDConnectionRouterDescriptor defConnectionRouter = routerRegistry.getActiveRouter();
-        if (defConnectionRouter != null) {
-            routingType.select(routerDescriptors.indexOf(defConnectionRouter));
-        } else {
-            routingType.select(0);
-        }
+        routingType.select(routerDescriptors.indexOf(defConnectionRouter));
         // notation
         notationType = UIUtils.createLabelCombo(contentsGroup, ERDUIMessages.erd_preference_page_title_notation_combo,
             SWT.DROP_DOWN | SWT.READ_ONLY);
@@ -344,11 +340,11 @@ public class ERDPreferencePage extends AbstractPrefPage implements IWorkbenchPre
         if (hasStyleGroup()) {
             List<ERDViewStyle> enabledStyles = new ArrayList<>();
             for (Button check : styleButtons) {
-                if (check.getSelection()) {
-                    enabledStyles.add((ERDViewStyle) check.getData());
+                if (check.getSelection() && check.getData() instanceof ERDViewStyle data) {
+                    enabledStyles.add(data);
                 }
             }
-            ERDViewStyle.setDefaultStyles(store, enabledStyles.toArray(new ERDViewStyle[enabledStyles.size()]));
+            ERDViewStyle.setDefaultStyles(store, enabledStyles.toArray(new ERDViewStyle[0]));
         }
     
         PrefUtils.savePreferenceStore(store);
