@@ -28,12 +28,12 @@
                         label="GaussDB"
                         icon="icons/gaussdb_icon.png"
                         iconBig="icons/gaussdb_icon_big.png"
-                        class="org.postgresql.Driver"
-                        sampleURL="jdbc:postgresql://{host}[:{port}]/[{database}]"
+                        class="com.huawei.gaussdb.jdbc.Driver"
+                        sampleURL="jdbc:gaussdb://{host}[:{port}]/[{database}]"
                         defaultPort="8000"
                         description="%driver.gaussdb.description"
                         categories="sql">
-                    <file type="jar" path="https://repo.huaweicloud.com/repository/maven/huaweicloudsdk/gsjdbc4/gsjdbc4/1.1/gsjdbc4-1.1.jar" bundle="!drivers.gaussdb"/>
+                    <file type="jar" path="maven:/com.huaweicloud.gaussdb:gaussdbjdbc:RELEASE[506.0.0.b058]" bundle="!drivers.gaussdb"/>
                     <file type="jar" path="drivers/gaussdb" bundle="drivers.gaussdb"/>
                     <parameter name="serverType" value="gaussdb"/>
                     <property name="loginTimeout" value="20"/>
