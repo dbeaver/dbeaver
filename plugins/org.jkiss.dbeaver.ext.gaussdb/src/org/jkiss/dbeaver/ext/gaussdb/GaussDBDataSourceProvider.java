@@ -90,7 +90,7 @@ public class GaussDBDataSourceProvider extends JDBCDataSourceProvider {
         }
 
         StringBuilder url = new StringBuilder();
-        url.append("jdbc:postgresql://");
+        url.append("jdbc:gaussdb://");
 
         url.append(connectionInfo.getHostName());
         if (!CommonUtils.isEmpty(connectionInfo.getHostPort())) {
