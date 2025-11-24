@@ -313,17 +313,23 @@ public class SQLServerMetaModel extends GenericMetaModel implements DBCQueryTran
         return null;
     }
 
-    private String extractSource(DBRProgressMonitor monitor, GenericDataSource dataSource, DBSObject object, GenericCatalog catalog, String schema, String name) throws DBException {
+    private String extractSource(
+        DBRProgressMonitor monitor,
+        @NotNull GenericDataSource dataSource,
+        DBSObject object,
+        GenericCatalog catalog,
+        String schema,
+        String name
+    ) throws DBException {
         ServerType serverType = getServerType();
         String systemSchema = SQLServerUtils.getSystemSchemaFQN(dataSource, catalog.getName(), getSystemSchema());
         try (JDBCSession session = DBUtils.openMetaSession(monitor, dataSource, "Read source code")) {
             String mdQuery;
             if (serverType == ServerType.SQL_SERVER) {
                 final String objectFQN = DBUtils.getQuotedIdentifier(dataSource, schema) + "." + DBUtils.getQuotedIdentifier(dataSource, name);
-                if (SQLServerUtils.isDriverBabelfish(dataSource.getContainer().getDriver())) {
-                    mdQuery = "SELECT definition FROM sys.sql_modules WHERE object_id = (OBJECT_ID(N'" + objectFQN + "'))";
-                } else if (SQLServerUtils.isSupportsObjectDefinitionFunction(dataSource)) {
-                    mdQuery = SQLServerUtils.getObjectDefinitionFunction(objectFQN);
+                if (SQLServerUtils.isDriverBabelfish(dataSource.getContainer().getDriver())
+                    || SQLServerUtils.isSupportsObjectDefinitionFunction(dataSource)) {
+                    mdQuery = SQLServerUtils.getObjectDefinitionFunction(dataSource, objectFQN);
                 } else {
                     mdQuery = systemSchema + ".sp_helptext '" + objectFQN + "'";
                 }

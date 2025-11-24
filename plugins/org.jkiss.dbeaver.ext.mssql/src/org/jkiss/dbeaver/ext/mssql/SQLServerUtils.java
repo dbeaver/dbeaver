@@ -88,7 +88,7 @@ public class SQLServerUtils {
                 CommonUtils.toBoolean(connectionInfo.getProperties().get(SQLServerConstants.PROP_CONNECTION_INTEGRATED_SECURITY));
     }
 
-    public static boolean isSupportsObjectDefinitionFunction(@NotNull JDBCDataSource dataSource) {
+    public static boolean isSupportsObjectDefinitionFunction(@NotNull DBPDataSource dataSource) {
         String containerNameLowercase = dataSource.getContainer().getName().toLowerCase();
         return containerNameLowercase.contains("fabric");
     }
@@ -269,9 +269,7 @@ public class SQLServerUtils {
             String objectFQN = DBUtils.getQuotedIdentifier(dataSource, schema.getName()) + "." + DBUtils.getQuotedIdentifier(dataSource, objectName);
             String sqlQuery = systemSchema + ".sp_helptext '" + objectFQN + "'";
             if (dataSource.isDataWarehouseServer(monitor) || isDriverBabelfish(dataSource.getContainer().getDriver()) || dataSource.isSynapseDatabase()) {
-                sqlQuery = isSupportsObjectDefinitionFunction(dataSource)
-                    ? getObjectDefinitionFunction(objectFQN)
-                    : "SELECT definition FROM sys.sql_modules WHERE object_id = (OBJECT_ID(N'" + objectFQN + "'))";
+                sqlQuery = getObjectDefinitionFunction(dataSource, objectFQN);
             }
             try (JDBCPreparedStatement dbStat = session.prepareStatement(sqlQuery)) {
                 try (JDBCResultSet dbResult = dbStat.executeQuery()) {
@@ -350,8 +348,11 @@ public class SQLServerUtils {
     }
 
     @NotNull
-    public static String getObjectDefinitionFunction(@NotNull String objectFQN) {
-        return "SELECT OBJECT_DEFINITION(OBJECT_ID(N'" + objectFQN + "'))";
+    public static String getObjectDefinitionFunction(@NotNull DBPDataSource dataSource, @NotNull String objectFQN) {
+        String quotedObjectFQN = SQLUtils.quoteString(dataSource, objectFQN);
+        return isSupportsObjectDefinitionFunction(dataSource)
+            ? "SELECT OBJECT_DEFINITION(OBJECT_ID(" + quotedObjectFQN + "))"
+            : "SELECT definition FROM sys.sql_modules WHERE object_id = (OBJECT_ID(" + quotedObjectFQN + "))";
     }
 
     private static String getFullDeclarationFirstKeyWord(@NotNull String ddl) {
