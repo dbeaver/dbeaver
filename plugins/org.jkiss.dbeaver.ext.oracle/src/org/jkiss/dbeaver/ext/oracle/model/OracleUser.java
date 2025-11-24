@@ -30,6 +30,8 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.*;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.sql.SQLDialect;
+import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectLazy;
 import org.jkiss.utils.CommonUtils;
@@ -37,7 +39,9 @@ import org.jkiss.utils.CommonUtils;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -229,10 +233,12 @@ public class OracleUser extends OracleGrantee implements DBAUser, DBSObjectLazy<
             "Load definition for USER '" + this.name + "'"
         )) {
             String userDDL = OracleUtils.fetchDDL(session, "USER", this.getName());
+            SQLDialect sqlDialect = getDataSource().getSQLDialect();
             OracleUtils.addDDLLine(sql, userDDL);
 
             if (getDataSource().isAtLeastV10()) {
-                OracleUtils.addMultiStatementDDL(
+                SQLUtils.addMultiStatementDDL(
+                    sqlDialect,
                     sql,
                     OracleUtils.invokeDBMSMetadataGetGrantedDDL(
                         session,
@@ -241,7 +247,8 @@ public class OracleUser extends OracleGrantee implements DBAUser, DBSObjectLazy<
                     )
                 );
 
-                OracleUtils.addMultiStatementDDL(
+                SQLUtils.addMultiStatementDDL(
+                    sqlDialect,
                     sql,
                     OracleUtils.invokeDBMSMetadataGetGrantedDDL(
                         session,
@@ -250,7 +257,8 @@ public class OracleUser extends OracleGrantee implements DBAUser, DBSObjectLazy<
                     )
                 );
 
-                OracleUtils.addMultiStatementDDL(
+                SQLUtils.addMultiStatementDDL(
+                    sqlDialect,
                     sql,
                     OracleUtils.invokeDBMSMetadataGetGrantedDDL(
                         session,
@@ -269,7 +277,7 @@ public class OracleUser extends OracleGrantee implements DBAUser, DBSObjectLazy<
                     )
                 );
 
-                OracleUtils.appendDefaultRolesDDL(monitor, this, sql);
+                appendDefaultRolesDDL(monitor, sql);
             }
         } catch (SQLException e) {
             throw new DBException("Failed of getting Oracle user definition", e);
@@ -327,6 +335,40 @@ public class OracleUser extends OracleGrantee implements DBAUser, DBSObjectLazy<
             return !CommonUtils.toBoolean(object.getDataSource().getContainer().getConnectionConfiguration()
                 .getProviderProperty(OracleConstants.PROP_ALWAYS_USE_DBA_VIEWS));
         }
+    }
+
+    private void appendDefaultRolesDDL(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull StringBuilder sql
+    ) throws DBException {
+        Collection<OraclePrivRole> rolePrivs = getRolePrivs(monitor);
+        List<String> defaultRoles = new ArrayList<>();
+
+        for (OraclePrivRole rolePriv : rolePrivs) {
+            if (rolePriv.isDefaultRole()) {
+                Object role = rolePriv.getRole(monitor);
+                if (role instanceof OracleRole oracleRole) {
+                    defaultRoles.add(oracleRole.getName());
+                }
+            }
+        }
+
+        if (defaultRoles.isEmpty()) {
+            return;
+        }
+
+        sql.append("\nALTER USER ")
+            .append(DBUtils.getQuotedIdentifier(getDataSource(), getName()))
+            .append(" DEFAULT ROLE ");
+
+        for (int i = 0; i < defaultRoles.size(); i++) {
+            if (i > 0) {
+                sql.append(", ");
+            }
+            sql.append(DBUtils.getQuotedIdentifier(getDataSource(), defaultRoles.get(i)));
+        }
+
+        sql.append(";\n");
     }
 
 }

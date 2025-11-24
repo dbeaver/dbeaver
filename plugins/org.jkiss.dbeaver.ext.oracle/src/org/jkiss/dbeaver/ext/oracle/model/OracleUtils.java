@@ -49,7 +49,10 @@ import java.io.Reader;
 import java.io.StringWriter;
 import java.sql.Clob;
 import java.sql.SQLException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.StringTokenizer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -620,70 +623,4 @@ public class OracleUtils {
 
 		return result.toString();
 	}
-
-    public static void addMultiStatementDDL(
-        @NotNull StringBuilder sql,
-        @Nullable String ddl
-    ) {
-        if (CommonUtils.isEmpty(ddl)) {
-            return;
-        }
-
-        String[] lines = ddl.trim().split("\\r?\\n");
-        boolean hasStatements = false;
-
-        for (String line : lines) {
-            String trimmed = line.trim();
-            if (CommonUtils.isEmpty(trimmed)) {
-                continue;
-            }
-
-            hasStatements = true;
-
-            if (!trimmed.endsWith(";")) {
-                trimmed = trimmed + ";";
-            }
-
-            sql.append(trimmed).append("\n");
-        }
-
-        if (hasStatements) {
-            sql.append("\n");
-        }
-    }
-
-    public static void appendDefaultRolesDDL(
-        @NotNull DBRProgressMonitor monitor,
-        @NotNull OracleGrantee grantee,
-        @NotNull StringBuilder sql
-    ) throws DBException {
-        Collection<OraclePrivRole> rolePrivs = grantee.getRolePrivs(monitor);
-        List<String> defaultRoles = new ArrayList<>();
-
-        for (OraclePrivRole rolePriv : rolePrivs) {
-            if (rolePriv.isDefaultRole()) {
-                Object role = rolePriv.getRole(monitor);
-                if (role instanceof OracleRole oracleRole) {
-                    defaultRoles.add(oracleRole.getName());
-                }
-            }
-        }
-
-        if (defaultRoles.isEmpty()) {
-            return;
-        }
-
-        sql.append("\nALTER USER ")
-            .append(DBUtils.getQuotedIdentifier(grantee.getDataSource(), grantee.getName()))
-            .append(" DEFAULT ROLE ");
-
-        for (int i = 0; i < defaultRoles.size(); i++) {
-            if (i > 0) {
-                sql.append(", ");
-            }
-            sql.append(DBUtils.getQuotedIdentifier(grantee.getDataSource(), defaultRoles.get(i)));
-        }
-
-        sql.append(";\n");
-    }
 }
