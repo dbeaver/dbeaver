@@ -322,6 +322,8 @@ public class SQLServerMetaModel extends GenericMetaModel implements DBCQueryTran
                 final String objectFQN = DBUtils.getQuotedIdentifier(dataSource, schema) + "." + DBUtils.getQuotedIdentifier(dataSource, name);
                 if (SQLServerUtils.isDriverBabelfish(dataSource.getContainer().getDriver())) {
                     mdQuery = "SELECT definition FROM sys.sql_modules WHERE object_id = (OBJECT_ID(N'" + objectFQN + "'))";
+                } else if (SQLServerUtils.isFabricWarehouse(dataSource)) {
+                    mdQuery = SQLServerUtils.getFabricObjectDefinition(objectFQN);
                 } else {
                     mdQuery = systemSchema + ".sp_helptext '" + objectFQN + "'";
                 }

@@ -88,6 +88,11 @@ public class SQLServerUtils {
                 CommonUtils.toBoolean(connectionInfo.getProperties().get(SQLServerConstants.PROP_CONNECTION_INTEGRATED_SECURITY));
     }
 
+    public static boolean isFabricWarehouse(@NotNull JDBCDataSource dataSource) {
+        String containerNameLowercase = dataSource.getContainer().getName().toLowerCase();
+        return containerNameLowercase.contains("fabric");
+    }
+
     public static boolean isActiveDirectoryAuth(DBPConnectionConfiguration connectionInfo) {
         return SQLServerConstants.AUTH_ACTIVE_DIRECTORY_PASSWORD.equals(
             connectionInfo.getProperty(SQLServerConstants.PROP_CONNECTION_AUTHENTICATION));
@@ -264,7 +269,9 @@ public class SQLServerUtils {
             String objectFQN = DBUtils.getQuotedIdentifier(dataSource, schema.getName()) + "." + DBUtils.getQuotedIdentifier(dataSource, objectName);
             String sqlQuery = systemSchema + ".sp_helptext '" + objectFQN + "'";
             if (dataSource.isDataWarehouseServer(monitor) || isDriverBabelfish(dataSource.getContainer().getDriver()) || dataSource.isSynapseDatabase()) {
-                sqlQuery = "SELECT definition FROM sys.sql_modules WHERE object_id = (OBJECT_ID(N'" + objectFQN + "'))";
+                sqlQuery = isFabricWarehouse(dataSource)
+                    ? getFabricObjectDefinition(objectFQN)
+                    : "SELECT definition FROM sys.sql_modules WHERE object_id = (OBJECT_ID(N'" + objectFQN + "'))";
             }
             try (JDBCPreparedStatement dbStat = session.prepareStatement(sqlQuery)) {
                 try (JDBCResultSet dbResult = dbStat.executeQuery()) {
@@ -340,6 +347,11 @@ public class SQLServerUtils {
             return ddl.replaceFirst(firstKeyword, replacement);
         }
         return ddl;
+    }
+
+    @NotNull
+    public static String getFabricObjectDefinition(@NotNull String objectFQN) {
+        return "SELECT OBJECT_DEFINITION(OBJECT_ID(N'" + objectFQN + "'))";
     }
 
     private static String getFullDeclarationFirstKeyWord(@NotNull String ddl) {
