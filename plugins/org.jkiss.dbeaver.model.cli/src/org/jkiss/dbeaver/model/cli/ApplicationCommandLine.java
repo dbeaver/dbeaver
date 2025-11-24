@@ -256,10 +256,8 @@ public abstract class ApplicationCommandLine<T extends ApplicationInstanceContro
             }
             cmd.addSubcommand(param.getImplClass());
         }
-        //        cmd.setUnmatchedArgumentsAllowed(true);
         return cmd;
     }
-
 
     protected boolean commandLineIsEmpty(@Nullable CommandLine.ParseResult commandLine) {
         return commandLine == null || (

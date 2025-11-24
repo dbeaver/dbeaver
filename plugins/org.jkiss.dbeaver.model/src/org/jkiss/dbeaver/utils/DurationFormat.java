@@ -14,13 +14,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.ai.impl;
+package org.jkiss.dbeaver.utils;
 
-public interface TokenCounter {
-    /**
-     * Count tokens for the WHOLE message as the model sees it (role + content if applicable).
-     */
-    int count(String message);
-
-    String truncateToTokenLimit(String message, int tokenLimit);
+/**
+ * Enumeration of the style of a duration formatter.
+ * <p>
+ * Refer to {@link DurationFormatter} for more details.
+ */
+public enum DurationFormat {
+    LONG,
+    MEDIUM,
+    SHORT
 }
