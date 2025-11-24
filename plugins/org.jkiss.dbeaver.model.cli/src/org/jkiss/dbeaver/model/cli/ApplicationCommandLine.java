@@ -112,17 +112,8 @@ public abstract class ApplicationCommandLine<T extends ApplicationInstanceContro
             }
             validateCommandLineParameters(parseResult);
 
-            for (CommandLineParameterDescriptor descriptor : customParameters.values()) {
-                CommandLine.ParseResult cliCommand = findCommand(parseResult, descriptor.getImplClass());
-                if (cliCommand == null) {
-                    continue;
-                }
-                if (supportNewInstance && descriptor.isExclusiveMode() && descriptor.isForceNewInstance()) {
-                    return new CLIProcessResult(CLIProcessResult.PostAction.START_INSTANCE);
-                }
-            }
-
-
+            // Handle help/version before executing commands,
+            // because we don't need to execute/start new instance for this cases
             CommandLine.Model.CommandSpec commandForHelp = null;
             if (parseResult.isUsageHelpRequested()) {
                 commandForHelp = parseResult.commandSpec();
@@ -155,6 +146,16 @@ public abstract class ApplicationCommandLine<T extends ApplicationInstanceContro
             if (parseResult.isVersionHelpRequested()) {
                 String version = GeneralUtils.getLongProductTitle();
                 return new CLIProcessResult(CLIProcessResult.PostAction.SHUTDOWN, version);
+            }
+
+            for (CommandLineParameterDescriptor descriptor : customParameters.values()) {
+                CommandLine.ParseResult cliCommand = findCommand(parseResult, descriptor.getImplClass());
+                if (cliCommand == null) {
+                    continue;
+                }
+                if (supportNewInstance && descriptor.isExclusiveMode() && descriptor.isForceNewInstance()) {
+                    return new CLIProcessResult(CLIProcessResult.PostAction.START_INSTANCE);
+                }
             }
 
             commandLine.execute(args);
