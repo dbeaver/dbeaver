@@ -88,7 +88,7 @@ public class SQLServerUtils {
                 CommonUtils.toBoolean(connectionInfo.getProperties().get(SQLServerConstants.PROP_CONNECTION_INTEGRATED_SECURITY));
     }
 
-    public static boolean isFabricWarehouse(@NotNull JDBCDataSource dataSource) {
+    public static boolean isSupportsObjectDefinitionFunction(@NotNull JDBCDataSource dataSource) {
         String containerNameLowercase = dataSource.getContainer().getName().toLowerCase();
         return containerNameLowercase.contains("fabric");
     }
@@ -269,8 +269,8 @@ public class SQLServerUtils {
             String objectFQN = DBUtils.getQuotedIdentifier(dataSource, schema.getName()) + "." + DBUtils.getQuotedIdentifier(dataSource, objectName);
             String sqlQuery = systemSchema + ".sp_helptext '" + objectFQN + "'";
             if (dataSource.isDataWarehouseServer(monitor) || isDriverBabelfish(dataSource.getContainer().getDriver()) || dataSource.isSynapseDatabase()) {
-                sqlQuery = isFabricWarehouse(dataSource)
-                    ? getFabricObjectDefinition(objectFQN)
+                sqlQuery = isSupportsObjectDefinitionFunction(dataSource)
+                    ? getObjectDefinitionFunction(objectFQN)
                     : "SELECT definition FROM sys.sql_modules WHERE object_id = (OBJECT_ID(N'" + objectFQN + "'))";
             }
             try (JDBCPreparedStatement dbStat = session.prepareStatement(sqlQuery)) {
@@ -350,7 +350,7 @@ public class SQLServerUtils {
     }
 
     @NotNull
-    public static String getFabricObjectDefinition(@NotNull String objectFQN) {
+    public static String getObjectDefinitionFunction(@NotNull String objectFQN) {
         return "SELECT OBJECT_DEFINITION(OBJECT_ID(N'" + objectFQN + "'))";
     }
 
