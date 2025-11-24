@@ -347,8 +347,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
      * Adaptable implementation for Editor
      */
     @Override
-    public Object getAdapter(Class adapter)
-    {
+    public Object getAdapter(Class adapter) {
         // we need to handle common .gef elements we created
         if (adapter == GraphicalViewer.class || adapter == EditPartViewer.class) {
             return getGraphicalViewer();
@@ -367,8 +366,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
         } else if (IWorkbenchAdapter.class.equals(adapter)) {
             return new WorkbenchAdapter() {
                 @Override
-                public String getLabel(Object o)
-                {
+                public String getLabel(Object o) {
                     return "ERD Editor";
                 }
             };

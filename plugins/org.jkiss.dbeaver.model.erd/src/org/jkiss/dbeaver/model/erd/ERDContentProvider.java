@@ -73,7 +73,7 @@ public interface ERDContentProvider {
      *
      * @param entities the list of entities to evaluate and process; must not be null
      */
-    default void hideUnusedColumns(@NotNull List<ERDEntity> entities) {}
+    default void hideUnusedColumns(@NotNull DBRProgressMonitor monitor, @NotNull List<ERDEntity> entities) {}
 
     /**
      * Create entity associating according to specified attributes.
