@@ -136,7 +136,7 @@ public class DataExporterXLSX extends StreamExporterAbstract implements IAppenda
         properties.put(DataExporterXLSX.PROP_SPLIT_BYCOL, 0);
         properties.put(DataExporterXLSX.PROP_DATE_FORMAT, "");
         properties.put(DataExporterXLSX.PROP_APPEND_STRATEGY, AppendStrategy.CREATE_NEW_SHEETS.value);
-        properties.put(DataExporterXLSX.PROP_USE_DEFAULT_SPREADSHEET_NAMES, false);
+        properties.put(DataExporterXLSX.PROP_USE_DEFAULT_SPREADSHEET_NAMES, true);
         return properties;
     }
 
@@ -396,7 +396,7 @@ public class DataExporterXLSX extends StreamExporterAbstract implements IAppenda
             sheet = wb.getSheetAt(sheetIndex++);
             worksheet = new Worksheet(sheet, colValue, getPhysicalNumberOfRows(sheet));
         } else {
-            if (CommonUtils.toBoolean(getSite().getProperties().get(PROP_USE_DEFAULT_SPREADSHEET_NAMES))) {
+            if (CommonUtils.toBoolean(getSite().getProperties().get(PROP_USE_DEFAULT_SPREADSHEET_NAMES), true)) {
                 sheet = wb.createSheet();
             } else {
                 sheet = wb.createSheet(WorksheetUtils.makeUniqueSheetName(wb, exportTableName));

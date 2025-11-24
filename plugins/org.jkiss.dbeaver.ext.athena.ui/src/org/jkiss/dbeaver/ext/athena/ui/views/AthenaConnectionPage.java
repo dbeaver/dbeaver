@@ -32,7 +32,6 @@ import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Text;
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.athena.model.AWSRegion;
 import org.jkiss.dbeaver.ext.athena.model.AthenaConstants;
 import org.jkiss.dbeaver.ext.athena.ui.AthenaActivator;
@@ -55,10 +54,8 @@ import org.jkiss.dbeaver.ui.dialogs.connection.DriverPropertiesDialogPage;
 import org.jkiss.dbeaver.ui.internal.UIConnectionMessages;
 import org.jkiss.dbeaver.ui.navigator.database.load.TreeNodeSpecial;
 import org.jkiss.dbeaver.ui.navigator.dialogs.ObjectBrowserDialogBase;
-import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 
-import java.lang.reflect.InvocationTargetException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
@@ -194,15 +191,13 @@ public class AthenaConnectionPage extends ConnectionPageWithAuth implements IDia
     }
 
     private DBNNode findFileSystemNode(DBNFileSystems fsRootNode, String s3Path) {
-        final DBNPathBase[] result = new DBNPathBase[1];
-        RuntimeUtils.runTask(monitor -> {
-            try {
-                result[0] = fsRootNode.findNodeByPath(monitor, s3Path, true);
-            } catch (DBException e) {
-                throw new InvocationTargetException(e);
-            }
-        }, "Load S3 node", 10000);
-        return result[0];
+        try {
+            return DBWorkbench.getPlatformUI().runWithProgress(monitor ->
+                fsRootNode.findNodeByPath(monitor, s3Path, true));
+        } catch (Exception e) {
+            DBWorkbench.getPlatformUI().showError("Error opening file system", "Error while opening S3 file system", e);
+            return null;
+        }
     }
 
     @Override

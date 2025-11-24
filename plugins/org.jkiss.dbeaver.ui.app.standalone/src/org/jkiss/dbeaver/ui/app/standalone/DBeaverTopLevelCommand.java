@@ -36,7 +36,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
-@CommandLine.Command(name = "dbeaver", description = "DBeaver commands", mixinStandardHelpOptions = true)
+@CommandLine.Command(name = "dbeaver", description = "DBeaver commands")
 public class DBeaverTopLevelCommand extends AbstractTopLevelCommand {
     private static final Log log = Log.getLog(DBeaverTopLevelCommand.class);
 
