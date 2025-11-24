@@ -14,34 +14,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.ai;
+package org.jkiss.dbeaver.utils;
 
 /**
- * Type of the message
+ * Enumeration of the style of a duration formatter.
+ * <p>
+ * Refer to {@link DurationFormatter} for more details.
  */
-public enum AIMessageType {
-    // System messages like context description
-    SYSTEM(false),
-    // User prompts
-    USER(false),
-    // Response from AI
-    ASSISTANT(false),
-    FUNCTION(false),
-    WARNING(true),
-    // Error messages
-    ERROR(true);
-
-    private final boolean isLocal;
-
-    AIMessageType(boolean isLocal) {
-        this.isLocal = isLocal;
-    }
-
-    /**
-     * Local messages are never sent to AI engine, they exist only on dbeaver side.
-     */
-    public boolean isLocal() {
-        return isLocal;
-    }
-
+public enum DurationFormat {
+    LONG,
+    MEDIUM,
+    SHORT
 }

@@ -139,10 +139,7 @@ import org.jkiss.dbeaver.ui.editors.sql.variables.SQLVariablesPanel;
 import org.jkiss.dbeaver.ui.editors.text.ScriptPositionColumn;
 import org.jkiss.dbeaver.ui.internal.UIMessages;
 import org.jkiss.dbeaver.ui.navigator.INavigatorModelView;
-import org.jkiss.dbeaver.utils.GeneralUtils;
-import org.jkiss.dbeaver.utils.PrefUtils;
-import org.jkiss.dbeaver.utils.ResourceUtils;
-import org.jkiss.dbeaver.utils.RuntimeUtils;
+import org.jkiss.dbeaver.utils.*;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.IOUtils;
@@ -153,8 +150,8 @@ import java.net.URI;
 import java.nio.file.Path;
 import java.text.SimpleDateFormat;
 import java.time.Duration;
-import java.util.List;
 import java.util.*;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 import java.util.regex.Matcher;
@@ -5981,12 +5978,12 @@ public class SQLEditor extends SQLEditorBase implements
         ) {
             return NLS.bind(
                 SQLEditorMessages.sql_editor_status_bar_rollback_label,
-                RuntimeUtils.formatExecutionTime(Duration.ofSeconds(rollbackTimeoutSeconds - elapsedSeconds))
+                DurationFormatter.format(Duration.ofSeconds(rollbackTimeoutSeconds - elapsedSeconds), DurationFormat.MEDIUM)
             );
         } else if (disconnectTimeoutSeconds > 0 && disconnectTimeoutSeconds > elapsedSeconds) {
             return NLS.bind(
                 SQLEditorMessages.sql_editor_status_bar_disconnect_label,
-                RuntimeUtils.formatExecutionTime(Duration.ofSeconds(disconnectTimeoutSeconds - elapsedSeconds))
+                DurationFormatter.format(Duration.ofSeconds(disconnectTimeoutSeconds - elapsedSeconds), DurationFormat.MEDIUM)
             );
         } else {
             return null;
