@@ -14,36 +14,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ui.navigator.database;
-
-import org.jkiss.dbeaver.ui.navigator.INavigatorFilter;
+package org.jkiss.dbeaver.utils;
 
 /**
- * Default database navigator filter
+ * Enumeration of the style of a duration formatter.
+ * <p>
+ * Refer to {@link DurationFormatter} for more details.
  */
-public class DatabaseNavigatorTreeFilter implements INavigatorFilter {
-
-    @Override
-    public boolean filterFolders() {
-        return false;
-    }
-
-    @Override
-    public boolean isLeafObject(Object object) {
-        return false;
-    }
-
-    @Override
-    public boolean filterObjectByPattern(Object object) {
-        return false;
-    }
-
-    @Override
-    public boolean select(Object element) {
-        return true;
-    }
-
-    public boolean isConnectionsOnly() {
-        return false;
-    }
+public enum DurationFormat {
+    LONG,
+    MEDIUM,
+    SHORT
 }

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,10 +35,12 @@ import org.jkiss.dbeaver.model.runtime.load.ILoadVisualizer;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.utils.RuntimeUtils;
+import org.jkiss.dbeaver.utils.DurationFormat;
+import org.jkiss.dbeaver.utils.DurationFormatter;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
+import java.time.Duration;
 
 /**
  * PairListControl
@@ -175,7 +177,10 @@ public class ProgressLoaderVisualizer<RESULT> implements ILoadVisualizer<RESULT>
                     NLS.bind(
                         "{0} - {1}",
                         CommonUtils.truncateString(progressMessage.replaceAll("\\s", " "), 64),
-                        RuntimeUtils.formatExecutionTime(System.currentTimeMillis() - loadStartTime)
+                        DurationFormatter.format(
+                            Duration.ofMillis(System.currentTimeMillis() - loadStartTime),
+                            DurationFormat.SHORT
+                        )
                     ),
                     buttonBounds.x + buttonBounds.width / 2,
                     buttonBounds.y - imageBounds.height - 10

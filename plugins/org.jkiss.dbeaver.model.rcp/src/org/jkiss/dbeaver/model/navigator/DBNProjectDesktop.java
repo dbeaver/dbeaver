@@ -78,6 +78,7 @@ public class DBNProjectDesktop extends DBNProject {
 
     @Override
     public void rename(@NotNull DBRProgressMonitor monitor, @NotNull String newName) throws DBException {
+        newName = newName.trim();
         GeneralUtils.validateResourceNameUnconditionally(newName);
 
         RCPProject project = getProject();
