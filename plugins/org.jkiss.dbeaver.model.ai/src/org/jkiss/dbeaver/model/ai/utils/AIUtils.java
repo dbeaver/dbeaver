@@ -101,17 +101,6 @@ public final class AIUtils {
     }
 
     /**
-     * Retrieves all AI manager settings as a map of properties.
-     * @return a map containing all AI manager settings
-     */
-    public static Map<String, Object> getAIManagerSettings() {
-        AISettingsManager settingsManager = AISettingsManager.getInstance();
-        AISettings settings = settingsManager.getSettings();
-        return settings.getAllProperties();
-    }
-
-
-    /**
      * Retrieves the DDL for the given DBSObject if applicable.
      *
      * @param object  the DBSObject from which to retrieve the DDL
