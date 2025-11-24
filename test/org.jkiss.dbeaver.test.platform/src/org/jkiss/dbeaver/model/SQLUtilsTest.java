@@ -37,13 +37,14 @@ public class SQLUtilsTest extends DBeaverUnitTest {
     public void fixLineFeedsTest() {
         Assert.assertEquals(
             "SELECT LastName -- x\r\n"
-            + "FROM Persons drai where PersonID  = 1\r\n"
-            + "-- AND ResourceId  = 1\n\r"
-            + "ORDER BY PersonID ;",
+                + "FROM Persons drai where PersonID  = 1\r\n"
+                + "-- AND ResourceId  = 1\n\r"
+                + "ORDER BY PersonID ;",
             SQLUtils.fixLineFeeds("SELECT LastName -- x\r"
-            + "FROM Persons drai where PersonID  = 1\r\n"
-            + "-- AND ResourceId  = 1\n\r"
-            + "ORDER BY PersonID ;"));
+                + "FROM Persons drai where PersonID  = 1\r\n"
+                + "-- AND ResourceId  = 1\n\r"
+                + "ORDER BY PersonID ;")
+        );
     }
 
     @Test
@@ -68,39 +69,130 @@ public class SQLUtilsTest extends DBeaverUnitTest {
 
     @Test
     public void extractProcedureParameterTypes_whenNamesPresent_thenRemoved() {
-        Assert.assertEquals("(NUMBER(38,0), VARCHAR)",
-            SQLUtils.extractProcedureParameterTypes("(a NUMBER(38,0), b VARCHAR)"));
-        Assert.assertEquals("(ARRAY, OBJECT)",
-            SQLUtils.extractProcedureParameterTypes("(x ARRAY, y OBJECT)"));
+        Assert.assertEquals(
+            "(NUMBER(38,0), VARCHAR)",
+            SQLUtils.extractProcedureParameterTypes("(a NUMBER(38,0), b VARCHAR)")
+        );
+        Assert.assertEquals(
+            "(ARRAY, OBJECT)",
+            SQLUtils.extractProcedureParameterTypes("(x ARRAY, y OBJECT)")
+        );
     }
 
     @Test
     public void extractTypesOnly_whenNestedProcedureParameterTypes_thenKeepInnerParens() {
-        Assert.assertEquals("(DECIMAL(10,2), ARRAY(VARCHAR))",
-            SQLUtils.extractProcedureParameterTypes("(price DECIMAL(10,2), tags ARRAY(VARCHAR))"));
-        Assert.assertEquals("(ARRAY(OBJECT), VARIANT)",
-            SQLUtils.extractProcedureParameterTypes("(p ARRAY(OBJECT), v VARIANT)"));
+        Assert.assertEquals(
+            "(DECIMAL(10,2), ARRAY(VARCHAR))",
+            SQLUtils.extractProcedureParameterTypes("(price DECIMAL(10,2), tags ARRAY(VARCHAR))")
+        );
+        Assert.assertEquals(
+            "(ARRAY(OBJECT), VARIANT)",
+            SQLUtils.extractProcedureParameterTypes("(p ARRAY(OBJECT), v VARIANT)")
+        );
     }
 
     @Test
     public void extractProcedureParameterTypes_whenNoOuterParens_thenSingleType() {
-        Assert.assertEquals("(NUMBER)",
-            SQLUtils.extractProcedureParameterTypes("id NUMBER"));
-        Assert.assertEquals("(ARRAY(VARCHAR))",
-            SQLUtils.extractProcedureParameterTypes("arr ARRAY(VARCHAR)"));
+        Assert.assertEquals(
+            "(NUMBER)",
+            SQLUtils.extractProcedureParameterTypes("id NUMBER")
+        );
+        Assert.assertEquals(
+            "(ARRAY(VARCHAR))",
+            SQLUtils.extractProcedureParameterTypes("arr ARRAY(VARCHAR)")
+        );
     }
 
     @Test
     public void extractProcedureParameterTypes_whenWhitespaceAndCase_thenCanonicalUpper() {
-        Assert.assertEquals("(NUMBER, VARCHAR)",
-            SQLUtils.extractProcedureParameterTypes("(  a   number  ,   b   varchar  )"));
-        Assert.assertEquals("(ARRAY, OBJECT, VARIANT)",
-            SQLUtils.extractProcedureParameterTypes("( arr  array , obj   object , v   variant )"));
+        Assert.assertEquals(
+            "(NUMBER, VARCHAR)",
+            SQLUtils.extractProcedureParameterTypes("(  a   number  ,   b   varchar  )")
+        );
+        Assert.assertEquals(
+            "(ARRAY, OBJECT, VARIANT)",
+            SQLUtils.extractProcedureParameterTypes("( arr  array , obj   object , v   variant )")
+        );
     }
 
     @Test
     public void extractProcedureParameterTypes_whenComplexSignature_thenCorrectSplit() {
-        Assert.assertEquals("(DECIMAL(38,0), ARRAY(DECIMAL(10,2)), OBJECT)",
-            SQLUtils.extractProcedureParameterTypes("(a DECIMAL(38,0), b ARRAY(DECIMAL(10,2)), c OBJECT)"));
+        Assert.assertEquals(
+            "(DECIMAL(38,0), ARRAY(DECIMAL(10,2)), OBJECT)",
+            SQLUtils.extractProcedureParameterTypes("(a DECIMAL(38,0), b ARRAY(DECIMAL(10,2)), c OBJECT)")
+        );
+    }
+
+    @Test
+    public void addMultiStatementDDL_whenNullOrEmpty_thenNoChange() {
+        StringBuilder sb = new StringBuilder();
+        SQLUtils.addMultiStatementDDL(new String[] {";"}, sb, null);
+        Assert.assertEquals("", sb.toString());
+
+        SQLUtils.addMultiStatementDDL(new String[] {";"}, sb, "   ");
+        Assert.assertEquals("", sb.toString());
+    }
+
+    @Test
+    public void addMultiStatementDDL_oracleUserAndGrants_examples() {
+        String ddl = "CREATE USER \"TEST_USER_DECL\" IDENTIFIED BY VALUES 'S:91A176BDA85169E00F18E6F4C9FDE5609E82'\n" +
+            "      DEFAULT TABLESPACE \"USERS\"\n" +
+            "      TEMPORARY TABLESPACE \"TEMP\";\n" +
+            "GRANT CREATE TABLE TO \"TEST_USER_DECL\";\n" +
+            "GRANT CREATE SESSION TO \"TEST_USER_DECL\";\n\n" +
+            "GRANT \"ROLE1\" TO \"TEST_USER_DECL\";\n" +
+            "GRANT \"ROLE2\" TO \"TEST_USER_DECL\";\n" +
+            "GRANT \"ROLE3\" TO \"TEST_USER_DECL\";\n";
+
+        StringBuilder sb = new StringBuilder();
+        SQLUtils.addMultiStatementDDL(new String[] {";"}, sb, ddl);
+
+        Assert.assertEquals(
+            "CREATE USER \"TEST_USER_DECL\" IDENTIFIED BY VALUES 'S:91A176BDA85169E00F18E6F4C9FDE5609E82';\n" +
+                "DEFAULT TABLESPACE \"USERS\";\n" +
+                "TEMPORARY TABLESPACE \"TEMP\";\n" +
+                "GRANT CREATE TABLE TO \"TEST_USER_DECL\";\n" +
+                "GRANT CREATE SESSION TO \"TEST_USER_DECL\";\n" +
+                "GRANT \"ROLE1\" TO \"TEST_USER_DECL\";\n" +
+                "GRANT \"ROLE2\" TO \"TEST_USER_DECL\";\n" +
+                "GRANT \"ROLE3\" TO \"TEST_USER_DECL\";\n\n",
+            sb.toString()
+        );
+    }
+
+    @Test
+    public void addMultiStatementDDL_whenNoDelimiters_thenAppendDelimiterPerLineAndTrailingLF() {
+        String ddl = "CREATE TABLE A(id INT)\nCREATE INDEX I ON A(id)";
+        StringBuilder sb = new StringBuilder();
+        SQLUtils.addMultiStatementDDL(new String[] {";"}, sb, ddl);
+        Assert.assertEquals(
+            "CREATE TABLE A(id INT);\n" +
+                "CREATE INDEX I ON A(id);\n\n",
+            sb.toString()
+        );
+    }
+
+    @Test
+    public void addMultiStatementDDL_whenAlreadyDelimited_thenDoNotDuplicateDelimiter() {
+        String ddl = "CREATE TABLE A(id INT);\nCREATE INDEX I ON A(id);";
+        StringBuilder sb = new StringBuilder();
+        SQLUtils.addMultiStatementDDL(new String[] {";"}, sb, ddl);
+        Assert.assertEquals(
+            "CREATE TABLE A(id INT);\n" +
+                "CREATE INDEX I ON A(id);\n\n",
+            sb.toString()
+        );
+    }
+
+    @Test
+    public void addMultiStatementDDL_whenHasEmptyLines_thenSkipThem() {
+        String ddl = "\n\n  \nCREATE TABLE A(id INT)\n   \nCREATE INDEX I ON A(id)  \n\n";
+        StringBuilder sb = new StringBuilder();
+        SQLUtils.addMultiStatementDDL(new String[] {";"}, sb, ddl);
+        Assert.assertEquals(
+            "CREATE TABLE A(id INT);\n" +
+                "CREATE INDEX I ON A(id);\n\n",
+            sb.toString()
+        );
     }
 }

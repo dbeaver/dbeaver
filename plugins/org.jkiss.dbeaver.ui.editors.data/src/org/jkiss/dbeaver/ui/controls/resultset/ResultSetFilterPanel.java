@@ -1243,6 +1243,7 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
                     currentCondition,
                     true
                 );
+                System.out.println();
             } catch (DBException e) {
                 log.error(e);
                 return false;

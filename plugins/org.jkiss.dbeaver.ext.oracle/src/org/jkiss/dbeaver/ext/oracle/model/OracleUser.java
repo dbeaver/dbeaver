@@ -30,7 +30,6 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.*;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectLazy;
@@ -233,12 +232,12 @@ public class OracleUser extends OracleGrantee implements DBAUser, DBSObjectLazy<
             "Load definition for USER '" + this.name + "'"
         )) {
             String userDDL = OracleUtils.fetchDDL(session, "USER", this.getName());
-            SQLDialect sqlDialect = getDataSource().getSQLDialect();
+            String [] scriptDelimiters = getDataSource().getSQLDialect().getScriptDelimiters();
             OracleUtils.addDDLLine(sql, userDDL);
 
             if (getDataSource().isAtLeastV10()) {
                 SQLUtils.addMultiStatementDDL(
-                    sqlDialect,
+                    scriptDelimiters,
                     sql,
                     OracleUtils.invokeDBMSMetadataGetGrantedDDL(
                         session,
@@ -248,7 +247,7 @@ public class OracleUser extends OracleGrantee implements DBAUser, DBSObjectLazy<
                 );
 
                 SQLUtils.addMultiStatementDDL(
-                    sqlDialect,
+                    scriptDelimiters,
                     sql,
                     OracleUtils.invokeDBMSMetadataGetGrantedDDL(
                         session,
@@ -258,7 +257,7 @@ public class OracleUser extends OracleGrantee implements DBAUser, DBSObjectLazy<
                 );
 
                 SQLUtils.addMultiStatementDDL(
-                    sqlDialect,
+                    scriptDelimiters,
                     sql,
                     OracleUtils.invokeDBMSMetadataGetGrantedDDL(
                         session,

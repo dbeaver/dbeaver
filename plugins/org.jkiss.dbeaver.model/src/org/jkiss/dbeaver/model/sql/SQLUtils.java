@@ -1289,11 +1289,10 @@ public final class SQLUtils {
     }
 
     public static void addMultiStatementDDL(
-        @NotNull SQLDialect sqlDialect,
+        @NotNull String[] scriptDelimiters,
         @NotNull StringBuilder sql,
         @Nullable String ddl
     ) {
-        String[] scriptDelimiters = sqlDialect.getScriptDelimiters();
         if (CommonUtils.isEmpty(ddl)) {
             return;
         }
