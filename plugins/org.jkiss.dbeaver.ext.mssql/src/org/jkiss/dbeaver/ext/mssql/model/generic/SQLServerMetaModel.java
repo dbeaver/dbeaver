@@ -314,15 +314,15 @@ public class SQLServerMetaModel extends GenericMetaModel implements DBCQueryTran
     }
 
     private String extractSource(
-        DBRProgressMonitor monitor,
+        @NotNull DBRProgressMonitor monitor,
         @NotNull GenericDataSource dataSource,
-        DBSObject object,
-        GenericCatalog catalog,
-        String schema,
-        String name
+        @NotNull DBSObject object,
+        @Nullable GenericCatalog catalog,
+        @NotNull String schema,
+        @NotNull String name
     ) throws DBException {
         ServerType serverType = getServerType();
-        String systemSchema = SQLServerUtils.getSystemSchemaFQN(dataSource, catalog.getName(), getSystemSchema());
+        String systemSchema = SQLServerUtils.getSystemSchemaFQN(dataSource, catalog != null ? catalog.getName() : null, getSystemSchema());
         try (JDBCSession session = DBUtils.openMetaSession(monitor, dataSource, "Read source code")) {
             String mdQuery;
             if (serverType == ServerType.SQL_SERVER) {

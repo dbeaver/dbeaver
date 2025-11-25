@@ -300,6 +300,7 @@ public class GenericDataSource extends JDBCDataSource implements DBPTermProvider
         return catalogs;
     }
 
+    @Nullable
     public GenericCatalog getCatalog(String name) {
         return DBUtils.findObject(getCatalogs(), name);
     }
