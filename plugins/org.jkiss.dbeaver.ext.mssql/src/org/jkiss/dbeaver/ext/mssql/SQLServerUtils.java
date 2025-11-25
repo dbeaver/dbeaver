@@ -261,14 +261,9 @@ public class SQLServerUtils {
         SQLServerDataSource dataSource = schema.getDataSource();
         String systemSchema = getSystemSchemaFQN(dataSource, schema.getDatabase().getName(), SQLServerConstants.SQL_SERVER_SYSTEM_SCHEMA);
         try (JDBCSession session = DBUtils.openMetaSession(monitor, dataSource, "Read source code")) {
-            String objectFQN = DBUtils.getQuotedIdentifier(dataSource, schema.getName()) + "." + DBUtils.getQuotedIdentifier(dataSource, objectName);
 
-            String sqlQuery = systemSchema + ".sp_helptext '" + objectFQN + "'";
-            if (isDriverBabelfish(dataSource.getContainer().getDriver())) {
-                sqlQuery = getLegacyObjectDefinitionFunction(dataSource, objectFQN);
-            } else if (dataSource.isDataWarehouseServer(monitor) || dataSource.isSynapseDatabase()) {
-                sqlQuery = getObjectDefinitionFunction(dataSource, objectFQN);
-            }
+            String objectFQN = DBUtils.getQuotedIdentifier(dataSource, schema.getName()) + "." + DBUtils.getQuotedIdentifier(dataSource, objectName);
+            String sqlQuery = getObjectDefinitionFunction(systemSchema, dataSource, objectFQN, monitor);
 
             try (JDBCPreparedStatement dbStat = session.prepareStatement(sqlQuery)) {
                 try (JDBCResultSet dbResult = dbStat.executeQuery()) {
@@ -346,14 +341,28 @@ public class SQLServerUtils {
         return ddl;
     }
 
-    @NotNull
-    public static String getLegacyObjectDefinitionFunction(@NotNull DBPDataSource dataSource, @NotNull String objectFQN) {
-        return "SELECT definition FROM sys.sql_modules WHERE object_id = (OBJECT_ID(" + SQLUtils.quoteString(dataSource, objectFQN) + "))";
-    }
 
     @NotNull
-    public static String getObjectDefinitionFunction(@NotNull DBPDataSource dataSource, @NotNull String objectFQN) {
-        return "SELECT OBJECT_DEFINITION(OBJECT_ID(" + SQLUtils.quoteString(dataSource, objectFQN) + "))";
+    public static String getObjectDefinitionFunction(
+        @NotNull String systemSchema,
+        @NotNull DBPDataSource dataSource,
+        @NotNull String objectFQN,
+        @NotNull DBRProgressMonitor monitor
+    ) {
+        String quotedObjectFQN = SQLUtils.quoteString(dataSource, objectFQN);
+        return isDriverBabelfish(dataSource.getContainer().getDriver())
+            ? "SELECT definition FROM sys.sql_modules WHERE object_id = (OBJECT_ID(" + quotedObjectFQN + "))"
+            : isSupportsObjectDefinitionFunction(dataSource, monitor)
+                ? "SELECT OBJECT_DEFINITION(OBJECT_ID(" + quotedObjectFQN + "))"
+                : systemSchema + ".sp_helptext '" + objectFQN + "'";
+    }
+
+    public static boolean isSupportsObjectDefinitionFunction(
+        @NotNull DBPDataSource dataSource,
+        @NotNull DBRProgressMonitor monitor
+    ) {
+        return dataSource instanceof SQLServerDataSource sqlServerDataSource &&
+            (sqlServerDataSource.isDataWarehouseServer(monitor) || sqlServerDataSource.isSynapseDatabase());
     }
 
     private static String getFullDeclarationFirstKeyWord(@NotNull String ddl) {
