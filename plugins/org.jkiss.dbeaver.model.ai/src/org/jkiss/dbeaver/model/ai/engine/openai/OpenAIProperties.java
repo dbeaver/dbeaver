@@ -72,7 +72,7 @@ public class OpenAIProperties implements OpenAIBaseProperties {
 
     @NotNull
     @Override
-    @Property(order = 2)
+    @Property(order = 2, required = true)
     public String getBaseUrl() {
         if (baseUrl == null || baseUrl.isEmpty()) {
             return OpenAIClient.OPENAI_ENDPOINT;
@@ -86,7 +86,7 @@ public class OpenAIProperties implements OpenAIBaseProperties {
 
     @Nullable
     @Override
-    @Property(order = 1, password = true)
+    @Property(order = 1, password = true, required = true)
     public String getToken() {
         return token;
     }
@@ -157,7 +157,7 @@ public class OpenAIProperties implements OpenAIBaseProperties {
 
     @Nullable
     @Override
-    @Property(order = 6, required = true)
+    @Property(order = 6)
     public Integer getContextWindowSize() {
         if (contextWindowSize != null) {
             return contextWindowSize;
