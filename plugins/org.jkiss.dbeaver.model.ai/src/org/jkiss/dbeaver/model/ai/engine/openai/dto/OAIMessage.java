@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.model.ai.engine.openai.dto;
 
 import com.google.gson.annotations.SerializedName;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.ai.AIMessage;
 import org.jkiss.dbeaver.model.ai.AIMessageType;
 
@@ -59,15 +60,13 @@ public class OAIMessage {
         return content.stream().map(c -> c.text).collect(Collectors.joining());
     }
 
-    @NotNull
+    @Nullable
     private static String mapRole(@NotNull AIMessageType role) {
         return switch (role) {
             case SYSTEM -> "system";
             case USER -> "user";
-            case ASSISTANT -> "assistant";
+            case ASSISTANT, FUNCTION -> "assistant";
             default -> null;
         };
     }
-
-
 }

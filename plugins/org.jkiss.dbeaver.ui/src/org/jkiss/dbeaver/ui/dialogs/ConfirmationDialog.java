@@ -50,6 +50,8 @@ public class ConfirmationDialog extends MessageDialogWithToggle {
 
     private static final Log log = Log.getLog(UIStyles.class);
 
+    public static final int CONFIRM_WITH_YES_TO_ALL = 7;
+
     private final boolean hideToggle;
 
     public ConfirmationDialog(
@@ -162,6 +164,9 @@ public class ConfirmationDialog extends MessageDialogWithToggle {
             case QUESTION_WITH_CANCEL -> RuntimeUtils.isMacOS() ?
                 new String[]{IDialogConstants.CANCEL_LABEL, IDialogConstants.NO_LABEL, IDialogConstants.YES_LABEL } :
                 new String[]{IDialogConstants.YES_LABEL, IDialogConstants.NO_LABEL, IDialogConstants.CANCEL_LABEL};
+            case CONFIRM_WITH_YES_TO_ALL -> RuntimeUtils.isMacOS() ?
+                new String[] {IDialogConstants.CANCEL_LABEL, IDialogConstants.OK_LABEL, IDialogConstants.YES_TO_ALL_LABEL} :
+                new String[] {IDialogConstants.YES_TO_ALL_LABEL, IDialogConstants.OK_LABEL, IDialogConstants.CANCEL_LABEL};
             default -> throw new IllegalArgumentException(
                 "Illegal value for kind in MessageDialog.open()"); //$NON-NLS-1$
         };
@@ -181,7 +186,7 @@ public class ConfirmationDialog extends MessageDialogWithToggle {
                 }
             case QUESTION:
                 return RuntimeUtils.isMacOS() ? 0 : 1;
-            case QUESTION_WITH_CANCEL: {
+            case QUESTION_WITH_CANCEL, CONFIRM_WITH_YES_TO_ALL: {
                 return RuntimeUtils.isMacOS() ? 0 : 2;
             }
             default:
