@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -57,8 +57,11 @@ public class BinaryPanelEditor implements IStreamValueEditor<HexEditControl> {
 
     private static final Log log = Log.getLog(BinaryPanelEditor.class);
 
+    private IValueController valueController;
+
     @Override
     public HexEditControl createControl(IValueController valueController) {
+        this.valueController = valueController;
         HexEditControl hControl = new HexEditControl(valueController.getEditPlaceholder(), SWT.BORDER | SWT.READ_ONLY);
         DBPPreferenceListener preferencesChangeListener = new DBPPreferenceListener() {
             @Override
@@ -77,7 +80,7 @@ public class BinaryPanelEditor implements IStreamValueEditor<HexEditControl> {
         final DBCExecutionContext executionContext = valueController.getExecutionContext();
         if (executionContext != null) {
             final DBPDataSourceContainer container = executionContext.getDataSource().getContainer();
-            final DBPEventListener listener = e -> hControl.setReadOnly(container.isConnectionReadOnly());
+            final DBPEventListener listener = e -> hControl.setReadOnly(container.isConnectionReadOnly() || valueController.isReadOnly());
             final DBPDataSourceRegistry registry = container.getRegistry();
 
             registry.addDataSourceListener(listener);
@@ -116,7 +119,7 @@ public class BinaryPanelEditor implements IStreamValueEditor<HexEditControl> {
             }
             UIUtils.syncExec(() -> {
                 control.setContent(byteData, finalCharset, false);
-                control.setReadOnly(value.getDataSource().getContainer().isConnectionReadOnly());
+                control.setReadOnly(value.getDataSource().getContainer().isConnectionReadOnly() || valueController.isReadOnly());
             });
         } catch (IOException e) {
             throw new DBException("Error reading stream value", e);

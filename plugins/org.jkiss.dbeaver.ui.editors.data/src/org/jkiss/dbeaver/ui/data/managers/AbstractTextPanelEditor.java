@@ -128,6 +128,7 @@ public abstract class AbstractTextPanelEditor<EDITOR extends BaseTextEditor>
 
         StyledText editorControl = editor.getEditorControl();
         assert editorControl != null;
+        editorControl.setEditable(!valueController.isReadOnly());
         initEditorSettings(editorControl);
         editor.addContextMenuContributor(manager -> contributeTextEditorActions(manager, editorControl));
         messageBar = new MessageBar(cmpsBase);
