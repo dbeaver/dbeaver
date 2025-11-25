@@ -150,13 +150,7 @@ public class SQLQuery implements SQLScriptElement {
                 this.parseError = new DBException("Empty query");
                 return;
             }
-            List<Statement> statements = SQLSemanticProcessor.parseQueries(dataSource == null ? null : dataSource.getSQLDialect(), text);
-            if (statements.size() != 1) {
-                this.type = SQLQueryType.UNKNOWN;
-                this.parseError = new DBException("Multiple queries in single statement");
-                return;
-            }
-            statement = statements.getFirst();
+            statement = SQLSemanticProcessor.parseQuery(dataSource == null ? null : dataSource.getSQLDialect(), text);
             if (statement instanceof PlainSelect plainSelect) {
                 type = SQLQueryType.SELECT;
                 // Detect single source table (no joins, no group by, no sub-selects)

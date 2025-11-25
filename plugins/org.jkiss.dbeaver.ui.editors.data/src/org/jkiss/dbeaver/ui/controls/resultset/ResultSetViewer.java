@@ -121,8 +121,8 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
-import java.util.List;
 import java.util.*;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 /**
@@ -636,13 +636,8 @@ public class ResultSetViewer extends Viewer
 
     public void updateFiltersText(boolean resetFilterValue)
     {
-        boolean enableFilters = getExecutionContext() != null && container.isReadyToRun() && !model.isUpdateInProgress();
-        if (enableFilters) {
-            DBSDataContainer dataContainer = container.getDataContainer();
-            enableFilters = dataContainer != null && dataContainer.isFeatureSupported(DBSDataContainer.FEATURE_DATA_FILTER);
-
-        }
-        getAutoRefresh().enableControls(enableFilters);
+        boolean readyToRun = getExecutionContext() != null && container.isReadyToRun() && !model.isUpdateInProgress();
+        getAutoRefresh().enableControls(readyToRun);
 
         if (filtersPanel == null || this.viewerPanel.isDisposed()) {
             return;
@@ -678,6 +673,9 @@ public class ResultSetViewer extends Viewer
                     }
                 }
             }
+            boolean enableFilters = readyToRun
+                && getDataContainer() != null
+                && getDataContainer().isFeatureSupported(DBSDataContainer.FEATURE_DATA_FILTER);
             filtersPanel.enableFilters(enableFilters);
             //presentationSwitchToolbar.setEnabled(enableFilters);
         } finally {
