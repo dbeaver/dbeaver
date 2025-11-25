@@ -68,10 +68,10 @@ public class ERDPreferencePage extends AbstractPrefPage implements IWorkbenchPre
     private Spinner spinnerGridWidth;
     private Spinner spinnerGridHeight;
 
-    private List<Button> visibilityButtons = new ArrayList<>();
-    private List<Button> styleButtons = new ArrayList<>();
-    private ERDConnectionRouterRegistry routerRegistry = ERDConnectionRouterRegistry.getInstance();
-    private ERDNotationRegistry notationRegistry = ERDNotationRegistry.getInstance();
+    private final List<Button> visibilityButtons = new ArrayList<>();
+    private final List<Button> styleButtons = new ArrayList<>();
+    private final ERDConnectionRouterRegistry routerRegistry = ERDConnectionRouterRegistry.getInstance();
+    private final ERDNotationRegistry notationRegistry = ERDNotationRegistry.getInstance();
     private List<ERDConnectionRouterDescriptor> routerDescriptors = new ArrayList<>();
     private List<ERDNotationDescriptor> notationDescriptors = new ArrayList<>();
     
@@ -82,13 +82,27 @@ public class ERDPreferencePage extends AbstractPrefPage implements IWorkbenchPre
         routerDescriptors = routerRegistry.getDescriptors();
         notationDescriptors = notationRegistry.getNotations();
         Composite composite = UIUtils.createPlaceholder(parent, 2, 5);
-        createContentsGroup(store, composite);
-        createColorPrefGroup(store, composite);
-        createVisibilityGroup(store, composite);
-        createStyleGroup(store, composite);
-        createGridGroup(store, composite);
-        createPrintGroup(store, composite);
-        createAdvancedGroup(store, composite);
+        if (hasContentGroup()) {
+            createContentsGroup(store, composite);
+        }
+        if (hasColorPrefGroup()) {
+            createColorPrefGroup(store, composite);
+        }
+        if (hasVisibilityGroup()) {
+            createVisibilityGroup(store, composite);
+        }
+        if (hasStyleGroup()) {
+            createStyleGroup(store, composite);
+        }
+        if (hasGridGroup()) {
+            createGridGroup(store, composite);
+        }
+        if (hasPrintGroup()) {
+            createPrintGroup(store, composite);
+        }
+        if (hasAdvancedGroup()) {
+            createAdvancedGroup(store, composite);
+        }
         return composite;
     }
 
@@ -102,11 +116,7 @@ public class ERDPreferencePage extends AbstractPrefPage implements IWorkbenchPre
             routingType.add(descriptor.getName());
         }
         ERDConnectionRouterDescriptor defConnectionRouter = routerRegistry.getActiveRouter();
-        if (defConnectionRouter != null) {
-            routingType.select(routerDescriptors.indexOf(defConnectionRouter));
-        } else {
-            routingType.select(0);
-        }
+        routingType.select(routerDescriptors.indexOf(defConnectionRouter));
         // notation
         notationType = UIUtils.createLabelCombo(contentsGroup, ERDUIMessages.erd_preference_page_title_notation_combo,
             SWT.DROP_DOWN | SWT.READ_ONLY);
@@ -213,85 +223,154 @@ public class ERDPreferencePage extends AbstractPrefPage implements IWorkbenchPre
     @Override
     protected void performDefaults() {
         DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
-        contentsShowViews.setSelection(store.getDefaultBoolean(ERDUIConstants.PREF_DIAGRAM_SHOW_VIEWS));
-        contentsShowPartitions.setSelection(store.getDefaultBoolean(ERDUIConstants.PREF_DIAGRAM_SHOW_PARTITIONS));
-        routingType.select(routerDescriptors.indexOf(routerRegistry.getActiveRouter()));
-        changeBorderColors.setSelection(store.getDefaultBoolean(ERDUIConstants.PREF_DIAGRAM_CHANGE_BORDER_COLORS));
-        notationType.select(notationDescriptors.indexOf(notationRegistry.getDefaultDescriptor()));
-        changeHeaderColors.setSelection(store.getDefaultBoolean(ERDUIConstants.PREF_DIAGRAM_CHANGE_HEADER_COLORS));
-        gridCheck.setSelection(store.getDefaultBoolean(ERDUIConstants.PREF_GRID_ENABLED));
-        snapCheck.setSelection(store.getDefaultBoolean(ERDUIConstants.PREF_GRID_SNAP_ENABLED));
-        spinnerGridWidth.setSelection(store.getDefaultInt(ERDUIConstants.PREF_GRID_WIDTH));
-        spinnerGridHeight.setSelection(store.getDefaultInt(ERDUIConstants.PREF_GRID_HEIGHT));
-        modeCombo.select(ERDUIConstants.PRINT_MODE_DEFAULT);
-        spinnerMarginTop.setSelection(ERDUIConstants.PRINT_MARGIN_DEFAULT);
-        spinnerMarginBottom.setSelection(ERDUIConstants.PRINT_MARGIN_DEFAULT);
-        spinnerMarginLeft.setSelection(ERDUIConstants.PRINT_MARGIN_DEFAULT);
-        spinnerMarginRight.setSelection(ERDUIConstants.PRINT_MARGIN_DEFAULT);
-        if (visibilityButtons.size() > 0) {
-            visibilityButtons.get(0).setSelection(true);
+
+        if (hasContentGroup()) {
+            contentsShowViews.setSelection(store.getDefaultBoolean(ERDUIConstants.PREF_DIAGRAM_SHOW_VIEWS));
+            contentsShowPartitions.setSelection(store.getDefaultBoolean(ERDUIConstants.PREF_DIAGRAM_SHOW_PARTITIONS));
         }
-        if (styleButtons.size() > 0) {
-            for (Button styleButton : styleButtons) {
-                styleButton.setSelection(false);
+
+        if (hasColorPrefGroup()) {
+            changeBorderColors.setSelection(store.getDefaultBoolean(ERDUIConstants.PREF_DIAGRAM_CHANGE_BORDER_COLORS));
+            changeHeaderColors.setSelection(store.getDefaultBoolean(ERDUIConstants.PREF_DIAGRAM_CHANGE_HEADER_COLORS));
+        }
+
+        if (hasGridGroup()) {
+            gridCheck.setSelection(store.getDefaultBoolean(ERDUIConstants.PREF_GRID_ENABLED));
+            snapCheck.setSelection(store.getDefaultBoolean(ERDUIConstants.PREF_GRID_SNAP_ENABLED));
+            spinnerGridWidth.setSelection(store.getDefaultInt(ERDUIConstants.PREF_GRID_WIDTH));
+            spinnerGridHeight.setSelection(store.getDefaultInt(ERDUIConstants.PREF_GRID_HEIGHT));
+        }
+
+        if (hasPrintGroup()) {
+            modeCombo.select(ERDUIConstants.PRINT_MODE_DEFAULT);
+            spinnerMarginTop.setSelection(ERDUIConstants.PRINT_MARGIN_DEFAULT);
+            spinnerMarginBottom.setSelection(ERDUIConstants.PRINT_MARGIN_DEFAULT);
+            spinnerMarginLeft.setSelection(ERDUIConstants.PRINT_MARGIN_DEFAULT);
+            spinnerMarginRight.setSelection(ERDUIConstants.PRINT_MARGIN_DEFAULT);
+        }
+
+        if (hasAdvancedGroup()) {
+            routingType.select(routerDescriptors.indexOf(routerRegistry.getActiveRouter()));
+            notationType.select(notationDescriptors.indexOf(notationRegistry.getDefaultDescriptor()));
+        }
+
+        if (hasVisibilityGroup()) {
+            if (!visibilityButtons.isEmpty()) {
+                visibilityButtons.getFirst().setSelection(true);
             }
-            styleButtons.get(0).setSelection(true);
+        }
+        if (hasStyleGroup()) {
+            // Style settings
+            if (!styleButtons.isEmpty()) {
+                for (Button styleButton : styleButtons) {
+                    styleButton.setSelection(false);
+                }
+                styleButtons.getFirst().setSelection(true);
+            }
         }
         super.performDefaults();
     }
 
     @Override
-    public boolean performOk()
-    {
+    public boolean performOk() {
         DBPPreferenceStore store = ERDUIActivator.getDefault().getPreferences();
-        store.setValue(ERDUIConstants.PREF_DIAGRAM_SHOW_VIEWS, contentsShowViews.getSelection());
-        store.setValue(ERDUIConstants.PREF_DIAGRAM_SHOW_PARTITIONS, contentsShowPartitions.getSelection());
-        ERDConnectionRouterDescriptor connectionRouter = ERDConnectionRouterRegistry.getInstance()
-            .getDescriptorById(routingType.getText());
-        if (connectionRouter != null) {
-            ERDConnectionRouterRegistry.getInstance().setActiveRouter(connectionRouter);
-        }
-        ERDNotationDescriptor erdNotation = ERDNotationRegistry.getInstance().getDescriptorByName(notationType.getText());
-        if (erdNotation != null) {
-            ERDNotationRegistry.getInstance().setActiveDescriptor(erdNotation);
-        }
-        store.setValue(ERDUIConstants.PREF_DIAGRAM_CHANGE_BORDER_COLORS, changeBorderColors.getSelection());
-        store.setValue(ERDUIConstants.PREF_DIAGRAM_CHANGE_HEADER_COLORS, changeHeaderColors.getSelection());
-        store.setValue(ERDUIConstants.PREF_GRID_ENABLED, gridCheck.getSelection());
-        store.setValue(ERDUIConstants.PREF_GRID_SNAP_ENABLED, snapCheck.getSelection());
-        store.setValue(ERDUIConstants.PREF_GRID_WIDTH, spinnerGridWidth.getSelection());
-        store.setValue(ERDUIConstants.PREF_GRID_HEIGHT, spinnerGridHeight.getSelection());
 
-        int pageMode;
-        switch (modeCombo.getSelectionIndex()) {
-            case 1: pageMode = PrintFigureOperation.FIT_PAGE; break;
-            case 2: pageMode = PrintFigureOperation.FIT_WIDTH; break;
-            case 3: pageMode = PrintFigureOperation.FIT_HEIGHT; break;
-            default: pageMode = PrintFigureOperation.TILE; break;
+        if (hasContentGroup()) {
+            store.setValue(ERDUIConstants.PREF_DIAGRAM_SHOW_VIEWS, contentsShowViews.getSelection());
+            store.setValue(ERDUIConstants.PREF_DIAGRAM_SHOW_PARTITIONS, contentsShowPartitions.getSelection());
         }
-        store.setValue(ERDUIConstants.PREF_PRINT_PAGE_MODE, pageMode);
 
-        store.setValue(ERDUIConstants.PREF_PRINT_MARGIN_TOP, spinnerMarginTop.getSelection());
-        store.setValue(ERDUIConstants.PREF_PRINT_MARGIN_BOTTOM, spinnerMarginBottom.getSelection());
-        store.setValue(ERDUIConstants.PREF_PRINT_MARGIN_LEFT, spinnerMarginLeft.getSelection());
-        store.setValue(ERDUIConstants.PREF_PRINT_MARGIN_RIGHT, spinnerMarginRight.getSelection());
-
-        for (Button radio : visibilityButtons) {
-            if (radio.getSelection()) {
-                ERDAttributeVisibility.setDefaultVisibility(store, (ERDAttributeVisibility) radio.getData());
-                break;
+        if (hasAdvancedGroup()) {
+            ERDConnectionRouterDescriptor connectionRouter = ERDConnectionRouterRegistry.getInstance()
+                .getDescriptorById(routingType.getText());
+            if (connectionRouter != null) {
+                ERDConnectionRouterRegistry.getInstance().setActiveRouter(connectionRouter);
+            }
+            ERDNotationDescriptor erdNotation = ERDNotationRegistry.getInstance().getDescriptorByName(notationType.getText());
+            if (erdNotation != null) {
+                ERDNotationRegistry.getInstance().setActiveDescriptor(erdNotation);
             }
         }
-        List<ERDViewStyle> enabledStyles = new ArrayList<>();
-        for (Button check : styleButtons) {
-            if (check.getSelection()) {
-                enabledStyles.add((ERDViewStyle) check.getData());
+
+        if (hasColorPrefGroup()) {
+            store.setValue(ERDUIConstants.PREF_DIAGRAM_CHANGE_BORDER_COLORS, changeBorderColors.getSelection());
+            store.setValue(ERDUIConstants.PREF_DIAGRAM_CHANGE_HEADER_COLORS, changeHeaderColors.getSelection());
+        }
+
+        if (hasGridGroup()) {
+            store.setValue(ERDUIConstants.PREF_GRID_ENABLED, gridCheck.getSelection());
+            store.setValue(ERDUIConstants.PREF_GRID_SNAP_ENABLED, snapCheck.getSelection());
+            store.setValue(ERDUIConstants.PREF_GRID_WIDTH, spinnerGridWidth.getSelection());
+            store.setValue(ERDUIConstants.PREF_GRID_HEIGHT, spinnerGridHeight.getSelection());
+        }
+
+        if (hasPrintGroup()) {
+            int pageMode;
+            switch (modeCombo.getSelectionIndex()) {
+                case 1:
+                    pageMode = PrintFigureOperation.FIT_PAGE;
+                    break;
+                case 2:
+                    pageMode = PrintFigureOperation.FIT_WIDTH;
+                    break;
+                case 3:
+                    pageMode = PrintFigureOperation.FIT_HEIGHT;
+                    break;
+                default:
+                    pageMode = PrintFigureOperation.TILE;
+                    break;
+            }
+            store.setValue(ERDUIConstants.PREF_PRINT_PAGE_MODE, pageMode);
+
+            store.setValue(ERDUIConstants.PREF_PRINT_MARGIN_TOP, spinnerMarginTop.getSelection());
+            store.setValue(ERDUIConstants.PREF_PRINT_MARGIN_BOTTOM, spinnerMarginBottom.getSelection());
+            store.setValue(ERDUIConstants.PREF_PRINT_MARGIN_LEFT, spinnerMarginLeft.getSelection());
+            store.setValue(ERDUIConstants.PREF_PRINT_MARGIN_RIGHT, spinnerMarginRight.getSelection());
+        }
+
+        if (hasVisibilityGroup()) {
+            for (Button radio : visibilityButtons) {
+                if (radio.getSelection()) {
+                    ERDAttributeVisibility.setDefaultVisibility(store, (ERDAttributeVisibility) radio.getData());
+                    break;
+                }
             }
         }
-        ERDViewStyle.setDefaultStyles(store, enabledStyles.toArray(new ERDViewStyle[enabledStyles.size()]));
 
+        if (hasStyleGroup()) {
+            List<ERDViewStyle> enabledStyles = new ArrayList<>();
+            for (Button check : styleButtons) {
+                if (check.getSelection() && check.getData() instanceof ERDViewStyle data) {
+                    enabledStyles.add(data);
+                }
+            }
+            ERDViewStyle.setDefaultStyles(store, enabledStyles.toArray(new ERDViewStyle[0]));
+        }
+    
         PrefUtils.savePreferenceStore(store);
+    
+        return true;
+    }
 
+    protected boolean hasContentGroup() {
+        return true;
+    }
+    protected boolean hasColorPrefGroup() {
+        return true;
+    }
+    protected boolean hasVisibilityGroup() {
+        return true;
+    }
+    protected boolean hasStyleGroup() {
+        return true;
+    }
+    protected boolean hasGridGroup() {
+        return true;
+    }
+    protected boolean hasPrintGroup() {
+        return true;
+    }
+    protected boolean hasAdvancedGroup() {
         return true;
     }
 
