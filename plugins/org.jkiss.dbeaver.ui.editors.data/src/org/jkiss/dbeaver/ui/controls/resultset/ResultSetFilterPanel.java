@@ -219,16 +219,6 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
                     e.detail = SWT.TRAVERSE_NONE;
                 }
             });
-
-            this.filtersText.addVerifyKeyListener(e -> {
-                if (e.keyCode == SWT.CR || e.keyCode == SWT.LF || e.character == SWT.CR) {
-                    if (filterExpanded && (e.stateMask & SWT.CTRL) == 0) {
-                        return;
-                    }
-                    // Suppress Enter handling if filter is not expanded
-                    e.doit = false;
-                }
-            });
             this.filtersText.addKeyListener(new KeyAdapter() {
                 @Override
                 public void keyPressed(KeyEvent e) {
