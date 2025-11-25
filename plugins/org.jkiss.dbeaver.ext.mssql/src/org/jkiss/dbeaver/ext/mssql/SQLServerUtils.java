@@ -88,11 +88,6 @@ public class SQLServerUtils {
                 CommonUtils.toBoolean(connectionInfo.getProperties().get(SQLServerConstants.PROP_CONNECTION_INTEGRATED_SECURITY));
     }
 
-    public static boolean isSupportsObjectDefinitionFunction(@NotNull DBPDataSource dataSource) {
-        String containerNameLowercase = dataSource.getContainer().getName().toLowerCase();
-        return containerNameLowercase.contains("fabric");
-    }
-
     public static boolean isActiveDirectoryAuth(DBPConnectionConfiguration connectionInfo) {
         return SQLServerConstants.AUTH_ACTIVE_DIRECTORY_PASSWORD.equals(
             connectionInfo.getProperty(SQLServerConstants.PROP_CONNECTION_AUTHENTICATION));
@@ -267,10 +262,14 @@ public class SQLServerUtils {
         String systemSchema = getSystemSchemaFQN(dataSource, schema.getDatabase().getName(), SQLServerConstants.SQL_SERVER_SYSTEM_SCHEMA);
         try (JDBCSession session = DBUtils.openMetaSession(monitor, dataSource, "Read source code")) {
             String objectFQN = DBUtils.getQuotedIdentifier(dataSource, schema.getName()) + "." + DBUtils.getQuotedIdentifier(dataSource, objectName);
+
             String sqlQuery = systemSchema + ".sp_helptext '" + objectFQN + "'";
-            if (dataSource.isDataWarehouseServer(monitor) || isDriverBabelfish(dataSource.getContainer().getDriver()) || dataSource.isSynapseDatabase()) {
+            if (isDriverBabelfish(dataSource.getContainer().getDriver())) {
+                sqlQuery = getLegacyObjectDefinitionFunction(dataSource, objectFQN);
+            } else if (dataSource.isDataWarehouseServer(monitor) || dataSource.isSynapseDatabase()) {
                 sqlQuery = getObjectDefinitionFunction(dataSource, objectFQN);
             }
+
             try (JDBCPreparedStatement dbStat = session.prepareStatement(sqlQuery)) {
                 try (JDBCResultSet dbResult = dbStat.executeQuery()) {
                     StringBuilder sql = new StringBuilder();
@@ -348,11 +347,13 @@ public class SQLServerUtils {
     }
 
     @NotNull
+    public static String getLegacyObjectDefinitionFunction(@NotNull DBPDataSource dataSource, @NotNull String objectFQN) {
+        return "SELECT definition FROM sys.sql_modules WHERE object_id = (OBJECT_ID(" + SQLUtils.quoteString(dataSource, objectFQN) + "))";
+    }
+
+    @NotNull
     public static String getObjectDefinitionFunction(@NotNull DBPDataSource dataSource, @NotNull String objectFQN) {
-        String quotedObjectFQN = SQLUtils.quoteString(dataSource, objectFQN);
-        return isSupportsObjectDefinitionFunction(dataSource)
-            ? "SELECT OBJECT_DEFINITION(OBJECT_ID(" + quotedObjectFQN + "))"
-            : "SELECT definition FROM sys.sql_modules WHERE object_id = (OBJECT_ID(" + quotedObjectFQN + "))";
+        return "SELECT OBJECT_DEFINITION(OBJECT_ID(" + SQLUtils.quoteString(dataSource, objectFQN) + "))";
     }
 
     private static String getFullDeclarationFirstKeyWord(@NotNull String ddl) {
