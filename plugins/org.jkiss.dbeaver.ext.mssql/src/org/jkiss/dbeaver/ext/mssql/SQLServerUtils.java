@@ -263,7 +263,7 @@ public class SQLServerUtils {
         try (JDBCSession session = DBUtils.openMetaSession(monitor, dataSource, "Read source code")) {
 
             String objectFQN = DBUtils.getQuotedIdentifier(dataSource, schema.getName()) + "." + DBUtils.getQuotedIdentifier(dataSource, objectName);
-            String sqlQuery = getObjectDefinitionFunction(monitor, systemSchema, dataSource, objectFQN);
+            String sqlQuery = selectObjectDefinitionDescriptionSQL(monitor, systemSchema, dataSource, objectFQN);
 
             try (JDBCPreparedStatement dbStat = session.prepareStatement(sqlQuery)) {
                 try (JDBCResultSet dbResult = dbStat.executeQuery()) {
@@ -342,8 +342,18 @@ public class SQLServerUtils {
     }
 
 
+    /**
+     * Generates SQL for selecting the Transact-SQL source text of the definition of a specified object.
+     * Returns NULL on error or if a caller does not have permission to view the object.
+     *
+     * @param monitor
+     * @param systemSchema name of the schema used
+     * @param dataSource
+     * @param objectFQN    object unique full name
+     * @return select function with single string column containing object definition
+     */
     @NotNull
-    public static String getObjectDefinitionFunction(
+    public static String selectObjectDefinitionDescriptionSQL(
         @NotNull DBRProgressMonitor monitor,
         @NotNull String systemSchema,
         @NotNull DBPDataSource dataSource,
