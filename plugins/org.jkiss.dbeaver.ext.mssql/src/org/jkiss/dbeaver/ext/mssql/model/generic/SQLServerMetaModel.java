@@ -327,7 +327,7 @@ public class SQLServerMetaModel extends GenericMetaModel implements DBCQueryTran
             String mdQuery;
             if (serverType == ServerType.SQL_SERVER) {
                 final String objectFQN = DBUtils.getQuotedIdentifier(dataSource, schema) + "." + DBUtils.getQuotedIdentifier(dataSource, name);
-                mdQuery = SQLServerUtils.getObjectDefinitionFunction(systemSchema, dataSource, objectFQN, monitor);
+                mdQuery = SQLServerUtils.getObjectDefinitionFunction(monitor, systemSchema, dataSource, objectFQN);
             } else {
                 if (isSapIQ(dataSource)) {
                     mdQuery = "SELECT s.source\n" +

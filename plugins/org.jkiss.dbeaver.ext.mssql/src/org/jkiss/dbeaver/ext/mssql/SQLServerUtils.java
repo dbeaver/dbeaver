@@ -263,7 +263,7 @@ public class SQLServerUtils {
         try (JDBCSession session = DBUtils.openMetaSession(monitor, dataSource, "Read source code")) {
 
             String objectFQN = DBUtils.getQuotedIdentifier(dataSource, schema.getName()) + "." + DBUtils.getQuotedIdentifier(dataSource, objectName);
-            String sqlQuery = getObjectDefinitionFunction(systemSchema, dataSource, objectFQN, monitor);
+            String sqlQuery = getObjectDefinitionFunction(monitor, systemSchema, dataSource, objectFQN);
 
             try (JDBCPreparedStatement dbStat = session.prepareStatement(sqlQuery)) {
                 try (JDBCResultSet dbResult = dbStat.executeQuery()) {
@@ -344,25 +344,32 @@ public class SQLServerUtils {
 
     @NotNull
     public static String getObjectDefinitionFunction(
+        @NotNull DBRProgressMonitor monitor,
         @NotNull String systemSchema,
         @NotNull DBPDataSource dataSource,
-        @NotNull String objectFQN,
-        @NotNull DBRProgressMonitor monitor
+        @NotNull String objectFQN
     ) {
         String quotedObjectFQN = SQLUtils.quoteString(dataSource, objectFQN);
-        return isDriverBabelfish(dataSource.getContainer().getDriver())
-            ? "SELECT definition FROM sys.sql_modules WHERE object_id = (OBJECT_ID(" + quotedObjectFQN + "))"
-            : isSupportsObjectDefinitionFunction(dataSource, monitor)
-                ? "SELECT OBJECT_DEFINITION(OBJECT_ID(" + quotedObjectFQN + "))"
-                : systemSchema + ".sp_helptext '" + objectFQN + "'";
+
+        String sqlQuery;
+        if (isDriverBabelfish(dataSource.getContainer().getDriver())) {
+            sqlQuery = "SELECT definition FROM sys.sql_modules WHERE object_id = (OBJECT_ID(" + quotedObjectFQN + "))";
+        } else if (isSupportsObjectDefinitionFunction(dataSource, monitor)) {
+            sqlQuery = "SELECT OBJECT_DEFINITION(OBJECT_ID(" + quotedObjectFQN + "))";
+        } else {
+            sqlQuery = systemSchema + ".sp_helptext '" + objectFQN + "'";
+        }
+        return sqlQuery;
     }
 
     public static boolean isSupportsObjectDefinitionFunction(
         @NotNull DBPDataSource dataSource,
         @NotNull DBRProgressMonitor monitor
     ) {
-        return dataSource instanceof SQLServerDataSource sqlServerDataSource &&
-            (sqlServerDataSource.isDataWarehouseServer(monitor) || sqlServerDataSource.isSynapseDatabase());
+        if (!(dataSource instanceof SQLServerDataSource sqlServerDataSource)) {
+            return false;
+        }
+        return sqlServerDataSource.isDataWarehouseServer(monitor) || sqlServerDataSource.isSynapseDatabase();
     }
 
     private static String getFullDeclarationFirstKeyWord(@NotNull String ddl) {
