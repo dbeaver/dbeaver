@@ -397,7 +397,7 @@
                 </driver>
 
                 <driver
-                    id="postgres-yellowbrick-jdbc"
+                    id="yellowbrick-jdbc"
                     label="Yellowbrick"
                     icon="icons/yellowbrick_icon.png"
                     iconBig="icons/yellowbrick_icon_big.png"
@@ -411,6 +411,7 @@
                     supportedConfigurationTypes="MANUAL,URL"
                     categories="sql"
                     dialect="postgresql">
+                    <replace provider="postgresql" driver="postgres-yellowbrick-jdbc"/>
                     <file type="jar" path="maven:/io.yellowbrick:yellowbrick-jdbc:0.9.3" bundle="!drivers.yellowbrick"/>
                     <file type="license" path="licenses/external/pg.txt"/>
                     <file type="jar" path="drivers/yellowbrick" bundle="drivers.yellowbrick"/>
@@ -419,6 +420,7 @@
                     <property name="connectTimeout" value="20"/>
                     <property name="@dbeaver-default-resultset.maxrows.sql" value="true"/>
                 </driver>
+                <driver id="postgres-yellowbrick-jdbc"/>
 
                 <driver
                         id="postgres-yugabytedb-jdbc"
