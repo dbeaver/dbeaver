@@ -161,12 +161,10 @@ public class AIEngineRequestFactory {
 
         AISettings aiSettings = AISettingsManager.getInstance().getSettings();
         Set<String> enabledFunctions = aiSettings.getEnabledFunctions();
-        Set<String> enabledFunctionCategories = aiSettings.getEnabledFunctionCategories();
 
         List<AIFunctionDescriptor> selectedFunctions = new ArrayList<>(functions);
         selectedFunctions.removeIf(aiFunctionDescriptor ->
-            !enabledFunctions.contains(aiFunctionDescriptor.getId()) &&
-                !enabledFunctionCategories.contains(aiFunctionDescriptor.getCategoryId())
+            !enabledFunctions.contains(aiFunctionDescriptor.getId())
         );
 
         Set<String> requiredByDeps = resolveDependencies(selectedFunctions, currentPromptGenerator);
