@@ -246,7 +246,7 @@ public class SQLServerUtils {
         SQLServerDataSource dataSource = object.getDataSource();
         try (JDBCSession session = DBUtils.openMetaSession(monitor, dataSource, "Read source code")) {
 
-            String sqlQuery = selectObjectDefinitionDescriptionSQL(object);
+            String sqlQuery = selectObjectDefinitionDescriptionSQL(monitor, object);
 
             try (JDBCPreparedStatement dbStat = session.prepareStatement(sqlQuery)) {
                 try (JDBCResultSet dbResult = dbStat.executeQuery()) {
@@ -271,27 +271,20 @@ public class SQLServerUtils {
      */
     @NotNull
     public static String selectObjectDefinitionDescriptionSQL(
+        @NotNull DBRProgressMonitor monitor,
         @NotNull SQLServerObject object
     ) {
-
         long objectId = object.getObjectId();
-        SQLServerDataSource dataSource = object.getDataSource();
-
+        SQLServerDatabase database = object.getDatabase();
+        SQLServerDataSource dataSource = database.getDataSource();
+        String systemSchema = getSystemSchemaFQN(dataSource, database.getName(), SQLServerConstants.SQL_SERVER_SYSTEM_SCHEMA);
         String sqlQuery;
-        if (isDriverBabelfish(dataSource.getContainer().getDriver())) {
-            sqlQuery = "SELECT definition FROM sys.sql_modules WHERE object_id = %d".formatted(objectId);
-        } else if (isSupportsObjectDefinitionFunction(dataSource)) {
+        if (dataSource.isDataWarehouseServer(monitor) || dataSource.isSynapseDatabase()) {
             sqlQuery = "SELECT OBJECT_DEFINITION(%d)".formatted(objectId);
         } else {
-            sqlQuery = "sys.sp_helptext '" + object.getName() + "'";
+            sqlQuery = "SELECT definition FROM " + systemSchema + ".sql_modules WHERE object_id = %d".formatted(objectId);
         }
         return sqlQuery;
-    }
-
-    public static boolean isSupportsObjectDefinitionFunction(
-        @NotNull SQLServerDataSource dataSource
-    ) {
-        return dataSource.getInfo().getDatabaseVersion().getMajor() >= 9; // at least SQL Server 2005
     }
 
     public static boolean isCommentSet(DBRProgressMonitor monitor, SQLServerDatabase database, SQLServerObjectClass objectClass, long majorId, long minorId) {
