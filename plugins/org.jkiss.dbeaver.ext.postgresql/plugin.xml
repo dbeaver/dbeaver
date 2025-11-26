@@ -411,8 +411,9 @@
                     supportedConfigurationTypes="MANUAL,URL"
                     categories="sql"
                     dialect="postgresql">
-                    <file type="jar" path="maven:/io.yellowbrick:yellowbrick-jdbc:0.9.3"/>
+                    <file type="jar" path="maven:/io.yellowbrick:yellowbrick-jdbc:0.9.3" bundle="!drivers.yellowbrick"/>
                     <file type="license" path="licenses/external/pg.txt"/>
+                    <file type="jar" path="drivers/yellowbrick" bundle="drivers.yellowbrick"/>
                     <parameter name="serverType" value="yellowbrick"/>
                     <property name="loginTimeout" value="20"/>
                     <property name="connectTimeout" value="20"/>
