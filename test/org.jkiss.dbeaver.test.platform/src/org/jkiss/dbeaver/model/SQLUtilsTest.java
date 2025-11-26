@@ -24,7 +24,7 @@ import org.junit.Test;
 
 public class SQLUtilsTest extends DBeaverUnitTest {
 
-    public static final OracleSQLDialect ORACLE_SQL_DIALECT = new OracleSQLDialect();
+    private static final OracleSQLDialect ORACLE_SQL_DIALECT = new OracleSQLDialect();
 
     @Test
     public void makeRegexFromLikeTest() {
