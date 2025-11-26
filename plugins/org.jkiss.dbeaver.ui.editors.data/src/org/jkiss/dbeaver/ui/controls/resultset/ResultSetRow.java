@@ -127,6 +127,7 @@ public class ResultSetRow implements DBDValueRow {
         return changes.get(attr);
     }
 
+    @NotNull
     public Iterable<Map.Entry<DBDAttributeBinding, Object>> getChanges() {
         return () -> changes.entrySet().iterator();
     }
