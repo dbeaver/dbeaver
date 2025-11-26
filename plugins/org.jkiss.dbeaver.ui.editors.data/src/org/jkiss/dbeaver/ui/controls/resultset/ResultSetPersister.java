@@ -134,54 +134,32 @@ class ResultSetPersister {
         return !changedRows.isEmpty();
     }
 
-    /**
-     * Filter changes
-     * Depending on attributes structure we leave only leaf elements or entire document (for document-oriented databases)
-     *
-     * @param row row to check
-     * @return map of changed attributes and their new values null if no changes
-     */
-    @Nullable
-    private static Map<DBDAttributeBinding, Object> collectUpdateChanges(@NotNull ResultSetRow row) {
-        if (!row.isChanged()) {
-            return null;
+    @NotNull
+    public Set<DBDAttributeBinding> getUpdatedAttributes() {
+        Set<DBDAttributeBinding> attrs = new LinkedHashSet<>();
+        for (ResultSetRow row : changedRows) {
+            attrs.addAll(row.getChangedAttributes());
         }
-        Map<DBDAttributeBinding, Object> changes = new LinkedHashMap<>(row.getChangesCount());
-        List<DBDAttributeBinding> attrRefs = new ArrayList<>();
-        boolean hasComplexUpdates = false;
-        for (Map.Entry<DBDAttributeBinding, Object> change : row.getChanges()) {
-            if (change.getValue() instanceof DBDAttributeBinding ab) {
-                attrRefs.add(ab);
-            }
-            if (!hasComplexUpdates && isComplexNestedAttribute(change.getKey())) {
-                hasComplexUpdates = true;
-            }
-        }
-        if (hasComplexUpdates && !attrRefs.isEmpty()) {
-            // If we have complex values then leave only nested elements attributes
-            for (Map.Entry<DBDAttributeBinding, Object> change : row.getChanges()) {
-                if (change.getValue() instanceof DBDAttributeBinding ab && attrRefs.contains(ab)) {
-                    changes.put(ab, row.getChange(ab));
-                }
-            }
-        } else {
-            // Otherwise remove root element from the list
-            for (Map.Entry<DBDAttributeBinding, Object> change : row.getChanges()) {
-                if (attrRefs.contains(change.getKey())) {
-                    continue;
-                }
-                if (change.getValue() instanceof DBDAttributeBinding ab) {
-                    changes.put(change.getKey(), row.getChange(ab));
-                } else {
-                    changes.put(change.getKey(), change.getValue());
-                }
-            }
-        }
-        return changes;
+        return attrs;
     }
 
-    private static boolean isVirtualColumn(DBDAttributeBinding column) {
-        return column instanceof DBDAttributeBindingCustom;
+    @NotNull
+    public ResultSetSaveReport generateReport() {
+        ResultSetSaveReport report = new ResultSetSaveReport();
+        report.setDeletes(deletedRows.size());
+        report.setInserts(addedRows.size());
+        int changedRows = 0;
+        for (ResultSetRow row : this.rowIdentifiers.keySet()) {
+            if (row.isChanged()) {
+                changedRows++;
+            }
+        }
+        report.setUpdates(changedRows);
+
+        DBPDataSource dataSource = viewer.getDataSource();
+        report.setHasReferences(dataSource != null && dataSource.getInfo().supportsReferentialIntegrity());
+
+        return report;
     }
 
     /**
@@ -266,13 +244,8 @@ class ResultSetPersister {
         return true;
     }
 
-    @NotNull
-    public Set<DBDAttributeBinding> getUpdatedAttributes() {
-        Set<DBDAttributeBinding> attrs = new LinkedHashSet<>();
-        for (ResultSetRow row : changedRows) {
-            attrs.addAll(row.getChangedAttributes());
-        }
-        return attrs;
+    private boolean isVirtualColumn(DBDAttributeBinding column) {
+        return column instanceof DBDAttributeBindingCustom;
     }
 
     public List<DBEPersistAction> getScript() {
@@ -475,23 +448,50 @@ class ResultSetPersister {
         }
     }
 
-    @NotNull
-    public ResultSetSaveReport generateReport() {
-        ResultSetSaveReport report = new ResultSetSaveReport();
-        report.setDeletes(deletedRows.size());
-        report.setInserts(addedRows.size());
-        int changedRows = 0;
-        for (ResultSetRow row : this.rowIdentifiers.keySet()) {
-            if (row.isChanged()) {
-                changedRows++;
+    /**
+     * Filter changes
+     * Depending on attributes structure we leave only leaf elements or entire document (for document-oriented databases)
+     *
+     * @param row row to check
+     * @return map of changed attributes and their new values null if no changes
+     */
+    @Nullable
+    private Map<DBDAttributeBinding, Object> collectUpdateChanges(@NotNull ResultSetRow row) {
+        if (!row.isChanged()) {
+            return null;
+        }
+        Map<DBDAttributeBinding, Object> changes = new LinkedHashMap<>(row.getChangesCount());
+        List<DBDAttributeBinding> attrRefs = new ArrayList<>();
+        boolean hasComplexUpdates = false;
+        for (Map.Entry<DBDAttributeBinding, Object> change : row.getChanges()) {
+            if (change.getValue() instanceof DBDAttributeBinding ab) {
+                attrRefs.add(ab);
+            }
+            if (!hasComplexUpdates && isComplexNestedAttribute(change.getKey())) {
+                hasComplexUpdates = true;
             }
         }
-        report.setUpdates(changedRows);
-
-        DBPDataSource dataSource = viewer.getDataSource();
-        report.setHasReferences(dataSource != null && dataSource.getInfo().supportsReferentialIntegrity());
-
-        return report;
+        if (hasComplexUpdates && !attrRefs.isEmpty()) {
+            // If we have complex values then leave only nested elements attributes
+            for (Map.Entry<DBDAttributeBinding, Object> change : row.getChanges()) {
+                if (change.getValue() instanceof DBDAttributeBinding ab && attrRefs.contains(ab)) {
+                    changes.put(ab, row.getChange(ab));
+                }
+            }
+        } else {
+            // Otherwise remove root element from the list
+            for (Map.Entry<DBDAttributeBinding, Object> change : row.getChanges()) {
+                if (attrRefs.contains(change.getKey())) {
+                    continue;
+                }
+                if (change.getValue() instanceof DBDAttributeBinding ab) {
+                    changes.put(change.getKey(), row.getChange(ab));
+                } else {
+                    changes.put(change.getKey(), change.getValue());
+                }
+            }
+        }
+        return changes;
     }
 
     // Returns true only if our attribute has parent of type array
