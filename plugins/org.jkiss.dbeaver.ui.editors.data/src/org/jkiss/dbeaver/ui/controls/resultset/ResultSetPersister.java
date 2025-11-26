@@ -244,7 +244,7 @@ class ResultSetPersister {
         return true;
     }
 
-    private boolean isVirtualColumn(DBDAttributeBinding column) {
+    private boolean isVirtualColumn(@Nullable DBDAttributeBinding column) {
         return column instanceof DBDAttributeBindingCustom;
     }
 
