@@ -1289,7 +1289,7 @@ public final class SQLUtils {
     }
 
     public static void addMultiStatementDDL(
-        @NotNull String[] scriptDelimiters,
+        @NotNull SQLDialect sqlDialect,
         @NotNull StringBuilder sql,
         @Nullable String ddl
     ) {
@@ -1307,7 +1307,7 @@ public final class SQLUtils {
             }
 
             hasStatements = true;
-            for (String scriptDelimiter : scriptDelimiters) {
+            for (String scriptDelimiter : sqlDialect.getScriptDelimiters()) {
                 if (!trimmed.toString().endsWith(scriptDelimiter)) {
                     trimmed.append(scriptDelimiter);
                 }

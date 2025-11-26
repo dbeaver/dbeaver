@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.model;
 
+import org.jkiss.dbeaver.ext.oracle.model.OracleSQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.junit.DBeaverUnitTest;
 import org.junit.Assert;
@@ -126,10 +127,10 @@ public class SQLUtilsTest extends DBeaverUnitTest {
     @Test
     public void addMultiStatementDDL_whenNullOrEmpty_thenNoChange() {
         StringBuilder sb = new StringBuilder();
-        SQLUtils.addMultiStatementDDL(new String[] {";"}, sb, null);
+        SQLUtils.addMultiStatementDDL(new OracleSQLDialect(), sb, null);
         Assert.assertEquals("", sb.toString());
 
-        SQLUtils.addMultiStatementDDL(new String[] {";"}, sb, "   ");
+        SQLUtils.addMultiStatementDDL(new OracleSQLDialect(), sb, "   ");
         Assert.assertEquals("", sb.toString());
     }
 
@@ -143,7 +144,7 @@ public class SQLUtilsTest extends DBeaverUnitTest {
             "GRANT \"ROLE3\" TO \"TEST_USER_DECL\";\n";
 
         StringBuilder sb = new StringBuilder();
-        SQLUtils.addMultiStatementDDL(new String[] {";"}, sb, ddl);
+        SQLUtils.addMultiStatementDDL(new OracleSQLDialect(), sb, ddl);
 
         Assert.assertEquals(
             "GRANT CREATE TABLE TO \"TEST_USER_DECL\";\n" +
@@ -159,7 +160,7 @@ public class SQLUtilsTest extends DBeaverUnitTest {
     public void addMultiStatementDDL_whenNoDelimiters_thenAppendDelimiterPerLineAndTrailingLF() {
         String ddl = "CREATE TABLE A(id INT)\nCREATE INDEX I ON A(id)";
         StringBuilder sb = new StringBuilder();
-        SQLUtils.addMultiStatementDDL(new String[] {";"}, sb, ddl);
+        SQLUtils.addMultiStatementDDL(new OracleSQLDialect(), sb, ddl);
         Assert.assertEquals(
             "CREATE TABLE A(id INT);\n" +
                 "CREATE INDEX I ON A(id);\n\n",
@@ -171,7 +172,7 @@ public class SQLUtilsTest extends DBeaverUnitTest {
     public void addMultiStatementDDL_whenAlreadyDelimited_thenDoNotDuplicateDelimiter() {
         String ddl = "CREATE TABLE A(id INT);\nCREATE INDEX I ON A(id);";
         StringBuilder sb = new StringBuilder();
-        SQLUtils.addMultiStatementDDL(new String[] {";"}, sb, ddl);
+        SQLUtils.addMultiStatementDDL(new OracleSQLDialect(), sb, ddl);
         Assert.assertEquals(
             "CREATE TABLE A(id INT);\n" +
                 "CREATE INDEX I ON A(id);\n\n",
@@ -183,7 +184,7 @@ public class SQLUtilsTest extends DBeaverUnitTest {
     public void addMultiStatementDDL_whenHasEmptyLines_thenSkipThem() {
         String ddl = "\n\n  \nCREATE TABLE A(id INT)\n   \nCREATE INDEX I ON A(id)  \n\n";
         StringBuilder sb = new StringBuilder();
-        SQLUtils.addMultiStatementDDL(new String[] {";"}, sb, ddl);
+        SQLUtils.addMultiStatementDDL(new OracleSQLDialect(), sb, ddl);
         Assert.assertEquals(
             "CREATE TABLE A(id INT);\n" +
                 "CREATE INDEX I ON A(id);\n\n",
