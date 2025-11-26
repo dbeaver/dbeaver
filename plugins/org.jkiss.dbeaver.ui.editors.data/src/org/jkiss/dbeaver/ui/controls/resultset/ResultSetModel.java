@@ -463,7 +463,7 @@ public class ResultSetModel implements DBDResultSetModel {
             updateChanges = false;
         }
 
-        boolean isOldHistoricValueAbsent = row.getChange(topAttribute) == null;
+        boolean isOldHistoricValueAbsent = !row.isChanged(attr);
         Object currentValue = row.values[rootIndex];
         Object valueToEdit = currentValue;
 
@@ -528,14 +528,11 @@ public class ResultSetModel implements DBDResultSetModel {
         } else if (row.isChanged(attr)) {
             DBUtils.resetValue(getCellValue(attr, row, rowIndexes, false));
             try {
-                Object origValue = row.getChange(attr).value();
+                Object origValue = row.getChange(attr);
                 if (origValue instanceof DBDAttributeBinding refAttr) {
                     // We reset top attribute value
                     attr = refAttr;
-                    origValue = Optional
-                        .ofNullable(row.getChange(attr))
-                        .map(ResultSetRow.ChangedValue::value)
-                        .orElse(null);
+                    origValue = row.getChange(attr);
                     rowIndexes = null;
                 }
                 updateCellValue(
