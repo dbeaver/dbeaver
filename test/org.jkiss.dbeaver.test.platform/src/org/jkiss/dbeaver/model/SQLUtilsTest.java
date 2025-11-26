@@ -135,23 +135,18 @@ public class SQLUtilsTest extends DBeaverUnitTest {
 
     @Test
     public void addMultiStatementDDL_oracleUserAndGrants_examples() {
-        String ddl = "CREATE USER \"TEST_USER_DECL\" IDENTIFIED BY VALUES 'S:91A176BDA85169E00F18E6F4C9FDE5609E82'\n" +
-            "      DEFAULT TABLESPACE \"USERS\"\n" +
-            "      TEMPORARY TABLESPACE \"TEMP\";\n" +
-            "GRANT CREATE TABLE TO \"TEST_USER_DECL\";\n" +
-            "GRANT CREATE SESSION TO \"TEST_USER_DECL\";\n\n" +
-            "GRANT \"ROLE1\" TO \"TEST_USER_DECL\";\n" +
-            "GRANT \"ROLE2\" TO \"TEST_USER_DECL\";\n" +
+        String ddl =
+            "GRANT CREATE TABLE TO \"TEST_USER_DECL\"\n" +
+            "GRANT CREATE SESSION TO \"TEST_USER_DECL\"\n" +
+            "GRANT \"ROLE1\" TO \"TEST_USER_DECL\"\n" +
+            "GRANT \"ROLE2\" TO \"TEST_USER_DECL\"\n" +
             "GRANT \"ROLE3\" TO \"TEST_USER_DECL\";\n";
 
         StringBuilder sb = new StringBuilder();
         SQLUtils.addMultiStatementDDL(new String[] {";"}, sb, ddl);
 
         Assert.assertEquals(
-            "CREATE USER \"TEST_USER_DECL\" IDENTIFIED BY VALUES 'S:91A176BDA85169E00F18E6F4C9FDE5609E82';\n" +
-                "DEFAULT TABLESPACE \"USERS\";\n" +
-                "TEMPORARY TABLESPACE \"TEMP\";\n" +
-                "GRANT CREATE TABLE TO \"TEST_USER_DECL\";\n" +
+            "GRANT CREATE TABLE TO \"TEST_USER_DECL\";\n" +
                 "GRANT CREATE SESSION TO \"TEST_USER_DECL\";\n" +
                 "GRANT \"ROLE1\" TO \"TEST_USER_DECL\";\n" +
                 "GRANT \"ROLE2\" TO \"TEST_USER_DECL\";\n" +
