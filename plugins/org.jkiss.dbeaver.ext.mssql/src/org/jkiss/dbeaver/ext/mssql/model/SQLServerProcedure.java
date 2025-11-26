@@ -141,7 +141,7 @@ public class SQLServerProcedure extends AbstractProcedure<SQLServerDataSource, S
                         "AS " + GeneralUtils.getDefaultLineSeparator() +
                         "SELECT 1";
             } else {
-                this.body = SQLServerUtils.extractSource(monitor, getContainer(), getName());
+                this.body = SQLServerUtils.extractSource(monitor, this);
             }
         }
         return body;

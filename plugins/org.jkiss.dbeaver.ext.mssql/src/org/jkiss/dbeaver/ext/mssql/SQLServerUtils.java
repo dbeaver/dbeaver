@@ -238,32 +238,15 @@ public class SQLServerUtils {
         }
     }
 
-    public static String extractSource(@NotNull DBRProgressMonitor monitor, @NotNull SQLServerDatabase database, @NotNull SQLServerObject object) throws DBException {
-        SQLServerDataSource dataSource = database.getDataSource();
-        String systemSchema = getSystemSchemaFQN(dataSource, database.getName(), SQLServerConstants.SQL_SERVER_SYSTEM_SCHEMA);
-        try (JDBCSession session = DBUtils.openMetaSession(monitor, dataSource, "Read source code")) {
-            try (JDBCPreparedStatement dbStat = session.prepareStatement("SELECT definition FROM " + systemSchema + ".sql_modules WHERE object_id = ?")) {
-                dbStat.setLong(1, object.getObjectId());
-                try (JDBCResultSet dbResult = dbStat.executeQuery()) {
-                    StringBuilder sql = new StringBuilder();
-                    while (dbResult.nextRow()) {
-                        sql.append(dbResult.getString(1));
-                    }
-                    return sql.toString();
-                }
-            }
-        } catch (SQLException e) {
-            throw new DBDatabaseException(e, dataSource);
-        }
-    }
-
-    public static String extractSource(@NotNull DBRProgressMonitor monitor, @NotNull SQLServerSchema schema, @NotNull  String objectName) throws DBException {
-        SQLServerDataSource dataSource = schema.getDataSource();
-        String systemSchema = getSystemSchemaFQN(dataSource, schema.getDatabase().getName(), SQLServerConstants.SQL_SERVER_SYSTEM_SCHEMA);
+    @NotNull
+    public static String extractSource(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull SQLServerObject object
+    ) throws DBException {
+        SQLServerDataSource dataSource = object.getDataSource();
         try (JDBCSession session = DBUtils.openMetaSession(monitor, dataSource, "Read source code")) {
 
-            String objectFQN = DBUtils.getQuotedIdentifier(dataSource, schema.getName()) + "." + DBUtils.getQuotedIdentifier(dataSource, objectName);
-            String sqlQuery = selectObjectDefinitionDescriptionSQL(monitor, systemSchema, dataSource, objectFQN);
+            String sqlQuery = selectObjectDefinitionDescriptionSQL(object);
 
             try (JDBCPreparedStatement dbStat = session.prepareStatement(sqlQuery)) {
                 try (JDBCResultSet dbResult = dbStat.executeQuery()) {
@@ -277,6 +260,38 @@ public class SQLServerUtils {
         } catch (SQLException e) {
             throw new DBDatabaseException(e, dataSource);
         }
+    }
+
+    /**
+     * Generates SQL for selecting the Transact-SQL source text of the definition of a specified object.
+     * After call might return NULL on error or if a caller does not have permission to view the object.
+     *
+     * @param object to get definition about
+     * @return select function with single string column containing object definition
+     */
+    @NotNull
+    public static String selectObjectDefinitionDescriptionSQL(
+        @NotNull SQLServerObject object
+    ) {
+
+        long objectId = object.getObjectId();
+        SQLServerDataSource dataSource = object.getDataSource();
+
+        String sqlQuery;
+        if (isDriverBabelfish(dataSource.getContainer().getDriver())) {
+            sqlQuery = "SELECT definition FROM sys.sql_modules WHERE object_id = %d".formatted(objectId);
+        } else if (isSupportsObjectDefinitionFunction(dataSource)) {
+            sqlQuery = "SELECT OBJECT_DEFINITION(%d)".formatted(objectId);
+        } else {
+            sqlQuery = "sys.sp_helptext '" + object.getName() + "'";
+        }
+        return sqlQuery;
+    }
+
+    public static boolean isSupportsObjectDefinitionFunction(
+        @NotNull SQLServerDataSource dataSource
+    ) {
+        return dataSource.getInfo().getDatabaseVersion().getMajor() >= 9; // at least SQL Server 2005
     }
 
     public static boolean isCommentSet(DBRProgressMonitor monitor, SQLServerDatabase database, SQLServerObjectClass objectClass, long majorId, long minorId) {
@@ -341,46 +356,6 @@ public class SQLServerUtils {
         return ddl;
     }
 
-
-    /**
-     * Generates SQL for selecting the Transact-SQL source text of the definition of a specified object.
-     * Returns NULL on error or if a caller does not have permission to view the object.
-     *
-     * @param monitor
-     * @param systemSchema name of the schema used
-     * @param dataSource
-     * @param objectFQN    object unique full name
-     * @return select function with single string column containing object definition
-     */
-    @NotNull
-    public static String selectObjectDefinitionDescriptionSQL(
-        @NotNull DBRProgressMonitor monitor,
-        @NotNull String systemSchema,
-        @NotNull DBPDataSource dataSource,
-        @NotNull String objectFQN
-    ) {
-        String quotedObjectFQN = SQLUtils.quoteString(dataSource, objectFQN);
-
-        String sqlQuery;
-        if (isDriverBabelfish(dataSource.getContainer().getDriver())) {
-            sqlQuery = "SELECT definition FROM sys.sql_modules WHERE object_id = (OBJECT_ID(" + quotedObjectFQN + "))";
-        } else if (isSupportsObjectDefinitionFunction(dataSource, monitor)) {
-            sqlQuery = "SELECT OBJECT_DEFINITION(OBJECT_ID(" + quotedObjectFQN + "))";
-        } else {
-            sqlQuery = systemSchema + ".sp_helptext '" + objectFQN + "'";
-        }
-        return sqlQuery;
-    }
-
-    public static boolean isSupportsObjectDefinitionFunction(
-        @NotNull DBPDataSource dataSource,
-        @NotNull DBRProgressMonitor monitor
-    ) {
-        if (!(dataSource instanceof SQLServerDataSource sqlServerDataSource)) {
-            return false;
-        }
-        return sqlServerDataSource.isDataWarehouseServer(monitor) || sqlServerDataSource.isSynapseDatabase();
-    }
 
     private static String getFullDeclarationFirstKeyWord(@NotNull String ddl) {
         var pattern = Pattern.compile("(CREATE\\s+OR\\s+ALTER|\\w+)");
