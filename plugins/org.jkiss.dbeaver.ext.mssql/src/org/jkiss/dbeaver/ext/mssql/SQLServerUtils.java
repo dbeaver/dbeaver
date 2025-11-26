@@ -265,9 +265,9 @@ public class SQLServerUtils {
 
     /**
      * Generates SQL for selecting the Transact-SQL source text of the definition of a specified object.
-     * After call might return NULL on error or if a caller does not have permission to view the object.
+     * After call to DB might return NULL on error or if a caller does not have permission to view the object definition.
      *
-     * @param object to get definition about
+     * @param object to get definition
      * @return select function with single string column containing object definition
      */
     @NotNull
@@ -283,13 +283,10 @@ public class SQLServerUtils {
             database.map(SQLServerDatabase::getName).orElse(null),
             SQLServerConstants.SQL_SERVER_SYSTEM_SCHEMA
         );
-        String sqlQuery;
-        if (dataSource.isDataWarehouseServer(monitor) || dataSource.isSynapseDatabase()) {
-            sqlQuery = "SELECT OBJECT_DEFINITION(%d)".formatted(objectId);
-        } else {
-            sqlQuery = "SELECT definition FROM " + systemSchema + ".sql_modules WHERE object_id = %d".formatted(objectId);
-        }
-        return sqlQuery;
+
+        return dataSource.isDataWarehouseServer(monitor) || dataSource.isSynapseDatabase()
+            ? "SELECT OBJECT_DEFINITION(%d)".formatted(objectId)
+            : "SELECT definition FROM " + systemSchema + ".sql_modules WHERE object_id = %d".formatted(objectId);
     }
 
     public static boolean isCommentSet(DBRProgressMonitor monitor, SQLServerDatabase database, SQLServerObjectClass objectClass, long majorId, long minorId) {
