@@ -233,12 +233,12 @@ public class OracleUser extends OracleGrantee implements DBAUser, DBSObjectLazy<
             "Load definition for USER '" + this.name + "'"
         )) {
             String userDDL = OracleUtils.fetchDDL(session, "USER", this.getName());
-            SQLDialect scriptDelimiters = getDataSource().getSQLDialect();
+            SQLDialect sqlDialect = getDataSource().getSQLDialect();
             OracleUtils.addDDLLine(sql, userDDL);
 
             if (getDataSource().isAtLeastV10()) {
                 SQLUtils.addMultiStatementDDL(
-                    scriptDelimiters,
+                    sqlDialect,
                     sql,
                     OracleUtils.invokeDBMSMetadataGetGrantedDDL(
                         session,
@@ -248,7 +248,7 @@ public class OracleUser extends OracleGrantee implements DBAUser, DBSObjectLazy<
                 );
 
                 SQLUtils.addMultiStatementDDL(
-                    scriptDelimiters,
+                    sqlDialect,
                     sql,
                     OracleUtils.invokeDBMSMetadataGetGrantedDDL(
                         session,
@@ -258,7 +258,7 @@ public class OracleUser extends OracleGrantee implements DBAUser, DBSObjectLazy<
                 );
 
                 SQLUtils.addMultiStatementDDL(
-                    scriptDelimiters,
+                    sqlDialect,
                     sql,
                     OracleUtils.invokeDBMSMetadataGetGrantedDDL(
                         session,
