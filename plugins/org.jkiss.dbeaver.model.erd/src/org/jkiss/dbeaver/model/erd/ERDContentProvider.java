@@ -38,8 +38,12 @@ public interface ERDContentProvider {
      * @param otherEntities list of entities if they are added as a batch
      * @param erdEntity     entity to be filled
      */
-    void fillEntityFromObject(@NotNull DBRProgressMonitor monitor, @NotNull ERDDiagram diagram,
-                              @NotNull List<ERDEntity> otherEntities, @NotNull ERDEntity erdEntity) throws DBCException;
+    void fillEntityFromObject(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull ERDDiagram diagram,
+        @NotNull List<ERDEntity> otherEntities,
+        @NotNull ERDEntity erdEntity
+    ) throws DBCException;
 
     /**
      * Create default entity attributes according to specified settings.
@@ -49,14 +53,27 @@ public interface ERDContentProvider {
      * @param erdEntity     entity to be filled
      * @param settings      attribute settings
      */
-    void fillEntityFromObject(@NotNull DBRProgressMonitor monitor, @NotNull ERDDiagram diagram, @NotNull List<ERDEntity> otherEntities, @NotNull ERDEntity erdEntity, @NotNull ERDAttributeSettings settings);
+    void fillEntityFromObject(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull ERDDiagram diagram,
+        @NotNull List<ERDEntity> otherEntities,
+        @NotNull ERDEntity erdEntity,
+        @NotNull ERDAttributeSettings settings
+    );
 
     @Nullable
-    ERDAssociation createAutoAssociation(ERDContainer diagram, 
-        @NotNull DBSEntityAssociation association, 
+    ERDAssociation createAutoAssociation(ERDContainer diagram,
+        @NotNull DBSEntityAssociation association,
         @NotNull ERDEntity sourceEntity,
-        @NotNull ERDEntity targetEntity, 
+        @NotNull ERDEntity targetEntity,
         boolean reflect);
+
+    /**
+     * Hides any columns in the provided list of entities that are not in use if this option is enabled.
+     *
+     * @param entities the list of entities to evaluate and process; must not be null
+     */
+    default void hideUnusedColumns(@NotNull DBRProgressMonitor monitor, @NotNull List<ERDEntity> entities) {}
 
     /**
      * Create entity associating according to specified attributes.
@@ -70,8 +87,8 @@ public interface ERDContentProvider {
      * @param reflect - additional for pk
      */
     @Nullable
-    ERDAssociation createAssociation(ERDContainer diagram, 
-        @NotNull DBSEntityAssociation association, 
+    ERDAssociation createAssociation(ERDContainer diagram,
+        @NotNull DBSEntityAssociation association,
         @NotNull ERDEntity sourceEntity,
         @NotNull ERDEntityAttribute sourceAttribute,
         @NotNull ERDEntity targetEntity,
