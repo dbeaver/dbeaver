@@ -131,8 +131,6 @@ public class PostgreDataSourceProvider extends JDBCDataSourceProvider implements
      */
     @Override
     public boolean providesDriverClasses() {
-        // SSPI auth model uses bundled version of waffle
-        // in this case we should load driver classes
         return true;
     }
 
