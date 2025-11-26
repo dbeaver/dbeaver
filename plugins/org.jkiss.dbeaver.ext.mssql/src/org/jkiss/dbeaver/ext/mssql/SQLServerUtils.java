@@ -47,6 +47,7 @@ import org.jkiss.utils.CommonUtils;
 
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -275,9 +276,13 @@ public class SQLServerUtils {
         @NotNull SQLServerObject object
     ) {
         long objectId = object.getObjectId();
-        SQLServerDatabase database = object.getDatabase();
-        SQLServerDataSource dataSource = database.getDataSource();
-        String systemSchema = getSystemSchemaFQN(dataSource, database.getName(), SQLServerConstants.SQL_SERVER_SYSTEM_SCHEMA);
+        Optional<SQLServerDatabase> database = Optional.ofNullable(object.getDatabase());
+        SQLServerDataSource dataSource = database.map(SQLServerDatabase::getDataSource).orElseGet(object::getDataSource);
+        String systemSchema = getSystemSchemaFQN(
+            dataSource,
+            database.map(SQLServerDatabase::getName).orElse(null),
+            SQLServerConstants.SQL_SERVER_SYSTEM_SCHEMA
+        );
         String sqlQuery;
         if (dataSource.isDataWarehouseServer(monitor) || dataSource.isSynapseDatabase()) {
             sqlQuery = "SELECT OBJECT_DEFINITION(%d)".formatted(objectId);
