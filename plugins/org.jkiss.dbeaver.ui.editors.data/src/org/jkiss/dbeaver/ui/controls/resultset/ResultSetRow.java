@@ -88,6 +88,7 @@ public class ResultSetRow implements DBDValueRow {
         return changes.size();
     }
 
+    @NotNull
     public Collection<DBDAttributeBinding> getChangedAttributes() {
         return changes.keySet();
     }

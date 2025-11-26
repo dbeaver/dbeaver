@@ -134,10 +134,15 @@ class ResultSetPersister {
         return !changedRows.isEmpty();
     }
 
-    // Filter changes
-    // Depending on attributes structure we leave only leaf elements or entire document (for document-oriented databases)
+    /**
+     * Filter changes
+     * Depending on attributes structure we leave only leaf elements or entire document (for document-oriented databases)
+     *
+     * @param row row to check
+     * @return map of changed attributes and their new values null if no changes
+     */
     @Nullable
-    private static Map<DBDAttributeBinding, Object> collectUpdateChanges(ResultSetRow row) {
+    private static Map<DBDAttributeBinding, Object> collectUpdateChanges(@NotNull ResultSetRow row) {
         if (!row.isChanged()) {
             return null;
         }
@@ -263,12 +268,13 @@ class ResultSetPersister {
         return true;
     }
 
-    public List<DBDAttributeBinding> getUpdatedAttributes() {
+    @NotNull
+    public Set<DBDAttributeBinding> getUpdatedAttributes() {
         Set<DBDAttributeBinding> attrs = new LinkedHashSet<>();
         for (ResultSetRow row : changedRows) {
             attrs.addAll(row.getChangedAttributes());
         }
-        return new ArrayList<>(attrs);
+        return attrs;
     }
 
     public List<DBEPersistAction> getScript() {
@@ -471,6 +477,7 @@ class ResultSetPersister {
         }
     }
 
+    @NotNull
     public ResultSetSaveReport generateReport() {
         ResultSetSaveReport report = new ResultSetSaveReport();
         report.setDeletes(deletedRows.size());
@@ -646,7 +653,7 @@ class ResultSetPersister {
             }
         }
 
-        List<DBDAttributeBinding> updatedAttributes = this.getUpdatedAttributes();
+        Set<DBDAttributeBinding> updatedAttributes = this.getUpdatedAttributes();
         if (this.hasDeletes()) {
             DBDRowIdentifier defIdentifier = model.getDefaultRowIdentifier();
             if (defIdentifier == null) {
