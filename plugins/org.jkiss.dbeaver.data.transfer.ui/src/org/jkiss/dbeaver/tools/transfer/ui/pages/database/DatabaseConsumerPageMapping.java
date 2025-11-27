@@ -65,10 +65,8 @@ import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.*;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
@@ -1307,23 +1305,57 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
         model.clear();
 
         List<Throwable> errors = new ArrayList<>();
+
         try {
+            Set<DBSObjectContainer> containersToCache = new HashSet<>();
+
+            for (DataTransferPipe pipe : getWizard().getSettings().getDataPipes()) {
+                if (pipe.getProducer() == null) {
+                    continue;
+                }
+                DBSObject dbObject = pipe.getProducer().getDatabaseObject();
+                if (!(dbObject instanceof DBSDataContainer sourceDataContainer)) {
+                    continue;
+                }
+
+                DBSObject parentObject = sourceDataContainer.getParentObject();
+                DBSObjectContainer container = DBUtils.getAdapter(DBSObjectContainer.class, parentObject);
+                if (container != null) {
+                    containersToCache.add(container);
+                }
+            }
+
             getWizard().getRunnableContext().run(true, true, monitor -> {
+                for (DBSObjectContainer container : containersToCache) {
+                    try {
+                        container.cacheStructure(monitor, DBSObjectContainer.STRUCT_ATTRIBUTES);
+                    } catch (DBException e) {
+                        errors.add(e);
+                        log.debug(
+                            "Error structure for container '" +
+                                DBUtils.getObjectFullName(container, DBPEvaluationContext.UI) + "'",
+                            e
+                        );
+                    }
+                }
                 for (DataTransferPipe pipe : getWizard().getSettings().getDataPipes()) {
                     if (pipe.getProducer() == null || !(pipe.getProducer().getDatabaseObject() instanceof DBSDataContainer sourceDataContainer)) {
                         continue;
                     }
+
                     DatabaseMappingContainer mapping = settings.getDataMapping(sourceDataContainer);
+
                     // Create new mapping for source object
                     DatabaseMappingContainer newMapping;
                     IDataTransferConsumer<?, ?> pipeConsumer = pipe.getConsumer();
-                    if (pipeConsumer instanceof DatabaseTransferConsumer && ((DatabaseTransferConsumer) pipeConsumer).getTargetObject() != null) {
+                    if (pipeConsumer instanceof DatabaseTransferConsumer databaseTransferConsumer && databaseTransferConsumer.getTargetObject() != null) {
                         try {
                             newMapping = new DatabaseMappingContainer(
                                 monitor,
                                 getDatabaseConsumerSettings(),
                                 sourceDataContainer,
-                                ((DatabaseTransferConsumer) pipe.getConsumer()).getTargetObject());
+                                databaseTransferConsumer.getTargetObject()
+                            );
                         } catch (DBException e) {
                             errors.add(e);
                             newMapping = new DatabaseMappingContainer(getDatabaseConsumerSettings(), sourceDataContainer);
@@ -1331,7 +1363,9 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
                     } else {
                         newMapping = new DatabaseMappingContainer(getDatabaseConsumerSettings(), sourceDataContainer);
                     }
-                    newMapping.getAttributeMappings();
+
+                    newMapping.getAttributeMappings(monitor);
+
                     // Update current mapping if it differs from new one
                     if (mapping == null || !mapping.isSameMapping(newMapping)) {
                         mapping = newMapping;
@@ -1352,7 +1386,6 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
             setMessage(lastError.getMessage(), IMessageProvider.ERROR);
         }
 
-
         mappingViewer.getTree().setVisible(false);
         Object[] expandedElements = mappingViewer.getExpandedElements();
         mappingViewer.setInput(model);
@@ -1364,6 +1397,7 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
             mappingViewer.setSelection(new StructuredSelection(model.get(0)));
         }
     }
+
 
     @Override
     protected boolean determinePageCompletion()
