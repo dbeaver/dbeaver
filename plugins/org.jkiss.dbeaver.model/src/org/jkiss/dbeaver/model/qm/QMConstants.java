@@ -25,8 +25,8 @@ public class QMConstants {
     public static final String QM_USERNAME_ATTR = "qm_username_id";
     public static final String QM_ANONYMOUS_DOMAIN = "anonymous";
     public static final String QM_ANONYMOUS_USER = "@anonymous@";
-    public static final String QM_UNAUTHORIZE_DOMAIN = "unauthorize";
-    public static final String QM_UNAUTHORIZE_USER = "@unauthorize@";
+    public static final String QM_UNAUTHORIZED_DOMAIN = "unauthorized";
+    public static final String QM_UNAUTHORIZED_USER = "@unauthorized@";
 
     public static final String PROP_PREFIX = "qm.";
 
