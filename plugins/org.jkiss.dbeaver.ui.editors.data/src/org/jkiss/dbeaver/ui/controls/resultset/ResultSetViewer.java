@@ -5300,7 +5300,7 @@ public class ResultSetViewer extends Viewer
                             }
                         }
                         showErrorPresentation(sqlText, errorMessage, error);
-                        //log.error(errorMessage, error);
+                        log.error(errorMessage, error);
                     }
                 } else {
                     if (!metadataChanged) {
