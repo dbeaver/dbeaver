@@ -1314,11 +1314,12 @@ public final class SQLUtils {
                     break;
                 }
             }
+            sql.append(trimmed);
             if (!hasDelimiter) {
-                trimmed += getDefaultScriptDelimiter(sqlDialect);
+                sql.append(getDefaultScriptDelimiter(sqlDialect));
             }
 
-            sql.append(trimmed).append("\n");
+            sql.append("\n");
         }
 
         if (hasStatements) {
