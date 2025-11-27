@@ -209,6 +209,8 @@ public class DataExporterDbUnit extends StreamExporterAbstract {
                     out.write("&gt;");
                 } else if (buffer[i] == '&') {
                     out.write("&amp;");
+                } else if (buffer[i] == '"') {
+                    out.write("&quot;");
                 } else {
                     out.write(buffer[i]);
                 }
