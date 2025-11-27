@@ -97,7 +97,7 @@ public class DBeaverTopLevelCommand extends AbstractTopLevelCommand {
             return;
         }
 
-        if (newInstance) {
+        if (meta.isSupportNewInstance() && newInstance) {
             context.setPostAction(CLIProcessResult.PostAction.START_INSTANCE);
             return;
         }
