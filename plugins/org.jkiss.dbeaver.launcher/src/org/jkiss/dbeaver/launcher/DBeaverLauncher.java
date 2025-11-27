@@ -793,6 +793,9 @@ public class DBeaverLauncher {
             }
 
             if (output != null && !output.isEmpty()) {
+                if (output.startsWith("[") && output.endsWith("]")) {
+                    output = output.substring(1, output.length() - 1);
+                }
                 // since we don't have gson and don't deserialize the response, remove escaping for cleaner output
                 output = output
                     .replace("\\\\\\\"", "\"")
