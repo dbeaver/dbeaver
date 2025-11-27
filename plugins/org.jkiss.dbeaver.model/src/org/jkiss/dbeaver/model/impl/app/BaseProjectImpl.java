@@ -64,6 +64,7 @@ public abstract class BaseProjectImpl implements DBPProject, DBSSecretSubject {
     public static final String PROP_PROJECT_ID = "id";
     public static final String PROP_PROJECT_NAME = "name";
     public static final String PROP_PROJECT_DESCRIPTION = "description";
+    public static final String PROJECT_FILE = ".project";
 
     public enum ProjectFormat {
         UNKNOWN,    // Project is not open or corrupted
@@ -697,4 +698,10 @@ public abstract class BaseProjectImpl implements DBPProject, DBSSecretSubject {
         return fileNotEmpty;
     }
 
+    // Called by model itself when some project-dependent entities change their state
+    // E.g. when we save/load datasource registry
+    // By default does nothing
+    public void updateProjectNature() {
+
+    }
 }

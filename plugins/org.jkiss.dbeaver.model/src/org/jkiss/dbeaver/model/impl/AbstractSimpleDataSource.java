@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.model.impl;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPExclusiveResource;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
@@ -39,6 +40,8 @@ import java.util.List;
 public abstract class AbstractSimpleDataSource<EXEC_CONTEXT extends DBCExecutionContext>
     extends AbstractDataSource
     implements DBSInstance, DBSObjectContainer, DBSObject {
+
+    private static final Log log = Log.getLog(AbstractSimpleDataSource.class);
 
     protected EXEC_CONTEXT executionContext;
     @NotNull
@@ -100,6 +103,8 @@ public abstract class AbstractSimpleDataSource<EXEC_CONTEXT extends DBCExecution
         Object lock = this.exclusiveLock.acquireExclusiveLock();
         try {
             executionContext.close();
+        } catch (DBException e) {
+            log.error("Rrror shutting down datasource", e);
         } finally {
             this.exclusiveLock.releaseExclusiveLock(lock);
         }

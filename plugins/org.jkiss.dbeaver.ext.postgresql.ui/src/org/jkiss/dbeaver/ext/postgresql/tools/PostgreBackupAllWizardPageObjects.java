@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ext.postgresql.tools;
 
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.CLabel;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.code.NotNull;
@@ -61,6 +62,11 @@ public class PostgreBackupAllWizardPageObjects extends AbstractNativeToolWizardP
             GridData.FILL_HORIZONTAL,
             0);
         objectsGroup.setLayoutData(new GridData(GridData.FILL_BOTH));
+
+        connInfo = new CLabel(objectsGroup, SWT.WRAP);
+        connInfo.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
+        connInfo.setImage(DBeaverIcons.getImage(DBIcon.DATABASE_DEFAULT));
+
 
         {
             Composite catPanel = UIUtils.createComposite(objectsGroup, 1);
@@ -127,6 +133,8 @@ public class PostgreBackupAllWizardPageObjects extends AbstractNativeToolWizardP
             }
         }
         if (dataSource != null) {
+            setConnectionInfo(dataSource.getContainer(), null);
+
             // Database list depends on connection setting
             for (PostgreDatabase database : dataSource.getDatabases()) {
                 TableItem item = new TableItem(databasesTable, SWT.NONE);

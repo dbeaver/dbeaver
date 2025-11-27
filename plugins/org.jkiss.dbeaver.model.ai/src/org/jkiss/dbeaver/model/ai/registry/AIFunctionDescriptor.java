@@ -20,11 +20,13 @@ import org.eclipse.core.runtime.IConfigurationElement;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.ai.AIFunction;
 import org.jkiss.dbeaver.model.ai.AIFunctionResult;
 import org.jkiss.dbeaver.model.ai.AIPromptGenerator;
 import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
+import org.jkiss.dbeaver.model.meta.IPropertyValueListProvider;
 import org.jkiss.dbeaver.registry.RegistryConstants;
 import org.jkiss.utils.CommonUtils;
 
@@ -35,7 +37,8 @@ public class AIFunctionDescriptor extends AbstractDescriptor {
 
     public static final String EXTENSION_ID = "com.dbeaver.ai.function";
 
-    public static class Parameter {
+    public class Parameter {
+        private static final Log log = Log.getLog(Parameter.class);
         private final IConfigurationElement config;
 
         Parameter(@NotNull IConfigurationElement config) {
@@ -57,19 +60,37 @@ public class AIFunctionDescriptor extends AbstractDescriptor {
             return config.getAttribute("description");
         }
 
+        public boolean isRequired() {
+            return CommonUtils.getBoolean(config.getAttribute("required"));
+        }
+
         @Nullable
         public String[] getValidValues() {
             String validValues = config.getAttribute("validValues");
-            return CommonUtils.isEmpty(validValues) ? null : validValues.split(", ");
+            if (CommonUtils.isEmpty(validValues) && CommonUtils.isNotEmpty(config.getAttribute("validValuesProvider"))) {
+                ObjectType validValuesProvider = new ObjectType(config, "validValuesProvider");
+                try {
+                    var provider = validValuesProvider.createInstance(IPropertyValueListProvider.class);
+                    Object[] validObjects = provider.getPossibleValues(this);
+                    return (String[]) validObjects;
+                } catch (DBException e) {
+                    log.error("Error on getting valid values from provider", e);
+                }
+            }
+            return CommonUtils.isEmpty(validValues) ? null : validValues.split(",");
         }
     }
 
     private final IConfigurationElement contributorConfig;
     private final ObjectType objectType;
+    private final String id;
     private final String name;
     private final DBPImage icon;
     private final boolean global;
+    private final boolean hidden;
     private final AIFunctionResult.FunctionType type;
+    private final String[] dependsOn;
+    private final String categoryId;
     private final Parameter[] parameters;
 
     public AIFunctionDescriptor(@NotNull IConfigurationElement config) {
@@ -77,8 +98,12 @@ public class AIFunctionDescriptor extends AbstractDescriptor {
         this.contributorConfig = config;
         this.objectType = new ObjectType(config, RegistryConstants.ATTR_CLASS);
         this.icon = iconToImage(config.getAttribute(RegistryConstants.ATTR_ICON));
+        this.id = config.getAttribute("id");
         this.name = config.getAttribute("name");
         this.global = CommonUtils.toBoolean(config.getAttribute("global"));
+        this.hidden = CommonUtils.toBoolean(config.getAttribute("hidden"));
+        this.categoryId = config.getAttribute("categoryId");
+        this.dependsOn = CommonUtils.splitString(config.getAttribute("dependsOn"), ',').toArray(new String[0]);
         this.type = CommonUtils.valueOf(
             AIFunctionResult.FunctionType.class,
             config.getAttribute("type"),
@@ -90,6 +115,11 @@ public class AIFunctionDescriptor extends AbstractDescriptor {
             params.add(new Parameter(pe));
         }
         this.parameters = params.toArray(new Parameter[0]);
+    }
+
+    @NotNull
+    public String getId() {
+        return id;
     }
 
     @NotNull
@@ -119,9 +149,18 @@ public class AIFunctionDescriptor extends AbstractDescriptor {
         return global;
     }
 
+    public boolean isHidden() {
+        return hidden;
+    }
+
     @NotNull
     public Parameter[] getParameters() {
         return parameters;
+    }
+
+    @NotNull
+    public String[] getDependsOn() {
+        return dependsOn;
     }
 
     @NotNull
@@ -129,7 +168,7 @@ public class AIFunctionDescriptor extends AbstractDescriptor {
         try {
             return objectType.createInstance(AIFunction.class);
         } catch (Exception e) {
-            throw new DBException("Error creating AI function " + getName(), e);
+            throw new DBException("Error creating AI function " + getId(), e);
         }
     }
 
@@ -139,11 +178,16 @@ public class AIFunctionDescriptor extends AbstractDescriptor {
 
     @Override
     public String toString() {
-        return "AI function: " + getName();
+        return "AI function: " + getId();
     }
 
     @NotNull
     public String getSignature() {
-        return getName();
+        return getId();
+    }
+
+    @Nullable
+    public String getCategoryId() {
+        return categoryId;
     }
 }

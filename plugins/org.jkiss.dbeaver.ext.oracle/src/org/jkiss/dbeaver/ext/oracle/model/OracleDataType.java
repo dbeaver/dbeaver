@@ -264,6 +264,7 @@ public class OracleDataType extends OracleObject<DBSObject>
         return OracleSourceType.TYPE;
     }
 
+    @NotNull
     @Override
     @Property(hidden = true, editable = true, updatable = true, order = -1)
     public String getObjectDefinitionText(@NotNull DBRProgressMonitor monitor, @NotNull Map<String, Object> options) throws DBCException
@@ -296,9 +297,10 @@ public class OracleDataType extends OracleObject<DBSObject>
         }
     }
 
+    @NotNull
     @Override
     @Property(hidden = true, editable = true, updatable = true, order = -1)
-    public String getExtendedDefinitionText(DBRProgressMonitor monitor) throws DBException
+    public String getExtendedDefinitionText(@NotNull DBRProgressMonitor monitor) throws DBException
     {
         if (sourceDefinition == null && monitor != null) {
             sourceDefinition = OracleUtils.getSource(monitor, this, true, false);
@@ -375,7 +377,7 @@ public class OracleDataType extends OracleObject<DBSObject>
 
     @NotNull
     @Override
-    public DBCLogicalOperator[] getSupportedOperators(DBSTypedObject attribute) {
+    public DBCLogicalOperator[] getSupportedOperators(@NotNull DBSTypedObject attribute) {
         return DBUtils.getDefaultOperators(this);
     }
 

@@ -221,6 +221,7 @@ public abstract class PostgreTable extends PostgreTableReal
         return getSchema().getIndexes(monitor, this);
     }
 
+    @NotNull
     @Override
     public String getObjectDefinitionText(@NotNull DBRProgressMonitor monitor, @NotNull Map<String, Object> options) throws DBException {
         return DBStructUtils.generateTableDDL(monitor, this, options, false);
@@ -502,7 +503,7 @@ public abstract class PostgreTable extends PostgreTableReal
     }
 
     @Override
-    public boolean supportsObjectDefinitionOption(String option) {
+    public boolean supportsObjectDefinitionOption(@NotNull String option) {
         if (hasPartitions && DBPScriptObject.OPTION_INCLUDE_PARTITIONS.equals(option)) {
             return true;
         }
@@ -531,14 +532,14 @@ public abstract class PostgreTable extends PostgreTableReal
     public static class PostgreColumnHasOidsValidator implements IPropertyValueValidator<PostgreTable, Object> {
 
         @Override
-        public boolean isValidValue(PostgreTable object, Object value) throws IllegalArgumentException {
+        public boolean isValidValue(@NotNull PostgreTable object, @Nullable Object value) throws IllegalArgumentException {
             return object.getDataSource().getServerType().supportsHasOidsColumn();
         }
     }
 
     public static class PostgreColumnHasRowLevelSecurity implements IPropertyValueValidator<PostgreTable, Object> {
         @Override
-        public boolean isValidValue(PostgreTable object, Object value) throws IllegalArgumentException {
+        public boolean isValidValue(@NotNull PostgreTable object, @Nullable Object value) throws IllegalArgumentException {
             return object.getDataSource().getServerType().supportsRowLevelSecurity();
         }
     }

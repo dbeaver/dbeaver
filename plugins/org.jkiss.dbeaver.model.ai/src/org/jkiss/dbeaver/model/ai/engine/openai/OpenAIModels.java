@@ -35,14 +35,14 @@ public final class OpenAIModels {
     public static final Map<String, AIModel> KNOWN_MODELS = Stream.of(
         new AIModel("o4-mini", 200_000, Set.of(AIModelFeature.CHAT, AIModelFeature.STREAMING)),
         new AIModel("o3-pro", 200_000, Set.of(AIModelFeature.CHAT)),
-        new AIModel("o3", 200_000, Set.of(AIModelFeature.CHAT), 1),
-        new AIModel("o3-mini", 200_000, Set.of(AIModelFeature.CHAT, AIModelFeature.STREAMING), 1),
+        new AIModel("o3", 200_000, Set.of(AIModelFeature.CHAT, AIModelFeature.ALWAYS_DEFAULT_TEMPERATURE), 1),
+        new AIModel("o3-mini", 200_000, Set.of(AIModelFeature.CHAT, AIModelFeature.STREAMING, AIModelFeature.ALWAYS_DEFAULT_TEMPERATURE), 1),
         new AIModel("o1-pro", 200_000, Set.of(AIModelFeature.CHAT, AIModelFeature.STREAMING)),
         new AIModel("o1", 200_000, Set.of(AIModelFeature.CHAT, AIModelFeature.STREAMING)),
         new AIModel("o1-mini", 128_000, Set.of(AIModelFeature.CHAT, AIModelFeature.STREAMING)),
-        new AIModel("gpt-5", 400_000, Set.of(AIModelFeature.CHAT), 1),
-        new AIModel("gpt-5-mini", 400_000, Set.of(AIModelFeature.CHAT), 1),
-        new AIModel("gpt-5-nano", 400_000, Set.of(AIModelFeature.CHAT), 1),
+        new AIModel("gpt-5", 400_000, Set.of(AIModelFeature.CHAT, AIModelFeature.ALWAYS_DEFAULT_TEMPERATURE), 1),
+        new AIModel("gpt-5-mini", 400_000, Set.of(AIModelFeature.CHAT, AIModelFeature.ALWAYS_DEFAULT_TEMPERATURE), 1),
+        new AIModel("gpt-5-nano", 400_000, Set.of(AIModelFeature.CHAT, AIModelFeature.ALWAYS_DEFAULT_TEMPERATURE), 1),
         new AIModel("gpt-4.1", 1_048_576, Set.of(AIModelFeature.CHAT, AIModelFeature.STREAMING)),
         new AIModel("gpt-4o", 128_000, Set.of(AIModelFeature.CHAT, AIModelFeature.STREAMING)),
         new AIModel("gpt-4o-mini", 128_000, Set.of(AIModelFeature.CHAT, AIModelFeature.STREAMING)),
@@ -135,5 +135,9 @@ public final class OpenAIModels {
             }
         }
         return true;
+    }
+
+    public static boolean isTemperatureEditable(@NotNull AIModel model) {
+        return !model.features().contains(AIModelFeature.ALWAYS_DEFAULT_TEMPERATURE);
     }
 }

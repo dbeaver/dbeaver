@@ -179,7 +179,7 @@ public class VerticaSchema extends GenericSchema implements DBPSystemObject, DBP
     }
 
     @Override
-    public void collectObjectStatistics(DBRProgressMonitor monitor, boolean totalSizeOnly, boolean forceRefresh) throws DBException {
+    public void collectObjectStatistics(@NotNull DBRProgressMonitor monitor, boolean totalSizeOnly, boolean forceRefresh) throws DBException {
         try (DBCSession session = DBUtils.openMetaSession(monitor, this, "Read relation statistics")) {
             try (JDBCPreparedStatement dbStat = ((JDBCSession)session).prepareStatement(
                 "SELECT anchor_table_name as table_name,\n" +

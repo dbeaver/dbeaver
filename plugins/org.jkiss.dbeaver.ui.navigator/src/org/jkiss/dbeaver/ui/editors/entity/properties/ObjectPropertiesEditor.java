@@ -171,12 +171,8 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
                     propertiesPanel.createControl(propsPlaceholder);
                 }
             }
-
             if (sashForm != null) {
-                //Runnable sashUpdater = this::updateSashWidths;
-                //sashUpdater.run();
-                //UIUtils.asyncExec(sashUpdater);
-                updateSashWidths();
+                UIUtils.asyncExec(this::updateSashWidths);
             }
             pageControl.layout(true, true);
         } finally {
@@ -305,47 +301,21 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
             return;
         }
 
-//        if (propsPlaceholder != null) {
-            Point propsSize = propsPlaceholder.computeSize(SWT.DEFAULT, SWT.DEFAULT, true);
-            propsSize.y += 10;
-            Point sashSize = sashForm.getParent().getSize();
-            if (sashSize.x <= 0 || sashSize.y <= 0) {
-                // This may happen if EntityEditor created with some other active editor (i.e. props editor not visible)
-                sashSize = getParentSize(sashForm);
-                //sashSize.y += 20;
-            }
-            if (sashSize.x > 0 && sashSize.y > 0) {
-                float ratio = (float) propsSize.y / (float) sashSize.y;
-                int propsRatio = Math.min(1000, (int) (1000 * ratio));
-                int[] newWeights = {propsRatio, 1000 - propsRatio};
-                if (!Arrays.equals(newWeights, sashForm.getWeights())) {
-                    sashForm.setWeights(newWeights);
-                    //sashForm.layout();
-                }
-            }
-
-/*
-        } else {
-            String sashStateStr = DBWorkbench.getPlatform().getPreferenceStore().getString(NavigatorPreferences.ENTITY_EDITOR_INFO_SASH_STATE);
-            int sashPanelHeight = !CommonUtils.isEmpty(sashStateStr) ? Integer.parseInt(sashStateStr) : 400;
-            if (sashPanelHeight < 0) sashPanelHeight = 0;
-            if (sashPanelHeight > 1000) sashPanelHeight = 1000;
-
-            sashForm.setWeights(new int[] { sashPanelHeight, 1000 - sashPanelHeight });
-            //sashForm.layout();
-
-            sashForm.getChildren()[0].addListener(SWT.Resize, event -> {
-                if (sashForm != null) {
-                    int[] weights = sashForm.getWeights();
-                    if (weights != null && weights.length > 0) {
-                        int topWeight = weights[0];
-                        if (topWeight == 0) topWeight = 1;
-                        DBWorkbench.getPlatform().getPreferenceStore().setValue(NavigatorPreferences.ENTITY_EDITOR_INFO_SASH_STATE, topWeight);
-                    }
-                }
-            });
+        Point sashSize = sashForm.getParent().getSize();
+        if (sashSize.x <= 0 || sashSize.y <= 0) {
+            // This may happen if EntityEditor created with some other active editor (i.e. props editor not visible)
+            sashSize = getParentSize(sashForm);
         }
-*/
+
+        if (sashSize.x > 0 && sashSize.y > 0) {
+            Point propsSize = propsPlaceholder.getSize();
+            int budget = sashSize.y - sashForm.getSashWidth();
+            int height = propsPlaceholder.computeSize(propsSize.x, SWT.DEFAULT).y;
+            int[] newWeights = {height, budget - height};
+            if (!Arrays.equals(newWeights, sashForm.getWeights())) {
+                sashForm.setWeights(newWeights);
+            }
+        }
     }
 
     @Override

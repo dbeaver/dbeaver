@@ -248,6 +248,7 @@ public class VerticaUDF extends AbstractProcedure<GenericDataSource, GenericStru
         return getName();
     }
 
+    @NotNull
     @Override
     public String getObjectDefinitionText(@NotNull DBRProgressMonitor monitor, @NotNull Map<String, Object> options) throws DBException {
         return definition;

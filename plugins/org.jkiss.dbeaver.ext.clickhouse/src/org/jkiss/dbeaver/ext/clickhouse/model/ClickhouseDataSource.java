@@ -33,9 +33,9 @@ import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.jdbc.*;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCExecutionContext;
-import org.jkiss.dbeaver.model.impl.jdbc.JDBCRemoteInstance;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
+import org.jkiss.dbeaver.model.impl.jdbc.exec.JDBCStatementImpl;
 import org.jkiss.dbeaver.model.impl.net.SSLHandlerTrustStoreImpl;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
@@ -44,6 +44,7 @@ import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectFilter;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.utils.BeanUtils;
 import org.jkiss.utils.CommonUtils;
 import org.osgi.framework.Version;
 
@@ -171,6 +172,38 @@ public class ClickhouseDataSource extends GenericDataSource {
         properties.put(ClickhouseConstants.CLICKHOUSE_SETTING_SESSION_ID, "sess_" + UUID.randomUUID());
     }
 
+    // Canceling
+    @Override
+    public void cancelStatementExecute(DBRProgressMonitor monitor, JDBCStatement statement) throws DBException {
+        try {
+
+            super.cancelStatementExecute(monitor, statement);
+        } catch (Throwable ex) {
+            if (ex.getMessage().contains(ClickhouseConstants.SESSION_BUSY_ERROR_CODE_MESSAGE)) {
+                fallbackForServerID(monitor, statement);
+            }
+        }
+    }
+
+    // same session_id will lead to impossibility of cancelling the query, because the session is already busy...
+    // So we need to temporarily create a new one
+    protected void fallbackForServerID(@NotNull DBRProgressMonitor monitor, @NotNull JDBCStatement statement) throws DBCException {
+        try (Connection connection = openConnection(monitor, statement.getConnection().getExecutionContext(), "Close Query")) {
+            try (Statement dbStat = connection.createStatement()) {
+                Statement original = ((JDBCStatementImpl) statement).getOriginal();
+                String getLastQueryId = (String) BeanUtils.invokeObjectDeclaredMethod(
+                    original,
+                    ClickhouseConstants.DRIVER_GET_LAST_QUERY_METHOD,
+                    new Class[0],
+                    new Object[0]
+                );
+                dbStat.execute("KILL QUERY WHERE query_id='%s'".formatted(getLastQueryId));
+            }
+        } catch (Throwable e) {
+            throw new DBCException("Error during cancelling query", e);
+        }
+    }
+
     @Override
     protected synchronized void readDatabaseServerVersion(Connection session, DatabaseMetaData metaData) {
         if (databaseVersion == null) {
@@ -201,9 +234,18 @@ public class ClickhouseDataSource extends GenericDataSource {
                 return type;
             }
         }
-        return super.resolveDataType(monitor, typeFullName);
+
+        DBSDataType type = super.resolveDataType(monitor, typeFullName);
+        if (type != null) {
+            return type;
+        }
+
+        // As a last resort, try to find the type without modifiers
+        String baseTypeName = ClickhouseTypeParser.getTypeNameWithoutModifiers(typeFullName);
+        return super.resolveDataType(monitor, baseTypeName);
     }
 
+    @NotNull
     @Override
     public String getDefaultDataTypeName(@NotNull DBPDataKind dataKind) {
         switch (dataKind) {

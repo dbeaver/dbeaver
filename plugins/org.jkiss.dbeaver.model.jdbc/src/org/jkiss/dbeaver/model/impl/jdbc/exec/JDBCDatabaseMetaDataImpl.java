@@ -69,7 +69,14 @@ public class JDBCDatabaseMetaDataImpl implements JDBCDatabaseMetaData {
         fakeStatement.beforeExecute();
         fakeStatement.afterExecute();
 
-        ResultSet originalRS = resultSet.get();
+        ResultSet originalRS = null;
+        try {
+            originalRS = resultSet.get();
+        } catch (SQLException e) {
+            fakeStatement.close();
+            throw e;
+        }
+
         // We need to create a fake statement for such a result sets
         return JDBCResultSetImpl.makeResultSet(connection, fakeStatement, originalRS, false);
     }

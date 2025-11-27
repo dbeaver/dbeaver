@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,13 +26,14 @@ import org.jkiss.utils.ArrayUtils;
  */
 public abstract class RMObject implements DBPNamedObject {
 
+    @Nullable
     private RMResource[] children;
     private String name;
 
     public RMObject() {
     }
 
-    public RMObject(String name) {
+    public RMObject(@NotNull String name) {
         this.name = name;
     }
 
@@ -43,7 +44,7 @@ public abstract class RMObject implements DBPNamedObject {
         return name;
     }
 
-    public void setName(String name) {
+    public void setName(@NotNull String name) {
         this.name = name;
     }
 
@@ -85,7 +86,7 @@ public abstract class RMObject implements DBPNamedObject {
         }
     }
 
-    public void addChild(RMResource child) {
+    public void addChild(@NotNull RMResource child) {
         if (children == null) {
             children = new RMResource[] { child };
         } else {
@@ -93,8 +94,8 @@ public abstract class RMObject implements DBPNamedObject {
         }
     }
 
-    public void removeChild(RMResource child) {
-        if (children.length == 1 && children[0] == child) {
+    public void removeChild(@NotNull RMResource child) {
+        if (children == null || (children.length == 1 && children[0] == child)) {
             children = null;
         } else {
             children = ArrayUtils.remove(RMResource.class, children, child);

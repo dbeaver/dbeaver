@@ -134,7 +134,7 @@ public class PostgreSequence extends PostgreTableBase implements DBSSequence, DB
 
     public static class AdditionalInfoValidator implements IPropertyCacheValidator<PostgreSequence> {
         @Override
-        public boolean isPropertyCached(PostgreSequence object, Object propertyId)
+        public boolean isPropertyCached(@NotNull PostgreSequence object, @NotNull Object propertyId)
         {
             return object.additionalInfo.loaded;
         }
@@ -266,6 +266,7 @@ public class PostgreSequence extends PostgreTableBase implements DBSSequence, DB
         return null;
     }
 
+    @NotNull
     @Override
     public String getObjectDefinitionText(@NotNull DBRProgressMonitor monitor, @NotNull Map<String, Object> options) throws DBException {
         StringBuilder sql = new StringBuilder()
@@ -344,7 +345,7 @@ public class PostgreSequence extends PostgreTableBase implements DBSSequence, DB
     }
 
     @Override
-    public boolean supportsObjectDefinitionOption(String option) {
+    public boolean supportsObjectDefinitionOption(@NotNull String option) {
         return DBPScriptObject.OPTION_INCLUDE_PERMISSIONS.equals(option) || DBPScriptObject.OPTION_INCLUDE_COMMENTS.equals(option);
     }
 
@@ -362,7 +363,7 @@ public class PostgreSequence extends PostgreTableBase implements DBSSequence, DB
 
     public static class CacheAndCycleValidator implements IPropertyValueValidator<PostgreSequence, Object> {
         @Override
-        public boolean isValidValue(PostgreSequence object, Object value) throws IllegalArgumentException {
+        public boolean isValidValue(@NotNull PostgreSequence object, @Nullable Object value) throws IllegalArgumentException {
             return object.supportsCacheAndCycle();
         }
     }

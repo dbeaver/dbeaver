@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,8 +37,7 @@ public class ObjectPropertySwitchToSourceHandler extends AbstractHandler {
     @Nullable
     public Object execute(@NotNull ExecutionEvent event) throws ExecutionException {
         IEditorPart editorPart = HandlerUtil.getActiveEditor(event);
-        if (editorPart instanceof EntityEditor) {
-            EntityEditor editor = (EntityEditor)editorPart;
+        if (editorPart instanceof EntityEditor editor) {
             String sourceEditorId = findSourceTextEditorId(editor);
             if (sourceEditorId != null) {
                 editor.switchFolder(sourceEditorId);
@@ -50,11 +49,11 @@ public class ObjectPropertySwitchToSourceHandler extends AbstractHandler {
     
     @Nullable
     public static String findSourceTextEditorId(@NotNull EntityEditor editor) {
-        ObjectPropertiesEditor part = (ObjectPropertiesEditor)editor.getPageEditor(EntityEditorDescriptor.DEFAULT_OBJECT_EDITOR_ID);
-        if (part != null) {
-            List<EntityEditorDescriptor> descrs = EntityEditorsRegistry.getInstance().getEntityEditors(editor.getDatabaseObject(), part, null);
-            for (EntityEditorDescriptor descr: descrs) {
-                if (BaseTextEditor.class.isAssignableFrom(descr.getEditorType().getObjectClass())) {
+        if (editor.getPageEditor(EntityEditorDescriptor.DEFAULT_OBJECT_EDITOR_ID) instanceof ObjectPropertiesEditor part) {
+            List<EntityEditorDescriptor> descrs = EntityEditorsRegistry.getInstance().getEntityEditors(
+                editor.getDatabaseObject(), part, null);
+            for (EntityEditorDescriptor descr : descrs) {
+                if (descr.getEditorType().matchesType(BaseTextEditor.class)) {
                     return descr.getId();
                 }
             }

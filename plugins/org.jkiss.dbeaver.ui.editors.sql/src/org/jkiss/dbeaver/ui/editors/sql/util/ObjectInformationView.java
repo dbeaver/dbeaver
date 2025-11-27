@@ -50,6 +50,7 @@ import org.jkiss.dbeaver.ui.BaseThemeSettings;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.SubEditorSite;
 import org.jkiss.dbeaver.ui.navigator.itemlist.ItemListControl;
+import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
@@ -257,7 +258,7 @@ public class ObjectInformationView {
             return Collections.emptyList();
         }
         List<DBNNode> children = new ArrayList<>();
-        for (DBNNode child : node.getChildren(monitor)) {
+        for (DBNNode child : ArrayUtils.safeArray(node.getChildren(monitor))) {
             if (child instanceof DBNDatabaseFolder databaseFolder) {
                 Class<? extends DBSObject> childrenClass = databaseFolder.getChildrenClass();
                 if (childrenClass != null && DBSTableColumn.class.isAssignableFrom(childrenClass)) {
@@ -265,7 +266,9 @@ public class ObjectInformationView {
                         itemListControl.setRootNode(child);
                     }
                     DBNNode[] folderChildren = child.getChildren(monitor);
-                    children.addAll(List.of(folderChildren));
+                    if (folderChildren != null) {
+                        children.addAll(List.of(folderChildren));
+                    }
                 }
             } else {
                 children.add(child);

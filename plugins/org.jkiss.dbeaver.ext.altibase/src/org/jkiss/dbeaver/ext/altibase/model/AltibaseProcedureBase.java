@@ -118,6 +118,7 @@ implements DBSObjectWithScript, DBPStatefulObject, DBPRefreshableObject {
         }
     }
     
+    @NotNull
     @Override
     @Property(hidden = true, editable = true, updatable = true)
     public String getObjectDefinitionText(@NotNull DBRProgressMonitor monitor, @NotNull Map<String, Object> options) throws DBException {
@@ -153,7 +154,7 @@ implements DBSObjectWithScript, DBPStatefulObject, DBPRefreshableObject {
     }
 
     @Override
-    public void refreshObjectState(DBRProgressMonitor monitor) throws DBCException {
+    public void refreshObjectState(@NotNull DBRProgressMonitor monitor) throws DBCException {
         try (JDBCSession session = DBUtils.openMetaSession(monitor, this, 
                 "Refresh state of " + getProcedureTypeName() + " '" + this.getName() + "'")) {
             refreshState(session);

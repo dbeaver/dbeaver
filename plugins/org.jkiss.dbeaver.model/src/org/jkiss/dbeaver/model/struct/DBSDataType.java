@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -45,7 +45,7 @@ public interface DBSDataType extends DBSObject, DBSTypedObject
     int getMaxScale();
 
     @NotNull
-    DBCLogicalOperator[] getSupportedOperators(DBSTypedObject attribute);
+    DBCLogicalOperator[] getSupportedOperators(@NotNull DBSTypedObject attribute);
     
     default boolean isStructurallyConsistentTypeWith(@NotNull DBCAttributeMetaData metaData) {
         return this.getDataKind().isComplex() == metaData.getDataKind().isComplex();

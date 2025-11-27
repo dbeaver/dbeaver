@@ -403,34 +403,37 @@ public abstract class JDBCDataSource extends AbstractDataSource
                 }
                 closingConnections.add(connection);
             }
-            // Close datasource (in async task)
-            return RuntimeUtils.runTask(monitor -> {
-                    if (doRollback) {
-                        try {
-                            // If we in transaction - rollback it.
-                            // Any valuable transaction changes should be committed by UI
-                            // so here we do it just in case to avoid error messages on close with open transaction
-                            connection.rollback();
-                        } catch (Throwable e) {
-                            if (e instanceof SQLException se && JDBCUtils.isRollbackWarning(se)) {
-                                // ignore
-                                log.debug("Warning during active transaction close: " + e.getMessage());
-                            } else {
-                                // Do not write warning because connection maybe broken before the moment of close
-                                log.debug("Error closing active transaction", e);
+            try {
+                // Close datasource (in async task)
+                return RuntimeUtils.runTask(monitor -> {
+                        if (doRollback) {
+                            try {
+                                // If we in transaction - rollback it.
+                                // Any valuable transaction changes should be committed by UI
+                                // so here we do it just in case to avoid error messages on close with open transaction
+                                connection.rollback();
+                            } catch (Throwable e) {
+                                if (e instanceof SQLException se && JDBCUtils.isRollbackWarning(se)) {
+                                    // ignore
+                                    log.debug("Warning during active transaction close: " + e.getMessage());
+                                } else {
+                                    // Do not write warning because connection maybe broken before the moment of close
+                                    log.debug("Error closing active transaction", e);
+                                }
                             }
                         }
-                    }
-                    try {
-                        connection.close();
-                    } catch (Throwable ex) {
-                        log.debug("Error closing connection", ex);
-                    }
-                    synchronized (closingConnections) {
-                        closingConnections.remove(connection);
-                    }
-                }, "Close JDBC connection " + getContainer().getName() + " (" + purpose + ")",
-                getContainer().getPreferenceStore().getInt(ModelPreferences.CONNECTION_CLOSE_TIMEOUT));
+                        try {
+                            connection.close();
+                        } catch (Throwable ex) {
+                            log.debug("Error closing connection", ex);
+                        }
+                    }, "Close JDBC connection " + getContainer().getName() + " (" + purpose + ")",
+                    getContainer().getPreferenceStore().getInt(ModelPreferences.CONNECTION_CLOSE_TIMEOUT));
+            } finally {
+                synchronized (closingConnections) {
+                    closingConnections.remove(connection);
+                }
+            }
         } else {
             log.debug("Null connection parameter");
             return true;
@@ -469,7 +472,7 @@ public abstract class JDBCDataSource extends AbstractDataSource
         return jdbcFactory;
     }
 
-    @Nullable
+    @NotNull
     @Override
     public JDBCRemoteInstance getDefaultInstance() {
         return defaultRemoteInstance;
@@ -711,6 +714,7 @@ public abstract class JDBCDataSource extends AbstractDataSource
         return getLocalDataType(typeFullName);
     }
 
+    @Nullable
     @Override
     public DBSDataType getLocalDataType(int typeID) {
         for (DBSDataType dataType : getLocalDataTypes()) {
@@ -721,6 +725,7 @@ public abstract class JDBCDataSource extends AbstractDataSource
         return null;
     }
 
+    @NotNull
     @Override
     public String getDefaultDataTypeName(@NotNull DBPDataKind dataKind)
     {
@@ -805,6 +810,7 @@ public abstract class JDBCDataSource extends AbstractDataSource
     /////////////////////////////////////////////////
     // Error assistance
 
+    @NotNull
     @Override
     public ErrorType discoverErrorType(@NotNull Throwable error)
     {

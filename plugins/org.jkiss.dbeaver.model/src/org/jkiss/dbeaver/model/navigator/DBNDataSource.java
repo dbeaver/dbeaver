@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,7 +23,7 @@ import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.navigator.meta.DBXTreeItem;
 import org.jkiss.dbeaver.model.navigator.meta.DBXTreeNode;
-import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
+import org.jkiss.dbeaver.model.net.DBWUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressListener;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -40,7 +40,7 @@ public class DBNDataSource extends DBNDatabaseNode implements DBNContainer, DBPA
     private static final boolean USE_ICON_DECORATIONS = false; // Disabled in #9384
 
     private final DBPDataSourceContainer dataSource;
-    private DBXTreeNode treeRoot;
+    private final DBXTreeNode treeRoot;
 
     public DBNDataSource(@NotNull DBNNode parentNode, @NotNull DBPDataSourceContainer dataSource)
     {
@@ -50,6 +50,7 @@ public class DBNDataSource extends DBNDatabaseNode implements DBNContainer, DBPA
         registerNode();
     }
 
+    @Nullable
     @Override
     public DBNNode getParentNode()
     {
@@ -78,52 +79,59 @@ public class DBNDataSource extends DBNDatabaseNode implements DBNContainer, DBPA
         return dataSource;
     }
 
+    @Nullable
     @Override
     public Object getValueObject()
     {
         return dataSource.getDataSource();
     }
 
+    @NotNull
     @Override
     public String getChildrenType() {
         final List<DBXTreeNode> metaChildren = treeRoot.getChildren(this);
         if (CommonUtils.isEmpty(metaChildren) || metaChildren.size() > 1) {
             return "?";
         } else {
-            return metaChildren.get(0).getChildrenTypeLabel(getDataSource(), null);
+            return metaChildren.getFirst().getChildrenTypeLabel(getDataSource(), null);
         }
     }
 
+    @Nullable
     @Override
     public Class<?> getChildrenClass() {
         final List<DBXTreeNode> metaChildren = treeRoot.getChildren(null); // Use null context because we don't need to filter nodes
         if (CommonUtils.isEmpty(metaChildren) || metaChildren.size() > 1) {
             return null;
         }
-        DBXTreeNode childNode = metaChildren.get(0);
+        DBXTreeNode childNode = metaChildren.getFirst();
         if (childNode instanceof DBXTreeItem) {
             return getChildrenClass((DBXTreeItem) childNode);
         }
         return null;
     }
 
+    @NotNull
     @Override
     public String getNodeDisplayName() {
         return dataSource.getName();
     }
 
+    @Nullable
     @Override
     public String getNodeDescription()
     {
         return dataSource.getDescription();
     }
 
+    @NotNull
     @Override
     public String getNodeFullName()
     {
         return getNodeDisplayName();
     }
 
+    @NotNull
     @Deprecated
     @Override
     public String getNodeItemPath() {
@@ -131,7 +139,7 @@ public class DBNDataSource extends DBNDatabaseNode implements DBNContainer, DBPA
     }
 
     @Override
-    public boolean isManagable()
+    public boolean isManageable()
     {
         return true;
     }
@@ -155,10 +163,11 @@ public class DBNDataSource extends DBNDatabaseNode implements DBNContainer, DBPA
     }
 
     @Override
-    public boolean initializeNode(@Nullable DBRProgressMonitor monitor, DBRProgressListener onFinish) throws DBException {
+    public boolean initializeNode(@Nullable DBRProgressMonitor monitor, @Nullable DBRProgressListener onFinish) throws DBException {
         return DBUtils.initDataSource(monitor, dataSource, onFinish);
     }
 
+    @Nullable
     @Override
     public DBPImage getNodeIcon() {
         DBPImage image = super.getNodeIcon();
@@ -183,16 +192,11 @@ public class DBNDataSource extends DBNDatabaseNode implements DBNContainer, DBPA
     }
 
     public boolean hasNetworkHandlers() {
-        for (DBWHandlerConfiguration handler : dataSource.getConnectionConfiguration().getHandlers()) {
-            if (handler.isEnabled()) {
-                return true;
-            }
-        }
-        return false;
+        return !DBWUtils.getActualNetworkHandlers(dataSource).isEmpty();
     }
 
     @Override
-    public <T> T getAdapter(Class<T> adapter) {
+    public <T> T getAdapter(@NotNull Class<T> adapter) {
         if (adapter == DBNDataSource.class) {
             return adapter.cast(this);
         } else if (DBPDataSourceContainer.class.isAssignableFrom(adapter)) {
@@ -215,7 +219,7 @@ public class DBNDataSource extends DBNDatabaseNode implements DBNContainer, DBPA
     }
 
     @Override
-    public void rename(DBRProgressMonitor monitor, String newName)
+    public void rename(@NotNull DBRProgressMonitor monitor, @NotNull String newName)
     {
         dataSource.setName(newName);
         dataSource.persistConfiguration();
@@ -238,15 +242,14 @@ public class DBNDataSource extends DBNDatabaseNode implements DBNContainer, DBPA
     }
 
     @Override
-    public boolean supportsDrop(DBNNode otherNode)
-    {
+    public boolean supportsDrop(@Nullable DBNNode otherNode) {
         return otherNode == null || otherNode instanceof DBNDataSource ||
-            (otherNode instanceof DBNLocalFolder && ((DBNLocalFolder) otherNode).getFolder().canMoveTo(dataSource.getFolder()));
+            (dataSource.getFolder() != null && otherNode instanceof DBNLocalFolder oln &&
+                oln.getFolder().canMoveTo(dataSource.getFolder()));
     }
 
     @Override
-    public void dropNodes(DBRProgressMonitor monitor, Collection<DBNNode> nodes) throws DBException
-    {
+    public void dropNodes(@NotNull DBRProgressMonitor monitor, @NotNull Collection<DBNNode> nodes) {
         DBPDataSourceFolder folder = dataSource.getFolder();
         for (DBNNode node : nodes) {
             if (node instanceof DBNDataSource) {
@@ -270,7 +273,8 @@ public class DBNDataSource extends DBNDatabaseNode implements DBNContainer, DBPA
         return true;
     }
 
-    public DBNNode refreshNode(DBRProgressMonitor monitor, Object source) throws DBException
+    @Nullable
+    public DBNNode refreshNode(@NotNull DBRProgressMonitor monitor, @Nullable Object source) throws DBException
     {
         DBNNode node = super.refreshNode(monitor, source);
         if (node == this) {
@@ -285,6 +289,7 @@ public class DBNDataSource extends DBNDatabaseNode implements DBNContainer, DBPA
         clearNode(true);
     }
 
+    @NotNull
     @Override
     public String toString() {
         return dataSource.toString();

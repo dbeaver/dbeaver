@@ -425,6 +425,7 @@ public class OracleTable extends OracleTablePhysical implements DBPScriptObject,
         super.appendSelectSource(monitor, query, tableAlias, rowIdAttribute);
     }
 
+    @NotNull
     @Override
     public String getObjectDefinitionText(@NotNull DBRProgressMonitor monitor, @NotNull Map<String, Object> options) throws DBException {
         return getDDL(monitor, OracleDDLFormat.getCurrentFormat(getDataSource()), options);
@@ -536,7 +537,7 @@ public class OracleTable extends OracleTablePhysical implements DBPScriptObject,
     }
 
     @Override
-    public boolean supportsObjectDefinitionOption(String option) {
+    public boolean supportsObjectDefinitionOption(@NotNull String option) {
         return ArrayUtils.contains(supportedOptions, option);
     }
 }

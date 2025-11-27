@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,26 +20,37 @@ package org.jkiss.dbeaver.ui.dialogs;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.MessageDialogWithToggle;
 import org.eclipse.jface.preference.IPreferenceStore;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Shell;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
+import org.jkiss.dbeaver.registry.confirmation.ConfirmationConstants;
+import org.jkiss.dbeaver.registry.confirmation.ConfirmationDescriptor;
+import org.jkiss.dbeaver.registry.confirmation.ConfirmationRegistry;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.ui.UIStyles;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.internal.UIActivator;
 import org.jkiss.dbeaver.ui.preferences.PreferenceStoreDelegate;
-import org.jkiss.dbeaver.ui.registry.ConfirmationRegistry;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
+
+import java.util.Locale;
+import java.util.ResourceBundle;
 
 /**
  * Standard confirmation dialog
  */
 public class ConfirmationDialog extends MessageDialogWithToggle {
 
-    public static final String PREF_KEY_PREFIX = "org.jkiss.dbeaver.core.confirm."; //$NON-NLS-1$
+    private static final Log log = Log.getLog(UIStyles.class);
+
+    public static final int CONFIRM_WITH_YES_TO_ALL = 7;
 
     private final boolean hideToggle;
 
@@ -83,7 +94,7 @@ public class ConfirmationDialog extends MessageDialogWithToggle {
      */
     @Nullable
     public static Boolean getPersistedState(@NotNull String id, int kind) {
-        String key = ConfirmationDialog.PREF_KEY_PREFIX + id;
+        String key = ConfirmationConstants.CONFIRM_PREF_KEY_PREFIX + id;
         DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
 
         if (ConfirmationDialog.ALWAYS.equals(store.getString(key))) {
@@ -153,6 +164,9 @@ public class ConfirmationDialog extends MessageDialogWithToggle {
             case QUESTION_WITH_CANCEL -> RuntimeUtils.isMacOS() ?
                 new String[]{IDialogConstants.CANCEL_LABEL, IDialogConstants.NO_LABEL, IDialogConstants.YES_LABEL } :
                 new String[]{IDialogConstants.YES_LABEL, IDialogConstants.NO_LABEL, IDialogConstants.CANCEL_LABEL};
+            case CONFIRM_WITH_YES_TO_ALL -> RuntimeUtils.isMacOS() ?
+                new String[] {IDialogConstants.CANCEL_LABEL, IDialogConstants.OK_LABEL, IDialogConstants.YES_TO_ALL_LABEL} :
+                new String[] {IDialogConstants.YES_TO_ALL_LABEL, IDialogConstants.OK_LABEL, IDialogConstants.CANCEL_LABEL};
             default -> throw new IllegalArgumentException(
                 "Illegal value for kind in MessageDialog.open()"); //$NON-NLS-1$
         };
@@ -172,7 +186,7 @@ public class ConfirmationDialog extends MessageDialogWithToggle {
                 }
             case QUESTION:
                 return RuntimeUtils.isMacOS() ? 0 : 1;
-            case QUESTION_WITH_CANCEL: {
+            case QUESTION_WITH_CANCEL, CONFIRM_WITH_YES_TO_ALL: {
                 return RuntimeUtils.isMacOS() ? 0 : 2;
             }
             default:
@@ -182,16 +196,39 @@ public class ConfirmationDialog extends MessageDialogWithToggle {
     }
 
     public static int confirmAction(@Nullable Shell shell, @NotNull String id, int type, @NotNull Object... args) {
-        return ConfirmationRegistry.getInstance().confirmAction(shell, id, type, -1, args);
+        return confirmAction(shell, -1, id, type, args);
     }
 
     public static int confirmAction(@Nullable Shell shell, int imageType, @NotNull String id, int type, @NotNull Object... args) {
-        return ConfirmationRegistry.getInstance().confirmAction(shell, id, type, imageType, args);
+        ConfirmationDescriptor descriptor = ConfirmationRegistry.getInstance().getConfirmation(id);
+        String toggleMessage = descriptor.getToggleMessage();
+        if ("default".equals(descriptor.getToggleMessage())) {
+            ResourceBundle resourceBundle = RuntimeUtils.getBundleLocalization(
+                UIActivator.getDefault().getBundle(),
+                Locale.getDefault().getLanguage()
+            );
+            try {
+                toggleMessage = resourceBundle.getString("confirm.general.toggleMessage");
+            } catch (Exception e) {
+                log.debug(e);
+            }
+        }
+
+        return ConfirmationDialog.open(
+            type,
+            imageType == -1 ? type : imageType,
+            shell,
+            NLS.bind(descriptor.getTitle(), args),
+            NLS.bind(descriptor.getMessage(), args),
+            toggleMessage != null ? NLS.bind(toggleMessage, args) : null,
+            false,
+            ConfirmationConstants.CONFIRM_PREF_KEY_PREFIX + id
+        );
     }
 
     public static String getSavedPreference(String id) {
         DBPPreferenceStore prefStore = DBWorkbench.getPlatform().getPreferenceStore();
-        return prefStore.getString(PREF_KEY_PREFIX + id);
+        return prefStore.getString(ConfirmationConstants.CONFIRM_PREF_KEY_PREFIX + id);
     }
 
     @Override

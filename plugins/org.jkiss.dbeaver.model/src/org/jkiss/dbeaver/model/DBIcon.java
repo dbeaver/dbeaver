@@ -18,6 +18,7 @@
 package org.jkiss.dbeaver.model;
 
 import org.eclipse.core.runtime.FileLocator;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
@@ -249,6 +250,7 @@ public class DBIcon implements DBPImage {
         return token;
     }
 
+    @NotNull
     @Override
     public String getLocation() {
         return path;

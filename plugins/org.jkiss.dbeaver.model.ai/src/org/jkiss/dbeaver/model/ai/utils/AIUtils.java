@@ -21,17 +21,17 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.*;
-import org.jkiss.dbeaver.model.ai.AIConstants;
-import org.jkiss.dbeaver.model.ai.AIQueryConfirmationRule;
-import org.jkiss.dbeaver.model.ai.AISettings;
+import org.jkiss.dbeaver.model.ai.*;
 import org.jkiss.dbeaver.model.ai.engine.AIEngineProperties;
 import org.jkiss.dbeaver.model.ai.internal.AIMessages;
 import org.jkiss.dbeaver.model.ai.registry.AIEngineDescriptor;
 import org.jkiss.dbeaver.model.ai.registry.AIEngineRegistry;
 import org.jkiss.dbeaver.model.ai.registry.AISettingsManager;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContextDefaults;
 import org.jkiss.dbeaver.model.exec.DBCTransactionManager;
 import org.jkiss.dbeaver.model.impl.DataSourceContextProvider;
+import org.jkiss.dbeaver.model.navigator.DBNUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.secret.DBSSecretController;
 import org.jkiss.dbeaver.model.sql.SQLQueryCategory;
@@ -140,9 +140,13 @@ public final class AIUtils {
             return true;
         }
         Set<SQLQueryCategory> queryCategories = SQLQueryCategory.categorizeScript(scriptElements);
-        boolean isDdlOrUnknown = queryCategories.contains(SQLQueryCategory.DDL) ||
-            queryCategories.contains(SQLQueryCategory.UNKNOWN);
-        if (isDdlOrUnknown && isConfirmationNeeded(AIConstants.AI_CONFIRM_DDL)) {
+        if (queryCategories.contains(SQLQueryCategory.UNKNOWN) && isConfirmationNeeded(AIConstants.AI_CONFIRM_OTHER)) {
+            String message = isCommand ? AIMessages.ai_execute_command_confirm_other_message :
+                AIMessages.ai_execute_query_confirm_other_message;
+            return confirmExecute(AIMessages.ai_execute_query_title, message, dataSource, scriptElements);
+        }
+
+        if (queryCategories.contains(SQLQueryCategory.DDL) && isConfirmationNeeded(AIConstants.AI_CONFIRM_DDL)) {
             String message = isCommand ? AIMessages.ai_execute_command_confirm_ddl_message :
                 AIMessages.ai_execute_query_confirm_ddl_message;
             return confirmExecute(AIMessages.ai_execute_query_title, message, dataSource, scriptElements);
@@ -220,5 +224,38 @@ public final class AIUtils {
             .map(SQLScriptElement::getDataSource)
             .orElse(null);
         return new DataSourceContextProvider(dataSource);
+    }
+
+    public static void updateScopeSettingsIfNeeded(
+        @NotNull AIContextSettings settings,
+        @NotNull DBPDataSourceContainer container,
+        @Nullable DBCExecutionContext executionContext
+    ) {
+        if (settings.getScope() != null || !container.isConnected()) {
+            return;
+        }
+        if (executionContext == null || executionContext.getContextDefaults() == null) {
+            // default scope
+            settings.setScope(AIDatabaseScope.CURRENT_DATABASE);
+            return;
+        }
+        DBCExecutionContextDefaults<?, ?> contextDefaults = executionContext.getContextDefaults();
+        if (contextDefaults.getDefaultSchema() != null || contextDefaults.supportsSchemaChange()) {
+            settings.setScope(AIDatabaseScope.CURRENT_SCHEMA);
+        } else if (contextDefaults.getDefaultCatalog() != null || contextDefaults.supportsCatalogChange()) {
+            settings.setScope(AIDatabaseScope.CURRENT_DATABASE);
+        } else {
+            settings.setScope(AIDatabaseScope.CURRENT_DATASOURCE);
+        }
+    }
+
+    public static boolean isExcludableObject(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBSObject obj
+    ) {
+        return DBUtils.isSystemObject(obj)
+            || DBUtils.isHiddenObject(obj)
+            || obj instanceof DBSTablePartition
+            || DBNUtils.getNodeByObject(monitor, obj, false) == null;
     }
 }

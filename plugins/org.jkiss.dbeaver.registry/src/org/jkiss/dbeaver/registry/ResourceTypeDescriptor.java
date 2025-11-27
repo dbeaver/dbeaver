@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -52,7 +52,7 @@ public class ResourceTypeDescriptor extends AbstractDescriptor implements DBPRes
     private final String name;
     private final DBPImage icon;
     private final DBPImage folderIcon;
-    private final boolean managable;
+    private final boolean manageable;
     private final List<IContentType> contentTypes = new ArrayList<>();
     private final List<ObjectType> resourceTypes = new ArrayList<>();
     private final List<String> roots = new ArrayList<>();
@@ -66,7 +66,7 @@ public class ResourceTypeDescriptor extends AbstractDescriptor implements DBPRes
         this.name = config.getAttribute(RegistryConstants.ATTR_NAME);
         this.icon = iconToImage(config.getAttribute(RegistryConstants.ATTR_ICON));
         this.folderIcon = iconToImage(config.getAttribute("folderIcon"));
-        this.managable = CommonUtils.toBoolean(config.getAttribute(RegistryConstants.ATTR_MANAGABLE));
+        this.manageable = CommonUtils.toBoolean(config.getAttribute(RegistryConstants.ATTR_MANAGEABLE));
         for (IConfigurationElement contentTypeBinding : ArrayUtils.safeArray(config.getChildren("contentTypeBinding"))) {
             String contentTypeId = contentTypeBinding.getAttribute("contentTypeId");
             if (!CommonUtils.isEmpty(contentTypeId)) {
@@ -194,8 +194,8 @@ public class ResourceTypeDescriptor extends AbstractDescriptor implements DBPRes
     }
 
     @Override
-    public boolean isManagable() {
-        return managable;
+    public boolean isManageable() {
+        return manageable;
     }
 
     public List<String> getRoots() {

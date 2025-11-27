@@ -65,7 +65,7 @@ public class AIMessage {
         @NotNull AIFunctionResult result
     ) {
         this.role = AIMessageType.FUNCTION;
-        this.content = functionCall.toString();
+        this.content = CommonUtils.toString(result.getValue()) + " was completed";
         this.time = LocalDateTime.now();
         this.functionCall = functionCall;
         this.functionResult = result;
@@ -90,6 +90,11 @@ public class AIMessage {
     @NotNull
     public static AIMessage functionCall(@NotNull AIFunctionCall functionCall, @NotNull AIFunctionResult result) {
         return new AIMessage(functionCall, result);
+    }
+
+    @NotNull
+    public static AIMessage warningMessage(@NotNull String message) {
+        return new AIMessage(AIMessageType.WARNING, message);
     }
 
     @NotNull

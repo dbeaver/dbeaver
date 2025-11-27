@@ -191,27 +191,13 @@ public final class RuntimeUtils {
         }
     }
 
+    /**
+     * @deprecated consider using {@link DurationFormatter#format(Duration, DurationFormat)} instead
+     */
     @NotNull
+    @Deprecated(since = "25.3.0")
     public static String formatExecutionTime(long ms) {
-        return formatExecutionTime(Duration.ofMillis(ms));
-    }
-
-    @NotNull
-    public static String formatExecutionTime(@NotNull Duration duration) {
-        final long hours = duration.toHours();
-        final int minutes = duration.toMinutesPart();
-        final int seconds = duration.toSecondsPart();
-        final int millis = duration.toMillisPart();
-
-        if (hours > 0) {
-            return String.format("%dh %dm %ds", hours, minutes, seconds);
-        } else if (minutes > 0) {
-            return String.format("%dm %ds", minutes, seconds);
-        } else if (seconds >= 10) {
-            return String.format("%ds", seconds);
-        } else {
-            return String.format("%d.%ds", seconds, millis / 100);
-        }
+        return DurationFormatter.format(Duration.ofMillis(ms), DurationFormat.MEDIUM);
     }
 
     @NotNull

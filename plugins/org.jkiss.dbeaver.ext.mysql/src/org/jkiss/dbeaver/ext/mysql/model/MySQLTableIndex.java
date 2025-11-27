@@ -129,7 +129,7 @@ public class MySQLTableIndex extends JDBCTableIndex<MySQLCatalog, MySQLTable> im
     }
 
     @Override
-    public List<MySQLTableIndexColumn> getAttributeReferences(@NotNull DBRProgressMonitor monitor)
+    public List<MySQLTableIndexColumn> getAttributeReferences(@Nullable DBRProgressMonitor monitor)
     {
         return columns;
     }
@@ -200,6 +200,7 @@ public class MySQLTableIndex extends JDBCTableIndex<MySQLCatalog, MySQLTable> im
             return false;
         }
 
+        @Nullable
         @Override
         public Object[] getPossibleValues(MySQLTableIndex object) {
             return object.getDataSource().supportedIndexTypes().toArray();
