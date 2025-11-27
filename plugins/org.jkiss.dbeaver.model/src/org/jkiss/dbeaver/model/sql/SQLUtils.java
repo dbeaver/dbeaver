@@ -1301,16 +1301,21 @@ public final class SQLUtils {
         boolean hasStatements = false;
 
         for (String line : lines) {
-            StringBuilder trimmed = new StringBuilder(line.trim());
-            if (CommonUtils.isEmpty(trimmed.toString())) {
+            String trimmed = line.trim();
+            if (CommonUtils.isEmpty(trimmed)) {
                 continue;
             }
 
             hasStatements = true;
+            boolean hasDelimiter = false;
             for (String scriptDelimiter : sqlDialect.getScriptDelimiters()) {
-                if (!trimmed.toString().endsWith(scriptDelimiter)) {
-                    trimmed.append(scriptDelimiter);
+                if (trimmed.endsWith(scriptDelimiter)) {
+                    hasDelimiter = true;
+                    break;
                 }
+            }
+            if (!hasDelimiter) {
+                trimmed += getDefaultScriptDelimiter(sqlDialect);
             }
 
             sql.append(trimmed).append("\n");
