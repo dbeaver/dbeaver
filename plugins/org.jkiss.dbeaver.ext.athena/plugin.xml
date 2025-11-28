@@ -6,7 +6,6 @@
     <extension point="org.jkiss.dbeaver.dataSourceProvider">
 
         <!-- Athena -->
-
         <datasource
                 class="org.jkiss.dbeaver.ext.athena.AthenaDataSourceProvider"
                 description="%datasource.athena.description"
@@ -16,10 +15,9 @@
                 icon="icons/athena_icon.svg"
                 dialect="aws_athena">
             <drivers managable="true">
-
-                <!-- Simba JDBC driver -->
+                <driver id="aws_athena_jdbc_simba"/>
                 <driver
-                        id="aws_athena_jdbc_simba"
+                        id="aws_athena_jdbc_amazon"
                         label="Athena"
                         icon="icons/athena_icon.svg"
                         iconBig="icons/athena_icon_big.svg"
@@ -34,7 +32,9 @@
                         databaseDocumentationSuffixURL="Database-driver-Amazon-Athena"
                         categories="sql,aws"
                         singleConnection="true">
+                    <replace provider="athena" driver="aws_athena_jdbc_simba"/>
                     <replace provider="generic" driver="aws_athena_42"/>
+
                     <file type="jar" path="https://downloads.athena.us-east-1.amazonaws.com/drivers/JDBC/3.6.0/athena-jdbc-3.6.0-lean-jar-and-separate-dependencies-jars.zip" bundle="!drivers.athena"/>
                     <file type="license" path="https://downloads.athena.us-east-1.amazonaws.com/drivers/JDBC/3.6.0/LICENSE.txt" bundle="!drivers.athena"/>
 
