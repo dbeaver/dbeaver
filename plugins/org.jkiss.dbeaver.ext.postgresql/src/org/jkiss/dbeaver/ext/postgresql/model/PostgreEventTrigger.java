@@ -43,6 +43,7 @@ public class PostgreEventTrigger extends PostgreTriggerBase {
     public enum TriggerEventTypes {
         ddl_command_start,
         ddl_command_end,
+        login, // It is available starting with PostgreSQL version 18
         table_rewrite,
         sql_drop
     }
