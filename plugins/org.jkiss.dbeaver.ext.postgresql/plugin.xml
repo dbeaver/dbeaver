@@ -397,11 +397,11 @@
                 </driver>
 
                 <driver
-                    id="postgres-yellowbrick-jdbc"
+                    id="yellowbrick-jdbc"
                     label="Yellowbrick"
                     icon="icons/yellowbrick_icon.png"
                     iconBig="icons/yellowbrick_icon_big.png"
-                    class="org.postgresql.Driver"
+                    class="io.yellowbrick.jdbc.YellowbrickDriver"
                     sampleURL="jdbc:postgresql://{host}[:{port}]/[{database}]"
                     useURL="true"
                     defaultPort="5432"
@@ -411,14 +411,16 @@
                     supportedConfigurationTypes="MANUAL,URL"
                     categories="sql"
                     dialect="postgresql">
-                    <file type="jar" path="maven:/org.postgresql:postgresql:RELEASE[42.7.2]" bundle="!drivers.postgresql"/>
+                    <replace provider="postgresql" driver="postgres-yellowbrick-jdbc"/>
+                    <file type="jar" path="maven:/io.yellowbrick:yellowbrick-jdbc:0.9.3" bundle="!drivers.yellowbrick"/>
                     <file type="license" path="licenses/external/pg.txt"/>
-                    <file type="jar" path="drivers/postgresql" bundle="drivers.postgresql"/>
+                    <file type="jar" path="drivers/yellowbrick" bundle="drivers.yellowbrick"/>
                     <parameter name="serverType" value="yellowbrick"/>
                     <property name="loginTimeout" value="20"/>
                     <property name="connectTimeout" value="20"/>
                     <property name="@dbeaver-default-resultset.maxrows.sql" value="true"/>
                 </driver>
+                <driver id="postgres-yellowbrick-jdbc"/>
 
                 <driver
                         id="postgres-yugabytedb-jdbc"
