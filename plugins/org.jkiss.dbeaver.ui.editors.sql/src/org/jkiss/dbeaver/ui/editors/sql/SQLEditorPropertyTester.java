@@ -20,10 +20,8 @@ import org.eclipse.core.expressions.PropertyTester;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.ITextSelection;
 import org.eclipse.jface.text.Region;
-import org.eclipse.jface.text.TextViewer;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.ISelectionProvider;
-import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.widgets.Control;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
@@ -61,16 +59,12 @@ public class SQLEditorPropertyTester extends PropertyTester
 
     @Override
     public boolean test(Object receiver, String property, Object[] args, Object expectedValue) {
-        if (!(receiver instanceof SQLEditor editor)) {
+        if (!(receiver instanceof SQLEditorBase)) {
             return false;
         }
-        TextViewer textViewer = editor.getTextViewer();
+        SQLEditor editor = (SQLEditor)receiver;
         final Control editorControl = editor.getEditorControl();
-        if (editorControl == null || textViewer == null) {
-            return false;
-        }
-        StyledText textWidget = textViewer.getTextWidget();
-        if (textWidget == null) {
+        if (editorControl == null) {
             return false;
         }
         boolean hasConnection = editor.getDataSourceContainer() != null;
@@ -79,7 +73,7 @@ public class SQLEditorPropertyTester extends PropertyTester
                 var descriptor = editor.getActivePresentationDescriptor();
                 var mode = descriptor != null ? descriptor.getQueryMode() : QueryMode.MULTIPLE;
                 return switch (CommonUtils.toString(expectedValue)) {
-                    case "statement" -> mode != QueryMode.NONE && textWidget.isFocusControl();
+                    case "statement" -> mode != QueryMode.NONE;
                     case "script" -> mode == QueryMode.MULTIPLE;
                     default -> false;
                 };
