@@ -144,7 +144,7 @@ public class GroupingResultsContainer implements IResultSetContainer {
         }
     }
 
-    boolean removeGroupingAttribute(List<SQLGroupingAttribute> attributes) {
+    public boolean removeGroupingAttribute(List<SQLGroupingAttribute> attributes) {
         boolean changed = false;
         for (SQLGroupingAttribute attr : attributes) {
             if (groupAttributes.contains(attr)) {
