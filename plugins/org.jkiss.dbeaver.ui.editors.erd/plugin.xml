@@ -400,9 +400,11 @@
 
     <extension point="org.eclipse.ui.propertyPages">
         <page id="org.jkiss.dbeaver.preferences.erd.general" class="org.jkiss.dbeaver.ui.editors.erd.editor.ERDPreferencePage" name="%page.org.jkiss.dbeaver.preferences.erd.general.name">
-           <enabledWhen>
-               <test property="org.jkiss.dbeaver.ui.editors.erd.editor.isERD"/>
-           </enabledWhen>
+            <enabledWhen>
+                <adapt type="org.jkiss.dbeaver.ui.editors.erd.editor.ERDEditorPart">
+                    <test property="org.jkiss.dbeaver.ui.editors.erd.editor.isERD"/>
+                </adapt>
+            </enabledWhen>
         </page>
     </extension>
 
