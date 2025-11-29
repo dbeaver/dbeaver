@@ -1053,10 +1053,8 @@ public class OracleDataSource extends JDBCDataSource implements DBPObjectStatist
             JDBCPreparedStatement dbStat = session.prepareStatement(schemasQuery.toString());
 
             if (showOnlyOneSchema) {
-                // Get the actual connected username from the session
                 String userName = configuration.getUserName();
                 if (CommonUtils.isEmpty(userName)) {
-                    // Fallback to getting username from database session (for OS auth, etc.)
                     userName = JDBCUtils.queryString(session, "SELECT SYS_CONTEXT('USERENV', 'SESSION_USER') FROM DUAL");
                 }
                 if (!CommonUtils.isEmpty(userName)) {
