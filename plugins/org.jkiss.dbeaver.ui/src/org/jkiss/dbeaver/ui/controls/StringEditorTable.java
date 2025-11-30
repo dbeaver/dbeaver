@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -55,8 +55,19 @@ public class StringEditorTable {
         @Nullable DBPImage icon,
         @Nullable IContentProposalProvider proposalProvider
     ) {
+        return createEditableList(parent, name, values, icon, proposalProvider, false);
+    }
+
+    public static Table createEditableList(
+        @NotNull Composite parent,
+        @NotNull String name,
+        @Nullable List<String> values,
+        @Nullable DBPImage icon,
+        @Nullable IContentProposalProvider proposalProvider,
+        boolean withReordering
+    ) {
         return createCustomEditableList(
-            parent, name, values, new StringValuesManager(icon), proposalProvider, false
+            parent, name, values, new StringValuesManager(icon), proposalProvider, withReordering
         );
     }
 

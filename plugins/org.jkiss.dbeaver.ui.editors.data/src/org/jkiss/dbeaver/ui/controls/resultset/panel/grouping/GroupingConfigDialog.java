@@ -72,7 +72,14 @@ public class GroupingConfigDialog extends BaseDialog {
 
         Collections.addAll(proposals, "COUNT", "AVG", "MAX", "MIN", "SUM");
         proposalProvider.setProposals(proposals.toArray(new String[0]));
-        functionsTable = StringEditorTable.createEditableList(composite, "Functions", resultsContainer.getGroupFunctions(), DBIcon.TREE_FUNCTION, proposalProvider);
+        functionsTable = StringEditorTable.createEditableList(
+            composite,
+            "Functions",
+            resultsContainer.getGroupFunctions(),
+            DBIcon.TREE_FUNCTION,
+            proposalProvider,
+            true
+        );
 
         return composite;
     }
