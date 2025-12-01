@@ -164,7 +164,7 @@ public class GroupingConfigDialog extends BaseDialog {
             super(
                 UIUtils.createControlGroup(parent, "Functions", 2, GridData.FILL_BOTH, 0),
                 values,
-                new StringEditorTableUtils.StringValuesManager(DBIcon.TREE_FUNCTION),
+                new StringEditorTableFactory.StringValuesManager(DBIcon.TREE_FUNCTION),
                 proposalProvider,
                 true
             );
@@ -175,7 +175,7 @@ public class GroupingConfigDialog extends BaseDialog {
 
         @Override
         protected Control addButton(@NotNull Composite buttonsGroup) {
-            Button addButton = new Button(buttonsGroup, SWT.PUSH | SWT.ARROW_DOWN);
+            Button addButton = new Button(buttonsGroup, SWT.PUSH | SWT.ARROW | SWT.DOWN);
             addButton.setText(UIMessages.button_add);
             addButton.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
             Menu items = createAddMenu(addButton);

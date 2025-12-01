@@ -39,7 +39,7 @@ import java.util.List;
 
 public class StringEditorTableFactory<T> {
 
-    private static final String CUSTOM_EDITABLE_LIST_VALUE_KEY = "CUSTOM_EDITABLE_LIST_VALUE";
+    public static final String CUSTOM_EDITABLE_LIST_VALUE_KEY = "CUSTOM_EDITABLE_LIST_VALUE";
 
     protected final Table valueTable;
 
@@ -318,6 +318,32 @@ public class StringEditorTableFactory<T> {
 
     private <T> void setCustomValue(TableItem tableItem, T value) {
         tableItem.setData(CUSTOM_EDITABLE_LIST_VALUE_KEY, value);
+    }
+
+    public record StringValuesManager(@Nullable DBPImage icon) implements StringEditorTableUtils.TableValuesManager<String> {
+        @Nullable
+        @Override
+        public DBPImage getIcon(@Nullable String value) {
+            return icon;
+        }
+
+        @NotNull
+        @Override
+        public String getString(@Nullable String value) {
+            return value == null ? "" : value;
+        }
+
+        @NotNull
+        @Override
+        public Boolean isEditable(@Nullable String value) {
+            return true;
+        }
+
+        @Nullable
+        @Override
+        public String prepareNewValue(@Nullable String originalValue, @Nullable String string) {
+            return string;
+        }
     }
 
 }

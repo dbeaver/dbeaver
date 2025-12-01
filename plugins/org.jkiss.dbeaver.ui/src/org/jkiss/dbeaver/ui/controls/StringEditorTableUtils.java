@@ -38,7 +38,6 @@ import java.util.List;
  */
 public class StringEditorTableUtils {
 
-    private static final String CUSTOM_EDITABLE_LIST_VALUE_KEY = "CUSTOM_EDITABLE_LIST_VALUE";
 
     /**
      * Creates the panel to manage list of string values
@@ -50,21 +49,16 @@ public class StringEditorTableUtils {
         @Nullable DBPImage icon,
         @Nullable IContentProposalProvider proposalProvider
     ) {
-        return createEditableList(parent, name, values, icon, proposalProvider, false);
-    }
-
-    public static Table createEditableList(
-        @NotNull Composite parent,
-        @NotNull String name,
-        @Nullable List<String> values,
-        @Nullable DBPImage icon,
-        @Nullable IContentProposalProvider proposalProvider,
-        boolean withReordering
-    ) {
         return createCustomEditableList(
-            parent, name, values, new StringValuesManager(icon), proposalProvider, withReordering
+            parent,
+            name,
+            values,
+            new StringEditorTableFactory.StringValuesManager(icon),
+            proposalProvider,
+            false
         );
     }
+
 
     /**
      * Creates the panel to manage list of custom values
@@ -138,11 +132,11 @@ public class StringEditorTableUtils {
     }
 
     private static <T> T getCustomValue(TableItem tableItem) {
-        return (T) tableItem.getData(CUSTOM_EDITABLE_LIST_VALUE_KEY);
+        return (T) tableItem.getData(StringEditorTableFactory.CUSTOM_EDITABLE_LIST_VALUE_KEY);
     }
 
     private static <T> void setCustomValue(TableItem tableItem, T value) {
-        tableItem.setData(CUSTOM_EDITABLE_LIST_VALUE_KEY, value);
+        tableItem.setData(StringEditorTableFactory.CUSTOM_EDITABLE_LIST_VALUE_KEY, value);
     }
 
     /**
@@ -172,31 +166,5 @@ public class StringEditorTableUtils {
          */
         @Nullable
         T prepareNewValue(@Nullable T originalValue, @Nullable String string);
-    }
-
-    public record StringValuesManager(@Nullable DBPImage icon) implements TableValuesManager<String> {
-        @Nullable
-        @Override
-        public DBPImage getIcon(@Nullable String value) {
-            return icon;
-        }
-
-        @NotNull
-        @Override
-        public String getString(@Nullable String value) {
-            return value == null ? "" : value;
-        }
-
-        @NotNull
-        @Override
-        public Boolean isEditable(@Nullable String value) {
-            return true;
-        }
-
-        @Nullable
-        @Override
-        public String prepareNewValue(@Nullable String originalValue, @Nullable String string) {
-            return string;
-        }
     }
 }
