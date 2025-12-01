@@ -48,8 +48,8 @@ import org.jkiss.dbeaver.ui.preferences.AbstractPrefPage;
 
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
-import java.util.List;
 import java.util.*;
+import java.util.List;
 
 public class AIPreferencePageMain extends AbstractPrefPage implements IWorkbenchPreferencePage, IWorkbenchPropertyPage {
     private static final Log log = Log.getLog(AIPreferencePageMain.class);

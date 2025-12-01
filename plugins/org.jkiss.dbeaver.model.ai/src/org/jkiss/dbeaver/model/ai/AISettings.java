@@ -16,6 +16,8 @@
  */
 package org.jkiss.dbeaver.model.ai;
 
+import com.google.gson.Gson;
+import com.google.gson.JsonElement;
 import org.eclipse.core.runtime.IAdaptable;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
@@ -23,7 +25,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.ai.engine.AIEngineProperties;
 import org.jkiss.dbeaver.model.ai.registry.AIEngineDescriptor;
 import org.jkiss.dbeaver.model.ai.registry.AIEngineRegistry;
-import org.jkiss.dbeaver.model.ai.registry.AISettingsManager;
+import org.jkiss.dbeaver.model.ai.registry.AISettingsWriter;
 
 import java.util.*;
 
@@ -32,15 +34,20 @@ import java.util.*;
  * Keeps global parameters and configuration of all AI engines
  */
 public class AISettings implements IAdaptable {
+    private final Gson gson;
+
     private boolean aiDisabled;
     private String activeEngine;
     private final Map<String, AIEngineProperties> engineConfigurations = new LinkedHashMap<>();
+    private final Map<String, JsonElement> rawEngineConfigurations = new LinkedHashMap<>();
+
     private final Map<String, Object> properties = new LinkedHashMap<>();
     private final Set<String> resolvedSecrets = new HashSet<>();
     private final Set<String> enabledFunctionCategories = new LinkedHashSet<>();
     private final Set<String> enabledFunctions = new LinkedHashSet<>();
 
-    public AISettings() {
+    public AISettings(Gson gson) {
+        this.gson = gson;
     }
 
     public Map<String, Object> getAllProperties() {
@@ -139,13 +146,22 @@ public class AISettings implements IAdaptable {
             throw new DBException("AI engine " + engineId + " not found");
         }
 
-        AIEngineProperties aiEngineSettings = engineConfigurations.get(engineId);
+        AIEngineProperties aiEngineSettings = engineConfigurations.computeIfAbsent(
+            engineId, k -> {
+                JsonElement jsonObject = rawEngineConfigurations.remove(engineId);
+                if (jsonObject != null) {
+                    return gson.fromJson(jsonObject, engineDescriptor.getPropertiesType());
+                }
+                return null;
+            }
+        );
+
         if (aiEngineSettings == null) {
             aiEngineSettings = engineDescriptor.createPropertiesInstance();
         }
 
         if (aiEngineSettings != null) {
-            if (!AISettingsManager.saveSecretsAsPlainText()) {
+            if (!AISettingsWriter.saveSecretsAsPlainText()) {
                 if (!resolvedSecrets.contains(engineId)) {
                     aiEngineSettings.resolveSecrets();
                     resolvedSecrets.add(engineId);
@@ -167,10 +183,10 @@ public class AISettings implements IAdaptable {
         engineConfigurations.put(engineId, engineConfiguration);
     }
 
-    public void setEngineConfigurations(
-        @NotNull Map<String, AIEngineProperties> engineConfigurations
+    public void setRawEngineConfigurations(
+        @NotNull Map<String, JsonElement> rawEngineConfigurations
     ) {
-        this.engineConfigurations.putAll(engineConfigurations);
+        this.rawEngineConfigurations.putAll(rawEngineConfigurations);
     }
 
     public void saveSecrets() throws DBException {
