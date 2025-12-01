@@ -65,6 +65,7 @@ class DriverDownloadAutoPage extends DriverDownloadPage {
     public static final String NETWORK_TEST_URL = "https://repo1.maven.org";
 
     private DriverDependenciesTree depsTree;
+    private boolean isArtifactModified = false;
 
     DriverDownloadAutoPage() {
         super(UIConnectionMessages.dialog_driver_download_auto_page_auto_download, UIConnectionMessages.dialog_driver_download_auto_page_download_driver_files, null);
@@ -230,6 +231,7 @@ class DriverDownloadAutoPage extends DriverDownloadPage {
                     if (CommonUtils.equalObjects(curVersion, version)) {
                         return;
                     }
+                    isArtifactModified = !CommonUtils.equalObjects(library.getOriginalPreferredVersion(), version);
                     library.setPreferredVersion(version);
                     library.setForcedVersion(true);
                     resolveLibraries();
@@ -338,9 +340,9 @@ class DriverDownloadAutoPage extends DriverDownloadPage {
                     break;
             }
         }
-
-        ((DriverDescriptor)getWizard().getDriver()).setModified(true);
-        //DataSourceProviderRegistry.getInstance().saveDrivers();
+        if (isArtifactModified) {
+            ((DriverDescriptor) getWizard().getDriver()).setModified(true);
+        }
     }
 
     private boolean acceptDriverLicenses() {
