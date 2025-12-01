@@ -75,7 +75,7 @@ public class RedshiftSchema extends PostgreSchema {
 
             StringBuilder sql = new StringBuilder();
             sql.append("""
-                SELECT c.oid, c.relname, c.relnamespace, c.relowner, c.relkind, c.relpages, c.reltuples, d.description,
+                SELECT c.oid, c.relname::varchar AS relname, c.relnamespace, c.relowner, c.relkind, c.relpages, c.reltuples, d.description,
                        CASE WHEN mv.name IS NOT NULL THEN 'm' ELSE c.relkind END AS relkind_rs
                 FROM pg_catalog.pg_class c
                 JOIN SVV_TABLE_INFO t ON t.table_id = c.oid
@@ -84,12 +84,11 @@ public class RedshiftSchema extends PostgreSchema {
                 WHERE t."schema" = ?
                 """);
             if (hasNameFilter) {
-                sql.append(" AND t.\"table\" = ?");
+                sql.append(" AND t.\"table\"::varchar = ?");
             }
             sql.append("""
-                
                 UNION ALL
-                SELECT c.oid, c.relname, c.relnamespace, c.relowner, c.relkind, c.relpages, c.reltuples, d.description,
+                SELECT c.oid, c.relname::varchar AS relname, c.relnamespace, c.relowner, c.relkind, c.relpages, c.reltuples, d.description,
                        NULL AS relkind_rs
                 FROM pg_catalog.pg_class c
                 JOIN pg_catalog.pg_namespace n ON n.oid = c.relnamespace
@@ -99,7 +98,7 @@ public class RedshiftSchema extends PostgreSchema {
                   AND mv2.name IS NULL
                 """);
             if (hasNameFilter) {
-                sql.append(" AND c.relname = ?");
+                sql.append(" AND c.relname::varchar = ?");
             }
 
             JDBCPreparedStatement dbStat = session.prepareStatement(sql.toString());
