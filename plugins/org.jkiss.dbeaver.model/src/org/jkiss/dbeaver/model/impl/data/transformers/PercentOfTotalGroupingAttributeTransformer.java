@@ -34,7 +34,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Transforms string/numeric value into URL
+ * Transforms numeric values into their percentage of a total.
  */
 public class PercentOfTotalGroupingAttributeTransformer implements DBDAttributeTransformer {
 
@@ -44,6 +44,9 @@ public class PercentOfTotalGroupingAttributeTransformer implements DBDAttributeT
     private final long total;
 
     public PercentOfTotalGroupingAttributeTransformer(long total) {
+        if (total < 0) {
+            throw new IllegalArgumentException("Total must be non-negative, but got: " + total);
+        }
         this.total = total;
     }
 
