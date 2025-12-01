@@ -30,7 +30,7 @@ import org.jkiss.dbeaver.model.sql.SQLGroupingAttribute;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.contentassist.StringContentProposalProvider;
-import org.jkiss.dbeaver.ui.controls.StringEditorTable;
+import org.jkiss.dbeaver.ui.controls.StringEditorTableUtils;
 import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
 import org.jkiss.utils.CommonUtils;
 
@@ -68,11 +68,18 @@ public class GroupingConfigDialog extends BaseDialog {
         }
         StringContentProposalProvider proposalProvider = new StringContentProposalProvider(new String[0]);
         proposalProvider.setProposals(proposals.toArray(new String[0]));
-        columnsTable = StringEditorTable.createCustomEditableList(composite, "Columns", resultsContainer.getGroupAttributes(), new GroupingAttributeValueManager(), proposalProvider, true);
+        columnsTable = StringEditorTableUtils.createCustomEditableList(
+            composite,
+            "Columns",
+            resultsContainer.getGroupAttributes(),
+            new GroupingAttributeValueManager(),
+            proposalProvider,
+            true
+        );
 
         Collections.addAll(proposals, "COUNT", "AVG", "MAX", "MIN", "SUM");
         proposalProvider.setProposals(proposals.toArray(new String[0]));
-        functionsTable = StringEditorTable.createEditableList(
+        functionsTable = StringEditorTableUtils.createEditableList(
             composite,
             "Functions",
             resultsContainer.getGroupFunctions(),
@@ -86,13 +93,13 @@ public class GroupingConfigDialog extends BaseDialog {
 
     @Override
     protected void okPressed() {
-        List<SQLGroupingAttribute> attributes = StringEditorTable.collectCustomValues(columnsTable);
-        List<String> functions = StringEditorTable.collectStringValues(functionsTable);
+        List<SQLGroupingAttribute> attributes = StringEditorTableUtils.collectCustomValues(columnsTable);
+        List<String> functions = StringEditorTableUtils.collectStringValues(functionsTable);
         resultsContainer.setGrouping(attributes, functions);
         super.okPressed();
     }
 
-    private class GroupingAttributeValueManager implements StringEditorTable.TableValuesManager<SQLGroupingAttribute> {
+    private class GroupingAttributeValueManager implements StringEditorTableUtils.TableValuesManager<SQLGroupingAttribute> {
         @NotNull
         @Override
         public DBPImage getIcon(@Nullable SQLGroupingAttribute value) {
