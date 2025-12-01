@@ -88,7 +88,7 @@ public class StringEditorTableUtils {
     /**
      * Replaces all the values in the Table with the new collection of strings
      */
-    public static void replaceAllStringValues(Table valueTable, List<String> values, DBPImage icon) {
+    public static void replaceAllStringValues(@NotNull Table valueTable, @Nullable List<String> values, @Nullable DBPImage icon) {
         valueTable.removeAll();
         if (!CommonUtils.isEmpty(values)) {
             for (String value : values) {
@@ -105,7 +105,8 @@ public class StringEditorTableUtils {
     /**
      * Returns collection of strings from the Table
      */
-    public static List<String> collectStringValues(Table table) {
+    @NotNull
+    public static List<String> collectStringValues(@NotNull Table table) {
         List<String> values = new ArrayList<>();
         for (TableItem item : table.getItems()) {
             String value = item.getText().trim();
@@ -120,6 +121,7 @@ public class StringEditorTableUtils {
     /**
      * Returns collection of custom values from the Table
      */
+    @NotNull
     public static <T> List<T> collectCustomValues(@NotNull Table table) {
         List<T> values = new ArrayList<>(table.getItemCount());
         for (TableItem item : table.getItems()) {
@@ -131,11 +133,13 @@ public class StringEditorTableUtils {
         return values;
     }
 
-    private static <T> T getCustomValue(TableItem tableItem) {
+    @NotNull
+    private static <T> T getCustomValue(@NotNull TableItem tableItem) {
         return (T) tableItem.getData(StringEditorTableFactory.CUSTOM_EDITABLE_LIST_VALUE_KEY);
     }
 
-    private static <T> void setCustomValue(TableItem tableItem, T value) {
+    @NotNull
+    private static <T> void setCustomValue(@NotNull TableItem tableItem, @NotNull T value) {
         tableItem.setData(StringEditorTableFactory.CUSTOM_EDITABLE_LIST_VALUE_KEY, value);
     }
 
