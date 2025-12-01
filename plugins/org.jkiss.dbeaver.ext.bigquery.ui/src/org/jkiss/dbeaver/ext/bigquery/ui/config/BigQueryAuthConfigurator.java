@@ -65,7 +65,7 @@ public class BigQueryAuthConfigurator extends DatabaseNativeAuthModelConfigurato
 
     private void updateKeyPathVisibility() {
         if (keyPathLabel != null && authCertFile != null) {
-            boolean serviceBased = authTypeCombo.getSelectionIndex() == 0;
+            boolean serviceBased = authTypeCombo.getText().equals(BigQueryMessages.label_service_based);
             UIUtils.setControlVisible(keyPathLabel, serviceBased);
             UIUtils.setControlVisible(authCertFile.getPanel(), serviceBased);
             authCertFile.getParent().layout(true, true);
