@@ -66,28 +66,22 @@ public class GroupingConfigDialog extends BaseDialog {
     protected Composite createDialogArea(Composite parent) {
         Composite composite = super.createDialogArea(parent);
 
-        List<String> columnNames = new ArrayList<>();
+        List<String> allColumnNames = new ArrayList<>();
         for (DBDAttributeBinding attr : resultsContainer.getOwnerPresentation().getController().getModel().getAttributes()) {
-            columnNames.add(attr.getName());
+            allColumnNames.add(attr.getName());
         }
-        List<String> proposals = new ArrayList<>(columnNames);
+        List<String> proposals = new ArrayList<>(allColumnNames);
         StringContentProposalProvider proposalProvider = new StringContentProposalProvider(new String[0]);
         proposalProvider.setProposals(proposals.toArray(new String[0]));
-        columnsTable = StringEditorTableUtils.createCustomEditableList(
-            composite,
-            "Columns",
-            resultsContainer.getGroupAttributes(),
-            new GroupingAttributeValueManager(),
-            proposalProvider,
-            true
-        );
+
+        columnsTable = createColumnsTable(parent, proposalProvider, resultsContainer.getGroupAttributes(), allColumnNames);
 
         List<String> defaultFunctions = List.of("COUNT", "SUM", "AVG", "MAX", "MIN");
         proposals.addAll(defaultFunctions);
         proposalProvider.setProposals(proposals.toArray(new String[0]));
         functionsTable = createFunctionsTable(
             parent,
-            proposalProvider, resultsContainer.getGroupFunctions(), defaultFunctions, columnNames
+            proposalProvider, resultsContainer.getGroupFunctions(), defaultFunctions, allColumnNames
         );
 
         return composite;
@@ -109,6 +103,16 @@ public class GroupingConfigDialog extends BaseDialog {
         @NotNull List<String> columnNames
     ) {
         var tableFactory = new FunctionsTableFactory(parent, proposalProvider, groupFunctions, defaultFunctions, columnNames);
+        return tableFactory.createTable();
+    }
+
+    private Table createColumnsTable(
+        @NotNull Composite parent,
+        @NotNull StringContentProposalProvider proposalProvider,
+        @NotNull List<SQLGroupingAttribute> groupAttributes,
+        @NotNull List<String> allColumnNames
+    ) {
+        var tableFactory = new ColumnsTableFactory(parent, proposalProvider, groupAttributes, allColumnNames);
         return tableFactory.createTable();
     }
 
@@ -144,6 +148,65 @@ public class GroupingConfigDialog extends BaseDialog {
             } else {
                 return null;
             }
+        }
+    }
+
+    private class ColumnsTableFactory extends StringEditorTableFactory<SQLGroupingAttribute> {
+
+        private final List<String> columnNames;
+
+        ColumnsTableFactory(
+            @NotNull Composite parent,
+            @Nullable IContentProposalProvider proposalProvider,
+            @NotNull List<SQLGroupingAttribute> values,
+            @NotNull List<String> allColumnNames
+        ) {
+            super(
+                UIUtils.createControlGroup(parent, "Columns", 2, GridData.FILL_BOTH, 0),
+                values,
+                new GroupingAttributeValueManager(),
+                proposalProvider,
+                true
+            );
+            this.columnNames = allColumnNames;
+        }
+
+        @Override
+        protected Control addButton(@NotNull Composite buttonsGroup) {
+            Button addButton = new Button(buttonsGroup, SWT.PUSH | SWT.ARROW | SWT.DOWN);
+            addButton.setText(UIMessages.button_add);
+            addButton.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+            Menu items = createAddMenu(addButton);
+            addButton.addSelectionListener(new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    items.setVisible(true);
+                }
+            });
+            return addButton;
+        }
+
+        private Menu createAddMenu(@NotNull Button addButton) {
+            Menu addMenu = new Menu(addButton);
+            addCustomColumn(addMenu);
+            for (String columnName : columnNames) {
+                MenuItem columnItem = new MenuItem(addMenu, SWT.PUSH);
+                columnItem.setText(columnName);
+                columnItem.addListener(
+                    SWT.Selection, e -> {
+                        TableItem newItem = new TableItem(valueTable, SWT.LEFT);
+                        newItem.setText(columnName);
+                        addTableItem(newItem);
+                    }
+                );
+            }
+            return addMenu;
+        }
+
+        private void addCustomColumn(@NotNull Menu addMenu) {
+            MenuItem defaultFunctionItem = new MenuItem(addMenu, SWT.PUSH);
+            defaultFunctionItem.setText("Custom");
+            defaultFunctionItem.addListener(SWT.Selection, e -> addTableItem(new TableItem(valueTable, SWT.LEFT)));
         }
     }
 
@@ -216,7 +279,7 @@ public class GroupingConfigDialog extends BaseDialog {
 
         private void addCustomFunction(@NotNull Menu addMenu) {
             MenuItem defaultFunctionItem = new MenuItem(addMenu, SWT.PUSH);
-            defaultFunctionItem.setText("Custom...");
+            defaultFunctionItem.setText("Custom");
             defaultFunctionItem.addListener(SWT.Selection, e -> addTableItem(new TableItem(valueTable, SWT.LEFT)));
         }
     }
