@@ -17,9 +17,12 @@
 package org.jkiss.dbeaver.ui.controls.resultset.panel.grouping;
 
 import org.eclipse.jface.dialogs.IDialogSettings;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Shell;
-import org.eclipse.swt.widgets.Table;
+import org.eclipse.jface.fieldassist.IContentProposalProvider;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.widgets.*;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBIcon;
@@ -30,12 +33,13 @@ import org.jkiss.dbeaver.model.sql.SQLGroupingAttribute;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.contentassist.StringContentProposalProvider;
+import org.jkiss.dbeaver.ui.controls.StringEditorTableFactory;
 import org.jkiss.dbeaver.ui.controls.StringEditorTableUtils;
 import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
+import org.jkiss.dbeaver.ui.internal.UIMessages;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 /**
@@ -62,10 +66,11 @@ public class GroupingConfigDialog extends BaseDialog {
     protected Composite createDialogArea(Composite parent) {
         Composite composite = super.createDialogArea(parent);
 
-        List<String> proposals = new ArrayList<>();
+        List<String> columnNames = new ArrayList<>();
         for (DBDAttributeBinding attr : resultsContainer.getOwnerPresentation().getController().getModel().getAttributes()) {
-            proposals.add(attr.getName());
+            columnNames.add(attr.getName());
         }
+        List<String> proposals = new ArrayList<>(columnNames);
         StringContentProposalProvider proposalProvider = new StringContentProposalProvider(new String[0]);
         proposalProvider.setProposals(proposals.toArray(new String[0]));
         columnsTable = StringEditorTableUtils.createCustomEditableList(
@@ -77,15 +82,12 @@ public class GroupingConfigDialog extends BaseDialog {
             true
         );
 
-        Collections.addAll(proposals, "COUNT", "AVG", "MAX", "MIN", "SUM");
+        List<String> defaultFunctions = List.of("COUNT", "SUM", "AVG", "MAX", "MIN");
+        proposals.addAll(defaultFunctions);
         proposalProvider.setProposals(proposals.toArray(new String[0]));
-        functionsTable = StringEditorTableUtils.createEditableList(
-            composite,
-            "Functions",
-            resultsContainer.getGroupFunctions(),
-            DBIcon.TREE_FUNCTION,
-            proposalProvider,
-            true
+        functionsTable = createFunctionsTable(
+            parent,
+            proposalProvider, resultsContainer.getGroupFunctions(), defaultFunctions, columnNames
         );
 
         return composite;
@@ -97,6 +99,17 @@ public class GroupingConfigDialog extends BaseDialog {
         List<String> functions = StringEditorTableUtils.collectStringValues(functionsTable);
         resultsContainer.setGrouping(attributes, functions);
         super.okPressed();
+    }
+
+    private Table createFunctionsTable(
+        @NotNull Composite parent,
+        @NotNull StringContentProposalProvider proposalProvider,
+        @NotNull List<String> groupFunctions,
+        @NotNull List<String> defaultFunctions,
+        @NotNull List<String> columnNames
+    ) {
+        var tableFactory = new FunctionsTableFactory(parent, proposalProvider, groupFunctions, defaultFunctions, columnNames);
+        return tableFactory.createTable();
     }
 
     private class GroupingAttributeValueManager implements StringEditorTableUtils.TableValuesManager<SQLGroupingAttribute> {
@@ -131,6 +144,80 @@ public class GroupingConfigDialog extends BaseDialog {
             } else {
                 return null;
             }
+        }
+    }
+
+    private class FunctionsTableFactory extends StringEditorTableFactory<String> {
+
+        private final List<String> defaultFunctions;
+
+        private final List<String> columns;
+
+
+        FunctionsTableFactory(
+            @NotNull Composite parent,
+            @Nullable IContentProposalProvider proposalProvider,
+            @NotNull List<String> values,
+            @NotNull List<String> defaultFunctions,
+            @NotNull List<String> columns
+        ) {
+            super(
+                UIUtils.createControlGroup(parent, "Functions", 2, GridData.FILL_BOTH, 0),
+                values,
+                new StringEditorTableUtils.StringValuesManager(DBIcon.TREE_FUNCTION),
+                proposalProvider,
+                true
+            );
+            this.defaultFunctions = defaultFunctions;
+            this.columns = new ArrayList<>(columns);
+            this.columns.addFirst("*");
+        }
+
+        @Override
+        protected Control addButton(@NotNull Composite buttonsGroup) {
+            Button addButton = new Button(buttonsGroup, SWT.PUSH | SWT.ARROW_DOWN);
+            addButton.setText(UIMessages.button_add);
+            addButton.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+            Menu items = createAddMenu(addButton);
+            addButton.addSelectionListener(new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    items.setVisible(true);
+                }
+            });
+            return addButton;
+        }
+
+        private Menu createAddMenu(@NotNull Button addButton) {
+            Menu addMenu = new Menu(addButton);
+            addCustomFunction(addMenu);
+            for (String function : defaultFunctions) {
+                Menu funcMenu = new Menu(addMenu);
+
+                MenuItem functionItem = new MenuItem(addMenu, SWT.CASCADE);
+                functionItem.setText(function);
+                functionItem.setMenu(funcMenu);
+
+                for (String column : columns) {
+                    MenuItem columnItem = new MenuItem(funcMenu, SWT.PUSH);
+                    columnItem.setText(column);
+                    columnItem.addListener(
+                        SWT.Selection, e -> {
+                            String functionCall = function + "(" + column + ")";
+                            TableItem newItem = new TableItem(valueTable, SWT.LEFT);
+                            newItem.setText(functionCall);
+                            addTableItem(newItem);
+                        }
+                    );
+                }
+            }
+            return addMenu;
+        }
+
+        private void addCustomFunction(@NotNull Menu addMenu) {
+            MenuItem defaultFunctionItem = new MenuItem(addMenu, SWT.PUSH);
+            defaultFunctionItem.setText("Custom...");
+            defaultFunctionItem.addListener(SWT.Selection, e -> addTableItem(new TableItem(valueTable, SWT.LEFT)));
         }
     }
 }

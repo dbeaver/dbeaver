@@ -174,7 +174,7 @@ public class StringEditorTableUtils {
         T prepareNewValue(@Nullable T originalValue, @Nullable String string);
     }
 
-    private record StringValuesManager(@Nullable DBPImage icon) implements TableValuesManager<String> {
+    public record StringValuesManager(@Nullable DBPImage icon) implements TableValuesManager<String> {
         @Nullable
         @Override
         public DBPImage getIcon(@Nullable String value) {

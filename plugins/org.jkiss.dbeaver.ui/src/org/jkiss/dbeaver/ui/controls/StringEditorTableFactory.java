@@ -41,24 +41,25 @@ public class StringEditorTableFactory<T> {
 
     private static final String CUSTOM_EDITABLE_LIST_VALUE_KEY = "CUSTOM_EDITABLE_LIST_VALUE";
 
-    private final Table valueTable;
+    protected final Table valueTable;
 
     @Nullable
-    private final List<T> values;
+    protected final List<T> values;
 
-    private final StringEditorTableUtils.TableValuesManager<T> valuesManager;
+    protected final StringEditorTableUtils.TableValuesManager<T> valuesManager;
 
     @Nullable
-    private final IContentProposalProvider proposalProvider;
+    protected final IContentProposalProvider proposalProvider;
 
-    private final boolean withReordering;
-    private final Runnable buttonsRefresher;
-    private CustomTableEditor tableEditor;
-    private Control addButton;
-    private Control removeButton;
-    private Control clearButton;
-    private Control upButton;
-    private Control downButton;
+    protected final boolean withReordering;
+    protected final Runnable buttonsRefresher;
+    protected CustomTableEditor tableEditor;
+    protected Control addButton;
+    protected Control removeButton;
+
+    protected Control clearButton;
+    protected Control upButton;
+    protected Control downButton;
 
 
     public StringEditorTableFactory(
@@ -212,15 +213,19 @@ public class StringEditorTableFactory<T> {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 TableItem newItem = new TableItem(valueTable, SWT.LEFT);
-                DBPImage icon = valuesManager.getIcon(null);
-                newItem.setImage(icon == null ? null : DBeaverIcons.getImage(icon));
-                valueTable.setSelection(newItem);
-                tableEditor.closeEditor();
-                tableEditor.showEditor(newItem);
-                buttonsRefresher.run();
+                addTableItem(newItem);
             }
         });
         return addButton;
+    }
+
+    protected void addTableItem(@NotNull TableItem newItem) {
+        DBPImage icon = valuesManager.getIcon(null);
+        newItem.setImage(icon == null ? null : DBeaverIcons.getImage(icon));
+        valueTable.setSelection(newItem);
+        tableEditor.closeEditor();
+        tableEditor.showEditor(newItem);
+        buttonsRefresher.run();
     }
 
     protected Control removeButton(@NotNull Composite buttonsGroup) {
