@@ -59,8 +59,6 @@ public class AthenaDataSource extends GenericDataSource {
         }
         if (!CommonUtils.isEmpty(connectionInfo.getDatabaseName())) {
             props.put(AthenaConstants.DRIVER_PROP_S3_OUTPUT_LOCATION, connectionInfo.getDatabaseName());
-        } else if (!CommonUtils.isEmpty(connectionInfo.getHostName())) {
-            props.put(AthenaConstants.DRIVER_PROP_S3_OUTPUT_LOCATION, connectionInfo.getHostName());
         }
 
         boolean useCatalogs = CommonUtils.toBoolean(connectionInfo.getProviderProperty(AthenaConstants.PROP_SHOW_CATALOGS));
