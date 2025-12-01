@@ -33,7 +33,7 @@
                         description="Denodo Virtual DataPort JDBC driver"
                         webURL="https://community.denodo.com/docs/html/browse/latest/vdp/developer/access_through_jdbc/access_through_jdbc"
                         categories="sql,analytic">
-                    <file type="jar" path="https://community.denodo.com/drivers/jdbc/8.0/denodo-vdp-jdbcdriver"/>
+                    <file type="jar" path="https://community.denodo.com/drivers/jdbc/9/denodo-vdp-jdbcdriver"/>
                 </driver>
             </drivers>
         </datasource>
