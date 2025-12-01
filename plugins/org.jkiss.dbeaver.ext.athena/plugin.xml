@@ -22,7 +22,7 @@
                         icon="icons/athena_icon.svg"
                         iconBig="icons/athena_icon_big.svg"
                         class="com.amazon.athena.jdbc.AthenaDriver"
-                        sampleURL="jdbc:athena://AwsRegion={region};"
+                        sampleURL="jdbc:athena://AWSRegion={region};"
                         defaultPort="444"
                         customEndpoint="true"
                         description="%driver.athena.description"
