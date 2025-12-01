@@ -128,8 +128,8 @@ public class CubridMetaModel extends GenericMetaModel implements DBCQueryTransfo
                 + "FROM db_attribute a LEFT JOIN (SELECT k.key_attr_name AS attr_name, "
                 + "i.class_name, i.is_foreign_key "
                 + (multiSchema ? ", i.owner_name " : "")
-                + "FROM db_index i JOIN db_index_key k "
-                + "ON i.index_name = k.index_name WHERE i.is_foreign_key = 'YES') i ON "
+                + "FROM db_index i JOIN db_index_key k ON i.class_name = k.class_name "
+                + "AND i.index_name = k.index_name WHERE i.is_foreign_key = 'YES') i ON "
                 + "a.class_name = i.class_name AND a.attr_name = i.attr_name "
                 + (multiSchema ? "AND a.owner_name = i.owner_name " : ""));
         if (forTable != null) {
