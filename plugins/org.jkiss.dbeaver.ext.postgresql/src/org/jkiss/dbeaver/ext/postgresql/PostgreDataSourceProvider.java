@@ -131,7 +131,7 @@ public class PostgreDataSourceProvider extends JDBCDataSourceProvider implements
      */
     @Override
     public boolean providesDriverClasses() {
-        return false;
+        return true;
     }
 
     ////////////////////////////////////////////////////////////////
