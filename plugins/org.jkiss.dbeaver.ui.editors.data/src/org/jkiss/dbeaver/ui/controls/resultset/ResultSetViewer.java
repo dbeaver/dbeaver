@@ -1117,6 +1117,19 @@ public class ResultSetViewer extends Viewer
             setActivePresentation(instance);
             instance.refreshData(true, false, false);
 
+            try {
+                String presentationId = selectedPresentation.getId();
+                if ("spreadsheet".equals(presentationId)) {
+                    DataEditorFeatures.RESULT_SET_REPRESENTATION_GRID.use();
+                } else if ("plaintext".equals(presentationId)) {
+                    DataEditorFeatures.RESULT_SET_REPRESENTATION_TEXT.use();
+                } else if (presentationId != null && presentationId.toLowerCase(Locale.ROOT).contains("chart")) {
+                    DataEditorFeatures.RESULT_SET_REPRESENTATION_CHART.use();
+                }
+            } catch (Throwable ignore) {
+                // ignore
+            }
+
             if (presentationSwitchFolder != null) {
                 for (VerticalButton item : presentationSwitchFolder.getItems()) {
                     if (item.getData() == activePresentationDescriptor) {
@@ -2100,6 +2113,13 @@ public class ResultSetViewer extends Viewer
         //redrawData(false);
         activePresentation.refreshData(true, false, false);
         activePresentation.changeMode(recordMode);
+        if (recordMode) {
+            try {
+                DataEditorFeatures.RESULT_SET_REPRESENTATION_RECORD.use();
+            } catch (Throwable ignore) {
+                //ignore
+            }
+        }
         updateStatusMessage();
 
         //restorePresentationState(state);

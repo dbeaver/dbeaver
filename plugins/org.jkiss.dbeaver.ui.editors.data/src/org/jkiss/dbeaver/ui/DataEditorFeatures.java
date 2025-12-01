@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -36,5 +36,15 @@ public interface DataEditorFeatures {
     DBRFeature RESULT_SET_PANEL_CALC = DBRFeature.createFeature(CATEGORY_RESULT_SET_VIEWER, "Use calc panel");
     DBRFeature RESULT_SET_PANEL_REFS = DBRFeature.createFeature(CATEGORY_RESULT_SET_VIEWER, "Use references panel");
     DBRFeature RESULT_SET_PANEL_METADATA = DBRFeature.createFeature(CATEGORY_RESULT_SET_VIEWER, "Use metadata panel");
+
+    DBRFeature CATEGORY_RESULT_SET_REPRESENTATION = DBRFeature.createCategory(
+        CATEGORY_RESULT_SET_VIEWER,
+        "Data representation",
+        "Representation is used in the result set viewer"
+    );
+    DBRFeature RESULT_SET_REPRESENTATION_GRID = DBRFeature.createFeature(CATEGORY_RESULT_SET_REPRESENTATION, "Use Grid representation");
+    DBRFeature RESULT_SET_REPRESENTATION_TEXT = DBRFeature.createFeature(CATEGORY_RESULT_SET_REPRESENTATION, "Use Text representation");
+    DBRFeature RESULT_SET_REPRESENTATION_CHART = DBRFeature.createFeature(CATEGORY_RESULT_SET_REPRESENTATION, "Use Chart representation");
+    DBRFeature RESULT_SET_REPRESENTATION_RECORD = DBRFeature.createFeature(CATEGORY_RESULT_SET_REPRESENTATION, "Use Record mode view");
 
 }
