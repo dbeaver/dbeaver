@@ -21,7 +21,9 @@ import org.jkiss.dbeaver.model.cli.command.AbstractTopLevelCommand;
 import org.jkiss.dbeaver.model.cli.model.option.HiddenOptionsForSubcommands;
 import picocli.CommandLine;
 
-public abstract class AbstractCommandLineParameterHandler {
+import java.util.concurrent.Callable;
+
+public abstract class AbstractCommandLineParameterHandler implements Callable<Void> {
     /**
      * Root command uses as context
      */
@@ -34,6 +36,12 @@ public abstract class AbstractCommandLineParameterHandler {
     @NotNull
     protected CommandLineContext context() {
         return parent.getContext();
+    }
+
+    @Override
+    public Void call() throws CLIException {
+        run();
+        return null;
     }
 
     public abstract void run() throws CLIException;
