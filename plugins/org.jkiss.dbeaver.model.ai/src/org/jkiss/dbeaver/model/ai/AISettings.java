@@ -34,7 +34,8 @@ import java.util.*;
  * Keeps global parameters and configuration of all AI engines
  */
 public class AISettings implements IAdaptable {
-    private final Gson gson;
+    private final Gson readGson;
+    private final Gson writeGson;
 
     private boolean aiDisabled;
     private String activeEngine;
@@ -46,8 +47,9 @@ public class AISettings implements IAdaptable {
     private final Set<String> enabledFunctionCategories = new LinkedHashSet<>();
     private final Set<String> enabledFunctions = new LinkedHashSet<>();
 
-    public AISettings(Gson gson) {
-        this.gson = gson;
+    public AISettings(@NotNull Gson readGson, @NotNull Gson writeGson) {
+        this.readGson = readGson;
+        this.writeGson = writeGson;
     }
 
     public Map<String, Object> getAllProperties() {
@@ -136,7 +138,7 @@ public class AISettings implements IAdaptable {
     }
 
     public boolean hasConfiguration(String engineId) {
-        return engineConfigurations.containsKey(engineId);
+        return engineConfigurations.containsKey(engineId) || rawEngineConfigurations.containsKey(engineId);
     }
 
     @NotNull
@@ -150,7 +152,7 @@ public class AISettings implements IAdaptable {
             engineId, k -> {
                 JsonElement jsonObject = rawEngineConfigurations.remove(engineId);
                 if (jsonObject != null) {
-                    return gson.fromJson(jsonObject, engineDescriptor.getPropertiesType());
+                    return readGson.fromJson(jsonObject, engineDescriptor.getPropertiesType());
                 }
                 return null;
             }
@@ -203,5 +205,25 @@ public class AISettings implements IAdaptable {
     @Override
     public <T> T getAdapter(@NotNull Class<T> adapter) {
         return null;
+    }
+
+    @NotNull
+    public Map<String, JsonElement> getEngineConfigurationsRaw() {
+        Map<String, JsonElement> rawConfigs = new LinkedHashMap<>();
+        for (Map.Entry<String, AIEngineProperties> entry : engineConfigurations.entrySet()) {
+            String engineId = entry.getKey();
+            AIEngineProperties engineConfiguration = entry.getValue();
+            JsonElement jsonElement = writeGson.toJsonTree(engineConfiguration);
+            rawConfigs.put(engineId, jsonElement);
+        }
+
+        for (Map.Entry<String, JsonElement> stringJsonElementEntry : rawEngineConfigurations.entrySet()) {
+            String engineId = stringJsonElementEntry.getKey();
+            if (!rawConfigs.containsKey(engineId)) {
+                rawConfigs.put(engineId, stringJsonElementEntry.getValue());
+            }
+        }
+
+        return rawConfigs;
     }
 }

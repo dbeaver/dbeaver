@@ -22,6 +22,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.ai.AIAssistant;
 import org.jkiss.dbeaver.model.ai.AISchemaGenerator;
 import org.jkiss.dbeaver.model.ai.AISqlFormatter;
+import org.jkiss.dbeaver.model.ai.internal.AISettingsInitializer;
 import org.jkiss.dbeaver.model.app.DBPWorkspace;
 import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
 import org.jkiss.dbeaver.registry.RegistryConstants;
@@ -33,6 +34,7 @@ public class AIAssistantDescriptor extends AbstractDescriptor {
     private final ObjectType objectType;
     private final ObjectType formatterType;
     private final ObjectType schemaGeneratorType;
+    private final ObjectType settingsInitializerType;
     private final int priority;
 
     protected AIAssistantDescriptor(IConfigurationElement contributorConfig) {
@@ -41,6 +43,7 @@ public class AIAssistantDescriptor extends AbstractDescriptor {
         this.formatterType = new ObjectType(contributorConfig, "sqlFormatter");
         this.schemaGeneratorType = new ObjectType(contributorConfig, "schemaGenerator");
         this.priority = CommonUtils.toInt(contributorConfig.getAttribute("priority"));
+        this.settingsInitializerType = new ObjectType(contributorConfig, "settingsInitializer");
     }
 
     @NotNull
@@ -56,6 +59,11 @@ public class AIAssistantDescriptor extends AbstractDescriptor {
     @NotNull
     public AISchemaGenerator createSchemaGenerator() throws DBException {
         return schemaGeneratorType.createInstance(AISchemaGenerator.class);
+    }
+
+    @NotNull
+    public AISettingsInitializer createSettingsInitializer() throws DBException {
+        return settingsInitializerType.createInstance(AISettingsInitializer.class);
     }
 
     public int getPriority() {

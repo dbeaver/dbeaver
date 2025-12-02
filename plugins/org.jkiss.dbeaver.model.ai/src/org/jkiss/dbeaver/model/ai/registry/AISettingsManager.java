@@ -75,22 +75,36 @@ public class AISettingsManager {
 
     @NotNull
     public AISettings getSettings() {
-        return settingsHolder.updateAndGet(
+        AtomicReference<DBException> errorRef = new AtomicReference<>();
+
+        AISettings settings = settingsHolder.updateAndGet(
             cachedSettings -> {
                 if (cachedSettings != null) {
                     return cachedSettings;
                 }
 
                 AISettings aiSettings = settingsWriter.readSettings();
-                AISettingsInitializerRegistry.getInstance()
-                    .createInitializer()
-                    .initializeDefaultSettings(aiSettings);
+                try {
+                    AIAssistantRegistry.getInstance()
+                        .getDescriptor()
+                        .createSettingsInitializer()
+                        .initializeDefaultSettings(aiSettings);
+                } catch (DBException e) {
+                    log.error("Error initializing default AI settings", e);
+                    errorRef.set(e);
+                }
 
                 saveSettings(aiSettings); // save back to persist any default settings
 
                 return aiSettings;
             }
         );
+
+        if (errorRef.get() != null) {
+            throw new RuntimeException("Error loading AI settings", errorRef.get());
+        }
+
+        return settings;
     }
 
     public void saveSettings(AISettings settings) {

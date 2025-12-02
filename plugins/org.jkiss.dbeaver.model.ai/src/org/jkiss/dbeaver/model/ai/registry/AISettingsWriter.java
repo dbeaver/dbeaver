@@ -22,7 +22,6 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.ai.AISettings;
-import org.jkiss.dbeaver.model.ai.engine.AIEngineProperties;
 import org.jkiss.dbeaver.model.ai.engine.openai.OpenAIConstants;
 import org.jkiss.dbeaver.model.app.DBPApplication;
 import org.jkiss.dbeaver.model.data.json.JSONUtils;
@@ -48,7 +47,7 @@ public class AISettingsWriter {
 
     private final String configurationFileName;
     private final Gson readPropsGson = createPropertiesLoadGson();
-    private final Gson savePropsGson = createPropertiesSaveGson();
+    private final Gson writePropsGson = createPropertiesSaveGson();
 
     public AISettingsWriter(String configurationFileName) {
         this.configurationFileName = configurationFileName;
@@ -69,7 +68,7 @@ public class AISettingsWriter {
             configMap = new LinkedHashMap<>();
         }
 
-        AISettings settings = new AISettings(readPropsGson);
+        AISettings settings = new AISettings(readPropsGson, writePropsGson);
 
         if (!configMap.isEmpty()) {
             settings.setAiDisabled(JSONUtils.getBoolean(configMap, AI_DISABLED_KEY));
@@ -127,7 +126,7 @@ public class AISettingsWriter {
 
         JsonObject propertiesObject = new JsonObject();
         for (Map.Entry<String, Object> property : settings.getAllProperties().entrySet()) {
-            JsonElement propValue = savePropsGson.toJsonTree(property.getValue());
+            JsonElement propValue = writePropsGson.toJsonTree(property.getValue());
             propertiesObject.add(property.getKey(), propValue);
         }
         json.add(PROPERTIES_KEY, propertiesObject);
@@ -152,17 +151,16 @@ public class AISettingsWriter {
 
 
         JsonObject engineConfigurations = new JsonObject();
-        for (Map.Entry<String, AIEngineProperties> configuration : settings.getEngineConfigurations().entrySet()) {
-            JsonElement savedProps = savePropsGson.toJsonTree(configuration.getValue());
-            if (savedProps instanceof JsonObject jo && !jo.isEmpty()) {
+        for (Map.Entry<String, JsonElement> configuration : settings.getEngineConfigurationsRaw().entrySet()) {
+            if (configuration.getValue() instanceof JsonObject jo && !jo.isEmpty()) {
                 JsonObject props = new JsonObject();
-                props.add(ENGINE_PROPERTIES, savedProps);
+                props.add(ENGINE_PROPERTIES, jo);
                 engineConfigurations.add(configuration.getKey(), props);
             }
         }
         json.add(ENGINE_CONFIGURATIONS_KEY, engineConfigurations);
 
-        String content = savePropsGson.toJson(json);
+        String content = writePropsGson.toJson(json);
 
         DBWorkbench.getPlatform().getConfigurationController()
             .saveConfigurationFile(configurationFileName, content);

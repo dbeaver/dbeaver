@@ -116,6 +116,7 @@ public class AIPreferencePageMain extends AbstractPrefPage implements IWorkbench
                 try {
                     AIEngineProperties engineConfiguration = this.settings.getEngineConfiguration(entry.getKey());
                     entry.getValue().saveSettings(engineConfiguration);
+                    this.settings.setEngineConfiguration(entry.getKey(), engineConfiguration);
                 } catch (DBException e) {
                     log.error("Error saving engine settings", e);
 

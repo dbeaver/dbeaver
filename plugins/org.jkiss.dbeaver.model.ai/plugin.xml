@@ -6,8 +6,6 @@
     <extension-point id="com.dbeaver.ai.assistant" name="AI assistants" schema="schema/com.dbeaver.ai.assistant.exsd"/>
     <extension-point id="com.dbeaver.ai.prompt" name="AI prompt generators" schema="schema/com.dbeaver.ai.prompt.exsd"/>
     <extension-point id="com.dbeaver.ai.function" name="AI functions" schema="schema/com.dbeaver.ai.function.exsd"/>
-    <extension-point id="com.dbeaver.ai.settings.initializer" name="AI settings initializer"
-                     schema="schema/com.dbeaver.ai.settings.initializer.exsd"/>
 
     <extension point="com.dbeaver.ai.engine">
         <completionEngine id="openai"
@@ -26,15 +24,10 @@
 
     <extension point="com.dbeaver.ai.assistant">
         <assistant id="ce-assistant" priority="1"
-            class="org.jkiss.dbeaver.model.ai.impl.AIAssistantImpl"
-            sqlFormatter="org.jkiss.dbeaver.model.ai.impl.SimpleSqlFormatterImpl"
-            schemaGenerator="org.jkiss.dbeaver.model.ai.impl.AISchemaGeneratorImpl"/>
-    </extension>
-
-    <extension point="com.dbeaver.ai.settings.initializer">
-        <initializer id="ce-settings-initializer"
-                     priority="1"
-                     class="org.jkiss.dbeaver.model.ai.internal.AISettingsInitializer"/>
+                   class="org.jkiss.dbeaver.model.ai.impl.AIAssistantImpl"
+                   sqlFormatter="org.jkiss.dbeaver.model.ai.impl.SimpleSqlFormatterImpl"
+                   schemaGenerator="org.jkiss.dbeaver.model.ai.impl.AISchemaGeneratorImpl"
+                   settingsInitializer="org.jkiss.dbeaver.model.ai.internal.AISettingsInitializer"/>
     </extension>
 
     <extension point="com.dbeaver.ai.prompt">
