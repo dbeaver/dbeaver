@@ -42,9 +42,10 @@ public interface DataEditorFeatures {
         "Data representation",
         "Representation is used in the result set viewer"
     );
-    DBRFeature RESULT_SET_REPRESENTATION_GRID = DBRFeature.createFeature(CATEGORY_RESULT_SET_REPRESENTATION, "Use Grid representation");
-    DBRFeature RESULT_SET_REPRESENTATION_TEXT = DBRFeature.createFeature(CATEGORY_RESULT_SET_REPRESENTATION, "Use Text representation");
-    DBRFeature RESULT_SET_REPRESENTATION_CHART = DBRFeature.createFeature(CATEGORY_RESULT_SET_REPRESENTATION, "Use Chart representation");
+    DBRFeature RESULT_SET_REPRESENTATION_SELECTED = DBRFeature.createFeature(
+        CATEGORY_RESULT_SET_REPRESENTATION,
+        "Selected representation"
+    );
     DBRFeature RESULT_SET_REPRESENTATION_RECORD = DBRFeature.createFeature(CATEGORY_RESULT_SET_REPRESENTATION, "Use Record mode view");
 
 }

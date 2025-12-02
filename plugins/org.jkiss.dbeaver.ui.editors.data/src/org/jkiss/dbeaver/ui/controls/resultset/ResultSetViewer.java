@@ -1117,20 +1117,6 @@ public class ResultSetViewer extends Viewer
             setActivePresentation(instance);
             instance.refreshData(true, false, false);
 
-            try {
-                String presentationId = selectedPresentation.getId();
-                Map<String, Object> configurationMap = Map.of("driver", getDataSource().getContainer().getDriver().getPreconfiguredId());
-                if ("spreadsheet".equals(presentationId)) {
-                    DataEditorFeatures.RESULT_SET_REPRESENTATION_GRID.use(configurationMap);
-                } else if ("plaintext".equals(presentationId)) {
-                    DataEditorFeatures.RESULT_SET_REPRESENTATION_TEXT.use(configurationMap);
-                } else if (presentationId != null && presentationId.toLowerCase(Locale.ROOT).contains("chart")) {
-                    DataEditorFeatures.RESULT_SET_REPRESENTATION_CHART.use(configurationMap);
-                }
-            } catch (Throwable ignore) {
-                // ignore
-            }
-
             if (presentationSwitchFolder != null) {
                 for (VerticalButton item : presentationSwitchFolder.getItems()) {
                     if (item.getData() == activePresentationDescriptor) {

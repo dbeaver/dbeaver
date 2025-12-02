@@ -34,17 +34,23 @@ import org.eclipse.ui.contexts.IContextService;
 import org.eclipse.ui.themes.ITheme;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
+import org.jkiss.dbeaver.ui.DataEditorFeatures;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.EditorUtils;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Abstract presentation.
  */
 public abstract class AbstractPresentation implements IResultSetPresentation, ISelectionProvider {
+
+    private static final Log log = Log.getLog(AbstractPresentation.class);
 
     public static final String RESULT_SET_PRESENTATION_CONTEXT_MENU = "org.jkiss.dbeaver.ui.controls.resultset.conext.menu";
     public static final String DATA_VALUE_CONTROLLER = "org.jkiss.dbeaver.resultset.value-controller";
@@ -80,6 +86,40 @@ public abstract class AbstractPresentation implements IResultSetPresentation, IS
     @Override
     public void createPresentation(@NotNull final IResultSetController controller, @NotNull Composite parent) {
         this.controller = controller;
+        trackStatistics();
+    }
+
+    private void trackStatistics() {
+        try {
+            ResultSetPresentationDescriptor descriptor =
+                ResultSetPresentationRegistry.getInstance().getPresentation(getClass());
+            String presentationId = descriptor == null ? null : descriptor.getId();
+
+            DBPDataSource ds = controller.getExecutionContext() == null ? null : controller.getExecutionContext().getDataSource();
+            String driverId = null;
+            if (ds != null) {
+                try {
+                    driverId = ds.getContainer().getDriver().getPreconfiguredId();
+                } catch (Throwable trw) {
+                    log.warn("Error getting driver id", trw);
+                }
+            }
+
+            if (presentationId != null) {
+                Map<String, Object> params;
+                if (driverId != null) {
+                    params = Map.of(
+                        "presentationId", presentationId,
+                        "driver", driverId
+                    );
+                } else {
+                    params = Map.of("presentationId", presentationId);
+                }
+                DataEditorFeatures.RESULT_SET_REPRESENTATION_SELECTED.use(params);
+            }
+        } catch (Throwable trw) {
+            log.warn("Error tracking presentation selection", trw);
+        }
     }
 
     protected void applyCurrentThemeSettings() {
