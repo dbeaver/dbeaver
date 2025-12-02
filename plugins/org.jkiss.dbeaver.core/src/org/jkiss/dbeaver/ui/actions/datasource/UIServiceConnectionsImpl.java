@@ -22,8 +22,7 @@ import org.eclipse.core.net.proxy.IProxyService;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.bundle.ModelActivator;
+import org.jkiss.dbeaver.core.DBeaverActivator;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.rm.RMConstants;
@@ -45,12 +44,10 @@ import java.net.PasswordAuthentication;
  */
 public class UIServiceConnectionsImpl implements DBServiceConnections, UIServiceConnections {
 
-    private static final Log log = Log.getLog(UIServiceConnectionsImpl.class);
-
     private final IProxyService proxyService;
 
     public UIServiceConnectionsImpl() {
-        BundleContext bundleContext = ModelActivator.getInstance().getBundle().getBundleContext();
+        BundleContext bundleContext = DBeaverActivator.getInstance().getBundle().getBundleContext();
         ServiceReference<IProxyService> proxyServiceRef = bundleContext.getServiceReference(IProxyService.class);
         if (proxyServiceRef != null) {
             proxyService = bundleContext.getService(proxyServiceRef);
