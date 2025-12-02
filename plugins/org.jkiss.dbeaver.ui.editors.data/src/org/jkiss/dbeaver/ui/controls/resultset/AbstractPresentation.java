@@ -98,11 +98,7 @@ public abstract class AbstractPresentation implements IResultSetPresentation, IS
             DBPDataSource ds = controller.getExecutionContext() == null ? null : controller.getExecutionContext().getDataSource();
             String driverId = null;
             if (ds != null) {
-                try {
-                    driverId = ds.getContainer().getDriver().getPreconfiguredId();
-                } catch (Throwable trw) {
-                    log.warn("Error getting driver id", trw);
-                }
+                driverId = ds.getContainer().getDriver().getPreconfiguredId();
             }
 
             if (presentationId != null) {
@@ -117,7 +113,7 @@ public abstract class AbstractPresentation implements IResultSetPresentation, IS
                 }
                 DataEditorFeatures.RESULT_SET_REPRESENTATION_SELECTED.use(params);
             }
-        } catch (Throwable trw) {
+        } catch (Exception trw) {
             log.warn("Error tracking presentation selection", trw);
         }
     }
