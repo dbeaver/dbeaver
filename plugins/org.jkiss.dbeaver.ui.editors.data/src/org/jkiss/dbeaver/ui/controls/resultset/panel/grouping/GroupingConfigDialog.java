@@ -95,6 +95,7 @@ public class GroupingConfigDialog extends BaseDialog {
         super.okPressed();
     }
 
+    @NotNull
     private Table createFunctionsTable(
         @NotNull Composite parent,
         @NotNull StringContentProposalProvider proposalProvider,
@@ -106,6 +107,7 @@ public class GroupingConfigDialog extends BaseDialog {
         return tableFactory.createTable();
     }
 
+    @NotNull
     private Table createColumnsTable(
         @NotNull Composite parent,
         @NotNull StringContentProposalProvider proposalProvider,
@@ -171,6 +173,7 @@ public class GroupingConfigDialog extends BaseDialog {
             this.columnNames = allColumnNames;
         }
 
+        @NotNull
         @Override
         protected Control addButton(@NotNull Composite buttonsGroup) {
             Button addButton = new Button(buttonsGroup, SWT.PUSH | SWT.ARROW | SWT.DOWN);
@@ -186,6 +189,7 @@ public class GroupingConfigDialog extends BaseDialog {
             return addButton;
         }
 
+        @NotNull
         private Menu createAddMenu(@NotNull Button addButton) {
             Menu addMenu = new Menu(addButton);
             addCustomColumn(addMenu);
@@ -236,6 +240,7 @@ public class GroupingConfigDialog extends BaseDialog {
             this.columns.addFirst("*");
         }
 
+        @NotNull
         @Override
         protected Control addButton(@NotNull Composite buttonsGroup) {
             Button addButton = new Button(buttonsGroup, SWT.PUSH | SWT.ARROW | SWT.DOWN);
@@ -251,6 +256,7 @@ public class GroupingConfigDialog extends BaseDialog {
             return addButton;
         }
 
+        @NotNull
         private Menu createAddMenu(@NotNull Button addButton) {
             Menu addMenu = new Menu(addButton);
             addCustomFunction(addMenu);

@@ -77,6 +77,7 @@ public class StringEditorTableFactory<T> {
         this.buttonsRefresher = buttonsRefresher();
     }
 
+    @NotNull
     public Table createTable() {
         setLayout();
         createValueColumn();
@@ -93,6 +94,7 @@ public class StringEditorTableFactory<T> {
         return valueTable;
     }
 
+    @NotNull
     protected Runnable buttonsRefresher() {
         return () -> {
             int selectionIndex = valueTable.getSelectionIndex();
@@ -116,6 +118,7 @@ public class StringEditorTableFactory<T> {
         valueTable.setLinesVisible(true);
     }
 
+    @NotNull
     protected TableColumn createValueColumn() {
         TableColumn valueColumn = UIUtils.createTableColumn(valueTable, SWT.LEFT, UIMessages.properties_value);
         valueTable.addControlListener(new ControlAdapter() {
@@ -205,6 +208,7 @@ public class StringEditorTableFactory<T> {
         return rightArea;
     }
 
+    @NotNull
     protected Control addButton(@NotNull Composite buttonsGroup) {
         Button addButton = new Button(buttonsGroup, SWT.PUSH);
         addButton.setText(UIMessages.button_add);
@@ -228,6 +232,7 @@ public class StringEditorTableFactory<T> {
         buttonsRefresher.run();
     }
 
+    @NotNull
     protected Control removeButton(@NotNull Composite buttonsGroup) {
         Button removeButton = new Button(buttonsGroup, SWT.PUSH);
         removeButton.setText(UIMessages.button_remove);
@@ -247,6 +252,7 @@ public class StringEditorTableFactory<T> {
         return removeButton;
     }
 
+    @NotNull
     protected Control clearButton(@NotNull Composite buttonsGroup) {
         final Button clearButton = new Button(buttonsGroup, SWT.PUSH);
         clearButton.setText(UIMessages.button_clear);
@@ -262,6 +268,7 @@ public class StringEditorTableFactory<T> {
         return clearButton;
     }
 
+    @NotNull
     protected Control upButton(@NotNull Composite buttonsGroup) {
         final Button upButton = new Button(buttonsGroup, SWT.PUSH);
         upButton.setImage(DBeaverIcons.getImage(UIIcon.ARROW_UP));
@@ -287,6 +294,7 @@ public class StringEditorTableFactory<T> {
         return upButton;
     }
 
+    @NotNull
     protected Control downButton(@NotNull Composite buttonsGroup) {
         final Button downButton = new Button(buttonsGroup, SWT.PUSH);
         downButton.setImage(DBeaverIcons.getImage(UIIcon.ARROW_DOWN));
