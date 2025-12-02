@@ -707,12 +707,7 @@ public class SSHTunnelDefaultConfiguratorUI implements IObjectPropertyConfigurat
                 SSHUIMessages.model_ssh_configurator_dialog_choose_private_key, new String[]{"*", "*.ssh", "*.pem", "*.*"},
                 false,
                 DBWorkbench.isDistributed()
-            ) {
-                @Override
-                protected boolean isShowFileContentEditor() {
-                    return DBWorkbench.isDistributed();
-                }
-            };
+            );
             privateKeyText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
             privateKeyText.getTextControl().addModifyListener(listener);
             if (DBWorkbench.isDistributed()) {
