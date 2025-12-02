@@ -18,13 +18,14 @@ package org.jkiss.dbeaver.model.data.order;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ModelPreferences;
+import org.jkiss.dbeaver.model.data.messages.DataMessages;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.utils.CommonUtils;
 
 public enum OrderingPolicy {
-    DEFAULT("Database order"),
-    PRIMARY_KEY_ASC("Primary key (ascending)"),
-    PRIMARY_KEY_DESC("Primary key (descending)");
+    DEFAULT(DataMessages.database_resultsets_label_order_policy_default),
+    PRIMARY_KEY_ASC(DataMessages.database_resultsets_label_order_policy_primary_key_asc),
+    PRIMARY_KEY_DESC(DataMessages.database_resultsets_label_order_policy_primary_key_desc),;
 
     private final String text;
 
