@@ -59,10 +59,9 @@ public class SQLEditorPropertyTester extends PropertyTester
 
     @Override
     public boolean test(Object receiver, String property, Object[] args, Object expectedValue) {
-        if (!(receiver instanceof SQLEditorBase)) {
+        if (!(receiver instanceof SQLEditor editor)) {
             return false;
         }
-        SQLEditor editor = (SQLEditor)receiver;
         final Control editorControl = editor.getEditorControl();
         if (editorControl == null) {
             return false;
