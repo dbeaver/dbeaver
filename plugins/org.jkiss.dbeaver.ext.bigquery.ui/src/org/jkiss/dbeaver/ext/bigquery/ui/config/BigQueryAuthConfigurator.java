@@ -68,7 +68,12 @@ public class BigQueryAuthConfigurator extends DatabaseNativeAuthModelConfigurato
             boolean serviceBased = authTypeCombo.getText().equals(BigQueryMessages.label_service_based);
             UIUtils.setControlVisible(keyPathLabel, serviceBased);
             UIUtils.setControlVisible(authCertFile.getPanel(), serviceBased);
-            authCertFile.getParent().layout(true, true);
+            UIUtils.asyncExec(() -> {
+                if (!authTypeCombo.isDisposed()) {
+                    authTypeCombo.getShell().layout(true, true);
+                    UIUtils.resizeShell(authTypeCombo.getShell());
+                }
+            });
         }
     }
 
