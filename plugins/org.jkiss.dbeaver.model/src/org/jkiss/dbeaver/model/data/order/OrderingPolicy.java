@@ -25,7 +25,7 @@ import org.jkiss.utils.CommonUtils;
 public enum OrderingPolicy {
     DEFAULT(DataMessages.database_resultsets_label_order_policy_default),
     PRIMARY_KEY_ASC(DataMessages.database_resultsets_label_order_policy_primary_key_asc),
-    PRIMARY_KEY_DESC(DataMessages.database_resultsets_label_order_policy_primary_key_desc),;
+    PRIMARY_KEY_DESC(DataMessages.database_resultsets_label_order_policy_primary_key_desc);
 
     private final String text;
 
@@ -34,12 +34,9 @@ public enum OrderingPolicy {
     }
 
     @NotNull
-    public static OrderingPolicy get(@NotNull DBPPreferenceStore preferences) {
-        return CommonUtils.valueOf(
-            OrderingPolicy.class,
-            preferences.getString(ModelPreferences.RESULT_SET_ORDERING_POLICY),
-            DEFAULT
-        );
+    public static OrderingPolicy get(@NotNull DBPPreferenceStore store) {
+        String value = store.getString(ModelPreferences.RESULT_SET_ORDERING_POLICY);
+        return CommonUtils.valueOf(OrderingPolicy.class, value, DEFAULT);
     }
 
     @NotNull

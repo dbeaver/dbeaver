@@ -22,17 +22,12 @@ import org.jkiss.dbeaver.model.data.messages.DataMessages;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.utils.CommonUtils;
 
-/**
- * Non-UI mirror of result set ordering strategy pref.
- * Reads the same preference key used in UI without introducing UI dependencies.
- */
 public enum OrderingStrategy {
     SMART(DataMessages.database_resultsets_label_order_mode_smart),
     CLIENT_SIDE(DataMessages.database_resultsets_label_order_mode_always_client),
     SERVER_SIDE(DataMessages.database_resultsets_label_order_mode_always_server);
 
     private final String text;
-
 
     OrderingStrategy(String text) {
         this.text = text;
