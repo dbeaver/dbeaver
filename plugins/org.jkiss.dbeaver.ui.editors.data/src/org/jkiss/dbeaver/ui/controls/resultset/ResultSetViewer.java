@@ -2105,8 +2105,8 @@ public class ResultSetViewer extends Viewer
                 DataEditorFeatures.RESULT_SET_REPRESENTATION_RECORD.use(
                     Map.of("driver", getDataSource().getContainer().getDriver().getPreconfiguredId())
                 );
-            } catch (Throwable ignore) {
-                //ignore
+            } catch (Throwable trw) {
+                log.warn("Error setting result set presentation", trw);
             }
         }
         updateStatusMessage();
