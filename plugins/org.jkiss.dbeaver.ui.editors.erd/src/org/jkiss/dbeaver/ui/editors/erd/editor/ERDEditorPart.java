@@ -1305,7 +1305,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
                 ERDNotationDescriptor defaultNotation = ERDNotationRegistry.getInstance().getActiveDescriptor();
                 setDiagramNotation(defaultNotation);
                 doSave(new NullProgressMonitor());
-                refreshDiagram(true, false);
+                refreshDiagram(true, true);
             } else if (ERDUIConstants.PREF_ROUTING_TYPE.equals(event.getProperty())) {
                 ERDConnectionRouterDescriptor defaultRouter = ERDConnectionRouterRegistry.getInstance().getActiveRouter();
                 setDiagramRouter(defaultRouter);

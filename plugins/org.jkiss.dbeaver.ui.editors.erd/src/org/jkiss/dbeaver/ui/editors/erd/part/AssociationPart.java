@@ -191,10 +191,9 @@ public class AssociationPart extends PropertyAwareConnectionPart {
                 conn.setRoutingConstraint(bends);
             }
         }
-        if (cLayer.getConnectionRouter() instanceof ShortPathRouting) {
+        if (cLayer.getConnectionRouter() instanceof ShortPathRouting shortPathRouting) {
             ERDNotationDescriptor diagramNotationDescriptor = getDiagramPart().getEditor().getDiagramNotation();
-            ((ShortPathRouting) cLayer.getConnectionRouter())
-                .setIndentation(diagramNotationDescriptor.getNotation().getIndentation());
+            shortPathRouting.setIndentation(diagramNotationDescriptor.getNotation().getIndentation());
         }
     }
 
@@ -208,15 +207,14 @@ public class AssociationPart extends PropertyAwareConnectionPart {
         ERDNotationDescriptor diagramNotationDescriptor = getDiagramPart().getEditor().getDiagramNotation();
         if (diagramNotationDescriptor == null) {
             log.error("ERD notation descriptor is not defined");
+            return;
         }
-        if (diagramNotationDescriptor != null) {
-            Color background = getParent().getViewer().getControl().getBackground();
-            ERDNotation notation = diagramNotationDescriptor.getNotation();
-            if (notation != null) {
-                notation.applyNotationForArrows(monitor, conn, getAssociation(), background, labelForegroundColor);
-            } else {
-                log.error("ERD notation instance not created for id: " + diagramNotationDescriptor.getId());
-            }
+        Color background = getParent().getViewer().getControl().getBackground();
+        ERDNotation notation = diagramNotationDescriptor.getNotation();
+        if (notation != null) {
+            notation.applyNotationForArrows(monitor, conn, getAssociation(), background, labelForegroundColor);
+        } else {
+            log.error("ERD notation instance not created for id: " + diagramNotationDescriptor.getId());
         }
     }
 
