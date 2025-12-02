@@ -5,23 +5,15 @@ grade: stable
 adopt-info: dbeaver-ce
 
 base: core20
-confinement: strict
+confinement: classic
 
 architectures:
   - build-on: amd64
     run-on: [amd64, arm64]
 
-slots:
-  dbus-dbeaver:
-    interface: dbus
-    bus: session
-    name: snap.dbeaver-ce.dbeaver-ce
-
 apps:
   dbeaver-ce:
     command: usr/share/dbeaver-ce/dbeaver
-    slots: [ dbus-dbeaver ]
-    extensions: [ gnome-3-38 ]
     common-id: dbeaver
     desktop: usr/share/applications/dbeaver-ce.desktop
     environment:
@@ -31,21 +23,6 @@ apps:
       DISABLE_WAYLAND: 1
       # Fixes occasional crashes on various WMs
       NO_AT_BRIDGE: 1
-    plugs:
-      - network
-      - home
-      - removable-media
-      - ssh-keys
-      - ssh-public-keys
-      - network-manager
-      - network-bind
-      - mount-observe
-      - network-manager-observe
-      - browser-support
-      - system-observe
-      - process-control
-      - audio-playback
-      - audio-record
 
 parts:
   dbeaver-ce:
