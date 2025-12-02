@@ -181,10 +181,10 @@ public class DashboardRendererTimeseries extends DashboardRendererDatabaseChart 
 
         plot.setDomainGridlinePaint(gridColor);
         //plot.setDomainGridlineStroke(gridStroke);
-        plot.setDomainGridlinesVisible(viewConfig == null || viewConfig.isGridVisible());
+        plot.setDomainGridlinesVisible(viewConfig != null && viewConfig.isGridVisible());
         plot.setRangeGridlinePaint(gridColor);
         //plot.setRangeGridlineStroke(gridStroke);
-        plot.setRangeGridlinesVisible(viewConfig == null || viewConfig.isGridVisible());
+        plot.setRangeGridlinesVisible(viewConfig != null && viewConfig.isGridVisible());
 
         DashboardChartComposite chartComposite = createChartComposite(composite, container, viewContainer, preferredSize);
         chartComposite.setChart(histogramChart);

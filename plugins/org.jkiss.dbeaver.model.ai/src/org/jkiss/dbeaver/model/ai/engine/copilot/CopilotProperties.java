@@ -54,7 +54,7 @@ public class CopilotProperties implements AIEngineProperties {
     private boolean loggingEnabled;
 
     @Nullable
-    @Property(order = 1, password = true)
+    @Property(order = 1, password = true, required = true)
     public String getToken() {
         return token;
     }
@@ -73,15 +73,22 @@ public class CopilotProperties implements AIEngineProperties {
         this.model = model;
     }
 
+    @Override
     @Property(order = 3)
     public double getTemperature() {
-        return temperature;
+        if (temperature != 0.0) {
+            return temperature;
+        }
+        return CopilotModels.getModelByName(model)
+            .map(AIModel::defaultTemperature)
+            .orElse(0.0);
     }
 
     public void setTemperature(double temperature) {
         this.temperature = temperature;
     }
 
+    @Override
     @Nullable
     @Property(order = 4)
     public Integer getContextWindowSize() {

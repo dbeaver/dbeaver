@@ -28,6 +28,7 @@
         <module>org.jkiss.dbeaver.model.lsm.test</module>
         <module>org.jkiss.dbeaver.model.navigator.test</module>
         <module>org.jkiss.dbeaver.model.ai.test</module>
+        <module>org.jkiss.dbeaver.model.sql.test</module>
     </modules>
 
     <build>
