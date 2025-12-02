@@ -187,7 +187,7 @@ class DataSourceSerializerLegacy<T extends DataSourceDescriptor> implements Data
                     curDataSource.setName(name);
                     curDataSource.setSavePassword(CommonUtils.getBoolean(attributes.getValue(RegistryConstants.ATTR_SAVE_PASSWORD)));
 
-                    DataSourceNavigatorSettings navSettings = curDataSource.getNavigatorSettings();
+                    DataSourceNavigatorSettings navSettings = curDataSource.getOriginalNavigatorSettings();
                     navSettings.setShowSystemObjects(CommonUtils.getBoolean(attributes.getValue(DataSourceSerializerModern.ATTR_NAVIGATOR_SHOW_SYSTEM_OBJECTS)));
                     navSettings.setShowUtilityObjects(CommonUtils.getBoolean(attributes.getValue(DataSourceSerializerModern.ATTR_NAVIGATOR_SHOW_UTIL_OBJECTS)));
                     navSettings.setShowOnlyEntities(CommonUtils.getBoolean(attributes.getValue(DataSourceSerializerModern.ATTR_NAVIGATOR_SHOW_ONLY_ENTITIES)));

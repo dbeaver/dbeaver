@@ -236,19 +236,22 @@ public interface SMController extends DBPObjectController, DBInternalDatabaseInf
     String[] getTeamMembers(String teamId) throws DBException;
 
     @NotNull
-    Map<String, Object> getObjectSettings(
+    List<SMObjectSettings> getObjectSettings(
+        @NotNull String projectId,
         @NotNull String objectId,
         @NotNull SMObjectType objectType,
         @Nullable String settingId
     ) throws DBException;
 
     void setObjectSettings(
+        @NotNull String projectId,
         @NotNull String objectId,
         @NotNull SMObjectType objectType,
         @NotNull Map<String, Object> settings
     ) throws DBException;
 
     void deleteObjectSettings(
+        @NotNull String projectId,
         @NotNull String objectId,
         @NotNull SMObjectType objectType,
         @Nullable Set<String> settingIds

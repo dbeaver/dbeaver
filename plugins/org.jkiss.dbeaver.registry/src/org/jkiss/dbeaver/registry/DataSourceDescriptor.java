@@ -160,6 +160,9 @@ public class DataSourceDescriptor
 
     @NotNull
     private DataSourceNavigatorSettings navigatorSettings;
+    @Nullable
+    // Custom navigator settings that can be saved separately (f.e. in project settings)
+    private DataSourceNavigatorSettings customNavigatorSettings;
     @NotNull
     private DBVModel virtualModel;
     private final boolean manageable;
@@ -395,11 +398,20 @@ public class DataSourceDescriptor
     @NotNull
     @Override
     public DataSourceNavigatorSettings getNavigatorSettings() {
+        return Objects.requireNonNullElseGet(customNavigatorSettings, () -> navigatorSettings);
+    }
+
+    @NotNull
+    public DataSourceNavigatorSettings getOriginalNavigatorSettings() {
         return navigatorSettings;
     }
 
     public void setNavigatorSettings(DBNBrowseSettings copyFrom) {
         this.navigatorSettings = new DataSourceNavigatorSettings(copyFrom);
+    }
+
+    public void setCustomNavigatorSettings(@Nullable DataSourceNavigatorSettings customNavigatorSettings) {
+        this.customNavigatorSettings = customNavigatorSettings;
     }
 
     @NotNull
@@ -1898,7 +1910,7 @@ public class DataSourceDescriptor
         this.connectionReadOnly = descriptor.connectionReadOnly;
         this.forceUseSingleConnection = descriptor.forceUseSingleConnection;
 
-        this.navigatorSettings = new DataSourceNavigatorSettings(descriptor.getNavigatorSettings());
+        this.navigatorSettings = new DataSourceNavigatorSettings(descriptor.getOriginalNavigatorSettings());
     }
 
     @Override
