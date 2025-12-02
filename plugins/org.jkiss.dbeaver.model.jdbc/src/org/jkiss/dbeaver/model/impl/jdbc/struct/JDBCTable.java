@@ -22,6 +22,8 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.data.*;
+import org.jkiss.dbeaver.model.data.order.OrderingStrategy;
+import org.jkiss.dbeaver.model.data.order.OrderingUtils;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
@@ -35,6 +37,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.data.handlers.JDBCStringValueHandler;
 import org.jkiss.dbeaver.model.impl.struct.AbstractTable;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.meta.Property;
+import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLExpressionFormatter;
@@ -175,6 +178,18 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
             SQLUtils.appendQueryConditions(dataSource, query, tableAlias, dataFilter);
         } catch (DBException e) {
             throw new DBCException("Can't generate query conditions", e, session.getExecutionContext());
+        }
+
+        if (dataFilter != null && !dataFilter.hasOrdering()) {
+            final DBPPreferenceStore prefs = session.getDataSource().getContainer().getPreferenceStore();
+            final OrderingStrategy strategy = OrderingStrategy.get(prefs);
+            if (strategy == OrderingStrategy.SERVER_SIDE) {
+                OrderingUtils.addOrderingOnServerSide(
+                    this,
+                    dataFilter,
+                    prefs
+                );
+            }
         }
         SQLUtils.appendQueryOrder(dataSource, query, tableAlias, dataFilter);
 

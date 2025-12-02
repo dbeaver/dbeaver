@@ -24,6 +24,9 @@ public class DataMessages extends NLS {
     public static String hint_attr_keys_unique_key;
     public static String hint_attr_keys_part_of;
     public static String hint_attr_keys_refers_to;
+    public static String database_resultsets_label_order_mode_smart;
+    public static String database_resultsets_label_order_mode_always_client;
+    public static String database_resultsets_label_order_mode_always_server;
 
     static {
         // initialize resource bundle

@@ -37,8 +37,6 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
-import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
@@ -171,58 +169,6 @@ public class ResultSetUtils
 
     static String formatRowCount(long rows) {
         return rows < 0 ? "0" : String.valueOf(rows);
-    }
-
-    public enum OrderingPolicy {
-        DEFAULT(ResultSetMessages.pref_page_database_resultsets_label_order_policy_default),
-        PRIMARY_KEY_ASC(ResultSetMessages.pref_page_database_resultsets_label_order_policy_primary_key_asc),
-        PRIMARY_KEY_DESC(ResultSetMessages.pref_page_database_resultsets_label_order_policy_primary_key_desc);
-
-        private final String text;
-
-        OrderingPolicy(String text) {
-            this.text = text;
-        }
-
-        @NotNull
-        public static OrderingPolicy get(@NotNull IResultSetController controller) {
-            return CommonUtils.valueOf(
-                OrderingPolicy.class,
-                controller.getPreferenceStore().getString(ResultSetPreferences.RESULT_SET_ORDERING_POLICY),
-                DEFAULT
-            );
-        }
-
-        @NotNull
-        public String getText() {
-            return text;
-        }
-    }
-
-    public enum OrderingStrategy {
-        SMART(ResultSetMessages.pref_page_database_resultsets_label_order_mode_smart),
-        CLIENT_SIDE(ResultSetMessages.pref_page_database_resultsets_label_order_mode_always_client),
-        SERVER_SIDE(ResultSetMessages.pref_page_database_resultsets_label_order_mode_always_server);
-
-        private final String text;
-
-        OrderingStrategy(String text) {
-            this.text = text;
-        }
-
-        @NotNull
-        public static OrderingStrategy get(@NotNull IResultSetController controller) {
-            return CommonUtils.valueOf(
-                OrderingStrategy.class,
-                controller.getPreferenceStore().getString(ResultSetPreferences.RESULT_SET_ORDERING_STRATEGY),
-                SMART
-            );
-        }
-
-        @NotNull
-        public String getText() {
-            return text;
-        }
     }
 
     public static DBDDataFilter restoreDataFilter(final DBSDataContainer dataContainer, @NotNull DBRProgressMonitor monitor) {

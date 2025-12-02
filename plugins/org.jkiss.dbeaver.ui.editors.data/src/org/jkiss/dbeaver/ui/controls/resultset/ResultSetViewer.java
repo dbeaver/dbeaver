@@ -59,6 +59,8 @@ import org.jkiss.dbeaver.model.data.hints.DBDCellHintProvider;
 import org.jkiss.dbeaver.model.data.hints.DBDValueHint;
 import org.jkiss.dbeaver.model.data.hints.DBDValueHintContext;
 import org.jkiss.dbeaver.model.data.hints.DBDValueHintProvider;
+import org.jkiss.dbeaver.model.data.order.OrderingStrategy;
+import org.jkiss.dbeaver.model.data.order.OrderingUtils;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.impl.local.StatResultSet;
@@ -88,8 +90,6 @@ import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.actions.DisabledLabelAction;
 import org.jkiss.dbeaver.ui.controls.*;
 import org.jkiss.dbeaver.ui.controls.autorefresh.AutoRefreshControl;
-import org.jkiss.dbeaver.ui.controls.resultset.ResultSetUtils.OrderingPolicy;
-import org.jkiss.dbeaver.ui.controls.resultset.ResultSetUtils.OrderingStrategy;
 import org.jkiss.dbeaver.ui.controls.resultset.actions.*;
 import org.jkiss.dbeaver.ui.controls.resultset.colors.CustomizeColorsAction;
 import org.jkiss.dbeaver.ui.controls.resultset.colors.ResetAllColorAction;
@@ -2452,7 +2452,7 @@ public class ResultSetViewer extends Viewer
         // }
         DBDAttributeConstraint constraint = dataFilter.getConstraint(columnElement);
         assert constraint != null;
-        OrderingStrategy orderingMode = OrderingStrategy.get(this);
+        OrderingStrategy orderingMode = OrderingStrategy.get(this.getPreferenceStore());
         if (CommonUtils.isNotEmpty(model.getDataFilter().getOrder())) {
             orderingMode = OrderingStrategy.SERVER_SIDE;
         }
@@ -4090,29 +4090,27 @@ public class ResultSetViewer extends Viewer
     }
 
     private void applyDefaultOrdering() {
-        OrderingPolicy policy = OrderingPolicy.get(this);
-        DBDRowIdentifier rowIdentifier = model.getDefaultRowIdentifier();
+        final OrderingStrategy strategy = OrderingStrategy.get(this.getPreferenceStore());
 
-        if (policy != OrderingPolicy.DEFAULT && rowIdentifier != null && !rowIdentifier.isIncomplete()) {
-            DBDDataFilter dataFilter = getDataFilter();
+        if (strategy == OrderingStrategy.SERVER_SIDE) {
+            return;
+        }
 
-            for (DBDAttributeBinding binding : rowIdentifier.getAttributes()) {
-                DBDAttributeConstraint constraint = dataFilter.getConstraint(binding);
-                if (constraint != null) {
-                    constraint.setOrderPosition(dataFilter.getMaxOrderingPosition() + 1);
-                    constraint.setOrderDescending(policy == OrderingPolicy.PRIMARY_KEY_DESC);
-                }
-            }
+        final DBSDataContainer dataContainer = getDataContainer();
+        final DBDRowIdentifier rowIdentifier = model.getDefaultRowIdentifier();
+        final DBDDataFilter dataFilter = getDataFilter();
 
-            OrderingStrategy strategy = OrderingStrategy.get(this);
+        boolean applied = OrderingUtils.addOrderingOnClientSide(
+            dataContainer,
+            dataFilter,
+            rowIdentifier,
+            this.getPreferenceStore()
+        );
 
-            if (strategy == OrderingStrategy.SERVER_SIDE || isHasMoreData()) {
-                refreshWithFilter(dataFilter);
-            } else {
-                getModel().resetOrdering(rowIdentifier.getAttributes());
-                getActivePresentation().refreshData(false, false, true);
-                updateFiltersText();
-            }
+        if (applied && rowIdentifier != null) {
+            getModel().resetOrdering(rowIdentifier.getAttributes());
+            getActivePresentation().refreshData(false, false, true);
+            updateFiltersText();
         }
     }
 
