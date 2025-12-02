@@ -643,7 +643,7 @@ public class DBNModel {
                 }
 
                 try {
-                    DBWorkbench.getPlatformUI().executeWithProgress(() -> {
+                    DBWorkbench.getPlatformUI().executeInMainThread(() -> {
                         for (int i = 0; i < realEvents.length; i++) {
                             for (INavigatorListener listener : listenersCopy) {
                                 listener.nodeChanged(realEvents[i]);

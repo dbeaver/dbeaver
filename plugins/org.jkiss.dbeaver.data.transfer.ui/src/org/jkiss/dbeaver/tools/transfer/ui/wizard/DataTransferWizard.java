@@ -33,9 +33,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPContextProvider;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
-import org.jkiss.dbeaver.model.runtime.DBRRunnableWithResult;
 import org.jkiss.dbeaver.model.sql.SQLQueryContainer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.task.DBTTask;
@@ -697,18 +695,14 @@ public class DataTransferWizard extends TaskConfigurationWizard<DataTransferSett
     public static DataTransferWizard openWizard(@NotNull DBTTask task)
     {
         try {
-            DataTransferSettings settings = DataTransferSettings.loadSettings(new DBRRunnableWithResult<>() {
-                @Override
-                public void run(DBRProgressMonitor monitor) {
-                    result = new DataTransferSettings(
-                        monitor,
-                        task,
-                        log,
-                        new DialogSettingsMap(getWizardDialogSettings()),
-                        new DataTransferState(),
-                        false);
-                }
-            });
+            DataTransferSettings settings = DataTransferSettings.loadSettings(monitor ->
+                new DataTransferSettings(
+                    monitor,
+                    task,
+                    log,
+                    new DialogSettingsMap(getWizardDialogSettings()),
+                    new DataTransferState(),
+                    false));
 
             return new DataTransferWizard(task, settings, false);
         } catch (DBException e) {

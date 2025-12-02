@@ -170,7 +170,7 @@
              class="org.jkiss.dbeaver.ui.editors.erd.action.ERDEditorPropertyTester"
              id="org.jkiss.dbeaver.ui.editors.erd.action.ERDEditorPropertyTester"
              namespace="org.jkiss.dbeaver.ui.editors.erd.editor"
-             properties="canUndo,canRedo,canDelete,editable,supportsStructureEdit,editMode"
+             properties="canUndo,canRedo,canDelete,editable,supportsStructureEdit,editMode,isERD"
              type="org.jkiss.dbeaver.ui.editors.erd.editor.ERDEditorPart">
        </propertyTester>
     </extension>
@@ -400,9 +400,11 @@
 
     <extension point="org.eclipse.ui.propertyPages">
         <page id="org.jkiss.dbeaver.preferences.erd.general" class="org.jkiss.dbeaver.ui.editors.erd.editor.ERDPreferencePage" name="%page.org.jkiss.dbeaver.preferences.erd.general.name">
-           <enabledWhen>
-              <instanceof value="org.jkiss.dbeaver.ui.editors.erd.editor.ERDEditorPart"/>
-           </enabledWhen>
+            <enabledWhen>
+                <adapt type="org.jkiss.dbeaver.ui.editors.erd.editor.ERDEditorPart">
+                    <test property="org.jkiss.dbeaver.ui.editors.erd.editor.isERD"/>
+                </adapt>
+            </enabledWhen>
         </page>
     </extension>
 
@@ -465,7 +467,7 @@
             <enabledWhen>
                 <with variable="activePart">
                     <and>
-                        <test property="org.jkiss.dbeaver.core.global.currentProjectResourceEditable"/>
+                        <test property="org.jkiss.dbeaver.core.global.ui.currentProjectResourceEditable"/>
                     </and>
                 </with>
             </enabledWhen>
@@ -517,7 +519,7 @@
                             <adapt type="org.eclipse.core.resources.IFolder">
                                 <and>
                                     <test property="org.jkiss.dbeaver.core.resource.type" value="diagram folder"/>
-                                    <test property="org.jkiss.dbeaver.core.global.currentProjectResourceEditable"/>
+                                    <test property="org.jkiss.dbeaver.core.global.ui.currentProjectResourceEditable"/>
                                 </and>
                             </adapt>
                         </iterate>
@@ -547,7 +549,7 @@
                         <iterate operator="and">
                             <and>
                                 <adapt type="org.jkiss.dbeaver.model.struct.DBSEntity"/>
-                                <test property="org.jkiss.dbeaver.core.global.currentProjectResourceEditable"/>
+                                <test property="org.jkiss.dbeaver.core.global.ui.currentProjectResourceEditable"/>
                             </and>
                         </iterate>
                     </with>

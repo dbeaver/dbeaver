@@ -21,20 +21,18 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPNamedObject;
-import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.ai.AIDatabaseScope;
 import org.jkiss.dbeaver.model.ai.AISchemaGenerationOptions;
 import org.jkiss.dbeaver.model.ai.AISchemaGenerator;
 import org.jkiss.dbeaver.model.ai.engine.AIDatabaseContext;
 import org.jkiss.dbeaver.model.ai.registry.AIAssistantRegistry;
+import org.jkiss.dbeaver.model.ai.utils.AIUtils;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContextDefaults;
-import org.jkiss.dbeaver.model.navigator.DBNUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
-import org.jkiss.dbeaver.model.struct.rdb.DBSTablePartition;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -142,7 +140,7 @@ public class AIDatabaseSnapshotService {
             throw new DBException("Snapshot generation was canceled");
         }
 
-        if (shouldSkipObject(monitor, obj)) {          // ignore system or hidden objects
+        if (AIUtils.isExcludableObject(monitor, obj)) {          // ignore system or hidden objects
             return true;
         }
 
@@ -189,7 +187,7 @@ public class AIDatabaseSnapshotService {
                 return true;
             }
             for (DBSObject child : children) {
-                if (shouldSkipObject(monitor, child)) {
+                if (AIUtils.isExcludableObject(monitor, child)) {
                     continue;
                 }
                 try {
@@ -219,16 +217,6 @@ public class AIDatabaseSnapshotService {
         }
 
         return true;
-    }
-
-    private static boolean shouldSkipObject(
-        @NotNull DBRProgressMonitor monitor,
-        @NotNull DBSObject obj
-    ) {
-        return DBUtils.isSystemObject(obj)
-            || DBUtils.isHiddenObject(obj)
-            || obj instanceof DBSTablePartition
-            || DBNUtils.getNodeByObject(monitor, obj, false) == null;
     }
 
     private static boolean requiresFqn(

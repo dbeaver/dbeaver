@@ -114,7 +114,7 @@
         <handler commandId="org.jkiss.dbeaver.debug.ui.command.debugConfigurationMenu" class="org.jkiss.dbeaver.debug.ui.actions.OpenDebugConfigurationHandler">
             <enabledWhen>
                 <and>
-                    <test property="org.jkiss.dbeaver.core.global.hasPermission" value="database-developer"/>
+                    <test property="org.jkiss.dbeaver.core.global.ui.hasPermission" value="database-developer"/>
                     <with variable="activePart">
                         <adapt type="org.jkiss.dbeaver.debug.DBGDebugObject"/>
                     </with>
