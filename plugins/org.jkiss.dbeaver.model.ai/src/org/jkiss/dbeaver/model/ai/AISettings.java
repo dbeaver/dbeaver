@@ -36,9 +36,10 @@ public class AISettings implements IAdaptable {
     private String activeEngine;
     private final Map<String, AIEngineProperties> engineConfigurations = new LinkedHashMap<>();
     private final Map<String, Object> properties = new LinkedHashMap<>();
-    private final Set<String> resolvedSecrets = new HashSet<>();
     private final Set<String> enabledFunctionCategories = new LinkedHashSet<>();
     private final Set<String> enabledFunctions = new LinkedHashSet<>();
+
+    private final transient Set<String> resolvedSecrets = new HashSet<>();
 
     public AISettings() {
     }

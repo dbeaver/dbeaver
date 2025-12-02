@@ -54,12 +54,13 @@ public class AISettingsManager {
     private static final Gson savePropsGson = createPropertiesSaveGson();
 
     private final Set<AISettingsEventListener> settingsChangedListeners = Collections.synchronizedSet(new HashSet<>());
+    private AISettings theSettings;
 
     private AISettingsManager() {
         WorkspaceConfigEventManager.addConfigChangedListener(
             AI_CONFIGURATION_FILE_NAME, o -> {
                 // reset current context for settings to be lazily reloaded when needed
-                this.getSettingsHolder().reset();
+                theSettings = null;
                 this.raiseChangedEvent(this); // consider detailed event info
             });
     }
@@ -85,13 +86,21 @@ public class AISettingsManager {
         }
     }
 
-    private AISettingsHolder getSettingsHolder() {
-        return AISettingsLocalHolder.INSTANCE;
-    }
-
     @NotNull
     public AISettings getSettings() {
-        return this.getSettingsHolder().getSettings();
+        if (theSettings == null) {
+            AISettings loaded = loadSettingsFromConfig();
+            // This check prevents redundant reloading of settings by the same thread.
+            // Reason: loadSettingsFromConfig() may initiate loading of other bundles,
+            // which could lead subsequently to calls back into this method to
+            // modify the settings during initialization, leading to multiple
+            // loads and potential inconsistencies without this safeguard.
+
+            if (theSettings == null) {
+                theSettings = loaded;
+            }
+        }
+        return theSettings;
     }
 
     @NotNull
@@ -129,6 +138,12 @@ public class AISettingsManager {
                     settings.setEnabledFunctions(new HashSet<>(enabledFunctions));
                 }
 
+                if (settings.getEnabledFunctionCategories().isEmpty()) {
+                    settings.setEnabledFunctionCategories(
+                        AIFunctionRegistry.getInstance().getDefaultEnabledCategoryIds()
+                    );
+                }
+
 
                 Map<String, Object> ecRoot = JSONUtils.getObject(configMap, ENGINE_CONFIGURATIONS_KEY);
 
@@ -154,28 +169,10 @@ public class AISettingsManager {
                 }
             }
 
-            if (settings.getEnabledFunctionCategories().isEmpty()) {
-                settings.setEnabledFunctionCategories(
-                    AIFunctionRegistry.getInstance().getDefaultEnabledCategoryIds()
-                );
-            }
-
             settings.setEngineConfigurations(engineConfigurationMap);
         }
         if (settings.activeEngine() == null || !settings.hasConfiguration(settings.activeEngine())) {
             settings.setActiveEngine(OpenAIConstants.OPENAI_ENGINE);
-        }
-
-        // Fill missing settings
-        Map<String, AIEngineProperties> configurations = settings.getEngineConfigurations();
-        for (AIEngineDescriptor aed : AIEngineRegistry.getInstance().getCompletionEngines()) {
-            if (!configurations.containsKey(aed.getId())) {
-                try {
-                    configurations.put(aed.getId(), aed.createPropertiesInstance());
-                } catch (DBException e) {
-                    log.error(e);
-                }
-            }
         }
 
         return settings;
@@ -237,7 +234,7 @@ public class AISettingsManager {
                 settings.saveSecrets();
             }
 
-            this.getSettingsHolder().setSettings(settings);
+            this.theSettings = settings;
         } catch (Exception e) {
             log.error("Error saving AI configuration", e);
         }
@@ -279,45 +276,4 @@ public class AISettingsManager {
         }
     }
 
-    private interface AISettingsHolder {
-        AISettings getSettings();
-
-        void setSettings(AISettings mruSettings);
-
-        void reset();
-    }
-
-    private static class AISettingsLocalHolder implements AISettingsHolder {
-        public static final AISettingsHolder INSTANCE = new AISettingsLocalHolder();
-
-        private AISettings settings = null;
-
-        @Override
-        public synchronized AISettings getSettings() {
-            if (settings == null) {
-                AISettings loaded = loadSettingsFromConfig();
-                // This check prevents redundant reloading of settings by the same thread.
-                // Reason: loadSettingsFromConfig() may initiate loading of other bundles,
-                // which could lead subsequently to calls back into this method to
-                // modify the settings during initialization, leading to multiple
-                // loads and potential inconsistencies without this safeguard.
-
-                if (settings == null) {
-                    settings = loaded;
-                }
-            }
-
-            return settings;
-        }
-
-        @Override
-        public synchronized void setSettings(AISettings mruSettings) {
-            this.settings = mruSettings;
-        }
-
-        @Override
-        public synchronized void reset() {
-            this.settings = null;
-        }
-    }
 }
