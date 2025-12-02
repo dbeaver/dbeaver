@@ -1119,12 +1119,13 @@ public class ResultSetViewer extends Viewer
 
             try {
                 String presentationId = selectedPresentation.getId();
+                Map<String, Object> configurationMap = Map.of("driver", getDataSource().getContainer().getDriver().getPreconfiguredId());
                 if ("spreadsheet".equals(presentationId)) {
-                    DataEditorFeatures.RESULT_SET_REPRESENTATION_GRID.use();
+                    DataEditorFeatures.RESULT_SET_REPRESENTATION_GRID.use(configurationMap);
                 } else if ("plaintext".equals(presentationId)) {
-                    DataEditorFeatures.RESULT_SET_REPRESENTATION_TEXT.use();
+                    DataEditorFeatures.RESULT_SET_REPRESENTATION_TEXT.use(configurationMap);
                 } else if (presentationId != null && presentationId.toLowerCase(Locale.ROOT).contains("chart")) {
-                    DataEditorFeatures.RESULT_SET_REPRESENTATION_CHART.use();
+                    DataEditorFeatures.RESULT_SET_REPRESENTATION_CHART.use(configurationMap);
                 }
             } catch (Throwable ignore) {
                 // ignore
@@ -2115,7 +2116,9 @@ public class ResultSetViewer extends Viewer
         activePresentation.changeMode(recordMode);
         if (recordMode) {
             try {
-                DataEditorFeatures.RESULT_SET_REPRESENTATION_RECORD.use();
+                DataEditorFeatures.RESULT_SET_REPRESENTATION_RECORD.use(
+                    Map.of("driver", getDataSource().getContainer().getDriver().getPreconfiguredId())
+                );
             } catch (Throwable ignore) {
                 //ignore
             }
