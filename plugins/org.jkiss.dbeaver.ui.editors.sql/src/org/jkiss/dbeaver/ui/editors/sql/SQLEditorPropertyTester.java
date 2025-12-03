@@ -42,8 +42,7 @@ import java.util.List;
 /**
  * SQLEditorPropertyTester
  */
-public class SQLEditorPropertyTester extends PropertyTester
-{
+public class SQLEditorPropertyTester extends PropertyTester {
     static final Log log = Log.getLog(SQLEditorPropertyTester.class);
 
     public static final String NAMESPACE = "org.jkiss.dbeaver.ui.editors.sql";
@@ -109,15 +108,11 @@ public class SQLEditorPropertyTester extends PropertyTester
                 }
                 ITextSelection selection = (ITextSelection) selectionProvider.getSelection();
                 IDocument document = editor.getDocument();
-                return
-                    selection != null &&
-                        document != null &&
-                        !new SQLIdentifierDetector(
-                            editor.getSyntaxManager().getDialect(),
-                            editor.getSyntaxManager().getStructSeparator(),
-                            editor.getSyntaxManager().getIdentifierQuoteStrings())
-                            .extractIdentifier(document, new Region(selection.getOffset(), selection.getLength()), editor.getRuleManager())
-                            .isEmpty();
+                return selection != null && document != null && !new SQLIdentifierDetector(
+                    editor.getSyntaxManager().getDialect(),
+                    editor.getSyntaxManager().getStructSeparator(),
+                    editor.getSyntaxManager().getIdentifierQuoteStrings()
+                ).extractIdentifier(document, new Region(selection.getOffset(), selection.getLength()), editor.getRuleManager()).isEmpty();
             }
             case PROP_CAN_EXPORT:
                 return hasConnection && editor.hasActiveQuery();
@@ -138,18 +133,15 @@ public class SQLEditorPropertyTester extends PropertyTester
                 Control focus = display.getFocusControl();
                 if (focus != null && focus.getParent() != null && !focus.getParent().isDisposed()) {
                     Object id = focus.getParent().getData(OVERLAY_ID_DATA_KEY);
-                    return id instanceof String sid && OVERLAY_ID_INPUTS.contains(sid) ;
+                    return id instanceof String sid && OVERLAY_ID_INPUTS.contains(sid);
                 }
                 return false;
             }
-
         }
         return false;
     }
 
-    public static void firePropertyChange(String propName)
-    {
+    public static void firePropertyChange(String propName) {
         ActionUtils.evaluatePropertyState(NAMESPACE + "." + propName);
     }
-
 }
