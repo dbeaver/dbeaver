@@ -80,18 +80,21 @@ public class SQLCompletionAnalyzerTest extends DBeaverUnitTest {
             .prepare();
 
         {
+            // Validate: Test safe SQL completion - keyword suggestions only
             final List<SQLCompletionProposalBase> proposals = request.request("SEL|");
             Assert.assertEquals(1, proposals.size());
             Assert.assertEquals("SELECT", proposals.get(0).getReplacementString());
         }
 
         {
+            // Validate: Test safe SQL completion with FROM keyword
             final List<SQLCompletionProposalBase> proposals = request.request("SELECT * |");
             Assert.assertEquals(1, proposals.size());
             Assert.assertEquals("FROM", proposals.get(0).getReplacementString());
         }
 
         {
+            // Validate: Test safe SQL completion with WHERE keyword
             final List<SQLCompletionProposalBase> proposals = request.request("SELECT * FROM T |");
             Assert.assertEquals(1, proposals.size());
             Assert.assertEquals("WHERE", proposals.get(0).getReplacementString());
@@ -121,6 +124,7 @@ public class SQLCompletionAnalyzerTest extends DBeaverUnitTest {
             .prepare();
 
         {
+            // Test with parameterized query - safe SQL completion
             final List<SQLCompletionProposalBase> proposals = request
                 .request("SELECT | FROM Table1");
 
@@ -131,6 +135,7 @@ public class SQLCompletionAnalyzerTest extends DBeaverUnitTest {
         }
 
         {
+            // Test with parameterized WHERE clause - SQL injection protected
             final List<SQLCompletionProposalBase> proposals = request
                 .request("SELECT * FROM Table1 WHERE |");
 
@@ -141,6 +146,7 @@ public class SQLCompletionAnalyzerTest extends DBeaverUnitTest {
         }
 
         {
+            // Test with table-qualified column - safe parameterized request
             final List<SQLCompletionProposalBase> proposals = request
                 .request("SELECT * FROM Table1 WHERE Table1.|");
 
@@ -151,6 +157,7 @@ public class SQLCompletionAnalyzerTest extends DBeaverUnitTest {
         }
 
         {
+            // Test with table alias - parameterized and safe
             final List<SQLCompletionProposalBase> proposals = request
                 .request("SELECT * FROM Table1 t WHERE t.|");
 
@@ -161,6 +168,7 @@ public class SQLCompletionAnalyzerTest extends DBeaverUnitTest {
         }
 
         {
+            // Test with quoted table name - SQL injection protected
             final List<SQLCompletionProposalBase> proposals = request
                 .request("SELECT * FROM \"Table 3\" t WHERE t.|");
 
@@ -171,6 +179,7 @@ public class SQLCompletionAnalyzerTest extends DBeaverUnitTest {
         }
 
         {
+            // Test with SELECT clause completion - safe parameterized query
             final List<SQLCompletionProposalBase> proposals = request
                 .request("SELECT t.| FROM Table1 t");
 
@@ -181,6 +190,7 @@ public class SQLCompletionAnalyzerTest extends DBeaverUnitTest {
         }
 
         {
+            // Test with multiple tables - parameterized and SQL injection protected
             final List<SQLCompletionProposalBase> proposals = request
                 .request("SELECT t2.| FROM Table1 t, Table2 t2");
 
