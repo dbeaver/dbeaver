@@ -131,7 +131,7 @@ public class SQLEditorPropertyTester extends PropertyTester {
             case PROP_OVERLAY_FOCUSED: {
                 Display display = UIUtils.getDisplay();
                 Control focus = display.getFocusControl();
-                if (focus != null && focus.getParent() != null && !focus.getParent().isDisposed()) {
+                if (focus != null && !focus.isDisposed() && focus.getParent() != null && !focus.getParent().isDisposed()) {
                     Object id = focus.getParent().getData(OVERLAY_ID_DATA_KEY);
                     return id instanceof String sid && OVERLAY_ID_INPUTS.contains(sid);
                 }
