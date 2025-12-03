@@ -23,16 +23,21 @@ import org.eclipse.jface.text.Region;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Display;
+import org.eclipse.ui.internal.findandreplace.overlay.FindReplaceOverlay;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.exec.plan.DBCQueryPlanner;
 import org.jkiss.dbeaver.model.sql.parser.SQLIdentifierDetector;
 import org.jkiss.dbeaver.ui.ActionUtils;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.actions.exec.SQLNativeExecutorDescriptor;
 import org.jkiss.dbeaver.ui.actions.exec.SQLNativeExecutorRegistry;
 import org.jkiss.dbeaver.ui.editors.sql.registry.SQLPresentationDescriptor.QueryMode;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
+
+import java.util.List;
 
 /**
  * SQLEditorPropertyTester
@@ -52,6 +57,10 @@ public class SQLEditorPropertyTester extends PropertyTester
     public static final String PROP_IS_ACTIVE_QUERY_RUNNING = "isActiveQueryRunning";
     public static final String PROP_FOLDING_SUPPORTED = "foldingSupported";
     public static final String PROP_FOLDING_ENABLED = "foldingEnabled";
+    public static final String PROP_OVERLAY_FOCUSED = "overlayFocused";
+
+    public static final String OVERLAY_ID_DATA_KEY = FindReplaceOverlay.ID_DATA_KEY;
+    public static final List<String> OVERLAY_ID_INPUTS = List.of("replaceInput", "searchInput");
 
     public SQLEditorPropertyTester() {
         super();
@@ -124,6 +133,16 @@ public class SQLEditorPropertyTester extends PropertyTester
                 return editor.isFoldingEnabled();
             case PROP_FOLDING_SUPPORTED:
                 return editor.getProjectionAnnotationModel() != null;
+            case PROP_OVERLAY_FOCUSED: {
+                Display display = UIUtils.getDisplay();
+                Control focus = display.getFocusControl();
+                if (focus != null && focus.getParent() != null && !focus.getParent().isDisposed()) {
+                    Object id = focus.getParent().getData(OVERLAY_ID_DATA_KEY);
+                    return id instanceof String sid && OVERLAY_ID_INPUTS.contains(sid) ;
+                }
+                return false;
+            }
+
         }
         return false;
     }

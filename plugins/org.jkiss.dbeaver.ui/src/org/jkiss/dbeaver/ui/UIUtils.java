@@ -1978,6 +1978,7 @@ public class UIUtils {
         runInUI(context, runnable);
     }
 
+    @NotNull
     public static Display getDisplay() {
         try {
             return PlatformUI.getWorkbench().getDisplay();
