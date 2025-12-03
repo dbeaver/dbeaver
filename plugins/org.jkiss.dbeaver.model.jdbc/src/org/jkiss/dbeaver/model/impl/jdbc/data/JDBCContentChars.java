@@ -201,10 +201,9 @@ public class JDBCContentChars extends JDBCContentAbstract implements DBDContentS
 
     @Override
     public String getDisplayString(@NotNull DBDDisplayFormat format) {
-        return data == null ? null :
-            (format == DBDDisplayFormat.EDIT || data.length() > MAX_LENGTH_REMOVE_WHITESPACES
+        return data == null || format == DBDDisplayFormat.EDIT || data.length() > MAX_LENGTH_REMOVE_WHITESPACES
                 ? data
-                : CommonUtils.compactWhiteSpaces(data));
+                : CommonUtils.compactWhiteSpaces(data);
     }
 
     @Override
