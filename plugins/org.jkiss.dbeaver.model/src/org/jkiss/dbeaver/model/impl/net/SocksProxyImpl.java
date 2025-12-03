@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,6 @@
  */
 package org.jkiss.dbeaver.model.impl.net;
 
-import org.eclipse.core.net.proxy.IProxyService;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
@@ -74,20 +73,10 @@ public class SocksProxyImpl implements DBWNetworkHandler, DBWForwarder {
         return false;
     }
 
-    private static void activateProxyService() {
-        try {
-            log.debug("Proxy service '" + IProxyService.class.getName() + "' loaded");
-        } catch (Throwable e) {
-            log.debug("Proxy service not found");
-        }
-    }
-
     private static void setupProxyHandler() {
         if (ProxySelector.getDefault() instanceof GlobalProxySelector) {
             return;
         }
-
-        activateProxyService();
 
         // Init default network settings
         ProxySelector defProxySelector = GeneralUtils.adapt(DBWorkbench.getPlatform(), ProxySelector.class);

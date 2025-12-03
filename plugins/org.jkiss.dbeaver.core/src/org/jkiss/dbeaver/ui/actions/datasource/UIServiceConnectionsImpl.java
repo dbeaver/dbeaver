@@ -17,9 +17,12 @@
 
 package org.jkiss.dbeaver.ui.actions.datasource;
 
+import org.eclipse.core.net.proxy.IProxyData;
+import org.eclipse.core.net.proxy.IProxyService;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.core.DBeaverActivator;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.rm.RMConstants;
@@ -31,13 +34,27 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.ui.UIServiceConnections;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.connection.EditConnectionDialog;
+import org.osgi.framework.BundleContext;
+import org.osgi.framework.ServiceReference;
+
+import java.net.PasswordAuthentication;
 
 /**
  * UIServiceConnectionsImpl
  */
 public class UIServiceConnectionsImpl implements DBServiceConnections, UIServiceConnections {
 
-    private static final Log log = Log.getLog(UIServiceConnectionsImpl.class);
+    private final IProxyService proxyService;
+
+    public UIServiceConnectionsImpl() {
+        BundleContext bundleContext = DBeaverActivator.getInstance().getBundle().getBundleContext();
+        ServiceReference<IProxyService> proxyServiceRef = bundleContext.getServiceReference(IProxyService.class);
+        if (proxyServiceRef != null) {
+            proxyService = bundleContext.getService(proxyServiceRef);
+        } else {
+            proxyService = null;
+        }
+    }
 
     @Override
     public void openConnectionEditor(@NotNull DBPDataSourceContainer dataSourceContainer, String defaultPageName) {
@@ -82,8 +99,27 @@ public class UIServiceConnectionsImpl implements DBServiceConnections, UIService
         return DataSourceHandler.checkAndCloseActiveTransaction(contexts, false);
     }
 
+    @Nullable
+    @Override
+    public PasswordAuthentication getGlobalProxyConfiguration(@NotNull String requestingProtocol, @Nullable String requestingHost, int requestingPort) {
+        if (proxyService != null) {
+            // Try to use Eclipse proxy config for global proxies
+            IProxyData[] proxyData = proxyService.getProxyData();
+            if (proxyData != null) {
+                for (IProxyData pd : proxyData) {
+                    if (requestingProtocol.startsWith(pd.getType()) && pd.getUserId() != null && pd.getHost() != null && pd.getPort() == requestingPort && pd.getHost().equalsIgnoreCase(requestingHost)) {
+                        return new PasswordAuthentication(pd.getUserId(), pd.getPassword().toCharArray());
+                    }
+                }
+
+            }
+        }
+        return null;
+    }
+
     @Override
     public void initConnection(DBRProgressMonitor monitor, DBPDataSourceContainer dataSourceContainer, DBRProgressListener onFinish) {
         DataSourceHandler.connectToDataSource(monitor, dataSourceContainer, onFinish);
     }
+
 }

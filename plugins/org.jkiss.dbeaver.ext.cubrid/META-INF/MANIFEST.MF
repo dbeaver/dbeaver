@@ -8,8 +8,7 @@ Bundle-Activator: org.jkiss.dbeaver.ext.cubrid.internal.CubridActivator
 Export-Package: org.jkiss.dbeaver.ext.cubrid,
  org.jkiss.dbeaver.ext.cubrid.model,
  org.jkiss.dbeaver.ext.cubrid.model.plan
-Require-Bundle: org.eclipse.core.runtime,
- org.jkiss.dbeaver.model.sql,
+Require-Bundle: org.jkiss.dbeaver.model.sql,
  org.jkiss.dbeaver.model;visibility:=reexport,
  org.jkiss.dbeaver.ext.generic
 Bundle-ActivationPolicy: lazy

@@ -13,8 +13,6 @@ Export-Package: org.jkiss.dbeaver.model.net.ssh,
 Require-Bundle: org.eclipse.jsch.core,
  org.jkiss.dbeaver.model;visibility:=reexport,
  org.jkiss.dbeaver.registry,
- com.sun.jna,
- com.sun.jna.platform,
  com.jcraft.jsch
 Bundle-Localization: OSGI-INF/l10n/bundle
 Automatic-Module-Name: org.jkiss.dbeaver.net.ssh
