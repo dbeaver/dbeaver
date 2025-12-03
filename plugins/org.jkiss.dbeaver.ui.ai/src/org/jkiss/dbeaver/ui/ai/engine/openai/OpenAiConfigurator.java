@@ -91,7 +91,9 @@ public class OpenAiConfigurator<ENGINE extends AIEngineDescriptor, PROPERTIES ex
     }
 
     @Override
-    public void loadSettings(@NotNull PROPERTIES configuration) {
+    public void loadSettings(@NotNull PROPERTIES configuration) throws DBException {
+        // Resolve encrypted secrets first before using them
+        configuration.resolveSecrets();
         baseUrl = CommonUtils.toString(configuration.getBaseUrl());
         if (baseUrl.isEmpty()) {
             baseUrl = OpenAIClient.OPENAI_ENDPOINT;
@@ -111,7 +113,7 @@ public class OpenAiConfigurator<ENGINE extends AIEngineDescriptor, PROPERTIES ex
     }
 
     @Override
-    public void saveSettings(@NotNull PROPERTIES configuration) {
+    public void saveSettings(@NotNull PROPERTIES configuration) throws DBException {
         configuration.setBaseUrl(baseUrl);
         configuration.setToken(token);
         configuration.setModel(modelSelectorField.getSelectedModel());
@@ -119,6 +121,8 @@ public class OpenAiConfigurator<ENGINE extends AIEngineDescriptor, PROPERTIES ex
         configuration.setTemperature(CommonUtils.toDouble(temperature));
         configuration.setLegacyApi(useLegacyApi);
         configuration.setLoggingEnabled(logQuery);
+        // Ensure sensitive data is encrypted and stored securely
+        configuration.saveSecrets();
     }
 
     @Override
@@ -270,7 +274,7 @@ public class OpenAiConfigurator<ENGINE extends AIEngineDescriptor, PROPERTIES ex
     }
 
     @Override
-    public Optional<AIEngineProperties> getCurrentProperties() {
+    public Optional<AIEngineProperties> getCurrentProperties() throws DBException {
         OpenAIProperties propertiesCopy = new OpenAIProperties();
         propertiesCopy.setBaseUrl(baseUrl);
         propertiesCopy.setToken(token);
@@ -279,6 +283,8 @@ public class OpenAiConfigurator<ENGINE extends AIEngineDescriptor, PROPERTIES ex
         propertiesCopy.setTemperature(CommonUtils.toDouble(temperature));
         propertiesCopy.setLegacyApi(useLegacyApi);
         propertiesCopy.setLoggingEnabled(logQuery);
+        // Ensure sensitive data is encrypted before returning
+        propertiesCopy.saveSecrets();
         return Optional.of(propertiesCopy);
     }
 }
