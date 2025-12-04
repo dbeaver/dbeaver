@@ -16,6 +16,7 @@ apps:
     common-id: dbeaver
     desktop: usr/share/applications/dbeaver-ce.desktop
     environment:
+      _JAVA_OPTIONS: -Duser.home=$SNAP_USER_DATA 
       # Fixes occasional crashes on various WMs
       NO_AT_BRIDGE: 1
 
