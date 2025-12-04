@@ -22,6 +22,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.data.*;
+import org.jkiss.dbeaver.model.data.order.OrderingPolicy;
 import org.jkiss.dbeaver.model.data.order.OrderingStrategy;
 import org.jkiss.dbeaver.model.data.order.OrderingUtils;
 import org.jkiss.dbeaver.model.exec.*;
@@ -181,13 +182,14 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
         }
 
         if (dataFilter != null && !dataFilter.hasOrdering()) {
-            final DBPPreferenceStore prefs = session.getDataSource().getContainer().getPreferenceStore();
-            final OrderingStrategy strategy = OrderingStrategy.get(prefs);
+            DBPPreferenceStore prefs = session.getDataSource().getContainer().getPreferenceStore();
+            OrderingStrategy strategy = OrderingStrategy.get(prefs);
             if (strategy == OrderingStrategy.SERVER_SIDE) {
                 OrderingUtils.addOrderingOnServerSide(
+                    monitor,
                     this,
                     dataFilter,
-                    prefs
+                    OrderingPolicy.get(prefs)
                 );
             }
         }

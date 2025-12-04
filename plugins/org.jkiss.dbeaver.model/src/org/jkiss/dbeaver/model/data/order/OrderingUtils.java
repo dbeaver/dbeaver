@@ -18,14 +18,14 @@ package org.jkiss.dbeaver.model.data.order;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDAttributeConstraint;
 import org.jkiss.dbeaver.model.data.DBDDataFilter;
 import org.jkiss.dbeaver.model.data.DBDRowIdentifier;
-import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
-import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSDataContainer;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 
@@ -35,22 +35,17 @@ import java.util.List;
  * Utilities for applying default ordering in a non-UI layer.
  */
 public final class OrderingUtils {
+    private static final Log log = Log.getLog(OrderingUtils.class);
 
     private OrderingUtils() {
         // no instances
     }
 
     public static boolean addOrderingOnClientSide(
-        @Nullable DBSDataContainer dataContainer,
         @NotNull DBDDataFilter dataFilter,
         @Nullable DBDRowIdentifier rowIdentifier,
-        @NotNull DBPPreferenceStore preferences
+        @NotNull OrderingPolicy policy
     ) {
-        if (!(dataContainer instanceof DBSEntity)) {
-            return false;
-        }
-
-        OrderingPolicy policy = OrderingPolicy.get(preferences);
         if (policy == OrderingPolicy.DEFAULT) {
             return false;
         }
@@ -71,27 +66,26 @@ public final class OrderingUtils {
 
 
     public static void addOrderingOnServerSide(
+        @NotNull DBRProgressMonitor monitor,
         @NotNull DBSEntity entity,
         @NotNull DBDDataFilter dataFilter,
-        @NotNull DBPPreferenceStore preferences
+        @NotNull OrderingPolicy policy
     ) {
-        if (!entity.getDataSource().getSQLDialect().supportsOrderByIndex()) {
-            return;
-        }
-        OrderingPolicy policy = OrderingPolicy.get(preferences);
-        if (policy == OrderingPolicy.DEFAULT) {
+        if (!entity.getDataSource().getSQLDialect().supportsOrderByIndex() || policy == OrderingPolicy.DEFAULT) {
             return;
         }
 
+        List<? extends DBSEntityAttribute> attrs = List.of();
         try {
-            List<? extends DBSEntityAttribute> attrs = DBUtils.getBestTableIdentifier(new VoidProgressMonitor(), entity);
-            if (attrs.isEmpty()) {
-                return;
-            }
-            dataFilter.setOrder(String.join(",", attrs.stream().map(DBSEntityAttribute::getName).toList()) + " " + (
-                policy == OrderingPolicy.PRIMARY_KEY_DESC ? "DESC" : "ASC"));
-        } catch (Exception ignored) {
-
+            attrs = DBUtils.getBestTableIdentifier(monitor, entity);
+        } catch (DBException exception) {
+            log.warn("Can't get table identifier", exception);
         }
+
+        if (attrs.isEmpty()) {
+            return;
+        }
+        dataFilter.setOrder(String.join(",", attrs.stream().map(DBSEntityAttribute::getName).toList()) + " " + (
+            policy == OrderingPolicy.PRIMARY_KEY_DESC ? "DESC" : "ASC"));
     }
 }

@@ -59,6 +59,7 @@ import org.jkiss.dbeaver.model.data.hints.DBDCellHintProvider;
 import org.jkiss.dbeaver.model.data.hints.DBDValueHint;
 import org.jkiss.dbeaver.model.data.hints.DBDValueHintContext;
 import org.jkiss.dbeaver.model.data.hints.DBDValueHintProvider;
+import org.jkiss.dbeaver.model.data.order.OrderingPolicy;
 import org.jkiss.dbeaver.model.data.order.OrderingStrategy;
 import org.jkiss.dbeaver.model.data.order.OrderingUtils;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
@@ -4096,15 +4097,13 @@ public class ResultSetViewer extends Viewer
             return;
         }
 
-        final DBSDataContainer dataContainer = getDataContainer();
-        final DBDRowIdentifier rowIdentifier = model.getDefaultRowIdentifier();
-        final DBDDataFilter dataFilter = getDataFilter();
+        DBDRowIdentifier rowIdentifier = model.getDefaultRowIdentifier();
+        DBDDataFilter dataFilter = getDataFilter();
 
         boolean applied = OrderingUtils.addOrderingOnClientSide(
-            dataContainer,
             dataFilter,
             rowIdentifier,
-            this.getPreferenceStore()
+            OrderingPolicy.get(this.getPreferenceStore())
         );
 
         if (applied && rowIdentifier != null) {
