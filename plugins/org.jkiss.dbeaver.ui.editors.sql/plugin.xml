@@ -177,7 +177,7 @@
                 class="org.jkiss.dbeaver.ui.editors.sql.SQLEditorPropertyTester"
                 id="org.jkiss.dbeaver.ui.editors.sql.SQLEditorPropertyTester"
                 namespace="org.jkiss.dbeaver.ui.editors.sql"
-                properties="active,canExecute,canExecuteNative,canExplain,canNavigate,canValidate,canExport,hasSelection,hasActiveQuery,isActiveQueryRunning,foldingEnabled,foldingSupported,overlayFocused"
+                properties="active,canExecute,canExecuteNative,canExplain,canNavigate,canValidate,canExport,hasSelection,hasActiveQuery,isActiveQueryRunning,foldingEnabled,foldingSupported"
                 type="org.jkiss.dbeaver.ui.editors.sql.SQLEditor"/>
         <propertyTester
                 class="org.jkiss.dbeaver.ui.editors.sql.generator.SQLGeneratorPropertyTester"
@@ -431,20 +431,11 @@
 
         <handler commandId="org.jkiss.dbeaver.ui.editors.sql.run.statement" class="org.jkiss.dbeaver.ui.editors.sql.handlers.SQLEditorHandlerExecute">
             <enabledWhen>
-                <and>
-                    <with variable="activeEditor">
-                        <adapt type="org.jkiss.dbeaver.ui.editors.sql.SQLEditor">
-                            <test property="org.jkiss.dbeaver.ui.editors.sql.canExecute" value="statement"/>
-                        </adapt>
-                    </with>
-                    <not>
-                        <with variable="activeEditor">
-                            <adapt type="org.jkiss.dbeaver.ui.editors.sql.SQLEditor">
-                                <test property="org.jkiss.dbeaver.ui.editors.sql.overlayFocused" value="true"/>
-                            </adapt>
-                        </with>
-                    </not>
-                </and>
+                <with variable="activeEditor">
+                    <adapt type="org.jkiss.dbeaver.ui.editors.sql.SQLEditor">
+                        <test property="org.jkiss.dbeaver.ui.editors.sql.canExecute" value="statement"/>
+                    </adapt>
+                </with>
             </enabledWhen>
         </handler>
         <handler commandId="org.jkiss.dbeaver.ui.editors.sql.run.statementNew" class="org.jkiss.dbeaver.ui.editors.sql.handlers.SQLEditorHandlerExecute">

@@ -37,7 +37,7 @@ import org.jkiss.dbeaver.ui.editors.sql.registry.SQLPresentationDescriptor.Query
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
-import java.util.List;
+import java.util.Set;
 
 /**
  * SQLEditorPropertyTester
@@ -56,10 +56,9 @@ public class SQLEditorPropertyTester extends PropertyTester {
     public static final String PROP_IS_ACTIVE_QUERY_RUNNING = "isActiveQueryRunning";
     public static final String PROP_FOLDING_SUPPORTED = "foldingSupported";
     public static final String PROP_FOLDING_ENABLED = "foldingEnabled";
-    public static final String PROP_OVERLAY_FOCUSED = "overlayFocused";
 
     public static final String OVERLAY_ID_DATA_KEY = FindReplaceOverlay.ID_DATA_KEY;
-    public static final List<String> OVERLAY_ID_INPUTS = List.of("replaceInput", "searchInput");
+    public static final Set<String> OVERLAY_ID_INPUTS = Set.of("replaceInput", "searchInput");
 
     public SQLEditorPropertyTester() {
         super();
@@ -80,7 +79,7 @@ public class SQLEditorPropertyTester extends PropertyTester {
                 var descriptor = editor.getActivePresentationDescriptor();
                 var mode = descriptor != null ? descriptor.getQueryMode() : QueryMode.MULTIPLE;
                 return switch (CommonUtils.toString(expectedValue)) {
-                    case "statement" -> mode != QueryMode.NONE;
+                    case "statement" -> mode != QueryMode.NONE && isFocusNotInFindReplaceOverlay();
                     case "script" -> mode == QueryMode.MULTIPLE;
                     default -> false;
                 };
@@ -128,17 +127,18 @@ public class SQLEditorPropertyTester extends PropertyTester {
                 return editor.isFoldingEnabled();
             case PROP_FOLDING_SUPPORTED:
                 return editor.getProjectionAnnotationModel() != null;
-            case PROP_OVERLAY_FOCUSED: {
-                Display display = UIUtils.getDisplay();
-                Control focus = display.getFocusControl();
-                if (focus != null && !focus.isDisposed() && focus.getParent() != null && !focus.getParent().isDisposed()) {
-                    Object id = focus.getParent().getData(OVERLAY_ID_DATA_KEY);
-                    return id instanceof String sid && OVERLAY_ID_INPUTS.contains(sid);
-                }
-                return false;
-            }
         }
         return false;
+    }
+
+    private static boolean isFocusNotInFindReplaceOverlay() {
+        Display display = UIUtils.getDisplay();
+        Control focus = display.getFocusControl();
+        if (focus != null && !focus.isDisposed() && focus.getParent() != null && !focus.getParent().isDisposed()) {
+            Object id = focus.getParent().getData(OVERLAY_ID_DATA_KEY);
+            return !(id instanceof String sid && OVERLAY_ID_INPUTS.contains(sid));
+        }
+        return true;
     }
 
     public static void firePropertyChange(String propName) {
