@@ -162,20 +162,18 @@ public class OpenAiConfigurator<ENGINE extends AIEngineDescriptor, PROPERTIES ex
                     .map(AIModel::name)
                     .toList()
             )
-            .withSelectionListener(SelectionListener.widgetSelectedAdapter(e ->
-                OpenAIModels.getModelByName(modelSelectorField.getSelectedModel())
-                    .ifPresentOrElse(
-                        model -> {
-                            contextWindowSizeField.setValue(model.contextWindowSize());
-                            temperatureText.setText(String.valueOf(model.defaultTemperature()));
-                            temperatureText.setEnabled(OpenAIModels.isTemperatureEditable(model));
-                        }, () -> {
-                            contextWindowSizeField.setValue(null);
-                            temperatureText.setText("0.0");
-                            temperatureText.setEnabled(true);
-                        }
-                    )))
-                .build();
+            .withModelChangeListener(name -> OpenAIModels.getModelByName(name).ifPresentOrElse(
+                model -> {
+                    contextWindowSizeField.setValue(model.contextWindowSize());
+                    temperatureText.setText(String.valueOf(model.defaultTemperature()));
+                    temperatureText.setEnabled(OpenAIModels.isTemperatureEditable(model));
+                }, () -> {
+                    contextWindowSizeField.setValue(null);
+                    temperatureText.setText("0.0");
+                    temperatureText.setEnabled(true);
+                }
+            ))
+            .build();
 
         contextWindowSizeField = ContextWindowSizeField.builder()
             .withParent(parent)

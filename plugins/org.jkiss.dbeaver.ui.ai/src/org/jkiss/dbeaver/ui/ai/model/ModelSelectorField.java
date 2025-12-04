@@ -19,13 +19,10 @@ package org.jkiss.dbeaver.ui.ai.model;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Event;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -41,6 +38,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Consumer;
 
 public class ModelSelectorField {
     private static final Log log = Log.getLog(ModelSelectorField.class);
@@ -49,25 +47,28 @@ public class ModelSelectorField {
     private final Combo combo;
     @NotNull
     private final ModelListProvider modelListProvider;
+    @NotNull
+    private final Consumer<String> modelChangeListener;
 
     private volatile String selectedModel;
 
     private ModelSelectorField(
         @NotNull Combo combo,
         @NotNull ModelListProvider modelListProvider,
-        @NotNull Runnable onModelSelected
+        @NotNull Consumer<String> modelChangeListener
     ) {
         this.combo = combo;
-        this.combo.addModifyListener(e -> selectedModel = combo.getText());
-        this.combo.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                selectedModel = combo.getText();
-                onModelSelected.run();
-            }
+        this.combo.addModifyListener(e -> {
+            selectedModel = combo.getText();
+            modelChangeListener.accept(selectedModel);
         });
+        this.combo.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
+            selectedModel = combo.getText();
+            modelChangeListener.accept(selectedModel);
+        }));
 
         this.modelListProvider = modelListProvider;
+        this.modelChangeListener = modelChangeListener;
     }
 
     public static Builder builder() {
@@ -84,6 +85,7 @@ public class ModelSelectorField {
             return;
         }
 
+        selectedModel = model;
         for (String o : combo.getItems()) {
             if (o.equals(model)) {
                 combo.setText(model);
@@ -94,7 +96,7 @@ public class ModelSelectorField {
         // If the model is not in the list, add it
         combo.add(model);
         combo.select(combo.getItemCount() - 1);
-        selectedModel = model;
+        modelChangeListener.accept(model);
     }
 
     public void refreshModelListSilently(boolean refresh) {
@@ -142,8 +144,8 @@ public class ModelSelectorField {
         @NotNull
         private GridData gridData;
 
-        @Nullable
-        private SelectionListener selectionListener;
+        @NotNull
+        private Consumer<String> modelChangeListener = name -> {/* does nothing */};
 
         @NotNull
         private ModelListProvider modelListSupplier;
@@ -159,8 +161,8 @@ public class ModelSelectorField {
             return this;
         }
 
-        public Builder withSelectionListener(@NotNull SelectionListener selectionListener) {
-            this.selectionListener = selectionListener;
+        public Builder withModelChangeListener(@NotNull Consumer<String> modelChangeListener) {
+            this.modelChangeListener = modelChangeListener;
             return this;
         }
 
@@ -185,16 +187,7 @@ public class ModelSelectorField {
             ModelSelectorField modelSelectorField = new ModelSelectorField(
                 combo,
                 modelListSupplier,
-                () -> {
-                    if (selectionListener != null) {
-                        Event event = new Event();
-                        event.widget = combo;
-                        event.type = SWT.Selection;
-
-                        selectionListener.widgetSelected(new SelectionEvent(event));
-                    }
-                }
-
+                modelChangeListener
             );
 
             UIUtils.createPushButton(
@@ -232,7 +225,9 @@ public class ModelSelectorField {
         return combo;
     }
 
+    @FunctionalInterface
     public interface ModelListProvider {
-        List<String> getModels(DBRProgressMonitor monitor, boolean forceRefresh) throws DBException;
+        @NotNull
+        List<String> getModels(@NotNull DBRProgressMonitor monitor, boolean forceRefresh) throws DBException;
     }
 }

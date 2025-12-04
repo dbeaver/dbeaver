@@ -131,18 +131,15 @@ public class CopilotConfigurator implements AIIObjectPropertyConfigurator<AIEngi
         modelSelectorField = ModelSelectorField.builder()
             .withParent(parent)
             .withGridData(new GridData(GridData.FILL_HORIZONTAL))
-            .withSelectionListener(SelectionListener.widgetSelectedAdapter((e) -> {
-                CopilotModels.getModelByName(modelSelectorField.getSelectedModel())
-                    .ifPresentOrElse(
-                        model -> {
-                            contextWindowSizeField.setValue(model.contextWindowSize());
-                            temperatureText.setText(String.valueOf(model.defaultTemperature()));
-                        }, () -> {
-                            contextWindowSizeField.setValue(null);
-                            temperatureText.setText("0.0");
-                        }
-                    );
-            }))
+            .withModelChangeListener(name -> CopilotModels.getModelByName(name).ifPresentOrElse(
+                model -> {
+                    contextWindowSizeField.setValue(model.contextWindowSize());
+                    temperatureText.setText(String.valueOf(model.defaultTemperature()));
+                }, () -> {
+                    contextWindowSizeField.setValue(null);
+                    temperatureText.setText("0.0");
+                }
+            ))
             .withModelListSupplier(modelListProvider)
             .build();
 
