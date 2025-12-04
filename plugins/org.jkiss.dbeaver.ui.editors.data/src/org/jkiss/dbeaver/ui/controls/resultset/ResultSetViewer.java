@@ -948,8 +948,7 @@ public class ResultSetViewer extends Viewer
                 context, getDataSource(), null, IResultSetPresentation.PresentationType.COLUMNS));
         }
         activePresentation.createPresentation(this, presentationPanel);
-        activePresentation.getController();
-        trackStatistics(this, activePresentation);
+        trackPresentationStatistics();
 
         // Clear panels toolbar
         if (panelSwitchFolder != null) {
@@ -1075,28 +1074,19 @@ public class ResultSetViewer extends Viewer
         }
     }
 
-    private void trackStatistics(@NotNull IResultSetController controller, @NotNull IResultSetPresentation presentation) {
+    private void trackPresentationStatistics() {
         try {
-            ResultSetPresentationDescriptor descriptor =
-                ResultSetPresentationRegistry.getInstance().getPresentation(presentation.getClass());
-            String presentationId = descriptor == null ? null : descriptor.getId();
-
-            DBPDataSource ds = controller.getExecutionContext() == null ? null : controller.getExecutionContext().getDataSource();
-            String driverId = null;
-            if (ds != null) {
-                driverId = ds.getContainer().getDriver().getPreconfiguredId();
-            }
-
+            Map<String, Object> params = new HashMap<>();
+            String presentationId = activePresentationDescriptor == null ? null : activePresentationDescriptor.getId();
             if (presentationId != null) {
-                Map<String, Object> params;
-                if (driverId != null) {
-                    params = Map.of(
-                        "presentationId", presentationId,
-                        "driver", driverId
-                    );
-                } else {
-                    params = Map.of("presentationId", presentationId);
-                }
+                params.put("presentationId", presentationId);
+            }
+            DBCExecutionContext executionContext = getExecutionContext();
+            if (executionContext != null) {
+                String driverId = executionContext.getDataSource().getContainer().getDriver().getPreconfiguredId();
+                params.put("driver", driverId);
+            }
+            if (!params.isEmpty() && presentationId != null) {
                 DataEditorFeatures.RESULT_SET_REPRESENTATION_SELECTED.use(params);
             }
         } catch (Exception trw) {
