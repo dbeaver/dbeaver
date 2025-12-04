@@ -227,6 +227,11 @@ public class ModelSelectorField {
         }
     }
 
+    @NotNull
+    public Combo getCombo() {
+        return combo;
+    }
+
     public interface ModelListProvider {
         List<String> getModels(DBRProgressMonitor monitor, boolean forceRefresh) throws DBException;
     }

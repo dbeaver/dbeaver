@@ -123,8 +123,14 @@ public class OpenAIProperties implements OpenAIBaseProperties {
         this.model = model;
     }
 
+    public boolean isModelTemperatureEditable() {
+        return OpenAIModels.getModelByName(model)
+            .map(OpenAIModels::isTemperatureEditable)
+            .orElse(true);
+    }
+
     @Override
-    @Property(order = 4)
+    @Property(order = 4, editableExpr = "isModelTemperatureEditable")
     public double getTemperature() {
         if (temperature != null) {
             return temperature;

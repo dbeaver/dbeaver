@@ -23,10 +23,7 @@ import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.widgets.Button;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Link;
-import org.eclipse.swt.widgets.Text;
+import org.eclipse.swt.widgets.*;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -100,6 +97,12 @@ public class OpenAiConfigurator<ENGINE extends AIEngineDescriptor, PROPERTIES ex
         modelSelectorField.setSelectedModel(
             CommonUtils.toString(configuration.getModel(), OpenAIModels.DEFAULT_MODEL)
         );
+        Control ctrl = modelSelectorField.getCombo();
+        if (!ctrl.isDisposed()) {
+            Event ev = new Event();
+            ev.widget = ctrl;
+            ctrl.notifyListeners(SWT.Selection, ev);
+        }
         temperature = CommonUtils.toString(configuration.getTemperature(), "0.0");
         useLegacyApi = configuration.isLegacyApi();
         logQuery = CommonUtils.toBoolean(configuration.isLoggingEnabled());
