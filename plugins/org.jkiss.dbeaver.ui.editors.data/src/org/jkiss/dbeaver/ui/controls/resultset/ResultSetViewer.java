@@ -948,6 +948,8 @@ public class ResultSetViewer extends Viewer
                 context, getDataSource(), null, IResultSetPresentation.PresentationType.COLUMNS));
         }
         activePresentation.createPresentation(this, presentationPanel);
+        activePresentation.getController();
+        trackStatistics(this, activePresentation);
 
         // Clear panels toolbar
         if (panelSwitchFolder != null) {
@@ -1070,6 +1072,35 @@ public class ResultSetViewer extends Viewer
                     control.setFocus();
                 }
             });
+        }
+    }
+
+    private void trackStatistics(@NotNull IResultSetController controller, @NotNull IResultSetPresentation presentation) {
+        try {
+            ResultSetPresentationDescriptor descriptor =
+                ResultSetPresentationRegistry.getInstance().getPresentation(presentation.getClass());
+            String presentationId = descriptor == null ? null : descriptor.getId();
+
+            DBPDataSource ds = controller.getExecutionContext() == null ? null : controller.getExecutionContext().getDataSource();
+            String driverId = null;
+            if (ds != null) {
+                driverId = ds.getContainer().getDriver().getPreconfiguredId();
+            }
+
+            if (presentationId != null) {
+                Map<String, Object> params;
+                if (driverId != null) {
+                    params = Map.of(
+                        "presentationId", presentationId,
+                        "driver", driverId
+                    );
+                } else {
+                    params = Map.of("presentationId", presentationId);
+                }
+                DataEditorFeatures.RESULT_SET_REPRESENTATION_SELECTED.use(params);
+            }
+        } catch (Exception trw) {
+            log.warn("Error tracking presentation selection", trw);
         }
     }
 
