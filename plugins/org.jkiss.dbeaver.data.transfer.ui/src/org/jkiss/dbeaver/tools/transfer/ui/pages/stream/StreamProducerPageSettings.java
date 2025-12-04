@@ -73,6 +73,8 @@ public class StreamProducerPageSettings extends DataTransferPageNodeSettings {
 
     private PropertyTreeViewer propsEditor;
     private PropertySourceCustom propertySource;
+
+    private boolean showRemoteFS;
     private Table filesTable;
     private Button tiOpenLocal;
     private Button tiOpenRemote;
@@ -100,50 +102,11 @@ public class StreamProducerPageSettings extends DataTransferPageNodeSettings {
             inputFilesTableGroup.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 
             DBPProject project = getWizard().getProject();
-            boolean showRemoteFS = project != null && DBFUtils.supportsMultiFileSystems(project);
+            showRemoteFS = project != null && DBFUtils.supportsMultiFileSystems(project);
 
-            {
-                final Composite toolbar = new Composite(inputFilesTableGroup, SWT.NONE);
-                toolbar.setLayout(new GridLayout(3, false));
-                UIUtils.createControlLabel(toolbar, DTMessages.data_transfer_wizard_settings_group_input_files);
+            createFileSelectionToolBar(inputFilesTableGroup);
 
-                {
-                    tiOpenLocal = UIUtils.createPushButton(
-                        toolbar,
-                        UIMessages.text_with_open_dialog_browse,
-                        UIMessages.text_with_open_dialog_browse,
-                        UIIcon.OPEN,
-                        SelectionListener.widgetSelectedAdapter(e -> new SelectInputFileAction(false).run())
-                    );
-                }
-                if (showRemoteFS) {
-                    tiOpenRemote = UIUtils.createPushButton(
-                        toolbar,
-                        UIMessages.text_with_open_dialog_browse_remote,
-                        UIMessages.text_with_open_dialog_browse_remote,
-                        UIIcon.OPEN_EXTERNAL,
-                        SelectionListener.widgetSelectedAdapter(e -> new SelectInputFileAction(true).run())
-                    );
-                }
-
-                UIUtils.createLabelSeparator(inputFilesTableGroup, SWT.HORIZONTAL);
-            }
-
-            filesTable = new Table(inputFilesTableGroup, SWT.SINGLE | SWT.FULL_SELECTION);
-            filesTable.setLayoutData(new GridData(GridData.FILL_BOTH));
-            filesTable.setHeaderVisible(true);
-            filesTable.setLinesVisible(true);
-
-            {
-                UIWidgets.setControlContextMenu(filesTable, manager -> {
-                    {
-                        manager.add(new SelectInputFileAction(false));
-                    }
-                    if (showRemoteFS) {
-                        manager.add(new SelectInputFileAction(true));
-                    }
-                });
-            }
+            filesTable = createFilesTable(inputFilesTableGroup);
 
             if (DBWorkbench.getPlatform().getApplication().isDistributed()) {
                 UIUtils.createInfoLink(
@@ -155,21 +118,7 @@ public class StreamProducerPageSettings extends DataTransferPageNodeSettings {
             }
 
             UIUtils.createTableColumn(filesTable, SWT.LEFT, DTUIMessages.data_transfer_wizard_final_column_source);
-            List<DBSObject> sourceObjects = getWizard().getSettings().getSourceObjects();
-            boolean skipTargetColumn;
-            if (CommonUtils.isEmpty(sourceObjects)) {
-                skipTargetColumn = true;
-            } else {
-                boolean allSourceObjectsNotTables = true;
-                for (DBSObject sourceObject : sourceObjects) {
-                    if (sourceObject instanceof DBSDataManipulator) {
-                        allSourceObjectsNotTables = false;
-                        break;
-                    }
-                }
-                skipTargetColumn = allSourceObjectsNotTables;
-            }
-            if (!skipTargetColumn) {
+            if (!isSkipTargetColumn()) {
                 UIUtils.createTableColumn(filesTable, SWT.LEFT, DTUIMessages.data_transfer_wizard_final_column_target);
             }
 
@@ -249,6 +198,61 @@ public class StreamProducerPageSettings extends DataTransferPageNodeSettings {
 
         updatePageCompletion();
     }
+
+    @NotNull
+    private Composite createFileSelectionToolBar(@NotNull Composite inputFilesTableGroup) {
+        final Composite toolbar = new Composite(inputFilesTableGroup, SWT.NONE);
+        toolbar.setLayout(new GridLayout(3, false));
+        UIUtils.createControlLabel(toolbar, DTMessages.data_transfer_wizard_settings_group_input_files);
+
+        tiOpenLocal = UIUtils.createPushButton(
+            toolbar,
+            UIMessages.text_with_open_dialog_browse,
+            UIMessages.text_with_open_dialog_browse,
+            UIIcon.OPEN,
+            SelectionListener.widgetSelectedAdapter(e -> new SelectInputFileAction(false).run())
+        );
+
+        if (showRemoteFS) {
+            tiOpenRemote = UIUtils.createPushButton(
+                toolbar,
+                UIMessages.text_with_open_dialog_browse_remote,
+                UIMessages.text_with_open_dialog_browse_remote,
+                UIIcon.OPEN_EXTERNAL,
+                SelectionListener.widgetSelectedAdapter(e -> new SelectInputFileAction(true).run())
+            );
+        }
+
+        UIUtils.createLabelSeparator(inputFilesTableGroup, SWT.HORIZONTAL);
+        return toolbar;
+    }
+
+    @NotNull
+    private Table createFilesTable(@NotNull Composite inputFilesTableGroup) {
+        Table newFilesTable = new Table(inputFilesTableGroup, SWT.SINGLE | SWT.FULL_SELECTION);
+        newFilesTable.setLayoutData(new GridData(GridData.FILL_BOTH));
+        newFilesTable.setHeaderVisible(true);
+        newFilesTable.setLinesVisible(true);
+
+        UIWidgets.setControlContextMenu(
+            newFilesTable, manager -> {
+                manager.add(new SelectInputFileAction(false));
+                if (showRemoteFS) {
+                    manager.add(new SelectInputFileAction(true));
+                }
+            }
+        );
+        return newFilesTable;
+    }
+
+    private boolean isSkipTargetColumn() {
+        return getWizard()
+            .getSettings()
+            .getSourceObjects()
+            .stream()
+            .noneMatch(so -> so instanceof DBSDataManipulator);
+    }
+
 
     private void chooseSourceFile(DataTransferPipe pipe, boolean remoteFS) {
         final String[] extensions = new String[]{
