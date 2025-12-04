@@ -340,8 +340,8 @@ class DriverDownloadAutoPage extends DriverDownloadPage {
                     break;
             }
         }
-        if (isArtifactModified) {
-            ((DriverDescriptor) getWizard().getDriver()).setModified(true);
+        if (isArtifactModified && getWizard().getDriver() instanceof DriverDescriptor descriptor) {
+            descriptor.setModified(true);
         }
     }
 
