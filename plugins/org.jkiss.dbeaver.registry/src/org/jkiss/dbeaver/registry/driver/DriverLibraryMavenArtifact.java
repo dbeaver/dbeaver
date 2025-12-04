@@ -172,6 +172,7 @@ public class DriverLibraryMavenArtifact extends DriverLibraryAbstract {
         this.localVersion = null;
     }
 
+    @Nullable
     public String getOriginalPreferredVersion() {
         return originalPreferredVersion;
     }
