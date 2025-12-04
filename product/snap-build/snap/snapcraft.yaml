@@ -7,9 +7,8 @@ adopt-info: dbeaver-ce
 
 base: core22
 confinement: classic
-
 architectures:
-  - build-on: amd64
+- amd64
 
 apps:
   dbeaver-ce:
@@ -17,10 +16,6 @@ apps:
     common-id: dbeaver
     desktop: usr/share/applications/dbeaver-ce.desktop
     environment:
-      FONTCONFIG_FILE: etc/fonts
-      _JAVA_OPTIONS: -Duser.home=$SNAP_USER_DATA -Dorg.eclipse.swt.browser.DefaultType=webkit -Dorg.eclipse.swt.browser.UseWebKitGTK=true -Ddbeaver.io.tmpdir=/home/$USER/Downloads
-      # Fallback to XWayland if running in a Wayland session.
-      DISABLE_WAYLAND: 1
       # Fixes occasional crashes on various WMs
       NO_AT_BRIDGE: 1
 
@@ -37,15 +32,10 @@ parts:
       - libgconf-2-4
       - libcurl4
       - xdg-utils
-      - mariadb-client
-      - mysql-client
-      - postgresql-client-common
       - ibus-gtk3
       - libibus-1.0-5
       - libwebkit2gtk-4.0-37
       - libgtk-3-0
-      - fonts-noto-cjk
-      - fonts-noto-color-emoji
     override-pull: |
       snapcraftctl pull
       # Removes NO_AT_BRIDGE=1 from the source .desktop file; it's set for the snap app itself
