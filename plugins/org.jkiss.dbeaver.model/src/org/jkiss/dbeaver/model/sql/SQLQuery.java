@@ -500,10 +500,12 @@ public class SQLQuery implements SQLScriptElement {
         return false;
     }
 
-    public boolean isDropTableDangerous() {
+    public boolean isDropDangerous() {
         parseQuery();
-        return statement != null && statement instanceof Drop &&
-            ((Drop) statement).getName() != null && ((Drop) statement).getType().equalsIgnoreCase("table");
+        return statement != null &&
+            statement instanceof Drop dropStatement &&
+            dropStatement.getName() != null
+            && dropStatement.getType() != null;
     }
 
     public boolean isModifying() {

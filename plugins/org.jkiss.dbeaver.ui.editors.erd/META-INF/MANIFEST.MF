@@ -8,12 +8,9 @@ Bundle-Release-Date: 20251222
 Bundle-RequiredExecutionEnvironment: JavaSE-21
 Bundle-Activator: org.jkiss.dbeaver.ui.editors.erd.internal.ERDUIActivator
 Bundle-ActivationPolicy: lazy
-Require-Bundle: org.eclipse.core.runtime,
- org.eclipse.core.filesystem,
+Require-Bundle: org.eclipse.core.filesystem,
  org.eclipse.core.resources,
  org.eclipse.core.expressions,
- org.eclipse.ui,
- org.eclipse.ui.ide,
  org.eclipse.ui.views,
  org.eclipse.gef;visibility:=reexport,
  org.jkiss.dbeaver.model;visibility:=reexport,

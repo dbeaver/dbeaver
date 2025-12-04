@@ -48,10 +48,11 @@ public class QMMStatementInfo extends QMMObject {
     }
 
     @Override
-    public void close()
-    {
+    public void close() {
         super.close();
-        reference = null;
+        if (reference != null) {
+            reference = null;
+        }
     }
 
     @Override
@@ -62,6 +63,10 @@ public class QMMStatementInfo extends QMMObject {
     @Nullable
     DBCStatement getReference() {
         return reference;
+    }
+
+    public String getReferenceText() {
+        return reference != null ? reference.getQueryString() : "N/A";
     }
 
     @NotNull
@@ -80,9 +85,8 @@ public class QMMStatementInfo extends QMMObject {
     }
 
     @Override
-    public String toString()
-    {
-        return "STATEMENT";
+    public String toString() {
+        return "STATEMENT " + getReferenceText();
     }
 
 }
