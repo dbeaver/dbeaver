@@ -34,7 +34,6 @@ import org.eclipse.ui.contexts.IContextService;
 import org.eclipse.ui.themes.ITheme;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.EditorUtils;
@@ -46,8 +45,6 @@ import java.util.List;
  * Abstract presentation.
  */
 public abstract class AbstractPresentation implements IResultSetPresentation, ISelectionProvider {
-
-    private static final Log log = Log.getLog(AbstractPresentation.class);
 
     public static final String RESULT_SET_PRESENTATION_CONTEXT_MENU = "org.jkiss.dbeaver.ui.controls.resultset.conext.menu";
     public static final String DATA_VALUE_CONTROLLER = "org.jkiss.dbeaver.resultset.value-controller";
