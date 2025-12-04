@@ -23,18 +23,18 @@ import org.jkiss.dbeaver.DBRuntimeException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPDataSourceFolder;
+import org.jkiss.dbeaver.model.DBPObjectSettingsProvider;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.rm.RMController;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
-import org.jkiss.dbeaver.registry.DataSourceConfigurationManagerBuffer;
-import org.jkiss.dbeaver.registry.DataSourceDescriptor;
-import org.jkiss.dbeaver.registry.DataSourceFolder;
-import org.jkiss.dbeaver.registry.DataSourceRegistry;
+import org.jkiss.dbeaver.registry.*;
 
 import java.nio.charset.StandardCharsets;
 import java.util.List;
+import java.util.Map;
 
 public class DataSourceRegistryRM<T extends DataSourceDescriptor> extends DataSourceRegistry<T> {
     private static final Log log = Log.getLog(DataSourceRegistryRM.class);
@@ -150,6 +150,12 @@ public class DataSourceRegistryRM<T extends DataSourceDescriptor> extends DataSo
     }
 
     @Override
+    public void addDataSourceToList(@NotNull DBPDataSourceContainer dataSource) {
+        setCustomNavigatorSettings(dataSource);
+        super.addDataSourceToList(dataSource);
+    }
+
+    @Override
     protected void saveDataSources(DBRProgressMonitor monitor) {
         if (getProject().isInMemory()) {
             return;
@@ -172,4 +178,18 @@ public class DataSourceRegistryRM<T extends DataSourceDescriptor> extends DataSo
     private String getRemoteProjectId() {
         return getProject().getId();
     }
+
+    private void setCustomNavigatorSettings(@NotNull DBPDataSourceContainer dataSource) {
+        DBPObjectSettingsProvider settingsProvider = DBUtils.getAdapter(DBPObjectSettingsProvider.class, getProject());
+        if (settingsProvider == null || !(dataSource instanceof DataSourceDescriptor dsd)) {
+            return;
+        }
+        Map<String, String> settings = settingsProvider.getObjectSettings(dsd.getId());
+        if (settings == null) {
+            return;
+        }
+        DataSourceNavigatorSettings customSettings = DataSourceNavigatorSettings.fromMap(settings);
+        dsd.setCustomNavigatorSettings(customSettings);
+    }
+
 }

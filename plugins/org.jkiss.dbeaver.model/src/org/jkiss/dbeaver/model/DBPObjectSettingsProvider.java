@@ -14,11 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.security;
+package org.jkiss.dbeaver.model;
 
 import org.jkiss.code.NotNull;
 
 import java.util.Map;
 
-public record SMObjectSettings(@NotNull String objectId, @NotNull Map<String, String> settings) {
+public interface DBPObjectSettingsProvider {
+
+    Map<String, String> getObjectSettings(@NotNull String objectId);
+
 }

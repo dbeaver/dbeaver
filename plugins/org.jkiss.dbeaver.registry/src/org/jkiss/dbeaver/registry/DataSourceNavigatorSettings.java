@@ -265,7 +265,7 @@ public class DataSourceNavigatorSettings implements DBNBrowseSettings {
     }
 
     @Nullable
-    public static DataSourceNavigatorSettings fromMap(@NotNull Map<String, Object> map) {
+    public static DataSourceNavigatorSettings fromMap(@NotNull Map<String, String> map) {
         boolean hasAny = Stream.of(
             DEFAULT_SHOW_SYSTEM_OBJECTS,
             DEFAULT_SHOW_UTILITY_OBJECTS,
