@@ -271,7 +271,7 @@ public class StreamProducerPageSettings extends DataTransferPageNodeSettings {
     @NotNull
     private Composite createFileSelectionToolBar(@NotNull Composite inputFilesTableGroup) {
         final Composite toolbar = new Composite(inputFilesTableGroup, SWT.NONE);
-        toolbar.setLayout(new GridLayout(3, false));
+        toolbar.setLayout(new GridLayout(4, false));
         UIUtils.createControlLabel(toolbar, DTMessages.data_transfer_wizard_settings_group_input_files);
 
         tiOpenLocal = UIUtils.createPushButton(
@@ -292,7 +292,7 @@ public class StreamProducerPageSettings extends DataTransferPageNodeSettings {
             );
         }
 
-        openFSBrowserCheckbox = createOpenFSBrowserCheckbox(inputFilesTableGroup);
+        openFSBrowserCheckbox = createOpenFSBrowserCheckbox(toolbar);
         UIUtils.createLabelSeparator(inputFilesTableGroup, SWT.HORIZONTAL);
         return toolbar;
     }
@@ -301,8 +301,8 @@ public class StreamProducerPageSettings extends DataTransferPageNodeSettings {
     private Button createOpenFSBrowserCheckbox(@NotNull Composite inputFilesTableGroup) {
         return UIUtils.createCheckbox(
             inputFilesTableGroup,
-            "DTUIMessages.name",
-            "DTUIMessages.tool_tip",
+            DTUIMessages.pref_open_fs_browser_on_enter,
+            DTUIMessages.pref_open_fs_browser_on_enter_tooltip,
             DBWorkbench.getPlatform().getPreferenceStore().getBoolean(DTConstants.PREF_OPEN_LOCAL_FS_BROWSER),
             0
         );
