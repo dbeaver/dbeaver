@@ -97,12 +97,8 @@ public class OpenAiConfigurator<ENGINE extends AIEngineDescriptor, PROPERTIES ex
         modelSelectorField.setSelectedModel(
             CommonUtils.toString(configuration.getModel(), OpenAIModels.DEFAULT_MODEL)
         );
-        Control ctrl = modelSelectorField.getCombo();
-        if (!ctrl.isDisposed()) {
-            Event ev = new Event();
-            ev.widget = ctrl;
-            ctrl.notifyListeners(SWT.Selection, ev);
-        }
+        // Update read-only state for temperature
+        modelSelectorField.getCombo().notifyListeners(SWT.Selection, new Event());
         temperature = CommonUtils.toString(configuration.getTemperature(), "0.0");
         useLegacyApi = configuration.isLegacyApi();
         logQuery = CommonUtils.toBoolean(configuration.isLoggingEnabled());
