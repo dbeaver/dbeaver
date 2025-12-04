@@ -57,8 +57,8 @@ public class SQLEditorPropertyTester extends PropertyTester {
     public static final String PROP_FOLDING_SUPPORTED = "foldingSupported";
     public static final String PROP_FOLDING_ENABLED = "foldingEnabled";
 
-    public static final String OVERLAY_ID_DATA_KEY = FindReplaceOverlay.ID_DATA_KEY;
-    public static final Set<String> OVERLAY_ID_INPUTS = Set.of("replaceInput", "searchInput");
+    private static final String OVERLAY_ID_DATA_KEY = FindReplaceOverlay.ID_DATA_KEY;
+    private static final Set<String> OVERLAY_ID_INPUTS = Set.of("replaceInput", "searchInput");
 
     public SQLEditorPropertyTester() {
         super();
