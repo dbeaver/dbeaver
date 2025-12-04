@@ -4106,7 +4106,7 @@ public class ResultSetViewer extends Viewer
             OrderingPolicy.get(this.getPreferenceStore())
         );
 
-        if (applied && rowIdentifier != null) {
+        if (applied) {
             getModel().resetOrdering(rowIdentifier.getAttributes());
             getActivePresentation().refreshData(false, false, true);
             updateFiltersText();
