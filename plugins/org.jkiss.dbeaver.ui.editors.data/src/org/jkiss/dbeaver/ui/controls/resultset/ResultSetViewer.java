@@ -1075,21 +1075,16 @@ public class ResultSetViewer extends Viewer
     }
 
     private void trackPresentationStatistics() {
-        try {
-            Map<String, Object> params = new HashMap<>();
-            if (activePresentationDescriptor != null) {
-                params.put("presentationId", activePresentationDescriptor.getId());
-            }
-            DBPDataSource dataSource = getDataSource();
-            if (dataSource != null) {
-                String driverId = dataSource.getContainer().getDriver().getPreconfiguredId();
-                params.put("driver", driverId);
-            }
-            if (!params.isEmpty()) {
-                DataEditorFeatures.RESULT_SET_REPRESENTATION_SELECTED.use(params);
-            }
-        } catch (Exception trw) {
-            log.warn("Error tracking presentation selection", trw);
+        Map<String, Object> params = new HashMap<>();
+        if (activePresentationDescriptor != null) {
+            params.put("presentationId", activePresentationDescriptor.getId());
+        }
+        DBPDataSource dataSource = getDataSource();
+        if (dataSource != null) {
+            params.put("driver", dataSource.getContainer().getDriver().getPreconfiguredId());
+        }
+        if (!params.isEmpty()) {
+            DataEditorFeatures.RESULT_SET_REPRESENTATION_SELECTED.use(params);
         }
     }
 
@@ -2121,15 +2116,11 @@ public class ResultSetViewer extends Viewer
         activePresentation.refreshData(true, false, false);
         activePresentation.changeMode(recordMode);
         if (recordMode) {
-            try {
-                DBPDataSource dataSource = getDataSource();
-                if (dataSource != null) {
-                    DataEditorFeatures.RESULT_SET_REPRESENTATION_RECORD.use(
-                        Map.of("driver", dataSource.getContainer().getDriver().getPreconfiguredId())
-                    );
-                }
-            } catch (Exception e) {
-                log.warn("Error setting result set presentation", e);
+            DBPDataSource dataSource = getDataSource();
+            if (dataSource != null) {
+                DataEditorFeatures.RESULT_SET_REPRESENTATION_RECORD.use(
+                    Map.of("driver", dataSource.getContainer().getDriver().getPreconfiguredId())
+                );
             }
         }
         updateStatusMessage();
