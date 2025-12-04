@@ -2122,11 +2122,14 @@ public class ResultSetViewer extends Viewer
         activePresentation.changeMode(recordMode);
         if (recordMode) {
             try {
-                DataEditorFeatures.RESULT_SET_REPRESENTATION_RECORD.use(
-                    Map.of("driver", getDataSource().getContainer().getDriver().getPreconfiguredId())
-                );
-            } catch (Throwable trw) {
-                log.warn("Error setting result set presentation", trw);
+                DBPDataSource dataSource = getDataSource();
+                if (dataSource != null) {
+                    DataEditorFeatures.RESULT_SET_REPRESENTATION_RECORD.use(
+                        Map.of("driver", dataSource.getContainer().getDriver().getPreconfiguredId())
+                    );
+                }
+            } catch (Exception e) {
+                log.warn("Error setting result set presentation", e);
             }
         }
         updateStatusMessage();
