@@ -563,7 +563,7 @@ public class CoreMessages extends NLS {
 
     public static String transaction_log_dialog_error_open_database;
 
-    // Connection edit
+    //region Connection edit
     public static String dialog_connection_edit_title;
 
     public static String dialog_connection_edit_wizard_general;
@@ -594,7 +594,21 @@ public class CoreMessages extends NLS {
     public static String dialog_connection_edit_wizard_bad_pwd_msg;
     public static String dialog_connection_edit_wizard_error_md5_title;
     public static String dialog_connection_edit_wizard_error_md5_msg;
-    //Connection edit
+    //endregion
+
+    //region Connection - Internal Parameters
+    public static String dialog_connection_internal_parameters_title;
+    public static String dialog_connection_internal_parameters_description;
+    public static String dialog_connection_internal_parameters_tip;
+    public static String dialog_connection_internal_parameters_parameters;
+    public static String dialog_connection_internal_parameters_parameters_project_id;
+    public static String dialog_connection_internal_parameters_parameters_connection_id;
+    public static String dialog_connection_internal_parameters_parameters_driver_id;
+    public static String dialog_connection_internal_parameters_parameters_driver_provider_id;
+    public static String dialog_connection_internal_parameters_custom;
+    public static String dialog_connection_internal_parameters_custom_key;
+    public static String dialog_connection_internal_parameters_custom_value;
+    //endregion
 
     // Driver edit
 

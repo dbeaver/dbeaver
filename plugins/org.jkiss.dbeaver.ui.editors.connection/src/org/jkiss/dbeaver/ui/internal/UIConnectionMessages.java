@@ -118,6 +118,8 @@ public class UIConnectionMessages extends NLS {
     public static String dialog_edit_driver_label_default_user;
     public static String dialog_edit_driver_label_id;
     public static String dialog_edit_driver_label_id_tip;
+    public static String dialog_edit_driver_label_provider_id;
+    public static String dialog_edit_driver_label_provider_id_tip;
     public static String dialog_edit_driver_label_description;
     public static String dialog_edit_driver_label_driver_class;
     public static String dialog_edit_driver_label_driver_name;
