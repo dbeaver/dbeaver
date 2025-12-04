@@ -42,7 +42,8 @@ import java.sql.SQLException;
  */
 public class JDBCContentChars extends JDBCContentAbstract implements DBDContentStorage, DBDContentCached {
 
-    private static final int MAX_LENGTH_REMOVE_WHITESPACES = 251;
+    //+1 due to tooltip truncation is done at 250 chars. So must be more to see if truncated or not
+    private static final int MAX_LENGTH_REMOVE_WHITESPACES = 250 + 1;
 
 
     private String originalData;
