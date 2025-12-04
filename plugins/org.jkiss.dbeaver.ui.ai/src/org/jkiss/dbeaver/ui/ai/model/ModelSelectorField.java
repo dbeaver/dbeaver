@@ -220,11 +220,6 @@ public class ModelSelectorField {
         }
     }
 
-    @NotNull
-    public Combo getCombo() {
-        return combo;
-    }
-
     @FunctionalInterface
     public interface ModelListProvider {
         @NotNull
