@@ -298,9 +298,9 @@ public class StreamProducerPageSettings extends DataTransferPageNodeSettings {
     }
 
     @NotNull
-    private Button createOpenFSBrowserCheckbox(@NotNull Composite inputFilesTableGroup) {
+    private Button createOpenFSBrowserCheckbox(@NotNull Composite toolbar) {
         return UIUtils.createCheckbox(
-            inputFilesTableGroup,
+            toolbar,
             DTUIMessages.pref_open_fs_browser_on_enter,
             DTUIMessages.pref_open_fs_browser_on_enter_tooltip,
             DBWorkbench.getPlatform().getPreferenceStore().getBoolean(DTConstants.PREF_OPEN_LOCAL_FS_BROWSER),
