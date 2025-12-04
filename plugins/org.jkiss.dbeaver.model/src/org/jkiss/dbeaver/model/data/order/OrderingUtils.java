@@ -85,7 +85,8 @@ public final class OrderingUtils {
         if (attrs.isEmpty()) {
             return;
         }
-        dataFilter.setOrder(String.join(",", attrs.stream().map(DBSEntityAttribute::getName).toList()) + " " + (
-            policy == OrderingPolicy.PRIMARY_KEY_DESC ? "DESC" : "ASC"));
+        dataFilter.setOrder(String.join(",", attrs.stream()
+            .map(attr -> DBUtils.getQuotedIdentifier(entity.getDataSource(), attr.getName()))
+            .toList()) + " " + (policy == OrderingPolicy.PRIMARY_KEY_DESC ? "DESC" : "ASC"));
     }
 }
