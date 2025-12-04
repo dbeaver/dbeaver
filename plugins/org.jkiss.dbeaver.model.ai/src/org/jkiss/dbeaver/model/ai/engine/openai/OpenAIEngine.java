@@ -70,7 +70,9 @@ public class OpenAIEngine<PROPS extends OpenAIBaseProperties> extends BaseComple
         @NotNull AIEngineRequest request
     ) throws DBException {
         OAIResponsesResponse completionResult = complete(monitor, request);
-        List<OAIMessage> messages = completionResult.output.stream().filter(msg -> !OAIMessage.TYPE_FUNCTION_REASONING.equals(msg.type)).toList();
+        List<OAIMessage> messages = completionResult.output.stream()
+            .filter(msg -> !OAIMessage.TYPE_FUNCTION_REASONING.equals(msg.type))
+            .toList();
         if (messages.isEmpty()) {
             return new AIEngineResponse(AIMessageType.ASSISTANT, List.of(AIMessages.ai_empty_engine_response));
         }
