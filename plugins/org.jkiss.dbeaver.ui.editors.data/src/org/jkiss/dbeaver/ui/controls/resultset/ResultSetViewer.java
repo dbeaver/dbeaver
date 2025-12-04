@@ -1077,16 +1077,15 @@ public class ResultSetViewer extends Viewer
     private void trackPresentationStatistics() {
         try {
             Map<String, Object> params = new HashMap<>();
-            String presentationId = activePresentationDescriptor == null ? null : activePresentationDescriptor.getId();
-            if (presentationId != null) {
-                params.put("presentationId", presentationId);
+            if (activePresentationDescriptor != null) {
+                params.put("presentationId", activePresentationDescriptor.getId());
             }
-            DBCExecutionContext executionContext = getExecutionContext();
-            if (executionContext != null) {
-                String driverId = executionContext.getDataSource().getContainer().getDriver().getPreconfiguredId();
+            DBPDataSource dataSource = getDataSource();
+            if (dataSource != null) {
+                String driverId = dataSource.getContainer().getDriver().getPreconfiguredId();
                 params.put("driver", driverId);
             }
-            if (!params.isEmpty() && presentationId != null) {
+            if (!params.isEmpty()) {
                 DataEditorFeatures.RESULT_SET_REPRESENTATION_SELECTED.use(params);
             }
         } catch (Exception trw) {
