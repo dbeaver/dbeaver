@@ -17,8 +17,7 @@
 package org.jkiss.dbeaver.ext.bigquery.ui.config;
 
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
@@ -49,13 +48,10 @@ public class BigQueryAuthConfigurator extends DatabaseNativeAuthModelConfigurato
         authTypeCombo.add(BigQueryMessages.label_service_based);
         authTypeCombo.add(BigQueryMessages.label_user_based);
         authTypeCombo.select(0);
-        authTypeCombo.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                updateKeyPathVisibility();
-                propertyChangeListener.run();
-            }
-        });
+        authTypeCombo.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
+            updateKeyPathVisibility();
+            propertyChangeListener.run();
+        }));
 
         keyPathLabel = UIUtils.createControlLabel(authPanel, BigQueryMessages.label_key_path);
         authCertFile = new ConfigurationFileSelector(authPanel, BigQueryMessages.label_private_key_path, new String[]{"*", "*.p12", "*.json"}, DBWorkbench.isDistributed());
@@ -65,15 +61,13 @@ public class BigQueryAuthConfigurator extends DatabaseNativeAuthModelConfigurato
 
     private void updateKeyPathVisibility() {
         if (keyPathLabel != null && authCertFile != null) {
-            boolean serviceBased = authTypeCombo.getText().equals(BigQueryMessages.label_service_based);
+            boolean serviceBased = authTypeCombo.getSelectionIndex() == 0;
             UIUtils.setControlVisible(keyPathLabel, serviceBased);
             UIUtils.setControlVisible(authCertFile.getPanel(), serviceBased);
-            UIUtils.asyncExec(() -> {
-                if (!authTypeCombo.isDisposed()) {
-                    authTypeCombo.getShell().layout(true, true);
-                    UIUtils.resizeShell(authTypeCombo.getShell());
-                }
-            });
+            if (!authTypeCombo.isDisposed()) {
+                authTypeCombo.getShell().layout(true, true);
+                UIUtils.resizeShell(authTypeCombo.getShell());
+            }
         }
     }
 
