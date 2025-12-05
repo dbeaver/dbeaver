@@ -63,6 +63,6 @@ public class PercentFromTotalAction extends Action {
     }
 
     private void updateImage() {
-        setImageDescriptor(DBeaverIcons.getImageDescriptor(UIIcon.DBEAVER_LOGO_SMALL));
+        setImageDescriptor(DBeaverIcons.getImageDescriptor(UIIcon.PERCENT));
     }
 }

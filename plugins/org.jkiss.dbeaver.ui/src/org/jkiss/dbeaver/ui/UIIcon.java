@@ -190,6 +190,7 @@ public class UIIcon {
     public static final DBIcon CURSOR = new DBIcon("cursor", "misc/cursor.svg"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon SECURITY = new DBIcon("security", "security.svg"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon READONLY_RESOURCES = new DBIcon("readonly", "readonly_resources.png"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon PERCENT = new DBIcon("percent", "misc/percent.svg"); //$NON-NLS-1$ //$NON-NLS-2$
 
     public static final DBIcon SQL_NEW_CONNECTION = new DBIcon("sql_new_connection", "database_connect.svg"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon SQL_CONNECT = new DBIcon("sql_connect", "sql/connect.svg"); //$NON-NLS-1$ //$NON-NLS-2$
