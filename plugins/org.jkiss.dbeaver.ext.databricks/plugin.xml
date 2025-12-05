@@ -45,6 +45,8 @@
                     <parameter name="supports-indexes" value="false"/>
                     <parameter name="supports-multi-insert" value="true"/>
                     <property name="@dbeaver-default-resultset.maxrows.sql" value="true"/>
+                    <property name="EnableComplexDatatypeSupport" value="1"/>
+                    <property name="EnableGeoSpatialSupport" value="1"/>
                 </driver>
             </drivers>
         </datasource>
