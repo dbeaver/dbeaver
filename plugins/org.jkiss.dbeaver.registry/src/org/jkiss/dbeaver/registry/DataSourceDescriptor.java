@@ -190,7 +190,7 @@ public class DataSourceDescriptor
         @NotNull String id,
         @NotNull DBPDriver driver,
         @NotNull DBPConnectionConfiguration connectionInfo) {
-        this(registry, ((DataSourceRegistry) registry).getDefaultStorage(), DataSourceOriginLocal.INSTANCE, id, driver, connectionInfo);
+        this(registry, ((DataSourceRegistry<?>) registry).getDefaultStorage(), DataSourceOriginLocal.INSTANCE, id, driver, connectionInfo);
     }
 
     public DataSourceDescriptor(
@@ -241,9 +241,9 @@ public class DataSourceDescriptor
      */
     public DataSourceDescriptor(@NotNull DataSourceDescriptor source, @NotNull DBPDataSourceRegistry registry, boolean setDefaultStorage) {
         this.registry = registry;
-        this.storage = setDefaultStorage ? ((DataSourceRegistry) registry).getDefaultStorage() : source.storage;
+        this.storage = setDefaultStorage ? ((DataSourceRegistry<?>) registry).getDefaultStorage() : source.storage;
         this.origin = source.origin;
-        this.manageable = setDefaultStorage && ((DataSourceRegistry) registry).getDefaultStorage().isDefault();
+        this.manageable = setDefaultStorage && ((DataSourceRegistry<?>) registry).getDefaultStorage().isDefault();
         this.accessCheckRequired = manageable;
         this.id = source.id;
         this.name = source.name;
@@ -347,10 +347,10 @@ public class DataSourceDescriptor
     @NotNull
     @Override
     public DBPDataSourceOrigin getOrigin() {
-        if (origin instanceof DataSourceOriginLazy) {
+        if (origin instanceof DataSourceOriginLazy dsoLazy) {
             DBPDataSourceOrigin realOrigin;
             try {
-                realOrigin = ((DataSourceOriginLazy) this.origin).resolveRealOrigin();
+                realOrigin = dsoLazy.resolveRealOrigin();
             } catch (DBException e) {
                 log.debug("Error reading datasource origin", e);
                 realOrigin = null;
@@ -1010,7 +1010,7 @@ public class DataSourceDescriptor
         } else {
             this.availableSharedCredentials = secretController.discoverCurrentUserSecrets(this);
             if (this.availableSharedCredentials.size() == 1) {
-                setSelectedSharedCredentials(availableSharedCredentials.get(0));
+                setSelectedSharedCredentials(availableSharedCredentials.getFirst());
             }
         }
 
@@ -1104,8 +1104,8 @@ public class DataSourceDescriptor
                 }
                 setSelectedSharedCredentials(found);
             } else if (!CommonUtils.isEmpty(sharedCreds)) {
-                log.debug("Shared credentials not selected - use first one: " + sharedCreds.get(0).getDisplayName());
-                setSelectedSharedCredentials(sharedCreds.get(0));
+                log.debug("Shared credentials not selected - use first one: " + sharedCreds.getFirst().getDisplayName());
+                setSelectedSharedCredentials(sharedCreds.getFirst());
                 monitor.subTask("Use first available shared credentials");
             } else {
                 log.debug("Shared credentials not found - attempt to connect as is");
@@ -2247,6 +2247,10 @@ public class DataSourceDescriptor
         if (!CommonUtils.isEmpty(handlerList)) {
             for (Map<String, Object> handlerMap : handlerList) {
                 String handlerId = JSONUtils.getString(handlerMap, RegistryConstants.ATTR_ID);
+                if (handlerId == null) {
+                    log.warn("Network handler ID is missing in the configuration");
+                    continue;
+                }
                 DBWHandlerConfiguration hc = connectionInfo.getHandler(handlerId);
                 if (hc == null) {
                     log.warn("Handler '" + handlerId + "' not found in datasource '" + getId() + "'. Secret configuration will be lost.");

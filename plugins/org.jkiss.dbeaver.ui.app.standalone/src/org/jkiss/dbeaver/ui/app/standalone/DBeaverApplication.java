@@ -727,7 +727,6 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
     }
 
     @Nullable
-    @Override
     public IInstanceController getInstanceServer() {
         return instanceServer;
     }
