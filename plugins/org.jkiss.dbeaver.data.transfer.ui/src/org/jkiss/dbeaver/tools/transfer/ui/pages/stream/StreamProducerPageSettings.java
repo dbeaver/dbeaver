@@ -228,9 +228,9 @@ public class StreamProducerPageSettings extends DataTransferPageNodeSettings {
                                 producerSettings.updateProducerSettingsFromStream(monitor, producer, dtSettings);
                             }
 
-                            if (consumerSettings instanceof DatabaseConsumerSettings) {
+                            if (consumerSettings instanceof DatabaseConsumerSettings databaseConsumerSettings) {
                                 DatabaseMappingContainer mapping
-                                    = ((DatabaseConsumerSettings) consumerSettings).getDataMapping(producer.getDatabaseObject());
+                                    = databaseConsumerSettings.getDataMapping(producer.getDatabaseObject());
                                 if (mapping != null) {
                                     mapping.getAttributeMappings(monitor);
                                 }
