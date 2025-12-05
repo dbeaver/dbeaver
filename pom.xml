@@ -35,15 +35,6 @@
         <sourceDirectory>${project.basedir}/src</sourceDirectory>
         <testSourceDirectory>${project.basedir}/tests</testSourceDirectory>
         <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-resources-plugin</artifactId>
-                <configuration>
-                    <resources>
-                    </resources>
-                </configuration>
-            </plugin>
-
             <!-- Tycho build -->
             <plugin>
                 <groupId>org.eclipse.tycho</groupId>
