@@ -217,8 +217,8 @@ public class DriverLoaderDescriptor implements DBPDriverLoader {
         return rootClassLoader;
     }
 
-    public void updateFiles(boolean isExpended) {
-        validateFilesPresence(new LoggingProgressMonitor(log), true, isExpended);
+    public void updateFiles(boolean isExpanded) {
+        validateFilesPresence(new LoggingProgressMonitor(log), true, isExpanded);
     }
 
     @Override
