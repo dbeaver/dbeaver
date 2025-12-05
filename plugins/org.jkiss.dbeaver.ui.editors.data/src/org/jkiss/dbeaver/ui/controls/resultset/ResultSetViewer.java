@@ -1084,7 +1084,7 @@ public class ResultSetViewer extends Viewer
             params.put("driver", dataSource.getContainer().getDriver().getPreconfiguredId());
         }
         if (!params.isEmpty()) {
-            DataEditorFeatures.RESULT_SET_REPRESENTATION_SELECTED.use(params);
+            DataEditorFeatures.RESULT_SET_PRESENTATION_SELECTED.use(params);
         }
     }
 
@@ -2118,7 +2118,7 @@ public class ResultSetViewer extends Viewer
         if (recordMode) {
             DBPDataSource dataSource = getDataSource();
             if (dataSource != null) {
-                DataEditorFeatures.RESULT_SET_REPRESENTATION_RECORD.use(
+                DataEditorFeatures.RESULT_SET_PRESENTATION_RECORD.use(
                     Map.of("driver", dataSource.getContainer().getDriver().getPreconfiguredId())
                 );
             }

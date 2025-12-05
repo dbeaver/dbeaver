@@ -37,15 +37,15 @@ public interface DataEditorFeatures {
     DBRFeature RESULT_SET_PANEL_REFS = DBRFeature.createFeature(CATEGORY_RESULT_SET_VIEWER, "Use references panel");
     DBRFeature RESULT_SET_PANEL_METADATA = DBRFeature.createFeature(CATEGORY_RESULT_SET_VIEWER, "Use metadata panel");
 
-    DBRFeature CATEGORY_RESULT_SET_REPRESENTATION = DBRFeature.createCategory(
+    DBRFeature CATEGORY_RESULT_SET_PRESENTATION = DBRFeature.createCategory(
         CATEGORY_RESULT_SET_VIEWER,
-        "Data representation",
-        "Representation is used in the result set viewer"
+        "Data presentation",
+        "Presentation is used in the result set viewer"
     );
-    DBRFeature RESULT_SET_REPRESENTATION_SELECTED = DBRFeature.createFeature(
-        CATEGORY_RESULT_SET_REPRESENTATION,
-        "Selected representation"
+    DBRFeature RESULT_SET_PRESENTATION_SELECTED = DBRFeature.createFeature(
+        CATEGORY_RESULT_SET_PRESENTATION,
+        "Selected presentation"
     );
-    DBRFeature RESULT_SET_REPRESENTATION_RECORD = DBRFeature.createFeature(CATEGORY_RESULT_SET_REPRESENTATION, "Use Record mode view");
+    DBRFeature RESULT_SET_PRESENTATION_RECORD = DBRFeature.createFeature(CATEGORY_RESULT_SET_PRESENTATION, "Use Record mode view");
 
 }
