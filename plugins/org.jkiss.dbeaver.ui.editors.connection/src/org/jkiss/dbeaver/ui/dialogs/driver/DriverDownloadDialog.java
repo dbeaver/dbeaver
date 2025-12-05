@@ -88,9 +88,10 @@ public class DriverDownloadDialog extends WizardDialog {
     @Override
     protected Button createButton(Composite parent, int id, String label, boolean defaultButton) {
         if (id == IDialogConstants.FINISH_ID) {
-            Button button = super.createButton(parent, id, getWizard().getFinishText(), defaultButton);
+            Button button = super.createButton(parent, id, getWizard().getFinishText(), true);
             button.setImage(DBeaverIcons.getImage(UIIcon.BROWSER));
             setButtonLayoutData(button);
+            button.setFocus();
             return button;
         }
         return super.createButton(parent, id, label, defaultButton);
