@@ -35,7 +35,8 @@ public class UIServiceDriversImpl implements UIServiceDrivers {
     public boolean downloadDriverFiles(
         @NotNull DBRProgressMonitor monitor,
         @NotNull DBPDriver driver,
-        @NotNull DBPDriverDependencies dependencies
+        @NotNull DBPDriverDependencies dependencies,
+        boolean isShowExpanded
     ) {
         Boolean result = new UITask<Boolean>() {
             @Override
@@ -43,7 +44,8 @@ public class UIServiceDriversImpl implements UIServiceDrivers {
                 return DriverDownloadDialog.downloadDriverFiles(
                     null,
                     driver,
-                    dependencies
+                    dependencies,
+                    isShowExpanded
                 );
             }
         }.execute();

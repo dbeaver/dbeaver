@@ -55,7 +55,8 @@ public interface DBPDriverLoader {
     /**
      * Validates driver library files presence and download them if needed without creating a driver instance
      */
-    void validateFilesPresence(@NotNull DBRProgressMonitor monitor);
+    @NotNull
+    List<Path> validateFilesPresence(@NotNull DBRProgressMonitor monitor);
 
     /**
      * Indicates whether the driver library files are installed.

@@ -559,7 +559,7 @@ public class DriverEditDialog extends HelpEnabledDialog {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
                     driver.setDriverLibraries(libraries);
-                    driver.getDefaultDriverLoader().updateFiles();
+                    driver.getDefaultDriverLoader().updateFiles(true);
                     changeLibContent();
                 }
             });

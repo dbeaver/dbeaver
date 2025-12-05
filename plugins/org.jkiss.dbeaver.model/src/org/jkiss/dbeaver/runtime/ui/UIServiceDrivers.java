@@ -30,7 +30,8 @@ public interface UIServiceDrivers {
     boolean downloadDriverFiles(
         @NotNull DBRProgressMonitor monitor,
         @NotNull DBPDriver driver,
-        @NotNull DBPDriverDependencies dependencies
+        @NotNull DBPDriverDependencies dependencies,
+        boolean isShowExpanded
     );
 
 }

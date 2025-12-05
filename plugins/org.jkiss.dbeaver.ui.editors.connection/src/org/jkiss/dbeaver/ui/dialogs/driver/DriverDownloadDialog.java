@@ -46,9 +46,10 @@ public class DriverDownloadDialog extends WizardDialog {
         @NotNull DBPDriver driver,
         @NotNull DBPDriverDependencies dependencies,
         boolean updateVersion,
-        boolean forceDownload
+        boolean forceDownload,
+        boolean isShowExpanded
     ) {
-        super(shell, new DriverDownloadWizard(driver, dependencies, updateVersion, forceDownload));
+        super(shell, new DriverDownloadWizard(driver, dependencies, updateVersion, forceDownload, isShowExpanded));
         getWizard().init(UIUtils.getActiveWorkbenchWindow().getWorkbench(), null);
         addPageChangedListener(event -> UIUtils.asyncExec(() -> getWizard().pageActivated(event.getSelectedPage())));
     }
@@ -107,10 +108,6 @@ public class DriverDownloadDialog extends WizardDialog {
 
     @Override
     protected void finishPressed() {
-//        Button editButton = getButton(EDIT_DRIVER_BUTTON_ID);
-//        if (editButton != null) {
-//            editButton.setEnabled(false);
-//        }
         doDownload = true;
         super.finishPressed();
     }
@@ -119,25 +116,24 @@ public class DriverDownloadDialog extends WizardDialog {
         UIUtils.asyncExec(() -> buttonPressed(IDialogConstants.CANCEL_ID));
     }
 
-    public static boolean downloadDriverFiles(Shell shell, DBPDriver driver, DBPDriverDependencies dependencies) {
-        return downloadDriverFiles(shell, driver, dependencies, false);
+    public static boolean downloadDriverFiles(Shell shell, DBPDriver driver, DBPDriverDependencies dependencies, boolean isShowExpanded) {
+        return downloadDriverFiles(shell, driver, dependencies, false, isShowExpanded);
     }
 
-    public static boolean downloadDriverFiles(Shell shell, DBPDriver driver, DBPDriverDependencies dependencies, boolean forceDownload) {
+    public static boolean downloadDriverFiles(
+        Shell shell,
+        DBPDriver driver,
+        DBPDriverDependencies dependencies,
+        boolean forceDownload,
+        boolean isShowExpanded
+    ) {
         if (DBWorkbench.getPlatform().isShuttingDown()) {
             return false;
         }
         if (shell == null) {
             shell = Display.getCurrent().getActiveShell();
         }
-        DriverDownloadDialog dialog = new DriverDownloadDialog(shell, driver, dependencies, false, forceDownload);
-        dialog.setMinimumPageSize(0, 0);
-        dialog.open();
-        return dialog.doDownload;
-    }
-
-    public static boolean updateDriverFiles(Shell shell, DBPDriver driver, DBPDriverDependencies dependencies, boolean forceDownload) {
-        DriverDownloadDialog dialog = new DriverDownloadDialog(shell, driver, dependencies, true, forceDownload);
+        DriverDownloadDialog dialog = new DriverDownloadDialog(shell, driver, dependencies, false, forceDownload, isShowExpanded);
         dialog.setMinimumPageSize(0, 0);
         dialog.open();
         return dialog.doDownload;
