@@ -32,7 +32,7 @@ public class DriverDownloadWizard extends Wizard implements IExportWizard {
     private final DBPDriver driver;
     private final DBPDriverDependencies dependencies;
     private final boolean updateVersion;
-    private final boolean isShowExpanded;
+    private final boolean isExpanded;
     private boolean forceDownload;
     private DriverDownloadPage downloadPage;
 
@@ -41,13 +41,13 @@ public class DriverDownloadWizard extends Wizard implements IExportWizard {
         @NotNull DBPDriverDependencies dependencies,
         boolean updateVersion,
         boolean forceDownload,
-        boolean isShowExpanded
+        boolean isExpanded
     ) {
         this.driver = driver;
         this.dependencies = dependencies;
         this.updateVersion = updateVersion;
         this.forceDownload = forceDownload;
-        this.isShowExpanded = isShowExpanded;
+        this.isExpanded = isExpanded;
         setWindowTitle(updateVersion ? UIConnectionMessages.dialog_driver_download_wizard_title_upload_files : UIConnectionMessages.dialog_driver_download_wizard_title_setup_files);
         setNeedsProgressMonitor(isAutoDownloadWizard());
     }
@@ -80,7 +80,7 @@ public class DriverDownloadWizard extends Wizard implements IExportWizard {
     public void addPages() {
         super.addPages();
         if (isAutoDownloadWizard()) {
-            downloadPage = new DriverDownloadAutoPage(isShowExpanded);
+            downloadPage = new DriverDownloadAutoPage(isExpanded);
         } else {
             downloadPage = new DriverDownloadManualPage();
         }
