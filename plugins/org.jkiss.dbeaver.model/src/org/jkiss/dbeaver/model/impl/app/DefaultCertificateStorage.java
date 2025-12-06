@@ -202,7 +202,7 @@ public class DefaultCertificateStorage implements DBACertificateStorage {
 
             KeyPairGenerator keyPairGenerator = KeyPairGenerator.getInstance("RSA");
             KeyPair keyPair = keyPairGenerator.generateKeyPair();
-            Certificate clientCert = CertificateGenHelper.generateCertificate(certDN, keyPair, 365, "SHA256withRSA");
+            Certificate clientCert = SelfSignedCertificateGenerator.generateSelfSignedCertificate(certDN, keyPair, 365, "SHA256withRSA");
 
             keyStore.setCertificateEntry(CLIENT_CERT_ALIAS, clientCert);
             certChain.add(clientCert);
