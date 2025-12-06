@@ -28,11 +28,9 @@ import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.navigator.registry.DBNRegistry;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
-import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 
@@ -41,10 +39,10 @@ import java.util.List;
  */
 public class DBNRoot extends DBNNode implements DBNContainer, DBNNodeExtendable, DBPProjectListener {
     private final DBNModel model;
-    private DBNProject[] projects = new DBNProject[0];
+    private final List<DBNProject> projects = new ArrayList<>();
     private final List<DBNNode> extraNodes = new ArrayList<>();
 
-    public DBNRoot(DBNModel model) {
+    public DBNRoot(@NotNull DBNModel model) {
         super();
         this.model = model;
         List<? extends DBPProject> globalProjects = model.getModelProjects();
@@ -70,7 +68,7 @@ public class DBNRoot extends DBNNode implements DBNContainer, DBNNodeExtendable,
         for (DBNProject project : projects) {
             DBNUtils.disposeNode(project, reflect);
         }
-        projects = new DBNProject[0];
+        projects.clear();
         for (DBNNode node : extraNodes) {
             DBNUtils.disposeNode(node, reflect);
         }
@@ -139,27 +137,26 @@ public class DBNRoot extends DBNNode implements DBNContainer, DBNNodeExtendable,
 
     @Override
     public boolean allowsChildren() {
-        return projects.length > 0 || !extraNodes.isEmpty();
+        return !projects.isEmpty() || !extraNodes.isEmpty();
     }
 
     @Nullable
     @Override
     public DBNNode[] getChildren(@NotNull DBRProgressMonitor monitor) {
         if (extraNodes.isEmpty()) {
-            return projects;
-        } else if (projects.length == 0) {
+            return projects.toArray(new DBNNode[0]);
+        } else if (projects.isEmpty()) {
             return extraNodes.toArray(new DBNNode[0]);
         } else {
-            DBNNode[] children = new DBNNode[extraNodes.size() + projects.length];
-            System.arraycopy(projects, 0, children, 0, projects.length);
-            for (int i = 0; i < extraNodes.size(); i++) {
-                children[projects.length + i] = extraNodes.get(i);
-            }
-            return children;
+            List<DBNNode> children = new ArrayList<>(projects.size() + extraNodes.size());
+            children.addAll(projects);
+            children.addAll(extraNodes);
+            return children.toArray(new DBNNode[0]);
         }
     }
 
-    public DBNProject[] getProjects() {
+    @NotNull
+    public List<DBNProject> getProjects() {
         return projects;
     }
 
@@ -204,10 +201,11 @@ public class DBNRoot extends DBNNode implements DBNContainer, DBNNodeExtendable,
         return null;
     }
 
-    public DBNProject addProject(DBPProject project, boolean reflect) {
+    public DBNProject addProject(@NotNull DBPProject project, boolean reflect) {
         DBNProject projectNode = getModel().createProjectNode(this, project);
-        projects = ArrayUtils.add(DBNProject.class, projects, projectNode);
-        Arrays.sort(projects, Comparator.comparing(DBNNode::getNodeDisplayName));
+        projects.add(projectNode);
+        projects.sort((o1, o2) -> o1.getNodeDisplayName().compareToIgnoreCase(o2.getNodeDisplayName()));
+
         if (reflect) {
             model.fireNodeEvent(new DBNEvent(this, DBNEvent.Action.ADD, projectNode));
         }
@@ -215,11 +213,11 @@ public class DBNRoot extends DBNNode implements DBNContainer, DBNNodeExtendable,
         return projectNode;
     }
 
-    public void removeProject(DBPProject project) {
-        for (int i = 0; i < projects.length; i++) {
-            DBNProject projectNode = projects[i];
+    public void removeProject(@NotNull DBPProject project) {
+        for (int i = 0; i < projects.size(); i++) {
+            DBNProject projectNode = projects.get(i);
             if (projectNode.getProject() == project) {
-                projects = ArrayUtils.remove(DBNProject.class, projects, i);
+                projects.remove(i);
                 model.fireNodeEvent(new DBNEvent(this, DBNEvent.Action.REMOVE, projectNode));
                 DBNUtils.disposeNode(projectNode, true);
                 break;
