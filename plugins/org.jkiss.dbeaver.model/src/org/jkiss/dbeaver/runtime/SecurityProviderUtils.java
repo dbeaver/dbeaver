@@ -16,7 +16,7 @@
  */
 package org.jkiss.dbeaver.runtime;
 
-import org.bouncycastle.jcajce.provider.BouncyCastleFipsProvider;
+//import org.bouncycastle.jcajce.provider.BouncyCastleFipsProvider;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.jkiss.dbeaver.Log;
 
@@ -54,7 +54,8 @@ public class SecurityProviderUtils {
                 provider = new BouncyCastleProvider();
             } catch (Throwable e) {
                 try {
-                    provider = new BouncyCastleFipsProvider();
+                    throw new IllegalStateException("BC provider not found");
+                    //provider = new BouncyCastleFipsProvider();
                 } catch (Throwable ex) {
                     throw e;
                 }
