@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.runtime;
 
+import org.bouncycastle.jcajce.provider.BouncyCastleFipsProvider;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.jkiss.dbeaver.Log;
 
@@ -48,7 +49,16 @@ public class SecurityProviderUtils {
 
     private static boolean registerBouncyCastleSecurityProvider() {
         try {
-            Provider provider = new BouncyCastleProvider();
+            Provider provider;
+            try {
+                provider = new BouncyCastleProvider();
+            } catch (Throwable e) {
+                try {
+                    provider = new BouncyCastleFipsProvider();
+                } catch (Throwable ex) {
+                    throw e;
+                }
+            }
 
             if (Security.getProvider(provider.getName()) == null) {
                 Security.addProvider(provider);
@@ -65,5 +75,9 @@ public class SecurityProviderUtils {
         return false;
     }
 
+
+    public static String getActiveSecurityProvider() {
+        return securityProvider;
+    }
 
 }
