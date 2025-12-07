@@ -308,6 +308,13 @@ public class UINavigatorMessages extends NLS {
     public static String navigator_provider_element_tooltip_datasource_provided;
     public static String navigator_provider_element_tooltip_datasource_error;
 
+    public static String pref_page_navigator_view_title;
+    public static String pref_page_navigator_view_group_settings;
+    public static String pref_page_navigator_view_label_connection_view;
+    public static String pref_page_navigator_view_message_admin_only;
+    public static String pref_page_navigator_view_error_settings_title;
+    public static String pref_page_navigator_view_error_settings_message;
+
     static {
         // initialize resource bundle
         NLS.initializeMessages(BUNDLE_NAME, UINavigatorMessages.class);

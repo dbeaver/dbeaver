@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,8 @@
  */
 package org.jkiss.dbeaver.registry;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.navigator.DBNBrowseSettings;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.registry.internal.RegistryMessages;
@@ -198,8 +200,20 @@ public class DataSourceNavigatorSettings implements DBNBrowseSettings {
     private static final String DEFAULT_HIDE_VIRTUAL_MODEL = "navigator.settings.default.hideVirtualModel";
 
     public static DBNBrowseSettings getDefaultSettings() {
-        DBPPreferenceStore preferences = DBWorkbench.getPlatform().getPreferenceStore();
+        return getDefaultSettings(null, false);
+    }
 
+    @NotNull
+    public static DBNBrowseSettings getDefaultSettings(@Nullable String presetId, boolean forceUpdate) {
+        if (forceUpdate && CommonUtils.isNotEmpty(presetId)) {
+            for (DataSourceNavigatorSettings.Preset p : DataSourceNavigatorSettings.PRESETS.values()) {
+                if (p.getId().equals(presetId)) {
+                    return p.getSettings();
+                }
+            }
+        }
+
+        DBPPreferenceStore preferences = DBWorkbench.getPlatform().getPreferenceStore();
         String defPreset = preferences.getString(DEFAULT_NAVIGATOR_SETTINGS_PRESET);
         if (!CommonUtils.isEmpty(defPreset)) {
             for (DataSourceNavigatorSettings.Preset p : DataSourceNavigatorSettings.PRESETS.values()) {
