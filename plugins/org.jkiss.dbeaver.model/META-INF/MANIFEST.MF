@@ -94,6 +94,7 @@ Import-Package: org.bouncycastle.asn1,
  org.bouncycastle.cert,
  org.bouncycastle.cert.jcajce,
  org.bouncycastle.jce.provider;resolution:=optional,
+ org.bouncycastle.jcajce.provider;resolution:=optional,
  org.bouncycastle.operator,
  org.bouncycastle.operator.jcajce
 Require-Bundle: org.eclipse.equinox.security;visibility:=reexport,

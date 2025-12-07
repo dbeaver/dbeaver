@@ -16,8 +16,6 @@
  */
 package org.jkiss.dbeaver.runtime;
 
-//import org.bouncycastle.jcajce.provider.BouncyCastleFipsProvider;
-import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.jkiss.dbeaver.Log;
 
 import java.security.Provider;
@@ -29,7 +27,17 @@ import java.security.Security;
 public class SecurityProviderUtils {
     private static final Log log = Log.getLog(SecurityProviderUtils.class);
 
-    private static String securityProvider = null;
+    // Classic BC provider
+    public static final String BC_PROVIDER_JCE = "org.bouncycastle.jce.provider.BouncyCastleProvider";
+    // FIPS provider
+    public static final String BC_PROVIDER_JCAJCE = "org.bouncycastle.jcajce.provider.BouncyCastleFipsProvider";
+
+    public static final String[] BC_PROVIDER_CLASSES = {
+        BC_PROVIDER_JCE,
+        BC_PROVIDER_JCAJCE
+    };
+
+    private static Provider securityProvider = null;
     private static boolean registrationDone;
 
     public static void registerSecurityProvider() {
@@ -49,16 +57,17 @@ public class SecurityProviderUtils {
 
     private static boolean registerBouncyCastleSecurityProvider() {
         try {
-            Provider provider;
-            try {
-                provider = new BouncyCastleProvider();
-            } catch (Throwable e) {
+            Provider provider = null;
+            for (String providerClass : BC_PROVIDER_CLASSES) {
                 try {
-                    throw new IllegalStateException("BC provider not found");
-                    //provider = new BouncyCastleFipsProvider();
-                } catch (Throwable ex) {
-                    throw e;
+                    provider = (Provider) Class.forName(providerClass).getConstructor().newInstance();
+                } catch (Throwable e) {
+                    // ignore
                 }
+            }
+            if (provider == null) {
+                log.debug("No BC security providers were found");
+                return false;
             }
 
             if (Security.getProvider(provider.getName()) == null) {
@@ -66,7 +75,7 @@ public class SecurityProviderUtils {
             }
 
             if (securityProvider == null) {
-                securityProvider = provider.getName();
+                securityProvider = provider;
                 log.debug("BounceCastle bundle found. Use JCE provider " + provider.getName());
                 return true;
             }
@@ -76,9 +85,12 @@ public class SecurityProviderUtils {
         return false;
     }
 
-
-    public static String getActiveSecurityProvider() {
+    public static Provider getActiveSecurityProvider() {
         return securityProvider;
+    }
+
+    public static String getActiveSecurityProviderClass() {
+        return securityProvider == null ? null : securityProvider.getName();
     }
 
 }
