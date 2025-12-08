@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.ui.controls.resultset;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPAdaptable;
 import org.jkiss.dbeaver.model.DBPContextProvider;
@@ -27,6 +28,7 @@ import org.jkiss.dbeaver.model.data.*;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.impl.data.AttributeMetaDataProxy;
 import org.jkiss.dbeaver.model.impl.local.LocalResultSetMeta;
+import org.jkiss.dbeaver.model.impl.local.LocalStatement;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.utils.GeneralUtils;
@@ -92,8 +94,8 @@ public class ResultSetDataContainer implements DBSDataContainer, DBPContextProvi
         long firstRow,
         long maxRows,
         long flags,
-        int fetchSize) throws DBCException
-    {
+        int fetchSize
+    ) throws DBException {
         filterAttributes = proceedSelectedColumnsOnly(flags);
         if (filterAttributes || proceedSelectedRowsOnly(flags)) {
 
@@ -104,22 +106,14 @@ public class ResultSetDataContainer implements DBSDataContainer, DBPContextProvi
             //LocalSta
             ModelResultSet resultSet = new ModelResultSet(session, flags);
             long resultCount = 0;
-            try {
-                dataReceiver.fetchStart(session, resultSet, firstRow, maxRows);
+            try (resultSet) {
+                DBDDataReceiver.startFetchWorkflow(dataReceiver, session, resultSet, firstRow, maxRows);
                 while (!session.getProgressMonitor().isCanceled() && resultSet.nextRow()) {
                     if (!proceedSelectedRowsOnly(flags) || options.getSelectedRows().contains(resultSet.curRow.getRowNumber())) {
                         dataReceiver.fetchRow(session, resultSet);
                     }
                     resultCount++;
                 }
-            } finally {
-                try {
-                    dataReceiver.fetchEnd(session, resultSet);
-                } catch (DBCException e) {
-                    log.error("Error while finishing result set fetch", e); //$NON-NLS-1$
-                }
-                resultSet.close();
-                dataReceiver.close();
             }
             statistics.setFetchTime(System.currentTimeMillis() - startTime);
             statistics.setRowsFetched(resultCount);
@@ -138,7 +132,7 @@ public class ResultSetDataContainer implements DBSDataContainer, DBPContextProvi
     }
 
     @Override
-    public long countData(@NotNull DBCExecutionSource source, @NotNull DBCSession session, @Nullable DBDDataFilter dataFilter, long flags) throws DBCException {
+    public long countData(@NotNull DBCExecutionSource source, @NotNull DBCSession session, @Nullable DBDDataFilter dataFilter, long flags) throws DBException {
         if (proceedSelectedRowsOnly(flags)) {
             return options.getSelectedRows().size();
         } else if (proceedSelectedColumnsOnly(flags)) {
@@ -221,23 +215,27 @@ public class ResultSetDataContainer implements DBSDataContainer, DBPContextProvi
     private class ModelResultSet implements DBCResultSet, DBCResultFiltered {
 
         private final DBCSession session;
+        private DBCStatement localStatement;
         private final long flags;
         private ResultSetRow curRow;
         private CustomResultSetMeta meta;
 
         ModelResultSet(DBCSession session, long flags) {
             this.session = session;
+            this.localStatement = new LocalStatement(session, "");
             this.flags = flags;
         }
 
+        @NotNull
         @Override
         public DBCSession getSession() {
             return session;
         }
 
+        @NotNull
         @Override
         public DBCStatement getSourceStatement() {
-            return null;
+            return localStatement;
         }
 
         @Override

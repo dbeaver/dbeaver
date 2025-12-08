@@ -47,7 +47,6 @@ import org.eclipse.ui.internal.WorkbenchImages;
 import org.eclipse.ui.menus.CommandContributionItem;
 import org.eclipse.ui.menus.CommandContributionItemParameter;
 import org.eclipse.ui.menus.IMenuService;
-import org.eclipse.ui.themes.ITheme;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -484,8 +483,7 @@ public class ResultSetViewer extends Viewer
         UIUtils.applyMainFont(panelSwitchFolder);
 
         if (activePresentation instanceof AbstractPresentation abstractPresentation) {
-            ITheme currentTheme = PlatformUI.getWorkbench().getThemeManager().getCurrentTheme();
-            abstractPresentation.applyThemeSettings(currentTheme);
+            abstractPresentation.applyThemeSettings(UIUtils.getCurrentTheme());
         }
     }
 
@@ -638,13 +636,8 @@ public class ResultSetViewer extends Viewer
 
     public void updateFiltersText(boolean resetFilterValue)
     {
-        boolean enableFilters = getExecutionContext() != null && container.isReadyToRun() && !model.isUpdateInProgress();
-        if (enableFilters) {
-            DBSDataContainer dataContainer = container.getDataContainer();
-            enableFilters = dataContainer != null && dataContainer.isFeatureSupported(DBSDataContainer.FEATURE_DATA_FILTER);
-
-        }
-        getAutoRefresh().enableControls(enableFilters);
+        boolean readyToRun = getExecutionContext() != null && container.isReadyToRun() && !model.isUpdateInProgress();
+        getAutoRefresh().enableControls(readyToRun);
 
         if (filtersPanel == null || this.viewerPanel.isDisposed()) {
             return;
@@ -680,6 +673,9 @@ public class ResultSetViewer extends Viewer
                     }
                 }
             }
+            boolean enableFilters = readyToRun
+                && getDataContainer() != null
+                && getDataContainer().isFeatureSupported(DBSDataContainer.FEATURE_DATA_FILTER);
             filtersPanel.enableFilters(enableFilters);
             //presentationSwitchToolbar.setEnabled(enableFilters);
         } finally {
@@ -5201,7 +5197,7 @@ public class ResultSetViewer extends Viewer
         }
 
         @Override
-        protected IStatus run(DBRProgressMonitor monitor) {
+        protected IStatus run(@NotNull DBRProgressMonitor monitor) {
             if (!acquireDataReadLock()) {
                 // Must run finalizer in any case
                 if (finalizer != null) {
@@ -5304,7 +5300,7 @@ public class ResultSetViewer extends Viewer
                             }
                         }
                         showErrorPresentation(sqlText, errorMessage, error);
-                        //log.error(errorMessage, error);
+                        log.error(errorMessage, error);
                     }
                 } else {
                     if (!metadataChanged) {

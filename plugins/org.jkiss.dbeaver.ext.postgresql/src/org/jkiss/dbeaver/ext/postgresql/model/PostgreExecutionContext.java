@@ -271,7 +271,7 @@ public class PostgreExecutionContext extends JDBCExecutionContext implements DBC
     }
 
     private static boolean isUserFirstInPath(List<String> newSearchPath) {
-        return !newSearchPath.isEmpty() && newSearchPath.get(0).equals(PostgreConstants.USER_VARIABLE);
+        return !newSearchPath.isEmpty() && newSearchPath.getFirst().equals(PostgreConstants.USER_VARIABLE);
     }
 
     private void setUserInTheEndOfThePath(List<String> searchPath) {
@@ -279,7 +279,7 @@ public class PostgreExecutionContext extends JDBCExecutionContext implements DBC
             return;
         }
         if (isUserFirstInPath(searchPath)) {
-            searchPath.remove(0);
+            searchPath.removeFirst();
             searchPath.add(PostgreConstants.USER_VARIABLE);
         } else {
             int userIndex = -1;
@@ -297,15 +297,12 @@ public class PostgreExecutionContext extends JDBCExecutionContext implements DBC
     }
 
     private void setSearchPath(String path) {
-        if (searchPath.contains(path)) {
-            return;
-        }
-        searchPath.add(0, path);
-        if (activeUser != null && !searchPath.contains(activeUser)) {
+        searchPath.clear();
+        searchPath.add(path);
+        if (!path.equals(activeUser)) {
             searchPath.add(activeUser);
         }
     }
-
 
     private void setSessionRole(@NotNull DBRProgressMonitor monitor) throws DBCException {
         final String roleName = getDataSource().getContainer().getConnectionConfiguration().getProviderProperty(PostgreConstants.PROP_CHOSEN_ROLE);

@@ -17,14 +17,17 @@
 package org.jkiss.dbeaver.ui.ai;
 
 import org.eclipse.osgi.util.NLS;
+import org.eclipse.swt.widgets.Shell;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.ai.AIContextSettings;
 import org.jkiss.dbeaver.model.ai.AIIcons;
+import org.jkiss.dbeaver.model.ai.registry.AISettingsManager;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.ai.internal.AIUIMessages;
+import org.jkiss.dbeaver.ui.ai.preferences.AIPreferencePageMain;
 
 
 public class AIUIUtils {
@@ -54,5 +57,13 @@ public class AIUIUtils {
         }
 
         return false;
+    }
+
+    public static void showPreferences(@NotNull Shell shell) {
+        UIUtils.showPreferencesFor(
+            shell,
+            AISettingsManager.getInstance().getSettings(),
+            AIPreferencePageMain.PAGE_ID
+        );
     }
 }

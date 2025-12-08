@@ -428,22 +428,30 @@ public class DriverDescriptorSerializerLegacy extends DriverDescriptorSerializer
                         lib.setDisabled(true);
                     } else if (lib == null) {
                         lib = DriverLibraryAbstract.createFromPath(curDriver, type, path, version);
-                        curDriver.addDriverLibrary(lib, false);
-                    } else if (!CommonUtils.isEmpty(version) && lib instanceof DriverLibraryMavenArtifact mavenLib) {
-                        // Overwrite version only if it is higher than the original one
-                        String preferredVersion = CommonUtils.toString(lib.getPreferredVersion(), "0");
-                        int versionMatch = VersionUtils.compareVersions(version, preferredVersion);
-                        if (versionMatch > 0 || mavenLib.isForcedVersion()) {
-                            // Version in config higher than in bundles. Probably a manual update - just overwrite it.
-                            mavenLib.setPreferredVersion(version);
-                        } else if (versionMatch < 0 && DBWorkbench.getPlatform().getPreferenceStore().getBoolean(ModelPreferences.UI_DRIVERS_VERSION_UPDATE)) {
-                            // Version in config is lower than in bundle. Probably it came from product version update - just reset it.
-                            mavenLib.resetVersion();
-                            isLibraryUpgraded = true;
+                        if (loaderId == null) {
+                            // Driver library will be loaded from the custom library provider if a loader is defined
+                            // (DriverLoaderDescriptor#getAllLibraries)
+                            curDriver.addDriverLibrary(lib, false);
                         }
-                    } else if (lib.isDisabled()) {
-                        // library was enabled in config file
-                        lib.setDisabled(false);
+                    } else {
+                        if (!CommonUtils.isEmpty(version) && lib instanceof DriverLibraryMavenArtifact mavenLib) {
+                            // Overwrite version only if it is higher than the original one
+                            String preferredVersion = CommonUtils.toString(lib.getPreferredVersion(), "0");
+                            int versionMatch = VersionUtils.compareVersions(version, preferredVersion);
+                            if (versionMatch > 0 || mavenLib.isForcedVersion()) {
+                                // Version in config higher than in bundles. Probably a manual update - just overwrite it.
+                                mavenLib.setPreferredVersion(version);
+                            } else if (versionMatch < 0 && DBWorkbench.getPlatform().getPreferenceStore()
+                                .getBoolean(ModelPreferences.UI_DRIVERS_VERSION_UPDATE)) {
+                                // Version in config is lower than in bundle. Probably it came from product version update - just reset it.
+                                mavenLib.resetVersion();
+                                isLibraryUpgraded = true;
+                            }
+                        }
+                        if (lib.isDisabled()) {
+                            // library was enabled in config file
+                            lib.setDisabled(false);
+                        }
                     }
                     curLibrary = lib;
                     break;

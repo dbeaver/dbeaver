@@ -61,7 +61,7 @@ public abstract class ApplicationInstanceServer<T extends ApplicationInstanceCon
 
         try (ByteArrayOutputStream os = new ByteArrayOutputStream()) {
             Properties props = new Properties();
-            props.setProperty("port", String.valueOf(server.getAddress().getPort()));
+            props.setProperty(portPropertyName(), String.valueOf(server.getAddress().getPort()));
             props.store(os, "DBeaver instance server properties");
             configFileChannel.write(ByteBuffer.wrap(os.toByteArray()));
         }
@@ -118,9 +118,9 @@ public abstract class ApplicationInstanceServer<T extends ApplicationInstanceCon
     }
 
     @NotNull
-    protected static Path getConfigPath(@Nullable String workspacePath) {
+    protected static Path getConfigPath(@Nullable Path workspacePath) {
         if (workspacePath != null) {
-            return Path.of(workspacePath).resolve(DBPWorkspace.METADATA_FOLDER).resolve(CONFIG_PROP_FILE);
+            return workspacePath.resolve(DBPWorkspace.METADATA_FOLDER).resolve(CONFIG_PROP_FILE);
         } else {
             return GeneralUtils.getMetadataFolder().resolve(CONFIG_PROP_FILE);
         }
@@ -161,5 +161,9 @@ public abstract class ApplicationInstanceServer<T extends ApplicationInstanceCon
         public boolean isOpenConsole() {
             return openConsole;
         }
+    }
+
+    protected static String portPropertyName() {
+        return "port";
     }
 }

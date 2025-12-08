@@ -448,15 +448,8 @@ public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor
             Object[] finalResult = new Object[1];
             try {
                 progressMonitor.subTask("Read " + this.getDisplayName());
-                DBExecUtils.tryExecuteRecover(progressMonitor, dbsObject.getDataSource(), param -> {
-                    try {
-                        finalResult[0] = readPropertyMethod.get();
-                    } catch (InvocationTargetException e) {
-                        throw e;
-                    } catch (Exception e) {
-                        throw new InvocationTargetException(e);
-                    }
-                });
+                DBExecUtils.tryExecuteRecover(progressMonitor, dbsObject.getDataSource(), param ->
+                    finalResult[0] = readPropertyMethod.get());
             } catch (Exception e) {
                 throw new InvocationTargetException(e);
             }
@@ -522,10 +515,12 @@ public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor
             } else {
                 if (argType == Boolean.TYPE || argType == Boolean.class && !(value instanceof Boolean)) {
                     value = CommonUtils.toBoolean(value);
-                } else if (argType == Long.TYPE) {
+                } else if (argType == Long.TYPE || argType == Long.class) {
                     value = CommonUtils.toLong(value);
-                } else if (argType == Integer.TYPE) {
+                } else if (argType == Integer.TYPE || argType == Integer.class) {
                     value = CommonUtils.toInt(value);
+                } else if (argType == Double.TYPE || argType == Double.class) {
+                    value = CommonUtils.toDouble(value);
                 }
             }
             setter.invoke(object, value);

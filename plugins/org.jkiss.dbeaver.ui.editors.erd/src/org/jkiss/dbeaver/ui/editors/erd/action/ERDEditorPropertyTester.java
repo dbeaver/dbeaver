@@ -34,14 +34,14 @@ public class ERDEditorPropertyTester extends PropertyTester
     public static final String PROP_CAN_DELETE = "canDelete";
     public static final String PROP_EDITABLE = "editable";
     public static final String PROP_EDIT_MODE = "editMode";
+    public static final String PROP_IS_ERD = "isERD";
     public static final String SUPPORTS_STRUCTURE_EDIT = "supportsStructureEdit";
 
     @Override
     public boolean test(Object receiver, String property, Object[] args, Object expectedValue) {
-        if (!(receiver instanceof ERDEditorPart)) {
+        if (!(receiver instanceof ERDEditorPart erdEditor)) {
             return false;
         }
-        ERDEditorPart erdEditor = (ERDEditorPart) receiver;
         switch (property) {
             case PROP_CAN_UNDO:
                 return erdEditor.getCommandStack().canUndo();
@@ -59,6 +59,8 @@ public class ERDEditorPropertyTester extends PropertyTester
             case SUPPORTS_STRUCTURE_EDIT:
                 return erdEditor.getDecorator().supportsStructureEdit() &&
                     erdEditor.getCommandContext() != null;
+            case PROP_IS_ERD:
+                return erdEditor.isERD();
         }
         return false;
     }

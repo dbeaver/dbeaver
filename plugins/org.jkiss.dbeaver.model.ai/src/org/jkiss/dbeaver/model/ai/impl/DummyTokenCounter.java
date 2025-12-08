@@ -27,4 +27,13 @@ public class DummyTokenCounter implements TokenCounter {
 
         return message.length() / TOKEN_TO_CHAR_RATIO;
     }
+
+    @Override
+    public String truncateToTokenLimit(String message, int tokenLimit) {
+        if (count(message) <= tokenLimit) {
+            return message;
+        }
+        int charLimit = tokenLimit * TOKEN_TO_CHAR_RATIO;
+        return message.substring(0, Math.min(charLimit, message.length()));
+    }
 }

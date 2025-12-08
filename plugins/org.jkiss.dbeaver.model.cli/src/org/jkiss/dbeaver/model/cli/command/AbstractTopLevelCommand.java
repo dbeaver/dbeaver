@@ -29,8 +29,31 @@ public abstract class AbstractTopLevelCommand implements Runnable, CommandLine.I
     private final Log log = Log.getLog(getClass());
 
     @CommandLine.Option(names = {"-dump"},
-        description = "Print instance thread dump")
+        description = "Print instance thread dump.")
     private boolean dump;
+
+
+    @CommandLine.Option(
+        names = {"-h", "-help", "--help"},
+        description = "Show this help message and exit.",
+        usageHelp = true,
+        scope = CommandLine.ScopeType.INHERIT
+    )
+    private boolean help;
+
+    @CommandLine.Option(
+        names = {"-V", "--version"},
+        description = "Print version information and exit.",
+        versionHelp = true,
+        scope = CommandLine.ScopeType.INHERIT
+    )
+    private boolean version;
+
+    @CommandLine.Option(names = {"--debug-logs"},
+        description = "Enable debug logging.",
+        scope = CommandLine.ScopeType.INHERIT
+    )
+    private boolean debugLogs;
 
     @CommandLine.Mixin
     private EclipseOptions eclipseOptions;
@@ -58,15 +81,17 @@ public abstract class AbstractTopLevelCommand implements Runnable, CommandLine.I
 
     @Override
     public void run() {
+        if (debugLogs) {
+            Log.setLogHandler(null);
+        }
         try {
-            if (!meta.isUiActivated() && dump) {
+            if (dump) {
                 if (controller == null) {
                     log.debug("Can't process commands because no running instance is present");
-                    context.setPostAction(CLIProcessResult.PostAction.START_INSTANCE);
+                    context.setPostAction(CLIProcessResult.PostAction.SHUTDOWN);
                     return;
                 }
                 String threadDump = controller.getThreadDump();
-                System.out.println(threadDump);
                 context.addResult(threadDump);
                 context.setPostAction(CLIProcessResult.PostAction.SHUTDOWN);
                 return;
