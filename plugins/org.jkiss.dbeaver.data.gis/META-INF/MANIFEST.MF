@@ -9,7 +9,6 @@ Bundle-RequiredExecutionEnvironment: JavaSE-21
 Bundle-ActivationPolicy: lazy
 Require-Bundle: org.jkiss.dbeaver.model;visibility:=reexport,
  org.jkiss.dbeaver.model.jdbc;visibility:=reexport,
- org.eclipse.core.runtime,
  org.jkiss.bundle.gis;visibility:=reexport
 Export-Package: org.jkiss.dbeaver.data.gis.handlers,
  org.jkiss.dbeaver.model.gis
