@@ -260,8 +260,14 @@ public class AIAssistantImpl implements AIAssistant {
         return settingsManager.getSettings().getEngineConfiguration(activeEngine);
     }
 
-
     protected static <T> T callWithRetry(ThrowableSupplier<T, DBException> supplier) throws DBException {
+        return callWithRetry(null, supplier);
+    }
+
+    protected static <T> T callWithRetry(
+        @Nullable AIEngineResponseConsumer listener,
+        @NotNull ThrowableSupplier<T, DBException> supplier
+    ) throws DBException {
         int retry = 0;
         while (retry < MANY_REQUESTS_RETRIES) {
             try {
@@ -270,6 +276,9 @@ public class AIAssistantImpl implements AIAssistant {
                 retry++;
                 if (retry < MANY_REQUESTS_RETRIES) {
                     log.debug("Too many engine requests. Retry after " + MANY_REQUESTS_TIMEOUT + "ms");
+                    if (listener != null) {
+                        listener.close();
+                    }
                     RuntimeUtils.pause(MANY_REQUESTS_TIMEOUT);
                 }
             }

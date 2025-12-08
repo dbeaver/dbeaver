@@ -182,7 +182,7 @@ public class CopilotClient extends AbstractHttpAIClient {
 
                     String data = line.substring(6).trim();
                     if (DONE_EVENT.equals(data)) {
-                        listener.close();
+                        listener.completeBlock();
                     } else {
                         try {
                             CopilotChatChunk chunk = GSON.fromJson(data, CopilotChatChunk.class);
@@ -198,7 +198,7 @@ public class CopilotClient extends AbstractHttpAIClient {
                 }
             },
             listener::error,
-            listener::close
+            listener::completeBlock
         );
     }
 
