@@ -35,6 +35,7 @@ import org.mockito.Mock;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.util.stream.IntStream;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.mock;
@@ -69,6 +70,30 @@ public class DataExporterDbUnitExpertRowTest extends DBeaverUnitTest {
         assertOutputMatches(simpleTextRow);
     }
 
+    @Test
+    public void textRowWithAllSpecialSymbolsShouldBeReplaced() throws DBException, IOException {
+        // given
+        String textRowWithSpecialXmlChars = """
+        <>&"abc'""";
+        String expectedRow = "&lt;&gt;&amp;&quot;abc'";
+        // when
+        writeRow(textRowWithSpecialXmlChars);
+        // then
+        assertOutputMatches(expectedRow);
+    }
+
+    @Test
+    public void textRowWithQuotesShouldBeReplaced() throws DBException, IOException {
+        // given
+        String textRowWithSpecialXmlChars = """
+        {"delivery":"express"}""";
+        String expectedRow = "{&quot;delivery&quot;:&quot;express&quot;}";
+        // when
+        writeRow(textRowWithSpecialXmlChars);
+        // then
+        assertOutputMatches(expectedRow);
+    }
+
     @Before
     public void setUp() throws DBException {
         stringWriter = new StringWriter();
@@ -85,10 +110,11 @@ public class DataExporterDbUnitExpertRowTest extends DBeaverUnitTest {
     }
 
     private void assertOutputMatches(@NotNull String expectedRow) {
-        String actualOutput = stringWriter.toString();
-        String expectedOutput = constructExpectedOutput(expectedRow);
         //EOT independent comparison
-        assertEquals(expectedOutput.lines().toList(), actualOutput.lines().toList());
+        var actualOutput = stringWriter.toString().lines().toList();
+        var expectedOutput = constructExpectedOutput(expectedRow).lines().toList();
+        IntStream.range(0, actualOutput.size())
+            .forEach(i -> assertEquals(expectedOutput.get(i), actualOutput.get(i)));
     }
 
     private String constructExpectedOutput(@NotNull String row) {
