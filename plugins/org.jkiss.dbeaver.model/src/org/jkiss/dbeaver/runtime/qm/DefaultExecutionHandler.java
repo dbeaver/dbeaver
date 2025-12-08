@@ -33,110 +33,97 @@ import java.util.Map;
 public abstract class DefaultExecutionHandler implements QMExecutionHandler {
 
     @Override
-    public void handleContextOpen(@NotNull DBCExecutionContext context, boolean transactional)
-    {
+    public void handleContextOpen(@NotNull DBCExecutionContext context, boolean transactional) {
 
     }
 
     @Override
-    public void handleContextClose(@NotNull DBCExecutionContext context)
-    {
+    public void handleContextUpdate(@NotNull DBCExecutionContext context, boolean transactional) {
 
     }
 
     @Override
-    public void handleSessionOpen(@NotNull DBCSession session)
-    {
+    public void handleContextClose(@NotNull DBCExecutionContext context) {
 
     }
 
     @Override
-    public void handleSessionClose(@NotNull DBCSession session)
-    {
+    public void handleSessionOpen(@NotNull DBCSession session) {
 
     }
 
     @Override
-    public void handleTransactionAutocommit(@NotNull DBCExecutionContext context, boolean autoCommit)
-    {
+    public void handleSessionClose(@NotNull DBCSession session) {
 
     }
 
     @Override
-    public void handleTransactionIsolation(@NotNull DBCExecutionContext context, @NotNull DBPTransactionIsolation level)
-    {
+    public void handleTransactionAutocommit(@NotNull DBCExecutionContext context, boolean autoCommit) {
 
     }
 
     @Override
-    public void handleTransactionCommit(@NotNull DBCExecutionContext context)
-    {
+    public void handleTransactionIsolation(@NotNull DBCExecutionContext context, @NotNull DBPTransactionIsolation level) {
 
     }
 
     @Override
-    public void handleTransactionSavepoint(@NotNull DBCSavepoint savepoint)
-    {
+    public void handleTransactionCommit(@NotNull DBCExecutionContext context) {
 
     }
 
     @Override
-    public void handleTransactionRollback(@NotNull DBCExecutionContext context, DBCSavepoint savepoint)
-    {
+    public void handleTransactionSavepoint(@NotNull DBCSavepoint savepoint) {
 
     }
 
     @Override
-    public void handleStatementOpen(@NotNull DBCStatement statement)
-    {
+    public void handleTransactionRollback(@NotNull DBCExecutionContext context, DBCSavepoint savepoint) {
 
     }
 
     @Override
-    public void handleStatementExecuteBegin(@NotNull DBCStatement statement)
-    {
+    public void handleStatementOpen(@NotNull DBCStatement statement) {
 
     }
 
     @Override
-    public void handleStatementExecuteEnd(@NotNull DBCStatement statement, long rows, Throwable error)
-    {
+    public void handleStatementExecuteBegin(@NotNull DBCStatement statement) {
+
+    }
+
+    @Override
+    public void handleStatementExecuteEnd(@NotNull DBCStatement statement, long rows, Throwable error) {
         
     }
 
     @Override
-    public void handleStatementBind(@NotNull DBCStatement statement, Object column, Object value)
-    {
+    public void handleStatementBind(@NotNull DBCStatement statement, Object column, Object value) {
 
     }
 
     @Override
-    public void handleStatementClose(@NotNull DBCStatement statement, long rows)
-    {
+    public void handleStatementClose(@NotNull DBCStatement statement, long rows) {
 
     }
 
     @Override
-    public void handleResultSetOpen(@NotNull DBCResultSet resultSet)
-    {
+    public void handleResultSetOpen(@NotNull DBCResultSet resultSet) {
 
     }
 
     @Override
-    public void handleResultSetClose(@NotNull DBCResultSet resultSet, long rowCount)
-    {
+    public void handleResultSetClose(@NotNull DBCResultSet resultSet, long rowCount) {
 
     }
 
     @Override
-    public void handleScriptBegin(@NotNull DBCSession session)
-    {
+    public void handleScriptBegin(@NotNull DBCSession session) {
 
     }
 
     @Override
-    public void handleScriptEnd(@NotNull DBCSession session)
-    {
+    public void handleScriptEnd(@NotNull DBCSession session) {
 
     }
 
