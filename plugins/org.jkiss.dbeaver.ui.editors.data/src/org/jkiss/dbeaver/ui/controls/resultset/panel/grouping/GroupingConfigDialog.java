@@ -35,6 +35,7 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.contentassist.StringContentProposalProvider;
 import org.jkiss.dbeaver.ui.controls.StringEditorTableFactory;
 import org.jkiss.dbeaver.ui.controls.StringEditorTableUtils;
+import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
 import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
 import org.jkiss.dbeaver.ui.internal.UIMessages;
 import org.jkiss.utils.CommonUtils;
@@ -164,7 +165,7 @@ public class GroupingConfigDialog extends BaseDialog {
             @NotNull List<String> allColumnNames
         ) {
             super(
-                UIUtils.createControlGroup(parent, "Columns", 2, GridData.FILL_BOTH, 0),
+                UIUtils.createControlGroup(parent, ResultSetMessages.grouping_panel_column_panel_title, 2, GridData.FILL_BOTH, 0),
                 values,
                 new GroupingAttributeValueManager(),
                 proposalProvider,
@@ -209,7 +210,7 @@ public class GroupingConfigDialog extends BaseDialog {
 
         private void addCustomColumn(@NotNull Menu addMenu) {
             MenuItem defaultFunctionItem = new MenuItem(addMenu, SWT.PUSH);
-            defaultFunctionItem.setText("Custom");
+            defaultFunctionItem.setText(ResultSetMessages.grouping_panel_column_panel_custom_label);
             defaultFunctionItem.addListener(SWT.Selection, e -> addTableItem(new TableItem(valueTable, SWT.LEFT)));
         }
     }
@@ -229,7 +230,7 @@ public class GroupingConfigDialog extends BaseDialog {
             @NotNull List<String> columns
         ) {
             super(
-                UIUtils.createControlGroup(parent, "Functions", 2, GridData.FILL_BOTH, 0),
+                UIUtils.createControlGroup(parent, ResultSetMessages.grouping_panel_function_panel_title, 2, GridData.FILL_BOTH, 0),
                 values,
                 new StringEditorTableFactory.StringValuesManager(DBIcon.TREE_FUNCTION),
                 proposalProvider,
@@ -285,7 +286,7 @@ public class GroupingConfigDialog extends BaseDialog {
 
         private void addCustomFunction(@NotNull Menu addMenu) {
             MenuItem defaultFunctionItem = new MenuItem(addMenu, SWT.PUSH);
-            defaultFunctionItem.setText("Custom");
+            defaultFunctionItem.setText(ResultSetMessages.grouping_panel_function_panel_custom_label);
             defaultFunctionItem.addListener(SWT.Selection, e -> addTableItem(new TableItem(valueTable, SWT.LEFT)));
         }
     }

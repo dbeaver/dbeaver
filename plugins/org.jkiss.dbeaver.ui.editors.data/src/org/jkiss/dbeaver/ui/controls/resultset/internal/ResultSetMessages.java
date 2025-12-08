@@ -434,6 +434,10 @@ public class ResultSetMessages extends NLS {
     public static String grouping_panel_error_change_sort_message;
     public static String grouping_panel_error_change_duplicate_presentation_message;
     public static String grouping_panel_error_show_percent_of_total_message;
+    public static String grouping_panel_function_panel_title;
+    public static String grouping_panel_function_panel_custom_label;
+    public static String grouping_panel_column_panel_title;
+    public static String grouping_panel_column_panel_custom_label;
 
     public static String refs_label;
     public static String refs_no_refs_text;

@@ -73,7 +73,7 @@ public class StringEditorTableUtils {
     ) {
         Group group = UIUtils.createControlGroup(parent, name, 2, GridData.FILL_BOTH, 0);
 
-        StringEditorTableFactory<T> stringEditorTableFactory = new StringEditorTableFactory<>(
+        var stringEditorTableFactory = new StringEditorTableFactory<>(
             group,
             values,
             valuesManager,
