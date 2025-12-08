@@ -33,7 +33,6 @@
     <plugin id="org.objectweb.asm.tree.analysis" version="0.0.0" />
     <plugin id="org.objectweb.asm.tree" version="0.0.0" />
     <plugin id="org.objectweb.asm.util" version="0.0.0" />
-    <plugin id="org.apache.aries.spifly.dynamic.bundle" version="0.0.0" />
 
     <!-- our plugins -->
 
