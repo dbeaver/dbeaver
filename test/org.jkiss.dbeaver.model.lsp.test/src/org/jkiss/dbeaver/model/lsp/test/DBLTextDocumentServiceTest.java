@@ -93,6 +93,22 @@ public class DBLTextDocumentServiceTest extends DBeaverUnitTest {
     }
 
     @Test
+    public void shouldOpenAndCloseDocument() {
+        TextDocumentItem textDocument = new TextDocumentItem();
+        String sql = "SELECT * FROM table";
+        textDocument.setText(sql);
+        textDocument.setUri(BASIC_SQL_URI);
+        service.didOpen(new DidOpenTextDocumentParams(textDocument));
+
+        TextDocumentIdentifier textDocumentId = new TextDocumentIdentifier(textDocument.getUri());
+        DidCloseTextDocumentParams closeParams = new DidCloseTextDocumentParams(textDocumentId);
+        service.didClose(closeParams);
+
+        String text = service.getText(textDocument.getUri());
+        Assert.assertNull(text);
+    }
+
+    @Test
     public void shouldFormatSingleLineQuery() throws ExecutionException, InterruptedException {
         String sql = "sElEcT dIsTiNcT * fRoM tablename As alias;";
         var formattingParams = setupDocumentAndBuildFormattingParams(sql);

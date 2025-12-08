@@ -23,6 +23,7 @@ import org.eclipse.lsp4j.jsonrpc.messages.Either3;
 import org.eclipse.lsp4j.services.LanguageClient;
 import org.eclipse.lsp4j.services.LanguageClientAware;
 import org.eclipse.lsp4j.services.TextDocumentService;
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSource;
@@ -160,7 +161,8 @@ public class DBLTextDocumentService implements TextDocumentService, LanguageClie
         languageClient = client;
     }
 
-    public String getText(String uri) {
+    @Nullable
+    public String getText(@NotNull String uri) {
         return textCache.get(uri);
     }
 }
