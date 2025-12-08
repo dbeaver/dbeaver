@@ -31,12 +31,21 @@ public class ChangeSortingAction extends Action {
     private final Boolean descending;
     private final GroupingResultsContainer resultsContainer;
 
+    public static final String ASC = "ASC";
+    public static final String DESC = "DESC";
+    public static final String NONE = "";
+
+    public GroupingResultsContainer getResultsContainer() {
+        return resultsContainer;
+    }
+
+
     public ChangeSortingAction(@Nullable Boolean descending, @NotNull GroupingResultsContainer resultsContainer) {
         super(
             descending == null ?
                 ResultSetMessages.grouping_panel_sorting_action_unsorted :
                 (descending ?
-                    ResultSetMessages.grouping_panel_sorting_action_decending :
+                    ResultSetMessages.grouping_panel_sorting_action_descending :
                     ResultSetMessages.grouping_panel_sorting_action_ascending),
             Action.AS_RADIO_BUTTON
         );
@@ -53,7 +62,7 @@ public class ChangeSortingAction extends Action {
         String defSorting = dataSource.getContainer().getPreferenceStore().getString(ResultSetPreferences.RS_GROUPING_DEFAULT_SORTING);
         if (CommonUtils.isEmpty(defSorting)) {
             return descending == null;
-        } else if (defSorting.equals("ASC")) {
+        } else if (defSorting.equals(ASC)) {
             return Boolean.FALSE.equals(descending);
         } else {
             return Boolean.TRUE.equals(descending);
@@ -62,7 +71,7 @@ public class ChangeSortingAction extends Action {
 
     @Override
     public void run() {
-        String newValue = descending == null ? "" : (descending ? "DESC" : "ASC");
+        String newValue = descending == null ? NONE : (descending ? DESC : ASC);
         DBPDataSource dataSource = getResultsContainer().getDataContainer().getDataSource();
         if (dataSource == null) {
             return;
@@ -77,7 +86,4 @@ public class ChangeSortingAction extends Action {
         }
     }
 
-    public GroupingResultsContainer getResultsContainer() {
-        return resultsContainer;
-    }
 }

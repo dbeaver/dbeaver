@@ -428,7 +428,7 @@ public class ResultSetMessages extends NLS {
 
     public static String grouping_panel_show_percent_of_total_tip;
     public static String grouping_panel_sorting_action_unsorted;
-    public static String grouping_panel_sorting_action_decending;
+    public static String grouping_panel_sorting_action_descending;
     public static String grouping_panel_sorting_action_ascending;
     public static String grouping_panel_error_title;
     public static String grouping_panel_error_change_sort_message;
