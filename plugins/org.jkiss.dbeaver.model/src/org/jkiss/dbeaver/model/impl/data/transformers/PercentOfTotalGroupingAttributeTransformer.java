@@ -30,6 +30,8 @@ import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.impl.data.ProxyValueHandler;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.List;
 import java.util.Map;
 
@@ -86,7 +88,7 @@ public class PercentOfTotalGroupingAttributeTransformer implements DBDAttributeT
         @Override
         public String getValueDisplayString(@NotNull DBSTypedObject column, @Nullable Object value, @NotNull DBDDisplayFormat format) {
             if (value instanceof Number rowCount) {
-                return formatPercent(percentOfTotal(rowCount.doubleValue(), total));
+                return percentOfTotal(rowCount.doubleValue(), total) + "%";
             }
             if (value == null) {
                 return "";
@@ -95,15 +97,19 @@ public class PercentOfTotalGroupingAttributeTransformer implements DBDAttributeT
             return super.getValueDisplayString(column, value, format);
         }
 
-        private double percentOfTotal(double value, double total) {
+        private String percentOfTotal(double value, double total) {
+            int scale = 3;
             if (total == 0) {
-                return 0;
+                return "0";
             }
-            return (value / total) * 100;
-        }
+            BigDecimal bdValue = BigDecimal.valueOf(value);
+            BigDecimal bdTotal = BigDecimal.valueOf(total);
 
-        private String formatPercent(double percent) {
-            return String.format("%.2f%%", percent);
+            BigDecimal percent = bdValue
+                .divide(bdTotal, scale, RoundingMode.HALF_UP)
+                .multiply(BigDecimal.valueOf(100));
+
+            return percent.stripTrailingZeros().toPlainString();
         }
     }
 }
