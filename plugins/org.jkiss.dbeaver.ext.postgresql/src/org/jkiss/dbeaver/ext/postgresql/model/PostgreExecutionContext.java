@@ -271,7 +271,7 @@ public class PostgreExecutionContext extends JDBCExecutionContext implements DBC
     }
 
     private static boolean isUserFirstInPath(List<String> newSearchPath) {
-        return !newSearchPath.isEmpty() && newSearchPath.get(0).equals(PostgreConstants.USER_VARIABLE);
+        return !newSearchPath.isEmpty() && newSearchPath.getFirst().equals(PostgreConstants.USER_VARIABLE);
     }
 
     private void setUserInTheEndOfThePath(List<String> searchPath) {
@@ -279,7 +279,7 @@ public class PostgreExecutionContext extends JDBCExecutionContext implements DBC
             return;
         }
         if (isUserFirstInPath(searchPath)) {
-            searchPath.remove(0);
+            searchPath.removeFirst();
             searchPath.add(PostgreConstants.USER_VARIABLE);
         } else {
             int userIndex = -1;
