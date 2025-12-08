@@ -28,6 +28,7 @@ import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLGroupingAttribute;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
+import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.ui.controls.resultset.IResultSetController;
 import org.jkiss.utils.ArrayUtils;
@@ -38,7 +39,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class GroupingDataContainer implements TransformerDataContainer {
+public class GroupingDataContainer implements DBDAttributeTransformerProvider, DBSDataContainer {
 
     private static final Log log = Log.getLog(GroupingDataContainer.class);
 

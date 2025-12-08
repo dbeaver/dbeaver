@@ -25,7 +25,7 @@ import java.util.List;
  * Transformer data container.
  */
 
-public interface TransformerDataContainer extends DBSDataContainer {
+public interface DBDAttributeTransformerProvider {
 
     @NotNull
     List<DBDAttributeTransformer> findTransformerForBinding(@NotNull DBDAttributeBinding attributeBinding);

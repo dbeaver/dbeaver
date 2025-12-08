@@ -160,8 +160,8 @@ public abstract class DBVUtils {
     @Nullable
     public static DBDAttributeTransformer[] findAttributeTransformers(@NotNull DBDAttributeBinding binding, @Nullable Boolean custom) {
         List<DBDAttributeTransformer> allTransformers = new ArrayList<>();
-        if (binding.getDataContainer() instanceof TransformerDataContainer transformerDataContainer) {
-            List<DBDAttributeTransformer> inMemoryAddedTransformers = transformerDataContainer.findTransformerForBinding(binding);
+        if (binding.getDataContainer() instanceof DBDAttributeTransformerProvider dbdAttributeTransformerProvider) {
+            List<DBDAttributeTransformer> inMemoryAddedTransformers = dbdAttributeTransformerProvider.findTransformerForBinding(binding);
             allTransformers.addAll(inMemoryAddedTransformers);
         }
         List<DBDAttributeTransformer> savedTransformers = findBindingTransformers(binding, custom);
