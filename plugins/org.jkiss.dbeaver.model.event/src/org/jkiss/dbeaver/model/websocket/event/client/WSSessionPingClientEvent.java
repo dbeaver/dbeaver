@@ -22,7 +22,7 @@ import org.jkiss.dbeaver.model.websocket.event.WSClientEvent;
 public class WSSessionPingClientEvent extends WSClientEvent {
     public static final String ID = "cb_client_session_ping";
 
-    protected WSSessionPingClientEvent(@Nullable String topicId) {
+    public WSSessionPingClientEvent(@Nullable String topicId) {
         super(ID, topicId);
     }
 }

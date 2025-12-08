@@ -63,8 +63,8 @@ import java.io.File;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.List;
 import java.util.*;
+import java.util.List;
 import java.util.stream.Collectors;
 
 public class StreamProducerPageSettings extends DataTransferPageNodeSettings {
@@ -266,7 +266,7 @@ public class StreamProducerPageSettings extends DataTransferPageNodeSettings {
                 SWT.OPEN,
                 false,
                 extensions,
-                pipe.getProducer() instanceof StreamTransferProducer stp ?
+                pipe.getProducer() instanceof StreamTransferProducer stp && stp.getInputFile() != null ?
                     DBFUtils.convertPathToString(stp.getInputFile()) :
                     pipe.getProducer().getObjectName());
             if (selected != null) {
