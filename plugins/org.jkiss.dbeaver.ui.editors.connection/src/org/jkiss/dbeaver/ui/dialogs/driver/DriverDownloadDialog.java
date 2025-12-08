@@ -22,6 +22,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.connection.DBPDriverDependencies;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -117,14 +118,19 @@ public class DriverDownloadDialog extends WizardDialog {
         UIUtils.asyncExec(() -> buttonPressed(IDialogConstants.CANCEL_ID));
     }
 
-    public static boolean downloadDriverFiles(Shell shell, DBPDriver driver, DBPDriverDependencies dependencies, boolean isShowExpanded) {
+    public static boolean downloadDriverFiles(
+        @Nullable Shell shell,
+        @NotNull DBPDriver driver,
+        @NotNull DBPDriverDependencies dependencies,
+        boolean isShowExpanded
+    ) {
         return downloadDriverFiles(shell, driver, dependencies, false, isShowExpanded);
     }
 
     public static boolean downloadDriverFiles(
-        Shell shell,
-        DBPDriver driver,
-        DBPDriverDependencies dependencies,
+        @Nullable Shell shell,
+        @NotNull DBPDriver driver,
+        @NotNull DBPDriverDependencies dependencies,
         boolean forceDownload,
         boolean isShowExpanded
     ) {
@@ -134,7 +140,7 @@ public class DriverDownloadDialog extends WizardDialog {
         if (shell == null) {
             shell = Display.getCurrent().getActiveShell();
         }
-        DriverDownloadDialog dialog = new DriverDownloadDialog(shell, driver, dependencies, false, forceDownload, isShowExpanded);
+        var dialog = new DriverDownloadDialog(shell, driver, dependencies, false, forceDownload, isShowExpanded);
         dialog.setMinimumPageSize(0, 0);
         dialog.open();
         return dialog.doDownload;
@@ -142,10 +148,6 @@ public class DriverDownloadDialog extends WizardDialog {
 
     @Override
     protected Point getInitialSize() {
-        Point computed = getShell().computeSize(SWT.DEFAULT, SWT.DEFAULT, true);
-//        if (computed.x > MAX_WIDTH) {
-//            computed.x = MAX_WIDTH;
-//        }
-        return computed;
+        return getShell().computeSize(SWT.DEFAULT, SWT.DEFAULT, true);
     }
 }
