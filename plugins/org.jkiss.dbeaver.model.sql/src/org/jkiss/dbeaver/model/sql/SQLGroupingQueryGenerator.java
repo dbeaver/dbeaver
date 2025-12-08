@@ -171,8 +171,7 @@ public class SQLGroupingQueryGenerator {
             }
             sql.append(groupAttributes.get(i).prepareSqlString(subqueryAlias));
         }
-        boolean isCountPresent = groupFunctions
-            .stream()
+        boolean isCountPresent = groupFunctions.stream()
             .anyMatch(f -> f.equalsIgnoreCase(DEFAULT_FUNCTION));
 
         if (isCountPresent && showDuplicatesOnly) {
