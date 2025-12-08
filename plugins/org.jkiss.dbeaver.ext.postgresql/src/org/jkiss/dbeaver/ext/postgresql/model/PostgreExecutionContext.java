@@ -300,7 +300,8 @@ public class PostgreExecutionContext extends JDBCExecutionContext implements DBC
         if (searchPath.contains(path)) {
             return;
         }
-        searchPath(0, path);
+
+        searchPath.addFirst(path);
         if (activeUser != null && !searchPath.contains(activeUser)) {
             searchPath.add(activeUser);
         }
