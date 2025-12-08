@@ -276,12 +276,13 @@ public class AIAssistantImpl implements AIAssistant {
                 retry++;
                 if (retry < MANY_REQUESTS_RETRIES) {
                     log.debug("Too many engine requests. Retry after " + MANY_REQUESTS_TIMEOUT + "ms");
-                    if (listener != null) {
-                        listener.close();
-                    }
                     RuntimeUtils.pause(MANY_REQUESTS_TIMEOUT);
                 }
             }
+        }
+        DBException dbException = new DBException("Request failed after " + MANY_REQUESTS_RETRIES + " attempts");
+        if (listener != null) {
+            listener.error(dbException);
         }
         throw new DBException("Request failed after " + MANY_REQUESTS_RETRIES + " attempts");
     }
