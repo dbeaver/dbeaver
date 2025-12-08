@@ -8,9 +8,7 @@ Bundle-Vendor: DBeaver Corp
 Bundle-RequiredExecutionEnvironment: JavaSE-21
 Bundle-ActivationPolicy: lazy
 Bundle-Activator: org.jkiss.dbeaver.ext.snowflake.internal.SnowflakeActivator
-Require-Bundle: com.sun.jna,
- com.sun.jna.platform,
- org.jkiss.dbeaver.model;visibility:=reexport,
+Require-Bundle: org.jkiss.dbeaver.model;visibility:=reexport,
  org.jkiss.dbeaver.model.sql;visibility:=reexport,
  org.jkiss.dbeaver.ext.generic;visibility:=reexport
 Export-Package: org.jkiss.dbeaver.ext.snowflake,
