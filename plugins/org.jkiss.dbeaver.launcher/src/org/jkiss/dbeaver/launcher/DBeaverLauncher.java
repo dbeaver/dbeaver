@@ -846,6 +846,15 @@ public class DBeaverLauncher {
                 break;
             }
         }
+        if (productName.isEmpty()) {
+            Properties properties = loadEclipseProductProperties();
+            if (debug) {
+                System.out.println("Loaded eclipse product properties: " + properties);
+            }
+            if (properties.containsKey(Constants.PROPERTY_ECLIPSE_PRODUCT_ID)) {
+                productName = properties.getProperty(Constants.PROPERTY_ECLIPSE_PRODUCT_ID);
+            }
+        }
         if (customWorkspacePath != null) {
             return Path.of(customWorkspacePath);
         } else if (productName.startsWith(Constants.PRODUCT_CLOUDBEAVER)) {
@@ -1643,6 +1652,28 @@ public class DBeaverLauncher {
         if (hashCode < 0)
             hashCode = -(hashCode);
         return String.valueOf(hashCode);
+    }
+
+    private Properties loadEclipseProductProperties() {
+        Properties properties = new Properties();
+
+        URL installURL = getInstallLocation();
+        if (installURL == null) {
+            return properties;
+        }
+        File eclipseProduct = new File(installURL.getFile(), PRODUCT_SITE_MARKER);
+        if (!eclipseProduct.exists()) {
+            return properties;
+        }
+
+        try (FileInputStream inStream = new FileInputStream(eclipseProduct)) {
+            properties.load(inStream);
+        } catch (IOException e) {
+            if (debug) {
+                System.out.println("Could not load " + PRODUCT_SITE_MARKER + " file: " + e.getMessage());
+            }
+        }
+        return properties;
     }
 
     /**
