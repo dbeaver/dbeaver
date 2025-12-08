@@ -17,7 +17,6 @@
 
 package org.jkiss.dbeaver.model.cli;
 
-import org.eclipse.core.runtime.Platform;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
@@ -119,9 +118,9 @@ public abstract class ApplicationInstanceServer<T extends ApplicationInstanceCon
     }
 
     @NotNull
-    protected static Path getConfigPath(@Nullable String workspacePath) {
+    protected static Path getConfigPath(@Nullable Path workspacePath) {
         if (workspacePath != null) {
-            return Path.of(workspacePath).resolve(DBPWorkspace.METADATA_FOLDER).resolve(CONFIG_PROP_FILE);
+            return workspacePath.resolve(DBPWorkspace.METADATA_FOLDER).resolve(CONFIG_PROP_FILE);
         } else {
             return GeneralUtils.getMetadataFolder().resolve(CONFIG_PROP_FILE);
         }
@@ -165,6 +164,6 @@ public abstract class ApplicationInstanceServer<T extends ApplicationInstanceCon
     }
 
     protected static String portPropertyName() {
-        return Platform.getProduct().getId() + ".port";
+        return "port";
     }
 }
