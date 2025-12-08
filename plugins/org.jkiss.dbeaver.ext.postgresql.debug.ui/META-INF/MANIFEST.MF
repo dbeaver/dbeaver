@@ -7,8 +7,7 @@ Bundle-Release-Date: 20251222
 Bundle-Vendor: DBeaver Corp
 Bundle-RequiredExecutionEnvironment: JavaSE-21
 Bundle-ActivationPolicy: lazy
-Require-Bundle: org.eclipse.core.runtime,
- org.jkiss.dbeaver.debug.core,
+Require-Bundle: org.jkiss.dbeaver.debug.core,
  org.jkiss.dbeaver.debug.ui,
  org.jkiss.dbeaver.ext.postgresql,
  org.jkiss.dbeaver.ext.postgresql.ui,
