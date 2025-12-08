@@ -8,7 +8,6 @@ Bundle-Vendor: DBeaver Corp
 Bundle-RequiredExecutionEnvironment: JavaSE-21
 Require-Bundle: org.eclipse.e4.core.services,
  org.eclipse.e4.core.contexts,
- org.eclipse.core.runtime,
  org.eclipse.debug.core;visibility:=reexport,
  org.jkiss.dbeaver.model;visibility:=reexport,
  org.jkiss.dbeaver.model.jdbc
