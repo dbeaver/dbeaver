@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.model.lsp;
 import org.eclipse.lsp4j.jsonrpc.Launcher;
 import org.eclipse.lsp4j.launch.LSPLauncher;
 import org.eclipse.lsp4j.services.LanguageClient;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 
@@ -44,7 +45,7 @@ public final class DBLFacade {
      * @param out an OutputStream with messages for the client
      * @throws DBException if it feels like it
      */
-    public static void runLanguageServer(InputStream in, OutputStream out) throws DBException {
+    public static void runLanguageServer(@NotNull InputStream in, @NotNull OutputStream out) throws DBException {
         try {
             log.info("Launching LSP server"); //NON-NLS
             DBLServer server = DBLServer.of();

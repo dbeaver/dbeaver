@@ -32,11 +32,12 @@ public final class DBLServer implements LanguageServer, LanguageClientAware {
 
     @Nullable
     private ClientInfo clientInfo;
-
+    @NotNull
     private final TextDocumentService textDocumentService;
+    @NotNull
     private final WorkspaceService workspaceService;
 
-    private DBLServer(TextDocumentService textDocumentService, WorkspaceService workspaceService) {
+    private DBLServer(@NotNull TextDocumentService textDocumentService, @NotNull WorkspaceService workspaceService) {
         this.textDocumentService = textDocumentService;
         this.workspaceService = workspaceService;
     }
@@ -45,10 +46,11 @@ public final class DBLServer implements LanguageServer, LanguageClientAware {
         return new DBLServer(new DBLTextDocumentService(), new DBLWorkspaceService());
     }
 
+    @NotNull
     @Override
-    public CompletableFuture<InitializeResult> initialize(InitializeParams params) {
+    public CompletableFuture<InitializeResult> initialize(@NotNull InitializeParams params) {
         clientInfo = params.getClientInfo();
-        log.info("an LSP client has sent an initialize request. " + clientInfo); //NON-NLS
+        log.info("LSP client sent an initialize request. " + clientInfo); //NON-NLS
         log.debug(params);
 
         //https://microsoft.github.io/language-server-protocol/specifications/specification-current/#textDocument_synchronization
@@ -62,24 +64,20 @@ public final class DBLServer implements LanguageServer, LanguageClientAware {
         String serverVersion = GeneralUtils.getPlainVersion(); //NON-NLS
         ServerInfo serverInfo = new ServerInfo(SERVER_NAME, serverVersion);
 
-        ServerCapabilities serverCapabilities = buildServerCapabilities(params, textDocumentSyncOptions);
+        ServerCapabilities serverCapabilities = buildServerCapabilities(textDocumentSyncOptions);
         return CompletableFuture.completedFuture(new InitializeResult(serverCapabilities, serverInfo));
     }
 
     @NotNull
-    private static ServerCapabilities buildServerCapabilities(InitializeParams params, TextDocumentSyncOptions textDocumentSyncOptions) {
+    private static ServerCapabilities buildServerCapabilities(@NotNull TextDocumentSyncOptions options) {
         ServerCapabilities serverCapabilities = new ServerCapabilities();
-        serverCapabilities.setTextDocumentSync(textDocumentSyncOptions);
-//        //https://microsoft.github.io/language-server-protocol/specifications/specification-current/#textDocument_foldingRange
-//        FoldingRangeCapabilities foldingRange = params.getCapabilities().getTextDocument().getFoldingRange();
-//        if (foldingRange != null && !Boolean.TRUE.equals(foldingRange.getLineFoldingOnly())) {
-//            serverCapabilities.setFoldingRangeProvider(new FoldingRangeProviderOptions());
-//        }
+        serverCapabilities.setTextDocumentSync(options);
         //https://microsoft.github.io/language-server-protocol/specifications/specification-current/#textDocument_formatting
         serverCapabilities.setDocumentFormattingProvider(new DocumentFormattingOptions());
         return serverCapabilities;
     }
 
+    @NotNull
     @Override
     public CompletableFuture<Object> shutdown() {
         log.info("shutdown request received by the language server. " + clientInfo); //NON-NLS
@@ -94,21 +92,23 @@ public final class DBLServer implements LanguageServer, LanguageClientAware {
          * The server should exit with success code 0 if the shutdown request has been received before; otherwise with error code 1."
          * Let's ignore it for now as it's not clear at this point what to do.
          */
-        log.info("exit notification received by the language server. " + clientInfo); //NON-NLS
+        log.info("exit notification received by the language server. " + clientInfo); // NON-NLS
     }
 
+    @NotNull
     @Override
     public TextDocumentService getTextDocumentService() {
         return textDocumentService;
     }
 
+    @NotNull
     @Override
     public WorkspaceService getWorkspaceService() {
         return workspaceService;
     }
 
     @Override
-    public void connect(LanguageClient client) {
+    public void connect(@NotNull LanguageClient client) {
         log.info("LSP client connected: " + client); // NON-NLS
         if (textDocumentService instanceof LanguageClientAware clientAwareTextDocumentService) {
             clientAwareTextDocumentService.connect(client);

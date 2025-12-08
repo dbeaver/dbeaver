@@ -19,18 +19,19 @@ package org.jkiss.dbeaver.model.lsp;
 import org.eclipse.lsp4j.DidChangeConfigurationParams;
 import org.eclipse.lsp4j.DidChangeWatchedFilesParams;
 import org.eclipse.lsp4j.services.WorkspaceService;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
 
 class DBLWorkspaceService implements WorkspaceService {
     private static final Log log = Log.getLog(DBLWorkspaceService.class);
 
     @Override
-    public void didChangeConfiguration(DidChangeConfigurationParams params) {
+    public void didChangeConfiguration(@NotNull DidChangeConfigurationParams params) {
         log.debug(params);
     }
 
     @Override
-    public void didChangeWatchedFiles(DidChangeWatchedFilesParams params) {
+    public void didChangeWatchedFiles(@NotNull DidChangeWatchedFilesParams params) {
         log.debug(params);
     }
 }

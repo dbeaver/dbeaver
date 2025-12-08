@@ -55,7 +55,7 @@ public class DBLTextDocumentService implements TextDocumentService, LanguageClie
     private LanguageClient languageClient;
 
     @Override
-    public void didOpen(DidOpenTextDocumentParams params) {
+    public void didOpen(@NotNull DidOpenTextDocumentParams params) {
         log.debug("didOpen with params: " + params);
 
         TextDocumentItem textDocument = params.getTextDocument();
@@ -63,7 +63,7 @@ public class DBLTextDocumentService implements TextDocumentService, LanguageClie
     }
 
     @Override
-    public void didChange(DidChangeTextDocumentParams params) {
+    public void didChange(@NotNull DidChangeTextDocumentParams params) {
         log.debug("didChange with params: " + params);
 
         VersionedTextDocumentIdentifier textDocument = params.getTextDocument();
@@ -76,26 +76,31 @@ public class DBLTextDocumentService implements TextDocumentService, LanguageClie
     }
 
     @Override
-    public void didClose(DidCloseTextDocumentParams params) {
+    public void didClose(@NotNull DidCloseTextDocumentParams params) {
         log.debug("\"didClose with params: \"" + params);
 
         textCache.remove(params.getTextDocument().getUri());
     }
 
     @Override
-    public void didSave(DidSaveTextDocumentParams params) {
+    public void didSave(@NotNull DidSaveTextDocumentParams params) {
         log.debug("\"didSave with params: \"" + params);
     }
 
+    @NotNull
     @Override
-    public CompletableFuture<List<? extends TextEdit>> formatting(DocumentFormattingParams params) {
+    public CompletableFuture<List<? extends TextEdit>> formatting(@NotNull DocumentFormattingParams params) {
         log.debug("\"formatting with params: \"" + params);
 
         return CompletableFutures.computeAsync(cancelChecker -> formatting(params, cancelChecker));
     }
 
     // TODO: think about creating an incremental formatter instead of replacing the whole document
-    private List<? extends TextEdit> formatting(DocumentFormattingParams params, CancelChecker cancelChecker) {
+    @NotNull
+    private List<? extends TextEdit> formatting(
+        @NotNull DocumentFormattingParams params,
+        @NotNull CancelChecker cancelChecker
+    ) {
         cancelChecker.checkCanceled();
         String documentUri = params.getTextDocument().getUri();
         String text = textCache.get(documentUri);
@@ -120,7 +125,8 @@ public class DBLTextDocumentService implements TextDocumentService, LanguageClie
         return List.of(new TextEdit(range, formattedText));
     }
 
-    private Position lastTextPosition(String text) {
+    @NotNull
+    private Position lastTextPosition(@NotNull String text) {
         int numberOfLines = 0;
         int indexOfLastLineSeparator = -1;
         for (int i = 0; i < text.length(); i++) {
@@ -157,7 +163,7 @@ public class DBLTextDocumentService implements TextDocumentService, LanguageClie
     }
 
     @Override
-    public void connect(LanguageClient client) {
+    public void connect(@NotNull LanguageClient client) {
         languageClient = client;
     }
 

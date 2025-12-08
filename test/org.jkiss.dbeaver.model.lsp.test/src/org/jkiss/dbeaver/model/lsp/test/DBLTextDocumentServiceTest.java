@@ -17,11 +17,9 @@
 package org.jkiss.dbeaver.model.lsp.test;
 
 import org.eclipse.lsp4j.*;
-import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.lsp.DBLTextDocumentService;
 import org.jkiss.junit.DBeaverUnitTest;
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Test;
 
 import java.util.List;
@@ -35,11 +33,6 @@ public class DBLTextDocumentServiceTest extends DBeaverUnitTest {
 
     public static final String BASIC_SQL_URI = "sql/scripts/basic.sql";
     private final DBLTextDocumentService service = new DBLTextDocumentService();
-
-
-    @Before
-    public void init() throws DBException {
-    }
 
     @Test
     public void shouldOpenDocument() {
