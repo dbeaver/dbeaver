@@ -31,27 +31,26 @@ import java.util.concurrent.ExecutionException;
  */
 public class DBLTextDocumentServiceTest extends DBeaverUnitTest {
 
-    public static final String BASIC_SQL_URI = "sql/scripts/basic.sql";
     private final DBLTextDocumentService service = new DBLTextDocumentService();
 
     @Test
     public void shouldOpenDocument() {
         TextDocumentItem textDocument = new TextDocumentItem();
-        String sql = "SELECT * FROM table";
-        textDocument.setText(sql);
-        textDocument.setUri(BASIC_SQL_URI);
+        String query = "SELECT * FROM table";
+        textDocument.setText(query);
+        textDocument.setUri(DocumentServiceUtils.BASIC_SQL_URI);
         service.didOpen(new DidOpenTextDocumentParams(textDocument));
 
         String savedText = service.getText(textDocument.getUri());
-        Assert.assertEquals(sql, savedText);
+        Assert.assertEquals(query, savedText);
     }
 
     @Test
     public void shouldOpenAndChangeDocument() {
         TextDocumentItem textDocument = new TextDocumentItem();
-        String sql = "SELECT * FROM table";
-        textDocument.setText(sql);
-        textDocument.setUri(BASIC_SQL_URI);
+        String query = "SELECT * FROM table";
+        textDocument.setText(query);
+        textDocument.setUri(DocumentServiceUtils.BASIC_SQL_URI);
         service.didOpen(new DidOpenTextDocumentParams(textDocument));
 
         String updatedSql = "SELECT DISTINCT * FROM table";
@@ -67,9 +66,9 @@ public class DBLTextDocumentServiceTest extends DBeaverUnitTest {
     @Test
     public void shouldFailSubmittingMultipleChangesToDocument() {
         TextDocumentItem textDocument = new TextDocumentItem();
-        String sql = "SELECT * FROM table";
-        textDocument.setText(sql);
-        textDocument.setUri(BASIC_SQL_URI);
+        String query = "SELECT * FROM table";
+        textDocument.setText(query);
+        textDocument.setUri(DocumentServiceUtils.BASIC_SQL_URI);
         service.didOpen(new DidOpenTextDocumentParams(textDocument));
 
         String updatedSql1 = "SELECT DISTINCT * FROM table";
@@ -88,9 +87,9 @@ public class DBLTextDocumentServiceTest extends DBeaverUnitTest {
     @Test
     public void shouldOpenAndCloseDocument() {
         TextDocumentItem textDocument = new TextDocumentItem();
-        String sql = "SELECT * FROM table";
-        textDocument.setText(sql);
-        textDocument.setUri(BASIC_SQL_URI);
+        String query = "SELECT * FROM table";
+        textDocument.setText(query);
+        textDocument.setUri(DocumentServiceUtils.BASIC_SQL_URI);
         service.didOpen(new DidOpenTextDocumentParams(textDocument));
 
         TextDocumentIdentifier textDocumentId = new TextDocumentIdentifier(textDocument.getUri());
@@ -103,19 +102,19 @@ public class DBLTextDocumentServiceTest extends DBeaverUnitTest {
 
     @Test
     public void shouldFormatSingleLineQuery() throws ExecutionException, InterruptedException {
-        String sql = "sElEcT dIsTiNcT * fRoM tablename As alias;";
-        var formattingParams = setupDocumentAndBuildFormattingParams(sql);
+        String query = "sElEcT dIsTiNcT * fRoM tablename As alias;";
+        var formattingParams = DocumentServiceUtils.setupDocumentAndBuildFormattingParams(service, query);
 
         CompletableFuture<List<? extends TextEdit>> future = service.formatting(formattingParams);
 
         TextEdit textEdit = future.get().getFirst();
-        String expectedSql = """
+        String expectedQuery = """
             SELECT
                 DISTINCT *
             FROM
                 tablename AS alias;
             """;
-        Assert.assertEquals(expectedSql.trim(), textEdit.getNewText());
+        Assert.assertEquals(expectedQuery.trim(), textEdit.getNewText());
 
         Position start = textEdit.getRange().getStart();
         Assert.assertEquals(0, start.getCharacter());
@@ -128,18 +127,18 @@ public class DBLTextDocumentServiceTest extends DBeaverUnitTest {
 
     @Test
     public void shouldFormatMultilineQuery() throws ExecutionException, InterruptedException {
-        String sql = """
+        String query = """
             select dbname1.schemaname1.tablename1.columnname1, schemaname2.tablename2.columnname2,
                 tablename3.columnname3 from
             dbname1.schemaname1.tablename1,dbname2.schemaname2.tablename2,schemaname3.tablename3
             ;
             """.trim();
-        var formattingParams = setupDocumentAndBuildFormattingParams(sql);
+        var formattingParams = DocumentServiceUtils.setupDocumentAndBuildFormattingParams(service, query);
 
         CompletableFuture<List<? extends TextEdit>> future = service.formatting(formattingParams);
 
         TextEdit textEdit = future.get().getFirst();
-        String expectedSql = """
+        String expectedQuery = """
             SELECT
                 dbname1.schemaname1.tablename1.columnname1,
                 schemaname2.tablename2.columnname2,
@@ -150,7 +149,7 @@ public class DBLTextDocumentServiceTest extends DBeaverUnitTest {
                 schemaname3.tablename3
             ;
             """.trim();
-        Assert.assertEquals(expectedSql.trim(), textEdit.getNewText());
+        Assert.assertEquals(expectedQuery.trim(), textEdit.getNewText());
 
         Position start = textEdit.getRange().getStart();
         Assert.assertEquals(0, start.getCharacter());
@@ -161,15 +160,31 @@ public class DBLTextDocumentServiceTest extends DBeaverUnitTest {
         Assert.assertEquals(1, end.getCharacter());
     }
 
-    private DocumentFormattingParams setupDocumentAndBuildFormattingParams(String sql) {
-        TextDocumentItem textDocument = new TextDocumentItem();
-        textDocument.setText(sql);
-        textDocument.setUri(BASIC_SQL_URI);
-        service.didOpen(new DidOpenTextDocumentParams(textDocument));
-        DocumentFormattingParams formattingParams = new DocumentFormattingParams();
-        formattingParams.setTextDocument(new TextDocumentIdentifier(BASIC_SQL_URI));
-        FormattingOptions formattingOptions = new FormattingOptions();
-        formattingParams.setOptions(formattingOptions);
-        return formattingParams;
+    @Test
+    public void shouldFormatPostgresSqlQuery() throws ExecutionException, InterruptedException {
+        String query = """
+            DO $$ BEGIN CREATE TABLE logs (id serial PRIMARY KEY,message text,created_at timestamptz DEFAULT now());ELSE RAISE NOTICE 'Table "logs" already exists.';END IF;END $$;
+            """.trim();
+        var formattingParams = DocumentServiceUtils.setupDocumentAndBuildFormattingParams(service, query);
+
+        CompletableFuture<List<? extends TextEdit>> future = service.formatting(formattingParams);
+
+        TextEdit textEdit = future.get().getFirst();
+        String expectedQuery = """
+            DO $$
+            BEGIN
+                CREATE TABLE logs (id serial PRIMARY KEY,
+                message text,
+                created_at timestamptz DEFAULT now());
+            ELSE RAISE NOTICE 'Table "logs" already exists.';
+            END IF;
+            END $$;
+            """.trim();
+
+        Assert.assertEquals(expectedQuery.trim(), textEdit.getNewText());
+
+        Position end = textEdit.getRange().getEnd();
+        Assert.assertEquals(0, end.getLine());
+        Assert.assertEquals(167, end.getCharacter());
     }
 }
