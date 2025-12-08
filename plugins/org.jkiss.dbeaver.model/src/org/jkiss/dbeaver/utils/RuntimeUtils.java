@@ -201,15 +201,14 @@ public final class RuntimeUtils {
     }
 
     @NotNull
-    public static File getPlatformFile(@NotNull String platformURL) throws IOException {
+    public static Path getPlatformFile(@NotNull String platformURL) throws IOException {
         URL url = new URL(platformURL);
         URL fileURL = FileLocator.toFileURL(url);
         return getLocalFileFromURL(fileURL);
-
     }
 
     @NotNull
-    public static File getLocalFileFromURL(@NotNull URL fileURL) throws IOException {
+    public static Path getLocalFileFromURL(@NotNull URL fileURL) throws IOException {
         // Escape spaces to avoid URI syntax error
         try {
             URI filePath = GeneralUtils.makeURIFromFilePath(fileURL.toString());
@@ -218,9 +217,9 @@ public final class RuntimeUtils {
                 see dbeaver#15117
              */
             if (filePath.getAuthority() != null) {
-                return new File(filePath.getSchemeSpecificPart());
+                return Path.of(filePath.getSchemeSpecificPart());
             }
-            return new File(filePath);
+            return Path.of(filePath);
         } catch (URISyntaxException e) {
             throw new IOException("Bad local file path: " + fileURL, e);
         }
