@@ -63,7 +63,7 @@ public class DeleteColumnAction extends GroupingAction {
                     try {
                         groupingResultsContainer.rebuildGrouping();
                     } catch (DBException e) {
-                        DBWorkbench.getPlatformUI().showError("Grouping error", "Can't change grouping query", e);
+                        DBWorkbench.getPlatformUI().showError(ResultSetMessages.grouping_panel_error_title, ResultSetMessages.grouping_panel_error_change_grouping_query_message, e);
                     }
                 }
             }

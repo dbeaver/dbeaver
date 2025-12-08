@@ -42,7 +42,7 @@ public class EditColumnsAction extends GroupingAction {
             try {
                 groupingResultsContainer.rebuildGrouping();
             } catch (DBException e) {
-                DBWorkbench.getPlatformUI().showError("Grouping error", "Can't change grouping settings", e);
+                DBWorkbench.getPlatformUI().showError(ResultSetMessages.grouping_panel_error_title, ResultSetMessages.grouping_panel_error_change_grouping_settings_message, e);
             }
         }
     }
