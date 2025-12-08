@@ -92,7 +92,7 @@ public class DBeaverInstanceServer extends ApplicationInstanceServer<IInstanceCo
     }
 
     @Nullable
-    public static IInstanceController createClient(@Nullable String workspacePath) {
+    public static IInstanceController createClient(@Nullable Path workspacePath) {
         final Path path = getConfigPath(workspacePath);
 
         if (Files.notExists(path)) {

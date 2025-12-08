@@ -288,12 +288,14 @@ public class OracleUtils {
      *     <li><b>SYSTEM_GRANT</b> - System-level privileges granted to a user or role (e.g., CREATE SESSION).</li>
      *     <li><b>ROLE_GRANT</b> - Roles granted to a user or another role.</li>
      *     <li><b>OBJECT_GRANT</b> - Object-level privileges (e.g., SELECT, INSERT on specific tables or views).</li>
+     *     <li><b>TABLESPACE_QUOTA</b> - Tablespace quotas granted to a user or role (e.g., QUOTA 100M / UNLIMITED ON a tablespace).</li>
      * </ul>
      */
     public enum DBMSMetaGrantedObjectType {
         SYSTEM_GRANT,
         ROLE_GRANT,
-        OBJECT_GRANT
+        OBJECT_GRANT,
+        TABLESPACE_QUOTA
     }
 
     /**
