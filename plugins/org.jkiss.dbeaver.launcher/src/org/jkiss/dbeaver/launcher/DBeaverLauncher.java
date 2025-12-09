@@ -1661,13 +1661,14 @@ public class DBeaverLauncher {
         if (installURL == null) {
             return properties;
         }
-        File eclipseProduct = new File(installURL.getFile(), PRODUCT_SITE_MARKER);
-        if (!eclipseProduct.exists()) {
+
+        Path eclipseProduct = Path.of(installURL.getPath(), PRODUCT_SITE_MARKER);
+        if (Files.notExists(eclipseProduct)) {
             return properties;
         }
 
-        try (FileInputStream inStream = new FileInputStream(eclipseProduct)) {
-            properties.load(inStream);
+        try (var in = Files.newInputStream(eclipseProduct)) {
+            properties.load(in);
         } catch (IOException e) {
             if (debug) {
                 System.out.println("Could not load " + PRODUCT_SITE_MARKER + " file: " + e.getMessage());
