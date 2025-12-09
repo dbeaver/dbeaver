@@ -35,6 +35,7 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.internal.UIConnectionMessages;
 import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -54,7 +55,10 @@ public class ProjectSelectorPanel {
     }
 
     public ProjectSelectorPanel(@NotNull Composite parent, @Nullable DBPProject activeProject, int style, boolean showOnlyEditable, boolean alignRight) {
-        final List<? extends DBPProject> projects = DBWorkbench.getPlatform().getWorkspace().getProjects();
+        final List<? extends DBPProject> projects = new ArrayList<>(
+            DBWorkbench.getPlatform().getWorkspace().getProjects());
+        projects.sort((o1, o2) ->
+            o1.getDisplayName().compareToIgnoreCase(o2.getDisplayName()));
         if (showOnlyEditable) {
             projects.removeIf(p -> !p.hasRealmPermission(RMConstants.PERMISSION_PROJECT_DATASOURCES_EDIT));
         }
