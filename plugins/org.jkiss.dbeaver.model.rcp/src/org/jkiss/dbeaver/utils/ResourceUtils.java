@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,15 +23,21 @@ import org.eclipse.core.filesystem.IFileStore;
 import org.eclipse.core.resources.*;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
+import org.jkiss.utils.AlphanumericComparator;
 import org.jkiss.utils.ArrayUtils;
 
 import java.io.*;
 import java.net.URI;
+import java.util.Comparator;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.stream.Stream;
 
 /**
  * Eclipse resource utilities
@@ -90,8 +96,45 @@ public class ResourceUtils {
         }
     }
 
-    public static IFile getUniqueFile(IFolder folder, String fileName, String fileExt)
-    {
+    @NotNull
+    public static IFile getUniqueFile(@NotNull IFolder folder, @NotNull String fileName, @NotNull String fileExt) {
+        IFile file = folder.getFile(fileName + "." + fileExt);
+        if (!file.exists()) {
+            // Fast path
+            return file;
+        }
+
+        IResource[] members;
+        try {
+            members = folder.members();
+        } catch (CoreException ignored) {
+            return getUniqueFileFallback(folder, fileName, fileExt);
+        }
+
+        // Look for all matching files and grab the one that has the highest index
+        var pattern = Pattern.compile("^%s-(\\d+).%s".formatted(Pattern.quote(fileName), Pattern.quote(fileExt)));
+        var files = Stream.of(members)
+            .filter(r -> pattern.matcher(r.getName()).matches())
+            .sorted(Comparator.comparing(IResource::getName, AlphanumericComparator.getInstance()))
+            .toList();
+
+        if (!files.isEmpty()) {
+            Matcher matcher = pattern.matcher(files.getLast().getName());
+            if (matcher.matches()) {
+                try {
+                    int index = Integer.parseInt(matcher.group(1));
+                    return folder.getFile(fileName + '-' + (index + 1) + '.' + fileExt);
+                } catch (NumberFormatException ignored) {
+                    // How did we get here?
+                }
+            }
+        }
+
+        return getUniqueFileFallback(folder, fileName, fileExt);
+    }
+
+    @NotNull
+    private static IFile getUniqueFileFallback(@NotNull IFolder folder, @NotNull String fileName, @NotNull String fileExt) {
         IFile file = folder.getFile(fileName + "." + fileExt);
         int index = 1;
         while (file.exists()) {

@@ -68,4 +68,5 @@ public interface AIEngine<PROPS extends AIEngineProperties> extends AutoCloseabl
 
     @Override
     void close() throws DBException;
+
 }

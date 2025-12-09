@@ -14,21 +14,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ext.athena.model;
+package org.jkiss.dbeaver.model.cli;
 
-/**
- * Athena constants
- */
-public class AthenaConstants
-{
+import org.jkiss.dbeaver.DBException;
 
-    public static final String JDBC_URL_PREFIX = "jdbc:awsathena://";
+public class CLIException extends DBException {
+    private final short exitCode;
 
-    public static final String DRIVER_PROP_REGION = "Region";
-    public static final String DRIVER_PROP_S3_OUTPUT_LOCATION = "OutputLocation";
-    public static final String DRIVER_PROP_REGION_OLD = "AwsRegion";
-    public static final String DRIVER_PROP_S3_OUTPUT_LOCATION_OLD = "S3OutputLocation";
-    public static final String DRIVER_PROP_METADATA_RETRIEVAL_METHOD = "MetadataRetrievalMethod";
-    public static final String PROP_SHOW_CATALOGS = "show-aws-catalogs";
+    public CLIException(String message, short exitCode) {
+        super(message);
+        this.exitCode = exitCode;
+    }
 
+    public CLIException(String message, Throwable cause, short exitCode) {
+        super(message, cause);
+        this.exitCode = exitCode;
+    }
+
+    public short getExitCode() {
+        return exitCode;
+    }
 }
