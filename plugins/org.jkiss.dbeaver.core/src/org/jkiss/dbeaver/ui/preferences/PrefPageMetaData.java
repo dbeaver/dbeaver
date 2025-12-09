@@ -174,10 +174,12 @@ public class PrefPageMetaData extends TargetPrefPage
     {
         try {
             store.setValue(ModelPreferences.READ_EXPENSIVE_PROPERTIES, readExpensiveCheck.getSelection());
-            store.setValue(
-                ModelPreferences.META_SEPARATE_CONNECTION,
-                metaUseSeparateConnectionValues.get(separateMetaConnectionCombo.getSelectionIndex()).name()
-            );
+            if (separateMetaConnectionCombo.isEnabled()) {
+                store.setValue(
+                    ModelPreferences.META_SEPARATE_CONNECTION,
+                    metaUseSeparateConnectionValues.get(separateMetaConnectionCombo.getSelectionIndex()).name()
+                );
+            }
             store.setValue(ModelPreferences.META_CASE_SENSITIVE, caseSensitiveNamesCheck.getSelection());
             store.setValue(ModelPreferences.META_DISABLE_EXTRA_READ, disableExtraMetadataRead.getSelection());
             store.setValue(ModelPreferences.META_EXTRA_DDL_INFO, addExtraDDLInfo.getSelection());
