@@ -12,8 +12,6 @@ Export-Package: org.jkiss.dbeaver.model.security,
  org.jkiss.dbeaver.model.security.exception,
  org.jkiss.dbeaver.model.auth,
  org.jkiss.dbeaver.model.secret
-Require-Bundle: org.eclipse.equinox.security,
- org.eclipse.core.runtime,
- org.jkiss.dbeaver.model;visibility:=reexport
+Require-Bundle: org.jkiss.dbeaver.model;visibility:=reexport
 Bundle-Localization: OSGI-INF/l10n/bundle
 Automatic-Module-Name: org.jkiss.dbeaver.model.sm
