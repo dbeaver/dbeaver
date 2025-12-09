@@ -65,7 +65,7 @@ public class AIMessage {
         @NotNull AIFunctionResult result
     ) {
         this.role = AIMessageType.FUNCTION;
-        this.content = functionCall.toString();
+        this.content = CommonUtils.toString(result.getValue()) + " was completed";
         this.time = LocalDateTime.now();
         this.functionCall = functionCall;
         this.functionResult = result;

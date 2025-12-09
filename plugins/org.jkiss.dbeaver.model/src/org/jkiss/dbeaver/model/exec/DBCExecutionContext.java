@@ -50,6 +50,7 @@ public interface DBCExecutionContext extends DBPObject, DBPCloseableObject, DBPC
     @NotNull
     DBPDataSource getDataSource();
 
+    @NotNull
     DBSInstance getOwnerInstance();
 
     /**

@@ -112,10 +112,10 @@
 
     <extension point="org.eclipse.core.expressions.propertyTesters">
         <propertyTester
-            class="org.jkiss.dbeaver.ui.actions.GlobalPropertyTester"
-            id="org.jkiss.dbeaver.ui.actions.GlobalPropertyTester"
-            namespace="org.jkiss.dbeaver.core.global"
-            properties="standalone,distributed,bundleInstalled,hasPermission,canCreateConnection,canCreateProject,hasActiveProject,hasMultipleProjects,canEditResource,currentProjectResourceEditable,currentProjectResourceViewable,hasPreference,hasEnvVariable"
+            class="org.jkiss.dbeaver.ui.actions.GlobalUIPropertyTester"
+            id="org.jkiss.dbeaver.ui.actions.GlobalUIPropertyTester"
+            namespace="org.jkiss.dbeaver.core.global.ui"
+            properties="hasPermission,canCreateConnection,canCreateProject,hasActiveProject,hasMultipleProjects,canEditResource,currentProjectResourceEditable,currentProjectResourceViewable"
             type="java.lang.Object"/>
         <propertyTester
             class="org.jkiss.dbeaver.ui.actions.ObjectPropertyTester"
@@ -699,7 +699,7 @@
         <handler commandId="org.jkiss.dbeaver.core.project.create" class="org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerProjectCreate">
             <enabledWhen>
                 <with variable="selection">
-                    <test property="org.jkiss.dbeaver.core.global.canCreateProject"/>
+                    <test property="org.jkiss.dbeaver.core.global.ui.canCreateProject"/>
                 </with>
             </enabledWhen>
         </handler>
@@ -707,7 +707,7 @@
         <handler commandId="org.jkiss.dbeaver.core.project.select" class="org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerProjectSelect">
             <enabledWhen>
                 <with variable="selection">
-                    <test property="org.jkiss.dbeaver.core.global.hasMultipleProjects"/>
+                    <test property="org.jkiss.dbeaver.core.global.ui.hasMultipleProjects"/>
                 </with>
             </enabledWhen>
         </handler>

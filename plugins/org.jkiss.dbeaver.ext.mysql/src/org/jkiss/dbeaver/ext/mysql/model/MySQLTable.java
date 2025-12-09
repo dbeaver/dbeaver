@@ -805,6 +805,7 @@ public class MySQLTable extends MySQLTableBase
         }
         getContainer().indexCache.clearObjectCache(this);
         getContainer().triggerCache.clearChildrenOf(this);
+        getContainer().resetStatistics();
         this.referenceCache = null;
 
         return super.refreshObject(monitor);

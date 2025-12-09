@@ -210,13 +210,8 @@ public class ConsoleUserInterface implements DBPPlatformUI {
     }
 
     @Override
-    public void executeWithProgress(@NotNull Runnable runnable) {
+    public void executeInMainThread(@NotNull Runnable runnable) {
         runnable.run();
-    }
-
-    @Override
-    public void executeWithProgress(@NotNull DBRRunnableWithProgress runnable) throws InvocationTargetException, InterruptedException {
-        runnable.run(new LoggingProgressMonitor());
     }
 
     @NotNull
@@ -235,6 +230,11 @@ public class ConsoleUserInterface implements DBPPlatformUI {
 
     @Override
     public <T> T runWithMonitor(@NotNull DBRRunnableWithReturn<T> runnable) throws DBException {
+        return runnable.runTask(new LoggingProgressMonitor(log));
+    }
+
+    @Override
+    public <T> T runWithProgress(@NotNull DBRRunnableWithReturn<T> runnable) throws DBException {
         return runnable.runTask(new LoggingProgressMonitor(log));
     }
 

@@ -381,7 +381,7 @@ public class EntityEditor extends MultiPageDatabaseEditor
         boolean isNewObject = getDatabaseObject() == null || !getDatabaseObject().isPersisted();
         if (!isNewObject) {
             // Check for any new nested objects
-            for (DBECommand cmd : commandContext.getFinalCommands()) {
+            for (DBECommand<?> cmd : commandContext.getFinalCommands()) {
                 if (cmd.getObject() instanceof DBSObject && !((DBSObject) cmd.getObject()).isPersisted()) {
                     isNewObject = true;
                     break;
