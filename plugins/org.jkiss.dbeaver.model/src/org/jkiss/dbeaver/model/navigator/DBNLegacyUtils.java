@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,12 +17,12 @@
 package org.jkiss.dbeaver.model.navigator;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.navigator.fs.DBNFileSystems;
 import org.jkiss.dbeaver.model.navigator.meta.DBXTreeFolder;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.nio.file.Path;
@@ -96,21 +96,21 @@ public class DBNLegacyUtils {
                 return node;
             }
             // works for cloud explorer
-            DBNProject[] projects = model.getRoot().getProjects();
-            if (ArrayUtils.isEmpty(projects)) {
+            List<DBNProject> projects = model.getRoot().getProjects();
+            if (projects.isEmpty()) {
                 throw new DBException("No projects in workspace");
             }
             var projectId = nodePath.first();
             DBNProject parentProjectNode = projectId == null
                 ? null
-                : Arrays.stream(projects)
+                : projects.stream()
                 .filter(dbnProject -> dbnProject.getProject().getId().equals(projectId))
                 .findFirst()
                 .orElse(null);
             int firstItem = 0;
             //backward compatibility
             if (parentProjectNode == null) {
-                parentProjectNode = projects[0];
+                parentProjectNode = projects.getFirst();
             } else {
                 // cause projectId included in the path
                 firstItem = 1;
@@ -130,10 +130,11 @@ public class DBNLegacyUtils {
 
     }
 
+    @Nullable
     private static DBNNode legacyFindNodeByPath(
-        DBRProgressMonitor monitor,
-        DBNModel.NodePath nodePath,
-        DBNNode curNode,
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBNModel.NodePath nodePath,
+        @NotNull DBNNode curNode,
         int firstItem
     ) throws DBException {
         //log.debug("findNodeByPath '" + nodePath + "' in '" + curNode.getNodeItemPath() + "'/" + firstItem);
