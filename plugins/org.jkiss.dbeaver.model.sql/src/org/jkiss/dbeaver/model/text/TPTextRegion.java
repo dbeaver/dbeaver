@@ -14,22 +14,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.cli;
+package org.jkiss.dbeaver.model.text;
 
-public class CLIException extends RuntimeException {
-    private final short exitCode;
 
-    public CLIException(String message, short exitCode) {
-        super(message);
-        this.exitCode = exitCode;
-    }
+/**
+ * Text region
+ */
+public record TPTextRegion(int offset, int length) {
 
-    public CLIException(String message, Throwable cause, short exitCode) {
-        super(message, cause);
-        this.exitCode = exitCode;
-    }
+	public int getLength() {
+		return length;
+	}
 
-    public short getExitCode() {
-        return exitCode;
-    }
+	public int getOffset() {
+		return offset;
+	}
+
 }

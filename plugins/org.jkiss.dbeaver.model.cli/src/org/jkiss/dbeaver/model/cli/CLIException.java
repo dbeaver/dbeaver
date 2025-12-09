@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,15 +14,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.websocket.event.client;
+package org.jkiss.dbeaver.model.cli;
 
-import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.model.websocket.event.WSClientEvent;
+import org.jkiss.dbeaver.DBException;
 
-public class WSSessionPingClientEvent extends WSClientEvent {
-    public static final String ID = "cb_client_session_ping";
+public class CLIException extends DBException {
+    private final short exitCode;
 
-    public WSSessionPingClientEvent(@Nullable String topicId) {
-        super(ID, topicId);
+    public CLIException(String message, short exitCode) {
+        super(message);
+        this.exitCode = exitCode;
+    }
+
+    public CLIException(String message, Throwable cause, short exitCode) {
+        super(message, cause);
+        this.exitCode = exitCode;
+    }
+
+    public short getExitCode() {
+        return exitCode;
     }
 }
