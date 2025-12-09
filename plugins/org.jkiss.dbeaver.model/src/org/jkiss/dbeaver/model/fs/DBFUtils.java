@@ -129,7 +129,7 @@ public class DBFUtils {
         }
     }
 
-    public static String convertPathToString(Path path) {
+    public static String convertPathToString(@NotNull Path path) {
         return IOUtils.isLocalPath(path) ? path.toString() : DBFUtils.getUriFromPath(path).toString();
     }
 
