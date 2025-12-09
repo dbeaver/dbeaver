@@ -86,7 +86,8 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
     private IDoubleClickListener doubleClickHandler;
     private PropertySourceAbstract listPropertySource;
 
-    private ObjectViewerRenderer renderer;
+    @NotNull
+    private final ObjectViewerRenderer renderer;
     protected ViewerColumnController<ObjectColumn, Object> columnController;
 
     // Sample flag. True only when initial content is packed. Used to provide actual cell data to Tree/Table pack() methods
@@ -105,12 +106,12 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
     private ObjectColumn focusColumn;
 
     private ObjectColumn groupingColumn;
-    private IContentProvider originalContentProvider;
+    private final IContentProvider originalContentProvider;
 
     public ObjectListControl(
-        Composite parent,
+        @NotNull Composite parent,
         int style,
-        IContentProvider contentProvider)
+        @NotNull IContentProvider contentProvider)
     {
         super(parent, style);
 
@@ -233,6 +234,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
         return SWT.MULTI | SWT.FULL_SELECTION;
     }
 
+    @NotNull
     public ObjectViewerRenderer getRenderer() {
         return renderer;
     }
@@ -698,7 +700,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
     }
 
     @Nullable
-    protected final Object getCellValue(Object element, int columnIndex) {
+    protected final Object getCellValue(@NotNull Object element, int columnIndex) {
         final ObjectColumn columnInfo = getColumnByIndex(columnIndex);
         if (columnInfo == null) {
             return null;
@@ -707,7 +709,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
     }
 
     @Nullable
-    protected Object getCellValue(Object element, ObjectColumn objectColumn, boolean formatValue) {
+    protected Object getCellValue(@NotNull Object element, @NotNull ObjectColumn objectColumn, boolean formatValue) {
         if (element instanceof ObjectsGroupingWrapper) {
             if (objectColumn == groupingColumn) {
                 Object groupingKey = ((ObjectsGroupingWrapper) element).groupingKey;
@@ -812,6 +814,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
      * @param item list item
      * @return object which will be examined for properties
      */
+    @NotNull
     protected Object getObjectValue(@NotNull OBJECT_TYPE item) {
         return item;
     }
@@ -831,10 +834,12 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
         return null;
     }
 
+    @Nullable
     protected Color getObjectBackground(OBJECT_TYPE item) {
         return null;
     }
 
+    @Nullable
     protected Color getObjectForeground(OBJECT_TYPE item) {
         return null;
     }
@@ -857,7 +862,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
         return props;
     }
 
-    public void setIsColumnVisibleById(String id, boolean visible) {
+    public void setIsColumnVisibleById(@NotNull String id, boolean visible) {
         if (columnController != null) {
             ObjectColumn[] columnsData = columnController.getColumnsData(ObjectColumn.class);
             for (int i = 0; i < columnsData.length; i++) {
@@ -868,7 +873,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
         }
     }
 
-    protected void createColumn(ObjectPropertyDescriptor prop) {
+    protected void createColumn(@NotNull ObjectPropertyDescriptor prop) {
         ObjectColumn objectColumn = null;
         for (ObjectColumn col : columnController.getColumnsData(ObjectColumn.class)) {
             if (CommonUtils.equalObjects(col.id, prop.getId()) || CommonUtils.equalObjects(col.displayName, prop.getDisplayName())) {
@@ -918,6 +923,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
      */
     protected abstract LoadingJob<Collection<OBJECT_TYPE>> createLoadService(boolean forUpdate);
 
+    @NotNull
     protected ObjectViewerRenderer createRenderer() {
         return new ViewerRenderer();
     }
@@ -983,7 +989,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
                             objectName = DBValueFormatting.getDefaultValueDisplayString(object, DBDDisplayFormat.UI);
                         }
                     }
-                    if (buf.length() > 0) buf.append("\n");
+                    if (!buf.isEmpty()) buf.append("\n");
                     if (selection instanceof TreeSelection) {
                         final TreePath[] paths = ((TreeSelection) selection).getPathsFor(o);
                         if (!ArrayUtils.isEmpty(paths)) {

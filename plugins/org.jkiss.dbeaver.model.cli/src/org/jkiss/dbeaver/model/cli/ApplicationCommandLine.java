@@ -33,6 +33,7 @@ import picocli.CommandLine;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 public abstract class ApplicationCommandLine<T extends ApplicationInstanceController> {
@@ -95,25 +96,24 @@ public abstract class ApplicationCommandLine<T extends ApplicationInstanceContro
             try {
                 parseResult = commandLine.parseArgs(args);
             } catch (CommandLine.UnmatchedArgumentException e) {
-                log.error(e.getMessage());
-                return new CLIProcessResult(CLIProcessResult.PostAction.ERROR, e.getMessage());
+                String message;
+                if (!CommonUtils.isEmpty(e.getUnmatched())) {
+                    String command = e.getCommandLine().getCommandName();
+                    message = "Parameter(s) " + String.join(" ", e.getUnmatched()) + " cannot be specified after '" + command + "'";
+                } else {
+                    message = e.getMessage();
+                }
+                log.error(message);
+                return new CLIProcessResult(CLIProcessResult.PostAction.ERROR, message);
             }
 
             if (commandLineIsEmpty(parseResult)) {
                 return new CLIProcessResult(CLIProcessResult.PostAction.START_INSTANCE);
             }
+            validateCommandLineParameters(parseResult);
 
-            for (CommandLineParameterDescriptor descriptor : customParameters.values()) {
-                CommandLine.ParseResult cliCommand = findCommand(parseResult, descriptor.getImplClass());
-                if (cliCommand == null) {
-                    continue;
-                }
-                if (supportNewInstance && descriptor.isExclusiveMode() && descriptor.isForceNewInstance()) {
-                    return new CLIProcessResult(CLIProcessResult.PostAction.START_INSTANCE);
-                }
-            }
-
-
+            // Handle help/version before executing commands,
+            // because we don't need to execute/start new instance for this cases
             CommandLine.Model.CommandSpec commandForHelp = null;
             if (parseResult.isUsageHelpRequested()) {
                 commandForHelp = parseResult.commandSpec();
@@ -136,7 +136,6 @@ public abstract class ApplicationCommandLine<T extends ApplicationInstanceContro
                     var updatedCmd = new CommandLine(commandForHelp);
                     updatedCmd.usage(print);
                     String help = out.toString();
-                    System.out.println(help);
                     return new CLIProcessResult(CLIProcessResult.PostAction.SHUTDOWN, help);
                 } catch (Exception e) {
                     log.error("Error handling command line: " + e.getMessage());
@@ -146,8 +145,17 @@ public abstract class ApplicationCommandLine<T extends ApplicationInstanceContro
 
             if (parseResult.isVersionHelpRequested()) {
                 String version = GeneralUtils.getLongProductTitle();
-                System.out.println(version);
                 return new CLIProcessResult(CLIProcessResult.PostAction.SHUTDOWN, version);
+            }
+
+            for (CommandLineParameterDescriptor descriptor : customParameters.values()) {
+                CommandLine.ParseResult cliCommand = findCommand(parseResult, descriptor.getImplClass());
+                if (cliCommand == null) {
+                    continue;
+                }
+                if (supportNewInstance && descriptor.isExclusiveMode() && descriptor.isForceNewInstance()) {
+                    return new CLIProcessResult(CLIProcessResult.PostAction.START_INSTANCE);
+                }
             }
 
             commandLine.execute(args);
@@ -164,7 +172,7 @@ public abstract class ApplicationCommandLine<T extends ApplicationInstanceContro
                 var finalAction = action == CLIProcessResult.PostAction.UNKNOWN_COMMAND
                     ? CLIProcessResult.PostAction.SHUTDOWN
                     : action;
-                return new CLIProcessResult(finalAction, gson.toJson(context.getResults()));
+                return new CLIProcessResult(finalAction, context.getResults());
             }
             return new CLIProcessResult(action);
 
@@ -174,7 +182,7 @@ public abstract class ApplicationCommandLine<T extends ApplicationInstanceContro
             if (e instanceof CLIException cliException) {
                 result = new CLIProcessResult(
                     CLIProcessResult.PostAction.ERROR,
-                    output,
+                    List.of(output),
                     cliException.getExitCode()
                 );
             } else {
@@ -187,6 +195,10 @@ public abstract class ApplicationCommandLine<T extends ApplicationInstanceContro
 
 
         return result;
+    }
+
+    protected void validateCommandLineParameters(@NotNull CommandLine.ParseResult parseResult) throws CLIException {
+
     }
 
     @NotNull
@@ -245,10 +257,8 @@ public abstract class ApplicationCommandLine<T extends ApplicationInstanceContro
             }
             cmd.addSubcommand(param.getImplClass());
         }
-        //        cmd.setUnmatchedArgumentsAllowed(true);
         return cmd;
     }
-
 
     protected boolean commandLineIsEmpty(@Nullable CommandLine.ParseResult commandLine) {
         return commandLine == null || (

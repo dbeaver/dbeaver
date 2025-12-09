@@ -31,6 +31,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Shell;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.DBPImageProvider;
@@ -259,6 +260,7 @@ public class ObjectListDialog<T extends DBPObject> extends AbstractPopupPanel {
             return new ObjectLabelProvider(objectColumn);
         }
 
+        @NotNull
         @Override
         protected Object getObjectValue(@NotNull T item) {
             if (item instanceof DBSWrapper) {
@@ -267,6 +269,7 @@ public class ObjectListDialog<T extends DBPObject> extends AbstractPopupPanel {
             return super.getObjectValue(item);
         }
 
+        @Nullable
         @Override
         protected DBPImage getObjectImage(T item) {
             if (item instanceof DBNNode node) {

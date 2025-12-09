@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -42,8 +42,6 @@ import org.jkiss.dbeaver.ui.editors.text.BaseTextDocumentProvider;
 import org.jkiss.dbeaver.ui.editors.text.DatabaseMarkerAnnotationModel;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
-
-import java.lang.reflect.InvocationTargetException;
 
 public abstract class SQLObjectDocumentProvider extends BaseTextDocumentProvider {
 
@@ -102,13 +100,9 @@ public abstract class SQLObjectDocumentProvider extends BaseTextDocumentProvider
                     try {
                         if (dataSource != null) {
                             DBExecUtils.tryExecuteRecover(monitor, dataSource, param -> {
-                                try {
-                                    sourceText = loadSourceText(monitor);
-                                    if (sourceText == null) {
-                                        sourceText = SQLUtils.generateCommentLine(dataSource, "Empty source");
-                                    }
-                                } catch (DBException e) {
-                                    throw new InvocationTargetException(e);
+                                sourceText = loadSourceText(monitor);
+                                if (sourceText == null) {
+                                    sourceText = SQLUtils.generateCommentLine(dataSource, "Empty source");
                                 }
                             });
                         } else {

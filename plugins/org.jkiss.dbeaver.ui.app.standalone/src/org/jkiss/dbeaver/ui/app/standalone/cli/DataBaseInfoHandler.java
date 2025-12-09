@@ -43,7 +43,7 @@ import java.util.List;
 import java.util.Objects;
 
 @CommandLine.Command(name = "database-driver-list", aliases = {"-database-driver-list", "-databaseList"},
-    description = "Show list of supported database drivers in json format.", mixinStandardHelpOptions = true)
+    description = "Show list of supported database drivers in json format.")
 public class DataBaseInfoHandler extends AbstractCommandLineParameterHandler {
     private static final String OUTPUT_DATABASES_JSON = "database.drivers.json"; //$NON-NLS-1$
     private static final String PRODUCT_ID_LABEL = "id"; //$NON-NLS-1$

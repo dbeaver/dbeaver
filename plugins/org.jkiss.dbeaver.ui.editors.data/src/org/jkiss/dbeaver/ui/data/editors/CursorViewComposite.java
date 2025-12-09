@@ -24,6 +24,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
@@ -209,7 +210,7 @@ public class CursorViewComposite extends Composite implements IResultSetContaine
             long maxRows,
             long flags,
             int fetchSize
-        ) throws DBCException {
+        ) throws DBException {
             DBCStatistics statistics = new DBCStatistics();
             DBCResultSet resultSet = value == null ? null : value.openResultSet(session);
             if (resultSet == null) {
@@ -223,8 +224,11 @@ public class CursorViewComposite extends Composite implements IResultSetContaine
                     log.debug(e);
                 }
             }
-            try {
+            try (resultSet) {
                 long startTime = System.currentTimeMillis();
+                // FIXME: we cannot use fetch workflow because statement is not closed
+                // until user close data viewer
+                //DBDDataReceiver.startFetchWorkflow(dataReceiver, session, resultSet, firstRow, maxRows);
                 dataReceiver.fetchStart(session, resultSet, firstRow, maxRows);
                 long rowCount;
                 try {
@@ -251,19 +255,11 @@ public class CursorViewComposite extends Composite implements IResultSetContaine
                     } catch (DBCException e) {
                         log.error("Error while finishing result set fetch", e); //$NON-NLS-1$
                     }
+                    dataReceiver.close();
                 }
                 statistics.setFetchTime(System.currentTimeMillis() - startTime);
                 statistics.setRowsFetched(rowCount);
                 return statistics;
-            }
-            finally {
-                dataReceiver.close();
-
-                try {
-                    resultSet.close();
-                } catch (Exception e) {
-                    log.debug(e);
-                }
             }
         }
 

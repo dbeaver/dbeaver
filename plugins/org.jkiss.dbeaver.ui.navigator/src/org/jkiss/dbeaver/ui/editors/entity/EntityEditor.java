@@ -381,7 +381,7 @@ public class EntityEditor extends MultiPageDatabaseEditor
         boolean isNewObject = getDatabaseObject() == null || !getDatabaseObject().isPersisted();
         if (!isNewObject) {
             // Check for any new nested objects
-            for (DBECommand cmd : commandContext.getFinalCommands()) {
+            for (DBECommand<?> cmd : commandContext.getFinalCommands()) {
                 if (cmd.getObject() instanceof DBSObject && !((DBSObject) cmd.getObject()).isPersisted()) {
                     isNewObject = true;
                     break;
@@ -390,11 +390,7 @@ public class EntityEditor extends MultiPageDatabaseEditor
         }
         try {
             DBExecUtils.tryExecuteRecover(monitor, executionContext.getDataSource(), param -> {
-                try {
-                    commandContext.saveChanges(monitor, options);
-                } catch (DBException e) {
-                    throw new InvocationTargetException(e);
-                }
+                commandContext.saveChanges(monitor, options);
             });
         } catch (DBException e) {
             error = e;

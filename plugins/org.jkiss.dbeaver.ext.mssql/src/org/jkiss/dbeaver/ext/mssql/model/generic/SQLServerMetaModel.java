@@ -190,8 +190,12 @@ public class SQLServerMetaModel extends GenericMetaModel implements DBCQueryTran
                             "LEFT JOIN " +
                             DBUtils.getQuotedIdentifier(sourceObject.getCatalog()) + ".dbo.sysobjects so " +
                             "ON so.id = s.object_id\n" +
-                            "WHERE s.proc_name=?")) {
+                            "LEFT JOIN " +
+                            DBUtils.getQuotedIdentifier(sourceObject.getCatalog()) + ".dbo.sysusers su " +
+                            "ON s.creator = su.uid\n" +
+                            "WHERE s.proc_name=? AND su.name=?")) {
                         dbStat.setString(1, objectName);
+                        dbStat.setString(2, sourceObject.getSchema().getName());
                         try (JDBCResultSet dbResult = dbStat.executeQuery()) {
                             if (dbResult.nextRow()) {
                                 String source = dbResult.getString(1);

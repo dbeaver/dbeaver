@@ -14,22 +14,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.cli;
+package org.jkiss.dbeaver.model.ai.engine;
 
-public class CLIException extends RuntimeException {
-    private final short exitCode;
+import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.model.DBPNamedObject;
+import org.jkiss.dbeaver.model.DBPObjectWithDescription;
 
-    public CLIException(String message, short exitCode) {
-        super(message);
-        this.exitCode = exitCode;
-    }
+/**
+ * Purpose like: generate SQL, code completion, transcript, embedding
+ */
+public interface AIEnginePurpose extends DBPNamedObject, DBPObjectWithDescription {
 
-    public CLIException(String message, Throwable cause, short exitCode) {
-        super(message, cause);
-        this.exitCode = exitCode;
-    }
+    @NotNull
+    AIModelFeature[] getRequiredModelFeatures();
 
-    public short getExitCode() {
-        return exitCode;
-    }
 }

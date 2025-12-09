@@ -31,6 +31,7 @@ import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContextDefaults;
 import org.jkiss.dbeaver.model.exec.DBCTransactionManager;
 import org.jkiss.dbeaver.model.impl.DataSourceContextProvider;
+import org.jkiss.dbeaver.model.navigator.DBNUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.secret.DBSSecretController;
 import org.jkiss.dbeaver.model.sql.SQLQueryCategory;
@@ -248,5 +249,13 @@ public final class AIUtils {
         }
     }
 
-
+    public static boolean isExcludableObject(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBSObject obj
+    ) {
+        return DBUtils.isSystemObject(obj)
+            || DBUtils.isHiddenObject(obj)
+            || obj instanceof DBSTablePartition
+            || DBNUtils.getNodeByObject(monitor, obj, false) == null;
+    }
 }

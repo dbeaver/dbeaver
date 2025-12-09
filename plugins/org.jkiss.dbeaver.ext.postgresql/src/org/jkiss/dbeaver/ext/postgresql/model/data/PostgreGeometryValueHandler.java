@@ -172,7 +172,8 @@ public class PostgreGeometryValueHandler extends JDBCAbstractValueHandler {
                 final int srid = (Integer) BeanUtils.invokeObjectMethod(geometry, "getSrid");
 
                 // PostGIS JDBC uses StringBuffer instead of StringBuilder, yup
-                final StringBuilder sb = new StringBuilder(type);
+                @SuppressWarnings("StringBufferMayBeStringBuilder")
+                final StringBuffer sb = new StringBuffer(type);
 
                 if (is3D) {
                     sb.append('Z');

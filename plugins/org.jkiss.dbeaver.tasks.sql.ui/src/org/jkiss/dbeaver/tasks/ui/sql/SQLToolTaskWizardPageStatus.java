@@ -30,6 +30,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.console.MessageConsole;
 import org.eclipse.ui.console.TextConsoleViewer;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.DBPObject;
@@ -99,6 +100,7 @@ class SQLToolTaskWizardPageStatus extends ActiveWizardPage<SQLToolTaskWizard> im
                 return "SQLToolStatus." + getWizard().getTaskType().getId();
             }
 
+            @Nullable
             @Override
             protected DBPImage getObjectImage(SQLToolStatistics item) {
                 return DBValueFormatting.getObjectImage(item.getObject());

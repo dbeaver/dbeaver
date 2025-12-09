@@ -28,6 +28,8 @@ public interface OpenAIBaseProperties extends AIEngineProperties {
     @Nullable
     String getToken();
 
+    boolean isLegacyApi();
+
     default boolean isStreamingEnabled() {
         return true;
     }

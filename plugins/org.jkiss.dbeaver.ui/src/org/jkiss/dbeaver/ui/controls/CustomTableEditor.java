@@ -24,6 +24,8 @@ import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableItem;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ui.UIUtils;
 
 /**
@@ -38,11 +40,11 @@ public abstract class CustomTableEditor implements MouseListener, TraverseListen
     protected int firstTraverseIndex = -1, lastTraverseIndex = -1;
     protected boolean editOnEnter = true;
 
-    public CustomTableEditor(Table table) {
+    public CustomTableEditor(@NotNull Table table) {
         this(table, null);
     }
 
-    public CustomTableEditor(Table table, ContentProposalAdapter proposalAdapter) {
+    public CustomTableEditor(@NotNull Table table, @Nullable ContentProposalAdapter proposalAdapter) {
         this.table = table;
         this.proposalAdapter = proposalAdapter;
 

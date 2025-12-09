@@ -108,6 +108,12 @@
                           defaultValue="false" type="boolean" scopes="global,user"/>
                 <property id="SQLEditor.ContentAssistant.experimental.mode" label="%SQLEditor.ContentAssistant.experimental.mode"
                           validValues="NEW,DEFAULT" defaultValue="NEW" type="string" scopes="global,user"/>
+                <property id="org.jkiss.dbeaver.core.confirm.dangerous_sql"
+                          label="%confirm.dangerous_sql.label" description="%confirm.dangerous_sql.tip"
+                          defaultValue="true" type="boolean" scopes="user"/>
+                <property id="org.jkiss.dbeaver.core.confirm.drop_sql"
+                          label="%confirm.drop_sql.label" description="%confirm.drop_sql.tip"
+                          defaultValue="true" type="boolean" scopes="user"/>
             </propertyGroup>
         </propertyGroup>
     </extension>

@@ -104,12 +104,10 @@ public class JDBCResultSetImpl extends AbstractResultSet<JDBCSession, JDBCStatem
         // FIXME: starte/end block. Do we need them here?
         //this.session.getProgressMonitor().startBlock(statement, null);
         //QMUtils.getDefaultHandler().handleResultSetFetch(this);
-        this.session.getExecutionContext().lockQueryExecution();
     }
 
     protected void afterFetch()
     {
-        this.session.getExecutionContext().unlockQueryExecution();
         if (JDBCUtils.LOG_JDBC_WARNINGS) {
             try {
                 JDBCUtils.reportWarnings(getSession(), this.getWarnings());
@@ -126,12 +124,14 @@ public class JDBCResultSetImpl extends AbstractResultSet<JDBCSession, JDBCStatem
         return original;
     }
 
+    @NotNull
     @Override
     public JDBCSession getSession()
     {
         return session;
     }
 
+    @NotNull
     @Override
     public JDBCStatement getSourceStatement() {
         return statement;

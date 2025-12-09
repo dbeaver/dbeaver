@@ -34,8 +34,8 @@ import java.nio.file.StandardCopyOption;
 import java.security.CodeSource;
 import java.security.KeyStore;
 import java.security.ProtectionDomain;
-import java.util.*;
 import java.util.List;
+import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.regex.Matcher;
@@ -713,8 +713,16 @@ public class DBeaverLauncher {
     }
 
     private CommandLineExecuteResult processCommandLineAsClient(String[] args, Path dbeaverDataDir) throws Exception {
+        if (Boolean.parseBoolean(System.getProperty(Constants.DISABLE_REMOTE_CLI))) {
+            if (debug) {
+                System.out.println("Remote CLI processing is disabled by system property.");
+            }
+            return new CommandLineExecuteResult(cliMode);
+        }
         Path workspacePath = detectDefaultWorkspaceLocation(args, dbeaverDataDir);
-
+        if (debug) {
+            System.out.println("Detected workspace location: " + workspacePath);
+        }
         if (args == null || args.length == 0 || newInstance) {
             return new CommandLineExecuteResult(cliMode);
         }
@@ -723,7 +731,9 @@ public class DBeaverLauncher {
             return new CommandLineExecuteResult(cliMode);
         }
         Integer serverPort = readDBeaverServerPort(workspacePath);
-
+        if (debug) {
+            System.out.println("Detected DBeaver server port: " + serverPort);
+        }
         if (serverPort == null) {
             return new CommandLineExecuteResult(cliMode);
         }
@@ -783,16 +793,22 @@ public class DBeaverLauncher {
             }
 
             if (output != null && !output.isEmpty()) {
+                if (output.startsWith("[") && output.endsWith("]")) {
+                    output = output.substring(1, output.length() - 1);
+                }
                 // since we don't have gson and don't deserialize the response, remove escaping for cleaner output
                 output = output
                     .replace("\\\\\\\"", "\"")
                     .replace("\\\"", "\"")
                     .replace("\\\\\\\\t", "\t")
+                    .replace("\\\\t", "\t")
                     .replace("\\\"{", "{")
                     .replace("}\\\"", "}")
                     .replace("\\\\\\\\n", "\n")
                     .replace("\\\\n", "\n")
-                    .replace("\\n", "\n");
+                    .replace("\\n", "\n")
+                    .replace("\\r", "")
+                ;
                 System.out.println(output);
             }
             return new CommandLineExecuteResult(shutdownApplication || cliMode, exitCode);
@@ -845,6 +861,9 @@ public class DBeaverLauncher {
             .resolve(Constants.METADATA)
             .resolve(Constants.DBEAVER_INSTANCE_PROPS);
         if (Files.notExists(dbeaverProperties)) {
+            if (debug) {
+                System.out.println("DBeaver properties file not found: " + dbeaverProperties);
+            }
             return null;
         }
         Properties properties = new Properties();

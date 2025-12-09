@@ -47,7 +47,6 @@ import org.eclipse.ui.internal.WorkbenchImages;
 import org.eclipse.ui.menus.CommandContributionItem;
 import org.eclipse.ui.menus.CommandContributionItemParameter;
 import org.eclipse.ui.menus.IMenuService;
-import org.eclipse.ui.themes.ITheme;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -60,6 +59,9 @@ import org.jkiss.dbeaver.model.data.hints.DBDCellHintProvider;
 import org.jkiss.dbeaver.model.data.hints.DBDValueHint;
 import org.jkiss.dbeaver.model.data.hints.DBDValueHintContext;
 import org.jkiss.dbeaver.model.data.hints.DBDValueHintProvider;
+import org.jkiss.dbeaver.model.data.order.OrderingPolicy;
+import org.jkiss.dbeaver.model.data.order.OrderingStrategy;
+import org.jkiss.dbeaver.model.data.order.OrderingUtils;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.impl.local.StatResultSet;
@@ -89,8 +91,6 @@ import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.actions.DisabledLabelAction;
 import org.jkiss.dbeaver.ui.controls.*;
 import org.jkiss.dbeaver.ui.controls.autorefresh.AutoRefreshControl;
-import org.jkiss.dbeaver.ui.controls.resultset.ResultSetUtils.OrderingPolicy;
-import org.jkiss.dbeaver.ui.controls.resultset.ResultSetUtils.OrderingStrategy;
 import org.jkiss.dbeaver.ui.controls.resultset.actions.*;
 import org.jkiss.dbeaver.ui.controls.resultset.colors.CustomizeColorsAction;
 import org.jkiss.dbeaver.ui.controls.resultset.colors.ResetAllColorAction;
@@ -484,8 +484,7 @@ public class ResultSetViewer extends Viewer
         UIUtils.applyMainFont(panelSwitchFolder);
 
         if (activePresentation instanceof AbstractPresentation abstractPresentation) {
-            ITheme currentTheme = PlatformUI.getWorkbench().getThemeManager().getCurrentTheme();
-            abstractPresentation.applyThemeSettings(currentTheme);
+            abstractPresentation.applyThemeSettings(UIUtils.getCurrentTheme());
         }
     }
 
@@ -638,13 +637,8 @@ public class ResultSetViewer extends Viewer
 
     public void updateFiltersText(boolean resetFilterValue)
     {
-        boolean enableFilters = getExecutionContext() != null && container.isReadyToRun() && !model.isUpdateInProgress();
-        if (enableFilters) {
-            DBSDataContainer dataContainer = container.getDataContainer();
-            enableFilters = dataContainer != null && dataContainer.isFeatureSupported(DBSDataContainer.FEATURE_DATA_FILTER);
-
-        }
-        getAutoRefresh().enableControls(enableFilters);
+        boolean readyToRun = getExecutionContext() != null && container.isReadyToRun() && !model.isUpdateInProgress();
+        getAutoRefresh().enableControls(readyToRun);
 
         if (filtersPanel == null || this.viewerPanel.isDisposed()) {
             return;
@@ -680,6 +674,9 @@ public class ResultSetViewer extends Viewer
                     }
                 }
             }
+            boolean enableFilters = readyToRun
+                && getDataContainer() != null
+                && getDataContainer().isFeatureSupported(DBSDataContainer.FEATURE_DATA_FILTER);
             filtersPanel.enableFilters(enableFilters);
             //presentationSwitchToolbar.setEnabled(enableFilters);
         } finally {
@@ -2456,7 +2453,7 @@ public class ResultSetViewer extends Viewer
         // }
         DBDAttributeConstraint constraint = dataFilter.getConstraint(columnElement);
         assert constraint != null;
-        OrderingStrategy orderingMode = OrderingStrategy.get(this);
+        OrderingStrategy orderingMode = OrderingStrategy.get(this.getPreferenceStore());
         if (CommonUtils.isNotEmpty(model.getDataFilter().getOrder())) {
             orderingMode = OrderingStrategy.SERVER_SIDE;
         }
@@ -4094,29 +4091,25 @@ public class ResultSetViewer extends Viewer
     }
 
     private void applyDefaultOrdering() {
-        OrderingPolicy policy = OrderingPolicy.get(this);
+        final OrderingStrategy strategy = OrderingStrategy.get(this.getPreferenceStore());
+
+        if (strategy == OrderingStrategy.SERVER_SIDE) {
+            return;
+        }
+
         DBDRowIdentifier rowIdentifier = model.getDefaultRowIdentifier();
+        DBDDataFilter dataFilter = getDataFilter();
 
-        if (policy != OrderingPolicy.DEFAULT && rowIdentifier != null && !rowIdentifier.isIncomplete()) {
-            DBDDataFilter dataFilter = getDataFilter();
+        boolean applied = OrderingUtils.addOrderingOnClientSide(
+            dataFilter,
+            rowIdentifier,
+            OrderingPolicy.get(this.getPreferenceStore())
+        );
 
-            for (DBDAttributeBinding binding : rowIdentifier.getAttributes()) {
-                DBDAttributeConstraint constraint = dataFilter.getConstraint(binding);
-                if (constraint != null) {
-                    constraint.setOrderPosition(dataFilter.getMaxOrderingPosition() + 1);
-                    constraint.setOrderDescending(policy == OrderingPolicy.PRIMARY_KEY_DESC);
-                }
-            }
-
-            OrderingStrategy strategy = OrderingStrategy.get(this);
-
-            if (strategy == OrderingStrategy.SERVER_SIDE || isHasMoreData()) {
-                refreshWithFilter(dataFilter);
-            } else {
-                getModel().resetOrdering(rowIdentifier.getAttributes());
-                getActivePresentation().refreshData(false, false, true);
-                updateFiltersText();
-            }
+        if (applied) {
+            getModel().resetOrdering(rowIdentifier.getAttributes());
+            getActivePresentation().refreshData(false, false, true);
+            updateFiltersText();
         }
     }
 
@@ -5201,7 +5194,7 @@ public class ResultSetViewer extends Viewer
         }
 
         @Override
-        protected IStatus run(DBRProgressMonitor monitor) {
+        protected IStatus run(@NotNull DBRProgressMonitor monitor) {
             if (!acquireDataReadLock()) {
                 // Must run finalizer in any case
                 if (finalizer != null) {
@@ -5304,7 +5297,7 @@ public class ResultSetViewer extends Viewer
                             }
                         }
                         showErrorPresentation(sqlText, errorMessage, error);
-                        //log.error(errorMessage, error);
+                        log.error(errorMessage, error);
                     }
                 } else {
                     if (!metadataChanged) {

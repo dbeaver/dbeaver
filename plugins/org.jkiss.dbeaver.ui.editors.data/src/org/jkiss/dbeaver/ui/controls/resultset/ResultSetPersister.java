@@ -907,7 +907,7 @@ class ResultSetPersister {
             DBSDataManipulator.ExecuteBatch batch,
             Object[] attributes,
             DBCStatistics stats
-        ) throws DBCException {
+        ) throws DBException {
             for (int i = 0; i < statement.keyAttributes.size(); i++) {
                 if (DBUtils.isNullValue(statement.keyAttributes.get(i).getValue())) {
                     attributes[statement.updateAttributes.size() + i] = DBDNull.INSTANCE;

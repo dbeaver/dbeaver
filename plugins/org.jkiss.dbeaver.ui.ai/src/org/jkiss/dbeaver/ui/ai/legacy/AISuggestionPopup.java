@@ -28,7 +28,6 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.ai.AICompletionSettings;
 import org.jkiss.dbeaver.model.ai.AIDatabaseScope;
 import org.jkiss.dbeaver.model.ai.AIIcons;
-import org.jkiss.dbeaver.model.ai.registry.AISettingsManager;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.logical.DBSLogicalDataSource;
 import org.jkiss.dbeaver.model.qm.QMTranslationHistoryItem;
@@ -37,9 +36,9 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.ai.AIUIUtils;
 import org.jkiss.dbeaver.ui.ai.controls.ScopeSelectorControl;
 import org.jkiss.dbeaver.ui.ai.internal.AIUIMessages;
-import org.jkiss.dbeaver.ui.ai.preferences.AIPreferencePageMain;
 import org.jkiss.dbeaver.ui.dialogs.AbstractPopupPanel;
 import org.jkiss.dbeaver.utils.HelpUtils;
 import org.jkiss.utils.CommonUtils;
@@ -98,11 +97,7 @@ public class AISuggestionPopup extends AbstractPopupPanel {
             scopeSelectorControl.getToolBar(),
             "Settings",
             UIIcon.CONFIGURATION,
-            SelectionListener.widgetSelectedAdapter(e -> UIUtils.showPreferencesFor(
-                getShell(),
-                AISettingsManager.getInstance().getSettings(),
-                AIPreferencePageMain.PAGE_ID
-            ))
+            SelectionListener.widgetSelectedAdapter(e -> AIUIUtils.showPreferences(getShell()))
         );
 
         inputField = new Text(placeholder, SWT.BORDER | SWT.MULTI);
