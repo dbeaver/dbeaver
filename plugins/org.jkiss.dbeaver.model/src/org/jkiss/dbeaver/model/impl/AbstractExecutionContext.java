@@ -25,6 +25,7 @@ import org.jkiss.dbeaver.model.connection.DBPConnectionBootstrap;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.qm.QMUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSInstance;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -37,28 +38,43 @@ import java.util.Map;
  * All regular DBCExecutionContext implementations should extend this class.
  * It provides bootstrap init functions and QM notifications.
  */
-public abstract class AbstractExecutionContext<DATASOURCE extends DBPDataSource> implements DBCExecutionContext
-{
+public abstract class AbstractExecutionContext<DATASOURCE extends DBPDataSource, INSTANCE extends DBSInstance>
+    implements DBCExecutionContext {
     private static final Log log = Log.getLog(AbstractExecutionContext.class);
 
     private static long idSequence = 0;
 
+    @NotNull
+    protected INSTANCE instance;
     @NotNull
     protected final DATASOURCE dataSource;
     protected final String purpose;
     protected final long id;
     private final Map<String, Object> contextAttributes = new LinkedHashMap<>();
 
-    public AbstractExecutionContext(@NotNull DATASOURCE dataSource, String purpose) {
-        this.dataSource = dataSource;
+    public AbstractExecutionContext(@NotNull INSTANCE instance, String purpose) {
+        this.instance = instance;
+        this.dataSource = (DATASOURCE) instance.getDataSource();
         this.purpose = purpose;
         this.id = generateContextId();
 
         log.debug("Execution context opened (" + dataSource.getName() + "; " + purpose + "; " + this.id +  ")");
+
+        QMUtils.getDefaultHandler().handleContextOpen(this, false);
     }
 
     public static synchronized long generateContextId() {
         return idSequence++;
+    }
+
+    @NotNull
+    @Override
+    public INSTANCE getOwnerInstance() {
+        return instance;
+    }
+
+    protected void setOwnerInstance(@NotNull INSTANCE instance) {
+        this.instance = instance;
     }
 
     @Override
@@ -94,10 +110,9 @@ public abstract class AbstractExecutionContext<DATASOURCE extends DBPDataSource>
      * Executes bootstrap queries and other init functions.
      * This function must be called by all implementations.
      */
-    protected boolean initContextBootstrap(@NotNull DBRProgressMonitor monitor, boolean autoCommit) throws DBException
-    {
+    protected boolean initContextBootstrap(@NotNull DBRProgressMonitor monitor, boolean autoCommit) throws DBException {
         // Notify QM
-        QMUtils.getDefaultHandler().handleContextOpen(this, !autoCommit);
+        QMUtils.getDefaultHandler().handleContextUpdate(this, !autoCommit);
 
         // Execute bootstrap queries
         DBPConnectionBootstrap bootstrap = getBootstrapSettings();

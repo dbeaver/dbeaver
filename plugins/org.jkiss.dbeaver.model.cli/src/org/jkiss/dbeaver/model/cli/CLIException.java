@@ -14,29 +14,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.jkiss.dbeaver.model.cli;
 
-package org.jkiss.dbeaver.utils;
+import org.jkiss.dbeaver.DBException;
 
-import org.jkiss.code.NotNull;
+public class CLIException extends DBException {
+    private final short exitCode;
 
-/**
- * Preferences utilities
- */
-public class HelpUtils {
-
-    public static final String GLOBAL_HELP_PREFIX = "https://dbeaver.com/docs/dbeaver/";
-    public static final String TE_HELP_PREFIX = "https://dbeaver.com/docs/team-edition/";
-
-    public static final String GITHUB_HELP_PREFIX = "https://github.com/dbeaver/dbeaver/wiki/";
-
-    @NotNull
-    public static String getHelpExternalReference(@NotNull String topicId) {
-        return GLOBAL_HELP_PREFIX + topicId;
+    public CLIException(String message, short exitCode) {
+        super(message);
+        this.exitCode = exitCode;
     }
 
-    @NotNull
-    public static String getHelpGitHubReference(@NotNull String topicId) {
-        return GITHUB_HELP_PREFIX + topicId;
+    public CLIException(String message, Throwable cause, short exitCode) {
+        super(message, cause);
+        this.exitCode = exitCode;
     }
 
+    public short getExitCode() {
+        return exitCode;
+    }
 }

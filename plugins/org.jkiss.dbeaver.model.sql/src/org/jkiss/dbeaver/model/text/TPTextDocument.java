@@ -14,29 +14,49 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.jkiss.dbeaver.model.text;
 
-package org.jkiss.dbeaver.utils;
 
 import org.jkiss.code.NotNull;
 
 /**
- * Preferences utilities
+ * Document
  */
-public class HelpUtils {
+public interface TPTextDocument {
 
-    public static final String GLOBAL_HELP_PREFIX = "https://dbeaver.com/docs/dbeaver/";
-    public static final String TE_HELP_PREFIX = "https://dbeaver.com/docs/team-edition/";
+	char getChar(int offset);
 
-    public static final String GITHUB_HELP_PREFIX = "https://github.com/dbeaver/dbeaver/wiki/";
+	int getLength();
 
-    @NotNull
-    public static String getHelpExternalReference(@NotNull String topicId) {
-        return GLOBAL_HELP_PREFIX + topicId;
-    }
+	@NotNull
+	String get();
 
-    @NotNull
-    public static String getHelpGitHubReference(@NotNull String topicId) {
-        return GITHUB_HELP_PREFIX + topicId;
-    }
+	@NotNull
+	String get(int offset, int length);
+
+	void set(@NotNull String text);
+
+	void replace(int offset, int length, @NotNull String text);
+
+	/* ------------------ line delimiter conversion --------------------------- */
+
+	@NotNull
+	String[] getLegalLineDelimiters();
+
+	@NotNull
+	String getLineDelimiter(int line);
+
+	int getLineOfOffset(int offset);
+
+	int getLineOffset(int line);
+
+	@NotNull
+	TPTextRegion getLineInformation(int line);
+
+	@NotNull
+	TPTextRegion getLineInformationOfOffset(int offset);
+
+	int getNumberOfLines();
+
 
 }
