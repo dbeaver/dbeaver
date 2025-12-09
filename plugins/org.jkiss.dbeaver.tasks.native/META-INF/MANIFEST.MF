@@ -7,9 +7,7 @@ Bundle-Version: 1.0.147.qualifier
 Bundle-Release-Date: 20251222
 Bundle-RequiredExecutionEnvironment: JavaSE-21
 Bundle-ActivationPolicy: lazy
-Require-Bundle: org.eclipse.core.runtime,
- org.eclipse.core.expressions,
- org.jkiss.dbeaver.model,
+Require-Bundle: org.jkiss.dbeaver.model,
  org.jkiss.dbeaver.model.sql,
  org.jkiss.dbeaver.registry
 Export-Package: org.jkiss.dbeaver.tasks.nativetool
