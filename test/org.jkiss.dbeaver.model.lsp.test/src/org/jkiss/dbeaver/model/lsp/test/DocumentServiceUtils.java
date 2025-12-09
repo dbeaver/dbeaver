@@ -18,20 +18,65 @@ package org.jkiss.dbeaver.model.lsp.test;
 
 import org.eclipse.lsp4j.*;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.lsp.DBLTextDocumentService;
+import org.jkiss.dbeaver.model.lsp.context.ContextAwareDocument;
+
+import java.lang.reflect.Field;
+import java.util.Map;
+import java.util.Objects;
 
 public class DocumentServiceUtils {
 
     public static final String BASIC_SQL_URI = "sql/scripts/basic.sql";
+    public static final String SQL_LANGUAGE_ID = "SQL";
+
+    @Nullable
+    public static ContextAwareDocument getDocument(@NotNull DBLTextDocumentService service, @NotNull String uri) {
+        try {
+            Field documentsField = service.getClass().getDeclaredField("documentCache");
+            documentsField.setAccessible(true);
+            Map<String, ContextAwareDocument> documents =
+                (Map<String, ContextAwareDocument>) documentsField.get(service);
+            ContextAwareDocument document = documents.get(uri);
+            documentsField.setAccessible(false);
+            return document;
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public static void clearDocuments(@NotNull DBLTextDocumentService service) {
+        try {
+            Field documentsField = service.getClass().getDeclaredField("documentCache");
+            documentsField.setAccessible(true);
+            Map<String, ContextAwareDocument> documents =
+                (Map<String, ContextAwareDocument>) documentsField.get(service);
+            documents.clear();
+            documentsField.setAccessible(false);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @NotNull
+    public static TextDocumentItem createQueryDocument(@NotNull String text) {
+        return new TextDocumentItem(BASIC_SQL_URI, SQL_LANGUAGE_ID, 0, text);
+    }
+
+    @NotNull
+    public static ContextAwareDocument createAndSaveDocument(@NotNull DBLTextDocumentService service, @NotNull String text) {
+        TextDocumentItem document = new TextDocumentItem(BASIC_SQL_URI, SQL_LANGUAGE_ID, 0, text);
+        service.didOpen(new DidOpenTextDocumentParams(document));
+        return Objects.requireNonNull(getDocument(service, BASIC_SQL_URI));
+    }
 
     @NotNull
     public static DocumentFormattingParams setupDocumentAndBuildFormattingParams(
         @NotNull DBLTextDocumentService service,
-        @NotNull String sql
+        @NotNull String query
     ) {
-        TextDocumentItem textDocument = new TextDocumentItem();
-        textDocument.setText(sql);
-        textDocument.setUri(BASIC_SQL_URI);
+        TextDocumentItem textDocument = createQueryDocument(query);
         service.didOpen(new DidOpenTextDocumentParams(textDocument));
         DocumentFormattingParams formattingParams = new DocumentFormattingParams();
         formattingParams.setTextDocument(new TextDocumentIdentifier(BASIC_SQL_URI));

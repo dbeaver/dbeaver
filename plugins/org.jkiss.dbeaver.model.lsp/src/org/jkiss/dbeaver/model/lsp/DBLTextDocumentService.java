@@ -19,7 +19,7 @@ package org.jkiss.dbeaver.model.lsp;
 import org.eclipse.lsp4j.*;
 import org.eclipse.lsp4j.jsonrpc.CancelChecker;
 import org.eclipse.lsp4j.jsonrpc.CompletableFutures;
-import org.eclipse.lsp4j.jsonrpc.messages.Either3;
+import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.eclipse.lsp4j.services.LanguageClient;
 import org.eclipse.lsp4j.services.LanguageClientAware;
 import org.eclipse.lsp4j.services.TextDocumentService;
@@ -28,28 +28,30 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
+import org.jkiss.dbeaver.model.lsp.context.ContextAwareDocument;
+import org.jkiss.dbeaver.model.lsp.context.LspSqlCompletionContext;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLSyntaxManager;
+import org.jkiss.dbeaver.model.sql.completion.SQLCompletionContext;
 import org.jkiss.dbeaver.model.sql.format.SQLFormatter;
 import org.jkiss.dbeaver.model.sql.format.SQLFormatterConfiguration;
 import org.jkiss.dbeaver.model.sql.format.tokenized.SQLFormatterTokenized;
+import org.jkiss.dbeaver.model.sql.parser.SQLRuleManager;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class DBLTextDocumentService implements TextDocumentService, LanguageClientAware {
     private static final Log log = Log.getLog(DBLTextDocumentService.class);
 
-    public static final String PROJECT_ID_OPTION = "projectId";
-    public static final String DATA_SOURCE_ID_OPTION = "dataSourceId";
-
-    private final Map<String, String> textCache = new ConcurrentHashMap<>();
+    private final Map<String, ContextAwareDocument> documentCache = new ConcurrentHashMap<>();
 
     @Nullable
     private LanguageClient languageClient;
@@ -58,33 +60,81 @@ public class DBLTextDocumentService implements TextDocumentService, LanguageClie
     public void didOpen(@NotNull DidOpenTextDocumentParams params) {
         log.debug("didOpen with params: " + params);
 
-        TextDocumentItem textDocument = params.getTextDocument();
-        textCache.put(textDocument.getUri(), textDocument.getText());
+        TextDocumentItem document = params.getTextDocument();
+        documentCache.put(
+            document.getUri(),
+            ContextAwareDocument.from(document)
+        );
     }
 
     @Override
     public void didChange(@NotNull DidChangeTextDocumentParams params) {
         log.debug("didChange with params: " + params);
 
-        VersionedTextDocumentIdentifier textDocument = params.getTextDocument();
+        VersionedTextDocumentIdentifier document = params.getTextDocument();
         List<TextDocumentContentChangeEvent> contentChanges = params.getContentChanges();
         if (contentChanges.size() != 1) {
             // There should be exactly one change since we use TextDocumentSyncKind.Full
             throw new IllegalArgumentException("Unexpected number of document changes: " + contentChanges.size());
         }
-        textCache.put(textDocument.getUri(), contentChanges.getFirst().getText());
+
+        ContextAwareDocument existingDocument = documentCache.get(document.getUri());
+        if (existingDocument == null) {
+            log.warn(String.format("Change registered for an unknown document %s, Skipping", document.getUri()));
+        } else {
+            existingDocument.setText(contentChanges.getFirst().getText());
+            existingDocument.setVersion(document.getVersion());
+        }
     }
 
     @Override
     public void didClose(@NotNull DidCloseTextDocumentParams params) {
         log.debug("\"didClose with params: \"" + params);
 
-        textCache.remove(params.getTextDocument().getUri());
+        documentCache.remove(params.getTextDocument().getUri());
     }
 
     @Override
     public void didSave(@NotNull DidSaveTextDocumentParams params) {
         log.debug("\"didSave with params: \"" + params);
+    }
+
+    /**
+     * Initializes context for a document
+     * Context is required for a specific SQL dialect support and advanced completion
+     */
+    public void initContext(
+        @NotNull TextDocumentIdentifier documentId,
+        @NotNull String projectId,
+        @NotNull String dataSourceId
+    ) {
+        String documentUri = documentId.getUri();
+        ContextAwareDocument document = documentCache.get(documentUri);
+        if (document == null) {
+            log.warn(String.format("Received context for an unknown document %s, Skipping", documentUri));
+            return;
+        }
+
+        DBPDataSource dataSource = resolveDataSource(projectId, dataSourceId);
+        if (dataSource == null) {
+            log.warn(String.format("Received context for an unknown data source %s, using basic SQL dialect", dataSourceId));
+        }
+        document.setDataSource(dataSource);
+
+        DBCExecutionContext executionContext = DBUtils.getDefaultContext(dataSource, false);
+        if (executionContext == null) {
+            log.warn("Failed to determine default execution context");
+        }
+        document.setExecutionContext(executionContext);
+
+        SQLSyntaxManager syntaxManager = resolveSyntaxManager(dataSource);
+        document.setSyntaxManager(syntaxManager);
+
+        SQLRuleManager ruleManager = new SQLRuleManager(syntaxManager);
+        ruleManager.loadRules(dataSource, false);
+        document.setRuleManager(ruleManager);
+
+        log.debug("Initialized context for text document " + document);
     }
 
     @NotNull
@@ -102,27 +152,42 @@ public class DBLTextDocumentService implements TextDocumentService, LanguageClie
         @NotNull CancelChecker cancelChecker
     ) {
         cancelChecker.checkCanceled();
+
         String documentUri = params.getTextDocument().getUri();
-        String text = textCache.get(documentUri);
-        if (text == null) {
+        ContextAwareDocument document = documentCache.get(documentUri);
+        if (document == null) {
             log.warn("Formatting requested for an unknown document " + documentUri);
             return List.of();
         }
 
-        DBPDataSource dataSource = resolveDataSource(params.getOptions());
-        SQLDialect dialect = BasicSQLDialect.INSTANCE;
-        if (dataSource != null) {
-            dialect = dataSource.getSQLDialect();
+        SQLFormatterConfiguration sqlFormatterConfiguration = new SQLFormatterConfiguration(
+            document.getDataSource(),
+            document.getSyntaxManager()
+        );
+        SQLFormatter sqlFormatter = new SQLFormatterTokenized();
+        String formattedText = sqlFormatter.format(document.getText(), sqlFormatterConfiguration);
+        Position startPosition = new Position(0, 0);
+        Range range = new Range(startPosition, lastTextPosition(document.getText()));
+        return List.of(new TextEdit(range, formattedText));
+    }
+
+    @Override
+    public CompletableFuture<Either<List<CompletionItem>, CompletionList>> completion(CompletionParams position) {
+        String documentUri = position.getTextDocument().getUri();
+        ContextAwareDocument textDocument = documentCache.get(documentUri);
+        if (textDocument == null) {
+            log.warn(String.format("Completion requested for an unknown document %s", documentUri));
+            return CompletableFuture.completedFuture(Either.forRight(new CompletionList()));
         }
 
-        SQLSyntaxManager syntaxManager = new SQLSyntaxManager();
-        syntaxManager.init(dialect, DBWorkbench.getPlatform().getPreferenceStore());
-        SQLFormatterConfiguration sqlFormatterConfiguration = new SQLFormatterConfiguration(dataSource, syntaxManager);
-        SQLFormatter sqlFormatter = new SQLFormatterTokenized();
-        String formattedText = sqlFormatter.format(text, sqlFormatterConfiguration);
-        Position startPosition = new Position(0, 0);
-        Range range = new Range(startPosition, lastTextPosition(text));
-        return List.of(new TextEdit(range, formattedText));
+        SQLCompletionContext completionContext = new LspSqlCompletionContext(
+            textDocument.getDataSource(),
+            textDocument.getExecutionContext(),
+            textDocument.getSyntaxManager(),
+            textDocument.getRuleManager()
+        );
+
+        return TextDocumentService.super.completion(position); // FIXME: this is a mock, replace
     }
 
     @NotNull
@@ -144,15 +209,7 @@ public class DBLTextDocumentService implements TextDocumentService, LanguageClie
     }
 
     @Nullable
-    private DBPDataSource resolveDataSource(@Nullable FormattingOptions options) {
-        String projectId = Optional.ofNullable(options)
-            .map(o -> o.get(PROJECT_ID_OPTION))
-            .map(Either3::getFirst)
-            .orElse(null);
-        String dataSourceId = Optional.ofNullable(options)
-            .map(o -> o.get(DATA_SOURCE_ID_OPTION))
-            .map(Either3::getFirst)
-            .orElse(null);
+    private DBPDataSource resolveDataSource(@NotNull String projectId, @NotNull String dataSourceId) {
         return DBWorkbench.getPlatform().getWorkspace().getProjects().stream()
             .filter(project -> Objects.equals(project.getId(), projectId))
             .flatMap(project -> project.getDataSourceRegistry().getDataSources().stream())
@@ -162,13 +219,20 @@ public class DBLTextDocumentService implements TextDocumentService, LanguageClie
             .orElse(null);
     }
 
+    @NotNull
+    private SQLSyntaxManager resolveSyntaxManager(@Nullable DBPDataSource dataSource) {
+        SQLDialect dialect = BasicSQLDialect.INSTANCE;
+        if (dataSource != null) {
+            dialect = dataSource.getSQLDialect();
+        }
+        SQLSyntaxManager syntaxManager = new SQLSyntaxManager();
+        syntaxManager.init(dialect, DBWorkbench.getPlatform().getPreferenceStore());
+
+        return syntaxManager;
+    }
+
     @Override
     public void connect(@NotNull LanguageClient client) {
         languageClient = client;
-    }
-
-    @Nullable
-    public String getText(@NotNull String uri) {
-        return textCache.get(uri);
     }
 }

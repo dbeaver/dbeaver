@@ -17,12 +17,18 @@
 package org.jkiss.dbeaver.model.lsp.test;
 
 import org.eclipse.lsp4j.*;
+import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
 import org.jkiss.dbeaver.model.lsp.DBLTextDocumentService;
+import org.jkiss.dbeaver.model.lsp.context.ContextAwareDocument;
+import org.jkiss.dbeaver.model.sql.SQLSyntaxManager;
+import org.jkiss.dbeaver.model.sql.parser.SQLRuleManager;
 import org.jkiss.junit.DBeaverUnitTest;
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Test;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
@@ -33,24 +39,45 @@ public class DBLTextDocumentServiceTest extends DBeaverUnitTest {
 
     private final DBLTextDocumentService service = new DBLTextDocumentService();
 
+    @After
+    public void setUp() {
+        DocumentServiceUtils.clearDocuments(service);
+    }
+
     @Test
     public void shouldOpenDocument() {
-        TextDocumentItem textDocument = new TextDocumentItem();
         String query = "SELECT * FROM table";
-        textDocument.setText(query);
-        textDocument.setUri(DocumentServiceUtils.BASIC_SQL_URI);
+        TextDocumentItem textDocument = DocumentServiceUtils.createQueryDocument(query);
         service.didOpen(new DidOpenTextDocumentParams(textDocument));
 
-        String savedText = service.getText(textDocument.getUri());
-        Assert.assertEquals(query, savedText);
+        ContextAwareDocument savedDocument = DocumentServiceUtils.getDocument(service, textDocument.getUri());
+        Assert.assertNotNull(savedDocument);
+        Assert.assertEquals(query, savedDocument.getText());
+
+        SQLSyntaxManager syntaxManager = savedDocument.getSyntaxManager();
+        Assert.assertNotNull(syntaxManager);
+        Assert.assertEquals(BasicSQLDialect.INSTANCE, syntaxManager.getDialect());
+        SQLRuleManager ruleManager = savedDocument.getRuleManager();
+        Assert.assertNotNull(ruleManager);
+    }
+
+    @Test
+    public void shouldInitDefaultSyntax() {
+        TextDocumentItem textDocument = DocumentServiceUtils.createQueryDocument("SELECT * FROM table");
+        service.didOpen(new DidOpenTextDocumentParams(textDocument));
+
+        ContextAwareDocument savedDocument = Objects.requireNonNull(DocumentServiceUtils.getDocument(service, textDocument.getUri()));
+        SQLSyntaxManager syntaxManager = savedDocument.getSyntaxManager();
+        Assert.assertNotNull(syntaxManager);
+        Assert.assertEquals(BasicSQLDialect.INSTANCE, syntaxManager.getDialect());
+        SQLRuleManager ruleManager = savedDocument.getRuleManager();
+        Assert.assertNotNull(ruleManager);
     }
 
     @Test
     public void shouldOpenAndChangeDocument() {
-        TextDocumentItem textDocument = new TextDocumentItem();
         String query = "SELECT * FROM table";
-        textDocument.setText(query);
-        textDocument.setUri(DocumentServiceUtils.BASIC_SQL_URI);
+        TextDocumentItem textDocument = DocumentServiceUtils.createQueryDocument(query);
         service.didOpen(new DidOpenTextDocumentParams(textDocument));
 
         String updatedSql = "SELECT DISTINCT * FROM table";
@@ -59,16 +86,15 @@ public class DBLTextDocumentServiceTest extends DBeaverUnitTest {
         List<TextDocumentContentChangeEvent> contentChanges = List.of(event);
         service.didChange(new DidChangeTextDocumentParams(textDocumentChange, contentChanges));
 
-        String savedText = service.getText(textDocument.getUri());
-        Assert.assertEquals(updatedSql, savedText);
+        ContextAwareDocument updatedDocument = DocumentServiceUtils.getDocument(service, textDocument.getUri());
+        Assert.assertNotNull(updatedDocument);
+        Assert.assertEquals(updatedSql, updatedDocument.getText());
     }
 
     @Test
     public void shouldFailSubmittingMultipleChangesToDocument() {
-        TextDocumentItem textDocument = new TextDocumentItem();
         String query = "SELECT * FROM table";
-        textDocument.setText(query);
-        textDocument.setUri(DocumentServiceUtils.BASIC_SQL_URI);
+        TextDocumentItem textDocument = DocumentServiceUtils.createQueryDocument(query);
         service.didOpen(new DidOpenTextDocumentParams(textDocument));
 
         String updatedSql1 = "SELECT DISTINCT * FROM table";
@@ -78,7 +104,8 @@ public class DBLTextDocumentServiceTest extends DBeaverUnitTest {
         TextDocumentContentChangeEvent event2 = new TextDocumentContentChangeEvent(updatedSql2);
         List<TextDocumentContentChangeEvent> contentChanges = List.of(event1, event2);
 
-        Assert.assertThrows("Unexpected number of document changes: 2",
+        Assert.assertThrows(
+            "Unexpected number of document changes: 2",
             IllegalArgumentException.class,
             () -> service.didChange(new DidChangeTextDocumentParams(textDocumentChange, contentChanges))
         );
@@ -86,18 +113,16 @@ public class DBLTextDocumentServiceTest extends DBeaverUnitTest {
 
     @Test
     public void shouldOpenAndCloseDocument() {
-        TextDocumentItem textDocument = new TextDocumentItem();
         String query = "SELECT * FROM table";
-        textDocument.setText(query);
-        textDocument.setUri(DocumentServiceUtils.BASIC_SQL_URI);
+        TextDocumentItem textDocument = DocumentServiceUtils.createQueryDocument(query);
         service.didOpen(new DidOpenTextDocumentParams(textDocument));
 
         TextDocumentIdentifier textDocumentId = new TextDocumentIdentifier(textDocument.getUri());
         DidCloseTextDocumentParams closeParams = new DidCloseTextDocumentParams(textDocumentId);
         service.didClose(closeParams);
 
-        String text = service.getText(textDocument.getUri());
-        Assert.assertNull(text);
+        ContextAwareDocument updatedDocument = DocumentServiceUtils.getDocument(service, textDocument.getUri());
+        Assert.assertNull(updatedDocument);
     }
 
     @Test
@@ -163,7 +188,8 @@ public class DBLTextDocumentServiceTest extends DBeaverUnitTest {
     @Test
     public void shouldFormatPostgresSqlQuery() throws ExecutionException, InterruptedException {
         String query = """
-            DO $$ BEGIN CREATE TABLE logs (id serial PRIMARY KEY,message text,created_at timestamptz DEFAULT now());ELSE RAISE NOTICE 'Table "logs" already exists.';END IF;END $$;
+            DO $$ BEGIN CREATE TABLE logs (id serial PRIMARY KEY,message text,created_at timestamptz DEFAULT now());
+            ELSE RAISE NOTICE 'Table "logs" already exists.';END IF;END $$;
             """.trim();
         var formattingParams = DocumentServiceUtils.setupDocumentAndBuildFormattingParams(service, query);
 
@@ -182,9 +208,8 @@ public class DBLTextDocumentServiceTest extends DBeaverUnitTest {
             """.trim();
 
         Assert.assertEquals(expectedQuery.trim(), textEdit.getNewText());
-
         Position end = textEdit.getRange().getEnd();
-        Assert.assertEquals(0, end.getLine());
-        Assert.assertEquals(167, end.getCharacter());
+        Assert.assertEquals(1, end.getLine());
+        Assert.assertEquals(63, end.getCharacter());
     }
 }

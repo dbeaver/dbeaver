@@ -21,35 +21,41 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataSource;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataType;
+import org.jkiss.dbeaver.ext.postgresql.model.PostgreDialect;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.lsp.DBLTextDocumentService;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
+import org.jkiss.dbeaver.model.lsp.context.ContextAwareDocument;
+import org.jkiss.dbeaver.model.sql.parser.SQLRuleManager;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.junit.DBeaverUnitTest;
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
 import java.lang.reflect.Field;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
 public class DBLTextDocumentServiceDataSourceTest extends DBeaverUnitTest {
-    private final DBRProgressMonitor monitor = new VoidProgressMonitor();
-    private DBPDataSourceContainer dataSourceContainer;
-
     private final DBLTextDocumentService service = new DBLTextDocumentService();
+
+    private DBPDataSourceContainer dataSourceContainer;
+    private DBPProject project;
 
     @Before
     public void setUp() throws DBException, NoSuchFieldException, IllegalAccessException {
-        var driver = DBWorkbench.getPlatform().getDataSourceProviderRegistry().findDriver("postgresql");
+        var driver = Objects.requireNonNull(
+            DBWorkbench.getPlatform().getDataSourceProviderRegistry().findDriver("postgresql")
+        );
         var configuration = new DBPConnectionConfiguration();
         dataSourceContainer = new DataSourceDescriptor(
-            DBWorkbench.getPlatform().getWorkspace().getActiveProject().getDataSourceRegistry(),
+            Objects.requireNonNull(DBWorkbench.getPlatform().getWorkspace().getActiveProject()).getDataSourceRegistry(),
             DataSourceDescriptor.generateNewId(driver),
             driver,
             configuration
@@ -74,7 +80,7 @@ public class DBLTextDocumentServiceDataSourceTest extends DBeaverUnitTest {
         dataSourceField.setAccessible(true);
         dataSourceField.set(dataSourceContainer, testDataSource);
 
-        var project = DBWorkbench.getPlatform().getWorkspace().getProjects().getFirst();
+        project = DBWorkbench.getPlatform().getWorkspace().getProjects().getFirst();
         project.getDataSourceRegistry().addDataSource(dataSourceContainer);
 
 //        PostgreRole testUser = new PostgreRole(null, "tester", "test", true);
@@ -96,25 +102,48 @@ public class DBLTextDocumentServiceDataSourceTest extends DBeaverUnitTest {
 //        cachedAttributes.add(column);
     }
 
+    @After
+    public void after() {
+        DocumentServiceUtils.clearDocuments(service);
+    }
+
+    @Test
+    public void shouldInitPostgresContext() {
+        TextDocumentItem document = DocumentServiceUtils.createAndSaveDocument(service, "select * from table");
+
+        service.initContext(
+            new TextDocumentIdentifier(document.getUri()),
+            project.getId(),
+            dataSourceContainer.getId()
+        );
+
+        ContextAwareDocument contextedDocument = DocumentServiceUtils.getDocument(service, document.getUri());
+        Assert.assertNotNull(contextedDocument);
+        Assert.assertEquals(dataSourceContainer.getDataSource(), contextedDocument.getDataSource());
+        // FIXME: Check exec context
+//        Assert.assertNotNull(contextedDocument.getExecutionContext());
+//        Assert.assertEquals(dataSourceContainer.getDataSource(), contextedDocument.getExecutionContext().getDataSource());
+        Assert.assertTrue(contextedDocument.getSyntaxManager().getDialect() instanceof PostgreDialect);
+        SQLRuleManager ruleManager = contextedDocument.getRuleManager();
+        Assert.assertNotNull(ruleManager);
+        // FIXME: Check postgres rules
+//        Assert.assertTrue(
+//            Arrays.stream(ruleManager.getAllRules())
+//                .anyMatch(r -> r instanceof PostgreEscapeStringRule)
+//        );
+    }
+
     @Test
     public void shouldFormatPostgresSqlQuery() throws ExecutionException, InterruptedException {
         String query = """
-            INSERT INTO users (id, profile) VALUES (1,'{"name": "JohnDoe"}'::jsonb) ON CONFLICT (id) DO UPDATE SET profile = users.profile || EXCLUDED.profile RETURNING id, profile->>'name' AS name;
+            INSERT INTO users (id, profile) VALUES (1,'{"name": "JohnDoe"}'::jsonb) ON CONFLICT (id) 
+            DO UPDATE SET profile = users.profile || EXCLUDED.profile RETURNING id, profile->>'name' AS name;
             """.trim();
-        TextDocumentItem textDocument = new TextDocumentItem();
-        textDocument.setText(query);
-        textDocument.setUri(DocumentServiceUtils.BASIC_SQL_URI);
-        service.didOpen(new DidOpenTextDocumentParams(textDocument));
-        DocumentFormattingParams formattingParams = new DocumentFormattingParams();
-        formattingParams.setTextDocument(new TextDocumentIdentifier(DocumentServiceUtils.BASIC_SQL_URI));
-        FormattingOptions formattingOptions = new FormattingOptions();
-        formattingOptions.putString(DBLTextDocumentService.PROJECT_ID_OPTION, dataSourceContainer.getProject().getId());
-        formattingOptions.putString(DBLTextDocumentService.DATA_SOURCE_ID_OPTION, dataSourceContainer.getId());
-        formattingParams.setOptions(formattingOptions);
+        DocumentFormattingParams formattingParams = DocumentServiceUtils.setupDocumentAndBuildFormattingParams(service, query);
 
         CompletableFuture<List<? extends TextEdit>> future = service.formatting(formattingParams);
 
-        TextEdit textEdit = future.get().getFirst();
+        TextEdit edit = future.get().getFirst();
         String expectedQuery = """
             insert
                 into
@@ -129,6 +158,13 @@ public class DBLTextDocumentServiceDataSourceTest extends DBeaverUnitTest {
                 profile->>'name' as name;
             """.trim();
 
-        Assert.assertEquals(expectedQuery.trim(), textEdit.getNewText());
+        Assert.assertEquals(expectedQuery.trim(), edit.getNewText());
+        Position start = edit.getRange().getStart();
+        Assert.assertEquals(0, start.getLine());
+        Assert.assertEquals(0, start.getCharacter());
+
+        Position end = edit.getRange().getEnd();
+        Assert.assertEquals(0, end.getLine());
+        Assert.assertEquals(185, end.getCharacter());
     }
 }
