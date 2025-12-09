@@ -284,7 +284,7 @@ public class SQLServerUtils {
             SQLServerConstants.SQL_SERVER_SYSTEM_SCHEMA
         );
 
-        return dataSource.isDataWarehouseServer(monitor) || dataSource.isSynapseDatabase()
+        return dataSource.isDataWarehouseServer(monitor) || isDriverAzure(dataSource.getContainer().getDriver())
             ? "SELECT OBJECT_DEFINITION(%d)".formatted(objectId)
             : "SELECT definition FROM " + systemSchema + ".sql_modules WHERE object_id = %d".formatted(objectId);
     }
