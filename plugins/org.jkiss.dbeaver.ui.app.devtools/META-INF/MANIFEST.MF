@@ -4,9 +4,7 @@ Bundle-Name: DBeaver Test Plug-in
 Bundle-SymbolicName: org.jkiss.dbeaver.ui.app.devtools;singleton:=true
 Bundle-Version: 2.0.0.qualifier
 Bundle-Release-Date: 20240722
-Require-Bundle: org.eclipse.ui,
- org.eclipse.core.runtime,
- org.jkiss.dbeaver.core,
+Require-Bundle: org.jkiss.dbeaver.core,
  org.jkiss.dbeaver.model,
  org.eclipse.core.resources,
  com.sun.jna,
