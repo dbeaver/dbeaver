@@ -31,7 +31,7 @@ public abstract class CommandLineWithAuth extends AbstractCommandLineParameterHa
     private AuthenticateOptions authenticateOptions;
 
     @Override
-    public void run() {
+    public void run() throws CLIException {
         if (context().getContextParameter(CLIConstants.CONTEXT_PARAM_AUTHENTICATOR) != null) {
             try {
                 ((CommandLineAuthenticator) context().getContextParameter(CLIConstants.CONTEXT_PARAM_AUTHENTICATOR))
