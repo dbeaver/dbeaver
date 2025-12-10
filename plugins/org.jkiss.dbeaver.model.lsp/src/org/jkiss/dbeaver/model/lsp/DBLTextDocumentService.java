@@ -32,7 +32,7 @@ import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
 import org.jkiss.dbeaver.model.lsp.context.ContextAwareDocument;
-import org.jkiss.dbeaver.model.lsp.context.LspSqlCompletionContext;
+import org.jkiss.dbeaver.model.lsp.context.LspSQLCompletionContext;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLSyntaxManager;
 import org.jkiss.dbeaver.model.sql.completion.SQLCompletionContext;
@@ -123,7 +123,9 @@ public class DBLTextDocumentService implements TextDocumentService, LanguageClie
 
         DBCExecutionContext executionContext = DBUtils.getDefaultContext(dataSource, false);
         if (executionContext == null) {
-            log.warn("Failed to determine default execution context");
+            log.warn(String.format(
+                "Failed to determine default execution context for document %s. Proceeding without it.", documentUri
+            ));
         }
         document.setExecutionContext(executionContext);
 
@@ -180,7 +182,7 @@ public class DBLTextDocumentService implements TextDocumentService, LanguageClie
             return CompletableFuture.completedFuture(Either.forRight(new CompletionList()));
         }
 
-        SQLCompletionContext completionContext = new LspSqlCompletionContext(
+        SQLCompletionContext completionContext = new LspSQLCompletionContext(
             textDocument.getDataSource(),
             textDocument.getExecutionContext(),
             textDocument.getSyntaxManager(),

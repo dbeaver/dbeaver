@@ -31,13 +31,13 @@ import org.jkiss.dbeaver.model.sql.parser.SQLRuleManager;
 
 import java.util.Map;
 
-public class LspSqlCompletionContext implements SQLCompletionContext {
+public class LspSQLCompletionContext implements SQLCompletionContext {
     private final DBPDataSource dataSource;
     private final DBCExecutionContext executionContext;
     private final SQLSyntaxManager syntaxManager;
     private final SQLRuleManager ruleManager;
 
-    public LspSqlCompletionContext(
+    public LspSQLCompletionContext(
         @Nullable DBPDataSource dataSource,
         @Nullable DBCExecutionContext executionContext,
         @NotNull SQLSyntaxManager syntaxManager,

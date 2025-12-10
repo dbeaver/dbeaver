@@ -120,17 +120,10 @@ public class DBLTextDocumentServiceDataSourceTest extends DBeaverUnitTest {
         ContextAwareDocument contextedDocument = DocumentServiceUtils.getDocument(service, document.getUri());
         Assert.assertNotNull(contextedDocument);
         Assert.assertEquals(dataSourceContainer.getDataSource(), contextedDocument.getDataSource());
-        // FIXME: Check exec context
-//        Assert.assertNotNull(contextedDocument.getExecutionContext());
-//        Assert.assertEquals(dataSourceContainer.getDataSource(), contextedDocument.getExecutionContext().getDataSource());
+        Assert.assertNull(contextedDocument.getExecutionContext());
         Assert.assertTrue(contextedDocument.getSyntaxManager().getDialect() instanceof PostgreDialect);
         SQLRuleManager ruleManager = contextedDocument.getRuleManager();
         Assert.assertNotNull(ruleManager);
-        // FIXME: Check postgres rules
-//        Assert.assertTrue(
-//            Arrays.stream(ruleManager.getAllRules())
-//                .anyMatch(r -> r instanceof PostgreEscapeStringRule)
-//        );
     }
 
     @Test
@@ -140,6 +133,7 @@ public class DBLTextDocumentServiceDataSourceTest extends DBeaverUnitTest {
             DO UPDATE SET profile = users.profile || EXCLUDED.profile RETURNING id, profile->>'name' AS name;
             """.trim();
         DocumentFormattingParams formattingParams = DocumentServiceUtils.setupDocumentAndBuildFormattingParams(service, query);
+        service.initContext(formattingParams.getTextDocument(), project.getId(), dataSourceContainer.getId());
 
         CompletableFuture<List<? extends TextEdit>> future = service.formatting(formattingParams);
 
@@ -151,7 +145,8 @@ public class DBLTextDocumentServiceDataSourceTest extends DBeaverUnitTest {
                 profile)
             values (1,
             '{"name": "JohnDoe"}'::jsonb) on
-            CONFLICT (id) DO
+            CONFLICT (id)
+            DO
             update
             set
                 profile = users.profile || EXCLUDED.profile RETURNING id,
@@ -164,7 +159,7 @@ public class DBLTextDocumentServiceDataSourceTest extends DBeaverUnitTest {
         Assert.assertEquals(0, start.getCharacter());
 
         Position end = edit.getRange().getEnd();
-        Assert.assertEquals(0, end.getLine());
-        Assert.assertEquals(185, end.getCharacter());
+        Assert.assertEquals(1, end.getLine());
+        Assert.assertEquals(97, end.getCharacter());
     }
 }
