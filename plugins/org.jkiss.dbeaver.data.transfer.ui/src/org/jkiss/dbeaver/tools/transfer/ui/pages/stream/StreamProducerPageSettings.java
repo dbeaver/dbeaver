@@ -63,8 +63,8 @@ import java.io.File;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.*;
 import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class StreamProducerPageSettings extends DataTransferPageNodeSettings {
@@ -79,6 +79,8 @@ public class StreamProducerPageSettings extends DataTransferPageNodeSettings {
     private Button tiOpenLocal;
     private Button tiOpenRemote;
     private Button openFSBrowserCheckbox;
+
+    private String noneItemSelectedText = DTUIMessages.stream_consumer_page_settings_item_text_none;
 
     public StreamProducerPageSettings() {
         super(DTMessages.data_transfer_wizard_page_input_files_name);
@@ -381,7 +383,7 @@ public class StreamProducerPageSettings extends DataTransferPageNodeSettings {
         IDataTransferProducer<?> producer = pipe.getProducer();
         if (isInvalidDataTransferNode(producer)) {
             item.setImage(0, null);
-            item.setText(0, DTUIMessages.stream_consumer_page_settings_item_text_none);
+            item.setText(0, noneItemSelectedText);
         } else {
             item.setImage(0, DBeaverIcons.getImage(getProducerProcessor().getIcon()));
             if (producer instanceof StreamTransferProducer stp) {
@@ -395,7 +397,7 @@ public class StreamProducerPageSettings extends DataTransferPageNodeSettings {
         IDataTransferConsumer<?, ?> consumer = pipe.getConsumer();
         if (isInvalidDataTransferNode(consumer)) {
             item.setImage(1, null);
-            item.setText(1, DTUIMessages.stream_consumer_page_settings_item_text_none);
+            item.setText(1, noneItemSelectedText);
         } else {
             item.setImage(1, DBeaverIcons.getImage(getWizard().getSettings().getConsumer().getIcon()));
             item.setText(1, String.valueOf(consumer.getObjectName()));
@@ -437,7 +439,7 @@ public class StreamProducerPageSettings extends DataTransferPageNodeSettings {
         if (!dataPipes.isEmpty()) {
             if (selectionIndex < 0) {
                 selectionIndex = 0;
-                if (openFSBrowserCheckbox.getSelection()) {
+                if (isOpenFSBrowser()) {
                     openFSBrowser();
                 }
             } else if (selectionIndex >= dataPipes.size()) {
@@ -447,6 +449,12 @@ public class StreamProducerPageSettings extends DataTransferPageNodeSettings {
         }
         updateBrowseButtons();
 
+    }
+
+    private boolean isOpenFSBrowser() {
+        return openFSBrowserCheckbox.getSelection()
+            && filesTable.getItemCount() == 1
+            && filesTable.getItem(0).getText().equals(noneItemSelectedText);
     }
 
     private void openFSBrowser() {
