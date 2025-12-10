@@ -7,12 +7,10 @@ Bundle-Version: 1.0.227.qualifier
 Bundle-Release-Date: 20251222
 Bundle-RequiredExecutionEnvironment: JavaSE-21
 Bundle-ActivationPolicy: lazy
-Require-Bundle: org.eclipse.core.runtime,
- org.jkiss.dbeaver.model;visibility:=reexport,
+Require-Bundle: org.jkiss.dbeaver.model;visibility:=reexport,
  org.jkiss.dbeaver.model.jdbc;visibility:=reexport,
  org.jkiss.dbeaver.model.sql,
- org.jkiss.dbeaver.data.gis,
- org.jkiss.utils
+ org.jkiss.dbeaver.data.gis
 Automatic-Module-Name: org.jkiss.dbeaver.ext.exasol
 Import-Package: com.google.gson
 Export-Package: org.jkiss.dbeaver.ext.exasol,

@@ -52,7 +52,7 @@ import org.jkiss.dbeaver.utils.PrefUtils;
  * TargetPrefPage
  */
 public abstract class TargetPrefPage extends AbstractPrefPage implements IWorkbenchPreferencePage, IWorkbenchPropertyPage {
-    static final Log log = Log.getLog(TargetPrefPage.class);
+    protected static final Log log = Log.getLog(TargetPrefPage.class);
 
     private IAdaptable element;
     private DBPDataSourceContainer dataSourceContainer;

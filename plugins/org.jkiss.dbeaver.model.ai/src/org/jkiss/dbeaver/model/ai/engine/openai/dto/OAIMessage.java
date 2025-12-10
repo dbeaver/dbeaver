@@ -28,6 +28,7 @@ import java.util.stream.Collectors;
 public class OAIMessage {
     public static final String TYPE_MESSAGE = "message";
     public static final String TYPE_FUNCTION_CALL = "function_call";
+    public static final String TYPE_FUNCTION_REASONING = "reasoning";
 
     public String id;
     public String type;
