@@ -43,7 +43,7 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
-public class DBLTextDocumentServiceDataSourceTest extends DBeaverUnitTest {
+public class DBLTextDocumentServiceContextTest extends DBeaverUnitTest {
     private final DBLTextDocumentService service = new DBLTextDocumentService();
 
     private DBPDataSourceContainer dataSourceContainer;
@@ -150,6 +150,24 @@ public class DBLTextDocumentServiceDataSourceTest extends DBeaverUnitTest {
         Assert.assertNotNull(completions);
         Assert.assertFalse(completions.getItems().isEmpty());
         Assert.assertEquals("SELECT", completions.getItems().getFirst().getLabel());
+    }
+
+    @Test
+    public void shouldSuggestMultilineKeywordCompletion() throws ExecutionException, InterruptedException {
+        String query = """
+            SELECT * FROM TEST_TABLE1
+                WH
+            """;
+        ContextAwareDocument document = DocumentServiceTestUtils.createAndSaveDocument(service, query);
+        TextDocumentIdentifier documentId = new TextDocumentIdentifier(document.getUri());
+        service.initContext(documentId, project.getId(), dataSourceContainer.getId());
+        CompletionParams completionParams = new CompletionParams(documentId, new Position(1, 6));
+
+        CompletionList completions = service.completion(completionParams).get().getRight();
+
+        Assert.assertNotNull(completions);
+        Assert.assertFalse(completions.getItems().isEmpty());
+        Assert.assertEquals("WHERE", completions.getItems().getFirst().getLabel());
     }
 
     @Test

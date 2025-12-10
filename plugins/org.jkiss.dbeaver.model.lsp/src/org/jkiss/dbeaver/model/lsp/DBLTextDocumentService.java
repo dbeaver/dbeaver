@@ -104,7 +104,7 @@ public class DBLTextDocumentService implements TextDocumentService, LanguageClie
 
     /**
      * Initializes context for a document
-     * Context is required for a specific SQL dialect support and advanced completion
+     * Context is required for a specific SQL dialect support and completion
      */
     public void initContext(
         @NotNull TextDocumentIdentifier documentId,
@@ -191,6 +191,7 @@ public class DBLTextDocumentService implements TextDocumentService, LanguageClie
         });
     }
 
+    @NotNull
     private Either<List<CompletionItem>, CompletionList> completion(
         @NotNull CompletionParams params,
         @NotNull CancelChecker cancelChecker
@@ -218,6 +219,36 @@ public class DBLTextDocumentService implements TextDocumentService, LanguageClie
             LspSQLCompletionContextParser.createCompletionsList(document, offset, completionContext)
         ));
     }
+
+    @NotNull
+    @Override
+    public CompletableFuture<List<? extends DocumentHighlight>> documentHighlight(
+        @NotNull DocumentHighlightParams params
+    ) {
+        log.debug("\"documentHighlight with params: \"" + params);
+
+        return CompletableFutures.computeAsync(cancelChecker -> documentHighlight(params, cancelChecker));
+    }
+
+    @NotNull
+    private List<? extends DocumentHighlight> documentHighlight(
+        @NotNull DocumentHighlightParams params,
+        @NotNull CancelChecker cancelChecker
+    ) {
+        cancelChecker.checkCanceled();
+
+        TextDocumentIdentifier documentId = params.getTextDocument();
+        ContextAwareDocument document = documentCache.get(documentId.getUri());
+        if (document == null) {
+            log.error(String.format("Highlight requested for an unknown document %s", documentId.getUri()));
+            return  List.of();
+        }
+
+        // TODO: parse doc, return highlighted ranges (Read + Write) kinds
+        return List.of();
+    }
+
+
 
     private int positionToOffset(@NotNull String text, @NotNull Position position) {
         String[] lines = text.split("\n");

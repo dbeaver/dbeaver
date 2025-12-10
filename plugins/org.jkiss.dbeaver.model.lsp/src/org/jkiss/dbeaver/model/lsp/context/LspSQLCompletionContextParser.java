@@ -68,27 +68,25 @@ public class LspSQLCompletionContextParser {
             parserContext.getPreferenceStore(),
             document.get()
         );
-        if (scriptItems != null) {
-            for (var item : scriptItems) {
-                var model = SQLQueryModelRecognizer.recognizeQuery(
-                    new SQLQueryRecognitionContext(
-                        monitor,
-                        request.getContext().getExecutionContext(),
-                        true,
-                        DBWorkbench.getPlatform().getPreferenceStore().getBoolean(SQLModelPreferences.VALIDATE_FUNCTIONS),
-                        request.getContext().getSyntaxManager(),
-                        request.getContext().getDataSource().getSQLDialect()
-                    ),
-                    item.getOriginalText()
-                );
-                syntaxContext.registerScriptItemContext(
-                    item.getOriginalText(),
-                    model,
-                    item.getOffset(),
-                    item.getLength(),
-                    true
-                );
-            }
+        for (var item : scriptItems) {
+            var model = SQLQueryModelRecognizer.recognizeQuery(
+                new SQLQueryRecognitionContext(
+                    monitor,
+                    request.getContext().getExecutionContext(),
+                    true,
+                    DBWorkbench.getPlatform().getPreferenceStore().getBoolean(SQLModelPreferences.VALIDATE_FUNCTIONS),
+                    request.getContext().getSyntaxManager(),
+                    request.getContext().getDataSource().getSQLDialect()
+                ),
+                item.getOriginalText()
+            );
+            syntaxContext.registerScriptItemContext(
+                item.getOriginalText(),
+                model,
+                item.getOffset(),
+                item.getLength(),
+                true
+            );
         }
 
         SQLScriptItemAtOffset scriptItem = syntaxContext.findScriptItem(position);
