@@ -17,28 +17,29 @@
 package org.jkiss.dbeaver.model.lsp.test;
 
 import org.eclipse.lsp4j.*;
-import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataSource;
-import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataType;
-import org.jkiss.dbeaver.ext.postgresql.model.PostgreDialect;
+import org.jkiss.dbeaver.ModelPreferences;
+import org.jkiss.dbeaver.ext.h2.model.H2SQLDialect;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.app.DBPProject;
-import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.lsp.DBLTextDocumentService;
 import org.jkiss.dbeaver.model.lsp.context.ContextAwareDocument;
-import org.jkiss.dbeaver.model.sql.parser.SQLRuleManager;
-import org.jkiss.dbeaver.registry.DataSourceDescriptor;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.LoggingProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.utils.PrefUtils;
 import org.jkiss.junit.DBeaverUnitTest;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.lang.reflect.Field;
+import java.nio.file.Path;
+import java.sql.SQLException;
 import java.util.List;
-import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
@@ -47,69 +48,42 @@ public class DBLTextDocumentServiceDataSourceTest extends DBeaverUnitTest {
 
     private DBPDataSourceContainer dataSourceContainer;
     private DBPProject project;
+    private JDBCSession databaseSession;
+    private final DBRProgressMonitor monitor = new LoggingProgressMonitor();
 
     @Before
-    public void setUp() throws DBException, NoSuchFieldException, IllegalAccessException {
-        var driver = Objects.requireNonNull(
-            DBWorkbench.getPlatform().getDataSourceProviderRegistry().findDriver("postgresql")
+    public void setUp() throws DBException {
+        PrefUtils.setDefaultPreferenceValue(
+            DBWorkbench.getPlatform().getPreferenceStore(),
+            ModelPreferences.UI_DRIVERS_HOME,
+            Path.of("../../../dbeaver-resources-drivers-jdbc/binaries")
         );
-        var configuration = new DBPConnectionConfiguration();
-        dataSourceContainer = new DataSourceDescriptor(
-            Objects.requireNonNull(DBWorkbench.getPlatform().getWorkspace().getActiveProject()).getDataSourceRegistry(),
-            DataSourceDescriptor.generateNewId(driver),
-            driver,
-            configuration
-        );
-        dataSourceContainer.setName("Test DB");
-        dataSourceContainer.setTemporary(true);
 
-        var testDataSource = new PostgreDataSource(dataSourceContainer, "PG Test", "postgres") {
-            @Override
-            public boolean isServerVersionAtLeast(int major, int minor) {
-                return major <= 10;
-            }
-
-            @Nullable
-            @Override
-            public PostgreDataType getLocalDataType(String typeName) {
-                return super.getLocalDataType(typeName);
-            }
-        };
-
-        Field dataSourceField = dataSourceContainer.getClass().getDeclaredField("dataSource");
-        dataSourceField.setAccessible(true);
-        dataSourceField.set(dataSourceContainer, testDataSource);
-
+        dataSourceContainer = DocumentServiceTestUtils.createDataSource(monitor);
+        databaseSession = DBUtils.openUtilSession(monitor, dataSourceContainer, "Internal test session");
         project = DBWorkbench.getPlatform().getWorkspace().getProjects().getFirst();
         project.getDataSourceRegistry().addDataSource(dataSourceContainer);
 
-//        PostgreRole testUser = new PostgreRole(null, "tester", "test", true);
-//        PostgreDatabase testDatabase = testDataSource.createDatabaseImpl(
-//            monitor, "testdb", testUser, null, null, null
-//        );
-//        PostgreSchema testSchema = new PostgreSchema(testDatabase, "test_schema", testUser);
-//
-//        PostgreTableRegular testTable = new PostgreTableRegular(testSchema);
-//        testTable.setName("test_table");
-//        testTable.setPartition(false);
-//        testTable.setPersisted(true);
-//
-//        PostgreTableColumn column = new PostgreTableColumn(testTable);
-//        column.setName("column1");
-//        column.setTypeName("int4");
-//        column.setOrdinalPosition(1);
-//        List<PostgreTableColumn> cachedAttributes = (List<PostgreTableColumn>) testTable.getCachedAttributes();
-//        cachedAttributes.add(column);
+        try (JDBCStatement stmt = databaseSession.createStatement()) {
+            Assert.assertFalse(stmt.execute("CREATE TABLE TEST_TABLE1 (id IDENTITY NOT NULL PRIMARY KEY, a VARCHAR, b INT)"));
+            Assert.assertFalse(stmt.execute("CREATE TABLE TEST_TABLE2 (id IDENTITY NOT NULL PRIMARY KEY, a VARCHAR, b INT)"));
+            /*for (int i = 0; i < 100; i++) {
+                assertFalse(stmt.execute("INSERT INTO TEST_TABLE1 (a, b) VALUES ('test" + i + "', " + i + ")"));
+                assertFalse(stmt.execute("INSERT INTO TEST_TABLE2 (a, b) VALUES ('test" + i + "', " + i + ")"));
+            }*/
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @After
     public void after() {
-        DocumentServiceUtils.clearDocuments(service);
+        DocumentServiceTestUtils.clearDocuments(service);
     }
 
     @Test
-    public void shouldInitPostgresContext() {
-        TextDocumentItem document = DocumentServiceUtils.createAndSaveDocument(service, "select * from table");
+    public void shouldInitH2Context() {
+        TextDocumentItem document = DocumentServiceTestUtils.createAndSaveDocument(service, "select * from table");
 
         service.initContext(
             new TextDocumentIdentifier(document.getUri()),
@@ -117,40 +91,40 @@ public class DBLTextDocumentServiceDataSourceTest extends DBeaverUnitTest {
             dataSourceContainer.getId()
         );
 
-        ContextAwareDocument contextedDocument = DocumentServiceUtils.getDocument(service, document.getUri());
+        ContextAwareDocument contextedDocument = DocumentServiceTestUtils.getDocument(service, document.getUri());
         Assert.assertNotNull(contextedDocument);
         Assert.assertEquals(dataSourceContainer.getDataSource(), contextedDocument.getDataSource());
-        Assert.assertNull(contextedDocument.getExecutionContext());
-        Assert.assertTrue(contextedDocument.getSyntaxManager().getDialect() instanceof PostgreDialect);
-        SQLRuleManager ruleManager = contextedDocument.getRuleManager();
-        Assert.assertNotNull(ruleManager);
+        Assert.assertNotNull(contextedDocument.getExecutionContext());
+        Assert.assertEquals(dataSourceContainer.getDataSource(), contextedDocument.getExecutionContext().getDataSource());
+        Assert.assertTrue(contextedDocument.getSyntaxManager().getDialect() instanceof H2SQLDialect);
+        Assert.assertNotNull(contextedDocument.getRuleManager());
     }
 
     @Test
-    public void shouldFormatPostgresSqlQuery() throws ExecutionException, InterruptedException {
+    public void shouldFormatQuery() throws ExecutionException, InterruptedException {
         String query = """
-            INSERT INTO users (id, profile) VALUES (1,'{"name": "JohnDoe"}'::jsonb) ON CONFLICT (id) 
+            INSERT INTO users (id, profile) VALUES (1,'{"name": "JohnDoe"}'::jsonb) ON CONFLICT (id)
             DO UPDATE SET profile = users.profile || EXCLUDED.profile RETURNING id, profile->>'name' AS name;
             """.trim();
-        DocumentFormattingParams formattingParams = DocumentServiceUtils.setupDocumentAndBuildFormattingParams(service, query);
+        DocumentFormattingParams formattingParams = DocumentServiceTestUtils.setupDocumentAndBuildFormattingParams(service, query);
         service.initContext(formattingParams.getTextDocument(), project.getId(), dataSourceContainer.getId());
 
         CompletableFuture<List<? extends TextEdit>> future = service.formatting(formattingParams);
 
         TextEdit edit = future.get().getFirst();
         String expectedQuery = """
-            insert
-                into
+            INSERT
+                INTO
                 users (id,
                 profile)
-            values (1,
-            '{"name": "JohnDoe"}'::jsonb) on
+            VALUES (1,
+            '{"name": "JohnDoe"}'::jsonb) ON
             CONFLICT (id)
             DO
-            update
-            set
+            UPDATE
+            SET
                 profile = users.profile || EXCLUDED.profile RETURNING id,
-                profile->>'name' as name;
+                profile->>'name' AS name;
             """.trim();
 
         Assert.assertEquals(expectedQuery.trim(), edit.getNewText());
@@ -164,16 +138,32 @@ public class DBLTextDocumentServiceDataSourceTest extends DBeaverUnitTest {
     }
 
     @Test
-    public void shouldSuggestBasicCompletion() throws ExecutionException, InterruptedException {
-        String query = "SELECT * FROM table\nWH";
-        ContextAwareDocument document = DocumentServiceUtils.createAndSaveDocument(service, query);
+    public void shouldSuggestKeywordCompletion() throws ExecutionException, InterruptedException {
+        String query = "SEL";
+        ContextAwareDocument document = DocumentServiceTestUtils.createAndSaveDocument(service, query);
         TextDocumentIdentifier documentId = new TextDocumentIdentifier(document.getUri());
         service.initContext(documentId, project.getId(), dataSourceContainer.getId());
-        CompletionParams completionParams = new CompletionParams(documentId, new Position(1, 1));
+        CompletionParams completionParams = new CompletionParams(documentId, new Position(0, 3));
 
         CompletionList completions = service.completion(completionParams).get().getRight();
 
         Assert.assertNotNull(completions);
         Assert.assertFalse(completions.getItems().isEmpty());
+        Assert.assertEquals("SELECT", completions.getItems().getFirst().getLabel());
+    }
+
+    @Test
+    public void shouldSuggestTableNameCompletion() throws ExecutionException, InterruptedException {
+        String query = "SELECT * FROM TEST_";
+        ContextAwareDocument document = DocumentServiceTestUtils.createAndSaveDocument(service, query);
+        TextDocumentIdentifier documentId = new TextDocumentIdentifier(document.getUri());
+        service.initContext(documentId, project.getId(), dataSourceContainer.getId());
+        CompletionParams completionParams = new CompletionParams(documentId, new Position(0, 19));
+
+        CompletionList completions = service.completion(completionParams).get().getRight();
+
+        Assert.assertNotNull(completions);
+        Assert.assertFalse(completions.getItems().isEmpty());
+        Assert.assertEquals("SELECT", completions.getItems().getFirst().getLabel());
     }
 }

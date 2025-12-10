@@ -19,15 +19,24 @@ package org.jkiss.dbeaver.model.lsp.test;
 import org.eclipse.lsp4j.*;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
+import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.lsp.DBLTextDocumentService;
 import org.jkiss.dbeaver.model.lsp.context.ContextAwareDocument;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.registry.DataSourceDescriptor;
+import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 
 import java.lang.reflect.Field;
 import java.util.Map;
 import java.util.Objects;
 
-public class DocumentServiceUtils {
+public class DocumentServiceTestUtils {
 
+    private static final String H2_DRIVER_ID = "h2_embedded_v2";
     public static final String BASIC_SQL_URI = "sql/scripts/basic.sql";
     public static final String SQL_LANGUAGE_ID = "SQL";
 
@@ -83,5 +92,31 @@ public class DocumentServiceUtils {
         FormattingOptions formattingOptions = new FormattingOptions();
         formattingParams.setOptions(formattingOptions);
         return formattingParams;
+    }
+
+    @NotNull
+    public static DBPDataSourceContainer createDataSource(
+        @NotNull DBRProgressMonitor monitor
+    ) throws DBException {
+        final DBPDriver driver = DataSourceProviderRegistry.getInstance().findDriver(H2_DRIVER_ID);
+        if (driver == null) {
+            throw new DBException("Could not find H2 driver: " + H2_DRIVER_ID);
+        }
+
+        final DBPConnectionConfiguration configuration = new DBPConnectionConfiguration();
+        configuration.setUrl("jdbc:h2:mem:");
+
+        final DataSourceDescriptor dataSourceDescriptor = new DataSourceDescriptor(
+            Objects.requireNonNull(DBWorkbench.getPlatform().getWorkspace().getActiveProject()).getDataSourceRegistry(),
+            DataSourceDescriptor.generateNewId(driver),
+            driver,
+            configuration
+        );
+        dataSourceDescriptor.setName("Test DB");
+        dataSourceDescriptor.setSavePassword(true);
+        dataSourceDescriptor.setTemporary(true);
+        dataSourceDescriptor.connect(monitor, true, true);
+
+        return dataSourceDescriptor;
     }
 }

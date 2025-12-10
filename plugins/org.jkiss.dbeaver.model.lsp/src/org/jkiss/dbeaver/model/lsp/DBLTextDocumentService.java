@@ -30,7 +30,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
 import org.jkiss.dbeaver.model.lsp.context.ContextAwareDocument;
 import org.jkiss.dbeaver.model.lsp.context.LspSQLCompletionContext;
@@ -124,13 +124,13 @@ public class DBLTextDocumentService implements TextDocumentService, LanguageClie
         }
         document.setDataSource(dataSource);
 
-        DBCExecutionContext executionContext = DBUtils.getDefaultContext(dataSource, false);
-        if (executionContext == null) {
-            log.warn(String.format(
+        try {
+            document.setExecutionContext(DBUtils.getOrOpenDefaultContext(dataSource, false));
+        } catch (DBCException e) {
+            log.error(String.format(
                 "Failed to determine default execution context for document %s. Proceeding without it.", documentUri
             ));
         }
-        document.setExecutionContext(executionContext);
 
         SQLSyntaxManager syntaxManager = resolveSyntaxManager(dataSource);
         document.setSyntaxManager(syntaxManager);
@@ -229,7 +229,7 @@ public class DBLTextDocumentService implements TextDocumentService, LanguageClie
         int offset = 0;
         for (String line : lines) {
             if (lineIndex < position.getLine()) {
-                offset += line.length();
+                offset += line.length() + 1;
                 lineIndex++;
             } else {
                 if (line.length() < position.getCharacter()) {
