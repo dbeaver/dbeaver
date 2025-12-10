@@ -26,6 +26,7 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCRemoteInstance;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.LocalCacheProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
@@ -69,7 +70,8 @@ public class OracleExecutionContext extends JDBCExecutionContext implements DBCE
     @Override
     public OracleSchema getDefaultSchema() {
         try {
-            return activeSchemaName == null ? null : getDataSource().getSchema(new VoidProgressMonitor(), activeSchemaName);
+            return activeSchemaName == null ? null : getDataSource().getSchema(
+                new LocalCacheProgressMonitor(new VoidProgressMonitor()), activeSchemaName);
         } catch (Exception e) {
             log.error(e);
             return null;

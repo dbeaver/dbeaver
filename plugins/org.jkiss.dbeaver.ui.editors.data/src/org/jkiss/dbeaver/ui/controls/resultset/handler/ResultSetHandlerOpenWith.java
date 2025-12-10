@@ -318,7 +318,7 @@ public class ResultSetHandlerOpenWith extends AbstractHandler implements IElemen
             // Def processor is null
             if (!ApplicationPolicyProvider.getInstance().isPolicyEnabled(ApplicationPolicyProvider.POLICY_DATA_EXPORT)) {
                 menu.add(new Action(ActionUtils.findCommandDescription(
-                    ResultSetHandlerMain.CMD_EXPORT, rsv.getSite(), false),
+                    IResultSetCommands.CMD_EXPORT, rsv.getSite(), false),
                     Action.AS_RADIO_BUTTON) {
                     {
                         setChecked(CommonUtils.isEmpty(getDefaultOpenWithProcessor()));
@@ -400,7 +400,7 @@ public class ResultSetHandlerOpenWith extends AbstractHandler implements IElemen
         final ICommandService service = PlatformUI.getWorkbench().getService(ICommandService.class);
 
         if (service != null) {
-            service.refreshElements(ResultSetHandlerMain.CMD_EXPORT, null);
+            service.refreshElements(IResultSetCommands.CMD_EXPORT, null);
             controller.updateToolbar();
         }
     }
