@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -67,6 +67,14 @@ public abstract class DashboardCatalogPanel extends Composite implements Dashboa
     private final DBPProject project;
     @Nullable
     private final DBPDataSourceContainer dataSourceContainer;
+
+    public void refreshInput() {
+        List<DashboardProviderDescriptor> dbProviders = DashboardRegistry.getInstance().getDashboardProviders(
+            dataSourceContainer);
+
+        dashboardTable.setInput(dbProviders);
+        dashboardTable.expandToLevel(2);
+    }
 
     public DashboardCatalogPanel(
         @NotNull Composite parent,
@@ -182,14 +190,6 @@ public abstract class DashboardCatalogPanel extends Composite implements Dashboa
         // Add listeners
         DashboardRegistry.getInstance().addListener(this);
         addDisposeListener(e -> DashboardRegistry.getInstance().removeListener(this));
-    }
-
-    private void refreshInput() {
-        List<DashboardProviderDescriptor> dbProviders = DashboardRegistry.getInstance().getDashboardProviders(
-            dataSourceContainer);
-
-        dashboardTable.setInput(dbProviders);
-        dashboardTable.expandToLevel(2);
     }
 
     private static void addDragAndDropSupport(Tree table) {

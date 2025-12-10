@@ -316,6 +316,7 @@ public class DashboardListViewer extends StructuredViewer implements DBPDataSour
     private void refreshConfiguration() {
         configuration = new DashboardConfigurationList(dashContainer.getDataSourceContainer());
         viewConfiguration = configuration.getDashboard(dashContainer.getView().getViewConfiguration().getDashboardId());
+        catalogPanel.refreshInput();
     }
 
     private void initConnection() {
