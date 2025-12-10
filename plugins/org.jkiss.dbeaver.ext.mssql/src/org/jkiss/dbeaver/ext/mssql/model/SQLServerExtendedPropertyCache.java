@@ -26,7 +26,6 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectLookupCache;
-import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 
 import java.sql.SQLException;
 
@@ -61,7 +60,7 @@ public class SQLServerExtendedPropertyCache extends JDBCObjectLookupCache<SQLSer
     private boolean isSupportVariantProperty(@NotNull JDBCSession session) {
         JDBCDataSource dataSource = session.getDataSource();
         if (dataSource instanceof SQLServerDataSource sqlServerDataSource) {
-            return !sqlServerDataSource.isDataWarehouseServer(new VoidProgressMonitor());
+            return !sqlServerDataSource.isDataWarehouseServer(session.getProgressMonitor());
         }
         return !SQLServerUtils.isDriverBabelfish(dataSource.getContainer().getDriver());
     }
