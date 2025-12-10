@@ -118,9 +118,9 @@ public abstract class ApplicationInstanceServer<T extends ApplicationInstanceCon
     }
 
     @NotNull
-    protected static Path getConfigPath(@Nullable String workspacePath) {
+    protected static Path getConfigPath(@Nullable Path workspacePath) {
         if (workspacePath != null) {
-            return Path.of(workspacePath).resolve(DBPWorkspace.METADATA_FOLDER).resolve(CONFIG_PROP_FILE);
+            return workspacePath.resolve(DBPWorkspace.METADATA_FOLDER).resolve(CONFIG_PROP_FILE);
         } else {
             return GeneralUtils.getMetadataFolder().resolve(CONFIG_PROP_FILE);
         }

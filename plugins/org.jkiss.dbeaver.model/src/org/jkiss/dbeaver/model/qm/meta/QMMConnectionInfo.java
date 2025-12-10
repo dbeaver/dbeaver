@@ -43,9 +43,9 @@ public class QMMConnectionInfo extends QMMObject implements QMMDataSourceInfo {
     private String contextName;
     private boolean transactional;
 
-    private transient QMMStatementInfo statementStack;
-    private transient QMMStatementExecuteInfo executionStack;
-    private transient QMMTransactionInfo transaction;
+    private transient volatile QMMStatementInfo statementStack;
+    private transient volatile QMMStatementExecuteInfo executionStack;
+    private transient volatile QMMTransactionInfo transaction;
     //private Throwable stack;
 
     public QMMConnectionInfo(DBCExecutionContext context, boolean transactional) {
@@ -119,9 +119,7 @@ public class QMMConnectionInfo extends QMMObject implements QMMDataSourceInfo {
         }
         for (QMMStatementInfo stat = statementStack; stat != null; stat = stat.getPrevious()) {
             if (!stat.isClosed()) {
-                DBCStatement statRef = stat.getReference();
-                String query = statRef == null ? "?" : statRef.getQueryString();
-                log.warn("Statement " + stat.getObjectId() + " (" + query + ") is not closed (" + stat.getConnection().connectionUrl + ")");
+                log.warn("Statement " + stat.getObjectId() + " (" + stat + ") is not closed (" + stat.getConnection().connectionUrl + ")");
                 stat.close();
             }
         }
@@ -202,8 +200,7 @@ public class QMMConnectionInfo extends QMMObject implements QMMDataSourceInfo {
         return this.statementStack = new QMMStatementInfo(this, statement, this.statementStack);
     }
 
-    public QMMStatementInfo closeStatement(DBCStatement statement, long rows)
-    {
+    public QMMStatementInfo closeStatement(DBCStatement statement, long rows) {
         QMMStatementExecuteInfo execution = getExecution(statement);
         if (execution != null && execution.getUpdateRowCount() < 0) {
             execution.close(rows, null);
@@ -231,8 +228,7 @@ public class QMMConnectionInfo extends QMMObject implements QMMDataSourceInfo {
         return null;
     }
 
-    public QMMStatementExecuteInfo getExecution(DBCStatement statement)
-    {
+    public QMMStatementExecuteInfo getExecution(DBCStatement statement) {
         for (QMMStatementExecuteInfo exec = this.executionStack; exec != null; exec = exec.getPrevious()) {
             if (exec.getStatement().getReference() == statement) {
                 return exec;
@@ -347,14 +343,16 @@ public class QMMConnectionInfo extends QMMObject implements QMMDataSourceInfo {
         return executionStack;
     }
 
-    public QMMTransactionInfo getTransaction()
-    {
+    public QMMTransactionInfo getTransaction() {
         return transaction;
     }
 
-    public boolean isTransactional()
-    {
+    public boolean isTransactional() {
         return transactional;
+    }
+
+    public void setTransactional(boolean transactional) {
+        this.transactional = transactional;
     }
 
     public String getConnectionUserName() {
