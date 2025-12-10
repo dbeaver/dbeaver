@@ -263,7 +263,7 @@ public class DataSourceProviderRegistry implements DBPDataSourceProviderRegistry
     }
 
     /**
-     * Topologically sorts extension elements so parents appear before their children.
+     * Sorts extension elements so parents appear before their children.
      * Scans remaining elements, appends those with no parent or whose parent was processed,
      * removes appended items and repeats until all are processed.
      */
