@@ -120,25 +120,12 @@ public class DataSourceProviderRegistry implements DBPDataSourceProviderRegistry
     private void loadExtensions(IExtensionRegistry registry) {
         // Load datasource providers from external plugins
         {
-            IConfigurationElement[] extElements = registry.getConfigurationElementsFor(DataSourceProviderDescriptor.EXTENSION_ID);
             // Sort - parse providers with parent in the end
-            Arrays.sort(
-                extElements,
-                Comparator.comparingInt(e -> {
-                    boolean hasParent = !CommonUtils.isEmpty(e.getAttribute(RegistryConstants.ATTR_PARENT));
-                    if (!hasParent) {
-                        return 0;
-                    }
-                    int priority = CommonUtils.toInt(e.getAttribute(RegistryConstants.ATTR_PRIORITY), 1);
-                    if (priority < 1) {
-                        throw new IllegalArgumentException("Invalid datasource provider priority: " + priority);
-                    }
-                    return priority;
-                })
-            );
+            List<IConfigurationElement> configurationElements = sortConfigurationElements(
+                registry.getConfigurationElementsFor(DataSourceProviderDescriptor.EXTENSION_ID));
 
             // Load datasource providers in three steps to link them with parent providers and load the rest of config
-            for (IConfigurationElement ext : extElements) {
+            for (IConfigurationElement ext : configurationElements) {
                 switch (ext.getName()) {
                     case RegistryConstants.TAG_DATASOURCE: {
                         DataSourceProviderDescriptor provider = new DataSourceProviderDescriptor(this, ext);
@@ -154,7 +141,7 @@ public class DataSourceProviderRegistry implements DBPDataSourceProviderRegistry
                 }
             }
 
-            for (IConfigurationElement ext : extElements) {
+            for (IConfigurationElement ext : configurationElements) {
                 switch (ext.getName()) {
                     case RegistryConstants.TAG_DATASOURCE: {
                         DataSourceProviderDescriptor provider = getDataSourceProvider(ext.getAttribute(RegistryConstants.ATTR_ID));
@@ -202,7 +189,7 @@ public class DataSourceProviderRegistry implements DBPDataSourceProviderRegistry
                     }
                 }
             }
-            for (IConfigurationElement ext : extElements) {
+            for (IConfigurationElement ext : configurationElements) {
                 if (RegistryConstants.TAG_DATASOURCE.equals(ext.getName())) {
                     DataSourceProviderDescriptor provider = getDataSourceProvider(ext.getAttribute(RegistryConstants.ATTR_ID));
                     if (provider != null) {
@@ -273,6 +260,44 @@ public class DataSourceProviderRegistry implements DBPDataSourceProviderRegistry
 
         // Load initial drivers config
         readDriversConfig();
+    }
+
+    private List<IConfigurationElement> sortConfigurationElements(IConfigurationElement[] extElements) {
+
+        List<IConfigurationElement> sortedElements = new ArrayList<>();
+        List<IConfigurationElement> remaining = new ArrayList<>(Arrays.asList(extElements));
+        Set<String> processedIds = new HashSet<>();
+
+        boolean progress = true;
+        while (!remaining.isEmpty() && progress) {
+            progress = false;
+            Iterator<IConfigurationElement> it = remaining.iterator();
+            while (it.hasNext()) {
+                IConfigurationElement element = it.next();
+                String parentId = element.getAttribute(RegistryConstants.ATTR_PARENT);
+                String id = element.getAttribute(RegistryConstants.ATTR_ID);
+
+                if (CommonUtils.isEmpty(parentId) || processedIds.contains(parentId)) {
+                    sortedElements.add(element);
+                    processedIds.add(id);
+                    it.remove();
+                    progress = true;
+                }
+            }
+        }
+
+        if (!remaining.isEmpty()) {
+            throw new IllegalStateException("Can't sort datasource providers - cyclic or broken dependencies detected among: " +
+                remaining.stream()
+                    .map(e -> e.getAttribute(RegistryConstants.ATTR_ID))
+                    .collect(Collectors.joining(", "))
+            );
+        }
+        if (sortedElements.size() != extElements.length) {
+            throw new IllegalStateException("Sorted elements size doesn't match the original one");
+        }
+
+        return sortedElements;
     }
 
     public void readDriversConfig() {
