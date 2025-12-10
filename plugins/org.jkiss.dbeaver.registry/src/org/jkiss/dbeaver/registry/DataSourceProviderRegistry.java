@@ -267,7 +267,8 @@ public class DataSourceProviderRegistry implements DBPDataSourceProviderRegistry
      * Scans remaining elements, appends those with no parent or whose parent was processed,
      * removes appended items and repeats until all are processed.
      */
-    private List<IConfigurationElement> sortConfigurationElements(IConfigurationElement[] extElements) {
+    @NotNull
+    private List<IConfigurationElement> sortConfigurationElements(@NotNull IConfigurationElement[] extElements) {
 
         List<IConfigurationElement> sortedElements = new ArrayList<>();
         List<IConfigurationElement> remainingElements = new ArrayList<>(Arrays.asList(extElements));
@@ -296,14 +297,13 @@ public class DataSourceProviderRegistry implements DBPDataSourceProviderRegistry
         }
         // If there are still remaining elements, then we have a cycle or broken dependencies
         if (!remainingElements.isEmpty()) {
-            throw new IllegalStateException("Can't sort datasource providers - cyclic or broken dependencies detected among: " +
+            log.error("Cyclic or broken dependencies detected among datasource providers: " +
                 remainingElements.stream()
                     .map(e -> e.getAttribute(RegistryConstants.ATTR_ID))
-                    .collect(Collectors.joining(", "))
-            );
+                    .collect(Collectors.joining(", ")));
         }
         if (sortedElements.size() != extElements.length) {
-            throw new IllegalStateException("Sorted elements size doesn't match the original one");
+            log.error("Sorted elements size doesn't match the original one");
         }
 
         return sortedElements;
