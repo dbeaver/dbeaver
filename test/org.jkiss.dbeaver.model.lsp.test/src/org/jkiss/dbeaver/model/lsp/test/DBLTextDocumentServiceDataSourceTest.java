@@ -163,7 +163,9 @@ public class DBLTextDocumentServiceDataSourceTest extends DBeaverUnitTest {
         CompletionList completions = service.completion(completionParams).get().getRight();
 
         Assert.assertNotNull(completions);
-        Assert.assertFalse(completions.getItems().isEmpty());
-        Assert.assertEquals("SELECT", completions.getItems().getFirst().getLabel());
+        List<String> items = completions.getItems().stream().map(CompletionItem::getLabel).toList();
+        Assert.assertEquals(2, items.size());
+        Assert.assertTrue(items.contains("TEST_TABLE1"));
+        Assert.assertTrue(items.contains("TEST_TABLE2"));
     }
 }
