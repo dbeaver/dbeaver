@@ -262,21 +262,30 @@ public class DataSourceProviderRegistry implements DBPDataSourceProviderRegistry
         readDriversConfig();
     }
 
+    /**
+     * Topologically sorts extension elements so parents appear before their children.
+     * Scans remaining elements, appends those with no parent or whose parent was processed,
+     * removes appended items and repeats until all are processed.
+     */
     private List<IConfigurationElement> sortConfigurationElements(IConfigurationElement[] extElements) {
 
         List<IConfigurationElement> sortedElements = new ArrayList<>();
-        List<IConfigurationElement> remaining = new ArrayList<>(Arrays.asList(extElements));
+        List<IConfigurationElement> remainingElements = new ArrayList<>(Arrays.asList(extElements));
         Set<String> processedIds = new HashSet<>();
 
+        // Progress flag: if a full pass over `remaining` doesn't process any element,
+        // then further passes are pointless (cycle or missing parents detected).
         boolean progress = true;
-        while (!remaining.isEmpty() && progress) {
+        while (!remainingElements.isEmpty() && progress) {
             progress = false;
-            Iterator<IConfigurationElement> it = remaining.iterator();
+            Iterator<IConfigurationElement> it = remainingElements.iterator();
             while (it.hasNext()) {
                 IConfigurationElement element = it.next();
                 String parentId = element.getAttribute(RegistryConstants.ATTR_PARENT);
                 String id = element.getAttribute(RegistryConstants.ATTR_ID);
 
+                // If element has no parent (root) or its parent was already processed,
+                // it is safe to append it to the result now.
                 if (CommonUtils.isEmpty(parentId) || processedIds.contains(parentId)) {
                     sortedElements.add(element);
                     processedIds.add(id);
@@ -285,10 +294,10 @@ public class DataSourceProviderRegistry implements DBPDataSourceProviderRegistry
                 }
             }
         }
-
-        if (!remaining.isEmpty()) {
+        // If there are still remaining elements, then we have a cycle or broken dependencies
+        if (!remainingElements.isEmpty()) {
             throw new IllegalStateException("Can't sort datasource providers - cyclic or broken dependencies detected among: " +
-                remaining.stream()
+                remainingElements.stream()
                     .map(e -> e.getAttribute(RegistryConstants.ATTR_ID))
                     .collect(Collectors.joining(", "))
             );
