@@ -72,7 +72,7 @@ public class JDBCFactoryDefault implements JDBCFactory {
         @NotNull ResultSet original,
         boolean disableLogging
     ) throws SQLException {
-        return new JDBCResultSetImpl(session, statement, original, disableLogging);
+        return JDBCResultSetImpl.makeResultSet(session, statement, original, disableLogging);
     }
 
     @Override

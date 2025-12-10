@@ -53,7 +53,7 @@ public interface JDBCFactory {
 
     JDBCResultSet createResultSet(
         @NotNull JDBCSession session,
-        @Nullable JDBCStatement statement,
+        @NotNull JDBCStatement statement,
         @NotNull ResultSet original,
         boolean disableLogging
     ) throws SQLException;

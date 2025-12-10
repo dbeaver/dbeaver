@@ -80,7 +80,7 @@ public class WMIResultSet implements DBCResultSet, DBCResultSetMetaData, DBCEnti
         return session;
     }
 
-    @NotNull
+    @Nullable
     @Override
     public DBCStatement getSourceStatement()
     {
