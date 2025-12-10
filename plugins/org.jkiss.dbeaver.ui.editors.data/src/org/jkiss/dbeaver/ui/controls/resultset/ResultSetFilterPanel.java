@@ -66,7 +66,6 @@ import org.jkiss.dbeaver.ui.controls.resultset.actions.FilterResetAllPinsAction;
 import org.jkiss.dbeaver.ui.controls.resultset.actions.FilterResetAllSettingsAction;
 import org.jkiss.dbeaver.ui.controls.resultset.actions.FilterResetAllTransformersAction;
 import org.jkiss.dbeaver.ui.controls.resultset.colors.ResetAllColorAction;
-import org.jkiss.dbeaver.ui.controls.resultset.handler.ResultSetHandlerMain;
 import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
 import org.jkiss.dbeaver.ui.controls.resultset.spreadsheet.SpreadsheetCommandHandler;
 import org.jkiss.dbeaver.ui.css.CSSUtils;
@@ -271,7 +270,7 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
                 filtersClearButton = new ToolItem(filterToolbar, SWT.NO_FOCUS | SWT.DROP_DOWN);
                 filtersClearButton.setImage(DBeaverIcons.getImage(UIIcon.ERASE));
                 filtersClearButton.setToolTipText(ActionUtils.findCommandDescription(
-                    ResultSetHandlerMain.CMD_FILTER_CLEAR_SETTING,
+                    IResultSetCommands.CMD_FILTER_CLEAR_SETTING,
                     viewer.getSite(),
                     false
                 ));
@@ -282,7 +281,7 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
             ToolItem filtersCustomButton = new ToolItem(filterToolbar, SWT.NO_FOCUS | SWT.DROP_DOWN);
             filtersCustomButton.setImage(DBeaverIcons.getImage(UIIcon.FILTER));
             filtersCustomButton.setToolTipText(ActionUtils.findCommandDescription(
-                ResultSetHandlerMain.CMD_FILTER_EDIT_SETTINGS,
+                IResultSetCommands.CMD_FILTER_EDIT_SETTINGS,
                 viewer.getSite(),
                 false
             ));
@@ -1343,7 +1342,7 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
     private class EraseItemListener extends AbstractDropDownListener {
         @Override
         protected void fillDropDownMenu(MenuManager menuManager) {
-            menuManager.add(ActionUtils.makeCommandContribution(viewer.getSite(), ResultSetHandlerMain.CMD_FILTER_CLEAR_SETTING));
+            menuManager.add(ActionUtils.makeCommandContribution(viewer.getSite(), IResultSetCommands.CMD_FILTER_CLEAR_SETTING));
             if (viewer.getDataFilter().hasHiddenAttributes()) {
                 menuManager.add(ActionUtils.makeCommandContribution(
                     viewer.getSite(),
@@ -1381,10 +1380,10 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
         @Override
         protected void fillDropDownMenu(MenuManager menuManager) {
             menuManager.add(ActionUtils.makeCommandContribution(
-                viewer.getSite(), ResultSetHandlerMain.CMD_FILTER_EDIT_SETTINGS));
+                viewer.getSite(), IResultSetCommands.CMD_FILTER_EDIT_SETTINGS));
             if (viewer.getDataContainer() instanceof DBSEntity) {
                 menuManager.add(ActionUtils.makeCommandContribution(
-                    viewer.getSite(), ResultSetHandlerMain.CMD_FILTER_SAVE_SETTING));
+                    viewer.getSite(), IResultSetCommands.CMD_FILTER_SAVE_SETTING));
             }
 
             if (showHistoryItems) {
@@ -1399,7 +1398,7 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
                 ));
                 menuManager.add(ActionUtils.makeCommandContribution(
                     viewer.getSite(),
-                    ResultSetHandlerMain.CMD_FILTER_CLEAR_SETTING
+                    IResultSetCommands.CMD_FILTER_CLEAR_SETTING
                 ));
             }
         }
