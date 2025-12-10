@@ -162,4 +162,18 @@ public class DBLTextDocumentServiceDataSourceTest extends DBeaverUnitTest {
         Assert.assertEquals(1, end.getLine());
         Assert.assertEquals(97, end.getCharacter());
     }
+
+    @Test
+    public void shouldSuggestBasicCompletion() throws ExecutionException, InterruptedException {
+        String query = "SELECT * FROM table\nWH";
+        ContextAwareDocument document = DocumentServiceUtils.createAndSaveDocument(service, query);
+        TextDocumentIdentifier documentId = new TextDocumentIdentifier(document.getUri());
+        service.initContext(documentId, project.getId(), dataSourceContainer.getId());
+        CompletionParams completionParams = new CompletionParams(documentId, new Position(1, 1));
+
+        CompletionList completions = service.completion(completionParams).get().getRight();
+
+        Assert.assertNotNull(completions);
+        Assert.assertFalse(completions.getItems().isEmpty());
+    }
 }

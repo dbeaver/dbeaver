@@ -25,6 +25,7 @@ import org.eclipse.lsp4j.services.LanguageClientAware;
 import org.eclipse.lsp4j.services.TextDocumentService;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
@@ -33,6 +34,7 @@ import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
 import org.jkiss.dbeaver.model.lsp.context.ContextAwareDocument;
 import org.jkiss.dbeaver.model.lsp.context.LspSQLCompletionContext;
+import org.jkiss.dbeaver.model.lsp.context.LspSQLCompletionContextParser;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLSyntaxManager;
 import org.jkiss.dbeaver.model.sql.completion.SQLCompletionContext;
@@ -42,6 +44,7 @@ import org.jkiss.dbeaver.model.sql.format.tokenized.SQLFormatterTokenized;
 import org.jkiss.dbeaver.model.sql.parser.SQLRuleManager;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -173,23 +176,70 @@ public class DBLTextDocumentService implements TextDocumentService, LanguageClie
         return List.of(new TextEdit(range, formattedText));
     }
 
+    @NotNull
     @Override
-    public CompletableFuture<Either<List<CompletionItem>, CompletionList>> completion(CompletionParams position) {
-        String documentUri = position.getTextDocument().getUri();
-        ContextAwareDocument textDocument = documentCache.get(documentUri);
-        if (textDocument == null) {
-            log.warn(String.format("Completion requested for an unknown document %s", documentUri));
-            return CompletableFuture.completedFuture(Either.forRight(new CompletionList()));
+    public CompletableFuture<Either<List<CompletionItem>, CompletionList>> completion(@NotNull CompletionParams params) {
+        log.debug("\"completion with params: \"" + params);
+
+        return CompletableFutures.computeAsync(cancelChecker -> {
+            try {
+                return completion(params, cancelChecker);
+            } catch (InterruptedException | InvocationTargetException | DBException e) {
+                log.error("Error when getting completion items: ", e);
+                return Either.forRight(new CompletionList());
+            }
+        });
+    }
+
+    private Either<List<CompletionItem>, CompletionList> completion(
+        @NotNull CompletionParams params,
+        @NotNull CancelChecker cancelChecker
+    ) throws InterruptedException, InvocationTargetException, DBException {
+        cancelChecker.checkCanceled();
+
+        String documentUri = params.getTextDocument().getUri();
+        ContextAwareDocument document = documentCache.get(documentUri);
+        if (document == null) {
+            log.error(String.format("Completion requested for an unknown document %s", documentUri));
+            return Either.forRight(new CompletionList());
+        } else if (document.getDataSource() == null) {
+            log.error(String.format("Completion requested for a document with no data source %s", documentUri));
+            return Either.forRight(new CompletionList());
         }
 
+        int offset = positionToOffset(document.getText(), params.getPosition());
         SQLCompletionContext completionContext = new LspSQLCompletionContext(
-            textDocument.getDataSource(),
-            textDocument.getExecutionContext(),
-            textDocument.getSyntaxManager(),
-            textDocument.getRuleManager()
+            document.getDataSource(),
+            document.getExecutionContext(),
+            document.getSyntaxManager(),
+            document.getRuleManager()
         );
+        return Either.forRight(new CompletionList(
+            LspSQLCompletionContextParser.createCompletionsList(document, offset, completionContext)
+        ));
+    }
 
-        return TextDocumentService.super.completion(position); // FIXME: this is a mock, replace
+    private int positionToOffset(@NotNull String text, @NotNull Position position) {
+        String[] lines = text.split("\n");
+        if (lines.length <= position.getLine()) {
+            throw new IllegalArgumentException("Invalid line number " + position.getLine());
+        }
+
+        int lineIndex = 0;
+        int offset = 0;
+        for (String line : lines) {
+            if (lineIndex < position.getLine()) {
+                offset += line.length();
+                lineIndex++;
+            } else {
+                if (line.length() < position.getCharacter()) {
+                    throw new IllegalArgumentException("Invalid char number " + position.getCharacter());
+                }
+                offset += position.getCharacter();
+            }
+        }
+
+        return offset;
     }
 
     @NotNull
