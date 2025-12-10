@@ -121,7 +121,6 @@ public class RegistryConstants {
     public static final String ATTR_AUTO_CLOSE_CONNECTIONS = "autoCloseConnections"; //$NON-NLS-1$
     public static final String ATTR_CLOSE_CONNECTIONS_PERIOD = "closeConnectionsPeriod"; //$NON-NLS-1$
     public static final String ATTR_PARENT = "parent"; //$NON-NLS-1$
-    public static final String ATTR_PRIORITY = "priority";
     public static final String ATTR_GROUP = "group"; //$NON-NLS-1$
     public static final String ATTR_SINGLETON = "singleton"; //$NON-NLS-1$
     public static final String ATTR_IGNORE_ERRORS = "ignoreErrors"; //$NON-NLS-1$
