@@ -26,7 +26,7 @@ import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBIconComposite;
 import org.jkiss.dbeaver.model.DBPImage;
 
-import java.net.URL;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -202,7 +202,7 @@ public class DBeaverIcons
         IconDescriptor icon = imageMap.get(location);
         if (icon == null) {
             try {
-                ImageDescriptor imageDescriptor = ImageDescriptor.createFromURL(new URL(location));
+                ImageDescriptor imageDescriptor = ImageDescriptor.createFromURL(URI.create(location).toURL());
                 icon = new IconDescriptor(location, imageDescriptor);
                 if (icon.image == null) {
                     log.warn("Bad image: " + location);
