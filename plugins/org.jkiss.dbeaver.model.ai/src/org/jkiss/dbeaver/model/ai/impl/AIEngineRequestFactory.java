@@ -141,7 +141,7 @@ public class AIEngineRequestFactory {
         @NotNull AIPromptGenerator systemPromptGenerator,
         @NotNull AIEngineRequest request
     ) {
-        if (!engineDescriptor.isSupportsFunctions()) {
+        if (!engineDescriptor.isSupportsFunctions() || DBWorkbench.getPlatform().getApplication().isMultiuser()) {
             return;
         }
         List<AIFunctionDescriptor> functions = new ArrayList<>();
