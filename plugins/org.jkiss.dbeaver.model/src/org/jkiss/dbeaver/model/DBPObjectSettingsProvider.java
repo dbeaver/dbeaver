@@ -17,11 +17,13 @@
 package org.jkiss.dbeaver.model;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 
 import java.util.Map;
 
 public interface DBPObjectSettingsProvider {
 
+    @Nullable
     Map<String, String> getObjectSettings(@NotNull String objectId);
 
 }
