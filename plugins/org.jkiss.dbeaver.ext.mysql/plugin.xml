@@ -260,7 +260,7 @@
                 </driver>
                 <driver
                         id="starRocks"
-                        label="StarRocks"
+                        label="StarRocks (Legacy)"
                         icon="icons/starRocks_icon.png"
                         iconBig="icons/starRocks_icon_big.png"
                         logoImage="icons/starRocks_logo.png"
