@@ -97,56 +97,6 @@ import java.util.stream.Collectors;
  */
 public class ResultSetHandlerMain extends AbstractHandler implements IElementUpdater {
 
-    public static final String CMD_TOGGLE_PANELS = "org.jkiss.dbeaver.core.resultset.grid.togglePreview";
-    public static final String CMD_ACTIVATE_PANELS = "org.jkiss.dbeaver.core.resultset.grid.activatePreview";
-    public static final String CMD_TOGGLE_MAXIMIZE = "org.jkiss.dbeaver.core.resultset.grid.togglePanelMaximize";
-    public static final String CMD_TOGGLE_LAYOUT = "org.jkiss.dbeaver.core.resultset.grid.toggleLayout";
-    public static final String CMD_TOGGLE_MODE = "org.jkiss.dbeaver.core.resultset.toggleMode";
-    public static final String CMD_FOCUS_FILTER = "org.jkiss.dbeaver.core.resultset.focus.filter";
-    public static final String CMD_SWITCH_PRESENTATION = "org.jkiss.dbeaver.core.resultset.switchPresentation";
-    public static final String CMD_ROW_FIRST = "org.jkiss.dbeaver.core.resultset.row.first";
-    public static final String CMD_ROW_PREVIOUS = "org.jkiss.dbeaver.core.resultset.row.previous";
-    public static final String CMD_ROW_NEXT = "org.jkiss.dbeaver.core.resultset.row.next";
-    public static final String CMD_ROW_LAST = "org.jkiss.dbeaver.core.resultset.row.last";
-    public static final String CMD_FETCH_PAGE = "org.jkiss.dbeaver.core.resultset.fetch.page";
-    public static final String CMD_FETCH_ALL = "org.jkiss.dbeaver.core.resultset.fetch.all";
-    public static final String CMD_COUNT = "org.jkiss.dbeaver.core.resultset.count";
-    public static final String CMD_ROW_EDIT = "org.jkiss.dbeaver.core.resultset.row.edit";
-    public static final String CMD_ROW_EDIT_INLINE = "org.jkiss.dbeaver.core.resultset.row.edit.inline";
-    public static final String CMD_ROW_ADD = "org.jkiss.dbeaver.core.resultset.row.add";
-    public static final String CMD_ROW_COPY = "org.jkiss.dbeaver.core.resultset.row.copy";
-    public static final String CMD_ROW_COPY_FROM_ABOVE = "org.jkiss.dbeaver.core.resultset.row.copy.from.above";
-    public static final String CMD_ROW_COPY_FROM_BELOW = "org.jkiss.dbeaver.core.resultset.row.copy.from.below";
-    public static final String CMD_ROW_DELETE = "org.jkiss.dbeaver.core.resultset.row.delete";
-    public static final String CMD_CELL_SET_NULL = "org.jkiss.dbeaver.core.resultset.cell.setNull";
-    public static final String CMD_CELL_SET_DEFAULT = "org.jkiss.dbeaver.core.resultset.cell.setDefault";
-    public static final String CMD_CELL_RESET = "org.jkiss.dbeaver.core.resultset.cell.reset";
-    public static final String CMD_APPLY_CHANGES = "org.jkiss.dbeaver.core.resultset.applyChanges";
-    public static final String CMD_APPLY_AND_COMMIT_CHANGES = "org.jkiss.dbeaver.core.resultset.applyAndCommitChanges";
-    public static final String CMD_REJECT_CHANGES = "org.jkiss.dbeaver.core.resultset.rejectChanges";
-    public static final String CMD_GENERATE_SCRIPT = "org.jkiss.dbeaver.core.resultset.generateScript";
-    public static final String CMD_TOGGLE_CONFIRM_SAVE = "org.jkiss.dbeaver.core.resultset.toggleConfirmSave";
-    public static final String CMD_NAVIGATE_LINK = "org.jkiss.dbeaver.core.resultset.navigateLink";
-    public static final String CMD_FILTER_MENU = "org.jkiss.dbeaver.core.resultset.filterMenu";
-    public static final String CMD_FILTER_MENU_DISTINCT = "org.jkiss.dbeaver.core.resultset.filterMenu.distinct";
-    public static final String CMD_FILTER_EDIT_SETTINGS = "org.jkiss.dbeaver.core.resultset.filterSettings";
-    public static final String CMD_FILTER_SAVE_SETTING = "org.jkiss.dbeaver.core.resultset.filterSave";
-    public static final String CMD_FILTER_CLEAR_SETTING = "org.jkiss.dbeaver.core.resultset.filterClear";
-    public static final String CMD_REFERENCES_MENU = "org.jkiss.dbeaver.core.resultset.referencesMenu";
-    public static final String CMD_COPY_COLUMN_NAMES = "org.jkiss.dbeaver.core.resultset.grid.copyColumnNames";
-    public static final String CMD_COPY_ROW_NAMES = "org.jkiss.dbeaver.core.resultset.grid.copyRowNames";
-    public static final String CMD_EXPORT = "org.jkiss.dbeaver.core.resultset.export";
-
-    public static final String CMD_ZOOM_IN = "org.jkiss.dbeaver.core.resultset.zoomIn";
-    public static final String CMD_ZOOM_OUT = "org.jkiss.dbeaver.core.resultset.zoomOut";
-
-    public static final String CMD_TOGGLE_ORDER = "org.jkiss.dbeaver.core.resultset.toggleOrder";
-    public static final String CMD_SELECT_ROW_COLOR = "org.jkiss.dbeaver.core.resultset.grid.selectRowColor";
-
-    public static final String CMD_GO_TO_COLUMN = "org.jkiss.dbeaver.core.resultset.grid.gotoColumn";
-    public static final String CMD_GO_TO_ROW = "org.jkiss.dbeaver.core.resultset.grid.gotoRow";
-    public static final String PARAM_EXPORT_WITH_PARAM = "exportWithParameter";
-
     @Nullable
     public static IResultSetController getActiveResultSet(@Nullable IWorkbenchPart activePart) {
         return getActiveResultSet(activePart, false);
@@ -203,62 +153,62 @@ public class ResultSetHandlerMain extends AbstractHandler implements IElementUpd
             case IWorkbenchCommandConstants.FILE_REFRESH:
                 rsv.refreshData(null);
                 break;
-            case CMD_TOGGLE_MODE:
+            case IResultSetCommands.CMD_TOGGLE_MODE:
                 rsv.toggleMode();
                 break;
-            case CMD_TOGGLE_PANELS:
+            case IResultSetCommands.CMD_TOGGLE_PANELS:
                 rsv.showPanels(!rsv.isPanelsVisible(), true, true);
                 break;
-            case CMD_ACTIVATE_PANELS:
+            case IResultSetCommands.CMD_ACTIVATE_PANELS:
                 rsv.togglePanelsFocus();
                 break;
-            case CMD_TOGGLE_MAXIMIZE:
+            case IResultSetCommands.CMD_TOGGLE_MAXIMIZE:
                 rsv.togglePanelsMaximize();
                 break;
-            case CMD_TOGGLE_LAYOUT:
+            case IResultSetCommands.CMD_TOGGLE_LAYOUT:
                 rsv.toggleVerticalLayout();
                 break;
-            case CMD_FOCUS_FILTER:
+            case IResultSetCommands.CMD_FOCUS_FILTER:
                 rsv.switchFilterFocus();
                 break;
-            case CMD_SWITCH_PRESENTATION:
+            case IResultSetCommands.CMD_SWITCH_PRESENTATION:
                 rsv.switchPresentation();
                 break;
-            case CMD_ROW_PREVIOUS:
+            case IResultSetCommands.CMD_ROW_PREVIOUS:
             case ITextEditorActionDefinitionIds.WORD_PREVIOUS:
                 presentation.scrollToRow(IResultSetPresentation.RowPosition.PREVIOUS);
                 break;
-            case CMD_ROW_NEXT:
+            case IResultSetCommands.CMD_ROW_NEXT:
             case ITextEditorActionDefinitionIds.WORD_NEXT:
                 presentation.scrollToRow(IResultSetPresentation.RowPosition.NEXT);
                 break;
-            case CMD_ROW_FIRST:
+            case IResultSetCommands.CMD_ROW_FIRST:
             case ITextEditorActionDefinitionIds.SELECT_WORD_PREVIOUS:
                 presentation.scrollToRow(IResultSetPresentation.RowPosition.FIRST);
                 break;
-            case CMD_ROW_LAST:
+            case IResultSetCommands.CMD_ROW_LAST:
             case ITextEditorActionDefinitionIds.SELECT_WORD_NEXT:
                 presentation.scrollToRow(IResultSetPresentation.RowPosition.LAST);
                 break;
-            case CMD_FETCH_PAGE:
+            case IResultSetCommands.CMD_FETCH_PAGE:
                 rsv.readNextSegment();
                 break;
-            case CMD_FETCH_ALL:
+            case IResultSetCommands.CMD_FETCH_ALL:
                 rsv.readAllData();
                 break;
-            case CMD_ROW_EDIT:
-                if (presentation instanceof IResultSetEditor) {
-                    ((IResultSetEditor) presentation).openValueEditor(false);
+            case IResultSetCommands.CMD_ROW_EDIT:
+                if (presentation instanceof IResultSetEditor rse) {
+                    rse.openValueEditor(false);
                 }
                 break;
-            case CMD_ROW_EDIT_INLINE:
-                if (presentation instanceof IResultSetEditor) {
-                    ((IResultSetEditor) presentation).openValueEditor(true);
+            case IResultSetCommands.CMD_ROW_EDIT_INLINE:
+                if (presentation instanceof IResultSetEditor rse) {
+                    rse.openValueEditor(true);
                 }
                 break;
-            case CMD_ROW_ADD:
-            case CMD_ROW_COPY: {
-                boolean copy = actionId.equals(CMD_ROW_COPY);
+            case IResultSetCommands.CMD_ROW_ADD:
+            case IResultSetCommands.CMD_ROW_COPY: {
+                boolean copy = actionId.equals(IResultSetCommands.CMD_ROW_COPY);
                 boolean shiftPressed = event.getTrigger() instanceof Event && ((((Event) event.getTrigger()).stateMask & SWT.SHIFT) == SWT.SHIFT);
                 final RowPlacement placement;
 
@@ -272,21 +222,21 @@ public class ResultSetHandlerMain extends AbstractHandler implements IElementUpd
                 rsv.getActivePresentation().getControl().setFocus();
                 break;
             }
-            case CMD_ROW_COPY_FROM_ABOVE:
-            case CMD_ROW_COPY_FROM_BELOW: {
-                rsv.copyRowValues(actionId.equals(CMD_ROW_COPY_FROM_ABOVE), true);
+            case IResultSetCommands.CMD_ROW_COPY_FROM_ABOVE:
+            case IResultSetCommands.CMD_ROW_COPY_FROM_BELOW: {
+                rsv.copyRowValues(actionId.equals(IResultSetCommands.CMD_ROW_COPY_FROM_ABOVE), true);
                 break;
             }
-            case CMD_ROW_DELETE:
+            case IResultSetCommands.CMD_ROW_DELETE:
             case IWorkbenchCommandConstants.EDIT_DELETE:
                 // Execute in async mode. Otherwise if user holds DEL button pressed then all keyboard
                 // events are processed in sync mode and first pain event after all keyboard events.
                 // Bad UIX.
                 UIUtils.asyncExec(rsv::deleteSelectedRows);
                 break;
-            case CMD_CELL_SET_NULL:
-            case CMD_CELL_SET_DEFAULT:
-            case CMD_CELL_RESET: {
+            case IResultSetCommands.CMD_CELL_SET_NULL:
+            case IResultSetCommands.CMD_CELL_SET_DEFAULT:
+            case IResultSetCommands.CMD_CELL_RESET: {
                 IResultSetSelection selection = rsv.getSelection();
                 for (Object cell : selection.toArray()) {
                     DBDAttributeBinding attr = selection.getElementAttribute(cell);
@@ -297,14 +247,14 @@ public class ResultSetHandlerMain extends AbstractHandler implements IElementUpd
                             new ResultSetCellLocation(attr, row, selection.getElementRowIndexes(cell)),
                             IValueController.EditType.NONE,
                             null);
-                        if (actionId.equals(CMD_CELL_SET_NULL)) {
+                        if (actionId.equals(IResultSetCommands.CMD_CELL_SET_NULL)) {
                             valueController.updateValue(
                                 BaseValueManager.makeNullValue(valueController), false);
-                        } else if (actionId.equals(CMD_CELL_SET_DEFAULT)) {
+                        } else if (actionId.equals(IResultSetCommands.CMD_CELL_SET_DEFAULT)) {
                             DBDValueHandler valueHandler = valueController.getValueHandler();
-                            if (valueHandler instanceof DBDValueDefaultGenerator) {
+                            if (valueHandler instanceof DBDValueDefaultGenerator vdg && rsv.getExecutionContext() != null) {
                                 try (DBCSession session = rsv.getExecutionContext().openSession(new VoidProgressMonitor(), DBCExecutionPurpose.UTIL, "Generate default value")) {
-                                    Object defValue = ((DBDValueDefaultGenerator) valueHandler).generateDefaultValue(session, valueController.getValueType());
+                                    Object defValue = vdg.generateDefaultValue(session, valueController.getValueType());
                                     valueController.updateValue(defValue, false);
                                 }
                             }
@@ -317,8 +267,8 @@ public class ResultSetHandlerMain extends AbstractHandler implements IElementUpd
                 rsv.updatePanelsContent(false);
                 break;
             }
-            case CMD_APPLY_CHANGES:
-            case CMD_APPLY_AND_COMMIT_CHANGES: {
+            case IResultSetCommands.CMD_APPLY_CHANGES:
+            case IResultSetCommands.CMD_APPLY_AND_COMMIT_CHANGES: {
                 if (dataSource == null) {
                     return null;
                 }
@@ -326,17 +276,17 @@ public class ResultSetHandlerMain extends AbstractHandler implements IElementUpd
 
                 rsv.applyChanges(null, saveSettings);
 
-                if (actionId.equals(CMD_APPLY_AND_COMMIT_CHANGES)) {
+                if (actionId.equals(IResultSetCommands.CMD_APPLY_AND_COMMIT_CHANGES)) {
                     // Do commit
                     ActionUtils.runCommand(ConnectionCommands.CMD_COMMIT, rsv.getSite());
                 }
 
                 break;
             }
-            case CMD_REJECT_CHANGES:
+            case IResultSetCommands.CMD_REJECT_CHANGES:
                 rsv.rejectChanges();
                 break;
-            case CMD_GENERATE_SCRIPT: {
+            case IResultSetCommands.CMD_GENERATE_SCRIPT: {
                 ResultSetSaveReport saveReport = rsv.generateChangesReport();
                 if (saveReport == null) {
                     return null;
@@ -348,12 +298,12 @@ public class ResultSetHandlerMain extends AbstractHandler implements IElementUpd
                 }
                 break;
             }
-            case CMD_TOGGLE_CONFIRM_SAVE: {
+            case IResultSetCommands.CMD_TOGGLE_CONFIRM_SAVE: {
                 DBPPreferenceStore store = rsv.getPreferenceStore();
                 store.setValue(ResultSetPreferences.RESULT_SET_CONFIRM_BEFORE_SAVE, !store.getBoolean(ResultSetPreferences.RESULT_SET_CONFIRM_BEFORE_SAVE));
                 break;
             }
-            case CMD_COPY_COLUMN_NAMES: {
+            case IResultSetCommands.CMD_COPY_COLUMN_NAMES: {
                 StringBuilder buffer = new StringBuilder();
                 String columnNames = event.getParameter("columns");
 
@@ -397,7 +347,7 @@ public class ResultSetHandlerMain extends AbstractHandler implements IElementUpd
                 ResultSetUtils.copyToClipboard(buffer.toString());
                 break;
             }
-            case CMD_COPY_ROW_NAMES: {
+            case IResultSetCommands.CMD_COPY_ROW_NAMES: {
                 StringBuilder buffer = new StringBuilder();
                 List<ResultSetRow> selectedRows = rsv.getSelection().getSelectedRows();
                 ResultSetCopySettings settings = new ResultSetCopySettings();
@@ -432,8 +382,8 @@ public class ResultSetHandlerMain extends AbstractHandler implements IElementUpd
                 }
                 break;
             case IWorkbenchCommandConstants.EDIT_PASTE:
-                if (presentation instanceof IResultSetEditor) {
-                    ((IResultSetEditor) presentation).pasteFromClipboard(null);
+                if (presentation instanceof IResultSetEditor rse) {
+                    rse.pasteFromClipboard(null);
                 }
                 break;
             case IWorkbenchCommandConstants.EDIT_CUT:
@@ -446,8 +396,8 @@ public class ResultSetHandlerMain extends AbstractHandler implements IElementUpd
                 presentation.printResultSet();
                 break;
             case ITextEditorActionDefinitionIds.SMART_ENTER:
-                if (presentation instanceof IResultSetEditor) {
-                    ((IResultSetEditor) presentation).openValueEditor(false);
+                if (presentation instanceof IResultSetEditor rse) {
+                    rse.openValueEditor(false);
                 }
                 break;
             case IWorkbenchCommandConstants.EDIT_FIND_AND_REPLACE:
@@ -456,7 +406,7 @@ public class ResultSetHandlerMain extends AbstractHandler implements IElementUpd
                     rsv.getAdapter(IFindReplaceTarget.class));
                 action.run();
                 break;
-            case CMD_NAVIGATE_LINK: {
+            case IResultSetCommands.CMD_NAVIGATE_LINK: {
                 final DBDAttributeBinding attr = rsv.getActivePresentation().getCurrentAttribute();
                 if (attr != null) {
                     new AbstractJob("Navigate association") {
@@ -473,7 +423,7 @@ public class ResultSetHandlerMain extends AbstractHandler implements IElementUpd
                 }
                 break;
             }
-            case CMD_COUNT:
+            case IResultSetCommands.CMD_COUNT:
                 rsv.updateRowCount();
                 break;
             case IWorkbenchCommandConstants.NAVIGATE_BACKWARD_HISTORY: {
@@ -490,7 +440,7 @@ public class ResultSetHandlerMain extends AbstractHandler implements IElementUpd
                 }
                 break;
             }
-            case CMD_GO_TO_ROW: {
+            case IResultSetCommands.CMD_GO_TO_ROW: {
                 ResultSetRow currentRow = rsv.getCurrentRow();
                 final int rowCount = rsv.getModel().getRowCount();
                 if (rowCount <= 0) {
@@ -520,7 +470,7 @@ public class ResultSetHandlerMain extends AbstractHandler implements IElementUpd
                 }
                 break;
             }
-            case CMD_GO_TO_COLUMN: {
+            case IResultSetCommands.CMD_GO_TO_COLUMN: {
                 var currentAttribute = rsv.getActivePresentation().getCurrentAttribute();
                 DBDAttributeBinding targetAttribute = askForColumnToGo(activeShell, currentAttribute, rsv.getModel().getAttributes());
                 if (targetAttribute != null) {
@@ -529,42 +479,42 @@ public class ResultSetHandlerMain extends AbstractHandler implements IElementUpd
                 }
                 break;
             }
-            case CMD_FILTER_MENU: {
+            case IResultSetCommands.CMD_FILTER_MENU: {
                 rsv.showFiltersMenu();
                 break;
             }
-            case CMD_FILTER_MENU_DISTINCT: {
+            case IResultSetCommands.CMD_FILTER_MENU_DISTINCT: {
                 DBDAttributeBinding curAttribute = rsv.getActivePresentation().getFocusAttribute();
                 if (curAttribute != null) {
                     rsv.showFiltersDistinctMenu(curAttribute, true);
                 }
                 break;
             }
-            case CMD_FILTER_EDIT_SETTINGS: {
+            case IResultSetCommands.CMD_FILTER_EDIT_SETTINGS: {
                 rsv.showFilterSettingsDialog();
                 break;
             }
-            case CMD_FILTER_SAVE_SETTING: {
+            case IResultSetCommands.CMD_FILTER_SAVE_SETTING: {
                 rsv.saveDataFilter();
                 break;
             }
-            case CMD_FILTER_CLEAR_SETTING: {
+            case IResultSetCommands.CMD_FILTER_CLEAR_SETTING: {
                 rsv.clearDataFilter(true);
                 break;
             }
-            case CMD_REFERENCES_MENU: {
+            case IResultSetCommands.CMD_REFERENCES_MENU: {
                 boolean shiftPressed = event.getTrigger() instanceof Event && ((((Event) event.getTrigger()).stateMask & SWT.SHIFT) == SWT.SHIFT);
                 rsv.showReferencesMenu(shiftPressed);
                 break;
             }
-            case CMD_EXPORT: {
+            case IResultSetCommands.CMD_EXPORT: {
                 if (ApplicationPolicyProvider.getInstance().isPolicyEnabled(ApplicationPolicyProvider.POLICY_DATA_EXPORT)) {
                     UIUtils.showMessageBox(HandlerUtil.getActiveShell(event),
                         UIMessages.dialog_policy_data_export_title,
                         UIMessages.dialog_policy_data_export_msg,
                         SWT.ICON_WARNING);
                 } else {
-                    if (event.getParameter(PARAM_EXPORT_WITH_PARAM) != null) {
+                    if (event.getParameter(IResultSetCommands.PARAM_EXPORT_WITH_PARAM) != null) {
                         String defProc = ResultSetHandlerOpenWith.getDefaultOpenWithProcessor();
                         if (!CommonUtils.isEmpty(defProc)) {
                             // Run "open with"
@@ -591,30 +541,28 @@ public class ResultSetHandlerMain extends AbstractHandler implements IElementUpd
                 }
                 break;
             }
-            case CMD_ZOOM_IN:
-            case CMD_ZOOM_OUT: {
+            case IResultSetCommands.CMD_ZOOM_IN:
+            case IResultSetCommands.CMD_ZOOM_OUT: {
                 FontRegistry fontRegistry = UIUtils.getCurrentTheme().getFontRegistry();
                 Font font = fontRegistry.get(presentation.getFontId());
                 if (font != null) {
                     FontData[] fondData= font.getFontData();
-                    if (fondData != null) {
-                        int zoomFactor = actionId.equals(CMD_ZOOM_IN) ? 1 : -1;
-                        FontDescriptor fd = createFontDescriptor(fondData, zoomFactor);
-                        fontRegistry.put(presentation.getFontId(), fd.getFontData());
-                    }
+                    int zoomFactor = actionId.equals(IResultSetCommands.CMD_ZOOM_IN) ? 1 : -1;
+                    FontDescriptor fd = createFontDescriptor(fondData, zoomFactor);
+                    fontRegistry.put(presentation.getFontId(), fd.getFontData());
                 }
 
                 break;
             }
-            case CMD_TOGGLE_ORDER: {
+            case IResultSetCommands.CMD_TOGGLE_ORDER: {
                 final DBDAttributeBinding attr = rsv.getActivePresentation().getFocusAttribute();
                 if (attr != null) {
                     rsv.toggleSortOrder(attr, null);
                 }
                 break;
             }
-            case CMD_SELECT_ROW_COLOR: {
-                if (activePart != null) {
+            case IResultSetCommands.CMD_SELECT_ROW_COLOR: {
+                {
                     ResultSetViewer resultSetViewer = activePart.getAdapter(ResultSetViewer.class);
                     if (presentation instanceof SpreadsheetPresentation ssp) {
                         UIUtils.asyncExec(() -> {
@@ -694,14 +642,14 @@ public class ResultSetHandlerMain extends AbstractHandler implements IElementUpd
 
     @Override
     public void updateElement(UIElement element, Map parameters) {
-        if (parameters.get(PARAM_EXPORT_WITH_PARAM) != null) {
+        if (parameters.get(IResultSetCommands.PARAM_EXPORT_WITH_PARAM) != null) {
             final String processorId = ResultSetHandlerOpenWith.getDefaultOpenWithProcessor();
             final DataTransferProcessorDescriptor descriptor = ResultSetHandlerCopyAs.getActiveProcessor(processorId);
 
             if (descriptor == null) {
-                element.setText(ActionUtils.findCommandName(CMD_EXPORT));
-                element.setIcon(ActionUtils.findCommandImage(CMD_EXPORT));
-                element.setTooltip(ActionUtils.findCommandDescription(CMD_EXPORT, element.getServiceLocator(), false));
+                element.setText(ActionUtils.findCommandName(IResultSetCommands.CMD_EXPORT));
+                element.setIcon(ActionUtils.findCommandImage(IResultSetCommands.CMD_EXPORT));
+                element.setTooltip(ActionUtils.findCommandDescription(IResultSetCommands.CMD_EXPORT, element.getServiceLocator(), false));
             } else {
                 element.setText(descriptor.getAppName());
                 element.setIcon(DBeaverIcons.getImageDescriptor(descriptor.getIcon()));
@@ -781,30 +729,27 @@ public class ResultSetHandlerMain extends AbstractHandler implements IElementUpd
                 return "Unknown column name"; //NON-NLS-1
             }
         };
-        IContentProposalProvider proposalProvider = new IContentProposalProvider() {
-            @Override
-            public IContentProposal[] getProposals(String contents, int position) {
-                String pattern = contents.substring(0, position).toUpperCase();
-                // Our existing trie (used in SQL parsing) works fine but only for prefix-based lookups, but here we want suffix lookups.
-                // Should use suffix tree instead of this for faster lookups on large attributes set:
-                //     O(patternLength+resultsCount) for suffix tree VS O(patternLength*totalKnownAttrsCount) for present solution
-                // See pretty dumb scale-irrelevant illustration
-                //     at https://www.wolframalpha.com/input?i=Plot%5B%7Bn%2Bn*10%2Cn*n%7D%2C%7Bn%2C0%2C30%7D%5D
-                // The same for MetaDataPanel::refresh(..)
-                // Correctly used suffix tree also capable of giving results sorting for free, while here we are sorting explicitly.
-                List<IContentProposal> entries = attrsByName.entrySet().stream()
-                        .filter(kv -> kv.getKey().contains(pattern))
-                        .map(kv -> kv.getValue().getSecond())
-                        .collect(Collectors.toCollection(() -> new ArrayList<>(attrsByName.size())));
-                entries.sort((a, b) -> { // list sorting works inplace instead of additional temporary buffer for streams
-                    String x = a.getContent();
-                    String y = b.getContent();
-                    boolean xs = x.startsWith(pattern);
-                    boolean ys = y.startsWith(pattern);
-                    return (xs ^ ys) ? (xs ? -1 : 1) : x.compareToIgnoreCase(y);
-                });
-                return entries.toArray(new IContentProposal[0]);
-            }
+        IContentProposalProvider proposalProvider = (contents, position) -> {
+            String pattern = contents.substring(0, position).toUpperCase();
+            // Our existing trie (used in SQL parsing) works fine but only for prefix-based lookups, but here we want suffix lookups.
+            // Should use suffix tree instead of this for faster lookups on large attributes set:
+            //     O(patternLength+resultsCount) for suffix tree VS O(patternLength*totalKnownAttrsCount) for present solution
+            // See pretty dumb scale-irrelevant illustration
+            //     at https://www.wolframalpha.com/input?i=Plot%5B%7Bn%2Bn*10%2Cn*n%7D%2C%7Bn%2C0%2C30%7D%5D
+            // The same for MetaDataPanel::refresh(..)
+            // Correctly used suffix tree also capable of giving results sorting for free, while here we are sorting explicitly.
+            List<IContentProposal> entries = attrsByName.entrySet().stream()
+                    .filter(kv -> kv.getKey().contains(pattern))
+                    .map(kv -> kv.getValue().getSecond())
+                    .collect(Collectors.toCollection(() -> new ArrayList<>(attrsByName.size())));
+            entries.sort((a, b) -> { // list sorting works inplace instead of additional temporary buffer for streams
+                String x = a.getContent();
+                String y = b.getContent();
+                boolean xs = x.startsWith(pattern);
+                boolean ys = y.startsWith(pattern);
+                return (xs ^ ys) ? (xs ? -1 : 1) : x.compareToIgnoreCase(y);
+            });
+            return entries.toArray(new IContentProposal[0]);
         };
         InputDialog dialog = new InputDialog(
             activeShell,
