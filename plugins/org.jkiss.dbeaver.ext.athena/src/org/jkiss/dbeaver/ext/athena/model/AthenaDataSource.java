@@ -51,7 +51,11 @@ public class AthenaDataSource extends GenericDataSource {
     ) throws DBCException {
         Map<String, String> props = new HashMap<>();
         if (CommonUtils.isEmpty(connectionInfo.getDatabaseName())) {
-            connectionInfo.setDatabaseName(connectionInfo.getProviderProperty(AthenaConstants.DRIVER_PROP_S3_OUTPUT_LOCATION));
+            String s3OutputLocation = connectionInfo.getProviderProperty(AthenaConstants.DRIVER_PROP_S3_OUTPUT_LOCATION);
+            if (s3OutputLocation == null) {
+                s3OutputLocation = connectionInfo.getProviderProperty(AthenaConstants.DRIVER_PROP_S3_OUTPUT_LOCATION_OLD);
+            }
+            connectionInfo.setDatabaseName(s3OutputLocation);
         }
         if (!CommonUtils.isEmpty(connectionInfo.getDatabaseName())) {
             props.put(AthenaConstants.DRIVER_PROP_S3_OUTPUT_LOCATION, connectionInfo.getDatabaseName());
