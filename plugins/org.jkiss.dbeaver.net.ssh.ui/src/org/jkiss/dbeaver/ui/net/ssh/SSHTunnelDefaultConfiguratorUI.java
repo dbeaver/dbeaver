@@ -736,8 +736,7 @@ public class SSHTunnelDefaultConfiguratorUI implements IObjectPropertyConfigurat
         @NotNull
         private ConfigurationFileSelector getConfigurationFileSelector(@NotNull ModifyListener listener) {
             boolean isDistributed = DBWorkbench.isDistributed();
-            final ConfigurationFileSelector privateKeyText;
-            privateKeyText = new ConfigurationFileSelector(
+            ConfigurationFileSelector selector = new ConfigurationFileSelector(
                 this,
                 SSHUIMessages.model_ssh_configurator_dialog_choose_private_key, new String[]{"*", "*.ssh", "*.pem", "*.*"},
                 false,
@@ -752,12 +751,12 @@ public class SSHTunnelDefaultConfiguratorUI implements IObjectPropertyConfigurat
                     );
                 }
             };
-            privateKeyText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-            privateKeyText.getTextControl().addModifyListener(listener);
+            selector.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+            selector.getTextControl().addModifyListener(listener);
             if (isDistributed) {
-                privateKeyText.getTextControl().setEditable(false);
+                selector.getTextControl().setEditable(false);
             }
-            return privateKeyText;
+            return selector;
         }
 
         public void loadSettings(@NotNull ConfigurationWrapper wrapper, boolean forceSavePassword) {
