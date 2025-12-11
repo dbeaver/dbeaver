@@ -75,7 +75,7 @@
             id="org.jkiss.dbeaver.config.migration.pgadmin"
             name="pgAdmin 4"
             icon="icons/pg_admin.png">
-            <description>pgAdmin servers.json</description>
+            <description>PgAdmin 4</description>
         </wizard>
 
     </extension>
