@@ -134,7 +134,7 @@ public class SQLServerView extends SQLServerTableBase implements DBSView {
         }
         if (ddl == null) {
             if (isPersisted()) {
-                String ddl1 = SQLServerUtils.extractSource(monitor, getSchema(), getName());
+                String ddl1 = SQLServerUtils.extractSource(monitor, this);
                 ddl = SQLServerUtils.changeCreateToAlterDDL(getDataSource(), ddl1);
             } else {
                 String createOrAlter = getDataSource().isAtLeastV16() ? "CREATE OR ALTER" : "ALTER";
