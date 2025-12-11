@@ -51,12 +51,7 @@ public class WMIResultSet implements DBCResultSet, DBCResultSetMetaData, DBCEnti
         this.rows = rows;
         this.iterator = rows.iterator();
         this.row = null;
-        this.statement = new LocalStatement(session, "") {
-            @Override
-            public void close() throws DBException {
-                // do nothing;
-            }
-        };
+        this.statement = new LocalStatement(session, "");
         {
             // Init meta properties
             WMIObject metaObject;
