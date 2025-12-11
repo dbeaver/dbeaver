@@ -74,6 +74,7 @@ public final class DBLServer implements LanguageServer, LanguageClientAware {
         serverCapabilities.setTextDocumentSync(options);
         //https://microsoft.github.io/language-server-protocol/specifications/specification-current/#textDocument_formatting
         serverCapabilities.setDocumentFormattingProvider(new DocumentFormattingOptions());
+        serverCapabilities.setCompletionProvider(new CompletionOptions());
         return serverCapabilities;
     }
 
