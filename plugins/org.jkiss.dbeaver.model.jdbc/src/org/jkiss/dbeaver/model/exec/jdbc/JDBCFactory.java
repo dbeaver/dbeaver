@@ -51,6 +51,7 @@ public interface JDBCFactory {
         boolean disableLogging
     ) throws SQLException;
 
+    @NotNull
     JDBCResultSet createResultSet(
         @NotNull JDBCSession session,
         @NotNull JDBCStatement statement,

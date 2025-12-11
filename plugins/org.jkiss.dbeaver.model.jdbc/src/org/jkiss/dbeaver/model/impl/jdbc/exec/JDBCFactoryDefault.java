@@ -65,6 +65,7 @@ public class JDBCFactoryDefault implements JDBCFactory {
         return new JDBCCallableStatementImpl(session, stmtSupplier, sql, disableLogging);
     }
 
+    @NotNull
     @Override
     public JDBCResultSet createResultSet(
         @NotNull JDBCSession session,

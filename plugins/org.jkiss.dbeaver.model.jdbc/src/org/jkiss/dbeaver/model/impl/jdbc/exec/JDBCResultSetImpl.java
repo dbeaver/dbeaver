@@ -36,7 +36,6 @@ import java.net.URL;
 import java.sql.*;
 import java.util.Calendar;
 import java.util.Map;
-import java.util.Objects;
 
 /**
  * Managable result set
@@ -75,15 +74,18 @@ public class JDBCResultSetImpl extends AbstractResultSet<JDBCSession, JDBCStatem
         }
     }
 
+    @NotNull
     public static JDBCResultSet makeResultSet(
         @NotNull JDBCSession session,
         @Nullable JDBCStatement statement,
         @NotNull ResultSet original,
         boolean disableLogging
     ) throws SQLException {
-        JDBCStatement notNullStatement = Objects.requireNonNullElse(statement, new JDBCFakeStatementImpl(session, null, disableLogging));
+        if (statement == null) {
+            statement = new JDBCFakeStatementImpl(session, null, disableLogging);
+        }
         return session.getDataSource().getJdbcFactory().createResultSet(
-            session, notNullStatement, original, disableLogging);
+            session, statement, original, disableLogging);
     }
 /*
 
