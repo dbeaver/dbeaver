@@ -30,6 +30,7 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.VersionUtils;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.IOUtils;
 import org.jkiss.utils.xml.SAXListener;
 import org.jkiss.utils.xml.SAXReader;
 import org.jkiss.utils.xml.XMLBuilder;
@@ -464,11 +465,28 @@ public class DriverDescriptorSerializerLegacy extends DriverDescriptorSerializer
                             if (CommonUtils.isEmpty(path)) {
                                 log.warn("Empty path for library file");
                             } else {
+
+                                Path filePath = Path.of(path);
+                                if ((curDriver.isCustom() || curLibrary.isDownloadable())
+                                    && DBWorkbench.getPlatform().getApplication()
+                                    .isMultiuser()) {
+                                    var workspaceFolder = DBWorkbench
+                                        .getPlatform().getWorkspace()
+                                        .getAbsolutePath();
+                                    if (!IOUtils.isFileFromDefaultFS(workspaceFolder)) {
+                                        String pathStr = path;
+                                        if (pathStr.startsWith("/")) {
+                                            pathStr = path.substring(1);
+                                        }
+                                        filePath = workspaceFolder.resolve(pathStr);
+                                    }
+                                }
                                 DriverFileInfo info = new DriverFileInfo(
                                         attributes.getValue(RegistryConstants.ATTR_ID),
                                         attributes.getValue(RegistryConstants.ATTR_VERSION),
                                         curLibrary.getType(),
-                                        Path.of(path), path);
+                                    filePath, path
+                                );
                                 String crcString = attributes.getValue("crc");
                                 if (!CommonUtils.isEmpty(crcString)) {
                                     long crc = Long.parseLong(crcString, 16);
