@@ -197,6 +197,7 @@ public class UIIcon {
     public static final DBIcon SQL_READONLY = new DBIcon("readonly", "sql/readonly.svg"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon SQL_CONSOLE = new DBIcon("sql_console", "sql/sql_console.svg"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon SQL_EXECUTE = new DBIcon("sql_exec", "sql/sql_exec.svg"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon SQL_SCRIPT_CREATE = new DBIcon("sql_script_create", "sql/sql_script_create.svg"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon SQL_SCRIPT_EXECUTE = new DBIcon("sql_script_exec", "sql/sql_script_exec.svg"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon SQL_SCRIPT_EXECUTE_NATIVE = new DBIcon("sql_exec_native", "sql/sql_exec_native.svg");//$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon SQL_MULTIPLE_RESULTS_PER_TAB_FALSE = new DBIcon(

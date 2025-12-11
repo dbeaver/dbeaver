@@ -1003,7 +1003,7 @@ public class GeneralUtils {
     }
 
 
-    @NotNull
+    @Nullable
     public static String makeStandardErrorMessage(@NotNull Throwable error) {
         if (error instanceof UnknownHostException) {
             return "Unknown host " + CommonUtils.notEmpty(error.getMessage());

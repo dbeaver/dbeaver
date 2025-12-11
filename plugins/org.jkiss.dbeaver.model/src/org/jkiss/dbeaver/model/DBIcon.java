@@ -53,6 +53,7 @@ public class DBIcon implements DBPImage {
     public static final DBIcon TREE_SCHEMA_SYSTEM = new DBIcon("schema_system", "tree/schema_system.svg"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon TREE_SCHEMA_UTIL = new DBIcon("schema_util", "tree/schema_util.svg"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon TREE_TABLE = new DBIcon("table", "tree/table.svg"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon TREE_TABLE_ADD = new DBIcon("table_alias", "tree/table_add.svg"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon TREE_TABLE_ALIAS = new DBIcon("table_alias", "tree/table_alias.svg"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon TREE_TABLE_LINK = new DBIcon("table_link", "tree/table_link.svg"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon TREE_TABLE_INDEX = new DBIcon("table_index", "tree/table_index.svg"); //$NON-NLS-1$ //$NON-NLS-2$
