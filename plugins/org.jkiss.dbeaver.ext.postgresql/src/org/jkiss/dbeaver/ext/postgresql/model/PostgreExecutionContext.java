@@ -240,8 +240,8 @@ public class PostgreExecutionContext extends JDBCExecutionContext implements DBC
         setSearchPath(monitor, schema.getName());
     }
 
-    private void setSearchPath(DBRProgressMonitor monitor, String defSchemaName) throws DBCException {
-        LinkedList<String> newSearchPath = new LinkedList<>(getSearchPath());
+    private void setSearchPath(@NotNull DBRProgressMonitor monitor, @NotNull String defSchemaName) throws DBCException {
+        List<String> newSearchPath = new ArrayList<>(getSearchPath());
 
         if (!newSearchPath.isEmpty() && defSchemaName.equals(newSearchPath.getFirst())) {
             return;
@@ -253,8 +253,6 @@ public class PostgreExecutionContext extends JDBCExecutionContext implements DBC
         if (activeUser != null && !newSearchPath.contains(activeUser)) {
             newSearchPath.add(activeUser);
         }
-
-        setUserInTheEndOfThePath(newSearchPath);
 
         StringBuilder spString = new StringBuilder();
         for (String sp : newSearchPath) {
