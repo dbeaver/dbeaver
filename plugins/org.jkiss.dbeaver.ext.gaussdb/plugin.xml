@@ -24,7 +24,7 @@
                     icon="icons/gaussdb_icon.png" dialect="gaussdb" inheritClients="false">
             <drivers managable="true">
                 <driver
-                        id="gaussdb-jdbc"
+                        id="huawei-gaussdb-jdbc"
                         label="GaussDB"
                         icon="icons/gaussdb_icon.png"
                         iconBig="icons/gaussdb_icon_big.png"
