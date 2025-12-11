@@ -2,4 +2,24 @@
 <?eclipse version="3.4"?>
 <plugin>
 
+    <extension point="org.eclipse.core.runtime.applications" id="application" name="LSP Server Standalone">
+        <application visible="true">
+            <run class="org.jkiss.dbeaver.model.lsp.standalone.LSApplication"/>
+        </application>
+    </extension>
+
+    <extension point="org.eclipse.core.runtime.products" id="product">
+        <product application="org.jkiss.dbeaver.model.lsp.standalone.application" description="LSP Server Standalone" name="LSP Server Standalone">
+        </product>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.application">
+        <application
+            id="lsp-standalone-app"
+            family="DB"
+            name="LSP Server Standalone"
+            description="LSP Server Standalone"
+            class="org.jkiss.dbeaver.model.lsp.standalone.LSApplication"/>
+    </extension>
+
 </plugin>

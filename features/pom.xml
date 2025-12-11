@@ -40,6 +40,8 @@
                 <module>org.jkiss.dbeaver.test.base.feature</module>
                 <module>org.jkiss.dbeaver.appstore.feature</module>
                 <module>org.jkiss.dbeaver.ce.feature</module>
+
+                <module>org.jkiss.dbeaver.model.lsp.standalone.feature</module>
             </modules>
         </profile>
     </profiles>

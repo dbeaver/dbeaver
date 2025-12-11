@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feature
+    id="org.jkiss.dbeaver.model.lsp.standalone.feature"
+    label="lsp.standalone"
+    version="25.0.2.qualifier"
+    provider-name="dbeaver"
+    plugin="org.jkiss.dbeaver.model.lsp">
+
+<!--    <plugin id="org.jkiss.dbeaver.model.lsp" download-size="0" install-size="0" version="0.0.0" unpack="false"/>-->
+    <plugin id="org.jkiss.dbeaver.model.lsp" version = "0.0.0"/>
+
+    <!-- Dependency -->
+    <plugin id="org.apache.commons.cli" version="0.0.0"/>
+</feature>
