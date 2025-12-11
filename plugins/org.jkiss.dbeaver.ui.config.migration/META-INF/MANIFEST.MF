@@ -9,7 +9,8 @@ Require-Bundle: org.jkiss.dbeaver.registry,
  org.jkiss.dbeaver.ui.editors.connection,
  org.jkiss.dbeaver.ui.navigator,
  org.jkiss.dbeaver.net.ssh,
- org.jkiss.dbeaver.net.ssh.jsch
+ org.jkiss.dbeaver.net.ssh.jsch,
+ com.google.gson
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-21
 Bundle-Vendor: DBeaver Corp
