@@ -75,7 +75,6 @@ public class JDBCResultSetImpl extends AbstractResultSet<JDBCSession, JDBCStatem
     }
 
     @NotNull
-    @NotNull
     public static JDBCResultSet makeResultSet(
         @NotNull JDBCSession session,
         @Nullable JDBCStatement statement,
