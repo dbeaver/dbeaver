@@ -18,9 +18,7 @@ package org.jkiss.dbeaver.ui.config.migration.wizards.pgadmin;
 
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.osgi.util.NLS;
-import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -42,8 +40,7 @@ public class ConfigImportWizardPagePgAdminSettings extends WizardPage {
 
     @Override
     public void createControl(@NotNull Composite parent) {
-        Composite placeholder = new Composite(parent, SWT.NONE);
-        placeholder.setLayout(new GridLayout(1, true));
+        Composite placeholder = UIUtils.createPlaceholder(parent, 1);
 
         UIUtils.createControlLabel(placeholder, ImportConfigMessages.config_import_wizard_custom_input_file);
         filePathText = new TextWithOpenFile(
@@ -52,7 +49,6 @@ public class ConfigImportWizardPagePgAdminSettings extends WizardPage {
             new String[]{"*.json"}
         );
         filePathText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        filePathText.setText("");
         setInputFileAndUpdateButtons();
         filePathText.getTextControl().addModifyListener(e -> setInputFileAndUpdateButtons());
 
@@ -70,7 +66,7 @@ public class ConfigImportWizardPagePgAdminSettings extends WizardPage {
     }
 
     private void setInputFileAndUpdateButtons() {
-        if (filePathText.getText().trim().isEmpty()) {
+        if (filePathText.getText().isBlank()) {
             return;
         }
         inputFile = new File(filePathText.getText());

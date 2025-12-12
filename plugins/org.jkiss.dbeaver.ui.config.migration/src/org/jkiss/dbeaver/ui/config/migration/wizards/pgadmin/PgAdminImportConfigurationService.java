@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.ui.config.migration.wizards.ImportConnectionInfo;
 import org.jkiss.dbeaver.ui.config.migration.wizards.ImportData;
 import org.jkiss.dbeaver.ui.config.migration.wizards.ImportDriverInfo;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.StandardConstants;
 import org.jkiss.utils.StringUtils;
 
 import java.io.Reader;
@@ -140,7 +141,7 @@ public class PgAdminImportConfigurationService {
         if (CommonUtils.isEmpty(value)) {
             return value;
         }
-        String home = System.getProperty("user.home");
+        String home = System.getProperty(StandardConstants.ENV_USER_HOME);
         return value.replace(STORAGE_PLACEHOLDER, CommonUtils.notEmpty(home));
     }
 
@@ -148,7 +149,7 @@ public class PgAdminImportConfigurationService {
         for (Map.Entry<String, Object> pe : params.entrySet()) {
             String propertyName = pe.getKey();
             String propertyValue = String.valueOf(pe.getValue());
-            if (CommonUtils.isEmpty(propertyName) || CommonUtils.isEmpty(propertyValue)) {
+            if (CommonUtils.isEmpty(propertyName) || CommonUtils.isEmpty(propertyValue) || propertyValue.equals("null")) {
                 continue;
             }
             String formattedName = StringUtils.underscoreToCamelCase(propertyName);

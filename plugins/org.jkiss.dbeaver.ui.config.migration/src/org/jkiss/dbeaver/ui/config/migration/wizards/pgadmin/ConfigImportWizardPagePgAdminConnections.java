@@ -23,7 +23,9 @@ import org.jkiss.dbeaver.ui.config.migration.ImportConfigMessages;
 import org.jkiss.dbeaver.ui.config.migration.wizards.ConfigImportWizardPage;
 import org.jkiss.dbeaver.ui.config.migration.wizards.ImportData;
 
-import java.io.*;
+import java.io.File;
+import java.io.Reader;
+import java.nio.file.Files;
 
 public class ConfigImportWizardPagePgAdminConnections extends ConfigImportWizardPage {
     private static final Log log = Log.getLog(ConfigImportWizardPagePgAdminConnections.class);
@@ -42,13 +44,8 @@ public class ConfigImportWizardPagePgAdminConnections extends ConfigImportWizard
 
         ConfigImportWizardPgAdmin wizard = (ConfigImportWizardPgAdmin) getWizard();
         File inputFile = wizard.getInputFile();
-        if (inputFile == null) {
-            return;
-        }
-        try (InputStream is = new FileInputStream(inputFile)) {
-            try (Reader reader = new InputStreamReader(is)) {
-                IMPORT_CONFIGURATION_SERVICE.importJSON(importData, reader);
-            }
+        try (Reader reader = Files.newBufferedReader(inputFile.toPath())) {
+            IMPORT_CONFIGURATION_SERVICE.importJSON(importData, reader);
         } catch (Exception e) {
             log.warn("Exception during loading connections", e);
             setErrorMessage(e.getMessage());
