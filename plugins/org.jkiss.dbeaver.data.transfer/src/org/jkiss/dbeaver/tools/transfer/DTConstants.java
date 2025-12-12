@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -36,6 +36,8 @@ public class DTConstants {
     public static final String PREF_REPLACE_MAPPING = "replaceMapping";
     public static final String PREF_MAX_TYPE_LENGTH = "maxTypeLengthMapping";
     public static final String PREF_SAVE_LOCAL_SETTINGS = "saveLocalSettings";
+
+    public static final String PREF_OPEN_LOCAL_FS_BROWSER = "openLocalFSBrowser";
 
     public static final String PRODUCT_FEATURE_ADVANCED_DATA_TRANSFER = "database/data/transfer/advanced";
 

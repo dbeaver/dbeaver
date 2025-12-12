@@ -263,8 +263,8 @@ public class ResultSetHandlerCopyAs extends AbstractHandler implements IElementU
 
         IWorkbenchPartSite site = viewer.getSite();
         copyAsMenu.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerCopySpecial.CMD_COPY_SPECIAL));
-        copyAsMenu.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerCopySpecial.CMD_COPY_COLUMN_NAMES));
-        copyAsMenu.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_COPY_ROW_NAMES));
+        copyAsMenu.add(ActionUtils.makeCommandContribution(site, IResultSetCommands.CMD_COPY_COLUMN_NAMES));
+        copyAsMenu.add(ActionUtils.makeCommandContribution(site, IResultSetCommands.CMD_COPY_ROW_NAMES));
         // Add copy commands for different formats
         copyAsMenu.add(new Separator());
 
