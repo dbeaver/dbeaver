@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,35 +21,21 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 
 public class ConfigurationFileSelector extends TextWithOpenFile {
 
-    private final boolean allowFileContentEditor;
-
     public ConfigurationFileSelector(Composite parent, String title, String[] filterExt) {
-        this(parent, title, filterExt, false, false, true);
+        this(parent, title, filterExt, false, false);
     }
 
     public ConfigurationFileSelector(Composite parent, String title, String[] filterExt, boolean binaryFile) {
-        this(parent, title, filterExt, binaryFile, false, true);
+        this(parent, title, filterExt, binaryFile, false);
     }
 
     public ConfigurationFileSelector(Composite parent, String title, String[] filterExt, boolean binaryFile, boolean secured) {
-        this(parent, title, filterExt, binaryFile, secured, true);
-    }
-
-    public ConfigurationFileSelector(
-        Composite parent,
-        String title,
-        String[] filterExt,
-        boolean binaryFile,
-        boolean secured,
-        boolean allowFileContentEditor
-    ) {
         super(parent, title, filterExt, binaryFile, secured);
-        this.allowFileContentEditor = allowFileContentEditor;
     }
 
     @Override
     protected boolean isShowFileContentEditor() {
-        return DBWorkbench.isDistributed() && allowFileContentEditor;
+        return DBWorkbench.isDistributed();
     }
 
 }
