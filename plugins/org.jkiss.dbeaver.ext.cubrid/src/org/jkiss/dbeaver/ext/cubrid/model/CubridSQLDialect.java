@@ -21,12 +21,11 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.generic.model.GenericSQLDialect;
 import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
-import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
-import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.BeanUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
@@ -37,6 +36,11 @@ import java.util.Arrays;
 public class CubridSQLDialect extends GenericSQLDialect
 {
     public static final String CUBRID_DIALECT_ID = "cubrid";
+    private static final String PROP_SHARD_TYPE = "shardType";
+    private static final String PROP_SHARD_VALUE = "shardValue";
+    private static final String PROP_IS_SHARD = "isShard";
+    private static final String SHARD_TYPE_ID = "SHARD ID";
+    private static final String DEFAULT_SHARD_VALUE = "0";
     private static final Log log = Log.getLog(CubridSQLDialect.class);
     private boolean isShard = false;
 
@@ -130,31 +134,25 @@ public class CubridSQLDialect extends GenericSQLDialect
         return !isShard;
     }
 
-    public boolean isShard() {
-        return isShard;
-    }
-
-    public void setShard(boolean shard) {
-        this.isShard = shard;
-    }
-
     private void detectAndApplyShardSettings(JDBCSession session, CubridDataSource source) {
         try {
             Object conn = session.getExecutionContext().getConnection(session.getProgressMonitor());
-            boolean shard = (boolean) BeanUtils.invokeObjectMethod(conn, "isShard");
-            if (!shard) return;
+            isShard = (boolean) BeanUtils.invokeObjectMethod(conn, PROP_IS_SHARD);
 
-            setShard(true);
-            source.setShard(true);
+            DBPConnectionConfiguration connectionInfo = source.getContainer().getConnectionConfiguration();
+            connectionInfo.setProperty(PROP_IS_SHARD, Boolean.toString(isShard));
+            source.setShard(isShard);
 
-            DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
-            String shardType = store.getString("shardType");
-            if (CommonUtils.isEmpty(shardType)) {
-                store.setValue("shardType", "SHARD ID");
-                store.setValue("shardVal", "0");
-            } else {
-                source.setShardType(shardType);
-                source.setShardVal(store.getString("shardVal"));
+            if (isShard) {
+                String shardType = connectionInfo.getProperty(PROP_SHARD_TYPE);
+                String shardValue = connectionInfo.getProperty(PROP_SHARD_VALUE);
+                if (CommonUtils.isEmpty(shardType)) {
+                    connectionInfo.setProperty(PROP_SHARD_TYPE, SHARD_TYPE_ID);
+                    connectionInfo.setProperty(PROP_SHARD_VALUE, DEFAULT_SHARD_VALUE);
+                } else {
+                    source.setShardType(shardType);
+                    source.setShardVal(shardValue);
+                }
             }
         } catch (SQLException e) {
             log.debug("Failed to get connection:", e);
