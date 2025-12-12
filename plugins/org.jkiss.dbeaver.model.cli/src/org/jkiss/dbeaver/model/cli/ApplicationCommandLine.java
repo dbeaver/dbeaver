@@ -108,13 +108,13 @@ public abstract class ApplicationCommandLine<T extends ApplicationInstanceContro
                 return new CLIProcessResult(
                     CLIProcessResult.PostAction.ERROR,
                     List.of(message),
-                    CLIConstants.EXIT_CODE_ILLEGAL_ARGUMENTS
+                    CLIConstants.EXIT_CODE_ERROR
                 );
             } catch (CommandLine.MissingParameterException e) {
                 return new CLIProcessResult(
                     CLIProcessResult.PostAction.ERROR,
                     List.of(e.getMessage()),
-                    CLIConstants.EXIT_CODE_ILLEGAL_ARGUMENTS
+                    CLIConstants.EXIT_CODE_ERROR
                 );
             }
 
