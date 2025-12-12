@@ -16,6 +16,8 @@
  */
 package org.jkiss.dbeaver.model.lsp;
 
+import org.eclipse.jface.text.Document;
+import org.eclipse.jface.text.Region;
 import org.eclipse.lsp4j.*;
 import org.eclipse.lsp4j.jsonrpc.CancelChecker;
 import org.eclipse.lsp4j.jsonrpc.CompletableFutures;
@@ -41,10 +43,16 @@ import org.jkiss.dbeaver.model.sql.completion.SQLCompletionContext;
 import org.jkiss.dbeaver.model.sql.format.SQLFormatter;
 import org.jkiss.dbeaver.model.sql.format.SQLFormatterConfiguration;
 import org.jkiss.dbeaver.model.sql.format.tokenized.SQLFormatterTokenized;
+import org.jkiss.dbeaver.model.sql.parser.SQLIdentifierDetector;
 import org.jkiss.dbeaver.model.sql.parser.SQLRuleManager;
+import org.jkiss.dbeaver.model.sql.parser.tokens.SQLTokenType;
+import org.jkiss.dbeaver.model.text.parser.TPToken;
+import org.jkiss.dbeaver.model.text.parser.TPTokenDefault;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.utils.Pair;
 
 import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -53,6 +61,14 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class DBLTextDocumentService implements TextDocumentService, LanguageClientAware {
     private static final Log log = Log.getLog(DBLTextDocumentService.class);
+
+    public static final Map<SQLTokenType, Pair<Integer, String>> SUPPORTED_TOKEN_TYPES = Map.of(
+        SQLTokenType.T_KEYWORD, new Pair<>(0, "keyword"),
+        SQLTokenType.T_TABLE, new Pair<>(1, "table")
+    );
+    public static final List<String> SUPPORTED_TOKEN_MODIFIERS = List.of(
+        "declaration"
+    );
 
     private final Map<String, ContextAwareDocument> documentCache = new ConcurrentHashMap<>();
 
@@ -220,35 +236,58 @@ public class DBLTextDocumentService implements TextDocumentService, LanguageClie
         ));
     }
 
-    @NotNull
     @Override
-    public CompletableFuture<List<? extends DocumentHighlight>> documentHighlight(
-        @NotNull DocumentHighlightParams params
-    ) {
-        log.debug("\"documentHighlight with params: \"" + params);
+    public CompletableFuture<SemanticTokens> semanticTokensFull(@NotNull SemanticTokensParams params) {
+        log.debug("\"semanticTokensFull with params: \"" + params);
 
-        return CompletableFutures.computeAsync(cancelChecker -> documentHighlight(params, cancelChecker));
+        return CompletableFutures.computeAsync(cancelChecker -> semanticTokensFull(params, cancelChecker));
     }
 
-    @NotNull
-    private List<? extends DocumentHighlight> documentHighlight(
-        @NotNull DocumentHighlightParams params,
+    private SemanticTokens semanticTokensFull(
+        @NotNull SemanticTokensParams params,
         @NotNull CancelChecker cancelChecker
     ) {
         cancelChecker.checkCanceled();
 
-        TextDocumentIdentifier documentId = params.getTextDocument();
-        ContextAwareDocument document = documentCache.get(documentId.getUri());
+        String documentUri = params.getTextDocument().getUri();
+        ContextAwareDocument document = documentCache.get(documentUri);
         if (document == null) {
-            log.error(String.format("Highlight requested for an unknown document %s", documentId.getUri()));
-            return  List.of();
+            log.error("Semantic tokens requested for an unknown document " + documentUri);
+            return new SemanticTokens();
         }
 
-        // TODO: parse doc, return highlighted ranges (Read + Write) kinds
-        return List.of();
+        SQLIdentifierDetector detector = new SQLIdentifierDetector(document.getSyntaxManager().getDialect());
+        List<Pair<TPToken, Region>> tokens = detector.extractAllIdentifiers(
+            new Document(document.getText()),
+            document.getRuleManager()
+        );
+
+        List<Integer> data = new ArrayList<>();
+        int lineOffset = 0;
+        int startCharOffset = 0;
+        for (Pair<TPToken, Region> pair : tokens) {
+            SQLTokenType tokenType = pair.getFirst() instanceof TPTokenDefault tpTokenDefault
+                ? (SQLTokenType) tpTokenDefault.getData() : SQLTokenType.T_OTHER;
+            Integer tokenId = SUPPORTED_TOKEN_TYPES.get(tokenType).getFirst();
+            if (tokenId == null) {
+                continue;
+            }
+
+            Region region = pair.getSecond();
+
+            // This is a chunk of token data describing one token
+            data.add(lineOffset);
+            data.add(startCharOffset);
+            data.add(region.getLength());
+            data.add(tokenId);
+            data.add(0); // FIXME: Only "declaration" modifier is supported now. Update if more modifiers are added.
+
+            startCharOffset += region.getLength();
+            //lineOffset = 0; // FIXME: How to support multi-line api if internals are single-line-based?
+        }
+
+        return new SemanticTokens(data);
     }
-
-
 
     private int positionToOffset(@NotNull String text, @NotNull Position position) {
         String[] lines = text.split("\n");
