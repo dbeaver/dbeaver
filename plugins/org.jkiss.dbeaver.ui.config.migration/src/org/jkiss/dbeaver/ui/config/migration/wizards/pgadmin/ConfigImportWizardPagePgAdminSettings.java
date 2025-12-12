@@ -22,6 +22,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.config.migration.ImportConfigMessages;
 import org.jkiss.dbeaver.ui.controls.TextWithOpenFile;
@@ -63,6 +64,7 @@ public class ConfigImportWizardPagePgAdminSettings extends WizardPage {
         return inputFile != null && inputFile.exists();
     }
 
+    @NotNull
     public File getInputFile() {
         return inputFile;
     }
