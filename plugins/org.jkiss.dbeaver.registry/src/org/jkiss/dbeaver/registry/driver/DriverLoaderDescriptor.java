@@ -464,7 +464,7 @@ public class DriverLoaderDescriptor implements DBPDriverLoader {
                             break;
                         }
                         for (DriverFileInfo file : files) {
-                            if (file.getFile() == null || !Files.exists(getDriverFilePath(file, library))) {
+                            if (file.getFile() == null || !Files.exists(getDriverFilePath(file))) {
                                 allExists = false;
                                 break;
                             }
@@ -492,7 +492,7 @@ public class DriverLoaderDescriptor implements DBPDriverLoader {
                 return false;
             } else {
                 for (DriverFileInfo file : files) {
-                    if (file.getFile() == null || !Files.exists(getDriverFilePath(file, library))) {
+                    if (file.getFile() == null || !Files.exists(getDriverFilePath(file))) {
                         return false;
                     }
                 }
@@ -504,10 +504,7 @@ public class DriverLoaderDescriptor implements DBPDriverLoader {
         }
     }
 
-    private Path getDriverFilePath(
-        @NotNull DriverFileInfo file,
-        @NotNull DBPDriverLibrary library
-    ) {
+    private Path getDriverFilePath(@NotNull DriverFileInfo file) {
         if (DBWorkbench.isDistributed()) {
             return DriverDescriptor.getExternalDriversStorageFolder().resolve(file.getFile());
         }
