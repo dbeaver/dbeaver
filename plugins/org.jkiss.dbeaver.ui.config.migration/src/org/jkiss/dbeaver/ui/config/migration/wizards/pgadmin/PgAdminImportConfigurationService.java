@@ -151,7 +151,7 @@ public class PgAdminImportConfigurationService {
             if (CommonUtils.isEmpty(propertyName) || CommonUtils.isEmpty(propertyValue)) {
                 continue;
             }
-            String formattedName = StringUtils.underScoreToCamelCase(propertyName);
+            String formattedName = StringUtils.underscoreToCamelCase(propertyName);
             String strVal = expandStorageDir(propertyValue);
             if (CommonUtils.isNotEmpty(strVal)) {
                 conn.setProperty(formattedName, strVal);
