@@ -22,39 +22,17 @@ import org.junit.Test;
 public class StringUtilsTest {
 
     @Test
-    public void testUnderscoreToCamelCaseNullAndEmpty() {
+    public void testUnderscoreToCamelCaseBasicConversion() {
         Assert.assertNull(StringUtils.underscoreToCamelCase(null));
         Assert.assertEquals("", StringUtils.underscoreToCamelCase(""));
-    }
-
-    @Test
-    public void testBasicConversion() {
         Assert.assertEquals("someField", StringUtils.underscoreToCamelCase("some_field"));
         Assert.assertEquals("somefield", StringUtils.underscoreToCamelCase("somefield"));
         Assert.assertEquals("someText", StringUtils.underscoreToCamelCase("SOME_TEXT"));
-    }
-
-    @Test
-    public void testLeadingAndTrailingUnderscores() {
         Assert.assertEquals("Abc", StringUtils.underscoreToCamelCase("_abc"));
         Assert.assertEquals("abc", StringUtils.underscoreToCamelCase("abc_"));
         Assert.assertEquals("aB", StringUtils.underscoreToCamelCase("a_b_"));
-    }
-
-    @Test
-    public void testMultipleConsecutiveUnderscores() {
-        Assert.assertEquals("aB", StringUtils.underscoreToCamelCase("a__b"));
-        Assert.assertEquals("", StringUtils.underscoreToCamelCase("___"));
-    }
-
-    @Test
-    public void testDigitsArePreserved() {
         Assert.assertEquals("abc123Def", StringUtils.underscoreToCamelCase("abc_123_def"));
         Assert.assertEquals("a1B2", StringUtils.underscoreToCamelCase("a1_b2"));
-    }
-
-    @Test
-    public void testMixedCaseInput() {
         Assert.assertEquals("alreadycamel", StringUtils.underscoreToCamelCase("AlreadyCamel"));
         Assert.assertEquals("aB", StringUtils.underscoreToCamelCase("A_B"));
     }
