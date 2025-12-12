@@ -122,8 +122,8 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
-import java.util.List;
 import java.util.*;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 /**
@@ -1077,12 +1077,11 @@ public class ResultSetViewer extends Viewer
 
     private void trackPresentationStatistics() {
         Map<String, Object> params = new HashMap<>();
-        if (activePresentationDescriptor != null) {
-            params.put("presentationId", activePresentationDescriptor.getId());
-        }
         DBPDataSource dataSource = getDataSource();
-        if (dataSource != null) {
+        if (activePresentationDescriptor != null && dataSource != null) {
+            params.put("presentationId", activePresentationDescriptor.getId());
             params.put("driver", dataSource.getContainer().getDriver().getPreconfiguredId());
+
         }
         if (!params.isEmpty()) {
             DataEditorFeatures.RESULT_SET_PRESENTATION_SELECTED.use(params);
