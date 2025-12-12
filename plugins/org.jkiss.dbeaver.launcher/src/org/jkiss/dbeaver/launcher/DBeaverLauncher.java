@@ -1669,8 +1669,18 @@ public class DBeaverLauncher {
     private Properties loadEclipseProductProperties() {
         Properties properties = new Properties();
 
-        URL installURL = getInstallLocation();
+        URL installURL = null;
+        try {
+            installURL = getInstallLocation();
+        } catch (Exception e) {
+            if (debug) {
+                System.out.println("Could not determine install location to load " + PRODUCT_SITE_MARKER + ": " + e.getMessage());
+            }
+        }
         if (installURL == null) {
+            if (debug) {
+                System.out.println("Install location is null, cannot load " + PRODUCT_SITE_MARKER);
+            }
             return properties;
         }
 
