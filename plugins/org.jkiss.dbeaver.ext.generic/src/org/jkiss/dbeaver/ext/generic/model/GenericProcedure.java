@@ -85,6 +85,7 @@ public class GenericProcedure extends AbstractProcedure<GenericDataSource, Gener
         this.source = source;
     }
 
+    @Nullable
     @Property(viewable = true, order = 3, labelProvider = GenericCatalog.CatalogNameTermProvider.class)
     public GenericCatalog getCatalog()
     {
