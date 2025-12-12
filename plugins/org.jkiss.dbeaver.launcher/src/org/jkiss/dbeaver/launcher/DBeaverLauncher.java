@@ -719,15 +719,24 @@ public class DBeaverLauncher {
             }
             return new CommandLineExecuteResult(cliMode);
         }
+        if (debug) {
+            System.out.println("Executing remote command line: " + Arrays.toString(args));
+        }
         Path workspacePath = detectDefaultWorkspaceLocation(args, dbeaverDataDir);
         if (debug) {
             System.out.println("Detected workspace location: " + workspacePath);
         }
         if (args == null || args.length == 0 || newInstance) {
+            if (debug) {
+                System.out.println("Empty arguments or new instance requested, skipping remote CLI processing.");
+            }
             return new CommandLineExecuteResult(cliMode);
         }
 
         if (Files.notExists(workspacePath)) {
+            if (debug) {
+                System.out.println("Workspace not exists: " + workspacePath);
+            }
             return new CommandLineExecuteResult(cliMode);
         }
         Integer serverPort = readDBeaverServerPort(workspacePath);
@@ -854,6 +863,9 @@ public class DBeaverLauncher {
             if (properties.containsKey(Constants.PROPERTY_ECLIPSE_PRODUCT_ID)) {
                 productName = properties.getProperty(Constants.PROPERTY_ECLIPSE_PRODUCT_ID);
             }
+        }
+        if (debug) {
+            System.out.println("product name: " + productName);
         }
         if (customWorkspacePath != null) {
             return Path.of(customWorkspacePath);
