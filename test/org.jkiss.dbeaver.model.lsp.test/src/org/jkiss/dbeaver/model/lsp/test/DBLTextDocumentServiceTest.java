@@ -214,17 +214,17 @@ public class DBLTextDocumentServiceTest extends DBeaverUnitTest {
     }
 
     @Test
-    public void shouldReturnSingleKeywordTokenData() throws ExecutionException, InterruptedException {
+    public void shouldReturnKeywordTokenData() throws ExecutionException, InterruptedException {
         String query = "SELECT";
         TextDocumentItem document = DocumentServiceTestUtils.createQueryDocument(query);
         service.didOpen(new DidOpenTextDocumentParams(document));
 
         SemanticTokensParams params = new SemanticTokensParams(new TextDocumentIdentifier(document.getUri()));
-        Integer[] semanticTokensData = service.semanticTokensFull(params).get().getData().toArray(new Integer[0]);
+        Integer[] tokensData = service.semanticTokensFull(params).get().getData().toArray(new Integer[0]);
 
         Assert.assertArrayEquals(
             new Integer[] {0, 0, 6, 0, 0},
-            semanticTokensData
+            tokensData
         );
     }
 
@@ -235,7 +235,7 @@ public class DBLTextDocumentServiceTest extends DBeaverUnitTest {
         service.didOpen(new DidOpenTextDocumentParams(document));
 
         SemanticTokensParams params = new SemanticTokensParams(new TextDocumentIdentifier(document.getUri()));
-        Integer[] semanticTokensData = service.semanticTokensFull(params).get().getData().toArray(new Integer[0]);
+        Integer[] tokensData = service.semanticTokensFull(params).get().getData().toArray(new Integer[0]);
 
         Integer[] expectedData = {
             0, 0, 6, 0, 0,   // SELECT
@@ -245,7 +245,31 @@ public class DBLTextDocumentServiceTest extends DBeaverUnitTest {
         };
         Assert.assertArrayEquals(
             expectedData,
-            semanticTokensData
+            tokensData
+        );
+    }
+
+    @Test
+    public void shouldReturnMultilineTokensData() throws ExecutionException, InterruptedException {
+        String query = """
+            SELECT name FROM users
+            WHERE surname = 'Doe';
+            """;
+        TextDocumentItem document = DocumentServiceTestUtils.createQueryDocument(query);
+        service.didOpen(new DidOpenTextDocumentParams(document));
+
+        SemanticTokensParams params = new SemanticTokensParams(new TextDocumentIdentifier(document.getUri()));
+        Integer[] tokensData = service.semanticTokensFull(params).get().getData().toArray(new Integer[0]);
+
+        Integer[] expectedData = {
+            0, 0, 6, 0, 0,   // SELECT
+            0, 12, 4, 0, 0,  // FROM
+            1, 0, 5, 0, 0,   // WHERE
+            1, 16, 5, 1, 0   // 'Doe'
+        };
+        Assert.assertArrayEquals(
+            expectedData,
+            tokensData
         );
     }
 }
