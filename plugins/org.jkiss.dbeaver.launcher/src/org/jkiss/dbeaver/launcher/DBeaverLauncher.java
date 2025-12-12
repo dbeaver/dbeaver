@@ -1675,7 +1675,13 @@ public class DBeaverLauncher {
         }
 
         Path eclipseProduct = Path.of(installURL.getPath(), PRODUCT_SITE_MARKER);
+        if (debug) {
+            System.out.println("Loading product properties from " + eclipseProduct);
+        }
         if (Files.notExists(eclipseProduct)) {
+            if (debug) {
+                System.out.println("Not exists " + eclipseProduct);
+            }
             return properties;
         }
 
