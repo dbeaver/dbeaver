@@ -46,8 +46,8 @@ public class QMMCollectorImpl extends DefaultExecutionHandler implements QMMColl
     private static final int MAX_HISTORY_EVENTS = 10000;
 
     // Session map
-    private LongKeyMap<QMMConnectionInfo> connectionMap = new LongKeyMap<>();
-    private List<Long> closedConnections = new ArrayList<>();
+    private final LongKeyMap<QMMConnectionInfo> connectionMap = new LongKeyMap<>();
+    private final List<Long> closedConnections = new ArrayList<>();
 
     // External listeners
     private final List<QMMetaListener> listeners = new ArrayList<>();
@@ -213,6 +213,14 @@ public class QMMCollectorImpl extends DefaultExecutionHandler implements QMMColl
     }
 
     @Override
+    public void handleContextUpdate(@NotNull DBCExecutionContext context, boolean transactional) {
+        QMMConnectionInfo connectionInfo = getConnectionInfo(context);
+        if (connectionInfo != null) {
+            connectionInfo.setTransactional(transactional);
+        }
+    }
+
+    @Override
     public synchronized void handleContextClose(@NotNull DBCExecutionContext context) {
         QMMConnectionInfo session = getConnectionInfo(context);
         if (session != null) {
@@ -258,10 +266,14 @@ public class QMMCollectorImpl extends DefaultExecutionHandler implements QMMColl
 
     @Override
     public synchronized void handleStatementOpen(@NotNull DBCStatement statement) {
-        QMMConnectionInfo session = getConnectionInfo(statement.getSession().getExecutionContext());
+        DBCExecutionContext executionContext = statement.getSession().getExecutionContext();
+        QMMConnectionInfo session = getConnectionInfo(executionContext);
         if (session != null) {
             QMMStatementInfo stat = session.openStatement(statement);
-            tryFireMetaEvent(stat, QMEventAction.BEGIN, stat.getOpenTime(), statement.getSession().getExecutionContext());
+            tryFireMetaEvent(stat, QMEventAction.BEGIN, stat.getOpenTime(), executionContext);
+        } else {
+            log.warn("QM session for '" + executionContext + "' is missing in cache. "
+                + "Cannot handle statement '" + statement + "' open.");
         }
     }
 

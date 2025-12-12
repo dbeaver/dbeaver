@@ -49,7 +49,7 @@ import java.util.concurrent.locks.ReentrantLock;
  * Implements transaction manager and execution context defaults.
  * Both depend on datasource implementation.
  */
-public class JDBCExecutionContext extends AbstractExecutionContext<JDBCDataSource> implements DBCTransactionManager, DBPAdaptable {
+public class JDBCExecutionContext extends AbstractExecutionContext<JDBCDataSource, JDBCRemoteInstance> implements DBCTransactionManager, DBPAdaptable {
     public static final String TYPE_MAIN = "Main";
     public static final String TYPE_METADATA = "Metadata";
 
@@ -60,8 +60,6 @@ public class JDBCExecutionContext extends AbstractExecutionContext<JDBCDataSourc
     // Time to wait for txn level/auto-commit detection
     static final int TXN_INFO_READ_TIMEOUT = 5000;
 
-    @NotNull
-    private volatile JDBCRemoteInstance instance;
     private volatile Connection connection;
     private volatile Boolean autoCommit;
     private volatile Integer transactionIsolationLevel;
@@ -70,25 +68,14 @@ public class JDBCExecutionContext extends AbstractExecutionContext<JDBCDataSourc
     private StatementLock statementLock = NoOpLock.INSTANCE;
 
     public JDBCExecutionContext(@NotNull JDBCRemoteInstance instance, String purpose) {
-        super(instance.getDataSource(), purpose);
-        this.instance = instance;
+        super(instance, purpose);
         if (!instance.getDataSource().getContainer().getDriver().isThreadSafeDriver()) {
             statementLock = new SingleThreadLock();
         }
     }
 
     public JDBCExecutionContext(@NotNull JDBCRemoteInstance instance, boolean test) {
-        super(instance.getDataSource(), "Test for " + instance);
-        this.instance = instance;
-    }
-
-    @Override
-    public JDBCRemoteInstance getOwnerInstance() {
-        return instance;
-    }
-
-    protected void setOwnerInstance(@NotNull JDBCRemoteInstance instance) {
-        this.instance = instance;
+        super(instance, "Test for " + instance);
     }
 
     @NotNull

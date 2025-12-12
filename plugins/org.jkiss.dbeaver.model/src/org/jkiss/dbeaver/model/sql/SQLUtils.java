@@ -1287,4 +1287,43 @@ public final class SQLUtils {
         }
         return parts;
     }
+
+    public static void addMultiStatementDDL(
+        @NotNull SQLDialect sqlDialect,
+        @NotNull StringBuilder sql,
+        @Nullable String ddl
+    ) {
+        if (CommonUtils.isEmpty(ddl)) {
+            return;
+        }
+
+        String[] lines = ddl.trim().split("\\r?\\n");
+        boolean hasStatements = false;
+
+        for (String line : lines) {
+            String trimmed = line.trim();
+            if (CommonUtils.isEmpty(trimmed)) {
+                continue;
+            }
+
+            hasStatements = true;
+            boolean hasDelimiter = false;
+            for (String scriptDelimiter : sqlDialect.getScriptDelimiters()) {
+                if (trimmed.endsWith(scriptDelimiter)) {
+                    hasDelimiter = true;
+                    break;
+                }
+            }
+            sql.append(trimmed);
+            if (!hasDelimiter) {
+                sql.append(getDefaultScriptDelimiter(sqlDialect));
+            }
+
+            sql.append("\n");
+        }
+
+        if (hasStatements) {
+            sql.append("\n");
+        }
+    }
 }
