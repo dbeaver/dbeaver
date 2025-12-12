@@ -29,6 +29,7 @@ public abstract class AbstractTopLevelCommand implements Runnable, CommandLine.I
     private final Log log = Log.getLog(getClass());
 
     public static final String HELP_OPTION = "--help";
+    public static final String NOSPASH_OPTION = "-nosplash";
 
     @CommandLine.Option(names = {"-dump"},
         description = "Print instance thread dump.")
