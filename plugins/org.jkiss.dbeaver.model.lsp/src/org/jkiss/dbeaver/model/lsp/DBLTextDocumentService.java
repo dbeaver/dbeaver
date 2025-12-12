@@ -64,7 +64,7 @@ public class DBLTextDocumentService implements TextDocumentService, LanguageClie
 
     public static final Map<SQLTokenType, Pair<Integer, String>> SUPPORTED_TOKEN_TYPES = Map.of(
         SQLTokenType.T_KEYWORD, new Pair<>(0, "keyword"),
-        SQLTokenType.T_TABLE, new Pair<>(1, "table")
+        SQLTokenType.T_STRING, new Pair<>(1, "string")
     );
     public static final List<String> SUPPORTED_TOKEN_MODIFIERS = List.of(
         "declaration"
@@ -264,26 +264,22 @@ public class DBLTextDocumentService implements TextDocumentService, LanguageClie
 
         List<Integer> data = new ArrayList<>();
         int lineOffset = 0;
-        int startCharOffset = 0;
         for (Pair<TPToken, Region> pair : tokens) {
+            Region region = pair.getSecond();
             SQLTokenType tokenType = pair.getFirst() instanceof TPTokenDefault tpTokenDefault
                 ? (SQLTokenType) tpTokenDefault.getData() : SQLTokenType.T_OTHER;
-            Integer tokenId = SUPPORTED_TOKEN_TYPES.get(tokenType).getFirst();
-            if (tokenId == null) {
+            Pair<Integer, String> tokenDefinition = SUPPORTED_TOKEN_TYPES.get(tokenType);
+            if (tokenDefinition == null) {
                 continue;
             }
-
-            Region region = pair.getSecond();
+            Integer tokenId = tokenDefinition.getFirst();
 
             // This is a chunk of token data describing one token
-            data.add(lineOffset);
-            data.add(startCharOffset);
+            data.add(lineOffset); // FIXME: How to support multi-line api if internals are single-line-based?
+            data.add(region.getOffset());
             data.add(region.getLength());
             data.add(tokenId);
             data.add(0); // FIXME: Only "declaration" modifier is supported now. Update if more modifiers are added.
-
-            startCharOffset += region.getLength();
-            //lineOffset = 0; // FIXME: How to support multi-line api if internals are single-line-based?
         }
 
         return new SemanticTokens(data);

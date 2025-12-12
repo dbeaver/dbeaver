@@ -214,7 +214,7 @@ public class DBLTextDocumentServiceTest extends DBeaverUnitTest {
     }
 
     @Test
-    public void shouldReturnSingleSemanticToken() throws ExecutionException, InterruptedException {
+    public void shouldReturnSingleKeywordTokenData() throws ExecutionException, InterruptedException {
         String query = "SELECT";
         TextDocumentItem document = DocumentServiceTestUtils.createQueryDocument(query);
         service.didOpen(new DidOpenTextDocumentParams(document));
@@ -229,8 +229,8 @@ public class DBLTextDocumentServiceTest extends DBeaverUnitTest {
     }
 
     @Test
-    public void shouldReturnSemanticTokensData() throws ExecutionException, InterruptedException {
-        String query = "SELECT * FROM table";
+    public void shouldReturnMultipleTokensData() throws ExecutionException, InterruptedException {
+        String query = "SELECT name FROM users WHERE surname = 'Doe'";
         TextDocumentItem document = DocumentServiceTestUtils.createQueryDocument(query);
         service.didOpen(new DidOpenTextDocumentParams(document));
 
@@ -238,9 +238,10 @@ public class DBLTextDocumentServiceTest extends DBeaverUnitTest {
         Integer[] semanticTokensData = service.semanticTokensFull(params).get().getData().toArray(new Integer[0]);
 
         Integer[] expectedData = {
-            0, 0, 6, 0, 0,  // SELECT
-            0, 9, 4, 0, 0,  // FROM
-            0, 14, 5, 1, 0  // table
+            0, 0, 6, 0, 0,   // SELECT
+            0, 12, 4, 0, 0,  // FROM
+            0, 23, 5, 0, 0,  // WHERE
+            0, 39, 5, 1, 0   // 'Doe'
         };
         Assert.assertArrayEquals(
             expectedData,
