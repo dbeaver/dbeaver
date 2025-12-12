@@ -340,12 +340,21 @@ public class DriverEditDialog extends HelpEnabledDialog {
         gd.horizontalSpan = 4;
         infoGroup.setLayoutData(gd);
 
-        {
-            gd = new GridData(GridData.FILL_HORIZONTAL);
-            gd.horizontalSpan = 3;
-            Text idText = UIUtils.createLabelText(infoGroup, UIConnectionMessages.dialog_edit_driver_label_id, driver.getId(), SWT.BORDER | SWT.READ_ONLY, gd);
-            idText.setToolTipText(UIConnectionMessages.dialog_edit_driver_label_id_tip);
-        }
+        Text idText = UIUtils.createLabelText(
+            infoGroup,
+            UIConnectionMessages.dialog_edit_driver_label_id,
+            driver.getId(),
+            SWT.BORDER | SWT.READ_ONLY
+        );
+        idText.setToolTipText(UIConnectionMessages.dialog_edit_driver_label_id_tip);
+
+        Text providerIdText = UIUtils.createLabelText(
+            infoGroup,
+            UIConnectionMessages.dialog_edit_driver_label_provider_id,
+            driver.getProviderId(),
+            SWT.BORDER | SWT.READ_ONLY
+        );
+        providerIdText.setToolTipText(UIConnectionMessages.dialog_edit_driver_label_provider_id_tip);
 
         gd = new GridData(GridData.FILL_HORIZONTAL);
         gd.horizontalSpan = 3;

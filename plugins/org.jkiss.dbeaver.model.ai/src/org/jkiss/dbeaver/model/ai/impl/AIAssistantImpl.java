@@ -171,6 +171,7 @@ public class AIAssistantImpl implements AIAssistant {
             throw new DBCMessageException("Function '" + functionName + "' not found");
         }
         functionCall.setFunction(function);
+        log.debug("Call AI function '" + function.getId() + "'");
         return registry.callFunction(context, function, functionCall.getArguments());
     }
 
