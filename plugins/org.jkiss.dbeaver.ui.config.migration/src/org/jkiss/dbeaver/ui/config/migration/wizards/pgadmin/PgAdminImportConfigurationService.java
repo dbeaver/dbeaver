@@ -148,12 +148,12 @@ public class PgAdminImportConfigurationService {
     private void applyConnectionParameters(@NotNull ImportConnectionInfo conn, @NotNull Map<String, Object> params) {
         for (Map.Entry<String, Object> pe : params.entrySet()) {
             String propertyName = pe.getKey();
-            String propertyValue = String.valueOf(pe.getValue());
-            if (CommonUtils.isEmpty(propertyName) || CommonUtils.isEmpty(propertyValue) || propertyValue.equals("null")) {
+            Object propertyValue = pe.getValue();
+            if (CommonUtils.isEmpty(propertyName) || propertyValue == null) {
                 continue;
             }
             String formattedName = StringUtils.underscoreToCamelCase(propertyName);
-            String strVal = expandStorageDir(propertyValue);
+            String strVal = expandStorageDir(String.valueOf(propertyValue));
             if (CommonUtils.isNotEmpty(strVal)) {
                 conn.setProperty(formattedName, strVal);
             }
