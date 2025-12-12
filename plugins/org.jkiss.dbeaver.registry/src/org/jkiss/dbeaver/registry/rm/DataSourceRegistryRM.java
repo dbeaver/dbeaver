@@ -16,6 +16,10 @@
  */
 package org.jkiss.dbeaver.registry.rm;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.Strictness;
+import com.google.gson.reflect.TypeToken;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -38,6 +42,11 @@ import java.util.Map;
 
 public class DataSourceRegistryRM<T extends DataSourceDescriptor> extends DataSourceRegistry<T> {
     private static final Log log = Log.getLog(DataSourceRegistryRM.class);
+    private static final Gson GSON = new GsonBuilder()
+        .setStrictness(Strictness.LENIENT)
+        .serializeNulls()
+        .setPrettyPrinting()
+        .create();
 
     @NotNull
     private final RMController rmController;
@@ -188,7 +197,16 @@ public class DataSourceRegistryRM<T extends DataSourceDescriptor> extends DataSo
         if (settings == null) {
             return;
         }
-        DataSourceNavigatorSettings customSettings = DataSourceNavigatorSettings.fromMap(settings);
+        String navigatorSettingsJson = settings.get(DataSourceNavigatorSettingsUtils.PARAM_ID_NAVIGATOR_SETTINGS);
+        if (navigatorSettingsJson == null) {
+            return;
+        }
+        DataSourceNavigatorSettings customSettings = new DataSourceNavigatorSettings();
+        Map<String, Object> settingsMap = GSON.fromJson(
+            navigatorSettingsJson,
+            TypeToken.getParameterized(Map.class, String.class, Object.class).getType()
+        );
+        DataSourceNavigatorSettingsUtils.loadSettingsFromMap(customSettings, settingsMap);
         dsd.setCustomNavigatorSettings(customSettings);
     }
 

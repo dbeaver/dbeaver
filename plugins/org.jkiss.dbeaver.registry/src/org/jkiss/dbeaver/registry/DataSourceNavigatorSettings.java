@@ -16,8 +16,6 @@
  */
 package org.jkiss.dbeaver.registry;
 
-import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.navigator.DBNBrowseSettings;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.registry.internal.RegistryMessages;
@@ -26,7 +24,6 @@ import org.jkiss.utils.CommonUtils;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.stream.Stream;
 
 /**
  * Browse settings
@@ -251,41 +248,4 @@ public class DataSourceNavigatorSettings implements DBNBrowseSettings {
         preferences.setValue(DEFAULT_HIDE_VIRTUAL_MODEL, settings.isHideVirtualModel());
     }
 
-    @NotNull
-    public Map<String, Object> toMap() {
-        Map<String, Object> map = new LinkedHashMap<>();
-        map.put(DEFAULT_SHOW_SYSTEM_OBJECTS, isShowSystemObjects());
-        map.put(DEFAULT_SHOW_UTILITY_OBJECTS, isShowUtilityObjects());
-        map.put(DEFAULT_SHOW_ONLY_ENTITIES, isShowOnlyEntities());
-        map.put(DEFAULT_MERGE_ENTITIES, isMergeEntities());
-        map.put(DEFAULT_HIDE_FOLDERS, isHideFolders());
-        map.put(DEFAULT_MERGE_SCHEMAS, isHideSchemas());
-        map.put(DEFAULT_HIDE_VIRTUAL_MODEL, isHideVirtualModel());
-        return map;
-    }
-
-    @Nullable
-    public static DataSourceNavigatorSettings fromMap(@NotNull Map<String, String> map) {
-        boolean hasAny = Stream.of(
-            DEFAULT_SHOW_SYSTEM_OBJECTS,
-            DEFAULT_SHOW_UTILITY_OBJECTS,
-            DEFAULT_SHOW_ONLY_ENTITIES,
-            DEFAULT_MERGE_ENTITIES,
-            DEFAULT_HIDE_FOLDERS,
-            DEFAULT_MERGE_SCHEMAS,
-            DEFAULT_HIDE_VIRTUAL_MODEL
-        ).anyMatch(map::containsKey);
-        if (!hasAny) {
-            return null;
-        }
-        DataSourceNavigatorSettings settings = new DataSourceNavigatorSettings();
-        settings.setShowSystemObjects(CommonUtils.toBoolean(map.get(DEFAULT_SHOW_SYSTEM_OBJECTS)));
-        settings.setShowUtilityObjects(CommonUtils.toBoolean(map.get(DEFAULT_SHOW_UTILITY_OBJECTS)));
-        settings.setShowOnlyEntities(CommonUtils.toBoolean(map.get(DEFAULT_SHOW_ONLY_ENTITIES)));
-        settings.setMergeEntities(CommonUtils.toBoolean(map.get(DEFAULT_MERGE_ENTITIES)));
-        settings.setHideFolders(CommonUtils.toBoolean(map.get(DEFAULT_HIDE_FOLDERS)));
-        settings.setHideSchemas(CommonUtils.toBoolean(map.get(DEFAULT_MERGE_SCHEMAS)));
-        settings.setHideVirtualModel(CommonUtils.toBoolean(map.get(DEFAULT_HIDE_VIRTUAL_MODEL)));
-        return settings;
-    }
 }

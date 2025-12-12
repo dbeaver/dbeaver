@@ -841,20 +841,7 @@ public class DataSourceSerializerModern<T extends DataSourceDescriptor> implemen
         dataSource.setDriverSubstitution(DataSourceProviderRegistry.getInstance()
             .getDriverSubstitution(CommonUtils.notEmpty(JSONUtils.getString(conObject, ATTR_DRIVER_SUBSTITUTION))));
 
-        DataSourceNavigatorSettings navSettings = dataSource.getOriginalNavigatorSettings();
-        navSettings.setShowSystemObjects(JSONUtils.getBoolean(
-            conObject,
-            DataSourceSerializerModern.ATTR_NAVIGATOR_SHOW_SYSTEM_OBJECTS));
-        navSettings.setShowUtilityObjects(JSONUtils.getBoolean(
-            conObject,
-            DataSourceSerializerModern.ATTR_NAVIGATOR_SHOW_UTIL_OBJECTS));
-        navSettings.setShowOnlyEntities(JSONUtils.getBoolean(
-            conObject,
-            DataSourceSerializerModern.ATTR_NAVIGATOR_SHOW_ONLY_ENTITIES));
-        navSettings.setHideFolders(JSONUtils.getBoolean(conObject, DataSourceSerializerModern.ATTR_NAVIGATOR_HIDE_FOLDERS));
-        navSettings.setHideSchemas(JSONUtils.getBoolean(conObject, DataSourceSerializerModern.ATTR_NAVIGATOR_HIDE_SCHEMAS));
-        navSettings.setHideVirtualModel(JSONUtils.getBoolean(conObject, DataSourceSerializerModern.ATTR_NAVIGATOR_HIDE_VIRTUAL));
-        navSettings.setMergeEntities(JSONUtils.getBoolean(conObject, DataSourceSerializerModern.ATTR_NAVIGATOR_MERGE_ENTITIES));
+        DataSourceNavigatorSettingsUtils.loadSettingsFromMap(dataSource.getOriginalNavigatorSettings(), conObject);
 
         dataSource.setConnectionReadOnly(JSONUtils.getBoolean(conObject, RegistryConstants.ATTR_READ_ONLY));
         final String folderPath = JSONUtils.getString(conObject, RegistryConstants.ATTR_FOLDER);
@@ -1115,13 +1102,7 @@ public class DataSourceSerializerModern<T extends DataSourceDescriptor> implemen
         if (dataSource.isSharedCredentials()) JSONUtils.field(json, RegistryConstants.ATTR_SHARED_CREDENTIALS, true);
 
         DataSourceNavigatorSettings navSettings = dataSource.getOriginalNavigatorSettings();
-        if (navSettings.isShowSystemObjects()) JSONUtils.field(json, ATTR_NAVIGATOR_SHOW_SYSTEM_OBJECTS, true);
-        if (navSettings.isShowUtilityObjects()) JSONUtils.field(json, ATTR_NAVIGATOR_SHOW_UTIL_OBJECTS, true);
-        if (navSettings.isShowOnlyEntities()) JSONUtils.field(json, ATTR_NAVIGATOR_SHOW_ONLY_ENTITIES, true);
-        if (navSettings.isHideFolders()) JSONUtils.field(json, ATTR_NAVIGATOR_HIDE_FOLDERS, true);
-        if (navSettings.isHideSchemas()) JSONUtils.field(json, ATTR_NAVIGATOR_HIDE_SCHEMAS, true);
-        if (navSettings.isHideVirtualModel()) JSONUtils.field(json, ATTR_NAVIGATOR_HIDE_VIRTUAL, true);
-        if (navSettings.isMergeEntities()) JSONUtils.field(json, ATTR_NAVIGATOR_MERGE_ENTITIES, true);
+        DataSourceNavigatorSettingsUtils.saveSettingsToMap(json, navSettings);
 
         if (dataSource.isConnectionReadOnly()) JSONUtils.field(json, RegistryConstants.ATTR_READ_ONLY, true);
 
