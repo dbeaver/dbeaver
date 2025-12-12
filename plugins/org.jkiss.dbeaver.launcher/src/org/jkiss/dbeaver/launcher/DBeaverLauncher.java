@@ -612,6 +612,9 @@ public class DBeaverLauncher {
                 openLogFile();
             }
             log.write(e.getMessage());
+            if (debug) {
+                System.out.println("Error processing remote command line: " + e.getMessage());
+            }
         }
         Path secretStoragePath = useCustomSecretStorage(dbeaverDataDir);
         if (secretStoragePath != null) {
