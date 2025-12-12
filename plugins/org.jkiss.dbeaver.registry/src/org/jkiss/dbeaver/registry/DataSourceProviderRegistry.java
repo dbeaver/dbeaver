@@ -122,22 +122,14 @@ public class DataSourceProviderRegistry implements DBPDataSourceProviderRegistry
         {
             IConfigurationElement[] extElements = registry.getConfigurationElementsFor(DataSourceProviderDescriptor.EXTENSION_ID);
             // Sort - parse providers with parent in the end
-            Arrays.sort(
-                extElements, (o1, o2) -> {
-                    String p1 = o1.getAttribute(RegistryConstants.ATTR_PARENT);
-                    String p2 = o2.getAttribute(RegistryConstants.ATTR_PARENT);
-                    if (CommonUtils.equalObjects(p1, p2)) {
-                        return 0;
-                    }
-                    if (p1 == null) {
-                        return -1;
-                    }
-                    if (p2 == null) {
-                        return 1;
-                    }
-                    return 0;
-                }
-            );
+            Arrays.sort(extElements, (o1, o2) -> {
+                String p1 = o1.getAttribute(RegistryConstants.ATTR_PARENT);
+                String p2 = o2.getAttribute(RegistryConstants.ATTR_PARENT);
+                if (CommonUtils.equalObjects(p1, p2)) return 0;
+                if (p1 == null) return -1;
+                if (p2 == null) return 1;
+                return 0;
+            });
 
             // Load datasource providers in three steps to link them with parent providers and load the rest of config
             for (IConfigurationElement ext : extElements) {
