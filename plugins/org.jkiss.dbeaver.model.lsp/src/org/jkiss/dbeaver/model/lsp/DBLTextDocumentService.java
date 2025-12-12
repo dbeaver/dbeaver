@@ -63,8 +63,8 @@ public class DBLTextDocumentService implements TextDocumentService, LanguageClie
     private static final Log log = Log.getLog(DBLTextDocumentService.class);
 
     public static final Map<SQLTokenType, Pair<Integer, String>> SUPPORTED_TOKEN_TYPES = Map.of(
-        SQLTokenType.T_KEYWORD, new Pair<>(0, "keyword"),
-        SQLTokenType.T_STRING, new Pair<>(1, "string")
+        SQLTokenType.T_KEYWORD, new Pair<>(0, SemanticTokenTypes.Keyword),
+        SQLTokenType.T_STRING, new Pair<>(1, SemanticTokenTypes.String)
     );
     public static final List<String> SUPPORTED_TOKEN_MODIFIERS = List.of(
         "declaration"
