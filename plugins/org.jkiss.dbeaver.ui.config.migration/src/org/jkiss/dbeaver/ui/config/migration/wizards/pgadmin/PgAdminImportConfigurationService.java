@@ -19,11 +19,11 @@ package org.jkiss.dbeaver.ui.config.migration.wizards.pgadmin;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.ToNumberPolicy;
+import com.google.gson.annotations.SerializedName;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
-import org.jkiss.dbeaver.model.data.json.JSONUtils;
 import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
 import org.jkiss.dbeaver.ui.config.migration.wizards.ImportConnectionInfo;
 import org.jkiss.dbeaver.ui.config.migration.wizards.ImportData;
@@ -42,14 +42,6 @@ public class PgAdminImportConfigurationService {
     private static final Log log = Log.getLog(PgAdminImportConfigurationService.class);
 
     private static final String DRIVER_ID_POSTGRESQL = "postgres-jdbc";
-    private static final String KEY_SERVERS = "Servers";
-    private static final String KEY_HOST = "Host";
-    private static final String KEY_HOST_ALT = "host";
-    private static final String KEY_NAME = "Name";
-    private static final String KEY_PORT = "Port";
-    private static final String KEY_USERNAME = "Username";
-    private static final String KEY_DB = "MaintenanceDB";
-    private static final String KEY_CONNECTION_PARAMETERS = "ConnectionParameters";
     private static final String STORAGE_PLACEHOLDER = "<STORAGE_DIR>";
 
     public static final PgAdminImportConfigurationService INSTANCE = new PgAdminImportConfigurationService();
@@ -76,15 +68,9 @@ public class PgAdminImportConfigurationService {
     }
 
     public void importJSON(@NotNull ImportData importData, @NotNull Reader reader) {
-        Map<String, Object> root = JSONUtils.parseMap(GSON, reader);
-        if (root.isEmpty()) {
-            log.debug("Empty or invalid pgAdmin config JSON");
-            return;
-        }
-
-        Map<String, Object> servers = JSONUtils.getObject(root, KEY_SERVERS);
-        if (servers.isEmpty()) {
-            log.debug("No 'Servers' found in pgAdmin config");
+        PgAdminRoot root = GSON.fromJson(reader, PgAdminRoot.class);
+        if (root == null || root.servers == null || root.servers.isEmpty()) {
+            log.debug("Empty or invalid pgAdmin config JSON or no 'Servers' found");
             return;
         }
 
@@ -92,29 +78,24 @@ public class PgAdminImportConfigurationService {
             importData.addDriver(postgresqlDriver);
         }
 
-        for (Map.Entry<String, Object> entry : servers.entrySet()) {
-            Object val = entry.getValue();
-            if (!(val instanceof Map)) {
+        for (Map.Entry<String, PgAdminServer> entry : root.servers.entrySet()) {
+            PgAdminServer pgAdminServer = entry.getValue();
+            if (pgAdminServer == null) {
                 continue;
             }
-            @SuppressWarnings("unchecked")
-            Map<String, Object> s = (Map<String, Object>) val;
 
-            String host = StringUtils.firstNonEmpty(JSONUtils.getString(s, KEY_HOST), JSONUtils.getString(s, KEY_HOST_ALT));
+            String host = StringUtils.firstNonEmpty(pgAdminServer.host, pgAdminServer.hostAlt);
             if (CommonUtils.isEmpty(host)) {
                 continue;
             }
-            String name  = JSONUtils.getString(s, KEY_NAME);
-            int portInt = JSONUtils.getInteger(s, KEY_PORT, 5432);
-            String port = String.valueOf(portInt);
-            String user = JSONUtils.getString(s, KEY_USERNAME);
-            String db = JSONUtils.getString(s, KEY_DB);
-
+            String db = pgAdminServer.maintenanceDB;
+            String user = pgAdminServer.username;
+            String port = String.valueOf(pgAdminServer.port);
 
             ImportConnectionInfo conn = new ImportConnectionInfo(
                 postgresqlDriver,
                 null,
-                name,
+                pgAdminServer.name,
                 null,
                 host,
                 port,
@@ -123,13 +104,8 @@ public class PgAdminImportConfigurationService {
                 null
             );
 
-            Object cp = s.get(KEY_CONNECTION_PARAMETERS);
-            if (cp instanceof Map) {
-                @SuppressWarnings("unchecked")
-                Map<String, Object> params = (Map<String, Object>) cp;
-                if (!params.isEmpty()) {
-                    applyConnectionParameters(conn, params);
-                }
+            if (pgAdminServer.connectionParameters != null && !pgAdminServer.connectionParameters.isEmpty()) {
+                applyConnectionParameters(conn, pgAdminServer.connectionParameters);
             }
 
             importData.addConnection(conn);
@@ -158,5 +134,32 @@ public class PgAdminImportConfigurationService {
                 conn.setProperty(formattedName, strVal);
             }
         }
+    }
+
+    private static class PgAdminRoot {
+        @SerializedName("Servers")
+        Map<String, PgAdminServer> servers;
+    }
+
+    private static class PgAdminServer {
+        @SerializedName("Host")
+        String host;
+        @SerializedName("host")
+        String hostAlt;
+
+        @SerializedName("Name")
+        String name;
+
+        @SerializedName("Port")
+        Integer port;
+
+        @SerializedName("Username")
+        String username;
+
+        @SerializedName("MaintenanceDB")
+        String maintenanceDB;
+
+        @SerializedName("ConnectionParameters")
+        Map<String, Object> connectionParameters;
     }
 }
