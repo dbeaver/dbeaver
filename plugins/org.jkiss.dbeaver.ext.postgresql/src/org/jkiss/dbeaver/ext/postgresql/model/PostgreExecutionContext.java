@@ -36,7 +36,6 @@ import org.jkiss.utils.CommonUtils;
 import java.lang.reflect.InvocationTargetException;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.List;
 
 /**
@@ -44,8 +43,8 @@ import java.util.List;
  */
 public class PostgreExecutionContext extends JDBCExecutionContext implements DBCExecutionContextDefaults<PostgreDatabase, PostgreSchema> {
 
-    private final List<String> searchPath = new LinkedList<>();
-    private List<String> defaultSearchPath = new LinkedList<>();
+    private final List<String> searchPath = new ArrayList<>();
+    private List<String> defaultSearchPath = new ArrayList<>();
     private String activeUser;
     private long activeSchemaId;
     private boolean isolatedContext;
@@ -274,7 +273,7 @@ public class PostgreExecutionContext extends JDBCExecutionContext implements DBC
         }
     }
 
-    private void setSearchPath(String path) {
+    private void setSearchPath(@NotNull String path) {
         if (searchPath.isEmpty()) {
             searchPath.addFirst(path);
         } else if (!searchPath.getFirst().equals(path)) {
@@ -283,9 +282,8 @@ public class PostgreExecutionContext extends JDBCExecutionContext implements DBC
         }
         if (activeUser != null && !searchPath.contains(activeUser)) {
             searchPath.add(activeUser);
+            setUserInTheEndOfThePath(searchPath);
         }
-
-        setUserInTheEndOfThePath(searchPath);
     }
 
     private static boolean isUserFirstInPath(List<String> newSearchPath) {
