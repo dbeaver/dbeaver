@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -276,5 +276,24 @@ public class SQLIdentifierDetector extends TPWordDetector {
         } catch (BadLocationException e) {
             return id;
         }
+    }
+
+    @NotNull
+    public List<Pair<TPToken, Region>> extractAllIdentifiers(@NotNull IDocument document, @NotNull SQLRuleManager ruleManager) {
+        final TPRuleBasedScanner scanner = new TPRuleBasedScanner();
+        scanner.setRules(ruleManager.getAllRules());
+        scanner.setRange(document, 0, document.getLength());
+
+        List<Pair<TPToken, Region>> tokens = new ArrayList<>();
+
+        TPToken token = scanner.nextToken();
+        while (!token.isEOF()) {
+            if (token instanceof TPTokenAbstract && !token.isWhitespace()) {
+                tokens.add(new Pair<>(token, new Region(scanner.getTokenOffset(), scanner.getTokenLength())));
+            }
+            token = scanner.nextToken();
+        }
+
+        return tokens;
     }
 }

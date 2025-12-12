@@ -22,7 +22,9 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.utils.GeneralUtils;
+import org.jkiss.utils.Pair;
 
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 public final class DBLServer implements LanguageServer, LanguageClientAware {
@@ -74,7 +76,17 @@ public final class DBLServer implements LanguageServer, LanguageClientAware {
         serverCapabilities.setTextDocumentSync(options);
         //https://microsoft.github.io/language-server-protocol/specifications/specification-current/#textDocument_formatting
         serverCapabilities.setDocumentFormattingProvider(new DocumentFormattingOptions());
+
+        //https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#textDocument_completion
         serverCapabilities.setCompletionProvider(new CompletionOptions());
+
+        //https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#textDocument_semanticTokens
+        List<String> supportedTokens = DBLTextDocumentService.SUPPORTED_TOKEN_TYPES.values().stream().map(Pair::getSecond).toList();
+        List<String> supportedModifiers = DBLTextDocumentService.SUPPORTED_TOKEN_MODIFIERS;
+        SemanticTokensLegend legend = new SemanticTokensLegend(supportedTokens, supportedModifiers);
+        SemanticTokensWithRegistrationOptions tokenProvider = new SemanticTokensWithRegistrationOptions(legend);
+        serverCapabilities.setSemanticTokensProvider(tokenProvider);
+
         return serverCapabilities;
     }
 
