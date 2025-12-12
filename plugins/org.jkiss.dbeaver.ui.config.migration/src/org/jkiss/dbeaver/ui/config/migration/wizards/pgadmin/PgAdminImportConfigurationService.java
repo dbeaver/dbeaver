@@ -24,7 +24,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.data.json.JSONUtils;
-import org.jkiss.dbeaver.registry.driver.DriverUtils;
+import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
 import org.jkiss.dbeaver.ui.config.migration.wizards.ImportConnectionInfo;
 import org.jkiss.dbeaver.ui.config.migration.wizards.ImportData;
 import org.jkiss.dbeaver.ui.config.migration.wizards.ImportDriverInfo;
@@ -32,7 +32,6 @@ import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.StringUtils;
 
 import java.io.Reader;
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -41,7 +40,7 @@ import java.util.Map;
 public class PgAdminImportConfigurationService {
     private static final Log log = Log.getLog(PgAdminImportConfigurationService.class);
 
-    private static final String DRIVER_ID_POSTGRESQL = "postgresql";
+    private static final String DRIVER_ID_POSTGRESQL = "postgres-jdbc";
     private static final String KEY_SERVERS = "Servers";
     private static final String KEY_HOST = "Host";
     private static final String KEY_HOST_ALT = "host";
@@ -61,17 +60,18 @@ public class PgAdminImportConfigurationService {
     private final ImportDriverInfo postgresqlDriver;
 
     private PgAdminImportConfigurationService() {
-        List<DBPDriver> drivers = DriverUtils.getAllDrivers();
-        this.postgresqlDriver = drivers.stream()
-            .filter(d -> d.getId().equals(DRIVER_ID_POSTGRESQL))
-            .findFirst()
-            .map(ImportDriverInfo::new)
-            .orElse(new ImportDriverInfo(
+        DataSourceProviderRegistry registry = DataSourceProviderRegistry.getInstance();
+        DBPDriver driver = registry.findDriver(DRIVER_ID_POSTGRESQL);
+        if (driver != null) {
+            this.postgresqlDriver = new ImportDriverInfo(driver);
+        } else {
+            this.postgresqlDriver = new ImportDriverInfo(
                 DRIVER_ID_POSTGRESQL,
                 "PostgreSQL",
                 "jdbc:postgresql://{host}[:{port}]/{database}",
                 "org.postgresql.Driver"
-            ));
+            );
+        }
     }
 
     public void importJSON(@NotNull ImportData importData, @NotNull Reader reader) {

@@ -41,7 +41,7 @@ public class ConfigImportWizardPagePgAdminSettings extends WizardPage {
     }
 
     @Override
-    public void createControl(Composite parent) {
+    public void createControl(@NotNull Composite parent) {
         Composite placeholder = new Composite(parent, SWT.NONE);
         placeholder.setLayout(new GridLayout(1, true));
 

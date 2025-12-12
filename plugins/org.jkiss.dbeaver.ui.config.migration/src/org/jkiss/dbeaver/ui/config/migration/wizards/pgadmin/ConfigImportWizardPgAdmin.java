@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ui.config.migration.wizards.pgadmin;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ui.config.migration.wizards.ConfigImportWizard;
 
 import java.io.File;
@@ -36,6 +37,7 @@ public class ConfigImportWizardPgAdmin extends ConfigImportWizard {
         super.addPages();
     }
 
+    @NotNull
     public File getInputFile() {
         return pageSettings.getInputFile();
     }
