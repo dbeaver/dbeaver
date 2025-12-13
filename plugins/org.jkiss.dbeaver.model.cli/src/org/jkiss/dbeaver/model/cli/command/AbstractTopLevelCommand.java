@@ -62,7 +62,8 @@ public abstract class AbstractTopLevelCommand implements Runnable, CommandLine.I
 
     @CommandLine.Option(names = {TRACE_LOGS_OPTION},
         description = "Enable trace logging.",
-        scope = CommandLine.ScopeType.INHERIT
+        scope = CommandLine.ScopeType.INHERIT,
+        hidden = true
     )
     private boolean traceLogs;
 
