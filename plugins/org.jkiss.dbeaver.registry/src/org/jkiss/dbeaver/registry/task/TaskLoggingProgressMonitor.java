@@ -39,7 +39,7 @@ public class TaskLoggingProgressMonitor extends ProxyProgressMonitor {
     }
 
     @Override
-    public void subTask(String name) {
+    public void subTask(@NotNull String name) {
         super.subTask(name);
         log.debug("\t" + name);
     }

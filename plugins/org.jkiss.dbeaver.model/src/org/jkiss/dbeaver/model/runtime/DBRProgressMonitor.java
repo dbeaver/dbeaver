@@ -40,7 +40,7 @@ public interface DBRProgressMonitor {
 
     void done();
 
-    void subTask(String name);
+    void subTask(@NotNull String name);
 
     void worked(int work);
 

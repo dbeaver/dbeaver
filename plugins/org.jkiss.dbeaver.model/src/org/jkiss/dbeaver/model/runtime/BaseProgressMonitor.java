@@ -49,7 +49,7 @@ public abstract class BaseProgressMonitor implements DBRProgressMonitor {
     }
 
     @Override
-    public void subTask(String name) {
+    public void subTask(@NotNull String name) {
     }
 
     @Override

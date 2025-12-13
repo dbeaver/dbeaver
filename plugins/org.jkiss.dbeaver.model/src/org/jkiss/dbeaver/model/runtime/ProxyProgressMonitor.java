@@ -54,7 +54,7 @@ public class ProxyProgressMonitor implements DBRProgressMonitor, IProgressMonito
     }
 
     @Override
-    public void subTask(String name)
+    public void subTask(@NotNull String name)
     {
         original.subTask(name);
     }

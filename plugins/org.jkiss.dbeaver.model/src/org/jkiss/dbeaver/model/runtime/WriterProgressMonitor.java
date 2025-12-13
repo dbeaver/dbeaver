@@ -40,7 +40,7 @@ public class WriterProgressMonitor extends ProxyProgressMonitor {
     }
 
     @Override
-    public void subTask(String name) {
+    public void subTask(@NotNull String name) {
         super.subTask(name);
         out.println("\t" + name);
     }

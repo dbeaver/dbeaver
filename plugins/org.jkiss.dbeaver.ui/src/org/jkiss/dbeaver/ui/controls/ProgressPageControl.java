@@ -589,7 +589,7 @@ public class ProgressPageControl extends ConComposite implements ISearchContextP
                 }
 
                 @Override
-                public void subTask(String name) {
+                public void subTask(@NotNull String name) {
                     super.subTask(name);
                     curStatus = name;
                 }
