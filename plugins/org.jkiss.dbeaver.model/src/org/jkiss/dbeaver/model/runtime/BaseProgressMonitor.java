@@ -42,18 +42,22 @@ public abstract class BaseProgressMonitor implements DBRProgressMonitor {
 
     @Override
     public void beginTask(@NotNull String name, int totalWork) {
+        // no-op
     }
 
     @Override
     public void done() {
+        // no-op
     }
 
     @Override
     public void subTask(@NotNull String name) {
+        // no-op
     }
 
     @Override
     public void worked(int work) {
+        // no-op
     }
 
     @Override
