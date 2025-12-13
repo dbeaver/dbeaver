@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,6 +15,8 @@
  * limitations under the License.
  */
 package org.jkiss.dbeaver.model.runtime;
+
+import org.jkiss.code.NotNull;
 
 import java.io.PrintWriter;
 import java.io.Writer;
@@ -32,7 +34,7 @@ public class WriterProgressMonitor extends ProxyProgressMonitor {
     }
 
     @Override
-    public void beginTask(String name, int totalWork) {
+    public void beginTask(@NotNull String name, int totalWork) {
         super.beginTask(name, totalWork);
         out.println(name);
     }

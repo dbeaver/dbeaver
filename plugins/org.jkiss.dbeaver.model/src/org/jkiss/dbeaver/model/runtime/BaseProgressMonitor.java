@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,8 @@ package org.jkiss.dbeaver.model.runtime;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 
 import java.util.List;
@@ -32,13 +34,14 @@ public abstract class BaseProgressMonitor implements DBRProgressMonitor {
     protected BaseProgressMonitor() {
     }
 
+    @NotNull
     @Override
     public IProgressMonitor getNestedMonitor() {
         return NESTED_INSTANCE;
     }
 
     @Override
-    public void beginTask(String name, int totalWork) {
+    public void beginTask(@NotNull String name, int totalWork) {
     }
 
     @Override
@@ -59,7 +62,7 @@ public abstract class BaseProgressMonitor implements DBRProgressMonitor {
     }
 
     @Override
-    public void startBlock(DBRBlockingObject object, String taskName) {
+    public void startBlock(@NotNull DBRBlockingObject object, @Nullable String taskName) {
         // do nothing
     }
 
@@ -68,6 +71,7 @@ public abstract class BaseProgressMonitor implements DBRProgressMonitor {
         // do nothing
     }
 
+    @Nullable
     @Override
     public List<DBRBlockingObject> getActiveBlocks() {
         return null;
