@@ -30,6 +30,8 @@ public abstract class AbstractTopLevelCommand implements Runnable, CommandLine.I
 
     public static final String HELP_OPTION = "--help";
     public static final String NOSPASH_OPTION = "-nosplash";
+    public static final String DEBUG_LOGS_OPTION = "--debug-logs";
+    public static final String TRACE_LOGS_OPTION = "--trace-logs";
 
     @CommandLine.Option(names = {"-dump"},
         description = "Print instance thread dump.")
@@ -52,11 +54,17 @@ public abstract class AbstractTopLevelCommand implements Runnable, CommandLine.I
     )
     private boolean version;
 
-    @CommandLine.Option(names = {"--debug-logs"},
+    @CommandLine.Option(names = {DEBUG_LOGS_OPTION},
         description = "Enable debug logging.",
         scope = CommandLine.ScopeType.INHERIT
     )
     private boolean debugLogs;
+
+    @CommandLine.Option(names = {TRACE_LOGS_OPTION},
+        description = "Enable trace logging.",
+        scope = CommandLine.ScopeType.INHERIT
+    )
+    private boolean traceLogs;
 
     @CommandLine.Mixin
     private EclipseOptions eclipseOptions;
@@ -84,8 +92,11 @@ public abstract class AbstractTopLevelCommand implements Runnable, CommandLine.I
 
     @Override
     public void run() {
-        if (debugLogs) {
+        if (debugLogs || traceLogs) {
             Log.setLogHandler(null);
+            if (traceLogs) {
+                Log.enableTraceLogs(true);
+            }
         }
         try {
             if (dump) {
