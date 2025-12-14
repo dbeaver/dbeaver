@@ -230,8 +230,9 @@ class GenericFilterValueEdit {
     Text addFilterText(Composite composite) {
         // Create job which will load values after specified delay
         final AbstractJob loadValuesJob = new AbstractJob("Load values timeout") {
+            @NotNull
             @Override
-            protected IStatus run(DBRProgressMonitor monitor) {
+            protected IStatus run(@NotNull DBRProgressMonitor monitor) {
                 UIUtils.asyncExec(() -> loadValues(null));
                 return Status.OK_STATUS;
             }
@@ -672,8 +673,9 @@ class GenericFilterValueEdit {
             setSkipErrorOnCanceling(true);
         }
 
+        @NotNull
         @Override
-        protected IStatus run(DBRProgressMonitor monitor) {
+        protected IStatus run(@NotNull DBRProgressMonitor monitor) {
             monitor.beginTask("Read filter values", 1);
             final DBCExecutionContext executionContext = viewer.getExecutionContext();
             if (executionContext == null) {

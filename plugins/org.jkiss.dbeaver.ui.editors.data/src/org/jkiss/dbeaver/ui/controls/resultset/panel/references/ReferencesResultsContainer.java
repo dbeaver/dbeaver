@@ -269,8 +269,9 @@ class ReferencesResultsContainer implements IResultSetContainer {
 
         if (!allEntities.isEmpty()) {
             new AbstractJob("Load reference keys") {
+                @NotNull
                 @Override
-                protected IStatus run(DBRProgressMonitor monitor) {
+                protected IStatus run(@NotNull DBRProgressMonitor monitor) {
                     monitor.beginTask("Load references", allEntities.size());
                     try {
                         List<ReferenceKey> refs = new ArrayList<>();
@@ -387,8 +388,9 @@ class ReferencesResultsContainer implements IResultSetContainer {
             return;
         }
         new AbstractJob("Read references") {
+            @NotNull
             @Override
-            protected IStatus run(DBRProgressMonitor monitor) {
+            protected IStatus run(@NotNull DBRProgressMonitor monitor) {
                 try {
                     DBSEntity realEntity = DBVUtils.getRealEntity(monitor, activeReferenceKey.refEntity);
                     if (!(realEntity instanceof DBSDataContainer)) {

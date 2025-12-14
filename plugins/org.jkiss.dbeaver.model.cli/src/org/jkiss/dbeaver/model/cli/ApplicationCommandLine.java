@@ -23,6 +23,7 @@ import org.eclipse.core.runtime.IExtensionRegistry;
 import org.eclipse.core.runtime.Platform;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.cli.command.AbstractTopLevelCommand;
 import org.jkiss.dbeaver.model.cli.registry.CommandLineParameterDescriptor;
@@ -104,7 +105,17 @@ public abstract class ApplicationCommandLine<T extends ApplicationInstanceContro
                     message = e.getMessage();
                 }
                 log.error(message);
-                return new CLIProcessResult(CLIProcessResult.PostAction.ERROR, message);
+                return new CLIProcessResult(
+                    CLIProcessResult.PostAction.ERROR,
+                    List.of(message),
+                    CLIConstants.EXIT_CODE_ERROR
+                );
+            } catch (CommandLine.MissingParameterException e) {
+                return new CLIProcessResult(
+                    CLIProcessResult.PostAction.ERROR,
+                    List.of(e.getMessage()),
+                    CLIConstants.EXIT_CODE_ERROR
+                );
             }
 
             if (commandLineIsEmpty(parseResult)) {
@@ -202,7 +213,7 @@ public abstract class ApplicationCommandLine<T extends ApplicationInstanceContro
     }
 
     @NotNull
-    public String[] preprocessCommandLine(@NotNull String[] args) {
+    public String[] preprocessCommandLine(@NotNull String[] args) throws DBException {
         try (var context = new CommandLineContext(null)) {
             CommandLine commandLine = initCommandLine(
                 null,
@@ -227,6 +238,8 @@ public abstract class ApplicationCommandLine<T extends ApplicationInstanceContro
                     false
                 );
             }
+        } catch (Exception e) {
+            log.error("Error preprocessing command line: " + e.getMessage(), e);
         }
         return args;
     }
