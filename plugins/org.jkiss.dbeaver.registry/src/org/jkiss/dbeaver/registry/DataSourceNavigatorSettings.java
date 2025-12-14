@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,6 +24,7 @@ import org.jkiss.utils.CommonUtils;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Browse settings
@@ -47,6 +48,19 @@ public class DataSourceNavigatorSettings implements DBNBrowseSettings {
         RegistryMessages.navigator_settings_preset_custom_view_name,
         RegistryMessages.navigator_settings_preset_custom_view_description
     );
+
+    public void loadSettings(Map<String, Object> projectNavigatorSettings) {
+        this.showOnlyEntities = CommonUtils.toBoolean(projectNavigatorSettings.get(DEFAULT_SHOW_ONLY_ENTITIES_SETTING), this.showOnlyEntities);
+        this.hideFolders = CommonUtils.toBoolean(projectNavigatorSettings.get(DEFAULT_HIDE_FOLDERS_SETTING), this.hideFolders);
+        this.hideSchemas = CommonUtils.toBoolean(projectNavigatorSettings.get(DEFAULT_MERGE_SCHEMAS_SETTING), this.hideSchemas);
+        this.hideVirtualModel = CommonUtils.toBoolean(projectNavigatorSettings.get(DEFAULT_HIDE_VIRTUAL_MODEL_SETTING), this.hideVirtualModel);
+        this.showSystemObjects = CommonUtils.toBoolean(projectNavigatorSettings.get(DEFAULT_SHOW_SYSTEM_OBJECTS_SETTING), this.showSystemObjects);
+        this.showUtilityObjects = CommonUtils.toBoolean(
+            projectNavigatorSettings.get(DEFAULT_SHOW_UTILITY_OBJECTS_SETTING),
+            this.showUtilityObjects
+        );
+        this.mergeEntities = CommonUtils.toBoolean(projectNavigatorSettings.get(DEFAULT_MERGE_ENTITIES_SETTING), this.mergeEntities);
+    }
 
     public static class Preset {
         private final String id;
@@ -197,6 +211,28 @@ public class DataSourceNavigatorSettings implements DBNBrowseSettings {
     private static final String DEFAULT_MERGE_SCHEMAS = "navigator.settings.default.hideSchemas";
     private static final String DEFAULT_HIDE_VIRTUAL_MODEL = "navigator.settings.default.hideVirtualModel";
 
+    //fixme (?) limit of 32 characters in database setting object key
+    private static final String DEFAULT_SHOW_SYSTEM_OBJECTS_SETTING = DEFAULT_SHOW_SYSTEM_OBJECTS.split("\\.")[3];
+    private static final String DEFAULT_SHOW_UTILITY_OBJECTS_SETTING = DEFAULT_SHOW_UTILITY_OBJECTS.split("\\.")[3];
+    private static final String DEFAULT_SHOW_ONLY_ENTITIES_SETTING = DEFAULT_SHOW_ONLY_ENTITIES.split("\\.")[3];
+    private static final String DEFAULT_MERGE_ENTITIES_SETTING = DEFAULT_MERGE_ENTITIES.split("\\.")[3];
+    private static final String DEFAULT_HIDE_FOLDERS_SETTING = DEFAULT_HIDE_FOLDERS.split("\\.")[3];
+    private static final String DEFAULT_MERGE_SCHEMAS_SETTING = DEFAULT_MERGE_SCHEMAS.split("\\.")[3];
+    private static final String DEFAULT_HIDE_VIRTUAL_MODEL_SETTING = DEFAULT_HIDE_VIRTUAL_MODEL.split("\\.")[3];
+
+
+
+    public static Set<String> getSettingsKeySet() {
+        return Set.of(
+            DEFAULT_SHOW_SYSTEM_OBJECTS_SETTING,
+            DEFAULT_SHOW_UTILITY_OBJECTS_SETTING,
+            DEFAULT_SHOW_ONLY_ENTITIES_SETTING,
+            DEFAULT_MERGE_ENTITIES_SETTING,
+            DEFAULT_HIDE_FOLDERS_SETTING,
+            DEFAULT_MERGE_SCHEMAS_SETTING,
+            DEFAULT_HIDE_VIRTUAL_MODEL_SETTING
+        );
+    }
     public static DBNBrowseSettings getDefaultSettings() {
         DBPPreferenceStore preferences = DBWorkbench.getPlatform().getPreferenceStore();
 

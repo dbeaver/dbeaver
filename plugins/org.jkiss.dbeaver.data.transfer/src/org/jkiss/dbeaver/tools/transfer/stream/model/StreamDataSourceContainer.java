@@ -115,6 +115,12 @@ public class StreamDataSourceContainer implements DBPDataSourceContainer {
         throw new IllegalStateException("Not supported");
     }
 
+    @NotNull
+    @Override
+    public void setNavigatorSettings(DBNBrowseSettings settings) {
+        log.warn("setNavigatorSettings called on StreamDataSourceContainer - no action taken");
+    }
+
     @Override
     public boolean isProvided() {
         return true;

@@ -87,6 +87,9 @@ public interface DBPDataSourceContainer extends
     @NotNull
     DBNBrowseSettings getNavigatorSettings();
 
+    @NotNull
+    void setNavigatorSettings(DBNBrowseSettings settings);
+
     boolean isProvided();
 
     /*

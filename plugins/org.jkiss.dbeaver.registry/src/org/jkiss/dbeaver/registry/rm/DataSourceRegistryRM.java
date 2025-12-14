@@ -56,6 +56,7 @@ public class DataSourceRegistryRM<T extends DataSourceDescriptor> extends DataSo
         if (getProject().isInMemory()) {
             return;
         }
+
         DataSourceConfigurationManagerBuffer buffer = new DataSourceConfigurationManagerBuffer();
         saveConfigurationToManager(new VoidProgressMonitor(), buffer, dsc -> dsc.equals(container));
 
