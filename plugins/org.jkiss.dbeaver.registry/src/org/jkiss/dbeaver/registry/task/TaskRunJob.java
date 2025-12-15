@@ -81,8 +81,9 @@ public class TaskRunJob extends AbstractJob implements DBRRunnableContext {
 
     }
 
+    @NotNull
     @Override
-    protected IStatus run(DBRProgressMonitor monitor) {
+    protected IStatus run(@NotNull DBRProgressMonitor monitor) {
         Date startTime = new Date();
         SimpleDateFormat dateFormat = new SimpleDateFormat(GeneralUtils.DEFAULT_TIMESTAMP_PATTERN, Locale.getDefault()); //$NON-NLS-1$
         dateFormat.setTimeZone(TimeZone.getTimeZone(TimezoneRegistry.getUserDefaultTimezone()));

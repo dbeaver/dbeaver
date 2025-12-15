@@ -50,19 +50,9 @@ public class JDBCResultSetImpl extends AbstractResultSet<JDBCSession, JDBCStatem
     private long maxRows = -1;
     private final boolean disableLogging;
 
-    public static JDBCResultSet makeResultSet(
-        @NotNull JDBCSession session,
-        @Nullable JDBCStatement statement,
-        @NotNull ResultSet original,
-        boolean disableLogging
-    ) throws SQLException {
-        return session.getDataSource().getJdbcFactory().createResultSet(
-            session, statement, original, disableLogging);
-    }
-
     protected JDBCResultSetImpl(
         @NotNull JDBCSession session,
-        @Nullable JDBCStatement statement,
+        @NotNull JDBCStatement statement,
         @NotNull ResultSet original,
         boolean disableLogging
     ) {
@@ -82,6 +72,20 @@ public class JDBCResultSetImpl extends AbstractResultSet<JDBCSession, JDBCStatem
         if (JDBCTrace.isApiTraceEnabled()) {
             JDBCTrace.dumpResultSetOpen(this.original);
         }
+    }
+
+    @NotNull
+    public static JDBCResultSet makeResultSet(
+        @NotNull JDBCSession session,
+        @Nullable JDBCStatement statement,
+        @NotNull ResultSet original,
+        boolean disableLogging
+    ) throws SQLException {
+        if (statement == null) {
+            statement = new JDBCFakeStatementImpl(session, null, disableLogging);
+        }
+        return session.getDataSource().getJdbcFactory().createResultSet(
+            session, statement, original, disableLogging);
     }
 /*
 
