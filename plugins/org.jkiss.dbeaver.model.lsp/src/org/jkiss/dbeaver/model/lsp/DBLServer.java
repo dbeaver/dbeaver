@@ -39,13 +39,9 @@ public final class DBLServer implements LanguageServer, LanguageClientAware {
     @NotNull
     private final WorkspaceService workspaceService;
 
-    private DBLServer(@NotNull TextDocumentService textDocumentService, @NotNull WorkspaceService workspaceService) {
-        this.textDocumentService = textDocumentService;
-        this.workspaceService = workspaceService;
-    }
-
-    static DBLServer of() {
-        return new DBLServer(new DBLTextDocumentService(), new DBLWorkspaceService());
+    public DBLServer() {
+        textDocumentService = new DBLTextDocumentService();
+        workspaceService = new DBLWorkspaceService();
     }
 
     @NotNull

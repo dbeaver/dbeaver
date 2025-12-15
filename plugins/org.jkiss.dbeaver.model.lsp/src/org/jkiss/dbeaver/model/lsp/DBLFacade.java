@@ -48,7 +48,7 @@ public final class DBLFacade {
     public static void runLanguageServer(@NotNull InputStream in, @NotNull OutputStream out) throws DBException {
         try {
             log.info("Launching LSP server"); //NON-NLS
-            DBLServer server = DBLServer.of();
+            DBLServer server = new DBLServer();
             Launcher<LanguageClient> launcher = LSPLauncher.createServerLauncher(server, in, out);
             LanguageClient client = launcher.getRemoteProxy();
             server.connect(client);
