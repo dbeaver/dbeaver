@@ -128,7 +128,7 @@
                         description="H2GIS Embedded"
                         categories="spatial,sql,embedded">
 
-                    <file type="jar" path="maven:/org.orbisgis:h2gis:RELEASE"/>
+                    <file type="jar" path="maven:/org.orbisgis:h2gis:[2.2.1]"/>
                     <file type="license" path="licenses/external/lgpl-3.0.txt"/>
 
                     <parameter name="query-get-active-db" value="SELECT SCHEMA()"/>

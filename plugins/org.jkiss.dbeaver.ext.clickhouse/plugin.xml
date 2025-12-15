@@ -68,6 +68,7 @@
                     <file type="jar" path="bundle:/org.apache.commons.lang3" bundle="drivers.clickhouse_com"/>
                     <!-- Disable server timezone as it confuses during timestamp edit -->
                     <property name="@dbeaver-default-dataformat.type.timestamp.pattern" value="yyyy-MM-dd HH:mm:ss[.fffffffff]"/>
+                    <property name="@dbeaver-default-resultset.maxrows.sql" value="true"/>
                     <property name="use_server_time_zone" value="false"/>
 
                     <parameter name="supports-references" value="false"/>

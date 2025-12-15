@@ -313,48 +313,29 @@ public class OracleDataSource extends JDBCDataSource implements DBPObjectStatist
                     log.debug("Error reading metadata", e);
                 }
 
+                Map<String, String> paramsMap = new LinkedHashMap<>();
                 // Set session settings
                 String sessionLanguage = connectionInfo.getProviderProperty(OracleConstants.PROP_SESSION_LANGUAGE);
                 if (sessionLanguage != null) {
-                    try {
-                        JDBCUtils.executeSQL(
-                            session,
-                            "ALTER SESSION SET NLS_LANGUAGE='" + sessionLanguage + "'");
-                    } catch (Throwable e) {
-                        log.warn("Can't set session language", e);
-                    }
+                    paramsMap.put("NLS_LANGUAGE", "'" + sessionLanguage + "'");
                 }
                 String sessionTerritory = connectionInfo.getProviderProperty(OracleConstants.PROP_SESSION_TERRITORY);
                 if (sessionTerritory != null) {
-                    try {
-                        JDBCUtils.executeSQL(
-                            session,
-                            "ALTER SESSION SET NLS_TERRITORY='" + sessionTerritory + "'");
-                    } catch (Throwable e) {
-                        log.warn("Can't set session territory", e);
-                    }
+                    paramsMap.put("NLS_TERRITORY", "'" + sessionTerritory + "'");
                 }
-                setNLSParameter(session, connectionInfo, "NLS_DATE_FORMAT", OracleConstants.PROP_SESSION_NLS_DATE_FORMAT);
-                setNLSParameter(session, connectionInfo, "NLS_TIMESTAMP_FORMAT", OracleConstants.PROP_SESSION_NLS_TIMESTAMP_FORMAT);
-                setNLSParameter(session, connectionInfo, "NLS_LENGTH_SEMANTICS", OracleConstants.PROP_SESSION_NLS_LENGTH_FORMAT);
-                setNLSParameter(session, connectionInfo, "NLS_CURRENCY", OracleConstants.PROP_SESSION_NLS_CURRENCY_FORMAT);
+                setNLSParameter(paramsMap, connectionInfo, "NLS_DATE_FORMAT", OracleConstants.PROP_SESSION_NLS_DATE_FORMAT);
+                setNLSParameter(paramsMap, connectionInfo, "NLS_TIMESTAMP_FORMAT", OracleConstants.PROP_SESSION_NLS_TIMESTAMP_FORMAT);
+                setNLSParameter(paramsMap, connectionInfo, "NLS_LENGTH_SEMANTICS", OracleConstants.PROP_SESSION_NLS_LENGTH_FORMAT);
+                setNLSParameter(paramsMap, connectionInfo, "NLS_CURRENCY", OracleConstants.PROP_SESSION_NLS_CURRENCY_FORMAT);
 
                 SeparateConnectionBehavior behavior = SeparateConnectionBehavior.parse(
                     getContainer().getPreferenceStore().getString(ModelPreferences.META_SEPARATE_CONNECTION)
                 );
-                boolean isMetaConnectionSeparate;
-                switch (behavior) {
-                    case ALWAYS:
-                        isMetaConnectionSeparate = true;
-                        break;
-                    case NEVER:
-                        isMetaConnectionSeparate = false;
-                        break;
-                    case DEFAULT:
-                    default:
-                        isMetaConnectionSeparate = !container.isForceUseSingleConnection();
-                        break;
-                }
+                boolean isMetaConnectionSeparate = switch (behavior) {
+                    case ALWAYS -> true;
+                    case NEVER -> false;
+                    default -> !container.isForceUseSingleConnection();
+                };
 
                 boolean isMetadataContext = isMetaConnectionSeparate
                     ? JDBCExecutionContext.TYPE_METADATA.equals(context.getContextName())
@@ -365,56 +346,39 @@ public class OracleDataSource extends JDBCDataSource implements DBPObjectStatist
                         connectionInfo.getProviderProperty(OracleConstants.PROP_USE_META_OPTIMIZER),
                         getContainer().getPreferenceStore().getBoolean(OracleConstants.PROP_USE_META_OPTIMIZER))) {
                         // See #5633
-                        try {
-                            JDBCUtils.executeSQL(session, "ALTER SESSION SET \"_optimizer_push_pred_cost_based\" = FALSE");
-                            JDBCUtils.executeSQL(session, "ALTER SESSION SET \"_optimizer_squ_bottomup\" = FALSE");
-                            JDBCUtils.executeSQL(session, "ALTER SESSION SET \"_optimizer_cost_based_transformation\" = 'OFF'");
+                        paramsMap.put("\"_optimizer_push_pred_cost_based\"", "FALSE");
+                        paramsMap.put("\"_optimizer_squ_bottomup\"", "FALSE");
+                        paramsMap.put("\"_optimizer_cost_based_transformation\"", "'OFF'");
 
-                            String optimizerVersion = connectionInfo.getProviderProperty(OracleConstants.PROP_USE_META_OPTIMIZER_VERSION);
-                            if (CommonUtils.isEmpty(optimizerVersion) && isServerVersionAtLeast(10, 2)) {
-                                optimizerVersion = OracleConstants.OPTIMIZER_VERSION_DEFAULT;
-                            }
-                            if (!CommonUtils.isEmpty(optimizerVersion)) {
-                                JDBCUtils.executeSQL(
-                                    session,
-                                    "ALTER SESSION SET OPTIMIZER_FEATURES_ENABLE='"+ optimizerVersion + "'"
-                                );
-                            }
-
-                            /*String optimiserVersion = null;
-                            if (isServerVersionAtLeast(23, 1)) {
-                                optimiserVersion = "23.1.0";
-                            } else if (isServerVersionAtLeast(19, 1)) {
-                                optimiserVersion = "19.1.0";
-                            } else if (isServerVersionAtLeast(18, 1)) {
-                                optimiserVersion = "18.1.0";
-                            } else if (isServerVersionAtLeast(12, 1)) {
-                                optimiserVersion = "12.1.0.1";
-                            } else if (isServerVersionAtLeast(10, 2)) {
-                                optimiserVersion = "10.2.0.1";
-                            }
-                            if (optimiserVersion != null) {
-                                JDBCUtils.executeSQL(session, "ALTER SESSION SET OPTIMIZER_FEATURES_ENABLE='%s'".formatted(optimiserVersion));
-                            }*/
-                        } catch (SQLException e) {
-                            log.warn("Can't set session optimizer parameters", e);
+                        String optimizerVersion = connectionInfo.getProviderProperty(OracleConstants.PROP_USE_META_OPTIMIZER_VERSION);
+                        if (CommonUtils.isEmpty(optimizerVersion) && isServerVersionAtLeast(10, 2)) {
+                            optimizerVersion = OracleConstants.OPTIMIZER_VERSION_DEFAULT;
                         }
+                        if (!CommonUtils.isEmpty(optimizerVersion)) {
+                            paramsMap.put("OPTIMIZER_FEATURES_ENABLE", "'" + optimizerVersion + "'");
+                        }
+                    }
+                }
+
+                if (!paramsMap.isEmpty()) {
+                    StringBuilder query = new StringBuilder("ALTER SESSION SET ");
+                    for (Map.Entry<String, String> pe : paramsMap.entrySet()) {
+                        query.append(" ").append(pe.getKey()).append("=").append(pe.getValue());
+                    }
+                    try {
+                        JDBCUtils.executeQuery(session, query.toString());
+                    } catch (SQLException e) {
+                        log.error("Error settings Oracle session parameters", e);
                     }
                 }
             }
         }
     }
 
-    private void setNLSParameter(JDBCSession session, DBPConnectionConfiguration connectionInfo, String oraNlsName, String paramName) {
+    private void setNLSParameter(Map<String, String> paramsMap, DBPConnectionConfiguration connectionInfo, String oraNlsName, String paramName) {
         String paramValue = connectionInfo.getProviderProperty(paramName);
         if (!CommonUtils.isEmpty(paramValue)) {
-            try {
-                JDBCUtils.executeSQL(
-                    session,
-                    "ALTER SESSION SET "+ oraNlsName + "='" + paramValue + "'");
-            } catch (Throwable e) {
-                log.warn("Can not set session NLS parameter " + oraNlsName, e);
-            }
+            paramsMap.put(oraNlsName, "'" + paramValue + "'");
         }
     }
 

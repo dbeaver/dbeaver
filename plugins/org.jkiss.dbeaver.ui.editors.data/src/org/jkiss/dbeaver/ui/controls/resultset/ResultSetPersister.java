@@ -699,8 +699,9 @@ class ResultSetPersister {
             return error;
         }
 
+        @NotNull
         @Override
-        protected IStatus run(DBRProgressMonitor monitor) {
+        protected IStatus run(@NotNull DBRProgressMonitor monitor) {
             model.setUpdateInProgress(this);
             UIUtils.asyncExec(viewer::fireResultSetChange); // Update "save" and "cancel" buttons
             updateStats = new DBCStatistics();
@@ -907,7 +908,7 @@ class ResultSetPersister {
             DBSDataManipulator.ExecuteBatch batch,
             Object[] attributes,
             DBCStatistics stats
-        ) throws DBCException {
+        ) throws DBException {
             for (int i = 0; i < statement.keyAttributes.size(); i++) {
                 if (DBUtils.isNullValue(statement.keyAttributes.get(i).getValue())) {
                     attributes[statement.updateAttributes.size() + i] = DBDNull.INSTANCE;
@@ -1069,8 +1070,9 @@ class ResultSetPersister {
             this.rows = new ArrayList<>(rows);
         }
 
+        @NotNull
         @Override
-        protected IStatus run(DBRProgressMonitor monitor) {
+        protected IStatus run(@NotNull DBRProgressMonitor monitor) {
             if (!viewer.acquireDataReadLock()) {
                 return Status.CANCEL_STATUS;
             }

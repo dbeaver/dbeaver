@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,10 +17,14 @@
 
 package org.jkiss.dbeaver.runtime;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.runtime.DBRProgressListener;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+
+import java.net.PasswordAuthentication;
 
 /**
  * Connections Service
@@ -28,5 +32,10 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 public interface DBServiceConnections {
 
     void initConnection(DBRProgressMonitor monitor, DBPDataSourceContainer dataSourceContainer, DBRProgressListener onFinish) throws DBException;
+
+    @Nullable
+    default PasswordAuthentication getGlobalProxyConfiguration(@NotNull String requestingProtocol, @Nullable String requestingHost, int requestingPort) {
+        return null;
+    }
 
 }

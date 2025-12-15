@@ -263,6 +263,7 @@ public class MetaDataPanel extends ResultSetPanelBase {
             return "MetaData/" + executionContext.getDataSource().getContainer().getDriver().getId();
         }
 
+        @NotNull
         @Override
         protected Object getObjectValue(@NotNull DBDAttributeBinding item) {
             if (item instanceof DBDAttributeBindingMeta) {
@@ -280,6 +281,7 @@ public class MetaDataPanel extends ResultSetPanelBase {
             return DBValueFormatting.getObjectImage(item.getMetaAttribute());
         }
 
+        @Nullable
         @Override
         protected Color getObjectForeground(DBDAttributeBinding item) {
             if (item.getParentObject() == null && !isAttributeVisible(item)) {

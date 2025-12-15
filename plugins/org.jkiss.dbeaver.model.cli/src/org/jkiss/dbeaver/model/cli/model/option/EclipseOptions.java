@@ -28,6 +28,4 @@ public class EclipseOptions {
     private String nl;
     @CommandLine.Option(names = {"-data"}, arity = "1", description = "Workspace location")
     private String data;
-    @CommandLine.Option(names = {"-nosplash"}, description = "Hide splash screen on start")
-    private boolean noSplash;
 }

@@ -59,7 +59,6 @@ import org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerObjectOpen;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.ReaderWriterLock.ExceptableFunction;
 
-import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 import java.util.*;
 
@@ -655,11 +654,7 @@ public class ReferenceValueEditor {
             EnumValuesData[] result = new EnumValuesData[1];
             try {
                 DBExecUtils.tryExecuteRecover(monitor, valueController.getExecutionContext().getDataSource(), param -> {
-                    try {
-                        result[0] = readEnum(monitor);
-                    } catch (DBException e) {
-                        throw new InvocationTargetException(e);
-                    }
+                    result[0] = readEnum(monitor);
                 });
             } catch (DBException e) {
                 // error

@@ -40,8 +40,7 @@ public class ERDContentProviderDecorated extends ERDContentProviderDefault {
                                      @NotNull List<ERDEntity> otherEntities, @NotNull ERDEntity erdEntity) throws DBCException {
         ERDAttributeVisibility attributeVisibility = ERDAttributeVisibility.ALL;
         boolean alphabeticalOrder = false;
-        if (diagram instanceof ERDContainerDecorated) {
-            final ERDContainerDecorated decoratedDiagram = (ERDContainerDecorated) diagram;
+        if (diagram instanceof ERDContainerDecorated decoratedDiagram) {
             attributeVisibility = decoratedDiagram.getDecorator().supportsAttributeVisibility() ?
                 erdEntity.getAttributeVisibility() : ERDAttributeVisibility.ALL;
             if (attributeVisibility == null) {

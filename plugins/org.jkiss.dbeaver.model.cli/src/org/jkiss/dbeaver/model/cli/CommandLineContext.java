@@ -31,7 +31,7 @@ public class CommandLineContext implements AutoCloseable {
     private final Map<String, Object> contextParameter = new LinkedHashMap<>();
     private final List<Runnable> closeHandlers = new ArrayList<>();
     @NotNull
-    private final List<Object> results = new ArrayList<>();
+    private final List<String> results = new ArrayList<>();
     @Nullable
     private final ApplicationInstanceController instanceController;
 
@@ -57,12 +57,12 @@ public class CommandLineContext implements AutoCloseable {
     }
 
 
-    public void addResult(@NotNull Object result) {
+    public void addResult(@NotNull String result) {
         this.results.add(result);
     }
 
     @NotNull
-    public List<Object> getResults() {
+    public List<String> getResults() {
         return List.copyOf(results);
     }
 

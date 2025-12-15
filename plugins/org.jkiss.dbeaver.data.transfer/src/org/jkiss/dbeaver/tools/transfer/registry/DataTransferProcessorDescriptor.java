@@ -182,11 +182,13 @@ public class DataTransferProcessorDescriptor extends AbstractDescriptor implemen
     }
 
     public boolean isAppendable() {
-        return processorType.matchesType(IAppendableDataExporter.class);
+        Class<?> cls = processorType.getObjectClass();
+        return cls != null && IAppendableDataExporter.class.isAssignableFrom(cls);
     }
 
     public boolean isMulti() {
-        return processorType.matchesType(IMultiStreamDataImporter.class);
+        Class<?> cls = processorType.getObjectClass();
+        return cls != null && IMultiStreamDataImporter.class.isAssignableFrom(cls);
     }
 
     public String getFullId() {

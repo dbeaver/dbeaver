@@ -95,7 +95,7 @@ public class OpenAIClient extends AbstractHttpAIClient {
         return new DBException("OpenAI request failed: " + AIHttpUtils.parseOpenAIStyleErrorMessage(body));
     }
 
-    public static OpenAIClient createClient(String baseUrl, String token) {
+    public static OpenAIClient createClient(@NotNull String baseUrl, @NotNull String token) {
         return new OpenAIClient(
             baseUrl,
             List.of(new OpenAIRequestFilter(token))
@@ -116,16 +116,11 @@ public class OpenAIClient extends AbstractHttpAIClient {
 
     private HttpRequest createCompletionRequest(@NotNull OAIResponsesRequest completionRequest) throws DBException {
         return HttpRequest.newBuilder()
-            .uri(AIHttpUtils.resolve(baseUrl, getResponsesEndpoint()))
+            .uri(AIHttpUtils.resolve(baseUrl, OpenAIConstants.ENDPOINT_RESPONSES))
             .header(HttpConstants.HEADER_USER_AGENT, GeneralUtils.getProductTitle())
             .POST(HttpRequest.BodyPublishers.ofString(serializeValue(completionRequest)))
             .timeout(TIMEOUT)
             .build();
-    }
-
-    @NotNull
-    protected String getResponsesEndpoint() {
-        return "responses";
     }
 
     @NotNull

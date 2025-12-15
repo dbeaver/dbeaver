@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,7 @@
 
 package org.jkiss.dbeaver.model.edit;
 
-import org.jkiss.dbeaver.model.exec.DBCException;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 
 /**
@@ -38,10 +38,10 @@ public interface DBEPersistAction {
     String getScript();
 
     void beforeExecute(DBCSession session)
-        throws DBCException;
+        throws DBException;
 
     void afterExecute(DBCSession session, Throwable error)
-        throws DBCException;
+        throws DBException;
 
     ActionType getType();
 

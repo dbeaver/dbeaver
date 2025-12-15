@@ -624,8 +624,9 @@ public abstract class BaseProjectImpl implements DBPProject, DBSSecretSubject {
             super("Project metadata sync");
         }
 
+        @NotNull
         @Override
-        protected IStatus run(DBRProgressMonitor monitor) {
+        protected IStatus run(@NotNull DBRProgressMonitor monitor) {
             setName("Project '" + BaseProjectImpl.this.getName() + "' sync job");
 
             ContentUtils.makeFileBackup(getMetadataFolder(false).resolve(METADATA_STORAGE_FILE));
@@ -698,4 +699,10 @@ public abstract class BaseProjectImpl implements DBPProject, DBSSecretSubject {
         return fileNotEmpty;
     }
 
+    // Called by model itself when some project-dependent entities change their state
+    // E.g. when we save/load datasource registry
+    // By default does nothing
+    public void updateProjectNature() {
+
+    }
 }
