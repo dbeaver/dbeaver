@@ -151,7 +151,7 @@ public class DBLTextDocumentService implements TextDocumentService, LanguageClie
         document.setSyntaxManager(syntaxManager);
 
         SQLRuleManager ruleManager = new SQLRuleManager(syntaxManager);
-        ruleManager.loadRules(dataSource, true);
+        ruleManager.loadRules(dataSource, false);
         document.setRuleManager(ruleManager);
 
         log.debug("Initialized context for text document " + document);
