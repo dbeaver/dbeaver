@@ -84,6 +84,7 @@ abstract class ResultSetJobDataRead extends ResultSetJobAbstract implements ILoa
         return statistics;
     }
 
+    @NotNull
     @Override
     protected IStatus run(@NotNull DBRProgressMonitor monitor) {
         error = null;

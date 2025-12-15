@@ -432,8 +432,9 @@ public class ResultSetViewer extends Viewer
         }
 
         themeUpdateJob = new AbstractJob("Update theme") {
+            @NotNull
             @Override
-            protected IStatus run(DBRProgressMonitor monitor) {
+            protected IStatus run(@NotNull DBRProgressMonitor monitor) {
                 if (!getControl().isDisposed()) {
                     UIUtils.syncExec(() -> {
                         if (!getControl().isDisposed()) {
@@ -1791,8 +1792,9 @@ public class ResultSetViewer extends Viewer
         }
         if (needRefresh) {
             new AbstractJob("Refresh hint cache") {
+                @NotNull
                 @Override
-                protected IStatus run(DBRProgressMonitor monitor) {
+                protected IStatus run(@NotNull DBRProgressMonitor monitor) {
                     try {
                         model.getHintContext().cacheRequiredData(
                             monitor,
@@ -4448,8 +4450,9 @@ public class ResultSetViewer extends Viewer
             {
                 setUser(false);
             }
+            @NotNull
             @Override
-            protected IStatus run(DBRProgressMonitor monitor) {
+            protected IStatus run(@NotNull DBRProgressMonitor monitor) {
                 if (dataPumpRunning.get()) {
                     // Retry later
                     schedule(50);
@@ -5193,6 +5196,7 @@ public class ResultSetViewer extends Viewer
             this.presentationState = savePresentationState();
         }
 
+        @NotNull
         @Override
         protected IStatus run(@NotNull DBRProgressMonitor monitor) {
             if (!acquireDataReadLock()) {
