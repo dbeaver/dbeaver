@@ -82,7 +82,12 @@ public class TaskProcessorUI implements DBRRunnableContext, DBTTaskExecutionList
     }
 
     @Override
-    public void taskFinished(@Nullable DBTTask task, @Nullable Object result, @Nullable Throwable error, @Nullable Object settings) {
+    public void taskFinished(
+        @Nullable DBTTask task,
+        @Nullable Object result,
+        @Nullable Throwable error,
+        @Nullable Object settings
+    ) {
         this.started = false;
 
         long elapsedTime = System.currentTimeMillis() - startTime;
@@ -91,12 +96,16 @@ public class TaskProcessorUI implements DBRRunnableContext, DBTTaskExecutionList
 
     }
 
-    private void sendNotification(@Nullable DBTTask task, @Nullable Throwable error, long elapsedTime, @Nullable Object settings) {
+    private void sendNotification(@Nullable DBTTask theTask, @Nullable Throwable error, long elapsedTime, @Nullable Object settings) {
         UIUtils.asyncExec(() -> {
             boolean hasErrors = error != null;
 
             StringBuilder completeMessage = new StringBuilder();
-            completeMessage.append(task == null ? this.task.getType().getName() : task.getType().getName()).append(" ").append(TaskUIMessages.task_processor_ui_message_task_completed).append(" (").append(RuntimeUtils.formatExecutionTime(elapsedTime)).append(")");
+            completeMessage.append(theTask == null ?
+                this.task.getType().getName() :
+                theTask.getType().getName()).append(" ")
+                    .append(TaskUIMessages.task_processor_ui_message_task_completed)
+                    .append(" (").append(RuntimeUtils.formatExecutionTime(elapsedTime)).append(")");
             List<String> objects = new ArrayList<>();
             if (settings instanceof AbstractNativeToolSettings) {
                 for (DBSObject databaseObject : ((AbstractNativeToolSettings<?>) settings).getDatabaseObjects()) {
@@ -113,14 +122,15 @@ public class TaskProcessorUI implements DBRRunnableContext, DBTTaskExecutionList
             if (isShowFinalMessage() && !hasErrors) {
                 DBeaverNotifications.showNotification(
                     "task.execute.success",
-                    task == null ? this.task.getName() : task.getName(),
+                    theTask == null ? this.task.getName() : theTask.getName(),
                     completeMessage.toString(),
                     DBPMessageType.INFORMATION,
-                    () -> TaskRegistry.getInstance().notifyTaskListeners(new DBTTaskEvent(task, DBTTaskEvent.Action.TASK_ACTIVATE)));
-            } else if (error != null && !(error instanceof InterruptedException)) { ;
+                    () -> TaskRegistry.getInstance().notifyTaskListeners(
+                        new DBTTaskEvent(theTask == null ? this.task : theTask, DBTTaskEvent.Action.TASK_ACTIVATE)));
+            } else if (error != null && !(error instanceof InterruptedException)) {
                 DBeaverNotifications.showNotification(
                     "task.execute.failure",
-                    task == null ? this.task.getName() : task.getName(),
+                    theTask == null ? this.task.getName() : theTask.getName(),
                     error.getMessage(),
                     DBPMessageType.ERROR,
                     () -> DBWorkbench.getPlatformUI().showError("Task error", "Task execution failed", error)
@@ -139,7 +149,11 @@ public class TaskProcessorUI implements DBRRunnableContext, DBTTaskExecutionList
     }
 
     @Override
-    public void run(boolean fork, boolean cancelable, DBRRunnableWithProgress runnable) throws InvocationTargetException, InterruptedException {
+    public void run(
+        boolean fork,
+        boolean cancelable,
+        DBRRunnableWithProgress runnable
+    ) throws InvocationTargetException, InterruptedException {
         staticContext.run(fork, cancelable, runnable);
     }
 

@@ -43,6 +43,7 @@ import java.io.OutputStream;
 import java.io.StringReader;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.Set;
@@ -118,7 +119,7 @@ public final class WorkbenchPatcher {
         try {
             patchWorkbenchXmi(path);
         } catch (Throwable e) {
-            log.error("Failed to patch workbench state file: " + path, e);
+            log.debug("Failed to patch workbench state file: " + path, e);
         }
     }
 
@@ -132,12 +133,18 @@ public final class WorkbenchPatcher {
             transformer.setOutputProperty(OutputKeys.INDENT, "yes");
             transformer.setOutputProperty(OutputKeys.STANDALONE, "no");
 
-            try (OutputStream os = Files.newOutputStream(workbenchXmi)) {
+            Path workbenchXmiPatch = workbenchXmi.resolveSibling(workbenchXmi.getFileName() + ".patch");
+
+            // Write to a temporary file first
+            try (OutputStream os = Files.newOutputStream(workbenchXmiPatch)) {
                 var source = new DOMSource(document);
                 var result = new StreamResult(os);
 
                 transformer.transform(source, result);
             }
+
+            // Then replace the original file with the patched one
+            Files.move(workbenchXmiPatch, workbenchXmi, StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE);
         }
     }
 

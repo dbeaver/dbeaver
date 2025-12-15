@@ -16,7 +16,15 @@
  */
 package org.jkiss.dbeaver.ext.clickhouse;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ext.clickhouse.model.ClickhouseDataSource;
 import org.jkiss.dbeaver.ext.generic.GenericDataSourceProvider;
+import org.jkiss.dbeaver.ext.generic.GenericMetaModelRegistry;
+import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaModel;
+import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 public class ClickhouseDataSourceProvider extends GenericDataSourceProvider {
 
@@ -28,4 +36,13 @@ public class ClickhouseDataSourceProvider extends GenericDataSourceProvider {
         return FEATURE_CATALOGS | FEATURE_SCHEMAS;
     }
 
+    @NotNull
+    @Override
+    public DBPDataSource openDataSource(
+            @NotNull DBRProgressMonitor monitor,
+            @NotNull DBPDataSourceContainer container)
+            throws DBException {
+        GenericMetaModel metaModel = GenericMetaModelRegistry.getInstance().getMetaModel(container);
+        return new ClickhouseDataSource(monitor, container, metaModel);
+    }
 }

@@ -336,10 +336,6 @@ public abstract class NavigatorViewBase extends ViewPart
         return null;
     }
 
-    public void configureView() {
-
-    }
-
     @Override
     public void preferenceChange(PreferenceChangeEvent event) {
         String property = event.getProperty();
@@ -349,6 +345,7 @@ public abstract class NavigatorViewBase extends ViewPart
         switch (property) {
             case ModelPreferences.NAVIGATOR_SHOW_FOLDER_PLACEHOLDERS:
             case ModelPreferences.NAVIGATOR_SORT_ALPHABETICALLY:
+            case ModelPreferences.NAVIGATOR_SORT_IGNORE_CASE:
             case ModelPreferences.NAVIGATOR_SORT_FOLDERS_FIRST:
             case NavigatorPreferences.NAVIGATOR_COLOR_ALL_NODES:
             case NavigatorPreferences.NAVIGATOR_GROUP_BY_DRIVER:

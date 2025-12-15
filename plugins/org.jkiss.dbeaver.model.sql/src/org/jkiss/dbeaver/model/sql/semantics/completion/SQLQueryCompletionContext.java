@@ -845,18 +845,24 @@ public abstract class SQLQueryCompletionContext {
                                     prepareProceduresCompletions(monitor, request, contextInfo.getKnownSources(), List.of(c), filterOrNull);
                                 }
                             }
-                            case OBJECT -> {
+                            case OBJECT, TABLE -> {
                                 if (origin.getObject() instanceof DBSObjectContainer objectContainer) {
+                                    List<DBSObjectContainer> contexts = List.of(objectContainer);
+                                    DBSObjectType objectTypesToPropose = switch (origin.getFilterMode()) {
+                                        case TABLE -> RelationalObjectType.TYPE_TABLE;
+                                        default -> RelationalObjectType.TYPE_UNKNOWN;
+                                    };
                                     prepareObjectCompletions(
                                         monitor,
                                         request,
                                         deepestContext.getKnownSources(),
-                                        List.of(objectContainer),
+                                        contexts,
                                         prefix,
-                                        Set.of(RelationalObjectType.TYPE_UNKNOWN),
+                                        Set.of(objectTypesToPropose),
                                         filterOrNull,
                                         results
                                     );
+                                    prepareContextSchemasAndCatalogs(monitor, contexts, prefix, filterOrNull, results);
                                 }
                             }
                             default -> throw new UnsupportedOperationException("Unexpected filter mode: " + origin.getFilterMode());

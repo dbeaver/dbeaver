@@ -37,7 +37,6 @@ public class DTMessages extends NLS {
     public static String data_transfer_wizard_output_checkbox_select_row_count;
     public static String data_transfer_wizard_output_checkbox_selected_columns_only;
     public static String data_transfer_wizard_output_checkbox_selected_rows_only;
-    public static String data_transfer_wizard_output_checkbox_enable_qm_logging;
     public static String data_transfer_wizard_output_combo_extract_type_item_by_segments;
     public static String data_transfer_wizard_output_combo_extract_type_item_single_query;
     public static String data_transfer_wizard_output_description;
@@ -69,8 +68,6 @@ public class DTMessages extends NLS {
     public static String data_transfer_wizard_output_name;
     public static String data_transfer_wizard_output_title;
     public static String data_transfer_wizard_output_export_to_external_storage_link;
-    public static String data_transfer_wizard_output_log_select_queries_check;
-    public static String data_transfer_wizard_output_log_select_queries_check_tip;
     public static String data_transfer_wizard_settings_binaries_item_inline;
     public static String data_transfer_wizard_settings_binaries_item_save_to_file;
     public static String data_transfer_wizard_settings_binaries_item_set_to_null;

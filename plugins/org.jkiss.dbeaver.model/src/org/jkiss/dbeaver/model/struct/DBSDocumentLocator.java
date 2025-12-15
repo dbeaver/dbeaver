@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,7 +21,6 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.data.DBDDocument;
 import org.jkiss.dbeaver.model.exec.DBCSession;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 import java.util.Map;
 
@@ -39,8 +38,8 @@ public interface DBSDocumentLocator extends DBSDocumentContainer
     @Nullable
     DBDDocument findDocument(
         @NotNull DBCSession session,
-        Map<String, Object> key,
-        Map<String, Object> metaData
+        @NotNull Map<String, Object> key,
+        @Nullable Map<String, Object> metaData
     ) throws DBException;
 
 

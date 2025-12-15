@@ -402,7 +402,7 @@ public class PlainTextPresentation extends AbstractPresentation implements IResu
     }
 
     @Override
-    public <T> T getAdapter(Class<T> adapter) {
+    public <T> T getAdapter(@NotNull Class<T> adapter) {
         if (adapter == IFindReplaceTarget.class) {
             return adapter.cast(findReplaceTarget);
         }

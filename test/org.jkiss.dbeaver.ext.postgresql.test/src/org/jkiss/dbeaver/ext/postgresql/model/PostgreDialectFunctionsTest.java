@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ext.postgresql.model;
 
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
 import org.jkiss.dbeaver.ext.postgresql.PostgreTestUtils;
@@ -64,6 +65,7 @@ public class PostgreDialectFunctionsTest extends DBeaverUnitTest {
                 return major <= 10;
             }
 
+            @Nullable
             @Override
             public PostgreDataType getLocalDataType(String typeName) {
                 return super.getLocalDataType(typeName);

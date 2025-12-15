@@ -19,7 +19,6 @@ package org.jkiss.dbeaver.model.ai.engine;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.ai.AIStreamPublisher;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 import java.util.List;
@@ -27,7 +26,7 @@ import java.util.List;
 /**
  * Completion engine
  */
-public interface AIEngine extends AutoCloseable {
+public interface AIEngine<PROPS extends AIEngineProperties> extends AutoCloseable {
 
     @NotNull
     List<AIModel> getModels(@NotNull DBRProgressMonitor monitor) throws DBException;
@@ -50,20 +49,24 @@ public interface AIEngine extends AutoCloseable {
     /**
      * Requests a stream of completion chunks from the completion engine.
      *
-     * @param monitor the progress monitor
-     * @param request the completion request
-     * @return the stream of completion chunks
+     * @param monitor  the progress monitor
+     * @param request  the completion request
+     * @param listener chat listener
      * @throws TooManyRequestsException if the request limit is exceeded and the request can be retried
      * @throws DBException              if an error occurs
      */
-    @NotNull
-    AIStreamPublisher requestCompletionStream(
+    void requestCompletionStream(
         @NotNull DBRProgressMonitor monitor,
-        @NotNull AIEngineRequest request
+        @NotNull AIEngineRequest request,
+        @NotNull AIEngineResponseConsumer listener
     ) throws DBException;
 
-    int getContextWindowSize(DBRProgressMonitor monitor) throws DBException;
+    @NotNull
+    PROPS getProperties();
+
+    int getContextWindowSize(@NotNull DBRProgressMonitor monitor) throws DBException;
 
     @Override
     void close() throws DBException;
+
 }

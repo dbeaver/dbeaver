@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
+import org.jkiss.dbeaver.registry.ApplicationPolicyProvider;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.controls.resultset.IResultSetEditor;
@@ -98,6 +99,9 @@ public class ResultSetPropertyTester extends PropertyTester
             }
             case PROP_CAN_MOVE: {
                 if (actionsDisabled || !rsv.supportsNavigation()) return false;
+                if (ApplicationPolicyProvider.getInstance().isPolicyEnabled(ApplicationPolicyProvider.POLICY_DATA_EDIT)) {
+                    return false;
+                }
                 ResultSetRow currentRow = rsv.getCurrentRow();
                 if ("back".equals(expectedValue)) {
                     return currentRow != null && currentRow.getVisualNumber() > 0;
@@ -108,6 +112,9 @@ public class ResultSetPropertyTester extends PropertyTester
             }
             case PROP_EDITABLE: {
                 if (actionsDisabled || !rsv.hasData() || !rsv.supportsEdit()) {
+                    return false;
+                }
+                if (ApplicationPolicyProvider.getInstance().isPolicyEnabled(ApplicationPolicyProvider.POLICY_DATA_EDIT)) {
                     return false;
                 }
                 if ("edit".equals(expectedValue) || "inline".equals(expectedValue)) {

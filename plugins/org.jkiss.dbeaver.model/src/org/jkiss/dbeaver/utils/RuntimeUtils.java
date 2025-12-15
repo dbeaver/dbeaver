@@ -191,39 +191,24 @@ public final class RuntimeUtils {
         }
     }
 
+    /**
+     * @deprecated consider using {@link DurationFormatter#format(Duration, DurationFormat)} instead
+     */
     @NotNull
+    @Deprecated(since = "25.3.0")
     public static String formatExecutionTime(long ms) {
-        return formatExecutionTime(Duration.ofMillis(ms));
+        return DurationFormatter.format(Duration.ofMillis(ms), DurationFormat.MEDIUM);
     }
 
     @NotNull
-    public static String formatExecutionTime(@NotNull Duration duration) {
-        final long hours = duration.toHours();
-        final int minutes = duration.toMinutesPart();
-        final int seconds = duration.toSecondsPart();
-        final int millis = duration.toMillisPart();
-
-        if (hours > 0) {
-            return String.format("%dh %dm %ds", hours, minutes, seconds);
-        } else if (minutes > 0) {
-            return String.format("%dm %ds", minutes, seconds);
-        } else if (seconds >= 10) {
-            return String.format("%ds", seconds);
-        } else {
-            return String.format("%d.%03ds", seconds, millis);
-        }
-    }
-
-    @NotNull
-    public static File getPlatformFile(@NotNull String platformURL) throws IOException {
+    public static Path getPlatformFile(@NotNull String platformURL) throws IOException {
         URL url = new URL(platformURL);
         URL fileURL = FileLocator.toFileURL(url);
         return getLocalFileFromURL(fileURL);
-
     }
 
     @NotNull
-    public static File getLocalFileFromURL(@NotNull URL fileURL) throws IOException {
+    public static Path getLocalFileFromURL(@NotNull URL fileURL) throws IOException {
         // Escape spaces to avoid URI syntax error
         try {
             URI filePath = GeneralUtils.makeURIFromFilePath(fileURL.toString());
@@ -232,9 +217,9 @@ public final class RuntimeUtils {
                 see dbeaver#15117
              */
             if (filePath.getAuthority() != null) {
-                return new File(filePath.getSchemeSpecificPart());
+                return Path.of(filePath.getSchemeSpecificPart());
             }
-            return new File(filePath);
+            return Path.of(filePath);
         } catch (URISyntaxException e) {
             throw new IOException("Bad local file path: " + fileURL, e);
         }
@@ -275,8 +260,9 @@ public final class RuntimeUtils {
                 setUser(!hidden);
             }
 
+            @NotNull
             @Override
-            protected IStatus run(DBRProgressMonitor monitor) {
+            protected IStatus run(@NotNull DBRProgressMonitor monitor) {
                 monitor.beginTask(getName(), 1);
                 try {
                     monitor.subTask("Execute task");
@@ -648,8 +634,9 @@ public final class RuntimeUtils {
                     setUser(false);
                 }
 
+                @NotNull
                 @Override
-                protected IStatus run(DBRProgressMonitor monitor) {
+                protected IStatus run(@NotNull DBRProgressMonitor monitor) {
                     if (!monitor.isCanceled()) {
                         try {
                             task.run(monitor, object);

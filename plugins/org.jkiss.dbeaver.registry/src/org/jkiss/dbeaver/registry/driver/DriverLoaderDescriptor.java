@@ -29,7 +29,6 @@ import org.jkiss.dbeaver.model.connection.DBPDriverDependencies;
 import org.jkiss.dbeaver.model.connection.DBPDriverLibrary;
 import org.jkiss.dbeaver.model.connection.DBPDriverLibraryProvider;
 import org.jkiss.dbeaver.model.connection.DBPDriverLoader;
-import org.jkiss.dbeaver.model.dpi.DBPApplicationDPI;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.LoggingProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -284,9 +283,6 @@ public class DriverLoaderDescriptor implements DBPDriverLoader {
             return syncDistributedDependencies(monitor);
         }
         DBPApplication application = DBWorkbench.getPlatform().getApplication();
-        if (application.isDetachedProcess()) {
-            return syncDpiDependencies(application);
-        }
 
         // don't download driver libraries in web application
         if (!application.isMultiuser() && !downloadDriverLibraries(monitor, resetVersions)) {
@@ -510,29 +506,6 @@ public class DriverLoaderDescriptor implements DBPDriverLoader {
 
     public Map<DBPDriverLibrary, List<DriverFileInfo>> getResolvedFiles() {
         return resolvedFiles;
-    }
-
-    @NotNull
-    private List<Path> syncDpiDependencies(@NotNull DBPApplication application) {
-        if (application instanceof DBPApplicationDPI driversProvider) {
-            List<Path> result = new ArrayList<>();
-            List<Path> librariesPath = driversProvider.getDriverLibsLocation(driver.getId());
-            for (Path path : librariesPath) {
-                if (Files.isDirectory(path)) {
-                    result.addAll(readJarsFromDir(path));
-                } else {
-                    if (!result.contains(path)) {
-                        result.add(path);
-                    }
-                }
-            }
-            return DriverUtils.extractZipArchives(result);
-        } else {
-            log.error("Detached process has no ability to find/download driver libraries, " +
-                "it must be specified directly"
-            );
-        }
-        return List.of();
     }
 
     @NotNull

@@ -22,7 +22,6 @@ import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.jface.preference.IPreferenceStore;
-import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.swt.dnd.DropTargetAdapter;
 import org.eclipse.swt.dnd.FileTransfer;
@@ -283,9 +282,10 @@ public class ApplicationWorkbenchWindowAdvisor extends IDEWorkbenchWindowAdvisor
 
         try {
             DBeaverCommandLine.getInstance().executeCommandLineCommands(
-                DBeaverCommandLine.getInstance().getCommandLine(),
                 DBeaverApplication.getInstance().getInstanceServer(),
-                true
+                true,
+                false,
+                Platform.getApplicationArgs()
             );
         } catch (Exception e) {
             log.error("Error processing command line", e);

@@ -45,5 +45,6 @@ public class AIPreferencesInitializer extends AbstractPreferenceInitializer {
         PrefUtils.setDefaultPreferenceValue(store, AIConstants.AI_CONFIRM_SQL, AIQueryConfirmationRule.EXECUTE.name());
         PrefUtils.setDefaultPreferenceValue(store, AIConstants.AI_CONFIRM_DML, AIQueryConfirmationRule.CONFIRM.name());
         PrefUtils.setDefaultPreferenceValue(store, AIConstants.AI_CONFIRM_DDL, AIQueryConfirmationRule.CONFIRM.name());
+        PrefUtils.setDefaultPreferenceValue(store, AIConstants.AI_CONFIRM_OTHER, AIQueryConfirmationRule.CONFIRM.name());
     }
 }

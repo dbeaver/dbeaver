@@ -25,6 +25,7 @@ import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.internal.UINavigatorMessages;
 import org.jkiss.dbeaver.ui.navigator.NavigatorPreferences;
 import org.jkiss.dbeaver.ui.navigator.database.load.*;
 import org.jkiss.utils.CommonUtils;
@@ -90,10 +91,16 @@ public class DatabaseNavigatorContentProvider implements IStructuredContentProvi
         if (!parentNode.hasChildren(true)) {
             return EMPTY_CHILDREN;
         }
-        if (parentNode instanceof DBNLazyNode && ((DBNLazyNode) parentNode).needsInitialization()) {
+        if (parentNode instanceof DBNLazyNode lazyNode && lazyNode.needsInitialization()) {
+            String nodeName = parentNode.getNodeDisplayName();
+            if (parentNode instanceof DBNDatabaseFolder) {
+                nodeName = parentNode.getParentNode().getNodeDisplayName() + " " + nodeName;
+            }
             return TreeLoadVisualizer.expandChildren(
                 navigatorTree.getViewer(),
-                new TreeLoadService("Loading", parentNode));
+                new TreeLoadService(
+                    UINavigatorMessages.ui_navigator_loading_text_loading.trim() + ": " + nodeName,
+                    parentNode));
         } else {
             try {
                 // Read children with null monitor cos' it's not a lazy node
@@ -128,17 +135,17 @@ public class DatabaseNavigatorContentProvider implements IStructuredContentProvi
 
     @Override
     public boolean hasChildren(Object parent) {
-        if (parent instanceof DBNDatabaseNode) {
+        if (parent instanceof DBNDatabaseNode dbNode) {
             if (navigatorTree.getNavigatorFilter() != null && navigatorTree.getNavigatorFilter().isLeafObject(parent)) {
                 return false;
             }
-            if (((DBNDatabaseNode) parent).getDataSourceContainer().getNavigatorSettings().isShowOnlyEntities()) {
-                if (((DBNDatabaseNode) parent).getObject() instanceof DBSEntity) {
+            if (dbNode.getDataSourceContainer().getNavigatorSettings().isShowOnlyEntities()) {
+                if (dbNode.getObject() instanceof DBSEntity) {
                     return false;
                 }
             }
         }
-        return parent instanceof DBNNode && ((DBNNode) parent).hasChildren(true);
+        return parent instanceof DBNNode node && node.hasChildren(true);
     }
 
     @NotNull
@@ -188,16 +195,5 @@ public class DatabaseNavigatorContentProvider implements IStructuredContentProvi
             return navigatorTree.isFilterActive() && isMatchingNeeded;
         }
     }
-
-/*
-    public void cancelLoading(Object parent)
-    {
-        if (!(parent instanceof DBSObject)) {
-            log.error("Bad parent type: " + parent);
-        }
-        DBSObject object = (DBSObject)parent;
-        object.getDataSource().cancelCurrentOperation();
-    }
-*/
 
 }

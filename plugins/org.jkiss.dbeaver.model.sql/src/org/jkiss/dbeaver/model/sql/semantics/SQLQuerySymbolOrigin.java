@@ -72,6 +72,7 @@ public abstract class SQLQuerySymbolOrigin {
         ROWSET,
         VALUE,
         FUNCTION,
+        TABLE,
         OBJECT
     }
 

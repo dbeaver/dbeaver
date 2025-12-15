@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,6 +24,8 @@ import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableItem;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ui.UIUtils;
 
 /**
@@ -38,11 +40,11 @@ public abstract class CustomTableEditor implements MouseListener, TraverseListen
     protected int firstTraverseIndex = -1, lastTraverseIndex = -1;
     protected boolean editOnEnter = true;
 
-    public CustomTableEditor(Table table) {
+    public CustomTableEditor(@NotNull Table table) {
         this(table, null);
     }
 
-    public CustomTableEditor(Table table, ContentProposalAdapter proposalAdapter) {
+    public CustomTableEditor(@NotNull Table table, @Nullable ContentProposalAdapter proposalAdapter) {
         this.table = table;
         this.proposalAdapter = proposalAdapter;
 
@@ -111,6 +113,9 @@ public abstract class CustomTableEditor implements MouseListener, TraverseListen
     }
 
     private void onFocusLost(Control editor) {
+        if (editor.isDisposed()) {
+            return;
+        }
         saveEditorValue(editor, columnIndex, tableEditor.getItem());
         if (!isProposalPopupActive()) {
             closeEditor();
@@ -123,7 +128,7 @@ public abstract class CustomTableEditor implements MouseListener, TraverseListen
 
     public void closeEditor() {
         Control editor = tableEditor.getEditor();
-        if (editor != null) {
+        if (editor != null && !editor.isDisposed()) {
             editor.dispose();
         }
     }

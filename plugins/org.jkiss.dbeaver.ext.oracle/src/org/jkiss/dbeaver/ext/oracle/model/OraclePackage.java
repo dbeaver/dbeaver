@@ -105,6 +105,7 @@ public class OraclePackage extends OracleSchemaObject
         return OracleSourceType.PACKAGE;
     }
 
+    @NotNull
     @Override
     @Property(hidden = true, editable = true, updatable = true, order = -1)
     public String getObjectDefinitionText(@NotNull DBRProgressMonitor monitor, @NotNull Map<String, Object> options) throws DBCException
@@ -120,9 +121,10 @@ public class OraclePackage extends OracleSchemaObject
         this.sourceDeclaration = sourceDeclaration;
     }
 
+    @NotNull
     @Override
     @Property(hidden = true, editable = true, updatable = true, order = -1)
-    public String getExtendedDefinitionText(DBRProgressMonitor monitor) throws DBException
+    public String getExtendedDefinitionText(@NotNull DBRProgressMonitor monitor) throws DBException
     {
         if (sourceDefinition == null && monitor != null) {
             sourceDefinition = OracleUtils.getSource(monitor, this, true, true);

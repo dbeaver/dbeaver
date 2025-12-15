@@ -26,11 +26,7 @@ import org.jkiss.dbeaver.ext.generic.model.GenericSchema;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableBase;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.exec.DBCException;
-import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
-import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
-import org.jkiss.dbeaver.model.exec.DBCExecutionResult;
-import org.jkiss.dbeaver.model.exec.DBCStatement;
+import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
@@ -50,14 +46,7 @@ import org.jkiss.utils.CommonUtils;
 
 import java.sql.CallableStatement;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
+import java.util.*;
 import java.util.regex.Pattern;
 
 public class CubridDataSource extends GenericDataSource
@@ -88,7 +77,7 @@ public class CubridDataSource extends GenericDataSource
     }
 
     @Override
-    public <T> T getAdapter(Class<T> adapter) {
+    public <T> T getAdapter(@NotNull Class<T> adapter) {
         if (adapter == DBSStructureAssistant.class) {
             return adapter.cast(new CubridStructureAssistant(this));
         } else if (adapter == DBCServerOutputReader.class) {
@@ -216,7 +205,7 @@ public class CubridDataSource extends GenericDataSource
     public void loadPrivilege(DBRProgressMonitor monitor) throws DBException {
         privilegeGroups = new ArrayList<>();
         try (JDBCSession session = DBUtils.openMetaSession(monitor, container, "Load privilege Group")) {
-            String query = "select db_user.name, user_group.name from db_user, table(groups) as groups_tb(user_group) where db_user.name = ?";
+            String query = wrapShardQuery("select db_user.name, user_group.name from db_user, table(groups) as groups_tb(user_group) where db_user.name = ?");
             try (JDBCPreparedStatement dbStat = session.prepareStatement(query)) {
                 String currentUser = getContainer().getConnectionConfiguration().getUserName().toUpperCase();
                 dbStat.setString(1, currentUser);

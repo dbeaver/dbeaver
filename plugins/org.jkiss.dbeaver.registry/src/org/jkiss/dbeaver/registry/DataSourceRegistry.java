@@ -36,6 +36,7 @@ import org.jkiss.dbeaver.model.connection.DBPAuthModelDescriptor;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDataSourceProviderRegistry;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
+import org.jkiss.dbeaver.model.impl.app.BaseProjectImpl;
 import org.jkiss.dbeaver.model.net.DBWNetworkProfile;
 import org.jkiss.dbeaver.model.net.DBWNetworkProfileProvider;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
@@ -737,6 +738,29 @@ public class DataSourceRegistry<T extends DataSourceDescriptor> implements DBPDa
         }
     }
 
+    /**
+     * Flushes all pending data source events. This is a blocking operation.
+     */
+    public void flushDataSourceEvents() {
+        final DBPEventListener[] listeners;
+        final DBPEvent[] events;
+        synchronized (dataSourceListeners) {
+            events = dataSourceEvents.toArray(new DBPEvent[0]);
+            dataSourceEvents.clear();
+
+            if (dataSourceListeners.isEmpty()) {
+                return;
+            }
+            listeners = dataSourceListeners.toArray(new DBPEventListener[0]);
+        }
+
+        for (DBPEvent event : events) {
+            for (DBPEventListener listener : listeners) {
+                listener.handleDataSourceEvent(event);
+            }
+        }
+    }
+
     @Nullable
     @Override
     public DBACredentialsProvider getAuthCredentialsProvider() {
@@ -951,7 +975,10 @@ public class DataSourceRegistry<T extends DataSourceDescriptor> implements DBPDa
         return result;
     }
 
-    protected void updateProjectNature() {
+    private void updateProjectNature() {
+        if (project instanceof BaseProjectImpl bp) {
+            bp.updateProjectNature();
+        }
     }
 
     @NotNull
@@ -1062,23 +1089,7 @@ public class DataSourceRegistry<T extends DataSourceDescriptor> implements DBPDa
 
         @Override
         protected IStatus run(IProgressMonitor monitor) {
-            final DBPEventListener[] listeners;
-            final DBPEvent[] events;
-            synchronized (dataSourceListeners) {
-                events = dataSourceEvents.toArray(new DBPEvent[0]);
-                dataSourceEvents.clear();
-
-                if (dataSourceListeners.isEmpty()) {
-                    return Status.OK_STATUS;
-                }
-                listeners = dataSourceListeners.toArray(new DBPEventListener[0]);
-            }
-
-            for (DBPEvent event : events) {
-                for (DBPEventListener listener : listeners) {
-                    listener.handleDataSourceEvent(event);
-                }
-            }
+            flushDataSourceEvents();
             return Status.OK_STATUS;
         }
     }
@@ -1126,8 +1137,9 @@ public class DataSourceRegistry<T extends DataSourceDescriptor> implements DBPDa
         ConfigSaver() {
             super("Datasource configuration save");
         }
+        @NotNull
         @Override
-        protected IStatus run(DBRProgressMonitor monitor) {
+        protected IStatus run(@NotNull DBRProgressMonitor monitor) {
             synchronized (DataSourceRegistry.this) {
                 //log.debug("Save column config " + System.currentTimeMillis());
                 saveDataSources(monitor);

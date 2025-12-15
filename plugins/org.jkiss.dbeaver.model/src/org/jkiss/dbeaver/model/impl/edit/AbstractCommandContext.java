@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -91,7 +91,7 @@ public abstract class AbstractCommandContext implements DBECommandContext {
 
         // Execute commands in transaction
         DBCTransactionManager txnManager = DBUtils.getTransactionManager(executionContext);
-        boolean useAutoCommit = false;
+        boolean useAutoCommit;
 
         // Validate commands
         {
@@ -367,15 +367,14 @@ public abstract class AbstractCommandContext implements DBECommandContext {
 
     @Override
     public void addCommand(
-        @NotNull DBECommand command,
+        @NotNull DBECommand<?> command,
         @Nullable DBECommandReflector reflector)
     {
         addCommand(command, reflector, false);
     }
 
     @Override
-    public void addCommand(DBECommand command, DBECommandReflector reflector, boolean execute)
-    {
+    public void addCommand(@NotNull DBECommand<?> command, @Nullable DBECommandReflector reflector, boolean execute) {
         synchronized (commands) {
             commands.add(new CommandInfo(command, reflector));
 
@@ -389,38 +388,8 @@ public abstract class AbstractCommandContext implements DBECommandContext {
         refreshCommandState();
     }
 
-/*
-    public void addCommandBatch(List<DBECommand> commandBatch, DBECommandReflector reflector, boolean execute)
-    {
-        if (commandBatch.isEmpty()) {
-            return;
-        }
-
-        synchronized (commands) {
-            CommandInfo prevInfo = null;
-            for (int i = 0, commandBatchSize = commandBatch.size(); i < commandBatchSize; i++) {
-                DBECommand command = commandBatch.get(i);
-                final CommandInfo info = new CommandInfo(command, i == 0 ? reflector : null);
-                info.prevInBatch = prevInfo;
-                commands.add(info);
-                prevInfo = info;
-            }
-            clearUndidCommands();
-            clearCommandQueues();
-        }
-
-        // Fire only single event
-        fireCommandChange(commandBatch.get(0));
-        if (execute && reflector != null) {
-            reflector.redoCommand(commandBatch.get(0));
-        }
-        refreshCommandState();
-    }
-*/
-
     @Override
-    public void removeCommand(DBECommand<?> command)
-    {
+    public void removeCommand(@NotNull DBECommand<?> command) {
         synchronized (commands) {
             for (CommandInfo cmd : commands) {
                 if (cmd.command == command) {
@@ -435,8 +404,7 @@ public abstract class AbstractCommandContext implements DBECommandContext {
     }
 
     @Override
-    public void updateCommand(DBECommand<?> command, DBECommandReflector commandReflector)
-    {
+    public void updateCommand(@NotNull DBECommand<?> command, @Nullable DBECommandReflector commandReflector) {
         synchronized (commands) {
             boolean found = false;
             for (CommandInfo cmd : commands) {
@@ -457,16 +425,14 @@ public abstract class AbstractCommandContext implements DBECommandContext {
     }
 
     @Override
-    public void addCommandListener(DBECommandListener listener)
-    {
+    public void addCommandListener(@NotNull DBECommandListener listener) {
         synchronized (listeners) {
             listeners.add(listener);
         }
     }
 
     @Override
-    public void removeCommandListener(DBECommandListener listener)
-    {
+    public void removeCommandListener(@NotNull DBECommandListener listener) {
         synchronized (listeners) {
             listeners.remove(listener);
         }
@@ -478,24 +444,22 @@ public abstract class AbstractCommandContext implements DBECommandContext {
         return userParams;
     }
 
-    private void fireCommandChange(DBECommand<?> command)
-    {
+    private void fireCommandChange(@NotNull DBECommand<?> command) {
         for (DBECommandListener listener : getListeners()) {
             listener.onCommandChange(command);
         }
     }
 
-    DBECommandListener[] getListeners()
-    {
+    @NotNull
+    DBECommandListener[] getListeners() {
         synchronized (listeners) {
-            return listeners.toArray(new DBECommandListener[listeners.size()]);
+            return listeners.toArray(new DBECommandListener[0]);
         }
     }
 
     @Nullable
     @Override
-    public DBECommand getUndoCommand()
-    {
+    public DBECommand<?> getUndoCommand() {
         synchronized (commands) {
             if (!commands.isEmpty()) {
                 CommandInfo cmd = commands.get(commands.size() - 1);
@@ -512,11 +476,10 @@ public abstract class AbstractCommandContext implements DBECommandContext {
 
     @Nullable
     @Override
-    public DBECommand getRedoCommand()
-    {
+    public DBECommand<?> getRedoCommand() {
         synchronized (commands) {
             if (!undidCommands.isEmpty()) {
-                CommandInfo cmd = undidCommands.get(undidCommands.size() - 1);
+                CommandInfo cmd = undidCommands.getLast();
                 while (cmd.prevInBatch != null) {
                     cmd = cmd.prevInBatch;
                 }
@@ -527,14 +490,13 @@ public abstract class AbstractCommandContext implements DBECommandContext {
     }
 
     @Override
-    public void undoCommand()
-    {
+    public void undoCommand() {
         if (getUndoCommand() == null) {
             throw new IllegalStateException("Can't undo command");
         }
         List<CommandInfo> processedCommands = new ArrayList<>();
         synchronized (commands) {
-            CommandInfo lastCommand = commands.get(commands.size() - 1);
+            CommandInfo lastCommand = commands.getLast();
             if (!lastCommand.command.isUndoable()) {
                 throw new IllegalStateException("Last executed command is not undoable");
             }
@@ -559,8 +521,7 @@ public abstract class AbstractCommandContext implements DBECommandContext {
     }
 
     @Override
-    public void redoCommand()
-    {
+    public void redoCommand() {
         if (getRedoCommand() == null) {
             throw new IllegalStateException("Can't redo command");
         }
@@ -570,9 +531,9 @@ public abstract class AbstractCommandContext implements DBECommandContext {
             CommandInfo commandInfo = null;
             // Redo batch
             while (!undidCommands.isEmpty() &&
-                (commandInfo == null || undidCommands.get(undidCommands.size() - 1).prevInBatch == commandInfo))
+                (commandInfo == null || undidCommands.getLast().prevInBatch == commandInfo))
             {
-                commandInfo = undidCommands.remove(undidCommands.size() - 1);
+                commandInfo = undidCommands.removeLast();
                 commands.add(commandInfo);
                 processedCommands.add(commandInfo);
             }
@@ -595,8 +556,7 @@ public abstract class AbstractCommandContext implements DBECommandContext {
         undidCommands.clear();
     }
 
-    private List<CommandQueue> getCommandQueues()
-    {
+    private List<CommandQueue> getCommandQueues() {
         if (commandQueues != null) {
             return commandQueues;
         }
@@ -765,8 +725,7 @@ public abstract class AbstractCommandContext implements DBECommandContext {
         CommandInfo prevInBatch = null;
         boolean executed = false;
 
-        CommandInfo(DBECommand<?> command, DBECommandReflector<?, DBECommand<?>> reflector)
-        {
+        CommandInfo(DBECommand<?> command, DBECommandReflector<?, DBECommand<?>> reflector) {
             this.command = command;
             this.reflector = reflector;
         }
@@ -784,8 +743,7 @@ public abstract class AbstractCommandContext implements DBECommandContext {
         private final DBEObjectManager objectManager;
         private List<CommandInfo> commands = new ArrayList<>();
 
-        private CommandQueue(DBEObjectManager objectManager, CommandQueue parent, DBPObject object)
-        {
+        private CommandQueue(DBEObjectManager objectManager, CommandQueue parent, DBPObject object) {
             this.parent = parent;
             this.object = object;
             this.objectManager = objectManager;
@@ -794,15 +752,14 @@ public abstract class AbstractCommandContext implements DBECommandContext {
             }
         }
 
-        void addSubQueue(CommandQueue queue)
-        {
+        void addSubQueue(@NotNull CommandQueue queue) {
             if (subQueues == null) {
                 subQueues = new ArrayList<>();
             }
             subQueues.add(queue);
         }
 
-        void addCommand(CommandInfo info)
+        void addCommand(@NotNull CommandInfo info)
         {
             commands.add(info);
         }
@@ -826,14 +783,14 @@ public abstract class AbstractCommandContext implements DBECommandContext {
         }
 
         @Override
-        public boolean add(DBECommand dbeCommand)
+        public boolean add(@NotNull DBECommand dbeCommand)
         {
             return commands.add(new CommandInfo(dbeCommand, null));
         }
 
+        @NotNull
         @Override
-        public Iterator<DBECommand<DBPObject>> iterator()
-        {
+        public Iterator<DBECommand<DBPObject>> iterator() {
             return new Iterator<DBECommand<DBPObject>>() {
                 private int index = -1;
                 @Override

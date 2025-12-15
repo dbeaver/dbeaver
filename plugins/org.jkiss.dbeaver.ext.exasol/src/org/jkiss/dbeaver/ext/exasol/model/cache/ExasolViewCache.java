@@ -1,7 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2016-2016 Karl Griesser (fullref@gmail.com)
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -123,12 +122,9 @@ public class ExasolViewCache extends JDBCStructCache<ExasolSchema, ExasolView, E
 			"	cast(null as integer) as COLUMN_PARTITION_KEY_ORDINAL_POSITION " + 
 			"FROM  \"$ODBCJDBC\".ALL_COLUMNS  " + 
 			"WHERE table_schem = '%s' ";
-	
-	
+
 	private static final String SQL_VIEWS = "/*snapshot execution*/ select OWNER,OBJECT_ID,TABLE_CAT,TABLE_SCHEM,TABLE_NAME as COLUMN_TABLE,TABLE_TYPE,REMARKS,TYPE_CAT,TYPE_SCHEM,TYPE_NAME,SELF_REFERENCING_COL_NAME,REF_GENERATION from \"$ODBCJDBC\".ALL_TABLES WHERE TABLE_SCHEM = '%s' and TABLE_TYPE = 'VIEW' " +
             " union all select 'SYS',-1,' ',SCHEMA_name, object_name as column_table, object_type,object_comment,null, null,null,null,null from EXA_SYSCAT where SCHEMA_NAME = '%s' order by TABLE_NAME";
-	
-	
 
     public ExasolViewCache() {
         super("COLUMN_TABLE");
@@ -138,29 +134,29 @@ public class ExasolViewCache extends JDBCStructCache<ExasolSchema, ExasolView, E
 	@NotNull
     @Override
     protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull ExasolSchema exasolSchema) throws SQLException {
-
 		String sql = String.format(SQL_VIEWS, exasolSchema.getName(),exasolSchema.getName());
 		
 		JDBCStatement dbstat = session.createStatement();
-		
 		dbstat.setQueryString(sql);
 
 		return dbstat;
     }
 
     @Override
-    protected ExasolView fetchObject(@NotNull JDBCSession session, @NotNull ExasolSchema exasolSchema, @NotNull JDBCResultSet dbResult) throws SQLException,
-        DBException {
+    protected ExasolView fetchObject(@NotNull JDBCSession session, @NotNull ExasolSchema exasolSchema, @NotNull JDBCResultSet dbResult) {
         return new ExasolView(session.getProgressMonitor(), exasolSchema, dbResult);
     }
 
 	@Override
-    protected JDBCStatement prepareChildrenStatement(@NotNull JDBCSession session, @NotNull ExasolSchema exasolSchema, @Nullable ExasolView forView) throws SQLException {
+    protected JDBCStatement prepareChildrenStatement(
+		@NotNull JDBCSession session,
+		@NotNull ExasolSchema exasolSchema,
+		@Nullable ExasolView forView
+	) throws SQLException {
         String sql;
 		String tablePrefix = exasolSchema.getDataSource().getTablePrefix(ExasolSysTablePrefix.ALL);
 
-		if (exasolSchema.getName().equals("SYS") || exasolSchema.getName().equals("EXA_STATISTICS"))
-		{
+		if (exasolSchema.getName().equals("SYS") || exasolSchema.getName().equals("EXA_STATISTICS")) {
 			if (forView != null) {
 	            sql = String.format(SQL_COLS_SYS_VIEW, ExasolUtils.quoteString(exasolSchema.getName()), ExasolUtils.quoteString(forView.getName())) ;
 	        } else {
@@ -183,8 +179,12 @@ public class ExasolViewCache extends JDBCStructCache<ExasolSchema, ExasolView, E
     }
 
     @Override
-    protected ExasolTableColumn fetchChild(@NotNull JDBCSession session, @NotNull ExasolSchema exasolSchema, @NotNull ExasolView exasolView, @NotNull JDBCResultSet dbResult)
-        throws SQLException, DBException {
+    protected ExasolTableColumn fetchChild(
+		@NotNull JDBCSession session,
+		@NotNull ExasolSchema exasolSchema,
+		@NotNull ExasolView exasolView,
+		@NotNull JDBCResultSet dbResult
+	) throws DBException {
         return new ExasolTableColumn(session.getProgressMonitor(), exasolView, dbResult);
     }
 

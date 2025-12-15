@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,6 +24,7 @@ import org.jkiss.dbeaver.model.DBPDataSourceConfigurationStorage;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.Collection;
 import java.util.List;
 
@@ -67,4 +68,8 @@ public class DataSourceConfigurationManagerBuffer implements DataSourceConfigura
         this.data = data;
     }
 
+    @NotNull
+    public String getStringData() {
+        return new String(data, StandardCharsets.UTF_8);
+    }
 }

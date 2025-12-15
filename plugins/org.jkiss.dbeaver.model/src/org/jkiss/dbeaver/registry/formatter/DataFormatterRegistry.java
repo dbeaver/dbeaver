@@ -34,7 +34,6 @@ import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.xml.SAXListener;
 import org.jkiss.utils.xml.SAXReader;
 import org.jkiss.utils.xml.XMLBuilder;
-import org.jkiss.utils.xml.XMLException;
 import org.xml.sax.Attributes;
 
 import java.io.IOException;
@@ -45,8 +44,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class DataFormatterRegistry implements DBPDataFormatterRegistry
-{
+public class DataFormatterRegistry implements DBPDataFormatterRegistry {
     private static final Log log = Log.getLog(DataFormatterRegistry.class);
 
     public static final String CONFIG_FILE_NAME = "dataformat-profiles.xml"; //$NON-NLS-1$
@@ -238,25 +236,21 @@ public class DataFormatterRegistry implements DBPDataFormatterRegistry
         private SimplePreferenceStore curStore;
 
         @Override
-        public void saxStartElement(SAXReader reader, String namespaceURI, String localName, Attributes atts)
-            throws XMLException
-        {
+        public void saxStartElement(@NotNull SAXReader reader, @Nullable String namespaceURI, @NotNull String localName, @NotNull Attributes attributes) {
             if (localName.equals("profile")) {
                 curStore = new CustomProfileStore();
-                profileName = atts.getValue("name");
+                profileName = attributes.getValue("name");
             } else if (localName.equals("property")) {
                 if (curStore != null) {
                     curStore.setValue(
-                        atts.getValue("name"),
-                        atts.getValue("value"));
+                        attributes.getValue("name"),
+                        attributes.getValue("value"));
                 }
             }
         }
 
         @Override
-        public void saxEndElement(SAXReader reader, String namespaceURI, String localName)
-            throws XMLException
-        {
+        public void saxEndElement(@NotNull SAXReader reader, @Nullable String namespaceURI, @NotNull String localName) {
             if (localName.equals("profile")) {
                 if (!CommonUtils.isEmpty(profileName)) {
                     DataFormatterProfile profile = new DataFormatterProfile(profileName, curStore);

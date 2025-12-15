@@ -50,6 +50,7 @@ import org.jkiss.dbeaver.ui.BaseThemeSettings;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.SubEditorSite;
 import org.jkiss.dbeaver.ui.navigator.itemlist.ItemListControl;
+import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
@@ -109,8 +110,9 @@ public class ObjectInformationView {
 
         final DBPNamedObject[] targetObject = {input};
         AbstractJob resolveObject = new AbstractJob("Resolving object") {
+            @NotNull
             @Override
-            protected IStatus run(DBRProgressMonitor monitor) {
+            protected IStatus run(@NotNull DBRProgressMonitor monitor) {
                 if (input instanceof DBSObjectReference objectReference) {
                     try {
                         targetObject[0] = objectReference.resolveObject(monitor);
@@ -190,8 +192,9 @@ public class ObjectInformationView {
         itemListControl.setLayoutData(gridData);
         final Object[] columnNodes = new Object[1];
         AbstractJob abstractJob = new AbstractJob("Populating table tip columns") {
+            @NotNull
             @Override
-            protected IStatus run(DBRProgressMonitor monitor) {
+            protected IStatus run(@NotNull DBRProgressMonitor monitor) {
                 monitor.beginTask("Load table columns", 1);
                 try {
                     columnNodes[0] = getColumnNodes(monitor, node);
@@ -257,7 +260,7 @@ public class ObjectInformationView {
             return Collections.emptyList();
         }
         List<DBNNode> children = new ArrayList<>();
-        for (DBNNode child : node.getChildren(monitor)) {
+        for (DBNNode child : ArrayUtils.safeArray(node.getChildren(monitor))) {
             if (child instanceof DBNDatabaseFolder databaseFolder) {
                 Class<? extends DBSObject> childrenClass = databaseFolder.getChildrenClass();
                 if (childrenClass != null && DBSTableColumn.class.isAssignableFrom(childrenClass)) {
@@ -265,7 +268,9 @@ public class ObjectInformationView {
                         itemListControl.setRootNode(child);
                     }
                     DBNNode[] folderChildren = child.getChildren(monitor);
-                    children.addAll(List.of(folderChildren));
+                    if (folderChildren != null) {
+                        children.addAll(List.of(folderChildren));
+                    }
                 }
             } else {
                 children.add(child);

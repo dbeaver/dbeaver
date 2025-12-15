@@ -129,7 +129,7 @@ public class MySQLCatalog implements
 
     public static class AdditionalInfoValidator implements IPropertyCacheValidator<MySQLCatalog> {
         @Override
-        public boolean isPropertyCached(MySQLCatalog object, Object propertyId)
+        public boolean isPropertyCached(@NotNull MySQLCatalog object, @NotNull Object propertyId)
         {
             return object.additionalInfo.loaded;
         }
@@ -452,7 +452,7 @@ public class MySQLCatalog implements
     }
 
     @Override
-    public void collectObjectStatistics(DBRProgressMonitor monitor, boolean totalSizeOnly, boolean forceRefresh) throws DBException {
+    public void collectObjectStatistics(@NotNull DBRProgressMonitor monitor, boolean totalSizeOnly, boolean forceRefresh) throws DBException {
         if (hasStatistics && !forceRefresh) {
             return;
         }
@@ -480,10 +480,11 @@ public class MySQLCatalog implements
     }
 
     @Override
-    public boolean supportsObjectDefinitionOption(String option) {
+    public boolean supportsObjectDefinitionOption(@NotNull String option) {
         return OPTION_INCLUDE_NESTED_OBJECTS.equals(option);
     }
 
+    @NotNull
     @Override
     public String getObjectDefinitionText(@NotNull DBRProgressMonitor monitor, @NotNull Map<String, Object> options) throws DBException {
         if (databaseDDL == null) {
@@ -670,7 +671,7 @@ public class MySQLCatalog implements
 
         @NotNull
         @Override
-        protected JDBCStatement prepareObjectsStatement(JDBCSession session, MySQLCatalog owner, MySQLTable forTable)
+        protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull MySQLCatalog owner, MySQLTable forTable)
             throws SQLException
         {
             StringBuilder sql = new StringBuilder();
@@ -692,7 +693,9 @@ public class MySQLCatalog implements
 
         @Nullable
         @Override
-        protected MySQLTableIndex fetchObject(JDBCSession session, MySQLCatalog owner, MySQLTable parent, String indexName, JDBCResultSet dbResult)
+        protected MySQLTableIndex fetchObject(@NotNull JDBCSession session, @NotNull MySQLCatalog owner, @NotNull MySQLTable parent, @NotNull
+        String indexName, @NotNull
+        JDBCResultSet dbResult)
             throws SQLException, DBException
         {
             String indexTypeName = JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_INDEX_TYPE);
@@ -720,8 +723,8 @@ public class MySQLCatalog implements
         @Nullable
         @Override
         protected MySQLTableIndexColumn[] fetchObjectRow(
-            JDBCSession session,
-            MySQLTable parent, MySQLTableIndex object, JDBCResultSet dbResult)
+            @NotNull JDBCSession session,
+            @NotNull MySQLTable parent, @NotNull MySQLTableIndex object, @NotNull JDBCResultSet dbResult)
             throws SQLException, DBException
         {
             int ordinalPosition = JDBCUtils.safeGetInt(dbResult, MySQLConstants.COL_SEQ_IN_INDEX);
@@ -747,7 +750,7 @@ public class MySQLCatalog implements
         }
 
         @Override
-        protected void cacheChildren(DBRProgressMonitor monitor, MySQLTableIndex index, List<MySQLTableIndexColumn> rows)
+        protected void cacheChildren(@NotNull DBRProgressMonitor monitor, @NotNull MySQLTableIndex index, @NotNull List<MySQLTableIndexColumn> rows)
         {
             index.setColumns(rows);
         }
@@ -764,7 +767,7 @@ public class MySQLCatalog implements
 
         @NotNull
         @Override
-        protected JDBCStatement prepareObjectsStatement(JDBCSession session, MySQLCatalog owner, MySQLTable forTable)
+        protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull MySQLCatalog owner, @Nullable MySQLTable forTable)
             throws SQLException
         {
             StringBuilder sql = new StringBuilder(500);
@@ -786,7 +789,9 @@ public class MySQLCatalog implements
 
         @Nullable
         @Override
-        protected MySQLTableConstraint fetchObject(JDBCSession session, MySQLCatalog owner, MySQLTable parent, String constraintName, JDBCResultSet dbResult)
+        protected MySQLTableConstraint fetchObject(@NotNull JDBCSession session, @NotNull MySQLCatalog owner, @NotNull MySQLTable parent, @NotNull
+        String constraintName, @NotNull
+        JDBCResultSet dbResult)
             throws SQLException, DBException
         {
             if (constraintName.equals(MySQLConstants.CONSTRAINT_PRIMARY_KEY_NAME)) {
@@ -801,8 +806,8 @@ public class MySQLCatalog implements
         @Nullable
         @Override
         protected MySQLTableConstraintColumn[] fetchObjectRow(
-                JDBCSession session,
-                MySQLTable parent, MySQLTableConstraint object, JDBCResultSet dbResult)
+            @NotNull JDBCSession session,
+            @NotNull MySQLTable parent, @NotNull MySQLTableConstraint object, @NotNull JDBCResultSet dbResult)
             throws SQLException, DBException
         {
             String columnName = JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_COLUMN_NAME);
@@ -820,7 +825,7 @@ public class MySQLCatalog implements
         }
 
         @Override
-        protected void cacheChildren(DBRProgressMonitor monitor, MySQLTableConstraint constraint, List<MySQLTableConstraintColumn> rows)
+        protected void cacheChildren(@NotNull DBRProgressMonitor monitor, @NotNull MySQLTableConstraint constraint, @NotNull List<MySQLTableConstraintColumn> rows)
         {
             constraint.setAttributeReferences(rows);
         }
@@ -838,7 +843,7 @@ public class MySQLCatalog implements
 
         @NotNull
         @Override
-        protected JDBCStatement prepareObjectsStatement(JDBCSession session, MySQLCatalog owner, MySQLTable forTable) throws SQLException {
+        protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull MySQLCatalog owner, @Nullable MySQLTable forTable) throws SQLException {
             StringBuilder sql = new StringBuilder(500);
             sql.append(
                 "SELECT tc.TABLE_NAME, cc.CONSTRAINT_NAME, cc.CHECK_CLAUSE\n" +
@@ -860,17 +865,21 @@ public class MySQLCatalog implements
         }
 
         @Override
-        protected MySQLTableConstraint fetchObject(JDBCSession session, MySQLCatalog owner, MySQLTable parent, String checkConstraintName, JDBCResultSet resultSet) throws SQLException, DBException {
+        protected MySQLTableConstraint fetchObject(@NotNull JDBCSession session, @NotNull MySQLCatalog owner, @NotNull MySQLTable parent, @NotNull
+        String checkConstraintName, @NotNull
+        JDBCResultSet resultSet) throws SQLException, DBException {
             return new MySQLTableConstraint(parent, checkConstraintName, null, DBSEntityConstraintType.CHECK, true, resultSet);
         }
 
         @Override
-        protected MySQLTableConstraintColumn[] fetchObjectRow(JDBCSession session, MySQLTable mySQLTable, MySQLTableConstraint forObject, JDBCResultSet resultSet) throws SQLException, DBException {
+        protected MySQLTableConstraintColumn[] fetchObjectRow(@NotNull JDBCSession session, @NotNull MySQLTable mySQLTable, @NotNull
+        MySQLTableConstraint forObject, @NotNull
+        JDBCResultSet resultSet) throws SQLException, DBException {
             return new MySQLTableConstraintColumn[0];
         }
 
         @Override
-        protected void cacheChildren(DBRProgressMonitor monitor, MySQLTableConstraint object, List<MySQLTableConstraintColumn> children) {
+        protected void cacheChildren(@NotNull DBRProgressMonitor monitor, @NotNull MySQLTableConstraint object, @NotNull List<MySQLTableConstraintColumn> children) {
 
         }
     }
@@ -1065,6 +1074,7 @@ public class MySQLCatalog implements
         {
             return false;
         }
+        @Nullable
         @Override
         public Object[] getPossibleValues(MySQLCatalog object)
         {
@@ -1078,6 +1088,7 @@ public class MySQLCatalog implements
         {
             return false;
         }
+        @Nullable
         @Override
         public Object[] getPossibleValues(MySQLCatalog object)
         {
@@ -1088,4 +1099,9 @@ public class MySQLCatalog implements
             }
         }
     }
+
+    void resetStatistics() {
+        this.hasStatistics = false;
+    }
+
 }

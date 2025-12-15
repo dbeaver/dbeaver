@@ -26,6 +26,8 @@ public enum AIMessageType {
     USER(false),
     // Response from AI
     ASSISTANT(false),
+    FUNCTION(false),
+    WARNING(true),
     // Error messages
     ERROR(true);
 

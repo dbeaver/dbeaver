@@ -29,6 +29,11 @@ import org.jkiss.dbeaver.model.impl.app.BaseApplicationImpl;
  */
 public abstract class DesktopApplicationImpl extends BaseApplicationImpl implements DBPApplicationDesktop {
 
+    public static final String WORKSPACE_PLUGINS_FOLDER = ".plugins";
+    public static final String CORE_RUNTIME_PLUGIN_ID = "org.eclipse.core.runtime";
+    public static final String CORE_RESOURCES_PLUGIN_ID = "org.eclipse.core.resources";
+    public static final String CORE_FILESYSTEM_PLUGIN_ID = "org.eclipse.core.filesystem";
+
     private boolean isForcedRestart = false;
 
     @NotNull

@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ui.editors.erd.navigator;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPImage;
@@ -58,7 +59,7 @@ public class DBNDiagramFolder extends DBNResource {
     }
 
     @Override
-    public boolean supportsDrop(DBNNode otherNode) {
+    public boolean supportsDrop(@Nullable DBNNode otherNode) {
         return otherNode instanceof DBNDiagram || super.supportsDrop(otherNode);
     }
 

@@ -26,6 +26,7 @@ import org.jkiss.dbeaver.model.app.DBPProject;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Path;
+import java.time.Duration;
 import java.util.Date;
 import java.util.Map;
 
@@ -78,4 +79,14 @@ public interface DBTTask extends DBPNamedObject, DBPObjectWithDescription {
      * Refreshes run statistics. This is a <b>thread blocking operation</b>.
      */
     void refreshRunStatistics();
+
+    /**
+     * A duration that represent the total execution time allocated for a task to finish. When expired, the task is terminated.
+     * <p>
+     * The duration must be ignored if it's not {@link Duration#isPositive()}.
+     *
+     * @return total execution time allocated for a task to finish
+     */
+    @NotNull
+    Duration getMaxExecutionTime();
 }

@@ -139,7 +139,7 @@ public class DBeaverTestPlatform extends BasePlatformImpl implements DBPPlatform
 
     @NotNull
     @Override
-    public DBPPlatformLanguage getLanguage() {
+    public DBPPlatformLanguage getPlatformLanguage() {
         return PlatformLanguageRegistry.getInstance().getLanguage(Locale.ENGLISH);
     }
 

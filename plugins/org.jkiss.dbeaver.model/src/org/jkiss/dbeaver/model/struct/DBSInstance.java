@@ -59,7 +59,11 @@ public interface DBSInstance extends DBSObject
      * @return execution context
      */
     @NotNull
-    DBCExecutionContext openIsolatedContext(@NotNull DBRProgressMonitor monitor, @NotNull String purpose, @Nullable DBCExecutionContext initFrom) throws DBException;
+    DBCExecutionContext openIsolatedContext(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull String purpose,
+        @Nullable DBCExecutionContext initFrom
+    ) throws DBException;
 
     void shutdown(DBRProgressMonitor monitor);
 

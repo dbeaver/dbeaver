@@ -89,7 +89,7 @@ public class ExasolTableUniqueKey extends JDBCTableConstraint<ExasolTable, Exaso
     // -----------------
 
     @Override
-    public List<ExasolTableKeyColumn> getAttributeReferences(DBRProgressMonitor monitor) throws DBException {
+    public List<ExasolTableKeyColumn> getAttributeReferences(@Nullable DBRProgressMonitor monitor) throws DBException {
         return columns;
     }
 
@@ -150,7 +150,8 @@ public class ExasolTableUniqueKey extends JDBCTableConstraint<ExasolTable, Exaso
         return false;
 	}
 
-	@Override
+	@NotNull
+    @Override
 	public String getObjectDefinitionText(@NotNull DBRProgressMonitor monitor, @NotNull Map<String, Object> options)
 			throws DBException
 	{

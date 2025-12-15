@@ -207,7 +207,7 @@ public class DB2DataSource extends JDBCDataSource implements DBCQueryPlanner, DB
 
     @Override
     @SuppressWarnings({ "rawtypes", "unchecked" })
-    public <T> T getAdapter(Class<T> adapter)
+    public <T> T getAdapter(@NotNull Class<T> adapter)
     {
         if (adapter == DBSStructureAssistant.class) {
             return adapter.cast(new DB2StructureAssistant(this));
@@ -411,6 +411,7 @@ public class DB2DataSource extends JDBCDataSource implements DBCQueryPlanner, DB
         return this;
     }
 
+    @NotNull
     @Override
     public Collection<DB2DataType> getLocalDataTypes()
     {
@@ -422,6 +423,7 @@ public class DB2DataSource extends JDBCDataSource implements DBCQueryPlanner, DB
         }
     }
 
+    @Nullable
     @Override
     public DB2DataType getLocalDataType(String typeName)
     {
@@ -841,7 +843,7 @@ public class DB2DataSource extends JDBCDataSource implements DBCQueryPlanner, DB
     }
 
     @Override
-    public void collectObjectStatistics(DBRProgressMonitor monitor, boolean totalSizeOnly, boolean forceRefresh) throws DBException {
+    public void collectObjectStatistics(@NotNull DBRProgressMonitor monitor, boolean totalSizeOnly, boolean forceRefresh) throws DBException {
         if (hasStatistics && !forceRefresh) {
             return;
         }

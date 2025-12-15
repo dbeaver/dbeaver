@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -51,8 +51,9 @@ public class SpannerDataSourceProvider extends GenericDataSourceProvider {
         return new SpannerDataSource(monitor, container, new SpannerMetaModel());
     }
 
+    @NotNull
     @Override
-    public String getConnectionURL(DBPDriver driver, DBPConnectionConfiguration connectionInfo) {
+    public String getConnectionURL(@NotNull DBPDriver driver, @NotNull DBPConnectionConfiguration connectionInfo) {
         if ( COMMUNITY_DRIVER_ID.equals(driver.getId())) {
             return "jdbc:cloudspanner://localhost;";
         } else {

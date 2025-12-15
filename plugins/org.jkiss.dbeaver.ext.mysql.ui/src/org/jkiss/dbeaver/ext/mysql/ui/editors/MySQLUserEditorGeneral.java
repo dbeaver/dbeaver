@@ -132,14 +132,14 @@ public class MySQLUserEditorGeneral extends MySQLUserEditorAbstract
                         privilege),
                     new DBECommandReflector<MySQLUser, MySQLCommandGrantPrivilege>() {
                         @Override
-                        public void redoCommand(MySQLCommandGrantPrivilege mySQLCommandGrantPrivilege)
+                        public void redoCommand(@NotNull MySQLCommandGrantPrivilege mySQLCommandGrantPrivilege)
                         {
                             if (!privTable.isDisposed()) {
                                 privTable.checkPrivilege(privilege, grant);
                             }
                         }
                         @Override
-                        public void undoCommand(MySQLCommandGrantPrivilege mySQLCommandGrantPrivilege)
+                        public void undoCommand(@NotNull MySQLCommandGrantPrivilege mySQLCommandGrantPrivilege)
                         {
                             if (!privTable.isDisposed()) {
                                 privTable.checkPrivilege(privilege, !grant);
@@ -188,7 +188,7 @@ public class MySQLUserEditorGeneral extends MySQLUserEditorAbstract
                 executionContext
             ) {
                 @Override
-                public List<MySQLPrivilege> evaluate(DBRProgressMonitor monitor) throws InvocationTargetException {
+                public List<MySQLPrivilege> evaluate(@NotNull DBRProgressMonitor monitor) throws InvocationTargetException {
                     try {
                         MySQLUser user = getDatabaseObject();
                         if (user == null) {

@@ -20,20 +20,18 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.ai.AIAssistant;
-import org.jkiss.dbeaver.model.ai.AIMessage;
-import org.jkiss.dbeaver.model.ai.AIPromptGenerator;
-import org.jkiss.dbeaver.model.ai.AISqlFormatter;
+import org.jkiss.dbeaver.model.ai.*;
 import org.jkiss.dbeaver.model.ai.engine.*;
-import org.jkiss.dbeaver.model.ai.registry.AIAssistantRegistry;
-import org.jkiss.dbeaver.model.ai.registry.AIEngineRegistry;
-import org.jkiss.dbeaver.model.ai.registry.AISettingsManager;
+import org.jkiss.dbeaver.model.ai.internal.AIMessages;
+import org.jkiss.dbeaver.model.ai.registry.*;
 import org.jkiss.dbeaver.model.ai.utils.ThrowableSupplier;
 import org.jkiss.dbeaver.model.app.DBPWorkspace;
+import org.jkiss.dbeaver.model.exec.DBCMessageException;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class AIAssistantImpl implements AIAssistant {
@@ -42,6 +40,7 @@ public class AIAssistantImpl implements AIAssistant {
     private static final int MANY_REQUESTS_RETRIES = 3;
     private static final int MANY_REQUESTS_TIMEOUT = 500;
     public static final String LOG_INDENT = "\t";
+    protected static final int MAX_FUNCTION_CALLS = 5;
 
     protected final DBPWorkspace workspace;
 
@@ -51,11 +50,15 @@ public class AIAssistantImpl implements AIAssistant {
     public AIAssistantImpl(@NotNull DBPWorkspace workspace) {
         this.workspace = workspace;
         this.requestFactory = createRequestFactory();
+        this.sqlFormatter = createSqlFormatter();
+    }
+
+    protected AISqlFormatter createSqlFormatter() {
         try {
-            this.sqlFormatter = AIAssistantRegistry.getInstance().getDescriptor().createSqlFormatter();
+            return AIAssistantRegistry.getInstance().getDescriptor().createSqlFormatter();
         } catch (DBException e) {
             log.error("Error creating SQL formatter", e);
-            this.sqlFormatter = new SimpleSqlFormatterImpl();
+            return new SimpleSqlFormatterImpl();
         }
     }
 
@@ -68,7 +71,7 @@ public class AIAssistantImpl implements AIAssistant {
 
     @NotNull
     @Override
-    public String generateText(
+    public AIAssistantResponse generateText(
         @NotNull DBRProgressMonitor monitor,
         @Nullable AIDatabaseContext context,
         @NotNull AIPromptGenerator systemGenerator,
@@ -76,26 +79,103 @@ public class AIAssistantImpl implements AIAssistant {
     ) throws DBException {
         checkAiEnablement();
 
-        try (AIEngine engine = createEngine()) {
-            String systemPrompt = systemGenerator.build();
-
-            AIEngineRequest completionRequest = requestFactory.build(
+        AIEngineDescriptor engineDescriptor = getEngineDescriptor();
+        try (AIEngine<?> engine = engineDescriptor.createEngineInstance()) {
+            AIEngineRequest completionRequest = buildAiEngineRequest(
                 monitor,
-                systemPrompt,
                 context,
+                systemGenerator,
                 messages,
-                engine.getContextWindowSize(monitor)
+                engine,
+                engineDescriptor
             );
+            AIFunctionContext functionContext = createAiFunctionContext(monitor, context, systemGenerator, messages);
 
-            AIEngineResponse completionResponse = requestCompletion(engine, monitor, completionRequest);
+            AIEngineRequest request = completionRequest;
+            for (int tryIndex = 0; tryIndex < MAX_FUNCTION_CALLS; tryIndex++) {
+                AIEngineResponse completionResponse = requestCompletion(engine, monitor, request);
 
-            return completionResponse.variants().stream()
-                .findFirst()
-                .orElseThrow(() -> new DBException("Empty AI response when executing command"));
+                if (completionResponse.getType() == AIMessageType.FUNCTION) {
+                    AIFunctionCall functionCall = completionResponse.getFunctionCall();
+                    if (functionCall != null) {
+                        functionContext.addFunctionCall(functionCall);
+                        AIFunctionResult result = callFunction(functionContext, functionCall);
+                        String stringValue = CommonUtils.toString(result.getValue());
+                        if (result.getType() == AIFunctionResult.FunctionType.ACTION) {
+                            return new AIAssistantResponse(AIAssistantResponse.Type.FUNCTION, stringValue);
+                        } else {
+                            List<AIMessage> newMessages = new ArrayList<>(request.getMessages());
+                            newMessages.add(new AIMessage(AIMessageType.USER, stringValue));
+                            AIEngineRequest newRequest = new AIEngineRequest(newMessages);
+                            newRequest.setFunctions(request.getFunctions());
+
+                            request = newRequest;
+                            continue;
+                        }
+                    }
+                } else {
+                    List<String> variants = completionResponse.getVariants();
+                    if (variants != null && !variants.isEmpty()) {
+                        return new AIAssistantResponse(AIAssistantResponse.Type.TEXT, variants.getFirst());
+                    }
+                }
+                return new AIAssistantResponse(AIAssistantResponse.Type.ERROR, AIMessages.ai_empty_engine_response);
+            }
+            throw new DBException("Too many AI function calls (" + MAX_FUNCTION_CALLS + ")");
         }
     }
 
-    protected static void checkAiEnablement() throws DBException {
+    @NotNull
+    public AIEngineRequest buildAiEngineRequest(
+        @NotNull DBRProgressMonitor monitor,
+        @Nullable AIDatabaseContext context,
+        @NotNull AIPromptGenerator systemGenerator,
+        @NotNull List<AIMessage> messages,
+        @NotNull AIEngine<?> engine,
+        @NotNull AIEngineDescriptor engineDescriptor
+    ) throws DBException {
+        return requestFactory.build(
+            monitor,
+            engine,
+            engineDescriptor,
+            systemGenerator,
+            context,
+            messages
+        );
+    }
+
+    @NotNull
+    private static AIFunctionContext createAiFunctionContext(
+        @NotNull DBRProgressMonitor monitor,
+        @Nullable AIDatabaseContext context,
+        @NotNull AIPromptGenerator systemGenerator,
+        @NotNull List<AIMessage> messages
+    ) {
+        return new AIFunctionContext(
+            monitor,
+            context,
+            systemGenerator,
+            messages
+        );
+    }
+
+    @NotNull
+    protected AIFunctionResult callFunction(
+        @NotNull AIFunctionContext context,
+        @NotNull AIFunctionCall functionCall
+    ) throws DBException {
+        AIFunctionRegistry registry = AIFunctionRegistry.getInstance();
+        String functionName = functionCall.getFunctionName();
+        AIFunctionDescriptor function = registry.getFunction(functionName);
+        if (function == null) {
+            throw new DBCMessageException("Function '" + functionName + "' not found");
+        }
+        functionCall.setFunction(function);
+        log.debug("Call AI function '" + function.getId() + "'");
+        return registry.callFunction(context, function, functionCall.getArguments());
+    }
+
+    protected void checkAiEnablement() throws DBException {
         if (AISettingsManager.getInstance().getSettings().isAiDisabled()) {
             throw new DBException("AI integration is disabled");
         }
@@ -112,19 +192,35 @@ public class AIAssistantImpl implements AIAssistant {
     }
 
     @NotNull
-    public AIEngine createEngine() throws DBException {
+    public AIEngine<?> createEngine() throws DBException {
         return AIEngineRegistry.getInstance().createEngine(getActiveEngineId());
     }
 
+    @NotNull
+    public AIEngineDescriptor getEngineDescriptor() throws DBException {
+        AIEngineDescriptor descriptor = AIEngineRegistry.getInstance().getEngineDescriptor(getActiveEngineId());
+        if (descriptor == null) {
+            log.trace("Active engine is not present in the configuration, switching to default active engine");
+            AIEngineDescriptor defaultCompletionEngineDescriptor =
+                AIEngineRegistry.getInstance().getDefaultCompletionEngineDescriptor();
+            if (defaultCompletionEngineDescriptor == null) {
+                throw new DBException("AI engine  not found");
+            }
+            descriptor = defaultCompletionEngineDescriptor;
+        }
+        return descriptor;
+    }
+
+    @NotNull
     protected AIEngineResponse requestCompletion(
-        @NotNull AIEngine engine,
+        @NotNull AIEngine<?> engine,
         @NotNull DBRProgressMonitor monitor,
         @NotNull AIEngineRequest request
     ) throws DBException {
         try {
             boolean loggingEnabled = isLoggingEnabled();
             if (loggingEnabled) {
-                log.debug("AI request:\n" + CommonUtils.addTextIndent(request.toString(), LOG_INDENT));
+                log.debug("AI request:\n" + CommonUtils.addTextIndent(request.getMessages().toString(), LOG_INDENT));
             }
 
             AIEngineResponse completionResponse = callWithRetry(() -> engine.requestCompletion(monitor, request));
@@ -135,8 +231,8 @@ public class AIAssistantImpl implements AIAssistant {
 
             return completionResponse;
         } catch (Exception e) {
-            if (e instanceof DBException) {
-                throw (DBException) e;
+            if (e instanceof DBException dbe) {
+                throw dbe;
             } else {
                 throw new DBException("Error requesting completion", e);
             }

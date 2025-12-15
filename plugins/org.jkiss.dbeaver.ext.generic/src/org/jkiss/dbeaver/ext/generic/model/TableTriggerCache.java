@@ -26,7 +26,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectWithParentCache;
 
 import java.sql.SQLException;
 
-public class TableTriggerCache extends JDBCObjectWithParentCache<GenericStructContainer, GenericTableBase, GenericTrigger> {
+public class TableTriggerCache extends JDBCObjectWithParentCache<GenericStructContainer, GenericTableBase, GenericTrigger<?>> {
 
     TableTriggerCache(TableCache tableCache) {
         super(tableCache, GenericTableBase.class, "OWNER", "TRIGGER_NAME");

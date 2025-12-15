@@ -82,6 +82,7 @@ public class AltibaseLibrary extends AltibaseObject<GenericStructContainer> impl
         return lastDdlTime;
     }
 
+    @NotNull
     @Override
     public String getObjectDefinitionText(@NotNull DBRProgressMonitor monitor, @NotNull Map<String, Object> options) throws DBException {
         if (CommonUtils.isEmpty(ddl)) {
@@ -92,7 +93,7 @@ public class AltibaseLibrary extends AltibaseObject<GenericStructContainer> impl
     }
 
     @Override
-    public DBSObject refreshObject(DBRProgressMonitor monitor) throws DBException {
+    public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException {
         AltibaseSchema schema = (AltibaseSchema) getParentObject();
         return schema.getLibraryCache().refreshObject(monitor, schema, this);
     }

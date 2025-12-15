@@ -32,10 +32,7 @@ import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.utils.Base64;
 import org.jkiss.utils.CommonUtils;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.PrintWriter;
-import java.io.Reader;
+import java.io.*;
 import java.math.BigDecimal;
 import java.sql.Date;
 import java.sql.Time;
@@ -183,11 +180,9 @@ public class DataExporterDbUnit extends StreamExporterAbstract {
         getWriter().write("</dataset>\n");
     }
 
-    private void writeTextCell(@Nullable String value)
-    {
+    private void writeTextCell(@Nullable String value) throws IOException {
         if (value != null) {
-            value = value.replace("<", "&lt;").replace(">", "&gt;").replace("&", "&amp;");
-            getWriter().write(value);
+            writeCellValue(new StringReader(value));
         }
     }
 
@@ -209,6 +204,8 @@ public class DataExporterDbUnit extends StreamExporterAbstract {
                     out.write("&gt;");
                 } else if (buffer[i] == '&') {
                     out.write("&amp;");
+                } else if (buffer[i] == '"') {
+                    out.write("&quot;");
                 } else {
                     out.write(buffer[i]);
                 }

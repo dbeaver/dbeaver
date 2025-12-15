@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -51,15 +51,16 @@ public class ContentUtils {
 
     private static final Log log = Log.getLog(ContentUtils.class);
 
-    public static Path getLobFolder(DBRProgressMonitor monitor, DBPPlatform application)
-        throws IOException {
+    public static Path getLobFolder(@NotNull DBRProgressMonitor monitor, @NotNull DBPPlatform application) throws IOException {
         return application.getTempFolder(monitor, LOB_DIR);
     }
 
-    public static Path createTempContentFile(DBRProgressMonitor monitor, DBPPlatform application, String fileName)
-        throws IOException {
+    public static Path createTempContentFile(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBPPlatform application,
+        @NotNull String fileName
+    ) throws IOException {
         return makeTempFile(
-            monitor,
             getLobFolder(monitor, application),
             fileName,
             "data");
@@ -74,8 +75,7 @@ public class ContentUtils {
 */
     }
 
-    public static Path makeTempFile(DBRProgressMonitor monitor, Path folder, String name, String extension)
-        throws IOException {
+    public static Path makeTempFile(Path folder, String name, String extension) throws IOException {
         name = CommonUtils.escapeFileName(name);
         Path tempFile = folder.resolve(name + "-" + System.currentTimeMillis() + "." + extension);  //$NON-NLS-1$ //$NON-NLS-2$
         Files.createFile(tempFile);

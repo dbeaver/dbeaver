@@ -19,19 +19,25 @@ package org.jkiss.dbeaver.model.ai.impl;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.ai.AIConstants;
-import org.jkiss.dbeaver.model.ai.AIMessage;
-import org.jkiss.dbeaver.model.ai.AISchemaGenerationOptions;
+import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.ai.*;
 import org.jkiss.dbeaver.model.ai.engine.AIDatabaseContext;
+import org.jkiss.dbeaver.model.ai.engine.AIEngine;
 import org.jkiss.dbeaver.model.ai.engine.AIEngineRequest;
+import org.jkiss.dbeaver.model.ai.registry.*;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public class AIEngineRequestFactory {
+    private static final Log log = Log.getLog(AIEngineRequestFactory.class);
+
     // Section header used before the DB snapshot inside the system prompt
     private static final String DB_SNAPSHOT_SECTION_HEADER = "Database snapshot:\n";
 
@@ -57,12 +63,16 @@ public class AIEngineRequestFactory {
 
     public AIEngineRequest build(
         @NotNull DBRProgressMonitor monitor,
-        @NotNull String systemPrompt,
-        @Nullable AIDatabaseContext aiDatabaseContext,
-        @NotNull List<AIMessage> messages,
-        int maxContextWindowSize
+        @NotNull AIEngine engine,
+        @NotNull AIEngineDescriptor engineDescriptor,
+        @NotNull AIPromptGenerator systemPromptGenerator,
+        @Nullable AIDatabaseContext databaseContext,
+        @NotNull List<AIMessage> messages
     ) throws DBException {
+        String systemPrompt = systemPromptGenerator.build();
+
         // Tokens available for user/system/chat history after we reserve reply + overhead
+        int maxContextWindowSize = getContextWindowSize(monitor, engine);
         int availableContextTokens = maxContextWindowSize - REPLY_TOKEN_RESERVE - OVERHEAD_TOKEN_RESERVE;
         if (availableContextTokens < 0) {
             availableContextTokens = 0; // clamp, just in case caller gave a tiny window
@@ -84,9 +94,14 @@ public class AIEngineRequestFactory {
         // Build DB snapshot
 
         String dbSnapshot = "";
-        if (aiDatabaseContext != null && dbSnapshotTokenBudget > 0) {
+        boolean isContextTruncated = false;
+        if (databaseContext != null && dbSnapshotTokenBudget > 0) {
             AISchemaGenerationOptions ddlOptions = buildOptions(dbSnapshotTokenBudget);
-            dbSnapshot = databaseSnapshotService.createDbSnapshot(monitor, aiDatabaseContext, ddlOptions);
+            AIDatabaseSnapshotService.TokenBoundedStringBuilder dbSnapshotBuilder = databaseSnapshotService.createDbSnapshot(monitor, databaseContext, ddlOptions);
+            if (dbSnapshotBuilder != null) {
+                dbSnapshot = dbSnapshotBuilder.toString();
+                isContextTruncated = dbSnapshotBuilder.isTruncated();
+            }
         }
 
         // Compose system message
@@ -112,7 +127,68 @@ public class AIEngineRequestFactory {
         allMessages.addAll(messages);
 
         List<AIMessage> truncated = chatTruncator.truncate(allMessages);
-        return new AIEngineRequest(truncated);
+        AIEngineRequest request = new AIEngineRequest(truncated);
+        request.setWasPromptTruncated(isContextTruncated);
+
+        determineRequestTools(monitor, engineDescriptor, systemPromptGenerator, request);
+
+        return request;
+    }
+
+    protected void determineRequestTools(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull AIEngineDescriptor engineDescriptor,
+        @NotNull AIPromptGenerator systemPromptGenerator,
+        @NotNull AIEngineRequest request
+    ) {
+        if (!engineDescriptor.isSupportsFunctions() || DBWorkbench.getPlatform().getApplication().isMultiuser()) {
+            return;
+        }
+        List<AIFunctionDescriptor> functions = new ArrayList<>();
+        for (AIFunctionDescriptor fd : AIFunctionRegistry.getInstance().getAllFunctions()) {
+            if (fd.isGlobal() || fd.isApplicable(engineDescriptor, systemPromptGenerator)) {
+                functions.add(fd);
+            }
+        }
+
+        AIPromptGeneratorDescriptor currentPromptGenerator = null;
+        for (AIPromptGeneratorDescriptor promptGeneratorDescriptor : AIPromptGeneratorRegistry.getInstance().getAllPromptGenerator()) {
+            if (systemPromptGenerator.generatorId().equals(promptGeneratorDescriptor.getId())) {
+                currentPromptGenerator = promptGeneratorDescriptor;
+                break;
+            }
+        }
+
+        AISettings aiSettings = AISettingsManager.getInstance().getSettings();
+        Set<String> enabledFunctions = aiSettings.getEnabledFunctions();
+
+        List<AIFunctionDescriptor> selectedFunctions = new ArrayList<>(functions);
+        selectedFunctions.removeIf(aiFunctionDescriptor ->
+            !enabledFunctions.contains(aiFunctionDescriptor.getId())
+        );
+
+        Set<String> requiredByDeps = resolveDependencies(selectedFunctions, currentPromptGenerator);
+
+        if (!requiredByDeps.isEmpty()) {
+            for (AIFunctionDescriptor f : functions) {
+                if (requiredByDeps.contains(f.getId())) {
+                    selectedFunctions.add(f);
+                }
+            }
+        }
+
+        request.setFunctions(selectedFunctions);
+    }
+
+
+    private static int getContextWindowSize(@NotNull DBRProgressMonitor monitor, @NotNull AIEngine engine) {
+        try {
+            return engine.getContextWindowSize(monitor);
+        } catch (DBException e) {
+            log.debug("Cannot determine engine " + engine + " context window size. Set to default " +
+                AIConstants.DEFAULT_CONTEXT_WINDOW_SIZE, e);
+            return AIConstants.DEFAULT_CONTEXT_WINDOW_SIZE;
+        }
     }
 
     protected AISchemaGenerationOptions buildOptions(int dbSnapshotTokenBudget) {
@@ -124,5 +200,38 @@ public class AIEngineRequestFactory {
             .withSendColumnTypes(prefs.getBoolean(AIConstants.AI_SEND_TYPE_INFO))
             .build();
 
+    }
+
+    /**
+     * Resolves transitive dependencies for the given list of already selected function descriptors.
+     */
+    @NotNull
+    private static Set<String> resolveDependencies(@NotNull List<AIFunctionDescriptor> selected, @Nullable AIPromptGeneratorDescriptor pg) {
+        Set<String> result = new HashSet<>();
+        for (AIFunctionDescriptor fd : selected) {
+            collectDependencies(fd.getDependsOn(), result);
+        }
+        if (pg != null) {
+            collectDependencies(pg.getDependsOn(), result);
+        }
+        return result;
+    }
+
+    private static void collectDependencies(
+        @NotNull String[] dependencies,
+        @NotNull Set<String> result
+    ) {
+        for (String depId : dependencies) {
+            if (CommonUtils.isEmpty(depId)) {
+                continue;
+            }
+            if (!result.add(depId)) {
+                continue;
+            }
+            AIFunctionDescriptor dep = AIFunctionRegistry.getInstance().getFunction(depId);
+            if (dep != null) {
+                collectDependencies(dep.getDependsOn(), result);
+            }
+        }
     }
 }

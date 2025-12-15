@@ -109,6 +109,9 @@ public class MySQLDatabaseExportHandler extends MySQLNativeToolHandler<MySQLExpo
                 cmd.add("--routines"); //$NON-NLS-1$
             }
         }
+        if (settings.isCompressed()) {
+            cmd.add("--compress"); //$NON-NLS-1$
+        }
         if (settings.isAddDropStatements()) {
             cmd.add("--add-drop-table"); //$NON-NLS-1$
         } else {

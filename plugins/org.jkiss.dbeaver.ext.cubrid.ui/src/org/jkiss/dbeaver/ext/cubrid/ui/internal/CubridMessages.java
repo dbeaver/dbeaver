@@ -45,4 +45,13 @@ public class CubridMessages extends NLS {
     public static String cubrid_oid_search_find;
     public static String cubrid_oid_search_error_title;
     public static String cubrid_oid_search_error_message;
+    public static String dialog_connection_cubrid_properties;
+    public static String dialog_connection_cubrid_properties_description;
+    public static String dialog_connection_cubrid_properties_shard_setting;
+    public static String dialog_connection_cubrid_properties_shard_tooltip;
+    public static String dialog_connection_cubrid_properties_invalid_shard_id_title;
+    public static String dialog_connection_cubrid_properties_invalid_shard_id_message;
+    public static String dialog_connection_cubrid_properties_invalid_input_title;
+    public static String dialog_connection_cubrid_properties_invalid_input_message;
+
 }

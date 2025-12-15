@@ -1,7 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2016-2016 Karl Griesser (fullref@gmail.com)
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -100,13 +99,25 @@ public final class ExasolTableForeignKeyCache
 
     @NotNull
     @Override
-    protected JDBCStatement prepareObjectsStatement(JDBCSession session, ExasolSchema exasolSchema, ExasolTable forTable)
-        throws SQLException {
+    protected JDBCStatement prepareObjectsStatement(
+        @NotNull JDBCSession session,
+        @NotNull ExasolSchema exasolSchema,
+        @Nullable ExasolTable forTable
+    ) throws SQLException {
         String sql;
         if (forTable != null) {
-            sql = String.format(SQL_FK_TAB,ExasolUtils.quoteString(exasolSchema.getName()),ExasolUtils.quoteString(forTable.getName()),ExasolUtils.quoteString(exasolSchema.getName()),ExasolUtils.quoteString(forTable.getName()),ExasolUtils.quoteString(exasolSchema.getName()),ExasolUtils.quoteString(forTable.getName()));
+            sql = String.format(SQL_FK_TAB,
+                ExasolUtils.quoteString(exasolSchema.getName()),
+                ExasolUtils.quoteString(forTable.getName()),
+                ExasolUtils.quoteString(exasolSchema.getName()),
+                ExasolUtils.quoteString(forTable.getName()),
+                ExasolUtils.quoteString(exasolSchema.getName()),
+                ExasolUtils.quoteString(forTable.getName()));
         } else {
-            sql = String.format(SQL_FK_ALL,ExasolUtils.quoteString(exasolSchema.getName()),ExasolUtils.quoteString(exasolSchema.getName()),ExasolUtils.quoteString(exasolSchema.getName()));
+            sql = String.format(SQL_FK_ALL,
+                ExasolUtils.quoteString(exasolSchema.getName()),
+                ExasolUtils.quoteString(exasolSchema.getName()),
+                ExasolUtils.quoteString(exasolSchema.getName()));
         }
         JDBCStatement dbStat = session.createStatement();
         
@@ -116,21 +127,26 @@ public final class ExasolTableForeignKeyCache
 
     }
 
-    @Nullable
+    @NotNull
     @Override
     protected ExasolTableForeignKey fetchObject(
-        JDBCSession session, ExasolSchema ExasolSchema, ExasolTable ExasolTable,
-        String constName, JDBCResultSet dbResult) throws SQLException, DBException
-    {
+        @NotNull JDBCSession session,
+        @NotNull ExasolSchema ExasolSchema,
+        @NotNull ExasolTable ExasolTable,
+        @NotNull String constName,
+        @NotNull JDBCResultSet dbResult
+    ) throws DBException {
         return new ExasolTableForeignKey(session.getProgressMonitor(), ExasolTable, dbResult);
     }
 
     @Nullable
     @Override
     protected ExasolTableForeignKeyColumn[] fetchObjectRow(
-        JDBCSession session, ExasolTable table, ExasolTableForeignKey object,
-        JDBCResultSet dbResult) throws SQLException, DBException {
-
+        @NotNull JDBCSession session,
+        @NotNull ExasolTable table,
+        @NotNull ExasolTableForeignKey object,
+        @NotNull JDBCResultSet dbResult
+    ) throws DBException {
         String colName = JDBCUtils.safeGetString(dbResult, "COLUMN_NAME");
         ExasolTableColumn tableColumn = table.getAttribute(session.getProgressMonitor(), colName);
         if (tableColumn == null) {
@@ -159,7 +175,7 @@ public final class ExasolTableForeignKeyCache
     }
 
     @Override
-    protected void cacheChildren(DBRProgressMonitor monitor, ExasolTableForeignKey constraint, List<ExasolTableForeignKeyColumn> rows) {
+    protected void cacheChildren(@NotNull DBRProgressMonitor monitor, @NotNull ExasolTableForeignKey constraint, @NotNull List<ExasolTableForeignKeyColumn> rows) {
         constraint.setAttributeReferences(rows);
     }
 

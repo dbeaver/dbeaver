@@ -17,7 +17,7 @@
 
 package org.jkiss.dbeaver.ui.app.standalone.rpc;
 
-import org.apache.commons.cli.CommandLine;
+
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -32,7 +32,7 @@ import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.app.DBPPlatformDesktop;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.cli.ApplicationInstanceServer;
-import org.jkiss.dbeaver.model.cli.CliProcessResult;
+import org.jkiss.dbeaver.model.cli.CLIProcessResult;
 import org.jkiss.dbeaver.registry.DataSourceUtils;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.ActionUtils;
@@ -92,7 +92,7 @@ public class DBeaverInstanceServer extends ApplicationInstanceServer<IInstanceCo
     }
 
     @Nullable
-    public static IInstanceController createClient(@Nullable String workspacePath) {
+    public static IInstanceController createClient(@Nullable Path workspacePath) {
         final Path path = getConfigPath(workspacePath);
 
         if (Files.notExists(path)) {
@@ -109,7 +109,7 @@ public class DBeaverInstanceServer extends ApplicationInstanceServer<IInstanceCo
             return null;
         }
 
-        final String port = properties.getProperty("port");
+        final String port = properties.getProperty(portPropertyName());
 
         if (CommonUtils.isEmptyTrimmed(port)) {
             log.error("No port specified for the instance controller to connect to");
@@ -155,17 +155,16 @@ public class DBeaverInstanceServer extends ApplicationInstanceServer<IInstanceCo
 
     @NotNull
     @Override
-    public CliProcessResult handleCommandLine(@NotNull String[] args) {
-        CommandLine cmd = DBeaverCommandLine.getInstance().getCommandLine(args);
-
+    public CLIProcessResult handleCommandLine(@NotNull String[] args) {
         try {
             return DBeaverCommandLine.getInstance().executeCommandLineCommands(
-                cmd,
                 this,
-                !DBeaverApplication.getInstance().isHeadlessMode()
+                !DBeaverApplication.getInstance().isHeadlessMode(),
+                true,
+                args
             );
         } catch (Exception e) {
-            return new CliProcessResult(CliProcessResult.PostAction.ERROR, "Error executing command: " + e.getMessage());
+            return new CLIProcessResult(CLIProcessResult.PostAction.ERROR, "Error executing command: " + e.getMessage());
         }
     }
 
@@ -197,7 +196,8 @@ public class DBeaverInstanceServer extends ApplicationInstanceServer<IInstanceCo
             GeneralUtils.replaceVariables(connectionSpec, SystemVariablesResolver.INSTANCE),
             instanceConParameters,
             false,
-            instanceConParameters.createNewConnection);
+            instanceConParameters.isCreateNewConnection()
+        );
         if (dataSourceContainer == null) {
             filesToConnect.clear();
             return;
@@ -207,14 +207,14 @@ public class DBeaverInstanceServer extends ApplicationInstanceServer<IInstanceCo
                 EditorUtils.setFileDataSource(file, new SQLNavigatorContext(dataSourceContainer));
             }
         }
-        if (instanceConParameters.openConsole) {
+        if (instanceConParameters.isOpenConsole()) {
             final IWorkbenchWindow workbenchWindow = UIUtils.getActiveWorkbenchWindow();
             UIUtils.syncExec(() -> {
                 SQLEditorHandlerOpenEditor.openSQLConsole(workbenchWindow, new SQLNavigatorContext(dataSourceContainer), dataSourceContainer.getName(), "");
                 workbenchWindow.getShell().forceActive();
 
             });
-        } else if (instanceConParameters.makeConnect) {
+        } else if (instanceConParameters.isMakeConnect()) {
             DataSourceHandler.connectToDataSource(null, dataSourceContainer, null);
         }
         filesToConnect.clear();
@@ -269,28 +269,5 @@ public class DBeaverInstanceServer extends ApplicationInstanceServer<IInstanceCo
                 shell.setActive();
             }
         });
-    }
-
-    private static class InstanceConnectionParameters implements GeneralUtils.IParameterHandler {
-        boolean makeConnect = true, openConsole = false, createNewConnection = true;
-
-        @Override
-        public boolean setParameter(String name, String value) {
-            return switch (name) {
-                case "connect" -> {
-                    makeConnect = CommonUtils.toBoolean(value);
-                    yield true;
-                }
-                case "openConsole" -> {
-                    openConsole = CommonUtils.toBoolean(value);
-                    yield true;
-                }
-                case "create" -> {
-                    createNewConnection = CommonUtils.toBoolean(value);
-                    yield true;
-                }
-                default -> false;
-            };
-        }
     }
 }

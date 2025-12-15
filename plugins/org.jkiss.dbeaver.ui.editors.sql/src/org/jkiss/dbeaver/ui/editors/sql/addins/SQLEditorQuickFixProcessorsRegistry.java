@@ -21,14 +21,14 @@ import org.eclipse.core.runtime.IExtensionRegistry;
 import org.eclipse.core.runtime.Platform;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.utils.ArrayUtils;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 
 public class SQLEditorQuickFixProcessorsRegistry {
 
     public static final String EXTENSION_ID = "org.jkiss.dbeaver.sql.quickFixProcessors"; //$NON-NLS-1$
-    private static final String JDT_EXTENSION_ID = "org.eclipse.jdt.ui.quickFixProcessors"; //$NON-NLS-1$
 
     private static final String TAG_QUICK_FIX_PROCESSOR = "quickFixProcessor"; //$NON-NLS-1$
 
@@ -50,10 +50,7 @@ public class SQLEditorQuickFixProcessorsRegistry {
 
     private SQLEditorQuickFixProcessorsRegistry(@NotNull IExtensionRegistry registry) {
         Map<Class<?>, SQLEditorQuickFixProcessorDescriptor> descs = new HashMap<>();
-        for (IConfigurationElement element : ArrayUtils.concatArrays(
-            registry.getConfigurationElementsFor(EXTENSION_ID),
-            registry.getConfigurationElementsFor(JDT_EXTENSION_ID)
-        )) {
+        for (IConfigurationElement element : registry.getConfigurationElementsFor(EXTENSION_ID)) {
             if (TAG_QUICK_FIX_PROCESSOR.equals(element.getName())) {
                 SQLEditorQuickFixProcessorDescriptor desc = new SQLEditorQuickFixProcessorDescriptor((element));
                 descs.put(desc.getClass(), desc);

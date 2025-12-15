@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -70,8 +70,9 @@ public class IoTDBAbstractUser implements DBAUser, DBARole, DBPRefreshableObject
         return userName;
     }
 
+    @NotNull
     @Override
-    public String getFullyQualifiedName(DBPEvaluationContext dbpEvaluationContext) {
+    public String getFullyQualifiedName(@NotNull DBPEvaluationContext dbpEvaluationContext) {
         return "";
     }
 
@@ -175,7 +176,7 @@ public class IoTDBAbstractUser implements DBAUser, DBARole, DBPRefreshableObject
     }
 
     @Override
-    public DBSObject refreshObject(DBRProgressMonitor dbrProgressMonitor) throws DBException {
+    public DBSObject refreshObject(@NotNull DBRProgressMonitor dbrProgressMonitor) throws DBException {
         this.globalPrivileges = null;
         this.schemaPrivileges = null;
         loadGrants(dbrProgressMonitor);

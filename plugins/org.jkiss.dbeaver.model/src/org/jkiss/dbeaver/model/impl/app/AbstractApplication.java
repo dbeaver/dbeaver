@@ -42,6 +42,8 @@ public abstract class AbstractApplication implements IApplication, DBPApplicatio
 
     private static final Log log = Log.getLog(AbstractApplication.class);
 
+    public static final Integer EXIT_ERROR_UNSPECIFIED = 1;
+
     private static DBPApplication INSTANCE;
 
     private String applicationRunId;
@@ -147,6 +149,7 @@ public abstract class AbstractApplication implements IApplication, DBPApplicatio
     /////////////////////////////////////////
     // IApplication
 
+    @NotNull
     @Override
     public Object start(IApplicationContext context) throws Exception {
         return EXIT_OK;

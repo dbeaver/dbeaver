@@ -780,6 +780,7 @@ public class MySQLDataSource extends JDBCDataSource implements DBPObjectStatisti
         return super.getAdapter(adapter);
     }
 
+    @NotNull
     @Override
     public Collection<? extends DBSDataType> getLocalDataTypes() {
         return dataTypeCache.getCachedObjects();
@@ -789,18 +790,21 @@ public class MySQLDataSource extends JDBCDataSource implements DBPObjectStatisti
         return dataTypeCache;
     }
 
+    @Nullable
     @Override
     public DBSDataType getLocalDataType(String typeName) {
         return dataTypeCache.getCachedObject(typeName);
     }
 
+    @Nullable
     @Override
     public DBSDataType getLocalDataType(int typeID) {
         return dataTypeCache.getCachedObject(typeID);
     }
 
+    @NotNull
     @Override
-    public String getDefaultDataTypeName(DBPDataKind dataKind) {
+    public String getDefaultDataTypeName(@NotNull DBPDataKind dataKind) {
         switch (dataKind) {
             case BOOLEAN:
                 return "TINYINT(1)";
@@ -825,7 +829,7 @@ public class MySQLDataSource extends JDBCDataSource implements DBPObjectStatisti
     }
 
     @Override
-    public void collectObjectStatistics(DBRProgressMonitor monitor, boolean totalSizeOnly, boolean forceRefresh) throws DBException {
+    public void collectObjectStatistics(@NotNull DBRProgressMonitor monitor, boolean totalSizeOnly, boolean forceRefresh) throws DBException {
         if (hasStatistics && !forceRefresh) {
             return;
         }
@@ -932,6 +936,7 @@ public class MySQLDataSource extends JDBCDataSource implements DBPObjectStatisti
             getContainer().getDriver().getDriverClassName());
     }
 
+    @NotNull
     @Override
     public ErrorType discoverErrorType(@NotNull Throwable error) {
         if (isMariaDB()) {

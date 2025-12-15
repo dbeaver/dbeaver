@@ -17,6 +17,7 @@
 
 package org.jkiss.dbeaver.ui.actions.datasource;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.connection.DBPDriverDependencies;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -31,11 +32,19 @@ import org.jkiss.utils.CommonUtils;
 public class UIServiceDriversImpl implements UIServiceDrivers {
 
     @Override
-    public boolean downloadDriverFiles(DBRProgressMonitor monitor, DBPDriver driver, DBPDriverDependencies dependencies) {
+    public boolean downloadDriverFiles(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBPDriver driver,
+        @NotNull DBPDriverDependencies dependencies
+    ) {
         Boolean result = new UITask<Boolean>() {
             @Override
             protected Boolean runTask() {
-                return DriverDownloadDialog.downloadDriverFiles(null, driver, dependencies);
+                return DriverDownloadDialog.downloadDriverFiles(
+                    null,
+                    driver,
+                    dependencies
+                );
             }
         }.execute();
         return CommonUtils.toBoolean(result, false);

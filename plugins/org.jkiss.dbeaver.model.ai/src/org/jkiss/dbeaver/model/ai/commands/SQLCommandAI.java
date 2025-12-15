@@ -28,6 +28,7 @@ import org.jkiss.dbeaver.model.ai.prompt.AIPromptGenerateSql;
 import org.jkiss.dbeaver.model.ai.registry.AIAssistantRegistry;
 import org.jkiss.dbeaver.model.ai.utils.AIUtils;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.exec.DBCMessageException;
 import org.jkiss.dbeaver.model.exec.output.DBCOutputSeverity;
 import org.jkiss.dbeaver.model.logical.DBSLogicalDataSource;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -86,15 +87,18 @@ public class SQLCommandAI implements SQLControlCommandHandler {
                 throw new DBException("AI services restricted for '" + dataSourceContainer.getName() + "'");
             }
         }
-        AIDatabaseScope scope = completionSettings.getScope();
-        AIDatabaseContext.Builder contextBuilder = new AIDatabaseContext.Builder(lDataSource);
-        if (scope != null) {
-            contextBuilder.setScope(scope);
-        }
         DBCExecutionContext executionContext = scriptContext.getExecutionContext();
+        AIUtils.updateScopeSettingsIfNeeded(completionSettings, dataSourceContainer, executionContext);
+
+        AIDatabaseContext.Builder contextBuilder = new AIDatabaseContext.Builder(lDataSource);
         if (executionContext != null) {
             contextBuilder.setExecutionContext(executionContext);
         }
+        AIDatabaseScope scope = completionSettings.getScope();
+        if (scope != null) {
+            contextBuilder.setScope(scope);
+        }
+
         if (scope == AIDatabaseScope.CUSTOM && completionSettings.getCustomObjectIds() != null) {
             contextBuilder.setCustomEntities(
                 AITextUtils.loadCustomEntities(
@@ -105,24 +109,31 @@ public class SQLCommandAI implements SQLControlCommandHandler {
         }
         AIDatabaseContext dbContext = contextBuilder.build();
 
-        AIPromptAbstract sysPromptBuilder = AIPromptGenerateSql.create(() -> dbContext.getDataSource());
+        AIPromptAbstract sysPromptBuilder = AIPromptGenerateSql.create(dbContext::getDataSource);
+
+        monitor.subTask("Generate SQL from prompt");
 
         AIAssistant assistant = AIAssistantRegistry.getInstance()
             .createAssistant(dataSourceContainer.getProject().getWorkspace());
 
-        String text = assistant.generateText(
+        AIAssistantResponse result = assistant.generateText(
             monitor,
             dbContext,
             sysPromptBuilder,
             List.of(AIMessage.userMessage(prompt))
         );
+        if (!result.isText()) {
+            return SQLControlResult.success();
+        }
+
+        monitor.subTask("Process generated SQL");
 
         AISqlFormatter sqlFormatter = AIAssistantRegistry.getInstance().getDescriptor().createSqlFormatter();
         MessageChunk[] messageChunks = AITextUtils.processAndSplitCompletion(
             monitor,
             dbContext,
             sqlFormatter,
-            text
+            result.getText()
         );
 
         String script = null;
@@ -137,15 +148,14 @@ public class SQLCommandAI implements SQLControlCommandHandler {
 
         if (script == null) {
             if (!messages.isEmpty()) {
-                scriptContext.getOutputWriter().println(AI_OUTPUT_SEVERITY, prompt + " ==>\n\n" + messages + "\n");
-                return SQLControlResult.success();
+                throw new DBCMessageException(messages.toString());
             }
-            throw new DBException("Empty AI response for '" + prompt + "'");
+            throw new DBCMessageException("Empty AI response for '" + prompt + "'");
         }
 
         SQLDialect dialect = SQLUtils.getDialectFromObject(dataSource);
         if (!script.contains("\n") && SQLUtils.isCommentLine(dialect, script)) {
-            throw new DBException(script);
+            throw new DBCMessageException(script);
         }
 
         List<SQLScriptElement> scriptElements = SQLScriptParser.parseScript(dataSource, script);
@@ -161,7 +171,7 @@ public class SQLCommandAI implements SQLControlCommandHandler {
         scriptContext.getOutputWriter().println(AI_OUTPUT_SEVERITY, prompt + " ==> " + script + "\n");
 
         if (scriptElements.size() == 1) {
-            return SQLControlResult.transform(new SQLQuery(dataSource, script));
+            return SQLControlResult.transform(scriptElements.getFirst());
         } else {
             return SQLControlResult.transform(new SQLScript(dataSource, script, scriptElements));
         }

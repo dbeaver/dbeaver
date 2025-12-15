@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -74,7 +74,7 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor implements 
     private DBPDataSourceProvider instance;
     private DBXTreeDescriptor treeDescriptor;
     private final Map<String, DBXTreeNode> treeNodeMap = new HashMap<>();
-    private boolean driversManagable;
+    private boolean driversManageable;
     private boolean supportsDriverMigration;
     private final List<DBPPropertyDescriptor> driverProperties = new ArrayList<>();
     private final List<DriverDescriptor> drivers = new ArrayList<>();
@@ -166,8 +166,8 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor implements 
         // Load supplied drivers
         {
             for (IConfigurationElement driversElement : config.getChildren(RegistryConstants.TAG_DRIVERS)) {
-                this.driversManagable = driversElement.getAttribute(RegistryConstants.ATTR_MANAGABLE) == null ||
-                    CommonUtils.getBoolean(driversElement.getAttribute(RegistryConstants.ATTR_MANAGABLE));
+                this.driversManageable = driversElement.getAttribute(RegistryConstants.ATTR_MANAGEABLE) == null ||
+                    CommonUtils.getBoolean(driversElement.getAttribute(RegistryConstants.ATTR_MANAGEABLE));
                 for (IConfigurationElement driverElement : driversElement.getChildren(RegistryConstants.TAG_DRIVER)) {
                     try {
                         this.drivers.add(loadDriver(driverElement));
@@ -336,8 +336,8 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor implements 
     //////////////////////////////////////
     // Drivers
 
-    public boolean isDriversManagable() {
-        return driversManagable;
+    public boolean isDriversManageable() {
+        return driversManageable;
     }
 
     public boolean supportsDriverMigration() {
@@ -475,7 +475,7 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor implements 
     private void initProviderBundle(DriverDescriptor driver) {
     }
 
-    private DBXTreeDescriptor loadTreeInfo(IConfigurationElement config) {
+    private DBXTreeDescriptor loadTreeInfo(@NotNull IConfigurationElement config) {
         DBXTreeDescriptor treeRoot = new DBXTreeDescriptor(
             this,
             null,

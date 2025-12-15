@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -646,7 +646,7 @@ public class EditForeignKeyPage extends BaseObjectEditPage {
             schemaCombo.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
 
             DBNDatabaseNode selectedNode = null;
-            for (DBNNode node : schemaContainerNode.getChildren(new VoidProgressMonitor())) {
+            for (DBNNode node : ArrayUtils.safeArray(schemaContainerNode.getChildren(new VoidProgressMonitor()))) {
                 if (node instanceof DBNDatabaseNode dbNode && dbNode.getObject() instanceof DBSObjectContainer) {
                     schemaCombo.addItem(dbNode);
                     if (dbNode.getObject() == foreignKey.getParentObject().getParentObject()) {
@@ -691,7 +691,7 @@ public class EditForeignKeyPage extends BaseObjectEditPage {
         } else {
             try {
                 boolean found = false;
-                for (DBNNode child : schemaNode.getChildren(new VoidProgressMonitor())) {
+                for (DBNNode child : ArrayUtils.safeArray(schemaNode.getChildren(new VoidProgressMonitor()))) {
                     if (child instanceof DBNDatabaseFolder dbNode) {
                         for (DBXTreeNode childItem : dbNode.getMeta().getChildren(child)) {
                             if (childItem instanceof DBXTreeItem dbxItem) {
@@ -898,7 +898,7 @@ public class EditForeignKeyPage extends BaseObjectEditPage {
             } else {
                 uniqueKeyCombo.select(0);
                 //uniqueKeyCombo.setEnabled(curConstraints.size() > 1);
-                curConstraint = curConstraints.get(0);
+                curConstraint = curConstraints.getFirst();
             }
             if (enableCustomKeys) {
                 enableCurConstraintEdit();
