@@ -50,13 +50,23 @@ public class ERDContentProviderDefault implements ERDContentProvider {
     }
 
     @Override
-    public void fillEntityFromObject(@NotNull DBRProgressMonitor monitor, @NotNull ERDDiagram diagram,
-                                     @NotNull List<ERDEntity> otherEntities, @NotNull ERDEntity erdEntity) throws DBCException {
+    public void fillEntityFromObject(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull ERDDiagram diagram,
+        @NotNull List<ERDEntity> otherEntities,
+        @NotNull ERDEntity erdEntity
+    ) throws DBCException {
         fillEntityFromObject(monitor, diagram, otherEntities, erdEntity, new ERDAttributeSettings(ERDAttributeVisibility.ALL, false));
     }
 
     @Override
-    public void fillEntityFromObject(@NotNull DBRProgressMonitor monitor, @NotNull ERDDiagram diagram, @NotNull List<ERDEntity> otherEntities, @NotNull ERDEntity erdEntity, @NotNull ERDAttributeSettings settings) {
+    public void fillEntityFromObject(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull ERDDiagram diagram,
+        @NotNull List<ERDEntity> otherEntities,
+        @NotNull ERDEntity erdEntity,
+        @NotNull ERDAttributeSettings settings
+    ) {
         DBSEntity entity = erdEntity.getObject();
         if (READ_LAZY_DESCRIPTIONS && entity instanceof DBPObjectWithLazyDescription) {
             try {
@@ -66,22 +76,7 @@ public class ERDContentProviderDefault implements ERDContentProvider {
             }
         }
         if (settings.getVisibility() != ERDAttributeVisibility.NONE) {
-            Set<DBSEntityAttribute> keyColumns = new HashSet<>();
-            try {
-                for (DBSEntityAssociation assoc : DBVUtils.getAllAssociations(monitor, entity)) {
-                    if (assoc instanceof DBSEntityReferrer) {
-                        keyColumns.addAll(DBUtils.getEntityAttributes(monitor, (DBSEntityReferrer) assoc));
-                    }
-                }
-                for (DBSEntityConstraint constraint : DBVUtils.getAllConstraints(monitor, entity)) {
-                    if (constraint instanceof DBSEntityReferrer) {
-                        keyColumns.addAll(DBUtils.getEntityAttributes(monitor, (DBSEntityReferrer) constraint));
-                    }
-                }
-            } catch (DBException e) {
-                log.warn(e);
-            }
-
+            Set<DBSEntityAttribute> keyColumns = getAllKeys(monitor, entity);
             Collection<? extends DBSEntityAttribute> idColumns = null;
             try {
                 idColumns = ERDUtils.getBestTableIdentifier(monitor, entity);
@@ -95,10 +90,9 @@ public class ERDContentProviderDefault implements ERDContentProvider {
                 if (CommonUtils.isEmpty(attributes)) {
                     return;
                 }
-                DBSEntityAttribute firstAttr = attributes.iterator().next();
+                DBSEntityAttribute firstAttr = attributes.getFirst();
                 DBSObjectFilter columnFilter = entity.getDataSource().getContainer().getObjectFilter(firstAttr.getClass(), entity, false);
-                for (int i = 0; i < attributes.size(); i++) {
-                    DBSEntityAttribute attribute = attributes.get(i);
+                for (DBSEntityAttribute attribute : attributes) {
                     boolean isInIdentifier = idColumns != null && idColumns.contains(attribute);
                     if (!isAttributeVisible(erdEntity, attribute)) {
                         // Show only visible attributes
@@ -169,12 +163,15 @@ public class ERDContentProviderDefault implements ERDContentProvider {
     }
 
     @Override
-    public ERDAssociation createAssociation(ERDContainer diagram,
-        DBSEntityAssociation association,
-        ERDEntity sourceEntity,
-        ERDEntityAttribute sourceAttribute,
-        ERDEntity targetEntity,
-        ERDEntityAttribute targetAttribute, boolean reflect) {
+    public ERDAssociation createAssociation(
+        ERDContainer diagram,
+        @NotNull DBSEntityAssociation association,
+        @NotNull ERDEntity sourceEntity,
+        @NotNull ERDEntityAttribute sourceAttribute,
+        @NotNull ERDEntity targetEntity,
+        @NotNull ERDEntityAttribute targetAttribute,
+        boolean reflect
+    ) {
         ERDAssociation erdAssociation = new ERDAssociation(association, sourceEntity, targetEntity, reflect);
         erdAssociation.addCondition(sourceAttribute, targetAttribute);
         return erdAssociation;
@@ -188,5 +185,24 @@ public class ERDContentProviderDefault implements ERDContentProvider {
     @Override
     public void setAttribute(String name, Object value) {
         attributes.put(name, value);
+    }
+
+    protected Set<DBSEntityAttribute> getAllKeys(@NotNull DBRProgressMonitor monitor, @NotNull DBSEntity entity){
+        Set<DBSEntityAttribute> keyColumns = new HashSet<>();
+        try {
+            for (DBSEntityAssociation assoc : DBVUtils.getAllAssociations(monitor, entity)) {
+                if (assoc instanceof DBSEntityReferrer) {
+                    keyColumns.addAll(DBUtils.getEntityAttributes(monitor, (DBSEntityReferrer) assoc));
+                }
+            }
+            for (DBSEntityConstraint constraint : DBVUtils.getAllConstraints(monitor, entity)) {
+                if (constraint instanceof DBSEntityReferrer) {
+                    keyColumns.addAll(DBUtils.getEntityAttributes(monitor, (DBSEntityReferrer) constraint));
+                }
+            }
+        } catch (DBException e) {
+            log.warn(e);
+        }
+        return keyColumns;
     }
 }

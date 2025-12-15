@@ -40,7 +40,6 @@ public class AIConstants {
     public static final String AI_CONFIRM_OTHER = "ai.confirmation.other";
     public static final String AI_JOIN_RULE = "ai.joinRule";
     public static final int DEFAULT_CONTEXT_WINDOW_SIZE = 16384;
-    public static final String AI_USE_STREAM_MODE = "ai.useStreamMode";
 
     public static final String AI_MODEL_PROPERTY = "model";
     public static final String AI_CONTEXT_SIZE_PROPERTY = "contextWindowSize";

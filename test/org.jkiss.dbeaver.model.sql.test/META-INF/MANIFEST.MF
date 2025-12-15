@@ -1,0 +1,14 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: DBeaver SQL Tests
+Bundle-SymbolicName: org.jkiss.dbeaver.model.sql.test
+Bundle-Version: 1.0.0.qualifier
+Bundle-Release-Date: 20251006
+Bundle-RequiredExecutionEnvironment: JavaSE-21
+Bundle-Vendor: DBeaver Corp
+Fragment-Host: org.jkiss.dbeaver.model
+Bundle-ActivationPolicy: lazy
+Require-Bundle: org.junit,
+ org.mockito.mockito-core,
+ org.jkiss.dbeaver.test.platform,
+ org.jkiss.dbeaver.model

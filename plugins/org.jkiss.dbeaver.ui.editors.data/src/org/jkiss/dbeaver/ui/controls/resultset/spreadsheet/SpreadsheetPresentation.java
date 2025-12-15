@@ -71,7 +71,6 @@ import org.jkiss.dbeaver.ui.controls.bool.BooleanStyleSet;
 import org.jkiss.dbeaver.ui.controls.lightgrid.*;
 import org.jkiss.dbeaver.ui.controls.resultset.*;
 import org.jkiss.dbeaver.ui.controls.resultset.IResultSetController.RowPlacement;
-import org.jkiss.dbeaver.ui.controls.resultset.handler.ResultSetHandlerMain;
 import org.jkiss.dbeaver.ui.controls.resultset.handler.ResultSetPropertyTester;
 import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
 import org.jkiss.dbeaver.ui.controls.resultset.panel.valueviewer.ValueViewerPanel;
@@ -965,7 +964,7 @@ public class SpreadsheetPresentation extends AbstractPresentation
     public void fillMenu(@NotNull IMenuManager menu) {
         menu.add(ActionUtils.makeCommandContribution(
             controller.getSite(),
-            ResultSetHandlerMain.CMD_TOGGLE_PANELS,
+            IResultSetCommands.CMD_TOGGLE_PANELS,
             CommandContributionItem.STYLE_CHECK));
     }
 

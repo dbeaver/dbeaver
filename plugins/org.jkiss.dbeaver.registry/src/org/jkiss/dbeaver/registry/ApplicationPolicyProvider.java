@@ -91,13 +91,18 @@ public class ApplicationPolicyProvider implements DBPPolicyProvider {
             return value;
         }
 
-        value = getRegistryPolicyValue(WinReg.HKEY_CURRENT_USER, property);
-        if (value != null) {
-            return value;
-        }
+        try {
+            value = getRegistryPolicyValue(WinReg.HKEY_CURRENT_USER, property);
+            if (value != null) {
+                return value;
+            }
 
-        value = getRegistryPolicyValue(WinReg.HKEY_LOCAL_MACHINE, property);
-        return value;
+            value = getRegistryPolicyValue(WinReg.HKEY_LOCAL_MACHINE, property);
+            return value;
+        } catch (Throwable e) {
+            log.error("Error reading Windows registry", e);
+            return null;
+        }
     }
 
     @Nullable

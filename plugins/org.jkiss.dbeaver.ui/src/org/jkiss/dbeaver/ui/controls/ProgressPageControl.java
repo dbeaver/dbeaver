@@ -42,6 +42,7 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.MultiPageEditorSite;
 import org.eclipse.ui.progress.UIJob;
 import org.eclipse.ui.texteditor.IWorkbenchActionDefinitionIds;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.ProxyProgressMonitor;
@@ -566,7 +567,7 @@ public class ProgressPageControl extends ConComposite implements ISearchContextP
         public DBRProgressMonitor overwriteMonitor(final DBRProgressMonitor monitor) {
             return new ProxyProgressMonitor(monitor) {
                 @Override
-                public void beginTask(final String name, int totalWork) {
+                public void beginTask(@NotNull final String name, int totalWork) {
                     super.beginTask(name, totalWork);
                     curStatus = name;
                     synchronized (tasksRunning) {
@@ -588,7 +589,7 @@ public class ProgressPageControl extends ConComposite implements ISearchContextP
                 }
 
                 @Override
-                public void subTask(String name) {
+                public void subTask(@NotNull String name) {
                     super.subTask(name);
                     curStatus = name;
                 }

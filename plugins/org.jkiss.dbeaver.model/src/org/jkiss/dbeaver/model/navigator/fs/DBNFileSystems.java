@@ -117,11 +117,22 @@ public class DBNFileSystems extends DBNNode implements DBNNodeWithCache, DBPHidd
     }
 
     public DBNFileSystemRoot getRootFolder(@NotNull DBRProgressMonitor monitor, @NotNull String id) throws DBException {
+        Throwable firstError = null;
         for (DBNFileSystem fsNode : ArrayUtils.safeArray(getChildren(monitor))) {
-            DBNFileSystemRoot rootFolder = fsNode.getChild(monitor, id);
-            if (rootFolder != null) {
-                return rootFolder;
+            try {
+                DBNFileSystemRoot rootFolder = fsNode.getChild(monitor, id);
+                if (rootFolder != null) {
+                    return rootFolder;
+                }
+            } catch (Throwable e) {
+                firstError = e;
             }
+        }
+        if (firstError != null) {
+            if (firstError instanceof DBException dbe) {
+                throw dbe;
+            }
+            throw new DBException("Error reading file system roots", firstError);
         }
         return null;
     }

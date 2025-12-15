@@ -28,13 +28,18 @@ import picocli.CommandLine;
 public abstract class AbstractTopLevelCommand implements Runnable, CommandLine.IExitCodeGenerator {
     private final Log log = Log.getLog(getClass());
 
+    public static final String HELP_OPTION = "--help";
+    public static final String NOSPASH_OPTION = "-nosplash";
+    public static final String DEBUG_LOGS_OPTION = "--debug-logs";
+    public static final String TRACE_LOGS_OPTION = "--trace-logs";
+
     @CommandLine.Option(names = {"-dump"},
         description = "Print instance thread dump.")
     private boolean dump;
 
 
     @CommandLine.Option(
-        names = {"-h", "-help", "--help"},
+        names = {"-h", "-help", HELP_OPTION},
         description = "Show this help message and exit.",
         usageHelp = true,
         scope = CommandLine.ScopeType.INHERIT
@@ -49,9 +54,18 @@ public abstract class AbstractTopLevelCommand implements Runnable, CommandLine.I
     )
     private boolean version;
 
-    @CommandLine.Option(names = {"-v", "--debug-logs"},
-        description = "Show verbose debug logs.")
+    @CommandLine.Option(names = {DEBUG_LOGS_OPTION},
+        description = "Enable debug logging.",
+        scope = CommandLine.ScopeType.INHERIT
+    )
     private boolean debugLogs;
+
+    @CommandLine.Option(names = {TRACE_LOGS_OPTION},
+        description = "Enable trace logging.",
+        scope = CommandLine.ScopeType.INHERIT,
+        hidden = true
+    )
+    private boolean traceLogs;
 
     @CommandLine.Mixin
     private EclipseOptions eclipseOptions;
@@ -79,8 +93,11 @@ public abstract class AbstractTopLevelCommand implements Runnable, CommandLine.I
 
     @Override
     public void run() {
-        if (debugLogs) {
+        if (debugLogs || traceLogs) {
             Log.setLogHandler(null);
+            if (traceLogs) {
+                Log.enableTraceLogs(true);
+            }
         }
         try {
             if (dump) {
