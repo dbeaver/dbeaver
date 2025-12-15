@@ -590,7 +590,9 @@ public class DBeaverLauncher {
         System.setProperty("eclipse.startTime", Long.toString(System.currentTimeMillis())); //$NON-NLS-1$
         commands = args;
         String[] passThruArgs = processCommandLine(args);
-
+        if (debug) {
+            System.out.println("Processed command line arguments: " + Arrays.toString(passThruArgs));
+        }
         if (!debug)
             // debug can be specified as system property as well
             debug = System.getProperty(PROP_DEBUG) != null;
@@ -645,7 +647,11 @@ public class DBeaverLauncher {
         //if (!checkConfigurationLocation(configurationLocation))
         //    return;
 
-        if (!hasAppParameters(passThruArgs)) {
+        boolean hasAppParams = hasAppParameters(passThruArgs);
+        if (debug) {
+            System.out.println("Has application parameters: " + hasAppParams);
+        }
+        if (!hasAppParams) {
             // splash handling is done here, because the default case needs to know
             // the location of the boot plugin we are going to use
             handleSplash(bootPath);
