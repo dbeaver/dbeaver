@@ -38,10 +38,7 @@ import org.eclipse.ui.internal.WorkbenchPlugin;
 import org.eclipse.ui.internal.ide.ChooseWorkspaceDialog;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.DBeaverPreferences;
-import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.LogOutputStream;
-import org.jkiss.dbeaver.ModelPreferences;
+import org.jkiss.dbeaver.*;
 import org.jkiss.dbeaver.core.DBeaverActivator;
 import org.jkiss.dbeaver.core.DesktopPlatform;
 import org.jkiss.dbeaver.core.DesktopUI;
@@ -354,7 +351,11 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
                 break;
             }
         }
-        args = DBeaverCommandLine.getInstance().preprocessCommandLine(args);
+        try {
+            args = DBeaverCommandLine.getInstance().preprocessCommandLine(args);
+        } catch (DBException e) {
+            log.error("Error preprocessing command line", e);
+        }
         return args;
     }
 

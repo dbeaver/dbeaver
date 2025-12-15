@@ -513,8 +513,9 @@ public class SQLCompletionProcessor implements IContentAssistProcessor {
             setUser(false);
         }
 
+        @NotNull
         @Override
-        protected IStatus run(DBRProgressMonitor monitor) {
+        protected IStatus run(@NotNull DBRProgressMonitor monitor) {
             try {
                 monitor.beginTask("Seeking for SQL completion proposals", 1);
                 try {
@@ -538,8 +539,9 @@ public class SQLCompletionProcessor implements IContentAssistProcessor {
             super("Analyzing query for proposals...");
             this.analyzer = analyzer;
         }
+        @NotNull
         @Override
-        protected IStatus run(DBRProgressMonitor monitor) {
+        protected IStatus run(@NotNull DBRProgressMonitor monitor) {
             try {
                 monitor.beginTask("Seeking for SQL completion proposals", 2);
                 monitor.worked(1);
