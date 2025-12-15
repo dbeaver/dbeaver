@@ -252,8 +252,11 @@ public class DBLTextDocumentServiceTest extends DBeaverUnitTest {
     @Test
     public void shouldReturnMultilineTokensData() throws ExecutionException, InterruptedException {
         String query = """
-            SELECT name FROM users
-            WHERE surname = 'Doe';
+            SELECT name
+            FROM
+                users
+            WHERE
+                surname = 'Doe';
             """;
         TextDocumentItem document = DocumentServiceTestUtils.createQueryDocument(query);
         service.didOpen(new DidOpenTextDocumentParams(document));
@@ -263,9 +266,9 @@ public class DBLTextDocumentServiceTest extends DBeaverUnitTest {
 
         Integer[] expectedData = {
             0, 0, 6, 0, 0,   // SELECT
-            0, 12, 4, 0, 0,  // FROM
-            1, 0, 5, 0, 0,   // WHERE
-            1, 16, 5, 1, 0   // 'Doe'
+            1, 0, 4, 0, 0,   // FROM
+            3, 0, 5, 0, 0,   // WHERE
+            4, 14, 5, 1, 0   // 'Doe'
         };
         Assert.assertArrayEquals(
             expectedData,

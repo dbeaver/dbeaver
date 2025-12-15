@@ -277,23 +277,4 @@ public class SQLIdentifierDetector extends TPWordDetector {
             return id;
         }
     }
-
-    @NotNull
-    public List<Pair<TPToken, Region>> extractAllIdentifiers(@NotNull IDocument document, @NotNull SQLRuleManager ruleManager) {
-        final TPRuleBasedScanner scanner = new TPRuleBasedScanner();
-        scanner.setRules(ruleManager.getAllRules());
-        scanner.setRange(document, 0, document.getLength());
-
-        List<Pair<TPToken, Region>> tokens = new ArrayList<>();
-
-        TPToken token = scanner.nextToken();
-        while (!token.isEOF()) {
-            if (token instanceof TPTokenAbstract && !token.isWhitespace()) {
-                tokens.add(new Pair<>(token, new Region(scanner.getTokenOffset(), scanner.getTokenLength())));
-            }
-            token = scanner.nextToken();
-        }
-
-        return tokens;
-    }
 }
