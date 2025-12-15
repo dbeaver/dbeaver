@@ -65,10 +65,12 @@ class DriverDownloadAutoPage extends DriverDownloadPage {
     public static final String NETWORK_TEST_URL = "https://repo1.maven.org";
 
     private DriverDependenciesTree depsTree;
+    private final boolean isExpanded;
 
-    DriverDownloadAutoPage() {
+    DriverDownloadAutoPage(boolean isExpanded) {
         super(UIConnectionMessages.dialog_driver_download_auto_page_auto_download, UIConnectionMessages.dialog_driver_download_auto_page_download_driver_files, null);
         setPageComplete(false);
+        this.isExpanded = isExpanded;
     }
 
     @Override
@@ -107,6 +109,7 @@ class DriverDownloadAutoPage extends DriverDownloadPage {
             GridDataFactory.fillDefaults().grab(true, true).indent(0, 10).create()
         );
         expander.setClient(details);
+        expander.setExpanded(isExpanded);
         return expander;
     }
 
