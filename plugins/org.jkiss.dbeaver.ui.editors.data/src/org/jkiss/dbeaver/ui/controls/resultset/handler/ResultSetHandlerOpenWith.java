@@ -168,8 +168,9 @@ public class ResultSetHandlerOpenWith extends AbstractHandler implements IElemen
                 setSystem(false);
             }
 
+            @NotNull
             @Override
-            protected IStatus run(DBRProgressMonitor monitor) {
+            protected IStatus run(@NotNull DBRProgressMonitor monitor) {
                 try {
                     Path tempDir = DBWorkbench.getPlatform().getTempFolder(monitor, "data-files");
                     Path tempFile = tempDir.resolve(new SimpleDateFormat(

@@ -28,8 +28,11 @@ import org.jkiss.dbeaver.model.qm.QMUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.*;
 import org.jkiss.dbeaver.model.sql.data.SQLQueryDataContainer;
+import org.jkiss.dbeaver.utils.DurationFormat;
+import org.jkiss.dbeaver.utils.DurationFormatter;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 
+import java.time.Duration;
 import java.util.List;
 
 /**
@@ -249,7 +252,6 @@ public class SQLScriptProcessor {
 
         // Execute statement
         try {
-            DBRProgressMonitor monitor = session.getProgressMonitor();
             log.debug(STAT_LOG_PREFIX + "Execute query\n" + sqlQuery.getText());
             boolean hasResultSet = statement.executeStatement();
 
@@ -322,7 +324,8 @@ public class SQLScriptProcessor {
             } catch (Throwable e) {
                 log.error("Error closing statement", e);
             }
-            log.debug(STAT_LOG_PREFIX + "Time: " + RuntimeUtils.formatExecutionTime(statistics.getExecuteTime()) +
+            String duration = DurationFormatter.format(Duration.ofMillis(statistics.getExecuteTime()), DurationFormat.MEDIUM);
+            log.debug(STAT_LOG_PREFIX + "Time: " + duration +
                 (statistics.getRowsFetched() >= 0 ? ", fetched " + statistics.getRowsFetched() + " row(s)" : "") +
                 (statistics.getRowsUpdated() >= 0 ? ", updated " + statistics.getRowsUpdated() + " row(s)" : ""));
 

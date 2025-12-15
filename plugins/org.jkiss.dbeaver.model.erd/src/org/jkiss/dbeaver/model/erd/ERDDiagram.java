@@ -62,6 +62,7 @@ public class ERDDiagram extends ERDObject<DBSObject> implements ERDContainer {
             return monitor;
         }
         return new BaseProgressMonitor() {
+            @NotNull
             @Override
             public IProgressMonitor getNestedMonitor() {
                 return super.getNestedMonitor();
