@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -259,8 +259,9 @@ public class VersionUpdateDialog extends Dialog {
             final PlatformInstaller installer = getPlatformInstaller();
             if (installer != null) {
                 final AbstractJob job = new AbstractJob("Downloading installation file") {
+                    @NotNull
                     @Override
-                    protected IStatus run(DBRProgressMonitor monitor) {
+                    protected IStatus run(@NotNull DBRProgressMonitor monitor) {
                         final ApplicationDescriptor app = ApplicationRegistry.getInstance().getApplication();
                         final Path folder;
                         final Path file;

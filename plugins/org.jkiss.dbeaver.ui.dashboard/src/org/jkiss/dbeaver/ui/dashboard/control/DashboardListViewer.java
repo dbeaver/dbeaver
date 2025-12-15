@@ -339,8 +339,9 @@ public class DashboardListViewer extends StructuredViewer implements DBPDataSour
             return;
         }
         new AbstractJob("Open connection for dashboard") {
+            @NotNull
             @Override
-            protected IStatus run(DBRProgressMonitor monitor) {
+            protected IStatus run(@NotNull DBRProgressMonitor monitor) {
                 DBSInstance instance = DBUtils.getObjectOwnerInstance(dataSource);
                 if (instance != null) {
                     try {

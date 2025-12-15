@@ -78,8 +78,9 @@ public class DataTransferJob extends AbstractJob {
         return totalStatistics;
     }
 
+    @NotNull
     @Override
-    protected IStatus run(DBRProgressMonitor jobMonitor) {
+    protected IStatus run(@NotNull DBRProgressMonitor jobMonitor) {
         final int pipeCount = settings.getDataPipes().size();
         final DBRProgressMonitor monitor = parentMonitor != null ? parentMonitor : jobMonitor;
         monitor.beginTask("Perform data transfer", pipeCount);
