@@ -437,15 +437,11 @@ public abstract class AttributesSelectorPage<T_OBJECT extends DBSObject, T_ATTRI
 
     @NotNull
     public List<T_ATTRIBUTE> getSelectedAttributes() {
-        List<T_ATTRIBUTE> tableColumns = new ArrayList<>();
-        Set<AttributeInfo<T_ATTRIBUTE>> orderedAttributes = new TreeSet<>(Comparator.comparingInt(o -> o.position));
-        orderedAttributes.addAll(attributes);
-        for (AttributeInfo<T_ATTRIBUTE> col : orderedAttributes) {
-            if (col.position >= 0) {
-                tableColumns.add(col.attribute);
-            }
-        }
-        return tableColumns;
+        return attributes.stream()
+            .filter(o -> o.position >= 0)
+            .sorted(Comparator.comparingInt(AttributeInfo::getPosition))
+            .map(AttributeInfo::getAttribute)
+            .toList();
     }
 
     protected void createContentsBeforeColumns(Composite panel)
@@ -462,7 +458,32 @@ public abstract class AttributesSelectorPage<T_OBJECT extends DBSObject, T_ATTRI
         return true;
     }
 
-    public void updateColumnSelection(@NotNull Predicate<T_ATTRIBUTE> predicate) {
+    public void setSelectedColumns(@NotNull Collection<? extends DBSAttributeBase> attributes) {
+        // Reset checked columns
+        for (TableItem item : columnsTable.getItems()) {
+            if (item.getChecked()) {
+                item.setChecked(false);
+                handleItemSelect(item, false);
+            }
+        }
+        // Check columns, in order
+        for (DBSAttributeBase attribute : attributes) {
+            setColumnSelected(attribute, true);
+        }
+    }
+
+    public void setColumnSelected(@NotNull DBSAttributeBase attribute, boolean selected) {
+        for (TableItem item : columnsTable.getItems()) {
+            if (item.getData() instanceof AttributeInfo<?> info && attribute.equals(info.attribute)) {
+                item.setChecked(selected);
+                handleItemSelect(item, false);
+                break;
+            }
+        }
+        updateToggleButton();
+    }
+
+    private void updateColumnSelection(@NotNull Predicate<T_ATTRIBUTE> predicate) {
         for (TableItem item : columnsTable.getItems()) {
             item.setChecked(false);
             if (item.getData() instanceof AttributeInfo<?> info) {
