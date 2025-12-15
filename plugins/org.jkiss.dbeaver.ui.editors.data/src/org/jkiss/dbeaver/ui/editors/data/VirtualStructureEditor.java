@@ -90,8 +90,9 @@ public class VirtualStructureEditor extends AbstractDatabaseObjectEditor<DBSEnti
     public RefreshResult refreshPart(Object source, boolean force) {
         new AbstractJob(DataEditorsMessages.virtual_structure_editor_abstract_job_load_entity) {
 
+            @NotNull
             @Override
-            protected IStatus run(DBRProgressMonitor monitor) {
+            protected IStatus run(@NotNull DBRProgressMonitor monitor) {
                 for (DBVEntityForeignKey fk : vEntity.getForeignKeys()) {
                     try {
                         fk.getRealReferenceConstraint(monitor);

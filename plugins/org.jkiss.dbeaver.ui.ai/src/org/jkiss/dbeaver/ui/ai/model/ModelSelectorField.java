@@ -99,8 +99,9 @@ public class ModelSelectorField {
 
     public void refreshModelListSilently(boolean refresh) {
         new AbstractJob("Refreshing model list silently") {
+            @NotNull
             @Override
-            protected IStatus run(DBRProgressMonitor monitor) {
+            protected IStatus run(@NotNull DBRProgressMonitor monitor) {
                 try {
                     refreshModelList(monitor, refresh);
                     return Status.OK_STATUS;
@@ -204,8 +205,9 @@ public class ModelSelectorField {
                 UIIcon.REFRESH,
                 SelectionListener.widgetSelectedAdapter((e) -> {
                     new AbstractJob("Refreshing model list") {
+                        @NotNull
                         @Override
-                        protected IStatus run(DBRProgressMonitor monitor) {
+                        protected IStatus run(@NotNull DBRProgressMonitor monitor) {
                             try {
                                 modelSelectorField.refreshModelList(monitor, true);
                                 return Status.OK_STATUS;
