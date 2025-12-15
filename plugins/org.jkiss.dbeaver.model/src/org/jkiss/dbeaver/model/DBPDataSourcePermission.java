@@ -23,8 +23,7 @@ import org.jkiss.dbeaver.model.messages.ModelMessages;
 /**
  * Data-source permissions
  */
-public enum DBPDataSourcePermission
-{
+public enum DBPDataSourcePermission {
     PERMISSION_EDIT_DATA("edit.data", ModelMessages.dbp_permission_edit_data_name, ModelMessages.dbp_permission_edit_data_description),
     PERMISSION_EDIT_METADATA("edit.meta", ModelMessages.dbp_permission_edit_metadata_name, ModelMessages.dbp_permission_edit_metadata_description),
     PERMISSION_EXECUTE_SCRIPTS("edit.execute", ModelMessages.dbp_permission_execute_scripts_name, ModelMessages.dbp_permission_execute_scripts_description),

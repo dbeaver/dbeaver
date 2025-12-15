@@ -30,6 +30,7 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.connection.DBPNativeClientLocation;
 import org.jkiss.dbeaver.model.connection.DBPNativeClientLocationManager;
@@ -124,8 +125,9 @@ public class ClientHomesSelector implements ISelectionProvider {
 
         AbstractJob hlJob = new AbstractJob("Find local client homes") {
 
+            @NotNull
             @Override
-            protected IStatus run(DBRProgressMonitor monitor) {
+            protected IStatus run(@NotNull DBRProgressMonitor monitor) {
                 for (DBPNativeClientLocation ncl : driver.getNativeClientLocations()) {
                     homes.put(ncl.getName(), ncl);
                 }
