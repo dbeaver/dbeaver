@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,8 @@
 package org.jkiss.dbeaver.model.runtime;
 
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -45,22 +47,25 @@ public class DefaultProgressMonitor implements DBRProgressMonitor {
             this.taskName = taskName;
             this.totalWork = totalWork;
         }
+
+        @Override
+        public String toString() {
+            return taskName + (subTask == null ? "" : " (" + subTask + ")");
+        }
     }
 
-    public DefaultProgressMonitor(IProgressMonitor nestedMonitor)
-    {
+    public DefaultProgressMonitor(@NotNull IProgressMonitor nestedMonitor) {
         this.nestedMonitor = nestedMonitor;
     }
 
     @Override
-    public IProgressMonitor getNestedMonitor()
-    {
+    @NotNull
+    public IProgressMonitor getNestedMonitor() {
         return nestedMonitor;
     }
 
     @Override
-    public void beginTask(String name, int totalWork)
-    {
+    public void beginTask(@NotNull String name, int totalWork) {
         ProgressState state = new ProgressState(name, totalWork);
         states.add(state);
 
@@ -68,18 +73,12 @@ public class DefaultProgressMonitor implements DBRProgressMonitor {
     }
 
     @Override
-    public void done()
-    {
-        if (states.isEmpty()) {
-            log.trace(new DBCException("Progress ended without start"));
-        } else {
-            states.remove(states.size() - 1);
-        }
+    public void done() {
         nestedMonitor.done();
 
         // Restore previous state
         if (!states.isEmpty()) {
-            ProgressState lastState = states.remove(states.size() - 1);
+            ProgressState lastState = states.removeLast();
             nestedMonitor.beginTask(lastState.taskName, lastState.totalWork);
             if (lastState.subTask != null) {
                 nestedMonitor.subTask(lastState.subTask);
@@ -87,41 +86,39 @@ public class DefaultProgressMonitor implements DBRProgressMonitor {
             if (lastState.progress > 0) {
                 nestedMonitor.worked(lastState.progress);
             }
+        } else {
+            log.trace(new DBCException("Progress ended without start"));
         }
     }
 
     @Override
-    public void subTask(String name)
-    {
+    public void subTask(@NotNull String name) {
         if (states.isEmpty()) {
             log.trace(new DBCException("Progress sub task without start"));
         } else {
-            states.get(states.size() - 1).subTask = name;
+            states.getLast().subTask = name;
         }
         nestedMonitor.subTask(name);
     }
 
     @Override
-    public void worked(int work)
-    {
+    public void worked(int work) {
         if (states.isEmpty()) {
             log.trace(new DBCException("Progress info without start"));
         } else {
-            states.get(states.size() - 1).progress += work;
+            states.getLast().progress += work;
         }
         nestedMonitor.worked(work);
     }
 
     @Override
-    public boolean isCanceled()
-    {
+    public boolean isCanceled() {
         return nestedMonitor.isCanceled() ||
             DBWorkbench.getPlatform().isShuttingDown(); // All monitors are canceled if workbench is shutting down
     }
 
     @Override
-    public synchronized void startBlock(DBRBlockingObject object, String taskName)
-    {
+    public synchronized void startBlock(@NotNull DBRBlockingObject object, @Nullable String taskName) {
         if (taskName != null) {
             subTask(taskName);
         }
@@ -132,8 +129,7 @@ public class DefaultProgressMonitor implements DBRProgressMonitor {
     }
 
     @Override
-    public synchronized void endBlock()
-    {
+    public synchronized void endBlock() {
         if (blocks == null || blocks.isEmpty()) {
             log.warn("End block invoked while no blocking objects are in stack"); //$NON-NLS-1$
             return;
@@ -141,12 +137,12 @@ public class DefaultProgressMonitor implements DBRProgressMonitor {
         //if (blocks.size() == 1) {
         //    this.done();
         //}
-        blocks.remove(blocks.size() - 1);
+        blocks.removeLast();
     }
 
     @Override
-    public synchronized List<DBRBlockingObject> getActiveBlocks()
-    {
+    @Nullable
+    public synchronized List<DBRBlockingObject> getActiveBlocks() {
         return blocks == null || blocks.isEmpty() ? null : new ArrayList<>(blocks);
     }
 

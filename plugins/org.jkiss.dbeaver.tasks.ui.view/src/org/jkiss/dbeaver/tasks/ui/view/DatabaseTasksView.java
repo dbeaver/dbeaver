@@ -439,8 +439,9 @@ public class DatabaseTasksView extends ViewPart implements DBTTaskListener {
             return;
         }
         new AbstractJob("Refresh task runs") {
+            @NotNull
             @Override
-            protected IStatus run(DBRProgressMonitor monitor) {
+            protected IStatus run(@NotNull DBRProgressMonitor monitor) {
                 monitor.beginTask("Refresh task runs", IProgressMonitor.UNKNOWN);
                 try {
                     selectedTask.refreshRunStatistics();
