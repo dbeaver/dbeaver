@@ -110,8 +110,9 @@ public class DesktopUI extends ConsoleUserInterface {
     // This method is called during startup thru @ComponentReference in workbench
     public void initialize() {
         new AbstractJob("Workbench listener") {
+            @NotNull
             @Override
-            protected IStatus run(DBRProgressMonitor monitor) {
+            protected IStatus run(@NotNull DBRProgressMonitor monitor) {
                 if (PlatformUI.isWorkbenchRunning() && !PlatformUI.getWorkbench().isStarting()) {
                     UIUtils.asyncExec(() -> contextListener = WorkbenchContextListener.registerInWorkbench());
                 } else {
@@ -540,8 +541,9 @@ public class DesktopUI extends ConsoleUserInterface {
         @NotNull DBRRunnableWithResult<Future<T>> runnable
     ) {
         final AbstractJob job = new AbstractJob(operationDescription) {
+            @NotNull
             @Override
-            protected IStatus run(DBRProgressMonitor monitor) {
+            protected IStatus run(@NotNull DBRProgressMonitor monitor) {
                 monitor.beginTask(operationDescription, IProgressMonitor.UNKNOWN);
                 try {
                     UIExecutionQueue.blockQueue();
@@ -649,12 +651,12 @@ public class DesktopUI extends ConsoleUserInterface {
 
     @NotNull
     @Override
-    public <RESULT> Job createLoadingService(ILoadService<RESULT> loadingService, ILoadVisualizer<RESULT> visualizer) {
+    public <RESULT> Job createLoadingService(@NotNull ILoadService<RESULT> loadingService, @NotNull ILoadVisualizer<RESULT> visualizer) {
         return LoadingJob.createService(loadingService, visualizer);
     }
 
     @Override
-    public void copyTextToClipboard(String text, boolean htmlFormat) {
+    public void copyTextToClipboard(@NotNull String text, boolean htmlFormat) {
         if (CommonUtils.isEmpty(text)) {
             return;
         }
@@ -676,7 +678,7 @@ public class DesktopUI extends ConsoleUserInterface {
     }
 
     @Override
-    public void executeShellProgram(String shellCommand) {
+    public void executeShellProgram(@NotNull String shellCommand) {
         UIUtils.asyncExec(() -> ShellUtils.launchProgram(shellCommand));
     }
 

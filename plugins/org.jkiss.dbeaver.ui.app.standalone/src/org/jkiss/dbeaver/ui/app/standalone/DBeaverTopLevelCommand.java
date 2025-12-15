@@ -41,7 +41,11 @@ public class DBeaverTopLevelCommand extends AbstractTopLevelCommand {
     private static final Log log = Log.getLog(DBeaverTopLevelCommand.class);
 
     // Eclipse cmd for desktop
-    @CommandLine.Option(names = {"-nosplash"}, description = "Hide splash screen on start")
+    @CommandLine.Option(
+        names = {NOSPASH_OPTION},
+        description = "Hide splash screen on start",
+        scope = CommandLine.ScopeType.INHERIT
+    )
     private boolean noSplash;
 
     @CommandLine.Option(names = {"-vars", "-variablesFile"}, description = "Uses a specified configuration file for variable resolving")

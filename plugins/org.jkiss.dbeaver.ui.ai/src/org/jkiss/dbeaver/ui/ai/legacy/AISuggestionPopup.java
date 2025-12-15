@@ -139,8 +139,9 @@ public class AISuggestionPopup extends AbstractPopupPanel {
 
         historyCombo.setEnabled(false);
         AbstractJob completionJob = new AbstractJob("Read completion history") {
+            @NotNull
             @Override
-            protected IStatus run(DBRProgressMonitor monitor) {
+            protected IStatus run(@NotNull DBRProgressMonitor monitor) {
                 List<QMTranslationHistoryItem> queries = InMemoryHistoryManager.readTranslationHistory(dataSource);
                 UIUtils.syncExec(() -> {
                     if (!CommonUtils.isEmpty(queries)) {

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -97,6 +97,7 @@ public class DamengExecutionContext extends JDBCExecutionContext implements DBCE
         return true;
     }
 
+    @NotNull
     @Override
     public DamengDataSource getDataSource() {
         return (DamengDataSource) super.getDataSource();
