@@ -260,8 +260,9 @@ public final class RuntimeUtils {
                 setUser(!hidden);
             }
 
+            @NotNull
             @Override
-            protected IStatus run(DBRProgressMonitor monitor) {
+            protected IStatus run(@NotNull DBRProgressMonitor monitor) {
                 monitor.beginTask(getName(), 1);
                 try {
                     monitor.subTask("Execute task");
@@ -633,8 +634,9 @@ public final class RuntimeUtils {
                     setUser(false);
                 }
 
+                @NotNull
                 @Override
-                protected IStatus run(DBRProgressMonitor monitor) {
+                protected IStatus run(@NotNull DBRProgressMonitor monitor) {
                     if (!monitor.isCanceled()) {
                         try {
                             task.run(monitor, object);

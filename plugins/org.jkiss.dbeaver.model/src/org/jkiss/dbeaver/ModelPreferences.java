@@ -20,6 +20,8 @@ package org.jkiss.dbeaver;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
+import org.jkiss.dbeaver.model.data.order.OrderingPolicy;
+import org.jkiss.dbeaver.model.data.order.OrderingStrategy;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.impl.preferences.BundlePreferenceStore;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
@@ -227,6 +229,8 @@ public final class ModelPreferences
     public static final String RESULT_SET_BINARY_STRING_MAX_LEN = "resultset.binary.stringMaxLength"; //$NON-NLS-1$
     // This will ignore label in result set metadata and will use names always (some buggy drivers return description or other crap in labels - #1952)
     public static final String RESULT_SET_IGNORE_COLUMN_LABEL = "resultset.column.label.ignore"; //$NON-NLS-1$
+    public static final String RESULT_SET_ORDERING_POLICY = "resultset.order.policy"; //$NON-NLS-1$
+    public static final String RESULT_SET_ORDERING_STRATEGY = "resultset.order.mode"; //$NON-NLS-1$
 
     public static final String RESULT_SET_REREAD_ON_SCROLLING = "resultset.reread.on.scroll"; //$NON-NLS-1$
     public static final String RESULT_SET_MAX_ROWS = "resultset.maxrows"; //$NON-NLS-1$
@@ -361,6 +365,8 @@ public final class ModelPreferences
         PrefUtils.setDefaultPreferenceValue(store, RESULT_SET_BINARY_STRING_MAX_LEN, 32);
         PrefUtils.setDefaultPreferenceValue(store, RESULT_SET_USE_FETCH_SIZE, false);
         PrefUtils.setDefaultPreferenceValue(store, RESULT_SET_IGNORE_COLUMN_LABEL, false);
+        PrefUtils.setDefaultPreferenceValue(store, RESULT_SET_ORDERING_POLICY, OrderingPolicy.DEFAULT);
+        PrefUtils.setDefaultPreferenceValue(store, RESULT_SET_ORDERING_STRATEGY, OrderingStrategy.SMART);
 
         // QM
         PrefUtils.setDefaultPreferenceValue(store, QMConstants.PROP_HISTORY_DAYS, 90);
