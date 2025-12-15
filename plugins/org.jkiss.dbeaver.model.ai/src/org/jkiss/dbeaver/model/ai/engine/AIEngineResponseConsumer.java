@@ -27,5 +27,7 @@ public interface AIEngineResponseConsumer {
 
     void error(@NotNull Throwable throwable);
 
-    void close();
+    void completeBlock();
+
+    void warning(@NotNull String message);
 }
