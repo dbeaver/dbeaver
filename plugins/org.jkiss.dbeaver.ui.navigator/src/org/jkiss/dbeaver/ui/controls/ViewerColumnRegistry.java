@@ -124,8 +124,9 @@ class ViewerColumnRegistry {
             super("Columns configuration save");
         }
 
+        @NotNull
         @Override
-        protected IStatus run(DBRProgressMonitor monitor) {
+        protected IStatus run(@NotNull DBRProgressMonitor monitor) {
             synchronized (columnsConfig) {
                 //log.debug("Save column config " + System.currentTimeMillis());
                 flushConfig();
