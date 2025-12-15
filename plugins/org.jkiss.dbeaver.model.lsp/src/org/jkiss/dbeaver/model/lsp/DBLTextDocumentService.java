@@ -43,7 +43,6 @@ import org.jkiss.dbeaver.model.sql.completion.SQLCompletionContext;
 import org.jkiss.dbeaver.model.sql.format.SQLFormatter;
 import org.jkiss.dbeaver.model.sql.format.SQLFormatterConfiguration;
 import org.jkiss.dbeaver.model.sql.format.tokenized.SQLFormatterTokenized;
-import org.jkiss.dbeaver.model.sql.parser.SQLIdentifierDetector;
 import org.jkiss.dbeaver.model.sql.parser.SQLRuleManager;
 import org.jkiss.dbeaver.model.sql.parser.tokens.SQLTokenType;
 import org.jkiss.dbeaver.model.text.parser.TPToken;
@@ -256,30 +255,42 @@ public class DBLTextDocumentService implements TextDocumentService, LanguageClie
             return new SemanticTokens();
         }
 
-        SQLIdentifierDetector detector = new SQLIdentifierDetector(document.getSyntaxManager().getDialect());
-        List<Pair<TPToken, Region>> tokens = detector.extractAllIdentifiers(
+        LspSQLIndentifierDetector detector = new LspSQLIndentifierDetector(document.getSyntaxManager().getDialect());
+        List<Pair<TPToken, Region>> tokens = detector.extractAllTokens(
             new Document(document.getText()),
             document.getRuleManager()
         );
 
         List<Integer> data = new ArrayList<>();
         int lineOffset = 0;
+        int charOffset = 0;
         for (Pair<TPToken, Region> pair : tokens) {
+            SQLTokenType sqlTokenType;
             Region region = pair.getSecond();
-            SQLTokenType tokenType = pair.getFirst() instanceof TPTokenDefault tpTokenDefault
-                ? (SQLTokenType) tpTokenDefault.getData() : SQLTokenType.T_OTHER;
-            Pair<Integer, String> tokenDefinition = SUPPORTED_TOKEN_TYPES.get(tokenType);
-            if (tokenDefinition == null) {
+            TPToken tpToken = pair.getFirst();
+            if (tpToken.isNewline()) {
+                lineOffset++;
+                charOffset = 0;
+                continue;
+            } else if (tpToken instanceof TPTokenDefault tpTokenDefault) {
+                sqlTokenType = (SQLTokenType) tpTokenDefault.getData();
+            } else {
+                sqlTokenType = SQLTokenType.T_OTHER;
+            }
+            Pair<Integer, String> tokenDefinition = SUPPORTED_TOKEN_TYPES.get(sqlTokenType);
+            if (tokenDefinition == null || tokenDefinition.getFirst() == null) {
+                charOffset += region.getLength();
                 continue;
             }
-            Integer tokenId = tokenDefinition.getFirst();
 
             // This is a chunk of token data describing one token
-            data.add(lineOffset); // FIXME: How to support multi-line api if internals are single-line-based?
-            data.add(region.getOffset());
+            data.add(lineOffset);
+            data.add(charOffset);
             data.add(region.getLength());
-            data.add(tokenId);
-            data.add(0); // FIXME: Only "declaration" modifier is supported now. Update if more modifiers are added.
+            data.add(tokenDefinition.getFirst());
+            data.add(0); // Only "declaration" modifier is supported now. Update if more modifiers are added.
+
+            charOffset += region.getLength();
         }
 
         return new SemanticTokens(data);

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,10 +30,7 @@ import org.jkiss.dbeaver.model.sql.parser.tokens.*;
 import org.jkiss.dbeaver.model.sql.registry.SQLCommandHandlerDescriptor;
 import org.jkiss.dbeaver.model.sql.registry.SQLCommandsRegistry;
 import org.jkiss.dbeaver.model.text.parser.*;
-import org.jkiss.dbeaver.model.text.parser.rules.EndOfLineRule;
-import org.jkiss.dbeaver.model.text.parser.rules.MultiLineRule;
-import org.jkiss.dbeaver.model.text.parser.rules.NumberRule;
-import org.jkiss.dbeaver.model.text.parser.rules.WhitespaceRule;
+import org.jkiss.dbeaver.model.text.parser.rules.*;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
@@ -211,6 +208,8 @@ public class SQLRuleManager {
         }
 
         if (!minimalRules) {
+            rules.add(new NewLineRule(TPTokenAbstract.NEWLINE)); // TODO: Check if having this rule before whitespace might break anything
+
             // Add generic whitespace rule.
             rules.add(new WhitespaceRule(TPTokenAbstract.WHITESPACE));
 
