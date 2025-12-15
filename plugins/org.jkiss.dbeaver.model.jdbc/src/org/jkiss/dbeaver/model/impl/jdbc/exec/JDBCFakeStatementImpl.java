@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.model.impl.jdbc.exec;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
@@ -28,14 +29,14 @@ import java.sql.SQLException;
  * ResultSet container.
  * May be used as "fake" statement to wrap result sets returned by connection metadata or something.
  */
-class JDBCFakeStatementImpl extends JDBCPreparedStatementImpl<PreparedStatement> {
+public class JDBCFakeStatementImpl extends JDBCPreparedStatementImpl<PreparedStatement> {
 
     private JDBCResultSetImpl resultSet;
     private boolean closed;
 
-    JDBCFakeStatementImpl(
+    public JDBCFakeStatementImpl(
         @NotNull JDBCSession connection,
-        String queryText,
+        @Nullable String queryText,
         boolean disableLogging
     ) throws SQLException {
         super(connection, () -> JDBCVoidStatementImpl.INSTANCE, queryText, disableLogging);
