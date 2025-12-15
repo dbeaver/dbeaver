@@ -34,7 +34,7 @@ public class ContextAwareDocument extends TextDocumentItem {
     @NotNull
     private SQLSyntaxManager syntaxManager;
     @NotNull
-    private SQLRuleManager ruleManager;
+    private LspSQLRuleManager ruleManager;
 
     public ContextAwareDocument(
         @NotNull final String uri,
@@ -51,7 +51,7 @@ public class ContextAwareDocument extends TextDocumentItem {
         return ruleManager;
     }
 
-    public void setRuleManager(@NotNull SQLRuleManager ruleManager) {
+    public void setRuleManager(@NotNull LspSQLRuleManager ruleManager) {
         this.ruleManager = ruleManager;
     }
 
@@ -97,7 +97,7 @@ public class ContextAwareDocument extends TextDocumentItem {
         syntaxManager = new SQLSyntaxManager();
         syntaxManager.init(BasicSQLDialect.INSTANCE, DBWorkbench.getPlatform().getPreferenceStore());
 
-        ruleManager = new SQLRuleManager(syntaxManager);
+        ruleManager = new LspSQLRuleManager(syntaxManager);
         ruleManager.loadRules(dataSource, false);
     }
 

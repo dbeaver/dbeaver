@@ -37,13 +37,13 @@ import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
 import org.jkiss.dbeaver.model.lsp.context.ContextAwareDocument;
 import org.jkiss.dbeaver.model.lsp.context.LspSQLCompletionContext;
 import org.jkiss.dbeaver.model.lsp.context.LspSQLCompletionContextParser;
+import org.jkiss.dbeaver.model.lsp.context.LspSQLRuleManager;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLSyntaxManager;
 import org.jkiss.dbeaver.model.sql.completion.SQLCompletionContext;
 import org.jkiss.dbeaver.model.sql.format.SQLFormatter;
 import org.jkiss.dbeaver.model.sql.format.SQLFormatterConfiguration;
 import org.jkiss.dbeaver.model.sql.format.tokenized.SQLFormatterTokenized;
-import org.jkiss.dbeaver.model.sql.parser.SQLRuleManager;
 import org.jkiss.dbeaver.model.sql.parser.tokens.SQLTokenType;
 import org.jkiss.dbeaver.model.text.parser.TPToken;
 import org.jkiss.dbeaver.model.text.parser.TPTokenDefault;
@@ -150,7 +150,7 @@ public class DBLTextDocumentService implements TextDocumentService, LanguageClie
         SQLSyntaxManager syntaxManager = resolveSyntaxManager(dataSource);
         document.setSyntaxManager(syntaxManager);
 
-        SQLRuleManager ruleManager = new SQLRuleManager(syntaxManager);
+        LspSQLRuleManager ruleManager = new LspSQLRuleManager(syntaxManager);
         ruleManager.loadRules(dataSource, false);
         document.setRuleManager(ruleManager);
 
