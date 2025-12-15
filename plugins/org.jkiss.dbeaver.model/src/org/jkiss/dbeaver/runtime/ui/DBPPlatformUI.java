@@ -174,12 +174,12 @@ public interface DBPPlatformUI {
 
     @NotNull
     <RESULT> Job createLoadingService(
-        ILoadService<RESULT> loadingService,
-        ILoadVisualizer<RESULT> visualizer);
+        @NotNull ILoadService<RESULT> loadingService,
+        @NotNull ILoadVisualizer<RESULT> visualizer);
 
-    void copyTextToClipboard(String text, boolean htmlFormat);
+    void copyTextToClipboard(@NotNull String text, boolean htmlFormat);
 
-    void executeShellProgram(String shellCommand);
+    void executeShellProgram(@NotNull String shellCommand);
 
     void showInSystemExplorer(@NotNull String path);
 

@@ -42,7 +42,7 @@ import java.util.Map;
  */
 public class JDBCResultSetCallable extends LocalResultSet<JDBCCallableStatement> implements JDBCResultSet {
 
-    public JDBCResultSetCallable(JDBCSession session, JDBCCallableStatementImpl statement)
+    public JDBCResultSetCallable(@NotNull JDBCSession session, @NotNull JDBCCallableStatementImpl statement)
     {
         super(session, statement);
     }

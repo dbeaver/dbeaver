@@ -24,6 +24,7 @@ import org.eclipse.swt.custom.SashForm;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.cubrid.CubridConstants;
@@ -147,8 +148,9 @@ public class CubridInfoPanel extends ResultSetPanelBase {
         DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
         new AbstractJob("Read Statistic")
         {
+            @NotNull
             @Override
-            protected IStatus run(DBRProgressMonitor monitor) {
+            protected IStatus run(@NotNull DBRProgressMonitor monitor) {
 
                 UIUtils.syncExec(
                         () -> {

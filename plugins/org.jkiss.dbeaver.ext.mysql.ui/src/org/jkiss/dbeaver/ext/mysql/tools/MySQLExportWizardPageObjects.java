@@ -44,8 +44,8 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.CustomSashForm;
 import org.jkiss.utils.CommonUtils;
 
-import java.util.*;
 import java.util.List;
+import java.util.*;
 
 
 class MySQLExportWizardPageObjects extends MySQLWizardPageSettings<MySQLExportWizard>
@@ -244,8 +244,9 @@ class MySQLExportWizardPageObjects extends MySQLWizardPageSettings<MySQLExportWi
             {
                 setUser(true);
             }
+            @NotNull
             @Override
-            protected IStatus run(DBRProgressMonitor monitor) {
+            protected IStatus run(@NotNull DBRProgressMonitor monitor) {
                 try {
                     final List<MySQLTableBase> objects = new ArrayList<>();
                     objects.addAll(curCatalog.getTables(monitor));

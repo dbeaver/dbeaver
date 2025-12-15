@@ -165,14 +165,15 @@ public class CubridMetaModel extends GenericMetaModel implements DBCQueryTransfo
             throws SQLException, DBException {
         CubridTable table = (CubridTable) forTable;
         String sql = "select *, t1.index_name as PK_NAME from db_index t1 join db_index_key t2 \n"
-                + "on t1.index_name = t2.index_name where is_unique = 'YES' and t1.class_name = ? \n"
+                + "on t1.index_name = t2.index_name where is_unique = 'YES' and t1.class_name = ? and t2.class_name = ? \n"
                 + (table.getDataSource().getSupportMultiSchema() ? "and t1.owner_name = ? and t2.owner_name = ?" : "");
         sql = ((CubridDataSource) owner.getDataSource()).wrapShardQuery(sql);
         final JDBCPreparedStatement dbStat = session.prepareStatement(sql);
         dbStat.setString(1, table.getName());
+        dbStat.setString(2, table.getName());
         if (table.getDataSource().getSupportMultiSchema()) {
-            dbStat.setString(2, table.getSchema().getName());
             dbStat.setString(3, table.getSchema().getName());
+            dbStat.setString(4, table.getSchema().getName());
         }
         return dbStat;
     }

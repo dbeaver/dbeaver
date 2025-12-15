@@ -26,6 +26,7 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.internal.WorkbenchPlugin;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.rcp.DesktopApplicationImpl;
 import org.jkiss.dbeaver.model.runtime.BaseProgressMonitor;
@@ -210,7 +211,7 @@ class DBeaverSettingsImporter {
         final DBRProgressMonitor monitor = new BaseProgressMonitor() {
             long bytesProcessed = 0;
             @Override
-            public void subTask(final String name) {
+            public void subTask(@NotNull final String name) {
                 display.syncExec(() -> progressLabel.setText(name));
             }
             @Override
