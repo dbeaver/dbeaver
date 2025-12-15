@@ -42,6 +42,7 @@ import org.jkiss.dbeaver.model.dashboard.registry.DashboardItemConfiguration;
 import org.jkiss.dbeaver.model.dashboard.registry.DashboardProviderDescriptor;
 import org.jkiss.dbeaver.model.dashboard.registry.DashboardRegistry;
 import org.jkiss.dbeaver.model.dashboard.registry.DashboardRegistryListener;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dashboard.internal.UIDashboardMessages;
@@ -186,10 +187,12 @@ public abstract class DashboardCatalogPanel extends Composite implements Dashboa
 
 
         UIUtils.asyncExec(() -> UIUtils.packColumns(table, true, null));
-
-        // Add listeners
-        DashboardRegistry.getInstance().addListener(this);
-        addDisposeListener(e -> DashboardRegistry.getInstance().removeListener(this));
+        if (!DBWorkbench.isDistributed()) {
+            // Add listeners only in NON-DISTRIBUTED version
+            // For update in Distributed we use config sync mechanism
+            DashboardRegistry.getInstance().addListener(this);
+            addDisposeListener(e -> DashboardRegistry.getInstance().removeListener(this));
+        }
     }
 
     private static void addDragAndDropSupport(Tree table) {
@@ -261,11 +264,23 @@ public abstract class DashboardCatalogPanel extends Composite implements Dashboa
 
     @Override
     public void handleItemCreate(@NotNull DashboardItemConfiguration item) {
-        refreshInput();
+        createItem(item);
     }
 
     @Override
     public void handleItemDelete(@NotNull DashboardItemConfiguration item) {
-        refreshInput();
+        deleteItem(item);
+    }
+
+    private void createItem(DashboardItemConfiguration item) {
+        dashboardTable.remove(item.getDashboardProvider());
+        dashboardTable.refresh();
+        dashboardTable.expandToLevel(2);
+    }
+
+    private void deleteItem(DashboardItemConfiguration item) {
+        dashboardTable.add(item.getDashboardProvider());
+        dashboardTable.refresh();
+        dashboardTable.expandToLevel(2);
     }
 }
