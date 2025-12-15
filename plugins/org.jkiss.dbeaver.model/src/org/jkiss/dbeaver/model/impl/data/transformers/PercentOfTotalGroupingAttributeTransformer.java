@@ -28,6 +28,7 @@ import org.jkiss.dbeaver.model.data.DBDValueHandler;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.impl.data.ProxyValueHandler;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 
 import java.text.DecimalFormat;
@@ -42,13 +43,10 @@ public class PercentOfTotalGroupingAttributeTransformer implements DBDAttributeT
     public static final String TYPE_NAME = "percent";
     private static final Log log = Log.getLog(PercentOfTotalGroupingAttributeTransformer.class);
 
-    private final long total;
+    private final TotalRowCountProvider totalRowCountSupplier;
 
-    public PercentOfTotalGroupingAttributeTransformer(long total) {
-        if (total < 0) {
-            throw new IllegalArgumentException("Total must be non-negative, but got: " + total);
-        }
-        this.total = total;
+    public PercentOfTotalGroupingAttributeTransformer(@NotNull TotalRowCountProvider totalRowCountSupplier) {
+        this.totalRowCountSupplier = totalRowCountSupplier;
     }
 
     @Override
@@ -58,14 +56,21 @@ public class PercentOfTotalGroupingAttributeTransformer implements DBDAttributeT
         @NotNull List<Object[]> rows,
         @NotNull Map<String, Object> options
     ) throws DBException {
+        long totalRows = totalRowCountSupplier.getTotalRowCount(session.getProgressMonitor());
         attribute.setPresentationAttribute(new TransformerPresentationAttribute(attribute, TYPE_NAME, -1, DBPDataKind.NUMERIC));
-        attribute.setTransformHandler(new PercentOfTotalValueHandler(attribute.getValueHandler()));
+        attribute.setTransformHandler(new PercentOfTotalValueHandler(attribute.getValueHandler(), totalRows));
     }
 
     private class PercentOfTotalValueHandler extends ProxyValueHandler {
 
-        public PercentOfTotalValueHandler(DBDValueHandler target) {
+        private final long total;
+
+        public PercentOfTotalValueHandler(@NotNull DBDValueHandler target, long total) {
             super(target);
+            if (total < 0) {
+                throw new IllegalArgumentException("Total must be non-negative, but got: " + total);
+            }
+            this.total = total;
         }
 
         @Nullable
@@ -107,5 +112,10 @@ public class PercentOfTotalGroupingAttributeTransformer implements DBDAttributeT
             DecimalFormat df = new DecimalFormat("#.#####");
             return df.format(percent) + "%";
         }
+    }
+
+    @FunctionalInterface
+    public interface TotalRowCountProvider {
+        long getTotalRowCount(@NotNull DBRProgressMonitor monitor) throws DBException;
     }
 }
