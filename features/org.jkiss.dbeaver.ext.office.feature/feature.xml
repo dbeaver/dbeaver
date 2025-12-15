@@ -2,7 +2,7 @@
 <feature
       id="org.jkiss.dbeaver.ext.office.feature"
       label="DBeaver Office Support"
-      version="1.1.205.qualifier"
+      version="1.1.206.qualifier"
       provider-name="DBeaver Corp"
       plugin="org.jkiss.dbeaver.data.office">
 

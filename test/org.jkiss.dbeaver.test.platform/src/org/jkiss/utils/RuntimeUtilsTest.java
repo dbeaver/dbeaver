@@ -19,13 +19,10 @@ package org.jkiss.utils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.junit.DBeaverUnitTest;
 import org.junit.Assert;
-import org.junit.Assume;
 import org.junit.Test;
 
-import java.time.Duration;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.Locale;
 
 public class RuntimeUtilsTest extends DBeaverUnitTest {
 
@@ -44,39 +41,5 @@ public class RuntimeUtilsTest extends DBeaverUnitTest {
     public void testBackslashEscape() {
         Assert.assertEquals(Arrays.asList("ls", "-l", "/home/folder with spaces"), RuntimeUtils.splitCommandLine("ls -l /home/folder\\ with\\ spaces", true));
         Assert.assertEquals(Arrays.asList("ls", "-l", "/home/\"folder with quotes\""), RuntimeUtils.splitCommandLine("ls -l /home/\\\"folder\\ with\\ quotes\\\"", true));
-    }
-
-    @Test
-    public void testFormatExecutionTime() {
-        // NOTE: Depends on the localization!
-        Assume.assumeTrue(Locale.getDefault().equals(Locale.ENGLISH));
-
-        Assert.assertEquals("1h 0m 0s", RuntimeUtils.formatExecutionTime(Duration.ofHours(1)));
-        Assert.assertEquals("1h 1m 1s", RuntimeUtils.formatExecutionTime(Duration.ofHours(1).plusMinutes(1).plusSeconds(1)));
-        Assert.assertEquals("1h 1m 0s", RuntimeUtils.formatExecutionTime(Duration.ofHours(1).plusMinutes(1).plusMillis(500)));
-        Assert.assertEquals("11h 41m 9s", RuntimeUtils.formatExecutionTime(Duration.ofSeconds(42069)));
-        Assert.assertEquals("1s", RuntimeUtils.formatExecutionTime(Duration.ofSeconds(1)));
-        Assert.assertEquals("0.5s", RuntimeUtils.formatExecutionTime(Duration.ofMillis(500)));
-        Assert.assertEquals("0.025s", RuntimeUtils.formatExecutionTime(Duration.ofMillis(25)));
-        Assert.assertEquals("0.001s", RuntimeUtils.formatExecutionTime(Duration.ofMillis(1)));
-        Assert.assertEquals("10s", RuntimeUtils.formatExecutionTime(Duration.ofSeconds(10)));
-        Assert.assertEquals("1m 1s", RuntimeUtils.formatExecutionTime(Duration.ofMinutes(1).plusSeconds(1)));
-        Assert.assertEquals("1m 0s", RuntimeUtils.formatExecutionTime(Duration.ofMinutes(1)));
-    }
-
-    @Test
-    public void testFormatDuration() {
-        // NOTE: Depends on the localization!
-        Assume.assumeTrue(Locale.getDefault().equals(Locale.ENGLISH));
-
-        Assert.assertEquals("1 hour", RuntimeUtils.formatDuration(Duration.ofHours(1)));
-        Assert.assertEquals("1 hour, 1 minute, 1 second", RuntimeUtils.formatDuration(Duration.ofHours(1).plusMinutes(1).plusSeconds(1)));
-        Assert.assertEquals("1 hour, 1 minute", RuntimeUtils.formatDuration(Duration.ofHours(1).plusMinutes(1).plusMillis(500)));
-        Assert.assertEquals("11 hours, 41 minutes, 9 seconds", RuntimeUtils.formatDuration(Duration.ofSeconds(42069)));
-        Assert.assertEquals("1 second", RuntimeUtils.formatDuration(Duration.ofSeconds(1)));
-        Assert.assertEquals("500 milliseconds", RuntimeUtils.formatDuration(Duration.ofMillis(500)));
-        Assert.assertEquals("10 seconds", RuntimeUtils.formatDuration(Duration.ofSeconds(10)));
-        Assert.assertEquals("1 minute, 1 second", RuntimeUtils.formatDuration(Duration.ofMinutes(1).plusSeconds(1)));
-        Assert.assertEquals("1 minute", RuntimeUtils.formatDuration(Duration.ofMinutes(1)));
     }
 }

@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.runtime.jobs;
 
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSource;
@@ -90,8 +91,9 @@ public class ConnectionTestJob extends ConnectJob {
         this.ownerMonitor = ownerMonitor;
     }
 
+    @NotNull
     @Override
-    public IStatus run(DBRProgressMonitor monitor) {
+    public IStatus run(@NotNull DBRProgressMonitor monitor) {
         if (ownerMonitor != null) {
             monitor = ownerMonitor;
         }

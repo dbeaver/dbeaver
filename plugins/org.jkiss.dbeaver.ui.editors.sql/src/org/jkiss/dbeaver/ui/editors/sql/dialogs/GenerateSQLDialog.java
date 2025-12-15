@@ -29,6 +29,7 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.ui.IWorkbenchPartSite;
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSource;
@@ -117,8 +118,9 @@ public abstract class GenerateSQLDialog extends BaseSQLDialog {
         final String jobName = getShell().getText();
         final String[] scriptLines = generateSQLScript();
         DataSourceJob job = new DataSourceJob(jobName, executionContext) {
+            @NotNull
             @Override
-            protected IStatus run(DBRProgressMonitor monitor)
+            protected IStatus run(@NotNull DBRProgressMonitor monitor)
             {
                 try (DBCSession session = getExecutionContext().openSession(monitor, DBCExecutionPurpose.UTIL, jobName)) {
                     for (String line : scriptLines) {

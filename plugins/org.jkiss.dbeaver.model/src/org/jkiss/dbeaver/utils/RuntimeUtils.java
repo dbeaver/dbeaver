@@ -29,7 +29,6 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.connection.DBPNativeClientLocation;
-import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.meta.ComponentReference;
 import org.jkiss.dbeaver.model.runtime.*;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -46,9 +45,6 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.net.*;
 import java.nio.file.Path;
-import java.text.DecimalFormat;
-import java.text.Format;
-import java.text.MessageFormat;
 import java.text.SimpleDateFormat;
 import java.time.Duration;
 import java.util.*;
@@ -195,65 +191,24 @@ public final class RuntimeUtils {
         }
     }
 
+    /**
+     * @deprecated consider using {@link DurationFormatter#format(Duration, DurationFormat)} instead
+     */
     @NotNull
+    @Deprecated(since = "25.3.0")
     public static String formatExecutionTime(long ms) {
-        return formatExecutionTime(Duration.ofMillis(ms));
+        return DurationFormatter.format(Duration.ofMillis(ms), DurationFormat.MEDIUM);
     }
 
     @NotNull
-    public static String formatExecutionTime(@NotNull Duration duration) {
-        final long hours = duration.toHours();
-        final int minutes = duration.toMinutesPart();
-        final int seconds = duration.toSecondsPart();
-        final int millis = duration.toMillisPart();
-
-        if (hours > 0) {
-            return String.format("%dh %dm %ds", hours, minutes, seconds);
-        } else if (minutes > 0) {
-            return String.format("%dm %ds", minutes, seconds);
-        } else if (seconds >= 10) {
-            return String.format("%ds", seconds);
-        } else {
-            return Lazy.EXECUTION_SECONDS_FORMAT.format(seconds + millis * 0.001);
-        }
-    }
-
-    @NotNull
-    public static String formatDuration(@NotNull Duration duration) {
-        StringJoiner joiner = new StringJoiner(", ");
-
-        long hours = duration.toHours();
-        if (hours > 0) {
-            joiner.add(Lazy.DURATION_HOURS_FORMAT.format(new Object[]{hours}));
-        }
-
-        int minutes = duration.toMinutesPart();
-        if (minutes > 0) {
-            joiner.add(Lazy.DURATION_MINUTES_FORMAT.format(new Object[]{minutes}));
-        }
-
-        int seconds = duration.toSecondsPart();
-        if (seconds > 0) {
-            joiner.add(Lazy.DURATION_SECONDS_FORMAT.format(new Object[]{seconds}));
-        }
-
-        if (joiner.length() == 0) {
-            joiner.add(Lazy.DURATION_MILLISECONDS_FORMAT.format(new Object[]{duration.toMillis()}));
-        }
-
-        return joiner.toString();
-    }
-
-    @NotNull
-    public static File getPlatformFile(@NotNull String platformURL) throws IOException {
+    public static Path getPlatformFile(@NotNull String platformURL) throws IOException {
         URL url = new URL(platformURL);
         URL fileURL = FileLocator.toFileURL(url);
         return getLocalFileFromURL(fileURL);
-
     }
 
     @NotNull
-    public static File getLocalFileFromURL(@NotNull URL fileURL) throws IOException {
+    public static Path getLocalFileFromURL(@NotNull URL fileURL) throws IOException {
         // Escape spaces to avoid URI syntax error
         try {
             URI filePath = GeneralUtils.makeURIFromFilePath(fileURL.toString());
@@ -262,9 +217,9 @@ public final class RuntimeUtils {
                 see dbeaver#15117
              */
             if (filePath.getAuthority() != null) {
-                return new File(filePath.getSchemeSpecificPart());
+                return Path.of(filePath.getSchemeSpecificPart());
             }
-            return new File(filePath);
+            return Path.of(filePath);
         } catch (URISyntaxException e) {
             throw new IOException("Bad local file path: " + fileURL, e);
         }
@@ -305,8 +260,9 @@ public final class RuntimeUtils {
                 setUser(!hidden);
             }
 
+            @NotNull
             @Override
-            protected IStatus run(DBRProgressMonitor monitor) {
+            protected IStatus run(@NotNull DBRProgressMonitor monitor) {
                 monitor.beginTask(getName(), 1);
                 try {
                     monitor.subTask("Execute task");
@@ -678,8 +634,9 @@ public final class RuntimeUtils {
                     setUser(false);
                 }
 
+                @NotNull
                 @Override
-                protected IStatus run(DBRProgressMonitor monitor) {
+                protected IStatus run(@NotNull DBRProgressMonitor monitor) {
                     if (!monitor.isCanceled()) {
                         try {
                             task.run(monitor, object);
@@ -812,17 +769,6 @@ public final class RuntimeUtils {
             } finally {
                 finished = true;
             }
-        }
-    }
-
-    private static class Lazy {
-        static final Format DURATION_HOURS_FORMAT = new MessageFormat(ModelMessages.duration_hours);
-        static final Format DURATION_MINUTES_FORMAT = new MessageFormat(ModelMessages.duration_minutes);
-        static final Format DURATION_SECONDS_FORMAT = new MessageFormat(ModelMessages.duration_seconds);
-        static final Format DURATION_MILLISECONDS_FORMAT = new MessageFormat(ModelMessages.duration_milliseconds);
-        static final Format EXECUTION_SECONDS_FORMAT = new DecimalFormat("#.###s");
-
-        private Lazy() {
         }
     }
 }

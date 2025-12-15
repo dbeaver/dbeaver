@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.model.ai.impl;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceInfo;
@@ -70,20 +71,11 @@ public class AIPromptUtils {
         return lines.toArray(String[]::new);
     }
 
-    public static String[] createDatabaseInstructions(@Nullable DBSLogicalDataSource dataSource) {
+    public static String[] createGenerateQueryInstructions(@Nullable DBSLogicalDataSource dataSource) {
         List<String> instructions = new ArrayList<>();
-        instructions.add("You are the DBeaver AI assistant.");
-        instructions.add("Act as a database architect and SQL expert.");
-        instructions.add("Rely only on the schema information provided below.");
+        addGeneralRulesInstructions(dataSource, instructions);
         instructions.add("Stick strictly to SQL dialect syntax.");
         instructions.add("Do not invent columns, tables, or data that aren’t explicitly defined.");
-
-        String useLanguage = DBWorkbench.getPlatform().getPreferenceStore().getString(AIConstants.AI_RESPONSE_LANGUAGE);
-        if (!CommonUtils.isEmpty(useLanguage)) {
-            instructions.add("Use " + useLanguage + " language in your responses.");
-        } else {
-            instructions.add("Use the same language as the user.");
-        }
 
         SQLDialect dialect = dataSource == null ? BasicSQLDialect.INSTANCE :
             SQLUtils.getDialectFromDataSource(dataSource.getDataSourceContainer().getDataSource());
@@ -97,6 +89,18 @@ public class AIPromptUtils {
         }
 
         return instructions.toArray(new String[0]);
+    }
+
+    public static void addGeneralRulesInstructions(@Nullable DBSLogicalDataSource dataSource, @NotNull List<String> instructions) {
+        instructions.add("You are the DBeaver AI assistant.");
+        instructions.add("Act as a database architect and SQL expert.");
+        instructions.add("Rely only on the provided schema information.");
+        String useLanguage = DBWorkbench.getPlatform().getPreferenceStore().getString(AIConstants.AI_RESPONSE_LANGUAGE);
+        if (!CommonUtils.isEmpty(useLanguage)) {
+            instructions.add("Use " + useLanguage + " language in your responses.");
+        } else {
+            instructions.add("Use the same language as the user.");
+        }
     }
 
     @Nullable

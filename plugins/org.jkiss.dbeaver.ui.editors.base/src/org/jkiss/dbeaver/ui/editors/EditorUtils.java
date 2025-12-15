@@ -69,6 +69,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
+import java.util.stream.Stream;
 
 /**
  * EditorUtils
@@ -88,6 +89,8 @@ public class EditorUtils {
     private static final String PROP_INPUT_FILE = "sql-editor-input-file"; //$NON-NLS-1$
 
     public static final String COLORS_AND_FONTS_PAGE_ID = "org.eclipse.ui.preferencePages.ColorsAndFonts"; //$NON-NLS-1$
+
+    private static final String ZWNBSP = "\uFEFF";
 
     private static final Log log = Log.getLog(EditorUtils.class);
 
@@ -612,7 +615,13 @@ public class EditorUtils {
     public static List<Path> openExternalFiles(@NotNull String[] fileNames, @Nullable DBPDataSourceContainer currentContainer) {
         log.debug("Open external file(s) [" + Arrays.toString(fileNames) + "]");
         List<Path> openedFiles = new ArrayList<>();
-        Path[] filePaths = Arrays.stream(fileNames).map(Path::of).toArray(Path[]::new);
+        Stream<String> fileNameStream = Arrays.stream(fileNames);
+        if (RuntimeUtils.isMacOS()) {
+            // On macOS files can be opened via Finder with ZWNBSP characters in the file name
+            fileNameStream = fileNameStream.map(fName -> fName.replaceAll(ZWNBSP, ""));
+        }
+        Path[] filePaths = fileNameStream
+            .map(Path::of).toArray(Path[]::new);
         openFileEditors(filePaths, currentContainer, openedFiles);
 
         return openedFiles;
@@ -631,6 +640,10 @@ public class EditorUtils {
     ) {
         Map<FileTypeHandlerDescriptor, List<Path>> filesByHandler = new LinkedHashMap<>();
         for (Path path : fileNames) {
+            if (Files.isDirectory(path)) {
+                log.error("Can't open directory '" + path + "'");
+                continue;
+            }
             if (Files.exists(path)) {
                 String fileExtension = IOUtils.getFileExtension(path);
                 FileTypeHandlerDescriptor handler = CommonUtils.isEmpty(fileExtension) ?
