@@ -54,4 +54,7 @@ public class HiddenOptions {
 
     @CommandLine.Option(names = {"-launcher"}, arity = "1", hidden = true)
     private String launcher;
+
+    @CommandLine.Option(names = {"-showsplash"}, hidden = true)
+    private boolean showSplash;
 }

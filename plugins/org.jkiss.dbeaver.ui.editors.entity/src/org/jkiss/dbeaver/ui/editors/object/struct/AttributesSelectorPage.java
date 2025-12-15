@@ -268,8 +268,9 @@ public abstract class AttributesSelectorPage<T_OBJECT extends DBSObject, T_ATTRI
         }
         final List<T_ATTRIBUTE> attrList = new ArrayList<>();
         AbstractJob loadJob = new AbstractJob("Load entity attributes") {
+            @NotNull
             @Override
-            protected IStatus run(DBRProgressMonitor monitor) {
+            protected IStatus run(@NotNull DBRProgressMonitor monitor) {
                 monitor.beginTask("Load attributes", 1);
                 try {
                     for (T_ATTRIBUTE attr : getAttributes(monitor, object)) {
