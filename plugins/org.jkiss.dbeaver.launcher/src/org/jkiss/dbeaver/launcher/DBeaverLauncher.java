@@ -1687,7 +1687,16 @@ public class DBeaverLauncher {
             return properties;
         }
 
-        Path eclipseProduct = Path.of(installURL.getPath(), PRODUCT_SITE_MARKER);
+        Path installPath;
+        try {
+            installPath = Path.of(installURL.toURI());
+        } catch (Exception e) {
+            if (debug) {
+                System.out.println("Could not convert install location " + installURL + ": " + e.getMessage());
+            }
+            return properties;
+        }
+        Path eclipseProduct = installPath.resolve(PRODUCT_SITE_MARKER);
         if (debug) {
             System.out.println("Loading product properties from " + eclipseProduct);
         }
