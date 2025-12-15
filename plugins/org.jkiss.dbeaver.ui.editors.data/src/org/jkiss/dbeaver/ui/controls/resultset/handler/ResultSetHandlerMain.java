@@ -410,8 +410,9 @@ public class ResultSetHandlerMain extends AbstractHandler implements IElementUpd
                 final DBDAttributeBinding attr = rsv.getActivePresentation().getCurrentAttribute();
                 if (attr != null) {
                     new AbstractJob("Navigate association") {
+                        @NotNull
                         @Override
-                        protected IStatus run(DBRProgressMonitor monitor) {
+                        protected IStatus run(@NotNull DBRProgressMonitor monitor) {
                             try {
                                 rsv.navigateAssociation(monitor, rsv.getModel(), DBExecUtils.getAssociationByAttribute(attr), rsv.getSelection().getSelectedRows(), false);
                             } catch (DBException e) {
