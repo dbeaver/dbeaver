@@ -109,7 +109,7 @@ public class PercentOfTotalGroupingAttributeTransformer implements DBDAttributeT
         }
 
         private String formatPercent(double percent) {
-            DecimalFormat df = new DecimalFormat("#.#####");
+            DecimalFormat df = new DecimalFormat("#.####");
             return df.format(percent) + "%";
         }
     }
