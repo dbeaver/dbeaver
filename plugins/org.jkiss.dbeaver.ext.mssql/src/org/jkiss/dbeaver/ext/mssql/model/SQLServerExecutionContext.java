@@ -100,7 +100,8 @@ public class SQLServerExecutionContext extends JDBCExecutionContext implements D
 
     @Override
     public boolean supportsCatalogChange() {
-        return true;
+        // Azure SQL Database doesn't support changing database
+        return !SQLServerUtils.isDriverAzure(getDataSource().getContainer().getDriver());
     }
 
     @Override

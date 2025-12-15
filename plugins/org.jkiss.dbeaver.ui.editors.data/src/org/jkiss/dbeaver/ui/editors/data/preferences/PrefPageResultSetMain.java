@@ -34,8 +34,8 @@ import org.jkiss.dbeaver.model.data.order.OrderingStrategy;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.controls.resultset.IResultSetCommands;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetPreferences;
-import org.jkiss.dbeaver.ui.controls.resultset.handler.ResultSetHandlerMain;
 import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
 import org.jkiss.dbeaver.ui.editors.data.internal.DataEditorsMessages;
 import org.jkiss.dbeaver.ui.internal.UIMessages;
@@ -204,7 +204,7 @@ public class PrefPageResultSetMain extends TargetPrefPage
 
             ICommandService commandService = UIUtils.getActiveWorkbenchWindow().getService(ICommandService.class);
             if (commandService != null) {
-                Command toggleComand = commandService.getCommand(ResultSetHandlerMain.CMD_TOGGLE_CONFIRM_SAVE);
+                Command toggleComand = commandService.getCommand(IResultSetCommands.CMD_TOGGLE_CONFIRM_SAVE);
                 if (toggleComand != null) {
                     try {
                         confirmDataSave = UIUtils.createCheckbox(uiGroup, toggleComand.getName(), toggleComand.getDescription(), false, 1);
