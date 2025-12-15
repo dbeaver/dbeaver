@@ -169,9 +169,10 @@ public abstract class ExasolBaseTableToolDialog extends GenerateMultiSQLDialog<E
         final DataSourceJob job = new DataSourceJob(jobName, getExecutionContext()) {
             Exception objectProcessingError;
 
+            @NotNull
             @SuppressWarnings("rawtypes")
 			@Override
-            protected IStatus run(final DBRProgressMonitor monitor)
+            protected IStatus run(@NotNull final DBRProgressMonitor monitor)
             {
                 final DataSourceJob curJob = this;
                 UIUtils.asyncExec(() -> scriptListener.beginScriptProcessing(curJob, objects));

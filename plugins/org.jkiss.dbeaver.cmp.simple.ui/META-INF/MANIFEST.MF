@@ -8,15 +8,7 @@ Bundle-Release-Date: 20251222
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-21
 Export-Package:  org.jkiss.dbeaver.tools.compare.simple.ui
-Require-Bundle: org.eclipse.core.runtime,
- org.eclipse.ui,
- org.eclipse.ui.views,
- org.eclipse.ui.workbench,
- org.eclipse.ui.ide,
- org.eclipse.swt,
- org.eclipse.jface,
- org.eclipse.jface.text,
- org.jkiss.dbeaver.model,
+Require-Bundle: org.jkiss.dbeaver.model,
  org.jkiss.dbeaver.registry,
  org.jkiss.dbeaver.ui,
  org.jkiss.dbeaver.ui.editors.sql,

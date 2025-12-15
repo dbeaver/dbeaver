@@ -274,8 +274,9 @@ public class SQLContextInformer
             setSystem(true);
         }
 
+        @NotNull
         @Override
-        protected IStatus run(DBRProgressMonitor monitor)
+        protected IStatus run(@NotNull DBRProgressMonitor monitor)
         {
             boolean[] result = new boolean[1];
             try {

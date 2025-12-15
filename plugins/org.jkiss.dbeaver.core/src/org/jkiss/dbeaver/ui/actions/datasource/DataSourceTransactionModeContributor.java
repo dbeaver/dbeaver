@@ -23,6 +23,7 @@ import org.eclipse.jface.action.IContributionItem;
 import org.eclipse.jface.action.Separator;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.ui.IEditorPart;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.core.CoreMessages;
@@ -133,8 +134,9 @@ public class DataSourceTransactionModeContributor extends DataSourceMenuContribu
             DBCTransactionManager txnManager = DBUtils.getTransactionManager(executionContext);
             if (txnManager != null) {
                 new AbstractJob("Set auto-commit") {
+                    @NotNull
                     @Override
-                    protected IStatus run(DBRProgressMonitor monitor) {
+                    protected IStatus run(@NotNull DBRProgressMonitor monitor) {
                         monitor.beginTask("Change connection auto-commit to " + autoCommit, 1);
                         try {
                             monitor.subTask("Change context '" + executionContext.getContextName() + "' auto-commit state");
@@ -221,8 +223,9 @@ public class DataSourceTransactionModeContributor extends DataSourceMenuContribu
             DBCTransactionManager txnManager = DBUtils.getTransactionManager(executionContext);
             if (txnManager != null) {
                 new AbstractJob("Set transaction isolation level") {
+                    @NotNull
                     @Override
-                    protected IStatus run(DBRProgressMonitor monitor) {
+                    protected IStatus run(@NotNull DBRProgressMonitor monitor) {
                         monitor.beginTask("Change transaction isolation level to " + level.getTitle(), 1);
                         try {
                             monitor.subTask("Change context '" + executionContext.getContextName() + "' transaction isolation level");
