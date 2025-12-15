@@ -26,6 +26,7 @@ import org.eclipse.swt.graphics.*;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -78,7 +79,7 @@ public class ProgressLoaderVisualizer<RESULT> implements ILoadVisualizer<RESULT>
     public DBRProgressMonitor overwriteMonitor(DBRProgressMonitor monitor) {
         DBRProgressMonitor progressMonitor = new ProxyProgressMonitor(monitor) {
             @Override
-            public void subTask(String name) {
+            public void subTask(@NotNull String name) {
                 if (loadStartTime == 0) {
                     resetStartTime();
                 }
