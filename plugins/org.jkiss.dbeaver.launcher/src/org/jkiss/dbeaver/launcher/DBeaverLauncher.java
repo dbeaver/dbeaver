@@ -168,7 +168,7 @@ public class DBeaverLauncher {
     private static final String NAME = "-name"; //$NON-NLS-1$
     private static final String LAUNCHER = "-launcher"; //$NON-NLS-1$
     private static final String PRODUCT = "-product"; //$NON-NLS-1$
-    private static final String INSTALL_IU = "-installIU";
+    private static final String APPLICATION = "-application";
 
     private static final String PROTECT = "-protect"; //$NON-NLS-1$
     //currently the only level of protection we care about.
@@ -659,7 +659,7 @@ public class DBeaverLauncher {
         } else {
             boolean addNoSplash = true;
             for (String arg : passThruArgs) {
-                if (arg.equals(INSTALL_IU)) {
+                if (arg.equals(APPLICATION)) {
                     addNoSplash = false;
                     break;
                 }
