@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,11 +17,8 @@
 
 package org.jkiss.dbeaver.ext.gaussdb.ui;
 
-import java.util.ArrayList;
-import java.util.List;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
-
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -31,6 +28,7 @@ import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.gaussdb.model.GaussDBDataSource;
 import org.jkiss.dbeaver.ext.postgresql.PostgreMessages;
@@ -43,6 +41,9 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
 import org.jkiss.dbeaver.utils.GeneralUtils;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class GaussDBCreateDatabaseDialog extends BaseDialog {
     private final GaussDBDataSource dataSource;
@@ -103,8 +104,9 @@ public class GaussDBCreateDatabaseDialog extends BaseDialog {
 
     private void scheduleLoadUsersJob(boolean supportsRoles, boolean supportsEncodings, boolean supportsTablespaces) {
         new AbstractJob("Load users") {
+            @NotNull
             @Override
-            protected IStatus run(DBRProgressMonitor monitor) {
+            protected IStatus run(@NotNull DBRProgressMonitor monitor) {
                 monitor.beginTask("Create database", 1);
                 try {
                     PostgreDatabase database = dataSource.getDefaultInstance();

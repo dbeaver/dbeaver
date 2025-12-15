@@ -59,7 +59,7 @@ public class ConnectionPageInternalParameters extends ConnectionWizardPage {
         createCustomPropertiesGroup(host);
 
         UIUtils.createInfoLink(
-            parent,
+            host,
             CoreMessages.dialog_connection_internal_parameters_tip,
             () -> ShellUtils.launchProgram(HelpUtils.getHelpExternalReference("Admin-Manage-Preferences")),
             SWT.NONE,

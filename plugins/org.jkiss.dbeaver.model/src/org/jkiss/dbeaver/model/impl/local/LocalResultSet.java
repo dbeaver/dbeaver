@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -36,7 +36,7 @@ public class LocalResultSet<SOURCE_STMT extends DBCStatement> extends AbstractRe
     protected final List<Object[]> rows = new ArrayList<>();
     protected int curPosition = -1;
 
-    public LocalResultSet(DBCSession session, SOURCE_STMT statement) {
+    public LocalResultSet(@NotNull DBCSession session, @NotNull SOURCE_STMT statement) {
         super(session, statement);
     }
 
