@@ -63,7 +63,7 @@ public interface DBPWorkspace extends SMAuthSpace, DBAPermissionRealm {
      * Finds project by ID
      */
     @Nullable
-    DBPProject getProjectById(@NotNull String projectId);
+    DBPProject getProjectById(@Nullable String projectId);
 
     /**
      * Workspace auth context

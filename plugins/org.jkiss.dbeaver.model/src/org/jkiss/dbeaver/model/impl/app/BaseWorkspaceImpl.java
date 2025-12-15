@@ -141,9 +141,13 @@ public abstract class BaseWorkspaceImpl implements DBPWorkspace {
         return activeProject;
     }
 
-    public DBPProject getProjectById(@NotNull String projectId) {
+    public DBPProject getProjectById(@Nullable String projectId) {
+        if (projectId == null) {
+            return activeProject;
+        }
+
         for (DBPProject project : getProjects()) {
-            if (projectId.equals(project.getId())) {
+            if (project.getId().equals(projectId)) {
                 return project;
             }
         }
