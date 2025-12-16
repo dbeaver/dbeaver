@@ -192,7 +192,7 @@ public class DriverLoaderDescriptor implements DBPDriverLoader {
     private void loadLibraries(@NotNull DBRProgressMonitor monitor) throws DBException {
         this.classLoader = null;
 
-        List<Path> allLibraryFiles = validateFilesPresence(monitor, false);
+        List<Path> allLibraryFiles = validateFilesPresence(monitor);
 
         Set<URL> libraryURLs = new LinkedHashSet<>();
         // Load libraries
@@ -248,16 +248,17 @@ public class DriverLoaderDescriptor implements DBPDriverLoader {
     }
 
     public List<Path> getAllLibraryFiles(@NotNull DBRProgressMonitor monitor) {
-        return validateFilesPresence(monitor, false);
+        return validateFilesPresence(monitor);
     }
 
-    public void updateFiles() {
-        validateFilesPresence(new LoggingProgressMonitor(log), true);
+    public void updateFiles(boolean isExpanded) {
+        validateFilesPresence(new LoggingProgressMonitor(log), true, isExpanded);
     }
 
+    @NotNull
     @Override
-    public void validateFilesPresence(@NotNull DBRProgressMonitor monitor) {
-        validateFilesPresence(monitor, false);
+    public List<Path> validateFilesPresence(@NotNull DBRProgressMonitor monitor) {
+        return validateFilesPresence(monitor, false, false);
     }
 
     @Override
@@ -277,7 +278,7 @@ public class DriverLoaderDescriptor implements DBPDriverLoader {
     }
 
     @NotNull
-    private List<Path> validateFilesPresence(@NotNull DBRProgressMonitor monitor, boolean resetVersions) {
+    private List<Path> validateFilesPresence(@NotNull DBRProgressMonitor monitor, boolean resetVersions, boolean isShowExpanded) {
         if (DBWorkbench.isDistributed()) {
             // We are in distributed mode
             return syncDistributedDependencies(monitor);
@@ -285,7 +286,7 @@ public class DriverLoaderDescriptor implements DBPDriverLoader {
         DBPApplication application = DBWorkbench.getPlatform().getApplication();
 
         // don't download driver libraries in web application
-        if (!application.isMultiuser() && !downloadDriverLibraries(monitor, resetVersions)) {
+        if (!application.isMultiuser() && !downloadDriverLibraries(monitor, resetVersions, isShowExpanded)) {
             return Collections.emptyList();
         }
 
@@ -383,13 +384,17 @@ public class DriverLoaderDescriptor implements DBPDriverLoader {
 
     @Override
     public boolean downloadDriverLibraries(@NotNull DBRProgressMonitor monitor, boolean resetVersions) {
+        return downloadDriverLibraries(monitor, resetVersions, false);
+    }
+
+    public boolean downloadDriverLibraries(@NotNull DBRProgressMonitor monitor, boolean resetVersions, boolean isShowExpanded) {
         final DriverDependencies dependencies = getDriverDependencies(resetVersions, false);
         if (dependencies == null) {
             return true;
         }
         UIServiceDrivers serviceDrivers = DBWorkbench.getService(UIServiceDrivers.class);
         boolean downloadOk = serviceDrivers != null ?
-                             serviceDrivers.downloadDriverFiles(monitor, driver, dependencies) :
+                             serviceDrivers.downloadDriverFiles(monitor, driver, dependencies, isShowExpanded) :
                              DriverUtils.downloadDriverFiles(monitor, driver, dependencies);
         if (!downloadOk) {
             return false;
