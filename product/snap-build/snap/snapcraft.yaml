@@ -1,51 +1,24 @@
 name: dbeaver-ce
+summary: Universal Database Manager and SQL Client
 description: |
   Free multi-platform database tool for developers, SQL programmers, database administrators and analysts. Supports all popular databases: MySQL PostgreSQL, MariaDB, SQLite, Oracle, DB2, SQL Server, Sybase, MS Access, Teradata, Firebird, Derby, etc.
 grade: stable
 adopt-info: dbeaver-ce
 
-base: core20
-confinement: strict
-
+base: core22
+confinement: classic
 architectures:
-  - build-on: amd64
-    run-on: [amd64, arm64]
-
-slots:
-  dbus-dbeaver:
-    interface: dbus
-    bus: session
-    name: snap.dbeaver-ce.dbeaver-ce
+- amd64
 
 apps:
   dbeaver-ce:
     command: usr/share/dbeaver-ce/dbeaver
-    slots: [ dbus-dbeaver ]
-    extensions: [ gnome-3-38 ]
     common-id: dbeaver
     desktop: usr/share/applications/dbeaver-ce.desktop
     environment:
-      FONTCONFIG_FILE: etc/fonts
-      _JAVA_OPTIONS: -Duser.home=$SNAP_USER_DATA -Dorg.eclipse.swt.browser.DefaultType=webkit -Dorg.eclipse.swt.browser.UseWebKitGTK=true -Ddbeaver.io.tmpdir=/home/$USER/Downloads
-      # Fallback to XWayland if running in a Wayland session.
-      DISABLE_WAYLAND: 1
+      _JAVA_OPTIONS: -Duser.home=$SNAP_USER_DATA 
       # Fixes occasional crashes on various WMs
       NO_AT_BRIDGE: 1
-    plugs:
-      - network
-      - home
-      - removable-media
-      - ssh-keys
-      - ssh-public-keys
-      - network-manager
-      - network-bind
-      - mount-observe
-      - network-manager-observe
-      - browser-support
-      - system-observe
-      - process-control
-      - audio-playback
-      - audio-record
 
 parts:
   dbeaver-ce:
@@ -60,15 +33,10 @@ parts:
       - libgconf-2-4
       - libcurl4
       - xdg-utils
-      - mariadb-client
-      - mysql-client
-      - postgresql-client-common
       - ibus-gtk3
       - libibus-1.0-5
       - libwebkit2gtk-4.0-37
       - libgtk-3-0
-      - fonts-noto-cjk
-      - fonts-noto-color-emoji
     override-pull: |
       snapcraftctl pull
       # Removes NO_AT_BRIDGE=1 from the source .desktop file; it's set for the snap app itself
@@ -81,7 +49,6 @@ parts:
       VERSION="${VERSION%.*}"
       snapcraftctl set-version "$VERSION"
       LD_BIND_NOW=1
-    parse-info: [usr/share/metainfo/dbeaver-ce.appdata.xml]
     override-prime: |
       snapcraftctl prime
       rm -vf usr/lib/jvm/java-*/lib/security/blacklisted.certs

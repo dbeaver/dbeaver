@@ -419,8 +419,9 @@ public class DesktopWorkspaceImpl extends EclipseWorkspaceImpl implements DBPWor
             super("External files metadata saver");
         }
 
+        @NotNull
         @Override
-        protected IStatus run(DBRProgressMonitor monitor) {
+        protected IStatus run(@NotNull DBRProgressMonitor monitor) {
             synchronized (externalFileProperties) {
                 java.nio.file.Path propsFile = GeneralUtils.getMetadataFolder(getAbsolutePath())
                     .resolve(EXT_FILES_PROPS_STORE);

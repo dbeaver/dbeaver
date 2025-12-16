@@ -148,7 +148,7 @@ public class OpenAIClient extends AbstractHttpAIClient {
             modifiedRequest,
             stringConsumer,
             listener::error,
-            listener::close
+            listener::completeBlock
         );
     }
 
@@ -196,7 +196,6 @@ public class OpenAIClient extends AbstractHttpAIClient {
                 try {
                     OAIResponsesChunk chunk = GSON.fromJson(data, OAIResponsesChunk.class);
                     if (EVENT_TYPE_RESPONSE_COMPLETED.equals(chunk.type)) {
-                        listener.close();
                     } else {
 
                         if (chunk.item != null && OAIMessage.TYPE_FUNCTION_CALL.equals(chunk.item.type)) {

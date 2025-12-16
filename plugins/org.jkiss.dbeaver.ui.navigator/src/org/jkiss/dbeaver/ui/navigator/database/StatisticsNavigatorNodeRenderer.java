@@ -569,8 +569,9 @@ public class StatisticsNavigatorNodeRenderer extends DefaultNavigatorNodeRendere
             this.treeItem = treeItem;
         }
 
+        @NotNull
         @Override
-        protected IStatus run(DBRProgressMonitor monitor) {
+        protected IStatus run(@NotNull DBRProgressMonitor monitor) {
             try {
                 monitor.beginTask("Collect database statistics", 1);
                 if (object instanceof DBPObjectStatisticsCollector) {
