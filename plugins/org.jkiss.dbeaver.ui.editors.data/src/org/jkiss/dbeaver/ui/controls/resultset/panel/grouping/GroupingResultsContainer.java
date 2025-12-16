@@ -99,7 +99,8 @@ public class GroupingResultsContainer implements IResultSetContainer {
     @Override
     public DBPProject getProject() {
         DBSDataContainer dataContainer = getDataContainer();
-        return dataContainer == null || dataContainer.getDataSource() == null ? null
+        return dataContainer == null || dataContainer.getDataSource() == null
+            ? null
             : dataContainer.getDataSource().getContainer().getProject();
     }
 
