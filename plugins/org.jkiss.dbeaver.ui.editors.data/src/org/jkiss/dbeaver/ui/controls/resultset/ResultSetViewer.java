@@ -2160,6 +2160,19 @@ public class ResultSetViewer extends Viewer
         boolean newRow = (curRow != null && curRow.getState() == ResultSetRow.STATE_ADDED);
         if (!newRow) {
             String status = DBExecUtils.getAttributeReadOnlyStatus(attr, checkKey);
+            if (status != null && checkKey) {
+                DBCExecutionContext executionContext = getExecutionContext();
+                if (executionContext != null) {
+                    boolean useAllColumnsAsKey = executionContext
+                        .getDataSource()
+                        .getContainer()
+                        .getPreferenceStore()
+                        .getBoolean(ResultSetPreferences.RS_EDIT_USE_ALL_COLUMNS);
+                    if (useAllColumnsAsKey) {
+                        return null;
+                    }
+                }
+            }
             if (status != null) {
                 return status;
             }

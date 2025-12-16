@@ -52,6 +52,15 @@
             <description>DataGrip and other JetBrains products</description>
         </wizard>
 
+        <wizard
+            category="org.jkiss.dbeaver.config.migration.third-party"
+            class="org.jkiss.dbeaver.ui.config.migration.wizards.pgadmin.ConfigImportWizardPgAdmin"
+            id="org.jkiss.dbeaver.config.migration.pgadmin"
+            name="pgAdmin 4"
+            icon="icons/pg_admin.svg">
+            <description>PgAdmin 4</description>
+        </wizard>
+
     </extension>
 
 
