@@ -21,9 +21,9 @@
     <!-- OS specific UI -->
     <plugin id="org.eclipse.ui.win32" ws="win32" version="0.0.0"/>
 
-    <plugin id="org.eclipse.equinox.security.win32" ws="win32" version="0.0.0"/>
-    <plugin id="org.eclipse.equinox.security.macosx" ws="macosx" version="0.0.0"/>
-    <plugin id="org.eclipse.equinox.security.linux" ws="linux" version="0.0.0"/>
+    <plugin id="org.eclipse.equinox.security.win32" os="win32" version="0.0.0"/>
+    <plugin id="org.eclipse.equinox.security.macosx" os="macosx" version="0.0.0"/>
+    <plugin id="org.eclipse.equinox.security.linux" os="linux" version="0.0.0"/>
 
     <plugin id="org.eclipse.compare.win32" ws="win32" version="0.0.0"/>
 
