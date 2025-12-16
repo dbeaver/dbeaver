@@ -213,7 +213,7 @@ public class DriverDescriptorSerializerLegacy extends DriverDescriptorSerializer
                                             // we need to relativize path and exclude path variables in config file
                                             normalizedFilePath = DriverUtils.getDistributedLibraryPath(file.getFile()).replace('\\', '/');
                                         }
-                                        if (!IOUtils.isFileFromDefaultFS(file.getFile())) {
+                                        if (!IOUtils.isFileFromDefaultFS(file.getFile()) && file.getFile().isAbsolute()) {
                                             // relativize path to workspace folder because in external fs path
                                             // may contain additional information like a bucket name
                                             var workspaceFolder = DBWorkbench
