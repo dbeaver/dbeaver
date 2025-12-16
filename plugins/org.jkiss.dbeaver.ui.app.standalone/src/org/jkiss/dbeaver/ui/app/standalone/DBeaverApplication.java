@@ -38,10 +38,7 @@ import org.eclipse.ui.internal.WorkbenchPlugin;
 import org.eclipse.ui.internal.ide.ChooseWorkspaceDialog;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.DBeaverPreferences;
-import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.LogOutputStream;
-import org.jkiss.dbeaver.ModelPreferences;
+import org.jkiss.dbeaver.*;
 import org.jkiss.dbeaver.core.DBeaverActivator;
 import org.jkiss.dbeaver.core.DesktopPlatform;
 import org.jkiss.dbeaver.core.DesktopUI;
@@ -70,7 +67,10 @@ import org.jkiss.dbeaver.ui.app.standalone.update.VersionUpdateDialog;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.dbeaver.utils.SystemVariablesResolver;
-import org.jkiss.utils.*;
+import org.jkiss.utils.ArrayUtils;
+import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.IOUtils;
+import org.jkiss.utils.StandardConstants;
 import org.osgi.framework.Version;
 
 import java.io.*;
@@ -354,7 +354,11 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
                 break;
             }
         }
-        DBeaverCommandLine.getInstance().preprocessCommandLine(args);
+        try {
+            args = DBeaverCommandLine.getInstance().preprocessCommandLine(args);
+        } catch (DBException e) {
+            log.error("Error preprocessing command line", e);
+        }
         return args;
     }
 
@@ -503,7 +507,6 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
             display = Display.getCurrent();
             if (display == null) {
                 display = PlatformUI.createDisplay();
-                overrideThemeValues();
             }
 
             // Check for resource leaks
@@ -512,25 +515,6 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
             addIdleListeners();
         }
         return display;
-    }
-
-    /**
-     * See {@code org.jkiss.dbeaver.ui.swt.linux}
-     */
-    private void overrideThemeValues() {
-        if (!RuntimeUtils.isLinux() || System.getProperty("org.eclipse.swt.internal.gtk.noThemingFixes") != null) {
-            return;
-        }
-        try {
-            BeanUtils.invokeStaticMethod(
-                Class.forName("org.eclipse.swt.GtkCssHelper"),
-                "overrideThemeValues",
-                new Class[] {},
-                new Object[] {}
-            );
-        } catch (Throwable e) {
-            log.error("Error overriding theme values", e);
-        }
     }
 
     private void addIdleListeners() {

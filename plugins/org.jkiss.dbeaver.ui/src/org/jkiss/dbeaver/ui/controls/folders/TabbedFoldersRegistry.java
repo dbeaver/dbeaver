@@ -104,8 +104,9 @@ class TabbedFoldersRegistry {
             setSystem(true);
         }
 
+        @NotNull
         @Override
-        protected IStatus run(DBRProgressMonitor monitor) {
+        protected IStatus run(@NotNull DBRProgressMonitor monitor) {
             synchronized (savedStates) {
                 //log.debug("Save column config " + System.currentTimeMillis());
                 flushConfig();
