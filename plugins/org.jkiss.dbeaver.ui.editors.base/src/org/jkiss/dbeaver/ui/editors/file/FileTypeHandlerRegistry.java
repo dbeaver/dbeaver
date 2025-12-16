@@ -44,8 +44,10 @@ public class FileTypeHandlerRegistry {
             for (IConfigurationElement ext : extElements) {
                 FileTypeHandlerDescriptor formatterDescriptor = new FileTypeHandlerDescriptor(ext);
                 handlers.add(formatterDescriptor);
-                for (String fileExt : formatterDescriptor.getExtensions()) {
-                    handlerByExtension.put(fileExt, formatterDescriptor);
+                for (FileTypeHandlerDescriptor.Extension fileExt : formatterDescriptor.getExtensions()) {
+                    for (String extName : fileExt.getExtensions()) {
+                        handlerByExtension.put(extName, formatterDescriptor);
+                    }
                 }
             }
             handlers.sort(Comparator.comparingInt(FileTypeHandlerDescriptor::getOrder));
@@ -62,4 +64,8 @@ public class FileTypeHandlerRegistry {
         return handlerByExtension.get(fileExtension);
     }
 
+    @Nullable
+    public FileTypeHandlerDescriptor.Extension findExtension(String fileName, String fileExtension) {
+        return findHandler(fileExtension).getFileExtension(fileName);
+    }
 }

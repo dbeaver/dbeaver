@@ -9,4 +9,6 @@ Bundle-RequiredExecutionEnvironment: JavaSE-21
 Bundle-ActivationPolicy: lazy
 Require-Bundle: org.jkiss.dbeaver.model,
  org.jkiss.dbeaver.ext.generic
+Export-Package: org.jkiss.dbeaver.ext.derby,
+ org.jkiss.dbeaver.ext.derby.model
 Automatic-Module-Name: org.jkiss.dbeaver.ext.derby

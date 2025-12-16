@@ -14,24 +14,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ext.sqlite.ui;
+package org.jkiss.dbeaver.ext.derby.ui;
 
 import org.jkiss.api.CompositeObjectId;
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.ext.sqlite.SQLiteUtils;
+import org.jkiss.dbeaver.ext.derby.model.DerbyConstants;
 import org.jkiss.dbeaver.ui.actions.AbstractFileDatabaseHandler;
 
 import java.nio.file.Path;
 import java.util.List;
 
 /**
- * SQLite file handler
+ * Derby file handler
  */
-public class SQLiteFileDatabaseHandler extends AbstractFileDatabaseHandler {
+public class DerbyFileDatabaseHandler extends AbstractFileDatabaseHandler {
 
     @Override
     protected String getDatabaseTerm() {
-        return "sqlite file";
+        return "derby file";
     }
 
     @Override
@@ -46,7 +46,7 @@ public class SQLiteFileDatabaseHandler extends AbstractFileDatabaseHandler {
 
     @Override
     protected CompositeObjectId getDriverReference() {
-        return SQLiteUtils.DRIVER_REFERENCE;
+        return DerbyConstants.DRIVER_DERBY_REFERENCE;
     }
 
     @Override

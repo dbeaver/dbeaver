@@ -622,22 +622,19 @@ public class EditorUtils {
         }
         Path[] filePaths = fileNameStream
             .map(Path::of).toArray(Path[]::new);
-        openFileEditors(filePaths, currentContainer, openedFiles);
+        openFileEditors(filePaths, currentContainer, openedFiles, false);
 
         return openedFiles;
     }
 
-    public static boolean openExternalFiles(@NotNull Path[] filePaths, @Nullable DBPDataSourceContainer currentContainer) {
+    public static boolean openExternalFiles(@NotNull Path[] filePaths, @Nullable DBPDataSourceContainer currentContainer, boolean databaseOnly) {
         log.debug("Open external file(s) [" + Arrays.toString(filePaths) + "]");
         List<Path> openedFiles = new ArrayList<>();
-        return openFileEditors(filePaths, currentContainer, openedFiles);
+        return openFileEditors(filePaths, currentContainer, openedFiles, databaseOnly);
     }
 
-    public static boolean openFileEditors(
-        @NotNull Path[] fileNames,
-        @Nullable DBPDataSourceContainer currentContainer,
-        @NotNull List<Path> openedFiles
-    ) {
+    @NotNull
+    public static Map<FileTypeHandlerDescriptor, List<Path>> getHandlerFiles(@NotNull Path[] fileNames, @NotNull List<Path> openedFiles, boolean databaseOnly) {
         Map<FileTypeHandlerDescriptor, List<Path>> filesByHandler = new LinkedHashMap<>();
         for (Path path : fileNames) {
             if (Files.isDirectory(path)) {
@@ -648,13 +645,25 @@ public class EditorUtils {
                 String fileExtension = IOUtils.getFileExtension(path);
                 FileTypeHandlerDescriptor handler = CommonUtils.isEmpty(fileExtension) ?
                     null : FileTypeHandlerRegistry.getInstance().findHandler(fileExtension);
+                if (handler != null && databaseOnly && !handler.isDatabaseHandler()) {
+                    handler = null;
+                }
                 filesByHandler.computeIfAbsent(handler, d -> new ArrayList<>()).add(path);
                 openedFiles.add(path);
             } else {
                 DBWorkbench.getPlatformUI().showError("Open file", "Can't open '" + path + "': file doesn't exist");
             }
         }
+        return filesByHandler;
+    }
 
+    public static boolean openFileEditors(
+        @NotNull Path[] fileNames,
+        @Nullable DBPDataSourceContainer currentContainer,
+        @NotNull List<Path> openedFiles,
+        boolean databaseOnly
+    ) {
+        Map<FileTypeHandlerDescriptor, List<Path>> filesByHandler = getHandlerFiles(fileNames, openedFiles, databaseOnly);
         for (Map.Entry<FileTypeHandlerDescriptor, List<Path>> entry : filesByHandler.entrySet()) {
             FileTypeHandlerDescriptor handler = entry.getKey();
             List<Path> pathList = entry.getValue();

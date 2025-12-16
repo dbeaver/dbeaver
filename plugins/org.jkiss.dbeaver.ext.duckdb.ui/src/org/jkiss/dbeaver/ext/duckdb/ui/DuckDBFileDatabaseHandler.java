@@ -14,24 +14,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ext.sqlite.ui;
+package org.jkiss.dbeaver.ext.duckdb.ui;
 
 import org.jkiss.api.CompositeObjectId;
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.ext.sqlite.SQLiteUtils;
+import org.jkiss.dbeaver.ext.duckdb.model.DuckDBConstants;
 import org.jkiss.dbeaver.ui.actions.AbstractFileDatabaseHandler;
 
 import java.nio.file.Path;
 import java.util.List;
 
 /**
- * SQLite file handler
+ * Duckdb file handler
  */
-public class SQLiteFileDatabaseHandler extends AbstractFileDatabaseHandler {
+public class DuckDBFileDatabaseHandler extends AbstractFileDatabaseHandler {
 
     @Override
     protected String getDatabaseTerm() {
-        return "sqlite file";
+        return "duckdb file";
     }
 
     @Override
@@ -46,7 +46,7 @@ public class SQLiteFileDatabaseHandler extends AbstractFileDatabaseHandler {
 
     @Override
     protected CompositeObjectId getDriverReference() {
-        return SQLiteUtils.DRIVER_REFERENCE;
+        return DuckDBConstants.DRIVER_REFERENCE;
     }
 
     @Override

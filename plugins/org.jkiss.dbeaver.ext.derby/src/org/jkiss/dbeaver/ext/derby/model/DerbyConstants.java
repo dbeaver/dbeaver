@@ -14,18 +14,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ext.duckdb.model;
+package org.jkiss.dbeaver.ext.derby.model;
 
 import org.jkiss.api.CompositeObjectId;
 
-public class DuckDBConstants {
-    public static final String TYPE_GEOMETRY = "GEOMETRY";
-    public static final String TYPE_BLOB = "BLOB";
-
+public class DerbyConstants {
     public static final String PROVIDER_ID = "generic";
-    public static final String DRIVER_DERBY_ID = "duckdb_jdbc";
-    public static final CompositeObjectId DRIVER_REFERENCE = new CompositeObjectId(PROVIDER_ID, DRIVER_DERBY_ID);
-
-    private DuckDBConstants() {
-    }
+    public static final String DRIVER_DERBY_ID = "derby";
+    public static final CompositeObjectId DRIVER_DERBY_REFERENCE = new CompositeObjectId(PROVIDER_ID, DRIVER_DERBY_ID);
 }
