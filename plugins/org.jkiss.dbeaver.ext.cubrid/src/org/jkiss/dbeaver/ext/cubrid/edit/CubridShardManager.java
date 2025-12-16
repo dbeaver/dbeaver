@@ -18,24 +18,27 @@ package org.jkiss.dbeaver.ext.cubrid.edit;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ext.cubrid.model.CubridDataSource;
 import org.jkiss.dbeaver.ext.cubrid.model.CubridShard;
 import org.jkiss.dbeaver.ext.generic.model.GenericStructContainer;
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.sql.edit.SQLObjectEditor;
-import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.cache.DBSObjectCache;
-import org.jkiss.dbeaver.runtime.DBWorkbench;
-import org.jkiss.dbeaver.utils.PrefUtils;
 
 import java.util.List;
 import java.util.Map;
 
 public class CubridShardManager extends SQLObjectEditor<CubridShard, GenericStructContainer> {
+
+    private static final String PROP_SHARD_TYPE = "shardType";
+    private static final String PROP_SHARD_VALUE = "shardValue";
+    private static final String SHARD_TYPE_ID = "SHARD ID";
 
     @Override
     protected void addObjectModifyActions(
@@ -46,10 +49,22 @@ public class CubridShardManager extends SQLObjectEditor<CubridShard, GenericStru
         @NotNull Map<String, Object> options
     ) {
         CubridShard shard = command.getObject();
-        DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
-        store.setValue("shardType", shard.getName());
-        store.setValue("shardVal", shard.getValue());
-        PrefUtils.savePreferenceStore(store);
+        CubridDataSource dataSource = shard.getDataSource();
+        DBPConnectionConfiguration connectionInfo = dataSource.getContainer().getConnectionConfiguration();
+
+        int shardValue;
+        try {
+            shardValue = Integer.parseInt(shard.getValue());
+        } catch (NumberFormatException e) {
+            throw new IllegalArgumentException("Shard value must be a numeric value.");
+        }
+
+        if (SHARD_TYPE_ID.equals(shard.getName()) && (shardValue < 0 || shardValue > 1)) {
+            throw new IllegalArgumentException("The maximum allowed Shard ID is 1. Please enter a valid value.");
+        }
+
+        connectionInfo.setProperty(PROP_SHARD_TYPE, shard.getName());
+        connectionInfo.setProperty(PROP_SHARD_VALUE, shard.getValue());
     }
 
     @Override

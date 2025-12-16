@@ -18,11 +18,13 @@ package org.jkiss.dbeaver.ext.wmi.model;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.DBPImageProvider;
 import org.jkiss.dbeaver.model.data.DBDValueMeta;
 import org.jkiss.dbeaver.model.exec.*;
+import org.jkiss.dbeaver.model.impl.local.LocalStatement;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.wmi.service.*;
 
@@ -40,13 +42,16 @@ public class WMIResultSet implements DBCResultSet, DBCResultSetMetaData, DBCEnti
     private WMIObject row;
     private List<DBCAttributeMetaData> properties;
 
-    public WMIResultSet(DBCSession session, WMIClass classObject, Collection<WMIObject> rows) throws WMIException
+    private final DBCStatement statement;
+
+    public WMIResultSet(@NotNull DBCSession session, WMIClass classObject, Collection<WMIObject> rows) throws WMIException
     {
         this.session = session;
         this.classObject = classObject;
         this.rows = rows;
         this.iterator = rows.iterator();
         this.row = null;
+        this.statement = new LocalStatement(session, "");
         {
             // Init meta properties
             WMIObject metaObject;
@@ -84,7 +89,7 @@ public class WMIResultSet implements DBCResultSet, DBCResultSetMetaData, DBCEnti
     @Override
     public DBCStatement getSourceStatement()
     {
-        return null;
+        return statement;
     }
 
     @Override

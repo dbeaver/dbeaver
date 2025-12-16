@@ -260,8 +260,14 @@ public class AIAssistantImpl implements AIAssistant {
         return settingsManager.getSettings().getEngineConfiguration(activeEngine);
     }
 
-
     protected static <T> T callWithRetry(ThrowableSupplier<T, DBException> supplier) throws DBException {
+        return callWithRetry(null, supplier);
+    }
+
+    protected static <T> T callWithRetry(
+        @Nullable AIEngineResponseConsumer listener,
+        @NotNull ThrowableSupplier<T, DBException> supplier
+    ) throws DBException {
         int retry = 0;
         while (retry < MANY_REQUESTS_RETRIES) {
             try {
@@ -273,6 +279,10 @@ public class AIAssistantImpl implements AIAssistant {
                     RuntimeUtils.pause(MANY_REQUESTS_TIMEOUT);
                 }
             }
+        }
+        DBException dbException = new DBException("Request failed after " + MANY_REQUESTS_RETRIES + " attempts");
+        if (listener != null) {
+            listener.error(dbException);
         }
         throw new DBException("Request failed after " + MANY_REQUESTS_RETRIES + " attempts");
     }

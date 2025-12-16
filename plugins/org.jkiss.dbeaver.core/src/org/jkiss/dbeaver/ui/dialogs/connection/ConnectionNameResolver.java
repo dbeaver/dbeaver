@@ -105,7 +105,7 @@ public class ConnectionNameResolver implements IVariableResolver {
             if (CommonUtils.isEmpty(newName)) {
                 newName = CoreMessages.dialog_connection_wizard_final_default_new_connection_name;
             }
-            StringTokenizer st = new StringTokenizer(newName, "/\\:,?=%$#@!^&*()"); //$NON-NLS-1$
+            StringTokenizer st = new StringTokenizer(newName, "/\\"); //$NON-NLS-1$
             while (st.hasMoreTokens()) {
                 String nextPart = st.nextToken();
                 if (nextPart.matches("[0-9]+")) {
@@ -116,7 +116,7 @@ public class ConnectionNameResolver implements IVariableResolver {
             //newName = settings.getDriver().getName() + " - " + newName; //$NON-NLS-1$
             newName = CommonUtils.truncateString(newName, 50);
         }
-        return newName;
+        return CommonUtils.trim(CommonUtils.notEmpty(newName));
     }
 
     @Nullable

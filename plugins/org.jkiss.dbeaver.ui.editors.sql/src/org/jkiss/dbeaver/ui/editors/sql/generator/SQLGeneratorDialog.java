@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,6 +32,7 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.ui.IWorkbenchPartSite;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPScriptObject;
@@ -123,8 +124,9 @@ class SQLGeneratorDialog extends ViewSQLDialog {
                 getDialogBoundsSettings().getBoolean(DBPScriptObject.OPTION_INCLUDE_NESTED_OBJECTS));
 
         generateDDLJob = new AbstractJob("Generating DDL") {
+            @NotNull
             @Override
-            protected IStatus run(DBRProgressMonitor monitor) {
+            protected IStatus run(@NotNull DBRProgressMonitor monitor) {
                 try {
                     DBExecUtils.tryExecuteRecover(monitor, getExecutionContext().getDataSource(), param -> {
                         sqlGenerator.run(monitor);
@@ -290,8 +292,9 @@ class SQLGeneratorDialog extends ViewSQLDialog {
     protected void buttonPressed(int buttonId) {
         if (buttonId == IDialogConstants.RETRY_ID) {
             final AbstractJob job = new AbstractJob("Refresh metadata for SQL Generator") { //$NON-NLS-1$
+                @NotNull
                 @Override
-                protected IStatus run(DBRProgressMonitor monitor) {
+                protected IStatus run(@NotNull DBRProgressMonitor monitor) {
                     for (Object object : sqlGenerator.getObjects()) {
                         if (object instanceof DBSObject) {
                             DBSObject dbsObject = (DBSObject) object;
