@@ -102,7 +102,11 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
 
     private final TextViewer filtersTextViewer;
     private final StyledText filtersText;
-    private final ContentProposalAdapter filtersProposalAdapter;
+
+    //IME composition state (e.g., Zhuyin)
+    private IME filtersIme;
+
+    private ContentProposalAdapter filtersProposalAdapter;
 
     private final ToolBar filterToolbar;
     private ToolItem filtersClearButton;
@@ -160,6 +164,8 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
             this.filtersTextViewer.setDocument(new Document());
             this.filtersText = this.filtersTextViewer.getTextWidget();
 
+            this.filtersIme = new IME(this.filtersText, SWT.NONE);
+
             this.filtersText.setFont(BaseThemeSettings.instance.baseFont);
             TextViewerUndoManager undoManager = new TextViewerUndoManager(200);
             undoManager.connect(filtersTextViewer);
@@ -197,6 +203,7 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
                     filtersText.redraw();
                 }
             });
+
             this.filtersText.addModifyListener(new ModifyListener() {
                 @Override
                 public void modifyText(ModifyEvent e) {
@@ -208,26 +215,39 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
                     filtersProposalAdapter.refresh();
                 }
             });
+
             this.filtersText.addTraverseListener(e -> {
                 if (e.detail == SWT.TRAVERSE_RETURN) {
                     if (filterExpanded) {
                         e.doit = true;
                         return;
                     }
+                    //  handle enter/return for commit Chinese or when popup is open
+                    if (isImeComposing() || filtersProposalAdapter != null && filtersProposalAdapter.isProposalPopupOpen()) {
+                        e.doit = true;
+                        return;
+                    }
+
                     e.doit = false;
                     e.detail = SWT.TRAVERSE_NONE;
                 }
             });
 
             this.filtersText.addVerifyKeyListener(e -> {
-                if (e.keyCode == SWT.CR || e.keyCode == SWT.LF || e.character == SWT.CR) {
-                    if (filterExpanded && (e.stateMask & SWT.CTRL) == 0) {
+                if (e.character == SWT.CR || e.character == SWT.LF) {
+                    if (filterExpanded && (e.stateMask & SWT.MOD1) == 0) {
                         return;
                     }
-                    // Suppress Enter handling if filter is not expanded
+                    if (filtersProposalAdapter != null && filtersProposalAdapter.isProposalPopupOpen()) {
+                        return;
+                    }
+                    if (isImeComposing()) {
+                        return;
+                    }
                     e.doit = false;
                 }
             });
+
             this.filtersText.addKeyListener(new KeyAdapter() {
                 @Override
                 public void keyPressed(KeyEvent e) {
@@ -236,11 +256,16 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
                             return;
                         }
                         historyPanel.showFilterHistoryPopup();
-                    } else if (e.keyCode == SWT.CR || e.keyCode == SWT.LF || e.character == SWT.CR) {
+                    } else if (e.character == SWT.CR) {
                         if (filtersProposalAdapter != null && filtersProposalAdapter.isProposalPopupOpen()) {
                             return;
                         }
-                        if (filterExpanded && (e.stateMask & SWT.CTRL) == 0) {
+                        // allows add new line when filter is expanded
+                        if (filterExpanded && (e.stateMask & SWT.MOD1) == 0) {
+                            return;
+                        }
+                        // don't apply filter(need to commit symbols)
+                        if (isImeComposing()) {
                             return;
                         }
                         e.doit = false;
@@ -324,6 +349,10 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
             }
         });
 
+    }
+
+    private boolean isImeComposing() {
+        return filtersIme != null && !filtersIme.isDisposed() && filtersIme.getCaretOffset() != -1;
     }
 
     void enableFilters(boolean enableFilters) {
@@ -428,7 +457,7 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
         if (historyPanel != null && !historyPanel.isDisposed()) {
             historyPanel.redraw();
         }
-        if (filterExpandPanel != null && !filterExpandPanel.isDisposed() ){
+        if (filterExpandPanel != null && !filterExpandPanel.isDisposed()) {
             filterExpandPanel.redraw();
         }
         if (executePanel != null && !executePanel.isDisposed()) {
@@ -576,9 +605,9 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
     private Control createObjectPanel(Shell popup) throws PartInitException {
         Composite panel = new Composite(popup, SWT.NONE);
         GridLayout gl = new GridLayout(2, false);
-//        gl.marginWidth = 0;
+        //        gl.marginWidth = 0;
         gl.marginHeight = 0;
-//        gl.horizontalSpacing = 0;
+        //        gl.horizontalSpacing = 0;
         panel.setLayout(gl);
 
         Label iconLabel = new Label(panel, SWT.NONE);
@@ -640,9 +669,9 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
 
     @Override
     public IContentProposal[] getProposals(String contents, int position) {
-    	if(!viewer.getPreferenceStore().getBoolean(ResultSetPreferences.RESULT_SET_FILTER_AUTO_COMPLETE_PROPOSIAL)) {
-    		return null;
-    	}
+        if (!viewer.getPreferenceStore().getBoolean(ResultSetPreferences.RESULT_SET_FILTER_AUTO_COMPLETE_PROPOSIAL)) {
+            return null;
+        }
         SQLSyntaxManager syntaxManager = new SQLSyntaxManager();
         DBPDataSource dataSource = viewer.getDataSource();
         if (dataSource != null) {
