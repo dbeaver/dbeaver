@@ -63,8 +63,8 @@ public class ResultSetModel implements DBDResultSetModel {
 
     // Data
     private List<ResultSetRow> curRows = new ArrayList<>();
+    private final Set<ResultSetRow> changedRows = Collections.newSetFromMap(new IdentityHashMap<>());
     private Long totalRowCount = null;
-    private int changesCount = 0;
     private volatile boolean hasData = false;
     // Flag saying that edited values update is in progress
     private volatile DataSourceJob updateInProgress = null;
@@ -205,12 +205,10 @@ public class ResultSetModel implements DBDResultSetModel {
     }
 
     public void refreshChangeCount() {
-        changesCount = 0;
+        changedRows.clear();
         for (ResultSetRow row : curRows) {
-            if (row.getState() != ResultSetRow.STATE_NORMAL) {
-                changesCount++;
-            } else if (row.isChanged()) {
-                changesCount += row.getChangesCount();
+            if (row.getState() != ResultSetRow.STATE_NORMAL || row.isChanged()) {
+                changedRows.add(row);
             }
         }
     }
@@ -516,7 +514,7 @@ public class ResultSetModel implements DBDResultSetModel {
         row.values[rootIndex] = valueToEdit;
 
         if (updateChanges && row.getState() == ResultSetRow.STATE_NORMAL) {
-            changesCount++;
+            changedRows.add(row);
         }
 
         return true;
@@ -545,10 +543,8 @@ public class ResultSetModel implements DBDResultSetModel {
                 log.error(e);
             }
             row.clearChange(attr);
-            if (row.getState() == ResultSetRow.STATE_NORMAL) {
-                changesCount--;
-            }
         }
+        changedRows.remove(row);
     }
 
     boolean isDynamicMetadata() {
@@ -627,7 +623,7 @@ public class ResultSetModel implements DBDResultSetModel {
 
         this.metadataDynamic =
             this.attributes.length > 0 &&
-            this.attributes[0].getTopParent().getDataSource().getInfo().isDynamicMetadata();
+                this.attributes[0].getTopParent().getDataSource().getInfo().isDynamicMetadata();
 
         {
             // Detect document attribute
@@ -670,8 +666,8 @@ public class ResultSetModel implements DBDResultSetModel {
         }
         return
             CommonUtils.equalObjects(ent1.getCatalogName(), ent2.getCatalogName()) &&
-            CommonUtils.equalObjects(ent1.getSchemaName(), ent2.getSchemaName()) &&
-            CommonUtils.equalObjects(ent1.getEntityName(), ent2.getEntityName());
+                CommonUtils.equalObjects(ent1.getSchemaName(), ent2.getSchemaName()) &&
+                CommonUtils.equalObjects(ent1.getEntityName(), ent2.getEntityName());
     }
 
     void resetMetaData() {
@@ -745,7 +741,7 @@ public class ResultSetModel implements DBDResultSetModel {
                 DBDAttributeBinding binding = DBUtils.findObject(attributes, co.getAttributeName());
                 if (binding != null) {
                     List<AttributeColorSettings> cmList =
-                            colorMapping.computeIfAbsent(binding, k -> new ArrayList<>());
+                        colorMapping.computeIfAbsent(binding, k -> new ArrayList<>());
                     cmList.add(new AttributeColorSettings(co));
                 } else {
                     log.debug("Attribute '" + co.getAttributeName() + "' not found in bindings. Skip colors.");
@@ -804,8 +800,14 @@ public class ResultSetModel implements DBDResultSetModel {
                                 double value = DBExecUtils.makeNumericValue(cellValue);
                                 if (value >= minValue && value <= maxValue) {
                                     if (acs.colorBackground != null && acs.colorBackground2 != null && value >= minValue && value <= maxValue) {
-                                            RGB bgRowRGB = ResultSetUtils.makeGradientValue(acs.colorBackground.getRGB(), acs.colorBackground2.getRGB(), minValue, maxValue, value);
-                                            background = UIUtils.getSharedColor(bgRowRGB);
+                                        RGB bgRowRGB = ResultSetUtils.makeGradientValue(
+                                            acs.colorBackground.getRGB(),
+                                            acs.colorBackground2.getRGB(),
+                                            minValue,
+                                            maxValue,
+                                            value
+                                        );
+                                        background = UIUtils.getSharedColor(bgRowRGB);
 
                                         // FIXME: coloring value before and after range. Maybe we need an option for this.
                                         /* else if (value < minValue) {
@@ -901,6 +903,7 @@ public class ResultSetModel implements DBDResultSetModel {
         this.curRows = new ArrayList<>();
         this.totalRowCount = null;
         this.singleSourceEntity = null;
+        this.changedRows.clear();
 
         this.hasData = false;
     }
@@ -910,7 +913,10 @@ public class ResultSetModel implements DBDResultSetModel {
     }
 
     public boolean isDirty() {
-        return changesCount != 0;
+        return !changedRows.isEmpty()
+            || curRows.stream()
+            .map(ResultSetRow::getState)
+            .anyMatch(state -> state != ResultSetRow.STATE_NORMAL);
     }
 
     public boolean isUpdateInProgress() {
@@ -932,7 +938,6 @@ public class ResultSetModel implements DBDResultSetModel {
         newRow.setState(ResultSetRow.STATE_ADDED);
         shiftRows(newRow, 1);
         curRows.add(rowNum, newRow);
-        changesCount++;
         return newRow;
     }
 
@@ -950,7 +955,7 @@ public class ResultSetModel implements DBDResultSetModel {
         } else {
             // Mark row as deleted
             row.setState(ResultSetRow.STATE_REMOVED);
-            changesCount++;
+            changedRows.add(row);
             return false;
         }
     }
@@ -960,6 +965,7 @@ public class ResultSetModel implements DBDResultSetModel {
         int index = row.getVisualNumber();
         if (this.curRows.size() > index) {
             this.curRows.remove(index);
+            changedRows.remove(row);
             this.shiftRows(row, -1);
         } else {
             log.debug("Error removing row from list: invalid row index: " + index);
@@ -1154,9 +1160,9 @@ public class ResultSetModel implements DBDResultSetModel {
                     if (comparator != null) {
                         result = comparator.compare(cell1, cell2);
                     } else if (cell1 instanceof String && cell2 instanceof String) {
-                    	result = (cell1.toString()).compareToIgnoreCase(cell2.toString());
+                        result = (cell1.toString()).compareToIgnoreCase(cell2.toString());
                     } else {
-                    	result = DBUtils.compareDataValues(cell1, cell2);
+                        result = DBUtils.compareDataValues(cell1, cell2);
                     }
 
                     if (co.isOrderDescending()) {
