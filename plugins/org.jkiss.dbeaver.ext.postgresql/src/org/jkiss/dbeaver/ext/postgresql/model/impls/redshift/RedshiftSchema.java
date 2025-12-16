@@ -76,7 +76,7 @@ public class RedshiftSchema extends PostgreSchema {
             StringBuilder sql = new StringBuilder();
             sql.append("""
                 SELECT c.oid, c.relname::varchar AS relname, c.relnamespace, c.relowner, c.relkind, c.relpages, c.reltuples, d.description,
-                       CASE WHEN mv.name IS NOT NULL THEN 'm' ELSE c.relkind END AS relkind_rs
+                       mv.name is not null as is_mv
                 FROM pg_catalog.pg_class c
                 JOIN SVV_TABLE_INFO t ON t.table_id = c.oid
                 LEFT JOIN SVV_MV_INFO mv ON mv.schema_name = t."schema" AND mv.name = t."table"
@@ -89,7 +89,7 @@ public class RedshiftSchema extends PostgreSchema {
             sql.append("""
                 UNION ALL
                 SELECT c.oid, c.relname::varchar AS relname, c.relnamespace, c.relowner, c.relkind, c.relpages, c.reltuples, d.description,
-                       NULL AS relkind_rs
+                       false AS is_mv
                 FROM pg_catalog.pg_class c
                 JOIN pg_catalog.pg_namespace n ON n.oid = c.relnamespace
                 LEFT JOIN SVV_MV_INFO mv2 ON mv2.schema_name = n.nspname AND mv2.name = c.relname
@@ -120,10 +120,9 @@ public class RedshiftSchema extends PostgreSchema {
             @NotNull PostgreTableContainer container,
             @NotNull JDBCResultSet dbResult
         ) throws SQLException, DBException {
-            String kindString = JDBCUtils.safeGetString(dbResult, "relkind_rs");
-            if (kindString != null) {
-                PostgreClass.RelKind kind = PostgreClass.RelKind.valueOf(kindString);
-                return container.getDataSource().getServerType().createRelationOfClass(RedshiftSchema.this, kind, dbResult);
+            boolean isMv = JDBCUtils.safeGetBoolean(dbResult, "is_mv");
+            if (isMv) {
+                return container.getDataSource().getServerType().createRelationOfClass(RedshiftSchema.this, PostgreClass.RelKind.m, dbResult);
             }
             return super.fetchObject(session, container, dbResult);
         }
