@@ -429,7 +429,7 @@ public class SQLQueryJob extends DataSourceJob
         }
         if (element instanceof SQLControlCommand controlCommand) {
             try {
-                if (controlCommand.getCommandId().equalsIgnoreCase("pause")) {
+                if (controlCommand.getCommandId().equals("pause")) {
                     controlCommand.setData(listener);
                 }
                 SQLControlResult controlResult = scriptContext.executeControlCommand(session.getProgressMonitor(), controlCommand);
