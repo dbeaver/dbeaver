@@ -10,6 +10,7 @@ Bundle-ActivationPolicy: lazy
 Bundle-Activator: org.jkiss.dbeaver.ui.editors.sql.internal.SQLEditorActivator
 Require-Bundle: org.jkiss.dbeaver.model.sql;visibility:=reexport,
  org.jkiss.dbeaver.model.lsm;visibility:=reexport,
+ org.jkiss.dbeaver.model.lsp,
  org.jkiss.dbeaver.ui;visibility:=reexport,
  org.jkiss.dbeaver.data.transfer,
  org.jkiss.dbeaver.data.transfer.ui,

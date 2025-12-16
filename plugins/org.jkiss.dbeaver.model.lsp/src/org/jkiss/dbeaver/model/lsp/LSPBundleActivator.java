@@ -26,7 +26,7 @@ import java.net.Socket;
 import java.net.SocketException;
 
 public class LSPBundleActivator implements BundleActivator {
-    private static final int PORT = 8979;
+    private static final int PORT = 8989;
 
     private volatile boolean stopping;
     private volatile ServerSocket serverSocket;

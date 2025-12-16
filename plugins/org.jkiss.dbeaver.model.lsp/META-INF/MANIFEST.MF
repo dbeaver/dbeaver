@@ -5,7 +5,7 @@ Bundle-Vendor: DBeaver Corp
 Bundle-Version: 25.0.1.qualifier
 Bundle-Release-Date: 20251207
 Bundle-SymbolicName: org.jkiss.dbeaver.model.lsp;singleton:=true
-Bundle-Activator: org.jkiss.dbeaver.model.lsp.LSPBundleActivator
+Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-21
 Require-Bundle: org.jkiss.dbeaver.model,
  org.jkiss.dbeaver.model.sql,
