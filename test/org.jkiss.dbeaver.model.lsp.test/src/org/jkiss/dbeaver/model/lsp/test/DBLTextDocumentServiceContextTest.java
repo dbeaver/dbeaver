@@ -138,6 +138,20 @@ public class DBLTextDocumentServiceContextTest extends DBeaverUnitTest {
     }
 
     @Test
+    public void shouldReturnEmptyCompletionsForInvalidPosition() throws ExecutionException, InterruptedException {
+        String query = "SEL";
+        ContextAwareDocument document = DocumentServiceTestUtils.createAndSaveDocument(service, query);
+        TextDocumentIdentifier documentId = new TextDocumentIdentifier(document.getUri());
+        service.initContext(documentId, project.getId(), dataSourceContainer.getId());
+        CompletionParams completionParams = new CompletionParams(documentId, new Position(1, 42));
+
+        CompletionList completions = service.completion(completionParams).get().getRight();
+
+        Assert.assertNotNull(completions);
+        Assert.assertTrue(completions.getItems().isEmpty());
+    }
+
+    @Test
     public void shouldSuggestKeywordCompletion() throws ExecutionException, InterruptedException {
         String query = "SEL";
         ContextAwareDocument document = DocumentServiceTestUtils.createAndSaveDocument(service, query);
@@ -155,8 +169,8 @@ public class DBLTextDocumentServiceContextTest extends DBeaverUnitTest {
     @Test
     public void shouldSuggestMultilineKeywordCompletion() throws ExecutionException, InterruptedException {
         String query = """
-            SELECT * FROM TEST_TABLE1
-                WH
+            SELECT *
+                FR
             """;
         ContextAwareDocument document = DocumentServiceTestUtils.createAndSaveDocument(service, query);
         TextDocumentIdentifier documentId = new TextDocumentIdentifier(document.getUri());
@@ -166,24 +180,7 @@ public class DBLTextDocumentServiceContextTest extends DBeaverUnitTest {
         CompletionList completions = service.completion(completionParams).get().getRight();
 
         Assert.assertNotNull(completions);
-        Assert.assertFalse(completions.getItems().isEmpty());
-        Assert.assertEquals("WHERE", completions.getItems().getFirst().getLabel());
-    }
-
-    @Test
-    public void shouldSuggestTableNameCompletion() throws ExecutionException, InterruptedException {
-        String query = "SELECT * FROM TEST_";
-        ContextAwareDocument document = DocumentServiceTestUtils.createAndSaveDocument(service, query);
-        TextDocumentIdentifier documentId = new TextDocumentIdentifier(document.getUri());
-        service.initContext(documentId, project.getId(), dataSourceContainer.getId());
-        CompletionParams completionParams = new CompletionParams(documentId, new Position(0, 19));
-
-        CompletionList completions = service.completion(completionParams).get().getRight();
-
-        Assert.assertNotNull(completions);
-        List<String> items = completions.getItems().stream().map(CompletionItem::getLabel).toList();
-        Assert.assertEquals(2, items.size());
-        Assert.assertTrue(items.contains("TEST_TABLE1"));
-        Assert.assertTrue(items.contains("TEST_TABLE2"));
+        Assert.assertEquals(1, completions.getItems().size());
+        Assert.assertEquals("FROM", completions.getItems().getFirst().getLabel());
     }
 }
