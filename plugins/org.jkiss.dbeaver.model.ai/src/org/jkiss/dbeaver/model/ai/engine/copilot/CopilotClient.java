@@ -179,26 +179,21 @@ public class CopilotClient extends AbstractHttpAIClient {
             request,
             line -> {
                 if (line.startsWith(DATA_EVENT)) {
-
                     String data = line.substring(6).trim();
-                    if (DONE_EVENT.equals(data)) {
-                        listener.close();
-                    } else {
-                        try {
-                            CopilotChatChunk chunk = GSON.fromJson(data, CopilotChatChunk.class);
-                            List<String> choices = chunk.choices().stream()
-                                .takeWhile(it -> it.delta().content() != null)
-                                .map(it -> it.delta().content())
-                                .toList();
-                            listener.nextChunk(new AIEngineResponseChunk(choices));
-                        } catch (Exception e) {
-                            listener.error(e);
-                        }
+                    try {
+                        CopilotChatChunk chunk = GSON.fromJson(data, CopilotChatChunk.class);
+                        List<String> choices = chunk.choices().stream()
+                            .takeWhile(it -> it.delta().content() != null)
+                            .map(it -> it.delta().content())
+                            .toList();
+                        listener.nextChunk(new AIEngineResponseChunk(choices));
+                    } catch (Exception e) {
+                        listener.error(e);
                     }
                 }
             },
             listener::error,
-            listener::close
+            listener::completeBlock
         );
     }
 
