@@ -172,7 +172,7 @@ public class SQLGroupingQueryGenerator {
             sql.append(groupAttributes.get(i).prepareSqlString(subqueryAlias));
         }
         boolean isCountPresent = groupFunctions.stream()
-            .anyMatch(f -> f.equalsIgnoreCase(DEFAULT_FUNCTION));
+            .anyMatch(DEFAULT_FUNCTION::equalsIgnoreCase);
 
         if (isCountPresent && showDuplicatesOnly) {
             sql.append("\nHAVING ");
