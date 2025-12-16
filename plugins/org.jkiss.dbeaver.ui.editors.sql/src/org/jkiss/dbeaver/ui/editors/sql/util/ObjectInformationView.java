@@ -110,8 +110,9 @@ public class ObjectInformationView {
 
         final DBPNamedObject[] targetObject = {input};
         AbstractJob resolveObject = new AbstractJob("Resolving object") {
+            @NotNull
             @Override
-            protected IStatus run(DBRProgressMonitor monitor) {
+            protected IStatus run(@NotNull DBRProgressMonitor monitor) {
                 if (input instanceof DBSObjectReference objectReference) {
                     try {
                         targetObject[0] = objectReference.resolveObject(monitor);
@@ -191,8 +192,9 @@ public class ObjectInformationView {
         itemListControl.setLayoutData(gridData);
         final Object[] columnNodes = new Object[1];
         AbstractJob abstractJob = new AbstractJob("Populating table tip columns") {
+            @NotNull
             @Override
-            protected IStatus run(DBRProgressMonitor monitor) {
+            protected IStatus run(@NotNull DBRProgressMonitor monitor) {
                 monitor.beginTask("Load table columns", 1);
                 try {
                     columnNodes[0] = getColumnNodes(monitor, node);
