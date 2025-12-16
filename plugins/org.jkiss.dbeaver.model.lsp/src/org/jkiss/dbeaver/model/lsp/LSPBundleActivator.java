@@ -61,7 +61,6 @@ public class LSPBundleActivator implements BundleActivator {
                 }
             } catch (Exception e) {
                 if (!stopping) {
-                    // start() can't throw here (we're already in a background thread), so just log
                     e.printStackTrace();
                 }
             } finally {

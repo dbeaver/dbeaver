@@ -43,7 +43,7 @@ public class SQLEditorActivator extends AbstractUIPlugin {
         plugin = this;
         preferences = new BundlePreferenceStore(getBundle());
 
-        new LSPBundleActivator().start(null);
+        new LSPBundleActivator().start(context);
 
         DBRFeatureRegistry.getInstance().registerFeatures(SQLEditorFeatures.class);
     }
