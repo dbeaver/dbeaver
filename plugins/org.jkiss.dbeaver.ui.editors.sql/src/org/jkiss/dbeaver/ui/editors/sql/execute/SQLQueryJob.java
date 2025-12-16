@@ -202,8 +202,9 @@ public class SQLQueryJob extends DataSourceJob
         this.fetchFlags = fetchFlags;
     }
 
+    @NotNull
     @Override
-    protected IStatus run(DBRProgressMonitor monitor)
+    protected IStatus run(@NotNull DBRProgressMonitor monitor)
     {
         RuntimeUtils.setThreadName("SQL script execution");
         statistics = new DBCStatistics();

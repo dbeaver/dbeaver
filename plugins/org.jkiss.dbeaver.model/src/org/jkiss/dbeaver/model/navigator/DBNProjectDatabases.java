@@ -384,8 +384,9 @@ public class DBNProjectDatabases extends DBNNode implements DBNContainer, DBPEve
                                 {
                                     setUser(true);
                                 }
+                                @NotNull
                                 @Override
-                                protected IStatus run(DBRProgressMonitor monitor) {
+                                protected IStatus run(@NotNull DBRProgressMonitor monitor) {
                                     try {
                                         nodeToLoad.getChildren(monitor);
                                     } catch (Exception e) {

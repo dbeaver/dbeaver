@@ -794,6 +794,8 @@
                     <parameter name="stored-quoted-case" value="lower"/>
                     <parameter name="stored-unquoted-case" value="lower"/>
                     <parameter name="identifier-quotes" value="`:`"/>
+                    <property  name="varcharAsString" value="true"/>
+                    <property  name="conmode" value="1"/>
                 </driver>
 
                 <!-- TDengine Cloud -->

@@ -29,8 +29,6 @@ public class HiddenOptionsForSubcommands extends HiddenOptions {
     private String nl;
     @CommandLine.Option(names = {"-data"}, hidden = true, arity = "1", description = "Workspace location")
     private String data;
-    @CommandLine.Option(names = {"-nosplash"}, hidden = true, description = "Hide splash screen on start")
-    private boolean noSplash;
     @CommandLine.Option(names = {CLIConstants.COMMAND_REUSE_WORKSPACE}, hidden = true)
     private boolean reuseWorkspace;
 }
