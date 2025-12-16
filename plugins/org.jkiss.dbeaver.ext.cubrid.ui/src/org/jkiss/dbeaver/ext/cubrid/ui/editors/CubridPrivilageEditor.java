@@ -143,8 +143,9 @@ public class CubridPrivilageEditor extends AbstractDatabaseObjectEditor<CubridPr
 
         new AbstractJob("Load groups")
         {
+            @NotNull
             @Override
-            protected IStatus run(DBRProgressMonitor monitor) {
+            protected IStatus run(@NotNull DBRProgressMonitor monitor) {
                 List<CubridPrivilage> cubridUsers;
                 try {
                     cubridUsers = user.getDataSource().getCubridPrivilages(monitor);

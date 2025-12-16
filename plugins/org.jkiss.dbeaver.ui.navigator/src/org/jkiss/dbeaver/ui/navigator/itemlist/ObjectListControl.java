@@ -1324,8 +1324,9 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
             super(UINavigatorMessages.controls_object_list_job_props_read);
         }
 
+        @NotNull
         @Override
-        protected IStatus run(final DBRProgressMonitor monitor) {
+        protected IStatus run(@NotNull final DBRProgressMonitor monitor) {
             final Map<OBJECT_TYPE, List<ObjectColumn>> objectMap = obtainLazyObjects();
             if (isDisposed()) {
                 return Status.OK_STATUS;
