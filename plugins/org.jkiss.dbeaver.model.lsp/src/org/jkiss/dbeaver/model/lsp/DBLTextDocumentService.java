@@ -34,10 +34,7 @@ import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
-import org.jkiss.dbeaver.model.lsp.context.ContextAwareDocument;
-import org.jkiss.dbeaver.model.lsp.context.LspSQLCompletionContext;
-import org.jkiss.dbeaver.model.lsp.context.LspSQLCompletionContextParser;
-import org.jkiss.dbeaver.model.lsp.context.LspSQLRuleManager;
+import org.jkiss.dbeaver.model.lsp.context.*;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLSyntaxManager;
 import org.jkiss.dbeaver.model.sql.completion.SQLCompletionContext;
@@ -58,7 +55,7 @@ import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class DBLTextDocumentService implements TextDocumentService, LanguageClientAware {
+public class DBLTextDocumentService implements TextDocumentService, LanguageClientAware, DocumentContextService {
     private static final Log log = Log.getLog(DBLTextDocumentService.class);
 
     public static final Map<SQLTokenType, Pair<Integer, String>> SUPPORTED_TOKEN_TYPES = Map.of(
@@ -117,10 +114,7 @@ public class DBLTextDocumentService implements TextDocumentService, LanguageClie
         log.debug("\"didSave with params: \"" + params);
     }
 
-    /**
-     * Initializes context for a document
-     * Context is required for a specific SQL dialect support and completion
-     */
+    @Override
     public void initContext(
         @NotNull TextDocumentIdentifier documentId,
         @NotNull String projectId,
