@@ -199,7 +199,7 @@ public class DBLTextDocumentService implements TextDocumentService, LanguageClie
         return CompletableFutures.computeAsync(cancelChecker -> {
             try {
                 return completion(params, cancelChecker);
-            } catch (InterruptedException | InvocationTargetException | DBException e) {
+            } catch (Exception e) {
                 log.error("Error when getting completion items: ", e);
                 return Either.forRight(new CompletionList());
             }
