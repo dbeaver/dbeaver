@@ -54,6 +54,7 @@ import org.jkiss.dbeaver.model.data.hints.DBDCellHintProvider;
 import org.jkiss.dbeaver.model.data.hints.DBDValueHint;
 import org.jkiss.dbeaver.model.data.hints.DBDValueHintProvider;
 import org.jkiss.dbeaver.model.exec.DBCException;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.DBExecUtils;
 import org.jkiss.dbeaver.model.impl.data.DBDValueError;
@@ -2136,6 +2137,17 @@ public class SpreadsheetPresentation extends AbstractPresentation
                             }
                             if (rowIdentifier == null) {
                                 return "Table metadata not found. Data edit is not possible.";
+                            }
+                            DBCExecutionContext executionContext = getController().getExecutionContext();
+                            if (executionContext != null) {
+                                boolean useAllColumnsAsKey = executionContext
+                                    .getDataSource()
+                                    .getContainer()
+                                    .getPreferenceStore()
+                                    .getBoolean(ResultSetPreferences.RS_EDIT_USE_ALL_COLUMNS);
+                                if (useAllColumnsAsKey) {
+                                    return "Virtual key is used";
+                                }
                             }
                             if (rowIdentifier.isIncomplete()) {
                                 return "No unique key was found. Data modification is not possible.";
