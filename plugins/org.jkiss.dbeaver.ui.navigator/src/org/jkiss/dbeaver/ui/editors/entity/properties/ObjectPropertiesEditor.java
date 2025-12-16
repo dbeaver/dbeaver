@@ -311,9 +311,11 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
             Point propsSize = propsPlaceholder.getSize();
             int budget = sashSize.y - sashForm.getSashWidth();
             int height = propsPlaceholder.computeSize(propsSize.x, SWT.DEFAULT).y;
-            int[] newWeights = {height, budget - height};
-            if (!Arrays.equals(newWeights, sashForm.getWeights())) {
-                sashForm.setWeights(newWeights);
+            if (height < budget) {
+                int[] newWeights = {height, budget - height};
+                if (!Arrays.equals(newWeights, sashForm.getWeights())) {
+                    sashForm.setWeights(newWeights);
+                }
             }
         }
     }

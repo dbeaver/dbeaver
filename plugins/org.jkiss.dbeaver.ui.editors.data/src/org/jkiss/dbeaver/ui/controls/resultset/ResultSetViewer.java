@@ -122,8 +122,8 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
-import java.util.List;
 import java.util.*;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 /**
@@ -432,8 +432,9 @@ public class ResultSetViewer extends Viewer
         }
 
         themeUpdateJob = new AbstractJob("Update theme") {
+            @NotNull
             @Override
-            protected IStatus run(DBRProgressMonitor monitor) {
+            protected IStatus run(@NotNull DBRProgressMonitor monitor) {
                 if (!getControl().isDisposed()) {
                     UIUtils.syncExec(() -> {
                         if (!getControl().isDisposed()) {
@@ -949,6 +950,7 @@ public class ResultSetViewer extends Viewer
                 context, getDataSource(), null, IResultSetPresentation.PresentationType.COLUMNS));
         }
         activePresentation.createPresentation(this, presentationPanel);
+        trackPresentationStatistics();
 
         // Clear panels toolbar
         if (panelSwitchFolder != null) {
@@ -1071,6 +1073,19 @@ public class ResultSetViewer extends Viewer
                     control.setFocus();
                 }
             });
+        }
+    }
+
+    private void trackPresentationStatistics() {
+        Map<String, Object> params = new HashMap<>();
+        DBPDataSource dataSource = getDataSource();
+        if (activePresentationDescriptor != null && dataSource != null) {
+            params.put("presentationId", activePresentationDescriptor.getId());
+            params.put("driver", dataSource.getContainer().getDriver().getPreconfiguredId());
+
+        }
+        if (!params.isEmpty()) {
+            DataEditorFeatures.RESULT_SET_PRESENTATION_SELECTED.use(params);
         }
     }
 
@@ -1791,8 +1806,9 @@ public class ResultSetViewer extends Viewer
         }
         if (needRefresh) {
             new AbstractJob("Refresh hint cache") {
+                @NotNull
                 @Override
-                protected IStatus run(DBRProgressMonitor monitor) {
+                protected IStatus run(@NotNull DBRProgressMonitor monitor) {
                     try {
                         model.getHintContext().cacheRequiredData(
                             monitor,
@@ -2101,6 +2117,14 @@ public class ResultSetViewer extends Viewer
         //redrawData(false);
         activePresentation.refreshData(true, false, false);
         activePresentation.changeMode(recordMode);
+        if (recordMode) {
+            DBPDataSource dataSource = getDataSource();
+            if (dataSource != null) {
+                DataEditorFeatures.RESULT_SET_PRESENTATION_RECORD.use(
+                    Map.of("driver", dataSource.getContainer().getDriver().getPreconfiguredId())
+                );
+            }
+        }
         updateStatusMessage();
 
         //restorePresentationState(state);
@@ -2158,6 +2182,19 @@ public class ResultSetViewer extends Viewer
         boolean newRow = (curRow != null && curRow.getState() == ResultSetRow.STATE_ADDED);
         if (!newRow) {
             String status = DBExecUtils.getAttributeReadOnlyStatus(attr, checkKey);
+            if (status != null && checkKey) {
+                DBCExecutionContext executionContext = getExecutionContext();
+                if (executionContext != null) {
+                    boolean useAllColumnsAsKey = executionContext
+                        .getDataSource()
+                        .getContainer()
+                        .getPreferenceStore()
+                        .getBoolean(ResultSetPreferences.RS_EDIT_USE_ALL_COLUMNS);
+                    if (useAllColumnsAsKey) {
+                        return null;
+                    }
+                }
+            }
             if (status != null) {
                 return status;
             }
@@ -3282,7 +3319,7 @@ public class ResultSetViewer extends Viewer
                     editMenu.add(ActionUtils.makeCommandContribution(site, IResultSetCommands.CMD_CELL_SET_DEFAULT, commandName, image));
                 }
             }
-            if (row.getState() == ResultSetRow.STATE_REMOVED || (row.changes != null && row.changes.containsKey(attr))) {
+            if (row.getState() == ResultSetRow.STATE_REMOVED || (row.isChanged(attr))) {
                 editMenu.add(ActionUtils.makeCommandContribution(site, IResultSetCommands.CMD_CELL_RESET));
             }
 
@@ -4448,8 +4485,9 @@ public class ResultSetViewer extends Viewer
             {
                 setUser(false);
             }
+            @NotNull
             @Override
-            protected IStatus run(DBRProgressMonitor monitor) {
+            protected IStatus run(@NotNull DBRProgressMonitor monitor) {
                 if (dataPumpRunning.get()) {
                     // Retry later
                     schedule(50);
@@ -5193,6 +5231,7 @@ public class ResultSetViewer extends Viewer
             this.presentationState = savePresentationState();
         }
 
+        @NotNull
         @Override
         protected IStatus run(@NotNull DBRProgressMonitor monitor) {
             if (!acquireDataReadLock()) {

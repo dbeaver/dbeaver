@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.ui.statistics;
 
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -63,8 +64,9 @@ public class StatisticsTransmitter {
                 {
                     setSystem(true);
                 }
+                @NotNull
                 @Override
-                protected IStatus run(DBRProgressMonitor monitor) {
+                protected IStatus run(@NotNull DBRProgressMonitor monitor) {
                     sendStatistics(monitor, false);
                     return Status.OK_STATUS;
                 }

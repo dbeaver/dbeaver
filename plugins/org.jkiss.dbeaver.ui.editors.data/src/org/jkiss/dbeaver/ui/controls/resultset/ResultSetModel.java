@@ -23,7 +23,9 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
-import org.jkiss.dbeaver.model.*;
+import org.jkiss.dbeaver.model.DBPDataKind;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.*;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.exec.trace.DBCTrace;
@@ -207,8 +209,8 @@ public class ResultSetModel implements DBDResultSetModel {
         for (ResultSetRow row : curRows) {
             if (row.getState() != ResultSetRow.STATE_NORMAL) {
                 changesCount++;
-            } else if (row.changes != null) {
-                changesCount += row.changes.size();
+            } else if (row.isChanged()) {
+                changesCount += row.getChangesCount();
             }
         }
     }
@@ -460,11 +462,8 @@ public class ResultSetModel implements DBDResultSetModel {
         if (row.getState() != ResultSetRow.STATE_NORMAL) {
             updateChanges = false;
         }
-        if (updateChanges && row.changes == null) {
-            row.changes = new HashMap<>();
-        }
 
-        Object oldHistoricValue = updateChanges ? row.changes.get(topAttribute) : null;
+        boolean isOldHistoricValueAbsent = !row.isChanged(attr);
         Object currentValue = row.values[rootIndex];
         Object valueToEdit = currentValue;
 
@@ -478,7 +477,7 @@ public class ResultSetModel implements DBDResultSetModel {
 
         if (currentValue instanceof DBDValue) {
             // It is complex
-            if (updateChanges && oldHistoricValue == null) {
+            if (updateChanges && isOldHistoricValueAbsent) {
                 // Save original to history and create a copy
                 if (currentValue instanceof DBDValueCloneable vc) {
                     try {
@@ -489,16 +488,16 @@ public class ResultSetModel implements DBDResultSetModel {
                 } else {
                     log.debug("Cannot copy complex value. Undo is not possible!");
                 }
-                row.changes.put(topAttribute, currentValue);
+                row.addChange(topAttribute, currentValue);
             }
         } else {
-            if (updateChanges && oldHistoricValue == null) {
-                row.changes.put(topAttribute, currentValue);
+            if (updateChanges && isOldHistoricValueAbsent) {
+                row.addChange(topAttribute, currentValue);
             }
         }
         if (updateChanges && attr != topAttribute) {
             // Save reference on top attribute
-            row.changes.put(attr, topAttribute);
+            row.addChange(attr, topAttribute);
         }
 
         if (value instanceof DBDValue) {
@@ -526,19 +525,14 @@ public class ResultSetModel implements DBDResultSetModel {
     void resetCellValue(@NotNull DBDAttributeBinding attr, @NotNull ResultSetRow row, @Nullable int[] rowIndexes) {
         if (row.getState() == ResultSetRow.STATE_REMOVED) {
             row.setState(ResultSetRow.STATE_NORMAL);
-        } else if (row.changes != null && row.changes.containsKey(attr)) {
+        } else if (row.isChanged(attr)) {
             DBUtils.resetValue(getCellValue(attr, row, rowIndexes, false));
             try {
-                Object origValue = row.changes.get(attr);
+                Object origValue = row.getChange(attr);
                 if (origValue instanceof DBDAttributeBinding refAttr) {
-                    // We reset entire row changes. Cleanup all references on the same top attribute + reset top attribute value
-                    for (var changedValues = row.changes.entrySet().iterator(); changedValues.hasNext(); ) {
-                        if (changedValues.next().getValue() == origValue) {
-                            changedValues.remove();
-                        }
-                    }
+                    // We reset top attribute value
                     attr = refAttr;
-                    origValue = row.changes.get(attr);
+                    origValue = row.getChange(attr);
                     rowIndexes = null;
                 }
                 updateCellValue(
@@ -550,7 +544,7 @@ public class ResultSetModel implements DBDResultSetModel {
             } catch (DBException e) {
                 log.error(e);
             }
-            row.resetChange(attr);
+            row.clearChange(attr);
             if (row.getState() == ResultSetRow.STATE_NORMAL) {
                 changesCount--;
             }
