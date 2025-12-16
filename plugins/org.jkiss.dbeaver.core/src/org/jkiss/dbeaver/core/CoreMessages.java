@@ -448,6 +448,8 @@ public class CoreMessages extends NLS {
     public static String pref_page_database_label_disable_client_application_name;
     public static String pref_page_database_label_override_client_application_name;
     public static String pref_page_database_label_client_application_name;
+    public static String pref_page_database_label_add_auto_query_identification_comment;
+    public static String pref_page_database_label_add_auto_query_identification_comment_tip;
 
     // MetaData
     public static String pref_page_database_general_separate_meta_connection_tip;
