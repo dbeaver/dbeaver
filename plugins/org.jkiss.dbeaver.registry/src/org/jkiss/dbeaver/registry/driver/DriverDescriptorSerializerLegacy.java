@@ -214,6 +214,14 @@ public class DriverDescriptorSerializerLegacy extends DriverDescriptorSerializer
                                             // we need to relativize path and exclude path variables in config file
                                             normalizedFilePath = DriverUtils.getDistributedLibraryPath(file.getFile()).replace('\\', '/');
                                         }
+                                        if (!IOUtils.isFileFromDefaultFS(file.getFile())) {
+                                            // relativize path to workspace folder because in external fs path
+                                            // may contain additional information like a bucket name
+                                            var workspaceFolder = DBWorkbench
+                                                .getPlatform().getWorkspace()
+                                                .getAbsolutePath();
+                                            normalizedFilePath = workspaceFolder.relativize(file.getFile()).toString();
+                                        }
                                         xml.addAttribute(
                                             RegistryConstants.ATTR_PATH,
                                             substitutePathVariables(pathSubstitutions, normalizedFilePath)
@@ -468,17 +476,13 @@ public class DriverDescriptorSerializerLegacy extends DriverDescriptorSerializer
 
                                 Path filePath = Path.of(path);
                                 if ((curDriver.isCustom() || curLibrary.isDownloadable())
-                                    && DBWorkbench.getPlatform().getApplication()
-                                    .isMultiuser()) {
+                                    && DBWorkbench.getPlatform().getApplication().isMultiuser()
+                                ) {
                                     var workspaceFolder = DBWorkbench
                                         .getPlatform().getWorkspace()
                                         .getAbsolutePath();
                                     if (!IOUtils.isFileFromDefaultFS(workspaceFolder)) {
-                                        String pathStr = path;
-                                        if (pathStr.startsWith("/")) {
-                                            pathStr = path.substring(1);
-                                        }
-                                        filePath = workspaceFolder.resolve(pathStr);
+                                        filePath = workspaceFolder.resolve(path);
                                     }
                                 }
                                 DriverFileInfo info = new DriverFileInfo(
