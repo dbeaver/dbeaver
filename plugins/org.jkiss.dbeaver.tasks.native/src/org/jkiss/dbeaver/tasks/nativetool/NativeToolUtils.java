@@ -22,7 +22,6 @@ import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DatabaseURL;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriverConfigurationType;
-import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -132,10 +131,6 @@ public abstract class NativeToolUtils {
             }
         }
         cmd.add("--host=" + hostname);
-        DBWHandlerConfiguration sshTunnelHandler = connectionInfo.getHandler("ssh_tunnel");
-        if (sshTunnelHandler != null) {
-            cmd.add("--protocol=TCP");
-        }
         if (!CommonUtils.isEmpty(port)) {
             cmd.add("--port=" + port);
         }
