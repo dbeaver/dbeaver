@@ -57,4 +57,7 @@ public class HiddenOptions {
 
     @CommandLine.Option(names = {"-showsplash"}, hidden = true)
     private boolean showSplash;
+
+    @CommandLine.Option(names = {"-debug"}, hidden = true)
+    private boolean debug;
 }
