@@ -35,12 +35,13 @@ public class CubridValueHandlerProvider implements DBDValueHandlerProvider {
     @Override
     public DBDValueHandler getValueHandler(DBPDataSource dataSource, DBDFormatSettings preferences, DBSTypedObject typedObject) {
         boolean isEnableOID = DBWorkbench.getPlatform().getPreferenceStore().getBoolean(CubridConstants.OID_NAVIGATOR);
-        JDBCColumnMetaData columnMeta = (JDBCColumnMetaData) typedObject;
-        String columnName = columnMeta.getName();
-        String tableName = columnMeta.getEntityName();
-        String typeName = typedObject.getTypeName();
-        if (isEnableOID && CubridConstants.CLASS.equals(typeName) && columnName.equals(tableName)) {
-            return new CubridOIDValueHandler();
+        if (typedObject instanceof JDBCColumnMetaData columnMeta) {
+            String columnName = columnMeta.getName();
+            String tableName = columnMeta.getEntityName();
+            String typeName = typedObject.getTypeName();
+            if (isEnableOID && CubridConstants.CLASS.equals(typeName) && columnName.equals(tableName)) {
+                return new CubridOIDValueHandler();
+            }
         }
         return null;
     }
