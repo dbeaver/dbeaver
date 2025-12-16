@@ -9,7 +9,6 @@ Bundle-RequiredExecutionEnvironment: JavaSE-21
 Bundle-ActivationPolicy: lazy
 Export-Package: org.jkiss.dbeaver.model.websocket,
  org.jkiss.dbeaver.model.websocket.event,
- org.jkiss.dbeaver.model.websocket.event.client,
  org.jkiss.dbeaver.model.websocket.event.datasource,
  org.jkiss.dbeaver.model.websocket.event.permissions,
  org.jkiss.dbeaver.model.websocket.event.resource,
