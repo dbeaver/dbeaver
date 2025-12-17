@@ -28,8 +28,6 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 
 public class ContextAwareDocument extends TextDocumentItem {
     @Nullable
-    private DBPDataSource dataSource;
-    @Nullable
     private DBCExecutionContext executionContext;
     @NotNull
     private SQLSyntaxManager syntaxManager;
@@ -75,18 +73,17 @@ public class ContextAwareDocument extends TextDocumentItem {
 
     @Nullable
     public DBPDataSource getDataSource() {
-        return dataSource;
-    }
-
-    public void setDataSource(@Nullable DBPDataSource dataSource) {
-        this.dataSource = dataSource;
+        if (executionContext == null) {
+            return null;
+        } else {
+            return executionContext.getDataSource();
+        }
     }
 
     @Override
     public String toString() {
         return "ContextAwareDocument{" +
-            "dataSource=" + dataSource +
-            ", executionContext=" + executionContext +
+            "executionContext=" + executionContext +
             ", syntaxManager=" + syntaxManager +
             ", ruleManager=" + ruleManager +
             ", textDocument=" + super.toString() +
@@ -98,7 +95,7 @@ public class ContextAwareDocument extends TextDocumentItem {
         syntaxManager.init(BasicSQLDialect.INSTANCE, DBWorkbench.getPlatform().getPreferenceStore());
 
         ruleManager = new LspSQLRuleManager(syntaxManager);
-        ruleManager.loadRules(dataSource, false);
+        ruleManager.loadRules(getDataSource(), false);
     }
 
     @NotNull

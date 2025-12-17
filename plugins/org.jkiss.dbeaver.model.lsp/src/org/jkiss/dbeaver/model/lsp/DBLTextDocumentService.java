@@ -29,7 +29,6 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.app.DBPProject;
@@ -40,7 +39,6 @@ import org.jkiss.dbeaver.model.lsp.context.LspSQLCompletionContext;
 import org.jkiss.dbeaver.model.lsp.context.LspSQLCompletionContextParser;
 import org.jkiss.dbeaver.model.lsp.context.LspSQLRuleManager;
 import org.jkiss.dbeaver.model.lsp.utils.TextUtils;
-import org.jkiss.dbeaver.model.lsp.utils.URIUtils;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLSyntaxManager;
 import org.jkiss.dbeaver.model.sql.completion.SQLCompletionContext;
@@ -57,7 +55,6 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -90,10 +87,9 @@ public class DBLTextDocumentService implements TextDocumentService, LanguageClie
         log.debug("didOpen with params: " + params);
 
         TextDocumentItem document = params.getTextDocument();
-        String uri = document.getUri();
-        URIUtils.validateUri(uri);
+        DocumentURI uri = new DocumentURI(document.getUri());
 
-        documentCache.put(uri, ContextAwareDocument.from(document));
+        documentCache.put(uri.getValue(), ContextAwareDocument.from(document));
         initContext(uri);
     }
 
@@ -190,8 +186,8 @@ public class DBLTextDocumentService implements TextDocumentService, LanguageClie
         if (document == null) {
             log.error(String.format("Completion requested for an unknown document %s", documentUri));
             return Either.forRight(new CompletionList());
-        } else if (document.getDataSource() == null) {
-            log.error(String.format("Completion requested for a document with no data source %s", documentUri));
+        } else if (document.getExecutionContext() == null) {
+            log.error(String.format("Completion requested for a document with no execution context %s", documentUri));
             return Either.forRight(new CompletionList());
         }
 
@@ -214,6 +210,7 @@ public class DBLTextDocumentService implements TextDocumentService, LanguageClie
 
         return CompletableFutures.computeAsync(cancelChecker -> semanticTokensFull(params, cancelChecker));
     }
+
     private SemanticTokens semanticTokensFull(
         @NotNull SemanticTokensParams params,
         @NotNull CancelChecker cancelChecker
@@ -268,67 +265,49 @@ public class DBLTextDocumentService implements TextDocumentService, LanguageClie
         return new SemanticTokens(data);
     }
 
-    private void initContext(@NotNull String documentUri) {
-        ContextAwareDocument document = documentCache.get(documentUri);
+    private void initContext(@NotNull DocumentURI documentUri) {
+        ContextAwareDocument document = documentCache.get(documentUri.getValue());
         if (document == null) {
             log.warn(String.format("Unknown document %s, Skipping context init", documentUri));
             return;
         }
 
-        String projectId = URIUtils.extractProjectId(documentUri);
-        String resourcePath = URIUtils.extractResourcePath(documentUri);
+        String projectId = documentUri.getProjectId();
+        String resourcePath = documentUri.getResourcePath();
         DBPProject project = DBWorkbench.getPlatform().getWorkspace().getProject(projectId);
-        String dataSourceId;
+        DBPDataSourceContainer dataSourceContainer;
         if (project == null) {
-            log.error(String.format("Project %s not found. Proceeding without data source", projectId));
-            dataSourceId = null;
+            log.warn(String.format("Project %s not found. Proceeding without data source", projectId));
+            dataSourceContainer = null;
         } else {
-            dataSourceId = String.valueOf(project.getResourceProperty(resourcePath, PROP_CONTEXT_DEFAULT_DATASOURCE));
+            String dataSourceId = String.valueOf(project.getResourceProperty(resourcePath, PROP_CONTEXT_DEFAULT_DATASOURCE));
+            dataSourceContainer = DBUtils.findDataSource(projectId, dataSourceId);
         }
 
-        DBPDataSource dataSource = resolveDataSource(projectId, dataSourceId);
-        if (dataSource == null) {
-            log.warn(String.format("Unknown document data source %s, using basic SQL dialect", dataSourceId));
-        }
-        document.setDataSource(dataSource);
 
         try {
-            document.setExecutionContext(DBUtils.getOrOpenDefaultContext(dataSource, false));
+            document.setExecutionContext(DBUtils.getOrOpenDefaultContext(dataSourceContainer, false));
         } catch (DBCException e) {
-            log.error(String.format(
+            log.warn(String.format(
                 "Failed to determine default execution context for document %s. Proceeding without it.", documentUri
             ));
         }
 
-        SQLSyntaxManager syntaxManager = resolveSyntaxManager(dataSource);
+        SQLSyntaxManager syntaxManager = resolveSyntaxManager(dataSourceContainer);
         document.setSyntaxManager(syntaxManager);
 
         LspSQLRuleManager ruleManager = new LspSQLRuleManager(syntaxManager);
-        ruleManager.loadRules(dataSource, false);
+        ruleManager.loadRules(dataSourceContainer, false);
         document.setRuleManager(ruleManager);
 
         log.debug("Initialized context for text document " + document);
     }
 
-    @Nullable
-    private DBPDataSource resolveDataSource(@NotNull String projectId, @Nullable String dataSourceId) {
-        if (dataSourceId == null) {
-            return null;
-        }
-        return DBWorkbench.getPlatform().getWorkspace().getProjects().stream()
-            .filter(project -> Objects.equals(project.getId(), projectId))
-            .flatMap(project -> project.getDataSourceRegistry().getDataSources().stream())
-            .filter(dataSource -> Objects.equals(dataSource.getId(), dataSourceId))
-            .findFirst()
-            .map(DBPDataSourceContainer::getDataSource)
-            .orElse(null);
-    }
-
     @NotNull
-    private SQLSyntaxManager resolveSyntaxManager(@Nullable DBPDataSource dataSource) {
+    private SQLSyntaxManager resolveSyntaxManager(@Nullable DBPDataSourceContainer dataSourceContainer) {
         SQLDialect dialect = BasicSQLDialect.INSTANCE;
-        if (dataSource != null) {
-            dialect = dataSource.getSQLDialect();
+        if (dataSourceContainer != null && dataSourceContainer.getDataSource() != null) {
+            dialect = dataSourceContainer.getDataSource().getSQLDialect();
         }
         SQLSyntaxManager syntaxManager = new SQLSyntaxManager();
         syntaxManager.init(dialect, DBWorkbench.getPlatform().getPreferenceStore());

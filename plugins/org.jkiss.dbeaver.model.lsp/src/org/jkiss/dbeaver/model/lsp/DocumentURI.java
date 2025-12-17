@@ -14,33 +14,52 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.lsp.utils;
+package org.jkiss.dbeaver.model.lsp;
 
 import org.jkiss.code.NotNull;
 
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class URIUtils {
-
+public class DocumentURI {
     private static final Pattern URI_PATTERN = Pattern.compile("^lsp://([A-Za-z0-9_-]+)/(\\S.*)$");
 
-    public static void validateUri(@NotNull String uri) {
-        if (!URI_PATTERN.matcher(uri).matches()) {
+    @NotNull
+    private final String uri;
+    @NotNull
+    private final String projectId;
+    @NotNull
+    private final String resourcePath;
+
+    public DocumentURI(@NotNull String uri) {
+        Matcher matcher = URI_PATTERN.matcher(uri);
+        if (!matcher.matches()) {
             throw new IllegalArgumentException(
                 String.format("Invalid URI format: %s, expected lsp://{projectId}/{resourcePath}", uri)
             );
         }
+        this.uri = uri;
+        this.projectId = matcher.group(1);
+        this.resourcePath = matcher.group(2);
     }
 
     @NotNull
-    public static String extractProjectId(@NotNull String documentUri) {
-        return documentUri.substring(6, documentUri.indexOf('/', 6));
+    public String getProjectId() {
+        return projectId;
     }
 
     @NotNull
-    public static String extractResourcePath(@NotNull String documentUri) {
-        return documentUri.substring(
-            documentUri.indexOf('/', 6) + 1
-        );
+    public String getResourcePath() {
+        return resourcePath;
+    }
+
+    @NotNull
+    public String getValue() {
+        return uri;
+    }
+
+    @Override
+    public String toString() {
+        return uri;
     }
 }
