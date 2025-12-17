@@ -272,13 +272,13 @@ public abstract class DashboardCatalogPanel extends Composite implements Dashboa
         deleteItem(item);
     }
 
-    private void createItem(DashboardItemConfiguration item) {
+    private void createItem(@NotNull DashboardItemConfiguration item) {
         dashboardTable.remove(item.getDashboardProvider());
         dashboardTable.refresh();
         dashboardTable.expandToLevel(2);
     }
 
-    private void deleteItem(DashboardItemConfiguration item) {
+    private void deleteItem(@NotNull DashboardItemConfiguration item) {
         dashboardTable.add(item.getDashboardProvider());
         dashboardTable.refresh();
         dashboardTable.expandToLevel(2);
