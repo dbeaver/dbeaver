@@ -63,8 +63,8 @@ public class ResultSetModel implements DBDResultSetModel {
 
     // Data
     private List<ResultSetRow> curRows = new ArrayList<>();
-    private final Set<ResultSetRow> changedRows = Collections.newSetFromMap(new IdentityHashMap<>());
     private Long totalRowCount = null;
+    private int changesCount = 0;
     private volatile boolean hasData = false;
     // Flag saying that edited values update is in progress
     private volatile DataSourceJob updateInProgress = null;
@@ -205,10 +205,12 @@ public class ResultSetModel implements DBDResultSetModel {
     }
 
     public void refreshChangeCount() {
-        changedRows.clear();
+        changesCount = 0;
         for (ResultSetRow row : curRows) {
-            if (row.getState() != ResultSetRow.STATE_NORMAL || row.isChanged()) {
-                changedRows.add(row);
+            if (row.getState() != ResultSetRow.STATE_NORMAL) {
+                changesCount++;
+            } else if (row.isChanged()) {
+                changesCount += row.getChangesCount();
             }
         }
     }
@@ -514,7 +516,7 @@ public class ResultSetModel implements DBDResultSetModel {
         row.values[rootIndex] = valueToEdit;
 
         if (updateChanges && row.getState() == ResultSetRow.STATE_NORMAL) {
-            changedRows.add(row);
+            changesCount++;
         }
 
         return true;
@@ -544,7 +546,7 @@ public class ResultSetModel implements DBDResultSetModel {
             }
             row.clearChange(attr);
         }
-        changedRows.remove(row);
+        refreshChangeCount();
     }
 
     boolean isDynamicMetadata() {
@@ -903,7 +905,6 @@ public class ResultSetModel implements DBDResultSetModel {
         this.curRows = new ArrayList<>();
         this.totalRowCount = null;
         this.singleSourceEntity = null;
-        this.changedRows.clear();
 
         this.hasData = false;
     }
@@ -913,10 +914,7 @@ public class ResultSetModel implements DBDResultSetModel {
     }
 
     public boolean isDirty() {
-        return !changedRows.isEmpty()
-            || curRows.stream()
-            .map(ResultSetRow::getState)
-            .anyMatch(state -> state != ResultSetRow.STATE_NORMAL);
+        return changesCount != 0;
     }
 
     public boolean isUpdateInProgress() {
@@ -938,6 +936,7 @@ public class ResultSetModel implements DBDResultSetModel {
         newRow.setState(ResultSetRow.STATE_ADDED);
         shiftRows(newRow, 1);
         curRows.add(rowNum, newRow);
+        changesCount++;
         return newRow;
     }
 
@@ -951,11 +950,12 @@ public class ResultSetModel implements DBDResultSetModel {
     boolean deleteRow(@NotNull ResultSetRow row) {
         if (row.getState() == ResultSetRow.STATE_ADDED) {
             cleanupRow(row);
+            changesCount--;
             return true;
         } else {
             // Mark row as deleted
             row.setState(ResultSetRow.STATE_REMOVED);
-            changedRows.add(row);
+            changesCount++;
             return false;
         }
     }
@@ -965,7 +965,6 @@ public class ResultSetModel implements DBDResultSetModel {
         int index = row.getVisualNumber();
         if (this.curRows.size() > index) {
             this.curRows.remove(index);
-            changedRows.remove(row);
             this.shiftRows(row, -1);
         } else {
             log.debug("Error removing row from list: invalid row index: " + index);
