@@ -877,7 +877,7 @@ public class DBeaverLauncher {
                 break;
             }
         }
-        productName = "";
+
         if (productName.isEmpty()) {
             Properties properties = loadEclipseProductProperties();
             if (debug) {
@@ -1706,7 +1706,7 @@ public class DBeaverLauncher {
             }
             return properties;
         }
-
+        //java.io used because url may contain spaces and other non escaped chars, and Path.of(URL.toURI()) would fail
         File eclipseProduct = new File(installURL.getFile(), PRODUCT_SITE_MARKER);
         if (debug) {
             System.out.println("Loading product properties from " + eclipseProduct);
