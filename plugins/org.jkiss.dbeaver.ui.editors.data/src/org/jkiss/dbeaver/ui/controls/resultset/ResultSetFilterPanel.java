@@ -104,7 +104,7 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
     private final StyledText filtersText;
 
     //IME composition state (e.g., Zhuyin)
-    private IME filtersIme;
+    private final IME filtersIme;
 
     private ContentProposalAdapter filtersProposalAdapter;
 
@@ -204,14 +204,13 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
                 }
             });
 
-            this.filtersText.addModifyListener(new ModifyListener() {
-                @Override
-                public void modifyText(ModifyEvent e) {
-                    filtersText.getText();
-                    if (executePanel != null) {
-                        executePanel.setEnabled(true);
-                        executePanel.redraw();
-                    }
+            this.filtersText.addModifyListener(e -> {
+                filtersText.getText();
+                if (executePanel != null) {
+                    executePanel.setEnabled(true);
+                    executePanel.redraw();
+                }
+                if (filtersProposalAdapter != null) {
                     filtersProposalAdapter.refresh();
                 }
             });
@@ -270,7 +269,7 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
                         }
                         e.doit = false;
                         setCustomDataFilter();
-                    } else if (e.keyCode == SWT.SPACE) {
+                    } else if (e.keyCode == SWT.SPACE && filtersProposalAdapter != null) {
                         // close the proposal window, if space is pressed.
                         filtersProposalAdapter.closeProposalPopup();
                     }
@@ -605,9 +604,9 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
     private Control createObjectPanel(Shell popup) throws PartInitException {
         Composite panel = new Composite(popup, SWT.NONE);
         GridLayout gl = new GridLayout(2, false);
-        //        gl.marginWidth = 0;
+//        gl.marginWidth = 0;
         gl.marginHeight = 0;
-        //        gl.horizontalSpacing = 0;
+//        gl.horizontalSpacing = 0;
         panel.setLayout(gl);
 
         Label iconLabel = new Label(panel, SWT.NONE);
