@@ -877,6 +877,7 @@ public class DBeaverLauncher {
                 break;
             }
         }
+        productName = "";
         if (productName.isEmpty()) {
             Properties properties = loadEclipseProductProperties();
             if (debug) {
@@ -1706,27 +1707,18 @@ public class DBeaverLauncher {
             return properties;
         }
 
-        Path installPath;
-        try {
-            installPath = Path.of(installURL.toURI());
-        } catch (Exception e) {
-            if (debug) {
-                System.out.println("Could not convert install location " + installURL + ": " + e.getMessage());
-            }
-            return properties;
-        }
-        Path eclipseProduct = installPath.resolve(PRODUCT_SITE_MARKER);
+        File eclipseProduct = new File(installURL.getFile(), PRODUCT_SITE_MARKER);
         if (debug) {
             System.out.println("Loading product properties from " + eclipseProduct);
         }
-        if (Files.notExists(eclipseProduct)) {
+        if (!eclipseProduct.exists()) {
             if (debug) {
                 System.out.println("Not exists " + eclipseProduct);
             }
             return properties;
         }
 
-        try (var in = Files.newInputStream(eclipseProduct)) {
+        try (FileInputStream in = new FileInputStream(eclipseProduct)) {
             properties.load(in);
         } catch (IOException e) {
             if (debug) {
