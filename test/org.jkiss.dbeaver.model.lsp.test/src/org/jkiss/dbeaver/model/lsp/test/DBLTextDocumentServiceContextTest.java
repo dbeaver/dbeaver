@@ -83,12 +83,13 @@ public class DBLTextDocumentServiceContextTest extends DBeaverUnitTest {
 
     @Test
     public void shouldInitH2Context() {
-        TextDocumentItem document = DocumentServiceTestUtils.createAndSaveDocument(service, "select * from table");
-
-        service.initContext(
-            new TextDocumentIdentifier(document.getUri()),
-            project.getId(),
+        project.setResourceProperty(
+            DocumentServiceTestUtils.BASIC_RESOURCE_PATH,
+            DBLTextDocumentService.PROP_CONTEXT_DEFAULT_DATASOURCE,
             dataSourceContainer.getId()
+        );
+        TextDocumentItem document = DocumentServiceTestUtils.createAndSaveDocument(
+            service, "select * from table", project.getId(), DocumentServiceTestUtils.BASIC_RESOURCE_PATH
         );
 
         ContextAwareDocument contextedDocument = DocumentServiceTestUtils.getDocument(service, document.getUri());
@@ -107,7 +108,6 @@ public class DBLTextDocumentServiceContextTest extends DBeaverUnitTest {
             DO UPDATE SET profile = users.profile || EXCLUDED.profile RETURNING id, profile->>'name' AS name;
             """.trim();
         DocumentFormattingParams formattingParams = DocumentServiceTestUtils.setupDocumentAndBuildFormattingParams(service, query);
-        service.initContext(formattingParams.getTextDocument(), project.getId(), dataSourceContainer.getId());
 
         CompletableFuture<List<? extends TextEdit>> future = service.formatting(formattingParams);
 
@@ -140,9 +140,15 @@ public class DBLTextDocumentServiceContextTest extends DBeaverUnitTest {
     @Test
     public void shouldReturnEmptyCompletionsForInvalidPosition() throws ExecutionException, InterruptedException {
         String query = "SEL";
-        ContextAwareDocument document = DocumentServiceTestUtils.createAndSaveDocument(service, query);
+        project.setResourceProperty(
+            DocumentServiceTestUtils.BASIC_RESOURCE_PATH,
+            DBLTextDocumentService.PROP_CONTEXT_DEFAULT_DATASOURCE,
+            dataSourceContainer.getId()
+        );
+        ContextAwareDocument document = DocumentServiceTestUtils.createAndSaveDocument(
+            service, query, project.getId(), DocumentServiceTestUtils.BASIC_RESOURCE_PATH
+        );
         TextDocumentIdentifier documentId = new TextDocumentIdentifier(document.getUri());
-        service.initContext(documentId, project.getId(), dataSourceContainer.getId());
         CompletionParams completionParams = new CompletionParams(documentId, new Position(1, 42));
 
         CompletionList completions = service.completion(completionParams).get().getRight();
@@ -154,9 +160,15 @@ public class DBLTextDocumentServiceContextTest extends DBeaverUnitTest {
     @Test
     public void shouldSuggestKeywordCompletion() throws ExecutionException, InterruptedException {
         String query = "SEL";
-        ContextAwareDocument document = DocumentServiceTestUtils.createAndSaveDocument(service, query);
+        project.setResourceProperty(
+            DocumentServiceTestUtils.BASIC_RESOURCE_PATH,
+            DBLTextDocumentService.PROP_CONTEXT_DEFAULT_DATASOURCE,
+            dataSourceContainer.getId()
+        );
+        ContextAwareDocument document = DocumentServiceTestUtils.createAndSaveDocument(
+            service, query, project.getId(), DocumentServiceTestUtils.BASIC_RESOURCE_PATH
+        );
         TextDocumentIdentifier documentId = new TextDocumentIdentifier(document.getUri());
-        service.initContext(documentId, project.getId(), dataSourceContainer.getId());
         CompletionParams completionParams = new CompletionParams(documentId, new Position(0, 3));
 
         CompletionList completions = service.completion(completionParams).get().getRight();
@@ -172,9 +184,15 @@ public class DBLTextDocumentServiceContextTest extends DBeaverUnitTest {
             SELECT *
                 FR
             """;
-        ContextAwareDocument document = DocumentServiceTestUtils.createAndSaveDocument(service, query);
+        project.setResourceProperty(
+            DocumentServiceTestUtils.BASIC_RESOURCE_PATH,
+            DBLTextDocumentService.PROP_CONTEXT_DEFAULT_DATASOURCE,
+            dataSourceContainer.getId()
+        );
+        ContextAwareDocument document = DocumentServiceTestUtils.createAndSaveDocument(
+            service, query, project.getId(), DocumentServiceTestUtils.BASIC_RESOURCE_PATH
+        );
         TextDocumentIdentifier documentId = new TextDocumentIdentifier(document.getUri());
-        service.initContext(documentId, project.getId(), dataSourceContainer.getId());
         CompletionParams completionParams = new CompletionParams(documentId, new Position(1, 6));
 
         CompletionList completions = service.completion(completionParams).get().getRight();

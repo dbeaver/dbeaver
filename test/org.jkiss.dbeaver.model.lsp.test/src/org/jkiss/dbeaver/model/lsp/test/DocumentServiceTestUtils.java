@@ -37,7 +37,8 @@ import java.util.Objects;
 public class DocumentServiceTestUtils {
 
     private static final String H2_DRIVER_ID = "h2_embedded_v2";
-    public static final String BASIC_SQL_URI = "sql/scripts/basic.sql";
+    public static final String BASIC_RESOURCE_PATH = "scripts/basic.sql";
+    public static final String BASIC_URI = "lsp://project-id/" + BASIC_RESOURCE_PATH;
     public static final String SQL_LANGUAGE_ID = "SQL";
 
     @Nullable
@@ -70,14 +71,20 @@ public class DocumentServiceTestUtils {
 
     @NotNull
     public static TextDocumentItem createQueryDocument(@NotNull String text) {
-        return new TextDocumentItem(BASIC_SQL_URI, SQL_LANGUAGE_ID, 0, text);
+        return new TextDocumentItem(BASIC_URI, SQL_LANGUAGE_ID, 0, text);
     }
 
     @NotNull
-    public static ContextAwareDocument createAndSaveDocument(@NotNull DBLTextDocumentService service, @NotNull String text) {
-        TextDocumentItem document = new TextDocumentItem(BASIC_SQL_URI, SQL_LANGUAGE_ID, 0, text);
+    public static ContextAwareDocument createAndSaveDocument(
+        @NotNull DBLTextDocumentService service,
+        @NotNull String text,
+        @NotNull String projectId,
+        @NotNull String resourcePath
+    ) {
+        String uri = String.format("lsp://%s/%s", projectId, resourcePath);
+        TextDocumentItem document = new TextDocumentItem(uri, SQL_LANGUAGE_ID, 0, text);
         service.didOpen(new DidOpenTextDocumentParams(document));
-        return Objects.requireNonNull(getDocument(service, BASIC_SQL_URI));
+        return Objects.requireNonNull(getDocument(service, uri));
     }
 
     @NotNull
@@ -88,7 +95,7 @@ public class DocumentServiceTestUtils {
         TextDocumentItem textDocument = createQueryDocument(query);
         service.didOpen(new DidOpenTextDocumentParams(textDocument));
         DocumentFormattingParams formattingParams = new DocumentFormattingParams();
-        formattingParams.setTextDocument(new TextDocumentIdentifier(BASIC_SQL_URI));
+        formattingParams.setTextDocument(new TextDocumentIdentifier(BASIC_URI));
         FormattingOptions formattingOptions = new FormattingOptions();
         formattingParams.setOptions(formattingOptions);
         return formattingParams;

@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.model.text.parser.TPRule;
 import org.jkiss.dbeaver.model.text.parser.TPTokenAbstract;
 import org.jkiss.dbeaver.model.text.parser.rules.NewLineRule;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -36,7 +37,7 @@ public class LspSQLRuleManager extends SQLRuleManager {
     @NotNull
     @Override
     public TPRule[] getAllRules() {
-        List<TPRule> allRules = Arrays.asList(super.getAllRules());
+        List<TPRule> allRules = new ArrayList<>(Arrays.asList(super.getAllRules()));
         allRules.addFirst(new NewLineRule(TPTokenAbstract.NEWLINE));
         return allRules.toArray(new TPRule[0]);
     }

@@ -45,6 +45,22 @@ public class DBLTextDocumentServiceTest extends DBeaverUnitTest {
     }
 
     @Test
+    public void shouldFailOpeningDocumentWithInvalidURI() {
+        String query = "SELECT * FROM table";
+        String uri = "invalid-uri";
+        TextDocumentItem textDocument = new TextDocumentItem(
+            uri, DocumentServiceTestUtils.SQL_LANGUAGE_ID, 0, query
+        );
+        DidOpenTextDocumentParams params = new DidOpenTextDocumentParams(textDocument);
+
+        Assert.assertThrows(
+            "Invalid URI format: invalid-uri, expected lsp://{projectId}/{resourcePath}",
+            IllegalArgumentException.class,
+            () -> service.didOpen(params)
+        );
+    }
+
+    @Test
     public void shouldOpenDocument() {
         String query = "SELECT * FROM table";
         TextDocumentItem textDocument = DocumentServiceTestUtils.createQueryDocument(query);

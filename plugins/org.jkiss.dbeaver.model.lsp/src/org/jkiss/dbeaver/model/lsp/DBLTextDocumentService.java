@@ -32,9 +32,15 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
-import org.jkiss.dbeaver.model.lsp.context.*;
+import org.jkiss.dbeaver.model.lsp.context.ContextAwareDocument;
+import org.jkiss.dbeaver.model.lsp.context.LspSQLCompletionContext;
+import org.jkiss.dbeaver.model.lsp.context.LspSQLCompletionContextParser;
+import org.jkiss.dbeaver.model.lsp.context.LspSQLRuleManager;
+import org.jkiss.dbeaver.model.lsp.utils.TextUtils;
+import org.jkiss.dbeaver.model.lsp.utils.URIUtils;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLSyntaxManager;
 import org.jkiss.dbeaver.model.sql.completion.SQLCompletionContext;
@@ -55,8 +61,16 @@ import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class DBLTextDocumentService implements TextDocumentService, LanguageClientAware, DocumentContextService {
+/**
+ * The DBLTextDocumentService class proves services for managing, manipulating,
+ * and analyzing text documents in the context of a language server.
+ *
+ * URI format: lsp://{projectId}/{resourcePath}
+ */
+public class DBLTextDocumentService implements TextDocumentService, LanguageClientAware {
     private static final Log log = Log.getLog(DBLTextDocumentService.class);
+
+    public static final String PROP_CONTEXT_DEFAULT_DATASOURCE = "default-datasource";
 
     public static final Map<SQLTokenType, Pair<Integer, String>> SUPPORTED_TOKEN_TYPES = Map.of(
         SQLTokenType.T_KEYWORD, new Pair<>(0, SemanticTokenTypes.Keyword),
@@ -76,10 +90,11 @@ public class DBLTextDocumentService implements TextDocumentService, LanguageClie
         log.debug("didOpen with params: " + params);
 
         TextDocumentItem document = params.getTextDocument();
-        documentCache.put(
-            document.getUri(),
-            ContextAwareDocument.from(document)
-        );
+        String uri = document.getUri();
+        URIUtils.validateUri(uri);
+
+        documentCache.put(uri, ContextAwareDocument.from(document));
+        initContext(uri);
     }
 
     @Override
@@ -114,43 +129,6 @@ public class DBLTextDocumentService implements TextDocumentService, LanguageClie
         log.debug("\"didSave with params: \"" + params);
     }
 
-    @Override
-    public void initContext(
-        @NotNull TextDocumentIdentifier documentId,
-        @NotNull String projectId,
-        @NotNull String dataSourceId
-    ) {
-        String documentUri = documentId.getUri();
-        ContextAwareDocument document = documentCache.get(documentUri);
-        if (document == null) {
-            log.warn(String.format("Received context for an unknown document %s, Skipping", documentUri));
-            return;
-        }
-
-        DBPDataSource dataSource = resolveDataSource(projectId, dataSourceId);
-        if (dataSource == null) {
-            log.warn(String.format("Received context for an unknown data source %s, using basic SQL dialect", dataSourceId));
-        }
-        document.setDataSource(dataSource);
-
-        try {
-            document.setExecutionContext(DBUtils.getOrOpenDefaultContext(dataSource, false));
-        } catch (DBCException e) {
-            log.error(String.format(
-                "Failed to determine default execution context for document %s. Proceeding without it.", documentUri
-            ));
-        }
-
-        SQLSyntaxManager syntaxManager = resolveSyntaxManager(dataSource);
-        document.setSyntaxManager(syntaxManager);
-
-        LspSQLRuleManager ruleManager = new LspSQLRuleManager(syntaxManager);
-        ruleManager.loadRules(dataSource, false);
-        document.setRuleManager(ruleManager);
-
-        log.debug("Initialized context for text document " + document);
-    }
-
     @NotNull
     @Override
     public CompletableFuture<List<? extends TextEdit>> formatting(@NotNull DocumentFormattingParams params) {
@@ -181,7 +159,7 @@ public class DBLTextDocumentService implements TextDocumentService, LanguageClie
         SQLFormatter sqlFormatter = new SQLFormatterTokenized();
         String formattedText = sqlFormatter.format(document.getText(), sqlFormatterConfiguration);
         Position startPosition = new Position(0, 0);
-        Range range = new Range(startPosition, lastTextPosition(document.getText()));
+        Range range = new Range(startPosition, TextUtils.lastTextPosition(document.getText()));
         return List.of(new TextEdit(range, formattedText));
     }
 
@@ -217,7 +195,7 @@ public class DBLTextDocumentService implements TextDocumentService, LanguageClie
             return Either.forRight(new CompletionList());
         }
 
-        int offset = positionToOffset(document.getText(), params.getPosition());
+        int offset = TextUtils.positionToOffset(document.getText(), params.getPosition());
         SQLCompletionContext completionContext = new LspSQLCompletionContext(
             document.getDataSource(),
             document.getExecutionContext(),
@@ -229,13 +207,13 @@ public class DBLTextDocumentService implements TextDocumentService, LanguageClie
         ));
     }
 
+    // TODO: think about implementing semanticTokensFullDelta and/or semanticTokensRange
     @Override
     public CompletableFuture<SemanticTokens> semanticTokensFull(@NotNull SemanticTokensParams params) {
         log.debug("\"semanticTokensFull with params: \"" + params);
 
         return CompletableFutures.computeAsync(cancelChecker -> semanticTokensFull(params, cancelChecker));
     }
-
     private SemanticTokens semanticTokensFull(
         @NotNull SemanticTokensParams params,
         @NotNull CancelChecker cancelChecker
@@ -290,49 +268,53 @@ public class DBLTextDocumentService implements TextDocumentService, LanguageClie
         return new SemanticTokens(data);
     }
 
-    private int positionToOffset(@NotNull String text, @NotNull Position position) {
-        String[] lines = text.split("\n");
-        if (lines.length <= position.getLine()) {
-            throw new IllegalArgumentException("Invalid line number " + position.getLine());
+    private void initContext(@NotNull String documentUri) {
+        ContextAwareDocument document = documentCache.get(documentUri);
+        if (document == null) {
+            log.warn(String.format("Unknown document %s, Skipping context init", documentUri));
+            return;
         }
 
-        int lineIndex = 0;
-        int offset = 0;
-        for (String line : lines) {
-            if (lineIndex < position.getLine()) {
-                offset += line.length() + 1;
-                lineIndex++;
-            } else {
-                if (line.length() < position.getCharacter()) {
-                    throw new IllegalArgumentException("Invalid char number " + position.getCharacter());
-                }
-                offset += position.getCharacter();
-            }
+        String projectId = URIUtils.extractProjectId(documentUri);
+        String resourcePath = URIUtils.extractResourcePath(documentUri);
+        DBPProject project = DBWorkbench.getPlatform().getWorkspace().getProject(projectId);
+        String dataSourceId;
+        if (project == null) {
+            log.error(String.format("Project %s not found. Proceeding without data source", projectId));
+            dataSourceId = null;
+        } else {
+            dataSourceId = String.valueOf(project.getResourceProperty(resourcePath, PROP_CONTEXT_DEFAULT_DATASOURCE));
         }
 
-        return offset;
-    }
+        DBPDataSource dataSource = resolveDataSource(projectId, dataSourceId);
+        if (dataSource == null) {
+            log.warn(String.format("Unknown document data source %s, using basic SQL dialect", dataSourceId));
+        }
+        document.setDataSource(dataSource);
 
-    @NotNull
-    private Position lastTextPosition(@NotNull String text) {
-        int numberOfLines = 0;
-        int indexOfLastLineSeparator = -1;
-        for (int i = 0; i < text.length(); i++) {
-            char c = text.charAt(i);
-            if (c == '\n') {
-                numberOfLines++;
-                indexOfLastLineSeparator = i;
-            }
+        try {
+            document.setExecutionContext(DBUtils.getOrOpenDefaultContext(dataSource, false));
+        } catch (DBCException e) {
+            log.error(String.format(
+                "Failed to determine default execution context for document %s. Proceeding without it.", documentUri
+            ));
         }
-        int startOfTheLastLine = indexOfLastLineSeparator + 1;
-        if (startOfTheLastLine == text.length()) {
-            return new Position(numberOfLines, 0);
-        }
-        return new Position(numberOfLines, text.substring(startOfTheLastLine).length());
+
+        SQLSyntaxManager syntaxManager = resolveSyntaxManager(dataSource);
+        document.setSyntaxManager(syntaxManager);
+
+        LspSQLRuleManager ruleManager = new LspSQLRuleManager(syntaxManager);
+        ruleManager.loadRules(dataSource, false);
+        document.setRuleManager(ruleManager);
+
+        log.debug("Initialized context for text document " + document);
     }
 
     @Nullable
-    private DBPDataSource resolveDataSource(@NotNull String projectId, @NotNull String dataSourceId) {
+    private DBPDataSource resolveDataSource(@NotNull String projectId, @Nullable String dataSourceId) {
+        if (dataSourceId == null) {
+            return null;
+        }
         return DBWorkbench.getPlatform().getWorkspace().getProjects().stream()
             .filter(project -> Objects.equals(project.getId(), projectId))
             .flatMap(project -> project.getDataSourceRegistry().getDataSources().stream())

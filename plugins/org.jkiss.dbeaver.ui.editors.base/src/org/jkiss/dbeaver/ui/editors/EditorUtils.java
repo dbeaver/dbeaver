@@ -337,6 +337,7 @@ public class EditorUtils {
         return getFileDataSource(file, true);
     }
 
+    // TODO use this
     @Nullable
     public static DBPDataSourceContainer getFileDataSource(IFile file, boolean forceRegistryLoad) {
         if (!file.exists()) {
