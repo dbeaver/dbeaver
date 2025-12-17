@@ -255,7 +255,7 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
                             return;
                         }
                         historyPanel.showFilterHistoryPopup();
-                    } else if (e.character == SWT.CR) {
+                    } else if (e.character == SWT.CR || e.character == SWT.LF) {
                         if (filtersProposalAdapter != null && filtersProposalAdapter.isProposalPopupOpen()) {
                             return;
                         }
