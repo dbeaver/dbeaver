@@ -106,7 +106,7 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
     //IME composition state (e.g., Zhuyin)
     private final IME filtersIme;
 
-    private ContentProposalAdapter filtersProposalAdapter;
+    private final ContentProposalAdapter filtersProposalAdapter;
 
     private final ToolBar filterToolbar;
     private ToolItem filtersClearButton;
@@ -204,15 +204,19 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
                 }
             });
 
+            ResultSetFilterContentAdapter contentAdapter = new ResultSetFilterContentAdapter(viewer);
+            filtersProposalAdapter = ContentAssistUtils.installContentProposal(
+                filtersText,
+                contentAdapter,
+                this);
+
             this.filtersText.addModifyListener(e -> {
                 filtersText.getText();
                 if (executePanel != null) {
                     executePanel.setEnabled(true);
                     executePanel.redraw();
                 }
-                if (filtersProposalAdapter != null) {
-                    filtersProposalAdapter.refresh();
-                }
+                filtersProposalAdapter.refresh();
             });
 
             this.filtersText.addTraverseListener(e -> {
@@ -222,7 +226,7 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
                         return;
                     }
                     //  handle enter/return for commit Chinese or when popup is open
-                    if (isImeComposing() || filtersProposalAdapter != null && filtersProposalAdapter.isProposalPopupOpen()) {
+                    if (isImeComposing() || filtersProposalAdapter.isProposalPopupOpen()) {
                         e.doit = true;
                         return;
                     }
@@ -237,7 +241,7 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
                     if (filterExpanded && (e.stateMask & SWT.MOD1) == 0) {
                         return;
                     }
-                    if (filtersProposalAdapter != null && filtersProposalAdapter.isProposalPopupOpen()) {
+                    if (filtersProposalAdapter.isProposalPopupOpen()) {
                         return;
                     }
                     if (isImeComposing()) {
@@ -246,6 +250,7 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
                     e.doit = false;
                 }
             });
+
 
             this.filtersText.addKeyListener(new KeyAdapter() {
                 @Override
@@ -256,7 +261,7 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
                         }
                         historyPanel.showFilterHistoryPopup();
                     } else if (e.character == SWT.CR || e.character == SWT.LF) {
-                        if (filtersProposalAdapter != null && filtersProposalAdapter.isProposalPopupOpen()) {
+                        if (filtersProposalAdapter.isProposalPopupOpen()) {
                             return;
                         }
                         // allows add new line when filter is expanded
@@ -269,18 +274,12 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
                         }
                         e.doit = false;
                         setCustomDataFilter();
-                    } else if (e.keyCode == SWT.SPACE && filtersProposalAdapter != null) {
+                    } else if (e.keyCode == SWT.SPACE) {
                         // close the proposal window, if space is pressed.
                         filtersProposalAdapter.closeProposalPopup();
                     }
                 }
             });
-
-            ResultSetFilterContentAdapter contentAdapter = new ResultSetFilterContentAdapter(viewer);
-            filtersProposalAdapter = ContentAssistUtils.installContentProposal(
-                filtersText,
-                contentAdapter,
-                this);
         }
 
         // Handle all shortcuts by filters editor, not by host editor
