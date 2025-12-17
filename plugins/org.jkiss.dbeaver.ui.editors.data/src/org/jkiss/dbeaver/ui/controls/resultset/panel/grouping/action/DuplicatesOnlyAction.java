@@ -33,7 +33,7 @@ public class DuplicatesOnlyAction extends Action {
 
     public DuplicatesOnlyAction(@NotNull GroupingResultsContainer resultsContainer) {
         super(ResultSetMessages.controls_resultset_grouping_show_duplicates_only, Action.AS_CHECK_BOX);
-        updateImage();
+        setImageDescriptor(DBeaverIcons.getImageDescriptor(UIIcon.DUPS_RESTRICTED));
         this.resultsContainer = resultsContainer;
     }
 
@@ -61,9 +61,5 @@ public class DuplicatesOnlyAction extends Action {
                 e
             );
         }
-    }
-
-    private void updateImage() {
-        setImageDescriptor(DBeaverIcons.getImageDescriptor(UIIcon.DUPS_RESTRICTED));
     }
 }

@@ -42,6 +42,8 @@ public class PercentOfTotalGroupingAttributeTransformer implements DBDAttributeT
 
     public static final String TYPE_NAME = "percent";
     private static final Log log = Log.getLog(PercentOfTotalGroupingAttributeTransformer.class);
+    private static final DecimalFormat df = new DecimalFormat("0.####%");
+
 
     private final TotalRowCountProvider totalRowCountSupplier;
 
@@ -105,12 +107,11 @@ public class PercentOfTotalGroupingAttributeTransformer implements DBDAttributeT
             if (total == 0) {
                 return 0;
             }
-            return (value / total) * 100;
+            return value / total;
         }
 
         private String formatPercent(double percent) {
-            DecimalFormat df = new DecimalFormat("#.####");
-            return df.format(percent) + "%";
+            return df.format(percent);
         }
     }
 

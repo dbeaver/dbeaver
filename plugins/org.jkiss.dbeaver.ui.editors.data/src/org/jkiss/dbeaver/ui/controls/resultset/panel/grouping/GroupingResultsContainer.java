@@ -230,7 +230,7 @@ public class GroupingResultsContainer implements IResultSetContainer {
         String queryText = statistics.getQueryText();
         boolean isShowDuplicatesOnly = dataSource.getContainer().getPreferenceStore()
             .getBoolean(ResultSetPreferences.RS_GROUPING_SHOW_DUPLICATES_ONLY);
-        DBDDataFilter dataFilter = getDbdDataFilter();
+        DBDDataFilter dataFilter = getDataFilter();
 
         var groupingQueryGenerator = new SQLGroupingQueryGenerator(
             dataSource,
@@ -267,18 +267,13 @@ public class GroupingResultsContainer implements IResultSetContainer {
             "dups", isShowDuplicatesOnly
         ));
         groupingViewer.setDataFilter(dataFilter, true);
-        // groupingViewer.refresh();
     }
 
     @NotNull
-    private DBDDataFilter getDbdDataFilter() {
-        DBDDataFilter dataFilter;
-        if (presentation.getController().getModel().isMetadataChanged()) {
-            dataFilter = new DBDDataFilter();
-        } else {
-            dataFilter = new DBDDataFilter(groupingViewer.getModel().getDataFilter());
-        }
-        return dataFilter;
+    private DBDDataFilter getDataFilter() {
+        return presentation.getController().getModel().isMetadataChanged()
+            ? new DBDDataFilter()
+            : new DBDDataFilter(groupingViewer.getModel().getDataFilter());
     }
 
     void setGrouping(List<SQLGroupingAttribute> attributes, List<String> functions) {

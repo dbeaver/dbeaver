@@ -32,7 +32,7 @@ public class PercentFromTotalAction extends Action {
 
     public PercentFromTotalAction(@NotNull GroupingResultsContainer resultsContainer) {
         super(ResultSetMessages.grouping_panel_show_percent_of_total_tip, Action.AS_CHECK_BOX);
-        updateImage();
+        setImageDescriptor(DBeaverIcons.getImageDescriptor(UIIcon.PERCENT));
         this.resultsContainer = resultsContainer;
     }
 
@@ -60,9 +60,5 @@ public class PercentFromTotalAction extends Action {
                 e
             );
         }
-    }
-
-    private void updateImage() {
-        setImageDescriptor(DBeaverIcons.getImageDescriptor(UIIcon.PERCENT));
     }
 }
