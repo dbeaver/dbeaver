@@ -66,7 +66,7 @@ public class Log {
         return new Context(name);
     }
 
-    private static final boolean TRACE_LOG_ENABLED = CommonUtils.getBoolean(System.getProperty("dbeaver.trace.enabled"));
+    private static boolean TRACE_LOG_ENABLED = CommonUtils.getBoolean(System.getProperty("dbeaver.trace.enabled"));
     public static final boolean DEV_DEBUG_ENABLED = CommonUtils.getBoolean(System.getProperty("dbeaver.debug.enabled"));
 
     private static final SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS"); //$NON-NLS-1$
@@ -84,7 +84,8 @@ public class Log {
 
         quietMode = ArrayUtils.containsAny(
             Platform.getApplicationArgs(),
-            "-q", "--q", "-help", "--help", "-version", "--version");
+            "-q", "--q", "-h", "-help", "--help", "-version", "--version"
+        );
     }
 
     private static final ThreadLocal<Context> activeContext = new ThreadLocal<>();
@@ -101,6 +102,10 @@ public class Log {
 
     public static void setLogHandler(@Nullable LogHandler handler) {
         Log.handler = handler;
+    }
+
+    public static void enableTraceLogs(boolean enable) {
+        TRACE_LOG_ENABLED = enable;
     }
 
     public static void setDefaultDebugStream(@NotNull PrintStream defaultDebugStream) {

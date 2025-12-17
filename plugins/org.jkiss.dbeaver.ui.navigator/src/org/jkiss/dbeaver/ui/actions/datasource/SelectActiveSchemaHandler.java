@@ -31,6 +31,7 @@ import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.commands.IElementUpdater;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.eclipse.ui.menus.UIElement;
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBIcon;
@@ -218,8 +219,9 @@ public class SelectActiveSchemaHandler extends AbstractDataSourceHandler impleme
                 {
                     setUser(true);
                 }
+                @NotNull
                 @Override
-                protected IStatus run(DBRProgressMonitor monitor) {
+                protected IStatus run(@NotNull DBRProgressMonitor monitor) {
                     try {
                         DBExecUtils.setExecutionContextDefaults(monitor, dataSource, executionContext, newInstanceName, curInstanceName, newObjectName);
                         return Status.OK_STATUS;
