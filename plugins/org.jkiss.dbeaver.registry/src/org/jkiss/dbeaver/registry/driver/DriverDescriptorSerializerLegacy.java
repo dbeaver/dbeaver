@@ -20,7 +20,6 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
-import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.connection.*;
 import org.jkiss.dbeaver.registry.DataSourceProviderDescriptor;
 import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
@@ -244,13 +243,6 @@ public class DriverDescriptorSerializerLegacy extends DriverDescriptorSerializer
                         xml.addAttribute(RegistryConstants.ATTR_NAME, paramEntry.getKey());
                         xml.addAttribute(RegistryConstants.ATTR_VALUE, CommonUtils.toString(paramEntry.getValue()));
                     }
-                }
-            }
-
-            // Extra icon parameter for the custom driver
-            if (driver.isCustom()) {
-                try (XMLBuilder.Element ignored1 = xml.startElement(RegistryConstants.TAG_PARAMETER)) {
-                    xml.addAttribute(RegistryConstants.ATTR_ICON, driver.getIcon().getLocation());
                 }
             }
 
@@ -496,15 +488,6 @@ public class DriverDescriptorSerializerLegacy extends DriverDescriptorSerializer
                         final String paramValue = attributes.getValue(RegistryConstants.ATTR_VALUE);
                         if (!CommonUtils.isEmpty(paramName) && !CommonUtils.isEmpty(paramValue)) {
                             curDriver.setDriverParameter(paramName, paramValue, false);
-                        }
-                        // Read extra icon parameter for custom drivers
-                        if (curDriver.isCustom()) {
-                            final String iconParam = attributes.getValue(RegistryConstants.ATTR_ICON);
-                            if (!CommonUtils.isEmpty(iconParam)) {
-                                DBPImage icon = curDriver.iconToImage(iconParam);
-                                curDriver.setIconPlain(icon);
-                                curDriver.makeIconExtensions();
-                            }
                         }
                     }
                     break;

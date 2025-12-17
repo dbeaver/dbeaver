@@ -22,6 +22,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.connection.DBPDriverDependencies;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -46,9 +47,10 @@ public class DriverDownloadDialog extends WizardDialog {
         @NotNull DBPDriver driver,
         @NotNull DBPDriverDependencies dependencies,
         boolean updateVersion,
-        boolean forceDownload
+        boolean forceDownload,
+        boolean isShowExpanded
     ) {
-        super(shell, new DriverDownloadWizard(driver, dependencies, updateVersion, forceDownload));
+        super(shell, new DriverDownloadWizard(driver, dependencies, updateVersion, forceDownload, isShowExpanded));
         getWizard().init(UIUtils.getActiveWorkbenchWindow().getWorkbench(), null);
         addPageChangedListener(event -> UIUtils.asyncExec(() -> getWizard().pageActivated(event.getSelectedPage())));
     }
@@ -87,9 +89,10 @@ public class DriverDownloadDialog extends WizardDialog {
     @Override
     protected Button createButton(Composite parent, int id, String label, boolean defaultButton) {
         if (id == IDialogConstants.FINISH_ID) {
-            Button button = super.createButton(parent, id, getWizard().getFinishText(), defaultButton);
+            Button button = super.createButton(parent, id, getWizard().getFinishText(), true);
             button.setImage(DBeaverIcons.getImage(UIIcon.BROWSER));
             setButtonLayoutData(button);
+            button.setFocus();
             return button;
         }
         return super.createButton(parent, id, label, defaultButton);
@@ -107,10 +110,6 @@ public class DriverDownloadDialog extends WizardDialog {
 
     @Override
     protected void finishPressed() {
-//        Button editButton = getButton(EDIT_DRIVER_BUTTON_ID);
-//        if (editButton != null) {
-//            editButton.setEnabled(false);
-//        }
         doDownload = true;
         super.finishPressed();
     }
@@ -119,25 +118,29 @@ public class DriverDownloadDialog extends WizardDialog {
         UIUtils.asyncExec(() -> buttonPressed(IDialogConstants.CANCEL_ID));
     }
 
-    public static boolean downloadDriverFiles(Shell shell, DBPDriver driver, DBPDriverDependencies dependencies) {
-        return downloadDriverFiles(shell, driver, dependencies, false);
+    public static boolean downloadDriverFiles(
+        @Nullable Shell shell,
+        @NotNull DBPDriver driver,
+        @NotNull DBPDriverDependencies dependencies,
+        boolean isShowExpanded
+    ) {
+        return downloadDriverFiles(shell, driver, dependencies, false, isShowExpanded);
     }
 
-    public static boolean downloadDriverFiles(Shell shell, DBPDriver driver, DBPDriverDependencies dependencies, boolean forceDownload) {
+    public static boolean downloadDriverFiles(
+        @Nullable Shell shell,
+        @NotNull DBPDriver driver,
+        @NotNull DBPDriverDependencies dependencies,
+        boolean forceDownload,
+        boolean isShowExpanded
+    ) {
         if (DBWorkbench.getPlatform().isShuttingDown()) {
             return false;
         }
         if (shell == null) {
             shell = Display.getCurrent().getActiveShell();
         }
-        DriverDownloadDialog dialog = new DriverDownloadDialog(shell, driver, dependencies, false, forceDownload);
-        dialog.setMinimumPageSize(0, 0);
-        dialog.open();
-        return dialog.doDownload;
-    }
-
-    public static boolean updateDriverFiles(Shell shell, DBPDriver driver, DBPDriverDependencies dependencies, boolean forceDownload) {
-        DriverDownloadDialog dialog = new DriverDownloadDialog(shell, driver, dependencies, true, forceDownload);
+        var dialog = new DriverDownloadDialog(shell, driver, dependencies, false, forceDownload, isShowExpanded);
         dialog.setMinimumPageSize(0, 0);
         dialog.open();
         return dialog.doDownload;
@@ -145,10 +148,6 @@ public class DriverDownloadDialog extends WizardDialog {
 
     @Override
     protected Point getInitialSize() {
-        Point computed = getShell().computeSize(SWT.DEFAULT, SWT.DEFAULT, true);
-//        if (computed.x > MAX_WIDTH) {
-//            computed.x = MAX_WIDTH;
-//        }
-        return computed;
+        return getShell().computeSize(SWT.DEFAULT, SWT.DEFAULT, true);
     }
 }
