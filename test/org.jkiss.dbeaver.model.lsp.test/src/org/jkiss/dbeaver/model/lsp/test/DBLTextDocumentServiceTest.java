@@ -23,8 +23,8 @@ import org.jkiss.dbeaver.model.lsp.context.ContextAwareDocument;
 import org.jkiss.dbeaver.model.sql.SQLSyntaxManager;
 import org.jkiss.dbeaver.model.sql.parser.SQLRuleManager;
 import org.jkiss.junit.DBeaverUnitTest;
-import org.junit.After;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 
 import java.util.List;
@@ -36,11 +36,11 @@ import java.util.concurrent.ExecutionException;
  * Test scenarios to cover DBLTextDocumentService
  */
 public class DBLTextDocumentServiceTest extends DBeaverUnitTest {
-    private final DBLTextDocumentService service = new DBLTextDocumentService(new TestSessionProvider());
+    private DBLTextDocumentService service;
 
-    @After
-    public void cleanup() {
-        DocumentServiceTestUtils.clearDocuments(service);
+    @Before
+    public void setUp() {
+        service = new DBLTextDocumentService();
     }
 
     @Test

@@ -22,6 +22,7 @@ import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
+import org.jkiss.dbeaver.model.lsp.DBLTextDocumentService;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.LoggingProgressMonitor;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
@@ -41,6 +42,8 @@ public abstract class H2DataSourceTest extends DBeaverUnitTest {
     protected DBPProject project;
     protected JDBCSession databaseSession;
     protected final DBRProgressMonitor monitor = new LoggingProgressMonitor();
+
+    protected DBLTextDocumentService service;
 
     @Before
     public void setUp() throws DBException {
@@ -68,7 +71,9 @@ public abstract class H2DataSourceTest extends DBeaverUnitTest {
                 Assert.assertFalse(stmt.execute("INSERT INTO TEST_TABLE2 (a, b) VALUES ('test" + i + "', " + i + ")"));
             }
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            throw new IllegalStateException(e);
         }
+
+        service = new DBLTextDocumentService(new TestSessionProvider());
     }
 }

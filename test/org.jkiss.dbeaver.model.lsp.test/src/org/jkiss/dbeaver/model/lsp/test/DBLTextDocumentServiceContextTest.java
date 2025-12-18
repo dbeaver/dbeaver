@@ -18,9 +18,7 @@ package org.jkiss.dbeaver.model.lsp.test;
 
 import org.eclipse.lsp4j.*;
 import org.jkiss.dbeaver.ext.h2.model.H2SQLDialect;
-import org.jkiss.dbeaver.model.lsp.DBLTextDocumentService;
 import org.jkiss.dbeaver.model.lsp.context.ContextAwareDocument;
-import org.junit.After;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -29,12 +27,6 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
 public class DBLTextDocumentServiceContextTest extends H2DataSourceTest {
-    private final DBLTextDocumentService service = new DBLTextDocumentService(new TestSessionProvider());
-
-    @After
-    public void cleanup() {
-        DocumentServiceTestUtils.clearDocuments(service);
-    }
 
     @Test
     public void shouldInitH2Context() {

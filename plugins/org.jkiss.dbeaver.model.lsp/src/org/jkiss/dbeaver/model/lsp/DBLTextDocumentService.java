@@ -78,9 +78,6 @@ public class DBLTextDocumentService implements TextDocumentService, LanguageClie
     private final Map<String, ContextAwareDocument> documentCache = new ConcurrentHashMap<>();
 
     @Nullable
-    private LanguageClient languageClient;
-
-    @Nullable
     private final DBLServerSessionProvider sessionProvider;
 
     public DBLTextDocumentService() {
@@ -328,6 +325,5 @@ public class DBLTextDocumentService implements TextDocumentService, LanguageClie
 
     @Override
     public void connect(@NotNull LanguageClient client) {
-        languageClient = client;
     }
 }

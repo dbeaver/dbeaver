@@ -51,20 +51,7 @@ public class DocumentServiceTestUtils {
             documentsField.setAccessible(false);
             return document;
         } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    public static void clearDocuments(@NotNull DBLTextDocumentService service) {
-        try {
-            Field documentsField = service.getClass().getDeclaredField("documentCache");
-            documentsField.setAccessible(true);
-            Map<String, ContextAwareDocument> documents =
-                (Map<String, ContextAwareDocument>) documentsField.get(service);
-            documents.clear();
-            documentsField.setAccessible(false);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
+            throw new IllegalStateException(e);
         }
     }
 

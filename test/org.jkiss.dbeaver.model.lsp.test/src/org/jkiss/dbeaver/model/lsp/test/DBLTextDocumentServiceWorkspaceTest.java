@@ -25,7 +25,6 @@ import org.jkiss.dbeaver.model.lsp.DBLTextDocumentService;
 import org.jkiss.dbeaver.model.lsp.context.ContextAwareDocument;
 import org.jkiss.dbeaver.registry.DataSourceRegistry;
 import org.jkiss.dbeaver.utils.ResourceUtils;
-import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -55,11 +54,6 @@ public class DBLTextDocumentServiceWorkspaceTest extends H2DataSourceTest {
 
         DBLServerSessionProvider sessionProvider = new TestSessionProvider(workspace);
         service = new DBLTextDocumentService(sessionProvider);
-    }
-
-    @After
-    public void cleanup() {
-        DocumentServiceTestUtils.clearDocuments(service);
     }
 
     @Test
