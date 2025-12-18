@@ -18,12 +18,9 @@
             <id>desktop</id>
             <activation><property><name>!headless-platform</name></property></activation>
             <modules>
-                <!-- Tests -->
-                <module>test</module>
-
                 <!-- Products -->
-                <module>product/community</module>
-                <module>product/repositories</module>
+                <module>community</module>
+                <module>repositories</module>
             </modules>
         </profile>
 
