@@ -2,8 +2,8 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: DBeaver Clickhouse Model
 Bundle-SymbolicName: org.jkiss.dbeaver.ext.clickhouse;singleton:=true
-Bundle-Version: 1.0.174.qualifier
-Bundle-Release-Date: 20251222
+Bundle-Version: 1.0.175.qualifier
+Bundle-Release-Date: 20260105
 Require-Bundle: org.jkiss.dbeaver.model,
  org.jkiss.dbeaver.ext.generic;visibility:=reexport,
  org.jkiss.dbeaver.data.gis,
