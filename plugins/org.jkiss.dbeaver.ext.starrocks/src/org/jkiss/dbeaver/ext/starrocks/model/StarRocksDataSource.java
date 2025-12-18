@@ -14,15 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ext.starrocks;
+package org.jkiss.dbeaver.ext.starrocks.model;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.ext.starrocks.model.StarRocksCatalog;
-import org.jkiss.dbeaver.ext.starrocks.model.StarRocksDatabase;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.DBPRefreshableObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
@@ -46,10 +45,14 @@ import java.util.Collections;
  * StarRocks DataSource - extends JDBCDataSource directly to support 3-level hierarchy:
  * Catalog -> Database -> Table
  */
-public class StarRocksDataSource extends JDBCDataSource {
+public class StarRocksDataSource extends JDBCDataSource implements DBPRefreshableObject {
 
     private static final Log log = Log.getLog(StarRocksDataSource.class);
-    private static final String DEFAULT_CATALOG_NAME = "default_catalog";
+
+    /**
+     * Default catalog name in StarRocks (internal catalog).
+     */
+    public static final String DEFAULT_CATALOG_NAME = "default_catalog";
 
     private final CatalogCache catalogCache = new CatalogCache();
     private int lowerCaseTableNames = 1;
@@ -183,6 +186,12 @@ public class StarRocksDataSource extends JDBCDataSource {
     @Override
     public void cacheStructure(@NotNull DBRProgressMonitor monitor, int scope) throws DBException {
         catalogCache.getAllObjects(monitor, this);
+    }
+
+    @Override
+    public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException {
+        catalogCache.clearCache();
+        return this;
     }
 
     // ======== Catalog Cache ========

@@ -14,20 +14,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ext.starrocks;
+package org.jkiss.dbeaver.ext.starrocks.model;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.ext.starrocks.model.StarRocksCatalog;
-import org.jkiss.dbeaver.ext.starrocks.model.StarRocksDatabase;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.connection.DBPConnectionBootstrap;
 import org.jkiss.dbeaver.model.exec.DBCCachedContextDefaults;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContextDefaults;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
-import org.jkiss.dbeaver.model.exec.DBCFeatureNotSupportedException;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
@@ -210,7 +207,7 @@ public class StarRocksExecutionContext extends JDBCExecutionContext
         } catch (SQLException e) {
             log.debug("Error getting current catalog", e);
             // Default to default_catalog if we can't determine
-            activeCatalogName = "default_catalog";
+            activeCatalogName = StarRocksDataSource.DEFAULT_CATALOG_NAME;
         }
 
         // Get current database

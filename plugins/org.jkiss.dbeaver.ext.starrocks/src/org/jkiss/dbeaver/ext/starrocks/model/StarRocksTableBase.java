@@ -19,7 +19,6 @@ package org.jkiss.dbeaver.ext.starrocks.model;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ext.starrocks.StarRocksDataSource;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBPQualifiedObject;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -63,18 +62,15 @@ public abstract class StarRocksTableBase extends JDBCTable<StarRocksDataSource, 
         StarRocksCatalog catalog = getCatalog();
         StarRocksDatabase database = getContainer();
 
-        switch (context) {
-            case DML:
-            case DDL:
-                if (catalog != null) {
-                    return DBUtils.getQuotedIdentifier(catalog) + "." +
-                           DBUtils.getQuotedIdentifier(database) + "." +
-                           DBUtils.getQuotedIdentifier(this);
-                }
-            default:
-                return DBUtils.getQuotedIdentifier(database) + "." +
-                       DBUtils.getQuotedIdentifier(this);
+        // For DML/DDL contexts, use 3-level FQN (catalog.database.table) when catalog is available
+        if (catalog != null && (context == DBPEvaluationContext.DML || context == DBPEvaluationContext.DDL)) {
+            return DBUtils.getQuotedIdentifier(catalog) + "." +
+                   DBUtils.getQuotedIdentifier(database) + "." +
+                   DBUtils.getQuotedIdentifier(this);
         }
+        // For other contexts or when catalog is unavailable, use 2-level FQN
+        return DBUtils.getQuotedIdentifier(database) + "." +
+               DBUtils.getQuotedIdentifier(this);
     }
 
     @Override

@@ -19,8 +19,8 @@ package org.jkiss.dbeaver.ext.starrocks.model;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ext.starrocks.StarRocksDataSource;
 import org.jkiss.dbeaver.model.DBPRefreshableObject;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
@@ -33,6 +33,7 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
 
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.Collection;
 
 /**
@@ -143,7 +144,9 @@ public class StarRocksCatalog implements DBSCatalog, DBPRefreshableObject {
                 @NotNull JDBCSession session,
                 @NotNull StarRocksCatalog owner) throws SQLException {
             // Switch to this catalog context
-            session.getOriginal().createStatement().execute("SET CATALOG `" + name + "`");
+            try (Statement stmt = session.getOriginal().createStatement()) {
+                stmt.execute("SET CATALOG " + DBUtils.getQuotedIdentifier(dataSource, name));
+            }
 
             // Now fetch databases in this catalog
             return session.prepareStatement("SHOW DATABASES");

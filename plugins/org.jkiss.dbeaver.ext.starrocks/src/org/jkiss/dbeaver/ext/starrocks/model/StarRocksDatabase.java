@@ -19,8 +19,6 @@ package org.jkiss.dbeaver.ext.starrocks.model;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.ext.starrocks.StarRocksDataSource;
 import org.jkiss.dbeaver.model.DBPRefreshableObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
@@ -36,14 +34,13 @@ import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
 
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.Collection;
 
 /**
  * StarRocks Database - represents a database/schema within a StarRocks catalog.
  */
 public class StarRocksDatabase implements DBSSchema, DBSObjectContainer, DBPRefreshableObject {
-
-    private static final Log log = Log.getLog(StarRocksDatabase.class);
 
     private final StarRocksCatalog catalog;
     private final String name;
@@ -110,6 +107,15 @@ public class StarRocksDatabase implements DBSSchema, DBSObjectContainer, DBPRefr
         return tableCache.getObject(monitor, this, name, StarRocksView.class);
     }
 
+    @Association
+    public Collection<StarRocksMaterializedView> getMaterializedViews(DBRProgressMonitor monitor) throws DBException {
+        return tableCache.getTypedObjects(monitor, this, StarRocksMaterializedView.class);
+    }
+
+    public StarRocksMaterializedView getMaterializedView(DBRProgressMonitor monitor, String name) throws DBException {
+        return tableCache.getObject(monitor, this, name, StarRocksMaterializedView.class);
+    }
+
     // DBSObjectContainer implementation
     @Override
     public Collection<? extends DBSObject> getChildren(@NotNull DBRProgressMonitor monitor) throws DBException {
@@ -139,7 +145,9 @@ public class StarRocksDatabase implements DBSSchema, DBSObjectContainer, DBPRefr
     }
 
     void switchToCatalogContext(JDBCSession session) throws SQLException {
-        session.getOriginal().createStatement().execute("SET CATALOG `" + catalog.getName() + "`");
+        try (Statement stmt = session.getOriginal().createStatement()) {
+            stmt.execute("SET CATALOG " + DBUtils.getQuotedIdentifier(getDataSource(), catalog.getName()));
+        }
     }
 
     /**
@@ -163,9 +171,11 @@ public class StarRocksDatabase implements DBSSchema, DBSObjectContainer, DBPRefr
         protected StarRocksTableBase fetchObject(@NotNull JDBCSession session, @NotNull StarRocksDatabase owner, @NotNull JDBCResultSet dbResult) throws SQLException, DBException {
             String tableName = JDBCUtils.safeGetString(dbResult, 1);
             String tableType = JDBCUtils.safeGetString(dbResult, 2);
-            boolean isView = tableType != null && tableType.toUpperCase().contains("VIEW");
+            String tableTypeUpper = tableType != null ? tableType.toUpperCase() : "";
 
-            if (isView) {
+            if (tableTypeUpper.contains("MATERIALIZED VIEW")) {
+                return new StarRocksMaterializedView(owner, tableName);
+            } else if (tableTypeUpper.contains("VIEW")) {
                 return new StarRocksView(owner, tableName);
             } else {
                 return new StarRocksTable(owner, tableName);
@@ -174,13 +184,13 @@ public class StarRocksDatabase implements DBSSchema, DBSObjectContainer, DBPRefr
 
         @Override
         protected JDBCStatement prepareChildrenStatement(@NotNull JDBCSession session, @NotNull StarRocksDatabase owner, @Nullable StarRocksTableBase table) throws SQLException {
-            switchToCatalogContext(session);
-            StringBuilder sql = new StringBuilder("SHOW FULL COLUMNS FROM ");
-            if (table != null) {
-                sql.append(DBUtils.getQuotedIdentifier(table)).append(" FROM ");
+            if (table == null) {
+                throw new SQLException("Cannot load columns without specifying a table");
             }
-            sql.append(DBUtils.getQuotedIdentifier(owner));
-            return session.prepareStatement(sql.toString());
+            switchToCatalogContext(session);
+            String sql = "SHOW FULL COLUMNS FROM " + DBUtils.getQuotedIdentifier(table) +
+                         " FROM " + DBUtils.getQuotedIdentifier(owner);
+            return session.prepareStatement(sql);
         }
 
         @Override

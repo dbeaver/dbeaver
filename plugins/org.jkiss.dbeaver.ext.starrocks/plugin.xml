@@ -31,6 +31,13 @@
                                         </folder>
                                     </items>
                                 </folder>
+                                <folder type="org.jkiss.dbeaver.ext.starrocks.model.StarRocksMaterializedView" label="Materialized Views" icon="#folder_view" description="Materialized views in database">
+                                    <items label="Materialized View" path="materializedView" property="materializedViews" icon="#view">
+                                        <folder type="org.jkiss.dbeaver.ext.starrocks.model.StarRocksTableColumn" label="Columns" icon="#columns" description="Materialized view columns">
+                                            <items label="Column" path="attribute" property="attributes" icon="#column"/>
+                                        </folder>
+                                    </items>
+                                </folder>
                             </items>
                         </folder>
                     </items>
@@ -70,11 +77,11 @@
     </extension>
 
     <extension point="org.jkiss.dbeaver.sqlDialect">
-        <dialect id="starrocks" parent="mysql" class="org.jkiss.dbeaver.ext.starrocks.StarRocksDialect"
+        <dialect id="starrocks" parent="mysql" class="org.jkiss.dbeaver.ext.starrocks.model.StarRocksDialect"
                  label="StarRocks" description="StarRocks SQL dialect" icon="icons/starrocks_icon.png">
-            <keywords value=""/>
-            <functions value=""/>
-            <types value=""/>
+            <keywords value="CATALOG,CATALOGS,MATERIALIZED,REFRESH,ASYNC,DEFERRED,IMMEDIATE,BUCKETS,DISTRIBUTED,PROPERTIES,BROKER,ROUTINE,LOAD,STREAM,PAUSE,RESUME,STOP,SUBMIT,TASK,PIPE,PIPES,REPOSITORY,SNAPSHOT,RESTORE,ADMIN"/>
+            <functions value="ARRAY_AGG,ARRAY_CONCAT,ARRAY_CONTAINS,ARRAY_LENGTH,ARRAY_POSITION,BITMAP_COUNT,BITMAP_UNION,HLL_UNION_AGG,PERCENTILE_APPROX,RETENTION,WINDOW_FUNNEL,APPROX_COUNT_DISTINCT"/>
+            <types value="ARRAY,BITMAP,HLL,JSON,MAP,STRUCT,LARGEINT"/>
         </dialect>
     </extension>
 </plugin>
