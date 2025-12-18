@@ -134,16 +134,32 @@ class ResultSetPersister {
         return !changedRows.isEmpty();
     }
 
-    public List<DBDAttributeBinding> getUpdatedAttributes() {
+    @NotNull
+    public Set<DBDAttributeBinding> getUpdatedAttributes() {
         Set<DBDAttributeBinding> attrs = new LinkedHashSet<>();
         for (ResultSetRow row : changedRows) {
-            attrs.addAll(row.changes.keySet());
+            attrs.addAll(row.getChangedAttributes());
         }
-        return new ArrayList<>(attrs);
+        return attrs;
     }
 
-    private static boolean isVirtualColumn(DBDAttributeBinding column) {
-        return column instanceof DBDAttributeBindingCustom;
+    @NotNull
+    public ResultSetSaveReport generateReport() {
+        ResultSetSaveReport report = new ResultSetSaveReport();
+        report.setDeletes(deletedRows.size());
+        report.setInserts(addedRows.size());
+        int changedRows = 0;
+        for (ResultSetRow row : this.rowIdentifiers.keySet()) {
+            if (row.isChanged()) {
+                changedRows++;
+            }
+        }
+        report.setUpdates(changedRows);
+
+        DBPDataSource dataSource = viewer.getDataSource();
+        report.setHasReferences(dataSource != null && dataSource.getInfo().supportsReferentialIntegrity());
+
+        return report;
     }
 
     /**
@@ -228,20 +244,8 @@ class ResultSetPersister {
         return true;
     }
 
-    public ResultSetSaveReport generateReport() {
-        ResultSetSaveReport report = new ResultSetSaveReport();
-        report.setDeletes(deletedRows.size());
-        report.setInserts(addedRows.size());
-        int changedRows = 0;
-        for (ResultSetRow row : this.rowIdentifiers.keySet()) {
-            if (row.changes != null) changedRows++;
-        }
-        report.setUpdates(changedRows);
-
-        DBPDataSource dataSource = viewer.getDataSource();
-        report.setHasReferences(dataSource != null && dataSource.getInfo().supportsReferentialIntegrity());
-
-        return report;
+    private boolean isVirtualColumn(@Nullable DBDAttributeBinding column) {
+        return column instanceof DBDAttributeBindingCustom;
     }
 
     public List<DBEPersistAction> getScript() {
@@ -444,17 +448,22 @@ class ResultSetPersister {
         }
     }
 
-    // Filter changes
-    // Depending on attributes structure we leave only leaf elements or entire document (for document-oriented databases)
+    /**
+     * Filter changes
+     * Depending on attributes structure we leave only leaf elements or entire document (for document-oriented databases)
+     *
+     * @param row row to check
+     * @return map of changed attributes and their new values null if no changes
+     */
     @Nullable
-    private static Map<DBDAttributeBinding, Object> collectUpdateChanges(ResultSetRow row) {
-        if (CommonUtils.isEmpty(row.changes)) {
+    private Map<DBDAttributeBinding, Object> collectUpdateChanges(@NotNull ResultSetRow row) {
+        if (!row.isChanged()) {
             return null;
         }
-        Map<DBDAttributeBinding, Object> changes = new LinkedHashMap<>(row.changes.size());
+        Map<DBDAttributeBinding, Object> changes = new LinkedHashMap<>(row.getChangesCount());
         List<DBDAttributeBinding> attrRefs = new ArrayList<>();
         boolean hasComplexUpdates = false;
-        for (Map.Entry<DBDAttributeBinding, Object> change : row.changes.entrySet()) {
+        for (Map.Entry<DBDAttributeBinding, Object> change : row.getChanges()) {
             if (change.getValue() instanceof DBDAttributeBinding ab) {
                 attrRefs.add(ab);
             }
@@ -464,19 +473,19 @@ class ResultSetPersister {
         }
         if (hasComplexUpdates && !attrRefs.isEmpty()) {
             // If we have complex values then leave only nested elements attributes
-            for (Map.Entry<DBDAttributeBinding, Object> change : row.changes.entrySet()) {
+            for (Map.Entry<DBDAttributeBinding, Object> change : row.getChanges()) {
                 if (change.getValue() instanceof DBDAttributeBinding ab && attrRefs.contains(ab)) {
-                    changes.put(ab, row.changes.get(ab));
+                    changes.put(ab, row.getChange(ab));
                 }
             }
         } else {
             // Otherwise remove root element from the list
-            for (Map.Entry<DBDAttributeBinding, Object> change : row.changes.entrySet()) {
+            for (Map.Entry<DBDAttributeBinding, Object> change : row.getChanges()) {
                 if (attrRefs.contains(change.getKey())) {
                     continue;
                 }
                 if (change.getValue() instanceof DBDAttributeBinding ab) {
-                    changes.put(change.getKey(), row.changes.get(ab));
+                    changes.put(change.getKey(), row.getChange(ab));
                 } else {
                     changes.put(change.getKey(), change.getValue());
                 }
@@ -514,14 +523,14 @@ class ResultSetPersister {
     public void rejectChanges() {
         collectChanges();
         for (ResultSetRow row : changedRows) {
-            if (row.changes != null) {
-                for (Map.Entry<DBDAttributeBinding, Object> changedValue : row.changes.entrySet()) {
+            if (row.isChanged()) {
+                for (Map.Entry<DBDAttributeBinding, Object> changedValue : row.getChanges()) {
                     if (changedValue.getValue() instanceof DBDAttributeBinding) {
                         continue;
                     }
                     Object curValue = model.getCellValue(changedValue.getKey(), row);
                     // If new value and old value are the same - do not release it
-                    if (curValue != changedValue.getValue()) {
+                    if (!Objects.equals(changedValue.getValue(), curValue)) {
                         DBUtils.releaseValue(curValue);
                         try {
                             model.updateCellValue(changedValue.getKey(), row, null, changedValue.getValue(), false);
@@ -530,7 +539,7 @@ class ResultSetPersister {
                         }
                     }
                 }
-                row.changes = null;
+                row.clearChanges();
             }
         }
 
@@ -563,7 +572,7 @@ class ResultSetPersister {
             for (DataStatementInfo stat : updateStatements) {
                 if (stat.executed && stat.row == row) {
                     reflectKeysUpdate(stat);
-                    row.changes = null;
+                    row.clearChanges();
                     break;
                 }
             }
@@ -642,7 +651,7 @@ class ResultSetPersister {
             }
         }
 
-        List<DBDAttributeBinding> updatedAttributes = this.getUpdatedAttributes();
+        Set<DBDAttributeBinding> updatedAttributes = this.getUpdatedAttributes();
         if (this.hasDeletes()) {
             DBDRowIdentifier defIdentifier = model.getDefaultRowIdentifier();
             if (defIdentifier == null) {

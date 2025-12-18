@@ -130,6 +130,11 @@ public class ContentValueManager extends BaseValueManager {
                                 "Unexpected error while trying to open the selected value", e);
                     }
                 }
+
+                @Override
+                public boolean isEnabled() {
+                    return !controller.isReadOnly();
+                }
             });
             manager.add(new Action(ResultSetMessages.model_jdbc_load_from_file_, DBeaverIcons.getImageDescriptor(UIIcon.LOAD)) {
                 @Override
@@ -143,6 +148,11 @@ public class ContentValueManager extends BaseValueManager {
                             }
                         }
                     }
+                }
+
+                @Override
+                public boolean isEnabled() {
+                    return !controller.isReadOnly();
                 }
             });
         }
