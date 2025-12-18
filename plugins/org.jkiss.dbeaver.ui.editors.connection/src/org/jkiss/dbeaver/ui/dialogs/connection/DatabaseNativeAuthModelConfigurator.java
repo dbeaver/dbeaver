@@ -56,10 +56,10 @@ public class DatabaseNativeAuthModelConfigurator implements IObjectPropertyConfi
 
     protected DBPDataSourceContainer dataSource;
 
-    protected final boolean credentialsSaveRestricted;
+    protected final boolean canEditCredentialsPerPolicy;
 
     public DatabaseNativeAuthModelConfigurator() {
-        credentialsSaveRestricted = ApplicationPolicyProvider.getInstance()
+        canEditCredentialsPerPolicy = !ApplicationPolicyProvider.getInstance()
             .isPolicyEnabled(ApplicationPolicyProvider.POLICY_CREDENTIALS_EDIT);
     }
 
@@ -112,21 +112,21 @@ public class DatabaseNativeAuthModelConfigurator implements IObjectPropertyConfi
         }
         if (this.passwordText != null && !this.passwordText.isDisposed()) {
             this.passwordText.setText(CommonUtils.notEmpty(dataSource.getConnectionConfiguration().getUserPassword()));
-            if (credentialsSaveRestricted) {
-                if (this.savePasswordCheck != null) {
-                    this.savePasswordCheck.setSelection(false);
-                    this.savePasswordCheck.setEnabled(false);
-                }
-                if (showPasswordButton != null) {
-                    this.showPasswordButton.setEnabled(false);
-                }
-            } else {
+            if (canEditCredentialsPerPolicy) {
                 this.passwordText.setEnabled(dataSource.isSavePassword());
                 if (this.savePasswordCheck != null) {
                     this.savePasswordCheck.setSelection(dataSource.isSavePassword() || isForceSaveCredentials());
                 }
                 if (showPasswordButton != null) {
                     this.showPasswordButton.setEnabled(dataSource.isSavePassword() || isForceSaveCredentials());
+                }
+            } else {
+                if (this.savePasswordCheck != null) {
+                    this.savePasswordCheck.setSelection(false);
+                    this.savePasswordCheck.setEnabled(false);
+                }
+                if (showPasswordButton != null) {
+                    this.showPasswordButton.setEnabled(false);
                 }
             }
         }
@@ -146,7 +146,7 @@ public class DatabaseNativeAuthModelConfigurator implements IObjectPropertyConfi
 
     @Override
     public void saveSettings(@NotNull DBPDataSourceContainer dataSource) {
-        boolean resetPassword = credentialsSaveRestricted || (this.savePasswordCheck != null && !this.savePasswordCheck.getSelection());
+        boolean resetPassword = !canEditCredentialsPerPolicy || (this.savePasswordCheck != null && !this.savePasswordCheck.getSelection());
         if (dataSource.isSharedCredentials()) {
             resetPassword = false;
         }
@@ -159,12 +159,10 @@ public class DatabaseNativeAuthModelConfigurator implements IObjectPropertyConfi
         } else {
             dataSource.getConnectionConfiguration().setUserPassword(null);
         }
-        if (credentialsSaveRestricted) {
+        if (!canEditCredentialsPerPolicy) {
             dataSource.setSavePassword(dataSource.isSharedCredentials());
-        } else {
-            if (this.savePasswordCheck != null) {
-                dataSource.setSavePassword(this.savePasswordCheck.getSelection());
-            }
+        } else if (this.savePasswordCheck != null) {
+            dataSource.setSavePassword(this.savePasswordCheck.getSelection());
         }
     }
 
@@ -217,7 +215,7 @@ public class DatabaseNativeAuthModelConfigurator implements IObjectPropertyConfi
         GridData gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
         panel.setLayoutData(gd);
 
-        if (!credentialsSaveRestricted) {
+        if (canEditCredentialsPerPolicy) {
             savePasswordCheck = UIUtils.createCheckbox(
                 panel,
                 UIConnectionMessages.dialog_connection_wizard_final_checkbox_save_password,
@@ -234,7 +232,7 @@ public class DatabaseNativeAuthModelConfigurator implements IObjectPropertyConfi
             savePasswordCheck.setEnabled(!isForceSaveCredentials());
         }
 
-        if (supportsPasswordView && !credentialsSaveRestricted) {
+        if (supportsPasswordView && canEditCredentialsPerPolicy) {
             showPasswordButton = UIUtils.createPushButton(
                 panel,
                 null,
