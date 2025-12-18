@@ -27,6 +27,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.utils.AlphanumericComparator;
@@ -45,6 +46,8 @@ import java.util.stream.Stream;
 public class ResourceUtils {
 
     private static final Log log = Log.getLog(ResourceUtils.class);
+
+    public static final String PROP_CONTEXT_DEFAULT_DATASOURCE = "default-datasource"; //$NON-NLS-1$
 
     public static void checkFolderExists(IFolder folder)
             throws DBException
@@ -222,6 +225,16 @@ public class ResourceUtils {
             reader.close();
         }
         syncFile(monitor, localFile);
+    }
+
+    @Nullable
+    public static String getResourceDataSourceId(
+        @NotNull DBPProject project,
+        @NotNull String resourcePath
+    ) {
+        return String.valueOf(
+            project.getResourceProperty(resourcePath, PROP_CONTEXT_DEFAULT_DATASOURCE)
+        );
     }
 
 }

@@ -36,8 +36,7 @@ import java.util.concurrent.ExecutionException;
  * Test scenarios to cover DBLTextDocumentService
  */
 public class DBLTextDocumentServiceTest extends DBeaverUnitTest {
-
-    private final DBLTextDocumentService service = new DBLTextDocumentService();
+    private final DBLTextDocumentService service = new DBLTextDocumentService(new TestSessionProvider());
 
     @After
     public void cleanup() {

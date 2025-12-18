@@ -32,7 +32,6 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.app.DBPProject;
-import org.jkiss.dbeaver.model.app.DBPWorkspace;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
 import org.jkiss.dbeaver.model.lsp.context.ContextAwareDocument;
@@ -50,6 +49,7 @@ import org.jkiss.dbeaver.model.sql.parser.tokens.SQLTokenType;
 import org.jkiss.dbeaver.model.text.parser.TPToken;
 import org.jkiss.dbeaver.model.text.parser.TPTokenDefault;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.utils.ResourceUtils;
 import org.jkiss.utils.Pair;
 
 import java.lang.reflect.InvocationTargetException;
@@ -67,7 +67,6 @@ import java.util.concurrent.ConcurrentHashMap;
 public class DBLTextDocumentService implements TextDocumentService, LanguageClientAware {
     private static final Log log = Log.getLog(DBLTextDocumentService.class);
 
-    public static final String PROP_CONTEXT_DEFAULT_DATASOURCE = "default-datasource";
     public static final Map<SQLTokenType, Pair<Integer, String>> SUPPORTED_TOKEN_TYPES = Map.of(
         SQLTokenType.T_KEYWORD, new Pair<>(0, SemanticTokenTypes.Keyword),
         SQLTokenType.T_STRING, new Pair<>(1, SemanticTokenTypes.String)
@@ -82,14 +81,14 @@ public class DBLTextDocumentService implements TextDocumentService, LanguageClie
     private LanguageClient languageClient;
 
     @Nullable
-    private final DBPWorkspace workspace;
+    private final DBLServerSessionProvider sessionProvider;
 
     public DBLTextDocumentService() {
-        this.workspace = null;
+        this.sessionProvider = null;
     }
 
-    public DBLTextDocumentService(@Nullable DBPWorkspace workspace) {
-        this.workspace = workspace;
+    public DBLTextDocumentService(@Nullable DBLServerSessionProvider sessionProvider) {
+        this.sessionProvider = sessionProvider;
     }
 
     @Override
@@ -285,19 +284,17 @@ public class DBLTextDocumentService implements TextDocumentService, LanguageClie
         String projectId = documentUri.getProjectId();
         String resourcePath = documentUri.getResourcePath();
 
-        DBPProject project = workspace != null ?
-            workspace.getProject(projectId) :
+        DBPProject project = sessionProvider != null ?
+            sessionProvider.getWorkspace().getProject(projectId) :
             DBWorkbench.getPlatform().getWorkspace().getProject(projectId);
 
-        DBPDataSourceContainer dataSourceContainer;
-        if (project == null) {
-            log.warn(String.format("Project %s not found. Proceeding without data source", projectId));
-            dataSourceContainer = null;
-        } else {
-            String dataSourceId = String.valueOf(project.getResourceProperty(resourcePath, PROP_CONTEXT_DEFAULT_DATASOURCE));
-            dataSourceContainer = project.getDataSourceRegistry().getDataSource(dataSourceId);
+        DBPDataSourceContainer dataSourceContainer = null;
+        if (project != null) {
+            String dataSourceId = ResourceUtils.getResourceDataSourceId(project, resourcePath);
+            if (dataSourceId != null) {
+                dataSourceContainer = project.getDataSourceRegistry().getDataSource(dataSourceId);
+            }
         }
-
 
         try {
             document.setExecutionContext(DBUtils.getOrOpenDefaultContext(dataSourceContainer, false));

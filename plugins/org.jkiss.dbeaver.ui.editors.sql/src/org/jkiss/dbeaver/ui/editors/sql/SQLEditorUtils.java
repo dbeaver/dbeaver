@@ -138,7 +138,7 @@ public class SQLEditorUtils {
             return;
         }
         try {
-            for (String path : project.findResources(Map.of(EditorUtils.PROP_CONTEXT_DEFAULT_DATASOURCE, container.getId()))) {
+            for (String path : project.findResources(Map.of(ResourceUtils.PROP_CONTEXT_DEFAULT_DATASOURCE, container.getId()))) {
                 final IResource resource = project.getRootResource().findMember(path);
                 if (resource instanceof IFile) {
                     result.add(new ResourceInfo((IFile) resource, container));

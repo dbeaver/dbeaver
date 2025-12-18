@@ -23,7 +23,6 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.app.DBPWorkspace;
 
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -49,11 +48,11 @@ public final class DBLFacade {
     public static void runLanguageServer(
         @NotNull InputStream in,
         @NotNull OutputStream out,
-        @Nullable DBPWorkspace workspace
+        @Nullable DBLServerSessionProvider sessionProvider
     ) throws DBException {
         try {
             log.info("Launching LSP server"); //NON-NLS
-            DBLServer server = new DBLServer(workspace);
+            DBLServer server = new DBLServer(sessionProvider);
             Launcher<LanguageClient> launcher = LSPLauncher.createServerLauncher(server, in, out);
             LanguageClient client = launcher.getRemoteProxy();
             server.connect(client);

@@ -21,7 +21,6 @@ import org.eclipse.lsp4j.services.*;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.app.DBPWorkspace;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.Pair;
 
@@ -40,8 +39,8 @@ public final class DBLServer implements LanguageServer, LanguageClientAware {
     @NotNull
     private final WorkspaceService workspaceService;
 
-    public DBLServer(@Nullable DBPWorkspace workspace) {
-        this.textDocumentService = new DBLTextDocumentService(workspace);
+    public DBLServer(@Nullable DBLServerSessionProvider sessionProvider) {
+        this.textDocumentService = new DBLTextDocumentService(sessionProvider);
         this.workspaceService = new DBLWorkspaceService();
     }
 

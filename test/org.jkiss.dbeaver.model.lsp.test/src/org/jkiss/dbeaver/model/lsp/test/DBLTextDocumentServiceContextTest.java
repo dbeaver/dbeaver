@@ -29,7 +29,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
 public class DBLTextDocumentServiceContextTest extends H2DataSourceTest {
-    private final DBLTextDocumentService service = new DBLTextDocumentService();
+    private final DBLTextDocumentService service = new DBLTextDocumentService(new TestSessionProvider());
 
     @After
     public void cleanup() {
@@ -38,11 +38,6 @@ public class DBLTextDocumentServiceContextTest extends H2DataSourceTest {
 
     @Test
     public void shouldInitH2Context() {
-        project.setResourceProperty(
-            DocumentServiceTestUtils.BASIC_RESOURCE_PATH,
-            DBLTextDocumentService.PROP_CONTEXT_DEFAULT_DATASOURCE,
-            dataSourceDescriptor.getId()
-        );
         TextDocumentItem document = DocumentServiceTestUtils.createAndSaveDocument(
             service, "select * from table", project.getId(), DocumentServiceTestUtils.BASIC_RESOURCE_PATH
         );
@@ -95,11 +90,6 @@ public class DBLTextDocumentServiceContextTest extends H2DataSourceTest {
     @Test
     public void shouldReturnEmptyCompletionsForInvalidPosition() throws ExecutionException, InterruptedException {
         String query = "SEL";
-        project.setResourceProperty(
-            DocumentServiceTestUtils.BASIC_RESOURCE_PATH,
-            DBLTextDocumentService.PROP_CONTEXT_DEFAULT_DATASOURCE,
-            dataSourceDescriptor.getId()
-        );
         ContextAwareDocument document = DocumentServiceTestUtils.createAndSaveDocument(
             service, query, project.getId(), DocumentServiceTestUtils.BASIC_RESOURCE_PATH
         );
@@ -115,11 +105,6 @@ public class DBLTextDocumentServiceContextTest extends H2DataSourceTest {
     @Test
     public void shouldSuggestKeywordCompletion() throws ExecutionException, InterruptedException {
         String query = "SEL";
-        project.setResourceProperty(
-            DocumentServiceTestUtils.BASIC_RESOURCE_PATH,
-            DBLTextDocumentService.PROP_CONTEXT_DEFAULT_DATASOURCE,
-            dataSourceDescriptor.getId()
-        );
         ContextAwareDocument document = DocumentServiceTestUtils.createAndSaveDocument(
             service, query, project.getId(), DocumentServiceTestUtils.BASIC_RESOURCE_PATH
         );
@@ -139,11 +124,6 @@ public class DBLTextDocumentServiceContextTest extends H2DataSourceTest {
             SELECT *
                 FR
             """;
-        project.setResourceProperty(
-            DocumentServiceTestUtils.BASIC_RESOURCE_PATH,
-            DBLTextDocumentService.PROP_CONTEXT_DEFAULT_DATASOURCE,
-            dataSourceDescriptor.getId()
-        );
         ContextAwareDocument document = DocumentServiceTestUtils.createAndSaveDocument(
             service, query, project.getId(), DocumentServiceTestUtils.BASIC_RESOURCE_PATH
         );

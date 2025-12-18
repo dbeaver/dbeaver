@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.model.runtime.LoggingProgressMonitor;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.utils.PrefUtils;
+import org.jkiss.dbeaver.utils.ResourceUtils;
 import org.jkiss.junit.DBeaverUnitTest;
 import org.junit.Assert;
 import org.junit.Before;
@@ -53,6 +54,11 @@ public abstract class H2DataSourceTest extends DBeaverUnitTest {
         databaseSession = DBUtils.openUtilSession(monitor, dataSourceDescriptor, "Internal test session");
         project = DBWorkbench.getPlatform().getWorkspace().getProjects().getFirst();
         project.getDataSourceRegistry().addDataSource(dataSourceDescriptor);
+        project.setResourceProperty(
+            DocumentServiceTestUtils.BASIC_RESOURCE_PATH,
+            ResourceUtils.PROP_CONTEXT_DEFAULT_DATASOURCE,
+            dataSourceDescriptor.getId()
+        );
 
         try (JDBCStatement stmt = databaseSession.createStatement()) {
             Assert.assertFalse(stmt.execute("CREATE TABLE TEST_TABLE1 (id IDENTITY NOT NULL PRIMARY KEY, a VARCHAR, b INT)"));

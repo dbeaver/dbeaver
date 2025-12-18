@@ -79,7 +79,6 @@ public class EditorUtils {
     public static final String PROP_SQL_DATA_SOURCE_ID = "sql-editor-data-source-id"; //$NON-NLS-1$
     public static final String PROP_SQL_PROJECT_ID = "sql-editor-project-id"; //$NON-NLS-1$
 
-    public static final String PROP_CONTEXT_DEFAULT_DATASOURCE = "default-datasource"; //$NON-NLS-1$
     public static final String PROP_CONTEXT_DEFAULT_CATALOG = "default-catalog"; //$NON-NLS-1$
     private static final String PROP_CONTEXT_DEFAULT_SCHEMA = "default-schema"; //$NON-NLS-1$
 
@@ -303,7 +302,7 @@ public class EditorUtils {
         String defaultCatalogName = null;
         String defaultSchema = null;
         if (editorInput instanceof IInMemoryEditorInput mei) {
-            defaultDatasource = (String) mei.getProperty(PROP_CONTEXT_DEFAULT_DATASOURCE);
+            defaultDatasource = (String) mei.getProperty(ResourceUtils.PROP_CONTEXT_DEFAULT_DATASOURCE);
             defaultCatalogName = (String) mei.getProperty(PROP_CONTEXT_DEFAULT_CATALOG);
             defaultSchema= (String) mei.getProperty(PROP_CONTEXT_DEFAULT_SCHEMA);
         } else {
@@ -311,15 +310,15 @@ public class EditorUtils {
             if (file != null) {
                 RCPProject projectMeta = DBPPlatformDesktop.getInstance().getWorkspace().getProject(file.getProject());
                 if (projectMeta != null) {
-                    defaultDatasource = (String) EditorUtils.getResourceProperty(projectMeta, file, PROP_CONTEXT_DEFAULT_DATASOURCE);
-                    defaultCatalogName = (String) EditorUtils.getResourceProperty(projectMeta, file, PROP_CONTEXT_DEFAULT_CATALOG);
-                    defaultSchema = (String) EditorUtils.getResourceProperty(projectMeta, file, PROP_CONTEXT_DEFAULT_SCHEMA);
+                    defaultDatasource = (String) getResourceProperty(projectMeta, file, ResourceUtils.PROP_CONTEXT_DEFAULT_DATASOURCE);
+                    defaultCatalogName = (String) getResourceProperty(projectMeta, file, PROP_CONTEXT_DEFAULT_CATALOG);
+                    defaultSchema = (String) getResourceProperty(projectMeta, file, PROP_CONTEXT_DEFAULT_SCHEMA);
                 }
             } else {
                 File localFile = getLocalFileFromInput(editorInput);
                 if (localFile != null) {
                     final DBPExternalFileManager efManager = DBPPlatformDesktop.getInstance().getExternalFileManager();
-                    defaultDatasource = (String) efManager.getFileProperty(localFile, PROP_CONTEXT_DEFAULT_DATASOURCE);
+                    defaultDatasource = (String) efManager.getFileProperty(localFile, ResourceUtils.PROP_CONTEXT_DEFAULT_DATASOURCE);
                     defaultCatalogName = (String) efManager.getFileProperty(localFile, PROP_CONTEXT_DEFAULT_CATALOG);
                     defaultSchema = (String) efManager.getFileProperty(localFile, PROP_CONTEXT_DEFAULT_SCHEMA);
                 }
@@ -337,7 +336,6 @@ public class EditorUtils {
         return getFileDataSource(file, true);
     }
 
-    // TODO use this
     @Nullable
     public static DBPDataSourceContainer getFileDataSource(IFile file, boolean forceRegistryLoad) {
         if (!file.exists()) {
@@ -345,7 +343,7 @@ public class EditorUtils {
         }
         RCPProject projectMeta = DBPPlatformDesktop.getInstance().getWorkspace().getProject(file.getProject());
         if (projectMeta != null) {
-            Object dataSourceId = EditorUtils.getResourceProperty(projectMeta, file, PROP_CONTEXT_DEFAULT_DATASOURCE);
+            Object dataSourceId = getResourceProperty(projectMeta, file, ResourceUtils.PROP_CONTEXT_DEFAULT_DATASOURCE);
             if (dataSourceId != null && (forceRegistryLoad || projectMeta.isRegistryLoaded())) {
                 DBPDataSourceContainer dataSource = projectMeta.getDataSourceRegistry().getDataSource(dataSourceId.toString());
                 if (dataSource == null) {
@@ -376,7 +374,7 @@ public class EditorUtils {
             }
             if (!isDefaultContextSettings(context)) {
                 if (dataSourceContainer != null) {
-                    ((IInMemoryEditorInput) editorInput).setProperty(PROP_CONTEXT_DEFAULT_DATASOURCE, dataSourceContainer.getId());
+                    ((IInMemoryEditorInput) editorInput).setProperty(ResourceUtils.PROP_CONTEXT_DEFAULT_DATASOURCE, dataSourceContainer.getId());
                 }
                 String catalogName = getDefaultCatalogName(context);
                 if (catalogName != null) ((IInMemoryEditorInput) editorInput).setProperty(PROP_CONTEXT_DEFAULT_CATALOG, getDefaultCatalogName(context));
@@ -429,7 +427,7 @@ public class EditorUtils {
             PROP_SQL_DATA_SOURCE_ID,
             dataSourceId);
         if (!isDefaultContextSettings(context)) {
-            efManager.setFileProperty(localFile, PROP_CONTEXT_DEFAULT_DATASOURCE, dataSourceId);
+            efManager.setFileProperty(localFile, ResourceUtils.PROP_CONTEXT_DEFAULT_DATASOURCE, dataSourceId);
             String catalogName = getDefaultCatalogName(context);
             if (catalogName != null) efManager.setFileProperty(localFile, PROP_CONTEXT_DEFAULT_CATALOG, getDefaultCatalogName(context));
             String schemaName = getDefaultSchemaName(context);
@@ -446,7 +444,7 @@ public class EditorUtils {
         String dataSourceId = dataSourceContainer == null ? null : dataSourceContainer.getId();
 
         String resourcePath = projectMeta.getResourcePath(file);
-        projectMeta.setResourceProperty(resourcePath, PROP_CONTEXT_DEFAULT_DATASOURCE, dataSourceId);
+        projectMeta.setResourceProperty(resourcePath, ResourceUtils.PROP_CONTEXT_DEFAULT_DATASOURCE, dataSourceId);
         if (!isDefaultContextSettings(context)) {
             String defaultCatalogName = getDefaultCatalogName(context);
             if (!CommonUtils.isEmpty(defaultCatalogName)) {
