@@ -308,7 +308,8 @@ public class GroupingResultsContainer implements IResultSetContainer {
         return DBUtils.readRowCount(
             monitor,
             groupingViewer.getExecutionContext(),
-            presentation.getController().getDataContainer(), filterExcludingGroupingColumns(),
+            presentation.getController().getDataContainer(),
+            filterExcludingGroupingColumns(),
             groupingViewer
         );
     }
