@@ -104,30 +104,6 @@
     </build>
 
     <profiles>
-        <!-- desktop build: includes UI components and products -->
-        <profile>
-            <id>desktop</id>
-            <activation><property><name>!headless-platform</name></property></activation>
-            <modules>
-                <!-- Tests -->
-                <module>test</module>
-
-                <!-- Products -->
-                <module>product/community</module>
-                <module>product/repositories</module>
-            </modules>
-        </profile>
-
-        <!-- desktop build: includes UI components and products -->
-        <profile>
-            <id>appstore</id>
-            <activation><activeByDefault>false</activeByDefault></activation>
-            <modules>
-                <!-- Products -->
-                <module>product/appstore</module>
-            </modules>
-        </profile>
-
         <!-- Enables build for all platforms including ARM -->
         <profile>
             <id>all-platforms</id>
