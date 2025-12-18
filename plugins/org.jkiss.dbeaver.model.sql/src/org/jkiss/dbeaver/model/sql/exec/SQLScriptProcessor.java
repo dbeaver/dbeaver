@@ -28,8 +28,11 @@ import org.jkiss.dbeaver.model.qm.QMUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.*;
 import org.jkiss.dbeaver.model.sql.data.SQLQueryDataContainer;
+import org.jkiss.dbeaver.utils.DurationFormat;
+import org.jkiss.dbeaver.utils.DurationFormatter;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 
+import java.time.Duration;
 import java.util.List;
 
 /**
@@ -50,7 +53,8 @@ public class SQLScriptProcessor {
     private final DBCStatistics totalStatistics = new DBCStatistics();
 
     private int fetchSize;
-    private int maxRows;
+    private long offset;
+    private long maxRows;
     private long fetchFlags;
     private SQLScriptCommitType commitType = SQLScriptCommitType.AUTOCOMMIT;
     private SQLScriptErrorHandling errorHandling = SQLScriptErrorHandling.STOP_ROLLBACK;
@@ -72,7 +76,11 @@ public class SQLScriptProcessor {
         this.fetchSize = fetchSize;
     }
 
-    public void setMaxRows(int maxRows) {
+    public void setOffset(long offset) {
+        this.offset = offset;
+    }
+
+    public void setMaxRows(long maxRows) {
         this.maxRows = maxRows;
     }
 
@@ -237,14 +245,13 @@ public class SQLScriptProcessor {
             session,
             DBCStatementType.SCRIPT,
             sqlQuery,
-            0,
+            offset,
             maxRows
         );
         DBExecUtils.setStatementFetchSize(statement, 0, maxRows, fetchSize);
 
         // Execute statement
         try {
-            DBRProgressMonitor monitor = session.getProgressMonitor();
             log.debug(STAT_LOG_PREFIX + "Execute query\n" + sqlQuery.getText());
             boolean hasResultSet = statement.executeStatement();
 
@@ -317,7 +324,8 @@ public class SQLScriptProcessor {
             } catch (Throwable e) {
                 log.error("Error closing statement", e);
             }
-            log.debug(STAT_LOG_PREFIX + "Time: " + RuntimeUtils.formatExecutionTime(statistics.getExecuteTime()) +
+            String duration = DurationFormatter.format(Duration.ofMillis(statistics.getExecuteTime()), DurationFormat.MEDIUM);
+            log.debug(STAT_LOG_PREFIX + "Time: " + duration +
                 (statistics.getRowsFetched() >= 0 ? ", fetched " + statistics.getRowsFetched() + " row(s)" : "") +
                 (statistics.getRowsUpdated() >= 0 ? ", updated " + statistics.getRowsUpdated() + " row(s)" : ""));
 

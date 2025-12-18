@@ -121,7 +121,7 @@ public class GeometryViewerRegistry {
         @NotNull Collection<String> notVisiblePredefinedTilesIds,
         @NotNull Collection<LeafletTilesDescriptor> userDefinedTiles
     ) throws DBException {
-        String content = DBWorkbench.getPlatform().getConfigurationController().loadConfigurationFile(GEOMETRY_REGISTRY_CONFIG_XML);
+        String content = DBWorkbench.getPlatform().getProductConfigurationController().loadConfigurationFile(GEOMETRY_REGISTRY_CONFIG_XML);
         if (CommonUtils.isEmpty(content)) {
             return;
         }
@@ -296,7 +296,7 @@ public class GeometryViewerRegistry {
             xmlBuilder.flush();
             out.flush();
             
-            DBWorkbench.getPlatform().getConfigurationController()
+            DBWorkbench.getPlatform().getProductConfigurationController()
                 .saveConfigurationFile(GEOMETRY_REGISTRY_CONFIG_XML, out.getBuffer().toString());
         } catch (Throwable e) {
             log.error("Error saving " + GeometryViewerRegistry.class.getName() + " configuration");

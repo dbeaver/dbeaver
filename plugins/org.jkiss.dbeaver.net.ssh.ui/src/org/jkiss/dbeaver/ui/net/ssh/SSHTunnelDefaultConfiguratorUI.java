@@ -60,6 +60,7 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.ConfigurationFileSelector;
 import org.jkiss.dbeaver.ui.controls.VariablesHintLabel;
 import org.jkiss.dbeaver.ui.controls.ViewerColumnController;
+import org.jkiss.dbeaver.ui.dialogs.EditTextDialog;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.HelpUtils;
 import org.jkiss.dbeaver.utils.SystemVariablesResolver;
@@ -702,17 +703,7 @@ public class SSHTunnelDefaultConfiguratorUI implements IObjectPropertyConfigurat
             privateKeyLabel = UIUtils.createControlLabel(this, SSHUIMessages.model_ssh_configurator_label_private_key);
             privateKeyLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
 
-            privateKeyText = new ConfigurationFileSelector(
-                this,
-                SSHUIMessages.model_ssh_configurator_dialog_choose_private_key, new String[]{"*", "*.ssh", "*.pem", "*.*"},
-                false,
-                DBWorkbench.isDistributed()
-            );
-            privateKeyText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-            privateKeyText.getTextControl().addModifyListener(listener);
-            if (DBWorkbench.isDistributed()) {
-                privateKeyText.getTextControl().setEditable(false);
-            }
+            privateKeyText = getConfigurationFileSelector(listener);
 
             passwordLabel = UIUtils.createControlLabel(this, SSHUIMessages.model_ssh_configurator_label_password);
             privateKeyLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
@@ -740,6 +731,32 @@ public class SSHTunnelDefaultConfiguratorUI implements IObjectPropertyConfigurat
                 hostPortText.setEditable(false);
                 authMethodCombo.setEnabled(false);
             }
+        }
+
+        @NotNull
+        private ConfigurationFileSelector getConfigurationFileSelector(@NotNull ModifyListener listener) {
+            boolean isDistributed = DBWorkbench.isDistributed();
+            ConfigurationFileSelector selector = new ConfigurationFileSelector(
+                this,
+                SSHUIMessages.model_ssh_configurator_dialog_choose_private_key, new String[]{"*", "*.ssh", "*.pem", "*.*"},
+                false,
+                isDistributed
+            ) {
+                @Nullable
+                protected String getNewTextFromUser(boolean secured) {
+                    return EditTextDialog.editText(
+                        panel.getShell(),
+                        secured ? SSHUIMessages.model_ssh_dialog_set_private_key : SSHUIMessages.model_ssh_dialog_edit_private_key,
+                        secured ? "" : getText()
+                    );
+                }
+            };
+            selector.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+            selector.getTextControl().addModifyListener(listener);
+            if (isDistributed) {
+                selector.getTextControl().setEditable(false);
+            }
+            return selector;
         }
 
         public void loadSettings(@NotNull ConfigurationWrapper wrapper, boolean forceSavePassword) {

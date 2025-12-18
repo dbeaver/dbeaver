@@ -1,19 +1,14 @@
-/*
- * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+/*******************************************************************************
+ * Copyright (c) 2000, 2008 IBM Corporation and others.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
+ * Contributors:
+ *     IBM Corporation - initial API and implementation
+ *     Stephan Wahlbrink <stephan.wahlbrink@walware.de> - [templates] improve logging when reading templates into SQLTemplateStore - https://bugs.eclipse.org/bugs/show_bug.cgi?id=212252
+ *******************************************************************************/
 package org.jkiss.dbeaver.ui.editors.sql.templates;
 
 import org.eclipse.core.runtime.FileLocator;
@@ -28,6 +23,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.connection.DBPDataSourceProviderDescriptor;
+import org.jkiss.utils.ReaderWriterLock;
 import org.jkiss.dbeaver.model.impl.preferences.SimplePreferenceStore;
 import org.jkiss.dbeaver.model.rm.RMConstants;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -35,7 +31,6 @@ import org.jkiss.dbeaver.ui.editors.sql.internal.SQLEditorActivator;
 import org.jkiss.dbeaver.ui.preferences.PreferenceStoreDelegate;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.utils.CommonUtils;
-import org.jkiss.utils.ReaderWriterLock;
 import org.osgi.framework.Bundle;
 
 import java.io.*;
@@ -237,7 +232,7 @@ public class SQLTemplateStore extends TemplateStore {
         
         public void loadTemplatesConfig() {
             try {
-                String content = DBWorkbench.getPlatform().getConfigurationController().loadConfigurationFile(TEMPLATES_CONFIG_XML);
+                String content = DBWorkbench.getPlatform().getProductConfigurationController().loadConfigurationFile(TEMPLATES_CONFIG_XML);
                 clear();
                 if (CommonUtils.isNotEmpty(content)) {
                     setValue(PREF_STORE_KEY, content);
@@ -257,7 +252,7 @@ public class SQLTemplateStore extends TemplateStore {
             String templatesConfig = getString(PREF_STORE_KEY);
             try {
                 DBWorkbench.getPlatform()
-                    .getConfigurationController()
+                    .getProductConfigurationController()
                     .saveConfigurationFile(TEMPLATES_CONFIG_XML, templatesConfig);
             } catch (DBException e) {
                 log.warn("Can't save template configuration", e);

@@ -24,6 +24,7 @@ import org.jkiss.dbeaver.model.cli.ApplicationCommandLine;
 import org.jkiss.dbeaver.model.cli.CLIRunMeta;
 import org.jkiss.dbeaver.model.cli.CommandLineContext;
 import org.jkiss.dbeaver.model.cli.registry.CommandLineParameterDescriptor;
+import org.jkiss.dbeaver.ui.app.standalone.cli.DBeaverMixin;
 import org.jkiss.dbeaver.ui.app.standalone.rpc.IInstanceController;
 import picocli.CommandLine;
 
@@ -74,5 +75,17 @@ public class DBeaverCommandLine extends ApplicationCommandLine<IInstanceControll
                 DBeaverApplication.instance.setExclusiveMode(true);
             }
         }
+    }
+
+    @NotNull
+    @Override
+    protected CommandLine initCommandLine(
+        @Nullable IInstanceController applicationInstanceController,
+        @NotNull CommandLineContext context,
+        @NotNull CLIRunMeta runMeta
+    ) {
+        CommandLine cmd = super.initCommandLine(applicationInstanceController, context, runMeta);
+        cmd.addMixin("dbeaver", new DBeaverMixin());
+        return cmd;
     }
 }

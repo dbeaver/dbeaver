@@ -1099,4 +1099,9 @@ public class MySQLCatalog implements
             }
         }
     }
+
+    void resetStatistics() {
+        this.hasStatistics = false;
+    }
+
 }
