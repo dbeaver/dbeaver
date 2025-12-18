@@ -93,10 +93,14 @@ public class DBLTextDocumentService implements TextDocumentService, LanguageClie
         log.debug("didOpen with params: " + params);
 
         TextDocumentItem document = params.getTextDocument();
-        DocumentURI uri = new DocumentURI(document.getUri());
 
-        documentCache.put(uri.getValue(), ContextAwareDocument.from(document));
-        initContext(uri);
+        documentCache.put(document.getUri(), ContextAwareDocument.from(document));
+        try {
+            DocumentURI uri = new DocumentURI(document.getUri());
+            initContext(uri);
+        } catch (IllegalArgumentException e) {
+            log.error("Error initiating document context. Proceeding with default. ", e);
+        }
     }
 
     @Override
@@ -279,15 +283,13 @@ public class DBLTextDocumentService implements TextDocumentService, LanguageClie
         }
 
         String projectId = documentUri.getProjectId();
-        String resourcePath = documentUri.getResourcePath();
-
         DBPProject project = sessionProvider != null ?
             sessionProvider.getWorkspace().getProject(projectId) :
             DBWorkbench.getPlatform().getWorkspace().getProject(projectId);
 
         DBPDataSourceContainer dataSourceContainer = null;
         if (project != null) {
-            String dataSourceId = ResourceUtils.getResourceDataSourceId(project, resourcePath);
+            String dataSourceId = ResourceUtils.getResourceDataSourceId(project, documentUri.getResourcePath());
             if (dataSourceId != null) {
                 dataSourceContainer = project.getDataSourceRegistry().getDataSource(dataSourceId);
             }
