@@ -19,17 +19,14 @@ package org.jkiss.dbeaver.ext.starrocks.model;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPRefreshableObject;
-import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCRemoteInstance;
-import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
 import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -47,15 +44,12 @@ import java.util.Collections;
  */
 public class StarRocksDataSource extends JDBCDataSource implements DBPRefreshableObject {
 
-    private static final Log log = Log.getLog(StarRocksDataSource.class);
-
     /**
      * Default catalog name in StarRocks (internal catalog).
      */
     public static final String DEFAULT_CATALOG_NAME = "default_catalog";
 
     private final CatalogCache catalogCache = new CatalogCache();
-    private int lowerCaseTableNames = 1;
 
     public StarRocksDataSource(DBRProgressMonitor monitor, DBPDataSourceContainer container)
             throws DBException {
@@ -87,28 +81,6 @@ public class StarRocksDataSource extends JDBCDataSource implements DBPRefreshabl
         } else {
             ((StarRocksExecutionContext) context).refreshDefaults(monitor, true);
         }
-    }
-
-    @Override
-    public void initialize(@NotNull DBRProgressMonitor monitor) throws DBException {
-        super.initialize(monitor);
-
-        // Load lower_case_table_names setting (needed by dialect)
-        try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Load StarRocks configuration")) {
-            try (JDBCPreparedStatement dbStat = session.prepareStatement("SHOW VARIABLES LIKE 'lower_case_table_names'")) {
-                try (JDBCResultSet dbResult = dbStat.executeQuery()) {
-                    if (dbResult.next()) {
-                        lowerCaseTableNames = JDBCUtils.safeGetInt(dbResult, 2);
-                    }
-                }
-            } catch (Exception e) {
-                log.debug("Error reading lower_case_table_names", e);
-            }
-        }
-    }
-
-    public int getLowerCaseTableNames() {
-        return lowerCaseTableNames;
     }
 
     // ======== DBPDataTypeProvider (required abstract methods) ========

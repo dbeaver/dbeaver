@@ -22,7 +22,7 @@ import org.jkiss.dbeaver.model.DBPDataSource;
 
 /**
  * StarRocks SQL Dialect - extends MySQL dialect.
- * Overrides afterDataSourceInitialization to handle StarRocksDataSource.
+ * StarRocks is always case-sensitive regardless of the lower_case_table_names setting.
  */
 public class StarRocksDialect extends MySQLDialect {
 
@@ -33,15 +33,24 @@ public class StarRocksDialect extends MySQLDialect {
     /**
      * Override to handle StarRocksDataSource instead of MySQLDataSource.
      * This prevents ClassCastException when parent="mysql" is set in plugin.xml.
+     * StarRocks is always case-sensitive, so we always support unquoted mixed case.
      */
     @Override
     public void afterDataSourceInitialization(@NotNull DBPDataSource dataSource) {
         if (dataSource instanceof StarRocksDataSource) {
-            int lowerCaseTableNames = ((StarRocksDataSource) dataSource).getLowerCaseTableNames();
-            this.setSupportsUnquotedMixedCase(lowerCaseTableNames != 2);
+            // StarRocks is always case-sensitive - no need to check lower_case_table_names
+            this.setSupportsUnquotedMixedCase(true);
         } else {
             super.afterDataSourceInitialization(dataSource);
         }
+    }
+
+    /**
+     * StarRocks is always case-sensitive, so never use case-insensitive name lookup.
+     */
+    @Override
+    public boolean useCaseInsensitiveNameLookup() {
+        return false;
     }
 
     @NotNull
