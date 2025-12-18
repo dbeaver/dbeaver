@@ -196,26 +196,30 @@ public class GroupingConfigDialog extends BaseDialog {
 
         @NotNull
         private Menu createAddMenu(@NotNull Button addButton) {
-            Menu addMenu = new Menu(addButton);
-            addCustomColumn(addMenu);
+            MenuManager rootManager = new MenuManager();
+            addButton.addDisposeListener(e -> rootManager.dispose());
+            addCustomColumn(rootManager);
             for (String columnName : columnNames) {
-                MenuItem columnItem = new MenuItem(addMenu, SWT.PUSH);
-                columnItem.setText(columnName);
-                columnItem.addListener(
-                    SWT.Selection, e -> {
-                        TableItem newItem = new TableItem(valueTable, SWT.LEFT);
-                        newItem.setText(columnName);
-                        addTableItem(newItem);
-                    }
+                rootManager.add(new Action(columnName) {
+                                    @Override
+                                    public void run() {
+                                        TableItem newItem = new TableItem(valueTable, SWT.LEFT);
+                                        newItem.setText(columnName);
+                                        addTableItem(newItem);
+                                    }
+                                }
                 );
             }
-            return addMenu;
+            return rootManager.createContextMenu(addButton);
         }
 
-        private void addCustomColumn(@NotNull Menu addMenu) {
-            MenuItem defaultFunctionItem = new MenuItem(addMenu, SWT.PUSH);
-            defaultFunctionItem.setText(ResultSetMessages.grouping_panel_column_panel_custom_label);
-            defaultFunctionItem.addListener(SWT.Selection, e -> addTableItem(new TableItem(valueTable, SWT.LEFT)));
+        private void addCustomColumn(@NotNull MenuManager addMenu) {
+            addMenu.add(new Action(ResultSetMessages.grouping_panel_column_panel_custom_label) {
+                @Override
+                public void run() {
+                    addTableItem(new TableItem(valueTable, SWT.LEFT));
+                }
+            });
         }
     }
 
@@ -264,6 +268,7 @@ public class GroupingConfigDialog extends BaseDialog {
         @NotNull
         private Menu createAddMenu(@NotNull Button addButton) {
             MenuManager rootManager = new MenuManager();
+            addButton.addDisposeListener(e -> rootManager.dispose());
             addCustomFunction(rootManager);
             for (String function : defaultFunctions) {
                 MenuManager functionMenu = new MenuManager(function);
@@ -273,7 +278,6 @@ public class GroupingConfigDialog extends BaseDialog {
                 rootManager.add(functionMenu);
             }
             Menu addMenu = rootManager.createContextMenu(addButton);
-            addButton.addDisposeListener(e -> rootManager.dispose());
             return addMenu;
         }
 
