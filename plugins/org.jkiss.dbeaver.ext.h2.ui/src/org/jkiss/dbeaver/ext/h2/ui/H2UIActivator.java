@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ext.derby.ui;
+package org.jkiss.dbeaver.ext.h2.ui;
 
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
@@ -23,18 +23,18 @@ import org.osgi.framework.BundleContext;
 /**
  * The activator class controls the plug-in life cycle
  */
-public class DerbyUIActivator extends AbstractUIPlugin {
+public class H2UIActivator extends AbstractUIPlugin {
 
     // The plug-in ID
-    public static final String PLUGIN_ID = "org.jkiss.dbeaver.ext.derby.ui";
+    public static final String PLUGIN_ID = "org.jkiss.dbeaver.ext.h2.ui";
 
     // The shared instance
-    private static DerbyUIActivator plugin;
+    private static H2UIActivator plugin;
 
     /**
      * The constructor
      */
-    public DerbyUIActivator() {
+    public H2UIActivator() {
     }
 
     /*
@@ -60,7 +60,7 @@ public class DerbyUIActivator extends AbstractUIPlugin {
      *
      * @return the shared instance
      */
-    public static DerbyUIActivator getDefault() {
+    public static H2UIActivator getDefault() {
         return plugin;
     }
 

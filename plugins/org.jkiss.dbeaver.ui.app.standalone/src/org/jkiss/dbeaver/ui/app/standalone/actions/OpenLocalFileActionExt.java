@@ -34,10 +34,7 @@ import org.jkiss.utils.ArrayUtils;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-import java.util.TreeSet;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -68,6 +65,7 @@ public class OpenLocalFileActionExt extends AbstractHandler {
         for (FileTypeHandlerDescriptor dhd : FileTypeHandlerRegistry.getInstance().getHandlers()) {
             extensions.add(Stream.of(dhd.getExtensions())
                 .map(FileTypeHandlerDescriptor.Extension::getExtensions)
+                .flatMap(Arrays::stream)
                 .map(e -> "*." + e)
                 .collect(Collectors.joining(";")));
         }

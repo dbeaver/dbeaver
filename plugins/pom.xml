@@ -114,7 +114,7 @@
                 <module>org.jkiss.dbeaver.ext.databend.ui</module>
                 <module>org.jkiss.dbeaver.ext.exasol.ui</module>
                 <module>org.jkiss.dbeaver.ext.db2.ui</module>
-                <module>org.jkiss.dbeaver.ext.derby.ui</module>
+                <module>org.jkiss.dbeaver.ext.h2.ui</module>
                 <module>org.jkiss.dbeaver.ext.duckdb.ui</module>
                 <module>org.jkiss.dbeaver.ext.generic.ui</module>
                 <module>org.jkiss.dbeaver.ext.hana.ui</module>

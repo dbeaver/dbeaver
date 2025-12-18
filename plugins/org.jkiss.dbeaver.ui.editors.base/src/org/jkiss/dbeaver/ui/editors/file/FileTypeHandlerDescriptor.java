@@ -66,10 +66,6 @@ public class FileTypeHandlerDescriptor extends AbstractDescriptor {
         return extensions;
     }
 
-    public Extension[] getExtensionsInfo() {
-        return extensions;
-    }
-
     public boolean supportsRemoteFiles() {
         return supportsRemote;
     }
@@ -105,14 +101,14 @@ public class FileTypeHandlerDescriptor extends AbstractDescriptor {
         private final String id;
         private final String[] extensions;
         private final DBPImage icon;
-        private final boolean supportImport;
+        private final boolean supportsImport;
 
         Extension(@NotNull IConfigurationElement config, @NotNull FileTypeHandlerDescriptor descriptor) {
             this.descriptor = descriptor;
             this.id = config.getAttribute("id");
             this.extensions = CommonUtils.notEmpty(config.getAttribute("extensions")).split(",");
             this.icon = iconToImage(config.getAttribute("icon"));
-            this.supportImport = CommonUtils.toBoolean(config.getAttribute("supportImport"), false);
+            this.supportsImport = CommonUtils.toBoolean(config.getAttribute("supportsImport"), false);
         }
 
         @NotNull
@@ -135,8 +131,8 @@ public class FileTypeHandlerDescriptor extends AbstractDescriptor {
             return extensions;
         }
 
-        public boolean isSupportImport() {
-            return supportImport;
+        public boolean isSupportsImport() {
+            return supportsImport;
         }
     }
 

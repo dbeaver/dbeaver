@@ -657,6 +657,30 @@ public class EditorUtils {
         return filesByHandler;
     }
 
+    @NotNull
+    public static Map<FileTypeHandlerDescriptor.Extension, List<Path>> getExtensionFiles(@NotNull List<Path> fileNames, @NotNull List<Path> openedFiles, boolean databaseOnly) {
+        Map<FileTypeHandlerDescriptor.Extension, List<Path>> filesByExtension = new LinkedHashMap<>();
+        for (Path path : fileNames) {
+            if (Files.isDirectory(path)) {
+                log.error("Can't open directory '" + path + "'");
+                continue;
+            }
+            if (Files.exists(path)) {
+                String fileExtension = IOUtils.getFileExtension(path);
+                FileTypeHandlerDescriptor.Extension extension = CommonUtils.isEmpty(fileExtension) ?
+                    null : FileTypeHandlerRegistry.getInstance().findExtension(fileExtension);
+                if (extension != null && databaseOnly && !extension.getDescriptor().isDatabaseHandler()) {
+                    extension = null;
+                }
+                filesByExtension.computeIfAbsent(extension, d -> new ArrayList<>()).add(path);
+                openedFiles.add(path);
+            } else {
+                DBWorkbench.getPlatformUI().showError("Open file", "Can't open '" + path + "': file doesn't exist");
+            }
+        }
+        return filesByExtension;
+    }
+
     public static boolean openFileEditors(
         @NotNull Path[] fileNames,
         @Nullable DBPDataSourceContainer currentContainer,

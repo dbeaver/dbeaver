@@ -14,24 +14,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ext.derby.ui;
+package org.jkiss.dbeaver.ext.h2.ui;
 
 import org.jkiss.api.CompositeObjectId;
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.ext.derby.model.DerbyConstants;
 import org.jkiss.dbeaver.ui.actions.AbstractFileDatabaseHandler;
 
 import java.nio.file.Path;
 import java.util.List;
 
 /**
- * Derby file handler
+ * H2 file handler
  */
-public class DerbyFileDatabaseHandler extends AbstractFileDatabaseHandler {
+public class H2FileDatabaseHandler extends AbstractFileDatabaseHandler {
 
     @Override
     protected String getDatabaseTerm() {
-        return "derby file";
+        return "H2 file";
     }
 
     @Override
@@ -46,7 +45,7 @@ public class DerbyFileDatabaseHandler extends AbstractFileDatabaseHandler {
 
     @Override
     protected CompositeObjectId getDriverReference() {
-        return DerbyConstants.DRIVER_DERBY_REFERENCE;
+        return new CompositeObjectId("h2", "h2_embedded_v2");
     }
 
     @Override

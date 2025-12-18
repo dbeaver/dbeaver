@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.2"?>
+
+<plugin>
+    <extension point="org.jkiss.dbeaver.ui.fileTypeHandler">
+        <handler id="h2" class="org.jkiss.dbeaver.ext.h2.ui.H2FileDatabaseHandler" remote="false" order="1119">
+            <extension id="h2" extensions="db" icon="platform:/plugin/org.jkiss.dbeaver.ext.generic/icons/h2_icon_big.png"/>
+        </handler>
+    </extension>
+</plugin>
