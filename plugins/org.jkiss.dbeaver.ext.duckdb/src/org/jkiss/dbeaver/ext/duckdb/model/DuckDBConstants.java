@@ -22,9 +22,7 @@ public class DuckDBConstants {
     public static final String TYPE_GEOMETRY = "GEOMETRY";
     public static final String TYPE_BLOB = "BLOB";
 
-    public static final String PROVIDER_ID = "generic";
-    public static final String DRIVER_DERBY_ID = "duckdb_jdbc";
-    public static final CompositeObjectId DRIVER_REFERENCE = new CompositeObjectId(PROVIDER_ID, DRIVER_DERBY_ID);
+    public static final CompositeObjectId DRIVER_ID = new CompositeObjectId("generic", "duckdb_jdbc");
 
     private DuckDBConstants() {
     }

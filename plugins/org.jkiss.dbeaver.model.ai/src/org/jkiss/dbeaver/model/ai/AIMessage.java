@@ -103,11 +103,6 @@ public class AIMessage {
     }
 
     @NotNull
-    public static AIMessage attachmentMessage(@NotNull String message) {
-        return new AIMessage(AIMessageType.ATTACHMENT, message);
-    }
-
-    @NotNull
     public static AIMessage userAutoMessage(@NotNull String prompt, @NotNull String uiMessage) {
         return new AIMessage(AIMessageType.USER, prompt, uiMessage, LocalDateTime.now());
     }

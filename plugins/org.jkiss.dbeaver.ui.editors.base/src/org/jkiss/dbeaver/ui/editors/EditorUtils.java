@@ -627,14 +627,22 @@ public class EditorUtils {
         return openedFiles;
     }
 
-    public static boolean openExternalFiles(@NotNull Path[] filePaths, @Nullable DBPDataSourceContainer currentContainer, boolean databaseOnly) {
+    public static boolean openExternalFiles(
+        @NotNull Path[] filePaths,
+        @Nullable DBPDataSourceContainer currentContainer,
+        boolean databaseOnly
+    ) {
         log.debug("Open external file(s) [" + Arrays.toString(filePaths) + "]");
         List<Path> openedFiles = new ArrayList<>();
         return openFileEditors(filePaths, currentContainer, openedFiles, databaseOnly);
     }
 
     @NotNull
-    public static Map<FileTypeHandlerDescriptor, List<Path>> getHandlerFiles(@NotNull Path[] fileNames, @NotNull List<Path> openedFiles, boolean databaseOnly) {
+    public static Map<FileTypeHandlerDescriptor, List<Path>> getHandlerFiles(
+        @NotNull Path[] fileNames,
+        @NotNull List<Path> openedFiles,
+        boolean databaseOnly
+    ) {
         Map<FileTypeHandlerDescriptor, List<Path>> filesByHandler = new LinkedHashMap<>();
         for (Path path : fileNames) {
             if (Files.isDirectory(path)) {
@@ -658,7 +666,11 @@ public class EditorUtils {
     }
 
     @NotNull
-    public static Map<FileTypeHandlerDescriptor.Extension, List<Path>> getExtensionFiles(@NotNull List<Path> fileNames, @NotNull List<Path> openedFiles, boolean databaseOnly) {
+    public static Map<FileTypeHandlerDescriptor.Extension, List<Path>> getExtensionFiles(
+        @NotNull List<Path> fileNames,
+        @NotNull List<Path> openedFiles,
+        boolean databaseOnly
+    ) {
         Map<FileTypeHandlerDescriptor.Extension, List<Path>> filesByExtension = new LinkedHashMap<>();
         for (Path path : fileNames) {
             if (Files.isDirectory(path)) {

@@ -74,18 +74,6 @@ public class FileTypeHandlerDescriptor extends AbstractDescriptor {
         return isDatabaseHandler;
     }
 
-    @Nullable
-    public Extension getFileExtension(String fileName) {
-        for (Extension ext : extensions) {
-            for (String extName : ext.getExtensions()) {
-                if (fileName.endsWith(extName)) {
-                    return ext;
-                }
-            }
-        }
-        return null;
-    }
-
     public int getOrder() {
         return order;
     }
@@ -94,7 +82,6 @@ public class FileTypeHandlerDescriptor extends AbstractDescriptor {
         Class<? extends IFileTypeHandler> clazz = handlerType.getImplClass(IFileTypeHandler.class);
         return clazz.getConstructor().newInstance();
     }
-
 
     public class Extension {
         private final FileTypeHandlerDescriptor descriptor;

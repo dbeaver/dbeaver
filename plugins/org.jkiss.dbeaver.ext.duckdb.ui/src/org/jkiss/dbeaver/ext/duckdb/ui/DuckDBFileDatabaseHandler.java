@@ -46,7 +46,7 @@ public class DuckDBFileDatabaseHandler extends AbstractFileDatabaseHandler {
 
     @Override
     protected CompositeObjectId getDriverReference() {
-        return DuckDBConstants.DRIVER_REFERENCE;
+        return DuckDBConstants.DRIVER_ID;
     }
 
     @Override
