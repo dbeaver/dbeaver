@@ -51,14 +51,12 @@ public class GroupingConfigDialog extends BaseDialog {
     private static final String DIALOG_ID = "DBeaver.GroupingConfigDialog"; //$NON-NLS-1$
 
     private final GroupingResultsContainer resultsContainer;
-    private final MenuManager menuManager;
     private Table columnsTable;
     private Table functionsTable;
 
     public GroupingConfigDialog(Shell parentShell, GroupingResultsContainer resultsContainer) {
         super(parentShell, "Grouping configuration", null);
         this.resultsContainer = resultsContainer;
-        menuManager = new MenuManager();
     }
 
     @Override
