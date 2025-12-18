@@ -27,10 +27,9 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.model.DBIcon;
-import org.jkiss.dbeaver.model.DBPImage;
-import org.jkiss.dbeaver.model.DBValueFormatting;
+import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
+import org.jkiss.dbeaver.model.data.DBDAttributeBindingMeta;
 import org.jkiss.dbeaver.model.sql.SQLGroupingAttribute;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -73,7 +72,7 @@ public class GroupingConfigDialog extends BaseDialog {
 
         List<String> allColumnNames = new ArrayList<>();
         for (DBDAttributeBinding attr : resultsContainer.getOwnerPresentation().getController().getModel().getAttributes()) {
-            allColumnNames.add(attr.getName());
+            allColumnNames.add(getAttributeBindingName(attr));
         }
         List<String> proposals = new ArrayList<>(allColumnNames);
         StringContentProposalProvider proposalProvider = new StringContentProposalProvider(new String[0]);
@@ -98,6 +97,14 @@ public class GroupingConfigDialog extends BaseDialog {
         List<String> functions = StringEditorTableUtils.collectStringValues(functionsTable);
         resultsContainer.setGrouping(attributes, functions);
         super.okPressed();
+    }
+
+    private String getAttributeBindingName(@NotNull DBDAttributeBinding binding) {
+        if (binding instanceof DBDAttributeBindingMeta) {
+            return DBUtils.getQuotedIdentifier(binding.getDataSource(), binding.getMetaAttribute().getLabel());
+        } else {
+            return binding.getFullyQualifiedName(DBPEvaluationContext.DML);
+        }
     }
 
     @NotNull
