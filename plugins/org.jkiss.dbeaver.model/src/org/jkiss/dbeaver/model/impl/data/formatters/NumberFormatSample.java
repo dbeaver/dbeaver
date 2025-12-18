@@ -38,6 +38,7 @@ public class NumberFormatSample implements DBDDataFormatterSample {
     public static final String PROP_SCIENTIFIC_SMALL_VALUES = "scientificSmallValues";
     public static final String PROP_SCIENTIFIC_EXP_SEP = "scientificExponentSeparator";
     public static final String PROP_SCIENTIFIC_PATTERN = "scientificPattern";
+    public static final String PROP_EXCLUDE_ID_COLUMNS = "excludeIdColumns";
 
     @Override
     public Map<String, Object> getDefaultProperties(Locale locale)
@@ -54,6 +55,7 @@ public class NumberFormatSample implements DBDDataFormatterSample {
         props.put(PROP_NATIVE_SPECIAL_VALUES, false);
         props.put(PROP_SCIENTIFIC_EXP_SEP, "E");
         props.put(PROP_SCIENTIFIC_PATTERN, tmp.toPattern()); // Use default locale-specific pattern
+        props.put(PROP_EXCLUDE_ID_COLUMNS, false);
         // Use UNNECESSARY by default [#6493]
         // FIX: Use default. The problem in rounding was caused by float->double conversions.
         //props.put(PROP_ROUNDING_MODE, RoundingMode.UNNECESSARY.name());

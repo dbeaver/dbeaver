@@ -51,7 +51,8 @@ public class DBNUtils {
 
     private static final Log log = Log.getLog(DBNUtils.class);
 
-    public static DBNDatabaseNode getNodeByObject(DBSObject object) {
+    @Nullable
+    public static DBNDatabaseNode getNodeByObject(@NotNull DBSObject object) {
         DBNModel model = getNavigatorModel(object);
         return model == null ? null : model.getNodeByObject(object);
     }
@@ -75,9 +76,14 @@ public class DBNUtils {
         return model == null ? null : model.getNodeByObject(monitor, object, addFiltered);
     }
 
-    public static DBNDatabaseNode getChildFolder(DBRProgressMonitor monitor, DBNDatabaseNode node, Class<?> folderType) {
+    @Nullable
+    public static DBNDatabaseNode getChildFolder(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBNDatabaseNode node,
+        @NotNull Class<?> folderType
+    ) {
         try {
-            for (DBNDatabaseNode childNode : node.getChildren(monitor)) {
+            for (DBNDatabaseNode childNode : ArrayUtils.safeArray(node.getChildren(monitor))) {
                 if (!(childNode instanceof DBNDatabaseFolder folder)) {
                     continue;
                 }
@@ -95,7 +101,12 @@ public class DBNUtils {
         return null;
     }
 
-    public static DBNNode[] getNodeChildrenFiltered(DBRProgressMonitor monitor, DBNNode node, boolean forTree) throws DBException {
+    @Nullable
+    public static DBNNode[] getNodeChildrenFiltered(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBNNode node,
+        boolean forTree
+    ) throws DBException {
         DBNNode[] children = node.getChildren(monitor);
         if (children != null && children.length > 0) {
             children = filterNavigableChildren(children, forTree);
@@ -103,8 +114,8 @@ public class DBNUtils {
         return children;
     }
 
-    public static DBNNode[] filterNavigableChildren(DBNNode[] children, boolean forTree)
-    {
+    @NotNull
+    public static DBNNode[] filterNavigableChildren(@NotNull DBNNode[] children, boolean forTree) {
         if (ArrayUtils.isEmpty(children)) {
             return children;
         }
@@ -128,7 +139,7 @@ public class DBNUtils {
         return result;
     }
 
-    private static void sortNodes(DBNNode[] children) {
+    private static void sortNodes(@NotNull DBNNode[] children) {
         if (children.length == 0) {
             return;
         }
@@ -149,7 +160,7 @@ public class DBNUtils {
 
         if (firstChild instanceof DBNDatabaseItem item && item.getObject() instanceof DBSTableColumn) {
             if (prefStore.getBoolean(ModelPreferences.NAVIGATOR_SORT_ALPHABETICALLY)) {
-                Arrays.sort(children, NodeNameComparator.INSTANCE);
+                Arrays.sort(children, new NodeNameComparator());
             }
             return;
         }
@@ -160,10 +171,6 @@ public class DBNUtils {
 
         Comparator<DBNNode> comparator = null;
 
-        if (prefStore.getBoolean(ModelPreferences.NAVIGATOR_SORT_ALPHABETICALLY)) {
-            comparator = NodeNameComparator.INSTANCE;
-        }
-
         if (prefStore.getBoolean(ModelPreferences.NAVIGATOR_SORT_FOLDERS_FIRST) || isMergedEntity(firstChild)) {
             comparator = NodeFolderComparator.INSTANCE.thenComparing((o1, o2) -> {
                 if (o1 instanceof DBNContainer && o2 instanceof DBNContainer) {
@@ -173,23 +180,28 @@ public class DBNUtils {
                 } else if (o2 instanceof DBNContainer) {
                     return -1;
                 }
-                return AlphanumericComparator.getInstance()
-                    .compare(o1.getNodeDisplayName(), o2.getNodeDisplayName());
+                return 0;
             });
         }
+
+        if (prefStore.getBoolean(ModelPreferences.NAVIGATOR_SORT_ALPHABETICALLY)) {
+            comparator = Objects.isNull(comparator)
+                ? new NodeNameComparator()
+                : comparator.thenComparing(new NodeNameComparator());
+        }
+
         if (comparator != null) {
             Arrays.sort(children, comparator);
         }
     }
 
-    private static boolean isMergedEntity(DBNNode node) {
+    private static boolean isMergedEntity(@NotNull DBNNode node) {
         return node instanceof DBNDatabaseNode dbNode &&
            dbNode.getObject() instanceof DBSEntity &&
            dbNode.getObject().getDataSource().getContainer().getNavigatorSettings().isMergeEntities();
     }
 
-    public static boolean isDefaultElement(Object element)
-    {
+    public static boolean isDefaultElement(@Nullable Object element) {
         if (element instanceof DBSWrapper wrapper) {
             DBSObject object = wrapper.getObject();
             if (object != null) {
@@ -215,18 +227,21 @@ public class DBNUtils {
         return divPos == -1 ? path : path.substring(divPos + 1);
     }
 
-    public static boolean isReadOnly(DBNNode node)
-    {
+    public static boolean isReadOnly(@NotNull DBNNode node) {
         return node instanceof DBNDatabaseNode dbNode &&
             !(node instanceof DBNDataSource) &&
             !dbNode.getDataSourceContainer().hasModifyPermission(DBPDataSourcePermission.PERMISSION_EDIT_METADATA);
     }
 
-    public static boolean isFolderNode(DBNNode node) {
+    public static boolean isFolderNode(@NotNull DBNNode node) {
         return node.allowsChildren();
     }
 
-    public static DBXTreeItem getValidItemsMeta(DBRProgressMonitor monitor, DBNDatabaseNode dbNode) throws DBException {
+    @Nullable
+    public static DBXTreeItem getValidItemsMeta(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBNDatabaseNode dbNode
+    ) throws DBException {
         DBXTreeItem itemsMeta = dbNode.getItemsMeta();
         if (itemsMeta != null && itemsMeta.isOptional()) {
             // Maybe we need nested item.
@@ -234,10 +249,9 @@ public class DBNUtils {
             Class<?> expectedChildrenType = dbNode.getChildrenOrFolderClass(itemsMeta);
             if (expectedChildrenType != null) {
                 List<DBXTreeNode> childMetas = itemsMeta.getChildren(dbNode);
-                if (childMetas.size() == 1 && childMetas.get(0) instanceof DBXTreeItem nestedMeta) {
-                    Class<?> expectedNestedType = dbNode.getChildrenOrFolderClass(nestedMeta);
+                if (childMetas.size() == 1 && childMetas.getFirst() instanceof DBXTreeItem nestedMeta) {
                     DBNDatabaseNode[] nodeChildren = dbNode.getChildren(monitor);
-                    if (nodeChildren.length > 0 &&
+                    if (nodeChildren != null && nodeChildren.length > 0 &&
                         !expectedChildrenType.isInstance(nodeChildren[0].getObject()))
                     {
                         // Note: We should've check expectedNestedType.isInstance(nodeChildren[0].getObject())
@@ -270,11 +284,19 @@ public class DBNUtils {
     }
 
     private static class NodeNameComparator implements Comparator<DBNNode> {
-        static NodeNameComparator INSTANCE = new NodeNameComparator();
+        private final AlphanumericComparator alphanumericComparator = AlphanumericComparator.getInstance();
+        private final boolean caseInsensitive;
+
+        public NodeNameComparator() {
+            caseInsensitive = DBWorkbench.getPlatform().getPreferenceStore().getBoolean(
+                ModelPreferences.NAVIGATOR_SORT_IGNORE_CASE);
+        }
 
         @Override
         public int compare(DBNNode node1, DBNNode node2) {
-            return node1.getNodeDisplayName().compareToIgnoreCase(node2.getNodeDisplayName());
+            return caseInsensitive
+                ? alphanumericComparator.compareIgnoreCase(node1.getNodeDisplayName(), node2.getNodeDisplayName())
+                : alphanumericComparator.compare(node1.getNodeDisplayName(), node2.getNodeDisplayName());
         }
     }
 
@@ -294,19 +316,19 @@ public class DBNUtils {
         return null;
     }
 
-    public static JexlContext makeContext(final DBNNode node) {
+    public static JexlContext makeContext(@NotNull DBNNode node) {
         return new JexlContext() {
 
             @Override
             public Object get(String name) {
-                if (node instanceof DBNDatabaseNode) {
+                if (node instanceof DBNDatabaseNode dbNode) {
                     switch (name) {
                         case "object":
-                            return ((DBNDatabaseNode) node).getValueObject();
+                            return dbNode.getValueObject();
                         case "dataSource":
-                            return ((DBNDatabaseNode) node).getDataSource();
+                            return dbNode.getDataSource();
                         case "connected":
-                            return ((DBNDatabaseNode) node).getDataSource() != null;
+                            return dbNode.getDataSource() != null;
                     }
                 }
                 return null;
@@ -346,7 +368,7 @@ public class DBNUtils {
     }
 
 
-    public static void disposeNode(DBNNode node, boolean reflect) {
+    public static void disposeNode(@NotNull DBNNode node, boolean reflect) {
         node.dispose(reflect);
     }
 
@@ -362,10 +384,10 @@ public class DBNUtils {
 
         DBSObject objectToOpen;
         if (entities.size() == 1) {
-            objectToOpen = entities.get(0);
+            objectToOpen = entities.getFirst();
         } else {
             if (entities.size() > 1) {
-                objectToOpen = entities.get(0).getParentObject();
+                objectToOpen = entities.getFirst().getParentObject();
             } else {
                 objectToOpen = dataSource;
             }
@@ -377,11 +399,11 @@ public class DBNUtils {
     }
 
     private static void getConnectionEntities(
-        DBRProgressMonitor monitor,
-        DBSObjectContainer container,
-        List<DBSEntity> entities
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBSObjectContainer container,
+        @NotNull List<DBSEntity> entities
     ) throws DBException {
-        for (DBSObject child : container.getChildren(monitor)) {
+        for (DBSObject child : CommonUtils.safeCollection(container.getChildren(monitor))) {
             if (child instanceof DBSEntity entity) {
                 entities.add(entity);
             } else if (child instanceof DBSObjectContainer oc) {

@@ -24,6 +24,7 @@ import org.eclipse.jface.action.Separator;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
@@ -175,7 +176,7 @@ public class ERDEditorEmbedded extends ERDEditorPart
         diagramLoadingJob = LoadingJob.createService(
             new DatabaseLoadService<EntityDiagram>("Load diagram '" + object.getName() + "'", object.getDataSource()) {
                 @Override
-                public EntityDiagram evaluate(DBRProgressMonitor monitor) {
+                public EntityDiagram evaluate(@NotNull DBRProgressMonitor monitor) {
                     try {
                         getDiagram().setDiagramMonitor(monitor);
                         EntityDiagram diagram = loadFromDatabase(monitor);

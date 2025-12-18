@@ -116,6 +116,7 @@ public class TeradataTrigger extends GenericTableTrigger implements DBPQualified
         return createDate;
     }
 
+    @NotNull
     @Override
     public String getObjectDefinitionText(@NotNull DBRProgressMonitor monitor, @NotNull Map<String, Object> options) {
         return definition;

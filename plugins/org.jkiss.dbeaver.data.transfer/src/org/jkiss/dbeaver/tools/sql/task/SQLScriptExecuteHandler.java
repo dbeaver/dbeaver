@@ -72,7 +72,7 @@ public class SQLScriptExecuteHandler implements DBTTaskHandler {
         @NotNull DBTTaskExecutionListener listener) throws DBException
     {
         SQLScriptExecuteSettings settings = new SQLScriptExecuteSettings();
-        settings.loadConfiguration(runnableContext, task);
+        settings.loadConfiguration(task);
         executeWithSettings(runnableContext, task, locale, log, logStream, listener, settings);
         return DBTTaskRunStatus.makeStatisticsStatus(totalStatistics);
     }

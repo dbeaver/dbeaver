@@ -50,8 +50,8 @@ import org.jkiss.dbeaver.ui.properties.PropertyTreeViewer;
 import org.jkiss.dbeaver.utils.HelpUtils;
 import org.jkiss.utils.CommonUtils;
 
-import java.util.*;
 import java.util.List;
+import java.util.*;
 
 /**
  * PrefPageDataFormat
@@ -620,7 +620,7 @@ public class PrefPageDataFormat extends TargetPrefPage
         }
 
         @Override
-        public void setPropertyValue(@Nullable DBRProgressMonitor monitor, String id, Object value) {
+        public void setPropertyValue(@Nullable DBRProgressMonitor monitor, @NotNull String id, @Nullable Object value) {
             final Object previousValue = getPropertyValue(monitor, id);
 
             super.setPropertyValue(monitor, id, value);
@@ -634,7 +634,7 @@ public class PrefPageDataFormat extends TargetPrefPage
         }
 
         @Override
-        public void resetPropertyValueToDefault(String id) {
+        public void resetPropertyValueToDefault(@NotNull String id) {
             super.resetPropertyValueToDefault(id);
 
             try {

@@ -36,13 +36,12 @@ import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.aggregate.IAggregateFunction;
 import org.jkiss.dbeaver.registry.functions.AggregateFunctionDescriptor;
 import org.jkiss.dbeaver.registry.functions.FunctionsRegistry;
-import org.jkiss.dbeaver.ui.DBeaverIcons;
-import org.jkiss.dbeaver.ui.DataEditorFeatures;
-import org.jkiss.dbeaver.ui.UIIcon;
-import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.controls.ToolbarSeparatorContribution;
 import org.jkiss.dbeaver.ui.controls.resultset.*;
 import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
+import org.jkiss.dbeaver.ui.controls.resultset.panel.ResultSetPanelBase;
+import org.jkiss.dbeaver.ui.internal.UIMessages;
 
 import java.math.BigDecimal;
 import java.text.DecimalFormat;
@@ -53,7 +52,7 @@ import java.util.stream.Collectors;
 /**
  * RSV value view panel
  */
-public class AggregateColumnsPanel implements IResultSetPanel {
+public class AggregateColumnsPanel extends ResultSetPanelBase {
 
     private static final Log log = Log.getLog(AggregateColumnsPanel.class);
 
@@ -323,7 +322,9 @@ public class AggregateColumnsPanel implements IResultSetPanel {
     }
 
     private void fillToolBar(IContributionManager contributionManager) {
-        contributionManager.add(new AddFunctionAction());
+        ActionContributionItem item = new ActionContributionItem(new AddFunctionAction());
+        item.setMode(ActionContributionItem.MODE_FORCE_TEXT);
+        contributionManager.add(item);
         contributionManager.add(new RemoveFunctionAction());
         contributionManager.add(new ResetFunctionsAction());
         contributionManager.add(new ToolbarSeparatorContribution(true));
@@ -365,24 +366,32 @@ public class AggregateColumnsPanel implements IResultSetPanel {
 
     private class AddFunctionAction extends Action {
         public AddFunctionAction() {
-            super(ResultSetMessages.aggregate_columns_add_function_text, DBeaverIcons.getImageDescriptor(UIIcon.ADD));
+            super(UIMessages.button_add, DBeaverIcons.getImageDescriptor(UIIcon.ADD));
+
+            setMenuCreator(new MenuCreator(widget -> createMenuManager()));
         }
 
-        @Override
-        public void run() {
+        private MenuManager createMenuManager() {
             List<AggregateFunctionDescriptor> missingFunctions = new ArrayList<>();
             for (AggregateFunctionDescriptor func : FunctionsRegistry.getInstance().getAggregateFunctions()) {
                 if (!enabledFunctions.contains(func)) {
                     missingFunctions.add(func);
                 }
             }
+            MenuManager menuManager = new MenuManager();
             if (!missingFunctions.isEmpty()) {
-                Point location = aggregateTable.getDisplay().getCursorLocation();
-                MenuManager menuManager = new MenuManager();
-
                 for (final AggregateFunctionDescriptor func : missingFunctions) {
                     menuManager.add(new AddFunctionItemAction(func));
                 }
+            }
+            return menuManager;
+        }
+
+        @Override
+        public void run() {
+            MenuManager menuManager = createMenuManager();
+            if (!menuManager.isEmpty()) {
+                Point location = aggregateTable.getDisplay().getCursorLocation();
 
                 final Menu contextMenu = menuManager.createContextMenu(aggregateTable);
                 contextMenu.setLocation(location);

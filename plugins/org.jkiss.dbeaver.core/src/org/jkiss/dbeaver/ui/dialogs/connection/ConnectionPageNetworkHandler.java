@@ -119,7 +119,7 @@ public class ConnectionPageNetworkHandler extends ConnectionWizardPage {
     }
 
     @Override
-    public void saveSettings(DBPDataSourceContainer dataSource) {
+    public void saveSettings(@NotNull DBPDataSourceContainer dataSource) {
         DBPConnectionConfiguration configuration = dataSource.getConnectionConfiguration();
         if (handlerConfiguration == null) {
             return;

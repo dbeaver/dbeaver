@@ -63,10 +63,7 @@ public class FileTypeHandlerDescriptor extends AbstractDescriptor {
     }
 
     public IFileTypeHandler createHandler() throws ReflectiveOperationException {
-        Class<? extends IFileTypeHandler> clazz = handlerType.getObjectClass(IFileTypeHandler.class);
-        if (clazz == null) {
-            throw new NoClassDefFoundError(handlerType.getImplName());
-        }
+        Class<? extends IFileTypeHandler> clazz = handlerType.getImplClass(IFileTypeHandler.class);
         return clazz.getConstructor().newInstance();
     }
 

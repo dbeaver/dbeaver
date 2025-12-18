@@ -165,6 +165,7 @@ public abstract class GenericTableBase extends JDBCTable<GenericDataSource, Gene
     }
 
     @Property(viewable = true, optional = true, order = 3, labelProvider = GenericCatalog.CatalogNameTermProvider.class)
+    @Nullable
     public GenericCatalog getCatalog() {
         if (!CommonUtils.isEmpty(tableCatalogName)) {
             getDataSource().getCatalog(tableCatalogName);
@@ -267,7 +268,7 @@ public abstract class GenericTableBase extends JDBCTable<GenericDataSource, Gene
     }
 
     @Override
-    public Collection<GenericTableForeignKey> getReferences(@NotNull DBRProgressMonitor monitor)
+    public Collection<? extends GenericTableForeignKey> getReferences(@NotNull DBRProgressMonitor monitor)
         throws DBException {
         if (getDataSource().getInfo().supportsReferentialIntegrity()) {
             return loadReferences(monitor);

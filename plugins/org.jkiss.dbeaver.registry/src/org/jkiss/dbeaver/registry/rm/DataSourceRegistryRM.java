@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.registry.rm;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.DBRuntimeException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPDataSourceFolder;
@@ -48,13 +49,6 @@ public class DataSourceRegistryRM<T extends DataSourceDescriptor> extends DataSo
     ) {
         super(project, new DataSourceConfigurationManagerRM(project, rmController), preferenceStore);
         this.rmController = rmController;
-
-        // We shouldn't refresh config on update events
-//        addDataSourceListener(event -> {
-//            if (event.getAction() == DBPEvent.Action.OBJECT_UPDATE && event.getObject() instanceof DBPDataSourceContainer) {
-//                refreshConfig();
-//            }
-//        });
     }
 
     @Override
@@ -132,8 +126,7 @@ public class DataSourceRegistryRM<T extends DataSourceDescriptor> extends DataSo
             lastError = null;
         } catch (DBException e) {
             lastError = e;
-            log.error("Error persisting rm data folder create", e);
-            return null;
+            throw new DBRuntimeException("Error persisting rm data folder create", e);
         }
         return createFolder(parent, name);
     }

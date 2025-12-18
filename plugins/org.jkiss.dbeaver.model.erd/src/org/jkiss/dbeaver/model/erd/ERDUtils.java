@@ -34,7 +34,6 @@ import org.jkiss.dbeaver.model.virtual.DBVUtils;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.CommonUtils;
 
-import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 
 public class ERDUtils
@@ -143,10 +142,7 @@ public class ERDUtils
         try {
             diagram.getContentProvider().fillEntityFromObject(monitor, diagram, otherEntities, erdEntity);
         } catch (DBCException e) {
-            // Something goes wrong
-            DBWorkbench.getPlatformUI().showError(
-                "Can't create entity",
-                e.getMessage());
+            log.error("Can't create ERD entity from database entity " + entity, e);
             return null;
         }
         return erdEntity;
@@ -162,17 +158,15 @@ public class ERDUtils
         Set<DBSEntity> result = new LinkedHashSet<>();
 
         // Cache structure
-        if (root instanceof DBSObjectContainer) {
+        if (root instanceof DBSObjectContainer objectContainer) {
             monitor.beginTask("Load '" + root.getName() + "' content", 3);
-            DBSObjectContainer objectContainer = (DBSObjectContainer) root;
             try {
-                DBExecUtils.tryExecuteRecover(monitor, objectContainer.getDataSource(), param -> {
-                    try {
-                        objectContainer.cacheStructure(monitor, DBSObjectContainer.STRUCT_ENTITIES | DBSObjectContainer.STRUCT_ASSOCIATIONS | DBSObjectContainer.STRUCT_ATTRIBUTES);
-                    } catch (DBException e) {
-                        throw new InvocationTargetException(e);
-                    }
-                });
+                DBExecUtils.tryExecuteRecover(monitor, objectContainer.getDataSource(), param ->
+                    objectContainer.cacheStructure(
+                        monitor,
+                        DBSObjectContainer.STRUCT_ENTITIES
+                            | DBSObjectContainer.STRUCT_ASSOCIATIONS
+                            | DBSObjectContainer.STRUCT_ATTRIBUTES));
             } catch (DBException e) {
                 DBWorkbench.getPlatformUI().showError("Cache database model", "Error caching database model", e);
             }

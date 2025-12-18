@@ -47,9 +47,9 @@ import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.controls.TreeContentProvider;
 import org.jkiss.dbeaver.ui.controls.ViewerColumnController;
-import org.jkiss.dbeaver.ui.controls.resultset.IResultSetPanel;
 import org.jkiss.dbeaver.ui.controls.resultset.IResultSetPresentation;
 import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
+import org.jkiss.dbeaver.ui.controls.resultset.panel.ResultSetPanelBase;
 import org.jkiss.dbeaver.ui.controls.resultset.panel.ResultSetPanelRefresher;
 import org.jkiss.dbeaver.ui.navigator.itemlist.DatabaseObjectListControl;
 import org.jkiss.utils.CommonUtils;
@@ -62,7 +62,7 @@ import java.util.stream.Collectors;
 /**
  * RSV value view panel
  */
-public class MetaDataPanel implements IResultSetPanel {
+public class MetaDataPanel extends ResultSetPanelBase {
 
     public static final String PANEL_ID = "results-metadata";
 
@@ -211,7 +211,7 @@ public class MetaDataPanel implements IResultSetPanel {
                 ResultSetMessages.generate_ddl_by_result_set_name,
                 DBIcon.SQL_TEXT,
                 ResultSetMessages.generate_ddl_by_result_set_tip,
-                false
+                true
             )
         );
     }
@@ -263,8 +263,9 @@ public class MetaDataPanel implements IResultSetPanel {
             return "MetaData/" + executionContext.getDataSource().getContainer().getDriver().getId();
         }
 
+        @NotNull
         @Override
-        protected Object getObjectValue(DBDAttributeBinding item) {
+        protected Object getObjectValue(@NotNull DBDAttributeBinding item) {
             if (item instanceof DBDAttributeBindingMeta) {
                 return item.getMetaAttribute();
             } else if (item != null) {
@@ -280,6 +281,7 @@ public class MetaDataPanel implements IResultSetPanel {
             return DBValueFormatting.getObjectImage(item.getMetaAttribute());
         }
 
+        @Nullable
         @Override
         protected Color getObjectForeground(DBDAttributeBinding item) {
             if (item.getParentObject() == null && !isAttributeVisible(item)) {
@@ -327,7 +329,7 @@ public class MetaDataPanel implements IResultSetPanel {
         }
 
         @Override
-        public Collection<DBDAttributeBinding> evaluate(DBRProgressMonitor monitor) {
+        public Collection<DBDAttributeBinding> evaluate(@NotNull DBRProgressMonitor monitor) {
             return curAttributes;
         }
     }

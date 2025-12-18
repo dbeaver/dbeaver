@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,10 +26,10 @@ import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCExecutionContext;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCRemoteInstance;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.utils.CommonUtils;
 
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -41,6 +41,11 @@ public class BigQueryDataSource extends GenericDataSource {
         @NotNull GenericMetaModel metaModel
     ) throws DBException {
         super(monitor, container, metaModel, new BigQuerySQLDialect());
+    }
+
+    @Override
+    protected JDBCExecutionContext createExecutionContext(JDBCRemoteInstance instance, String type) throws DBCException {
+        return new BigQueryExecutionContext(instance, type);
     }
 
     @Override
@@ -76,6 +81,7 @@ public class BigQueryDataSource extends GenericDataSource {
         if (CommonUtils.isNotEmpty(additionalProjects)) {
             props.put(BigQueryConstants.DRIVER_PROP_ADDITIONAL_PROJECTS, additionalProjects);
         }
+
         return props;
     }
 
@@ -87,8 +93,9 @@ public class BigQueryDataSource extends GenericDataSource {
         return super.resolveDataKind(typeName, valueType);
     }
 
+    @NotNull
     @Override
-    public String getDefaultDataTypeName(DBPDataKind dataKind) {
+    public String getDefaultDataTypeName(@NotNull DBPDataKind dataKind) {
         switch (dataKind) {
             case STRING:
                 return "STRING";
@@ -97,5 +104,7 @@ public class BigQueryDataSource extends GenericDataSource {
         }
     }
 
-
+    protected boolean isSessionModeEnabled() {
+        return false;
+    }
 }

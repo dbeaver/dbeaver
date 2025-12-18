@@ -25,27 +25,24 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.ai.engine.AIEngineResponseChunk;
 import org.jkiss.dbeaver.model.ai.engine.AIEngineResponseConsumer;
 import org.jkiss.dbeaver.model.ai.engine.AIFunctionCall;
-import org.jkiss.dbeaver.model.ai.engine.TooManyRequestsException;
+import org.jkiss.dbeaver.model.ai.engine.AbstractHttpAIClient;
 import org.jkiss.dbeaver.model.ai.engine.openai.dto.*;
 import org.jkiss.dbeaver.model.ai.utils.AIHttpUtils;
-import org.jkiss.dbeaver.model.ai.utils.MonitoredHttpClient;
 import org.jkiss.dbeaver.model.data.json.JSONUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.HttpConstants;
 
-import java.io.Closeable;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
 
-public class OpenAIClient implements Closeable {
+public class OpenAIClient extends AbstractHttpAIClient {
     private static final Log log = Log.getLog(OpenAIClient.class);
 
     public static final String OPENAI_ENDPOINT = "https://api.openai.com/v1/";
@@ -53,16 +50,15 @@ public class OpenAIClient implements Closeable {
     private static final String DATA_EVENT = "data: ";
     private static final String EVENT_EVENT = "event: ";
 
-    private static final Duration TIMEOUT = Duration.ofSeconds(30);
-    private static final Gson GSON = JSONUtils.GSON;
+    protected static final Duration TIMEOUT = Duration.ofSeconds(30);
+    protected static final Gson GSON = JSONUtils.GSON;
     public static final String EVENT_TYPE_RESPONSE_COMPLETED = "response.completed";
     public static final String EVENT_TYPE_ITEM_DONE = "response.output_item.done";
     public static final String EVENT_TYPE_ARGUMENTS_DELTA = "response.function_call_arguments.delta";
     public static final String EVENT_TYPE_TEXT_DELTA = "response.output_text.delta";
 
-    private final String baseUrl;
-    private final List<HttpRequestFilter> requestFilters;
-    private final MonitoredHttpClient client = new MonitoredHttpClient(HttpClient.newBuilder().build());
+    protected final String baseUrl;
+    protected final List<HttpRequestFilter> requestFilters;
 
     public OpenAIClient(
         @NotNull String baseUrl,
@@ -84,8 +80,7 @@ public class OpenAIClient implements Closeable {
         } catch (JsonSyntaxException e) {
             throw new DBException("Error parsing function call arguments", e);
         }
-        AIFunctionCall fc = new AIFunctionCall(message.name, arguments);
-        return fc;
+        return new AIFunctionCall(message.name, arguments);
     }
 
     @NotNull
@@ -93,7 +88,14 @@ public class OpenAIClient implements Closeable {
         return client.getHttpClient();
     }
 
-    public static OpenAIClient createClient(String baseUrl, String token) {
+    @NotNull
+    @Override
+    protected DBException mapHttpError(int statusCode, @NotNull String body) {
+        log.debug("OpenAI request failed: " + statusCode + ", " + body);
+        return new DBException("OpenAI request failed: " + AIHttpUtils.parseOpenAIStyleErrorMessage(body));
+    }
+
+    public static OpenAIClient createClient(@NotNull String baseUrl, @NotNull String token) {
         return new OpenAIClient(
             baseUrl,
             List.of(new OpenAIRequestFilter(token))
@@ -109,26 +111,16 @@ public class OpenAIClient implements Closeable {
             .build();
 
         HttpRequest modifiedRequest = applyFilters(request);
-        HttpResponse<String> response = client.send(monitor, modifiedRequest);
-        if (response.statusCode() == 200) {
-            return GSON.fromJson(response.body(), OAIModelList.class).data();
-        } else {
-            throw new DBException("Models read failed: " + response.statusCode() + ", body=" + response.body());
-        }
+        return GSON.fromJson(client.send(monitor, modifiedRequest), OAIModelList.class).data();
     }
 
     private HttpRequest createCompletionRequest(@NotNull OAIResponsesRequest completionRequest) throws DBException {
         return HttpRequest.newBuilder()
-            .uri(AIHttpUtils.resolve(baseUrl, getResponsesEndpoint()))
+            .uri(AIHttpUtils.resolve(baseUrl, OpenAIConstants.ENDPOINT_RESPONSES))
             .header(HttpConstants.HEADER_USER_AGENT, GeneralUtils.getProductTitle())
             .POST(HttpRequest.BodyPublishers.ofString(serializeValue(completionRequest)))
             .timeout(TIMEOUT)
             .build();
-    }
-
-    @NotNull
-    protected String getResponsesEndpoint() {
-        return "responses";
     }
 
     @NotNull
@@ -139,15 +131,7 @@ public class OpenAIClient implements Closeable {
         HttpRequest request = createCompletionRequest(completionRequest);
 
         HttpRequest modifiedRequest = applyFilters(request);
-        HttpResponse<String> response = client.send(monitor, modifiedRequest);
-        String body = response.body();
-        if (response.statusCode() == 200) {
-            return GSON.fromJson(body, OAIResponsesResponse.class);
-        } else if (response.statusCode() == 429) {
-            throw new TooManyRequestsException("Too many requests: " + body);
-        } else {
-            throw new DBException("OpenAI request failed: " + response.statusCode() + ", body=" + body);
-        }
+        return GSON.fromJson(client.send(monitor, modifiedRequest), OAIResponsesResponse.class);
     }
 
     public void createChatCompletionStream(
@@ -164,14 +148,10 @@ public class OpenAIClient implements Closeable {
             modifiedRequest,
             stringConsumer,
             listener::error,
-            listener::close
+            listener::completeBlock
         );
     }
 
-    @Override
-    public void close() {
-        client.close();
-    }
 
     public HttpRequest applyFilters(@NotNull HttpRequest request) throws DBException {
         return applyFilters(request, true);
@@ -185,7 +165,7 @@ public class OpenAIClient implements Closeable {
     }
 
     @NotNull
-    private static String serializeValue(@Nullable Object value) throws DBException {
+    protected static String serializeValue(@Nullable Object value) throws DBException {
         try {
             return GSON.toJson(value);
         } catch (Exception e) {
@@ -216,15 +196,12 @@ public class OpenAIClient implements Closeable {
                 try {
                     OAIResponsesChunk chunk = GSON.fromJson(data, OAIResponsesChunk.class);
                     if (EVENT_TYPE_RESPONSE_COMPLETED.equals(chunk.type)) {
-                        listener.close();
                     } else {
 
                         if (chunk.item != null && OAIMessage.TYPE_FUNCTION_CALL.equals(chunk.item.type)) {
                             if (EVENT_TYPE_ITEM_DONE.equals(chunk.type)) {
-                                if (chunk.item != null) {
-                                    listener.nextChunk(new AIEngineResponseChunk(
-                                        createFunctionCall(chunk.item)));
-                                }
+                                listener.nextChunk(new AIEngineResponseChunk(
+                                    createFunctionCall(chunk.item)));
                                 functionCall = false;
                             } else {
                                 functionCall = true;

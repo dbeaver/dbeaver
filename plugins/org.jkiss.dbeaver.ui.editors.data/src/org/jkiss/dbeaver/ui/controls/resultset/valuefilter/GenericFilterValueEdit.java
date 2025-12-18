@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -53,7 +53,6 @@ import org.jkiss.dbeaver.ui.controls.resultset.ResultSetViewer;
 import org.jkiss.dbeaver.ui.data.IValueEditor;
 import org.jkiss.utils.CommonUtils;
 
-import java.lang.reflect.InvocationTargetException;
 import java.sql.Timestamp;
 import java.util.List;
 import java.util.*;
@@ -231,8 +230,9 @@ class GenericFilterValueEdit {
     Text addFilterText(Composite composite) {
         // Create job which will load values after specified delay
         final AbstractJob loadValuesJob = new AbstractJob("Load values timeout") {
+            @NotNull
             @Override
-            protected IStatus run(DBRProgressMonitor monitor) {
+            protected IStatus run(@NotNull DBRProgressMonitor monitor) {
                 UIUtils.asyncExec(() -> loadValues(null));
                 return Status.OK_STATUS;
             }
@@ -354,8 +354,6 @@ class GenericFilterValueEdit {
                             showRowCount,
                             true,
                             caseInsensitiveSearch);
-                    } catch (DBException e) {
-                        throw new InvocationTargetException(e);
                     }
                 });
                 return result;
@@ -369,8 +367,6 @@ class GenericFilterValueEdit {
                 DBExecUtils.tryExecuteRecover(monitor, attributeEnumerable.getDataSource(), param -> {
                     try (DBCSession session = DBUtils.openUtilSession(monitor, attributeEnumerable, "Read count of distinct values")) {
                         result[0] = attributeEnumerable.getDistinctValuesCount(session);
-                    } catch (DBException e) {
-                        throw new InvocationTargetException(e);
                     }
                 });
 
@@ -396,8 +392,6 @@ class GenericFilterValueEdit {
                             caseInsensitiveSearch,
                             MAX_MULTI_VALUES
                         ));
-                    } catch (DBException e) {
-                        throw new InvocationTargetException(e);
                     }
                 });
                 return result;
@@ -679,8 +673,9 @@ class GenericFilterValueEdit {
             setSkipErrorOnCanceling(true);
         }
 
+        @NotNull
         @Override
-        protected IStatus run(DBRProgressMonitor monitor) {
+        protected IStatus run(@NotNull DBRProgressMonitor monitor) {
             monitor.beginTask("Read filter values", 1);
             final DBCExecutionContext executionContext = viewer.getExecutionContext();
             if (executionContext == null) {

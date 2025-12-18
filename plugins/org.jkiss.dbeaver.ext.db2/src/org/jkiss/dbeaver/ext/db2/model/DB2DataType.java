@@ -280,7 +280,7 @@ public class DB2DataType extends DB2Object<DBSObject> implements DBSDataType, DB
 
     @NotNull
     @Override
-    public DBCLogicalOperator[] getSupportedOperators(DBSTypedObject attribute)
+    public DBCLogicalOperator[] getSupportedOperators(@NotNull DBSTypedObject attribute)
     {
         return DBUtils.getDefaultOperators(this);
     }

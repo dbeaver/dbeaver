@@ -242,7 +242,7 @@ public class PostgreIndex extends JDBCTableIndex<PostgreSchema, PostgreTableBase
     }
 
     @Override
-    public List<PostgreIndexColumn> getAttributeReferences(@NotNull DBRProgressMonitor monitor) {
+    public List<PostgreIndexColumn> getAttributeReferences(@Nullable DBRProgressMonitor monitor) {
         return columns;
     }
 
@@ -273,6 +273,7 @@ public class PostgreIndex extends JDBCTableIndex<PostgreSchema, PostgreTableBase
         return isPrimaryKeyIndex;
     }
 
+    @NotNull
     @Override
     @Property(hidden = true, editable = true, updatable = true, order = -1)
     public String getObjectDefinitionText(@NotNull DBRProgressMonitor monitor, @NotNull Map<String, Object> options) throws DBException {

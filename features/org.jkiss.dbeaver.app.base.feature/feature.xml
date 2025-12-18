@@ -3,7 +3,7 @@
 <feature
         id="org.jkiss.dbeaver.app.base.feature"
         label="DBeaver Base Standalone Application"
-        version="25.2.2.qualifier"
+        version="25.3.2.qualifier"
         provider-name="DBeaver Corp"
         plugin="org.jkiss.dbeaver.ui.app.standalone">
 
@@ -31,7 +31,6 @@
     <!-- Additional plugins for standalone version -->
 
     <plugin id="org.eclipse.ui.ide.application" version="0.0.0" />
-    <plugin id="org.apache.commons.cli" version="0.0.0" />
     <!-- Launcher -->
     <plugin id="org.jkiss.dbeaver.launcher" version="0.0.0"/>
     

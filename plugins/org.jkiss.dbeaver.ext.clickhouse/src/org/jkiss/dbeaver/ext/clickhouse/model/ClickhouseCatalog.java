@@ -71,7 +71,7 @@ public class ClickhouseCatalog extends GenericCatalog implements DBPObjectStatis
     }
 
     @Override
-    public void collectObjectStatistics(DBRProgressMonitor monitor, boolean totalSizeOnly, boolean forceRefresh)
+    public void collectObjectStatistics(@NotNull DBRProgressMonitor monitor, boolean totalSizeOnly, boolean forceRefresh)
     throws DBException {
         if (hasStatistics && !forceRefresh) {
             return;

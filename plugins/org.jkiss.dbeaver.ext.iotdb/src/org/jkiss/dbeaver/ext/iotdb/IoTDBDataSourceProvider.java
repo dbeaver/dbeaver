@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,8 +19,8 @@ package org.jkiss.dbeaver.ext.iotdb;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ext.iotdb.model.IoTDBDataSource;
 import org.jkiss.dbeaver.ext.generic.GenericDataSourceProvider;
+import org.jkiss.dbeaver.ext.iotdb.model.IoTDBDataSource;
 import org.jkiss.dbeaver.ext.iotdb.model.meta.IoTDBMetaModel;
 import org.jkiss.dbeaver.ext.iotdb.model.meta.IoTDBTableMetaModel;
 import org.jkiss.dbeaver.model.DBConstants;
@@ -83,9 +83,11 @@ public class IoTDBDataSourceProvider extends GenericDataSourceProvider {
         return url.toString();
     }
 
+    @NotNull
     @Override
-    public String getConnectionURL(DBPDriver driver,
-                                   DBPConnectionConfiguration connectionInfo) {
+    public String getConnectionURL(
+        @NotNull DBPDriver driver,
+        @NotNull DBPConnectionConfiguration connectionInfo) {
         String urlTemplate = driver.getSampleURL();
         if (useRawUrl(connectionInfo)) {
             return connectionInfo.getUrl();

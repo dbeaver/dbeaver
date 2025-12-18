@@ -65,10 +65,12 @@ import org.eclipse.ui.forms.widgets.ExpandableComposite;
 import org.eclipse.ui.handlers.IHandlerActivation;
 import org.eclipse.ui.handlers.IHandlerService;
 import org.eclipse.ui.internal.WorkbenchMessages;
+import org.eclipse.ui.internal.themes.WorkbenchThemeManager;
 import org.eclipse.ui.menus.CommandContributionItem;
 import org.eclipse.ui.preferences.IWorkbenchPreferenceContainer;
 import org.eclipse.ui.services.IServiceLocator;
 import org.eclipse.ui.swt.IFocusService;
+import org.eclipse.ui.themes.ITheme;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -182,7 +184,7 @@ public class UIUtils {
     }
 
     public static void createToolBarSeparator(ToolBar toolBar, int style) {
-        Label label = new Label(toolBar, SWT.NONE);
+        Label label = new Label(toolBar, SWT.NONE);//SEPARATOR | style);
         label.setImage(DBeaverIcons.getImage((style & SWT.HORIZONTAL) == SWT.HORIZONTAL ? UIIcon.SEPARATOR_H : UIIcon.SEPARATOR_V));
         new ToolItem(toolBar, SWT.SEPARATOR).setControl(label);
     }
@@ -720,12 +722,12 @@ public class UIUtils {
             .grab(true, false).create());
         final Label imageLabel = new Label(composite, SWT.NONE);
         imageLabel.setImage(DBeaverIcons.getImage(DBIcon.SMALL_INFO));
-        imageLabel.setLayoutData(new GridData(SWT.BEGINNING, SWT.BEGINNING, false, false));
+        imageLabel.setLayoutData(new GridData(SWT.BEGINNING, SWT.CENTER, false, true));
 
         final Link link = new Link(composite, SWT.NONE);
         link.setText(text);
         link.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> callback.run()));
-        link.setLayoutData(GridDataFactory.fillDefaults().grab(true, false).create());
+        link.setLayoutData(new GridData(SWT.BEGINNING, SWT.CENTER, true, true));
 
         return link;
     }
@@ -1685,7 +1687,7 @@ public class UIUtils {
         return new RGB(r, g, b);
     }
 
-    public static boolean isParent(Control parent, Control child) {
+    public static boolean isParent(@NotNull Control parent, @Nullable Control child) {
         for (Control c = child; c != null; c = c.getParent()) {
             if (c == parent) {
                 return true;
@@ -1724,7 +1726,7 @@ public class UIUtils {
     }
 
     public static Point drawMessageOverControl(Control control, GC gc, String message, int offset) {
-        Rectangle bounds = control.getBounds();
+        Rectangle bounds = getControlPaintBounds(control);
         Point textSize = gc.textExtent(message);
 
         if (textSize.x > bounds.width) {
@@ -1747,6 +1749,26 @@ public class UIUtils {
         }
 
         return textSize;
+    }
+
+    @NotNull
+    private static Rectangle getControlPaintBounds(@NotNull Control control) {
+        Rectangle bounds;
+        if (control instanceof Scrollable scrollable) {
+            bounds = scrollable.getClientArea();
+        } else {
+            bounds = control.getBounds();
+        }
+        if (control instanceof Tree tree) {
+            int height = tree.getHeaderHeight();
+            bounds.y += height;
+            bounds.height -= height;
+        } else if (control instanceof Table table) {
+            int height = table.getHeaderHeight();
+            bounds.y += height;
+            bounds.height -= height;
+        }
+        return bounds;
     }
 
     public static SharedTextColors getSharedTextColors() {
@@ -1815,6 +1837,21 @@ public class UIUtils {
         return workbenchWindow;
     }
 
+    /**
+     * Returns {@link IWorkbenchWindow} that contains the given control.
+     *
+     * @param control the SWT control (must not be null)
+     * @return the corresponding {@link IWorkbenchWindow}, or {@code null} if none found
+     */
+    @Nullable
+    public static IWorkbenchWindow findWorkbenchWindow(@NotNull Control control) {
+        Shell shell = control.getShell();
+        return Arrays.stream(PlatformUI.getWorkbench().getWorkbenchWindows())
+            .filter(w -> w.getShell() == shell)
+            .findFirst()
+            .orElse(null);
+    }
+
     @Nullable
     public static Shell getActiveWorkbenchShell() {
         if (PlatformUI.isWorkbenchRunning()) {
@@ -1847,8 +1884,7 @@ public class UIUtils {
      * Runs task in Eclipse progress service.
      * NOTE: this call can't be canceled if it will block in IO
      */
-    public static void runInProgressService(final DBRRunnableWithProgress runnable)
-    throws InvocationTargetException, InterruptedException {
+    public static void runInProgressService(final DBRRunnableWithProgress runnable) throws InvocationTargetException, InterruptedException {
         getDefaultRunnableContext().run(true, true, runnable);
     }
 
@@ -1942,6 +1978,7 @@ public class UIUtils {
         runInUI(context, runnable);
     }
 
+    @NotNull
     public static Display getDisplay() {
         try {
             return PlatformUI.getWorkbench().getDisplay();
@@ -2009,7 +2046,8 @@ public class UIUtils {
         return SHARED_TEXT_COLORS.getColor(rgb);
     }
 
-    public static Color getConnectionColor(DBPConnectionConfiguration connectionInfo) {
+    @Nullable
+    public static Color getConnectionColor(@NotNull DBPConnectionConfiguration connectionInfo) {
         String rgbString = connectionInfo.getConnectionColor();
         if (CommonUtils.isEmpty(rgbString)) {
             rgbString = connectionInfo.getConnectionType().getColor();
@@ -2020,7 +2058,8 @@ public class UIUtils {
         return getConnectionColorByRGB(rgbString);
     }
 
-    public static Color getConnectionTypeColor(DBPConnectionType connectionType) {
+    @Nullable
+    public static Color getConnectionTypeColor(@NotNull DBPConnectionType connectionType) {
         String rgbString = connectionType.getColor();
         if (CommonUtils.isEmpty(rgbString)) {
             return null;
@@ -2028,14 +2067,14 @@ public class UIUtils {
         return getConnectionColorByRGB(rgbString);
     }
 
-    public static Color getConnectionColorByRGB(String rgbStringOrId) {
+    @Nullable
+    public static Color getConnectionColorByRGB(@NotNull String rgbStringOrId) {
         if (rgbStringOrId.isEmpty()) {
             return null;
         }
         if (Character.isAlphabetic(rgbStringOrId.charAt(0))) {
             // Some color constant
-            RGB rgb = getActiveWorkbenchWindow().getWorkbench().getThemeManager().getCurrentTheme().getColorRegistry()
-                .getRGB(rgbStringOrId);
+            RGB rgb = getCurrentTheme().getColorRegistry().getRGB(rgbStringOrId);
             return SHARED_TEXT_COLORS.getColor(rgb);
         } else {
             Color connectionColor = SHARED_TEXT_COLORS.getColor(rgbStringOrId);
@@ -2051,7 +2090,8 @@ public class UIUtils {
     /**
      * Create centralized shell from default display
      */
-    public static Shell createCenteredShell(Shell parent) {
+    @NotNull
+    public static Shell createCenteredShell(@NotNull Shell parent) {
         final Rectangle bounds = parent.getBounds();
         final int x = bounds.x + bounds.width / 2 - 120;
         final int y = bounds.y + bounds.height / 2 - 170;
@@ -2060,7 +2100,7 @@ public class UIUtils {
         return shell;
     }
 
-    public static void centerShell(Shell parent, Shell shell) {
+    public static void centerShell(@Nullable Shell parent, @Nullable Shell shell) {
         if (parent == null || shell == null) {
             return;
         }
@@ -2072,7 +2112,8 @@ public class UIUtils {
         shell.setLocation(x, y);
     }
 
-    public static Image getShardImage(String id) {
+    @Nullable
+    public static Image getShardImage(@NotNull String id) {
         return PlatformUI.getWorkbench().getSharedImages().getImage(id);
     }
 
@@ -2126,6 +2167,7 @@ public class UIUtils {
             shellSize.x = Math.max(shellSize.x, compSize.x);
             shellSize.y = Math.max(shellSize.y, compSize.y);
             shell.setSize(shellSize);
+            needsLayout = true;
         }
 
         if (shellLocation.x + shellSize.x > displayArea.width || shellLocation.y + shellSize.y > displayArea.height) {
@@ -2136,7 +2178,7 @@ public class UIUtils {
         }
 
         if (needsLayout) {
-            shell.layout(true);
+            shell.layout(true, true);
         }
     }
 
@@ -2173,8 +2215,14 @@ public class UIUtils {
         }
     }
 
+    @NotNull
     public static ColorRegistry getColorRegistry() {
-        return PlatformUI.getWorkbench().getThemeManager().getCurrentTheme().getColorRegistry();
+        return getCurrentTheme().getColorRegistry();
+    }
+
+    @NotNull
+    public static ITheme getCurrentTheme() {
+        return WorkbenchThemeManager.getInstance().getCurrentTheme();
     }
 
     public static Control createEmptyLabel(Composite parent, int horizontalSpan, int verticalSpan) {
@@ -2424,7 +2472,7 @@ public class UIUtils {
     }
 
     public static void populateToolItemCommandIds(ToolBarManager toolbarManager) {
-        // used for accessibility automation, see dbeaver-qa-auto
+        // used for accessibility automation, see qa-auto-dbeaver
         ToolBar toolBar = toolbarManager.getControl();
         if (toolBar == null || toolBar.isDisposed()) {
             return;
@@ -2510,7 +2558,7 @@ public class UIUtils {
      * @return closeable object that will enable redraw when closed
      */
     @NotNull
-    public static DBPCloseableObject disableRedraw(@NotNull Control control) {
+    public static DBPCloseableNE disableRedraw(@NotNull Control control) {
         control.setRedraw(false);
         return () -> control.setRedraw(true);
     }

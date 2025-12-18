@@ -27,10 +27,7 @@ import org.jkiss.dbeaver.model.ai.AIFunction;
 import org.jkiss.dbeaver.model.ai.AIFunctionContext;
 import org.jkiss.dbeaver.model.ai.AIFunctionResult;
 
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * AI function registry
@@ -38,8 +35,7 @@ import java.util.Map;
 public class AIFunctionRegistry {
 
     private static final Log log = Log.getLog(AIFunctionRegistry.class);
-
-    private static AIFunctionRegistry instance = null;
+    private static AIFunctionRegistry instance;
 
     public static synchronized AIFunctionRegistry getInstance() {
         if (instance == null) {
@@ -48,26 +44,64 @@ public class AIFunctionRegistry {
         return instance;
     }
 
-    private final Map<String, AIFunctionDescriptor> descriptorMap = new LinkedHashMap<>();
+    private final Map<String, AIFunctionDescriptor> functionsById = new LinkedHashMap<>();
+    private final Map<String, AIFunctionCategoryDescriptor> categoriesById = new LinkedHashMap<>();
 
     public AIFunctionRegistry(@NotNull IExtensionRegistry registry) {
         IConfigurationElement[] extElements = registry.getConfigurationElementsFor(AIFunctionDescriptor.EXTENSION_ID);
+        for (IConfigurationElement el : extElements) {
+            if ("category".equals(el.getName())) {
+                var cd = new AIFunctionCategoryDescriptor(el);
+                categoriesById.put(cd.getId(), cd);
+            }
+        }
         for (IConfigurationElement ext : extElements) {
             if ("function".equals(ext.getName())) {
-                AIFunctionDescriptor descriptor = new AIFunctionDescriptor(ext);
-                descriptorMap.put(descriptor.getName(), descriptor);
+                AIFunctionDescriptor fd = new AIFunctionDescriptor(ext);
+                functionsById.put(fd.getId(), fd);
             }
         }
     }
 
     @Nullable
     public AIFunctionDescriptor getFunction(@NotNull String id) {
-        return descriptorMap.get(id);
+        return functionsById.get(id);
     }
 
     @NotNull
     public List<AIFunctionDescriptor> getAllFunctions() {
-        return new ArrayList<>(descriptorMap.values());
+        return new ArrayList<>(functionsById.values());
+    }
+
+    @NotNull
+    public List<AIFunctionCategoryDescriptor> getAllCategories() {
+        return new ArrayList<>(categoriesById.values());
+    }
+
+    @NotNull
+    public Map<AIFunctionCategoryDescriptor, List<AIFunctionDescriptor>> getFunctionsByCategory() {
+        Map<AIFunctionCategoryDescriptor, List<AIFunctionDescriptor>> map = new LinkedHashMap<>();
+        for (var cat : categoriesById.values()) {
+            map.put(cat, new ArrayList<>());
+        }
+        for (AIFunctionDescriptor f : functionsById.values()) {
+            var cat = categoriesById.get(f.getCategoryId());
+            if (cat != null) {
+                map.get(cat).add(f);
+            }
+        }
+        return map;
+    }
+
+    @NotNull
+    public Set<String> getDefaultEnabledCategoryIds() {
+        Set<String> ids = new LinkedHashSet<>();
+        for (var c : categoriesById.values()) {
+            if (c.isEnabledByDefault()) {
+                ids.add(c.getId());
+            }
+        }
+        return ids;
     }
 
     @NotNull

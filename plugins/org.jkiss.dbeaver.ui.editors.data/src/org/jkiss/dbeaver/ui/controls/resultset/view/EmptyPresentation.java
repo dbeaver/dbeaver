@@ -54,7 +54,7 @@ public class EmptyPresentation extends AbstractPresentation {
     public void createPresentation(@NotNull final IResultSetController controller, @NotNull Composite parent) {
         super.createPresentation(controller, parent);
 
-        UIUtils.createHorizontalLine(parent);
+        //UIUtils.createHorizontalLine(parent);
         placeholder = new Canvas(parent, SWT.NONE);
         placeholder.setLayoutData(new GridData(GridData.FILL_BOTH));
         placeholder.setBackground(controller.getDefaultBackground());

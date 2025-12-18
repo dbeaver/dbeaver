@@ -108,7 +108,7 @@ public class DB2TableUniqueKey extends JDBCTableConstraint<DB2Table, DB2TableKey
     // -----------------
 
     @Override
-    public List<DB2TableKeyColumn> getAttributeReferences(DBRProgressMonitor monitor) {
+    public List<DB2TableKeyColumn> getAttributeReferences(@Nullable DBRProgressMonitor monitor) {
         return columns;
     }
 

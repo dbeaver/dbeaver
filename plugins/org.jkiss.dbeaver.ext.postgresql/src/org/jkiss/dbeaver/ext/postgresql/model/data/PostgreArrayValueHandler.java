@@ -172,7 +172,7 @@ public class PostgreArrayValueHandler extends JDBCArrayValueHandler {
 
         final String string = handler.getValueDisplayString(type, value, format);
 
-        if (isQuotingRequired(type, string)) {
+        if (format != DBDDisplayFormat.NATIVE && isQuotingRequired(type, string)) {
             return '"' + string.replaceAll("[\\\\\"]", "\\\\$0") + '"';
         }
 

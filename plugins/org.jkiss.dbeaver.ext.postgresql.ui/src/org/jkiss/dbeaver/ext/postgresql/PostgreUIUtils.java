@@ -57,4 +57,5 @@ public class PostgreUIUtils {
             infoLabel.setLayoutData(gridData);
         }
     }
+
 }

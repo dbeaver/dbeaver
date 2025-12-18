@@ -18,40 +18,24 @@ package org.jkiss.dbeaver.model.cli.registry;
 
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.Platform;
-import org.jkiss.dbeaver.model.cli.ICommandLineParameterHandler;
 import org.jkiss.utils.CommonUtils;
 import org.osgi.framework.Bundle;
 
 public class CommandLineParameterDescriptor {
-    private final String name;
-    private final String longName;
-    private final String description;
-    private final boolean hasArg;
-    private final boolean hasOptionalArg;
     private final boolean exitAfterExecute;
     private final boolean exclusiveMode;
     private final boolean forceNewInstance;
-    private final boolean contextInitializer;
-    private final ICommandLineParameterHandler handler;
+    private final Class<?> implClass;
+
 
     public CommandLineParameterDescriptor(IConfigurationElement config) throws Exception {
-        this.name = config.getAttribute("name");
-        this.longName = config.getAttribute("longName");
-        this.description = config.getAttribute("description");
-        this.hasArg = CommonUtils.toBoolean(config.getAttribute("hasArg"));
-        this.hasOptionalArg = CommonUtils.toBoolean(config.getAttribute("hasOptionalArg"));
         this.exitAfterExecute = CommonUtils.toBoolean(config.getAttribute("exitAfterExecute"));
         this.exclusiveMode = CommonUtils.toBoolean(config.getAttribute("exclusiveMode"));
         this.forceNewInstance = CommonUtils.toBoolean(config.getAttribute("forceNewInstance"));
-        this.contextInitializer = CommonUtils.toBoolean(config.getAttribute("contextInitializer"));
         Bundle cBundle = Platform.getBundle(config.getContributor().getName());
-        Class<?> implClass = cBundle.loadClass(config.getAttribute("handler"));
-        handler = (ICommandLineParameterHandler) implClass.getConstructor().newInstance();
+        this.implClass = cBundle.loadClass(config.getAttribute("handler"));
     }
 
-    public String getDescription() {
-        return description;
-    }
 
     public boolean isExclusiveMode() {
         return exclusiveMode;
@@ -65,36 +49,8 @@ public class CommandLineParameterDescriptor {
         return forceNewInstance;
     }
 
-    public ICommandLineParameterHandler getHandler() {
-        return handler;
-    }
-
-    public boolean hasArg() {
-        return hasArg;
-    }
-
-    public boolean canBeWithArg() {
-        return hasArg() || hasOptionalArg();
-    }
-
-    public String getLongName() {
-        return longName;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    /**
-     * Returns true if this parameter is used to initialize the CommandLineContext.
-     * Context initializers are executed before any other handlers.
-     */
-    public boolean isContextInitializer() {
-        return contextInitializer;
-    }
-
-    public boolean hasOptionalArg() {
-        return hasOptionalArg;
+    public Class<?> getImplClass() {
+        return implClass;
     }
 }
 

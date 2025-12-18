@@ -16,11 +16,9 @@
  */
 package org.jkiss.junit.osgi.annotation;
 
-import org.eclipse.core.runtime.Platform;
 import org.jkiss.junit.osgi.OSGITestRunner;
 
 import java.lang.annotation.*;
-import java.util.concurrent.Callable;
 
 /**
  * Run with product used for @{@link OSGITestRunner}
@@ -35,6 +33,11 @@ public @interface RunWithApplication {
      * Bundle name with application
      */
     String bundleName();
+
+    /**
+     * Force include bundles
+     */
+    String[] forceDependencies() default {};
 
     /**
      Application classname

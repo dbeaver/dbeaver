@@ -142,6 +142,7 @@
                 id="greengage"
                 parent="greenplum"
                 label="Greengage"
+                icon="icons/greengage_icon.svg"
                 dialect="greenplum"
                 inheritClients="true"
                 inheritProviderProperties="true">

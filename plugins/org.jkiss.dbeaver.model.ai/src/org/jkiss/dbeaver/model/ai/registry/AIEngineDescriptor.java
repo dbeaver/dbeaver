@@ -35,6 +35,7 @@ public class AIEngineDescriptor extends AbstractDescriptor {
     private final ObjectType objectType;
     private final ObjectType propertiesType;
     private final boolean supportsFunctions;
+    private final boolean providesMetadata;
 
     protected AIEngineDescriptor(@NotNull IConfigurationElement contributorConfig) {
         super(contributorConfig);
@@ -43,6 +44,7 @@ public class AIEngineDescriptor extends AbstractDescriptor {
         this.objectType = new ObjectType(contributorConfig, RegistryConstants.ATTR_CLASS);
         this.supportsFunctions = CommonUtils.toBoolean(contributorConfig.getAttribute("supportsFunctions"));
         this.propertiesType = new ObjectType(contributorConfig, "properties");
+        this.providesMetadata = CommonUtils.toBoolean(contributorConfig.getAttribute("providesMetadata"), true);
     }
 
     @NotNull
@@ -69,17 +71,22 @@ public class AIEngineDescriptor extends AbstractDescriptor {
         return CommonUtils.toBoolean(contributorConfig.getAttribute("default"));
     }
 
+    /**
+     * Indicates whether the engine provides model metadata such as context window size.
+     *
+     * @return true if the engine provides model metadata, false otherwise
+     */
+    public boolean isProvidesMetadata() {
+        return providesMetadata;
+    }
+
     public boolean isSupportsFunctions() {
         return supportsFunctions;
     }
 
     @NotNull
     public Class<? extends AIEngineProperties> getPropertiesType() {
-        Class<? extends AIEngineProperties> propsClass = propertiesType.getObjectClass(AIEngineProperties.class);
-        if (propsClass == null) {
-            throw new IllegalStateException("AI properties class not specified (" + getId() + ")");
-        }
-        return propsClass;
+        return propertiesType.getImplClass(AIEngineProperties.class);
     }
 
     @NotNull
@@ -94,6 +101,11 @@ public class AIEngineDescriptor extends AbstractDescriptor {
 
     @NotNull
     public AIEngine createEngineInstance() throws DBException {
-        return objectType.createInstance(AIEngine.class);
+        return createEngineInstance(AISettingsManager.getInstance().getSettings().getEngineConfiguration(getId()));
+    }
+
+    @NotNull
+    public AIEngine createEngineInstance(@NotNull AIEngineProperties properties) throws DBException {
+        return objectType.createInstance(AIEngine.class, properties);
     }
 }

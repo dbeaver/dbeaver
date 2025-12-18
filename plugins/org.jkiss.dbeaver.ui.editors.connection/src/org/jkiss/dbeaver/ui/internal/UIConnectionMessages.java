@@ -118,6 +118,8 @@ public class UIConnectionMessages extends NLS {
     public static String dialog_edit_driver_label_default_user;
     public static String dialog_edit_driver_label_id;
     public static String dialog_edit_driver_label_id_tip;
+    public static String dialog_edit_driver_label_provider_id;
+    public static String dialog_edit_driver_label_provider_id_tip;
     public static String dialog_edit_driver_label_description;
     public static String dialog_edit_driver_label_driver_class;
     public static String dialog_edit_driver_label_driver_name;
@@ -153,6 +155,8 @@ public class UIConnectionMessages extends NLS {
     public static String dialog_driver_download_auto_page_driver_file_missing_text;
     public static String dialog_driver_download_auto_page_force_download;
     public static String dialog_driver_download_auto_page_force_download_tooltip;
+    public static String dialog_driver_download_auto_page_show_details;
+    public static String dialog_driver_download_auto_page_driver_description;
     public static String dialog_driver_download_auto_page_required_files;
     public static String dialog_driver_download_auto_page_change_driver_version_text;
     public static String dialog_driver_download_auto_page_obtain_driver_files_text;
@@ -326,6 +330,8 @@ public class UIConnectionMessages extends NLS {
     public static String pref_page_network_profiles_tool_no_profile_error_title;
     public static String pref_page_network_profiles_tool_no_profile_error_info;
     public static String pref_page_network_profiles_tool_no_profile_error_information;
+    public static String pref_page_network_profiles_global_project_label;
+    public static String pref_page_network_profiles_global_project_hint;
     public static String dialog_tunnel_checkbox_use_handler;
     public static String dialog_tunnel_title;
 

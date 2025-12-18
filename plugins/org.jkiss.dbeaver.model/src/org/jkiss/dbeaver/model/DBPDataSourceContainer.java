@@ -119,6 +119,7 @@ public interface DBPDataSourceContainer extends
     /**
      * find all available shared credentials for the current user
      */
+    @NotNull
     List<DBSSecretValue> listSharedCredentials() throws DBException;
     void setSharedCredentials(boolean sharedCredentials);
     boolean isSharedCredentialsSelected();
@@ -156,7 +157,7 @@ public interface DBPDataSourceContainer extends
     @Nullable
     Integer getDefaultTransactionsIsolation();
 
-    void setDefaultTransactionsIsolation(DBPTransactionIsolation isolationLevel);
+    void setDefaultTransactionsIsolation(@Nullable DBPTransactionIsolation isolationLevel);
 
     boolean isExtraMetadataReadEnabled();
 
@@ -170,15 +171,17 @@ public interface DBPDataSourceContainer extends
     @Nullable
     DBSObjectFilter getObjectFilter(Class<?> type, @Nullable DBSObject parentObject, boolean firstMatch);
 
-    void setObjectFilter(Class<?> type, DBSObject parentObject, DBSObjectFilter filter);
+    void setObjectFilter(@NotNull Class<?> type, @Nullable DBSObject parentObject, @Nullable DBSObjectFilter filter);
 
     @Nullable
     String getClientApplicationName();
 
     void setClientApplicationName(@NotNull String applicationName);
 
+    @NotNull
     DBVModel getVirtualModel();
 
+    @Nullable
     DBPNativeClientLocation getClientHome();
 
     @NotNull
@@ -209,7 +212,7 @@ public interface DBPDataSourceContainer extends
      * @param reflect notify UI about connection state change
      * @throws DBException on error
      */
-    boolean connect(DBRProgressMonitor monitor, boolean initialize, boolean reflect) throws DBException;
+    boolean connect(@NotNull DBRProgressMonitor monitor, boolean initialize, boolean reflect) throws DBException;
 
     /**
      * Disconnects from datasource.
@@ -219,7 +222,7 @@ public interface DBPDataSourceContainer extends
      * @throws DBException on error
      * @return true on disconnect, false if disconnect action was canceled
      */
-    boolean disconnect(DBRProgressMonitor monitor) throws DBException;
+    boolean disconnect(@NotNull DBRProgressMonitor monitor) throws DBException;
 
     /**
      * Reconnects datasource.
@@ -227,7 +230,7 @@ public interface DBPDataSourceContainer extends
      * @return true on reconnect, false if reconnect action was canceled
      * @throws org.jkiss.dbeaver.DBException on any DB error
      */
-    boolean reconnect(DBRProgressMonitor monitor) throws DBException;
+    boolean reconnect(@NotNull DBRProgressMonitor monitor) throws DBException;
 
     @Nullable
     DBPDataSource getDataSource();
@@ -239,11 +242,11 @@ public interface DBPDataSourceContainer extends
 
     Collection<DBPDataSourceTask> getTasks();
 
-    void acquire(DBPDataSourceTask user);
+    void acquire(@NotNull DBPDataSourceTask user);
 
-    void release(DBPDataSourceTask user);
+    void release(@NotNull DBPDataSourceTask user);
 
-    void fireEvent(DBPEvent event);
+    void fireEvent(@NotNull DBPEvent event);
 
     /**
      * Preference store associated with this datasource
@@ -263,6 +266,7 @@ public interface DBPDataSourceContainer extends
      */
     boolean persistConfiguration();
 
+    @Nullable
     Date getConnectTime();
 
     @NotNull
@@ -283,10 +287,13 @@ public interface DBPDataSourceContainer extends
      *
      * @param actualConfig if true then actual connection config will be used (e.g. with preprocessed host/port values).
      */
+    @NotNull
     IVariableResolver getVariablesResolver(boolean actualConfig);
 
+    @NotNull
     DBPDataSourceContainer createCopy(DBPDataSourceRegistry forRegistry);
 
+    @NotNull
     DBPExclusiveResource getExclusiveLock();
     
     boolean isForceUseSingleConnection();
@@ -308,11 +315,13 @@ public interface DBPDataSourceContainer extends
     /**
      * Datasource tags. Tags can be used in various 3rd party integrations.
      */
+    @NotNull
     Map<String, String> getTags();
 
-    String getTagValue(String tagName);
+    @Nullable
+    String getTagValue(@NotNull String tagName);
 
-    void setTagValue(String tagName, String tagValue);
+    void setTagValue(@NotNull String tagName, @Nullable String tagValue);
 
     /**
      * Extension settings. Any custom attributes assigned by product plugins for internal configuration purposes

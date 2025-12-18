@@ -95,9 +95,9 @@ public class TaskRegistry implements DBTTaskRegistry
                         DBTTask task = project.getTaskManager().getTaskById(taskId);
                         if (task != null) {
                             task.refreshRunStatistics();
+                            DBTTaskEvent event = new DBTTaskEvent(task, DBTTaskEvent.Action.TASK_EXECUTE);
+                            notifyTaskListeners(event);
                         }
-                        DBTTaskEvent event = new DBTTaskEvent(task, DBTTaskEvent.Action.TASK_EXECUTE);
-                        notifyTaskListeners(event);
                     }
                 }
                 if (eventId.equals(EVENT_BEFORE_PROJECT_DELETE)) {

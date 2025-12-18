@@ -17,6 +17,5 @@
 package org.jkiss.dbeaver.model.ai.engine.copilot;
 
 public class CopilotConstants {
-    public static final String COPILOT_ENGINE = "copilot";
     public static final String COPILOT_ACCESS_TOKEN = "copilot.access.token";
 }

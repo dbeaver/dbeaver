@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -84,8 +84,18 @@ class ColumnsMappingDialog extends DialogPage {
         Text sourceEntity = UIUtils.createLabelText(composite, DTUIMessages.columns_mapping_dialog_composite_label_text_source_entity, DBUtils.getObjectFullName(mapping.getSource(), DBPEvaluationContext.UI), SWT.BORDER | SWT.READ_ONLY | SWT.MULTI | SWT.V_SCROLL);
         ((GridData) sourceEntity.getLayoutData()).widthHint = 600;
         ((GridData) sourceEntity.getLayoutData()).heightHint = UIUtils.getFontHeight(sourceEntity) * 3;
-        UIUtils.createLabelText(composite, DTUIMessages.columns_mapping_dialog_composite_label_text_target_container, (targetDataSource == null ? "?" : targetDataSource.getContainer().getName()), SWT.BORDER | SWT.READ_ONLY);
-        Text targetEntity = UIUtils.createLabelText(composite, DTUIMessages.columns_mapping_dialog_composite_label_text_target_entity, mapping.getTargetName(), SWT.BORDER | SWT.READ_ONLY);
+        UIUtils.createLabelText(
+            composite,
+            DTUIMessages.columns_mapping_dialog_composite_label_text_target_container,
+            (targetDataSource == null ? "?" : targetDataSource.getContainer().getName()),
+            SWT.BORDER | SWT.READ_ONLY
+        );
+        Text targetEntity = UIUtils.createLabelText(
+            composite,
+            DTUIMessages.columns_mapping_dialog_composite_label_text_target_entity,
+            mapping.getTargetName(),
+            SWT.BORDER | SWT.READ_ONLY
+        );
         ((GridData) targetEntity.getLayoutData()).widthHint = 600;
         ((GridData) targetEntity.getLayoutData()).heightHint = UIUtils.getFontHeight(sourceEntity) * 3;
 
@@ -162,8 +172,7 @@ class ColumnsMappingDialog extends DialogPage {
                     DatabaseMappingAttribute mapping = (DatabaseMappingAttribute) element;
                     DatabaseMappingContainer container = mapping.getParent();
                     if ((container.getMappingType() == DatabaseMappingType.existing || container.getMappingType() == DatabaseMappingType.recreate) &&
-                        container.getTarget() instanceof DBSEntity) {
-                        DBSEntity parentEntity = (DBSEntity) container.getTarget();
+                        container.getTarget() instanceof DBSEntity parentEntity) {
                         for (DBSEntityAttribute attr : CommonUtils.safeCollection(parentEntity.getAttributes(new VoidProgressMonitor()))) {
                             items.add(attr.getName());
                         }
@@ -201,8 +210,7 @@ class ColumnsMappingDialog extends DialogPage {
                     } else {
                         DatabaseMappingContainer container = attrMapping.getParent();
                         if ((container.getMappingType() == DatabaseMappingType.existing || container.getMappingType() == DatabaseMappingType.recreate) &&
-                            container.getTarget() instanceof DBSEntity) {
-                            DBSEntity parentEntity = (DBSEntity) container.getTarget();
+                            container.getTarget() instanceof DBSEntity parentEntity) {
                             for (DBSEntityAttribute attr : CommonUtils.safeCollection(parentEntity.getAttributes(new VoidProgressMonitor()))) {
                                 if (name.equalsIgnoreCase(attr.getName())) {
                                     attrMapping.setTarget(attr);
@@ -290,16 +298,12 @@ class ColumnsMappingDialog extends DialogPage {
             @Override
             public String getText(Object element) {
                 DatabaseMappingAttribute mapping = (DatabaseMappingAttribute) element;
-                switch (mapping.getMappingType()) {
-                    case existing:
-                        return DTUIMessages.columns_mapping_dialog_cell_text_existing;
-                    case create:
-                        return DTUIMessages.columns_mapping_dialog_cell_text_new;
-                    case skip:
-                        return DTUIMessages.columns_mapping_dialog_cell_text_skip;
-                    default:
-                        return "?";
-                }
+                return switch (mapping.getMappingType()) {
+                    case existing -> DTUIMessages.columns_mapping_dialog_cell_text_existing;
+                    case create -> DTUIMessages.columns_mapping_dialog_cell_text_new;
+                    case skip -> DTUIMessages.columns_mapping_dialog_cell_text_skip;
+                    default -> "?";
+                };
             }
         });
 

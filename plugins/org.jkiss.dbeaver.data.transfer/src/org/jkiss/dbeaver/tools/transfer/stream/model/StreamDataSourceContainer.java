@@ -198,7 +198,7 @@ public class StreamDataSourceContainer implements DBPDataSourceContainer {
     }
 
     @Override
-    public void setDefaultTransactionsIsolation(DBPTransactionIsolation isolationLevel) {
+    public void setDefaultTransactionsIsolation(@Nullable DBPTransactionIsolation isolationLevel) {
 
     }
 
@@ -214,7 +214,7 @@ public class StreamDataSourceContainer implements DBPDataSourceContainer {
     }
 
     @Override
-    public void setObjectFilter(Class<?> type, DBSObject parentObject, DBSObjectFilter filter) {
+    public void setObjectFilter(@NotNull Class<?> type, @Nullable DBSObject parentObject, @Nullable DBSObjectFilter filter) {
 
     }
 
@@ -229,11 +229,13 @@ public class StreamDataSourceContainer implements DBPDataSourceContainer {
         // noop
     }
 
+    @NotNull
     @Override
     public DBVModel getVirtualModel() {
         return virtualModel;
     }
 
+    @Nullable
     @Override
     public DBPNativeClientLocation getClientHome() {
         return null;
@@ -262,17 +264,17 @@ public class StreamDataSourceContainer implements DBPDataSourceContainer {
     }
 
     @Override
-    public boolean connect(DBRProgressMonitor monitor, boolean initialize, boolean reflect) throws DBException {
+    public boolean connect(@NotNull DBRProgressMonitor monitor, boolean initialize, boolean reflect) throws DBException {
         throw new DBCFeatureNotSupportedException();
     }
 
     @Override
-    public boolean disconnect(DBRProgressMonitor monitor) throws DBException {
+    public boolean disconnect(@NotNull DBRProgressMonitor monitor) throws DBException {
         throw new DBCFeatureNotSupportedException();
     }
 
     @Override
-    public boolean reconnect(DBRProgressMonitor monitor) throws DBException {
+    public boolean reconnect(@NotNull DBRProgressMonitor monitor) throws DBException {
         throw new DBCFeatureNotSupportedException();
     }
 
@@ -305,17 +307,17 @@ public class StreamDataSourceContainer implements DBPDataSourceContainer {
     }
 
     @Override
-    public void acquire(DBPDataSourceTask user) {
+    public void acquire(@NotNull DBPDataSourceTask user) {
 
     }
 
     @Override
-    public void release(DBPDataSourceTask user) {
+    public void release(@NotNull DBPDataSourceTask user) {
 
     }
 
     @Override
-    public void fireEvent(DBPEvent event) {
+    public void fireEvent(@NotNull DBPEvent event) {
 
     }
 
@@ -354,6 +356,7 @@ public class StreamDataSourceContainer implements DBPDataSourceContainer {
         return true;
     }
 
+    @Nullable
     @Override
     public Date getConnectTime() {
         if (inputFile != null) {
@@ -382,26 +385,30 @@ public class StreamDataSourceContainer implements DBPDataSourceContainer {
 
     }
 
+    @NotNull
     @Override
     public IVariableResolver getVariablesResolver(boolean actualConfig) {
         return null;
     }
 
+    @NotNull
     @Override
     public DBPDataSourceContainer createCopy(DBPDataSourceRegistry forRegistry) {
         return null;
     }
 
+    @NotNull
     @Override
     public DBPExclusiveResource getExclusiveLock() {
         return exclusiveLock;
     }
 
     @Override
-    public boolean hasModifyPermission(DBPDataSourcePermission permission) {
+    public boolean hasModifyPermission(@NotNull DBPDataSourcePermission permission) {
         return false;
     }
 
+    @NotNull
     @Override
     public List<DBPDataSourcePermission> getModifyPermission() {
         return null;
@@ -413,7 +420,7 @@ public class StreamDataSourceContainer implements DBPDataSourceContainer {
     }
 
     @Override
-    public void setName(String newName) {
+    public void setName(@NotNull String newName) {
 
     }
 
@@ -470,6 +477,7 @@ public class StreamDataSourceContainer implements DBPDataSourceContainer {
         return false;
     }
 
+    @NotNull
     @Override
     public List<DBSSecretValue> listSharedCredentials() throws DBException {
         return List.of();
@@ -527,18 +535,20 @@ public class StreamDataSourceContainer implements DBPDataSourceContainer {
         // do nothing
     }
 
+    @NotNull
     @Override
     public Map<String, String> getTags() {
         return null;
     }
 
+    @Nullable
     @Override
-    public String getTagValue(String tagName) {
+    public String getTagValue(@NotNull String tagName) {
         return null;
     }
 
     @Override
-    public void setTagValue(String tagName, String tagValue) {
+    public void setTagValue(@NotNull String tagName, @Nullable String tagValue) {
 
     }
 

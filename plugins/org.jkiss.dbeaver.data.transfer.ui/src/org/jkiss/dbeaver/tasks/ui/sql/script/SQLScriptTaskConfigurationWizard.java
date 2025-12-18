@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,13 +17,14 @@
 package org.jkiss.dbeaver.tasks.ui.sql.script;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.model.task.DBTTask;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.tasks.ui.wizard.TaskConfigurationWizard;
 import org.jkiss.dbeaver.tools.sql.SQLScriptExecuteSettings;
 import org.jkiss.dbeaver.tools.sql.SQLTaskConstants;
 import org.jkiss.dbeaver.tools.transfer.ui.internal.DTUIMessages;
-import org.jkiss.dbeaver.ui.UIUtils;
 
 import java.util.Map;
 
@@ -36,7 +37,11 @@ class SQLScriptTaskConfigurationWizard extends TaskConfigurationWizard<SQLScript
 
     public SQLScriptTaskConfigurationWizard(@NotNull DBTTask task) {
         super(task);
-        settings.loadConfiguration(UIUtils.getDefaultRunnableContext(), task);
+        try {
+            settings.loadConfiguration(task);
+        } catch (DBException e) {
+            DBWorkbench.getPlatformUI().showError("Configuration error", "Unable to load task configuration", e);
+        }
     }
 
     @Override

@@ -192,19 +192,13 @@ public abstract class SQLServerTriggerBase<OWNER extends DBSObject> implements D
         return (SQLServerDataSource) container.getDataSource();
     }
 
+    @NotNull
     @Override
     @Property(hidden = true, editable = true, updatable = true, order = -1)
     public String getObjectDefinitionText(@NotNull DBRProgressMonitor monitor, @NotNull Map<String, Object> options) throws DBException
     {
         if (body == null && isPersisted()) {
-            OWNER owner = getParentObject();
-            SQLServerDatabase database = null;
-            if (owner instanceof SQLServerDatabase) {
-                database = (SQLServerDatabase) owner;
-            } else if (owner instanceof SQLServerTableBase) {
-                database = ((SQLServerTableBase) owner).getDatabase();
-            }
-            body = SQLServerUtils.extractSource(monitor, database, this);
+            body = SQLServerUtils.extractSource(monitor, this);
         }
         return body;
     }

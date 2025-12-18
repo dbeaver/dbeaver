@@ -128,8 +128,8 @@ public class CubridMetaModel extends GenericMetaModel implements DBCQueryTransfo
                 + "FROM db_attribute a LEFT JOIN (SELECT k.key_attr_name AS attr_name, "
                 + "i.class_name, i.is_foreign_key "
                 + (multiSchema ? ", i.owner_name " : "")
-                + "FROM db_index i JOIN db_index_key k "
-                + "ON i.index_name = k.index_name WHERE i.is_foreign_key = 'YES') i ON "
+                + "FROM db_index i JOIN db_index_key k ON i.class_name = k.class_name "
+                + "AND i.index_name = k.index_name WHERE i.is_foreign_key = 'YES') i ON "
                 + "a.class_name = i.class_name AND a.attr_name = i.attr_name "
                 + (multiSchema ? "AND a.owner_name = i.owner_name " : ""));
         if (forTable != null) {
@@ -165,14 +165,15 @@ public class CubridMetaModel extends GenericMetaModel implements DBCQueryTransfo
             throws SQLException, DBException {
         CubridTable table = (CubridTable) forTable;
         String sql = "select *, t1.index_name as PK_NAME from db_index t1 join db_index_key t2 \n"
-                + "on t1.index_name = t2.index_name where is_unique = 'YES' and t1.class_name = ? \n"
+                + "on t1.index_name = t2.index_name where is_unique = 'YES' and t1.class_name = ? and t2.class_name = ? \n"
                 + (table.getDataSource().getSupportMultiSchema() ? "and t1.owner_name = ? and t2.owner_name = ?" : "");
         sql = ((CubridDataSource) owner.getDataSource()).wrapShardQuery(sql);
         final JDBCPreparedStatement dbStat = session.prepareStatement(sql);
         dbStat.setString(1, table.getName());
+        dbStat.setString(2, table.getName());
         if (table.getDataSource().getSupportMultiSchema()) {
-            dbStat.setString(2, table.getSchema().getName());
             dbStat.setString(3, table.getSchema().getName());
+            dbStat.setString(4, table.getSchema().getName());
         }
         return dbStat;
     }

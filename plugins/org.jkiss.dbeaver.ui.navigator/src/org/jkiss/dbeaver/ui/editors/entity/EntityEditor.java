@@ -381,7 +381,7 @@ public class EntityEditor extends MultiPageDatabaseEditor
         boolean isNewObject = getDatabaseObject() == null || !getDatabaseObject().isPersisted();
         if (!isNewObject) {
             // Check for any new nested objects
-            for (DBECommand cmd : commandContext.getFinalCommands()) {
+            for (DBECommand<?> cmd : commandContext.getFinalCommands()) {
                 if (cmd.getObject() instanceof DBSObject && !((DBSObject) cmd.getObject()).isPersisted()) {
                     isNewObject = true;
                     break;
@@ -390,11 +390,7 @@ public class EntityEditor extends MultiPageDatabaseEditor
         }
         try {
             DBExecUtils.tryExecuteRecover(monitor, executionContext.getDataSource(), param -> {
-                try {
-                    commandContext.saveChanges(monitor, options);
-                } catch (DBException e) {
-                    throw new InvocationTargetException(e);
-                }
+                commandContext.saveChanges(monitor, options);
             });
         } catch (DBException e) {
             error = e;
@@ -415,8 +411,9 @@ public class EntityEditor extends MultiPageDatabaseEditor
             final DBNDatabaseNode treeNode = getEditorInput().getNavigatorNode();
             boolean doRefresh = isNewObject;
             new AbstractJob("Database node refresh") { //$NON-NLS-1$
+                @NotNull
                 @Override
-                protected IStatus run(DBRProgressMonitor monitor) {
+                protected IStatus run(@NotNull DBRProgressMonitor monitor) {
                     try {
                         treeNode.refreshNode(monitor, doRefresh ? DBNEvent.FORCE_REFRESH : DBNEvent.UPDATE_ON_SAVE);
                     } catch (DBException e) {
@@ -1172,8 +1169,9 @@ public class EntityEditor extends MultiPageDatabaseEditor
             setUser(true);
         }
 
+        @NotNull
         @Override
-        protected IStatus run(DBRProgressMonitor monitor) {
+        protected IStatus run(@NotNull DBRProgressMonitor monitor) {
             try {
                 final DBECommandContext commandContext = getCommandContext();
                 if (commandContext != null && commandContext.isDirty()) {

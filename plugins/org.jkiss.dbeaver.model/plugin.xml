@@ -1,22 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?eclipse version="3.2"?>
-<!--
- * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
-  -->
-
 <plugin>
 
     <extension-point id="org.jkiss.dbeaver.service" name="%extension-point.org.jkiss.dbeaver.service.name" schema="schema/org.jkiss.dbeaver.service.exsd"/>
@@ -49,6 +32,7 @@
                 <property id="scientificSmallValues" label="%DateFormatter.number.general.scientificSmallValues.label" type="boolean" description="%DateFormatter.number.general.scientificSmallValues.description"/>
                 <property id="scientificExponentSeparator" label="%DateFormatter.number.general.scientificExponentSeparator.label" type="string" description="%DateFormatter.number.general.scientificExponentSeparator.description" required="true"/>
                 <property id="scientificPattern" label="%DateFormatter.number.general.scientificPattern.label" type="string" description="%DateFormatter.number.general.scientificPattern.description" required="true"/>
+                <property id="excludeIdColumns" label="%DateFormatter.number.general.excludeIdColumns.label" type="boolean" description="%DateFormatter.number.general.excludeIdColumns.description"/>
             </propertyGroup>
         </formatter>
         <formatter id="timestamp" label="%DateFormatter.timestamp.label" class="org.jkiss.dbeaver.model.impl.data.formatters.DateTimeDataFormatter" sampleClass="org.jkiss.dbeaver.model.impl.data.formatters.TimestampFormatSample">
@@ -228,6 +212,15 @@
                           scopes="global,user"/>
             </propertyGroup>
         </propertyGroup>
+    </extension>
+
+    <extension point="org.eclipse.core.expressions.propertyTesters">
+        <propertyTester
+            class="org.jkiss.dbeaver.model.impl.GlobalPropertyTester"
+            id="org.jkiss.dbeaver.model.impl.GlobalPropertyTester"
+            namespace="org.jkiss.dbeaver.core.global"
+            properties="standalone,distributed,bundleInstalled,hasPreference,hasEnvVariable"
+            type="java.lang.Object"/>
     </extension>
 
 </plugin>

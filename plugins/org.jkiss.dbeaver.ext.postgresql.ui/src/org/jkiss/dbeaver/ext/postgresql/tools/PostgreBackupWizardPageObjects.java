@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ext.postgresql.tools;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.CLabel;
 import org.eclipse.swt.custom.SashForm;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
@@ -29,7 +30,10 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.postgresql.PostgreMessages;
 import org.jkiss.dbeaver.ext.postgresql.PostgreUIUtils;
-import org.jkiss.dbeaver.ext.postgresql.model.*;
+import org.jkiss.dbeaver.ext.postgresql.model.PostgreDatabase;
+import org.jkiss.dbeaver.ext.postgresql.model.PostgreSchema;
+import org.jkiss.dbeaver.ext.postgresql.model.PostgreTableBase;
+import org.jkiss.dbeaver.ext.postgresql.model.PostgreTableContainer;
 import org.jkiss.dbeaver.ext.postgresql.tasks.PostgreDatabaseBackupInfo;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -75,6 +79,10 @@ class PostgreBackupWizardPageObjects extends AbstractNativeToolWizardPage<Postgr
 
         Group objectsGroup = UIUtils.createControlGroup(composite, PostgreMessages.wizard_backup_page_object_group_object, 1, GridData.FILL_HORIZONTAL, 0);
         objectsGroup.setLayoutData(new GridData(GridData.FILL_BOTH));
+
+        connInfo = new CLabel(objectsGroup, SWT.WRAP);
+        connInfo.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
+        connInfo.setImage(DBeaverIcons.getImage(DBIcon.DATABASE_DEFAULT));
 
         SashForm sash = new CustomSashForm(objectsGroup, SWT.VERTICAL);
         sash.setLayoutData(new GridData(GridData.FILL_BOTH));
@@ -212,6 +220,8 @@ class PostgreBackupWizardPageObjects extends AbstractNativeToolWizardPage<Postgr
             exportViewsCheck.setSelection(true);
         }
         if (dataBase != null) {
+            setConnectionInfo(dataBase.getDataSource().getContainer(), dataBase.getName());
+
             boolean tablesLoaded = false;
             try {
                 for (PostgreSchema schema : dataBase.getSchemas(new VoidProgressMonitor())) {
@@ -280,8 +290,9 @@ class PostgreBackupWizardPageObjects extends AbstractNativeToolWizardPage<Postgr
             {
                 setUser(true);
             }
+            @NotNull
             @Override
-            protected IStatus run(DBRProgressMonitor monitor) {
+            protected IStatus run(@NotNull DBRProgressMonitor monitor) {
                 monitor.beginTask("Collect tables", 1);
                 try {
                     monitor.subTask("Collect tables to dump");

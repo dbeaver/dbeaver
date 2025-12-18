@@ -173,7 +173,7 @@ public class ERDEditorStandalone extends ERDEditorPart implements IResourceChang
         diagramLoadingJob = LoadingJob.createService(
             new AbstractLoadService<>("Load diagram '" + getEditorInput().getName() + "'") {
                 @Override
-                public EntityDiagram evaluate(DBRProgressMonitor monitor) throws InvocationTargetException {
+                public EntityDiagram evaluate(@NotNull DBRProgressMonitor monitor) throws InvocationTargetException {
                     try {
                         EntityDiagram entityDiagram = loadContentFromFile(monitor);
                         visuallize(monitor, entityDiagram);
