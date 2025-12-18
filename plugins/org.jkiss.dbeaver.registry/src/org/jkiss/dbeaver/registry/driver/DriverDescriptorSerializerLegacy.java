@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.VersionUtils;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.IOUtils;
 import org.jkiss.utils.xml.SAXListener;
 import org.jkiss.utils.xml.SAXReader;
 import org.jkiss.utils.xml.XMLBuilder;
@@ -211,6 +212,14 @@ public class DriverDescriptorSerializerLegacy extends DriverDescriptorSerializer
                                         if (isDistributed) {
                                             // we need to relativize path and exclude path variables in config file
                                             normalizedFilePath = DriverUtils.getDistributedLibraryPath(file.getFile()).replace('\\', '/');
+                                        }
+                                        if (!IOUtils.isFileFromDefaultFS(file.getFile()) && file.getFile().isAbsolute()) {
+                                            // relativize path to workspace folder because in external fs path
+                                            // may contain additional information like a bucket name
+                                            var workspaceFolder = DBWorkbench
+                                                .getPlatform().getWorkspace()
+                                                .getAbsolutePath();
+                                            normalizedFilePath = workspaceFolder.relativize(file.getFile()).toString();
                                         }
                                         xml.addAttribute(
                                             RegistryConstants.ATTR_PATH,
@@ -456,11 +465,24 @@ public class DriverDescriptorSerializerLegacy extends DriverDescriptorSerializer
                             if (CommonUtils.isEmpty(path)) {
                                 log.warn("Empty path for library file");
                             } else {
+
+                                Path filePath = Path.of(path);
+                                if ((curDriver.isCustom() || curLibrary.isDownloadable())
+                                    && DBWorkbench.getPlatform().getApplication().isMultiuser()
+                                ) {
+                                    var workspaceFolder = DBWorkbench
+                                        .getPlatform().getWorkspace()
+                                        .getAbsolutePath();
+                                    if (!IOUtils.isFileFromDefaultFS(workspaceFolder)) {
+                                        filePath = workspaceFolder.resolve(path);
+                                    }
+                                }
                                 DriverFileInfo info = new DriverFileInfo(
                                         attributes.getValue(RegistryConstants.ATTR_ID),
                                         attributes.getValue(RegistryConstants.ATTR_VERSION),
                                         curLibrary.getType(),
-                                        Path.of(path), path);
+                                    filePath, path
+                                );
                                 String crcString = attributes.getValue("crc");
                                 if (!CommonUtils.isEmpty(crcString)) {
                                     long crc = Long.parseLong(crcString, 16);
