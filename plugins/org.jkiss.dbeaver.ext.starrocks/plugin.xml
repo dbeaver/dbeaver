@@ -10,7 +10,7 @@
                 dialect="starrocks"
                 label="StarRocks"
                 icon="icons/starrocks_icon.png">
-            
+
             <!-- Define StarRocks tree with catalog layer -->
             <tree path="starrocks" label="StarRocks" icon="#folder_database">
                 <folder type="org.jkiss.dbeaver.ext.starrocks.model.StarRocksCatalog" label="Catalogs" icon="#folder_schema" description="StarRocks catalogs">
@@ -18,8 +18,15 @@
                         <folder type="org.jkiss.dbeaver.ext.starrocks.model.StarRocksDatabase" label="Databases" icon="#folder_database" description="Databases in catalog">
                             <items label="Database" path="database" property="databases" icon="#database">
                                 <folder type="org.jkiss.dbeaver.ext.starrocks.model.StarRocksTable" label="Tables" icon="#folder_table" description="Tables in database">
-                                    <items label="Table" path="table" property="children" icon="#table">
+                                    <items label="Table" path="table" property="tables" icon="#table">
                                         <folder type="org.jkiss.dbeaver.ext.starrocks.model.StarRocksTableColumn" label="Columns" icon="#columns" description="Table columns">
+                                            <items label="Column" path="attribute" property="attributes" icon="#column"/>
+                                        </folder>
+                                    </items>
+                                </folder>
+                                <folder type="org.jkiss.dbeaver.ext.starrocks.model.StarRocksView" label="Views" icon="#folder_view" description="Views in database">
+                                    <items label="View" path="view" property="views" icon="#view">
+                                        <folder type="org.jkiss.dbeaver.ext.starrocks.model.StarRocksTableColumn" label="Columns" icon="#columns" description="View columns">
                                             <items label="Column" path="attribute" property="attributes" icon="#column"/>
                                         </folder>
                                     </items>
@@ -29,7 +36,7 @@
                     </items>
                 </folder>
             </tree>
-            
+
             <drivers managable="true">
                 <driver
                         id="starrocks"

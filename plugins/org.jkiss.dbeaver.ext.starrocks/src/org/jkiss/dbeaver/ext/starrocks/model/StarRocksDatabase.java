@@ -94,28 +94,37 @@ public class StarRocksDatabase implements DBSSchema, DBSObjectContainer, DBPRefr
 
     @Association
     public Collection<StarRocksTable> getTables(DBRProgressMonitor monitor) throws DBException {
-        return tableCache.getAllObjects(monitor, this);
+        return tableCache.getTypedObjects(monitor, this, StarRocksTable.class);
     }
 
     public StarRocksTable getTable(DBRProgressMonitor monitor, String name) throws DBException {
-        return tableCache.getObject(monitor, this, name);
+        return tableCache.getObject(monitor, this, name, StarRocksTable.class);
+    }
+
+    @Association
+    public Collection<StarRocksView> getViews(DBRProgressMonitor monitor) throws DBException {
+        return tableCache.getTypedObjects(monitor, this, StarRocksView.class);
+    }
+
+    public StarRocksView getView(DBRProgressMonitor monitor, String name) throws DBException {
+        return tableCache.getObject(monitor, this, name, StarRocksView.class);
     }
 
     // DBSObjectContainer implementation
     @Override
     public Collection<? extends DBSObject> getChildren(@NotNull DBRProgressMonitor monitor) throws DBException {
-        return getTables(monitor);
+        return tableCache.getAllObjects(monitor, this);
     }
 
     @Override
     public DBSObject getChild(@NotNull DBRProgressMonitor monitor, @NotNull String childName) throws DBException {
-        return getTable(monitor, childName);
+        return tableCache.getObject(monitor, this, childName);
     }
 
     @NotNull
     @Override
     public Class<? extends DBSObject> getPrimaryChildType(@Nullable DBRProgressMonitor monitor) {
-        return StarRocksTable.class;
+        return StarRocksTableBase.class;
     }
 
     @Override
@@ -134,9 +143,10 @@ public class StarRocksDatabase implements DBSSchema, DBSObjectContainer, DBPRefr
     }
 
     /**
-     * Table cache with catalog context switching.
+     * Cache for tables and views within this database.
+     * Uses JDBCStructCache to support both tables/views and their columns.
      */
-    public class TableCache extends JDBCStructCache<StarRocksDatabase, StarRocksTable, StarRocksTableColumn> {
+    public class TableCache extends JDBCStructCache<StarRocksDatabase, StarRocksTableBase, StarRocksTableColumn> {
 
         protected TableCache() {
             super("Table");
@@ -150,15 +160,20 @@ public class StarRocksDatabase implements DBSSchema, DBSObjectContainer, DBPRefr
         }
 
         @Override
-        protected StarRocksTable fetchObject(@NotNull JDBCSession session, @NotNull StarRocksDatabase owner, @NotNull JDBCResultSet dbResult) throws SQLException, DBException {
+        protected StarRocksTableBase fetchObject(@NotNull JDBCSession session, @NotNull StarRocksDatabase owner, @NotNull JDBCResultSet dbResult) throws SQLException, DBException {
             String tableName = JDBCUtils.safeGetString(dbResult, 1);
             String tableType = JDBCUtils.safeGetString(dbResult, 2);
             boolean isView = tableType != null && tableType.toUpperCase().contains("VIEW");
-            return new StarRocksTable(owner, tableName, isView);
+
+            if (isView) {
+                return new StarRocksView(owner, tableName);
+            } else {
+                return new StarRocksTable(owner, tableName);
+            }
         }
 
         @Override
-        protected JDBCStatement prepareChildrenStatement(@NotNull JDBCSession session, @NotNull StarRocksDatabase owner, @Nullable StarRocksTable table) throws SQLException {
+        protected JDBCStatement prepareChildrenStatement(@NotNull JDBCSession session, @NotNull StarRocksDatabase owner, @Nullable StarRocksTableBase table) throws SQLException {
             switchToCatalogContext(session);
             StringBuilder sql = new StringBuilder("SHOW FULL COLUMNS FROM ");
             if (table != null) {
@@ -169,7 +184,7 @@ public class StarRocksDatabase implements DBSSchema, DBSObjectContainer, DBPRefr
         }
 
         @Override
-        protected StarRocksTableColumn fetchChild(@NotNull JDBCSession session, @NotNull StarRocksDatabase owner, @NotNull StarRocksTable table, @NotNull JDBCResultSet dbResult) throws SQLException, DBException {
+        protected StarRocksTableColumn fetchChild(@NotNull JDBCSession session, @NotNull StarRocksDatabase owner, @NotNull StarRocksTableBase table, @NotNull JDBCResultSet dbResult) throws SQLException, DBException {
             return new StarRocksTableColumn(table, dbResult);
         }
     }

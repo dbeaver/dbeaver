@@ -25,11 +25,11 @@ import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTableColumn;
 import java.sql.ResultSet;
 
 /**
- * StarRocks Table Column - minimal implementation for table structure cache.
+ * StarRocks Table Column - used for both tables and views.
  */
-public class StarRocksTableColumn extends JDBCTableColumn<StarRocksTable> {
+public class StarRocksTableColumn extends JDBCTableColumn<StarRocksTableBase> {
 
-    public StarRocksTableColumn(StarRocksTable table, ResultSet dbResult) throws DBException {
+    public StarRocksTableColumn(StarRocksTableBase table, ResultSet dbResult) throws DBException {
         super(table, true);
         // Parse SHOW FULL COLUMNS result: Field | Type | Collation | Null | Key | Default | Extra | Privileges | Comment
         setName(JDBCUtils.safeGetString(dbResult, "Field"));
