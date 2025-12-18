@@ -17,67 +17,22 @@
 package org.jkiss.dbeaver.model.lsp.test;
 
 import org.eclipse.lsp4j.*;
-import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.ext.h2.model.H2SQLDialect;
-import org.jkiss.dbeaver.model.DBPDataSourceContainer;
-import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.app.DBPProject;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.lsp.DBLTextDocumentService;
 import org.jkiss.dbeaver.model.lsp.context.ContextAwareDocument;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.runtime.LoggingProgressMonitor;
-import org.jkiss.dbeaver.runtime.DBWorkbench;
-import org.jkiss.dbeaver.utils.PrefUtils;
-import org.jkiss.junit.DBeaverUnitTest;
 import org.junit.After;
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Test;
 
-import java.nio.file.Path;
-import java.sql.SQLException;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
-public class DBLTextDocumentServiceContextTest extends DBeaverUnitTest {
+public class DBLTextDocumentServiceContextTest extends H2DataSourceTest {
     private final DBLTextDocumentService service = new DBLTextDocumentService();
 
-    private DBPDataSourceContainer dataSourceContainer;
-    private DBPProject project;
-    private JDBCSession databaseSession;
-    private final DBRProgressMonitor monitor = new LoggingProgressMonitor();
-
-    @Before
-    public void setUp() throws DBException {
-        PrefUtils.setDefaultPreferenceValue(
-            DBWorkbench.getPlatform().getPreferenceStore(),
-            ModelPreferences.UI_DRIVERS_HOME,
-            Path.of("../../../dbeaver-resources-drivers-jdbc/binaries")
-        );
-
-        dataSourceContainer = DocumentServiceTestUtils.createDataSource(monitor);
-        databaseSession = DBUtils.openUtilSession(monitor, dataSourceContainer, "Internal test session");
-        project = DBWorkbench.getPlatform().getWorkspace().getProjects().getFirst();
-        project.getDataSourceRegistry().addDataSource(dataSourceContainer);
-
-        try (JDBCStatement stmt = databaseSession.createStatement()) {
-            Assert.assertFalse(stmt.execute("CREATE TABLE TEST_TABLE1 (id IDENTITY NOT NULL PRIMARY KEY, a VARCHAR, b INT)"));
-            Assert.assertFalse(stmt.execute("CREATE TABLE TEST_TABLE2 (id IDENTITY NOT NULL PRIMARY KEY, a VARCHAR, b INT)"));
-            /*for (int i = 0; i < 100; i++) {
-                assertFalse(stmt.execute("INSERT INTO TEST_TABLE1 (a, b) VALUES ('test" + i + "', " + i + ")"));
-                assertFalse(stmt.execute("INSERT INTO TEST_TABLE2 (a, b) VALUES ('test" + i + "', " + i + ")"));
-            }*/
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
     @After
-    public void after() {
+    public void cleanup() {
         DocumentServiceTestUtils.clearDocuments(service);
     }
 
@@ -86,7 +41,7 @@ public class DBLTextDocumentServiceContextTest extends DBeaverUnitTest {
         project.setResourceProperty(
             DocumentServiceTestUtils.BASIC_RESOURCE_PATH,
             DBLTextDocumentService.PROP_CONTEXT_DEFAULT_DATASOURCE,
-            dataSourceContainer.getId()
+            dataSourceDescriptor.getId()
         );
         TextDocumentItem document = DocumentServiceTestUtils.createAndSaveDocument(
             service, "select * from table", project.getId(), DocumentServiceTestUtils.BASIC_RESOURCE_PATH
@@ -94,9 +49,9 @@ public class DBLTextDocumentServiceContextTest extends DBeaverUnitTest {
 
         ContextAwareDocument contextedDocument = DocumentServiceTestUtils.getDocument(service, document.getUri());
         Assert.assertNotNull(contextedDocument);
-        Assert.assertEquals(dataSourceContainer.getDataSource(), contextedDocument.getDataSource());
+        Assert.assertEquals(dataSourceDescriptor.getDataSource(), contextedDocument.getDataSource());
         Assert.assertNotNull(contextedDocument.getExecutionContext());
-        Assert.assertEquals(dataSourceContainer.getDataSource(), contextedDocument.getExecutionContext().getDataSource());
+        Assert.assertEquals(dataSourceDescriptor.getDataSource(), contextedDocument.getExecutionContext().getDataSource());
         Assert.assertTrue(contextedDocument.getSyntaxManager().getDialect() instanceof H2SQLDialect);
         Assert.assertNotNull(contextedDocument.getRuleManager());
     }
@@ -143,7 +98,7 @@ public class DBLTextDocumentServiceContextTest extends DBeaverUnitTest {
         project.setResourceProperty(
             DocumentServiceTestUtils.BASIC_RESOURCE_PATH,
             DBLTextDocumentService.PROP_CONTEXT_DEFAULT_DATASOURCE,
-            dataSourceContainer.getId()
+            dataSourceDescriptor.getId()
         );
         ContextAwareDocument document = DocumentServiceTestUtils.createAndSaveDocument(
             service, query, project.getId(), DocumentServiceTestUtils.BASIC_RESOURCE_PATH
@@ -163,7 +118,7 @@ public class DBLTextDocumentServiceContextTest extends DBeaverUnitTest {
         project.setResourceProperty(
             DocumentServiceTestUtils.BASIC_RESOURCE_PATH,
             DBLTextDocumentService.PROP_CONTEXT_DEFAULT_DATASOURCE,
-            dataSourceContainer.getId()
+            dataSourceDescriptor.getId()
         );
         ContextAwareDocument document = DocumentServiceTestUtils.createAndSaveDocument(
             service, query, project.getId(), DocumentServiceTestUtils.BASIC_RESOURCE_PATH
@@ -187,7 +142,7 @@ public class DBLTextDocumentServiceContextTest extends DBeaverUnitTest {
         project.setResourceProperty(
             DocumentServiceTestUtils.BASIC_RESOURCE_PATH,
             DBLTextDocumentService.PROP_CONTEXT_DEFAULT_DATASOURCE,
-            dataSourceContainer.getId()
+            dataSourceDescriptor.getId()
         );
         ContextAwareDocument document = DocumentServiceTestUtils.createAndSaveDocument(
             service, query, project.getId(), DocumentServiceTestUtils.BASIC_RESOURCE_PATH

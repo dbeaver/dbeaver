@@ -40,7 +40,7 @@ public class DBLTextDocumentServiceTest extends DBeaverUnitTest {
     private final DBLTextDocumentService service = new DBLTextDocumentService();
 
     @After
-    public void setUp() {
+    public void cleanup() {
         DocumentServiceTestUtils.clearDocuments(service);
     }
 

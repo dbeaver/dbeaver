@@ -32,6 +32,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.app.DBPProject;
+import org.jkiss.dbeaver.model.app.DBPWorkspace;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
 import org.jkiss.dbeaver.model.lsp.context.ContextAwareDocument;
@@ -61,14 +62,12 @@ import java.util.concurrent.ConcurrentHashMap;
 /**
  * The DBLTextDocumentService class proves services for managing, manipulating,
  * and analyzing text documents in the context of a language server.
- *
  * URI format: lsp://{projectId}/{resourcePath}
  */
 public class DBLTextDocumentService implements TextDocumentService, LanguageClientAware {
     private static final Log log = Log.getLog(DBLTextDocumentService.class);
 
     public static final String PROP_CONTEXT_DEFAULT_DATASOURCE = "default-datasource";
-
     public static final Map<SQLTokenType, Pair<Integer, String>> SUPPORTED_TOKEN_TYPES = Map.of(
         SQLTokenType.T_KEYWORD, new Pair<>(0, SemanticTokenTypes.Keyword),
         SQLTokenType.T_STRING, new Pair<>(1, SemanticTokenTypes.String)
@@ -81,6 +80,17 @@ public class DBLTextDocumentService implements TextDocumentService, LanguageClie
 
     @Nullable
     private LanguageClient languageClient;
+
+    @Nullable
+    private final DBPWorkspace workspace;
+
+    public DBLTextDocumentService() {
+        this.workspace = null;
+    }
+
+    public DBLTextDocumentService(@Nullable DBPWorkspace workspace) {
+        this.workspace = workspace;
+    }
 
     @Override
     public void didOpen(@NotNull DidOpenTextDocumentParams params) {
@@ -274,14 +284,18 @@ public class DBLTextDocumentService implements TextDocumentService, LanguageClie
 
         String projectId = documentUri.getProjectId();
         String resourcePath = documentUri.getResourcePath();
-        DBPProject project = DBWorkbench.getPlatform().getWorkspace().getProject(projectId);
+
+        DBPProject project = workspace != null ?
+            workspace.getProject(projectId) :
+            DBWorkbench.getPlatform().getWorkspace().getProject(projectId);
+
         DBPDataSourceContainer dataSourceContainer;
         if (project == null) {
             log.warn(String.format("Project %s not found. Proceeding without data source", projectId));
             dataSourceContainer = null;
         } else {
             String dataSourceId = String.valueOf(project.getResourceProperty(resourcePath, PROP_CONTEXT_DEFAULT_DATASOURCE));
-            dataSourceContainer = DBUtils.findDataSource(projectId, dataSourceId);
+            dataSourceContainer = project.getDataSourceRegistry().getDataSource(dataSourceId);
         }
 
 

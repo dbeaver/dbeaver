@@ -20,7 +20,6 @@ import org.eclipse.lsp4j.*;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.lsp.DBLTextDocumentService;
@@ -102,7 +101,7 @@ public class DocumentServiceTestUtils {
     }
 
     @NotNull
-    public static DBPDataSourceContainer createDataSource(
+    public static DataSourceDescriptor createDataSource(
         @NotNull DBRProgressMonitor monitor
     ) throws DBException {
         final DBPDriver driver = DataSourceProviderRegistry.getInstance().findDriver(H2_DRIVER_ID);

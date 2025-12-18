@@ -20,8 +20,10 @@ import org.eclipse.lsp4j.jsonrpc.Launcher;
 import org.eclipse.lsp4j.launch.LSPLauncher;
 import org.eclipse.lsp4j.services.LanguageClient;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.app.DBPWorkspace;
 
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -43,12 +45,15 @@ public final class DBLFacade {
      *
      * @param in an InputStream with messages for the server
      * @param out an OutputStream with messages for the client
-     * @throws DBException if it feels like it
      */
-    public static void runLanguageServer(@NotNull InputStream in, @NotNull OutputStream out) throws DBException {
+    public static void runLanguageServer(
+        @NotNull InputStream in,
+        @NotNull OutputStream out,
+        @Nullable DBPWorkspace workspace
+    ) throws DBException {
         try {
             log.info("Launching LSP server"); //NON-NLS
-            DBLServer server = DBLServer.of();
+            DBLServer server = new DBLServer(workspace);
             Launcher<LanguageClient> launcher = LSPLauncher.createServerLauncher(server, in, out);
             LanguageClient client = launcher.getRemoteProxy();
             server.connect(client);
