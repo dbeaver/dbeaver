@@ -93,7 +93,7 @@ public class SQLGroupingQueryGenerator {
             }
         }
 
-        boolean useAliasForColumns = dataSource.getSQLDialect().supportsAliasInConditions();
+        boolean useAliasForColumns = dataSource.getSQLDialect().supportsAliasInSelect();
         StringBuilder sql = new StringBuilder();
         funcAliases = new String[groupFunctions.size()];
         for (int i = 0; i < groupFunctions.size(); i++) {
@@ -193,11 +193,12 @@ public class SQLGroupingQueryGenerator {
             char c = function.charAt(i);
             if (Character.isLetterOrDigit(c) || c == '_') {
                 alias.append(c);
+            } else if (c == '(' || c == ')') {
+                alias.append('_');
             }
         }
-        if (alias.length() > 0) {
-            alias.append('_');
-            return alias.toString().toLowerCase(Locale.ENGLISH);
+        if (!alias.isEmpty()) {
+            return alias.append(funcIndex).toString().toLowerCase(Locale.ENGLISH);
         }
         return "i_" + funcIndex;
     }
