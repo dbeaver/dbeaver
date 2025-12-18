@@ -342,7 +342,7 @@ public class ResultSetValueController implements IAttributeController, IRowContr
             DBPDataKind dataKind = getValueType().getDataKind();
             return dataKind != DBPDataKind.ARRAY && dataKind != DBPDataKind.STRUCT;
         }
-        return controller.getAttributeReadOnlyStatus(getBinding(), true, true) != null;
+        return controller.getAttributeReadOnlyStatus(getBinding(), true, false) != null;
     }
 
     @Override
