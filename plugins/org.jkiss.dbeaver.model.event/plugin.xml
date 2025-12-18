@@ -82,6 +82,11 @@
         <event topicId="cb_session_task" id="cb_session_task_query_confirmation_request"
                class="org.jkiss.dbeaver.model.websocket.event.session.WSSessionTaskQueryConfirmationRequestEvent"/>
 
+        <event topicId="cb_object_settings" id="cb_object_settings_updated"
+               class="org.jkiss.dbeaver.model.websocket.event.WSObjectSettingsEvent"/>
+        <event topicId="cb_object_settings" id="cb_object_settings_deleted"
+               class="org.jkiss.dbeaver.model.websocket.event.WSObjectSettingsEvent"/>
+
         <clientEvent id="cb_client_session_ping" class="org.jkiss.dbeaver.model.websocket.event.client.WSSessionPingClientEvent"/>
         <clientEvent id="cb_client_topic_subscribe" class="org.jkiss.dbeaver.model.websocket.event.client.WSSubscribeOnTopicClientEvent"/>
         <clientEvent id="cb_client_topic_unsubscribe"

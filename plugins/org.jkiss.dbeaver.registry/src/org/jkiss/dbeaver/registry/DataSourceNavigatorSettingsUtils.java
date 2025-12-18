@@ -19,9 +19,13 @@ package org.jkiss.dbeaver.registry;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.Strictness;
+import com.google.gson.reflect.TypeToken;
 import com.google.gson.stream.JsonWriter;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.DBPObjectSettingsProvider;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.json.JSONUtils;
 
 import java.io.IOException;
@@ -96,4 +100,44 @@ public class DataSourceNavigatorSettingsUtils {
             throw new DBException("Error serializing navigator settings", e);
         }
     }
+
+    public static void setCustomNavigatorSettings(@NotNull DBPDataSourceContainer dataSource) {
+        DBPObjectSettingsProvider settingsProvider = DBUtils.getAdapter(DBPObjectSettingsProvider.class, dataSource.getProject());
+        if (settingsProvider == null || !(dataSource instanceof DataSourceDescriptor dsd)) {
+            return;
+        }
+        Map<String, String> settings = settingsProvider.getObjectSettings(dsd.getId());
+        if (settings == null) {
+            return;
+        }
+        String navigatorSettingsJson = settings.get(DataSourceNavigatorSettingsUtils.PARAM_ID_NAVIGATOR_SETTINGS);
+        if (navigatorSettingsJson == null) {
+            return;
+        }
+        DataSourceNavigatorSettings customSettings = new DataSourceNavigatorSettings();
+        Map<String, Object> settingsMap = GSON.fromJson(
+            navigatorSettingsJson,
+            TypeToken.getParameterized(Map.class, String.class, Object.class).getType()
+        );
+        loadSettingsFromMap(customSettings, settingsMap);
+        dsd.setCustomNavigatorSettings(customSettings);
+    }
+
+    public static void updateCustomNavigatorSettings(
+        @NotNull DBPDataSourceContainer dataSource,
+        @NotNull DataSourceNavigatorSettings settings
+    ) throws DBException {
+        DBPObjectSettingsProvider settingsProvider = DBUtils.getAdapter(DBPObjectSettingsProvider.class, dataSource.getProject());
+        if (settingsProvider == null || !(dataSource instanceof DataSourceDescriptor dsd)) {
+            return;
+        }
+        String serialized = DataSourceNavigatorSettingsUtils.serializeSettingsToJson(settings);
+        // save in sm database for authenticated users
+        settingsProvider.setObjectSettings(
+            dsd.getId(),
+            Map.of(DataSourceNavigatorSettingsUtils.PARAM_ID_NAVIGATOR_SETTINGS, serialized)
+        );
+    }
+
+
 }

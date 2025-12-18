@@ -2331,6 +2331,4 @@ public class DataSourceDescriptor
             log.error("Error reading datasource '" + getId() + "' legacy secrets", e);
         }
     }
-
-
 }

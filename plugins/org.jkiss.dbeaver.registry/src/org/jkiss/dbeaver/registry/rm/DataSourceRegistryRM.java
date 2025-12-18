@@ -16,10 +16,6 @@
  */
 package org.jkiss.dbeaver.registry.rm;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.Strictness;
-import com.google.gson.reflect.TypeToken;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -35,21 +31,19 @@ import org.jkiss.dbeaver.model.rm.RMController;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.registry.*;
+import org.jkiss.dbeaver.registry.settings.DataSourceNavigatorSettingsListener;
 
 import java.nio.charset.StandardCharsets;
 import java.util.List;
-import java.util.Map;
 
 public class DataSourceRegistryRM<T extends DataSourceDescriptor> extends DataSourceRegistry<T> {
     private static final Log log = Log.getLog(DataSourceRegistryRM.class);
-    private static final Gson GSON = new GsonBuilder()
-        .setStrictness(Strictness.LENIENT)
-        .serializeNulls()
-        .setPrettyPrinting()
-        .create();
 
     @NotNull
     private final RMController rmController;
+
+    @Nullable
+    private final DBPObjectSettingsProvider objectSettingsProvider;
 
     public DataSourceRegistryRM(
         @NotNull DBPProject project,
@@ -58,6 +52,13 @@ public class DataSourceRegistryRM<T extends DataSourceDescriptor> extends DataSo
     ) {
         super(project, new DataSourceConfigurationManagerRM(project, rmController), preferenceStore);
         this.rmController = rmController;
+        this.objectSettingsProvider = DBUtils.getAdapter(DBPObjectSettingsProvider.class, project);
+        if (objectSettingsProvider != null) {
+            objectSettingsProvider.getObjectSettingsManager().addListener(
+                DataSourceNavigatorSettingsUtils.PARAM_ID_NAVIGATOR_SETTINGS,
+                new DataSourceNavigatorSettingsListener(this)
+            );
+        }
     }
 
     @Override
@@ -160,7 +161,7 @@ public class DataSourceRegistryRM<T extends DataSourceDescriptor> extends DataSo
 
     @Override
     public void addDataSourceToList(@NotNull DBPDataSourceContainer dataSource) {
-        setCustomNavigatorSettings(dataSource);
+        DataSourceNavigatorSettingsUtils.setCustomNavigatorSettings(dataSource);
         super.addDataSourceToList(dataSource);
     }
 
@@ -188,26 +189,17 @@ public class DataSourceRegistryRM<T extends DataSourceDescriptor> extends DataSo
         return getProject().getId();
     }
 
-    private void setCustomNavigatorSettings(@NotNull DBPDataSourceContainer dataSource) {
-        DBPObjectSettingsProvider settingsProvider = DBUtils.getAdapter(DBPObjectSettingsProvider.class, getProject());
-        if (settingsProvider == null || !(dataSource instanceof DataSourceDescriptor dsd)) {
-            return;
+    @Override
+    public void dispose() {
+        if (objectSettingsProvider != null) {
+            objectSettingsProvider.getObjectSettingsManager().removeListener(
+                DataSourceNavigatorSettingsUtils.PARAM_ID_NAVIGATOR_SETTINGS,
+                new DataSourceNavigatorSettingsListener(this)
+            );
         }
-        Map<String, String> settings = settingsProvider.getObjectSettings(dsd.getId());
-        if (settings == null) {
-            return;
-        }
-        String navigatorSettingsJson = settings.get(DataSourceNavigatorSettingsUtils.PARAM_ID_NAVIGATOR_SETTINGS);
-        if (navigatorSettingsJson == null) {
-            return;
-        }
-        DataSourceNavigatorSettings customSettings = new DataSourceNavigatorSettings();
-        Map<String, Object> settingsMap = GSON.fromJson(
-            navigatorSettingsJson,
-            TypeToken.getParameterized(Map.class, String.class, Object.class).getType()
-        );
-        DataSourceNavigatorSettingsUtils.loadSettingsFromMap(customSettings, settingsMap);
-        dsd.setCustomNavigatorSettings(customSettings);
+        super.dispose();
     }
+
+
 
 }
