@@ -123,12 +123,9 @@ public class NumberDataFormatter implements DBDDataFormatter {
         String scientificExpSep = CommonUtils.toString(properties.get(NumberFormatSample.PROP_SCIENTIFIC_EXP_SEP));
         String scientificPattern = CommonUtils.toString(properties.get(NumberFormatSample.PROP_SCIENTIFIC_PATTERN));
 
-        DecimalFormatSymbols symbols = new DecimalFormatSymbols();
-        scientificFormat = (DecimalFormat) numberFormat.clone();
-
+        DecimalFormatSymbols symbols = DecimalFormatSymbols.getInstance();
         symbols.setExponentSeparator(scientificExpSep);
-        scientificFormat.setDecimalFormatSymbols(symbols);
-        scientificFormat.applyPattern(scientificPattern);
+        scientificFormat = new DecimalFormat(scientificPattern, symbols);
     }
 
     @Nullable
