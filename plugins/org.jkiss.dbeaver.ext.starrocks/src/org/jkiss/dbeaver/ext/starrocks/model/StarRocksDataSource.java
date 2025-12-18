@@ -27,7 +27,9 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCRemoteInstance;
+import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCBasicDataTypeCache;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
+import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCDataType;
 import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
@@ -39,8 +41,7 @@ import java.util.Collection;
 import java.util.Collections;
 
 /**
- * StarRocks DataSource - extends JDBCDataSource directly to support 3-level hierarchy:
- * Catalog -> Database -> Table
+ * StarRocks DataSource - extends JDBCDataSource
  */
 public class StarRocksDataSource extends JDBCDataSource implements DBPRefreshableObject {
 
@@ -49,11 +50,13 @@ public class StarRocksDataSource extends JDBCDataSource implements DBPRefreshabl
      */
     public static final String DEFAULT_CATALOG_NAME = "default_catalog";
 
+    private final JDBCBasicDataTypeCache<StarRocksDataSource, JDBCDataType> dataTypeCache;
     private final CatalogCache catalogCache = new CatalogCache();
 
     public StarRocksDataSource(DBRProgressMonitor monitor, DBPDataSourceContainer container)
             throws DBException {
         super(monitor, container, new StarRocksDialect());
+        dataTypeCache = new JDBCBasicDataTypeCache<>(this); 
     }
 
     @Override
@@ -83,19 +86,22 @@ public class StarRocksDataSource extends JDBCDataSource implements DBPRefreshabl
         }
     }
 
-    // ======== DBPDataTypeProvider (required abstract methods) ========
-
+    @Nullable
     @Override
     public DBSDataType getLocalDataType(String typeName) {
-        return null; // Uses JDBC metadata
+        return dataTypeCache.getCachedObject(typeName);
+    }
+
+    @Nullable
+    @Override
+    public DBSDataType getLocalDataType(int typeID) {
+        return dataTypeCache.getCachedObject(typeID);
     }
 
     @Override
     public Collection<? extends DBSDataType> getLocalDataTypes() {
         return Collections.emptyList();
     }
-
-    // ======== Catalog/Database Navigation - 3-Level Hierarchy ========
 
     @Association
     public Collection<StarRocksCatalog> getCatalogs(DBRProgressMonitor monitor) throws DBException {
@@ -113,8 +119,6 @@ public class StarRocksDataSource extends JDBCDataSource implements DBPRefreshabl
     public boolean isDefaultCatalog(StarRocksCatalog catalog) {
         return DEFAULT_CATALOG_NAME.equalsIgnoreCase(catalog.getName());
     }
-
-    // ======== DBSObjectContainer Implementation ========
 
     @Override
     public Collection<? extends DBSObject> getChildren(@NotNull DBRProgressMonitor monitor) throws DBException {
@@ -165,8 +169,6 @@ public class StarRocksDataSource extends JDBCDataSource implements DBPRefreshabl
         catalogCache.clearCache();
         return this;
     }
-
-    // ======== Catalog Cache ========
 
     class CatalogCache extends JDBCObjectCache<StarRocksDataSource, StarRocksCatalog> {
         @NotNull

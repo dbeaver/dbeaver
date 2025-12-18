@@ -116,7 +116,6 @@ public class StarRocksDatabase implements DBSSchema, DBSObjectContainer, DBPRefr
         return tableCache.getObject(monitor, this, name, StarRocksMaterializedView.class);
     }
 
-    // DBSObjectContainer implementation
     @Override
     public Collection<? extends DBSObject> getChildren(@NotNull DBRProgressMonitor monitor) throws DBException {
         return tableCache.getAllObjects(monitor, this);
@@ -151,8 +150,7 @@ public class StarRocksDatabase implements DBSSchema, DBSObjectContainer, DBPRefr
     }
 
     /**
-     * Cache for tables and views within this database.
-     * Uses JDBCStructCache to support both tables/views and their columns.
+     * Cache for tables, views, materialized views within this database.
      */
     public class TableCache extends JDBCStructCache<StarRocksDatabase, StarRocksTableBase, StarRocksTableColumn> {
 

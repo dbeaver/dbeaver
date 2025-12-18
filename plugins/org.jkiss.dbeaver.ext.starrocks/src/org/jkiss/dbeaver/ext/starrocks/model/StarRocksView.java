@@ -19,7 +19,6 @@ package org.jkiss.dbeaver.ext.starrocks.model;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBPScriptObject;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -43,8 +42,6 @@ import java.util.Map;
  * StarRocks View - represents a view within a StarRocks database.
  */
 public class StarRocksView extends StarRocksTableBase implements DBSView, DBPScriptObject {
-
-    private static final Log log = Log.getLog(StarRocksView.class);
 
     public static class AdditionalInfo {
         private volatile boolean loaded = false;

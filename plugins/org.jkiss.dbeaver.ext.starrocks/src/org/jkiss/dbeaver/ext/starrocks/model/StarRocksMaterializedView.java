@@ -19,7 +19,6 @@ package org.jkiss.dbeaver.ext.starrocks.model;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBPScriptObject;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -42,8 +41,6 @@ import java.util.Map;
  * StarRocks Materialized View - represents a materialized view within a StarRocks database.
  */
 public class StarRocksMaterializedView extends StarRocksTableBase implements DBPScriptObject {
-
-    private static final Log log = Log.getLog(StarRocksMaterializedView.class);
 
     public static class AdditionalInfo {
         private volatile boolean loaded = false;
@@ -142,22 +139,7 @@ public class StarRocksMaterializedView extends StarRocksTableBase implements DBP
                     }
                 }
             } catch (SQLException e) {
-                // Fall back to SHOW CREATE TABLE if SHOW CREATE MATERIALIZED VIEW fails
-                log.debug("SHOW CREATE MATERIALIZED VIEW failed, trying SHOW CREATE TABLE", e);
-                try (JDBCPreparedStatement dbStat = session.prepareStatement(
-                    "SHOW CREATE TABLE " + getFullyQualifiedName(DBPEvaluationContext.DDL))) {
-                    try (JDBCResultSet dbResult = dbStat.executeQuery()) {
-                        if (dbResult.next()) {
-                            String definition = JDBCUtils.safeGetString(dbResult, "Create Table");
-                            if (definition != null) {
-                                additionalInfo.setDefinition(
-                                    SQLFormatUtils.formatSQL(getDataSource(), definition));
-                            }
-                        }
-                    }
-                } catch (SQLException e2) {
-                    throw new DBCException(e2, session.getExecutionContext());
-                }
+                throw new DBCException(e, session.getExecutionContext());
             }
             additionalInfo.loaded = true;
         } catch (SQLException e) {

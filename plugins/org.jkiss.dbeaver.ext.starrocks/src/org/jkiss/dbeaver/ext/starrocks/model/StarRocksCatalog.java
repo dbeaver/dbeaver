@@ -111,8 +111,6 @@ public class StarRocksCatalog implements DBSCatalog, DBPRefreshableObject {
         return this;
     }
 
-    // DBSObjectContainer implementation (inherited from DBSCatalog -> DBSStructContainer -> DBSObjectContainer)
-
     @Override
     public Collection<? extends DBSObject> getChildren(@NotNull DBRProgressMonitor monitor) throws DBException {
         return getDatabases(monitor);
@@ -147,8 +145,6 @@ public class StarRocksCatalog implements DBSCatalog, DBPRefreshableObject {
             try (Statement stmt = session.getOriginal().createStatement()) {
                 stmt.execute("SET CATALOG " + DBUtils.getQuotedIdentifier(dataSource, name));
             }
-
-            // Now fetch databases in this catalog
             return session.prepareStatement("SHOW DATABASES");
         }
 

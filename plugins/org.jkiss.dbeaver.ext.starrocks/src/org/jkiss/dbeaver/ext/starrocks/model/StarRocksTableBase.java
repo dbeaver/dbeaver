@@ -36,7 +36,7 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * StarRocks Table/View base class - abstract base for both tables and views.
+ * StarRocks Table/View base class - abstract base for tables and views.
  * Implements catalog-aware fully qualified names.
  */
 public abstract class StarRocksTableBase extends JDBCTable<StarRocksDataSource, StarRocksDatabase>
