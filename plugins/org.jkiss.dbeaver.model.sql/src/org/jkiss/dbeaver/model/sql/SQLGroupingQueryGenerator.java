@@ -171,13 +171,12 @@ public class SQLGroupingQueryGenerator {
             }
             sql.append(groupAttributes.get(i).prepareSqlString(subqueryAlias));
         }
-        boolean isCountPresent = groupFunctions.stream()
-            .anyMatch(DEFAULT_FUNCTION::equalsIgnoreCase);
 
-        if (isCountPresent && showDuplicatesOnly) {
+        if (showDuplicatesOnly) {
             sql.append("\nHAVING ");
-            if (dataSource.getSQLDialect().supportsAliasInHaving()) {
-                sql.append(funcAliases[0]);
+            int foundCountIndex = countFunctionIndex();
+            if (dataSource.getSQLDialect().supportsAliasInHaving() && foundCountIndex >= 0) {
+                sql.append(funcAliases[foundCountIndex]);
             } else {
                 // very special case
                 sql.append(DEFAULT_FUNCTION);
@@ -224,10 +223,21 @@ public class SQLGroupingQueryGenerator {
         @Override
         public String getFullyQualifiedName() {
             String databaseName = !CommonUtils.isEmpty(getDatabase().getDatabaseName())
-                    ? getDatabase().getDatabaseName() + sqlDialect.getCatalogSeparator()
-                    : "";
+                ? getDatabase().getDatabaseName() + sqlDialect.getCatalogSeparator()
+                : "";
             String schemaName = getSchemaName() != null ? getSchemaName() + sqlDialect.getStructSeparator() : "";
             return databaseName + schemaName + getName();
         }
+    }
+
+    private int countFunctionIndex() {
+        for (int i = 0; i < groupFunctions.size(); i++) {
+            if (groupFunctions.get(i).equalsIgnoreCase(DEFAULT_FUNCTION)) {
+                return funcAliases.length > i
+                    ? i
+                    : -1;
+            }
+        }
+        return -1;
     }
 }
