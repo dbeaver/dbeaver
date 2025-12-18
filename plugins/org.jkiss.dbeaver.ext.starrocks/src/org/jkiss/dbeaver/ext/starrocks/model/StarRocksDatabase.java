@@ -21,8 +21,6 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.starrocks.StarRocksDataSource;
-import org.jkiss.dbeaver.model.DBPEvaluationContext;
-import org.jkiss.dbeaver.model.DBPQualifiedObject;
 import org.jkiss.dbeaver.model.DBPRefreshableObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
@@ -42,10 +40,8 @@ import java.util.Collection;
 
 /**
  * StarRocks Database - represents a database/schema within a StarRocks catalog.
- * Implements DBSSchema and DBSObjectContainer for proper hierarchy support.
- * Implements DBPQualifiedObject to provide catalog-aware fully qualified names.
  */
-public class StarRocksDatabase implements DBSSchema, DBSObjectContainer, DBPQualifiedObject, DBPRefreshableObject {
+public class StarRocksDatabase implements DBSSchema, DBSObjectContainer, DBPRefreshableObject {
 
     private static final Log log = Log.getLog(StarRocksDatabase.class);
 
@@ -53,13 +49,10 @@ public class StarRocksDatabase implements DBSSchema, DBSObjectContainer, DBPQual
     private final String name;
     private final TableCache tableCache;
 
-    public StarRocksDatabase(
-            @NotNull StarRocksCatalog catalog,
-            @NotNull JDBCResultSet resultSet) {
+    public StarRocksDatabase(@NotNull StarRocksCatalog catalog, @NotNull JDBCResultSet resultSet) {
         this.catalog = catalog;
-        this.name = JDBCUtils.safeGetString(resultSet, 1); // SHOW DATABASES returns single column
+        this.name = JDBCUtils.safeGetString(resultSet, 1);
         this.tableCache = new TableCache();
-        this.tableCache.setCaseSensitive(!getDataSource().getSQLDialect().useCaseInsensitiveNameLookup());
     }
 
     @NotNull
@@ -95,34 +88,9 @@ public class StarRocksDatabase implements DBSSchema, DBSObjectContainer, DBPQual
         return catalog;
     }
 
-    /**
-     * Get the table cache for this database
-     */
     public TableCache getTableCache() {
         return tableCache;
     }
-
-    // ======== DBPQualifiedObject Implementation ========
-
-    /**
-     * Provides catalog-aware fully qualified names.
-     * Format: catalog.database or `catalog`.`database`
-     */
-    @NotNull
-    @Override
-    public String getFullyQualifiedName(DBPEvaluationContext context) {
-        switch (context) {
-            case DML:
-            case DDL:
-                // For SQL contexts, include catalog name
-                return DBUtils.getQuotedIdentifier(catalog) + "." + DBUtils.getQuotedIdentifier(this);
-            default:
-                // For UI contexts, just show database name
-                return getName();
-        }
-    }
-
-    // ======== Table Management ========
 
     @Association
     public Collection<StarRocksTable> getTables(DBRProgressMonitor monitor) throws DBException {
@@ -133,8 +101,7 @@ public class StarRocksDatabase implements DBSSchema, DBSObjectContainer, DBPQual
         return tableCache.getObject(monitor, this, name);
     }
 
-    // ======== DBSObjectContainer Implementation ========
-
+    // DBSObjectContainer implementation
     @Override
     public Collection<? extends DBSObject> getChildren(@NotNull DBRProgressMonitor monitor) throws DBException {
         return getTables(monitor);
@@ -147,19 +114,14 @@ public class StarRocksDatabase implements DBSSchema, DBSObjectContainer, DBPQual
 
     @NotNull
     @Override
-    public Class<? extends DBSObject> getPrimaryChildType(@Nullable DBRProgressMonitor monitor) throws DBException {
+    public Class<? extends DBSObject> getPrimaryChildType(@Nullable DBRProgressMonitor monitor) {
         return StarRocksTable.class;
     }
 
     @Override
     public void cacheStructure(@NotNull DBRProgressMonitor monitor, int scope) throws DBException {
         tableCache.getAllObjects(monitor, this);
-        if ((scope & STRUCT_ATTRIBUTES) != 0) {
-            tableCache.loadChildren(monitor, this, null);
-        }
     }
-
-    // ======== Refresh ========
 
     @Override
     public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException {
@@ -167,27 +129,12 @@ public class StarRocksDatabase implements DBSSchema, DBSObjectContainer, DBPQual
         return this;
     }
 
-    // ======== Helper Methods ========
-
-    /**
-     * Switch to this database's catalog context before executing queries
-     */
     void switchToCatalogContext(JDBCSession session) throws SQLException {
-        String catalogName = catalog.getName();
-        String useCatalogSQL = "SET CATALOG `" + catalogName + "`";
-        try {
-            session.getOriginal().createStatement().execute(useCatalogSQL);
-        } catch (SQLException e) {
-            log.debug("Error switching to catalog " + catalogName, e);
-            throw e;
-        }
+        session.getOriginal().createStatement().execute("SET CATALOG `" + catalog.getName() + "`");
     }
 
-    // ======== Table Cache ========
-
     /**
-     * Cache for tables within this database.
-     * Uses JDBCStructCache to support both tables and their columns.
+     * Table cache with catalog context switching.
      */
     public class TableCache extends JDBCStructCache<StarRocksDatabase, StarRocksTable, StarRocksTableColumn> {
 
@@ -198,10 +145,7 @@ public class StarRocksDatabase implements DBSSchema, DBSObjectContainer, DBPQual
         @NotNull
         @Override
         protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull StarRocksDatabase owner) throws SQLException {
-            // Switch to correct catalog context
             switchToCatalogContext(session);
-
-            // Query tables using SHOW FULL TABLES
             return session.prepareStatement("SHOW FULL TABLES FROM " + DBUtils.getQuotedIdentifier(owner));
         }
 
@@ -215,16 +159,12 @@ public class StarRocksDatabase implements DBSSchema, DBSObjectContainer, DBPQual
 
         @Override
         protected JDBCStatement prepareChildrenStatement(@NotNull JDBCSession session, @NotNull StarRocksDatabase owner, @Nullable StarRocksTable table) throws SQLException {
-            // Switch to correct catalog context
             switchToCatalogContext(session);
-
             StringBuilder sql = new StringBuilder("SHOW FULL COLUMNS FROM ");
             if (table != null) {
-                sql.append(DBUtils.getQuotedIdentifier(table));
-                sql.append(" FROM ");
+                sql.append(DBUtils.getQuotedIdentifier(table)).append(" FROM ");
             }
             sql.append(DBUtils.getQuotedIdentifier(owner));
-
             return session.prepareStatement(sql.toString());
         }
 

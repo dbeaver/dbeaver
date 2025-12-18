@@ -19,18 +19,14 @@ package org.jkiss.dbeaver.ext.starrocks.model;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.starrocks.StarRocksDataSource;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
-import org.jkiss.dbeaver.model.DBPQualifiedObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCStructCache;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTable;
-import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntityAssociation;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
-import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableConstraint;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableIndex;
 
@@ -39,18 +35,11 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * StarRocks Table - represents a table within a StarRocks database.
- * Implements catalog-aware fully qualified names.
+ * StarRocks Table - supports 3-level fully qualified names (catalog.database.table).
  */
-public class StarRocksTable extends JDBCTable<StarRocksDataSource, StarRocksDatabase>
-        implements DBPQualifiedObject {
-
-    private static final Log log = Log.getLog(StarRocksTable.class);
+public class StarRocksTable extends JDBCTable<StarRocksDataSource, StarRocksDatabase> {
 
     private final boolean isView;
-    private String tableType;
-    private String engine;
-    private String comment;
 
     public StarRocksTable(StarRocksDatabase database, String tableName, boolean isView) {
         super(database, tableName, false);
@@ -68,69 +57,22 @@ public class StarRocksTable extends JDBCTable<StarRocksDataSource, StarRocksData
         return getContainer().getDataSource();
     }
 
-    public StarRocksCatalog getCatalog() {
-        return getContainer().getCatalog();
-    }
-
-    @Property(viewable = true, order = 2)
-    public String getTableType() {
-        return tableType;
-    }
-
-    public void setTableType(String tableType) {
-        this.tableType = tableType;
-    }
-
-    @Property(viewable = true, order = 3)
-    public String getEngine() {
-        return engine;
-    }
-
-    public void setEngine(String engine) {
-        this.engine = engine;
-    }
-
     @Nullable
     @Override
-    @Property(viewable = true, order = 100)
     public String getDescription() {
-        return comment;
+        return null;
     }
 
-    public void setDescription(String comment) {
-        this.comment = comment;
-    }
-
-    // ======== DBPQualifiedObject Implementation ========
-
-    /**
-     * Override to provide catalog-aware fully qualified names.
-     * Format: catalog.database.table or `catalog`.`database`.`table`
-     */
     @NotNull
     @Override
     public String getFullyQualifiedName(DBPEvaluationContext context) {
-        StarRocksCatalog catalog = getCatalog();
+        StarRocksCatalog catalog = getContainer().getCatalog();
         StarRocksDatabase database = getContainer();
-
-        switch (context) {
-            case DML:
-            case DDL:
-                // For SQL contexts, include catalog.database.table
-                if (catalog != null) {
-                    return DBUtils.getQuotedIdentifier(catalog) + "." +
-                           DBUtils.getQuotedIdentifier(database) + "." +
-                           DBUtils.getQuotedIdentifier(this);
-                }
-                // Fall through to default if no catalog
-            default:
-                // For UI and other contexts, use database.table
-                return DBUtils.getQuotedIdentifier(database) + "." +
-                       DBUtils.getQuotedIdentifier(this);
-        }
+        // 3-level FQN: catalog.database.table
+        return DBUtils.getQuotedIdentifier(catalog) + "." +
+               DBUtils.getQuotedIdentifier(database) + "." +
+               DBUtils.getQuotedIdentifier(this);
     }
-
-    // ======== Column Access ========
 
     @Override
     public JDBCStructCache<StarRocksDatabase, StarRocksTable, StarRocksTableColumn> getCache() {
@@ -148,33 +90,9 @@ public class StarRocksTable extends JDBCTable<StarRocksDataSource, StarRocksData
         return getContainer().getTableCache().getChild(monitor, getContainer(), this, attributeName);
     }
 
-    // ======== Required Abstract Method Implementations ========
-
-    @Nullable
-    @Override
-    public Collection<? extends DBSTableIndex> getIndexes(@NotNull DBRProgressMonitor monitor) throws DBException {
-        // StarRocks doesn't have traditional indexes like MySQL
-        return Collections.emptyList();
-    }
-
-    @Nullable
-    @Override
-    public Collection<? extends DBSTableConstraint> getConstraints(@NotNull DBRProgressMonitor monitor) throws DBException {
-        // StarRocks doesn't expose constraints the same way as MySQL
-        return Collections.emptyList();
-    }
-
-    @Nullable
-    @Override
-    public Collection<? extends DBSEntityAssociation> getAssociations(@NotNull DBRProgressMonitor monitor) throws DBException {
-        // StarRocks doesn't have foreign key associations
-        return Collections.emptyList();
-    }
-
-    @Nullable
-    @Override
-    public Collection<? extends DBSEntityAssociation> getReferences(@NotNull DBRProgressMonitor monitor) throws DBException {
-        // StarRocks doesn't have foreign key references
-        return Collections.emptyList();
-    }
+    // Required abstract method implementations - StarRocks doesn't support these
+    @Nullable @Override public Collection<? extends DBSTableIndex> getIndexes(@NotNull DBRProgressMonitor monitor) { return Collections.emptyList(); }
+    @Nullable @Override public Collection<? extends DBSTableConstraint> getConstraints(@NotNull DBRProgressMonitor monitor) { return Collections.emptyList(); }
+    @Nullable @Override public Collection<? extends DBSEntityAssociation> getAssociations(@NotNull DBRProgressMonitor monitor) { return Collections.emptyList(); }
+    @Nullable @Override public Collection<? extends DBSEntityAssociation> getReferences(@NotNull DBRProgressMonitor monitor) { return Collections.emptyList(); }
 }
