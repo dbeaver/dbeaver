@@ -270,7 +270,7 @@
                         defaultPort="9030"
                         defaultUser="root"
                         webURL="https://docs.starrocks.io/docs/quick_start/shared-nothing/"
-                        description="StarRocks using MySQL driver"
+                        description="Driver for MySQL 8 and StarRocks"
                         categories="sql">
 
                     <file type="jar" path="maven:/com.mysql:mysql-connector-j:RELEASE[8.3.0]" bundle="!drivers.mysql"/>
