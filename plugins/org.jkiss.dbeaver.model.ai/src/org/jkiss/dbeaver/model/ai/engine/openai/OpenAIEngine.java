@@ -34,7 +34,7 @@ import java.util.List;
 
 public class OpenAIEngine<PROPS extends OpenAIBaseProperties> extends BaseCompletionEngine<PROPS> {
 
-    private final DisposableLazyValue<OpenAIClient, DBException> openAiService = new DisposableLazyValue<>() {
+    protected final DisposableLazyValue<OpenAIClient, DBException> openAiService = new DisposableLazyValue<>() {
         @NotNull
         @Override
         protected OpenAIClient initialize() throws DBException {
@@ -47,18 +47,8 @@ public class OpenAIEngine<PROPS extends OpenAIBaseProperties> extends BaseComple
         }
     };
 
-    public OpenAIEngine() throws DBException {
-        super();
-    }
-
-    public OpenAIEngine(PROPS properties) throws DBException {
+    public OpenAIEngine(@NotNull PROPS properties) {
         super(properties);
-    }
-
-    @NotNull
-    @Override
-    protected String getEngineId() {
-        return OpenAIConstants.OPENAI_ENGINE;
     }
 
     @NotNull
@@ -80,8 +70,10 @@ public class OpenAIEngine<PROPS extends OpenAIBaseProperties> extends BaseComple
         @NotNull AIEngineRequest request
     ) throws DBException {
         OAIResponsesResponse completionResult = complete(monitor, request);
-        List<OAIMessage> messages = completionResult.output;
-        if (messages.isEmpty()) {
+        // Filter reasoning messages from the response for OpenAI reasoning models (e.g., gpt-5, gpt-5-mini, gpt-5-nano)
+        List<OAIMessage> messages = completionResult.output.stream()
+            .filter(msg -> !OAIMessage.TYPE_FUNCTION_REASONING.equals(msg.type))
+            .toList();        if (messages.isEmpty()) {
             return new AIEngineResponse(AIMessageType.ASSISTANT, List.of(AIMessages.ai_empty_engine_response));
         }
         OAIMessage message = messages.getFirst();
@@ -109,7 +101,7 @@ public class OpenAIEngine<PROPS extends OpenAIBaseProperties> extends BaseComple
     }
 
     @Override
-    public int getContextWindowSize(DBRProgressMonitor monitor) throws DBException {
+    public int getContextWindowSize(@NotNull DBRProgressMonitor monitor) throws DBException {
         Integer contextWindowSize = properties.getContextWindowSize();
         if (contextWindowSize != null) {
             return contextWindowSize;
@@ -147,16 +139,19 @@ public class OpenAIEngine<PROPS extends OpenAIBaseProperties> extends BaseComple
             for (AIFunctionDescriptor fd : request.getFunctions()) {
                 OAITool tool = new OAITool();
                 tool.type = OAITool.TYPE_FUNCTION;
-                tool.name = fd.getName();
+                tool.name = fd.getId();
                 tool.description = fd.getDescription();
                 tool.parameters.type = OAIToolParameters.TYPE_OBJECT;
+                List<String> requiredFields = new ArrayList<>();
                 for (AIFunctionDescriptor.Parameter param : fd.getParameters()) {
                     OAIToolParameter tp = new OAIToolParameter();
                     tp.type = param.getType();
                     tp.description = param.getDescription();
                     tp.enumItems = param.getValidValues();
+                    requiredFields.add(param.getName());
                     tool.parameters.properties.put(param.getName(), tp);
                 }
+                tool.parameters.required = requiredFields.toArray(new String[0]);
                 tools.add(tool);
             }
             oaiRequest.tools = tools;
@@ -181,6 +176,9 @@ public class OpenAIEngine<PROPS extends OpenAIBaseProperties> extends BaseComple
         String baseUrl = properties.getBaseUrl();
         if (baseUrl == null || baseUrl.isEmpty()) {
             baseUrl = OpenAIClient.OPENAI_ENDPOINT;
+        }
+        if (properties.isLegacyApi()) {
+            return OpenAIClientLegacy.createClient(baseUrl, token);
         }
         return OpenAIClient.createClient(baseUrl, token);
     }

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,8 @@
  */
 package org.jkiss.dbeaver.registry;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPDataSourceConfigurationStorage;
 import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
 import org.jkiss.dbeaver.model.app.DBPProject;
@@ -48,11 +50,13 @@ class DataSourceFileStorage implements DBPDataSourceConfigurationStorage
 
     }
 
+    @NotNull
     @Override
     public String getStorageId() {
         return "file://" + sourceFile.toAbsolutePath();
     }
 
+    @NotNull
     @Override
     public String getStorageName() {
         return sourceFile.getFileName().toString();
@@ -67,6 +71,7 @@ class DataSourceFileStorage implements DBPDataSourceConfigurationStorage
         return true;
     }
 
+    @NotNull
     @Override
     public String getStatus() {
         return "Valid";
@@ -76,6 +81,7 @@ class DataSourceFileStorage implements DBPDataSourceConfigurationStorage
         return sourceFile.getFileName().toString();
     }
 
+    @Nullable
     public String getStorageSubId() {
         return configSuffix;
     }

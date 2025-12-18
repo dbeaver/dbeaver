@@ -240,7 +240,7 @@ public class SQLQueryConnectionDummyContext extends SQLQueryConnectionContext {
         public void cacheStructure(@NotNull DBRProgressMonitor monitor, int scope) throws DBException {
         }
 
-        @Nullable
+        @NotNull
         @Override
         public DBSInstance getDefaultInstance() {
             return null;
@@ -257,22 +257,23 @@ public class SQLQueryConnectionDummyContext extends SQLQueryConnectionContext {
 
         }
 
+        @NotNull
         @Override
         public Map<String, ?> getContextAttributes() {
             return Collections.emptyMap();
         }
 
         @Override
-        public <T> T getContextAttribute(String attributeName) {
+        public <T> T getContextAttribute(@NotNull String attributeName) {
             return null;
         }
 
         @Override
-        public <T> void setContextAttribute(String attributeName, T attributeValue) {
+        public <T> void setContextAttribute(@NotNull String attributeName, @Nullable T attributeValue) {
         }
 
         @Override
-        public void removeContextAttribute(String attributeName) {
+        public void removeContextAttribute(@NotNull String attributeName) {
         }
 
         @NotNull

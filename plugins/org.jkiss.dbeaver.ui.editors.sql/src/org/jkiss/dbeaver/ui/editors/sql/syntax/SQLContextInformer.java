@@ -45,7 +45,6 @@ import org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
-import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 
 
@@ -275,17 +274,14 @@ public class SQLContextInformer
             setSystem(true);
         }
 
+        @NotNull
         @Override
-        protected IStatus run(DBRProgressMonitor monitor)
+        protected IStatus run(@NotNull DBRProgressMonitor monitor)
         {
             boolean[] result = new boolean[1];
             try {
                 DBExecUtils.tryExecuteRecover(monitor, getExecutionContext().getDataSource(), param -> {
-                    try {
-                        result[0] = findTables(monitor);
-                    } catch (Exception e) {
-                        throw new InvocationTargetException(e);
-                    }
+                    result[0] = findTables(monitor);
                 });
             } catch (DBException e) {
                 log.warn(e);

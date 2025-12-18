@@ -75,6 +75,7 @@ public class AltibaseDirectory extends AltibaseObject<GenericStructContainer> im
     }
 
     
+    @NotNull
     @Override
     public String getObjectDefinitionText(@NotNull DBRProgressMonitor monitor, @NotNull Map<String, Object> options) throws DBException {
         if (CommonUtils.isEmpty(ddl)) {
@@ -85,7 +86,7 @@ public class AltibaseDirectory extends AltibaseObject<GenericStructContainer> im
     }
 
     @Override
-    public DBSObject refreshObject(DBRProgressMonitor monitor) throws DBException {
+    public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException {
         AltibaseSchema schema = (AltibaseSchema) getParentObject();
         return schema.getDirectoryCache().refreshObject(monitor, schema, this);
     }

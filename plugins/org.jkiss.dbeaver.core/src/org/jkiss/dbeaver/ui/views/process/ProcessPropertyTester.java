@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,8 +23,7 @@ import org.jkiss.dbeaver.ui.ActionUtils;
 /**
  * ProcessPropertyTester
  */
-public class ProcessPropertyTester extends PropertyTester
-{
+public class ProcessPropertyTester extends PropertyTester {
 
     public static final String NAMESPACE = "org.jkiss.dbeaver.runtime.process";
     public static final String PROP_RUNNING = "running";
@@ -35,10 +34,9 @@ public class ProcessPropertyTester extends PropertyTester
 
     @Override
     public boolean test(Object receiver, String property, Object[] args, Object expectedValue) {
-        if (!(receiver instanceof DBRProcessController)) {
+        if (!(receiver instanceof DBRProcessController controller)) {
             return false;
         }
-        DBRProcessController controller = (DBRProcessController)receiver;
         if (property.equals(PROP_RUNNING)) {
             return controller.getProcessDescriptor() != null && controller.getProcessDescriptor().isRunning();
         }

@@ -224,7 +224,7 @@ public class PropertyDescriptor implements DBPPropertyDescriptor, IPropertyValue
     }
 
     @Override
-    public void setName(String name) {
+    public void setName(@NotNull String name) {
         this.name = name;
     }
 
@@ -295,6 +295,7 @@ public class PropertyDescriptor implements DBPPropertyDescriptor, IPropertyValue
         return ArrayUtils.isEmpty(validValues) || allowCustomValues;
     }
 
+    @Nullable
     @Override
     public Object[] getPossibleValues(Object object) {
         return validValues;

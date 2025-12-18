@@ -20,9 +20,11 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.widgets.*;
+import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.Text;
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.access.DBAAuthModel;
 import org.jkiss.dbeaver.model.impl.auth.AuthModelDatabaseNative;
@@ -31,7 +33,6 @@ import org.jkiss.dbeaver.registry.DBConnectionConstants;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.ui.UIServiceSecurity;
-import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.IObjectPropertyConfigurator;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -45,8 +46,6 @@ import org.jkiss.utils.CommonUtils;
  */
 public class DatabaseNativeAuthModelConfigurator implements IObjectPropertyConfigurator<DBAAuthModel<?>, DBPDataSourceContainer> {
 
-    private static final Log log = Log.getLog(DatabaseNativeAuthModelConfigurator.class);
-
     protected Label usernameLabel;
     protected Text usernameText;
 
@@ -55,7 +54,7 @@ public class DatabaseNativeAuthModelConfigurator implements IObjectPropertyConfi
     protected Text passwordText;
 
     protected Button savePasswordCheck;
-    protected ToolBar userManagementToolbar;
+    protected Button userManagementToolbar;
 
     protected DBPDataSourceContainer dataSource;
 
@@ -65,9 +64,9 @@ public class DatabaseNativeAuthModelConfigurator implements IObjectPropertyConfi
     public void createControl(@NotNull Composite authPanel, DBAAuthModel<?> object, @NotNull Runnable propertyChangeListener) {
         boolean userNameApplicable = true;
         boolean userPasswordApplicable = true;
-        if (object instanceof AuthModelDatabaseNative) {
-            userNameApplicable = ((AuthModelDatabaseNative<?>) object).isUserNameApplicable();
-            userPasswordApplicable = ((AuthModelDatabaseNative<?>) object).isUserPasswordApplicable();
+        if (object instanceof AuthModelDatabaseNative<?> amd) {
+            userNameApplicable = amd.isUserNameApplicable();
+            userPasswordApplicable = amd.isUserPasswordApplicable();
         }
         if (!userNameApplicable) {
             return;
@@ -114,9 +113,15 @@ public class DatabaseNativeAuthModelConfigurator implements IObjectPropertyConfi
             if (CREDENTIALS_SAVE_RESTRICTED) {
                 this.savePasswordCheck.setSelection(false);
                 this.savePasswordCheck.setEnabled(false);
+                if (userManagementToolbar != null) {
+                    this.userManagementToolbar.setEnabled(false);
+                }
             } else {
                 this.savePasswordCheck.setSelection(dataSource.isSavePassword() || isForceSaveCredentials());
                 this.passwordText.setEnabled(dataSource.isSavePassword());
+                if (userManagementToolbar != null) {
+                    this.userManagementToolbar.setEnabled(dataSource.isSavePassword() || isForceSaveCredentials());
+                }
             }
         }
         if (dataSource.isTemporary()) {
@@ -212,6 +217,9 @@ public class DatabaseNativeAuthModelConfigurator implements IObjectPropertyConfi
             @Override
             public void widgetSelected(SelectionEvent e) {
                 passwordText.setEnabled(savePasswordCheck.getSelection());
+                if (userManagementToolbar != null) {
+                    userManagementToolbar.setEnabled(savePasswordCheck.getSelection());
+                }
             }
         });
         if (isForceSaveCredentials()) {
@@ -219,16 +227,16 @@ public class DatabaseNativeAuthModelConfigurator implements IObjectPropertyConfi
         }
 
         if (supportsPasswordView) {
-            userManagementToolbar = new ToolBar(panel, SWT.HORIZONTAL);
-            ToolItem showPasswordLabel = new ToolItem(userManagementToolbar, SWT.NONE);
-            showPasswordLabel.setToolTipText(UIConnectionMessages.dialog_connection_auth_label_show_password);
-            showPasswordLabel.setImage(DBeaverIcons.getImage(UIIcon.SHOW_ALL_DETAILS));
-            showPasswordLabel.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
-                    showPasswordText(serviceSecurity);
-                }
-            });
+            userManagementToolbar = UIUtils.createPushButton(
+                panel,
+                null,
+                UIConnectionMessages.dialog_connection_auth_label_show_password,
+                UIIcon.SHOW_ALL_DETAILS, new SelectionAdapter() {
+                    @Override
+                    public void widgetSelected(SelectionEvent e) {
+                        showPasswordText(serviceSecurity);
+                    }
+                });
         }
     }
 

@@ -57,8 +57,8 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
-import java.util.*;
 import java.util.List;
+import java.util.*;
 
 /**
  * Action utils
@@ -105,13 +105,14 @@ public class ActionUtils {
         @NotNull IServiceLocator serviceLocator,
         @NotNull String commandId,
         int style,
-        @Nullable DBPImage icon) {
+        @Nullable DBPImage icon
+    ) {
         CommandContributionItemParameter parameters = new CommandContributionItemParameter(
             serviceLocator,
             null,
             commandId,
             style);
-        parameters.icon = DBeaverIcons.getImageDescriptor(icon);
+        parameters.icon = icon == null ? null : DBeaverIcons.getImageDescriptor(icon);
         return new CommandContributionItem(parameters);
     }
 
@@ -157,8 +158,9 @@ public class ActionUtils {
         @Nullable DBPImage image,
         @Nullable String toolTip,
         boolean showText,
-        @Nullable Map<String, Object> parameters) {
-        final CommandContributionItemParameter contributionParameters = new CommandContributionItemParameter(
+        @Nullable Map<String, Object> parameters
+    ) {
+        CommandContributionItemParameter contributionParameters = new CommandContributionItemParameter(
             serviceLocator,
             null,
             commandId,
@@ -456,30 +458,33 @@ public class ActionUtils {
     public static Point getLocationFromControl(@NotNull Shell activeShell, @NotNull Control focusControl) {
         Point location = null;
         final Display display = activeShell.getDisplay();
-        if (focusControl instanceof Table) {
-            final Table table = (Table) focusControl;
-            final int selectionIndex = table.getSelectionIndex();
-            if (selectionIndex < 0) {
-                location = display.map(focusControl, null, table.getLocation());
-            } else {
-                Rectangle absBounds = display.map(focusControl, null, table.getItem(selectionIndex).getBounds());
-                location = new Point(absBounds.x, absBounds.y + table.getItemHeight());
+        switch (focusControl) {
+            case Table table -> {
+                final int selectionIndex = table.getSelectionIndex();
+                if (selectionIndex < 0) {
+                    location = display.map(focusControl, null, table.getLocation());
+                } else {
+                    Rectangle absBounds = display.map(focusControl, null, table.getItem(selectionIndex).getBounds());
+                    location = new Point(absBounds.x, absBounds.y + table.getItemHeight());
+                }
             }
-        } else if (focusControl instanceof Tree) {
-            final Tree tree = (Tree) focusControl;
-            final TreeItem[] selection = tree.getSelection();
-            if (ArrayUtils.isEmpty(selection)) {
-                location = display.map(focusControl, null, tree.getLocation());
-            } else {
-                Rectangle absBounds = display.map(focusControl, null, selection[0].getBounds());
-                location = new Point(absBounds.x, absBounds.y + tree.getItemHeight());
+            case Tree tree -> {
+                final TreeItem[] selection = tree.getSelection();
+                if (ArrayUtils.isEmpty(selection)) {
+                    location = display.map(focusControl, null, tree.getLocation());
+                } else {
+                    Rectangle absBounds = display.map(focusControl, null, selection[0].getBounds());
+                    location = new Point(absBounds.x, absBounds.y + tree.getItemHeight());
+                }
             }
-        } else if (focusControl instanceof StyledText) {
-            final StyledText styledText = (StyledText) focusControl;
-            final int caretOffset = styledText.getCaretOffset();
-            location = styledText.getLocationAtOffset(caretOffset);
-            location = display.map(styledText, null, location);
-            location.y += styledText.getLineHeight();
+            case StyledText styledText -> {
+                final int caretOffset = styledText.getCaretOffset();
+                location = styledText.getLocationAtOffset(caretOffset);
+                location = display.map(styledText, null, location);
+                location.y += styledText.getLineHeight();
+            }
+            default -> {
+            }
         }
         return location;
     }

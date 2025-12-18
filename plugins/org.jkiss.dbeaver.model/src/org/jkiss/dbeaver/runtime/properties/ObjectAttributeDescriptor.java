@@ -20,7 +20,6 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBConstants;
-import org.jkiss.dbeaver.model.dpi.DPIClientObject;
 import org.jkiss.dbeaver.model.meta.IPropertyCacheValidator;
 import org.jkiss.dbeaver.model.meta.LazyProperty;
 import org.jkiss.dbeaver.model.meta.Property;
@@ -183,17 +182,7 @@ public abstract class ObjectAttributeDescriptor {
 
     @NotNull
     public static Class<?> getObjectClass(Object theObject) {
-        if (theObject instanceof DPIClientObject) {
-            String objectType = ((DPIClientObject) theObject).dpiObjectType();
-            try {
-                return  ((DPIClientObject) theObject).dpiClassLoader().loadClass(objectType);
-            } catch (ClassNotFoundException e) {
-                log.debug("Cannot determine DPI object local class '" + objectType + "'", e);
-                return theObject.getClass();
-            }
-        } else {
-            return theObject.getClass();
-        }
+        return theObject.getClass();
     }
 
     @NotNull

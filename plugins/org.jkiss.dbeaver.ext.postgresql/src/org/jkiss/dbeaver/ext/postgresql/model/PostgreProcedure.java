@@ -412,11 +412,12 @@ public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, Postg
     }
 
     @Override
-    public void setName(String name) {
+    public void setName(@NotNull String name) {
         super.setName(name);
         this.overloadedName = makeOverloadedName(getSchema(), getName(), params, false, false, false);
     }
 
+    @NotNull
     @Override
     @Property(hidden = true, editable = true, updatable = true, order = -1)
     public String getObjectDefinitionText(@NotNull DBRProgressMonitor monitor, @NotNull Map<String, Object> options) throws DBException {
@@ -867,7 +868,7 @@ public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, Postg
     }
 
     @Override
-    public boolean supportsObjectDefinitionOption(String option) {
+    public boolean supportsObjectDefinitionOption(@NotNull String option) {
         return DBPScriptObject.OPTION_INCLUDE_COMMENTS.equals(option) 
             || DBPScriptObject.OPTION_INCLUDE_PERMISSIONS.equals(option) 
             || DBPScriptObject.OPTION_CAST_PARAMS.equals(option);

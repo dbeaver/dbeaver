@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,16 +39,12 @@ public abstract class ComplexValueManager extends BaseValueManager {
     public IValueEditor createEditor(@NotNull final IValueController controller)
         throws DBException
     {
-        switch (controller.getEditType()) {
-            case PANEL:
-                return new ComplexValueInlineEditor(controller);
-            case INLINE:
-                return new StringInlineEditor(controller);
-            case EDITOR:
-                return new DefaultValueViewDialog(controller);
-            default:
-                return null;
-        }
+        return switch (controller.getEditType()) {
+            case PANEL -> new ComplexValueInlineEditor(controller);
+            case INLINE -> new StringInlineEditor(controller);
+            case EDITOR -> new DefaultValueViewDialog(controller);
+            default -> null;
+        };
     }
 
 }

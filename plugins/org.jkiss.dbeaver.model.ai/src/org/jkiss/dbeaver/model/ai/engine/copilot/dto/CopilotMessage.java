@@ -16,6 +16,8 @@
  */
 package org.jkiss.dbeaver.model.ai.engine.copilot.dto;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.ai.AIMessage;
 import org.jkiss.dbeaver.model.ai.AIMessageType;
 
@@ -27,10 +29,11 @@ public record CopilotMessage(
         return new CopilotMessage(mapRole(message.getRole()), message.getContent());
     }
 
-    private static String mapRole(AIMessageType role) {
+    @Nullable
+    private static String mapRole(@NotNull AIMessageType role) {
         return switch (role) {
             case USER -> "user";
-            case ASSISTANT -> "assistant";
+            case ASSISTANT, FUNCTION -> "assistant";
             case SYSTEM -> "system";
             default -> null;
         };

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.model.preferences;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
@@ -24,20 +25,23 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
  */
 public interface DBPPropertySource {
 
+    @NotNull
     Object getEditableValue();
 
+    @NotNull
     DBPPropertyDescriptor[] getProperties();
 
-    Object getPropertyValue(@Nullable DBRProgressMonitor monitor, String id);
+    @Nullable
+    Object getPropertyValue(@Nullable DBRProgressMonitor monitor, @NotNull String id);
 
-    boolean isPropertySet(String id);
+    boolean isPropertySet(@NotNull String id);
 
-    boolean isPropertyResettable(String id);
+    boolean isPropertyResettable(@NotNull String id);
 
-    void resetPropertyValue(@Nullable DBRProgressMonitor monitor, String id);
+    void resetPropertyValue(@Nullable DBRProgressMonitor monitor, @NotNull String id);
 
-    void resetPropertyValueToDefault(String id);
+    void resetPropertyValueToDefault(@NotNull String id);
 
-    void setPropertyValue(@Nullable DBRProgressMonitor monitor, String id, Object value);
+    void setPropertyValue(@Nullable DBRProgressMonitor monitor, @NotNull String id, @Nullable Object value);
 
 }

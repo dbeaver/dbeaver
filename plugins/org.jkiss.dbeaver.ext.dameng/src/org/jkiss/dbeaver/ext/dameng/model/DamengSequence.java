@@ -99,6 +99,7 @@ public class DamengSequence extends GenericSequence implements DBPSaveableObject
         return super.getDescription();
     }
 
+    @NotNull
     @Override
     public String getObjectDefinitionText(@NotNull DBRProgressMonitor monitor, @NotNull Map<String, Object> options) {
         if (CommonUtils.isEmpty(sql)) {

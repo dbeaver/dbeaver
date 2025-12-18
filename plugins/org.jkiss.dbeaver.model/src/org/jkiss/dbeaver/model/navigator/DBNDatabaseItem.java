@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,7 +29,7 @@ public class DBNDatabaseItem extends DBNDatabaseNode {
     private final DBXTreeNode meta;
     private DBSObject object;
 
-    DBNDatabaseItem(DBNNode parent, DBXTreeNode meta, DBSObject object, boolean reflect) {
+    DBNDatabaseItem(@NotNull DBNNode parent, @NotNull DBXTreeNode meta, DBSObject object, boolean reflect) {
         super(parent);
         this.meta = meta;
         this.object = object;
@@ -92,10 +92,11 @@ public class DBNDatabaseItem extends DBNDatabaseNode {
     }
 
     @Override
-    public final boolean isManagable() {
+    public final boolean isManageable() {
         return true;
     }
 
+    @NotNull
     @Override
     public String toString() {
         return object == null ? super.toString() : object.toString();

@@ -21,8 +21,7 @@ public record AISchemaGenerationOptions(
     boolean sendObjectComment,
     boolean sendColumnTypes,
     boolean sendConstraints,
-    boolean sendForeignKeys,
-    boolean sendSampleData
+    boolean sendForeignKeys
 ) {
 
     public static Builder builder() {
@@ -35,8 +34,7 @@ public record AISchemaGenerationOptions(
             .withSendObjectComment(sendObjectComment)
             .withSendColumnTypes(sendColumnTypes)
             .withSendConstraints(sendConstraints)
-            .withSendForeignKeys(sendForeignKeys)
-            .withSendSampleData(sendSampleData);
+            .withSendForeignKeys(sendForeignKeys);
     }
 
     public static final class Builder {
@@ -45,7 +43,6 @@ public record AISchemaGenerationOptions(
         private boolean sendColumnTypes;
         private boolean sendConstraints;
         private boolean sendForeignKeys;
-        private boolean sendSampleData;
 
         private Builder() {
         }
@@ -75,19 +72,13 @@ public record AISchemaGenerationOptions(
             return this;
         }
 
-        public Builder withSendSampleData(boolean sendSampleData) {
-            this.sendSampleData = sendSampleData;
-            return this;
-        }
-
         public AISchemaGenerationOptions build() {
             return new AISchemaGenerationOptions(
                 maxDbSnapshotTokens,
                 sendObjectComment,
                 sendColumnTypes,
                 sendConstraints,
-                sendForeignKeys,
-                sendSampleData
+                sendForeignKeys
             );
         }
     }

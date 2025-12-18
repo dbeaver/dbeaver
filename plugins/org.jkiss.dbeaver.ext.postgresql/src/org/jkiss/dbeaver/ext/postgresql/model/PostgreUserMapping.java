@@ -79,6 +79,7 @@ public class PostgreUserMapping extends PostgreInformation implements PostgreScr
         return userMappingOptions;
     }
 
+    @NotNull
     @Override
     public String getObjectDefinitionText(@NotNull DBRProgressMonitor monitor, @NotNull Map<String, Object> options) throws DBException {
         return

@@ -63,6 +63,9 @@ public class SSHUIMessages extends NLS {
     public static String model_ssh_dialog_credentials_password;
     public static String model_ssh_dialog_credentials_passphrase;
 
+    public static String model_ssh_dialog_edit_private_key;
+    public static String model_ssh_dialog_set_private_key;
+
     public static String jsch_remote_host_identifier_changed_warning_title;
 
 

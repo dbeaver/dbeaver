@@ -129,7 +129,7 @@ public class MySQLCatalog implements
 
     public static class AdditionalInfoValidator implements IPropertyCacheValidator<MySQLCatalog> {
         @Override
-        public boolean isPropertyCached(MySQLCatalog object, Object propertyId)
+        public boolean isPropertyCached(@NotNull MySQLCatalog object, @NotNull Object propertyId)
         {
             return object.additionalInfo.loaded;
         }
@@ -452,7 +452,7 @@ public class MySQLCatalog implements
     }
 
     @Override
-    public void collectObjectStatistics(DBRProgressMonitor monitor, boolean totalSizeOnly, boolean forceRefresh) throws DBException {
+    public void collectObjectStatistics(@NotNull DBRProgressMonitor monitor, boolean totalSizeOnly, boolean forceRefresh) throws DBException {
         if (hasStatistics && !forceRefresh) {
             return;
         }
@@ -480,10 +480,11 @@ public class MySQLCatalog implements
     }
 
     @Override
-    public boolean supportsObjectDefinitionOption(String option) {
+    public boolean supportsObjectDefinitionOption(@NotNull String option) {
         return OPTION_INCLUDE_NESTED_OBJECTS.equals(option);
     }
 
+    @NotNull
     @Override
     public String getObjectDefinitionText(@NotNull DBRProgressMonitor monitor, @NotNull Map<String, Object> options) throws DBException {
         if (databaseDDL == null) {
@@ -1073,6 +1074,7 @@ public class MySQLCatalog implements
         {
             return false;
         }
+        @Nullable
         @Override
         public Object[] getPossibleValues(MySQLCatalog object)
         {
@@ -1086,6 +1088,7 @@ public class MySQLCatalog implements
         {
             return false;
         }
+        @Nullable
         @Override
         public Object[] getPossibleValues(MySQLCatalog object)
         {
@@ -1096,4 +1099,9 @@ public class MySQLCatalog implements
             }
         }
     }
+
+    void resetStatistics() {
+        this.hasStatistics = false;
+    }
+
 }

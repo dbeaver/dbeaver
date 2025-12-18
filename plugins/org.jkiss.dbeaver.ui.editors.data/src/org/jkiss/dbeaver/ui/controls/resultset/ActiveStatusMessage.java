@@ -83,7 +83,7 @@ abstract class ActiveStatusMessage extends Composite {
             }
         });
 
-        messageText = new Text(this, SWT.READ_ONLY);
+        messageText = new Text(this, SWT.BORDER | SWT.READ_ONLY);
         if (RuntimeUtils.isWindows()) {
             messageText.setBackground(null);
         } else {

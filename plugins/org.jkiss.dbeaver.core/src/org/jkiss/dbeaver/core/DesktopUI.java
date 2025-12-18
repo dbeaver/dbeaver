@@ -54,6 +54,7 @@ import org.jkiss.dbeaver.model.runtime.load.ILoadVisualizer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.DBeaverNotifications;
+import org.jkiss.dbeaver.runtime.ui.DBPPlatformUI;
 import org.jkiss.dbeaver.runtime.ui.console.ConsoleUserInterface;
 import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.actions.datasource.DataSourceInvalidateHandler;
@@ -70,7 +71,6 @@ import org.jkiss.dbeaver.ui.views.process.ShellProcessView;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
-import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -91,10 +91,10 @@ public class DesktopUI extends ConsoleUserInterface {
     }
 
     static void disposeUI() {
-        DesktopUI instance = getInstance();
-        if (instance != null) {
+        DBPPlatformUI platformUI = DBWorkbench.getPlatformUI();
+        if (platformUI instanceof DesktopUI desktopUI) {
             try {
-                instance.dispose();
+                desktopUI.dispose();
             } catch (Throwable e) {
                 log.error(e);
             }
@@ -110,8 +110,9 @@ public class DesktopUI extends ConsoleUserInterface {
     // This method is called during startup thru @ComponentReference in workbench
     public void initialize() {
         new AbstractJob("Workbench listener") {
+            @NotNull
             @Override
-            protected IStatus run(DBRProgressMonitor monitor) {
+            protected IStatus run(@NotNull DBRProgressMonitor monitor) {
                 if (PlatformUI.isWorkbenchRunning() && !PlatformUI.getWorkbench().isStarting()) {
                     UIUtils.asyncExec(() -> contextListener = WorkbenchContextListener.registerInWorkbench());
                 } else {
@@ -526,16 +527,8 @@ public class DesktopUI extends ConsoleUserInterface {
     }
 
     @Override
-    public void executeWithProgress(@NotNull Runnable runnable) {
-        UIExecutionQueue.queueExec(runnable);
-    }
-
-    @Override
-    public void executeWithProgress(@NotNull DBRRunnableWithProgress runnable) throws InvocationTargetException, InterruptedException {
-        // FIXME: we need to run with progress service bu we can't change active control focus
-        // Otherwise it breaks some functions (e.g. data editor value save as it handles focus events).
-        // so we can use runInProgressServie function
-        runnable.run(new VoidProgressMonitor());
+    public void executeInMainThread(@NotNull Runnable runnable) {
+        UIUtils.syncExec(runnable);
     }
 
     /**
@@ -548,8 +541,9 @@ public class DesktopUI extends ConsoleUserInterface {
         @NotNull DBRRunnableWithResult<Future<T>> runnable
     ) {
         final AbstractJob job = new AbstractJob(operationDescription) {
+            @NotNull
             @Override
-            protected IStatus run(DBRProgressMonitor monitor) {
+            protected IStatus run(@NotNull DBRProgressMonitor monitor) {
                 monitor.beginTask(operationDescription, IProgressMonitor.UNKNOWN);
                 try {
                     UIExecutionQueue.blockQueue();
@@ -650,15 +644,19 @@ public class DesktopUI extends ConsoleUserInterface {
         return UIUtils.runWithMonitor(runnable);
     }
 
+    @Override
+    public <T> T runWithProgress(@NotNull DBRRunnableWithReturn<T> runnable) throws DBException {
+        return UIUtils.runWithDialog(runnable);
+    }
 
     @NotNull
     @Override
-    public <RESULT> Job createLoadingService(ILoadService<RESULT> loadingService, ILoadVisualizer<RESULT> visualizer) {
+    public <RESULT> Job createLoadingService(@NotNull ILoadService<RESULT> loadingService, @NotNull ILoadVisualizer<RESULT> visualizer) {
         return LoadingJob.createService(loadingService, visualizer);
     }
 
     @Override
-    public void copyTextToClipboard(String text, boolean htmlFormat) {
+    public void copyTextToClipboard(@NotNull String text, boolean htmlFormat) {
         if (CommonUtils.isEmpty(text)) {
             return;
         }
@@ -680,7 +678,7 @@ public class DesktopUI extends ConsoleUserInterface {
     }
 
     @Override
-    public void executeShellProgram(String shellCommand) {
+    public void executeShellProgram(@NotNull String shellCommand) {
         UIUtils.asyncExec(() -> ShellUtils.launchProgram(shellCommand));
     }
 

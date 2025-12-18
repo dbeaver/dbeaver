@@ -120,11 +120,13 @@ public class SQLServerSchema implements DBSSchema, DBPSaveableObject, DBPQualifi
         return database.getDataSource();
     }
 
+    @NotNull
     @Property(viewable = false, editable = true, order = 10)
     public SQLServerDatabase getDatabase() {
         return database;
     }
 
+    @NotNull
     @Override
     @Property(viewable = true, editable = true, order = 1)
     public String getName() {
@@ -271,7 +273,19 @@ public class SQLServerSchema implements DBSSchema, DBPSaveableObject, DBPQualifi
 
     @Override
     public SQLServerTableBase getChild(@NotNull DBRProgressMonitor monitor, @NotNull String childName) throws DBException {
-        return tableCache.getObject(monitor, this, childName);
+        SQLServerTableBase object = tableCache.getObject(monitor, this, childName);
+        if (object != null) {
+            return object;
+        }
+        // tempdb tables have special naming convention. See SQLServerUtils.stripTempdbTableName
+        if (database.isTempDatabase()) {
+            for (SQLServerTableTemp table : tableCache.getTypedObjects(monitor, this, SQLServerTableTemp.class)) {
+                if (table.getOriginalName().equalsIgnoreCase(childName)) {
+                    return table;
+                }
+            }
+        }
+        return null;
     }
 
     @NotNull
@@ -296,6 +310,7 @@ public class SQLServerSchema implements DBSSchema, DBPSaveableObject, DBPQualifi
         }
     }
 
+    @NotNull
     @Override
     public String getObjectDefinitionText(@NotNull DBRProgressMonitor monitor, @NotNull Map<String, Object> options) throws DBException {
         StringBuilder sql = new StringBuilder();
@@ -327,7 +342,7 @@ public class SQLServerSchema implements DBSSchema, DBPSaveableObject, DBPQualifi
     }
 
     @Override
-    public void collectObjectStatistics(DBRProgressMonitor monitor, boolean totalSizeOnly, boolean forceRefresh) throws DBException {
+    public void collectObjectStatistics(@NotNull DBRProgressMonitor monitor, boolean totalSizeOnly, boolean forceRefresh) throws DBException {
         if (hasTableStatistics && !forceRefresh) {
             return;
         }
@@ -426,6 +441,12 @@ public class SQLServerSchema implements DBSSchema, DBPSaveableObject, DBPQualifi
             }
             String type = JDBCUtils.safeGetStringTrimmed(dbResult, "type");
             if (SQLServerObjectType.U.name().equals(type) || SQLServerObjectType.S.name().equals(type)) {
+                if (owner.getDatabase().isTempDatabase()) {
+                    String originalName = SQLServerUtils.stripTempdbTableName(name);
+                    if (originalName != null) {
+                        return new SQLServerTableTemp(owner, dbResult, name, originalName);
+                    }
+                }
                 return new SQLServerTable(owner, dbResult, name);
             } else if (SQLServerObjectType.TT.name().equals(type)) {
                 return new SQLServerTableType(owner, dbResult, name);

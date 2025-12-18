@@ -322,7 +322,10 @@ public class DriverTabbedViewer extends StructuredViewer {
 
         @Override
         public void setFocus() {
-            viewer.getControl().setFocus();
+            Control control = viewer.getControl();
+            if (!control.isDisposed()) {
+                control.setFocus();
+            }
         }
 
         @Override

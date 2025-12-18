@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,8 +16,6 @@
  */
 package org.jkiss.dbeaver.ext.cubrid.model;
 
-import java.util.Arrays;
-
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -29,6 +27,8 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.meta.PropertyLength;
+
+import java.util.Arrays;
 
 public class CubridTableColumn extends GenericTableColumn
 {
@@ -61,7 +61,7 @@ public class CubridTableColumn extends GenericTableColumn
     }
 
     @Override
-    public void setName(String name) {
+    public void setName(@NotNull String name) {
         super.setName(name != null ? name.toLowerCase() : null);
     }
 

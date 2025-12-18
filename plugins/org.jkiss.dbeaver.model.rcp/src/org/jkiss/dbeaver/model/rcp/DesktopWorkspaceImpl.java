@@ -342,6 +342,7 @@ public class DesktopWorkspaceImpl extends EclipseWorkspaceImpl implements DBPWor
         refreshWorkspaceContents(monitor);
     }
 
+    @NotNull
     @Override
     public Map<String, Object> getFileProperties(File file) {
         synchronized (externalFileProperties) {
@@ -349,6 +350,7 @@ public class DesktopWorkspaceImpl extends EclipseWorkspaceImpl implements DBPWor
         }
     }
 
+    @Nullable
     @Override
     public Object getFileProperty(File file, String property) {
         synchronized (externalFileProperties) {
@@ -376,6 +378,7 @@ public class DesktopWorkspaceImpl extends EclipseWorkspaceImpl implements DBPWor
         saveExternalFileProperties();
     }
 
+    @NotNull
     @Override
     public Map<String, Map<String, Object>> getAllFiles() {
         synchronized (externalFileProperties) {
@@ -416,8 +419,9 @@ public class DesktopWorkspaceImpl extends EclipseWorkspaceImpl implements DBPWor
             super("External files metadata saver");
         }
 
+        @NotNull
         @Override
-        protected IStatus run(DBRProgressMonitor monitor) {
+        protected IStatus run(@NotNull DBRProgressMonitor monitor) {
             synchronized (externalFileProperties) {
                 java.nio.file.Path propsFile = GeneralUtils.getMetadataFolder(getAbsolutePath())
                     .resolve(EXT_FILES_PROPS_STORE);

@@ -424,6 +424,7 @@ public class OracleSchema extends OracleGlobalObject implements
         return OracleTable.class;
     }
 
+    @NotNull
     @Override
     public List<DBSObjectContainer> getPublicScopes(@NotNull DBRProgressMonitor monitor) {
         return List.of(this.getDataSource().getPublicSchema());
@@ -506,7 +507,7 @@ public class OracleSchema extends OracleGlobalObject implements
     }
 
     @Override
-    public void collectObjectStatistics(DBRProgressMonitor monitor, boolean totalSizeOnly, boolean forceRefresh) throws DBException {
+    public void collectObjectStatistics(@NotNull DBRProgressMonitor monitor, boolean totalSizeOnly, boolean forceRefresh) throws DBException {
         if (hasStatistics && !forceRefresh) {
             return;
         }
@@ -544,6 +545,7 @@ public class OracleSchema extends OracleGlobalObject implements
         }
     }
 
+    @NotNull
     @Override
     public String getObjectDefinitionText(@NotNull DBRProgressMonitor monitor, @NotNull Map<String, Object> options) throws DBException {
         StringBuilder sql = new StringBuilder();

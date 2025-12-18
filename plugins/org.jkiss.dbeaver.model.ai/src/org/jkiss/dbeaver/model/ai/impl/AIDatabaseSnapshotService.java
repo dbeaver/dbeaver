@@ -21,20 +21,18 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPNamedObject;
-import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.ai.AIDatabaseScope;
 import org.jkiss.dbeaver.model.ai.AISchemaGenerationOptions;
 import org.jkiss.dbeaver.model.ai.AISchemaGenerator;
 import org.jkiss.dbeaver.model.ai.engine.AIDatabaseContext;
 import org.jkiss.dbeaver.model.ai.registry.AIAssistantRegistry;
+import org.jkiss.dbeaver.model.ai.utils.AIUtils;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContextDefaults;
-import org.jkiss.dbeaver.model.navigator.DBNUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
-import org.jkiss.dbeaver.model.struct.rdb.DBSTablePartition;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -51,8 +49,8 @@ public class AIDatabaseSnapshotService {
     public AIDatabaseSnapshotService() {
     }
 
-    @NotNull
-    public String createDbSnapshot(
+    @Nullable
+    public TokenBoundedStringBuilder createDbSnapshot(
         @NotNull DBRProgressMonitor monitor,
         @Nullable AIDatabaseContext aiDatabaseContext,
         @NotNull AISchemaGenerationOptions options
@@ -60,29 +58,29 @@ public class AIDatabaseSnapshotService {
         schemaGenerator = AIAssistantRegistry.getInstance().getDescriptor().createSchemaGenerator();
 
         if (aiDatabaseContext == null) {
-            return "";
+            return null;
         }
 
         Objects.requireNonNull(aiDatabaseContext.getScopeObject(), "Scope object is null");
         Objects.requireNonNull(aiDatabaseContext.getExecutionContext(), "Execution context is null");
 
-        var prompt = new TokenBoundedStringBuilder(options.maxDbSnapshotTokens());
+        var prompt = new TokenBoundedStringBuilder(options.maxDbSnapshotTokens(), false);
 
         if (appendContext(monitor, aiDatabaseContext, options, prompt, true)) {
-            return prompt.toString();
+            return prompt;
         }
 
         // --- fall-back -----------------------------------------------------
         AISchemaGenerationOptions fallback = buildFallbackOptions(options);
         if (options.equals(fallback)) {        // nothing else we can exclude
-            return prompt.toString();
+            return prompt;
         }
 
         LOG.warn("Context description is too long, generating partial description");
 
-        var partialPrompt = new TokenBoundedStringBuilder(options.maxDbSnapshotTokens());
+        var partialPrompt = new TokenBoundedStringBuilder(options.maxDbSnapshotTokens(), true);
         appendContext(monitor, aiDatabaseContext, fallback, partialPrompt, false);
-        return partialPrompt.toString();
+        return partialPrompt;
     }
 
     /**
@@ -142,13 +140,18 @@ public class AIDatabaseSnapshotService {
             throw new DBException("Snapshot generation was canceled");
         }
 
-        if (shouldSkipObject(monitor, obj)) {          // ignore system or hidden objects
+        if (AIUtils.isExcludableObject(monitor, obj)) {          // ignore system or hidden objects
             return true;
         }
 
         if (obj instanceof DBSEntity entity) {
-            String ddl = schemaGenerator.generateSchema(monitor, entity, execCtx, options, useFqn) + "\n";
-            return out.append(ddl);
+            try {
+                String ddl = schemaGenerator.generateSchema(monitor, entity, execCtx, options, useFqn) + "\n";
+                return out.append(ddl);
+            } catch (DBException e) {
+                LOG.warn("Failed to read metadata for entity '" + entity.getName() + "'", e);
+                return true;
+            }
         }
 
         if (obj instanceof DBSObjectContainer container) {
@@ -168,41 +171,52 @@ public class AIDatabaseSnapshotService {
     ) throws DBException {
 
         if (refreshCache) {
-            container.cacheStructure(
-                monitor,
-                DBSObjectContainer.STRUCT_ENTITIES | DBSObjectContainer.STRUCT_ATTRIBUTES
-            );
-        }
-
-        for (DBSObject child : container.getChildren(monitor)) {
-            if (shouldSkipObject(monitor, child)) {
-                continue;
-            }
-            if (!appendObjectDescription(
-                monitor,
-                out,
-                child,
-                execCtx,
-                options,
-                requiresFqn(child, execCtx),
-                refreshCache
-            )) {
-
-                LOG.warn("Object description is too long, truncated at: " + child.getName());
-                return false;
+            try {
+                container.cacheStructure(
+                    monitor,
+                    DBSObjectContainer.STRUCT_ENTITIES | DBSObjectContainer.STRUCT_ATTRIBUTES
+                );
+            } catch (DBException e) {
+                LOG.warn("Failed to cache for '" + container.getName() + "'. Proceeding.", e);
             }
         }
+
+        try {
+            Collection<? extends DBSObject> children = container.getChildren(monitor);
+            if (children == null) {
+                return true;
+            }
+            for (DBSObject child : children) {
+                if (AIUtils.isExcludableObject(monitor, child)) {
+                    continue;
+                }
+                try {
+                    if (!appendObjectDescription(
+                        monitor,
+                        out,
+                        child,
+                        execCtx,
+                        options,
+                        requiresFqn(child, execCtx),
+                        refreshCache
+                    )) {
+                        LOG.warn("Object description is too long, truncated at: " + child.getName());
+                        return false;
+                    }
+                } catch (DBException e) {
+                    LOG.warn(
+                        "Failed to read metadata for child '" + child.getName()
+                            + "' of container '" + container.getName() + "'",
+                        e
+                    );
+                }
+            }
+        } catch (DBException e) {
+            LOG.warn("Failed to children for '" + container.getName() + "'", e);
+            return true;
+        }
+
         return true;
-    }
-
-    private static boolean shouldSkipObject(
-        @NotNull DBRProgressMonitor monitor,
-        @NotNull DBSObject obj
-    ) {
-        return DBUtils.isSystemObject(obj)
-            || DBUtils.isHiddenObject(obj)
-            || obj instanceof DBSTablePartition
-            || DBNUtils.getNodeByObject(monitor, obj, false) == null;
     }
 
     private static boolean requiresFqn(
@@ -224,7 +238,6 @@ public class AIDatabaseSnapshotService {
             .withSendColumnTypes(false)
             .withSendForeignKeys(false)
             .withSendConstraints(false)
-            .withSendSampleData(false)
             .build();
     }
 
@@ -271,14 +284,16 @@ public class AIDatabaseSnapshotService {
      * Simple {@link StringBuilder} that stops accepting data once the specified
      * token limit (converted to characters) is reached.
      */
-    private static final class TokenBoundedStringBuilder {
+    public static class TokenBoundedStringBuilder {
         private static final int SAFE_MARGIN_TOKENS = 20;
 
         private final StringBuilder sb = new StringBuilder();
         private final int maxChars;
+        private final boolean isTruncated;
 
-        TokenBoundedStringBuilder(int maxTokens) {
+        TokenBoundedStringBuilder(int maxTokens, boolean isTruncated) {
             this.maxChars = (maxTokens - SAFE_MARGIN_TOKENS) * DummyTokenCounter.TOKEN_TO_CHAR_RATIO;
+            this.isTruncated = isTruncated;
         }
 
         boolean append(@NotNull CharSequence chunk) {
@@ -287,6 +302,10 @@ public class AIDatabaseSnapshotService {
             }
             sb.append(chunk);
             return true;
+        }
+
+        boolean isTruncated() {
+            return isTruncated;
         }
 
         @Override

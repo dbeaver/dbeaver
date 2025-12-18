@@ -32,14 +32,12 @@ import org.jkiss.dbeaver.model.app.DBPPlatformDesktop;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.app.DBPProjectListener;
 import org.jkiss.dbeaver.model.navigator.*;
-import org.jkiss.dbeaver.model.rcp.RCPProject;
 import org.jkiss.dbeaver.model.rm.RMConstants;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.actions.ObjectPropertyTester;
 import org.jkiss.dbeaver.ui.controls.ViewerColumnController;
 import org.jkiss.dbeaver.ui.internal.UINavigatorMessages;
-import org.jkiss.dbeaver.ui.project.PrefPageProjectResourceSettings;
 import org.jkiss.dbeaver.utils.ResourceUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -332,14 +330,6 @@ public class ProjectExplorerView extends DecoratedProjectView implements DBPProj
 
     private void updateTitle() {
         setPartName("Files - " + getRootNode().getNodeDisplayName());
-    }
-
-    public void configureView() {
-        //columnController.configureColumns();
-        DBPProject activeProject = DBWorkbench.getPlatform().getWorkspace().getActiveProject();
-        if (activeProject instanceof RCPProject rcpProject) {
-            UIUtils.showPreferencesFor(getSite().getShell(), rcpProject.getEclipseProject(), PrefPageProjectResourceSettings.PAGE_ID);
-        }
     }
 
 }

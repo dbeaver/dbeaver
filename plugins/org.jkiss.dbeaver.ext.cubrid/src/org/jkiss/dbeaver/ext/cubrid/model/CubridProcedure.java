@@ -128,6 +128,7 @@ public class CubridProcedure extends GenericProcedure implements DBSObjectWithSc
         return proColumns;
     }
 
+    @NotNull
     @Override
     @Property(hidden = true, editable = true, updatable = true)
     public String getObjectDefinitionText(@NotNull DBRProgressMonitor monitor, @NotNull Map<String, Object> options) throws DBException {

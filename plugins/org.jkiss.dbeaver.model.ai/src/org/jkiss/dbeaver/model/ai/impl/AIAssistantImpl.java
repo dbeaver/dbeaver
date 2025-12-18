@@ -40,7 +40,7 @@ public class AIAssistantImpl implements AIAssistant {
     private static final int MANY_REQUESTS_RETRIES = 3;
     private static final int MANY_REQUESTS_TIMEOUT = 500;
     public static final String LOG_INDENT = "\t";
-    private static final int MAX_FUNCTION_CALLS = 5;
+    protected static final int MAX_FUNCTION_CALLS = 5;
 
     protected final DBPWorkspace workspace;
 
@@ -50,11 +50,15 @@ public class AIAssistantImpl implements AIAssistant {
     public AIAssistantImpl(@NotNull DBPWorkspace workspace) {
         this.workspace = workspace;
         this.requestFactory = createRequestFactory();
+        this.sqlFormatter = createSqlFormatter();
+    }
+
+    protected AISqlFormatter createSqlFormatter() {
         try {
-            this.sqlFormatter = AIAssistantRegistry.getInstance().getDescriptor().createSqlFormatter();
+            return AIAssistantRegistry.getInstance().getDescriptor().createSqlFormatter();
         } catch (DBException e) {
             log.error("Error creating SQL formatter", e);
-            this.sqlFormatter = new SimpleSqlFormatterImpl();
+            return new SimpleSqlFormatterImpl();
         }
     }
 
@@ -76,21 +80,16 @@ public class AIAssistantImpl implements AIAssistant {
         checkAiEnablement();
 
         AIEngineDescriptor engineDescriptor = getEngineDescriptor();
-        try (AIEngine engine = engineDescriptor.createEngineInstance()) {
-            AIEngineRequest completionRequest = requestFactory.build(
+        try (AIEngine<?> engine = engineDescriptor.createEngineInstance()) {
+            AIEngineRequest completionRequest = buildAiEngineRequest(
                 monitor,
+                context,
+                systemGenerator,
+                messages,
                 engine,
-                engineDescriptor,
-                systemGenerator,
-                context,
-                messages
+                engineDescriptor
             );
-            AIFunctionContext functionContext = new AIFunctionContext(
-                monitor,
-                context,
-                systemGenerator,
-                messages
-            );
+            AIFunctionContext functionContext = createAiFunctionContext(monitor, context, systemGenerator, messages);
 
             AIEngineRequest request = completionRequest;
             for (int tryIndex = 0; tryIndex < MAX_FUNCTION_CALLS; tryIndex++) {
@@ -127,7 +126,41 @@ public class AIAssistantImpl implements AIAssistant {
     }
 
     @NotNull
-    protected static AIFunctionResult callFunction(
+    public AIEngineRequest buildAiEngineRequest(
+        @NotNull DBRProgressMonitor monitor,
+        @Nullable AIDatabaseContext context,
+        @NotNull AIPromptGenerator systemGenerator,
+        @NotNull List<AIMessage> messages,
+        @NotNull AIEngine<?> engine,
+        @NotNull AIEngineDescriptor engineDescriptor
+    ) throws DBException {
+        return requestFactory.build(
+            monitor,
+            engine,
+            engineDescriptor,
+            systemGenerator,
+            context,
+            messages
+        );
+    }
+
+    @NotNull
+    private static AIFunctionContext createAiFunctionContext(
+        @NotNull DBRProgressMonitor monitor,
+        @Nullable AIDatabaseContext context,
+        @NotNull AIPromptGenerator systemGenerator,
+        @NotNull List<AIMessage> messages
+    ) {
+        return new AIFunctionContext(
+            monitor,
+            context,
+            systemGenerator,
+            messages
+        );
+    }
+
+    @NotNull
+    protected AIFunctionResult callFunction(
         @NotNull AIFunctionContext context,
         @NotNull AIFunctionCall functionCall
     ) throws DBException {
@@ -138,10 +171,11 @@ public class AIAssistantImpl implements AIAssistant {
             throw new DBCMessageException("Function '" + functionName + "' not found");
         }
         functionCall.setFunction(function);
+        log.debug("Call AI function '" + function.getId() + "'");
         return registry.callFunction(context, function, functionCall.getArguments());
     }
 
-    protected static void checkAiEnablement() throws DBException {
+    protected void checkAiEnablement() throws DBException {
         if (AISettingsManager.getInstance().getSettings().isAiDisabled()) {
             throw new DBException("AI integration is disabled");
         }
@@ -158,7 +192,7 @@ public class AIAssistantImpl implements AIAssistant {
     }
 
     @NotNull
-    public AIEngine createEngine() throws DBException {
+    public AIEngine<?> createEngine() throws DBException {
         return AIEngineRegistry.getInstance().createEngine(getActiveEngineId());
     }
 
@@ -179,7 +213,7 @@ public class AIAssistantImpl implements AIAssistant {
 
     @NotNull
     protected AIEngineResponse requestCompletion(
-        @NotNull AIEngine engine,
+        @NotNull AIEngine<?> engine,
         @NotNull DBRProgressMonitor monitor,
         @NotNull AIEngineRequest request
     ) throws DBException {
@@ -226,8 +260,14 @@ public class AIAssistantImpl implements AIAssistant {
         return settingsManager.getSettings().getEngineConfiguration(activeEngine);
     }
 
-
     protected static <T> T callWithRetry(ThrowableSupplier<T, DBException> supplier) throws DBException {
+        return callWithRetry(null, supplier);
+    }
+
+    protected static <T> T callWithRetry(
+        @Nullable AIEngineResponseConsumer listener,
+        @NotNull ThrowableSupplier<T, DBException> supplier
+    ) throws DBException {
         int retry = 0;
         while (retry < MANY_REQUESTS_RETRIES) {
             try {
@@ -239,6 +279,10 @@ public class AIAssistantImpl implements AIAssistant {
                     RuntimeUtils.pause(MANY_REQUESTS_TIMEOUT);
                 }
             }
+        }
+        DBException dbException = new DBException("Request failed after " + MANY_REQUESTS_RETRIES + " attempts");
+        if (listener != null) {
+            listener.error(dbException);
         }
         throw new DBException("Request failed after " + MANY_REQUESTS_RETRIES + " attempts");
     }

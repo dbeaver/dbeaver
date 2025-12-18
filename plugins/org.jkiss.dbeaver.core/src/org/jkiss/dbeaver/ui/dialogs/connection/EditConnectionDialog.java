@@ -18,7 +18,6 @@ package org.jkiss.dbeaver.ui.dialogs.connection;
 
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.IDialogSettings;
-import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -74,24 +73,6 @@ public class EditConnectionDialog extends MultiPageWizardDialog {
         return UIUtils.getDialogSettings("DBeaver.EditConnectionDialog");
     }
 
-    @NotNull
-    @Override
-    protected IWizardPage getStartingPage() {
-/*
-        String defPage = defaultPageName;
-        if (defPage == null) {
-            defPage = lastActivePage;
-        }
-        if (defPage != null) {
-            IWizardPage page = getWizard().getPage(defPage);
-            if (page != null) {
-                return page;
-            }
-        }
-*/
-        return super.getStartingPage();
-    }
-
     @Override
     protected Control createContents(Composite parent) {
         Control contents = super.createContents(parent);
@@ -113,8 +94,8 @@ public class EditConnectionDialog extends MultiPageWizardDialog {
     }
 
     @Override
-    protected boolean isAutoLayoutAvailable() {
-        return true;
+    protected boolean isShowTreeIcons() {
+        return false;
     }
 
     @Override
@@ -180,7 +161,7 @@ public class EditConnectionDialog extends MultiPageWizardDialog {
         @Nullable Consumer<EditConnectionWizard> wizardConfigurer
     ) {
         EditConnectionDialog dialog = openDialogs.get(dataSource);
-        if (dialog != null) {
+        if (dialog != null && dialog.getShell() != null && !dialog.getShell().isDisposed()) {
             if (defaultPageName != null) {
                 dialog.showPage(defaultPageName);
             }

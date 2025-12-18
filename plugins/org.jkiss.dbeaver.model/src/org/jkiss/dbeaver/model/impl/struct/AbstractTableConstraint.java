@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -70,7 +70,7 @@ public abstract class AbstractTableConstraint<TABLE extends DBSTable, CON_COLUMN
         return name;
     }
 
-    public void setName(String name) {
+    public void setName(@NotNull String name) {
         this.name = name;
     }
 
@@ -98,7 +98,7 @@ public abstract class AbstractTableConstraint<TABLE extends DBSTable, CON_COLUMN
 
     @Nullable
     @Override
-    public abstract List<CON_COLUMN> getAttributeReferences(DBRProgressMonitor monitor) throws DBException;
+    public abstract List<CON_COLUMN> getAttributeReferences(@Nullable DBRProgressMonitor monitor) throws DBException;
 
     public void addAttributeReference(DBSTableColumn column) throws DBException {
         throw new DBCFeatureNotSupportedException("Attribute add is not supported for " + getClass().getSimpleName());
