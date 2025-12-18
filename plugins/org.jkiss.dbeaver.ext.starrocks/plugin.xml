@@ -10,7 +10,17 @@
                 dialect="mysql"
                 label="StarRocks"
                 icon="icons/starrocks_icon.png">
-
+            
+            <!-- Define StarRocks tree with catalog layer -->
+            <tree path="starrocks" label="StarRocks" icon="#folder_database">
+                <items label="Catalogs" path="catalog" property="catalogs" icon="#folder_schema">
+                    <items label="Databases" path="database" property="databases" icon="#folder_table">
+                        <!-- Simplest: just call getChildren() which returns all tables -->
+                        <items label="Table" path="table" property="children" icon="#table"/>
+                    </items>
+                </items>
+            </tree>
+            
             <drivers managable="true">
                 <driver
                         id="starrocks"
@@ -25,12 +35,10 @@
                         webURL="https://docs.starrocks.io/"
                         description="StarRocks using MySQL 8 driver"
                         categories="sql">
-
                     <file type="jar" path="maven:/com.mysql:mysql-connector-j:RELEASE[8.3.0]" bundle="!drivers.mysql"/>
                     <file type="license" path="https://www.gnu.org/licenses/old-licenses/lgpl-2.0.txt" bundle="!drivers.mysql"/>
                     <file type="license" path="drivers/mysql/LICENSE.txt" bundle="drivers.mysql"/>
                     <file type="jar" path="drivers/mysql/mysql8" bundle="drivers.mysql"/>
-
                     <property name="connectTimeout" value="20000"/>
                     <parameter name="supports-partitions" value="false"/>
                     <parameter name="supports-references" value="false"/>
