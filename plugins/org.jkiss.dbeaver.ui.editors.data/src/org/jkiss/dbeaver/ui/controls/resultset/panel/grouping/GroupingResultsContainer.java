@@ -24,6 +24,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.app.DBPProject;
+import org.jkiss.dbeaver.model.data.DBDAttributeConstraint;
 import org.jkiss.dbeaver.model.data.DBDDataFilter;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCStatistics;
@@ -37,10 +38,7 @@ import org.jkiss.dbeaver.ui.controls.resultset.*;
 import org.jkiss.dbeaver.ui.controls.resultset.view.EmptyPresentation;
 import org.jkiss.utils.CommonUtils;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
 
 public class GroupingResultsContainer implements IResultSetContainer {
@@ -310,10 +308,24 @@ public class GroupingResultsContainer implements IResultSetContainer {
         return DBUtils.readRowCount(
             monitor,
             groupingViewer.getExecutionContext(),
-            presentation.getController().getDataContainer(),
-            currentFiler.get(),
+            presentation.getController().getDataContainer(), filterExcludingGroupingColumns(),
             groupingViewer
         );
+    }
+
+    @Nullable
+    private DBDDataFilter filterExcludingGroupingColumns() {
+        DBDDataFilter dataFilter = currentFiler.get();
+        if (dataFilter == null) {
+            return null;
+        }
+        List<DBDAttributeConstraint> attributeConstraints = groupAttributes.stream()
+            .map(ga -> ga instanceof SQLGroupingAttribute.BoundAttribute boundAttribute
+                ? boundAttribute.getBindingName()
+                : ga.getDisplayName())
+            .map(dataFilter::getConstraint)
+            .filter(Objects::nonNull).toList();
+        return new DBDDataFilter(attributeConstraints);
     }
 
     private void resetDataFilters() {

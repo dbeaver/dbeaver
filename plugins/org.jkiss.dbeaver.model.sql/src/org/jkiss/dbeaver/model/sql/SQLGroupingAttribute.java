@@ -222,5 +222,9 @@ public abstract class SQLGroupingAttribute {
         public int hashCode() {
             return Objects.hashCode(this.displayName);
         }
+
+        public String getBindingName() {
+            return binding.getName();
+        }
     }
 }
