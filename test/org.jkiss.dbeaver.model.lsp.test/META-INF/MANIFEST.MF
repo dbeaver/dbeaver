@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: DBeaver LSP Test Plug-in
 Bundle-SymbolicName: org.jkiss.dbeaver.model.lsp.test;singleton:=true
-Bundle-Version: 25.0.1.qualifier
+Bundle-Version: 1.0.0.qualifier
 Bundle-Release-Date: 20251208
 Require-Bundle: org.jkiss.dbeaver.model.lsp,
  org.jkiss.dbeaver.model,
