@@ -3,14 +3,18 @@ package org.jkiss.dbeaver.ext.starrocks.model;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.ext.mysql.MySQLConstants;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLCatalog;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLTableBase;
+import org.jkiss.dbeaver.ext.mysql.model.MySQLView;
 import org.jkiss.dbeaver.ext.starrocks.StarRocksDataSource;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
+import org.jkiss.dbeaver.model.DBPEvaluationContext;
+import org.jkiss.dbeaver.model.DBPQualifiedObject;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
@@ -19,10 +23,10 @@ import java.util.Collection;
 
 /**
  * StarRocks Database - wraps MySQLCatalog but belongs to a StarRocks Catalog
+ * Implements DBPQualifiedObject to provide catalog-aware fully qualified names
  */
-public class StarRocksDatabase extends MySQLCatalog {
+public class StarRocksDatabase extends MySQLCatalog implements DBPQualifiedObject {
     
-    private static final Log log = Log.getLog(StarRocksDatabase.class);
     private final StarRocksCatalog catalog;
     private final StarRocksTableCache tableCache = new StarRocksTableCache();
     
@@ -53,25 +57,28 @@ public class StarRocksDatabase extends MySQLCatalog {
         return tableCache;
     }
     
-    /**
-     * CRITICAL: This method must be called for DBeaver to attempt to load tables
-     */
     @Override
     @Association
     public Collection<MySQLTableBase> getChildren(@NotNull DBRProgressMonitor monitor) throws DBException {
-        System.out.println("==========================================");
-        System.out.println("StarRocksDatabase.getChildren() CALLED!");
-        System.out.println("Database: " + getName());
-        System.out.println("Catalog: " + catalog.getName());
-        System.out.println("==========================================");
-        
-        log.debug("StarRocks: Loading tables for database '" + getName() + "' in catalog '" + catalog.getName() + "'");
-        
-        Collection<MySQLTableBase> tables = tableCache.getAllObjects(monitor, this);
-        
-        System.out.println("StarRocksDatabase.getChildren() RETURNED " + tables.size() + " tables");
-        
-        return tables;
+        return tableCache.getAllObjects(monitor, this);
+    }
+    
+    /**
+     * Implement DBPQualifiedObject to provide catalog-aware fully qualified names
+     * Format: catalog.database or `catalog`.`database`
+     */
+    @NotNull
+    @Override
+    public String getFullyQualifiedName(DBPEvaluationContext context) {
+        switch (context) {
+            case DML:
+            case DDL:
+                // For SQL contexts, include catalog name
+                return DBUtils.getQuotedIdentifier(catalog) + "." + DBUtils.getQuotedIdentifier(this);
+            default:
+                // For UI contexts, just show database name
+                return getName();
+        }
     }
     
     /**
@@ -81,48 +88,32 @@ public class StarRocksDatabase extends MySQLCatalog {
         String catalogName = catalog.getName();
         String useCatalogSQL = "SET CATALOG `" + catalogName + "`";
         
-        System.out.println("Executing: " + useCatalogSQL);
-        log.debug("StarRocks: Switching to catalog '" + catalogName + "' for database '" + getName() + "'");
-        
         try {
             session.getOriginal().createStatement().execute(useCatalogSQL);
-            System.out.println("Catalog switch successful");
-            log.debug("StarRocks: Successfully switched to catalog '" + catalogName + "'");
         } catch (SQLException e) {
-            System.err.println("Catalog switch FAILED: " + e.getMessage());
-            log.error("StarRocks: Failed to switch to catalog '" + catalogName + "'", e);
             throw e;
         }
     }
     
     /**
      * Custom table cache that switches to the correct catalog before querying
+     * and creates StarRocksTable instances instead of MySQLTable
      */
     class StarRocksTableCache extends TableCache {
         
-        /**
-         * Override prepareObjectsStatement for batch loading of all tables
-         */
         @NotNull
         @Override
         protected JDBCStatement prepareObjectsStatement(
                 @NotNull JDBCSession session,
                 @NotNull MySQLCatalog owner) throws SQLException {
             
-            System.out.println("StarRocksTableCache.prepareObjectsStatement() CALLED");
-            
             // Switch to correct catalog context
             switchToCatalogContext(session);
             
             // Call parent to generate SHOW FULL TABLES query
-            JDBCStatement stmt = super.prepareObjectsStatement(session, owner);
-            System.out.println("Statement prepared: " + stmt);
-            return stmt;
+            return super.prepareObjectsStatement(session, owner);
         }
         
-        /**
-         * Override prepareLookupStatement for individual table lookups
-         */
         @NotNull
         @Override
         public JDBCStatement prepareLookupStatement(
@@ -131,35 +122,43 @@ public class StarRocksDatabase extends MySQLCatalog {
                 @Nullable MySQLTableBase object,
                 @Nullable String objectName) throws SQLException {
             
-            System.out.println("StarRocksTableCache.prepareLookupStatement() CALLED");
-            System.out.println("  object: " + object);
-            System.out.println("  objectName: " + objectName);
-            
             // Switch to correct catalog context
             switchToCatalogContext(session);
             
             // Call parent to generate appropriate query
-            JDBCStatement stmt = super.prepareLookupStatement(session, owner, object, objectName);
-            System.out.println("Statement prepared: " + stmt);
-            return stmt;
+            return super.prepareLookupStatement(session, owner, object, objectName);
         }
         
-        /**
-         * Override prepareChildrenStatement to ensure catalog context when loading columns
-         */
         @Override
         protected JDBCStatement prepareChildrenStatement(
                 @NotNull JDBCSession session,
                 @NotNull MySQLCatalog owner,
                 @Nullable MySQLTableBase forTable) throws SQLException {
             
-            System.out.println("StarRocksTableCache.prepareChildrenStatement() CALLED");
-            
             // Switch to correct catalog context
             switchToCatalogContext(session);
             
             // Call parent to generate column query
             return super.prepareChildrenStatement(session, owner, forTable);
+        }
+        
+        /**
+         * Override to create StarRocksTable instead of MySQLTable
+         */
+        @Override
+        protected MySQLTableBase fetchObject(
+                @NotNull JDBCSession session, 
+                @NotNull MySQLCatalog owner, 
+                @NotNull JDBCResultSet dbResult)
+                throws SQLException, DBException {
+            
+            final String tableType = JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_TABLE_TYPE);
+            if (tableType != null && tableType.contains("VIEW")) {
+                return new MySQLView(owner, dbResult);
+            } else {
+                // Create StarRocksTable instead of MySQLTable
+                return new StarRocksTable(owner, dbResult);
+            }
         }
         
         @Override
