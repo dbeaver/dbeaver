@@ -16,6 +16,8 @@
  */
 package org.jkiss.dbeaver.ui.controls.resultset.panel.grouping;
 
+import org.eclipse.jface.action.Action;
+import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.fieldassist.IContentProposalProvider;
 import org.eclipse.swt.SWT;
@@ -50,12 +52,14 @@ public class GroupingConfigDialog extends BaseDialog {
     private static final String DIALOG_ID = "DBeaver.GroupingConfigDialog"; //$NON-NLS-1$
 
     private final GroupingResultsContainer resultsContainer;
+    private final MenuManager menuManager;
     private Table columnsTable;
     private Table functionsTable;
 
     public GroupingConfigDialog(Shell parentShell, GroupingResultsContainer resultsContainer) {
         super(parentShell, "Grouping configuration", null);
         this.resultsContainer = resultsContainer;
+        menuManager = new MenuManager();
     }
 
     @Override
@@ -259,35 +263,39 @@ public class GroupingConfigDialog extends BaseDialog {
 
         @NotNull
         private Menu createAddMenu(@NotNull Button addButton) {
-            Menu addMenu = new Menu(addButton);
-            addCustomFunction(addMenu);
+            MenuManager rootManager = new MenuManager();
+            addCustomFunction(rootManager);
             for (String function : defaultFunctions) {
-                Menu funcMenu = new Menu(addMenu);
-
-                MenuItem functionItem = new MenuItem(addMenu, SWT.CASCADE);
-                functionItem.setText(function);
-                functionItem.setMenu(funcMenu);
-
+                MenuManager functionMenu = new MenuManager(function);
                 for (String column : columns) {
-                    MenuItem columnItem = new MenuItem(funcMenu, SWT.PUSH);
-                    columnItem.setText(column);
-                    columnItem.addListener(
-                        SWT.Selection, e -> {
-                            String functionCall = function + "(" + column + ")";
-                            TableItem newItem = new TableItem(valueTable, SWT.LEFT);
-                            newItem.setText(functionCall);
-                            addTableItem(newItem);
-                        }
-                    );
+                    functionMenu.add(createSubmenuAction(function, column));
                 }
+                rootManager.add(functionMenu);
             }
+            Menu addMenu = rootManager.createContextMenu(addButton);
+            addButton.addDisposeListener(e -> rootManager.dispose());
             return addMenu;
         }
 
-        private void addCustomFunction(@NotNull Menu addMenu) {
-            MenuItem defaultFunctionItem = new MenuItem(addMenu, SWT.PUSH);
-            defaultFunctionItem.setText(ResultSetMessages.grouping_panel_function_panel_custom_label);
-            defaultFunctionItem.addListener(SWT.Selection, e -> addTableItem(new TableItem(valueTable, SWT.LEFT)));
+        private void addCustomFunction(@NotNull MenuManager addMenu) {
+            addMenu.add(new Action(ResultSetMessages.grouping_panel_function_panel_custom_label) {
+                @Override
+                public void run() {
+                    addTableItem(new TableItem(valueTable, SWT.LEFT));
+                }
+            });
+        }
+
+        private Action createSubmenuAction(@NotNull String functionName, @NotNull String columnName) {
+            return new Action(columnName) {
+                @Override
+                public void run() {
+                    String functionCall = functionName + "(" + columnName + ")";
+                    TableItem newItem = new TableItem(valueTable, SWT.LEFT);
+                    newItem.setText(functionCall);
+                    addTableItem(newItem);
+                }
+            };
         }
     }
 }
