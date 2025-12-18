@@ -29,6 +29,7 @@
 
         <module>plugins</module>
         <module>features</module>
+        <module>product</module>
     </modules>
 
     <build>
