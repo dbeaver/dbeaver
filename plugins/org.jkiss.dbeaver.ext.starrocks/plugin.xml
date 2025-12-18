@@ -13,12 +13,21 @@
             
             <!-- Define StarRocks tree with catalog layer -->
             <tree path="starrocks" label="StarRocks" icon="#folder_database">
-                <items label="Catalogs" path="catalog" property="catalogs" icon="#folder_schema">
-                    <items label="Databases" path="database" property="databases" icon="#folder_table">
-                        <!-- Simplest: just call getChildren() which returns all tables -->
-                        <items label="Table" path="table" property="children" icon="#table"/>
+                <folder type="org.jkiss.dbeaver.ext.starrocks.model.StarRocksCatalog" label="Catalogs" icon="#folder_schema" description="StarRocks catalogs">
+                    <items label="Catalog" path="catalog" property="catalogs" icon="#database">
+                        <folder type="org.jkiss.dbeaver.ext.starrocks.model.StarRocksDatabase" label="Databases" icon="#folder_database" description="Databases in catalog">
+                            <items label="Database" path="database" property="databases" icon="#database">
+                                <folder type="org.jkiss.dbeaver.ext.starrocks.model.StarRocksTable" label="Tables" icon="#folder_table" description="Tables in database">
+                                    <items label="Table" path="table" property="children" icon="#table">
+                                        <folder type="org.jkiss.dbeaver.ext.starrocks.model.StarRocksTableColumn" label="Columns" icon="#columns" description="Table columns">
+                                            <items label="Column" path="attribute" property="attributes" icon="#column"/>
+                                        </folder>
+                                    </items>
+                                </folder>
+                            </items>
+                        </folder>
                     </items>
-                </items>
+                </folder>
             </tree>
             
             <drivers managable="true">
@@ -52,6 +61,7 @@
             </drivers>
         </datasource>
     </extension>
+
     <extension point="org.jkiss.dbeaver.sqlDialect">
         <dialect id="starrocks" parent="mysql" class="org.jkiss.dbeaver.ext.starrocks.StarRocksDialect"
                  label="StarRocks" description="StarRocks SQL dialect" icon="icons/starrocks_icon.png">

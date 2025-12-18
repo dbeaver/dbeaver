@@ -201,7 +201,7 @@ public class StarRocksExecutionContext extends JDBCExecutionContext
         }
 
         // Get current catalog
-        try (JDBCPreparedStatement dbStat = session.prepareStatement("SELECT CURRENT_CATALOG()")) {
+        try (JDBCPreparedStatement dbStat = session.prepareStatement("SELECT CATALOG()")) {
             try (JDBCResultSet dbResult = dbStat.executeQuery()) {
                 if (dbResult.next()) {
                     activeCatalogName = JDBCUtils.safeGetString(dbResult, 1);

@@ -42,7 +42,7 @@ public class StarRocksTable extends JDBCTable<StarRocksDataSource, StarRocksData
     private final boolean isView;
 
     public StarRocksTable(StarRocksDatabase database, String tableName, boolean isView) {
-        super(database, tableName, false);
+        super(database, tableName, true);  // persisted = true since these are existing tables
         this.isView = isView;
     }
 
