@@ -269,13 +269,12 @@
                         useURL="false"
                         defaultPort="9030"
                         defaultUser="root"
-                        webURL="https://docs.starrocks.io/"
-                        description="StarRocks using MySQL driver (Legacy - does not support external catalogs)"
+                        webURL="https://docs.starrocks.io/docs/quick_start/shared-nothing/"
+                        description="StarRocks using MySQL driver"
                         categories="sql">
 
                     <file type="jar" path="maven:/com.mysql:mysql-connector-j:RELEASE[8.3.0]" bundle="!drivers.mysql"/>
-                    <file type="license" path="https://www.gnu.org/licenses/old-licenses/lgpl-2.0.txt" bundle="!drivers.mysql"/>
-                    <file type="license" path="drivers/mysql/LICENSE.txt" bundle="drivers.mysql"/>
+                    <file type="license" path="licenses/external/gnu3.txt"/>
                     <file type="jar" path="drivers/mysql/mysql8" bundle="drivers.mysql"/>
                     <property name="connectTimeout" value="20000"/>
                     <parameter name="supports-partitions" value="false"/>
