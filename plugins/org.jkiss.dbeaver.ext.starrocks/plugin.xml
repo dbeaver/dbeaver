@@ -7,7 +7,7 @@
                 description="StarRocks Database"
                 id="starrocks"
                 parent="mysql"
-                dialect="mysql"
+                dialect="starrocks"
                 label="StarRocks"
                 icon="icons/starrocks_icon.png">
             
@@ -51,5 +51,13 @@
                 </driver>
             </drivers>
         </datasource>
+    </extension>
+    <extension point="org.jkiss.dbeaver.sqlDialect">
+        <dialect id="starrocks" parent="mysql" class="org.jkiss.dbeaver.ext.starrocks.StarRocksDialect"
+                 label="StarRocks" description="StarRocks SQL dialect" icon="icons/starrocks_icon.png">
+            <keywords value=""/>
+            <functions value=""/>
+            <types value=""/>
+        </dialect>
     </extension>
 </plugin>
