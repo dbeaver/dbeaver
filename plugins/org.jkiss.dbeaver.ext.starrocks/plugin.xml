@@ -6,10 +6,10 @@
                 class="org.jkiss.dbeaver.ext.starrocks.StarRocksDataSourceProvider"
                 description="StarRocks Database"
                 id="starrocks"
-                label="StarRocks"
-                icon="icons/starrocks_icon.png"
                 parent="mysql"
-                dialect="mysql">
+                dialect="mysql"
+                label="StarRocks"
+                icon="icons/starrocks_icon.png">
 
             <drivers managable="true">
                 <driver
@@ -18,18 +18,18 @@
                         icon="icons/starrocks_icon.png"
                         iconBig="icons/starrocks_icon_big.png"
                         logoImage="icons/starrocks_logo.png"
-                        class="com.mysql.jdbc.Driver"
+                        class="com.mysql.cj.jdbc.Driver"
                         sampleURL="jdbc:mysql://{host}[:{port}]/[{database}]"
-                        useURL="false"
                         defaultPort="9030"
                         defaultUser="root"
                         webURL="https://docs.starrocks.io/"
-                        description="StarRocks JDBC Driver"
+                        description="StarRocks using MySQL 8 driver"
                         categories="sql">
 
                     <file type="jar" path="maven:/com.mysql:mysql-connector-j:RELEASE[8.3.0]" bundle="!drivers.mysql"/>
+                    <file type="license" path="https://www.gnu.org/licenses/old-licenses/lgpl-2.0.txt" bundle="!drivers.mysql"/>
+                    <file type="license" path="drivers/mysql/LICENSE.txt" bundle="drivers.mysql"/>
                     <file type="jar" path="drivers/mysql/mysql8" bundle="drivers.mysql"/>
-                    <file type="license" path="drivers/starrocks/LICENSE.txt" bundle="drivers.starrocks"/>
 
                     <property name="connectTimeout" value="20000"/>
                     <parameter name="supports-partitions" value="false"/>
