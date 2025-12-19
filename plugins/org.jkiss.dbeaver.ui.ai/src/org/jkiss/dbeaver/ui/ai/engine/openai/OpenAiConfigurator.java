@@ -106,7 +106,6 @@ public class OpenAiConfigurator<ENGINE extends AIEngineDescriptor, PROPERTIES ex
         applySettings();
 
         contextWindowSizeField.setValue(configuration.getContextWindowSize());
-
         modelSelectorField.refreshModelListSilently(false);
     }
 
@@ -159,7 +158,7 @@ public class OpenAiConfigurator<ENGINE extends AIEngineDescriptor, PROPERTIES ex
                     .map(AIModel::name)
                     .toList()
             )
-            .withSelectionListener(SelectionListener.widgetSelectedAdapter(e ->
+            .withModifyListener(() ->
                 OpenAIModels.getModelByName(modelSelectorField.getSelectedModel())
                     .ifPresentOrElse(
                         model -> {
@@ -171,7 +170,7 @@ public class OpenAiConfigurator<ENGINE extends AIEngineDescriptor, PROPERTIES ex
                             temperatureText.setText("0.0");
                             temperatureText.setEnabled(true);
                         }
-                    )))
+                    ))
                 .build();
 
         contextWindowSizeField = ContextWindowSizeField.builder()
