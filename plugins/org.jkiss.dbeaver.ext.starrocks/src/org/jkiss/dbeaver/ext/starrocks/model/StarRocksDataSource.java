@@ -100,7 +100,7 @@ public class StarRocksDataSource extends JDBCDataSource implements DBPRefreshabl
 
     @Override
     public Collection<? extends DBSDataType> getLocalDataTypes() {
-        return Collections.emptyList();
+        return dataTypeCache.getCachedObjects();
     }
 
     @Association
