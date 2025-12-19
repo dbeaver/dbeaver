@@ -32,9 +32,7 @@ import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.utils.CommonUtils;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
+import java.util.*;
 
 public class SQLGroupingQueryGenerator {
 
@@ -189,16 +187,28 @@ public class SQLGroupingQueryGenerator {
     private String makeGroupFunctionAlias(List<String> groupFunctions, int funcIndex) {
         String function = groupFunctions.get(funcIndex);
         StringBuilder alias = new StringBuilder();
+        char delimeter = '_';
         for (int i = 0; i < function.length(); i++) {
             char c = function.charAt(i);
-            if (Character.isLetterOrDigit(c) || c == '_') {
+            if (Character.isLetterOrDigit(c) || c == delimeter) {
                 alias.append(c);
             } else if (c == '(' || c == ')') {
-                alias.append('_');
+                alias.append(delimeter);
             }
         }
+        while (!alias.isEmpty() && alias.charAt(alias.length() - 1) == delimeter) {
+            alias.deleteCharAt(alias.length() - 1);
+        }
         if (!alias.isEmpty()) {
-            return alias.append(funcIndex).toString().toLowerCase(Locale.ENGLISH);
+            long numberOfSameColumnNames = Arrays.stream(funcAliases)
+                .filter(Objects::nonNull)
+                .filter(a -> a.startsWith(alias.toString().toLowerCase(Locale.ENGLISH)))
+                .count();
+
+            if (numberOfSameColumnNames > 0) {
+                alias.append(delimeter).append(numberOfSameColumnNames);
+            }
+            return alias.toString().toLowerCase(Locale.ENGLISH);
         }
         return "i_" + funcIndex;
     }
