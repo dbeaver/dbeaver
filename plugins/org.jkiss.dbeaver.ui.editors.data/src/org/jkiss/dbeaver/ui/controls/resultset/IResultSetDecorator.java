@@ -37,6 +37,8 @@ public interface IResultSetDecorator {
     long FEATURE_COMPACT_FILTERS    = 64;
     /** Hides the status details label */
     long FEATURE_COMPACT_STATUS     = 128;
+    /** Shows the status bar only when the result set if activated */
+    long FEATURE_ON_DEMAND_STATUS     = 256;
 
     long getDecoratorFeatures();
 
