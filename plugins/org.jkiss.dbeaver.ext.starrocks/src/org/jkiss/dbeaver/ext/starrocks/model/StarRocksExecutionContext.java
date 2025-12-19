@@ -82,31 +82,18 @@ public class StarRocksExecutionContext extends JDBCExecutionContext
 
     @Override
     public StarRocksCatalog getDefaultCatalog() {
-        if (CommonUtils.isEmpty(activeCatalogName)) {
-            return null;
-        }
-        try {
-            return getDataSource().getCatalog(new org.jkiss.dbeaver.model.runtime.VoidProgressMonitor(), activeCatalogName);
-        } catch (DBException e) {
-            log.error("Error getting default catalog", e);
-            return null;
-        }
+        return CommonUtils.isEmpty(activeCatalogName) ? null : getDataSource().getCatalog(activeCatalogName); 
     }
 
     @Override
     public StarRocksDatabase getDefaultSchema() {
-        if (CommonUtils.isEmpty(activeCatalogName) || CommonUtils.isEmpty(activeDatabaseName)) {
-            return null;
+        StarRocksCatalog catalog = getDefaultCatalog(); 
+        if (catalog == null) {
+            return null; 
         }
-        try {
-            StarRocksCatalog catalog = getDefaultCatalog();
-            if (catalog != null) {
-                return catalog.getDatabase(new org.jkiss.dbeaver.model.runtime.VoidProgressMonitor(), activeDatabaseName);
-            }
-        } catch (DBException e) {
-            log.error("Error getting default schema", e);
-        }
-        return null;
+        return CommonUtils.isEmpty(activeDatabaseName) 
+            ? null : 
+            catalog.getDatabase(new org.jkiss.dbeaver.model.VoidProgressMonitor(), activeDatabaseName); 
     }
 
     @Override
