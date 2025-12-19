@@ -73,23 +73,6 @@
                class="org.jkiss.dbeaver.model.websocket.event.session.WSOutputDBLogEvent"/>
         <event topicId="cb_user" id="cb_user_deleted" class="org.jkiss.dbeaver.model.websocket.event.WSUserDeletedEvent"/>
         <event topicId="cb_user" id="cb_user_disabled" class="org.jkiss.dbeaver.model.websocket.event.WSUserDisabledEvent"/>
-
-        <event topicId="cb_session_task" id="cb_session_task_info_updated"
-               class="org.jkiss.dbeaver.model.websocket.event.session.WSSessionTaskInfoEvent"/>
-
-        <event topicId="cb_session_task" id="cb_session_task_confirmation_request"
-               class="org.jkiss.dbeaver.model.websocket.event.session.WSSessionTaskConfirmationRequestEvent"/>
-        <event topicId="cb_session_task" id="cb_session_task_query_confirmation_request"
-               class="org.jkiss.dbeaver.model.websocket.event.session.WSSessionTaskQueryConfirmationRequestEvent"/>
-
-        <clientEvent id="cb_client_session_ping" class="org.jkiss.dbeaver.model.websocket.event.client.WSSessionPingClientEvent"/>
-        <clientEvent id="cb_client_topic_subscribe" class="org.jkiss.dbeaver.model.websocket.event.client.WSSubscribeOnTopicClientEvent"/>
-        <clientEvent id="cb_client_topic_unsubscribe"
-                     class="org.jkiss.dbeaver.model.websocket.event.client.WSUnsubscribeFromTopicClientEvent"/>
-        <clientEvent id="cb_client_projects_active"
-                     class="org.jkiss.dbeaver.model.websocket.event.client.WSUpdateActiveProjectsClientEvent"/>
-        <clientEvent id="cb_client_session_task_confirmation"
-                     class="org.jkiss.dbeaver.model.websocket.event.client.WSSessionTaskConfirmationEvent"/>
     </extension>
 
 </plugin>
