@@ -105,6 +105,10 @@ public class StarRocksCatalog implements DBSCatalog, DBPRefreshableObject {
         return databaseCache.getObject(monitor, this, name);
     }
 
+    public StarRocksDatabase getCachedDatabase(String name) {
+        return databaseCache.getCachedObject(name);
+    }
+
     @Override
     public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException {
         databaseCache.clearCache();

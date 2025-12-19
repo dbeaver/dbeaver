@@ -43,6 +43,8 @@ import java.util.Map;
  */
 public class StarRocksView extends StarRocksTableBase implements DBSView, DBPScriptObject {
 
+    private final AdditionalInfo additionalInfo = new AdditionalInfo();
+
     public static class AdditionalInfo {
         private volatile boolean loaded = false;
         private String definition;
@@ -76,8 +78,6 @@ public class StarRocksView extends StarRocksTableBase implements DBSView, DBPScr
             return object.additionalInfo.loaded;
         }
     }
-
-    private final AdditionalInfo additionalInfo = new AdditionalInfo();
 
     public StarRocksView(StarRocksDatabase database, String viewName) {
         super(database, viewName, true);

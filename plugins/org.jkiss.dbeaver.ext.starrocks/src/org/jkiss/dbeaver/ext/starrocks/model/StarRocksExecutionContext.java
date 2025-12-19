@@ -87,13 +87,11 @@ public class StarRocksExecutionContext extends JDBCExecutionContext
 
     @Override
     public StarRocksDatabase getDefaultSchema() {
-        StarRocksCatalog catalog = getDefaultCatalog(); 
+        StarRocksCatalog catalog = getDefaultCatalog();
         if (catalog == null) {
-            return null; 
+            return null;
         }
-        return CommonUtils.isEmpty(activeDatabaseName) 
-            ? null : 
-            catalog.getDatabase(new org.jkiss.dbeaver.model.VoidProgressMonitor(), activeDatabaseName); 
+        return CommonUtils.isEmpty(activeDatabaseName) ? null : catalog.getCachedDatabase(activeDatabaseName);
     }
 
     @Override
@@ -108,38 +106,39 @@ public class StarRocksExecutionContext extends JDBCExecutionContext
 
     @Override
     public void setDefaultCatalog(DBRProgressMonitor monitor, StarRocksCatalog catalog, StarRocksDatabase schema) throws DBCException {
-        if (catalog == null) {
-            return;
-        }
-
-        String newCatalogName = catalog.getName();
-        if (newCatalogName.equals(activeCatalogName) && (schema == null || schema.getName().equals(activeDatabaseName))) {
+        if (catalog == null || isAlreadyActive(catalog, schema)) {
             return;
         }
 
         final StarRocksCatalog oldCatalog = getDefaultCatalog();
         final StarRocksDatabase oldSchema = getDefaultSchema();
 
-        // Set catalog
-        if (!setCurrentCatalog(monitor, newCatalogName)) {
-            return;
-        }
-        activeCatalogName = newCatalogName;
+        setCurrentCatalog(monitor, catalog.getName());
+        activeCatalogName = catalog.getName();
 
-        // Set database/schema if provided
         if (schema != null) {
-            if (!setCurrentDatabase(monitor, schema.getName())) {
-                return;
-            }
+            setCurrentDatabase(monitor, schema.getName());
             activeDatabaseName = schema.getName();
         }
 
-        // Send notifications
+        fireSelectionChangeEvents(oldCatalog, catalog, oldSchema, schema);
+    }
+
+    private boolean isAlreadyActive(StarRocksCatalog catalog, StarRocksDatabase schema) {
+        String newCatalogName = catalog.getName();
+        boolean catalogMatch = newCatalogName.equals(activeCatalogName);
+        boolean schemaMatch = schema == null || schema.getName().equals(activeDatabaseName);
+        return catalogMatch && schemaMatch;
+    }
+
+    private void fireSelectionChangeEvents(
+            StarRocksCatalog oldCatalog, StarRocksCatalog newCatalog,
+            StarRocksDatabase oldSchema, StarRocksDatabase newSchema) {
         if (oldCatalog != null) {
-            DBUtils.fireObjectSelectionChange(oldCatalog, catalog, this);
+            DBUtils.fireObjectSelectionChange(oldCatalog, newCatalog, this);
         }
-        if (oldSchema != null && schema != null) {
-            DBUtils.fireObjectSelectionChange(oldSchema, schema, this);
+        if (oldSchema != null && newSchema != null) {
+            DBUtils.fireObjectSelectionChange(oldSchema, newSchema, this);
         }
     }
 

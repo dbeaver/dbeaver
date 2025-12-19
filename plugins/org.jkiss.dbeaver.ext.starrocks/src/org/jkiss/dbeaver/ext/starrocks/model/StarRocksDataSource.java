@@ -112,6 +112,10 @@ public class StarRocksDataSource extends JDBCDataSource implements DBPRefreshabl
         return catalogCache.getObject(monitor, this, name);
     }
 
+    public StarRocksCatalog getCatalog(String name) {
+        return catalogCache.getCachedObject(name);
+    }
+
     public StarRocksCatalog getDefaultCatalog(DBRProgressMonitor monitor) throws DBException {
         return getCatalog(monitor, DEFAULT_CATALOG_NAME);
     }

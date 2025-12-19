@@ -42,6 +42,8 @@ import java.util.Map;
  */
 public class StarRocksMaterializedView extends StarRocksTableBase implements DBPScriptObject {
 
+    private final AdditionalInfo additionalInfo = new AdditionalInfo();
+
     public static class AdditionalInfo {
         private volatile boolean loaded = false;
         private String definition;
@@ -85,8 +87,6 @@ public class StarRocksMaterializedView extends StarRocksTableBase implements DBP
             return object.additionalInfo.loaded;
         }
     }
-
-    private final AdditionalInfo additionalInfo = new AdditionalInfo();
 
     public StarRocksMaterializedView(StarRocksDatabase database, String viewName) {
         super(database, viewName, true);
