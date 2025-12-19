@@ -16,13 +16,9 @@
  */
 package org.jkiss.dbeaver.ext.duckdb.model;
 
-import org.jkiss.api.CompositeObjectId;
-
 public class DuckDBConstants {
     public static final String TYPE_GEOMETRY = "GEOMETRY";
     public static final String TYPE_BLOB = "BLOB";
-
-    public static final CompositeObjectId DRIVER_ID = new CompositeObjectId("generic", "duckdb_jdbc");
 
     private DuckDBConstants() {
     }

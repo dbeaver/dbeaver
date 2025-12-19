@@ -9,8 +9,6 @@ Require-Bundle: org.jkiss.dbeaver.model,
  org.jkiss.dbeaver.data.gis
 Import-Package: org.jkiss.code,
  org.jkiss.dbeaver.model.sql.format
-Export-Package: org.jkiss.dbeaver.ext.duckdb,
- org.jkiss.dbeaver.ext.duckdb.model
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-21
 Bundle-Vendor: DBeaver Corp
