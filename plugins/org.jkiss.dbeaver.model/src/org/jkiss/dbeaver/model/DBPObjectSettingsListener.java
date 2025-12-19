@@ -18,7 +18,9 @@ package org.jkiss.dbeaver.model;
 
 import org.jkiss.code.NotNull;
 
+import java.util.List;
+
 public interface DBPObjectSettingsListener {
 
-    void objectSettingUpdated(@NotNull String objectId, @NotNull String settingId);
+    void objectSettingUpdated(@NotNull String objectId, @NotNull List<String> settingIds);
 }

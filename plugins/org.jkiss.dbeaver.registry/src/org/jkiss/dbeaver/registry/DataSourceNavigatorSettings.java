@@ -16,12 +16,17 @@
  */
 package org.jkiss.dbeaver.registry;
 
+import com.google.gson.stream.JsonWriter;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.data.json.JSONUtils;
 import org.jkiss.dbeaver.model.navigator.DBNBrowseSettings;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.registry.internal.RegistryMessages;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.CommonUtils;
 
+import java.io.IOException;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -96,6 +101,8 @@ public class DataSourceNavigatorSettings implements DBNBrowseSettings {
     private boolean hideFolders;
     private boolean hideSchemas;
     private boolean hideVirtualModel;
+    @Nullable
+    private transient DataSourceNavigatorSettings userSettings;
 
     public DataSourceNavigatorSettings() {
     }
@@ -112,7 +119,7 @@ public class DataSourceNavigatorSettings implements DBNBrowseSettings {
 
     @Override
     public boolean isShowSystemObjects() {
-        return showSystemObjects;
+        return userSettings != null ? userSettings.showSystemObjects : showSystemObjects;
     }
 
     public void setShowSystemObjects(boolean showSystemObjects) {
@@ -121,7 +128,7 @@ public class DataSourceNavigatorSettings implements DBNBrowseSettings {
 
     @Override
     public boolean isShowUtilityObjects() {
-        return showUtilityObjects;
+        return userSettings != null ? userSettings.showUtilityObjects : showUtilityObjects;
     }
 
     public void setShowUtilityObjects(boolean showUtilityObjects) {
@@ -130,7 +137,7 @@ public class DataSourceNavigatorSettings implements DBNBrowseSettings {
 
     @Override
     public boolean isShowOnlyEntities() {
-        return showOnlyEntities;
+        return userSettings != null ? userSettings.showOnlyEntities : showOnlyEntities;
     }
 
     public void setShowOnlyEntities(boolean showOnlyEntities) {
@@ -139,7 +146,7 @@ public class DataSourceNavigatorSettings implements DBNBrowseSettings {
 
     @Override
     public boolean isMergeEntities() {
-        return mergeEntities;
+        return userSettings != null ? userSettings.mergeEntities : mergeEntities;
     }
 
     public void setMergeEntities(boolean mergeEntities) {
@@ -148,7 +155,7 @@ public class DataSourceNavigatorSettings implements DBNBrowseSettings {
 
     @Override
     public boolean isHideFolders() {
-        return hideFolders;
+        return userSettings != null ? userSettings.hideFolders : hideFolders;
     }
 
     public void setHideFolders(boolean hideFolders) {
@@ -157,7 +164,7 @@ public class DataSourceNavigatorSettings implements DBNBrowseSettings {
 
     @Override
     public boolean isHideSchemas() {
-        return hideSchemas;
+        return userSettings != null ? userSettings.hideSchemas : hideSchemas;
     }
 
     public void setHideSchemas(boolean hideSchemas) {
@@ -166,11 +173,20 @@ public class DataSourceNavigatorSettings implements DBNBrowseSettings {
 
     @Override
     public boolean isHideVirtualModel() {
-        return hideVirtualModel;
+        return userSettings != null ? userSettings.hideVirtualModel : hideVirtualModel;
     }
 
     public void setHideVirtualModel(boolean hideVirtualModel) {
         this.hideVirtualModel = hideVirtualModel;
+    }
+
+    @Nullable
+    public DataSourceNavigatorSettings getUserSettings() {
+        return userSettings;
+    }
+
+    public void setUserSettings(@Nullable DataSourceNavigatorSettings userSettings) {
+        this.userSettings = userSettings;
     }
 
     @Override
@@ -246,6 +262,34 @@ public class DataSourceNavigatorSettings implements DBNBrowseSettings {
         preferences.setValue(DEFAULT_HIDE_FOLDERS, settings.isHideFolders());
         preferences.setValue(DEFAULT_MERGE_SCHEMAS, settings.isHideSchemas());
         preferences.setValue(DEFAULT_HIDE_VIRTUAL_MODEL, settings.isHideVirtualModel());
+    }
+
+    public static void saveSettingsToMap(
+        @NotNull JsonWriter json,
+        @NotNull DataSourceNavigatorSettings navSettings,
+        boolean onlyTrueValues
+    ) throws IOException {
+        if (!onlyTrueValues || navSettings.showSystemObjects) {
+            JSONUtils.field(json, DataSourceSerializerModern.ATTR_NAVIGATOR_SHOW_SYSTEM_OBJECTS, navSettings.showSystemObjects);
+        }
+        if (!onlyTrueValues || navSettings.showUtilityObjects) {
+            JSONUtils.field(json, DataSourceSerializerModern.ATTR_NAVIGATOR_SHOW_UTIL_OBJECTS, navSettings.showUtilityObjects);
+        }
+        if (!onlyTrueValues || navSettings.showOnlyEntities) {
+            JSONUtils.field(json, DataSourceSerializerModern.ATTR_NAVIGATOR_SHOW_ONLY_ENTITIES, navSettings.showOnlyEntities);
+        }
+        if (!onlyTrueValues || navSettings.hideFolders) {
+            JSONUtils.field(json, DataSourceSerializerModern.ATTR_NAVIGATOR_HIDE_FOLDERS, navSettings.hideFolders);
+        }
+        if (!onlyTrueValues || navSettings.hideSchemas) {
+            JSONUtils.field(json, DataSourceSerializerModern.ATTR_NAVIGATOR_HIDE_SCHEMAS, navSettings.hideSchemas);
+        }
+        if (!onlyTrueValues || navSettings.hideVirtualModel) {
+            JSONUtils.field(json, DataSourceSerializerModern.ATTR_NAVIGATOR_HIDE_VIRTUAL, navSettings.hideVirtualModel);
+        }
+        if (!onlyTrueValues || navSettings.mergeEntities) {
+            JSONUtils.field(json, DataSourceSerializerModern.ATTR_NAVIGATOR_MERGE_ENTITIES, navSettings.mergeEntities);
+        }
     }
 
 }

@@ -841,7 +841,12 @@ public class DataSourceSerializerModern<T extends DataSourceDescriptor> implemen
         dataSource.setDriverSubstitution(DataSourceProviderRegistry.getInstance()
             .getDriverSubstitution(CommonUtils.notEmpty(JSONUtils.getString(conObject, ATTR_DRIVER_SUBSTITUTION))));
 
-        DataSourceNavigatorSettingsUtils.loadSettingsFromMap(dataSource.getOriginalNavigatorSettings(), conObject);
+        DataSourceNavigatorSettings defaultNavigatorSettings = dataSource.getNavigatorSettings();
+        DataSourceNavigatorSettingsUtils.loadSettingsFromMap(defaultNavigatorSettings, conObject);
+        DataSourceNavigatorSettings userNavigatorSettings = DataSourceNavigatorSettingsUtils.getUserNavigatorSettings(dataSource);
+        if (userNavigatorSettings != null) {
+            defaultNavigatorSettings.setUserSettings(userNavigatorSettings);
+        }
 
         dataSource.setConnectionReadOnly(JSONUtils.getBoolean(conObject, RegistryConstants.ATTR_READ_ONLY));
         final String folderPath = JSONUtils.getString(conObject, RegistryConstants.ATTR_FOLDER);
@@ -1101,8 +1106,7 @@ public class DataSourceSerializerModern<T extends DataSourceDescriptor> implemen
         if (dataSource.isSavePassword()) JSONUtils.field(json, RegistryConstants.ATTR_SAVE_PASSWORD, true);
         if (dataSource.isSharedCredentials()) JSONUtils.field(json, RegistryConstants.ATTR_SHARED_CREDENTIALS, true);
 
-        DataSourceNavigatorSettings navSettings = dataSource.getOriginalNavigatorSettings();
-        DataSourceNavigatorSettingsUtils.saveSettingsToMap(json, navSettings);
+        DataSourceNavigatorSettings.saveSettingsToMap(json, dataSource.getNavigatorSettings(), true);
 
         if (dataSource.isConnectionReadOnly()) JSONUtils.field(json, RegistryConstants.ATTR_READ_ONLY, true);
 

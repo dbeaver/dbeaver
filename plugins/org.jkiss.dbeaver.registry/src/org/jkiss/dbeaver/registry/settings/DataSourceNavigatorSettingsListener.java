@@ -25,7 +25,10 @@ import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.DBNUtils;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
+import org.jkiss.dbeaver.registry.DataSourceNavigatorSettings;
 import org.jkiss.dbeaver.registry.DataSourceNavigatorSettingsUtils;
+
+import java.util.List;
 
 public class DataSourceNavigatorSettingsListener implements DBPObjectSettingsListener {
     private static final Log log = Log.getLog(DataSourceNavigatorSettingsListener.class);
@@ -38,17 +41,19 @@ public class DataSourceNavigatorSettingsListener implements DBPObjectSettingsLis
     }
 
     @Override
-    public void objectSettingUpdated(@NotNull String objectId, @NotNull String settingId) {
+    public void objectSettingUpdated(@NotNull String objectId, @NotNull List<String> settingIds) {
         DBPDataSourceContainer dataSourceContainer = registry.getDataSource(objectId);
         if (dataSourceContainer == null) {
             log.warn("Data source container '" + objectId + "' not found in registry");
             return;
         }
-        if (settingId.equals(DataSourceNavigatorSettingsUtils.PARAM_ID_NAVIGATOR_SETTINGS)) {
-            DataSourceNavigatorSettingsUtils.setCustomNavigatorSettings(dataSourceContainer);
-        } else {
-            log.debug("Unsupported data source setting change: " + settingId);
+        if (settingIds.stream().noneMatch(s -> s.startsWith(DataSourceNavigatorSettingsUtils.PARAM_ID_NAVIGATOR_SETTINGS))) {
+            // No relevant settings changed
+            return;
         }
+        DataSourceNavigatorSettings navigatorSettings = DataSourceNavigatorSettingsUtils.getUserNavigatorSettings(dataSourceContainer);
+        ((DataSourceNavigatorSettings) dataSourceContainer.getNavigatorSettings()).setUserSettings(navigatorSettings);
+
         // Refresh data source
         DBNNode node = DBNUtils.getNodeByObject(dataSourceContainer);
         if (node != null) {

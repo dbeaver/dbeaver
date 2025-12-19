@@ -17,39 +17,25 @@
 package org.jkiss.dbeaver.model;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 public final class DBPObjectSettingsManager {
 
-    private final Map<String, List<DBPObjectSettingsListener>> listeners = new ConcurrentHashMap<>();
+    private final List<DBPObjectSettingsListener> listeners = new CopyOnWriteArrayList<>();
 
-    public void addListener(@Nullable String settingId, @NotNull DBPObjectSettingsListener listener) {
-        listeners.computeIfAbsent(settingId, k -> new ArrayList<>()).add(listener);
+    public void addListener(@NotNull DBPObjectSettingsListener listener) {
+        listeners.add(listener);
     }
 
-    public void removeListener(@Nullable String settingId, @NotNull DBPObjectSettingsListener listener) {
-        List<DBPObjectSettingsListener> set = listeners.get(settingId);
-        if (set != null) {
-            set.remove(listener);
-            if (set.isEmpty()) {
-                listeners.remove(settingId, set);
-            }
-        }
+    public void removeListener(@NotNull DBPObjectSettingsListener listener) {
+        listeners.remove(listener);
     }
 
     public void notifySettingsChanged(@NotNull String objectId, @NotNull List<String> settingIds) {
-        for (String settingId : settingIds) {
-            List<DBPObjectSettingsListener> settingsListeners = this.listeners.get(settingId);
-            if (settingsListeners != null) {
-                for (DBPObjectSettingsListener listener : settingsListeners) {
-                    listener.objectSettingUpdated(objectId, settingId);
-                }
-            }
+        for (DBPObjectSettingsListener listener : listeners) {
+            listener.objectSettingUpdated(objectId, settingIds);
         }
     }
 }

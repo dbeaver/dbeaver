@@ -30,7 +30,10 @@ import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.rm.RMController;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
-import org.jkiss.dbeaver.registry.*;
+import org.jkiss.dbeaver.registry.DataSourceConfigurationManagerBuffer;
+import org.jkiss.dbeaver.registry.DataSourceDescriptor;
+import org.jkiss.dbeaver.registry.DataSourceFolder;
+import org.jkiss.dbeaver.registry.DataSourceRegistry;
 import org.jkiss.dbeaver.registry.settings.DataSourceNavigatorSettingsListener;
 
 import java.nio.charset.StandardCharsets;
@@ -45,6 +48,9 @@ public class DataSourceRegistryRM<T extends DataSourceDescriptor> extends DataSo
     @Nullable
     private final DBPObjectSettingsProvider objectSettingsProvider;
 
+    private final DataSourceNavigatorSettingsListener navigatorSettingsListener =
+        new DataSourceNavigatorSettingsListener(this);
+
     public DataSourceRegistryRM(
         @NotNull DBPProject project,
         @NotNull RMController rmController,
@@ -54,10 +60,7 @@ public class DataSourceRegistryRM<T extends DataSourceDescriptor> extends DataSo
         this.rmController = rmController;
         this.objectSettingsProvider = DBUtils.getAdapter(DBPObjectSettingsProvider.class, project);
         if (objectSettingsProvider != null) {
-            objectSettingsProvider.getObjectSettingsManager().addListener(
-                DataSourceNavigatorSettingsUtils.PARAM_ID_NAVIGATOR_SETTINGS,
-                new DataSourceNavigatorSettingsListener(this)
-            );
+            objectSettingsProvider.getObjectSettingsManager().addListener(navigatorSettingsListener);
         }
     }
 
@@ -160,12 +163,6 @@ public class DataSourceRegistryRM<T extends DataSourceDescriptor> extends DataSo
     }
 
     @Override
-    public void addDataSourceToList(@NotNull DBPDataSourceContainer dataSource) {
-        DataSourceNavigatorSettingsUtils.setCustomNavigatorSettings(dataSource);
-        super.addDataSourceToList(dataSource);
-    }
-
-    @Override
     protected void saveDataSources(DBRProgressMonitor monitor) {
         if (getProject().isInMemory()) {
             return;
@@ -193,8 +190,7 @@ public class DataSourceRegistryRM<T extends DataSourceDescriptor> extends DataSo
     public void dispose() {
         if (objectSettingsProvider != null) {
             objectSettingsProvider.getObjectSettingsManager().removeListener(
-                DataSourceNavigatorSettingsUtils.PARAM_ID_NAVIGATOR_SETTINGS,
-                new DataSourceNavigatorSettingsListener(this)
+                navigatorSettingsListener
             );
         }
         super.dispose();

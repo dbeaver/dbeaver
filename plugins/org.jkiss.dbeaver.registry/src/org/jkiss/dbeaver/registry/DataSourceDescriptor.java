@@ -160,9 +160,6 @@ public class DataSourceDescriptor
 
     @NotNull
     private DataSourceNavigatorSettings navigatorSettings;
-    @Nullable
-    // Custom navigator settings that can be saved separately (f.e. in project settings)
-    private DataSourceNavigatorSettings customNavigatorSettings;
     @NotNull
     private DBVModel virtualModel;
     private final boolean manageable;
@@ -398,7 +395,7 @@ public class DataSourceDescriptor
     @NotNull
     @Override
     public DataSourceNavigatorSettings getNavigatorSettings() {
-        return Objects.requireNonNullElseGet(customNavigatorSettings, () -> navigatorSettings);
+        return navigatorSettings;
     }
 
     @NotNull
@@ -408,10 +405,6 @@ public class DataSourceDescriptor
 
     public void setNavigatorSettings(DBNBrowseSettings copyFrom) {
         this.navigatorSettings = new DataSourceNavigatorSettings(copyFrom);
-    }
-
-    public void setCustomNavigatorSettings(@Nullable DataSourceNavigatorSettings customNavigatorSettings) {
-        this.customNavigatorSettings = customNavigatorSettings;
     }
 
     @NotNull
