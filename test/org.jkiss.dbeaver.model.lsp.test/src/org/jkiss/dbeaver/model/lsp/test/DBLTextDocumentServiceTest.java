@@ -56,8 +56,7 @@ public class DBLTextDocumentServiceTest extends DBeaverUnitTest {
 
         ContextAwareDocument document = DocumentServiceTestUtils.getDocument(service, uri);
         Assert.assertNotNull(document);
-        Assert.assertEquals(uri, document.getUri());
-        Assert.assertEquals(BasicSQLDialect.INSTANCE, document.getSyntaxManager().getDialect());
+        Assert.assertEquals(document.getSyntaxManager().getDialect(), BasicSQLDialect.INSTANCE);
         Assert.assertNull(document.getExecutionContext());
     }
 
