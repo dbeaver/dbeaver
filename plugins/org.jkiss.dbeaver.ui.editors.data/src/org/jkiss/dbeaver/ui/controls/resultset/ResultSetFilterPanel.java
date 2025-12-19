@@ -106,7 +106,7 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
     //IME composition state (e.g., Zhuyin)
     private final IME filtersIme;
 
-    private final ContentProposalAdapter filtersProposalAdapter;
+    private ContentProposalAdapter filtersProposalAdapter;
 
     private final ToolBar filterToolbar;
     private ToolItem filtersClearButton;
@@ -204,12 +204,6 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
                 }
             });
 
-            ResultSetFilterContentAdapter contentAdapter = new ResultSetFilterContentAdapter(viewer);
-            filtersProposalAdapter = ContentAssistUtils.installContentProposal(
-                filtersText,
-                contentAdapter,
-                this);
-
             this.filtersText.addModifyListener(e -> {
                 filtersText.getText();
                 if (executePanel != null) {
@@ -239,9 +233,6 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
             this.filtersText.addVerifyKeyListener(e -> {
                 if (e.character == SWT.CR || e.character == SWT.LF) {
                     if (filterExpanded && (e.stateMask & SWT.MOD1) == 0) {
-                        return;
-                    }
-                    if (filtersProposalAdapter.isProposalPopupOpen()) {
                         return;
                     }
                     if (isImeComposing()) {
@@ -280,6 +271,11 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
                     }
                 }
             });
+            ResultSetFilterContentAdapter contentAdapter = new ResultSetFilterContentAdapter(viewer);
+            filtersProposalAdapter = ContentAssistUtils.installContentProposal(
+                filtersText,
+                contentAdapter,
+                this);
         }
 
         // Handle all shortcuts by filters editor, not by host editor
