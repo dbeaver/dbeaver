@@ -19,7 +19,6 @@ package org.jkiss.dbeaver.model.app;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.ui.DBPPlatformUI;
 
@@ -74,7 +73,7 @@ public interface DBPApplication {
      * Like license info or some custom produce info
      */
     @Nullable
-    String getInfoDetails(DBRProgressMonitor monitor);
+    String getInfoDetails();
 
     /**
      * Default project name, e.g. 'General'.
