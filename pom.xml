@@ -29,6 +29,7 @@
 
         <module>plugins</module>
         <module>features</module>
+        <module>product</module>
     </modules>
 
     <build>
@@ -111,20 +112,6 @@
             <modules>
                 <!-- Tests -->
                 <module>test</module>
-
-                <!-- Products -->
-                <module>product/community</module>
-                <module>product/repositories</module>
-            </modules>
-        </profile>
-
-        <!-- desktop build: includes UI components and products -->
-        <profile>
-            <id>appstore</id>
-            <activation><activeByDefault>false</activeByDefault></activation>
-            <modules>
-                <!-- Products -->
-                <module>product/appstore</module>
             </modules>
         </profile>
 
