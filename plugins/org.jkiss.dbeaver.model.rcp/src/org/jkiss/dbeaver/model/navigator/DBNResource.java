@@ -16,6 +16,8 @@
  */
 package org.jkiss.dbeaver.model.navigator;
 
+import org.eclipse.core.filesystem.EFS;
+import org.eclipse.core.filesystem.IFileStore;
 import org.eclipse.core.resources.*;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
@@ -36,6 +38,7 @@ import org.jkiss.utils.CommonUtils;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URI;
 import java.nio.file.Path;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
@@ -328,12 +331,27 @@ public class DBNResource extends DBNNode implements DBNStreamData, DBNNodeWithCa
                     try {
                         if (otherResource instanceof EFSNIOResource) {
                             if (DBWorkbench.isDistributed() && resource.getRawLocation() == null) {
-                                throw new DBException("Paste is not supported for " + resource);
+                                URI srcUri = otherResource.getLocationURI();
+                                URI dstUri = resource.getLocationURI();
+
+                                if (srcUri == null || dstUri == null) {
+                                    throw new DBException("Resource has no location URI");
+                                }
+
+                                IFileStore srcStore = EFS.getStore(srcUri);
+                                IFileStore dstStore = EFS.getStore(dstUri).getChild(otherResource.getName());
+                                srcStore.copy(
+                                    dstStore,
+                                    EFS.OVERWRITE,
+                                    monitor.getNestedMonitor()
+                                );
+                            } else {
+                                otherResource.copy(
+                                    resource.getRawLocation().append(otherResource.getName()),
+                                    true,
+                                    monitor.getNestedMonitor()
+                                );
                             }
-                            otherResource.copy(
-                                resource.getRawLocation().append(otherResource.getName()),
-                                true,
-                                monitor.getNestedMonitor());
                         } else {
                             if (DBWorkbench.isDistributed() && !CommonUtils.equalObjects(otherResource.getProject(), resource.getProject())) {
                                 throw new DBException("Cross-project resource move is not supported in distributed workspaces");
