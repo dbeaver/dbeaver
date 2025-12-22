@@ -51,7 +51,6 @@ import org.jkiss.dbeaver.model.cli.CLIProcessResult;
 import org.jkiss.dbeaver.model.impl.app.BaseWorkspaceImpl;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.rcp.DesktopApplicationImpl;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.registry.ApplicationPolicyProvider;
 import org.jkiss.dbeaver.registry.BasePlatformImpl;
 import org.jkiss.dbeaver.registry.SWTBrowserRegistry;
@@ -750,7 +749,7 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
     }
 
     @Override
-    public String getInfoDetails(DBRProgressMonitor monitor) {
+    public String getInfoDetails() {
         return null;
     }
 
