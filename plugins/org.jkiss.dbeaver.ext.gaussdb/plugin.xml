@@ -33,6 +33,7 @@
                         defaultPort="8000"
                         description="%driver.gaussdb.description"
                         categories="sql">
+                    <replace provider="gaussdb-jdbc" driver="huawei-gaussdb-jdbc"/>
                     <file type="jar" path="maven:/com.huaweicloud.gaussdb:gaussdbjdbc:RELEASE[506.0.0.b058]" bundle="!drivers.gaussdb"/>
                     <file type="jar" path="drivers/gaussdb" bundle="drivers.gaussdb"/>
                     <parameter name="serverType" value="gaussdb"/>
