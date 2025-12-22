@@ -150,8 +150,8 @@ import java.net.URI;
 import java.nio.file.Path;
 import java.text.SimpleDateFormat;
 import java.time.Duration;
-import java.util.List;
 import java.util.*;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
@@ -4381,9 +4381,14 @@ public class SQLEditor extends SQLEditorBase implements
             boolean singleQuery,
             boolean makeDefault
         ) {
-            return new SingleTabQueryResultsContainer(createSection(makeDefault), this, resultSetNumber, resultSetIndex,
+            return new SingleTabQueryResultsContainer(
+                createSection(makeDefault),
+                this,
+                resultSetNumber,
+                resultSetIndex,
                 singleQuery,
-                makeDefault);
+                makeDefault
+            );
         }
 
         @NotNull
@@ -4394,7 +4399,12 @@ public class SQLEditor extends SQLEditorBase implements
             @NotNull DBSDataContainer dataContainer,
             boolean singleQuery
         ) {
-            return new SingleTabQueryResultsContainer(createSection(false), this, resultSetNumber, resultSetIndex, dataContainer,
+            return new SingleTabQueryResultsContainer(
+                createSection(false),
+                this,
+                resultSetNumber,
+                resultSetIndex,
+                dataContainer,
                 singleQuery
             );
         }
