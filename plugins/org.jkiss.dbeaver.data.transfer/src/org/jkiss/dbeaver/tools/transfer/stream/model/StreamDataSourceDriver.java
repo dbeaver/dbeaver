@@ -17,7 +17,6 @@
 package org.jkiss.dbeaver.tools.transfer.stream.model;
 
 import org.jkiss.dbeaver.model.connection.DBPDriver;
-import org.jkiss.dbeaver.registry.DataSourceProviderLocal;
 import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
 import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
 
@@ -26,10 +25,13 @@ import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
  */
 public class StreamDataSourceDriver extends DriverDescriptor {
 
+    public static final String DRIVER_ID = "file-stream-driver";
+
     public static final DBPDriver INSTANCE = new StreamDataSourceDriver();
 
     public StreamDataSourceDriver() {
         super(DataSourceProviderRegistry.getInstance().getDataSourceProvider(
-            DataSourceProviderLocal.PROVIDER_ID), "stream-driver");
+            StreamDataSourceProvider.PROVIDER_ID), DRIVER_ID
+        );
     }
 }

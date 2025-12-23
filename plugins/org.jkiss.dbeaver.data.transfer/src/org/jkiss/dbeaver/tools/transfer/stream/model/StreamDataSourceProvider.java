@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.registry;
+package org.jkiss.dbeaver.tools.transfer.stream.model;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
@@ -31,8 +31,8 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 /**
  * DataSourceProviderLocal
  */
-public class DataSourceProviderLocal implements DBPDataSourceProvider {
-    public static final String PROVIDER_ID = "local";
+public class StreamDataSourceProvider implements DBPDataSourceProvider {
+    public static final String PROVIDER_ID = "stream";
 
     @Override
     public void init(@NotNull DBPPlatform platform) {
@@ -41,7 +41,7 @@ public class DataSourceProviderLocal implements DBPDataSourceProvider {
 
     @Override
     public long getFeatures() {
-        return 0;
+        return FEATURE_NONE;
     }
 
     @NotNull
