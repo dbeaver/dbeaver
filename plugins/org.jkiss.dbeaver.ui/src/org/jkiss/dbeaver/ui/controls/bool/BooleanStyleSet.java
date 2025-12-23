@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -57,13 +57,19 @@ public class BooleanStyleSet {
     private final BooleanStyle nullStyle;
     private final RGB defaultColor;
 
-    public BooleanStyleSet(@NotNull BooleanStyle checkedStyle, @NotNull BooleanStyle uncheckedStyle, @NotNull BooleanStyle nullStyle, @NotNull RGB defaultColor) {
+    public BooleanStyleSet(
+        @NotNull BooleanStyle checkedStyle,
+        @NotNull BooleanStyle uncheckedStyle,
+        @NotNull BooleanStyle nullStyle,
+        @NotNull RGB defaultColor
+    ) {
         this.checkedStyle = checkedStyle;
         this.uncheckedStyle = uncheckedStyle;
         this.nullStyle = nullStyle;
         this.defaultColor = defaultColor;
 
-        Assert.isLegal(checkedStyle.getMode() == uncheckedStyle.getMode() && uncheckedStyle.getMode() == nullStyle.getMode(), "Mixed style modes");
+        Assert.isLegal(checkedStyle.getMode() == uncheckedStyle.getMode() && uncheckedStyle.getMode() == nullStyle.getMode(),
+            "Mixed style modes");
     }
 
     @NotNull
@@ -152,33 +158,51 @@ public class BooleanStyleSet {
     }
 
     public static void installStyleChangeListener(@NotNull Control control, @NotNull IPropertyChangeListener listener) {
-        final DBPPreferenceListener preferenceListener = e -> {
+        final DBPPreferenceListener preferenceListener = e ->
             listener.propertyChange(new PropertyChangeEvent(e.getSource(), e.getProperty(), e.getOldValue(), e.getNewValue()));
-        };
 
         PlatformUI.getWorkbench().getThemeManager().addPropertyChangeListener(listener);
         DBWorkbench.getPlatform().getPreferenceStore().addPropertyChangeListener(preferenceListener);
-        DBWorkbench.getPlatform().getDataSourceProviderRegistry().getGlobalDataSourcePreferenceStore().addPropertyChangeListener(preferenceListener);
+        DBWorkbench.getPlatform().getDataSourceProviderRegistry()
+            .getGlobalDataSourcePreferenceStore().addPropertyChangeListener(preferenceListener);
 
         control.addDisposeListener(e -> {
-            DBWorkbench.getPlatform().getDataSourceProviderRegistry().getGlobalDataSourcePreferenceStore().removePropertyChangeListener(preferenceListener);
+            DBWorkbench.getPlatform().getDataSourceProviderRegistry()
+                .getGlobalDataSourcePreferenceStore().removePropertyChangeListener(preferenceListener);
             DBWorkbench.getPlatform().getPreferenceStore().removePropertyChangeListener(preferenceListener);
             PlatformUI.getWorkbench().getThemeManager().removePropertyChangeListener(listener);
         });
     }
 
     @NotNull
-    private static BooleanStyle getDefaultStyle(@NotNull DBPPreferenceStore store, @NotNull BooleanMode mode, @NotNull BooleanState state, @NotNull RGB defaultColor) {
+    private static BooleanStyle getDefaultStyle(
+        @NotNull DBPPreferenceStore store,
+        @NotNull BooleanMode mode,
+        @NotNull BooleanState state,
+        @NotNull RGB defaultColor
+    ) {
         final String namespace = PREF_BOOLEAN_STYLE + '.' + state.getId() + '.';
 
         if (mode == BooleanMode.TEXT) {
             final String text = store.getString(namespace + PROP_TEXT);
-            final UIElementAlignment alignment = CommonUtils.valueOf(UIElementAlignment.class, store.getString(namespace + PROP_ALIGN), UIElementAlignment.CENTER);
-            final UIElementFontStyle font = CommonUtils.valueOf(UIElementFontStyle.class, store.getString(namespace + PROP_FONT), UIElementFontStyle.NORMAL);
+            final UIElementAlignment alignment = CommonUtils.valueOf(
+                UIElementAlignment.class,
+                store.getString(namespace + PROP_ALIGN),
+                UIElementAlignment.CENTER
+            );
+            final UIElementFontStyle font = CommonUtils.valueOf(
+                UIElementFontStyle.class,
+                store.getString(namespace + PROP_FONT),
+                UIElementFontStyle.NORMAL
+            );
             final RGB color = convertStringToColor(store.getString(namespace + PROP_COLOR), defaultColor);
             return BooleanStyle.usingText(text.trim(), alignment, color, font);
         } else {
-            final UIElementAlignment alignment = CommonUtils.valueOf(UIElementAlignment.class, store.getString(namespace + PROP_ALIGN), UIElementAlignment.CENTER);
+            final UIElementAlignment alignment = CommonUtils.valueOf(
+                UIElementAlignment.class,
+                store.getString(namespace + PROP_ALIGN),
+                UIElementAlignment.CENTER
+            );
             return BooleanStyle.usingIcon(state.getIcon(), alignment);
         }
     }
@@ -195,22 +219,44 @@ public class BooleanStyleSet {
 
     @NotNull
     private static BooleanStyle getDefaultStyleLegacy(@NotNull DBPPreferenceStore store, @NotNull BooleanState state, @NotNull RGB color) {
-        switch (store.getString(PREF_BOOLEAN_STYLE)) {
-            case PROP_LEGACY_STYLE_ICON:
-                return BooleanStyle.usingIcon(state.choose(UIIcon.CHECK_ON, UIIcon.CHECK_OFF, UIIcon.CHECK_QUEST), UIElementAlignment.CENTER);
-            case PROP_LEGACY_STYLE_CHECKBOX:
-                return BooleanStyle.usingText(state.choose("☑", "☐", "☒"), UIElementAlignment.CENTER, color, UIElementFontStyle.NORMAL);
-            case PROP_LEGACY_STYLE_TRUE_FALSE:
-                return BooleanStyle.usingText(state.choose("true", "false", DBConstants.NULL_VALUE_LABEL), UIElementAlignment.CENTER, color, UIElementFontStyle.NORMAL);
-            case PROP_LEGACY_STYLE_YES_NO:
-                return BooleanStyle.usingText(state.choose("yes", "no", DBConstants.NULL_VALUE_LABEL), UIElementAlignment.CENTER, color, UIElementFontStyle.NORMAL);
-            case PROP_LEGACY_STYLE_TEXTBOX:
-            default:
-                return BooleanStyle.usingText(state.choose("[v]", "[ ]", DBConstants.NULL_VALUE_LABEL), UIElementAlignment.CENTER, color, UIElementFontStyle.NORMAL);
-        }
+        return switch (CommonUtils.toString(store.getString(PREF_BOOLEAN_STYLE), PROP_LEGACY_STYLE_TRUE_FALSE)) {
+            case PROP_LEGACY_STYLE_ICON -> BooleanStyle.usingIcon(
+                state.choose(UIIcon.CHECK_ON, UIIcon.CHECK_OFF, UIIcon.CHECK_QUEST),
+                UIElementAlignment.CENTER
+            );
+            case PROP_LEGACY_STYLE_CHECKBOX -> BooleanStyle.usingText(
+                state.choose("☑", "☐", "☒"),
+                UIElementAlignment.CENTER,
+                color,
+                UIElementFontStyle.NORMAL
+            );
+            case PROP_LEGACY_STYLE_TRUE_FALSE -> BooleanStyle.usingText(
+                state.choose("true", "false", DBConstants.NULL_VALUE_LABEL),
+                UIElementAlignment.CENTER,
+                color,
+                UIElementFontStyle.NORMAL
+            );
+            case PROP_LEGACY_STYLE_YES_NO -> BooleanStyle.usingText(
+                state.choose("yes", "no", DBConstants.NULL_VALUE_LABEL),
+                UIElementAlignment.CENTER,
+                color,
+                UIElementFontStyle.NORMAL
+            );
+            default -> BooleanStyle.usingText(
+                state.choose("[v]", "[ ]", DBConstants.NULL_VALUE_LABEL),
+                UIElementAlignment.CENTER,
+                color,
+                UIElementFontStyle.NORMAL
+            );
+        };
     }
 
-    private static void setDefaultStyle(@NotNull DBPPreferenceStore store, @NotNull BooleanStyle style, @NotNull BooleanState state, @NotNull RGB defaultColor) {
+    private static void setDefaultStyle(
+        @NotNull DBPPreferenceStore store,
+        @NotNull BooleanStyle style,
+        @NotNull BooleanState state,
+        @NotNull RGB defaultColor
+    ) {
         final String namespace = PREF_BOOLEAN_STYLE + '.' + state.getId() + '.';
 
         if (style.getMode() == BooleanMode.TEXT) {

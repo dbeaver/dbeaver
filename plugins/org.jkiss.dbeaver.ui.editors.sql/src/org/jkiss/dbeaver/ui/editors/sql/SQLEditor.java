@@ -337,6 +337,7 @@ public class SQLEditor extends SQLEditorBase implements
         return container == null ? null : container.getDataSource();
     }
 
+    @Nullable
     @Override
     public DBCExecutionContext getExecutionContext() {
         if (isolatedExecutionContext != null) {
@@ -711,7 +712,7 @@ public class SQLEditor extends SQLEditorBase implements
 
     @Override
     public boolean isSmartAutoCommit() {
-        DBPDataSourceContainer container = ((DBPDataSourceContainerProvider) this).getDataSourceContainer();
+        DBPDataSourceContainer container = this.getDataSourceContainer();
         if (container == null) {
             DBPDataSource dataSource = getDataSource();
             if (dataSource != null) {
@@ -2505,23 +2506,23 @@ public class SQLEditor extends SQLEditorBase implements
         }
         final IEditorInput editorInput = getEditorInput();
         String scriptPath;
-        if (editorInput instanceof IFileEditorInput fei) {
-            scriptPath = fei.getFile().getFullPath().toString();
-        } else if (editorInput instanceof IPathEditorInput pei) {
-            scriptPath = pei.getPath().toString();
-        } else if (editorInput instanceof IURIEditorInput iei) {
-            final URI uri = iei.getURI();
-            if ("file".equals(uri.getScheme())) {
-                scriptPath = new File(uri).getAbsolutePath();
-            } else {
-                scriptPath = uri.toString();
+        switch (editorInput) {
+            case IFileEditorInput fei -> scriptPath = fei.getFile().getFullPath().toString();
+            case IPathEditorInput pei -> scriptPath = pei.getPath().toString();
+            case IURIEditorInput iei -> {
+                final URI uri = iei.getURI();
+                if ("file".equals(uri.getScheme())) {
+                    scriptPath = new File(uri).getAbsolutePath();
+                } else {
+                    scriptPath = uri.toString();
+                }
             }
-        } else if (editorInput instanceof INonPersistentEditorInput) {
-            scriptPath = "SQL Console";
-        } else {
-            scriptPath = editorInput.getName();
-            if (CommonUtils.isEmpty(scriptPath)) {
-                scriptPath = "<not a file>";
+            case INonPersistentEditorInput npi -> scriptPath = "SQL Console";
+            case null, default -> {
+                scriptPath = editorInput.getName();
+                if (CommonUtils.isEmpty(scriptPath)) {
+                    scriptPath = "<not a file>";
+                }
             }
         }
 
@@ -4527,6 +4528,7 @@ public class SQLEditor extends SQLEditorBase implements
             return SQLEditor.this.getProject();
         }
 
+        @Nullable
         @Override
         public DBCExecutionContext getExecutionContext() {
             return SQLEditor.this.getExecutionContext();
