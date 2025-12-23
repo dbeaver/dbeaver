@@ -21,6 +21,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
+import org.jkiss.dbeaver.model.net.DBWUtils;
 import org.jkiss.dbeaver.model.net.ssh.SSHConstants;
 import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
 import org.jkiss.dbeaver.registry.network.NetworkHandlerDescriptor;
@@ -188,7 +189,7 @@ public class DbvisConfigurationCreatorv233 extends DbvisAbstractConfigurationCre
                             user,
                             password);
                         if (sshConfiguration != null) {
-                            NetworkHandlerDescriptor sslHD = NetworkHandlerRegistry.getInstance().getDescriptor("ssh_tunnel");
+                            NetworkHandlerDescriptor sslHD = NetworkHandlerRegistry.getInstance().getDescriptor(DBWUtils.SSH_TUNNEL);
                             DBWHandlerConfiguration sshHandler = new DBWHandlerConfiguration(sslHD, null);
                             sshHandler.setUserName(sshConfiguration.getSshUserid());
                             sshHandler.setSavePassword(true);

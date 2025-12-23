@@ -2,8 +2,8 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: DBeaver Firebird Model
 Bundle-SymbolicName: org.jkiss.dbeaver.ext.firebird;singleton:=true
-Bundle-Version: 1.0.270.qualifier
-Bundle-Release-Date: 20251222
+Bundle-Version: 1.0.271.qualifier
+Bundle-Release-Date: 20260105
 Require-Bundle: org.jkiss.dbeaver.model,
  org.jkiss.dbeaver.ext.generic
 Bundle-ActivationPolicy: lazy

@@ -173,6 +173,7 @@ public abstract class DatabaseEditorInput<NODE extends DBNDatabaseNode> implemen
         }
     }
 
+    @Nullable
     @Override
     public DBCExecutionContext getExecutionContext() {
         return executionContext;
