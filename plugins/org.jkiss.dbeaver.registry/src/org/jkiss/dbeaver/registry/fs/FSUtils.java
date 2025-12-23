@@ -20,11 +20,13 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.fs.DBFFileSystemProvider;
 
 import java.net.URI;
 import java.nio.file.FileSystem;
 import java.nio.file.FileSystems;
 import java.nio.file.Path;
+import java.util.Map;
 
 public class FSUtils {
     private static final Log log = Log.getLog(FSUtils.class);
@@ -43,18 +45,21 @@ public class FSUtils {
                 log.error("File system not found for scheme: " + fileUri.getScheme());
                 return null;
             }
-            ClassLoader fsClassloader = externalFsProvider.getInstance().getClass().getClassLoader();
+
+            DBFFileSystemProvider fileSystemProvider = externalFsProvider.getInstance();
+            // Use provider's classloader because filesystem registered there as service
+            ClassLoader fsClassloader = fileSystemProvider.getClass().getClassLoader();
+            Map<String, ?> env = fileSystemProvider.prepareEnv(System.getenv());
             try (
                 FileSystem externalFileSystem = FileSystems.newFileSystem(
                     fileUri,
-                    System.getenv(),
+                    env,
                     fsClassloader
                 )
             ) {
                 return externalFileSystem.provider().getPath(fileUri);
             } catch (Exception e) {
-                log.error("Failed to initialize workspace path: " + fileUri + " default workspace " +
-                    "location will be used", e);
+                log.error("Failed to initialize path: " + fileUri, e);
             }
         }
         return null;
