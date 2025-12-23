@@ -73,6 +73,7 @@ public class EditConnectionWizard extends ConnectionWizard {
     @Nullable
     private ConnectionPageSettings pageSettings;
     private ConnectionPageGeneral pageGeneral;
+    private ConnectionPageInternalParameters pageInternalParameters;
     //private ConnectionPageNetwork pageNetwork;
     private ConnectionPageInitialization pageInit;
     private ConnectionPageShellCommands pageEvents;
@@ -175,6 +176,7 @@ public class EditConnectionWizard extends ConnectionWizard {
 
         boolean embedded = dataSource.getDriver().isEmbedded();
         pageGeneral = new ConnectionPageGeneral(this, dataSource);
+        pageInternalParameters = new ConnectionPageInternalParameters(dataSource);
 
 //        if (!embedded) {
 //            pageNetwork = new ConnectionPageNetwork(this);
@@ -186,17 +188,22 @@ public class EditConnectionWizard extends ConnectionWizard {
         if (pageSettings != null) {
             pageSettings.addSubPage(pageInit);
             pageSettings.addSubPage(pageEvents);
-        }
 
-        if (!embedded && pageSettings != null) {
-            PrefPageConnectionClient pageClientSettings = new PrefPageConnectionClient();
-            pageSettings.addSubPage(
-                createPreferencePage(pageClientSettings, CoreMessages.dialog_connection_edit_wizard_connections, CoreMessages.dialog_connection_edit_wizard_connections_description));
-        }
-        if (pageSettings != null) {
-            PrefPageTransactions pageClientTransactions = new PrefPageTransactions();
-            pageSettings.addSubPage(
-                createPreferencePage(pageClientTransactions, CoreMessages.dialog_connection_edit_wizard_transactions, CoreMessages.dialog_connection_edit_wizard_transactions_description));
+            if (!embedded) {
+                pageSettings.addSubPage(createPreferencePage(
+                    new PrefPageConnectionClient(),
+                    CoreMessages.dialog_connection_edit_wizard_connections,
+                    CoreMessages.dialog_connection_edit_wizard_connections_description
+                ));
+            }
+
+            pageSettings.addSubPage(createPreferencePage(
+                new PrefPageTransactions(),
+                CoreMessages.dialog_connection_edit_wizard_transactions,
+                CoreMessages.dialog_connection_edit_wizard_transactions_description
+            ));
+
+            pageSettings.addSubPage(pageInternalParameters);
         }
 
         addPreferencePage(new PrefPageMetaData(), CoreMessages.dialog_connection_edit_wizard_metadata,  CoreMessages.dialog_connection_edit_wizard_metadata_description);
@@ -386,6 +393,7 @@ public class EditConnectionWizard extends ConnectionWizard {
             pageSettings.saveSettings(dataSource);
         }
         pageGeneral.saveSettings(dataSource);
+        pageInternalParameters.saveSettings(dataSource);
         pageInit.saveSettings(dataSource);
         pageEvents.saveSettings(dataSource);
         for (IDialogPage page : getPages()) {

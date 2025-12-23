@@ -880,7 +880,7 @@ public class GeneralUtils {
     }
 
     @Nullable
-    public static <T> T adapt(@NotNull Object sourceObject, @NotNull Class<T> adapter) {
+    public static <T> T adapt(@Nullable Object sourceObject, @NotNull Class<T> adapter) {
         return adapt(sourceObject, adapter, true);
     }
 
@@ -940,7 +940,7 @@ public class GeneralUtils {
         if (!DBWorkbench.isDistributed() && !DBWorkbench.getPlatform().getApplication().isMultiuser()) {
             return;
         }
-        validateResourceNameUnconditionally(name);
+        validateResourceNameUnconditionally(name.trim());
     }
 
     /**
@@ -952,6 +952,9 @@ public class GeneralUtils {
     public static void validateResourceNameUnconditionally(@NotNull String name) throws DBException {
         if (name.startsWith(".")) {
             throw new DBException("Resource name '" + name + "' can't start with dot");
+        }
+        if (name.endsWith(".")) {
+            throw new DBException("Resource name '" + name + "' can't end with dot");
         }
 
         String forbiddenSymbols = name.replaceAll(RESOURCE_NAME_FORBIDDEN_SYMBOLS_REGEX, "");

@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ui.navigator.database;
 
 import org.eclipse.swt.widgets.Composite;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.app.DBPProject;
@@ -75,7 +76,7 @@ public class DatabaseBrowserView extends NavigatorViewBase {
     public void createPartControl(Composite parent)
     {
         super.createPartControl(parent);
-        getNavigatorTree().setFilterObjectType(DatabaseNavigatorTreeFilterObjectType.table);
+        getNavigatorTree().setFilterObjectType(getDefaultFilterType());
 
         String secondaryId = getViewSite().getSecondaryId();
         if (!CommonUtils.isEmpty(secondaryId)) {
@@ -89,6 +90,11 @@ public class DatabaseBrowserView extends NavigatorViewBase {
                 }
             });
         }
+    }
+
+    @NotNull
+    protected DatabaseNavigatorTreeFilterObjectType getDefaultFilterType() {
+        return DatabaseNavigatorTreeFilterObjectType.table;
     }
 
     public static String getSecondaryIdFromNode(DBNNode node) {

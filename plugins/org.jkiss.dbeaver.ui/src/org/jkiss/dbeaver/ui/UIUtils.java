@@ -1837,6 +1837,21 @@ public class UIUtils {
         return workbenchWindow;
     }
 
+    /**
+     * Returns {@link IWorkbenchWindow} that contains the given control.
+     *
+     * @param control the SWT control (must not be null)
+     * @return the corresponding {@link IWorkbenchWindow}, or {@code null} if none found
+     */
+    @Nullable
+    public static IWorkbenchWindow findWorkbenchWindow(@NotNull Control control) {
+        Shell shell = control.getShell();
+        return Arrays.stream(PlatformUI.getWorkbench().getWorkbenchWindows())
+            .filter(w -> w.getShell() == shell)
+            .findFirst()
+            .orElse(null);
+    }
+
     @Nullable
     public static Shell getActiveWorkbenchShell() {
         if (PlatformUI.isWorkbenchRunning()) {
@@ -1869,8 +1884,7 @@ public class UIUtils {
      * Runs task in Eclipse progress service.
      * NOTE: this call can't be canceled if it will block in IO
      */
-    public static void runInProgressService(final DBRRunnableWithProgress runnable)
-    throws InvocationTargetException, InterruptedException {
+    public static void runInProgressService(final DBRRunnableWithProgress runnable) throws InvocationTargetException, InterruptedException {
         getDefaultRunnableContext().run(true, true, runnable);
     }
 
@@ -1964,6 +1978,7 @@ public class UIUtils {
         runInUI(context, runnable);
     }
 
+    @NotNull
     public static Display getDisplay() {
         try {
             return PlatformUI.getWorkbench().getDisplay();
@@ -2457,7 +2472,7 @@ public class UIUtils {
     }
 
     public static void populateToolItemCommandIds(ToolBarManager toolbarManager) {
-        // used for accessibility automation, see dbeaver-qa-auto
+        // used for accessibility automation, see qa-auto-dbeaver
         ToolBar toolBar = toolbarManager.getControl();
         if (toolBar == null || toolBar.isDisposed()) {
             return;

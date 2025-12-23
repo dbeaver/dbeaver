@@ -25,7 +25,7 @@ import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.data.json.JSONUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
-import org.jkiss.dbeaver.model.runtime.DBRRunnableWithResult;
+import org.jkiss.dbeaver.model.runtime.DBRRunnableWithReturn;
 import org.jkiss.dbeaver.model.runtime.MonitorRunnableContext;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -41,10 +41,10 @@ import org.jkiss.dbeaver.tools.transfer.registry.DataTransferNodeDescriptor;
 import org.jkiss.dbeaver.tools.transfer.registry.DataTransferProcessorDescriptor;
 import org.jkiss.dbeaver.tools.transfer.registry.DataTransferRegistry;
 import org.jkiss.dbeaver.tools.transfer.serialize.SerializerContext;
-import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -208,14 +208,14 @@ public class DataTransferSettings implements DBTTaskSettings<DBPObject> {
     }
 
     @NotNull
-    public static DataTransferSettings loadSettings(DBRRunnableWithResult<DataTransferSettings> loader) throws DBException {
-        // Wait 1 minute maximum
-        RuntimeUtils.runTask(loader, "Load data transfer settings", 60000, false);
-        DataTransferSettings settings = loader.getResult();
-        if (settings == null) {
-            throw new DBException("Timeout while loading data transfer settings");
+    public static DataTransferSettings loadSettings(DBRRunnableWithReturn<DataTransferSettings> loader) throws DBException {
+        try {
+            return DBWorkbench.getPlatformUI().runWithProgress(loader);
+        } catch (InvocationTargetException e) {
+            throw new DBException("Error loading settings", e.getTargetException());
+        } catch (InterruptedException e) {
+            throw new DBException("Settings load interrupted", e);
         }
-        return settings;
     }
 
     private void initializePipes(
