@@ -218,6 +218,7 @@ public class ERDEditorEmbedded extends ERDEditorPart
         return node.getOwnerProject();
     }
 
+    @Nullable
     @Override
     public DBCExecutionContext getExecutionContext()
     {
