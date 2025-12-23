@@ -164,6 +164,7 @@ class ReferencesResultsContainer implements IResultSetContainer {
         return dataContainer == null || dataContainer.getDataSource() == null ? null : dataContainer.getDataSource().getContainer().getProject();
     }
 
+    @Nullable
     @Override
     public DBCExecutionContext getExecutionContext() {
         return DBUtils.getDefaultContext(dataContainer, false);

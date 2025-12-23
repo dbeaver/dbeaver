@@ -142,6 +142,7 @@ public class SessionManagerViewer<SESSION_TYPE extends DBAServerSession>
             {
                 previewFolder = new CTabFolder(sashDetails, SWT.TOP);
                 sqlViewer = new SQLEditorBase() {
+                    @Nullable
                     @Override
                     public DBCExecutionContext getExecutionContext() {
                         return DBUtils.getDefaultContext(sessionManager.getDataSource(), false);
