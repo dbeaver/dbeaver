@@ -122,8 +122,8 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
-import java.util.*;
 import java.util.List;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 /**
@@ -950,7 +950,6 @@ public class ResultSetViewer extends Viewer
                 context, getDataSource(), null, IResultSetPresentation.PresentationType.COLUMNS));
         }
         activePresentation.createPresentation(this, presentationPanel);
-        trackPresentationStatistics();
 
         // Clear panels toolbar
         if (panelSwitchFolder != null) {
@@ -1073,19 +1072,6 @@ public class ResultSetViewer extends Viewer
                     control.setFocus();
                 }
             });
-        }
-    }
-
-    private void trackPresentationStatistics() {
-        Map<String, Object> params = new HashMap<>();
-        DBPDataSource dataSource = getDataSource();
-        if (activePresentationDescriptor != null && dataSource != null) {
-            params.put("presentationId", activePresentationDescriptor.getId());
-            params.put("driver", dataSource.getContainer().getDriver().getPreconfiguredId());
-
-        }
-        if (!params.isEmpty()) {
-            DataEditorFeatures.RESULT_SET_PRESENTATION_SELECTED.use(params);
         }
     }
 
@@ -2117,14 +2103,6 @@ public class ResultSetViewer extends Viewer
         //redrawData(false);
         activePresentation.refreshData(true, false, false);
         activePresentation.changeMode(recordMode);
-        if (recordMode) {
-            DBPDataSource dataSource = getDataSource();
-            if (dataSource != null) {
-                DataEditorFeatures.RESULT_SET_PRESENTATION_RECORD.use(
-                    Map.of("driver", dataSource.getContainer().getDriver().getPreconfiguredId())
-                );
-            }
-        }
         updateStatusMessage();
 
         //restorePresentationState(state);
