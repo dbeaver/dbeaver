@@ -46,12 +46,11 @@ public class DuplicatesOnlyAction extends Action {
 
     @Override
     public void run() {
-        boolean newValue = !isChecked();
         DBPDataSource dataSource = resultsContainer.getDataContainer().getDataSource();
         if (dataSource == null) {
             return;
         }
-        dataSource.getContainer().getPreferenceStore().setValue(ResultSetPreferences.RS_GROUPING_SHOW_DUPLICATES_ONLY, newValue);
+        dataSource.getContainer().getPreferenceStore().setValue(ResultSetPreferences.RS_GROUPING_SHOW_DUPLICATES_ONLY, !isChecked());
         try {
             resultsContainer.rebuildGrouping();
         } catch (DBException e) {

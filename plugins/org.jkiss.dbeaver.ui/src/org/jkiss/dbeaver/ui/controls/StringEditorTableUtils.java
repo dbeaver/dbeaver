@@ -38,10 +38,7 @@ import java.util.List;
  */
 public class StringEditorTableUtils {
 
-
-    /**
-     * Creates the panel to manage list of string values
-     */
+    @NotNull
     public static Table createEditableList(
         @NotNull Composite parent,
         @NotNull String name,
@@ -59,10 +56,7 @@ public class StringEditorTableUtils {
         );
     }
 
-
-    /**
-     * Creates the panel to manage list of custom values
-     */
+    @NotNull
     public static <T> Table createCustomEditableList(
         @NotNull Composite parent,
         @NotNull String name,
@@ -84,10 +78,6 @@ public class StringEditorTableUtils {
         return stringEditorTableFactory.createTable();
     }
 
-
-    /**
-     * Replaces all the values in the Table with the new collection of strings
-     */
     public static void replaceAllStringValues(@NotNull Table valueTable, @Nullable List<String> values, @Nullable DBPImage icon) {
         valueTable.removeAll();
         if (!CommonUtils.isEmpty(values)) {
@@ -102,15 +92,12 @@ public class StringEditorTableUtils {
         }
     }
 
-    /**
-     * Returns collection of strings from the Table
-     */
     @NotNull
     public static List<String> collectStringValues(@NotNull Table table) {
         List<String> values = new ArrayList<>();
         for (TableItem item : table.getItems()) {
             String value = item.getText().trim();
-            if (value.isEmpty()) { //$NON-NLS-1$
+            if (value.isEmpty()) {
                 continue;
             }
             values.add(value);
@@ -118,9 +105,6 @@ public class StringEditorTableUtils {
         return values;
     }
 
-    /**
-     * Returns collection of custom values from the Table
-     */
     @NotNull
     public static <T> List<T> collectCustomValues(@NotNull Table table) {
         List<T> values = new ArrayList<>(table.getItemCount());
@@ -138,7 +122,6 @@ public class StringEditorTableUtils {
         return (T) tableItem.getData(StringEditorTableFactory.CUSTOM_EDITABLE_LIST_VALUE_KEY);
     }
 
-    @NotNull
     private static <T> void setCustomValue(@NotNull TableItem tableItem, @NotNull T value) {
         tableItem.setData(StringEditorTableFactory.CUSTOM_EDITABLE_LIST_VALUE_KEY, value);
     }
@@ -147,27 +130,16 @@ public class StringEditorTableUtils {
      * Manager of the custom values handled by StringEditorTable
      */
     public interface TableValuesManager<T> {
-        /**
-         * Returns the icon for the list element
-         */
+
         @Nullable
         DBPImage getIcon(@Nullable T value);
 
-        /**
-         * Returns the string representation of the value
-         */
         @NotNull
         String getString(@Nullable T value);
 
-        /**
-         * Checks if the string representation of the value is editable
-         */
         @NotNull
         Boolean isEditable(@Nullable T value);
 
-        /**
-         * Returns a new instance of the value as a result of editing operation
-         */
         @Nullable
         T prepareNewValue(@Nullable T originalValue, @Nullable String string);
     }

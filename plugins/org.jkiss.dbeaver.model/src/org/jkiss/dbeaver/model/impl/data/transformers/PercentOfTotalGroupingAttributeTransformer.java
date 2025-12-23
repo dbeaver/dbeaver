@@ -93,11 +93,11 @@ public class PercentOfTotalGroupingAttributeTransformer implements DBDAttributeT
         @NotNull
         @Override
         public String getValueDisplayString(@NotNull DBSTypedObject column, @Nullable Object value, @NotNull DBDDisplayFormat format) {
-            if (value instanceof Number rowCount) {
-                return formatPercent(percentOfTotal(rowCount.doubleValue(), total));
-            }
             if (value == null) {
                 return "";
+            }
+            if (value instanceof Number rowCount) {
+                return formatPercent(percentOfTotal(rowCount.doubleValue(), total));
             }
             log.trace("Unexpected value type for PercentOfTotalValueHandler: " + value.getClass().getName());
             return super.getValueDisplayString(column, value, format);
