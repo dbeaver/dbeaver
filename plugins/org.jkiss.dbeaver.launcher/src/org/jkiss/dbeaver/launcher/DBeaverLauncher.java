@@ -710,14 +710,12 @@ public class DBeaverLauncher {
      */
     private void patchTempDirIfNeeded() {
         var tmpDir = System.getProperty(PROP_TMP_DIR, "");
-        try {
-            var ignored = Path.of(tmpDir);
-        } catch (Exception e) {
-            System.err.println("Error parsing the value of '" + PROP_TMP_DIR + "' (" + tmpDir + "): " + e.getMessage());
+        var newTmpDir = Path.of(tmpDir).toUri().toASCIIString();
+        if (!newTmpDir.isEmpty() && !newTmpDir.contains(tmpDir)) {
+            newTmpDir = newTmpDir.substring("file:/".length());
+            System.setProperty(PROP_TMP_DIR, newTmpDir);
+            System.err.println("Overriding temporary directory to " + newTmpDir);
         }
-        var newTmpDir = Path.of("C:/Users/はいздрасти/AppData/Roaming/DBeaverData/temp").toString();
-        System.setProperty(PROP_TMP_DIR, newTmpDir);
-        System.err.println("Overriding temporary directory to " + newTmpDir);
     }
 
     private void checkCompatibleWindowsVersion() {
