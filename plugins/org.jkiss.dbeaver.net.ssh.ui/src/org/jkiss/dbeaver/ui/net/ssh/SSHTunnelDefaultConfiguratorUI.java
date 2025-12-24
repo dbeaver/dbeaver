@@ -728,6 +728,7 @@ public class SSHTunnelDefaultConfiguratorUI implements IObjectPropertyConfigurat
                     }
                 });
                 savePasswordCheckbox.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
+                savePasswordCheckbox.setEnabled(canEditCredentialsPerPolicy);
             }
 
             if (editIntention == DBPConnectionEditIntention.CREDENTIALS_ONLY) {
