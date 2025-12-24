@@ -17,6 +17,8 @@
 
 package org.jkiss.dbeaver.model.exec;
 
+import org.jkiss.code.NotNull;
+
 /**
  * Execution purpose.
  *
@@ -34,8 +36,7 @@ public enum DBCExecutionPurpose {
     USER_SCRIPT(2, "User script", true),        // User script query
     UTIL(3, "Util", false),              // Utility query (utility method initialized by user)
     META(4, "Meta", false),              // Metadata query, processed by data source providers internally
-    META_DDL(5, "Meta DDL", false),
-    AI(6, "AI", true)                 // AI-generated query
+    META_DDL(5, "Meta DDL", false)
     ;
 
     private final int id;
@@ -48,10 +49,12 @@ public enum DBCExecutionPurpose {
         this.user = user;
     }
 
+    @NotNull
     public int getId() {
         return id;
     }
 
+    @NotNull
     public String getTitle() {
         return title;
     }
@@ -60,6 +63,7 @@ public enum DBCExecutionPurpose {
         return user;
     }           // Metadata modifications (DDL)
 
+    @NotNull
     public static DBCExecutionPurpose getById(int id) {
         for (DBCExecutionPurpose purpose : values()) {
             if (purpose.getId() == id) {
