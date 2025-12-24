@@ -74,8 +74,6 @@ import java.util.regex.Pattern;
 public class OracleDataSource extends JDBCDataSource implements DBPObjectStatisticsCollector, DBPAdaptable, DBDPseudoAttributeContainer {
     private static final Log log = Log.getLog(OracleDataSource.class);
 
-    public static final String OS_USER_PROP = "v$session.osuser";
-
     public static final DBDPseudoAttribute[] KNOWN_GLOBAL_PSEUDO_ATTRS = new DBDPseudoAttribute[] {
         new DBDPseudoAttribute(
             DBDPseudoAttributeType.ROWID,
@@ -427,7 +425,7 @@ public class OracleDataSource extends JDBCDataSource implements DBPObjectStatist
         }
         // FIXME: left for backward compatibility. Replaced by auth model. Remove in future.
         if (CommonUtils.toBoolean(connectionInfo.getProviderProperty(OracleConstants.OS_AUTH_PROP))) {
-            connectionsProps.put(OS_USER_PROP, System.getProperty(StandardConstants.ENV_USER_NAME));
+            connectionsProps.put("v$session.osuser", System.getProperty(StandardConstants.ENV_USER_NAME));
         }
         return connectionsProps;
     }

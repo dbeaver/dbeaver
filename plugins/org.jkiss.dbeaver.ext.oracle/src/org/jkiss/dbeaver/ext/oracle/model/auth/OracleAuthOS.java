@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,6 @@ package org.jkiss.dbeaver.ext.oracle.model.auth;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ext.oracle.model.OracleDataSource;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
@@ -53,7 +52,7 @@ public class OracleAuthOS extends AuthModelDatabaseNative<OracleAuthOSCredential
 
     @Override
     public Object initAuthentication(@NotNull DBRProgressMonitor monitor, @NotNull DBPDataSource dataSource, @NotNull OracleAuthOSCredentials credentials, @NotNull DBPConnectionConfiguration configuration, @NotNull Properties connProperties) throws DBException {
-        connProperties.put(OracleDataSource.OS_USER_PROP, System.getProperty(StandardConstants.ENV_USER_NAME));
+        connProperties.put("v$session.osuser", System.getProperty(StandardConstants.ENV_USER_NAME));
         return super.initAuthentication(monitor, dataSource, credentials, configuration, connProperties);
     }
 
