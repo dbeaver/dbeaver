@@ -45,12 +45,11 @@ public class PercentFromTotalAction extends Action {
 
     @Override
     public void run() {
-        boolean newValue = !isChecked();
         DBPDataSource dataSource = resultsContainer.getDataContainer().getDataSource();
         if (dataSource == null) {
             return;
         }
-        dataSource.getContainer().getPreferenceStore().setValue(ResultSetPreferences.RS_GROUPING_SHOW_PERCENT_OF_TOTAL_ROWS, newValue);
+        dataSource.getContainer().getPreferenceStore().setValue(ResultSetPreferences.RS_GROUPING_SHOW_PERCENT_OF_TOTAL_ROWS, !isChecked());
         try {
             resultsContainer.rebuildGrouping();
         } catch (DBException e) {

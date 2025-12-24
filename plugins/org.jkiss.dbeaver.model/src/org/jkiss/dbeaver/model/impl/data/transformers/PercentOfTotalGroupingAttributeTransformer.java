@@ -110,6 +110,7 @@ public class PercentOfTotalGroupingAttributeTransformer implements DBDAttributeT
             return value / total;
         }
 
+        @NotNull
         private String formatPercent(double percent) {
             return df.format(percent);
         }

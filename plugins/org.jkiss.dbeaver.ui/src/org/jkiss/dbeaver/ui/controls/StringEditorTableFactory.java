@@ -320,6 +320,7 @@ public class StringEditorTableFactory<T> {
         return downButton;
     }
 
+    @Nullable
     private <T> T getCustomValue(TableItem tableItem) {
         return (T) tableItem.getData(CUSTOM_EDITABLE_LIST_VALUE_KEY);
     }

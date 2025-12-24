@@ -35,6 +35,7 @@ public class ChangeSortingAction extends Action {
     public static final String DESC = "DESC";
     public static final String NONE = "";
 
+    @NotNull
     public GroupingResultsContainer getResultsContainer() {
         return resultsContainer;
     }

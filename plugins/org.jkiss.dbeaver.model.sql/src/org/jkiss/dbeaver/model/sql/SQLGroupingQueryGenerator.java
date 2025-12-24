@@ -76,6 +76,7 @@ public class SQLGroupingQueryGenerator {
         this.showDuplicatesOnly = showDuplicatesOnly;
     }
 
+    @NotNull
     public String generateGroupingQuery(String queryText) throws DBException {
 
         if (queryText == null || queryText.isEmpty()) {
@@ -184,6 +185,7 @@ public class SQLGroupingQueryGenerator {
         return sql.toString();
     }
 
+    @NotNull
     private String makeGroupFunctionAlias(List<String> groupFunctions, int funcIndex) {
         String function = groupFunctions.get(funcIndex);
         StringBuilder alias = new StringBuilder();
@@ -232,6 +234,7 @@ public class SQLGroupingQueryGenerator {
         }
 
         @Override
+        @NotNull
         public String getFullyQualifiedName() {
             String databaseName = !CommonUtils.isEmpty(getDatabase().getDatabaseName())
                 ? getDatabase().getDatabaseName() + sqlDialect.getCatalogSeparator()

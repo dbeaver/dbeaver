@@ -97,6 +97,7 @@ public class GroupingConfigDialog extends BaseDialog {
         super.okPressed();
     }
 
+    @NotNull
     private String getAttributeBindingName(@NotNull DBDAttributeBinding binding) {
         if (binding instanceof DBDAttributeBindingMeta) {
             return DBUtils.getQuotedIdentifier(binding.getDataSource(), binding.getMetaAttribute().getLabel());
@@ -295,6 +296,7 @@ public class GroupingConfigDialog extends BaseDialog {
             });
         }
 
+        @NotNull
         private Action createSubmenuAction(@NotNull String functionName, @NotNull String columnName) {
             return new Action(columnName) {
                 @Override
