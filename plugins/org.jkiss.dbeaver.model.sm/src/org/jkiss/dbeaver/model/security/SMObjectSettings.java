@@ -20,5 +20,5 @@ import org.jkiss.code.NotNull;
 
 import java.util.Map;
 
-public record SMObjectSettings(@NotNull String objectId, @NotNull Map<String, String> settings) {
+public record SMObjectSettings(@NotNull SMObjectType objectType, @NotNull String objectId, @NotNull Map<String, String> settings) {
 }

@@ -238,8 +238,8 @@ public interface SMController extends DBPObjectController, DBInternalDatabaseInf
     @NotNull
     List<SMObjectSettings> getObjectSettings(
         @NotNull String projectId,
-        @NotNull SMObjectType objectType,
-        @NotNull String objectId,
+        @Nullable SMObjectType objectType,
+        @Nullable String objectId,
         @Nullable String settingId
     ) throws DBException;
 
