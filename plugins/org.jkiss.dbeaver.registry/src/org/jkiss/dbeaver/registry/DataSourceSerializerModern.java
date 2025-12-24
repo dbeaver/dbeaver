@@ -1106,7 +1106,7 @@ public class DataSourceSerializerModern<T extends DataSourceDescriptor> implemen
         if (dataSource.isSavePassword()) JSONUtils.field(json, RegistryConstants.ATTR_SAVE_PASSWORD, true);
         if (dataSource.isSharedCredentials()) JSONUtils.field(json, RegistryConstants.ATTR_SHARED_CREDENTIALS, true);
 
-        DataSourceNavigatorSettings.saveSettingsToMap(json, dataSource.getNavigatorSettings(), true);
+        DataSourceNavigatorSettings.saveSettingsToMap(json, dataSource.getNavigatorSettings());
 
         if (dataSource.isConnectionReadOnly()) JSONUtils.field(json, RegistryConstants.ATTR_READ_ONLY, true);
 

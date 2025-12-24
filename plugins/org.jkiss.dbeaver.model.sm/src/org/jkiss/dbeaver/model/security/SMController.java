@@ -247,7 +247,7 @@ public interface SMController extends DBPObjectController, DBInternalDatabaseInf
         @NotNull String projectId,
         @NotNull String objectId,
         @NotNull SMObjectType objectType,
-        @NotNull Map<String, Object> settings
+        @NotNull Map<String, String> settings
     ) throws DBException;
 
     void deleteObjectSettings(

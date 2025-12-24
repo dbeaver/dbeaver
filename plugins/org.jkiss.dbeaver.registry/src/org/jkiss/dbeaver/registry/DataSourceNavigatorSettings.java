@@ -266,30 +266,33 @@ public class DataSourceNavigatorSettings implements DBNBrowseSettings {
 
     public static void saveSettingsToMap(
         @NotNull JsonWriter json,
-        @NotNull DataSourceNavigatorSettings navSettings,
-        boolean onlyTrueValues
+        @NotNull DataSourceNavigatorSettings navSettings
     ) throws IOException {
-        if (!onlyTrueValues || navSettings.showSystemObjects) {
-            JSONUtils.field(json, DataSourceSerializerModern.ATTR_NAVIGATOR_SHOW_SYSTEM_OBJECTS, navSettings.showSystemObjects);
+        addTrueSetting(json, DataSourceSerializerModern.ATTR_NAVIGATOR_SHOW_SYSTEM_OBJECTS, navSettings.showSystemObjects);
+        addTrueSetting(json, DataSourceSerializerModern.ATTR_NAVIGATOR_SHOW_UTIL_OBJECTS, navSettings.showUtilityObjects);
+        addTrueSetting(json, DataSourceSerializerModern.ATTR_NAVIGATOR_SHOW_ONLY_ENTITIES, navSettings.showOnlyEntities);
+        addTrueSetting(json, DataSourceSerializerModern.ATTR_NAVIGATOR_HIDE_FOLDERS, navSettings.hideFolders);
+        addTrueSetting(json, DataSourceSerializerModern.ATTR_NAVIGATOR_HIDE_SCHEMAS, navSettings.hideSchemas);
+        addTrueSetting(json, DataSourceSerializerModern.ATTR_NAVIGATOR_HIDE_VIRTUAL, navSettings.hideVirtualModel);
+        addTrueSetting(json, DataSourceSerializerModern.ATTR_NAVIGATOR_MERGE_ENTITIES, navSettings.mergeEntities);
+    }
+
+    private static void addTrueSetting(@NotNull JsonWriter json, @NotNull String name, boolean value) throws IOException {
+        if (value) {
+            JSONUtils.field(json, name, true);
         }
-        if (!onlyTrueValues || navSettings.showUtilityObjects) {
-            JSONUtils.field(json, DataSourceSerializerModern.ATTR_NAVIGATOR_SHOW_UTIL_OBJECTS, navSettings.showUtilityObjects);
-        }
-        if (!onlyTrueValues || navSettings.showOnlyEntities) {
-            JSONUtils.field(json, DataSourceSerializerModern.ATTR_NAVIGATOR_SHOW_ONLY_ENTITIES, navSettings.showOnlyEntities);
-        }
-        if (!onlyTrueValues || navSettings.hideFolders) {
-            JSONUtils.field(json, DataSourceSerializerModern.ATTR_NAVIGATOR_HIDE_FOLDERS, navSettings.hideFolders);
-        }
-        if (!onlyTrueValues || navSettings.hideSchemas) {
-            JSONUtils.field(json, DataSourceSerializerModern.ATTR_NAVIGATOR_HIDE_SCHEMAS, navSettings.hideSchemas);
-        }
-        if (!onlyTrueValues || navSettings.hideVirtualModel) {
-            JSONUtils.field(json, DataSourceSerializerModern.ATTR_NAVIGATOR_HIDE_VIRTUAL, navSettings.hideVirtualModel);
-        }
-        if (!onlyTrueValues || navSettings.mergeEntities) {
-            JSONUtils.field(json, DataSourceSerializerModern.ATTR_NAVIGATOR_MERGE_ENTITIES, navSettings.mergeEntities);
-        }
+    }
+
+    public static Map<String, Object> saveSettingsToMap(@NotNull DataSourceNavigatorSettings navSettings) {
+        Map<String, Object> map = new LinkedHashMap<>();
+        map.put(DataSourceSerializerModern.ATTR_NAVIGATOR_SHOW_SYSTEM_OBJECTS, navSettings.showSystemObjects);
+        map.put(DataSourceSerializerModern.ATTR_NAVIGATOR_SHOW_UTIL_OBJECTS, navSettings.showUtilityObjects);
+        map.put(DataSourceSerializerModern.ATTR_NAVIGATOR_SHOW_ONLY_ENTITIES, navSettings.showOnlyEntities);
+        map.put(DataSourceSerializerModern.ATTR_NAVIGATOR_HIDE_FOLDERS, navSettings.hideFolders);
+        map.put(DataSourceSerializerModern.ATTR_NAVIGATOR_HIDE_SCHEMAS, navSettings.hideSchemas);
+        map.put(DataSourceSerializerModern.ATTR_NAVIGATOR_HIDE_VIRTUAL, navSettings.hideVirtualModel);
+        map.put(DataSourceSerializerModern.ATTR_NAVIGATOR_MERGE_ENTITIES, navSettings.mergeEntities);
+        return map;
     }
 
 }
