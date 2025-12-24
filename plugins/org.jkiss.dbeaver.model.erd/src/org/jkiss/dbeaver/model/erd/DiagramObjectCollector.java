@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.model.erd;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
@@ -186,13 +187,15 @@ public class DiagramObjectCollector {
         return erdEntities;
     }
 
+    @NotNull
     public static List<ERDEntity> generateEntityList(
-        DBRProgressMonitor monitor,
-        final ERDDiagram diagram,
-        DBPProject diagramProject,
-        Collection<DBPNamedObject> objects,
-        DiagramCollectSettings settings,
-        boolean forceShowViews)
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull ERDDiagram diagram,
+        @NotNull DBPProject diagramProject,
+        @NotNull Collection<DBPNamedObject> objects,
+        @NotNull DiagramCollectSettings settings,
+        boolean forceShowViews,
+        boolean isERD)
     {
         final List<DBSObject> roots = new ArrayList<>();
         for (DBPNamedObject object : objects) {
@@ -214,25 +217,27 @@ public class DiagramObjectCollector {
         if (roots.isEmpty()) {
             return Collections.emptyList();
         }
-        for (Map.Entry<DBPProject, List<DBSObject>> entry : CommonUtils.group(roots, r -> r.getDataSource().getContainer().getProject()).entrySet()) {
-            final DBPProject project = entry.getKey();
-            final List<DBSObject> values = entry.getValue();
-            if (project != diagramProject) {
-                final StringJoiner joiner = new StringJoiner(", ");
-                for (DBSObject value : values) {
-                    joiner.add("'" + DBUtils.getObjectFullName(value, DBPEvaluationContext.UI) + "'");
+        if (isERD) {
+            for (Map.Entry<DBPProject, List<DBSObject>> entry : CommonUtils.group(roots, r -> r.getDataSource().getContainer().getProject())
+                .entrySet()) {
+                final DBPProject project = entry.getKey();
+                final List<DBSObject> values = entry.getValue();
+                if (project != diagramProject) {
+                    final StringJoiner joiner = new StringJoiner(", ");
+                    for (DBSObject value : values) {
+                        joiner.add("'" + DBUtils.getObjectFullName(value, DBPEvaluationContext.UI) + "'");
+                    }
+                    diagram.addErrorMessage(
+                        "Can't add object" + (values.size() > 1 ? "s" : "") + " " + joiner + " from a different project '" + project
+                            + "' (current project is '" + diagramProject.getName() + "')");
+                    roots.removeAll(values);
                 }
-                diagram.addErrorMessage("Can't add object" + (values.size() > 1 ? "s" : "") + " " + joiner + " from a different project '" + project + "' (current project is '" + diagramProject.getName() + "')");
-                roots.removeAll(values);
             }
         }
-
-        final List<ERDEntity> entities = new ArrayList<>();
 
         monitor.beginTask("Collect diagram objects", 1);
         DiagramObjectCollector collector = new DiagramObjectCollector(diagram);
         collector.setShowViews(forceShowViews);
-        //boolean showViews = ERDUIActivator.getDefault().getPreferenceStore().getBoolean(ERDUIConstants.PREF_DIAGRAM_SHOW_VIEWS);
 
         try {
             DBExecUtils.tryExecuteRecover(monitor, roots.getFirst().getDataSource(), monitor1 ->
@@ -240,7 +245,7 @@ public class DiagramObjectCollector {
         } catch (Exception e) {
             log.error(e);
         }
-        entities.addAll(collector.getDiagramEntities());
+        final List<ERDEntity> entities = new ArrayList<>(collector.getDiagramEntities());
         monitor.done();
 
         return entities;
