@@ -66,7 +66,8 @@ public class OracleAuthModelDatabaseNative extends AuthModelDatabaseNative<AuthM
             false
         );
         if (setOsUser) {
-            connProperties.setProperty(OracleConstants.CONN_PROP_SESSION_OS_USER, userName.toUpperCase());
+            String formattedUsername = userName.toUpperCase().split(" AS ")[0];
+            connProperties.setProperty(OracleConstants.CONN_PROP_SESSION_OS_USER, formattedUsername);
         }
 
         credentials.setUserName(userName);
