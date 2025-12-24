@@ -171,4 +171,6 @@ public class DBConstants {
     public static final String PROP_ORIGINAL_FILE_PATH = "originalFilePath";
 
     public static final String CERTIFICATE_STORAGE_FOLDER = "security";
+
+    public static final String PROP_SET_ORACLE_OS_USER = "setOsUser"; //$NON-NLS-1$
 }
