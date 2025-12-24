@@ -19,16 +19,22 @@ package org.jkiss.dbeaver.model;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.security.SMObjectType;
 
 import java.util.Map;
 
 public interface DBPObjectSettingsProvider {
 
     @Nullable
-    Map<String, String> getObjectSettings(@NotNull String objectId);
+    Map<String, String> getObjectSettings(
+        @NotNull SMObjectType objectType,
+        @NotNull String objectId
+    );
 
-    void setObjectSettings(@NotNull String objectId, @NotNull Map<String, String> settings) throws DBException;
-
-    DBPObjectSettingsManager getObjectSettingsManager();
+    void setObjectSettings(
+        @NotNull SMObjectType objectType,
+        @NotNull String objectId,
+        @NotNull Map<String, String> settings
+    ) throws DBException;
 
 }

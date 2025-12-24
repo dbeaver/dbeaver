@@ -19,17 +19,26 @@ package org.jkiss.dbeaver.registry;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPObjectSettingsProvider;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.data.json.JSONUtils;
+import org.jkiss.dbeaver.model.navigator.DBNNode;
+import org.jkiss.dbeaver.model.navigator.DBNUtils;
+import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
+import org.jkiss.dbeaver.model.security.SMObjectType;
 import org.jkiss.utils.CommonUtils;
 
+import java.util.Collection;
 import java.util.Map;
 import java.util.stream.Collectors;
 
 public class DataSourceNavigatorSettingsUtils {
     public static final String PARAM_ID_NAVIGATOR_SETTINGS = "navigator-settings.";
+
+    private static final Log log = Log.getLog(DataSourceNavigatorSettingsUtils.class);
 
     public static void loadSettingsFromMap(@NotNull DataSourceNavigatorSettings navSettings, @NotNull Map<String, Object> objectMap) {
         navSettings.setShowSystemObjects(JSONUtils.getBoolean(objectMap, DataSourceSerializerModern.ATTR_NAVIGATOR_SHOW_SYSTEM_OBJECTS));
@@ -47,7 +56,7 @@ public class DataSourceNavigatorSettingsUtils {
         if (settingsProvider == null) {
             return null;
         }
-        Map<String, String> settings = settingsProvider.getObjectSettings(dataSource.getId());
+        Map<String, String> settings = settingsProvider.getObjectSettings(SMObjectType.datasource, dataSource.getId());
         if (settings == null || settings.isEmpty()) {
             return null;
         }
@@ -81,6 +90,7 @@ public class DataSourceNavigatorSettingsUtils {
             .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
 
         settingsProvider.setObjectSettings(
+            SMObjectType.datasource,
             dataSource.getId(),
             settingsMap
         );
@@ -88,4 +98,28 @@ public class DataSourceNavigatorSettingsUtils {
     }
 
 
+    public static void objectSettingUpdated(@NotNull DBPProject project, @NotNull String objectId, @NotNull Collection<String> settingIds) {
+        DBPDataSourceContainer dataSourceContainer = project.getDataSourceRegistry().getDataSource(objectId);
+        if (dataSourceContainer == null) {
+            log.warn("Data source container '" + objectId + "' not found in registry");
+            return;
+        }
+        if (settingIds.stream().noneMatch(s -> s.startsWith(PARAM_ID_NAVIGATOR_SETTINGS))) {
+            // No relevant settings changed
+            return;
+        }
+        DataSourceNavigatorSettings navigatorSettings = getUserNavigatorSettings(dataSourceContainer);
+        ((DataSourceNavigatorSettings) dataSourceContainer.getNavigatorSettings()).setUserSettings(navigatorSettings);
+
+        // Refresh data source
+        DBNNode node = DBNUtils.getNodeByObject(dataSourceContainer);
+        if (node != null) {
+            try {
+                node.refreshNode(new VoidProgressMonitor(), DataSourceNavigatorSettingsUtils.class);
+            } catch (DBException e) {
+                log.warn("Error refreshing data source settings", e);
+            }
+        }
+
+    }
 }

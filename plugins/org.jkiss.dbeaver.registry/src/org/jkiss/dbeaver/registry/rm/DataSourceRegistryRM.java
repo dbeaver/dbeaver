@@ -23,8 +23,6 @@ import org.jkiss.dbeaver.DBRuntimeException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPDataSourceFolder;
-import org.jkiss.dbeaver.model.DBPObjectSettingsProvider;
-import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.rm.RMController;
@@ -34,7 +32,6 @@ import org.jkiss.dbeaver.registry.DataSourceConfigurationManagerBuffer;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.registry.DataSourceFolder;
 import org.jkiss.dbeaver.registry.DataSourceRegistry;
-import org.jkiss.dbeaver.registry.settings.DataSourceNavigatorSettingsListener;
 
 import java.nio.charset.StandardCharsets;
 import java.util.List;
@@ -45,12 +42,6 @@ public class DataSourceRegistryRM<T extends DataSourceDescriptor> extends DataSo
     @NotNull
     private final RMController rmController;
 
-    @Nullable
-    private final DBPObjectSettingsProvider objectSettingsProvider;
-
-    private final DataSourceNavigatorSettingsListener navigatorSettingsListener =
-        new DataSourceNavigatorSettingsListener(this);
-
     public DataSourceRegistryRM(
         @NotNull DBPProject project,
         @NotNull RMController rmController,
@@ -58,10 +49,6 @@ public class DataSourceRegistryRM<T extends DataSourceDescriptor> extends DataSo
     ) {
         super(project, new DataSourceConfigurationManagerRM(project, rmController), preferenceStore);
         this.rmController = rmController;
-        this.objectSettingsProvider = DBUtils.getAdapter(DBPObjectSettingsProvider.class, project);
-        if (objectSettingsProvider != null) {
-            objectSettingsProvider.getObjectSettingsManager().addListener(navigatorSettingsListener);
-        }
     }
 
     @Override
@@ -185,17 +172,5 @@ public class DataSourceRegistryRM<T extends DataSourceDescriptor> extends DataSo
     private String getRemoteProjectId() {
         return getProject().getId();
     }
-
-    @Override
-    public void dispose() {
-        if (objectSettingsProvider != null) {
-            objectSettingsProvider.getObjectSettingsManager().removeListener(
-                navigatorSettingsListener
-            );
-        }
-        super.dispose();
-    }
-
-
 
 }
