@@ -21,6 +21,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
+import org.jkiss.dbeaver.model.net.DBWUtils;
 import org.jkiss.dbeaver.registry.DataSourceProviderDescriptor;
 import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
 import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
@@ -196,7 +197,7 @@ public class DataGripDataSourceConfigXmlServiceImpl implements DataGripDataSourc
 
     private void configureSshConfig(ImportConnectionInfo connectionInfo, Map<String, String> conProps) {
 
-        NetworkHandlerDescriptor sslHD = NetworkHandlerRegistry.getInstance().getDescriptor("ssh_tunnel");
+        NetworkHandlerDescriptor sslHD = NetworkHandlerRegistry.getInstance().getDescriptor(DBWUtils.SSH_TUNNEL);
         DBWHandlerConfiguration sshHandler = new DBWHandlerConfiguration(sslHD, null);
         sshHandler.setUserName(conProps.get(DataGripConfigXMLConstant.SSH_USERNAME_PATH));
         sshHandler.setSavePassword(true);
