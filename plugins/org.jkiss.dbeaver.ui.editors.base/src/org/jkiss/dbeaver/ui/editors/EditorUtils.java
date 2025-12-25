@@ -668,7 +668,6 @@ public class EditorUtils {
     @NotNull
     public static Map<FileTypeHandlerDescriptor.Extension, List<Path>> getExtensionFiles(
         @NotNull List<Path> fileNames,
-        @NotNull List<Path> openedFiles,
         boolean databaseOnly
     ) {
         Map<FileTypeHandlerDescriptor.Extension, List<Path>> filesByExtension = new LinkedHashMap<>();
@@ -684,8 +683,9 @@ public class EditorUtils {
                 if (extension != null && databaseOnly && !extension.getDescriptor().isDatabaseHandler()) {
                     extension = null;
                 }
-                filesByExtension.computeIfAbsent(extension, d -> new ArrayList<>()).add(path);
-                openedFiles.add(path);
+                if (extension != null) {
+                    filesByExtension.computeIfAbsent(extension, d -> new ArrayList<>()).add(path);
+                }
             } else {
                 DBWorkbench.getPlatformUI().showError("Open file", "Can't open '" + path + "': file doesn't exist");
             }
