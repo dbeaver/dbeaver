@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.tools.transfer.database;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.tools.transfer.DTUtils;
 import org.jkiss.dbeaver.tools.transfer.DataTransferSettings;
@@ -100,11 +101,12 @@ public class DatabaseProducerSettings implements IDataTransferSettings {
         this.openNewConnections = openNewConnections;
     }
 
+    @NotNull
     public ExtractType getExtractType() {
         return extractType;
     }
 
-    public void setExtractType(ExtractType extractType) {
+    public void setExtractType(@NotNull ExtractType extractType) {
         this.extractType = extractType;
     }
 

@@ -16,45 +16,53 @@
  */
 package org.jkiss.dbeaver.tools.transfer.ui.pages.database;
 
-import org.eclipse.core.runtime.IAdaptable;
-import org.eclipse.jface.viewers.IStructuredSelection;
-import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.widgets.*;
-import org.jkiss.dbeaver.model.DBPDataSource;
+import org.eclipse.core.databinding.conversion.IConverter;
+import org.eclipse.core.databinding.observable.value.ComputedValue;
+import org.eclipse.core.databinding.observable.value.IObservableValue;
+import org.eclipse.core.databinding.observable.value.WritableValue;
+import org.eclipse.swt.widgets.Composite;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.data.DBDCellValue;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.model.struct.DBSDocumentContainer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.tools.transfer.database.DatabaseProducerSettings;
+import org.jkiss.dbeaver.tools.transfer.database.DatabaseProducerSettings.ExtractType;
 import org.jkiss.dbeaver.tools.transfer.database.DatabaseTransferProducer;
 import org.jkiss.dbeaver.tools.transfer.internal.DTMessages;
 import org.jkiss.dbeaver.tools.transfer.ui.internal.DTUIMessages;
 import org.jkiss.dbeaver.tools.transfer.ui.pages.DataTransferPageNodeSettings;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.internal.UIConnectionMessages;
-import org.jkiss.utils.CommonUtils;
+import org.jkiss.dbeaver.ui.forms.AlignX;
+import org.jkiss.dbeaver.ui.forms.PanelBuilder;
+import org.jkiss.dbeaver.ui.forms.util.Bindings;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 
 import java.util.List;
-import java.util.Locale;
+import java.util.function.Consumer;
 
 public class DatabaseProducerPageExtractSettings extends DataTransferPageNodeSettings {
 
-    private static final int EXTRACT_TYPE_SINGLE_QUERY = 0;
-    private static final int EXTRACT_TYPE_SEGMENTS = 1;
+    private enum Strategy {
+        QUERY_DATABASE,
+        USE_FETCHED_ROWS
+    }
 
-    private Button newConnectionCheckbox;
-    private Button rowCountCheckbox;
-    private Button selectedColumnsOnlyCheckbox;
-    private Button selectedRowsOnlyCheckbox;
-    private Text fetchSizeText;
+    private final WritableValue<Strategy> strategy = Bindings.of(Strategy.QUERY_DATABASE);
 
-    private Text threadsNumText;
-    private Combo rowsExtractType;
-    private Label segmentSizeLabel;
-    private Text segmentSizeText;
+    // Query database
+    private final WritableValue<Boolean> openNewConnections = Bindings.of(false);
+    private final WritableValue<Boolean> fetchRowCount = Bindings.of(false);
+
+    // Fetched rows
+    private final WritableValue<Boolean> selectedRowsOnly = Bindings.of(false);
+    private final WritableValue<Boolean> selectedColumnsOnly = Bindings.of(false);
+
+    // Advanced
+    private final WritableValue<Integer> fetchSize = Bindings.of(10000);
+    private final WritableValue<Integer> threadCount = Bindings.of(1);
+    private final WritableValue<Integer> segmentSize = Bindings.of(10000);
+    private final WritableValue<ExtractType> extractType = Bindings.of(ExtractType.SINGLE_QUERY);
 
     public DatabaseProducerPageExtractSettings() {
         super(DTUIMessages.database_producer_page_extract_settings_name_and_title);
@@ -64,251 +72,136 @@ public class DatabaseProducerPageExtractSettings extends DataTransferPageNodeSet
     }
 
     @Override
-    public void createControl(Composite parent) {
+    public void createControl(@NotNull Composite parent) {
         initializeDialogUnits(parent);
 
         Composite composite = UIUtils.createComposite(parent, 1);
 
-        final DatabaseProducerSettings settings = getWizard().getPageSettings(this, DatabaseProducerSettings.class);
+        PanelBuilder.build(composite, pb -> pb
+            .margins(0, 0)
+            .row(rb -> rb
+                .group("Extraction", buildExtractionPanel())));
 
-        {
-            Group generalSettings = UIUtils.createControlGroup(composite, DTMessages.data_transfer_wizard_settings_group_general, 4, GridData.HORIZONTAL_ALIGN_BEGINNING, 0);
-
-            newConnectionCheckbox = UIUtils.createCheckbox(generalSettings, DTMessages.data_transfer_wizard_output_checkbox_new_connection, DTUIMessages.database_producer_page_extract_settings_new_connection_checkbox_tooltip, true, 4);
-            newConnectionCheckbox.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
-                    settings.setOpenNewConnections(newConnectionCheckbox.getSelection());
-                }
-            });
-
-            rowCountCheckbox = UIUtils.createCheckbox(generalSettings, DTMessages.data_transfer_wizard_output_checkbox_select_row_count, DTUIMessages.database_producer_page_extract_settings_row_count_checkbox_tooltip, true, 4);
-            rowCountCheckbox.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
-                    settings.setQueryRowCount(rowCountCheckbox.getSelection());
-                }
-            });
-
-            fetchSizeText = UIUtils.createLabelText(generalSettings, DTUIMessages.database_producer_page_extract_settings_text_fetch_size_label, "", SWT.BORDER);
-            fetchSizeText.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
-            ((GridData)fetchSizeText.getLayoutData()).widthHint = UIUtils.getFontHeight(fetchSizeText) * 10;
-            fetchSizeText.setToolTipText(DTUIMessages.database_producer_page_extract_settings_text_fetch_size_tooltip);
-            fetchSizeText.addVerifyListener(UIUtils.getIntegerVerifyListener(Locale.ENGLISH));
-            fetchSizeText.addModifyListener(e -> {
-                settings.setFetchSize(Integer.parseInt(fetchSizeText.getText()));
-            });
-
-            IStructuredSelection curSelection = getWizard().getCurrentSelection();
-            boolean hasSelection = curSelection != null && !curSelection.isEmpty() && curSelection.getFirstElement() instanceof DBDCellValue;
-
-            if (hasSelection) {
-                boolean supportsColumnsExport = true;
-                List<DBSObject> sourceObjects = getWizard().getSettings().getSourceObjects();
-                if (!CommonUtils.isEmpty(sourceObjects)) {
-                    DBSObject sourceObject = sourceObjects.get(0);
-                    if (sourceObject instanceof IAdaptable) {
-                        DBSDataContainer adapter = ((IAdaptable) sourceObject).getAdapter(DBSDataContainer.class);
-                        if (adapter instanceof DBSDocumentContainer) {
-                            supportsColumnsExport = false;
-                        } else if (adapter != null) {
-                            DBPDataSource dataSource = adapter.getDataSource();
-                            if (dataSource != null && dataSource.getInfo().isDynamicMetadata()) {
-                                supportsColumnsExport = false;
-                            }
-                        }
-                    }
-                }
-                if (supportsColumnsExport) {
-                    selectedColumnsOnlyCheckbox = UIUtils.createCheckbox(generalSettings, DTMessages.data_transfer_wizard_output_checkbox_selected_columns_only, null, false, 4);
-                    selectedColumnsOnlyCheckbox.addSelectionListener(new SelectionAdapter() {
-                        @Override
-                        public void widgetSelected(SelectionEvent e) {
-                            settings.setSelectedColumnsOnly(selectedColumnsOnlyCheckbox.getSelection());
-                        }
-                    });
-                } else {
-                    settings.setSelectedColumnsOnly(false);
-                }
-
-                selectedRowsOnlyCheckbox = UIUtils.createCheckbox(generalSettings, DTMessages.data_transfer_wizard_output_checkbox_selected_rows_only, null, false, 4);
-                selectedRowsOnlyCheckbox.addSelectionListener(new SelectionAdapter() {
-                    @Override
-                    public void widgetSelected(SelectionEvent e) {
-                        settings.setSelectedRowsOnly(selectedRowsOnlyCheckbox.getSelection());
-                    }
-                });
-
-                SelectionAdapter listener = new SelectionAdapter() {
-                    @Override
-                    public void widgetSelected(SelectionEvent e) {
-                        enableNewConnectionCheckbox();
-                    }
-                };
-                if (supportsColumnsExport) {
-                    selectedColumnsOnlyCheckbox.addSelectionListener(listener);
-                }
-                selectedRowsOnlyCheckbox.addSelectionListener(listener);
-            }
-        }
-        {
-            Group generalSettings = UIUtils.createControlGroup(
-                composite,
-                UIConnectionMessages.dialog_connection_advanced_settings,
-                4,
-                GridData.HORIZONTAL_ALIGN_BEGINNING,
-                0
-            );
-
-            Label threadsNumLabel = UIUtils.createControlLabel(generalSettings, DTMessages.data_transfer_wizard_output_label_max_threads);
-            threadsNumText = new Text(generalSettings, SWT.BORDER);
-            threadsNumText.setToolTipText(DTUIMessages.database_producer_page_extract_settings_threads_num_text_tooltip);
-            threadsNumText.setLayoutData(new GridData(
-                GridData.HORIZONTAL_ALIGN_BEGINNING,
-                GridData.VERTICAL_ALIGN_BEGINNING,
-                false,
-                false,
-                3,
-                1
-            ));
-            ((GridData) threadsNumText.getLayoutData()).widthHint = UIUtils.getFontHeight(threadsNumText) * 5;
-            threadsNumText.addVerifyListener(UIUtils.getIntegerVerifyListener(Locale.ENGLISH));
-            threadsNumText.addModifyListener(e -> {
-                try {
-                    getWizard().getSettings().setMaxJobCount(Integer.parseInt(threadsNumText.getText()));
-                } catch (NumberFormatException e1) {
-                    // do nothing
-                }
-            });
-            if (getWizard().getSettings().getDataPipes().size() < 2) {
-                threadsNumLabel.setEnabled(false);
-                threadsNumText.setEnabled(false);
-            }
-
-            {
-
-                UIUtils.createControlLabel(generalSettings, DTMessages.data_transfer_wizard_output_label_extract_type);
-                rowsExtractType = new Combo(generalSettings, SWT.DROP_DOWN | SWT.READ_ONLY);
-                rowsExtractType.setLayoutData(new GridData(
-                    GridData.HORIZONTAL_ALIGN_BEGINNING,
-                    GridData.VERTICAL_ALIGN_BEGINNING,
-                    false,
-                    false,
-                    3,
-                    1
-                ));
-                rowsExtractType.setItems(
-                    DTMessages.data_transfer_wizard_output_combo_extract_type_item_single_query,
-                    DTMessages.data_transfer_wizard_output_combo_extract_type_item_by_segments
-                );
-                rowsExtractType.addSelectionListener(new SelectionAdapter() {
-                    @Override
-                    public void widgetSelected(SelectionEvent e) {
-                        switch (rowsExtractType.getSelectionIndex()) {
-                            case EXTRACT_TYPE_SEGMENTS:
-                                settings.setExtractType(DatabaseProducerSettings.ExtractType.SEGMENTS);
-                                break;
-                            case EXTRACT_TYPE_SINGLE_QUERY:
-                                settings.setExtractType(DatabaseProducerSettings.ExtractType.SINGLE_QUERY);
-                                break;
-                        }
-                        updatePageCompletion();
-                    }
-                });
-
-                segmentSizeLabel = UIUtils.createControlLabel(generalSettings, DTMessages.data_transfer_wizard_output_label_segment_size);
-                segmentSizeLabel.setLayoutData(new GridData(
-                    GridData.HORIZONTAL_ALIGN_BEGINNING,
-                    GridData.VERTICAL_ALIGN_BEGINNING,
-                    false,
-                    false,
-                    1,
-                    1
-                ));
-                segmentSizeText = new Text(generalSettings, SWT.BORDER);
-                segmentSizeText.addModifyListener(e -> {
-                    try {
-                        settings.setSegmentSize(Integer.parseInt(segmentSizeText.getText()));
-                    } catch (NumberFormatException e1) {
-                        // just skip it
-                    }
-                });
-                segmentSizeText.setLayoutData(new GridData(
-                    GridData.HORIZONTAL_ALIGN_BEGINNING,
-                    GridData.VERTICAL_ALIGN_BEGINNING,
-                    false,
-                    false,
-                    1,
-                    1
-                ));
-                ((GridData) segmentSizeText.getLayoutData()).widthHint = UIUtils.getFontHeight(segmentSizeText) * 10;
-            }
-        }
-
-        if(getWizard().getCurrentTask() != null){
+        if (getWizard().getCurrentTask() != null) {
             Composite buttonsPanel = UIUtils.createComposite(composite, 1);
             getWizard().createVariablesEditButton(buttonsPanel);
         }
 
         setControl(composite);
-
     }
 
-    private void enableNewConnectionCheckbox() {
-        if (selectedColumnsOnlyCheckbox == null || selectedRowsOnlyCheckbox == null) {
-            return;
-        }
-        boolean enable = !selectedColumnsOnlyCheckbox.getSelection() && !selectedRowsOnlyCheckbox.getSelection();
-        newConnectionCheckbox.setEnabled(enable);
-         if (!enable) {
-            newConnectionCheckbox.setSelection(false);
-        }
+    @NotNull
+    private Consumer<PanelBuilder> buildExtractionPanel() {
+        var queryDatabase = Bindings.select(strategy, Strategy.QUERY_DATABASE);
+        var useFetchedData = Bindings.select(strategy, Strategy.USE_FETCHED_ROWS);
+
+        return pb -> pb
+            .row(rb -> rb
+                .radioButton("Query the database", bb -> bb.selected(queryDatabase))
+                .radioButton("Use fetched rows", bb -> bb.selected(useFetchedData)))
+            .row(rb -> rb
+                .panel(buildQueryDatabasePanel(queryDatabase))
+                .panel(buildUseFetchedRowsPanel(useFetchedData)))
+            .row(rb -> rb
+                .expandableGroup("Advanced", false, pb1 -> pb1
+                    .align(AlignX.FILL).grow()
+                    .accept(buildAdvancedPanel(queryDatabase))));
+    }
+
+    @NotNull
+    private Consumer<PanelBuilder> buildQueryDatabasePanel(@NotNull IObservableValue<Boolean> enabled) {
+        return pb -> pb
+            .row(rb -> rb
+                .enabled(enabled)
+                .checkBox(DTMessages.data_transfer_wizard_output_checkbox_new_connection, bb -> bb
+                    .tooltip(DTUIMessages.database_producer_page_extract_settings_new_connection_checkbox_tooltip)
+                    .selected(openNewConnections)))
+            .row(rb -> rb
+                .enabled(enabled)
+                .checkBox(DTMessages.data_transfer_wizard_output_checkbox_select_row_count, bb -> bb
+                    .tooltip(DTUIMessages.database_producer_page_extract_settings_row_count_checkbox_tooltip)
+                    .selected(fetchRowCount)));
+    }
+
+    @NotNull
+    private Consumer<PanelBuilder> buildAdvancedPanel(@NotNull IObservableValue<Boolean> queryDatabase) {
+        var canChangeThreads = Bindings.of(getWizard().getSettings().getDataPipes().size() > 2);
+        var canChangeSegment = ComputedValue.create(() -> extractType.getValue() == ExtractType.SEGMENTS);
+
+        return pb -> pb
+            .row(rb -> rb
+                .enabled(Bindings.and(queryDatabase, canChangeThreads))
+                .controlLabel(DTMessages.data_transfer_wizard_output_label_max_threads)
+                .intTextField(threadCount, tb -> tb
+                    .tooltip(DTUIMessages.database_producer_page_extract_settings_threads_num_text_tooltip)))
+            .row(rb -> rb
+                .enabled(queryDatabase)
+                .controlLabel(DTUIMessages.database_producer_page_extract_settings_text_fetch_size_label)
+                .intTextField(fetchSize, tb -> tb
+                    .tooltip(DTUIMessages.database_producer_page_extract_settings_text_fetch_size_tooltip)))
+            .row(rb -> rb
+                .enabled(queryDatabase)
+                .controlLabel(DTMessages.data_transfer_wizard_output_label_extract_type)
+                .comboBox(extractType, IConverter.create(DatabaseProducerPageExtractSettings::getExtractTypeLabel)))
+            .row(rb -> rb
+                .enabled(Bindings.and(queryDatabase, canChangeSegment))
+                .controlLabel(DTMessages.data_transfer_wizard_output_label_segment_size)
+                .intTextField(segmentSize));
+    }
+
+    @NotNull
+    private Consumer<PanelBuilder> buildUseFetchedRowsPanel(@NotNull IObservableValue<Boolean> enabled) {
+        var canExportSelection = Bindings.of(hasCellSelection() && canExportColumns());
+
+        return pb -> pb
+            .row(rb -> rb
+                .enabled(Bindings.and(enabled, canExportSelection))
+                .checkBox("Selected rows only", bb -> bb.selected(selectedRowsOnly)))
+            .row(rb -> rb
+                .enabled(Bindings.and(enabled, canExportSelection))
+                .checkBox("Selected columns only", bb -> bb.selected(selectedColumnsOnly)));
     }
 
     @Override
-    public void activatePage()
-    {
+    public void activatePage() {
         getWizard().loadNodeSettings();
 
-        final DatabaseProducerSettings settings = getWizard().getPageSettings(this, DatabaseProducerSettings.class);
+        var settings = getWizard().getPageSettings(this, DatabaseProducerSettings.class);
 
-        threadsNumText.setText(String.valueOf(getWizard().getSettings().getMaxJobCount()));
-        newConnectionCheckbox.setSelection(settings.isOpenNewConnections());
-        rowCountCheckbox.setSelection(settings.isQueryRowCount());
+        // Query database
+        openNewConnections.setValue(settings.isOpenNewConnections());
+        fetchRowCount.setValue(settings.isQueryRowCount());
 
-        if (segmentSizeText != null) {
-            segmentSizeText.setText(String.valueOf(settings.getSegmentSize()));
-            switch (settings.getExtractType()) {
-                case SINGLE_QUERY: rowsExtractType.select(EXTRACT_TYPE_SINGLE_QUERY); break;
-                case SEGMENTS: rowsExtractType.select(EXTRACT_TYPE_SEGMENTS); break;
-            }
-        }
-        fetchSizeText.setText(String.valueOf(settings.getFetchSize()));
-        if (selectedColumnsOnlyCheckbox != null) {
-            selectedColumnsOnlyCheckbox.setSelection(settings.isSelectedColumnsOnly());
-        }
-        if (selectedRowsOnlyCheckbox != null) {
-            selectedRowsOnlyCheckbox.setSelection(settings.isSelectedRowsOnly());
-        }
-        enableNewConnectionCheckbox();
+        // Fetched rows
+        selectedRowsOnly.setValue(settings.isSelectedRowsOnly());
+        selectedColumnsOnly.setValue(settings.isSelectedColumnsOnly());
+
+        // Advanced
+        fetchSize.setValue(settings.getFetchSize());
+        threadCount.setValue(getWizard().getSettings().getMaxJobCount());
+        segmentSize.setValue(settings.getSegmentSize());
+        extractType.setValue(settings.getExtractType());
 
         updatePageCompletion();
     }
 
     @Override
-    protected boolean determinePageCompletion()
-    {
-        if (rowsExtractType != null) {
-            int selectionIndex = rowsExtractType.getSelectionIndex();
-            if (selectionIndex == EXTRACT_TYPE_SEGMENTS) {
-                segmentSizeLabel.setEnabled(true);
-                segmentSizeText.setEnabled(true);
-            } else {
-                segmentSizeLabel.setEnabled(false);
-                segmentSizeText.setEnabled(false);
-            }
-        }
-        return true;
+    public void deactivatePage() {
+        var settings = getWizard().getPageSettings(this, DatabaseProducerSettings.class);
+
+        // Query database
+        settings.setOpenNewConnections(openNewConnections.getValue());
+        settings.setQueryRowCount(fetchRowCount.getValue());
+
+        // Fetched rows
+        settings.setSelectedRowsOnly(selectedRowsOnly.getValue());
+        settings.setSelectedColumnsOnly(selectedColumnsOnly.getValue());
+
+        // Advanced
+        settings.setFetchSize(fetchSize.getValue());
+        getWizard().getSettings().setMaxJobCount(threadCount.getValue());
+        settings.setSegmentSize(segmentSize.getValue());
+        settings.setExtractType(extractType.getValue());
     }
 
     @Override
@@ -316,4 +209,30 @@ public class DatabaseProducerPageExtractSettings extends DataTransferPageNodeSet
         return isProducerOfType(DatabaseTransferProducer.class);
     }
 
+    @NotNull
+    private static String getExtractTypeLabel(@NotNull ExtractType type) {
+        return switch (type) {
+            case SINGLE_QUERY -> DTMessages.data_transfer_wizard_output_combo_extract_type_item_single_query;
+            case SEGMENTS -> DTMessages.data_transfer_wizard_output_combo_extract_type_item_by_segments;
+        };
+    }
+
+    private boolean hasCellSelection() {
+        var selection = getWizard().getCurrentSelection();
+        return selection != null && !selection.isEmpty() && selection.getFirstElement() instanceof DBDCellValue;
+    }
+
+    private boolean canExportColumns() {
+        List<DBSObject> objects = getWizard().getSettings().getSourceObjects();
+        for (DBSObject object : objects) {
+            DBSDataContainer container = GeneralUtils.adapt(object, DBSDataContainer.class);
+            if (container instanceof DBSDocumentContainer) {
+                return false;
+            }
+            if (container != null && container.getDataSource().getInfo().isDynamicMetadata()) {
+                return false;
+            }
+        }
+        return true;
+    }
 }
