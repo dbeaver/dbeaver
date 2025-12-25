@@ -16,14 +16,20 @@
  */
 package org.jkiss.dbeaver.ext.duckdb.model;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.generic.model.GenericSQLDialect;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
+import org.jkiss.dbeaver.model.sql.parser.rules.SQLDollarQuoteRule;
+import org.jkiss.dbeaver.model.text.parser.TPRule;
+import org.jkiss.dbeaver.model.text.parser.TPRuleProvider;
 
 import java.util.List;
 
-public final class DuckDBSQLDialect extends GenericSQLDialect {
+public final class DuckDBSQLDialect extends GenericSQLDialect implements TPRuleProvider {
     private static final List<String> DUCKDB_KEYWORDS = List.of(
         "INSTALL",
         "LOAD"
@@ -33,6 +39,23 @@ public final class DuckDBSQLDialect extends GenericSQLDialect {
     public void initDriverSettings(JDBCSession session, JDBCDataSource dataSource, JDBCDatabaseMetaData metaData) {
         super.initDriverSettings(session, dataSource, metaData);
         addSQLKeywords(DUCKDB_KEYWORDS);
+    }
+
+    @NotNull
+    @Override
+    public TPRule[] extendRules(@Nullable DBPDataSourceContainer dataSource, @NotNull TPRuleProvider.RulePosition position) {
+        if (position == TPRuleProvider.RulePosition.INITIAL || position == TPRuleProvider.RulePosition.PARTITION) {
+
+            return new TPRule[] {
+                new SQLDollarQuoteRule(
+                    position == RulePosition.PARTITION,
+                    false,
+                    false,
+                    false
+                )
+            };
+        }
+        return new TPRule[0];
     }
 
     @Override
