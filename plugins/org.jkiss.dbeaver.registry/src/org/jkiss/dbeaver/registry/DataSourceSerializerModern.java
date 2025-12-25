@@ -841,11 +841,12 @@ public class DataSourceSerializerModern<T extends DataSourceDescriptor> implemen
         dataSource.setDriverSubstitution(DataSourceProviderRegistry.getInstance()
             .getDriverSubstitution(CommonUtils.notEmpty(JSONUtils.getString(conObject, ATTR_DRIVER_SUBSTITUTION))));
 
-        DataSourceNavigatorSettings defaultNavigatorSettings = dataSource.getNavigatorSettings();
-        DataSourceNavigatorSettingsUtils.loadSettingsFromMap(defaultNavigatorSettings, conObject);
         DataSourceNavigatorSettings userNavigatorSettings = DataSourceNavigatorSettingsUtils.getUserNavigatorSettings(dataSource);
         if (userNavigatorSettings != null) {
-            defaultNavigatorSettings.setUserSettings(userNavigatorSettings);
+            dataSource.setNavigatorSettings(userNavigatorSettings);
+        } else {
+            DataSourceNavigatorSettings defaultNavigatorSettings = dataSource.getNavigatorSettings();
+            DataSourceNavigatorSettingsUtils.loadSettingsFromMap(defaultNavigatorSettings, conObject);
         }
 
         dataSource.setConnectionReadOnly(JSONUtils.getBoolean(conObject, RegistryConstants.ATTR_READ_ONLY));

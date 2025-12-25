@@ -18,7 +18,6 @@ package org.jkiss.dbeaver.registry;
 
 import com.google.gson.stream.JsonWriter;
 import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.data.json.JSONUtils;
 import org.jkiss.dbeaver.model.navigator.DBNBrowseSettings;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
@@ -101,13 +100,13 @@ public class DataSourceNavigatorSettings implements DBNBrowseSettings {
     private boolean hideFolders;
     private boolean hideSchemas;
     private boolean hideVirtualModel;
-    @Nullable
-    private transient DataSourceNavigatorSettings userSettings;
+
+    private transient boolean userSettings;
 
     public DataSourceNavigatorSettings() {
     }
 
-    public DataSourceNavigatorSettings(DBNBrowseSettings copyFrom) {
+    public DataSourceNavigatorSettings(@NotNull DBNBrowseSettings copyFrom) {
         this.showSystemObjects = copyFrom.isShowSystemObjects();
         this.showUtilityObjects = copyFrom.isShowUtilityObjects();
         this.showOnlyEntities = copyFrom.isShowOnlyEntities();
@@ -119,7 +118,7 @@ public class DataSourceNavigatorSettings implements DBNBrowseSettings {
 
     @Override
     public boolean isShowSystemObjects() {
-        return userSettings != null ? userSettings.showSystemObjects : showSystemObjects;
+        return showSystemObjects;
     }
 
     public void setShowSystemObjects(boolean showSystemObjects) {
@@ -128,7 +127,7 @@ public class DataSourceNavigatorSettings implements DBNBrowseSettings {
 
     @Override
     public boolean isShowUtilityObjects() {
-        return userSettings != null ? userSettings.showUtilityObjects : showUtilityObjects;
+        return showUtilityObjects;
     }
 
     public void setShowUtilityObjects(boolean showUtilityObjects) {
@@ -137,7 +136,7 @@ public class DataSourceNavigatorSettings implements DBNBrowseSettings {
 
     @Override
     public boolean isShowOnlyEntities() {
-        return userSettings != null ? userSettings.showOnlyEntities : showOnlyEntities;
+        return showOnlyEntities;
     }
 
     public void setShowOnlyEntities(boolean showOnlyEntities) {
@@ -146,7 +145,7 @@ public class DataSourceNavigatorSettings implements DBNBrowseSettings {
 
     @Override
     public boolean isMergeEntities() {
-        return userSettings != null ? userSettings.mergeEntities : mergeEntities;
+        return mergeEntities;
     }
 
     public void setMergeEntities(boolean mergeEntities) {
@@ -155,7 +154,7 @@ public class DataSourceNavigatorSettings implements DBNBrowseSettings {
 
     @Override
     public boolean isHideFolders() {
-        return userSettings != null ? userSettings.hideFolders : hideFolders;
+        return hideFolders;
     }
 
     public void setHideFolders(boolean hideFolders) {
@@ -164,7 +163,7 @@ public class DataSourceNavigatorSettings implements DBNBrowseSettings {
 
     @Override
     public boolean isHideSchemas() {
-        return userSettings != null ? userSettings.hideSchemas : hideSchemas;
+        return hideSchemas;
     }
 
     public void setHideSchemas(boolean hideSchemas) {
@@ -173,28 +172,27 @@ public class DataSourceNavigatorSettings implements DBNBrowseSettings {
 
     @Override
     public boolean isHideVirtualModel() {
-        return userSettings != null ? userSettings.hideVirtualModel : hideVirtualModel;
+        return hideVirtualModel;
     }
 
     public void setHideVirtualModel(boolean hideVirtualModel) {
         this.hideVirtualModel = hideVirtualModel;
     }
 
-    @Nullable
-    public DataSourceNavigatorSettings getUserSettings() {
+    @Override
+    public boolean isUserSettings() {
         return userSettings;
     }
 
-    public void setUserSettings(@Nullable DataSourceNavigatorSettings userSettings) {
+    public void setUserSettings(boolean userSettings) {
         this.userSettings = userSettings;
     }
 
     @Override
     public boolean equals(Object obj) {
-        if (!(obj instanceof DataSourceNavigatorSettings)) {
+        if (!(obj instanceof DataSourceNavigatorSettings source)) {
             return false;
         }
-        DataSourceNavigatorSettings source = (DataSourceNavigatorSettings) obj;
         return this.showSystemObjects == source.showSystemObjects &&
             this.showUtilityObjects == source.showUtilityObjects &&
             this.showOnlyEntities == source.showOnlyEntities &&
