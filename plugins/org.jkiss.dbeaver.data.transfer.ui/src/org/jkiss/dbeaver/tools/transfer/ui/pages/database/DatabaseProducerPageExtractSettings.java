@@ -198,7 +198,11 @@ public class DatabaseProducerPageExtractSettings extends DataTransferPageNodeSet
 
         // Fetched rows
         if (strategy.getValue() == Strategy.USE_FETCHED_ROWS) {
-            settings.setFetchedRowsPolicy(new FetchedRowsPolicy(selectedRowsOnly.getValue(), selectedColumnsOnly.getValue()));
+            boolean canExportSelection = hasCellSelection() && canExportColumns();
+            settings.setFetchedRowsPolicy(new FetchedRowsPolicy(
+                canExportSelection && selectedRowsOnly.getValue(),
+                canExportSelection && selectedColumnsOnly.getValue()
+            ));
         } else {
             settings.setFetchedRowsPolicy(null);
         }
