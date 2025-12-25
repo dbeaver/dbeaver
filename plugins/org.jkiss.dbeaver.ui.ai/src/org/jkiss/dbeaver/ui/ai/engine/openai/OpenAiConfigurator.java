@@ -97,17 +97,18 @@ public class OpenAiConfigurator<ENGINE extends AIEngineDescriptor, PROPERTIES ex
             baseUrl = OpenAIClient.OPENAI_ENDPOINT;
         }
         token = CommonUtils.toString(configuration.getToken());
+        modelSelectorField.setSelectedModel(
+            CommonUtils.toString(configuration.getModel(), OpenAIModels.DEFAULT_MODEL)
+        );
+        temperature = CommonUtils.toString(configuration.getTemperature(), "0.0");
 
         useLegacyApi = configuration.isLegacyApi();
         logQuery = CommonUtils.toBoolean(configuration.isLoggingEnabled());
         applySettings();
-        modelSelectorField.refreshModelListSilently(false);
-        modelSelectorField.setSelectedModel(
-            CommonUtils.toString(configuration.getModel(), OpenAIModels.DEFAULT_MODEL)
-        );
-        contextWindowSizeField.setValue(configuration.getContextWindowSize());
-        temperature = CommonUtils.toString(configuration.getTemperature(), "0.0");
 
+        contextWindowSizeField.setValue(configuration.getContextWindowSize());
+
+        modelSelectorField.refreshModelListSilently(false);
     }
 
     @Override
