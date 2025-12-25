@@ -194,6 +194,9 @@ public class DatabaseTransferProducer implements IDataTransferProducer<DatabaseP
 
         DBExecUtils.tryExecuteRecover(monitor1, dataSource, monitor -> {
             long readFlags = DBSDataContainer.FLAG_NONE;
+            if (settings.isFetchedRowsOnly()) {
+                readFlags |= DBSDataContainer.FLAG_USE_FETCHED_ROWS;
+            }
             if (settings.isSelectedColumnsOnly()) {
                 readFlags |= DBSDataContainer.FLAG_USE_SELECTED_COLUMNS;
             }
@@ -203,7 +206,7 @@ public class DatabaseTransferProducer implements IDataTransferProducer<DatabaseP
 
             boolean newConnection = settings.isOpenNewConnections() && !getDatabaseObject().getDataSource().getContainer().getDriver().isEmbedded();
             boolean forceDataReadTransactions = Boolean.TRUE.equals(dataSource.getDataSourceFeature(DBPDataSource.FEATURE_LOB_REQUIRE_TRANSACTIONS));
-            boolean selectiveExportFromUI = settings.isSelectedColumnsOnly() || settings.isSelectedRowsOnly();
+            boolean selectiveExportFromUI = settings.isFetchedRowsOnly();
 
             DBCExecutionContext context;
             if (dataContainer instanceof DBPContextProvider) {

@@ -43,6 +43,7 @@ public class DatabaseProducerSettings implements IDataTransferSettings {
 
     private boolean openNewConnections = true;
     private boolean queryRowCount = true;
+    private boolean fetchedRowsOnly = false;
     private boolean selectedRowsOnly = false;
     private boolean selectedColumnsOnly = false;
     private ExtractType extractType = ExtractType.SINGLE_QUERY;
@@ -75,6 +76,15 @@ public class DatabaseProducerSettings implements IDataTransferSettings {
 
     public void setFetchSize(int fetchSize) {
         this.fetchSize = fetchSize;
+    }
+
+    public boolean isFetchedRowsOnly() {
+        // TODO: Too hacky; getter doesn't reflect the value set via setter
+        return fetchedRowsOnly || selectedRowsOnly || selectedColumnsOnly;
+    }
+
+    public void setFetchedRowsOnly(boolean fetchedRowsOnly) {
+        this.fetchedRowsOnly = fetchedRowsOnly;
     }
 
     public boolean isSelectedRowsOnly() {
@@ -118,6 +128,7 @@ public class DatabaseProducerSettings implements IDataTransferSettings {
         fetchSize = CommonUtils.toInt(settings.get("fetchSize"), fetchSize);
         openNewConnections = CommonUtils.toBoolean(settings.get("openNewConnections"));
         queryRowCount = CommonUtils.toBoolean(settings.get("queryRowCount"));
+        fetchedRowsOnly = CommonUtils.toBoolean(settings.get("fetchedRowsOnly"));
         selectedColumnsOnly = CommonUtils.toBoolean(settings.get("selectedColumnsOnly"));
         selectedRowsOnly = CommonUtils.toBoolean(settings.get("selectedRowsOnly"));
     }
@@ -129,6 +140,7 @@ public class DatabaseProducerSettings implements IDataTransferSettings {
         settings.put("fetchSize", fetchSize);
         settings.put("openNewConnections", openNewConnections);
         settings.put("queryRowCount", queryRowCount);
+        settings.put("fetchedRowsOnly", fetchedRowsOnly);
         settings.put("selectedColumnsOnly", selectedColumnsOnly);
         settings.put("selectedRowsOnly", selectedRowsOnly);
     }
@@ -140,6 +152,7 @@ public class DatabaseProducerSettings implements IDataTransferSettings {
         DTUtils.addSummary(summary, DTMessages.data_transfer_wizard_output_checkbox_new_connection, openNewConnections);
         DTUtils.addSummary(summary, DTMessages.data_transfer_wizard_output_label_extract_type, extractType.name());
         DTUtils.addSummary(summary, DTMessages.data_transfer_wizard_output_checkbox_select_row_count, queryRowCount);
+        DTUtils.addSummary(summary, DTMessages.data_transfer_wizard_output_checkbox_fetched_rows_only, fetchedRowsOnly);
         DTUtils.addSummary(summary, DTMessages.data_transfer_wizard_output_checkbox_selected_rows_only, selectedRowsOnly);
         DTUtils.addSummary(summary, DTMessages.data_transfer_wizard_output_checkbox_selected_columns_only, selectedColumnsOnly);
 

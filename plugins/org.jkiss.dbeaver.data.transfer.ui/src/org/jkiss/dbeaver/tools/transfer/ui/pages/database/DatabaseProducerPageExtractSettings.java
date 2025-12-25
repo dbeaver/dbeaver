@@ -168,6 +168,9 @@ public class DatabaseProducerPageExtractSettings extends DataTransferPageNodeSet
 
         var settings = getWizard().getPageSettings(this, DatabaseProducerSettings.class);
 
+        // NOTE: fetchedRowsOnly checks whether selectedRowsOnly or selectedColumnsOnly are set
+        strategy.setValue(settings.isFetchedRowsOnly() ? Strategy.USE_FETCHED_ROWS : Strategy.QUERY_DATABASE);
+
         // Query database
         openNewConnections.setValue(settings.isOpenNewConnections());
         fetchRowCount.setValue(settings.isQueryRowCount());
@@ -188,6 +191,8 @@ public class DatabaseProducerPageExtractSettings extends DataTransferPageNodeSet
     @Override
     public void deactivatePage() {
         var settings = getWizard().getPageSettings(this, DatabaseProducerSettings.class);
+
+        settings.setFetchedRowsOnly(strategy.getValue() == Strategy.USE_FETCHED_ROWS);
 
         // Query database
         settings.setOpenNewConnections(openNewConnections.getValue());
