@@ -28,6 +28,7 @@ import org.jkiss.dbeaver.model.struct.DBSDocumentContainer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.tools.transfer.database.DatabaseProducerSettings;
 import org.jkiss.dbeaver.tools.transfer.database.DatabaseProducerSettings.ExtractType;
+import org.jkiss.dbeaver.tools.transfer.database.DatabaseProducerSettings.FetchedRowsPolicy;
 import org.jkiss.dbeaver.tools.transfer.database.DatabaseTransferProducer;
 import org.jkiss.dbeaver.tools.transfer.internal.DTMessages;
 import org.jkiss.dbeaver.tools.transfer.ui.internal.DTUIMessages;
@@ -168,16 +169,15 @@ public class DatabaseProducerPageExtractSettings extends DataTransferPageNodeSet
 
         var settings = getWizard().getPageSettings(this, DatabaseProducerSettings.class);
 
-        // NOTE: fetchedRowsOnly checks whether selectedRowsOnly or selectedColumnsOnly are set
-        strategy.setValue(settings.isFetchedRowsOnly() ? Strategy.USE_FETCHED_ROWS : Strategy.QUERY_DATABASE);
-
         // Query database
         openNewConnections.setValue(settings.isOpenNewConnections());
         fetchRowCount.setValue(settings.isQueryRowCount());
 
         // Fetched rows
-        selectedRowsOnly.setValue(settings.isSelectedRowsOnly());
-        selectedColumnsOnly.setValue(settings.isSelectedColumnsOnly());
+        var useFetchedRows = settings.getFetchedRowsPolicy();
+        strategy.setValue(useFetchedRows != null ? Strategy.USE_FETCHED_ROWS : Strategy.QUERY_DATABASE);
+        selectedRowsOnly.setValue(useFetchedRows != null && useFetchedRows.selectedRowsOnly());
+        selectedColumnsOnly.setValue(useFetchedRows != null && useFetchedRows.selectedColumnsOnly());
 
         // Advanced
         fetchSize.setValue(settings.getFetchSize());
@@ -192,15 +192,16 @@ public class DatabaseProducerPageExtractSettings extends DataTransferPageNodeSet
     public void deactivatePage() {
         var settings = getWizard().getPageSettings(this, DatabaseProducerSettings.class);
 
-        settings.setFetchedRowsOnly(strategy.getValue() == Strategy.USE_FETCHED_ROWS);
-
         // Query database
         settings.setOpenNewConnections(openNewConnections.getValue());
         settings.setQueryRowCount(fetchRowCount.getValue());
 
         // Fetched rows
-        settings.setSelectedRowsOnly(selectedRowsOnly.getValue());
-        settings.setSelectedColumnsOnly(selectedColumnsOnly.getValue());
+        if (strategy.getValue() == Strategy.USE_FETCHED_ROWS) {
+            settings.setFetchedRowsPolicy(new FetchedRowsPolicy(selectedRowsOnly.getValue(), selectedColumnsOnly.getValue()));
+        } else {
+            settings.setFetchedRowsPolicy(null);
+        }
 
         // Advanced
         settings.setFetchSize(fetchSize.getValue());
