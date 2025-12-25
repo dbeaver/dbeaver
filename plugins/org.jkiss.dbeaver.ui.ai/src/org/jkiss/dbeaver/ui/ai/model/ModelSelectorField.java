@@ -33,7 +33,6 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.ai.internal.AIUIMessages;
-import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -49,6 +48,7 @@ public class ModelSelectorField {
     private final ModelListProvider modelListProvider;
 
     private volatile String selectedModel;
+    private boolean disableModifyListener = false;
 
     private ModelSelectorField(
         @NotNull Combo combo,
@@ -58,11 +58,14 @@ public class ModelSelectorField {
         this.combo = combo;
         if (onModelModify != null) {
             this.combo.addModifyListener(e -> {
-                if (CommonUtils.isNotEmpty(combo.getText()) && !combo.getText().equals(selectedModel)) {
-                    selectedModel = combo.getText();
+                String newText = combo.getText();
+                if (!newText.equals(selectedModel) && !disableModifyListener) {
+                    selectedModel = newText;
                     onModelModify.run();
                 }
             });
+        } else {
+            this.combo.addModifyListener(e -> selectedModel = combo.getText());
         }
 
         this.modelListProvider = modelListProvider;
@@ -119,7 +122,9 @@ public class ModelSelectorField {
                 .sorted(String::compareToIgnoreCase)
                 .toList();
 
+            disableModifyListener = true;
             combo.setItems(sortedModels.toArray(new String[0]));
+            disableModifyListener = false;
             combo.select(sortedModels.indexOf(selectedItem));
         });
     }
