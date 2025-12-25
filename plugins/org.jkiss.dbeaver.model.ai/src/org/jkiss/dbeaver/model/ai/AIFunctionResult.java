@@ -34,14 +34,14 @@ public class AIFunctionResult {
 
     public AIFunctionResult(
         @NotNull AIFunctionResult.FunctionType type,
-        @NotNull String value
+        @NotNull Object value
     ) {
         this(type, value, null);
     }
 
     public AIFunctionResult(
         @NotNull AIFunctionResult.FunctionType type,
-        @NotNull String value,
+        @NotNull Object value,
         @Nullable DBRRunnableWithReturn<?> callback
     ) {
         this.type = type;
