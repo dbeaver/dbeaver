@@ -217,11 +217,13 @@ public class DiagramObjectCollector {
         }
 
         if (enforceSameProject) {
-            for (DBPProject project : roots.stream().map(r -> r.getDataSource().getContainer().getProject())
-                .filter(p -> p != diagramProject).collect(Collectors.toSet())) {
-                final List<DBSObject> values = roots.stream().filter(r -> r.getDataSource().getContainer().getProject() == project)
-                    .toList();
-                final StringJoiner joiner = new StringJoiner(", ");
+            Map<DBPProject, List<DBSObject>> foreignObjectsPerProject = roots.stream()
+                .filter(r -> r.getDataSource().getContainer().getProject() != diagramProject)
+                .collect(Collectors.groupingBy(r -> r.getDataSource().getContainer().getProject()));
+            for (var entry : foreignObjectsPerProject.entrySet()) {
+                StringJoiner joiner = new StringJoiner(", ");
+                DBPProject project = entry.getKey();
+                List<DBSObject> values = entry.getValue();
                 for (DBSObject value : values) {
                     joiner.add("'" + DBUtils.getObjectFullName(value, DBPEvaluationContext.UI) + "'");
                 }
