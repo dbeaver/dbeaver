@@ -28,6 +28,7 @@ import org.jkiss.dbeaver.registry.DataSourceNavigatorSettingsUtils;
 import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Keeps information cache about project settings overrides.
@@ -72,6 +73,23 @@ public abstract class BaseProjectSettings implements DBPObjectSettingsProvider {
         updateObjectSettingsCache(objectType, objectId, settings);
     }
 
+    @Override
+    public void clearObjectSettings(
+        @NotNull SMObjectType objectType,
+        @NotNull String objectId,
+        @NotNull Set<String> settings
+    ) throws DBException {
+        deleteObjectSettingsCache(objectType, objectId, settings);
+
+        // update local cache
+        Map<String, String> cacheSettings = projectSettings
+            .computeIfAbsent(objectType, ot -> new LinkedHashMap<>())
+            .computeIfAbsent(objectId, k -> new LinkedHashMap<>());
+        cacheSettings.keySet().removeAll(settings);
+
+        DataSourceNavigatorSettingsUtils.objectSettingUpdated(project, objectId, settings);
+    }
+
     public void updateObjectSettingsCache(
         @NotNull SMObjectType objectType,
         @NotNull String objectId,
@@ -92,16 +110,21 @@ public abstract class BaseProjectSettings implements DBPObjectSettingsProvider {
     ) {
         Map<String, Map<String, String>> cache = projectSettings.get(objectType);
         if (cache != null) {
+            Map<String, String> settingRemoved;
             if (settingIds == null) {
-                cache.remove(objectId);
+                settingRemoved = cache.remove(objectId);
             } else {
+                settingRemoved = new LinkedHashMap<>();
                 for (String settingId : settingIds) {
                     Map<String, String> settings = cache.get(objectId);
                     if (settings != null) {
-                        settings.remove(settingId);
+                        settingRemoved.put(
+                            settingId,
+                            settings.remove(settingId));
                     }
                 }
             }
+            updateObjectSettingsCache(objectType, objectId, settingRemoved);
         }
     }
 
@@ -112,6 +135,12 @@ public abstract class BaseProjectSettings implements DBPObjectSettingsProvider {
         @NotNull SMObjectType objectType,
         @NotNull String objectId,
         @NotNull Map<String, String> settings
+    ) throws DBException;
+
+    protected abstract void deleteProjectSettings(
+        @NotNull SMObjectType objectType,
+        @NotNull String objectId,
+        @NotNull Set<String> settings
     ) throws DBException;
 
 

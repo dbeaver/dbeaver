@@ -120,7 +120,7 @@ public class DataSourceNavigatorSettings implements DBNBrowseSettings {
     private boolean hideSchemas;
     private boolean hideVirtualModel;
 
-    private transient boolean userSettings;
+    private boolean userSettings;
 
     public DataSourceNavigatorSettings() {
     }

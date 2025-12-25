@@ -60,6 +60,19 @@ public class DataSourceNavigatorSettingsUtils {
         );
     }
 
+    public static void clearCustomNavigatorSettings(
+        @NotNull DBPDataSourceContainer dataSource
+    ) throws DBException {
+        DBPObjectSettingsProvider settingsProvider = DBUtils.getAdapter(DBPObjectSettingsProvider.class, dataSource.getProject());
+        if (settingsProvider == null) {
+            return;
+        }
+        settingsProvider.clearObjectSettings(
+            SMObjectType.datasource,
+            dataSource.getId(),
+            DataSourceNavigatorSettings.NAVIGATOR_SETTINGS
+        );
+    }
 
     public static void objectSettingUpdated(
         @NotNull DBPProject project,

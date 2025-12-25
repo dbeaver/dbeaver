@@ -22,6 +22,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.security.SMObjectType;
 
 import java.util.Map;
+import java.util.Set;
 
 public interface DBPObjectSettingsProvider {
 
@@ -35,6 +36,12 @@ public interface DBPObjectSettingsProvider {
         @NotNull SMObjectType objectType,
         @NotNull String objectId,
         @NotNull Map<String, String> settings
+    ) throws DBException;
+
+    void clearObjectSettings(
+        @NotNull SMObjectType objectType,
+        @NotNull String objectId,
+        @NotNull Set<String> settings
     ) throws DBException;
 
 }
