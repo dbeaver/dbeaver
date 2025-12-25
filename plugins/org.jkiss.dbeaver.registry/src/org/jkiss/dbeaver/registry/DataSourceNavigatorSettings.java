@@ -28,11 +28,30 @@ import org.jkiss.utils.CommonUtils;
 import java.io.IOException;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Browse settings
  */
 public class DataSourceNavigatorSettings implements DBNBrowseSettings {
+
+    // Navigator settings
+    static final String ATTR_NAVIGATOR_SHOW_SYSTEM_OBJECTS = "show-system-objects"; //$NON-NLS-1$
+    static final String ATTR_NAVIGATOR_SHOW_UTIL_OBJECTS = "show-util-objects"; //$NON-NLS-1$
+    static final String ATTR_NAVIGATOR_SHOW_ONLY_ENTITIES = "navigator-show-only-entities"; //$NON-NLS-1$
+    static final String ATTR_NAVIGATOR_HIDE_FOLDERS = "navigator-hide-folders"; //$NON-NLS-1$
+    static final String ATTR_NAVIGATOR_HIDE_SCHEMAS = "navigator-hide-schemas"; //$NON-NLS-1$
+    static final String ATTR_NAVIGATOR_HIDE_VIRTUAL = "navigator-hide-virtual"; //$NON-NLS-1$
+    static final String ATTR_NAVIGATOR_MERGE_ENTITIES = "navigator-merge-entities"; //$NON-NLS-1$
+    public static final Set<String> NAVIGATOR_SETTINGS = Set.of(
+        ATTR_NAVIGATOR_SHOW_SYSTEM_OBJECTS,
+        ATTR_NAVIGATOR_SHOW_UTIL_OBJECTS,
+        ATTR_NAVIGATOR_SHOW_ONLY_ENTITIES,
+        ATTR_NAVIGATOR_HIDE_FOLDERS,
+        ATTR_NAVIGATOR_HIDE_SCHEMAS,
+        ATTR_NAVIGATOR_HIDE_VIRTUAL,
+        ATTR_NAVIGATOR_MERGE_ENTITIES
+    );
 
     public static final Map<String, Preset> PRESETS = new LinkedHashMap<>();
 
@@ -266,13 +285,13 @@ public class DataSourceNavigatorSettings implements DBNBrowseSettings {
         @NotNull JsonWriter json,
         @NotNull DataSourceNavigatorSettings navSettings
     ) throws IOException {
-        addTrueSetting(json, DataSourceSerializerModern.ATTR_NAVIGATOR_SHOW_SYSTEM_OBJECTS, navSettings.showSystemObjects);
-        addTrueSetting(json, DataSourceSerializerModern.ATTR_NAVIGATOR_SHOW_UTIL_OBJECTS, navSettings.showUtilityObjects);
-        addTrueSetting(json, DataSourceSerializerModern.ATTR_NAVIGATOR_SHOW_ONLY_ENTITIES, navSettings.showOnlyEntities);
-        addTrueSetting(json, DataSourceSerializerModern.ATTR_NAVIGATOR_HIDE_FOLDERS, navSettings.hideFolders);
-        addTrueSetting(json, DataSourceSerializerModern.ATTR_NAVIGATOR_HIDE_SCHEMAS, navSettings.hideSchemas);
-        addTrueSetting(json, DataSourceSerializerModern.ATTR_NAVIGATOR_HIDE_VIRTUAL, navSettings.hideVirtualModel);
-        addTrueSetting(json, DataSourceSerializerModern.ATTR_NAVIGATOR_MERGE_ENTITIES, navSettings.mergeEntities);
+        addTrueSetting(json, ATTR_NAVIGATOR_SHOW_SYSTEM_OBJECTS, navSettings.showSystemObjects);
+        addTrueSetting(json, ATTR_NAVIGATOR_SHOW_UTIL_OBJECTS, navSettings.showUtilityObjects);
+        addTrueSetting(json, ATTR_NAVIGATOR_SHOW_ONLY_ENTITIES, navSettings.showOnlyEntities);
+        addTrueSetting(json, ATTR_NAVIGATOR_HIDE_FOLDERS, navSettings.hideFolders);
+        addTrueSetting(json, ATTR_NAVIGATOR_HIDE_SCHEMAS, navSettings.hideSchemas);
+        addTrueSetting(json, ATTR_NAVIGATOR_HIDE_VIRTUAL, navSettings.hideVirtualModel);
+        addTrueSetting(json, ATTR_NAVIGATOR_MERGE_ENTITIES, navSettings.mergeEntities);
     }
 
     private static void addTrueSetting(@NotNull JsonWriter json, @NotNull String name, boolean value) throws IOException {
@@ -281,15 +300,15 @@ public class DataSourceNavigatorSettings implements DBNBrowseSettings {
         }
     }
 
-    public static Map<String, Object> saveSettingsToMap(@NotNull DataSourceNavigatorSettings navSettings) {
-        Map<String, Object> map = new LinkedHashMap<>();
-        map.put(DataSourceSerializerModern.ATTR_NAVIGATOR_SHOW_SYSTEM_OBJECTS, navSettings.showSystemObjects);
-        map.put(DataSourceSerializerModern.ATTR_NAVIGATOR_SHOW_UTIL_OBJECTS, navSettings.showUtilityObjects);
-        map.put(DataSourceSerializerModern.ATTR_NAVIGATOR_SHOW_ONLY_ENTITIES, navSettings.showOnlyEntities);
-        map.put(DataSourceSerializerModern.ATTR_NAVIGATOR_HIDE_FOLDERS, navSettings.hideFolders);
-        map.put(DataSourceSerializerModern.ATTR_NAVIGATOR_HIDE_SCHEMAS, navSettings.hideSchemas);
-        map.put(DataSourceSerializerModern.ATTR_NAVIGATOR_HIDE_VIRTUAL, navSettings.hideVirtualModel);
-        map.put(DataSourceSerializerModern.ATTR_NAVIGATOR_MERGE_ENTITIES, navSettings.mergeEntities);
+    public static Map<String, String> saveSettingsToMap(@NotNull DataSourceNavigatorSettings navSettings) {
+        Map<String, String> map = new LinkedHashMap<>();
+        map.put(ATTR_NAVIGATOR_SHOW_SYSTEM_OBJECTS, String.valueOf(navSettings.showSystemObjects));
+        map.put(ATTR_NAVIGATOR_SHOW_UTIL_OBJECTS, String.valueOf(navSettings.showUtilityObjects));
+        map.put(ATTR_NAVIGATOR_SHOW_ONLY_ENTITIES, String.valueOf(navSettings.showOnlyEntities));
+        map.put(ATTR_NAVIGATOR_HIDE_FOLDERS, String.valueOf(navSettings.hideFolders));
+        map.put(ATTR_NAVIGATOR_HIDE_SCHEMAS, String.valueOf(navSettings.hideSchemas));
+        map.put(ATTR_NAVIGATOR_HIDE_VIRTUAL, String.valueOf(navSettings.hideVirtualModel));
+        map.put(ATTR_NAVIGATOR_MERGE_ENTITIES, String.valueOf(navSettings.mergeEntities));
         return map;
     }
 

@@ -26,26 +26,22 @@ import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.data.json.JSONUtils;
 import org.jkiss.dbeaver.model.security.SMObjectType;
-import org.jkiss.utils.CommonUtils;
 
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 public class DataSourceNavigatorSettingsUtils {
-    public static final String PARAM_ID_NAVIGATOR_SETTINGS = "navigator-settings.";
-
     private static final Log log = Log.getLog(DataSourceNavigatorSettingsUtils.class);
 
-    public static void loadSettingsFromMap(@NotNull DataSourceNavigatorSettings navSettings, @NotNull Map<String, Object> objectMap) {
-        navSettings.setShowSystemObjects(JSONUtils.getBoolean(objectMap, DataSourceSerializerModern.ATTR_NAVIGATOR_SHOW_SYSTEM_OBJECTS));
-        navSettings.setShowUtilityObjects(JSONUtils.getBoolean(objectMap, DataSourceSerializerModern.ATTR_NAVIGATOR_SHOW_UTIL_OBJECTS));
-        navSettings.setShowOnlyEntities(JSONUtils.getBoolean(objectMap, DataSourceSerializerModern.ATTR_NAVIGATOR_SHOW_ONLY_ENTITIES));
-        navSettings.setHideFolders(JSONUtils.getBoolean(objectMap, DataSourceSerializerModern.ATTR_NAVIGATOR_HIDE_FOLDERS));
-        navSettings.setHideSchemas(JSONUtils.getBoolean(objectMap, DataSourceSerializerModern.ATTR_NAVIGATOR_HIDE_SCHEMAS));
-        navSettings.setHideVirtualModel(JSONUtils.getBoolean(objectMap, DataSourceSerializerModern.ATTR_NAVIGATOR_HIDE_VIRTUAL));
-        navSettings.setMergeEntities(JSONUtils.getBoolean(objectMap, DataSourceSerializerModern.ATTR_NAVIGATOR_MERGE_ENTITIES));
+    public static void loadSettingsFromMap(@NotNull DataSourceNavigatorSettings navSettings, @NotNull Map<String, ?> objectMap) {
+        navSettings.setShowSystemObjects(JSONUtils.getBoolean(objectMap, DataSourceNavigatorSettings.ATTR_NAVIGATOR_SHOW_SYSTEM_OBJECTS));
+        navSettings.setShowUtilityObjects(JSONUtils.getBoolean(objectMap, DataSourceNavigatorSettings.ATTR_NAVIGATOR_SHOW_UTIL_OBJECTS));
+        navSettings.setShowOnlyEntities(JSONUtils.getBoolean(objectMap, DataSourceNavigatorSettings.ATTR_NAVIGATOR_SHOW_ONLY_ENTITIES));
+        navSettings.setHideFolders(JSONUtils.getBoolean(objectMap, DataSourceNavigatorSettings.ATTR_NAVIGATOR_HIDE_FOLDERS));
+        navSettings.setHideSchemas(JSONUtils.getBoolean(objectMap, DataSourceNavigatorSettings.ATTR_NAVIGATOR_HIDE_SCHEMAS));
+        navSettings.setHideVirtualModel(JSONUtils.getBoolean(objectMap, DataSourceNavigatorSettings.ATTR_NAVIGATOR_HIDE_VIRTUAL));
+        navSettings.setMergeEntities(JSONUtils.getBoolean(objectMap, DataSourceNavigatorSettings.ATTR_NAVIGATOR_MERGE_ENTITIES));
     }
 
     @Nullable
@@ -58,19 +54,9 @@ public class DataSourceNavigatorSettingsUtils {
         if (settings == null || settings.isEmpty()) {
             return null;
         }
-        Map<String, Object> navigatorSettingsMap = settings.entrySet().stream()
-            .filter(entry -> entry.getKey().startsWith(PARAM_ID_NAVIGATOR_SETTINGS))
-            .map((entry) -> Map.entry(entry.getKey().substring((PARAM_ID_NAVIGATOR_SETTINGS).length()), entry.getValue()))
-            .collect(Collectors.toMap(
-                Map.Entry::getKey,
-                Map.Entry::getValue
-            ));
-        if (navigatorSettingsMap.isEmpty()) {
-            return null;
-        }
 
         DataSourceNavigatorSettings navigatorSettings = new DataSourceNavigatorSettings();
-        loadSettingsFromMap(navigatorSettings, navigatorSettingsMap);
+        loadSettingsFromMap(navigatorSettings, settings);
         navigatorSettings.setUserSettings(true);
         return navigatorSettings;
     }
@@ -83,10 +69,7 @@ public class DataSourceNavigatorSettingsUtils {
         if (settingsProvider == null) {
             return;
         }
-        Map<String, String> settingsMap = DataSourceNavigatorSettings.saveSettingsToMap(settings)
-            .entrySet().stream()
-            .map((entry) -> Map.entry(PARAM_ID_NAVIGATOR_SETTINGS + entry.getKey(), CommonUtils.toString(entry.getValue())))
-            .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+        Map<String, String> settingsMap = DataSourceNavigatorSettings.saveSettingsToMap(settings);
 
         settingsProvider.setObjectSettings(
             SMObjectType.datasource,
@@ -106,7 +89,7 @@ public class DataSourceNavigatorSettingsUtils {
             log.warn("Data source container '" + objectId + "' not found in registry");
             return;
         }
-        if (settingIds.stream().noneMatch(s -> s.startsWith(PARAM_ID_NAVIGATOR_SETTINGS))) {
+        if (settingIds.stream().noneMatch(DataSourceNavigatorSettings.NAVIGATOR_SETTINGS::contains)) {
             // No relevant settings changed
             return;
         }
