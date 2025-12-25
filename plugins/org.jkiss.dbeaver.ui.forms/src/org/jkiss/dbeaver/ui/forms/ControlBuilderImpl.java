@@ -1,0 +1,354 @@
+/*
+ * DBeaver - Universal Database Manager
+ * Copyright (C) 2010-2025 DBeaver Corp and others
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.jkiss.dbeaver.ui.forms;
+
+import org.eclipse.core.databinding.DataBindingContext;
+import org.eclipse.core.databinding.UpdateValueStrategy;
+import org.eclipse.core.databinding.conversion.IConverter;
+import org.eclipse.core.databinding.observable.value.IObservableValue;
+import org.eclipse.core.databinding.validation.IValidator;
+import org.eclipse.jface.databinding.fieldassist.ControlDecorationSupport;
+import org.eclipse.jface.databinding.swt.typed.WidgetProperties;
+import org.eclipse.jface.resource.JFaceResources;
+import org.eclipse.jface.widgets.ButtonFactory;
+import org.eclipse.jface.widgets.LabelFactory;
+import org.eclipse.jface.widgets.TextFactory;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.graphics.Point;
+import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.widgets.*;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.forms.util.Bindings;
+
+import java.util.List;
+import java.util.function.Consumer;
+
+abstract sealed class ControlBuilderImpl<B extends ControlBuilder<B>, C extends Control> implements ControlBuilder<B>
+    permits ControlBuilderImpl.ButtonBuilderImpl, ControlBuilderImpl.ComboBuilderImpl, ControlBuilderImpl.CommentBuilderImpl,
+    ControlBuilderImpl.LabelBuilderImpl, ControlBuilderImpl.TextBuilderImpl, PanelBuilderImpl {
+
+    private IObservableValue<Boolean> visible;
+    private IObservableValue<Boolean> enabled;
+    private String tooltip;
+
+    int alignX = SWT.BEGINNING;
+    int alignY = SWT.CENTER;
+    int widthHint = SWT.DEFAULT;
+    int heightHint = SWT.DEFAULT;
+    boolean grow = false;
+
+    @NotNull
+    @Override
+    public B visible(@NotNull IObservableValue<Boolean> binding) {
+        visible = binding;
+        return builder();
+    }
+
+    @NotNull
+    @Override
+    public B enabled(@NotNull IObservableValue<Boolean> binding) {
+        enabled = binding;
+        return builder();
+    }
+
+    @NotNull
+    @Override
+    public B tooltip(@NotNull String value) {
+        tooltip = value;
+        return builder();
+    }
+
+    @NotNull
+    @Override
+    public B grow() {
+        grow = true;
+        return builder();
+    }
+
+    @NotNull
+    @Override
+    public B align(@NotNull AlignX x, @NotNull AlignY y) {
+        alignX = x.toSWT();
+        alignY = y.toSWT();
+        return builder();
+    }
+
+    @NotNull
+    @Override
+    public B align(@NotNull AlignX x) {
+        alignX = x.toSWT();
+        return builder();
+    }
+
+    @NotNull
+    @Override
+    public B align(@NotNull AlignY y) {
+        alignY = y.toSWT();
+        return builder();
+    }
+
+    @NotNull
+    @Override
+    public B hint(int width, int height) {
+        widthHint = width;
+        heightHint = height;
+        return builder();
+    }
+
+    @NotNull
+    @Override
+    public B accept(@NotNull Consumer<? super B> consumer) {
+        B builder = builder();
+        consumer.accept(builder);
+        return builder;
+    }
+
+    @NotNull
+    C build(@NotNull DataBindingContext context, @NotNull Composite parent, @Nullable RowBuilderImpl row) {
+        C control = create(context, parent);
+        bind(context, control, row);
+        return control;
+    }
+
+    @NotNull
+    protected abstract C create(@NotNull DataBindingContext context, @NotNull Composite parent);
+
+    @Nullable
+    protected Point preferredSize(@NotNull C control) {
+        return null;
+    }
+
+    protected void bind(@NotNull DataBindingContext context, @NotNull C control, @Nullable RowBuilderImpl row) {
+        if (row != null && row.visible != null || visible != null) {
+            // FIXME: Initially non-visible controls occupy space
+            var binding = Bindings.and(row != null ? row.visible : null, visible);
+            binding.addValueChangeListener(event -> {
+                var data = (GridData) control.getLayoutData();
+                var value = (boolean) binding.getValue();
+                if (data.exclude == value) {
+                    data.exclude = !value;
+                    control.requestLayout();
+                }
+            });
+            context.bindValue(WidgetProperties.visible().observe(control), binding);
+        }
+        if (row != null && row.enabled != null || enabled != null) {
+            var binding = Bindings.and(row != null ? row.enabled : null, enabled);
+            context.bindValue(WidgetProperties.enabled().observe(control), binding);
+        }
+        if (tooltip != null) {
+            control.setToolTipText(tooltip);
+        }
+    }
+
+    @NotNull
+    @SuppressWarnings("unchecked")
+    private B builder() {
+        return (B) this;
+    }
+
+    static final class LabelBuilderImpl extends ControlBuilderImpl<LabelBuilder, Label> implements LabelBuilder {
+        private final String text;
+        private final int style;
+
+        LabelBuilderImpl(@NotNull String text, int style) {
+            this.text = text;
+            this.style = style;
+        }
+
+        @NotNull
+        @Override
+        protected Label create(@NotNull DataBindingContext context, @NotNull Composite parent) {
+            return LabelFactory.newLabel(style)
+                .text(text)
+                .create(parent);
+        }
+    }
+
+    static final class TextBuilderImpl<T> extends ControlBuilderImpl<TextBuilder<T>, Text> implements TextBuilder<T> {
+        private final int style;
+        private final IObservableValue<T> text;
+        private IValidator<? super String> toModelValidator;
+        private IConverter<? super String, ? extends T> toModelConverter;
+        private IConverter<? super T, String> fromModelConverter;
+
+        TextBuilderImpl(int style, @NotNull IObservableValue<T> text) {
+            this.style = style;
+            this.text = text;
+        }
+
+        @NotNull
+        @Override
+        public TextBuilder<T> toModel(
+            @NotNull IValidator<? super String> afterGetValidator,
+            @NotNull IConverter<? super String, ? extends T> targetToModelConverter
+        ) {
+            this.toModelValidator = afterGetValidator;
+            this.toModelConverter = targetToModelConverter;
+            return this;
+        }
+
+        @NotNull
+        @Override
+        public TextBuilder<T> fromModel(@NotNull IConverter<? super T, String> modelToTargetConverter) {
+            this.fromModelConverter = modelToTargetConverter;
+            return this;
+        }
+
+        @NotNull
+        @Override
+        protected Text create(@NotNull DataBindingContext context, @NotNull Composite parent) {
+            return TextFactory.newText(style)
+                .create(parent);
+        }
+
+        @NotNull
+        @Override
+        protected Point preferredSize(@NotNull Text control) {
+            return new Point(UIUtils.getFontHeight(control) * 15, SWT.DEFAULT);
+        }
+
+        @Override
+        @SuppressWarnings("unchecked")
+        protected void bind(@NotNull DataBindingContext context, @NotNull Text control, @Nullable RowBuilderImpl row) {
+            super.bind(context, control, row);
+
+            UpdateValueStrategy<String, ? extends T> toModelStrategy = null;
+            UpdateValueStrategy<? super T, String> fromModelStrategy = null;
+
+            if (toModelConverter != null) {
+                toModelStrategy = (UpdateValueStrategy<String, ? extends T>) UpdateValueStrategy.create(toModelConverter);
+                toModelStrategy.setAfterGetValidator(toModelValidator);
+            }
+
+            if (fromModelConverter != null) {
+                fromModelStrategy = UpdateValueStrategy.create(fromModelConverter);
+            }
+
+            var target = WidgetProperties.text(SWT.Modify).observe(control);
+            var binding = context.bindValue(target, text, toModelStrategy, fromModelStrategy);
+
+            ControlDecorationSupport.create(binding, SWT.TOP | SWT.LEFT);
+        }
+    }
+
+    static final class ButtonBuilderImpl extends ControlBuilderImpl<ButtonBuilder, Button> implements ButtonBuilder {
+        private final String text;
+        private final Consumer<SelectionEvent> onSelect;
+        private final int style;
+        private IObservableValue<Boolean> selected;
+
+        ButtonBuilderImpl(@NotNull String text, @Nullable Consumer<SelectionEvent> onSelect, int style) {
+            this.text = text;
+            this.onSelect = onSelect;
+            this.style = style;
+        }
+
+        @NotNull
+        @Override
+        public ButtonBuilder selected(@NotNull IObservableValue<Boolean> binding) {
+            selected = binding;
+            return this;
+        }
+
+        @NotNull
+        @Override
+        protected Button create(@NotNull DataBindingContext context, @NotNull Composite parent) {
+            ButtonFactory factory = ButtonFactory.newButton(style).text(text);
+            if (onSelect != null) {
+                factory.onSelect(onSelect);
+            }
+            return factory.create(parent);
+        }
+
+        @NotNull
+        @Override
+        protected Point preferredSize(@NotNull Button control) {
+            return new Point(UIUtils.getDialogButtonWidth(control), SWT.DEFAULT);
+        }
+
+        @Override
+        protected void bind(@NotNull DataBindingContext context, @NotNull Button control, @Nullable RowBuilderImpl row) {
+            super.bind(context, control, row);
+            if (selected != null) {
+                context.bindValue(WidgetProperties.buttonSelection().observe(control), selected);
+            }
+        }
+    }
+
+    static final class ComboBuilderImpl<T> extends ControlBuilderImpl<ComboBuilder<T>, Combo> implements ComboBuilder<T> {
+        private final IObservableValue<T> binding;
+        private final IConverter<? super T, String> converter;
+        private final List<? extends T> items;
+        private final int style;
+
+        public ComboBuilderImpl(
+            @NotNull IObservableValue<T> binding,
+            @NotNull IConverter<? super T, String> converter,
+            @NotNull List<? extends T> items,
+            int style
+        ) {
+            this.binding = binding;
+            this.converter = converter;
+            this.items = List.copyOf(items);
+            this.style = style;
+        }
+
+        @NotNull
+        @Override
+        protected Combo create(@NotNull DataBindingContext context, @NotNull Composite parent) {
+            Combo combo = new Combo(parent, style);
+            for (T item : items) {
+                combo.add(converter.convert(item));
+            }
+            return combo;
+        }
+
+        @Override
+        protected void bind(@NotNull DataBindingContext context, @NotNull Combo control, @Nullable RowBuilderImpl row) {
+            super.bind(context, control, row);
+
+            context.bindValue(
+                WidgetProperties.singleSelectionIndex().observe(control),
+                binding,
+                UpdateValueStrategy.create(IConverter.create(items::get)),
+                UpdateValueStrategy.create(IConverter.create(items::indexOf))
+            );
+        }
+    }
+
+    static final class CommentBuilderImpl extends ControlBuilderImpl<CommentBuilder, Label> implements CommentBuilder {
+        private final String text;
+
+        CommentBuilderImpl(@NotNull String text) {
+            this.text = text;
+        }
+
+        @NotNull
+        @Override
+        protected Label create(@NotNull DataBindingContext context, @NotNull Composite parent) {
+            return LabelFactory.newLabel(SWT.NONE)
+                .text(text)
+                .foreground(parent.getDisplay().getSystemColor(SWT.COLOR_WIDGET_DISABLED_FOREGROUND)) // TODO use dedicated color
+                .font(JFaceResources.getFont("org.jkiss.dbeaver.erd.diagram.font.notation.label")) // TODO use dedicated font
+                .create(parent);
+        }
+    }
+}
