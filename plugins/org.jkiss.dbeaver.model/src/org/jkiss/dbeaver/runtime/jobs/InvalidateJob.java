@@ -110,8 +110,9 @@ public class InvalidateJob extends DataSourceJob
         this.feedbackHandler = feedbackHandler;
     }
 
+    @NotNull
     @Override
-    protected IStatus run(DBRProgressMonitor monitor)
+    protected IStatus run(@NotNull DBRProgressMonitor monitor)
     {
         DBPDataSource dataSource = getExecutionContext().getDataSource();
 

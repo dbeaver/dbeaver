@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,8 @@
 package org.jkiss.dbeaver.model.runtime;
 
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 
 import java.util.List;
 
@@ -32,6 +34,7 @@ public class ProxyProgressMonitor implements DBRProgressMonitor, IProgressMonito
         this.original = original;
     }
 
+    @NotNull
     @Override
     public IProgressMonitor getNestedMonitor()
     {
@@ -39,7 +42,7 @@ public class ProxyProgressMonitor implements DBRProgressMonitor, IProgressMonito
     }
 
     @Override
-    public void beginTask(String name, int totalWork)
+    public void beginTask(@NotNull String name, int totalWork)
     {
         original.beginTask(name, totalWork);
     }
@@ -51,7 +54,7 @@ public class ProxyProgressMonitor implements DBRProgressMonitor, IProgressMonito
     }
 
     @Override
-    public void subTask(String name)
+    public void subTask(@NotNull String name)
     {
         original.subTask(name);
     }
@@ -69,7 +72,7 @@ public class ProxyProgressMonitor implements DBRProgressMonitor, IProgressMonito
     }
 
     @Override
-    public synchronized void startBlock(DBRBlockingObject object, String taskName)
+    public synchronized void startBlock(@NotNull DBRBlockingObject object, @Nullable String taskName)
     {
         original.startBlock(object, taskName);
     }
@@ -80,6 +83,7 @@ public class ProxyProgressMonitor implements DBRProgressMonitor, IProgressMonito
         original.endBlock();
     }
 
+    @Nullable
     @Override
     public List<DBRBlockingObject> getActiveBlocks()
     {
