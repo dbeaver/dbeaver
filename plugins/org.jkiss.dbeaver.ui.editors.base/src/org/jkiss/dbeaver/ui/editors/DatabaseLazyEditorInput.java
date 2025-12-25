@@ -177,6 +177,7 @@ public class DatabaseLazyEditorInput implements IDatabaseEditorInput, ILazyEdito
         return null;
     }
 
+    @Nullable
     @Override
     public DBCExecutionContext getExecutionContext() {
         return null;
