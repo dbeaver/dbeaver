@@ -124,6 +124,19 @@ public class DatabaseProducerPageExtractSettings extends DataTransferPageNodeSet
     }
 
     @NotNull
+    private Consumer<PanelBuilder> buildUseFetchedRowsPanel(@NotNull IObservableValue<Boolean> enabled) {
+        var canExportSelection = Bindings.of(hasCellSelection() && canExportColumns());
+
+        return pb -> pb
+            .row(rb -> rb
+                .enabled(Bindings.and(enabled, canExportSelection))
+                .checkBox("Selected rows only", bb -> bb.selected(selectedRowsOnly)))
+            .row(rb -> rb
+                .enabled(Bindings.and(enabled, canExportSelection))
+                .checkBox("Selected columns only", bb -> bb.selected(selectedColumnsOnly)));
+    }
+
+    @NotNull
     private Consumer<PanelBuilder> buildAdvancedPanel(@NotNull IObservableValue<Boolean> queryDatabase) {
         var canChangeThreads = Bindings.of(getWizard().getSettings().getDataPipes().size() > 2);
         var canChangeSegment = ComputedValue.create(() -> extractType.getValue() == ExtractType.SEGMENTS);
@@ -147,19 +160,6 @@ public class DatabaseProducerPageExtractSettings extends DataTransferPageNodeSet
                 .enabled(Bindings.and(queryDatabase, canChangeSegment))
                 .controlLabel(DTMessages.data_transfer_wizard_output_label_segment_size)
                 .intTextField(segmentSize));
-    }
-
-    @NotNull
-    private Consumer<PanelBuilder> buildUseFetchedRowsPanel(@NotNull IObservableValue<Boolean> enabled) {
-        var canExportSelection = Bindings.of(hasCellSelection() && canExportColumns());
-
-        return pb -> pb
-            .row(rb -> rb
-                .enabled(Bindings.and(enabled, canExportSelection))
-                .checkBox("Selected rows only", bb -> bb.selected(selectedRowsOnly)))
-            .row(rb -> rb
-                .enabled(Bindings.and(enabled, canExportSelection))
-                .checkBox("Selected columns only", bb -> bb.selected(selectedColumnsOnly)));
     }
 
     @Override
