@@ -38,6 +38,7 @@ import org.jkiss.dbeaver.model.net.DBWNetworkProfile;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRShellCommand;
 import org.jkiss.dbeaver.model.secret.DBSValueEncryptor;
+import org.jkiss.dbeaver.model.security.SMObjectType;
 import org.jkiss.dbeaver.model.struct.DBSObjectFilter;
 import org.jkiss.dbeaver.model.virtual.DBVModel;
 import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
@@ -833,12 +834,19 @@ public class DataSourceSerializerModern<T extends DataSourceDescriptor> implemen
         dataSource.setDriverSubstitution(DataSourceProviderRegistry.getInstance()
             .getDriverSubstitution(CommonUtils.notEmpty(JSONUtils.getString(conObject, ATTR_DRIVER_SUBSTITUTION))));
 
-        DataSourceNavigatorSettings userNavigatorSettings = DataSourceNavigatorSettingsUtils.getUserNavigatorSettings(dataSource);
-        if (userNavigatorSettings != null) {
-            dataSource.setNavigatorSettings(userNavigatorSettings);
+        DBPObjectSettingsProvider settingsProvider = DBUtils.getAdapter(DBPObjectSettingsProvider.class, dataSource.getProject());
+        Map<String, String> userSettings = settingsProvider == null ?
+            null :
+            settingsProvider.getObjectSettings(SMObjectType.datasource, dataSource.getId());
+
+        if (!CommonUtils.isEmpty(userSettings) && userSettings.keySet().stream().anyMatch(
+            DataSourceNavigatorSettings.NAVIGATOR_SETTINGS::contains)
+        ) {
+            // There are custom navigator settings
+            DataSourceNavigatorSettingsUtils.loadSettingsFromMap(dataSource.getNavigatorSettings(), userSettings);
+            dataSource.getNavigatorSettings().setUserSettings(true);
         } else {
-            DataSourceNavigatorSettings defaultNavigatorSettings = dataSource.getNavigatorSettings();
-            DataSourceNavigatorSettingsUtils.loadSettingsFromMap(defaultNavigatorSettings, conObject);
+            DataSourceNavigatorSettingsUtils.loadSettingsFromMap(dataSource.getNavigatorSettings(), conObject);
         }
 
         dataSource.setConnectionReadOnly(JSONUtils.getBoolean(conObject, RegistryConstants.ATTR_READ_ONLY));

@@ -17,7 +17,6 @@
 package org.jkiss.dbeaver.registry;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
@@ -42,23 +41,6 @@ public class DataSourceNavigatorSettingsUtils {
         navSettings.setHideSchemas(JSONUtils.getBoolean(objectMap, DataSourceNavigatorSettings.ATTR_NAVIGATOR_HIDE_SCHEMAS));
         navSettings.setHideVirtualModel(JSONUtils.getBoolean(objectMap, DataSourceNavigatorSettings.ATTR_NAVIGATOR_HIDE_VIRTUAL));
         navSettings.setMergeEntities(JSONUtils.getBoolean(objectMap, DataSourceNavigatorSettings.ATTR_NAVIGATOR_MERGE_ENTITIES));
-    }
-
-    @Nullable
-    public static DataSourceNavigatorSettings getUserNavigatorSettings(@NotNull DBPDataSourceContainer dataSource) {
-        DBPObjectSettingsProvider settingsProvider = DBUtils.getAdapter(DBPObjectSettingsProvider.class, dataSource.getProject());
-        if (settingsProvider == null) {
-            return null;
-        }
-        Map<String, String> settings = settingsProvider.getObjectSettings(SMObjectType.datasource, dataSource.getId());
-        if (settings == null || settings.isEmpty()) {
-            return null;
-        }
-
-        DataSourceNavigatorSettings navigatorSettings = new DataSourceNavigatorSettings();
-        loadSettingsFromMap(navigatorSettings, settings);
-        navigatorSettings.setUserSettings(true);
-        return navigatorSettings;
     }
 
     public static void updateCustomNavigatorSettings(
