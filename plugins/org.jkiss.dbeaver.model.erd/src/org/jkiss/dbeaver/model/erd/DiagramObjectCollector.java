@@ -31,6 +31,7 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSTablePartition;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Table collector
@@ -195,8 +196,8 @@ public class DiagramObjectCollector {
         @NotNull Collection<DBPNamedObject> objects,
         @NotNull DiagramCollectSettings settings,
         boolean forceShowViews,
-        boolean isERD)
-    {
+        boolean enforceSameProject
+    ) {
         final List<DBSObject> roots = new ArrayList<>();
         for (DBPNamedObject object : objects) {
             if (!(object instanceof DBSObject)) {
@@ -214,25 +215,25 @@ public class DiagramObjectCollector {
             }
             roots.add((DBSObject) object);
         }
+
+        if (enforceSameProject) {
+            for (DBPProject project : roots.stream().map(r -> r.getDataSource().getContainer().getProject())
+                .filter(p -> p != diagramProject).collect(Collectors.toSet())) {
+                final List<DBSObject> values = roots.stream().filter(r -> r.getDataSource().getContainer().getProject() == project)
+                    .toList();
+                final StringJoiner joiner = new StringJoiner(", ");
+                for (DBSObject value : values) {
+                    joiner.add("'" + DBUtils.getObjectFullName(value, DBPEvaluationContext.UI) + "'");
+                }
+                diagram.addErrorMessage(
+                    "Can't add object" + (values.size() > 1 ? "s" : "") + " " + joiner + " from a different project '" + project.getName()
+                        + "' (current project is '" + diagramProject.getName() + "')");
+                roots.removeAll(values);
+            }
+        }
+
         if (roots.isEmpty()) {
             return Collections.emptyList();
-        }
-        if (isERD) {
-            for (Map.Entry<DBPProject, List<DBSObject>> entry : CommonUtils.group(roots, r -> r.getDataSource().getContainer().getProject())
-                .entrySet()) {
-                final DBPProject project = entry.getKey();
-                final List<DBSObject> values = entry.getValue();
-                if (project != diagramProject) {
-                    final StringJoiner joiner = new StringJoiner(", ");
-                    for (DBSObject value : values) {
-                        joiner.add("'" + DBUtils.getObjectFullName(value, DBPEvaluationContext.UI) + "'");
-                    }
-                    diagram.addErrorMessage(
-                        "Can't add object" + (values.size() > 1 ? "s" : "") + " " + joiner + " from a different project '" + project
-                            + "' (current project is '" + diagramProject.getName() + "')");
-                    roots.removeAll(values);
-                }
-            }
         }
 
         monitor.beginTask("Collect diagram objects", 1);
@@ -245,10 +246,11 @@ public class DiagramObjectCollector {
         } catch (Exception e) {
             log.error(e);
         }
-        final List<ERDEntity> entities = new ArrayList<>(collector.getDiagramEntities());
-        monitor.done();
-
-        return entities;
+        try {
+            return collector.getDiagramEntities();
+        } finally {
+            monitor.done();
+        }
     }
 
 }
