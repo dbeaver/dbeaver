@@ -317,7 +317,7 @@ public class PostgreServerRedshift extends PostgreServerExtensionBase implements
     public PostgreTableBase createNewRelation(DBRProgressMonitor monitor, PostgreSchema schema, PostgreClass.RelKind kind, Object copyFrom) throws DBException {
         if (kind == PostgreClass.RelKind.r) {
             return new RedshiftTable(schema);
-        } else if (kind == PostgreClass.RelKind.v) {
+        } else if (kind == PostgreClass.RelKind.v || kind == PostgreClass.RelKind.m) {
             return new RedshiftView(schema);
         }
         return super.createNewRelation(monitor, schema, kind, copyFrom);
@@ -327,7 +327,7 @@ public class PostgreServerRedshift extends PostgreServerExtensionBase implements
     public PostgreTableBase createRelationOfClass(PostgreSchema schema, PostgreClass.RelKind kind, JDBCResultSet dbResult) {
         if (kind == PostgreClass.RelKind.r) {
             return new RedshiftTable(schema, dbResult);
-        } else if (kind == PostgreClass.RelKind.v) {
+        } else if (kind == PostgreClass.RelKind.v || kind == PostgreClass.RelKind.m) {
             return new RedshiftView(schema, dbResult);
         }
         return super.createRelationOfClass(schema, kind, dbResult);
@@ -384,7 +384,7 @@ public class PostgreServerRedshift extends PostgreServerExtensionBase implements
         return null;
     }
 
-    private class RedshiftSchemaCache extends PostgreDatabase.SchemaCache {
+    private static class RedshiftSchemaCache extends PostgreDatabase.SchemaCache {
         private final Map<String, String> esSchemaMap = new HashMap<>();
 
         @NotNull

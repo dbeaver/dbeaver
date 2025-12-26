@@ -3297,7 +3297,7 @@ public class ResultSetViewer extends Viewer
                     editMenu.add(ActionUtils.makeCommandContribution(site, IResultSetCommands.CMD_CELL_SET_DEFAULT, commandName, image));
                 }
             }
-            if (row.getState() == ResultSetRow.STATE_REMOVED || (row.changes != null && row.changes.containsKey(attr))) {
+            if (row.getState() == ResultSetRow.STATE_REMOVED || (row.isChanged(attr))) {
                 editMenu.add(ActionUtils.makeCommandContribution(site, IResultSetCommands.CMD_CELL_RESET));
             }
 

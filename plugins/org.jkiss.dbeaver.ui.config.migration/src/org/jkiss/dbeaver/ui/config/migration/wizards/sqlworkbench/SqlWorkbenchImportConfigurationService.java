@@ -21,6 +21,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.impl.net.SSLHandlerTrustStoreImpl;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
+import org.jkiss.dbeaver.model.net.DBWUtils;
 import org.jkiss.dbeaver.model.net.ssh.SSHConstants;
 import org.jkiss.dbeaver.registry.driver.DriverUtils;
 import org.jkiss.dbeaver.registry.network.NetworkHandlerDescriptor;
@@ -178,7 +179,7 @@ public class SqlWorkbenchImportConfigurationService {
         String sshKeyFile = getElementValueOrEmptyString(parameterValues, "sshKeyFile");
         String sshUserName = getElementValueOrEmptyString(parameterValues, "sshUserName");
 
-        NetworkHandlerDescriptor sslHD = NetworkHandlerRegistry.getInstance().getDescriptor("ssh_tunnel");
+        NetworkHandlerDescriptor sslHD = NetworkHandlerRegistry.getInstance().getDescriptor(DBWUtils.SSH_TUNNEL);
         DBWHandlerConfiguration sshHandler = new DBWHandlerConfiguration(sslHD, null);
         sshHandler.setUserName(sshUserName);
         sshHandler.setSavePassword(true);

@@ -180,6 +180,10 @@ public class CopilotClient extends AbstractHttpAIClient {
             line -> {
                 if (line.startsWith(DATA_EVENT)) {
                     String data = line.substring(6).trim();
+                    if (data.equals(DONE_EVENT)) {
+                        listener.completeBlock();
+                        return;
+                    }
                     try {
                         CopilotChatChunk chunk = GSON.fromJson(data, CopilotChatChunk.class);
                         List<String> choices = chunk.choices().stream()

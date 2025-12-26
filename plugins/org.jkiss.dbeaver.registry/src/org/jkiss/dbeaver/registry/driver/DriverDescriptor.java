@@ -534,7 +534,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
         return result;
     }
 
-    void makeIconExtensions() {
+    private void makeIconExtensions() {
         if (isCustom()) {
             this.iconNormal = new DBIconComposite(this.iconPlain, false, null, null, DBIcon.OVER_LAMP, null);
         } else {
@@ -634,10 +634,6 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
     @NotNull
     public DBPImage getPlainIcon() {
         return iconPlain;
-    }
-
-    void setIconPlain(DBPImage iconPlain) {
-        this.iconPlain = iconPlain;
     }
 
     /**

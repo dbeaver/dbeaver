@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -75,7 +75,7 @@ public class AuthModelPgPass extends AuthModelDatabaseNative<AuthModelPgPassCred
 
     private String getSSHHost(@NotNull DBPDataSourceContainer dataSourceContainer) {
         DBWHandlerConfiguration sshHandler =
-            dataSourceContainer.getActualConnectionConfiguration().getHandler("ssh_tunnel");
+            dataSourceContainer.getActualConnectionConfiguration().getHandler(DBWUtils.SSH_TUNNEL);
         if (sshHandler != null) {
             Object host = sshHandler.getProperty(DBPConnectionConfiguration.VARIABLE_HOST);
             if (host != null) {
