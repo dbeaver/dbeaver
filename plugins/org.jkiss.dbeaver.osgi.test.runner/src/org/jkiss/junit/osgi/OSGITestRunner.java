@@ -86,6 +86,7 @@ public class OSGITestRunner extends BlockJUnit4ClassRunner {
     private Set<String> forceDependencies;
     private String[] args;
     private Object runnerProxy = null;
+    private String[] vmArgs;
 
     public OSGITestRunner(
         @NotNull Class<? extends IAsyncApplication> testClass
@@ -131,6 +132,7 @@ public class OSGITestRunner extends BlockJUnit4ClassRunner {
             this.appRegistryName = annotation.registryName();
             this.appBundleName = annotation.bundleName();
             this.args = annotation.args();
+            this.vmArgs = annotation.vmArgs();
             this.forceDependencies = Arrays.stream(annotation.forceDependencies()).collect(Collectors.toSet());
 
         } else {
@@ -246,6 +248,13 @@ public class OSGITestRunner extends BlockJUnit4ClassRunner {
     }
 
     private void startFramework() throws Exception {
+        if (vmArgs != null && vmArgs.length > 1 && vmArgs.length % 2 == 0) {
+            for (int i = 0; i < vmArgs.length; i += 2) {
+                String key = vmArgs[i];
+                String value = vmArgs[i + 1];
+                System.setProperty(key, value);
+            }
+        }
         framework.init();
         // Start the OSGi framework
         BundleContext context = framework.getBundleContext();
