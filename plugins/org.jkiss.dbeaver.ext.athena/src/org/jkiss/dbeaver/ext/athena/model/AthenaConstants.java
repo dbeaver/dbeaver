@@ -26,6 +26,8 @@ public class AthenaConstants
 
     public static final String DRIVER_PROP_REGION = "Region";
     public static final String DRIVER_PROP_S3_OUTPUT_LOCATION = "OutputLocation";
+    public static final String DRIVER_PROP_REGION_OLD = "AwsRegion";
+    public static final String DRIVER_PROP_S3_OUTPUT_LOCATION_OLD = "S3OutputLocation";
     public static final String DRIVER_PROP_METADATA_RETRIEVAL_METHOD = "MetadataRetrievalMethod";
     public static final String PROP_SHOW_CATALOGS = "show-aws-catalogs";
 

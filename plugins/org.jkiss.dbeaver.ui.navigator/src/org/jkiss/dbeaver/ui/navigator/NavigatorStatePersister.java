@@ -95,8 +95,9 @@ public class NavigatorStatePersister {
                 setUser(true);
             }
 
+            @NotNull
             @Override
-            protected IStatus run(DBRProgressMonitor monitor) {
+            protected IStatus run(@NotNull DBRProgressMonitor monitor) {
                 try {
                     runnable.run(monitor);
                 } catch (InvocationTargetException e) {

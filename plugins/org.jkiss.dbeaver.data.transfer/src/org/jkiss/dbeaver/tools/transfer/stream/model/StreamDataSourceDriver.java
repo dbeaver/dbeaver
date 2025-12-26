@@ -14,22 +14,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.cli;
+package org.jkiss.dbeaver.tools.transfer.stream.model;
 
-public class CLIException extends RuntimeException {
-    private final short exitCode;
+import org.jkiss.dbeaver.model.connection.DBPDriver;
+import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
+import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
 
-    public CLIException(String message, short exitCode) {
-        super(message);
-        this.exitCode = exitCode;
-    }
+/**
+ * StreamDataSourceDialect
+ */
+public class StreamDataSourceDriver extends DriverDescriptor {
 
-    public CLIException(String message, Throwable cause, short exitCode) {
-        super(message, cause);
-        this.exitCode = exitCode;
-    }
+    public static final String DRIVER_ID = "file-stream-driver";
 
-    public short getExitCode() {
-        return exitCode;
+    public static final DBPDriver INSTANCE = new StreamDataSourceDriver();
+
+    public StreamDataSourceDriver() {
+        super(DataSourceProviderRegistry.getInstance().getDataSourceProvider(
+            StreamDataSourceProvider.PROVIDER_ID), DRIVER_ID
+        );
     }
 }

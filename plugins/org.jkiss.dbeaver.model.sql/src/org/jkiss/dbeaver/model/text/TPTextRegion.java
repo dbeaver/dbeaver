@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,17 +14,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.websocket.event.client;
+package org.jkiss.dbeaver.model.text;
 
-import org.jkiss.dbeaver.model.websocket.event.WSClientEvent;
 
 /**
- * Subscribe on event topic
+ * Text region
  */
-public class WSSubscribeOnTopicClientEvent extends WSClientEvent {
-    public static final String ID = "cb_client_topic_subscribe";
+public record TPTextRegion(int offset, int length) {
 
-    public WSSubscribeOnTopicClientEvent(String topicId) {
-        super(ID, topicId);
-    }
+	public int getLength() {
+		return length;
+	}
+
+	public int getOffset() {
+		return offset;
+	}
+
 }

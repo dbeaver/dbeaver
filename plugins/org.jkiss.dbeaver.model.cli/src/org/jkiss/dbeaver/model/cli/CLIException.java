@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,17 +14,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.websocket.event.client;
+package org.jkiss.dbeaver.model.cli;
 
-import org.jkiss.dbeaver.model.websocket.event.WSClientEvent;
+import org.jkiss.dbeaver.DBException;
 
-/**
- * Unsubscribe from event topic
- */
-public class WSUnsubscribeFromTopicClientEvent extends WSClientEvent {
-    public static final String ID = "cb_client_topic_unsubscribe";
+public class CLIException extends DBException {
+    private final short exitCode;
 
-    public WSUnsubscribeFromTopicClientEvent(String topicId) {
-        super(ID, topicId);
+    public CLIException(String message, short exitCode) {
+        super(message);
+        this.exitCode = exitCode;
+    }
+
+    public CLIException(String message, Throwable cause, short exitCode) {
+        super(message, cause);
+        this.exitCode = exitCode;
+    }
+
+    public short getExitCode() {
+        return exitCode;
     }
 }

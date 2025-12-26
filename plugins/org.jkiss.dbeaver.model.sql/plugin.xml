@@ -114,6 +114,10 @@
                 <property id="org.jkiss.dbeaver.core.confirm.drop_sql"
                           label="%confirm.drop_sql.label" description="%confirm.drop_sql.tip"
                           defaultValue="true" type="boolean" scopes="user"/>
+                <property id="sql.parameter.enabled" label="%sql.parameter.enabled" description="%sql.parameter.enabled.description"
+                          type="boolean" scopes="user" defaultValue="true"/>
+                <property id="sql.variables.enabled" label="%sql.variables.enabled" description="%sql.variables.enabled.description"
+                          type="boolean" scopes="user" defaultValue="true"/>
             </propertyGroup>
         </propertyGroup>
     </extension>
