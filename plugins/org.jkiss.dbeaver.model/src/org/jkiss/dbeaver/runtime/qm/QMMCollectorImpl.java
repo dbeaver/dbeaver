@@ -353,8 +353,9 @@ public class QMMCollectorImpl extends DefaultExecutionHandler implements QMMColl
             setSystem(true);
         }
 
+        @NotNull
         @Override
-        protected IStatus run(DBRProgressMonitor monitor) {
+        protected IStatus run(@NotNull DBRProgressMonitor monitor) {
             final List<QMMetaEvent> events;
             List<Long> sessionsToClose;
             synchronized (QMMCollectorImpl.this) {

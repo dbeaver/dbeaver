@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@ import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.Position;
 import org.eclipse.jface.text.templates.*;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPContextProvider;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase;
@@ -46,6 +47,7 @@ public class SQLContext extends DocumentTemplateContext implements DBPContextPro
         return editor;
     }
 
+    @Nullable
     @Override
     public DBCExecutionContext getExecutionContext() {
         return editor.getExecutionContext();

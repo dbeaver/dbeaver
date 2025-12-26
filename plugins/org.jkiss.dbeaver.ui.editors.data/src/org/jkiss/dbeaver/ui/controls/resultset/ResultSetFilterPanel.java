@@ -66,7 +66,6 @@ import org.jkiss.dbeaver.ui.controls.resultset.actions.FilterResetAllPinsAction;
 import org.jkiss.dbeaver.ui.controls.resultset.actions.FilterResetAllSettingsAction;
 import org.jkiss.dbeaver.ui.controls.resultset.actions.FilterResetAllTransformersAction;
 import org.jkiss.dbeaver.ui.controls.resultset.colors.ResetAllColorAction;
-import org.jkiss.dbeaver.ui.controls.resultset.handler.ResultSetHandlerMain;
 import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
 import org.jkiss.dbeaver.ui.controls.resultset.spreadsheet.SpreadsheetCommandHandler;
 import org.jkiss.dbeaver.ui.css.CSSUtils;
@@ -103,7 +102,11 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
 
     private final TextViewer filtersTextViewer;
     private final StyledText filtersText;
-    private final ContentProposalAdapter filtersProposalAdapter;
+
+    //IME composition state (e.g., Zhuyin)
+    private final IME filtersIme;
+
+    private ContentProposalAdapter filtersProposalAdapter;
 
     private final ToolBar filterToolbar;
     private ToolItem filtersClearButton;
@@ -161,6 +164,8 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
             this.filtersTextViewer.setDocument(new Document());
             this.filtersText = this.filtersTextViewer.getTextWidget();
 
+            this.filtersIme = new IME(this.filtersText, SWT.NONE);
+
             this.filtersText.setFont(BaseThemeSettings.instance.baseFont);
             TextViewerUndoManager undoManager = new TextViewerUndoManager(200);
             undoManager.connect(filtersTextViewer);
@@ -198,50 +203,64 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
                     filtersText.redraw();
                 }
             });
-            this.filtersText.addModifyListener(new ModifyListener() {
-                @Override
-                public void modifyText(ModifyEvent e) {
-                    filtersText.getText();
-                    if (executePanel != null) {
-                        executePanel.setEnabled(true);
-                        executePanel.redraw();
-                    }
-                    filtersProposalAdapter.refresh();
+
+            this.filtersText.addModifyListener(e -> {
+                filtersText.getText();
+                if (executePanel != null) {
+                    executePanel.setEnabled(true);
+                    executePanel.redraw();
                 }
+                filtersProposalAdapter.refresh();
             });
+
             this.filtersText.addTraverseListener(e -> {
                 if (e.detail == SWT.TRAVERSE_RETURN) {
                     if (filterExpanded) {
                         e.doit = true;
                         return;
                     }
+                    //  handle enter/return for commit Chinese or when popup is open
+                    if (isImeComposing() || filtersProposalAdapter.isProposalPopupOpen()) {
+                        e.doit = true;
+                        return;
+                    }
+
                     e.doit = false;
                     e.detail = SWT.TRAVERSE_NONE;
                 }
             });
 
             this.filtersText.addVerifyKeyListener(e -> {
-                if (e.keyCode == SWT.CR || e.keyCode == SWT.LF || e.character == SWT.CR) {
-                    if (filterExpanded && (e.stateMask & SWT.CTRL) == 0) {
+                if (e.character == SWT.CR || e.character == SWT.LF) {
+                    if (filterExpanded && (e.stateMask & SWT.MOD1) == 0) {
                         return;
                     }
-                    // Suppress Enter handling if filter is not expanded
+                    if (isImeComposing()) {
+                        return;
+                    }
                     e.doit = false;
                 }
             });
+
+
             this.filtersText.addKeyListener(new KeyAdapter() {
                 @Override
                 public void keyPressed(KeyEvent e) {
                     if (e.keyCode == SWT.ARROW_DOWN) {
-                        if (filterExpanded && (e.stateMask & SWT.CTRL) ==0) {
+                        if (filterExpanded && (e.stateMask & SWT.CTRL) == 0) {
                             return;
                         }
                         historyPanel.showFilterHistoryPopup();
-                    } else if (e.keyCode == SWT.CR || e.keyCode == SWT.LF || e.character == SWT.CR) {
-                        if (filtersProposalAdapter != null && filtersProposalAdapter.isProposalPopupOpen()) {
+                    } else if (e.character == SWT.CR || e.character == SWT.LF) {
+                        if (filtersProposalAdapter.isProposalPopupOpen()) {
                             return;
                         }
-                        if (filterExpanded && (e.stateMask & SWT.CTRL) == 0) {
+                        // allows add new line when filter is expanded
+                        if (filterExpanded && (e.stateMask & SWT.MOD1) == 0) {
+                            return;
+                        }
+                        // don't apply filter(need to commit symbols)
+                        if (isImeComposing()) {
                             return;
                         }
                         e.doit = false;
@@ -252,7 +271,6 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
                     }
                 }
             });
-
             ResultSetFilterContentAdapter contentAdapter = new ResultSetFilterContentAdapter(viewer);
             filtersProposalAdapter = ContentAssistUtils.installContentProposal(
                 filtersText,
@@ -271,7 +289,7 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
                 filtersClearButton = new ToolItem(filterToolbar, SWT.NO_FOCUS | SWT.DROP_DOWN);
                 filtersClearButton.setImage(DBeaverIcons.getImage(UIIcon.ERASE));
                 filtersClearButton.setToolTipText(ActionUtils.findCommandDescription(
-                    ResultSetHandlerMain.CMD_FILTER_CLEAR_SETTING,
+                    IResultSetCommands.CMD_FILTER_CLEAR_SETTING,
                     viewer.getSite(),
                     false
                 ));
@@ -282,7 +300,7 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
             ToolItem filtersCustomButton = new ToolItem(filterToolbar, SWT.NO_FOCUS | SWT.DROP_DOWN);
             filtersCustomButton.setImage(DBeaverIcons.getImage(UIIcon.FILTER));
             filtersCustomButton.setToolTipText(ActionUtils.findCommandDescription(
-                ResultSetHandlerMain.CMD_FILTER_EDIT_SETTINGS,
+                IResultSetCommands.CMD_FILTER_EDIT_SETTINGS,
                 viewer.getSite(),
                 false
             ));
@@ -325,6 +343,10 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
             }
         });
 
+    }
+
+    private boolean isImeComposing() {
+        return filtersIme != null && !filtersIme.isDisposed() && filtersIme.getCaretOffset() != -1;
     }
 
     void enableFilters(boolean enableFilters) {
@@ -429,7 +451,7 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
         if (historyPanel != null && !historyPanel.isDisposed()) {
             historyPanel.redraw();
         }
-        if (filterExpandPanel != null && !filterExpandPanel.isDisposed() ){
+        if (filterExpandPanel != null && !filterExpandPanel.isDisposed()) {
             filterExpandPanel.redraw();
         }
         if (executePanel != null && !executePanel.isDisposed()) {
@@ -641,9 +663,9 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
 
     @Override
     public IContentProposal[] getProposals(String contents, int position) {
-    	if(!viewer.getPreferenceStore().getBoolean(ResultSetPreferences.RESULT_SET_FILTER_AUTO_COMPLETE_PROPOSIAL)) {
-    		return null;
-    	}
+        if (!viewer.getPreferenceStore().getBoolean(ResultSetPreferences.RESULT_SET_FILTER_AUTO_COMPLETE_PROPOSIAL)) {
+            return null;
+        }
         SQLSyntaxManager syntaxManager = new SQLSyntaxManager();
         DBPDataSource dataSource = viewer.getDataSource();
         if (dataSource != null) {
@@ -1343,7 +1365,7 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
     private class EraseItemListener extends AbstractDropDownListener {
         @Override
         protected void fillDropDownMenu(MenuManager menuManager) {
-            menuManager.add(ActionUtils.makeCommandContribution(viewer.getSite(), ResultSetHandlerMain.CMD_FILTER_CLEAR_SETTING));
+            menuManager.add(ActionUtils.makeCommandContribution(viewer.getSite(), IResultSetCommands.CMD_FILTER_CLEAR_SETTING));
             if (viewer.getDataFilter().hasHiddenAttributes()) {
                 menuManager.add(ActionUtils.makeCommandContribution(
                     viewer.getSite(),
@@ -1381,10 +1403,10 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
         @Override
         protected void fillDropDownMenu(MenuManager menuManager) {
             menuManager.add(ActionUtils.makeCommandContribution(
-                viewer.getSite(), ResultSetHandlerMain.CMD_FILTER_EDIT_SETTINGS));
+                viewer.getSite(), IResultSetCommands.CMD_FILTER_EDIT_SETTINGS));
             if (viewer.getDataContainer() instanceof DBSEntity) {
                 menuManager.add(ActionUtils.makeCommandContribution(
-                    viewer.getSite(), ResultSetHandlerMain.CMD_FILTER_SAVE_SETTING));
+                    viewer.getSite(), IResultSetCommands.CMD_FILTER_SAVE_SETTING));
             }
 
             if (showHistoryItems) {
@@ -1399,7 +1421,7 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
                 ));
                 menuManager.add(ActionUtils.makeCommandContribution(
                     viewer.getSite(),
-                    ResultSetHandlerMain.CMD_FILTER_CLEAR_SETTING
+                    IResultSetCommands.CMD_FILTER_CLEAR_SETTING
                 ));
             }
         }

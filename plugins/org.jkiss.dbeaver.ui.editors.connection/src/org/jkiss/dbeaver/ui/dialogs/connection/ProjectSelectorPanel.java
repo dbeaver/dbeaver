@@ -47,7 +47,10 @@ public class ProjectSelectorPanel {
     private DBPProject selectedProject;
 
     public ProjectSelectorPanel(
-        @NotNull Composite parent, @Nullable DBPProject activeProject, int style) {
+        @NotNull Composite parent,
+        @Nullable DBPProject activeProject,
+        int style
+    ) {
         this(parent, activeProject, style, false, true);
     }
 
