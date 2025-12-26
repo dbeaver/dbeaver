@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,8 @@
  */
 
 package org.jkiss.dbeaver.model.exec;
+
+import org.jkiss.code.NotNull;
 
 /**
  * Execution purpose.
@@ -34,7 +36,7 @@ public enum DBCExecutionPurpose {
     USER_SCRIPT(2, "User script", true),        // User script query
     UTIL(3, "Util", false),              // Utility query (utility method initialized by user)
     META(4, "Meta", false),              // Metadata query, processed by data source providers internally
-    META_DDL(5, "Meta DDL", false),
+    META_DDL(5, "Meta DDL", false)
     ;
 
     private final int id;
@@ -47,10 +49,12 @@ public enum DBCExecutionPurpose {
         this.user = user;
     }
 
+    @NotNull
     public int getId() {
         return id;
     }
 
+    @NotNull
     public String getTitle() {
         return title;
     }
@@ -59,6 +63,7 @@ public enum DBCExecutionPurpose {
         return user;
     }           // Metadata modifications (DDL)
 
+    @NotNull
     public static DBCExecutionPurpose getById(int id) {
         for (DBCExecutionPurpose purpose : values()) {
             if (purpose.getId() == id) {
