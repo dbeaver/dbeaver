@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.PartInitException;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPContextProvider;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 
@@ -75,6 +76,7 @@ public abstract class SinglePageDatabaseEditor<INPUT_TYPE extends IEditorInput> 
         super.dispose();
     }
 
+    @Nullable
     @Override
     public DBCExecutionContext getExecutionContext() {
         return getEditorInput() instanceof DBPContextProvider ? ((DBPContextProvider) getEditorInput()).getExecutionContext() : null;
