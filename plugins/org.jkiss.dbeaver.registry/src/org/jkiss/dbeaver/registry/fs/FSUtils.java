@@ -35,7 +35,7 @@ public class FSUtils {
     public static Path getPathFromURI(@NotNull String fileUriString) throws DBException {
         URI fileUri = URI.create(fileUriString);
         if (!fileUri.isAbsolute() || fileUri.getScheme() == null) {
-            return Path.of(fileUriString);
+            return Path.of(fileUriString).toAbsolutePath();
         }
         FileSystem defaultFs = FileSystems.getDefault();
         if (defaultFs.provider().getScheme().equals(fileUri.getScheme())) {
