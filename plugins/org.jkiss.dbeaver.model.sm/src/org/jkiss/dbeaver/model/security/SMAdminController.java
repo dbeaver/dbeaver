@@ -234,7 +234,7 @@ public interface SMAdminController extends SMController {
     List<SMTeamMemberInfo> getTeamMembersInfo(@NotNull String teamId) throws DBException;
 
     void deleteObject(
-        @Nullable String projectId,
+        @NotNull String projectId,
         @NotNull String objectId,
         @NotNull SMObjectType objectType
     ) throws DBException;
