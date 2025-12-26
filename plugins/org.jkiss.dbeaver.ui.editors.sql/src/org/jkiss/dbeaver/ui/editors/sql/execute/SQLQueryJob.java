@@ -55,6 +55,7 @@ import org.jkiss.dbeaver.model.runtime.DBRRunnableParametrized;
 import org.jkiss.dbeaver.model.sql.*;
 import org.jkiss.dbeaver.model.sql.data.SQLQueryDataContainer;
 import org.jkiss.dbeaver.model.sql.parser.SQLSemanticProcessor;
+import org.jkiss.dbeaver.model.sql.registry.SQLCommandHandlerDescriptor;
 import org.jkiss.dbeaver.model.sql.registry.SQLCommandsRegistry;
 import org.jkiss.dbeaver.model.sql.registry.SQLPragmaHandlerDescriptor;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
@@ -429,7 +430,8 @@ public class SQLQueryJob extends DataSourceJob
         }
         if (element instanceof SQLControlCommand controlCommand) {
             try {
-                if (controlCommand.getCommandId().equals("pause")) {
+                SQLCommandHandlerDescriptor descriptor = SQLCommandsRegistry.getInstance().getCommandHandler(controlCommand.getCommandId());
+                if (descriptor != null && descriptor.isInteractive()) {
                     controlCommand.setData(listener);
                 }
                 SQLControlResult controlResult = scriptContext.executeControlCommand(session.getProgressMonitor(), controlCommand);
