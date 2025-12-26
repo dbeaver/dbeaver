@@ -1076,15 +1076,12 @@ public class ResultSetViewer extends Viewer
     }
 
     private void trackPresentationStatistics() {
-        Map<String, Object> params = new HashMap<>();
         DBPDataSource dataSource = getDataSource();
         if (activePresentationDescriptor != null && dataSource != null) {
-            params.put("presentationId", activePresentationDescriptor.getId());
-            params.put("driver", dataSource.getContainer().getDriver().getPreconfiguredId());
-
-        }
-        if (!params.isEmpty()) {
-            DataEditorFeatures.RESULT_SET_PRESENTATION_SELECTED.use(params);
+            DataEditorFeatures.RESULT_SET_PRESENTATION_SELECTED.use(Map.of(
+                "presentationId", activePresentationDescriptor.getId(),
+                "driver", dataSource.getContainer().getDriver().getPreconfiguredId()
+            ));
         }
     }
 
