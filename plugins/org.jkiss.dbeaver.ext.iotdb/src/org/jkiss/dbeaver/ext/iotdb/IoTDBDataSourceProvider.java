@@ -83,6 +83,15 @@ public class IoTDBDataSourceProvider extends GenericDataSourceProvider {
         return url.toString();
     }
 
+    private String processUrl(String url) {
+        String processedUrl = url;
+        int index = url.indexOf("?");
+        if (index > 0 && url.charAt(index - 1) == '/') {
+            processedUrl = url.substring(0, index - 1).concat(url.substring(index));
+        }
+        return processedUrl;
+    }
+
     @NotNull
     @Override
     public String getConnectionURL(
@@ -90,14 +99,14 @@ public class IoTDBDataSourceProvider extends GenericDataSourceProvider {
         @NotNull DBPConnectionConfiguration connectionInfo) {
         String urlTemplate = driver.getSampleURL();
         if (useRawUrl(connectionInfo)) {
-            return connectionInfo.getUrl();
+            return processUrl(connectionInfo.getUrl());
         }
         if (CommonUtils.isEmptyTrimmed(urlTemplate)) {
             return connectionInfo.getUrl();
         }
 
         try {
-            return buildUrlFromTemplate(connectionInfo, urlTemplate);
+            return processUrl(buildUrlFromTemplate(connectionInfo, urlTemplate));
         } catch (DBException e) {
             log.error(e);
             return null;
