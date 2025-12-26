@@ -16,9 +16,18 @@
  */
 package org.jkiss.dbeaver.model.cli;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.app.DBPProject;
+import org.jkiss.dbeaver.model.app.DBPWorkspace;
 import org.jkiss.dbeaver.model.cli.model.option.InputFileOption;
+import org.jkiss.dbeaver.registry.DataSourceUtils;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.utils.GeneralUtils;
+import org.jkiss.dbeaver.utils.SystemVariablesResolver;
+import org.jkiss.utils.CommonUtils;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -63,5 +72,43 @@ public class CLIUtils {
             return null;
         }
         return null;
+    }
+
+
+    @NotNull
+    public static DBPProject findProject(@Nullable String projectIdOrName, @NotNull CommandLineContext context) throws CLIException {
+        DBPProject project;
+        DBPWorkspace workspace = context.getContextParameter(DBPWorkspace.class.getName());
+        if (workspace == null) {
+            workspace = DBWorkbench.getPlatform().getWorkspace();
+        }
+        if (CommonUtils.isEmpty(projectIdOrName)) {
+            project = workspace.getActiveProject();
+        } else {
+            project = workspace.getProject(projectIdOrName);
+            if (project == null) {
+                project = workspace.getProjectById(projectIdOrName);
+            }
+        }
+        if (project == null) {
+            throw new CLIException("Can't find project '" + projectIdOrName + "'", CLIConstants.EXIT_CODE_ILLEGAL_ARGUMENTS);
+        }
+        return project;
+    }
+
+    @Nullable
+    public static DBPDataSourceContainer findDataSource(
+        @NotNull DBPProject project,
+        @NotNull String connectionSpec
+    ) throws CLIException {
+        ApplicationInstanceServer.InstanceConnectionParameters instanceConParameters
+            = new ApplicationInstanceServer.InstanceConnectionParameters();
+        return DataSourceUtils.getDataSourceBySpec(
+            project,
+            GeneralUtils.replaceVariables(connectionSpec, SystemVariablesResolver.INSTANCE),
+            instanceConParameters,
+            false,
+            instanceConParameters.isCreateNewConnection()
+        );
     }
 }

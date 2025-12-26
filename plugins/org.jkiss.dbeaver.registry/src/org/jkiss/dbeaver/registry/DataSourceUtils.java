@@ -70,7 +70,7 @@ public class DataSourceUtils {
     private static final String PARAM_FOLDER = "folder";
     private static final String PARAM_AUTO_COMMIT = "autoCommit";
     private static final String PARAM_CREATE = "create";
-    private static final String PARAM_SAVE = "save";
+    public static final String PARAM_SAVE = "save";
 
     private static final String PREFIX_HANDLER = "handler.";
     private static final String PREFIX_PROP = "prop.";
