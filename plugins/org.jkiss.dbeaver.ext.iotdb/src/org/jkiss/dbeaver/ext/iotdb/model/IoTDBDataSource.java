@@ -85,22 +85,26 @@ public class IoTDBDataSource extends GenericDataSource {
 
         try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Show Current User & Check Privileges")) {
             String sql = "show current_user";
-            JDBCStatement stmt = session.createStatement();
-            JDBCResultSet rs = stmt.executeQuery(sql);
-            while (rs.next()) {
-                currentUserName = rs.getString("CurrentUser");
-                IoTDBAbstractUser user = isTree ? new IoTDBUser(this, currentUserName) :
-                        new IoTDBRelationalUser(this, currentUserName, monitor);
-                userList.add(user);
-            }
+            try (JDBCStatement stmt = session.createStatement()) {
+                try (JDBCResultSet rs = stmt.executeQuery(sql)) {
+                    while (rs.next()) {
+                        currentUserName = rs.getString("CurrentUser");
+                        IoTDBAbstractUser user = isTree ? new IoTDBUser(this, currentUserName) :
+                                new IoTDBRelationalUser(this, currentUserName, monitor);
+                        userList.add(user);
+                    }
 
-            sql = "list privileges of user " + currentUserName;
-            stmt = session.createStatement();
-            rs = stmt.executeQuery(sql);
-            while (rs.next()) {
-                if (rs.getString("Privileges").equals("MANAGE_USER")) {
-                    hasManageUserPrivilege = true;
-                    break;
+                    sql = "list privileges of user " + currentUserName;
+                    try (JDBCStatement stmt2 = session.createStatement()) {
+                        try (JDBCResultSet rs2 = stmt2.executeQuery(sql)) {
+                            while (rs2.next()) {
+                                if (rs2.getString("Privileges").equals("MANAGE_USER")) {
+                                    hasManageUserPrivilege = true;
+                                    break;
+                                }
+                            }
+                        }
+                    }
                 }
             }
         } catch (Exception e) {
@@ -114,18 +118,20 @@ public class IoTDBDataSource extends GenericDataSource {
 
         try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Load Users")) {
             String sql = "list user";
-            JDBCStatement stmt = session.createStatement();
-            JDBCResultSet rs = stmt.executeQuery(sql);
-            while (rs.next()) {
-                String tmpUserName = rs.getString("User");
-                if (tmpUserName.equals(currentUserName)) {
-                    continue;
+            try (JDBCStatement stmt = session.createStatement()) {
+                try (JDBCResultSet rs = stmt.executeQuery(sql)) {
+                    while (rs.next()) {
+                        String tmpUserName = rs.getString("User");
+                        if (tmpUserName.equals(currentUserName)) {
+                            continue;
+                        }
+                        IoTDBAbstractUser user = isTree ? new IoTDBUser(this, tmpUserName) :
+                                new IoTDBRelationalUser(this, tmpUserName, monitor);
+                        userList.add(user);
+                    }
+                    return userList;
                 }
-                IoTDBAbstractUser user = isTree ? new IoTDBUser(this, tmpUserName) :
-                        new IoTDBRelationalUser(this, tmpUserName, monitor);
-                userList.add(user);
             }
-            return userList;
         } catch (Exception e) {
             log.error("Error loading users", e);
             throw new DBDatabaseException(e, this);

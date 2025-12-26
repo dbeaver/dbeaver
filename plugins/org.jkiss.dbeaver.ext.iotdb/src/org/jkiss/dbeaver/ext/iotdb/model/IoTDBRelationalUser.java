@@ -78,27 +78,31 @@ public class IoTDBRelationalUser extends IoTDBAbstractUser {
 
         try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Load Databases and Tables Info")) {
             String sql = "show databases"; // use this instead of select * from information_schema to prevent permission issues
-            JDBCStatement stmt = session.createStatement();
-            JDBCResultSet rs = stmt.executeQuery(sql);
-            while (rs.next()) {
-                String currentDatabase = rs.getString("Database");
-                List<String> currentTables = new ArrayList<>();
+            try (JDBCStatement stmt = session.createStatement()) {
+                try (JDBCResultSet rs = stmt.executeQuery(sql)) {
+                    while (rs.next()) {
+                        String currentDatabase = rs.getString("Database");
+                        List<String> currentTables = new ArrayList<>();
 
-                sql = isTree ? ("show devices " + currentDatabase + ".**") : ("show tables in " + currentDatabase);
-                JDBCStatement stmt2 = session.createStatement();
-                JDBCResultSet rs2 = stmt2.executeQuery(sql);
-                if (isTree) {
-                    int prefixLength = currentDatabase.length() + 1;
-                    while (rs2.next()) {
-                        currentTables.add(rs2.getString("Device").substring(prefixLength));
-                    }
-                } else {
-                    while (rs2.next()) {
-                        currentTables.add(rs2.getString("TableName"));
+                        sql = isTree ? ("show devices " + currentDatabase + ".**") : ("show tables in " + currentDatabase);
+                        try (JDBCStatement stmt2 = session.createStatement()) {
+                            try (JDBCResultSet rs2 = stmt2.executeQuery(sql)) {
+                                if (isTree) {
+                                    int prefixLength = currentDatabase.length() + 1;
+                                    while (rs2.next()) {
+                                        currentTables.add(rs2.getString("Device").substring(prefixLength));
+                                    }
+                                } else {
+                                    while (rs2.next()) {
+                                        currentTables.add(rs2.getString("TableName"));
+                                    }
+                                }
+                                IoTDBDatabase newDatabase = new IoTDBDatabase(currentDatabase, currentTables);
+                                databases.add(newDatabase);
+                            }
+                        }
                     }
                 }
-                IoTDBDatabase newDatabase = new IoTDBDatabase(currentDatabase, currentTables);
-                databases.add(newDatabase);
             }
         } catch (Exception e) {
             log.error("Error loading databases and tables", e);

@@ -138,18 +138,22 @@ public class IoTDBTableMetaModel extends GenericMetaModel {
 
         try (JDBCSession session = DBUtils.openMetaSession(monitor, (DBSObject) sourceObject, "Get IoTDB table details")) {
             String sql = String.format("select * from information_schema.tables where database like '%s'", databaseName);
-            JDBCStatement stmt = session.createStatement();
-            JDBCResultSet rs = stmt.executeQuery(sql);
-            while (rs.next()) {
-                ttl = rs.getString("ttl(ms)");
+            try (JDBCStatement stmt = session.createStatement()) {
+                try (JDBCResultSet rs = stmt.executeQuery(sql)) {
+                    while (rs.next()) {
+                        ttl = rs.getString("ttl(ms)");
+                    }
+                }
             }
         } catch (Exception e) {
             try (JDBCSession session = DBUtils.openMetaSession(monitor, (DBSObject) sourceObject, "Get IoTDB table details")) {
                 String sql = String.format("show tables details from %s", databaseName);
-                JDBCStatement stmt = session.createStatement();
-                JDBCResultSet rs = stmt.executeQuery(sql);
-                while (rs.next()) {
-                    ttl = rs.getString("TTL(ms)");
+                try (JDBCStatement stmt = session.createStatement()) {
+                    try (JDBCResultSet rs = stmt.executeQuery(sql)) {
+                        while (rs.next()) {
+                            ttl = rs.getString("TTL(ms)");
+                        }
+                    }
                 }
             } catch (Exception e1) {
                 log.error("Error executing sql", e1);
@@ -171,26 +175,28 @@ public class IoTDBTableMetaModel extends GenericMetaModel {
         StringBuilder toAppend = new StringBuilder(200);
         String sql = String.format(
                 "select * from information_schema.columns where database like '%s' and table_name like '%s'", databaseName, insertTableName);
-        JDBCStatement stmt = session.createStatement();
-        JDBCResultSet rs = stmt.executeQuery(sql);
-        toAppend.append("CREATE TABLE ").append(insertTableName).append(" (\n");
-        while (rs.next()) {
-            toAppend.append("\t").append(rs.getString("column_name")).append(" ");
-            toAppend.append(rs.getString("datatype")).append(" ");
-            toAppend.append(rs.getString("category"));
-            String columnComment = rs.getString("comment");
-            if (columnComment != null && !columnComment.isEmpty()) {
-                toAppend.append(" COMMENT '").append(columnComment).append("'");
+        try (JDBCStatement stmt = session.createStatement()) {
+            try (JDBCResultSet rs = stmt.executeQuery(sql)) {
+                toAppend.append("CREATE TABLE ").append(insertTableName).append(" (\n");
+                while (rs.next()) {
+                    toAppend.append("\t").append(rs.getString("column_name")).append(" ");
+                    toAppend.append(rs.getString("datatype")).append(" ");
+                    toAppend.append(rs.getString("category"));
+                    String columnComment = rs.getString("comment");
+                    if (columnComment != null && !columnComment.isEmpty()) {
+                        toAppend.append(" COMMENT '").append(columnComment).append("'");
+                    }
+                    toAppend.append(",\n");
+                }
+                toAppend.setLength(toAppend.length() - 2);
+                String tableComment = ((DBSEntity) sourceObject).getDescription();
+                if (tableComment != null && !tableComment.isEmpty()) {
+                    toAppend.append("\n) COMMENT '").append(tableComment).append("' ");
+                    toAppend.append("WITH (TTL=").append(ttl).append(");");
+                } else {
+                    toAppend.append("\n) WITH (TTL=").append(ttl).append(");");
+                }
             }
-            toAppend.append(",\n");
-        }
-        toAppend.setLength(toAppend.length() - 2);
-        String tableComment = ((DBSEntity) sourceObject).getDescription();
-        if (tableComment != null && !tableComment.isEmpty()) {
-            toAppend.append("\n) COMMENT '").append(tableComment).append("' ");
-            toAppend.append("WITH (TTL=").append(ttl).append(");");
-        } else {
-            toAppend.append("\n) WITH (TTL=").append(ttl).append(");");
         }
 
         return toAppend.toString();
@@ -203,29 +209,30 @@ public class IoTDBTableMetaModel extends GenericMetaModel {
                                                      String ttl) throws SQLException {
         StringBuilder toAppend = new StringBuilder(200);
         String sql = String.format("desc %s.%s details", databaseName, insertTableName);
-        JDBCStatement stmt = session.createStatement();
-        JDBCResultSet rs = stmt.executeQuery(sql);
-        toAppend.append("CREATE TABLE ").append(insertTableName).append(" (\n");
-        while (rs.next()) {
-            toAppend.append("\t").append(rs.getString("ColumnName")).append(" ");
-            toAppend.append(rs.getString("DataType")).append(" ");
-            toAppend.append(rs.getString("Category"));
-            String columnComment = rs.getString("Comment");
-            if (columnComment != null && !columnComment.isEmpty()) {
-                toAppend.append(" COMMENT '").append(columnComment).append("'");
+        try (JDBCStatement stmt = session.createStatement()) {
+            try (JDBCResultSet rs = stmt.executeQuery(sql)) {
+                toAppend.append("CREATE TABLE ").append(insertTableName).append(" (\n");
+                while (rs.next()) {
+                    toAppend.append("\t").append(rs.getString("ColumnName")).append(" ");
+                    toAppend.append(rs.getString("DataType")).append(" ");
+                    toAppend.append(rs.getString("Category"));
+                    String columnComment = rs.getString("Comment");
+                    if (columnComment != null && !columnComment.isEmpty()) {
+                        toAppend.append(" COMMENT '").append(columnComment).append("'");
+                    }
+                    toAppend.append(",\n");
+                }
+                toAppend.setLength(toAppend.length() - 2);
+                String tableComment = ((DBSEntity) sourceObject).getDescription();
+                if (tableComment != null && !tableComment.isEmpty()) {
+                    toAppend.append("\n) COMMENT '").append(tableComment).append("' ");
+                    toAppend.append("WITH (TTL=").append(ttl).append(");");
+                } else {
+                    toAppend.append("\n) WITH (TTL=").append(ttl).append(");");
+                }
+                return toAppend.toString();
             }
-            toAppend.append(",\n");
         }
-        toAppend.setLength(toAppend.length() - 2);
-        String tableComment = ((DBSEntity) sourceObject).getDescription();
-        if (tableComment != null && !tableComment.isEmpty()) {
-            toAppend.append("\n) COMMENT '").append(tableComment).append("' ");
-            toAppend.append("WITH (TTL=").append(ttl).append(");");
-        } else {
-            toAppend.append("\n) WITH (TTL=").append(ttl).append(");");
-        }
-
-        return toAppend.toString();
     }
 
     /**
