@@ -234,6 +234,7 @@ class DriverDownloadAutoPage extends DriverDownloadPage {
                     if (CommonUtils.equalObjects(curVersion, version)) {
                         return;
                     }
+                    isArtifactModified = !CommonUtils.equalObjects(library.getOriginalPreferredVersion(), version);
                     library.setPreferredVersion(version);
                     library.setForcedVersion(true);
                     resolveLibraries();
@@ -343,8 +344,9 @@ class DriverDownloadAutoPage extends DriverDownloadPage {
             }
         }
 
-        ((DriverDescriptor)getWizard().getDriver()).setModified(true);
-        //DataSourceProviderRegistry.getInstance().saveDrivers();
+        if (isArtifactModified && getWizard().getDriver() instanceof DriverDescriptor descriptor) {
+            descriptor.setModified(true);
+        }
     }
 
     private boolean acceptDriverLicenses() {
