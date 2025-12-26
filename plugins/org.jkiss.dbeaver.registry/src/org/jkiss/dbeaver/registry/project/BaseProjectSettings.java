@@ -81,13 +81,16 @@ public abstract class BaseProjectSettings implements DBPObjectSettingsProvider {
     ) throws DBException {
         deleteObjectSettingsCache(objectType, objectId, settings);
 
-        // update local cache
-        Map<String, String> cacheSettings = projectSettings
-            .computeIfAbsent(objectType, ot -> new LinkedHashMap<>())
-            .computeIfAbsent(objectId, k -> new LinkedHashMap<>());
-        cacheSettings.keySet().removeAll(settings);
-
-        DataSourceNavigatorSettingsUtils.objectSettingUpdated(project, objectId, settings);
+        if (projectSettings != null) {
+            synchronized (this) {
+                // update local cache
+                Map<String, String> cacheSettings = projectSettings
+                    .computeIfAbsent(objectType, ot -> new LinkedHashMap<>())
+                    .computeIfAbsent(objectId, k -> new LinkedHashMap<>());
+                cacheSettings.keySet().removeAll(settings);
+            }
+            DataSourceNavigatorSettingsUtils.objectSettingUpdated(project, objectId, settings);
+        }
     }
 
     public void updateObjectSettingsCache(
@@ -95,10 +98,14 @@ public abstract class BaseProjectSettings implements DBPObjectSettingsProvider {
         @NotNull String objectId,
         Map<String, String> settingsToSet
     ) {
-        Map<String, String> settings = projectSettings
-            .computeIfAbsent(objectType, ot -> new LinkedHashMap<>())
-            .computeIfAbsent(objectId, k -> new LinkedHashMap<>());
-        settings.putAll(settingsToSet);
+        if (projectSettings != null) {
+            synchronized (this) {
+                Map<String, String> settings = projectSettings
+                    .computeIfAbsent(objectType, ot -> new LinkedHashMap<>())
+                    .computeIfAbsent(objectId, k -> new LinkedHashMap<>());
+                settings.putAll(settingsToSet);
+            }
+        }
 
         DataSourceNavigatorSettingsUtils.objectSettingUpdated(project, objectId, settingsToSet.keySet());
     }
@@ -108,23 +115,28 @@ public abstract class BaseProjectSettings implements DBPObjectSettingsProvider {
         @NotNull String objectId,
         @Nullable Collection<String> settingIds
     ) {
-        Map<String, Map<String, String>> cache = projectSettings.get(objectType);
-        if (cache != null) {
-            Map<String, String> settingRemoved;
-            if (settingIds == null) {
-                settingRemoved = cache.remove(objectId);
-            } else {
-                settingRemoved = new LinkedHashMap<>();
-                for (String settingId : settingIds) {
-                    Map<String, String> settings = cache.get(objectId);
-                    if (settings != null) {
-                        settingRemoved.put(
-                            settingId,
-                            settings.remove(settingId));
+        if (projectSettings == null) {
+            return;
+        }
+        synchronized (this) {
+            Map<String, Map<String, String>> cache = projectSettings.get(objectType);
+            if (cache != null) {
+                Map<String, String> settingRemoved;
+                if (settingIds == null) {
+                    settingRemoved = cache.remove(objectId);
+                } else {
+                    settingRemoved = new LinkedHashMap<>();
+                    for (String settingId : settingIds) {
+                        Map<String, String> settings = cache.get(objectId);
+                        if (settings != null) {
+                            settingRemoved.put(
+                                settingId,
+                                settings.remove(settingId));
+                        }
                     }
                 }
+                DataSourceNavigatorSettingsUtils.objectSettingUpdated(project, objectId, settingRemoved.keySet());
             }
-            updateObjectSettingsCache(objectType, objectId, settingRemoved);
         }
     }
 
