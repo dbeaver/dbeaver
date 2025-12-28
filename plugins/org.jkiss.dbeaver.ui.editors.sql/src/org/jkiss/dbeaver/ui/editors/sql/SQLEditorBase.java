@@ -863,6 +863,13 @@ public abstract class SQLEditorBase extends BaseTextEditor implements
                 //projectionViewer.getTextWidget().redraw();
                 try {
                     projectionViewer.reinitializeProjection();
+                    try {
+                        if (!projectionViewer.isProjectionMode()) {
+                            projectionViewer.doOperation(ProjectionViewer.TOGGLE);
+                        }
+                    } catch (Throwable ex) {
+                        log.debug("Can't toggle projection mode", ex);
+                    }
                 } catch (Throwable ex) {
                     // We can catch OutOfMemory here for too big/complex documents
                     log.warn("Can't initialize SQL syntax projection", ex); //$NON-NLS-1$
