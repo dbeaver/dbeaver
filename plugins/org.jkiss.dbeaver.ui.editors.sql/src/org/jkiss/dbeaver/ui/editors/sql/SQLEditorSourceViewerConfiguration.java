@@ -60,7 +60,6 @@ import org.jkiss.dbeaver.ui.editors.sql.syntax.*;
 import org.jkiss.dbeaver.ui.editors.sql.util.SQLAnnotationHover;
 import org.jkiss.utils.ArrayUtils;
 
-
 /**
  * This class defines the editor add-ons; content assist, content formatter,
  * highlighting, auto-indent strategy, double click strategy.
@@ -92,8 +91,7 @@ public class SQLEditorSourceViewerConfiguration extends TextSourceViewerConfigur
     }
 
     /**
-     * Constructs an instance of this class with the given SQLEditor to
-     * configure.
+     * Constructs an instance of this class with the given SQLEditor to configure.
      *
      * @param editor the SQLEditor to configure
      */
@@ -132,13 +130,6 @@ public class SQLEditorSourceViewerConfiguration extends TextSourceViewerConfigur
         return new TextViewerUndoManager(200);
     }
 
-    /**
-     * Returns the annotation hover which will provide the information to be
-     * shown in a hover popup window when requested for the given
-     * source viewer.
-     *
-     * @see org.eclipse.jface.text.source.SourceViewerConfiguration#getAnnotationHover(org.eclipse.jface.text.source.ISourceViewer)
-     */
     @Override
     public IAnnotationHover getAnnotationHover(ISourceViewer sourceViewer) {
         return new SQLAnnotationHover(getSQLEditor());
@@ -148,12 +139,25 @@ public class SQLEditorSourceViewerConfiguration extends TextSourceViewerConfigur
     @Override
     public IAutoEditStrategy[] getAutoEditStrategies(ISourceViewer sourceViewer, String contentType) {
         if (IDocument.DEFAULT_CONTENT_TYPE.equals(contentType)) {
-            return new IAutoEditStrategy[]{
-                new SQLAutoIndentStrategy(SQLParserPartitions.SQL_PARTITIONING, sourceViewer, editor.getSyntaxManager())};
-        } else if (SQLParserPartitions.CONTENT_TYPE_SQL_COMMENT.equals(contentType) || SQLParserPartitions.CONTENT_TYPE_SQL_MULTILINE_COMMENT.equals(contentType)) {
-            return new IAutoEditStrategy[]{new SQLCommentAutoIndentStrategy(SQLParserPartitions.SQL_PARTITIONING)};
+            return new IAutoEditStrategy[] {
+                new SQLAutoIndentStrategy(SQLParserPartitions.SQL_PARTITIONING, sourceViewer, editor.getSyntaxManager())
+            };
+        } else if (
+            SQLParserPartitions.CONTENT_TYPE_SQL_COMMENT.equals(contentType)
+                || SQLParserPartitions.CONTENT_TYPE_SQL_MULTILINE_COMMENT.equals(contentType)
+        ) {
+            return new IAutoEditStrategy[] {
+                new SQLCommentAutoIndentStrategy(SQLParserPartitions.SQL_PARTITIONING)
+            };
         } else if (SQLParserPartitions.CONTENT_TYPE_SQL_STRING.equals(contentType)) {
-            return new IAutoEditStrategy[]{new SQLStringAutoIndentStrategy(SQLParserPartitions.CONTENT_TYPE_SQL_STRING)};
+            return new IAutoEditStrategy[] {
+                new SQLStringAutoIndentStrategy(SQLParserPartitions.CONTENT_TYPE_SQL_STRING)
+            };
+        } else if (SQLParserPartitions.CONTENT_TYPE_SQL_DOLLAR_CODE.equals(contentType)) {
+            // Treat $$...$$ (when configured as code block) the same as normal SQL text
+            return new IAutoEditStrategy[] {
+                new SQLAutoIndentStrategy(SQLParserPartitions.SQL_PARTITIONING, sourceViewer, editor.getSyntaxManager())
+            };
         }
         return new IAutoEditStrategy[0];
     }
@@ -163,10 +167,10 @@ public class SQLEditorSourceViewerConfiguration extends TextSourceViewerConfigur
         IQuickAssistAssistant quickAssistAssistant = super.getQuickAssistAssistant(sourceViewer);
 
         if (quickAssistAssistant == null) {
-            quickAssistAssistant  = new QuickAssistAssistant() { {
+            quickAssistAssistant = new QuickAssistAssistant() {{
                 setRestoreCompletionProposalSize(EditorsPlugin.getDefault().getDialogSettingsSection("quick_assist_proposal_size"));
-                setInformationControlCreator(p ->new DefaultInformationControl(p, EditorsPlugin.getAdditionalInfoAffordanceString()));
-            } };
+                setInformationControlCreator(p -> new DefaultInformationControl(p, EditorsPlugin.getAdditionalInfoAffordanceString()));
+            }};
         }
 
         SQLEditorQuickAssistProcessor quickAssistProcessor = new SQLEditorQuickAssistProcessor(this.editor);
@@ -179,20 +183,11 @@ public class SQLEditorSourceViewerConfiguration extends TextSourceViewerConfigur
         return quickAssistAssistant;
     }
 
-    /**
-     * Returns the configured partitioning for the given source viewer. The partitioning is
-     * used when the querying content types from the source viewer's input document.
-     *
-     * @see org.eclipse.jface.text.source.SourceViewerConfiguration#getConfiguredDocumentPartitioning(org.eclipse.jface.text.source.ISourceViewer)
-     */
     @Override
     public String getConfiguredDocumentPartitioning(ISourceViewer sourceViewer) {
         return SQLParserPartitions.SQL_PARTITIONING;
     }
 
-    /**
-     * Creates, initializes, and returns the ContentAssistant to use with this editor.
-     */
     @Override
     public IContentAssistant getContentAssistant(ISourceViewer sourceViewer) {
         try {
@@ -206,11 +201,9 @@ public class SQLEditorSourceViewerConfiguration extends TextSourceViewerConfigur
     @NotNull
     private SQLContentAssistant createContentAssistant(ISourceViewer sourceViewer) {
         DBPPreferenceStore store = editor.getActivePreferenceStore();
-
         final DBPPreferenceStore configStore = store;
 
         final SQLContentAssistant assistant = new SQLContentAssistant(editor);
-
         assistant.setDocumentPartitioning(getConfiguredDocumentPartitioning(sourceViewer));
 
         // Set content assist processors for various content types.
@@ -221,6 +214,8 @@ public class SQLEditorSourceViewerConfiguration extends TextSourceViewerConfigur
             assistant.addContentAssistProcessor(completionProcessor, IDocument.DEFAULT_CONTENT_TYPE);
             assistant.addContentAssistProcessor(completionProcessor, SQLParserPartitions.CONTENT_TYPE_SQL_QUOTED);
             assistant.addContentAssistProcessor(completionProcessor, SQLParserPartitions.CONTENT_TYPE_SQL_STRING);
+            assistant.addContentAssistProcessor(completionProcessor, SQLParserPartitions.CONTENT_TYPE_SQL_DOLLAR_CODE);
+            assistant.addContentAssistProcessor(completionProcessor, SQLParserPartitions.CONTENT_TYPE_SQL_CONTROL);
         } catch (Throwable e) {
             // addContentAssistProcessor API was added in 4.12
             // Let's support older Eclipse versions
@@ -233,14 +228,15 @@ public class SQLEditorSourceViewerConfiguration extends TextSourceViewerConfigur
 
         assistant.setInformationControlCreator(getInformationControlCreator(sourceViewer));
 
-        //In the future, a preference page will be added to customize foreground and background.
+        // In the future, a preference page will be added to customize foreground and background.
         Color foreground = new Color(UIUtils.getDisplay(), 0, 0, 0);
         Color background = new Color(UIUtils.getDisplay(), 255, 255, 255);
 
         assistant.setContextInformationPopupOrientation(IContentAssistant.CONTEXT_INFO_ABOVE);
         assistant.setContextInformationPopupForeground(foreground);
         assistant.setContextInformationPopupBackground(background);
-        //Set auto insert mode.
+
+        // Set auto insert mode.
         assistant.enableAutoInsert(store.getBoolean(SQLPreferenceConstants.INSERT_SINGLE_PROPOSALS_AUTO));
         assistant.setShowEmptyList(true);
 
@@ -249,7 +245,7 @@ public class SQLEditorSourceViewerConfiguration extends TextSourceViewerConfigur
                 case SQLPreferenceConstants.ENABLE_AUTO_ACTIVATION:
                     assistant.enableAutoActivation(
                         SQLEditorUtils.isSQLSyntaxParserApplied(editor.getEditorInput())
-                        && configStore.getBoolean(SQLPreferenceConstants.ENABLE_AUTO_ACTIVATION)
+                            && configStore.getBoolean(SQLPreferenceConstants.ENABLE_AUTO_ACTIVATION)
                     );
                     break;
                 case SQLPreferenceConstants.AUTO_ACTIVATION_DELAY:
@@ -265,7 +261,8 @@ public class SQLEditorSourceViewerConfiguration extends TextSourceViewerConfigur
 
         configStore.addPropertyChangeListener(prefListener);
         editor.getTextViewer().getControl().addDisposeListener(
-            e -> configStore.removePropertyChangeListener(prefListener));
+            e -> configStore.removePropertyChangeListener(prefListener)
+        );
 
         return assistant;
     }
@@ -281,11 +278,6 @@ public class SQLEditorSourceViewerConfiguration extends TextSourceViewerConfigur
         return parent -> new DefaultInformationControl(parent, false);
     }
 
-    /**
-     * Creates, configures, and returns the ContentFormatter to use.
-     *
-     * @see org.eclipse.jface.text.source.SourceViewerConfiguration#getContentFormatter(ISourceViewer)
-     */
     @Override
     public IContentFormatter getContentFormatter(ISourceViewer sourceViewer) {
         SQLContentFormatter formatter = new SQLContentFormatter(editor);
@@ -300,58 +292,44 @@ public class SQLEditorSourceViewerConfiguration extends TextSourceViewerConfigur
         return formatter;
     }
 
-    /**
-     * Returns the double-click strategy ready to be used in this viewer when double clicking
-     * onto text of the given content type.  (Note: the same double-click strategy
-     * object is used for all content types.)
-     *
-     * @see org.eclipse.jface.text.source.SourceViewerConfiguration#getDoubleClickStrategy(ISourceViewer, String)
-     */
     @Override
     public ITextDoubleClickStrategy getDoubleClickStrategy(ISourceViewer sourceViewer, String contentType) {
         return new SQLDoubleClickStrategy();
     }
 
-    /**
-     * Creates, configures, and returns a presentation reconciler to help with
-     * document changes.
-     *
-     * @see org.eclipse.jface.text.source.SourceViewerConfiguration#getPresentationReconciler(ISourceViewer)
-     */
     @Override
     public IPresentationReconciler getPresentationReconciler(ISourceViewer sourceViewer) {
-        // Create a presentation reconciler to handle handle document changes.
         PresentationReconciler reconciler = new PresentationReconciler();
         String docPartitioning = getConfiguredDocumentPartitioning(sourceViewer);
         reconciler.setDocumentPartitioning(docPartitioning);
 
         // Add a "damager-repairer" for changes in default text (SQL code).
         addContentTypeDamageRepairer(reconciler, IDocument.DEFAULT_CONTENT_TYPE);
-        
-        // rule for multiline comments
-        // We just need a scanner that does nothing but returns a token with
-        // the corresponding text attributes
+
+        // Multiline comments
         addContentTypeDamageRepairer(reconciler, SQLParserPartitions.CONTENT_TYPE_SQL_MULTILINE_COMMENT, ThemeConstants.SQL_EDITOR_COLOR_COMMENT);
-        // Add a "damager-repairer" for changes within one-line SQL comments.
+        // One-line comments
         addContentTypeDamageRepairer(reconciler, SQLParserPartitions.CONTENT_TYPE_SQL_COMMENT, ThemeConstants.SQL_EDITOR_COLOR_COMMENT);
+
         SQLEditorBase sqlEditor = this.getSQLEditor();
         if (SQLEditorUtils.isSQLSyntaxParserApplied(sqlEditor.getEditorInput())) {
-            // Add a "damager-repairer" for changes within string literals.
+            // String literals
             addContentTypeDamageRepairer(reconciler, SQLParserPartitions.CONTENT_TYPE_SQL_STRING);
+            // $$...$$ / $tag$...$tag$ treated as code block (partition)
+            addContentTypeDamageRepairer(reconciler, SQLParserPartitions.CONTENT_TYPE_SQL_DOLLAR_CODE);
+
             if (sqlEditor.isAdvancedHighlightingEnabled()) {
-                // Add a "damager-repairer" for changes within quoted literals.
                 addContentTypeDamageRepairer(reconciler, SQLParserPartitions.CONTENT_TYPE_SQL_QUOTED);
             } else {
-                // Add a "damager-repairer" for changes within quoted literals.
                 addContentTypeDamageRepairer(reconciler, SQLParserPartitions.CONTENT_TYPE_SQL_QUOTED, ThemeConstants.SQL_EDITOR_COLOR_DATATYPE);
             }
         } else {
-            // Add a "damager-repairer" for changes within string literals.
             addContentTypeDamageRepairer(reconciler, SQLParserPartitions.CONTENT_TYPE_SQL_STRING, ThemeConstants.SQL_EDITOR_COLOR_STRING);
-            // Add a "damager-repairer" for changes within quoted literals.
+            addContentTypeDamageRepairer(reconciler, SQLParserPartitions.CONTENT_TYPE_SQL_DOLLAR_CODE, ThemeConstants.SQL_EDITOR_COLOR_STRING);
             addContentTypeDamageRepairer(reconciler, SQLParserPartitions.CONTENT_TYPE_SQL_QUOTED, ThemeConstants.SQL_EDITOR_COLOR_DATATYPE);
         }
-        // Add a "damager-repairer" for changes within control commands.
+
+        // Control commands (@set, etc.)
         addContentTypeDamageRepairer(reconciler, SQLParserPartitions.CONTENT_TYPE_SQL_CONTROL);
 
         return reconciler;
@@ -360,7 +338,7 @@ public class SQLEditorSourceViewerConfiguration extends TextSourceViewerConfigur
     private void addContentTypeDamageRepairer(@NotNull PresentationReconciler reconciler, @NotNull String contentType) {
         addContentTypeDamageRepairer(reconciler, contentType, ruleManager);
     }
-    
+
     private void addContentTypeDamageRepairer(
         @NotNull PresentationReconciler reconciler,
         @NotNull String contentType,
@@ -383,25 +361,12 @@ public class SQLEditorSourceViewerConfiguration extends TextSourceViewerConfigur
         reconciler.setRepairer(dr, contentType);
     }
 
-    /**
-     * Returns the SQLEditor associated with this object.
-     *
-     * @return the SQLEditor that this object configures
-     */
     public SQLEditorBase getSQLEditor() {
         return editor;
     }
 
-    /**
-     * Returns the text hover which will provide the information to be shown
-     * in a text hover popup window when requested for the given source viewer and
-     * the given content type.
-     *
-     * @see org.eclipse.jface.text.source.SourceViewerConfiguration#getTextHover(org.eclipse.jface.text.source.ISourceViewer, java.lang.String)
-     */
     @Override
     public ITextHover getTextHover(ISourceViewer sourceViewer, String contentType) {
-        //return new BestMatchHover(this.getSQLEditor());
         return new SQLAnnotationHover(this.getSQLEditor());
     }
 
@@ -421,7 +386,6 @@ public class SQLEditorSourceViewerConfiguration extends TextSourceViewerConfigur
         InformationPresenter presenter = new InformationPresenter(getInformationControlCreator(sourceViewer));
         presenter.setDocumentPartitioning(getConfiguredDocumentPartitioning(sourceViewer));
 
-        // Register information provider
         IInformationProvider provider = new SQLInformationProvider(getSQLEditor(), contextInformer);
         String[] contentTypes = getConfiguredContentTypes(sourceViewer);
         for (String contentType : contentTypes) {
@@ -435,7 +399,6 @@ public class SQLEditorSourceViewerConfiguration extends TextSourceViewerConfigur
     @Override
     public IHyperlinkPresenter getHyperlinkPresenter(ISourceViewer sourceViewer) {
         return new MultipleHyperlinkPresenter(editor.getViewerConfiguration().getPreferenceStore()) {
-
         };
     }
 
@@ -446,9 +409,10 @@ public class SQLEditorSourceViewerConfiguration extends TextSourceViewerConfigur
             return null;
         }
 
-        return new IHyperlinkDetector[]{
+        return new IHyperlinkDetector[] {
             hyperlinkDetector,
-            new URLHyperlinkDetector()};
+            new URLHyperlinkDetector()
+        };
     }
 
     void onDataSourceChange() {
