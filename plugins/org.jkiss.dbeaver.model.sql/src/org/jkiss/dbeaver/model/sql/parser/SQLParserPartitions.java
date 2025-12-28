@@ -27,6 +27,7 @@ public class SQLParserPartitions {
     public final static String CONTENT_TYPE_SQL_COMMENT = "sql_comment";
     public final static String CONTENT_TYPE_SQL_MULTILINE_COMMENT = "sql_multiline_comment";
     public final static String CONTENT_TYPE_SQL_STRING = "sql_character";
+    public final static String CONTENT_TYPE_SQL_DOLLAR_CODE = "sql_dollar_code";
     public final static String CONTENT_TYPE_SQL_QUOTED = "sql_quoted";
     public final static String CONTENT_TYPE_SQL_CONTROL = "sql_command";
     public final static String[] SQL_CONTENT_TYPES = new String[]{
@@ -35,6 +36,7 @@ public class SQLParserPartitions {
         CONTENT_TYPE_SQL_COMMENT,
         CONTENT_TYPE_SQL_MULTILINE_COMMENT,
         CONTENT_TYPE_SQL_STRING,
+        CONTENT_TYPE_SQL_DOLLAR_CODE,
         CONTENT_TYPE_SQL_QUOTED,
     };
 }
