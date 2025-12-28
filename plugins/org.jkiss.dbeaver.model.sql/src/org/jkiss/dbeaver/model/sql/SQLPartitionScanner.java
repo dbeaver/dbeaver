@@ -52,6 +52,7 @@ public class SQLPartitionScanner extends RuleBasedPartitionScanner implements TP
     private final IToken multilineCommentToken = new Token(SQLParserPartitions.CONTENT_TYPE_SQL_MULTILINE_COMMENT);
     private final IToken sqlStringToken = new Token(SQLParserPartitions.CONTENT_TYPE_SQL_STRING);
     private final IToken sqlQuotedToken = new Token(SQLParserPartitions.CONTENT_TYPE_SQL_QUOTED);
+    private final IToken sqlDollarCodeToken = new Token(SQLParserPartitions.CONTENT_TYPE_SQL_DOLLAR_CODE);
     private final IToken controlToken = new Token(SQLParserPartitions.CONTENT_TYPE_SQL_CONTROL);
 
     private void setupRules() {
@@ -160,14 +161,17 @@ public class SQLPartitionScanner extends RuleBasedPartitionScanner implements TP
         if (token instanceof TPTokenDefault) {
             if (token.getData() instanceof SQLTokenType) {
                 switch (((SQLTokenType) token.getData())) {
-                    case T_STRING:
-                        return sqlStringToken;
-                    case T_QUOTED:
-                        return sqlQuotedToken;
-                    case T_COMMENT:
-                        return token instanceof SQLMultilineCommentToken ? multilineCommentToken : commentToken;
-                    case T_CONTROL:
-                        return controlToken;
+    case T_STRING:
+        return sqlStringToken;
+    case T_DOLLAR_CODE:
+        return sqlDollarCodeToken;
+    case T_QUOTED:
+        return sqlQuotedToken;
+    case T_COMMENT:
+        return token instanceof SQLMultilineCommentToken ? multilineCommentToken : commentToken;
+    case T_CONTROL:
+        return controlToken;
+}
                 }
             }
         }
