@@ -45,6 +45,7 @@ public interface WSConstants {
     String TOPIC_TRANSACTION_COUNT = "cb_transaction";
     String TOPIC_AI = "cb_ai";
     String TOPIC_USER_NOTIFICATION = "cb_notification";
+    String TOPIC_OBJECT_SETTINGS = "cb_object_settings";
 
     //TODO remove this enum
     @Deprecated

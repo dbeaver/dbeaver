@@ -26,6 +26,7 @@ import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.tools.transfer.DTConstants;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferNode;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferSettings;
 import org.jkiss.utils.ArrayUtils;
@@ -77,7 +78,7 @@ public class DataTransferNodeDescriptor extends AbstractDescriptor {
 
     void loadNodeConfigurations(@NotNull IConfigurationElement config) {
         List<DataTransferProcessorDescriptor> procList = new ArrayList<>();
-        for (IConfigurationElement processorConfig : ArrayUtils.safeArray(config.getChildren("processor"))) {
+        for (IConfigurationElement processorConfig : ArrayUtils.safeArray(config.getChildren(DTConstants.PROP_PROCESSOR_TYPE))) {
             procList.add(new DataTransferProcessorDescriptor(this, processorConfig));
         }
         procList.sort(Comparator.comparing(DataTransferProcessorDescriptor::getName));

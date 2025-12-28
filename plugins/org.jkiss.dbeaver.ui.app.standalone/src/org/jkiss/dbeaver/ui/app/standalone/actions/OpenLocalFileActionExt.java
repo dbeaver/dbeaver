@@ -36,6 +36,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class OpenLocalFileActionExt extends AbstractHandler {
 
@@ -59,10 +60,14 @@ public class OpenLocalFileActionExt extends AbstractHandler {
     public Object execute(ExecutionEvent event) throws ExecutionException {
         Shell activeShell = HandlerUtil.getActiveShell(event);
 
-        Set<String> extensions = new LinkedHashSet<>();
+        Set<String> extensions = new TreeSet<>();
         extensions.add("*.*");
         for (FileTypeHandlerDescriptor dhd : FileTypeHandlerRegistry.getInstance().getHandlers()) {
-            extensions.add(Arrays.stream(dhd.getExtensions()).map(e -> "*." + e).collect(Collectors.joining(";")));
+            extensions.add(Stream.of(dhd.getExtensions())
+                .map(FileTypeHandlerDescriptor.Extension::getExtensions)
+                .flatMap(Arrays::stream)
+                .map(e -> "*." + e)
+                .collect(Collectors.joining(";")));
         }
 
         FileDialog dialog = new FileDialog(activeShell, SWT.OPEN | SWT.MULTI | SWT.SHEET);

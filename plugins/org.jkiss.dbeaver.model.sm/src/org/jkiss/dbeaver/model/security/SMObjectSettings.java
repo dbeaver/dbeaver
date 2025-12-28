@@ -14,27 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ui.editors.file;
+package org.jkiss.dbeaver.model.security;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 
-import java.nio.file.Path;
-import java.util.List;
 import java.util.Map;
 
-public interface IFileTypeHandler {
-
-    /**
-     * Open NIO files in associated handlers
-     */
-    void openFiles(
-        @NotNull List<Path> fileList,
-        @NotNull Map<String, String> parameters,
-        @Nullable DBPDataSourceContainer dataSource)
-        throws DBException;
-
-    void importFiles(@NotNull List<Path> filePath, @Nullable String extension) throws DBException;
+public record SMObjectSettings(@NotNull SMObjectType objectType, @NotNull String objectId, @NotNull Map<String, String> settings) {
 }
