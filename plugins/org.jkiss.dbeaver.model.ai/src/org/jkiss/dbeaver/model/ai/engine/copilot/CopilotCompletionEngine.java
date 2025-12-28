@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.model.ai.engine.copilot;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.ai.AIMessageType;
+import org.jkiss.dbeaver.model.ai.AIUsage;
 import org.jkiss.dbeaver.model.ai.engine.*;
 import org.jkiss.dbeaver.model.ai.engine.copilot.dto.CopilotChatRequest;
 import org.jkiss.dbeaver.model.ai.engine.copilot.dto.CopilotMessage;
@@ -84,7 +85,7 @@ public class CopilotCompletionEngine extends BaseCompletionEngine<CopilotPropert
             .map(it -> it.message().content())
             .toList();
 
-        return new AIEngineResponse(AIMessageType.ASSISTANT, choices);
+        return new AIEngineResponse(AIMessageType.ASSISTANT, choices, new AIUsage(0, 0));
     }
 
     @NotNull

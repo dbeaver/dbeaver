@@ -14,23 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.ai.engine;
+package org.jkiss.dbeaver.model.ai.engine.openai.dto;
 
-import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.model.ai.AIUsage;
+import com.google.gson.annotations.SerializedName;
 
-/**
- * Subscriber which listens for response stream
- */
-public interface AIEngineResponseConsumer {
-
-    void nextChunk(@NotNull AIEngineResponseChunk chunk);
-
-    void error(@NotNull Throwable throwable);
-
-    void completeBlock();
-
-    void completeStream(@NotNull AIUsage usage);
-
-    void warning(@NotNull String message);
+public record OAIUsage(
+    @SerializedName("input_tokens")
+    int inputTokens,
+    @SerializedName("output_tokens")
+    int outputTokens
+) {
 }

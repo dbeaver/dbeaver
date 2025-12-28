@@ -21,7 +21,9 @@ import com.google.gson.GsonBuilder;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.ai.AIMessage;
+import org.jkiss.dbeaver.model.ai.AIMessageMeta;
 import org.jkiss.dbeaver.model.ai.AIMessageType;
+import org.jkiss.dbeaver.model.ai.AIUsage;
 import org.jkiss.dbeaver.model.ai.engine.openai.dto.OAIMessage;
 import org.jkiss.dbeaver.model.ai.engine.openai.dto.OAIResponsesRequest;
 import org.jkiss.dbeaver.model.ai.engine.openai.dto.OAIResponsesResponse;
@@ -33,6 +35,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 import java.net.http.HttpRequest;
 import java.time.Duration;
+import java.time.Instant;
 import java.util.List;
 
 public class OpenAIClientLegacy extends OpenAIClient {
@@ -60,6 +63,7 @@ public class OpenAIClientLegacy extends OpenAIClient {
         @NotNull DBRProgressMonitor monitor,
         @NotNull OAIResponsesRequest completionRequest
     ) throws DBException {
+        Instant now = Instant.now();
         ChatCompletionRequest chatRequest = new ChatCompletionRequest();
         chatRequest.setMessages(completionRequest.input.stream().map(om -> new ChatMessage(
             om.role,
@@ -81,11 +85,24 @@ public class OpenAIClientLegacy extends OpenAIClient {
         String response = client.send(monitor, modifiedRequest);
         ChatCompletionResult chatCompletionResult = GSON.fromJson(response, ChatCompletionResult.class);
         OAIResponsesResponse oaiResponse = new OAIResponsesResponse();
+
+        AIMessageMeta messageMeta = new AIMessageMeta(
+            OpenAIConstants.OPENAI_ENGINE,
+            completionRequest.model,
+            new AIUsage(
+                oaiResponse.usage.inputTokens(),
+                oaiResponse.usage.outputTokens()
+            ),
+            Duration.between(now, Instant.now())
+        );
+
         oaiResponse.output = chatCompletionResult.getChoices().stream().map(
             c -> new OAIMessage(
                 new AIMessage(
                     AIMessageType.ASSISTANT,
-                    c.getMessage().getContent())
+                    c.getMessage().getContent(),
+                    messageMeta
+                )
             )).toList();
         return oaiResponse;
     }

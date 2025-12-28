@@ -31,6 +31,8 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 
+import java.time.Duration;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -93,7 +95,15 @@ public class AIAssistantImpl implements AIAssistant {
 
             AIEngineRequest request = completionRequest;
             for (int tryIndex = 0; tryIndex < MAX_FUNCTION_CALLS; tryIndex++) {
+                Instant now = Instant.now();
                 AIEngineResponse completionResponse = requestCompletion(engine, monitor, request);
+
+                AIMessageMeta requestMeta = new AIMessageMeta(
+                    engineDescriptor.getId(),
+                    engine.getProperties().getModel(),
+                    completionResponse.usage(),
+                    Duration.between(now, Instant.now())
+                );
 
                 if (completionResponse.getType() == AIMessageType.FUNCTION) {
                     AIFunctionCall functionCall = completionResponse.getFunctionCall();
@@ -102,10 +112,14 @@ public class AIAssistantImpl implements AIAssistant {
                         AIFunctionResult result = callFunction(functionContext, functionCall);
                         String stringValue = CommonUtils.toString(result.getValue());
                         if (result.getType() == AIFunctionResult.FunctionType.ACTION) {
-                            return new AIAssistantResponse(AIAssistantResponse.Type.FUNCTION, stringValue);
+                            return new AIAssistantResponse(
+                                AIAssistantResponse.Type.FUNCTION,
+                                stringValue,
+                                requestMeta
+                            );
                         } else {
                             List<AIMessage> newMessages = new ArrayList<>(request.getMessages());
-                            newMessages.add(new AIMessage(AIMessageType.USER, stringValue));
+                            newMessages.add(new AIMessage(AIMessageType.USER, stringValue, null));
                             AIEngineRequest newRequest = new AIEngineRequest(newMessages);
                             newRequest.setFunctions(request.getFunctions());
 
@@ -116,10 +130,18 @@ public class AIAssistantImpl implements AIAssistant {
                 } else {
                     List<String> variants = completionResponse.getVariants();
                     if (variants != null && !variants.isEmpty()) {
-                        return new AIAssistantResponse(AIAssistantResponse.Type.TEXT, variants.getFirst());
+                        return new AIAssistantResponse(
+                            AIAssistantResponse.Type.TEXT,
+                            variants.getFirst(),
+                            requestMeta
+                        );
                     }
                 }
-                return new AIAssistantResponse(AIAssistantResponse.Type.ERROR, AIMessages.ai_empty_engine_response);
+                return new AIAssistantResponse(
+                    AIAssistantResponse.Type.ERROR,
+                    AIMessages.ai_empty_engine_response,
+                    requestMeta
+                );
             }
             throw new DBException("Too many AI function calls (" + MAX_FUNCTION_CALLS + ")");
         }
