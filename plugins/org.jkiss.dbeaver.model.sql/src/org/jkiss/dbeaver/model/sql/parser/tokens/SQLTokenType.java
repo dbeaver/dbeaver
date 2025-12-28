@@ -26,6 +26,7 @@ public enum SQLTokenType implements TPTokenType {
 
     T_KEYWORD(500),
     T_STRING(501),
+    T_DOLLAR_CODE(5011),
     T_QUOTED(502),
     T_TYPE(503),
     T_NUMBER(504),
