@@ -9,7 +9,6 @@ Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-21
 Require-Bundle: org.jkiss.dbeaver.model,
  org.jkiss.dbeaver.model.sql,
- org.jkiss.dbeaver.model.rcp,
  org.eclipse.lsp4j,
  org.eclipse.lsp4j.jsonrpc
 Automatic-Module-Name: org.jkiss.dbeaver.model.lsp
