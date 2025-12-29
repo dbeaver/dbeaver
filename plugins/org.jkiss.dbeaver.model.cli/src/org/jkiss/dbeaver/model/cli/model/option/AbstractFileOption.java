@@ -17,21 +17,27 @@
 package org.jkiss.dbeaver.model.cli.model.option;
 
 import org.jkiss.code.Nullable;
-import picocli.CommandLine;
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.registry.fs.FSUtils;
+import org.jkiss.utils.CommonUtils;
 
 import java.nio.file.Path;
 
-public class InputFileOption extends AbstractFileOption {
-    @Nullable
-    @CommandLine.Option(
-        names = {"-in", "-input-file"},
-        arity = "1",
-        description = "Argument value that can be written in the file."
-    )
-    private String inputFile;
+public class AbstractFileOption {
+    private static final Log log = Log.getLog(AbstractFileOption.class);
+
 
     @Nullable
-    public Path getInputFile() {
-        return getPath(inputFile);
+    protected Path getPath(@Nullable String filePath) {
+        if (CommonUtils.isEmpty(filePath)) {
+            return null;
+        }
+        try {
+            return FSUtils.getPathFromURI(filePath);
+        } catch (DBException e) {
+            log.error("Error getting path from URI: " + filePath + " " + e.getMessage(), e);
+        }
+        return null;
     }
 }
