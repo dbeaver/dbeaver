@@ -21,6 +21,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.PartInitException;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPContextProvider;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.ui.css.CSSUtils;
@@ -67,6 +68,7 @@ public abstract class MultiPageDatabaseEditor extends MultiPageAbstractEditor im
         listener = new DatabaseEditorListener(this);
     }
 
+    @Nullable
     @Override
     public DBCExecutionContext getExecutionContext() {
         return getEditorInput().getExecutionContext();

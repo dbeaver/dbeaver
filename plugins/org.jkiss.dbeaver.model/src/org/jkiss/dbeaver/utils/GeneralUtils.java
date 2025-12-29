@@ -880,7 +880,7 @@ public class GeneralUtils {
     }
 
     @Nullable
-    public static <T> T adapt(@NotNull Object sourceObject, @NotNull Class<T> adapter) {
+    public static <T> T adapt(@Nullable Object sourceObject, @NotNull Class<T> adapter) {
         return adapt(sourceObject, adapter, true);
     }
 
@@ -1003,7 +1003,7 @@ public class GeneralUtils {
     }
 
 
-    @NotNull
+    @Nullable
     public static String makeStandardErrorMessage(@NotNull Throwable error) {
         if (error instanceof UnknownHostException) {
             return "Unknown host " + CommonUtils.notEmpty(error.getMessage());

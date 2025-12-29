@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,6 +32,7 @@ import org.eclipse.ui.IWorkbenchPreferencePage;
 import org.eclipse.ui.IWorkbenchPropertyPage;
 import org.eclipse.ui.forms.widgets.ExpandableComposite;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
@@ -177,6 +178,7 @@ public class PrefPageSQLResources extends AbstractPrefPage implements IWorkbench
                 ((GridData) sqlTemplateViewerComposite.getLayoutData()).heightHint = 200;
 
                 sqlTemplateViewer = new SQLEditorBase() {
+                    @Nullable
                     @Override
                     public DBCExecutionContext getExecutionContext() {
                         return null;

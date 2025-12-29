@@ -328,4 +328,9 @@
     <extension point="org.eclipse.core.runtime.preferences">
         <initializer class="org.jkiss.dbeaver.tools.transfer.internal.DataTransferPreferencesInitializer"/>
     </extension>
+
+    <extension point="org.jkiss.dbeaver.dataSourceProvider">
+        <datasource id="stream" class="org.jkiss.dbeaver.tools.transfer.stream.model.StreamDataSourceProvider"/>
+    </extension>
+
 </plugin>
