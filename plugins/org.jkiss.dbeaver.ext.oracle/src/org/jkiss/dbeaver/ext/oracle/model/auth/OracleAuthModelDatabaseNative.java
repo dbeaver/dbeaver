@@ -25,7 +25,6 @@ import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.impl.auth.AuthModelDatabaseNative;
-import org.jkiss.dbeaver.model.impl.auth.AuthModelDatabaseNativeCredentials;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.utils.CommonUtils;
 
@@ -34,7 +33,7 @@ import java.util.Properties;
 /**
  * Oracle database native auth model.
  */
-public class OracleAuthModelDatabaseNative extends AuthModelDatabaseNative<AuthModelDatabaseNativeCredentials> {
+public class OracleAuthModelDatabaseNative extends AuthModelDatabaseNative<OracleDatabaseNativeCredentials> {
 
     public static final String ID = "oracle_native";
 
@@ -42,7 +41,7 @@ public class OracleAuthModelDatabaseNative extends AuthModelDatabaseNative<AuthM
     public Object initAuthentication(
         @NotNull DBRProgressMonitor monitor,
         @NotNull DBPDataSource dataSource,
-        @NotNull AuthModelDatabaseNativeCredentials credentials,
+        @NotNull OracleDatabaseNativeCredentials credentials,
         @NotNull DBPConnectionConfiguration configuration,
         @NotNull Properties connProperties
     ) throws DBException {
@@ -79,4 +78,9 @@ public class OracleAuthModelDatabaseNative extends AuthModelDatabaseNative<AuthM
         super.endAuthentication(dataSource, configuration, connProperties);
     }
 
+    @NotNull
+    @Override
+    public OracleDatabaseNativeCredentials createCredentials() {
+        return new OracleDatabaseNativeCredentials();
+    }
 }

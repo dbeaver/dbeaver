@@ -14,17 +14,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.task;
+package org.jkiss.dbeaver.ext.oracle.model.auth;
 
-/**
- * Task settings
- */
-public interface DBTTaskSettings {
+import org.jkiss.dbeaver.model.impl.auth.AuthModelDatabaseNativeCredentials;
+import org.jkiss.dbeaver.model.meta.Property;
 
-    //void loadSettingsFromInput(List<INPUT_OBJECT_TYPE> inputObjects);
+public class OracleDatabaseNativeCredentials extends AuthModelDatabaseNativeCredentials {
 
-    //void loadSettings(DBRRunnableContext runnableContext, Map<String, Object> state);
-
-    //void saveSettings(Map<String, Object> state);
+    @Property(order = 1,
+        description = "Oracle username (optionally with role). "
+            + "Format: <username> or <{username} AS {role}> (example: sys as SYSDBA)"
+    )
+    public String getUserName() {
+        return super.getUserName();
+    }
 
 }

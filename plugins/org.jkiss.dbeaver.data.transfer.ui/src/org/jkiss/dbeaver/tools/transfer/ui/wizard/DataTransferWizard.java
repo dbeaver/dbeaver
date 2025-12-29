@@ -20,6 +20,7 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.MultiStatus;
 import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.wizard.IWizardContainer;
 import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.swt.widgets.Composite;
@@ -666,17 +667,17 @@ public class DataTransferWizard extends TaskConfigurationWizard<DataTransferSett
     public static void openWizard(
         @NotNull IWorkbenchWindow workbenchWindow,
         @Nullable Collection<IDataTransferProducer<?>> producers,
-        @Nullable Collection<IDataTransferConsumer<?,?>> consumers)
-    {
-        openWizard(workbenchWindow, producers, consumers, null);
+        @Nullable Collection<IDataTransferConsumer<?, ?>> consumers
+    ) {
+        openWizard(workbenchWindow, producers, consumers, StructuredSelection.EMPTY);
     }
 
     public static void openWizard(
         @NotNull IWorkbenchWindow workbenchWindow,
         @Nullable Collection<IDataTransferProducer<?>> producers,
         @Nullable Collection<IDataTransferConsumer<?,?>> consumers,
-        @Nullable IStructuredSelection selection)
-    {
+        @NotNull IStructuredSelection selection
+    ) {
         DataTransferSettings settings = new DataTransferSettings(
             producers,
             consumers,
@@ -688,7 +689,7 @@ public class DataTransferWizard extends TaskConfigurationWizard<DataTransferSett
             false);
 
         DataTransferWizard wizard = new DataTransferWizard(null, settings, true);
-        TaskConfigurationWizardDialog dialog = new TaskConfigurationWizardDialog(workbenchWindow, wizard, selection);
+        TaskConfigurationWizardDialog dialog = new TaskConfigurationWizardDialog(workbenchWindow, wizard, selection, Map.of());
         dialog.open();
     }
 
