@@ -49,7 +49,7 @@ import org.jkiss.dbeaver.model.sql.parser.tokens.SQLTokenType;
 import org.jkiss.dbeaver.model.text.parser.TPToken;
 import org.jkiss.dbeaver.model.text.parser.TPTokenDefault;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
-import org.jkiss.dbeaver.utils.ResourceUtils;
+import org.jkiss.dbeaver.utils.ProjectResourceUtils;
 import org.jkiss.utils.Pair;
 
 import java.lang.reflect.InvocationTargetException;
@@ -292,7 +292,7 @@ public class DBLTextDocumentService implements TextDocumentService, LanguageClie
             // Note: default datasource id is defined as a resource property:
             // in Cloudbeaver - from front-end - LocalResourceController#setResourceProperty
             // in Desktop - EditorUtils#setInputDataSource
-            String dataSourceId = ResourceUtils.getResourceDataSourceId(project, documentUri.getResourcePath());
+            String dataSourceId = ProjectResourceUtils.getResourceDataSourceId(project, documentUri.getResourcePath());
             if (dataSourceId != null) {
                 dataSourceContainer = project.getDataSourceRegistry().getDataSource(dataSourceId);
             }
