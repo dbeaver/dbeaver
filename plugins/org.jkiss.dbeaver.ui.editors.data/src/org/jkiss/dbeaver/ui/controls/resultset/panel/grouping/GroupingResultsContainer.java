@@ -93,6 +93,7 @@ public class GroupingResultsContainer implements IResultSetContainer {
         return dataContainer == null || dataContainer.getDataSource() == null ? null : dataContainer.getDataSource().getContainer().getProject();
     }
 
+    @Nullable
     @Override
     public DBCExecutionContext getExecutionContext() {
         return presentation.getController().getExecutionContext();

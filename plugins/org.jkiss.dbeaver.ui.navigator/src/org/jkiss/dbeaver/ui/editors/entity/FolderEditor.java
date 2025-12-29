@@ -30,6 +30,7 @@ import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.IWorkbenchCommandConstants;
 import org.eclipse.ui.menus.CommandContributionItem;
 import org.eclipse.ui.part.EditorPart;
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
@@ -220,7 +221,7 @@ public class FolderEditor extends EditorPart implements INavigatorModelView, IRe
 
         @Nullable
         @Override
-        protected Object getCellValue(Object element, ObjectColumn objectColumn, boolean formatValue) {
+        protected Object getCellValue(@NotNull Object element, @NotNull ObjectColumn objectColumn, boolean formatValue) {
             if (element instanceof DBNRoot) {
                 return objectColumn.isNameColumn(getObjectValue((DBNRoot) element)) ? ".." : "";
             }

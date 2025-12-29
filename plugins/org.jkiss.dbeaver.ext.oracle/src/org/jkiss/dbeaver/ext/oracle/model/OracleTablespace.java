@@ -411,7 +411,7 @@ public class OracleTablespace extends OracleGlobalObject implements DBPRefreshab
 
     public static class TablespaceReferenceValidator implements IPropertyCacheValidator<DBSObjectLazy<OracleDataSource>> {
         @Override
-        public boolean isPropertyCached(DBSObjectLazy<OracleDataSource> object, Object propertyId)
+        public boolean isPropertyCached(@NotNull DBSObjectLazy<OracleDataSource> object, @NotNull Object propertyId)
         {
             return
                 object.getLazyReference(propertyId) instanceof OracleTablespace ||

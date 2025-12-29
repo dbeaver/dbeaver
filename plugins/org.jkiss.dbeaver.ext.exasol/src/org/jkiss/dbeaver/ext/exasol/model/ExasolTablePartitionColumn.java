@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ext.exasol.model;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.impl.struct.AbstractTableIndexColumn;
@@ -114,7 +115,8 @@ public class ExasolTablePartitionColumn extends AbstractTableIndexColumn {
 			return true;
 		}
 
-		@Override
+		@Nullable
+        @Override
 		public Object[] getPossibleValues(ExasolTablePartitionColumn object) {
 			try {
 				return object.getTable().getAvailableColumns(new VoidProgressMonitor()).toArray();

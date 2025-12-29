@@ -214,7 +214,7 @@ public class CubridTable extends GenericTable
             return false;
         }
 
-        @NotNull
+        @Nullable
         @Override
         public Object[] getPossibleValues(@NotNull CubridTable object) {
             return object.getDataSource().getSchemas().toArray();
@@ -264,7 +264,7 @@ public class CubridTable extends GenericTable
             return false;
         }
 
-        @NotNull
+        @Nullable
         @Override
         public Object[] getPossibleValues(@NotNull CubridTable object) {
             return object.getDataSource().getCharsets().toArray();
@@ -278,7 +278,7 @@ public class CubridTable extends GenericTable
             return false;
         }
 
-        @NotNull
+        @Nullable
         @Override
         public Object[] getPossibleValues(@NotNull CubridTable object) {
             return object.charset.getCollations().toArray();

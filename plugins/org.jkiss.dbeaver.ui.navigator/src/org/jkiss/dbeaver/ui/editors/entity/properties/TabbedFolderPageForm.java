@@ -340,7 +340,7 @@ public class TabbedFolderPageForm extends TabbedFolderPage implements IRefreshab
                     propertySource.getEditableValue(), DBDDisplayFormat.UI) + "' properties",
                 databaseObject.getDataSource()) {
                 @Override
-                public Map<DBPPropertyDescriptor, Object> evaluate(DBRProgressMonitor monitor) {
+                public Map<DBPPropertyDescriptor, Object> evaluate(@NotNull DBRProgressMonitor monitor) {
                     Map<DBPPropertyDescriptor, Object> propValues = new HashMap<>();
                     for (DBPPropertyDescriptor prop : allProps) {
                         if (monitor.isCanceled()) {

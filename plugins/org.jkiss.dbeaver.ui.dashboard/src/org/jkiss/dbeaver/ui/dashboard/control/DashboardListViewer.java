@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -99,7 +99,7 @@ public class DashboardListViewer extends StructuredViewer implements DBPDataSour
         DBCExecutionContext context = isolatedContext;
         if (context != null) {
             if (context.isConnected()) {
-                context.close();
+                DBUtils.closeSafely(context);
             }
             isolatedContext = null;
         }
@@ -339,8 +339,9 @@ public class DashboardListViewer extends StructuredViewer implements DBPDataSour
             return;
         }
         new AbstractJob("Open connection for dashboard") {
+            @NotNull
             @Override
-            protected IStatus run(DBRProgressMonitor monitor) {
+            protected IStatus run(@NotNull DBRProgressMonitor monitor) {
                 DBSInstance instance = DBUtils.getObjectOwnerInstance(dataSource);
                 if (instance != null) {
                     try {

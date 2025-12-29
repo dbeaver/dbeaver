@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,6 +23,7 @@ import org.eclipse.jface.action.IContributionItem;
 import org.eclipse.jface.action.Separator;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.ui.IEditorPart;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.core.CoreMessages;
@@ -43,7 +44,6 @@ import org.jkiss.dbeaver.ui.actions.AbstractDataSourceHandler;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
-import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 
 public class DataSourceTransactionModeContributor extends DataSourceMenuContributor {
@@ -134,18 +134,14 @@ public class DataSourceTransactionModeContributor extends DataSourceMenuContribu
             DBCTransactionManager txnManager = DBUtils.getTransactionManager(executionContext);
             if (txnManager != null) {
                 new AbstractJob("Set auto-commit") {
+                    @NotNull
                     @Override
-                    protected IStatus run(DBRProgressMonitor monitor) {
+                    protected IStatus run(@NotNull DBRProgressMonitor monitor) {
                         monitor.beginTask("Change connection auto-commit to " + autoCommit, 1);
                         try {
                             monitor.subTask("Change context '" + executionContext.getContextName() + "' auto-commit state");
-                            DBExecUtils.tryExecuteRecover(monitor, executionContext.getDataSource(), param -> {
-                                try {
-                                    txnManager.setAutoCommit(monitor, autoCommit);
-                                } catch (DBCException e) {
-                                    throw new InvocationTargetException(e);
-                                }
-                            });
+                            DBExecUtils.tryExecuteRecover(monitor, executionContext.getDataSource(), param ->
+                                txnManager.setAutoCommit(monitor, autoCommit));
                         } catch (Exception e) {
                             return GeneralUtils.makeExceptionStatus(e);
                         } finally {
@@ -227,18 +223,14 @@ public class DataSourceTransactionModeContributor extends DataSourceMenuContribu
             DBCTransactionManager txnManager = DBUtils.getTransactionManager(executionContext);
             if (txnManager != null) {
                 new AbstractJob("Set transaction isolation level") {
+                    @NotNull
                     @Override
-                    protected IStatus run(DBRProgressMonitor monitor) {
+                    protected IStatus run(@NotNull DBRProgressMonitor monitor) {
                         monitor.beginTask("Change transaction isolation level to " + level.getTitle(), 1);
                         try {
                             monitor.subTask("Change context '" + executionContext.getContextName() + "' transaction isolation level");
-                            DBExecUtils.tryExecuteRecover(monitor, executionContext.getDataSource(), param -> {
-                                try {
-                                    txnManager.setTransactionIsolation(monitor, level);
-                                } catch (DBCException e) {
-                                    throw new InvocationTargetException(e);
-                                }
-                            });
+                            DBExecUtils.tryExecuteRecover(monitor, executionContext.getDataSource(), param ->
+                                txnManager.setTransactionIsolation(monitor, level));
                             executionContext.getDataSource().getContainer().setDefaultTransactionsIsolation(level);
                             executionContext.getDataSource().getContainer().persistConfiguration();
                         } catch (Exception e) {

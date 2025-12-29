@@ -351,13 +351,8 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBNLazyNode, DB
             DBPDataSource dataSource = object.getDataSource();
             if (object.isPersisted() && dataSource != null) {
                 DBSObject[] newObject = new DBSObject[1];
-                DBExecUtils.tryExecuteRecover(monitor, dataSource, param -> {
-                    try {
-                        newObject[0] = refreshableObject.refreshObject(monitor);
-                    } catch (DBException e) {
-                        throw new InvocationTargetException(e);
-                    }
-                });
+                DBExecUtils.tryExecuteRecover(monitor, dataSource, param ->
+                    newObject[0] = refreshableObject.refreshObject(monitor));
                 if (newObject[0] == null) {
                     if (parentNode instanceof DBNDatabaseNode dbNode) {
                         dbNode.removeChildItem(object);

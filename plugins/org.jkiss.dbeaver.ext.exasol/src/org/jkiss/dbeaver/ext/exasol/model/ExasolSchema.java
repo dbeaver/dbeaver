@@ -402,7 +402,8 @@ public class ExasolSchema extends ExasolGlobalObject implements DBSSchema, DBPNa
 			return false;
 		}
 		
-		public Object[] getPossibleValues(ExasolSchema object)
+		@Nullable
+        public Object[] getPossibleValues(ExasolSchema object)
 		{
 			ExasolDataSource dataSource = object.getDataSource();
 

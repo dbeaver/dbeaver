@@ -521,7 +521,7 @@ public class ContentPanelEditor extends BaseValueEditor<Control> implements IAda
         }
 
         @Override
-        public DBDContent evaluate(DBRProgressMonitor monitor) {
+        public DBDContent evaluate(@NotNull DBRProgressMonitor monitor) {
             monitor.beginTask("Detect appropriate editor", 1);
             try {
                 monitor.subTask("Load LOB value");
@@ -567,7 +567,7 @@ public class ContentPanelEditor extends BaseValueEditor<Control> implements IAda
         }
 
         @Override
-        public DBDContent evaluate(DBRProgressMonitor monitor) {
+        public DBDContent evaluate(@NotNull DBRProgressMonitor monitor) {
             monitor.beginTask("Detect appropriate editor", 1);
             try {
                 monitor.subTask("Prime LOB value");

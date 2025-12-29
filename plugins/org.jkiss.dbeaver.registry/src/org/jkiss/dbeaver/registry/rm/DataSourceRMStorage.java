@@ -53,12 +53,6 @@ class DataSourceRMStorage implements DBPDataSourceConfigurationStorage {
         return true;
     }
 
-    @NotNull
-    @Override
-    public String getStatus() {
-        return null;
-    }
-
     @Nullable
     @Override
     public String getStorageSubId() {

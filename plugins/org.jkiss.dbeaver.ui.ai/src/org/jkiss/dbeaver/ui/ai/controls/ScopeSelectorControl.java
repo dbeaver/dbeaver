@@ -32,6 +32,7 @@ import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.ai.AICompletionSettings;
 import org.jkiss.dbeaver.model.ai.AIDatabaseScope;
 import org.jkiss.dbeaver.model.ai.AITextUtils;
+import org.jkiss.dbeaver.model.ai.utils.AIUtils;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.logical.DBSLogicalDataSource;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
@@ -76,6 +77,7 @@ public class ScopeSelectorControl extends Composite {
 
         this.dataSource = dataSource;
         this.executionContext = executionContext;
+        AIUtils.updateScopeSettingsIfNeeded(settings, dataSource.getDataSourceContainer(), executionContext);
         this.currentScope = settings.getScope();
         this.checkedObjectIds = new LinkedHashSet<>();
 

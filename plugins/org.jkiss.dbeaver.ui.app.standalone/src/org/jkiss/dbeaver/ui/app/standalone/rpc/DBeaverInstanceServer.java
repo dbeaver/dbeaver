@@ -17,7 +17,7 @@
 
 package org.jkiss.dbeaver.ui.app.standalone.rpc;
 
-import org.apache.commons.cli.CommandLine;
+
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -92,7 +92,7 @@ public class DBeaverInstanceServer extends ApplicationInstanceServer<IInstanceCo
     }
 
     @Nullable
-    public static IInstanceController createClient(@Nullable String workspacePath) {
+    public static IInstanceController createClient(@Nullable Path workspacePath) {
         final Path path = getConfigPath(workspacePath);
 
         if (Files.notExists(path)) {
@@ -109,7 +109,7 @@ public class DBeaverInstanceServer extends ApplicationInstanceServer<IInstanceCo
             return null;
         }
 
-        final String port = properties.getProperty("port");
+        final String port = properties.getProperty(portPropertyName());
 
         if (CommonUtils.isEmptyTrimmed(port)) {
             log.error("No port specified for the instance controller to connect to");
@@ -156,13 +156,12 @@ public class DBeaverInstanceServer extends ApplicationInstanceServer<IInstanceCo
     @NotNull
     @Override
     public CLIProcessResult handleCommandLine(@NotNull String[] args) {
-        CommandLine cmd = DBeaverCommandLine.getInstance().getCommandLine(args);
-
         try {
             return DBeaverCommandLine.getInstance().executeCommandLineCommands(
-                cmd,
                 this,
-                !DBeaverApplication.getInstance().isHeadlessMode()
+                !DBeaverApplication.getInstance().isHeadlessMode(),
+                true,
+                args
             );
         } catch (Exception e) {
             return new CLIProcessResult(CLIProcessResult.PostAction.ERROR, "Error executing command: " + e.getMessage());

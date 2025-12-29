@@ -83,10 +83,8 @@ public class BrowserPopup extends AbstractPopupPanel {
     }
 
     @Override
-    protected void createButtonsForButtonBar(@NotNull Composite parent, int alignment) {
-        if (alignment == SWT.LEFT) {
-            createButton(parent, IDialogConstants.DETAILS_ID, UIMessages.popup_open_browser_open_external_browser, false);
-        }
+    protected void createButtonsForLeftButtonBar(@NotNull Composite parent) {
+        createButton(parent, IDialogConstants.DETAILS_ID, UIMessages.popup_open_browser_open_external_browser, false);
     }
 
     @Override

@@ -20,11 +20,9 @@ package org.jkiss.dbeaver.core;
 import org.eclipse.core.runtime.Plugin;
 import org.eclipse.ui.PlatformUI;
 import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPExternalFileManager;
 import org.jkiss.dbeaver.model.app.*;
@@ -41,7 +39,6 @@ import org.jkiss.dbeaver.model.runtime.features.DBRFeatureRegistry;
 import org.jkiss.dbeaver.registry.BasePlatformImpl;
 import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
 import org.jkiss.dbeaver.registry.GlobalEventManagerImpl;
-import org.jkiss.dbeaver.registry.language.PlatformLanguageRegistry;
 import org.jkiss.dbeaver.runtime.SecurityProviderUtils;
 import org.jkiss.dbeaver.runtime.qm.QMLogFileWriter;
 import org.jkiss.dbeaver.runtime.qm.QMRegistryImpl;
@@ -54,26 +51,20 @@ import org.jkiss.utils.StandardConstants;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.Reader;
-import java.io.Writer;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Locale;
-import java.util.Properties;
 
 /**
  * DesktopPlatform
  */
-public class DesktopPlatform extends BasePlatformImpl implements DBPPlatformDesktop, DBPPlatformLanguageManager {
+public class DesktopPlatform extends BasePlatformImpl implements DBPPlatformDesktop {
 
     // The plug-in ID
     public static final String PLUGIN_ID = "org.jkiss.dbeaver.core"; //$NON-NLS-1$
 
     private static final String TEMP_PROJECT_NAME = ".dbeaver-temp"; //$NON-NLS-1$
     private static final String DBEAVER_CONFIG_FOLDER = "settings";
-    private static final String DBEAVER_CONFIG_FILE = "global-settings.ini";
-    private static final String DBEAVER_PROP_LANGUAGE = "nl";
 
     private static final Log log = Log.getLog(DesktopPlatform.class);
 
@@ -86,7 +77,6 @@ public class DesktopPlatform extends BasePlatformImpl implements DBPPlatformDesk
     private QMRegistryImpl queryManager;
     private QMLogFileWriter qmLogWriter;
     private DBACertificateStorage certificateStorage;
-    private DBPPlatformLanguage language;
     private volatile boolean workbenchStarted;
 
     public static boolean isStandalone() {
@@ -114,13 +104,6 @@ public class DesktopPlatform extends BasePlatformImpl implements DBPPlatformDesk
     protected void initialize() {
         long startTime = System.currentTimeMillis();
         log.debug("Initialize desktop platform...");
-        {
-            this.language = PlatformLanguageRegistry.getInstance().getLanguage(Locale.getDefault());
-            if (this.language == null) {
-                log.debug("Language for locale '" + Locale.getDefault() + "' not found. Use default.");
-                this.language = PlatformLanguageRegistry.getInstance().getLanguage(Locale.ENGLISH);
-            }
-        }
 
         if (getPreferenceStore().getBoolean(DBeaverPreferences.SECURITY_USE_BOUNCY_CASTLE)) {
             // Register BC security provider
@@ -231,71 +214,6 @@ public class DesktopPlatform extends BasePlatformImpl implements DBPPlatformDesk
     public DBPApplicationDesktop getApplication() {
         return (DBPApplicationDesktop) BaseApplicationImpl.getInstance();
     }
-
-    @NotNull
-    @Override
-    public DBPPlatformLanguage getLanguage() {
-        return language;
-    }
-
-    @Override
-    public void setPlatformLanguage(@NotNull DBPPlatformLanguage language) throws DBException {
-        if (CommonUtils.equalObjects(language, this.language)) {
-            return;
-        }
-
-        try {
-            setConfigProperty(DBEAVER_PROP_LANGUAGE, language.getCode());
-            this.language = language;
-            // This property is fake. But we set it to trigger property change listener
-            // which will ask to restart workbench.
-            getPreferenceStore().setValue(ModelPreferences.PLATFORM_LANGUAGE, language.getCode());
-        } catch (IOException e) {
-            throw new DBException("Can't change platform language: " + e.getMessage(), e);
-        }
-    }
-
-    private void setConfigProperty(@NotNull String key, @Nullable String value) throws IOException {
-        final Path root = Path.of(RuntimeUtils.getWorkingDirectory(DBEAVER_DATA_DIR));
-        final Path file = root.resolve(DBEAVER_CONFIG_FOLDER).resolve(DBEAVER_CONFIG_FILE);
-        final Properties properties = new Properties();
-
-        if (Files.exists(file)) {
-            try (Reader reader = Files.newBufferedReader(file)) {
-                properties.load(reader);
-            }
-        }
-
-        if (value != null) {
-            properties.setProperty(key, value);
-        } else {
-            properties.remove(key);
-        }
-
-        // Ensure the config directory exists
-        Files.createDirectories(file.getParent());
-
-        try (Writer writer = Files.newBufferedWriter(file)) {
-            properties.store(writer, "DBeaver configuration");
-        }
-    }
-
-/*
-    private void changeRuntimeLocale(@NotNull DBPPlatformLanguage runtimeLocale) {
-        // Check locale
-        ILocaleChangeService localeService = PlatformUI.getWorkbench().getService(ILocaleChangeService.class);
-        if (localeService != null) {
-            localeService.changeApplicationLocale(runtimeLocale.getCode());
-        } else {
-            log.warn("Can't resolve locale change service");
-        }
-
-        Locale locale = Locale.forLanguageTag(runtimeLocale.getCode());
-        if (locale != null) {
-            Locale.setDefault(locale);
-        }
-    }
-*/
 
     @NotNull
     public QMRegistry getQueryManager() {

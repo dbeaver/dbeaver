@@ -127,7 +127,7 @@ public class LockTable extends DatabaseObjectListControl<DBAServerLock> {
         }
 
         @Override
-        public Collection<DBAServerLock> evaluate(DBRProgressMonitor monitor)
+        public Collection<DBAServerLock> evaluate(@NotNull DBRProgressMonitor monitor)
             throws InvocationTargetException, InterruptedException
         {
             try {
@@ -155,7 +155,7 @@ public class LockTable extends DatabaseObjectListControl<DBAServerLock> {
         }
 
         @Override
-        public Void evaluate(DBRProgressMonitor monitor)
+        public Void evaluate(@NotNull DBRProgressMonitor monitor)
             throws InvocationTargetException, InterruptedException
         {
             try {

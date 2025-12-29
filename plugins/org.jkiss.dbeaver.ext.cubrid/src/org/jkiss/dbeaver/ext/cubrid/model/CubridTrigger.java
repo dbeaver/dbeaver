@@ -258,6 +258,7 @@ public class CubridTrigger extends GenericTableTrigger {
             return false;
         }
 
+        @Nullable
         @Override
         public Object[] getPossibleValues(CubridTrigger object) {
             return object.columnList.toArray();
@@ -271,6 +272,7 @@ public class CubridTrigger extends GenericTableTrigger {
             return false;
         }
 
+        @Nullable
         @Override
         public Object[] getPossibleValues(CubridTrigger object) {
             return CubridConstants.EVENT_OPTION;
@@ -284,6 +286,7 @@ public class CubridTrigger extends GenericTableTrigger {
             return false;
         }
 
+        @Nullable
         @Override
         public Object[] getPossibleValues(CubridTrigger object) {
             return CubridConstants.ACTION_TIME_OPTION;
@@ -297,6 +300,7 @@ public class CubridTrigger extends GenericTableTrigger {
             return false;
         }
 
+        @Nullable
         @Override
         public Object[] getPossibleValues(CubridTrigger object) {
             return CubridConstants.ACTION_TYPE_OPTION;

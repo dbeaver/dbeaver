@@ -42,8 +42,6 @@ public final class ResultSetPreferences {
     public static final String RESULT_SET_AUTOMATIC_ROW_COUNT = "resultset.automatic.row.count"; //$NON-NLS-1$
     public static final String RESULT_SET_CANCEL_TIMEOUT = "resultset.cancel.timeout"; //$NON-NLS-1$
     public static final String RESULT_SET_BINARY_EDITOR_TYPE = "resultset.binary.editor"; //$NON-NLS-1$
-    public static final String RESULT_SET_ORDERING_STRATEGY = "resultset.order.mode"; //$NON-NLS-1$
-    public static final String RESULT_SET_ORDERING_POLICY = "resultset.order.policy"; //$NON-NLS-1$
     public static final String RESULT_SET_SHOW_ODD_ROWS = "resultset.show.oddRows"; //$NON-NLS-1$
     public static final String RESULT_SET_HIGHLIGHT_SELECTED_ROWS = "resultset.highlight.selectedRows"; //$NON-NLS-1$
     public static final String RESULT_SET_SHOW_CELL_ICONS = "resultset.show.cellIcons"; //$NON-NLS-1$

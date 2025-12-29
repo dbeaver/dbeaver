@@ -47,6 +47,15 @@ public class AIUIMessages extends NLS {
     public static String gpt_preference_page_ai_query_confirm_rule_confirm;
     public static String gpt_preference_page_ai_query_confirm_rule_disable_autocommit;
 
+    public static String gpt_preference_page_ai_query_confirm_sql_label;
+    public static String gpt_preference_page_ai_query_confirm_sql_tip;
+    public static String gpt_preference_page_ai_query_confirm_dml_label;
+    public static String gpt_preference_page_ai_query_confirm_dml_tip;
+    public static String gpt_preference_page_ai_query_confirm_ddl_label;
+    public static String gpt_preference_page_ai_query_confirm_ddl_tip;
+    public static String gpt_preference_page_ai_query_confirm_other_label;
+    public static String gpt_preference_page_ai_query_confirm_other_tip;
+
     public static String gpt_preference_page_ai_connection_test_label;
     public static String gpt_preference_page_ai_connection_test_connection_success_title;
     public static String gpt_preference_page_ai_connection_test_connection_success_message;

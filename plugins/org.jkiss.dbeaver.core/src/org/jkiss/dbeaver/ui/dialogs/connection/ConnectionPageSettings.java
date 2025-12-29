@@ -51,6 +51,7 @@ import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
 import org.jkiss.dbeaver.model.net.DBWHandlerDescriptor;
 import org.jkiss.dbeaver.model.net.DBWNetworkProfile;
+import org.jkiss.dbeaver.model.net.DBWUtils;
 import org.jkiss.dbeaver.model.rcp.RCPProject;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
@@ -714,11 +715,14 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
             return false;
         }
 
-        final NetworkHandlerDescriptor descriptor = ((ConnectionPageNetworkHandler) page).getHandlerDescriptor();
-        final DBPConnectionConfiguration configuration = getActiveDataSource().getConnectionConfiguration();
-        final DBWHandlerConfiguration handler = configuration.getHandler(descriptor.getId());
+        NetworkHandlerDescriptor descriptor = ((ConnectionPageNetworkHandler) page).getHandlerDescriptor();
+        for (DBWHandlerConfiguration handler : DBWUtils.getActualNetworkHandlers(getActiveDataSource())) {
+            if (handler.getId().equals(descriptor.getId())) {
+                return !handler.isEnabled();
+            }
+        }
 
-        return handler == null || !handler.isEnabled();
+        return true;
     }
 
     private static boolean isHandlerPage(@NotNull IDialogPage page) {
