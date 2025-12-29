@@ -317,7 +317,7 @@ public class DataTransferSettings implements DBTTaskSettings {
             // Restore consumer/producer from saved configuration
             // Do this only if consumer/producer weren't set explicitly
             {
-                String consumerId = CommonUtils.toString(config.get("consumer"));
+                String consumerId = CommonUtils.toString(config.get(DTConstants.PROP_CONSUMER_TYPE));
                 if (!CommonUtils.isEmpty(consumerId)) {
                     DataTransferNodeDescriptor consumerNode = DataTransferRegistry.getInstance().getNodeById(consumerId);
 
@@ -341,7 +341,7 @@ public class DataTransferSettings implements DBTTaskSettings {
                 }
             }
             {
-                String producerId = CommonUtils.toString(config.get("producer"));
+                String producerId = CommonUtils.toString(config.get(DTConstants.PROP_PRODUCER_TYPE));
                 if (!CommonUtils.isEmpty(producerId)) {
                     DataTransferNodeDescriptor producerNode = DataTransferRegistry.getInstance().getNodeById(producerId);
                     // Check that this producer is allowed
@@ -368,7 +368,7 @@ public class DataTransferSettings implements DBTTaskSettings {
 
         DataTransferProcessorDescriptor savedProcessor = null;
         if (processorNode != null) {
-            String processorId = CommonUtils.toString(config.get("processor"));
+            String processorId = CommonUtils.toString(config.get(DTConstants.PROP_PROCESSOR_TYPE));
             if (!CommonUtils.isEmpty(processorId)) {
                 savedProcessor = processorNode.getProcessor(processorId);
                 if (savedProcessor == null) {
@@ -390,7 +390,7 @@ public class DataTransferSettings implements DBTTaskSettings {
         }
 
         // Load processor properties
-        Map<String, Object> processorsSection = JSONUtils.getObject(config, "processors");
+        Map<String, Object> processorsSection = JSONUtils.getObject(config, DTConstants.PROP_PROCESSORS_LIST);
         {
             for (Map.Entry<String, Object> procIter : processorsSection.entrySet()) {
                 Map<String, Object> procSection = (Map<String, Object>) procIter.getValue();
@@ -404,7 +404,7 @@ public class DataTransferSettings implements DBTTaskSettings {
                         processorId = processorId.substring(divPos + 1);
                     }
                 }
-                String propNamesId = CommonUtils.toString(procSection.get("@propNames"));
+                String propNamesId = CommonUtils.toString(procSection.get(DTConstants.PROP_NAME));
                 DataTransferNodeDescriptor node = DataTransferRegistry.getInstance().getNodeById(nodeId);
                 if (node != null) {
                     Map<String, Object> props = new HashMap<>();

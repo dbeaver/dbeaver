@@ -166,7 +166,6 @@ class ResultSetPersister {
      * Applies changes.
      *
      * @param monitor  progress monitor
-     * @param settings
      * @param listener value listener
      */
     boolean applyChanges(@Nullable DBRProgressMonitor monitor, boolean generateScript, ResultSetSaveSettings settings, @Nullable DataUpdateListener listener)
@@ -221,7 +220,7 @@ class ResultSetPersister {
         }
 
         DBSEntity entity = rowIdentifier.getEntity();
-        if (entity != null && entity.getDataSource() != null &&
+        if (entity.getDataSource() != null &&
             (entity instanceof DBSDocumentContainer || entity.getDataSource().getInfo().isDynamicMetadata())
         ) {
             // FIXME: do not refresh documents for now. Can be solved by extracting document ID attributes
@@ -248,6 +247,7 @@ class ResultSetPersister {
         return column instanceof DBDAttributeBindingCustom;
     }
 
+    @NotNull
     public List<DBEPersistAction> getScript() {
         return script;
     }
@@ -324,7 +324,13 @@ class ResultSetPersister {
         }
     }
 
-    private List<DataStatementInfo> prepareDeleteCascade(@NotNull DBRProgressMonitor monitor, DBDRowIdentifier rowIdentifier, List<DataStatementInfo> statements, boolean deepCascade) throws DBException {
+    @NotNull
+    private List<DataStatementInfo> prepareDeleteCascade(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBDRowIdentifier rowIdentifier,
+        @NotNull List<DataStatementInfo> statements,
+        boolean deepCascade
+    ) throws DBException {
         List<DataStatementInfo> result = new ArrayList<>();
 
         DBSEntity entity = rowIdentifier.getEntity();
@@ -359,7 +365,7 @@ class ResultSetPersister {
                                 }
                             }
 
-                            if (refKeyValues.size() > 0) {
+                            if (!refKeyValues.isEmpty()) {
                                 // We have a key. Let's delete
                                 DataStatementInfo cascadeStat = new DataStatementInfo(DBSManipulationType.DELETE, stat.row, refEntity);
                                 cascadeStat.keyAttributes.addAll(refKeyValues);
@@ -394,8 +400,7 @@ class ResultSetPersister {
             if (docAttr != null) {
                 statement.keyAttributes.add(new DBDAttributeValue(docAttr, model.getCellValue(docAttr, row)));
             } else {
-                for (int i = 0; i < columns.length; i++) {
-                    DBDAttributeBinding column = columns[i];
+                for (DBDAttributeBinding column : columns) {
                     if (!isVirtualColumn(column)) {
                         statement.keyAttributes.add(new DBDAttributeValue(column, model.getCellValue(column, row)));
                     }
@@ -504,8 +509,12 @@ class ResultSetPersister {
         return false;
     }
 
-    private boolean execute(@Nullable DBRProgressMonitor monitor, boolean generateScript, @NotNull ResultSetSaveSettings settings, @Nullable final DataUpdateListener listener)
-        throws DBException {
+    private boolean execute(
+        @Nullable DBRProgressMonitor monitor,
+        boolean generateScript,
+        @NotNull ResultSetSaveSettings settings,
+        @Nullable final DataUpdateListener listener
+    ) throws DBException {
         DBCExecutionContext executionContext = viewer.getContainer().getExecutionContext();
         if (executionContext == null) {
             throw new DBCException("No execution context");
@@ -551,9 +560,8 @@ class ResultSetPersister {
         model.refreshChangeCount();
 
         try {
-            UIUtils.runInProgressService(monitor -> {
-                model.refreshHintsInfo(monitor, model.getAllRows(), true);
-            });
+            UIUtils.runInProgressService(monitor ->
+                model.refreshHintsInfo(monitor, model.getAllRows(), true));
         } catch (Exception e) {
             log.debug("Error refreshing hints", e);
         }
@@ -613,8 +621,8 @@ class ResultSetPersister {
 
     @NotNull
     private DBSDataManipulator getDataManipulator(DBSEntity entity) throws DBCException {
-        if (entity instanceof DBSDataManipulator) {
-            return (DBSDataManipulator) entity;
+        if (entity instanceof DBSDataManipulator dm) {
+            return dm;
         } else {
             throw new DBCException("Entity " + entity.getName() + " doesn't support data manipulation");
         }
@@ -657,7 +665,9 @@ class ResultSetPersister {
             if (defIdentifier == null) {
                 throw new DBCException("No unique row identifier is result set. Cannot proceed with row(s) delete.");
             } else if (!defIdentifier.isValidIdentifier()) {
-                throw new DBCException("Attributes of unique key '" + DBUtils.getObjectFullName(defIdentifier.getUniqueKey(), DBPEvaluationContext.UI) + "' are missing in result set. Cannot proceed with row(s) delete.");
+                throw new DBCException("Attributes of unique key '" +
+                    DBUtils.getObjectFullName(defIdentifier.getUniqueKey(), DBPEvaluationContext.UI) +
+                    "' are missing in result set. Cannot proceed with row(s) delete.");
             }
         }
 
@@ -676,7 +686,9 @@ class ResultSetPersister {
                 } else if (!rowIdentifier.isValidIdentifier()) {
                     throw new DBCException(
                         "Can't update attribute '" + attr.getName() +
-                            "' - attributes of key '" + DBUtils.getObjectFullName(rowIdentifier.getUniqueKey(), DBPEvaluationContext.UI) + "' are missing in result set");
+                            "' - attributes of key '" +
+                            DBUtils.getObjectFullName(rowIdentifier.getUniqueKey(), DBPEvaluationContext.UI) +
+                            "' are missing in result set");
                 }
             }
         }
@@ -691,7 +703,12 @@ class ResultSetPersister {
         private DBCSavepoint savepoint;
         private Throwable error;
 
-        DataUpdaterJob(boolean generateScript, @NotNull ResultSetSaveSettings settings, @Nullable DataUpdateListener listener, @NotNull DBCExecutionContext executionContext) {
+        DataUpdaterJob(
+            boolean generateScript,
+            @NotNull ResultSetSaveSettings settings,
+            @Nullable DataUpdateListener listener,
+            @NotNull DBCExecutionContext executionContext
+        ) {
             super(ResultSetMessages.controls_resultset_viewer_job_update, executionContext);
             this.generateScript = generateScript;
             this.settings = settings;
@@ -742,12 +759,13 @@ class ResultSetPersister {
                             viewer.setStatus(
                                 NLS.bind(
                                     ResultSetMessages.controls_resultset_viewer_status_inserted_,
-                                    new Object[]{
-                                        ResultSetUtils.formatRowCount(DataUpdaterJob.this.insertStats.getRowsUpdated()),
-                                        ResultSetUtils.formatRowCount(DataUpdaterJob.this.deleteStats.getRowsUpdated()),
-                                        ResultSetUtils.formatRowCount(DataUpdaterJob.this.updateStats.getRowsUpdated())}));
+                                    ResultSetUtils.formatRowCount(DataUpdaterJob.this.insertStats.getRowsUpdated()),
+                                    ResultSetUtils.formatRowCount(DataUpdaterJob.this.deleteStats.getRowsUpdated()),
+                                    ResultSetUtils.formatRowCount(DataUpdaterJob.this.updateStats.getRowsUpdated())
+                                ));
                         } else {
-                            DBWorkbench.getPlatformUI().showError("Data error", "Error synchronizing data with database", error);
+                            DBWorkbench.getPlatformUI().showError(
+                                "Data error", "Error synchronizing data with database", error);
                             viewer.setStatus(GeneralUtils.getFirstMessage(error), DBPMessageType.ERROR);
                         }
                     }
@@ -766,10 +784,15 @@ class ResultSetPersister {
         private Throwable executeStatements(DBRProgressMonitor monitor) {
             monitor.beginTask(
                 ResultSetMessages.controls_resultset_viewer_monitor_aply_changes,
-                ResultSetPersister.this.deleteStatements.size() + ResultSetPersister.this.insertStatements.size() + ResultSetPersister.this.updateStatements.size() + 1);
+                ResultSetPersister.this.deleteStatements.size()
+                    + ResultSetPersister.this.insertStatements.size()
+                    + ResultSetPersister.this.updateStatements.size() + 1);
 
-            try (DBCSession session = getExecutionContext().openSession(monitor, DBCExecutionPurpose.USER, ResultSetMessages.controls_resultset_viewer_job_update)) {
-
+            try (DBCSession session = getExecutionContext().openSession(
+                monitor,
+                DBCExecutionPurpose.USER,
+                ResultSetMessages.controls_resultset_viewer_job_update
+            )) {
                 if (!generateScript) {
                     IResultSetContainer container = viewer.getContainer();
                     if (container instanceof ISmartTransactionManager) {
@@ -1091,12 +1114,17 @@ class ResultSetPersister {
                 final Object[][] refreshValues = new Object[rows.size()][];
 
                 final DBDAttributeBinding[] curAttributes = viewer.getModel().getAttributes();
-                final AbstractExecutionSource executionSource = new AbstractExecutionSource(dataContainer, getExecutionContext(), this);
+                final AbstractExecutionSource executionSource = new AbstractExecutionSource(
+                    dataContainer, getExecutionContext(), this);
                 List<DBDAttributeBinding> idAttributes = rowIdentifier.getAttributes();
                 if (idAttributes.isEmpty()) {
                     return Status.OK_STATUS;
                 }
-                try (DBCSession session = getExecutionContext().openSession(monitor, DBCExecutionPurpose.UTIL, "Refresh row(s) after insert/update")) {
+                try (DBCSession session = getExecutionContext().openSession(
+                    monitor,
+                    DBCExecutionPurpose.UTIL,
+                    "Refresh row(s) after insert/update"
+                )) {
                     for (int i = 0; i < rows.size(); i++) {
                         ResultSetRow row = rows.get(i);
                         List<DBDAttributeConstraint> constraints = new ArrayList<>();
@@ -1119,7 +1147,7 @@ class ResultSetPersister {
                         DBDDataFilter filter = new DBDDataFilter(constraints);
 
                         RowDataReceiver dataReceiver = new RowDataReceiver(curAttributes);
-                        final DBCStatistics stats = dataContainer.readData(
+                        dataContainer.readData(
                             executionSource,
                             session,
                             dataReceiver,

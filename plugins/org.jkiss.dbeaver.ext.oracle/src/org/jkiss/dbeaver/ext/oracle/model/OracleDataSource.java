@@ -425,7 +425,7 @@ public class OracleDataSource extends JDBCDataSource implements DBPObjectStatist
         }
         // FIXME: left for backward compatibility. Replaced by auth model. Remove in future.
         if (CommonUtils.toBoolean(connectionInfo.getProviderProperty(OracleConstants.OS_AUTH_PROP))) {
-            connectionsProps.put("v$session.osuser", System.getProperty(StandardConstants.ENV_USER_NAME));
+            connectionsProps.put(OracleConstants.CONN_PROP_SESSION_OS_USER, System.getProperty(StandardConstants.ENV_USER_NAME));
         }
         return connectionsProps;
     }

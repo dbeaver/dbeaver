@@ -14,35 +14,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model;
+package org.jkiss.dbeaver.tools.transfer.stream.model;
 
-import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.connection.DBPDriver;
+import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
+import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
 
 /**
- * Provided data source configuration storage
+ * StreamDataSourceDialect
  */
-public interface DBPDataSourceConfigurationStorage {
+public class StreamDataSourceDriver extends DriverDescriptor {
 
-    @NotNull
-    String getStorageId();
+    public static final String DRIVER_ID = "file-stream-driver";
 
-    @NotNull
-    default String getStorageName() {
-        return getStorageId();
+    public static final DBPDriver INSTANCE = new StreamDataSourceDriver();
+
+    public StreamDataSourceDriver() {
+        super(DataSourceProviderRegistry.getInstance().getDataSourceProvider(
+            StreamDataSourceProvider.PROVIDER_ID), DRIVER_ID
+        );
     }
-
-    boolean isValid();
-
-    boolean isDefault();
-
-    /**
-     * Checks if configuration storage is virtual
-     */
-    boolean isVirtual();
-
-    // Used for secure credentials save/load (it is a prt of credentials file name)
-    @Nullable
-    String getStorageSubId();
-
 }

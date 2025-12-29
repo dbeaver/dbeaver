@@ -26,6 +26,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLPragmaHandler;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.tasks.ui.wizard.TaskConfigurationWizardDialog;
+import org.jkiss.dbeaver.tools.transfer.DTConstants;
 import org.jkiss.dbeaver.tools.transfer.DataTransferSettings;
 import org.jkiss.dbeaver.tools.transfer.DataTransferState;
 import org.jkiss.dbeaver.tools.transfer.database.DatabaseTransferProducer;
@@ -76,10 +77,10 @@ public class SQLPragmaExport implements SQLPragmaHandler {
             Collections.singleton(new DatabaseTransferProducer(container, null)),
             Collections.singleton(new StreamTransferConsumer()),
             Map.of(
-                "producer", producerNode.getId(),
-                "consumer", consumerNode.getId(),
-                "processor", processor.getId(),
-                "processors", Map.of(
+                DTConstants.PROP_PRODUCER_TYPE, producerNode.getId(),
+                DTConstants.PROP_CONSUMER_TYPE, consumerNode.getId(),
+                DTConstants.PROP_PROCESSOR_TYPE, processor.getId(),
+                DTConstants.PROP_PROCESSORS_LIST, Map.of(
                     processor.getFullId(), createProcessorSettings(processor, parameters)
                 ),
                 producerNode.getNodeClass().getSimpleName(), createProducerSettings(parameters),
@@ -109,14 +110,14 @@ public class SQLPragmaExport implements SQLPragmaHandler {
     @NotNull
     private static Map<String, Object> createProducerSettings(@NotNull Map<String, Object> parameters) {
         // TODO: Do we need to sanitize input data here?
-        return JSONUtils.getObject(parameters, "producer");
+        return JSONUtils.getObject(parameters, DTConstants.PROP_PRODUCER_TYPE);
     }
 
     @NotNull
     private static Map<String, Object> createConsumerSettings(
         @NotNull Map<String, Object> parameters) {
         // TODO: Do we need to sanitize input data here?
-        return JSONUtils.getObject(parameters, "consumer");
+        return JSONUtils.getObject(parameters, DTConstants.PROP_CONSUMER_TYPE);
     }
 
     @NotNull
@@ -132,7 +133,7 @@ public class SQLPragmaExport implements SQLPragmaHandler {
             names.add(property.getId());
         }
 
-        for (Map.Entry<String, Object> property : JSONUtils.getObject(parameters, "processor").entrySet()) {
+        for (Map.Entry<String, Object> property : JSONUtils.getObject(parameters, DTConstants.PROP_PROCESSOR_TYPE).entrySet()) {
             final DBPPropertyDescriptor propertyDescriptor = processor.getProperty(property.getKey());
 
             if (propertyDescriptor == null) {
@@ -143,7 +144,7 @@ public class SQLPragmaExport implements SQLPragmaHandler {
             properties.put(property.getKey(), PropertyDescriptor.convertString(CommonUtils.toString(property.getValue()), propertyDescriptor.getDataType()));
         }
 
-        properties.put("@propNames", names.toString());
+        properties.put(DTConstants.PROP_NAME, names.toString());
 
         return properties;
     }
