@@ -14,27 +14,30 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ui.editors.file;
+package org.jkiss.dbeaver.model.cli.model.option;
 
-import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.registry.fs.FSUtils;
+import org.jkiss.utils.CommonUtils;
 
 import java.nio.file.Path;
-import java.util.List;
-import java.util.Map;
 
-public interface IFileTypeHandler {
+public class AbstractFileOption {
+    private static final Log log = Log.getLog(AbstractFileOption.class);
 
-    /**
-     * Open NIO files in associated handlers
-     */
-    void openFiles(
-        @NotNull List<Path> fileList,
-        @NotNull Map<String, String> parameters,
-        @Nullable DBPDataSourceContainer dataSource)
-        throws DBException;
 
-    void importFiles(@NotNull List<Path> filePath, @Nullable String extension) throws DBException;
+    @Nullable
+    protected Path getPath(@Nullable String filePath) {
+        if (CommonUtils.isEmpty(filePath)) {
+            return null;
+        }
+        try {
+            return FSUtils.getPathFromURI(filePath);
+        } catch (DBException e) {
+            log.error("Error getting path from URI: " + filePath + " " + e.getMessage(), e);
+        }
+        return null;
+    }
 }
