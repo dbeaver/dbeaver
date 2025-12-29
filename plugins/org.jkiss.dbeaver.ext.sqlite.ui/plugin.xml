@@ -10,7 +10,9 @@
     </extension>
 
     <extension point="org.jkiss.dbeaver.ui.fileTypeHandler">
-        <handler id="sqlite" class="org.jkiss.dbeaver.ext.sqlite.ui.SQLiteFileDatabaseHandler" remote="false" order="101" extensions="db,sdb,sqlite,db3,s3db,sqlite3,sl3,db2,s2db,sqlite2,sl2"/>
+        <handler id="sqlite" class="org.jkiss.dbeaver.ext.sqlite.ui.SQLiteFileDatabaseHandler" remote="false" order="101">
+            <extension id="sqlite" extensions="sdb,sqlite,db3,s3db,sqlite3,sl3,db2,s2db,sqlite2,sl2" icon="platform:/plugin/org.jkiss.dbeaver.ext.sqlite/icons/sqlite_icon_big.png"/>
+        </handler>
     </extension>
 
     <extension point="org.jkiss.dbeaver.ui.propertyConfigurator">

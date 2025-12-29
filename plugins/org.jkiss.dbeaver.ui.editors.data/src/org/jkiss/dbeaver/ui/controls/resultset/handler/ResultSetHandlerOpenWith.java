@@ -44,6 +44,7 @@ import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.registry.ApplicationPolicyProvider;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.tools.transfer.DTConstants;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferConsumer;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferProcessor;
 import org.jkiss.dbeaver.tools.transfer.database.DatabaseProducerSettings;
@@ -192,7 +193,7 @@ public class ResultSetHandlerOpenWith extends AbstractHandler implements IElemen
                     Map<String, Object> properties = new HashMap<>();
                     // Default values from wizard
                     IDialogSettings dtSettings = DataTransferWizard.getWizardDialogSettings();
-                    IDialogSettings procListSection = dtSettings.getSection("processors");
+                    IDialogSettings procListSection = dtSettings.getSection(DTConstants.PROP_PROCESSORS_LIST);
                     IDialogSettings procSettings = null;
                     if (procListSection != null) {
                         procSettings = procListSection.getSection("stream_consumer:" + processor.getId());

@@ -22,7 +22,10 @@ import org.eclipse.core.runtime.Platform;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.List;
 
 public class FileTypeHandlerRegistry {
 
@@ -35,8 +38,8 @@ public class FileTypeHandlerRegistry {
         return instance;
     }
 
+    private final List<FileTypeHandlerDescriptor.Extension> extensions = new ArrayList<>();
     private final List<FileTypeHandlerDescriptor> handlers = new ArrayList<>();
-    private final Map<String, FileTypeHandlerDescriptor> handlerByExtension = new HashMap<>();
 
     private FileTypeHandlerRegistry(IExtensionRegistry registry) {
         {
@@ -44,9 +47,7 @@ public class FileTypeHandlerRegistry {
             for (IConfigurationElement ext : extElements) {
                 FileTypeHandlerDescriptor formatterDescriptor = new FileTypeHandlerDescriptor(ext);
                 handlers.add(formatterDescriptor);
-                for (String fileExt : formatterDescriptor.getExtensions()) {
-                    handlerByExtension.put(fileExt, formatterDescriptor);
-                }
+                extensions.addAll(Arrays.asList(formatterDescriptor.getExtensions()));
             }
             handlers.sort(Comparator.comparingInt(FileTypeHandlerDescriptor::getOrder));
         }
@@ -59,7 +60,22 @@ public class FileTypeHandlerRegistry {
 
     @Nullable
     public FileTypeHandlerDescriptor findHandler(String fileExtension) {
-        return handlerByExtension.get(fileExtension);
+        FileTypeHandlerDescriptor.Extension extension = findExtension(fileExtension);
+        if (extension != null) {
+            return extension.getDescriptor();
+        }
+        return null;
     }
 
+    @Nullable
+    public FileTypeHandlerDescriptor.Extension findExtension(String fileExtension) {
+        for (FileTypeHandlerDescriptor.Extension ext : extensions) {
+            for (String extName : ext.getExtensions()) {
+                if (fileExtension.endsWith(extName)) {
+                    return ext;
+                }
+            }
+        }
+        return null;
+    }
 }

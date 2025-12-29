@@ -51,10 +51,10 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-class DataTransferPagePipes extends ActiveWizardPage<DataTransferWizard> {
+public class DataTransferPagePipes extends ActiveWizardPage<DataTransferWizard> {
 
-    private static final String DATABASE_PRODUCER_ID = "database_producer";
-    private static final String DATABASE_CONSUMER_ID = "database_consumer";
+    public static final String DATABASE_PRODUCER_ID = "database_producer";
+    public static final String DATABASE_CONSUMER_ID = "database_consumer";
     private boolean activated;
     private TableViewer nodesTable;
     private TableViewer inputsTable;
