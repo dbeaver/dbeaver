@@ -85,7 +85,8 @@ public class NodeDropTargetListener extends AbstractTransferDropTargetListener {
                             editor.getDiagramProject(),
                             objects,
                             new DiagramCollectSettingsDefault(),
-                            true);
+                            true,
+                            editor.isERD());
                     }
                 };
                 try {

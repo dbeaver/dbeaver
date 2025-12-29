@@ -76,7 +76,9 @@ public class ERDHandlerPaste extends AbstractHandler {
                                 editor.getDiagram(),
                                 editor.getDiagramProject(),
                                 objects,
-                                new DiagramCollectSettingsDefault(), true);
+                                new DiagramCollectSettingsDefault(),
+                                true,
+                                editor.isERD());
                             if (!CommonUtils.isEmpty(erdEntities)) {
                                 UIUtils.syncExec(() -> {
                                     Command command = editor.getDiagramPart().createEntityAddCommand(erdEntities, new Point(10, 10));

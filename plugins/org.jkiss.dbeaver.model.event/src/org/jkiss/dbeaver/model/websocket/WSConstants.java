@@ -31,6 +31,7 @@ public interface WSConstants {
     String TOPIC_SESSION = "cb_session";
     String TOPIC_SESSION_AUTH = "cb_session_auth";
     String TOPIC_SESSION_TASK = "cb_session_task";
+    String TOPIC_SESSION_ACTION = "cb_session_action";
     String TOPIC_USER = "cb_user";
     String TOPIC_DATASOURCE = "cb_datasource";
     String TOPIC_DATASOURCE_FOLDER = "cb_datasource_folder";
