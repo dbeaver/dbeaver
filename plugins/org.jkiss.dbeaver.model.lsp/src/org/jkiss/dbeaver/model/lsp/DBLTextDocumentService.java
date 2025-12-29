@@ -289,6 +289,9 @@ public class DBLTextDocumentService implements TextDocumentService, LanguageClie
 
         DBPDataSourceContainer dataSourceContainer = null;
         if (project != null) {
+            // Note: default datasource id is defined as a resource property:
+            // in Cloudbeaver - from front-end - LocalResourceController#setResourceProperty
+            // in Desktop - EditorUtils#setInputDataSource
             String dataSourceId = ResourceUtils.getResourceDataSourceId(project, documentUri.getResourcePath());
             if (dataSourceId != null) {
                 dataSourceContainer = project.getDataSourceRegistry().getDataSource(dataSourceId);
