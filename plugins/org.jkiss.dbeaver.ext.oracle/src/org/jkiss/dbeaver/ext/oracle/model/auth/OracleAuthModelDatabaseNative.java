@@ -60,6 +60,15 @@ public class OracleAuthModelDatabaseNative extends AuthModelDatabaseNative<Oracl
             }
         }
 
+        boolean setOsUser = CommonUtils.getBoolean(
+            configuration.getProviderProperty(OracleConstants.PROP_SET_OS_USER),
+            false
+        );
+        if (setOsUser) {
+            String formattedUsername = userName.toUpperCase().split(" AS ")[0];
+            connProperties.setProperty(OracleConstants.CONN_PROP_SESSION_OS_USER, formattedUsername);
+        }
+
         credentials.setUserName(userName);
         return super.initAuthentication(monitor, dataSource, credentials, configuration, connProperties);
     }

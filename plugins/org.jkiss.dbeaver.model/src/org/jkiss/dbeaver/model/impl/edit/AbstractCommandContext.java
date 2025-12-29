@@ -61,6 +61,7 @@ public abstract class AbstractCommandContext implements DBECommandContext {
         this.atomic = atomic;
     }
 
+    @Nullable
     @Override
     public DBCExecutionContext getExecutionContext()
     {

@@ -14,24 +14,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.cli.model.option;
+package org.jkiss.dbeaver.tools.transfer.stream.model;
 
-import org.jkiss.code.Nullable;
-import picocli.CommandLine;
+import org.jkiss.dbeaver.model.connection.DBPDriver;
+import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
+import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
 
-import java.nio.file.Path;
+/**
+ * StreamDataSourceDialect
+ */
+public class StreamDataSourceDriver extends DriverDescriptor {
 
-public class InputFileOption extends AbstractFileOption {
-    @Nullable
-    @CommandLine.Option(
-        names = {"-in", "-input-file"},
-        arity = "1",
-        description = "Argument value that can be written in the file."
-    )
-    private String inputFile;
+    public static final String DRIVER_ID = "file-stream-driver";
 
-    @Nullable
-    public Path getInputFile() {
-        return getPath(inputFile);
+    public static final DBPDriver INSTANCE = new StreamDataSourceDriver();
+
+    public StreamDataSourceDriver() {
+        super(DataSourceProviderRegistry.getInstance().getDataSourceProvider(
+            StreamDataSourceProvider.PROVIDER_ID), DRIVER_ID
+        );
     }
 }

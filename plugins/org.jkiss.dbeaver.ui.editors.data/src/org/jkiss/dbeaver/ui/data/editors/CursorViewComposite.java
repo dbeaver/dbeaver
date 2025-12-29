@@ -118,6 +118,7 @@ public class CursorViewComposite extends Composite implements IResultSetContaine
         return null;
     }
 
+    @Nullable
     @Override
     public DBCExecutionContext getExecutionContext() {
         return valueController == null ? null : valueController.getExecutionContext();
