@@ -29,6 +29,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.app.DBPProject;
@@ -38,7 +39,7 @@ import org.jkiss.dbeaver.model.lsp.context.ContextAwareDocument;
 import org.jkiss.dbeaver.model.lsp.context.LspSQLCompletionContext;
 import org.jkiss.dbeaver.model.lsp.context.LspSQLCompletionContextParser;
 import org.jkiss.dbeaver.model.lsp.context.LspSQLRuleManager;
-import org.jkiss.dbeaver.model.lsp.utils.TextUtils;
+import org.jkiss.dbeaver.model.lsp.utils.LSPUtils;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLSyntaxManager;
 import org.jkiss.dbeaver.model.sql.completion.SQLCompletionContext;
@@ -49,7 +50,6 @@ import org.jkiss.dbeaver.model.sql.parser.tokens.SQLTokenType;
 import org.jkiss.dbeaver.model.text.parser.TPToken;
 import org.jkiss.dbeaver.model.text.parser.TPTokenDefault;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
-import org.jkiss.dbeaver.utils.ProjectResourceUtils;
 import org.jkiss.utils.Pair;
 
 import java.lang.reflect.InvocationTargetException;
@@ -165,7 +165,7 @@ public class DBLTextDocumentService implements TextDocumentService, LanguageClie
         SQLFormatter sqlFormatter = new SQLFormatterTokenized();
         String formattedText = sqlFormatter.format(document.getText(), sqlFormatterConfiguration);
         Position startPosition = new Position(0, 0);
-        Range range = new Range(startPosition, TextUtils.lastTextPosition(document.getText()));
+        Range range = new Range(startPosition, LSPUtils.lastTextPosition(document.getText()));
         return List.of(new TextEdit(range, formattedText));
     }
 
@@ -201,7 +201,7 @@ public class DBLTextDocumentService implements TextDocumentService, LanguageClie
             return Either.forRight(new CompletionList());
         }
 
-        int offset = TextUtils.positionToOffset(document.getText(), params.getPosition());
+        int offset = LSPUtils.positionToOffset(document.getText(), params.getPosition());
         SQLCompletionContext completionContext = new LspSQLCompletionContext(
             document.getDataSource(),
             document.getExecutionContext(),
@@ -292,7 +292,9 @@ public class DBLTextDocumentService implements TextDocumentService, LanguageClie
             // Note: default datasource id is defined as a resource property:
             // in Cloudbeaver - from front-end - LocalResourceController#setResourceProperty
             // in Desktop - EditorUtils#setInputDataSource
-            String dataSourceId = ProjectResourceUtils.getResourceDataSourceId(project, documentUri.getResourcePath());
+            String dataSourceId = String.valueOf(
+                project.getResourceProperty(documentUri.getResourcePath(), DBConstants.PROP_RESOURCE_DEFAULT_DATASOURCE)
+            );
             if (dataSourceId != null) {
                 dataSourceContainer = project.getDataSourceRegistry().getDataSource(dataSourceId);
             }

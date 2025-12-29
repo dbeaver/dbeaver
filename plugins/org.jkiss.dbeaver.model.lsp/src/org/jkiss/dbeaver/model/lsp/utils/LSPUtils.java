@@ -19,7 +19,7 @@ package org.jkiss.dbeaver.model.lsp.utils;
 import org.eclipse.lsp4j.Position;
 import org.jkiss.code.NotNull;
 
-public class TextUtils {
+public class LSPUtils {
 
     public static int positionToOffset(@NotNull String text, @NotNull Position position) {
         String[] lines = text.split("\n");

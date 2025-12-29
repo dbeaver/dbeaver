@@ -31,6 +31,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences.SeparateConnectionBehavior;
+import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPDataSourceFolder;
 import org.jkiss.dbeaver.model.DBPExternalFileManager;
@@ -56,7 +57,6 @@ import org.jkiss.dbeaver.ui.editors.sql.templates.SQLContextTypeBase;
 import org.jkiss.dbeaver.ui.editors.sql.templates.SQLContextTypeDriver;
 import org.jkiss.dbeaver.ui.editors.sql.templates.SQLContextTypeProvider;
 import org.jkiss.dbeaver.utils.GeneralUtils;
-import org.jkiss.dbeaver.utils.ProjectResourceUtils;
 import org.jkiss.dbeaver.utils.ResourceUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.Pair;
@@ -139,7 +139,7 @@ public class SQLEditorUtils {
             return;
         }
         try {
-            for (String path : project.findResources(Map.of(ProjectResourceUtils.PROP_CONTEXT_DEFAULT_DATASOURCE, container.getId()))) {
+            for (String path : project.findResources(Map.of(DBConstants.PROP_RESOURCE_DEFAULT_DATASOURCE, container.getId()))) {
                 final IResource resource = project.getRootResource().findMember(path);
                 if (resource instanceof IFile) {
                     result.add(new ResourceInfo((IFile) resource, container));
