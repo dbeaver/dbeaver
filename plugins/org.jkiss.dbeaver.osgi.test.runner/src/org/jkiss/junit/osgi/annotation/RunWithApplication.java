@@ -49,4 +49,6 @@ public @interface RunWithApplication {
      */
     String[] args() default {};
 
+    String [] vmArgs() default {};
+
 }
