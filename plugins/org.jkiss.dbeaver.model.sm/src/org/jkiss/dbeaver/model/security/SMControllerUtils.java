@@ -14,34 +14,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-package org.jkiss.dbeaver.model.fs;
+package org.jkiss.dbeaver.model.security;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.app.DBPProject;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
-import java.net.URI;
-import java.nio.file.Path;
+import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
-/**
- * Virtual file system provider
- */
-public interface DBFFileSystemProvider extends DBPObject {
-
+public class SMControllerUtils {
     @NotNull
-    Path getPathByURI(@NotNull DBRProgressMonitor monitor, @NotNull URI uri, @NotNull DBFVirtualFileSystem[] fileSystems) throws DBException;
-
-    DBFVirtualFileSystem[] getAvailableFileSystems(
-        @NotNull DBRProgressMonitor monitor,
-        @NotNull DBPProject project
-    ) throws DBException;
-
-    @NotNull
-    default Map<String, ?> prepareEnv(@NotNull Map<String, ?> env) {
-        return env;
+    public static Map<SMObjectType, Map<String, Map<String, String>>> getObjectSettingsMap(
+        @NotNull DBPProject project,
+        @NotNull SMController smController
+    ) throws DBException {
+        List<SMObjectSettings> settings = smController.getObjectSettings(project.getId(), null, null, null);
+        Map<SMObjectType, Map<String, Map<String, String>>> result = new LinkedHashMap<>();
+        for (SMObjectSettings os : settings) {
+            result.computeIfAbsent(os.objectType(), ot -> new LinkedHashMap<>())
+                .computeIfAbsent(os.objectId(), oid -> os.settings());
+        }
+        return result;
     }
 }

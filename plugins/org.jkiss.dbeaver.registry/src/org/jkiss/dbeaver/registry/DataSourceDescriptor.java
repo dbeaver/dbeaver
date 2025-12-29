@@ -398,6 +398,11 @@ public class DataSourceDescriptor
         return navigatorSettings;
     }
 
+    @NotNull
+    public DataSourceNavigatorSettings getOriginalNavigatorSettings() {
+        return navigatorSettings;
+    }
+
     public void setNavigatorSettings(DBNBrowseSettings copyFrom) {
         this.navigatorSettings = new DataSourceNavigatorSettings(copyFrom);
     }
@@ -1899,7 +1904,7 @@ public class DataSourceDescriptor
         this.connectionReadOnly = descriptor.connectionReadOnly;
         this.forceUseSingleConnection = descriptor.forceUseSingleConnection;
 
-        this.navigatorSettings = new DataSourceNavigatorSettings(descriptor.getNavigatorSettings());
+        this.navigatorSettings = new DataSourceNavigatorSettings(descriptor.getOriginalNavigatorSettings());
     }
 
     @Override
@@ -2319,6 +2324,4 @@ public class DataSourceDescriptor
             log.error("Error reading datasource '" + getId() + "' legacy secrets", e);
         }
     }
-
-
 }

@@ -561,13 +561,13 @@ public class DataTransferWizard extends TaskConfigurationWizard<DataTransferSett
         }
 
         if (settings.getProducer() != null) {
-            config.put("producer", settings.getProducer().getId());
+            config.put(DTConstants.PROP_PRODUCER_TYPE, settings.getProducer().getId());
         }
         if (settings.getConsumer() != null) {
-            config.put("consumer", settings.getConsumer().getId());
+            config.put(DTConstants.PROP_CONSUMER_TYPE, settings.getConsumer().getId());
         }
         if (settings.getProcessor() != null) {
-            config.put("processor", settings.getProcessor().getId());
+            config.put(DTConstants.PROP_PROCESSOR_TYPE, settings.getProcessor().getId());
         }
 
         String property = System.getProperty(CLI_ARG_DEBUG_DISABLE_DT_SETTINGS_SAVE); // Turn off processor settings save. For Testing only. Use it after vmargs -Ddbeaver.debug.disable-data-transfer-settings-save=true
@@ -592,14 +592,14 @@ public class DataTransferWizard extends TaskConfigurationWizard<DataTransferSett
                     for (Map.Entry<String, Object> prop : props.entrySet()) {
                         propNames.append(prop.getKey()).append(',');
                     }
-                    procSettings.put("@propNames", propNames.toString());
+                    procSettings.put(DTConstants.PROP_NAME, propNames.toString());
                     for (Map.Entry<String, Object> prop : props.entrySet()) {
                         procSettings.put(CommonUtils.toString(prop.getKey()), CommonUtils.toString(prop.getValue()));
                     }
                 }
                 processorsSection.put(procDescriptor.getFullId(), procSettings);
             }
-            config.put("processors", processorsSection);
+            config.put(DTConstants.PROP_PROCESSORS_LIST, processorsSection);
         }
 
         return config;
