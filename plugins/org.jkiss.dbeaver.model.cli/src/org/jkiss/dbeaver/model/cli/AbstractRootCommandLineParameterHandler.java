@@ -17,24 +17,19 @@
 package org.jkiss.dbeaver.model.cli;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.model.cli.model.option.HiddenOptionsForSubcommands;
+import org.jkiss.dbeaver.model.cli.command.AbstractTopLevelCommand;
 import picocli.CommandLine;
 
-import java.util.concurrent.Callable;
-
-public abstract class AbstractCommandLineParameterHandler implements Callable<Void> {
-
-    @CommandLine.Mixin
-    private HiddenOptionsForSubcommands eclipseHiddenOptions;
-
-    @Override
-    public Void call() throws CLIException {
-        run();
-        return null;
-    }
-
-    public abstract void run() throws CLIException;
+// Base class for first level commands, which use AbstractTopLevelCommand as parent
+public abstract class AbstractRootCommandLineParameterHandler extends AbstractCommandLineParameterHandler {
+    /**
+     * Root command uses as context
+     */
+    @CommandLine.ParentCommand
+    private AbstractTopLevelCommand parent;
 
     @NotNull
-    protected abstract CommandLineContext context();
+    public CommandLineContext context() {
+        return parent.getContext();
+    }
 }
