@@ -31,7 +31,6 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPImage;
-import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.app.DBPPlatformDesktop;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.app.DBPResourceHandler;
@@ -43,12 +42,10 @@ import org.jkiss.dbeaver.model.navigator.DBNResource;
 import org.jkiss.dbeaver.model.navigator.fs.DBNFileSystems;
 import org.jkiss.dbeaver.model.navigator.fs.DBNPathBase;
 import org.jkiss.dbeaver.model.rcp.RCPProject;
-import org.jkiss.dbeaver.model.rm.RMControllerProvider;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DefaultProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.tools.sql.SQLScriptExecuteSettings;
-import org.jkiss.dbeaver.tools.transfer.DTUtils;
 import org.jkiss.dbeaver.tools.transfer.internal.DTMessages;
 import org.jkiss.dbeaver.tools.transfer.ui.internal.DTUIMessages;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
@@ -61,9 +58,10 @@ import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.IOUtils;
 
 import java.lang.reflect.InvocationTargetException;
+import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.List;
 import java.util.*;
+import java.util.List;
 
 /**
  * SQL task settings page
@@ -471,18 +469,13 @@ class SQLScriptTaskPageSettings extends ActiveWizardPage<SQLScriptTaskConfigurat
             for (String filePath : scriptFiles) {
                 if (IOUtils.isLocalFile(filePath)) {
                     Path workspaceFile;
-                    RMControllerProvider rmControllerProvider = DBUtils.getAdapter(RMControllerProvider.class, project);
                     try {
-                        if (rmControllerProvider != null) {
-                            workspaceFile = project.getAbsolutePath().resolve(filePath);
-                        } else {
-                            workspaceFile = DTUtils.findProjectFile(project, filePath);
-                        }
+                        workspaceFile = DBFUtils.resolvePathFromString(monitor, project, filePath);
                     } catch (Exception e) {
                         log.error(e);
                         continue;
                     }
-                    if (workspaceFile == null) {
+                    if (!Files.exists(workspaceFile)) {
                         UIUtils.syncExec(() -> setMessage("Script file '" + filePath + "' not found", WARNING));
                         log.error("Script file '" + filePath + "' not found");
                         continue;

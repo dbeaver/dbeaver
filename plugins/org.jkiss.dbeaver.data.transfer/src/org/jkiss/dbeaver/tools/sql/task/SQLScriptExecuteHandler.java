@@ -40,13 +40,10 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
 import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
 import org.jkiss.dbeaver.model.task.*;
 import org.jkiss.dbeaver.tools.sql.SQLScriptExecuteSettings;
-import org.jkiss.dbeaver.tools.transfer.DTUtils;
-import org.jkiss.utils.IOUtils;
 
 import java.io.IOException;
 import java.io.PrintStream;
 import java.io.PrintWriter;
-import java.io.Reader;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -175,8 +172,7 @@ public class SQLScriptExecuteHandler implements DBTTaskHandler {
         @NotNull String filePath
     ) throws DBException, IOException {
         Path nioPath = DBFUtils.resolvePathFromString(monitor, project, filePath);
-        if (!IOUtils.isLocalPath(nioPath)) {
-            // Remote file
+        if (Files.exists(nioPath)) {
             return Files.readString(nioPath);
         }
 
@@ -185,13 +181,7 @@ public class SQLScriptExecuteHandler implements DBTTaskHandler {
             var rmController = rmControllerProvider.getResourceController();
             return new String(rmController.getResourceContents(project.getId(), filePath), StandardCharsets.UTF_8);
         }
-        var sqlFile = DTUtils.findProjectFile(project, filePath);
-        if (sqlFile == null) {
-            throw new DBException("File " + filePath + " is not found in project " + project.getId());
-        }
-        try (Reader fileReader = Files.newBufferedReader(sqlFile)) {
-            return IOUtils.readToString(fileReader);
-        }
+        throw new DBException("File " + filePath + " is not found in project " + project.getId());
     }
 
 }
