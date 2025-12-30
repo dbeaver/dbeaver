@@ -170,6 +170,9 @@ public class CLIUtils {
         @NotNull ConnectionAuthOptions authOptions,
         DBPDataSourceContainer dataSource
     ) throws CLIException {
+        if (CommonUtils.isNotEmpty(connectionOptions.getConnectionName())) {
+            dataSource.setName(connectionOptions.getConnectionName());
+        }
         dataSource.setSavePassword(connectionOptions.isSavePassword());
         processDataSourceAuthOptions(dataSource, authOptions);
     }
