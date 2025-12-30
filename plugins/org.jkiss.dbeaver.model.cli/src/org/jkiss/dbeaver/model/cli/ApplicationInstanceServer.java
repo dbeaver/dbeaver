@@ -42,7 +42,7 @@ public abstract class ApplicationInstanceServer<T extends ApplicationInstanceCon
     ApplicationInstanceController {
 
     private static final Log log = Log.getLog(ApplicationInstanceServer.class);
-    private final RestServer<T> server;
+    private final RestServer server;
     private final FileChannel configFileChannel;
     private final Class<T> controllerClass;
 
