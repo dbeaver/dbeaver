@@ -2,8 +2,8 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: DBeaver Test Suite
 Bundle-SymbolicName: org.jkiss.dbeaver.test.platform
-Bundle-Version: 1.0.127.qualifier
-Bundle-Release-Date: 20260105
+Bundle-Version: 1.0.128.qualifier
+Bundle-Release-Date: 20260119
 Bundle-Vendor: DBeaver Corp
 Bundle-RequiredExecutionEnvironment: JavaSE-21
 Bundle-ActivationPolicy: lazy
