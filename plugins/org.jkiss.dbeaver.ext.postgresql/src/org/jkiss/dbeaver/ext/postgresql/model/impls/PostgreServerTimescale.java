@@ -16,8 +16,14 @@
  */
 package org.jkiss.dbeaver.ext.postgresql.model.impls;
 
+import org.jkiss.dbeaver.ext.postgresql.model.PostgreClass;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataSource;
+import org.jkiss.dbeaver.ext.postgresql.model.PostgreSchema;
+import org.jkiss.dbeaver.ext.postgresql.model.PostgreTableBase;
+import org.jkiss.dbeaver.ext.postgresql.model.impls.timescale.TimescaleTable;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 
+import java.sql.SQLException;
 /**
  * PostgreServerTimescale
  */
@@ -41,5 +47,12 @@ public class PostgreServerTimescale extends PostgreServerExtensionBase {
     public String getServerTypeName() {
         return "Timescale";
     }
-}
 
+    @Override
+    public PostgreTableBase createRelationOfClass(PostgreSchema schema, PostgreClass.RelKind kind, JDBCResultSet dbResult) {
+        if (kind == PostgreClass.RelKind.r) {
+            return new TimescaleTable(schema, dbResult);
+        }
+        return super.createRelationOfClass(schema, kind, dbResult);
+    }
+}

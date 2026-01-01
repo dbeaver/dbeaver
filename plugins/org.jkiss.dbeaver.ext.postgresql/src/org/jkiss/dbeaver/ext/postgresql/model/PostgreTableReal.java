@@ -36,6 +36,7 @@ import org.jkiss.dbeaver.model.impl.struct.RelationalObjectType;
 import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectType;
@@ -177,11 +178,17 @@ public abstract class PostgreTableReal extends PostgreTableBase implements DBPOb
         if (!getDataSource().getServerType().supportsTableStatistics()) {
             return;
         }
-        try (JDBCPreparedStatement dbStat = session.prepareStatement(
-            "select " +
-                    "pg_catalog.pg_total_relation_size(?) as total_rel_size," +
-                    "pg_catalog.pg_relation_size(?) as rel_size"))
-        {
+
+        String sql;
+        if (isTimescaleDBEnabled() && isHypertable(session)) {
+            sql = "SELECT hypertable_size(?) as total_rel_size," + 
+                    "hypertable_size(?) as rel_size";
+        } else {
+            sql = "SELECT pg_catalog.pg_total_relation_size(?) as total_rel_size," +
+                  "pg_catalog.pg_relation_size(?) as rel_size";
+        }
+
+        try (JDBCPreparedStatement dbStat = session.prepareStatement(sql)) {
             dbStat.setLong(1, getObjectId());
             dbStat.setLong(2, getObjectId());
             try (JDBCResultSet dbResult = dbStat.executeQuery()) {
@@ -195,6 +202,35 @@ public abstract class PostgreTableReal extends PostgreTableBase implements DBPOb
     protected void fetchStatistics(JDBCResultSet dbResult) throws DBException, SQLException {
         diskSpace = dbResult.getLong("total_rel_size");
         tableRelSize = dbResult.getLong("rel_size");
+    }
+
+    private boolean isTimescaleDBEnabled() {
+        try {
+            PostgreDatabase database = getDatabase();
+            Collection<PostgreExtension> extensions = database.getExtensions(new VoidProgressMonitor());
+            return extensions.stream()
+                .anyMatch(ext -> "timescaledb".equalsIgnoreCase(ext.getName()));
+        } catch (DBException e) {
+            log.debug("Failed to check TimescaleDB extension", e);
+            return false;
+        }
+    }
+
+    protected boolean isHypertable(JDBCSession session) throws SQLException {
+        String sql =
+            "SELECT 1 FROM timescaledb_information.hypertables " +
+            "WHERE hypertable_schema = ? AND hypertable_name = ?";
+
+        try (JDBCPreparedStatement stmt = session.prepareStatement(sql)) {
+            stmt.setString(1, getSchema().getName());
+            stmt.setString(2, getName());
+            try (JDBCResultSet rs = stmt.executeQuery()) {
+                return rs.next();
+            }
+        } catch (SQLException e) {
+            log.debug("Failed to check if table is a hypertable", e);
+            return false;
+        }
     }
 
     @Override
