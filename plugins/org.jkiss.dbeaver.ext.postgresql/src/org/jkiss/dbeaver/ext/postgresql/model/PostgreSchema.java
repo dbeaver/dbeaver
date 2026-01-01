@@ -661,17 +661,29 @@ public class PostgreSchema implements
         if (!getDataSource().getServerType().supportsTableStatistics() || hasStatistics && !forceRefresh) {
             return;
         }
-
-        for (PostgreTableBase table : getTables(monitor)) {
-            if (table instanceof PostgreTableReal && table.isPersisted()) {
-                try {
-                    ((PostgreTableReal) table).getDiskSpace(monitor);
-                } catch (Exception e) {
-                    log.debug("Error reading statistics for table " + table.getName(), e);
+        try (DBCSession session = DBUtils.openMetaSession(monitor, this, "Read relation statistics")) {
+            try (JDBCPreparedStatement dbStat = ((JDBCSession)session).prepareStatement(
+                """
+                    select c.oid,pg_catalog.pg_total_relation_size(c.oid) as total_rel_size,pg_catalog.pg_relation_size(c.oid) as rel_size
+                    FROM pg_class c
+                    WHERE c.relnamespace=?"""))
+            {
+                dbStat.setLong(1, getObjectId());
+                try (JDBCResultSet dbResult = dbStat.executeQuery()) {
+                    while (dbResult.next()) {
+                        long tableId = dbResult.getLong(1);
+                        PostgreTableBase table = getTable(monitor, tableId);
+                        if (table instanceof PostgreTableReal) {
+                            ((PostgreTableReal) table).fetchStatistics(dbResult);
+                        }
+                    }
                 }
+            } catch (SQLException e) {
+                throw new DBCException("Error reading schema relation statistics", e);
             }
+        } finally {
+            hasStatistics = true;
         }
-        hasStatistics = true;
     }
 
     @Override

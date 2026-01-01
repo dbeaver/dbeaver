@@ -1,6 +1,7 @@
 package org.jkiss.dbeaver.ext.postgresql.model.impls.timescale;
 
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreSchema;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreTableRegular;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
@@ -11,6 +12,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 
 public class TimescaleTable extends PostgreTableRegular {
+
+    private static final Log log = Log.getLog(TimescaleTable.class);
 
     public TimescaleTable(PostgreSchema schema, ResultSet dbResult) {
         super(schema, dbResult);
@@ -39,6 +42,23 @@ public class TimescaleTable extends PostgreTableRegular {
                     fetchStatistics(dbResult);
                 }
             }
+        }
+    }
+
+    private boolean isHypertable(JDBCSession session) throws SQLException {
+        String sql =
+            "SELECT 1 FROM timescaledb_information.hypertables " +
+            "WHERE hypertable_schema = ? AND hypertable_name = ?";
+
+        try (JDBCPreparedStatement stmt = session.prepareStatement(sql)) {
+            stmt.setString(1, getSchema().getName());
+            stmt.setString(2, getName());
+            try (JDBCResultSet rs = stmt.executeQuery()) {
+                return rs.next();
+            }
+        } catch (SQLException e) {
+            log.debug("Failed to check if table is a hypertable: " + e.getMessage(), e);
+            return false;
         }
     }
 }
