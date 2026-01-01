@@ -54,7 +54,7 @@ public class TimescaleTable extends PostgreTableRegular {
                 return rs.next();
             }
         } catch (SQLException e) {
-            log.debug("Failed to check if table is a hypertable: " + e.getMessage(), e);
+            log.error("Failed to check if table is a hypertable: " + e.getMessage(), e);
             return false;
         }
     }
