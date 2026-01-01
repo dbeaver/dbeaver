@@ -25,18 +25,15 @@ public class TimescaleTable extends PostgreTableRegular {
             return;
         }
 
-        String sql;
-        if (isHypertable(session)) {
-            sql = "SELECT hypertable_size(?) as total_rel_size," +
-                  "hypertable_size(?) as rel_size";
-        } else {
-            sql = "SELECT pg_catalog.pg_total_relation_size(?) as total_rel_size," +
-                  "pg_catalog.pg_relation_size(?) as rel_size";
+        if (!isHypertable(session)) {
+            super.readTableStatistics(session);
+            return;
         }
 
-        try (JDBCPreparedStatement dbStat = session.prepareStatement(sql)) {
+        try (JDBCPreparedStatement dbStat = session.prepareStatement(
+            "SELECT total_bytes as total_rel_size, table_bytes as rel_size " +
+            "FROM hypertable_detailed_size(?)")) {
             dbStat.setLong(1, getObjectId());
-            dbStat.setLong(2, getObjectId());
             try (JDBCResultSet dbResult = dbStat.executeQuery()) {
                 if (dbResult.next()) {
                     fetchStatistics(dbResult);

@@ -7,6 +7,7 @@ import org.jkiss.dbeaver.ext.postgresql.model.PostgreDatabase;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreSchema;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreTableBase;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreTableReal;
+import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 import java.sql.ResultSet;
@@ -32,11 +33,7 @@ public class TimescaleSchema extends PostgreSchema {
 
         for (PostgreTableBase table : getTables(monitor)) {
             if (table instanceof PostgreTableReal && table.isPersisted()) {
-                try {
-                    ((PostgreTableReal) table).getDiskSpace(monitor);
-                } catch (Exception e) {
-                    log.debug("Error reading statistics for table " + table.getName(), e);
-                }
+                ((PostgreTableReal) table).getDiskSpace(monitor);
             }
         }
         hasStatistics = true;
