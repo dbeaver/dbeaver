@@ -66,12 +66,9 @@ public class PostgreServerTimescale extends PostgreServerExtensionBase {
     }
 
     private static class TimescaleSchemaCache extends PostgreDatabase.SchemaCache {
+
         @Override
-        protected PostgreSchema fetchObject(
-            @NotNull JDBCSession session,
-            @NotNull PostgreDatabase owner,
-            @NotNull JDBCResultSet resultSet
-        ) throws SQLException, DBException {
+        protected PostgreSchema fetchObject(@NotNull JDBCSession session, @NotNull PostgreDatabase owner, @NotNull JDBCResultSet resultSet) throws SQLException, DBException {
             String name = JDBCUtils.safeGetString(resultSet, "nspname");
             return new TimescaleSchema(owner, name, resultSet);
         }
