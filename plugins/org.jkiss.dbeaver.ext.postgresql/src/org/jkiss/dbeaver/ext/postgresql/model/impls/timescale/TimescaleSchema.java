@@ -5,7 +5,6 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDatabase;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreSchema;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreTableBase;
-import org.jkiss.dbeaver.ext.postgresql.model.PostgreTableReal;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCSession;
@@ -44,8 +43,8 @@ public class TimescaleSchema extends PostgreSchema {
                     while (dbResult.next()) {
                         long tableId = dbResult.getLong(1);
                         PostgreTableBase table = getTable(monitor, tableId);
-                        if (table instanceof PostgreTableReal) {
-                            ((PostgreTableReal) table).fetchStatistics(dbResult);
+                        if (table instanceof TimescaleTable) {
+                            ((TimescaleTable) table).fetchStatistics(dbResult);
                         }
                     }
                 }
