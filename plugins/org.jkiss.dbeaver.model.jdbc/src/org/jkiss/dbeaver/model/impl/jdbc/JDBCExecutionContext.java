@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,7 +32,6 @@ import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.qm.QMUtils;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -98,14 +97,10 @@ public class JDBCExecutionContext extends AbstractExecutionContext<JDBCDataSourc
     }
 
     protected void connect(@NotNull DBRProgressMonitor monitor, Boolean autoCommit, @Nullable Integer txnLevel, JDBCExecutionContext initFrom, boolean addContext) throws DBCException {
-        if (DBWorkbench.getPlatform().isUnitTestMode()) {
-            return;
-        }
         if (connection != null && addContext) {
             log.error("Reopening not-closed connection");
             close();
         }
-        boolean connectionReadOnly = dataSource.getContainer().isConnectionReadOnly();
         final JDBCRemoteInstance currentInstance = this.instance;
 
         DBExecUtils.startContextInitiation(dataSource.getContainer());
@@ -498,11 +493,6 @@ public class JDBCExecutionContext extends AbstractExecutionContext<JDBCDataSourc
     @Override
     public boolean isSupportsTransactions() {
         return instance.getDataSource().getInfo().supportsTransactions();
-    }
-
-    public void reconnect(DBRProgressMonitor monitor) throws DBCException {
-        close();
-        connect(monitor, null, null, this, true);
     }
 
     @Override
