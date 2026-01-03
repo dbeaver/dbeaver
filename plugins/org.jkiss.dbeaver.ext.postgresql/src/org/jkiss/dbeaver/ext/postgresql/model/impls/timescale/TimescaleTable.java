@@ -60,7 +60,7 @@ public class TimescaleTable extends PostgreTableRegular {
     }
 
     @Override
-    public void fetchStatistics(JDBCResultSet dbResult) throws DBException, SQLException {
+    protected void fetchStatistics(JDBCResultSet dbResult) throws DBException, SQLException {
         super.fetchStatistics(dbResult);
     }
 }
