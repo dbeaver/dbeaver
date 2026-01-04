@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,8 +29,8 @@ import org.jkiss.dbeaver.model.cli.model.option.InputFileOption;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.runtime.LoggingProgressMonitor;
-import org.jkiss.dbeaver.registry.DataSourceUtils;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.utils.PropertySerializationUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.IOException;
@@ -251,7 +251,11 @@ public class CLIUtils {
             if (!CommonUtils.isEmpty(authProperties)) {
                 DBAAuthCredentials credentialsInstance = connectionConfiguration.getAuthModel()
                     .loadCredentials(dataSource, connectionConfiguration);
-                DataSourceUtils.updateCredentialsFromProperties(new LoggingProgressMonitor(), credentialsInstance, authProperties);
+                PropertySerializationUtils.updateCredentialsFromProperties(
+                    new LoggingProgressMonitor(),
+                    credentialsInstance,
+                    authProperties
+                );
                 dataSource.getConnectionConfiguration().getAuthModel()
                     .provideCredentials(dataSource, dataSource.getConnectionConfiguration(), credentialsInstance);
             }
