@@ -282,7 +282,15 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
         DBWorkbench.getPlatform();
 
         WorkbenchPatcher.patchWorkbenchXmi(instanceLoc);
-        initializeApplication();
+        // Init application
+        // Error leads to app shutdown
+        try {
+            initializeApplication();
+        } catch (DBException e) {
+            showMessageBox("Error initializing application", e.getMessage(), SWT.ICON_ERROR);
+            log.error(e);
+            return IApplication.EXIT_OK;
+        }
 
         // Run instance server
         try {
@@ -308,7 +316,6 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
             ApplicationWorkbenchAdvisor.DBEAVER_SCHEME_NAME);
         try {
             log.debug("Run workbench");
-            getDisplay();
             int returnCode = PlatformUI.createAndRunWorkbench(display, createWorkbenchAdvisor());
 
             // Copy-pasted from IDEApplication
@@ -473,7 +480,7 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
     /**
      * May be overrided in implementors
      */
-    protected void initializeApplication() {
+    protected void initializeApplication() throws DBException {
         activateProxyService();
 
         if (ApplicationPolicyProvider.getInstance().isPolicyEnabled(POLICY_WD_CHECK_SUPPRESS)) {
