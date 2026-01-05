@@ -392,18 +392,16 @@ public class DBNResource extends DBNNode implements DBNStreamData, DBNNodeWithCa
     ) throws DBException, CoreException {
         URI srcUri = otherResource.getLocationURI();
         URI dstUri = resource.getLocationURI();
-
         if (srcUri == null || dstUri == null) {
             throw new DBException("Resource has no location URI");
         }
-        IFileStore srcStore = EFS.getStore(srcUri);
-
         IFileStore dstStore = EFS.getStore(dstUri);
         for (String additionalDir : createdDirs) {
             dstStore = dstStore.getChild(additionalDir);
         }
         dstStore = dstStore.getChild(otherResource.getName());
-        srcStore.copy(
+
+        EFS.getStore(srcUri).copy(
             dstStore,
             EFS.OVERWRITE | EFS.SHALLOW,
             monitor.getNestedMonitor()
