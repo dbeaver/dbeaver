@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,7 +21,7 @@ import picocli.CommandLine;
 
 import java.util.List;
 
-public class ConnectionAuthOptions {
+public class DataSourceAuthOptions {
     @Nullable
     @CommandLine.Option(names = {"-u", "--user"}, arity = "1", description = "Database user name for database native authentication")
     private String dbUser;

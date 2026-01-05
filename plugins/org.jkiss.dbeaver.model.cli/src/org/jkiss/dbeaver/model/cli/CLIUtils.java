@@ -23,7 +23,7 @@ import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.access.DBAAuthCredentials;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.app.DBPWorkspace;
-import org.jkiss.dbeaver.model.cli.model.option.ConnectionAuthOptions;
+import org.jkiss.dbeaver.model.cli.model.option.DataSourceAuthOptions;
 import org.jkiss.dbeaver.model.cli.model.option.DataSourceOptions;
 import org.jkiss.dbeaver.model.cli.model.option.InputFileOption;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
@@ -123,11 +123,13 @@ public class CLIUtils {
     @NotNull
     public static DBPDataSourceContainer createTempDataSource(
         @NotNull DBPProject project,
+        @NotNull String driverId,
         @NotNull DataSourceOptions dataSourceOptions,
-        @NotNull ConnectionAuthOptions authOptions
+        @NotNull DataSourceAuthOptions authOptions
     ) throws CLIException {
         DBPDataSourceContainer tempDatasource = createDataSource(
             project,
+            driverId,
             dataSourceOptions,
             authOptions,
             true
@@ -140,13 +142,14 @@ public class CLIUtils {
     @NotNull
     public static DBPDataSourceContainer createDataSource(
         @NotNull DBPProject project,
+        @NotNull String driverId,
         @NotNull DataSourceOptions dataSourceOptions,
-        @NotNull ConnectionAuthOptions authOptions,
+        @NotNull DataSourceAuthOptions authOptions,
         boolean temporary
     ) throws CLIException {
-        DBPDriver driver = DBWorkbench.getPlatform().getDataSourceProviderRegistry().findDriver(dataSourceOptions.getDriver());
+        DBPDriver driver = DBWorkbench.getPlatform().getDataSourceProviderRegistry().findDriver(driverId);
         if (driver == null) {
-            throw new CLIException("Can't find driver '" + dataSourceOptions.getDriver() + "'", CLIConstants.EXIT_CODE_ILLEGAL_ARGUMENTS);
+            throw new CLIException("Can't find driver '" + driverId + "'", CLIConstants.EXIT_CODE_ILLEGAL_ARGUMENTS);
         }
         DBPConnectionConfiguration connectionConfiguration = updateConnectionConfiguration(
             dataSourceOptions,
@@ -167,12 +170,12 @@ public class CLIUtils {
 
     public static void updateDataSource(
         @NotNull DataSourceOptions dataSourceOptions,
-        @NotNull ConnectionAuthOptions authOptions,
-        DBPDataSourceContainer dataSource
+        @NotNull DataSourceAuthOptions authOptions,
+        @NotNull DBPDataSourceContainer dataSource
     ) throws CLIException {
         String dsName = dataSourceOptions.getDatasourceName();
         if (CommonUtils.isEmpty(dsName)) {
-            dsName = "Ext: " + dataSourceOptions.getDriver();
+            dsName = "Ext: " + dataSource.getDriver().getName();
             if (CommonUtils.isNotEmpty(dataSourceOptions.getDbName())) {
                 dsName += " - " + dataSourceOptions.getDbName();
             } else if (CommonUtils.isNotEmpty(dataSourceOptions.getServer())) {
@@ -181,6 +184,12 @@ public class CLIUtils {
         }
         if (CommonUtils.isNotEmpty(dataSourceOptions.getDatasourceName())) {
             dataSource.setName(dsName);
+        }
+        if (CommonUtils.isNotEmpty(dataSourceOptions.getFolder())) {
+            var folder = dataSource.getRegistry().getFolder(dataSourceOptions.getFolder());
+            if (folder != null) {
+                dataSource.setFolder(folder);
+            }
         }
         dataSource.setSavePassword(dataSourceOptions.isSavePassword());
         processDataSourceAuthOptions(dataSource, authOptions);
@@ -229,7 +238,7 @@ public class CLIUtils {
 
     public static void processDataSourceAuthOptions(
         @NotNull DBPDataSourceContainer dataSource,
-        @NotNull ConnectionAuthOptions authOptions
+        @NotNull DataSourceAuthOptions authOptions
     ) throws CLIException {
         var connectionConfiguration = dataSource.getConnectionConfiguration();
 

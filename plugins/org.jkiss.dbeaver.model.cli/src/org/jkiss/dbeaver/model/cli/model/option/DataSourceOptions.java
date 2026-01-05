@@ -16,15 +16,10 @@
  */
 package org.jkiss.dbeaver.model.cli.model.option;
 
-import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import picocli.CommandLine;
 
 public class DataSourceOptions {
-    @NotNull
-    @CommandLine.Option(names = {"--driver"}, required = true, arity = "1", description = "Database driver")
-    private String driver;
-
     @Nullable
     @CommandLine.Option(names = {"--host"}, arity = "1", description = "Database host")
     private String host;
@@ -67,11 +62,6 @@ public class DataSourceOptions {
     @Nullable
     public String getAuthModel() {
         return authModel;
-    }
-
-    @NotNull
-    public String getDriver() {
-        return driver;
     }
 
     @Nullable
