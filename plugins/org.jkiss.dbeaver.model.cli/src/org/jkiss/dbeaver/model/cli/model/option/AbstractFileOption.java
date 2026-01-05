@@ -19,7 +19,7 @@ package org.jkiss.dbeaver.model.cli.model.option;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.registry.fs.FSUtils;
+import org.jkiss.dbeaver.model.fs.DBFUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.nio.file.Path;
@@ -34,7 +34,7 @@ public class AbstractFileOption {
             return null;
         }
         try {
-            return FSUtils.getPathFromURI(filePath);
+            return DBFUtils.getPathFromURI(filePath);
         } catch (DBException e) {
             log.error("Error getting path from URI: " + filePath + " " + e.getMessage(), e);
         }
