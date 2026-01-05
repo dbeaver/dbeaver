@@ -374,8 +374,7 @@ public class DBNResource extends DBNNode implements DBNStreamData, DBNNodeWithCa
         @NotNull DBRProgressMonitor monitor,
         @NotNull IResource otherResource,
         @NotNull List<String> createdParentFolders
-    )
-    throws DBException, CoreException {
+    ) throws DBException, CoreException {
         fileStoreSingleFileCopy(monitor, otherResource, createdParentFolders);
         if (otherResource instanceof IFolder folderSource) {
             List<String> newCreatedParentFolders = new ArrayList<>(createdParentFolders);
@@ -390,8 +389,7 @@ public class DBNResource extends DBNNode implements DBNStreamData, DBNNodeWithCa
         @NotNull DBRProgressMonitor monitor,
         @NotNull IResource otherResource,
         @NotNull List<String> createdDirs
-    )
-    throws DBException, CoreException {
+    ) throws DBException, CoreException {
         URI srcUri = otherResource.getLocationURI();
         URI dstUri = resource.getLocationURI();
 
