@@ -415,7 +415,7 @@ public class ExasolDataSource extends JDBCDataSource implements IAdaptable {
 	}
 
 	@Override
-	public <T> T getAdapter(Class<T> adapter)
+	public <T> T getAdapter(@NotNull Class<T> adapter)
 	{
 		if (adapter == DBSStructureAssistant.class) {
 			return adapter.cast(new ExasolStructureAssistant(this));

@@ -36,4 +36,5 @@ public interface IFileTypeHandler {
         @Nullable DBPDataSourceContainer dataSource)
         throws DBException;
 
+    void importFiles(@NotNull List<Path> filePath, @Nullable String extension) throws DBException;
 }

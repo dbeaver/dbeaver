@@ -40,10 +40,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.FileSystem;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.StandardCopyOption;
+import java.nio.file.*;
 import java.util.*;
 
 /**
@@ -162,7 +159,8 @@ public class DBFUtils {
         return uri;
     }
 
-    public static Map<String, String> getQueryParameters(String query) {
+    @NotNull
+    public static Map<String, String> getQueryParameters(@Nullable String query) {
         if (query == null || query.isEmpty()) {
             return Collections.emptyMap();
         }
@@ -244,5 +242,42 @@ public class DBFUtils {
             Files.copy(from, to, StandardCopyOption.REPLACE_EXISTING);
             Files.delete(from);
         }
+    }
+
+    @Nullable
+    public static Path getPathFromURI(@NotNull String fileUriString) throws DBException {
+        URI fileUri = URI.create(fileUriString);
+        if (!fileUri.isAbsolute() || fileUri.getScheme() == null) {
+            return Path.of(fileUriString).toAbsolutePath();
+        }
+        FileSystem defaultFs = FileSystems.getDefault();
+        if (defaultFs.provider().getScheme().equals(fileUri.getScheme())) {
+            // default filesystem
+            return defaultFs.provider().getPath(fileUri);
+        } else {
+            var externalFsProvider =
+                DBWorkbench.getPlatform().getFileSystemRegistry().getFileSystemProviderBySchema(fileUri.getScheme());
+            if (externalFsProvider == null) {
+                log.error("File system not found for scheme: " + fileUri.getScheme());
+                return null;
+            }
+
+            DBFFileSystemProvider fileSystemProvider = externalFsProvider.getInstance();
+            // Use provider's classloader because filesystem registered there as service
+            ClassLoader fsClassloader = fileSystemProvider.getClass().getClassLoader();
+            Map<String, ?> env = fileSystemProvider.prepareEnv(System.getenv());
+            try (
+                FileSystem externalFileSystem = FileSystems.newFileSystem(
+                    fileUri,
+                    env,
+                    fsClassloader
+                )
+            ) {
+                return externalFileSystem.provider().getPath(fileUri);
+            } catch (Exception e) {
+                log.error("Failed to initialize path: " + fileUri, e);
+            }
+        }
+        return null;
     }
 }
