@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,7 +20,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import picocli.CommandLine;
 
-public class ConnectionOptions {
+public class DataSourceOptions {
     @NotNull
     @CommandLine.Option(names = {"--driver"}, required = true, arity = "1", description = "Database driver")
     private String driver;
@@ -54,7 +54,7 @@ public class ConnectionOptions {
 
     @Nullable
     @CommandLine.Option(names = {"--name"}, arity = "1", description = "Connection name")
-    private String connectionName;
+    private String dataSourceName;
 
     @CommandLine.Option(
         names = {"--save-password"},
@@ -105,8 +105,8 @@ public class ConnectionOptions {
     }
 
     @Nullable
-    public String getConnectionName() {
-        return connectionName;
+    public String getDatasourceName() {
+        return dataSourceName;
     }
 
     public boolean isSavePassword() {

@@ -24,7 +24,7 @@ import org.jkiss.dbeaver.model.access.DBAAuthCredentials;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.app.DBPWorkspace;
 import org.jkiss.dbeaver.model.cli.model.option.ConnectionAuthOptions;
-import org.jkiss.dbeaver.model.cli.model.option.ConnectionOptions;
+import org.jkiss.dbeaver.model.cli.model.option.DataSourceOptions;
 import org.jkiss.dbeaver.model.cli.model.option.InputFileOption;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
@@ -123,12 +123,12 @@ public class CLIUtils {
     @NotNull
     public static DBPDataSourceContainer createTempDataSource(
         @NotNull DBPProject project,
-        @NotNull ConnectionOptions connectionOptions,
+        @NotNull DataSourceOptions dataSourceOptions,
         @NotNull ConnectionAuthOptions authOptions
     ) throws CLIException {
         DBPDataSourceContainer tempDatasource = createDataSource(
             project,
-            connectionOptions,
+            dataSourceOptions,
             authOptions,
             true
         );
@@ -140,22 +140,22 @@ public class CLIUtils {
     @NotNull
     public static DBPDataSourceContainer createDataSource(
         @NotNull DBPProject project,
-        @NotNull ConnectionOptions connectionOptions,
+        @NotNull DataSourceOptions dataSourceOptions,
         @NotNull ConnectionAuthOptions authOptions,
         boolean temporary
     ) throws CLIException {
-        DBPDriver driver = DBWorkbench.getPlatform().getDataSourceProviderRegistry().findDriver(connectionOptions.getDriver());
+        DBPDriver driver = DBWorkbench.getPlatform().getDataSourceProviderRegistry().findDriver(dataSourceOptions.getDriver());
         if (driver == null) {
-            throw new CLIException("Can't find driver '" + connectionOptions.getDriver() + "'", CLIConstants.EXIT_CODE_ILLEGAL_ARGUMENTS);
+            throw new CLIException("Can't find driver '" + dataSourceOptions.getDriver() + "'", CLIConstants.EXIT_CODE_ILLEGAL_ARGUMENTS);
         }
         DBPConnectionConfiguration connectionConfiguration = updateConnectionConfiguration(
-            connectionOptions,
+            dataSourceOptions,
             new DBPConnectionConfiguration()
         );
 
         var registry = project.getDataSourceRegistry();
         DBPDataSourceContainer dataSource = registry.createDataSource(driver, connectionConfiguration);
-        updateDataSource(connectionOptions, authOptions, dataSource);
+        updateDataSource(dataSourceOptions, authOptions, dataSource);
         dataSource.setTemporary(temporary);
         try {
             registry.addDataSource(dataSource);
@@ -166,31 +166,40 @@ public class CLIUtils {
     }
 
     public static void updateDataSource(
-        @NotNull ConnectionOptions connectionOptions,
+        @NotNull DataSourceOptions dataSourceOptions,
         @NotNull ConnectionAuthOptions authOptions,
         DBPDataSourceContainer dataSource
     ) throws CLIException {
-        if (CommonUtils.isNotEmpty(connectionOptions.getConnectionName())) {
-            dataSource.setName(connectionOptions.getConnectionName());
+        String dsName = dataSourceOptions.getDatasourceName();
+        if (CommonUtils.isEmpty(dsName)) {
+            dsName = "Ext: " + dataSourceOptions.getDriver();
+            if (CommonUtils.isNotEmpty(dataSourceOptions.getDbName())) {
+                dsName += " - " + dataSourceOptions.getDbName();
+            } else if (CommonUtils.isNotEmpty(dataSourceOptions.getServer())) {
+                dsName += " - " + dataSourceOptions.getServer();
+            }
         }
-        dataSource.setSavePassword(connectionOptions.isSavePassword());
+        if (CommonUtils.isNotEmpty(dataSourceOptions.getDatasourceName())) {
+            dataSource.setName(dsName);
+        }
+        dataSource.setSavePassword(dataSourceOptions.isSavePassword());
         processDataSourceAuthOptions(dataSource, authOptions);
     }
 
 
     @NotNull
     public static DBPConnectionConfiguration updateConnectionConfiguration(
-        @NotNull ConnectionOptions connectionOptions,
+        @NotNull DataSourceOptions dataSourceOptions,
         @NotNull DBPConnectionConfiguration connectionConfiguration
     ) {
-        connectionConfiguration.setUrl(connectionOptions.getUrl());
-        connectionConfiguration.setHostName(connectionOptions.getHost());
-        connectionConfiguration.setHostPort(connectionOptions.getPort() == null ? null : connectionOptions.getPort().toString());
-        connectionConfiguration.setServerName(connectionOptions.getServer());
-        connectionConfiguration.setDatabaseName(connectionOptions.getDbName());
+        connectionConfiguration.setUrl(dataSourceOptions.getUrl());
+        connectionConfiguration.setHostName(dataSourceOptions.getHost());
+        connectionConfiguration.setHostPort(dataSourceOptions.getPort() == null ? null : dataSourceOptions.getPort().toString());
+        connectionConfiguration.setServerName(dataSourceOptions.getServer());
+        connectionConfiguration.setDatabaseName(dataSourceOptions.getDbName());
 
-        if (!CommonUtils.isEmpty(connectionOptions.getAuthModel())) {
-            connectionConfiguration.setAuthModelId(connectionOptions.getAuthModel());
+        if (!CommonUtils.isEmpty(dataSourceOptions.getAuthModel())) {
+            connectionConfiguration.setAuthModelId(dataSourceOptions.getAuthModel());
         }
         return connectionConfiguration;
     }
