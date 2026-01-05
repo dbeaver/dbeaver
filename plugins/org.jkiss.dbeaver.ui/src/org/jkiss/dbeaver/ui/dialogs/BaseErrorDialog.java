@@ -273,7 +273,7 @@ public class BaseErrorDialog extends BaseDialog {
         if (!(t instanceof CoreException) && t != null) {
             // Include low-level exception message
             String message = GeneralUtils.makeStandardErrorMessage(t);
-            if (!Objects.equals(statusMessage, message)) {
+            if (message != null && !Objects.equals(statusMessage, message)) {
                 String sb = NESTING_INDENT.repeat(Math.max(0, nesting))
                     + message.trim()
                     + "\n";

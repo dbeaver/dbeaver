@@ -330,7 +330,7 @@
     </extension>
 
     <extension point="org.jkiss.dbeaver.dataSourceProvider">
-        <datasource id="stream" class="org.jkiss.dbeaver.tools.transfer.stream.model.StreamDataSourceProvider"/>
+        <datasource id="stream" class="org.jkiss.dbeaver.tools.transfer.stream.model.StreamDataSourceProvider" dialect="basic"/>
     </extension>
 
 </plugin>

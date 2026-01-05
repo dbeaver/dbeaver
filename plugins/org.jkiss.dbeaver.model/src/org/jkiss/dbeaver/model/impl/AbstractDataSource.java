@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.model.impl;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.DBPAdaptable;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -28,7 +29,7 @@ import java.util.Map;
 /**
  * Abstract DataSource.
  */
-public abstract class AbstractDataSource implements DBPDataSource, DBSObject {
+public abstract class AbstractDataSource implements DBPDataSource, DBSObject, DBPAdaptable {
 
     @NotNull
     protected final DBPDataSourceContainer container;
@@ -97,6 +98,11 @@ public abstract class AbstractDataSource implements DBPDataSource, DBSObject {
     @Override
     public void removeContextAttribute(@NotNull String attributeName) {
         contextAttributes.remove(attributeName);
+    }
+
+    @Override
+    public <T> T getAdapter(@NotNull Class<T> adapter) {
+        return null;
     }
 
     @Override

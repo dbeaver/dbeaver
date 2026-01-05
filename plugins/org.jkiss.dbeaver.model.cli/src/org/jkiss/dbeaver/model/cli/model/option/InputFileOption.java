@@ -21,18 +21,17 @@ import picocli.CommandLine;
 
 import java.nio.file.Path;
 
-public class InputFileOption {
+public class InputFileOption extends AbstractFileOption {
     @Nullable
     @CommandLine.Option(
         names = {"-in", "-input-file"},
         arity = "1",
         description = "Argument value that can be written in the file."
     )
-    private Path inputFile;
+    private String inputFile;
 
     @Nullable
     public Path getInputFile() {
-        return inputFile;
+        return getPath(inputFile);
     }
-
 }

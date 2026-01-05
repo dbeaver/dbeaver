@@ -38,6 +38,8 @@ import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
 import org.jkiss.dbeaver.ui.dialogs.connection.ClientHomesSelector;
 import org.jkiss.dbeaver.ui.internal.UIMessages;
 
+import java.util.Map;
+
 /**
  * Tool wizard dialog
  */
@@ -55,7 +57,7 @@ public class NativeToolWizardDialog extends TaskConfigurationWizardDialog {
         @NotNull TaskConfigurationWizard<?> wizard,
         @NotNull IStructuredSelection selection
     ) {
-        super(window, wizard, selection);
+        super(window, wizard, selection, Map.of());
         setupDialog();
     }
 
