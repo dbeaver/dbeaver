@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -75,7 +75,12 @@ public class OpenAIEngine<PROPS extends OpenAIBaseProperties> extends BaseComple
         List<OAIMessage> messages = completionResult.output.stream()
             .filter(msg -> !OAIMessage.TYPE_FUNCTION_REASONING.equals(msg.type))
             .toList();
-        AIUsage usage = new AIUsage(completionResult.usage.inputTokens(), completionResult.usage.outputTokens());
+        AIUsage usage = new AIUsage(
+            completionResult.usage.inputTokens(),
+            completionResult.usage.inputTokensDetails().cachedTokens(),
+            completionResult.usage.outputTokens(),
+            completionResult.usage.outputTokensDetails().reasoningTokens()
+        );
         if (messages.isEmpty()) {
             return new AIEngineResponse(
                 AIMessageType.ASSISTANT,

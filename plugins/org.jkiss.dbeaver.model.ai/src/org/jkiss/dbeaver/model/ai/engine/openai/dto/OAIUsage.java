@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,7 +21,23 @@ import com.google.gson.annotations.SerializedName;
 public record OAIUsage(
     @SerializedName("input_tokens")
     int inputTokens,
+    @SerializedName("input_tokens_details")
+    InputTokenDetails inputTokensDetails,
     @SerializedName("output_tokens")
-    int outputTokens
+    int outputTokens,
+    @SerializedName("output_tokens_details")
+    OutputTokenDetails outputTokensDetails
 ) {
+
+    public record InputTokenDetails(
+        @SerializedName("cached_tokens")
+        int cachedTokens
+    ) {
+    }
+
+    public record OutputTokenDetails(
+        @SerializedName("reasoning_tokens")
+        int reasoningTokens
+    ) {
+    }
 }

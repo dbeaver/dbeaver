@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -91,7 +91,9 @@ public class OpenAIClientLegacy extends OpenAIClient {
             completionRequest.model,
             new AIUsage(
                 oaiResponse.usage.inputTokens(),
-                oaiResponse.usage.outputTokens()
+                oaiResponse.usage.inputTokensDetails().cachedTokens(),
+                oaiResponse.usage.outputTokens(),
+                oaiResponse.usage.outputTokensDetails().reasoningTokens()
             ),
             Duration.between(now, Instant.now())
         );

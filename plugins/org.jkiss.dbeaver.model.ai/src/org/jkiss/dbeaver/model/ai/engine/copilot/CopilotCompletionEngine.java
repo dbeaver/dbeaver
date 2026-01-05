@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,6 +22,7 @@ import org.jkiss.dbeaver.model.ai.AIMessageType;
 import org.jkiss.dbeaver.model.ai.AIUsage;
 import org.jkiss.dbeaver.model.ai.engine.*;
 import org.jkiss.dbeaver.model.ai.engine.copilot.dto.CopilotChatRequest;
+import org.jkiss.dbeaver.model.ai.engine.copilot.dto.CopilotChatResponse;
 import org.jkiss.dbeaver.model.ai.engine.copilot.dto.CopilotMessage;
 import org.jkiss.dbeaver.model.ai.engine.copilot.dto.CopilotSessionToken;
 import org.jkiss.dbeaver.model.ai.engine.openai.OpenAIConstants;
@@ -79,13 +80,17 @@ public class CopilotCompletionEngine extends BaseCompletionEngine<CopilotPropert
             .withN(1)
             .build();
 
-        List<String> choices = client.getInstance().chat(monitor, requestSessionToken(monitor).token(), chatRequest)
+        CopilotChatResponse chatResponse = client.getInstance().chat(monitor, requestSessionToken(monitor).token(), chatRequest);
+        List<String> choices = chatResponse
             .choices()
             .stream()
             .map(it -> it.message().content())
             .toList();
 
-        return new AIEngineResponse(AIMessageType.ASSISTANT, choices, new AIUsage(0, 0));
+        return new AIEngineResponse(
+            AIMessageType.ASSISTANT,
+            choices,
+            new AIUsage(0, 0, 0, 0));
     }
 
     @NotNull

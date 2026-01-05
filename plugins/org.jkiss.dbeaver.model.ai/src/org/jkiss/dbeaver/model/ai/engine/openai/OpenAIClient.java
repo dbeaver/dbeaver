@@ -132,7 +132,8 @@ public class OpenAIClient extends AbstractHttpAIClient {
         HttpRequest request = createCompletionRequest(completionRequest);
 
         HttpRequest modifiedRequest = applyFilters(request);
-        return GSON.fromJson(client.send(monitor, modifiedRequest), OAIResponsesResponse.class);
+        String responseJson = client.send(monitor, modifiedRequest);
+        return GSON.fromJson(responseJson, OAIResponsesResponse.class);
     }
 
     public void createChatCompletionStream(
@@ -198,7 +199,12 @@ public class OpenAIClient extends AbstractHttpAIClient {
                     OAIResponsesChunk chunk = GSON.fromJson(data, OAIResponsesChunk.class);
                     if (EVENT_TYPE_RESPONSE_COMPLETED.equals(chunk.type)) {
                         listener.usage(
-                            new AIUsage(chunk.response.usage.inputTokens(), chunk.response.usage.outputTokens())
+                            new AIUsage(
+                                chunk.response.usage.inputTokens(),
+                                chunk.response.usage.inputTokensDetails().cachedTokens(),
+                                chunk.response.usage.outputTokens(),
+                                chunk.response.usage.outputTokensDetails().reasoningTokens()
+                            )
                         );
                     } else {
 
