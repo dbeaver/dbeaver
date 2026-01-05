@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -331,20 +331,7 @@ public class DBNResource extends DBNNode implements DBNStreamData, DBNNodeWithCa
                     try {
                         if (otherResource instanceof EFSNIOResource) {
                             if (DBWorkbench.isDistributed() && resource.getRawLocation() == null) {
-                                URI srcUri = otherResource.getLocationURI();
-                                URI dstUri = resource.getLocationURI();
-
-                                if (srcUri == null || dstUri == null) {
-                                    throw new DBException("Resource has no location URI");
-                                }
-
-                                IFileStore srcStore = EFS.getStore(srcUri);
-                                IFileStore dstStore = EFS.getStore(dstUri).getChild(otherResource.getName());
-                                srcStore.copy(
-                                    dstStore,
-                                    EFS.OVERWRITE,
-                                    monitor.getNestedMonitor()
-                                );
+                                fileStoreRecursiveCopy(monitor, otherResource);
                             } else {
                                 otherResource.copy(
                                     resource.getRawLocation().append(otherResource.getName()),
@@ -374,6 +361,55 @@ public class DBNResource extends DBNNode implements DBNStreamData, DBNNodeWithCa
         } finally {
             monitor.done();
         }
+    }
+
+    private void fileStoreRecursiveCopy(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull IResource otherResource
+    ) throws DBException, CoreException {
+        fileStoreRecursiveCopy(monitor, otherResource, new ArrayList<>());
+    }
+
+    private void fileStoreRecursiveCopy(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull IResource otherResource,
+        @NotNull List<String> createdParentFolders
+    )
+    throws DBException, CoreException {
+        fileStoreSingleFileCopy(monitor, otherResource, createdParentFolders);
+        if (otherResource instanceof IFolder folderSource) {
+            List<String> newCreatedParentFolders = new ArrayList<>(createdParentFolders);
+            newCreatedParentFolders.add(folderSource.getName());
+            for (IResource file : folderSource.members()) {
+                fileStoreRecursiveCopy(monitor, file, newCreatedParentFolders);
+            }
+        }
+    }
+
+    private void fileStoreSingleFileCopy(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull IResource otherResource,
+        @NotNull List<String> createdDirs
+    )
+    throws DBException, CoreException {
+        URI srcUri = otherResource.getLocationURI();
+        URI dstUri = resource.getLocationURI();
+
+        if (srcUri == null || dstUri == null) {
+            throw new DBException("Resource has no location URI");
+        }
+        IFileStore srcStore = EFS.getStore(srcUri);
+
+        IFileStore dstStore = EFS.getStore(dstUri);
+        for (String additionalDir : createdDirs) {
+            dstStore = dstStore.getChild(additionalDir);
+        }
+        dstStore = dstStore.getChild(otherResource.getName());
+        srcStore.copy(
+            dstStore,
+            EFS.OVERWRITE | EFS.SHALLOW,
+            monitor.getNestedMonitor()
+        );
     }
 
     public boolean supportsPaste(@NotNull DBNNode other) {
