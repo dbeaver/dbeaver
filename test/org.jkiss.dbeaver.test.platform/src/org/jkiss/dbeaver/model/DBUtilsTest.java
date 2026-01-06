@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -57,7 +57,6 @@ public class DBUtilsTest extends DBeaverUnitTest {
             return DBPIdentifierCase.MIXED;
         }
     };
-    @Mock
     JDBCDataSource mockDataSource;
     @Mock
     private JDBCDataSource mockDataSourceSchemaTable;
@@ -95,7 +94,14 @@ public class DBUtilsTest extends DBeaverUnitTest {
 
     @Before
     public void setUp() throws Exception {
+        DBPDataSourceContainer dataSourceContainer = configureTestContainer("sqlite_jdbc");
+        mockDataSource = Mockito.mock(JDBCDataSource.class);//new GenericDataSource(monitor, dataSourceContainer, new GenericMetaModel(), sqlDialect);
+        Mockito.when(mockDataSource.getContainer()).thenReturn(dataSourceContainer);
         Mockito.when(mockDataSource.getSQLDialect()).thenReturn(sqlDialect);
+
+        Mockito.when(mockDataSourceSchemaTable.getContainer()).thenReturn(dataSourceContainer);
+        Mockito.when(mockDataSourceCatalogSchema.getContainer()).thenReturn(dataSourceContainer);
+        Mockito.when(mockDataSourceTable.getContainer()).thenReturn(dataSourceContainer);
 
         // Datasource 1. Catalog-table structure
         Mockito.lenient().when(mockRemoteInstance.getDataSource()).thenReturn(mockDataSource);

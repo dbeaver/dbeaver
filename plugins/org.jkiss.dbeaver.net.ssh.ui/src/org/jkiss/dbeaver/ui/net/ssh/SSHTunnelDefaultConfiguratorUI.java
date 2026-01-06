@@ -50,6 +50,7 @@ import org.jkiss.dbeaver.model.net.ssh.config.SSHHostConfiguration;
 import org.jkiss.dbeaver.model.net.ssh.registry.SSHSessionControllerDescriptor;
 import org.jkiss.dbeaver.model.net.ssh.registry.SSHSessionControllerRegistry;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.registry.ApplicationPolicyProvider;
 import org.jkiss.dbeaver.registry.configurator.DBPConnectionEditIntention;
 import org.jkiss.dbeaver.runtime.AbstractTrackingJob;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -650,6 +651,9 @@ public class SSHTunnelDefaultConfiguratorUI implements IObjectPropertyConfigurat
     static class CredentialsPanel extends Composite {
         private ConfigurationWrapper lastConfiguration;
 
+        private final boolean canEditCredentialsPerPolicy = !ApplicationPolicyProvider.getInstance()
+            .isPolicyEnabled(ApplicationPolicyProvider.POLICY_CREDENTIALS_EDIT);
+
         private final Text hostNameText;
         private final Text hostPortText;
         private final Text userNameText;
@@ -724,6 +728,7 @@ public class SSHTunnelDefaultConfiguratorUI implements IObjectPropertyConfigurat
                     }
                 });
                 savePasswordCheckbox.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
+                savePasswordCheckbox.setEnabled(canEditCredentialsPerPolicy);
             }
 
             if (editIntention == DBPConnectionEditIntention.CREDENTIALS_ONLY) {
@@ -767,10 +772,10 @@ public class SSHTunnelDefaultConfiguratorUI implements IObjectPropertyConfigurat
             hostPortText.setText(String.valueOf(configuration.port()));
 
             if (configuration.auth() instanceof SSHAuthConfiguration.WithPassword password) {
-                final boolean savePassword = forceSavePassword || password.savePassword();
+                final boolean savePassword = canEditCredentialsPerPolicy && (forceSavePassword || password.savePassword());
                 passwordText.setText(CommonUtils.notEmpty(password.password()));
                 savePasswordCheckbox.setSelection(savePassword);
-                savePasswordCheckbox.setEnabled(!forceSavePassword);
+                savePasswordCheckbox.setEnabled(canEditCredentialsPerPolicy && !forceSavePassword);
             }
 
             if (configuration.auth() instanceof SSHAuthConfiguration.Password) {
