@@ -367,40 +367,44 @@ public class DBNResource extends DBNNode implements DBNStreamData, DBNNodeWithCa
         @NotNull DBRProgressMonitor monitor,
         @NotNull IResource otherResource
     ) throws DBException, CoreException {
-        fileStoreRecursiveCopy(monitor, otherResource, new ArrayList<>());
+        fileStoreRecursiveCopy(monitor, otherResource, null);
     }
 
     private void fileStoreRecursiveCopy(
         @NotNull DBRProgressMonitor monitor,
         @NotNull IResource otherResource,
-        @NotNull List<String> pathSegments
+        @Nullable IFileStore destinationStore
     ) throws DBException, CoreException {
-        fileStoreSingleFileCopy(monitor, otherResource, pathSegments);
+        IFileStore dstStore = destinationStore != null ? destinationStore : getDestinationStore();
+        dstStore = dstStore.getChild(otherResource.getName());
         if (otherResource instanceof IFolder folderSource) {
-            List<String> newCreatedParentFolders = new ArrayList<>(pathSegments);
-            newCreatedParentFolders.add(folderSource.getName());
+            dstStore.mkdir(EFS.NONE, monitor.getNestedMonitor());
             for (IResource memeber : folderSource.members()) {
-                fileStoreRecursiveCopy(monitor, memeber, newCreatedParentFolders);
+                fileStoreRecursiveCopy(monitor, memeber, dstStore);
             }
+        } else {
+            fileStoreSingleFileCopy(monitor, otherResource, dstStore);
         }
+    }
+
+    @NotNull
+    private IFileStore getDestinationStore() throws DBException, CoreException {
+        URI dstUri = resource.getLocationURI();
+        if (dstUri == null) {
+            throw new DBException("Destination resource has no location URI");
+        }
+        return EFS.getStore(dstUri);
     }
 
     private void fileStoreSingleFileCopy(
         @NotNull DBRProgressMonitor monitor,
         @NotNull IResource otherResource,
-        @NotNull List<String> pathSegments
+        @NotNull IFileStore dstStore
     ) throws DBException, CoreException {
         URI srcUri = otherResource.getLocationURI();
-        URI dstUri = resource.getLocationURI();
-        if (srcUri == null || dstUri == null) {
-            throw new DBException("Resource has no location URI");
+        if (srcUri == null) {
+            throw new DBException("Source resource has no location URI");
         }
-        IFileStore dstStore = EFS.getStore(dstUri);
-        for (String additionalDir : pathSegments) {
-            dstStore = dstStore.getChild(additionalDir);
-        }
-        dstStore = dstStore.getChild(otherResource.getName());
-
         EFS.getStore(srcUri).copy(
             dstStore,
             EFS.OVERWRITE | EFS.SHALLOW,
