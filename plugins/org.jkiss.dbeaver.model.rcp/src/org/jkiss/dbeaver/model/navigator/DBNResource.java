@@ -373,14 +373,14 @@ public class DBNResource extends DBNNode implements DBNStreamData, DBNNodeWithCa
     private void fileStoreRecursiveCopy(
         @NotNull DBRProgressMonitor monitor,
         @NotNull IResource otherResource,
-        @NotNull List<String> createdParentFolders
+        @NotNull List<String> pathSegments
     ) throws DBException, CoreException {
-        fileStoreSingleFileCopy(monitor, otherResource, createdParentFolders);
+        fileStoreSingleFileCopy(monitor, otherResource, pathSegments);
         if (otherResource instanceof IFolder folderSource) {
-            List<String> newCreatedParentFolders = new ArrayList<>(createdParentFolders);
+            List<String> newCreatedParentFolders = new ArrayList<>(pathSegments);
             newCreatedParentFolders.add(folderSource.getName());
-            for (IResource file : folderSource.members()) {
-                fileStoreRecursiveCopy(monitor, file, newCreatedParentFolders);
+            for (IResource memeber : folderSource.members()) {
+                fileStoreRecursiveCopy(monitor, memeber, newCreatedParentFolders);
             }
         }
     }
@@ -388,7 +388,7 @@ public class DBNResource extends DBNNode implements DBNStreamData, DBNNodeWithCa
     private void fileStoreSingleFileCopy(
         @NotNull DBRProgressMonitor monitor,
         @NotNull IResource otherResource,
-        @NotNull List<String> createdDirs
+        @NotNull List<String> pathSegments
     ) throws DBException, CoreException {
         URI srcUri = otherResource.getLocationURI();
         URI dstUri = resource.getLocationURI();
@@ -396,7 +396,7 @@ public class DBNResource extends DBNNode implements DBNStreamData, DBNNodeWithCa
             throw new DBException("Resource has no location URI");
         }
         IFileStore dstStore = EFS.getStore(dstUri);
-        for (String additionalDir : createdDirs) {
+        for (String additionalDir : pathSegments) {
             dstStore = dstStore.getChild(additionalDir);
         }
         dstStore = dstStore.getChild(otherResource.getName());
