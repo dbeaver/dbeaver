@@ -28,7 +28,7 @@
         <profile>
             <id>appstore</id>
             <modules>
-                <module>product/appstore</module>
+                <module>appstore</module>
             </modules>
         </profile>
     </profiles>
