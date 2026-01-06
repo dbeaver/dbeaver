@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,17 +14,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.cli;
+package org.jkiss.dbeaver.model.cli.model.option;
 
-public interface CLIConstants {
-    short EXIT_CODE_CONTINUE = -1;
-    short EXIT_CODE_OK = 0;
-    short EXIT_CODE_ERROR = 1;
-    short EXIT_CODE_ILLEGAL_ARGUMENTS = 2;
+import org.jkiss.code.NotNull;
+import picocli.CommandLine;
 
-    String COMMAND_REUSE_WORKSPACE = "-reuseWorkspace";
+public class CreateDataSourceOptions {
+    @NotNull
+    @CommandLine.Option(names = {"--driver"}, required = true, arity = "1", description = "Database driver")
+    private String driver;
+    @CommandLine.ArgGroup(exclusive = false)
+    private DataSourceOptions dataSourceOptions;
 
-    String PARAM_PROJECT = "--project";
+    public DataSourceOptions getDataSourceOptions() {
+        return dataSourceOptions;
+    }
 
-    String CONTEXT_PARAM_AUTHENTICATOR = "authenticator";
+    @NotNull
+    public String getDriver() {
+        return driver;
+    }
 }

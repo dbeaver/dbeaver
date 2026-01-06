@@ -14,17 +14,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.cli;
+package org.jkiss.dbeaver.model.cli.model.option;
 
-public interface CLIConstants {
-    short EXIT_CODE_CONTINUE = -1;
-    short EXIT_CODE_OK = 0;
-    short EXIT_CODE_ERROR = 1;
-    short EXIT_CODE_ILLEGAL_ARGUMENTS = 2;
+import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.cli.CLIConstants;
+import picocli.CommandLine;
 
-    String COMMAND_REUSE_WORKSPACE = "-reuseWorkspace";
+public class ProjectOption {
+    @CommandLine.Option(names = {CLIConstants.PARAM_PROJECT}, arity = "1", description = "Project name or ID")
+    private String projectIdOrName;
 
-    String PARAM_PROJECT = "--project";
-
-    String CONTEXT_PARAM_AUTHENTICATOR = "authenticator";
+    @Nullable
+    public String getProjectIdOrName() {
+        return projectIdOrName;
+    }
 }
