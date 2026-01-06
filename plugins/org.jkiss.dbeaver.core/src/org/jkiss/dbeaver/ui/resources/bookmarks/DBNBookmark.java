@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPImage;
@@ -39,7 +40,7 @@ import java.util.List;
  */
 public class DBNBookmark extends DBNResource
 {
-    private BookmarkStorage storage;
+    private final BookmarkStorage storage;
 
     DBNBookmark(DBNNode parentNode, IResource resource, DBPResourceHandler handler) throws DBException, CoreException
     {
@@ -58,12 +59,14 @@ public class DBNBookmark extends DBNResource
         return storage;
     }
 
+    @NotNull
     @Override
-    public String getNodeName()
+    public String getNodeDisplayName()
     {
         return storage.getTitle();
     }
 
+    @Nullable
     @Override
     public String getNodeDescription()
     {
@@ -82,14 +85,15 @@ public class DBNBookmark extends DBNResource
         return storage.getImage();
     }
 
+    @NotNull
     @Override
     public String getNodeTargetName() {
         List<String> dsPath = storage.getDataSourcePath();
-        return CommonUtils.isEmpty(dsPath) ? super.getNodeName() : dsPath.get(dsPath.size() - 1);
+        return CommonUtils.isEmpty(dsPath) ? super.getNodeDisplayName() : dsPath.get(dsPath.size() - 1);
     }
 
     @Override
-    public void rename(DBRProgressMonitor monitor, String newName) throws DBException
+    public void rename(@NotNull DBRProgressMonitor monitor, @NotNull String newName) throws DBException
     {
         IFile file = (IFile) getResource();
         if (file != null) {

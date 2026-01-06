@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,10 +17,15 @@
 package org.jkiss.dbeaver.ext.mysql.model;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBDatabaseException;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.mysql.MySQLConstants;
-import org.jkiss.dbeaver.model.*;
+import org.jkiss.dbeaver.model.DBPDataKind;
+import org.jkiss.dbeaver.model.DBPEvaluationContext;
+import org.jkiss.dbeaver.model.DBPRefreshableObject;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
@@ -140,42 +145,9 @@ public class MySQLProcedure extends AbstractProcedure<MySQLDataSource, MySQLCata
                     }
                 } catch (SQLException e) {
                     clientBody = e.getMessage();
-                    throw new DBException(e, getDataSource());
+                    throw new DBDatabaseException(e, getDataSource());
                 }
             }
-/*
-            StringBuilder cb = new StringBuilder(getBody().length() + 100);
-            cb.append("CREATE ").append(procedureType).append(' ').append(getFullyQualifiedName()).append(" (");
-
-            int colIndex = 0;
-            for (MySQLProcedureParameter column : CommonUtils.safeCollection(getParameters(monitor))) {
-                if (column.getParameterKind() == DBSProcedureParameterKind.RETURN) {
-                    continue;
-                }
-                if (colIndex > 0) {
-                    cb.append(", ");
-                }
-                if (getProcedureType() == DBSProcedureType.PROCEDURE) {
-                    cb.append(column.getParameterKind()).append(' ');
-                }
-                cb.append(column.getName()).append(' ');
-                appendParameterType(cb, column);
-                colIndex++;
-            }
-            cb.append(")").append(GeneralUtils.getDefaultLineSeparator());
-            for (MySQLProcedureParameter column : CommonUtils.safeCollection(getParameters(monitor))) {
-                if (column.getParameterKind() == DBSProcedureParameterKind.RETURN) {
-                    cb.append("RETURNS ");
-                    appendParameterType(cb, column);
-                    cb.append(GeneralUtils.getDefaultLineSeparator());
-                }
-            }
-            if (deterministic) {
-                cb.append("DETERMINISTIC").append(GeneralUtils.getDefaultLineSeparator());
-            }
-            cb.append(getBody());
-            clientBody = cb.toString();
-*/
         }
         return clientBody;
     }
@@ -226,25 +198,27 @@ public class MySQLProcedure extends AbstractProcedure<MySQLDataSource, MySQLCata
         return charset;
     }
 
+    @Nullable
     @Override
-    public Collection<MySQLProcedureParameter> getParameters(DBRProgressMonitor monitor)
+    public Collection<MySQLProcedureParameter> getParameters(@NotNull DBRProgressMonitor monitor)
         throws DBException
     {
-        return getContainer().proceduresCache.getChildren(monitor, getContainer(), this);
+        return getContainer().getProceduresCache().getChildren(monitor, getContainer(), this);
     }
 
     @NotNull
     @Override
-    public String getFullyQualifiedName(DBPEvaluationContext context)
+    public String getFullyQualifiedName(@NotNull DBPEvaluationContext context)
     {
         return DBUtils.getFullQualifiedName(getDataSource(),
             getContainer(),
             this);
     }
 
+    @NotNull
     @Override
     @Property(hidden = true, editable = true, updatable = true, order = -1)
-    public String getObjectDefinitionText(DBRProgressMonitor monitor, Map<String, Object> options) throws DBException
+    public String getObjectDefinitionText(@NotNull DBRProgressMonitor monitor, @NotNull Map<String, Object> options) throws DBException
     {
         return getDeclaration(monitor);
     }
@@ -257,7 +231,7 @@ public class MySQLProcedure extends AbstractProcedure<MySQLDataSource, MySQLCata
 
     @Override
     public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException {
-        return getContainer().proceduresCache.refreshObject(monitor, getContainer(), this);
+        return getContainer().getProceduresCache().refreshObject(monitor, getContainer(), this);
     }
 
     @Override

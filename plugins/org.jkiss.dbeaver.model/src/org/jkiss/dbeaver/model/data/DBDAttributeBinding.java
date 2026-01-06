@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -141,6 +141,11 @@ public abstract class DBDAttributeBinding implements DBSObject, DBSAttributeBase
 
     public abstract String getRowIdentifierStatus();
 
+    public boolean isInRowIdentifier() {
+        DBDRowIdentifier rowIdentifier = getRowIdentifier();
+        return rowIdentifier != null && rowIdentifier.hasAttribute(this);
+    }
+
     @Nullable
     public abstract List<DBSEntityReferrer> getReferrers();
 
@@ -179,23 +184,32 @@ public abstract class DBDAttributeBinding implements DBSObject, DBSAttributeBase
             return true;
         }
         if (searchByName) {
-            if (attr instanceof DBDAttributeBinding) {
-                DBDAttributeBinding cmpAttr = (DBDAttributeBinding) attr;
+            if (attr instanceof DBDAttributeBinding cmpAttr) {
                 if (getLevel() != cmpAttr.getLevel() || getOrdinalPosition() != cmpAttr.getOrdinalPosition()) {
                     return false;
                 }
                 // Match all hierarchy names
                 for (DBDAttributeBinding a1 = cmpAttr, a2 = this; a1 != null && a2 != null; a1 = a1.getParentObject(), a2 = a2.getParentObject()) {
-                    if (!SQLUtils.compareAliases(attr.getName(), this.getName())) {
+                    if (!SQLUtils.compareAliases(a1.getName(), a2.getName())) {
                         return false;
                     }
                 }
                 return true;
             } else if (attr != null) {
-                return SQLUtils.compareAliases(attr.getName(), this.getName());
+                return matchesAttributes(attr);
             }
         }
         return false;
+    }
+
+    private boolean matchesAttributes(@NotNull DBSAttributeBase attr) {
+        if (attr instanceof DBSObject attrObj && this.getEntityAttribute() != null) {
+            return attrObj.getParentObject() == this.getEntityAttribute().getParentObject() && SQLUtils.compareAliases(
+                attr.getName(),
+                this.getName()
+            );
+        }
+        return SQLUtils.compareAliases(attr.getName(), this.getName());
     }
 
     @Nullable
@@ -220,7 +234,7 @@ public abstract class DBDAttributeBinding implements DBSObject, DBSAttributeBase
 
     @NotNull
     @Override
-    public String getFullyQualifiedName(DBPEvaluationContext context) {
+    public String getFullyQualifiedName(@NotNull DBPEvaluationContext context) {
         return getFullyQualifiedName(context, DBPAttributeReferencePurpose.UNSPECIFIED);
     }
 
@@ -234,8 +248,9 @@ public abstract class DBDAttributeBinding implements DBSObject, DBSAttributeBase
      */
     @NotNull
     public String getFullyQualifiedName(DBPEvaluationContext context, @NotNull DBPAttributeReferencePurpose purpose) {
-        if (this.getEntityAttribute() instanceof DBSContextBoundAttribute) {
-            return DBUtils.getQuotedIdentifier(this.getEntityAttribute(), purpose);
+        if (this.getEntityAttribute() instanceof DBSContextBoundAttribute cba && purpose != DBPAttributeReferencePurpose.UNSPECIFIED) {
+            // FIXME: we shouldn't use formatMemberReference here
+            return cba.formatMemberReference(false, null, purpose);
         }
         final DBPDataSource dataSource = getDataSource();
         if (getParentObject() == null) {

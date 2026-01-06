@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -66,8 +66,9 @@ public abstract class AbstractLoadService<RESULT> implements ILoadService<RESULT
             try {
                 List<DBRBlockingObject> activeBlocks = progressMonitor.getActiveBlocks();
                 if (!CommonUtils.isEmpty(activeBlocks)) {
-                    BlockCanceler.cancelBlock(progressMonitor, activeBlocks.get(activeBlocks.size() - 1), null);
+                    BlockCanceler.cancelBlock(progressMonitor, activeBlocks.get(activeBlocks.size() - 1));
                 }
+                Thread.currentThread().interrupt();
                 return true;
             } catch (DBException e) {
                 throw new InvocationTargetException(e);

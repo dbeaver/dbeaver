@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  * Copyright (C) 2017-2018 Alexander Fedorov (alexander.fedorov@jkiss.org)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -45,7 +45,6 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.RunnableContextDelegate;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.controls.CustomTableEditor;
 import org.jkiss.dbeaver.ui.controls.SelectDataSourceCombo;
 import org.jkiss.utils.CommonUtils;
 
@@ -66,18 +65,6 @@ public class DatabaseDebugConfigurationTab extends AbstractLaunchConfigurationTa
     private SelectDataSourceCombo connectionCombo;
     private Group typesGroup;
     private Composite panelPlaceholder;
-    private CustomTableEditor editor;
-
-    public void setEditor(CustomTableEditor editor) {
-        this.editor = editor;
-    }
-
-    @Override
-    public void postApply() {
-        if(editor != null){
-            editor.closeEditor();
-        }
-    }
 
     @Override
     public void createControl(Composite parent) {
@@ -161,7 +148,7 @@ public class DatabaseDebugConfigurationTab extends AbstractLaunchConfigurationTa
             }
         }
         setDebugType(dataSource, null);
-        //typesGroup.getParent().layout(true, true);
+        typesGroup.getParent().layout(true, true);
     }
 
     private void setDebugType(DBPDataSourceContainer dataSource, DebugConfigurationPanelDescriptor debugPanel) {
@@ -199,7 +186,6 @@ public class DatabaseDebugConfigurationTab extends AbstractLaunchConfigurationTa
             for (Control c : typesGroup.getChildren()) {
                 if (c instanceof Button && c.getData() == debugPanel) {
                     ((Button) c).setSelection(true);
-                    typesGroup.getParent().layout(true, true);
                     break;
                 }
             }

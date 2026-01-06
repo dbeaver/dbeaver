@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.ui.statistics;
 
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -38,22 +39,23 @@ import java.net.URLConnection;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.TimeZone;
-import java.util.stream.Collectors;
+import java.util.*;
+import java.util.stream.Stream;
 
 public class StatisticsTransmitter {
 
     private static final Log log = Log.getLog(StatisticsTransmitter.class);
+    public static final String STATS_HOSTS = /*<STATS-PROD-URL*/"stats.dbeaver.com"/*/>*/;
+    private static final String URL_TEMPLATE = "https://%s/send-statistics";
 
-    private static final String ENDPOINT = "https://stats.dbeaver.com/send-statistics";
+    private final String endpoint;
 
     private final String workspaceId;
 
     public StatisticsTransmitter(String workspaceId) {
         this.workspaceId = workspaceId;
+
+        endpoint = URL_TEMPLATE.formatted(STATS_HOSTS);
     }
 
     public void send(boolean detached) {
@@ -62,8 +64,9 @@ public class StatisticsTransmitter {
                 {
                     setSystem(true);
                 }
+                @NotNull
                 @Override
-                protected IStatus run(DBRProgressMonitor monitor) {
+                protected IStatus run(@NotNull DBRProgressMonitor monitor) {
                     sendStatistics(monitor, false);
                     return Status.OK_STATUS;
                 }
@@ -76,30 +79,36 @@ public class StatisticsTransmitter {
     private void sendStatistics(DBRProgressMonitor monitor, boolean sendActiveSession) {
         try {
             String appSessionId = DBWorkbench.getPlatform().getApplication().getApplicationRunId();
-            Path logsFolder = FeatureStatisticsCollector.getLogsFolder();
-            List<Path> logFiles = Files.list(logsFolder)
-                .filter(path -> path.getFileName().toString().endsWith(".log"))
-                .collect(Collectors.toList());
-            for (Path logFile : logFiles) {
-                String fileName = logFile.getFileName().toString();
-                fileName = fileName.substring(0, fileName.length() - 4);
-                String[] parts = fileName.split("_");
-                if (parts.length != 2) {
-                    continue;
-                }
-                String timestamp = parts[0];
-                String sessionId = parts[1];
-                if (sendActiveSession) {
-                    if (sessionId.equals(appSessionId)) {
-                        sendLogFile(logFile, timestamp, sessionId);
-                        break;
-                    }
-                } else {
-                    if (sessionId.equals(appSessionId)) {
-                        // This is active session
+            Path activityLogsFolder = FeatureStatisticsCollector.getActivityLogsFolder();
+            if (Files.exists(activityLogsFolder) && !Files.isWritable(activityLogsFolder)) {
+                log.debug("Read-only metadata folder - can't send statistics");
+                return;
+            }
+            try (Stream<Path> list = Files.list(activityLogsFolder)) {
+                List<Path> logFiles = list
+                    .filter(path -> path.getFileName().toString().endsWith(".log"))
+                    .toList();
+                for (Path logFile : logFiles) {
+                    String fileName = logFile.getFileName().toString();
+                    fileName = fileName.substring(0, fileName.length() - 4);
+                    String[] parts = fileName.split("_");
+                    if (parts.length != 2) {
                         continue;
                     }
-                    sendLogFile(logFile, timestamp, sessionId);
+                    String timestamp = parts[0];
+                    String sessionId = parts[1];
+                    if (sendActiveSession) {
+                        if (sessionId.equals(appSessionId)) {
+                            sendLogFile(logFile, timestamp, sessionId);
+                            break;
+                        }
+                    } else {
+                        if (sessionId.equals(appSessionId)) {
+                            // This is active session
+                            continue;
+                        }
+                        sendLogFile(logFile, timestamp, sessionId);
+                    }
                 }
             }
         } catch (Exception e) {
@@ -108,26 +117,35 @@ public class StatisticsTransmitter {
     }
 
     private void sendLogFile(Path logFile, String timestamp, String sessionId) {
+        if (Files.exists(logFile) && !Files.isWritable(logFile)) {
+            log.debug("Statistics file is read-only, skipping transmission: " + logFile);
+            return;
+        }
         //log.debug("Sending statistics file '" + logFile.toAbsolutePath() + "'");
         try {
+            Map<String, String> parametersMap = new HashMap<>();
+            parametersMap.put("Content-Type", "text/plain");
+            parametersMap.put("Locale", Locale.getDefault().toString());
+            parametersMap.put("Country", Locale.getDefault().getISO3Country());
+            parametersMap.put("Timezone", TimeZone.getDefault().getID());
+            parametersMap.put("Application-Name", GeneralUtils.getProductName());
+            parametersMap.put("Application-Version", GeneralUtils.getProductVersion().toString());
+            parametersMap.put("OS", CommonUtils.notEmpty(System.getProperty(StandardConstants.ENV_OS_NAME)));
+            if (DBWorkbench.isPlatformStarted()) {
+                parametersMap.putAll(DBWorkbench.getPlatform().getApplication()
+                    .getAdditionalApplicationProperties());
+            }
             URLConnection urlConnection = WebUtils.openURLConnection(
-                ENDPOINT + "?session=" + sessionId + "&time=" + timestamp,
+                endpoint + "?session=" + sessionId + "&time=" + timestamp,
                 null,
                 workspaceId,
                 "POST",
                 0,
                 5000,
-                Map.of(
-                    "Content-Type", "text/plain",
-                    "Locale", Locale.getDefault().toString(),
-                    "Country", Locale.getDefault().getISO3Country(),
-                    "Timezone", TimeZone.getDefault().getID(),
-                    "Application-Name", GeneralUtils.getProductName(),
-                    "Application-Version", GeneralUtils.getProductVersion().toString(),
-                    "OS", CommonUtils.notEmpty(System.getProperty(StandardConstants.ENV_OS_NAME))));
+                parametersMap
+                );
 
-            ((HttpURLConnection)urlConnection).setFixedLengthStreamingMode(Files.size(logFile));
-
+            ((HttpURLConnection) urlConnection).setFixedLengthStreamingMode(Files.size(logFile));
             try (OutputStream outputStream = urlConnection.getOutputStream()) {
                 Files.copy(logFile, outputStream);
             }
@@ -141,15 +159,13 @@ public class StatisticsTransmitter {
                 log.debug("Error reading statistics server response");
             }
             ((HttpURLConnection) urlConnection).disconnect();
-
-            Files.delete(logFile);
         } catch (Exception e) {
             log.debug("Error sending statistics file '" + logFile.toAbsolutePath() + "'.", e);
-
+        } finally {
             try {
                 Files.delete(logFile);
             } catch (IOException ex) {
-                log.debug("Error deleting file with usage statistics '" + logFile.toAbsolutePath() + "'.", e);
+                log.debug("Error deleting file with usage statistics '" + logFile.toAbsolutePath() + "'.", ex);
             }
         }
     }

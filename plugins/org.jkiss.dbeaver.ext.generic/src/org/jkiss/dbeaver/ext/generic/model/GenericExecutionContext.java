@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,12 +22,8 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.generic.GenericConstants;
 import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.DPIContainer;
 import org.jkiss.dbeaver.model.connection.DBPConnectionBootstrap;
-import org.jkiss.dbeaver.model.exec.DBCException;
-import org.jkiss.dbeaver.model.exec.DBCExecutionContextDefaults;
-import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
-import org.jkiss.dbeaver.model.exec.DBCTransactionManager;
+import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
@@ -35,10 +31,13 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCRemoteInstance;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.LocalCacheProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.SQLException;
+import java.util.List;
 import java.util.regex.Matcher;
 
 /**
@@ -53,7 +52,6 @@ public class GenericExecutionContext extends JDBCExecutionContext implements DBC
         super(instance, purpose);
     }
 
-    @DPIContainer
     @NotNull
     @Override
     public GenericDataSource getDataSource() {
@@ -62,7 +60,7 @@ public class GenericExecutionContext extends JDBCExecutionContext implements DBC
 
     @Nullable
     @Override
-    public DBCExecutionContextDefaults getContextDefaults() {
+    public DBCExecutionContextDefaults<?,?> getContextDefaults() {
         return this;
     }
 
@@ -72,30 +70,36 @@ public class GenericExecutionContext extends JDBCExecutionContext implements DBC
         // Get selected entity (catalog or schema)
         selectedEntityName = null;
         try (JDBCSession session = openSession(monitor, DBCExecutionPurpose.META, "Determine default catalog/schema")) {
+            // Note: both catalog and schema might exist. And the active object must be the most concrete one (schema if exists)
             if (CommonUtils.isEmpty(dataSource.getQueryGetActiveDB())) {
-                {
-                    try {
-                        selectedEntityName = session.getCatalog();
-                        if (dataSource.getSelectedEntityType() == null && !CommonUtils.isEmpty(selectedEntityName)) {
-                            dataSource.setSelectedEntityType(GenericConstants.ENTITY_TYPE_CATALOG);
-                            dataSource.setSelectedEntityFromAPI(true);
-                        }
-                    } catch (Throwable e) {
-                        // Seems to be not supported
-                        log.debug(e);
-                    }
+                String catalogName;
+                String schemaName;
+                try {
+                    catalogName = session.getCatalog();
+                } catch (Throwable e) {
+                    catalogName = null; // Seems to be not supported
+                    log.debug(e);
                 }
-                if (CommonUtils.isEmpty(selectedEntityName)) {
-                    // Try to use current schema
-                    try {
-                        selectedEntityName = session.getSchema();
-                        if (dataSource.getSelectedEntityType() == null && !CommonUtils.isEmpty(selectedEntityName)) {
-                            dataSource.setSelectedEntityType(GenericConstants.ENTITY_TYPE_SCHEMA);
-                            dataSource.setSelectedEntityFromAPI(true);
-                        }
-                    } catch (Throwable e) {
-                        log.debug(e);
-                    }
+                try {
+                    schemaName = session.getSchema();
+                } catch (Throwable e) {
+                    schemaName = null; // Seems to be not supported
+                    log.debug(e);
+                }
+
+                String selectedObjectType = null;
+                if (CommonUtils.isNotEmpty(catalogName)) {
+                    selectedEntityName = catalogName;
+                    selectedObjectType = GenericConstants.ENTITY_TYPE_CATALOG;
+                }
+                if (CommonUtils.isNotEmpty(schemaName)) {
+                    selectedEntityName = schemaName;
+                    selectedObjectType = GenericConstants.ENTITY_TYPE_SCHEMA;
+                }
+
+                if (CommonUtils.isNotEmpty(selectedObjectType)) {
+                    dataSource.setSelectedEntityType(selectedObjectType);
+                    dataSource.setSelectedEntityFromAPI(true);
                 }
             } else {
                 try {
@@ -123,15 +127,15 @@ public class GenericExecutionContext extends JDBCExecutionContext implements DBC
             // If we have only one catalog then it is our selected entity
             if (dataSource.hasCatalogs() && dataSource.getCatalogs().size() == 1) {
                 dataSource.setSelectedEntityType(GenericConstants.ENTITY_TYPE_CATALOG);
-                selectedEntityName = dataSource.getCatalogs().get(0).getName();
+                selectedEntityName = dataSource.getCatalogs().getFirst().getName();
             } else if (dataSource.hasSchemas() && dataSource.getSchemas().size() == 1) {
                 dataSource.setSelectedEntityType(GenericConstants.ENTITY_TYPE_SCHEMA);
-                selectedEntityName = dataSource.getSchemas().get(0).getName();
+                selectedEntityName = dataSource.getSchemas().getFirst().getName();
             }
         }
     }
 
-    void initDefaultsFrom(DBRProgressMonitor monitor, GenericExecutionContext context) throws DBCException {
+    public void initDefaultsFrom(DBRProgressMonitor monitor, GenericExecutionContext context) throws DBCException {
         GenericCatalog defaultCatalog = context.getDefaultCatalog();
         String entityName = null;
         if (defaultCatalog != null && context.supportsCatalogChange()) {
@@ -190,26 +194,20 @@ public class GenericExecutionContext extends JDBCExecutionContext implements DBC
 
     @Override
     public GenericCatalog getDefaultCatalog() {
-        if (!CommonUtils.isEmpty(selectedEntityName)) {
-            GenericDataSource dataSource = getDataSource();
-            if (dataSource.hasCatalogs()) {
-                if (dataSource.getSelectedEntityType() == null || dataSource.getSelectedEntityType().equals(GenericConstants.ENTITY_TYPE_CATALOG) || !dataSource.hasSchemas()) {
-                    return getDataSource().getCatalog(selectedEntityName);
-                }
-            }
+        if (GenericConstants.ENTITY_TYPE_CATALOG.equals(getDataSource().getSelectedEntityType())
+            && getDefaultObject() instanceof GenericCatalog catalog
+        ) {
+            return catalog;
         }
         return getDataSource().getDefaultCatalog();
     }
 
     @Override
     public GenericSchema getDefaultSchema() {
-        if (!CommonUtils.isEmpty(selectedEntityName)) {
-            GenericDataSource dataSource = getDataSource();
-            if (!dataSource.hasCatalogs() && dataSource.hasSchemas()) {
-                if (dataSource.getSelectedEntityType() == null || dataSource.getSelectedEntityType().equals(GenericConstants.ENTITY_TYPE_SCHEMA) || !dataSource.hasCatalogs()) {
-                    return dataSource.getSchema(selectedEntityName);
-                }
-            }
+        if (GenericConstants.ENTITY_TYPE_SCHEMA.equals(getDataSource().getSelectedEntityType())
+            && getDefaultObject() instanceof GenericSchema schema
+        ) {
+            return schema;
         }
         return getDataSource().getDefaultSchema();
     }
@@ -217,10 +215,13 @@ public class GenericExecutionContext extends JDBCExecutionContext implements DBC
     @Override
     public boolean supportsCatalogChange() {
         GenericDataSource dataSource = getDataSource();
-        if (!(dataSource.getInfo() instanceof GenericDataSourceInfo)) {
-            return true;
+        if (!(dataSource.getInfo() instanceof GenericDataSourceInfo info)) {
+            if (dataSource.isSelectedEntityFromAPI()) {
+                return !dataSource.getContainer().getDriver().isInternalDriver();
+            } else {
+                return CommonUtils.isNotEmpty(dataSource.getQuerySetActiveDB());
+            }
         }
-        final GenericDataSourceInfo info = (GenericDataSourceInfo) dataSource.getInfo();
         if (dataSource.isSelectedEntityFromAPI() || !CommonUtils.isEmpty(dataSource.getQuerySetActiveDB())) {
             if (CommonUtils.isEmpty(dataSource.getSelectedEntityType())) {
                 return dataSource.hasCatalogs() && info.supportsCatalogSelection();
@@ -235,10 +236,13 @@ public class GenericExecutionContext extends JDBCExecutionContext implements DBC
     @Override
     public boolean supportsSchemaChange() {
         GenericDataSource dataSource = getDataSource();
-        if (!(dataSource.getInfo() instanceof GenericDataSourceInfo)) {
-            return true;
+        if (!(dataSource.getInfo() instanceof GenericDataSourceInfo info)) {
+            if (dataSource.isSelectedEntityFromAPI()) {
+                return !dataSource.getContainer().getDriver().isInternalDriver();
+            } else {
+                return CommonUtils.isNotEmpty(dataSource.getQuerySetActiveDB());
+            }
         }
-        final GenericDataSourceInfo info = (GenericDataSourceInfo) dataSource.getInfo();
         if (dataSource.isSelectedEntityFromAPI() || !CommonUtils.isEmpty(dataSource.getQuerySetActiveDB())) {
             if (CommonUtils.isEmpty(dataSource.getSelectedEntityType())) {
                 return !dataSource.hasCatalogs() && dataSource.hasSchemas() && info.supportsSchemaSelection();
@@ -296,9 +300,9 @@ public class GenericExecutionContext extends JDBCExecutionContext implements DBC
         dataSource.setSelectedEntityType(GenericConstants.ENTITY_TYPE_CATALOG);
 
         if (oldSelectedCatalog != null) {
-            DBUtils.fireObjectSelect(oldSelectedCatalog, false);
+            DBUtils.fireObjectSelect(oldSelectedCatalog, false, this);
         }
-        DBUtils.fireObjectSelect(catalog, true);
+        DBUtils.fireObjectSelect(catalog, true, this);
     }
 
     @Override
@@ -313,9 +317,9 @@ public class GenericExecutionContext extends JDBCExecutionContext implements DBC
         setDefaultSchema(monitor, schema.getName());
 
         if (oldSelectedSchema != null) {
-            DBUtils.fireObjectSelect(oldSelectedSchema, false);
+            DBUtils.fireObjectSelect(oldSelectedSchema, false, this);
         }
-        DBUtils.fireObjectSelect(schema, true);
+        DBUtils.fireObjectSelect(schema, true, this);
     }
 
     private void setDefaultSchema(DBRProgressMonitor monitor, String schemaName) throws DBCException {
@@ -344,7 +348,7 @@ public class GenericExecutionContext extends JDBCExecutionContext implements DBC
 
         if (useBootstrapSettings) {
             DBPConnectionBootstrap bootstrap = getBootstrapSettings();
-            if (!CommonUtils.isEmpty(bootstrap.getDefaultSchemaName())) {
+            if (!CommonUtils.isEmpty(bootstrap.getDefaultSchemaName()) && this.supportsSchemaChange()) {
                 setDefaultSchema(monitor, bootstrap.getDefaultSchemaName());
             }
         }
@@ -362,7 +366,7 @@ public class GenericExecutionContext extends JDBCExecutionContext implements DBC
         if (!CommonUtils.equalObjects(oldEntityName, selectedEntityName)) {
             final DBSObject newDefaultObject = getDefaultObject();
             if (newDefaultObject != null) {
-                DBUtils.fireObjectSelectionChange(oldDefaultObject, newDefaultObject);
+                DBUtils.fireObjectSelectionChange(oldDefaultObject, newDefaultObject, this);
                 return true;
             }
         }
@@ -372,6 +376,23 @@ public class GenericExecutionContext extends JDBCExecutionContext implements DBC
     public GenericObjectContainer getDefaultObject() {
         if (!CommonUtils.isEmpty(selectedEntityName)) {
             GenericDataSource dataSource = getDataSource();
+            if (dataSource.hasCatalogs() && GenericConstants.ENTITY_TYPE_CATALOG.equals(dataSource.getSelectedEntityType())) {
+                return dataSource.getCatalog(selectedEntityName);
+            } else if (GenericConstants.ENTITY_TYPE_SCHEMA.equals(dataSource.getSelectedEntityType())) {
+                if (dataSource.hasSchemas()) {
+                    return dataSource.getSchema(selectedEntityName);
+                } else if (dataSource.hasCatalogs()) {
+                    List<GenericCatalog> catalogs = dataSource.getCatalogs();
+                    if (catalogs.size() == 1) {
+                        try {
+                            return catalogs.getFirst().getSchema(
+                                new LocalCacheProgressMonitor(new VoidProgressMonitor()), selectedEntityName);
+                        } catch (DBException e) {
+                            log.debug("Error reading schema in the first catalog: " + e.getMessage());
+                        }
+                    }
+                }
+            }
             if (dataSource.hasCatalogs()) {
                 if (dataSource.getSelectedEntityType() == null || dataSource.getSelectedEntityType().equals(GenericConstants.ENTITY_TYPE_CATALOG)) {
                     return dataSource.getCatalog(selectedEntityName);
@@ -387,4 +408,37 @@ public class GenericExecutionContext extends JDBCExecutionContext implements DBC
         return null;
     }
 
+    public String getDefaultCatalogCached() {
+        if (!CommonUtils.isEmpty(selectedEntityName)) {
+            GenericDataSource dataSource = getDataSource();
+            if (dataSource.hasCatalogs()) {
+                if (dataSource.getSelectedEntityType() == null ||
+                    dataSource.getSelectedEntityType().equals(GenericConstants.ENTITY_TYPE_CATALOG) ||
+                    !dataSource.hasSchemas()) {
+                    return selectedEntityName;
+                }
+            }
+        }
+        return null;
+    }
+
+    public String getDefaultSchemaCached() {
+        if (!CommonUtils.isEmpty(selectedEntityName)) {
+            GenericDataSource dataSource = getDataSource();
+            if (!dataSource.hasCatalogs() && dataSource.hasSchemas()) {
+                if (dataSource.getSelectedEntityType() == null ||
+                    dataSource.getSelectedEntityType().equals(GenericConstants.ENTITY_TYPE_SCHEMA) ||
+                    !dataSource.hasCatalogs()) {
+                    return selectedEntityName;
+                }
+            }
+        }
+        return null;
+    }
+
+    @NotNull
+    @Override
+    public DBCCachedContextDefaults getCachedDefault() {
+        return new DBCCachedContextDefaults(getDefaultCatalogCached(), getDefaultSchemaCached());
+    }
 }

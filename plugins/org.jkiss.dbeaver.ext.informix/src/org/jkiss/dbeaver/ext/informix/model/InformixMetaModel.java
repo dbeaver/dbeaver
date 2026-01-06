@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.ext.informix.model;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBDatabaseException;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.generic.model.*;
@@ -49,17 +50,23 @@ public class InformixMetaModel extends GenericMetaModel
         super();
     }
 
-    public String getViewDDL(DBRProgressMonitor monitor, GenericView sourceObject, Map<String, Object> options) throws DBException {
+    public String getViewDDL(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull GenericView sourceObject,
+        @NotNull Map<String, Object> options) throws DBException {
         return InformixUtils.getViewSource(monitor, sourceObject);
     }
 
     @Override
-    public String getProcedureDDL(DBRProgressMonitor monitor, GenericProcedure sourceObject) throws DBException {
+    public String getProcedureDDL(@NotNull DBRProgressMonitor monitor, @NotNull GenericProcedure sourceObject) throws DBException {
         return InformixUtils.getProcedureSource(monitor, sourceObject);
     }
     
     @Override
-    public String getTableDDL(DBRProgressMonitor monitor, GenericTableBase sourceObject, Map<String, Object> options) throws DBException {
+    public String getTableDDL(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull GenericTableBase sourceObject,
+        @NotNull Map<String, Object> options) throws DBException {
     	String tableDDL = super.getTableDDL(monitor, sourceObject, options);
     	// Triggers, Serials
     	// 
@@ -71,6 +78,7 @@ public class InformixMetaModel extends GenericMetaModel
         return true;
     }
 
+    @NotNull
     @Override
     public JDBCStatement prepareTableTriggersLoadStatement(@NotNull JDBCSession session, @NotNull GenericStructContainer container, @Nullable GenericTableBase table) throws SQLException {
         String query = "SELECT T1.trigname as TRIGGER_NAME, T1.*, T2.tabname AS OWNER FROM informix.systriggers AS T1, informix.systables AS T2 \n" +
@@ -84,6 +92,7 @@ public class InformixMetaModel extends GenericMetaModel
         return dbStat;
     }
 
+    @NotNull
     @Override
     public GenericTableTrigger createTableTriggerImpl(@NotNull JDBCSession session, @NotNull GenericStructContainer container, @NotNull GenericTableBase genericTableBase, String triggerName, @NotNull JDBCResultSet resultSet) {
         if (CommonUtils.isEmpty(triggerName)) {
@@ -97,7 +106,7 @@ public class InformixMetaModel extends GenericMetaModel
     }
 
     @Override
-    public List<? extends GenericTrigger> loadTriggers(DBRProgressMonitor monitor, @NotNull GenericStructContainer container, @Nullable GenericTableBase table) throws DBException {
+    public List<InformixTrigger> loadTriggers(@NotNull DBRProgressMonitor monitor, @NotNull GenericStructContainer container, @Nullable GenericTableBase table) throws DBException {
         assert table != null;
         try (JDBCSession session = DBUtils.openMetaSession(monitor, container, "Read triggers")) {
             String query =
@@ -107,7 +116,7 @@ public class InformixMetaModel extends GenericMetaModel
 
             try (JDBCPreparedStatement dbStat = session.prepareStatement(query)) {
                 dbStat.setString(1, table.getName());
-                List<GenericTrigger> result = new ArrayList<>();
+                List<InformixTrigger> result = new ArrayList<>();
 
                 try (JDBCResultSet dbResult = dbStat.executeQuery()) {
                     while (dbResult.next()) {
@@ -123,12 +132,12 @@ public class InformixMetaModel extends GenericMetaModel
                 return result;
             }
         } catch (SQLException e) {
-            throw new DBException(e, container.getDataSource());
+            throw new DBDatabaseException(e, container.getDataSource());
         }
     }
 
     @Override
-    public boolean supportsTableDDLSplit(GenericTableBase sourceObject) {
+    public boolean supportsTableDDLSplit(@NotNull GenericTableBase sourceObject) {
         return false;
     }
 
@@ -143,7 +152,7 @@ public class InformixMetaModel extends GenericMetaModel
     }
 
     @Override
-    public String generateOnDeleteFK(DBSForeignKeyModifyRule deleteRule) {
+    public String generateOnDeleteFK(@NotNull DBSForeignKeyModifyRule deleteRule) {
         if (deleteRule != null && deleteRule.getId().equals("CASCADE")) {
             return "ON DELETE CASCADE";
         }
@@ -151,7 +160,7 @@ public class InformixMetaModel extends GenericMetaModel
     }
 
     @Override
-    public String generateOnUpdateFK(DBSForeignKeyModifyRule updateRule) {
+    public String generateOnUpdateFK(@NotNull DBSForeignKeyModifyRule updateRule) {
         return null;
     }
 

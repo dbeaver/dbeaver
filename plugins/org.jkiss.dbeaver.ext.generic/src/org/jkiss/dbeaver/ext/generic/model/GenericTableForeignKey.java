@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,7 +37,7 @@ import java.util.List;
 /**
  * GenericTableForeignKey
  */
-public class GenericTableForeignKey extends JDBCTableForeignKey<GenericTableBase, DBSEntityReferrer> {
+public class GenericTableForeignKey extends JDBCTableForeignKey<GenericTableBase, GenericTableForeignKeyColumnTable, DBSEntityReferrer> {
     private static final Log log = Log.getLog(GenericTableForeignKey.class);
 
     private DBSForeignKeyDeferability deferability;
@@ -72,8 +72,13 @@ public class GenericTableForeignKey extends JDBCTableForeignKey<GenericTableBase
     }
 
     @Override
-    public List<GenericTableForeignKeyColumnTable> getAttributeReferences(DBRProgressMonitor monitor) {
+    public List<GenericTableForeignKeyColumnTable> getAttributeReferences(@Nullable DBRProgressMonitor monitor) {
         return columns;
+    }
+
+    @Override
+    public void setAttributeReferences(List<GenericTableForeignKeyColumnTable> columns) throws DBException {
+        this.columns = columns;
     }
 
     public void addColumn(GenericTableForeignKeyColumnTable column) {
@@ -87,7 +92,7 @@ public class GenericTableForeignKey extends JDBCTableForeignKey<GenericTableBase
         this.columns = columns;
         final List<? extends DBSEntityAttributeRef> refColumns;
         try {
-            refColumns = referencedKey.getAttributeReferences(monitor);
+            refColumns = referencedConstraint.getAttributeReferences(monitor);
         } catch (DBException e) {
             log.error("Error getting referenced key columns", e);
             return;
@@ -114,7 +119,7 @@ public class GenericTableForeignKey extends JDBCTableForeignKey<GenericTableBase
 
     @NotNull
     @Override
-    public String getFullyQualifiedName(DBPEvaluationContext context) {
+    public String getFullyQualifiedName(@NotNull DBPEvaluationContext context) {
         return DBUtils.getFullQualifiedName(getDataSource(),
             getTable().getCatalog(),
             getTable().getSchema(),

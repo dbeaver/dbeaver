@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.ext.generic.model;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBDatabaseException;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.generic.GenericConstants;
 import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaObject;
@@ -52,7 +53,7 @@ public class GenericProcedure extends AbstractProcedure<GenericDataSource, Gener
     private static final Pattern PATTERN_COL_NAME_NUMERIC = Pattern.compile("\\$?([0-9]+)");
 
     private String specificName;
-    private DBSProcedureType procedureType;
+    private final DBSProcedureType procedureType;
     private List<GenericProcedureParameter> columns;
     private String source;
     private GenericFunctionResultType functionResultType;
@@ -84,13 +85,14 @@ public class GenericProcedure extends AbstractProcedure<GenericDataSource, Gener
         this.source = source;
     }
 
-    @Property(viewable = true, order = 3)
+    @Nullable
+    @Property(viewable = true, order = 3, labelProvider = GenericCatalog.CatalogNameTermProvider.class)
     public GenericCatalog getCatalog()
     {
         return getContainer().getCatalog();
     }
 
-    @Property(viewable = true, order = 4)
+    @Property(viewable = true, labelProvider = GenericSchema.SchemaNameTermProvider.class, order = 4)
     public GenericSchema getSchema()
     {
         return getContainer().getSchema();
@@ -114,12 +116,16 @@ public class GenericProcedure extends AbstractProcedure<GenericDataSource, Gener
         return functionResultType;
     }
 
+    @Nullable
     @Override
-    public Collection<GenericProcedureParameter> getParameters(DBRProgressMonitor monitor)
+    public Collection<GenericProcedureParameter> getParameters(@NotNull DBRProgressMonitor monitor)
         throws DBException
     {
         if (columns == null) {
             loadProcedureColumns(monitor);
+            if (columns == null) {
+                columns = new ArrayList<>();
+            }
         }
         return columns;
     }
@@ -169,50 +175,7 @@ public class GenericProcedure extends AbstractProcedure<GenericDataSource, Gener
                     //int radix = GenericUtils.safeGetInt(dbResult, JDBCConstants.RADIX);
                     String remarks = GenericUtils.safeGetString(pcObject, dbResult, JDBCConstants.REMARKS);
                     int position = GenericUtils.safeGetInt(pcObject, dbResult, JDBCConstants.ORDINAL_POSITION);
-                    DBSProcedureParameterKind parameterType;
-                    if (DBSProcedureType.PROCEDURE == procedureType) {
-                        switch (columnTypeNum) {
-                            case DatabaseMetaData.procedureColumnIn:
-                                parameterType = DBSProcedureParameterKind.IN;
-                                break;
-                            case DatabaseMetaData.procedureColumnInOut:
-                                parameterType = DBSProcedureParameterKind.INOUT;
-                                break;
-                            case DatabaseMetaData.procedureColumnOut:
-                                parameterType = DBSProcedureParameterKind.OUT;
-                                break;
-                            case DatabaseMetaData.procedureColumnReturn:
-                                parameterType = DBSProcedureParameterKind.RETURN;
-                                break;
-                            case DatabaseMetaData.procedureColumnResult:
-                                parameterType = DBSProcedureParameterKind.RESULTSET;
-                                break;
-                            default:
-                                parameterType = DBSProcedureParameterKind.UNKNOWN;
-                                break;
-                        }
-                    } else {
-                        switch (columnTypeNum) {
-                            case DatabaseMetaData.functionColumnIn:
-                                parameterType = DBSProcedureParameterKind.IN;
-                                break;
-                            case DatabaseMetaData.functionColumnInOut:
-                                parameterType = DBSProcedureParameterKind.INOUT;
-                                break;
-                            case DatabaseMetaData.functionColumnOut:
-                                parameterType = DBSProcedureParameterKind.OUT;
-                                break;
-                            case DatabaseMetaData.functionReturn:
-                                parameterType = DBSProcedureParameterKind.RETURN;
-                                break;
-                            case DatabaseMetaData.functionColumnResult:
-                                parameterType = DBSProcedureParameterKind.RESULTSET;
-                                break;
-                            default:
-                                parameterType = DBSProcedureParameterKind.UNKNOWN;
-                                break;
-                        }
-                    }
+                    DBSProcedureParameterKind parameterType = getParameterKind(columnTypeNum);
                     if (CommonUtils.isEmpty(columnName) && parameterType == DBSProcedureParameterKind.RETURN) {
                         columnName = "RETURN";
                     }
@@ -247,9 +210,34 @@ public class GenericProcedure extends AbstractProcedure<GenericDataSource, Gener
                 dbResult.close();
             }
         } catch (SQLException e) {
-            throw new DBException(e, getDataSource());
+            throw new DBDatabaseException(e, getDataSource());
         }
 
+    }
+
+    @NotNull
+    private DBSProcedureParameterKind getParameterKind(int columnTypeNum) {
+        DBSProcedureParameterKind parameterType;
+        if (DBSProcedureType.PROCEDURE == procedureType) {
+            parameterType = switch (columnTypeNum) {
+                case DatabaseMetaData.procedureColumnIn -> DBSProcedureParameterKind.IN;
+                case DatabaseMetaData.procedureColumnInOut -> DBSProcedureParameterKind.INOUT;
+                case DatabaseMetaData.procedureColumnOut -> DBSProcedureParameterKind.OUT;
+                case DatabaseMetaData.procedureColumnReturn -> DBSProcedureParameterKind.RETURN;
+                case DatabaseMetaData.procedureColumnResult -> DBSProcedureParameterKind.RESULTSET;
+                default -> DBSProcedureParameterKind.UNKNOWN;
+            };
+        } else {
+            parameterType = switch (columnTypeNum) {
+                case DatabaseMetaData.functionColumnIn -> DBSProcedureParameterKind.IN;
+                case DatabaseMetaData.functionColumnInOut -> DBSProcedureParameterKind.INOUT;
+                case DatabaseMetaData.functionColumnOut -> DBSProcedureParameterKind.OUT;
+                case DatabaseMetaData.functionReturn -> DBSProcedureParameterKind.RETURN;
+                case DatabaseMetaData.functionColumnResult -> DBSProcedureParameterKind.RESULTSET;
+                default -> DBSProcedureParameterKind.UNKNOWN;
+            };
+        }
+        return parameterType;
     }
 
     public void addColumn(GenericProcedureParameter column)
@@ -262,7 +250,7 @@ public class GenericProcedure extends AbstractProcedure<GenericDataSource, Gener
 
     @NotNull
     @Override
-    public String getFullyQualifiedName(DBPEvaluationContext context)
+    public String getFullyQualifiedName(@NotNull DBPEvaluationContext context)
     {
         return DBUtils.getFullQualifiedName(getDataSource(),
             getCatalog(),
@@ -285,8 +273,9 @@ public class GenericProcedure extends AbstractProcedure<GenericDataSource, Gener
         this.source = source;
     }
 
+    @NotNull
     @Override
-    public String getObjectDefinitionText(DBRProgressMonitor monitor, Map<String, Object> options) throws DBException {
+    public String getObjectDefinitionText(@NotNull DBRProgressMonitor monitor, @NotNull Map<String, Object> options) throws DBException {
         if (source == null) {
             source = getDataSource().getMetaModel().getProcedureDDL(monitor, this);
         }

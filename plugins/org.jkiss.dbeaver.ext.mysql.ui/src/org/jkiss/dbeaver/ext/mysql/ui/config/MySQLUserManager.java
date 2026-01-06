@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -52,7 +52,7 @@ public class MySQLUserManager extends AbstractObjectManager<MySQLUser> implement
     private static final boolean USE_DIRECT_UPDATE = false;
 
     @Override
-    public long getMakerOptions(DBPDataSource dataSource)
+    public long getMakerOptions(@NotNull DBPDataSource dataSource)
     {
         return FEATURE_EDITOR_ON_CREATE;
     }
@@ -65,19 +65,19 @@ public class MySQLUserManager extends AbstractObjectManager<MySQLUser> implement
     }
 
     @Override
-    public boolean canCreateObject(Object container)
+    public boolean canCreateObject(@NotNull Object container)
     {
         return true;
     }
 
     @Override
-    public boolean canDeleteObject(MySQLUser object)
+    public boolean canDeleteObject(@NotNull MySQLUser object)
     {
         return true;
     }
 
     @Override
-    public MySQLUser createNewObject(DBRProgressMonitor monitor, DBECommandContext commandContext, Object container, Object copyFrom, Map<String, Object> options)
+    public MySQLUser createNewObject(@NotNull DBRProgressMonitor monitor, @NotNull DBECommandContext commandContext, @NotNull Object container, Object copyFrom, @NotNull Map<String, Object> options)
     {
         MySQLUser newUser = new MySQLUser((MySQLDataSource) container, null);
         if (copyFrom instanceof MySQLUser) {
@@ -95,7 +95,7 @@ public class MySQLUserManager extends AbstractObjectManager<MySQLUser> implement
     }
 
     @Override
-    public void deleteObject(DBECommandContext commandContext, MySQLUser user, Map<String, Object> options)
+    public void deleteObject(@NotNull DBECommandContext commandContext, @NotNull MySQLUser user, @NotNull Map<String, Object> options)
     {
         commandContext.addCommand(new CommandDropUser(user), new DeleteObjectReflector<>(this), true);
     }
@@ -109,8 +109,9 @@ public class MySQLUserManager extends AbstractObjectManager<MySQLUser> implement
                 new DBECommandAbstract<MySQLUser>(
                     queue.getObject(),
                     MySQLUIMessages.edit_user_manager_command_flush_privileges) {
+                    @NotNull
                     @Override
-                    public DBEPersistAction[] getPersistActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, Map<String, Object> options) throws DBException {
+                    public DBEPersistAction[] getPersistActions(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext executionContext, @NotNull Map<String, Object> options) throws DBException {
                         if (CommonUtils.getOption(options, OPTION_SUPPRESS_FLUSH_PRIVILEGES)) {
                             return new DBEPersistAction[0];
                         }
@@ -138,13 +139,23 @@ public class MySQLUserManager extends AbstractObjectManager<MySQLUser> implement
         }
 
         @Override
-        public void validateCommand(DBRProgressMonitor monitor, Map<String, Object> options) throws DBException {
-            if (CommonUtils.isEmpty(getObject().getUserName())) {
+        public void validateCommand(@NotNull DBRProgressMonitor monitor, @NotNull Map<String, Object> options) throws DBException {
+            final String username = getObject().getUserName();
+            if (CommonUtils.isEmpty(username)) {
                 throw new DBException("Can't create user with empty name");
             }
-            if (CommonUtils.isEmpty(getObject().getHost())) {
+
+            final String host = getObject().getHost();
+            if (CommonUtils.isEmpty(host)) {
                 throw new DBException("Can't create user with empty host name");
             }
+
+            if (getObject().getDataSource().getUsers(monitor)
+                .stream()
+                .anyMatch(u -> username.equals(u.getUserName()) && host.equals(u.getHost()))) {
+                throw new DBException("Cannot create user: user '%s'@'%s' already exists".formatted(username, host));
+            }
+
             super.validateCommand(monitor, options);
         }
     }
@@ -154,8 +165,9 @@ public class MySQLUserManager extends AbstractObjectManager<MySQLUser> implement
         {
             super(user, MySQLUIMessages.edit_user_manager_command_drop_user);
         }
+        @NotNull
         @Override
-        public DBEPersistAction[] getPersistActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, Map<String, Object> options)
+        public DBEPersistAction[] getPersistActions(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext executionContext, @NotNull Map<String, Object> options)
         {
             return new DBEPersistAction[] {
                 new SQLDatabasePersistAction(MySQLUIMessages.edit_user_manager_command_drop_user, "DROP USER " + getObject().getFullName()) { //$NON-NLS-2$
@@ -230,8 +242,9 @@ public class MySQLUserManager extends AbstractObjectManager<MySQLUser> implement
             newHost = newName.substring(atPosition + 1);
         }
 
+        @NotNull
         @Override
-        public DBEPersistAction[] getPersistActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, Map<String, Object> options) {
+        public DBEPersistAction[] getPersistActions(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext executionContext, @NotNull Map<String, Object> options) {
             if (CommonUtils.equalObjects(oldName, newName)) {
                 return new DBEPersistAction[0];
             }
@@ -252,8 +265,9 @@ public class MySQLUserManager extends AbstractObjectManager<MySQLUser> implement
             return DBUtils.getQuotedIdentifier(dataSource, userName) + "@" + DBUtils.getQuotedIdentifier(dataSource, host);
         }
 
+        @NotNull
         @Override
-        public DBECommand<?> merge(DBECommand<?> prevCommand, Map<Object, Object> userParams) {
+        public DBECommand<?> merge(@NotNull DBECommand<?> prevCommand, @NotNull Map<Object, Object> userParams) {
             // We need very first and very last rename commands. They produce final rename
             final String mergeId = "rename" + getObject().hashCode();
             CommandRenameUser renameCmd = (CommandRenameUser) userParams.get(mergeId);
@@ -275,7 +289,7 @@ public class MySQLUserManager extends AbstractObjectManager<MySQLUser> implement
 
     private class ReflectorRenameUser implements DBECommandReflector<MySQLUser, CommandRenameUser> {
         @Override
-        public void redoCommand(CommandRenameUser command) {
+        public void redoCommand(@NotNull CommandRenameUser command) {
             MySQLUser user = command.getObject();
             user.setUserName(command.getNewUserName());
             setHost(user, command.getNewHost());
@@ -294,7 +308,7 @@ public class MySQLUserManager extends AbstractObjectManager<MySQLUser> implement
         }
 
         @Override
-        public void undoCommand(CommandRenameUser command) {
+        public void undoCommand(@NotNull CommandRenameUser command) {
             MySQLUser user = command.getObject();
             user.setUserName(command.getOldUserName());
             setHost(user, command.getOldHost());

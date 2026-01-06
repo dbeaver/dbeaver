@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,10 @@ package org.jkiss.dbeaver.ui.editors;
 
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.resource.ImageDescriptor;
+import org.eclipse.jface.resource.StringConverter;
+import org.eclipse.osgi.util.NLS;
+import org.eclipse.swt.graphics.Color;
+import org.eclipse.swt.graphics.RGB;
 import org.eclipse.ui.IMemento;
 import org.eclipse.ui.IPersistableElement;
 import org.jkiss.code.NotNull;
@@ -25,10 +29,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
-import org.jkiss.dbeaver.model.DBIcon;
-import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.DBPDataSourceContainer;
-import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
@@ -48,11 +49,11 @@ import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UITask;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.ConnectionLostDialog;
+import org.jkiss.dbeaver.ui.editors.internal.EditorsMessages;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 
-import java.lang.reflect.InvocationTargetException;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Objects;
@@ -60,7 +61,7 @@ import java.util.Objects;
 /**
  * Lazy input. Use by entity editors which are created during DBeaver startup (from memo by factory).
  */
-public class DatabaseLazyEditorInput implements IDatabaseEditorInput, ILazyEditorInput, IPersistableElement
+public class DatabaseLazyEditorInput implements IDatabaseEditorInput, ILazyEditorInput, IPersistableElement, DBPDataSourceContainerProvider
 {
     private static final Log log = Log.getLog(DatabaseLazyEditorInput.class);
 
@@ -68,11 +69,13 @@ public class DatabaseLazyEditorInput implements IDatabaseEditorInput, ILazyEdito
     private final String nodeName;
     private final String activePageId;
     private final String activeFolderId;
+    private final Color connectionColor;
     private final String dataSourceId;
     private final String inputClass;
     private final boolean canLoadImmediately;
 
     // Initialized on demand
+    @Nullable
     private DBPProject project;
     private DBPDataSourceContainer dataSourceContainer;
 
@@ -89,6 +92,13 @@ public class DatabaseLazyEditorInput implements IDatabaseEditorInput, ILazyEdito
         activePageId = memento.getString(DatabaseEditorInputFactory.TAG_ACTIVE_PAGE);
         activeFolderId = memento.getString(DatabaseEditorInputFactory.TAG_ACTIVE_FOLDER);
 
+        RGB connectionColorRgb = StringConverter.asRGB(memento.getString(DatabaseEditorInputFactory.TAG_CONNECTION_COLOR), null);
+        if (connectionColorRgb != null) {
+            connectionColor = new Color(connectionColorRgb);
+        } else {
+            connectionColor = null;
+        }
+
         if (nodeName == null && nodePath != null) {
             int divPos = nodePath.lastIndexOf('/');
             nodeName = divPos == -1 ? nodePath : nodePath.substring(divPos + 1);
@@ -98,11 +108,12 @@ public class DatabaseLazyEditorInput implements IDatabaseEditorInput, ILazyEdito
         this.canLoadImmediately = true;
     }
 
-    public DatabaseLazyEditorInput(
+    DatabaseLazyEditorInput(
         String nodePath,
         String nodeName,
         String activePageId,
         String activeFolderId,
+        @Nullable Color connectionColor,
         String dataSourceId,
         String inputClass,
         @Nullable DBPProject project,
@@ -113,6 +124,7 @@ public class DatabaseLazyEditorInput implements IDatabaseEditorInput, ILazyEdito
         this.nodeName = nodeName;
         this.activePageId = activePageId;
         this.activeFolderId = activeFolderId;
+        this.connectionColor = connectionColor;
         this.dataSourceId = dataSourceId;
         this.inputClass = inputClass;
         this.project = project;
@@ -138,6 +150,8 @@ public class DatabaseLazyEditorInput implements IDatabaseEditorInput, ILazyEdito
         return nodeName;
     }
 
+    @Nullable
+    @Override
     public String getNodePath() {
         return nodePath;
     }
@@ -163,14 +177,15 @@ public class DatabaseLazyEditorInput implements IDatabaseEditorInput, ILazyEdito
         return null;
     }
 
+    @Nullable
     @Override
     public DBCExecutionContext getExecutionContext() {
         return null;
     }
 
+    @Nullable
     @Override
-    public DBNDatabaseNode getNavigatorNode()
-    {
+    public DBNDatabaseNode getNavigatorNode() {
         return null;
     }
 
@@ -190,6 +205,12 @@ public class DatabaseLazyEditorInput implements IDatabaseEditorInput, ILazyEdito
     public String getDefaultFolderId()
     {
         return activeFolderId;
+    }
+
+    @Nullable
+    @Override
+    public Color getConnectionColor() {
+        return connectionColor;
     }
 
     @Nullable
@@ -236,23 +257,29 @@ public class DatabaseLazyEditorInput implements IDatabaseEditorInput, ILazyEdito
         return Objects.hash(nodePath, activePageId, activeFolderId, dataSourceId);
     }
 
+    @Nullable
+    @Override
+    public DBPProject getProject() {
+        return project;
+    }
+
     public IDatabaseEditorInput initializeRealInput(@NotNull DBRProgressMonitor monitor) throws DBException
     {
+        if (dataSourceId == null) {
+            return null;
+        }
         // Get the node path.
         if (project != null) {
             dataSourceContainer = project.getDataSourceRegistry().getDataSource(dataSourceId);
         }
         if (dataSourceContainer == null) {
-            log.error("Can't find data source '" + dataSourceId + "'"); //$NON-NLS-2$
+            log.error("Can not find data source '" + dataSourceId + "'"); //$NON-NLS-2$
             return null;
         }
         if (project == null) {
             project = dataSourceContainer.getRegistry().getProject();
         }
         final DBNModel navigatorModel = DBWorkbench.getPlatform().getNavigatorModel();
-        navigatorModel.ensureProjectLoaded(project);
-        //dataSourceContainer, project, nodePath, nodeName, activePageId, activeFolderId
-
         long connectionTimeout = dataSourceContainer.getPreferenceStore().getInt(ModelPreferences.CONNECTION_VALIDATION_TIMEOUT);
         long connectionStart = System.currentTimeMillis();
         while (!dataSourceContainer.isConnected()) {
@@ -291,23 +318,21 @@ public class DatabaseLazyEditorInput implements IDatabaseEditorInput, ILazyEdito
 
             final DBNNode[] editorNodeResult = new DBNNode[1];
             DBExecUtils.tryExecuteRecover(monitor, dataSource, param -> {
-                try {
-                    DBNDataSource dsNode = (DBNDataSource) navigatorModel.getNodeByObject(monitor, this.dataSourceContainer, true);
-                    if (dsNode == null) {
-                        throw new DBException("Datasource '" + this.dataSourceContainer.getName() + "' navigator node not found");
-                    }
-
-                    dsNode.initializeNode(monitor, null);
-
-                    editorNodeResult[0] = navigatorModel.getNodeByPath(
-                        monitor, project, nodePath);
-                } catch (Exception e) {
-                    throw new InvocationTargetException(e);
+                // FIXME: DBNModel#getNodeByObject should ensure that the project is loaded, not the caller
+                navigatorModel.ensureProjectLoaded(project);
+                DBNDataSource dsNode = (DBNDataSource) navigatorModel.getNodeByObject(monitor, this.dataSourceContainer, true);
+                if (dsNode == null) {
+                    throw new DBException("Datasource '" + this.dataSourceContainer.getName() + "' navigator node not found");
                 }
+
+                dsNode.initializeNode(monitor, null);
+
+                editorNodeResult[0] = navigatorModel.getNodeByPath(
+                    monitor, project, nodePath);
             });
             DBNNode node = editorNodeResult[0];
             if (node == null) {
-                throw new DBException("Navigator node '" + nodePath + "' not found");
+                throw new DBException(NLS.bind(EditorsMessages.lazy_editor_input_cant_find_node, nodePath));
             }
             if (node instanceof DBNDatabaseNode) {
                 DBSObject object = ((DBNDatabaseNode) node).getObject();
@@ -341,6 +366,7 @@ public class DatabaseLazyEditorInput implements IDatabaseEditorInput, ILazyEdito
             nodeName,
             activePageId,
             activeFolderId,
+            connectionColor,
             dataSourceId,
             inputClass,
             project,
@@ -367,6 +393,20 @@ public class DatabaseLazyEditorInput implements IDatabaseEditorInput, ILazyEdito
         if (!CommonUtils.isEmpty(nodeName)) memento.putString(DatabaseEditorInputFactory.TAG_NODE_NAME, nodeName);
         if (!CommonUtils.isEmpty(activePageId)) memento.putString(DatabaseEditorInputFactory.TAG_ACTIVE_PAGE, activePageId);
         if (!CommonUtils.isEmpty(activeFolderId)) memento.putString(DatabaseEditorInputFactory.TAG_ACTIVE_FOLDER, activeFolderId);
+        if (connectionColor != null) {
+            memento.putString(DatabaseEditorInputFactory.TAG_CONNECTION_COLOR, StringConverter.asString(connectionColor.getRGB()));
+        }
     }
 
+    @Nullable
+    @Override
+    public DBPDataSourceContainer getDataSourceContainer() {
+        if (dataSourceContainer != null) {
+            return dataSourceContainer;
+        }
+        if (project != null && project.isRegistryLoaded()) {
+            return project.getDataSourceRegistry().getDataSource(dataSourceId);
+        }
+        return null;
+    }
 }

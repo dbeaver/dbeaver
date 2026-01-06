@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,11 +20,13 @@ package org.jkiss.dbeaver.tools.transfer.registry;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.tools.transfer.DTConstants;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferNode;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferSettings;
 import org.jkiss.utils.ArrayUtils;
@@ -35,8 +37,7 @@ import java.util.*;
 /**
  * DataTransferNodeDescriptor
  */
-public class DataTransferNodeDescriptor extends AbstractDescriptor
-{
+public class DataTransferNodeDescriptor extends AbstractDescriptor {
     public enum NodeType {
         PRODUCER,
         CONSUMER
@@ -56,8 +57,7 @@ public class DataTransferNodeDescriptor extends AbstractDescriptor
     private final List<ObjectType> sourceTypes = new ArrayList<>();
     private final List<DataTransferProcessorDescriptor> processors = new ArrayList<>();
 
-    public DataTransferNodeDescriptor(IConfigurationElement config)
-    {
+    public DataTransferNodeDescriptor(@NotNull IConfigurationElement config) {
         super(config);
 
         this.id = config.getAttribute("id");
@@ -76,9 +76,9 @@ public class DataTransferNodeDescriptor extends AbstractDescriptor
         loadNodeConfigurations(config);
     }
 
-    void loadNodeConfigurations(IConfigurationElement config) {
+    void loadNodeConfigurations(@NotNull IConfigurationElement config) {
         List<DataTransferProcessorDescriptor> procList = new ArrayList<>();
-        for (IConfigurationElement processorConfig : ArrayUtils.safeArray(config.getChildren("processor"))) {
+        for (IConfigurationElement processorConfig : ArrayUtils.safeArray(config.getChildren(DTConstants.PROP_PROCESSOR_TYPE))) {
             procList.add(new DataTransferProcessorDescriptor(this, processorConfig));
         }
         procList.sort(Comparator.comparing(DataTransferProcessorDescriptor::getName));
@@ -97,6 +97,7 @@ public class DataTransferNodeDescriptor extends AbstractDescriptor
         return name;
     }
 
+    @Nullable
     public String getDescription()
     {
         return description;
@@ -112,38 +113,39 @@ public class DataTransferNodeDescriptor extends AbstractDescriptor
         return advanced;
     }
 
+    @Nullable
     public Class<? extends IDataTransferNode> getNodeClass()
     {
         return implType.getObjectClass(IDataTransferNode.class);
     }
 
-    public IDataTransferNode<?> createNode() throws DBException
-    {
+    @NotNull
+    public IDataTransferNode<?> createNode() throws DBException {
         implType.checkObjectClass(IDataTransferNode.class);
         try {
-            return implType.getObjectClass(IDataTransferNode.class).getDeclaredConstructor().newInstance();
+            return implType.getImplClass(IDataTransferNode.class).getDeclaredConstructor().newInstance();
         } catch (Throwable e) {
             throw new DBException("Can't create data transformer node", e);
         }
     }
 
-    public IDataTransferSettings createSettings() throws DBException
-    {
+    @NotNull
+    public IDataTransferSettings createSettings() throws DBException {
         settingsType.checkObjectClass(IDataTransferSettings.class);
         try {
-            return settingsType.getObjectClass(IDataTransferSettings.class).getDeclaredConstructor().newInstance();
+            return settingsType.getImplClass(IDataTransferSettings.class).getDeclaredConstructor().newInstance();
         } catch (Throwable e) {
             throw new DBException("Can't create node settings", e);
         }
     }
 
+    @NotNull
     public NodeType getNodeType()
     {
         return nodeType;
     }
 
-    public boolean appliesToType(Class<?> objectType)
-    {
+    public boolean appliesToType(@NotNull Class<?> objectType) {
         if (!sourceTypes.isEmpty()) {
             for (ObjectType sourceType : sourceTypes) {
                 if (sourceType.matchesType(objectType)) {
@@ -163,6 +165,7 @@ public class DataTransferNodeDescriptor extends AbstractDescriptor
         return !processors.isEmpty();
     }
 
+    @NotNull
     public DataTransferProcessorDescriptor[] getProcessors() {
         return processors.toArray(new DataTransferProcessorDescriptor[0]);
     }
@@ -172,7 +175,8 @@ public class DataTransferNodeDescriptor extends AbstractDescriptor
      * @param sourceObjects object types
      * @return list of editors
      */
-    public List<DataTransferProcessorDescriptor> getAvailableProcessors(Collection<DBSObject> sourceObjects) {
+    @NotNull
+    public List<DataTransferProcessorDescriptor> getAvailableProcessors(@NotNull Collection<DBSObject> sourceObjects) {
         List<DataTransferProcessorDescriptor> editors = new ArrayList<>();
         for (DataTransferProcessorDescriptor descriptor : processors) {
             boolean supports = true;
@@ -197,7 +201,8 @@ public class DataTransferNodeDescriptor extends AbstractDescriptor
         return editors;
     }
 
-    public List<DataTransferProcessorDescriptor> getAvailableProcessors(Class<?> objectType) {
+    @NotNull
+    public List<DataTransferProcessorDescriptor> getAvailableProcessors(@NotNull Class<?> objectType) {
         List<DataTransferProcessorDescriptor> procList = new ArrayList<>();
         for (DataTransferProcessorDescriptor descriptor : this.processors) {
             if (descriptor.appliesToType(objectType)) {
@@ -207,8 +212,8 @@ public class DataTransferNodeDescriptor extends AbstractDescriptor
         return procList;
     }
 
-    public DataTransferProcessorDescriptor getProcessor(String id)
-    {
+    @Nullable
+    public DataTransferProcessorDescriptor getProcessor(@NotNull String id) {
         for (DataTransferProcessorDescriptor descriptor : processors) {
             if (descriptor.getId().equals(id)) {
                 return descriptor;

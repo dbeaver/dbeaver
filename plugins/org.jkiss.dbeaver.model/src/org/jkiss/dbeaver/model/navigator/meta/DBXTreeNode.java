@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.model.navigator.meta;
 import org.apache.commons.jexl3.JexlException;
 import org.apache.commons.jexl3.JexlExpression;
 import org.eclipse.core.runtime.IConfigurationElement;
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
@@ -27,6 +28,7 @@ import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
 import org.jkiss.dbeaver.model.navigator.DBNDataSource;
+import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.DBNUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
@@ -39,8 +41,7 @@ import java.util.List;
 /**
  * DBXTreeNode
  */
-public abstract class DBXTreeNode
-{
+public abstract class DBXTreeNode {
     private static final Log log = Log.getLog(DBXTreeNode.class);
 
     private final AbstractDescriptor source;
@@ -53,14 +54,23 @@ public abstract class DBXTreeNode
     private final boolean navigable;
     private final boolean inline;
     private final boolean virtual;
-    private boolean standaloneNode;
+    private final boolean standaloneNode;
     //private final boolean embeddable;
     private JexlExpression visibleIf;
     private DBXTreeNode recursiveLink;
     private List<DBXTreeNodeHandler> handlers = null;
 
-    public DBXTreeNode(AbstractDescriptor source, DBXTreeNode parent, IConfigurationElement config, boolean navigable, boolean inline, boolean virtual, boolean standalone, String visibleIf, String recursive)
-    {
+    public DBXTreeNode(
+        @NotNull AbstractDescriptor source,
+        @Nullable DBXTreeNode parent,
+        @Nullable IConfigurationElement config,
+        boolean navigable,
+        boolean inline,
+        boolean virtual,
+        boolean standalone,
+        @Nullable String visibleIf,
+        @Nullable String recursive
+    ) {
         this.source = source;
         this.parent = parent;
         if (parent != null) {
@@ -89,8 +99,7 @@ public abstract class DBXTreeNode
         }
     }
 
-    public DBXTreeNode(AbstractDescriptor source, DBXTreeNode parent, DBXTreeNode node)
-    {
+    public DBXTreeNode(@NotNull AbstractDescriptor source, @Nullable DBXTreeNode parent, @NotNull DBXTreeNode node) {
         this.source = source;
         this.parent = parent;
         if (parent != null) {
@@ -103,16 +112,6 @@ public abstract class DBXTreeNode
         this.virtual = node.virtual;
         this.standaloneNode = node.standaloneNode;
         this.visibleIf = node.visibleIf;
-        if (node.recursiveLink != null) {
-/*
-            recursiveLink = this;
-            for (String path : recursive.split("/")) {
-                if (path.equals("..")) {
-                    recursiveLink = recursiveLink.parent;
-                }
-            }
-*/
-        }
         this.defaultIcon = node.defaultIcon;
         if (node.icons != null) {
             this.icons = new ArrayList<>(node.icons);
@@ -131,10 +130,12 @@ public abstract class DBXTreeNode
         }
     }
 
+    @Nullable
     protected IConfigurationElement getConfig() {
         return config;
     }
 
+    @NotNull
     public AbstractDescriptor getSource()
     {
         return source;
@@ -146,7 +147,7 @@ public abstract class DBXTreeNode
     public abstract String getNodeTypeLabel(@Nullable DBPDataSource dataSource, @Nullable String locale);
 
     /**
-     * Human readable child nodes type
+     * Human-readable child nodes type
      */
     public abstract String getChildrenTypeLabel(@Nullable DBPDataSource dataSource, @Nullable String locale);
 
@@ -161,7 +162,7 @@ public abstract class DBXTreeNode
     }
 
     /**
-     * Virtual items. Such items are not added to global meta model and couldn't
+     * Virtual items. Such items are not added to global metamodel and couldn't
      * be found in tree by object
      * @return true or false
      */
@@ -208,12 +209,13 @@ public abstract class DBXTreeNode
         return false;
     }
 
+    @Nullable
     protected List<DBXTreeNode> getChildren() {
         return children;
     }
 
-    public List<DBXTreeNode> getChildren(DBNNode context)
-    {
+    @NotNull
+    public List<DBXTreeNode> getChildren(@Nullable DBNNode context) {
         if (context != null && !CommonUtils.isEmpty(children)) {
             boolean hasExpr = false;
             for (DBXTreeNode child : children) {
@@ -245,29 +247,32 @@ public abstract class DBXTreeNode
         children.clear();
     }
 
-    protected boolean isVisible(DBNNode context)
-    {
+    protected boolean isVisible(@Nullable DBNNode context) {
+        if (context instanceof DBNDatabaseNode dbNode && dbNode.getObject() == null) {
+            return false;
+        }
         try {
             return visibleIf == null || Boolean.TRUE.equals(visibleIf.evaluate(DBNUtils.makeContext(context)));
         } catch (JexlException e) {
-            log.debug("Error evaluating expression '" + visibleIf.getSourceText() + "' on node '" + context.getName() + "': " + GeneralUtils.getExpressionParseMessage(e));
+            log.debug("Error evaluating tree node expression '" + visibleIf.getSourceText() + "' on node '" + context.getName() + "': " + GeneralUtils.getExpressionParseMessage(e));
             return false;
         }
     }
 
-    public void addChild(DBXTreeNode child)
-    {
+    public void addChild(@NotNull DBXTreeNode child) {
         if (this.children == null) {
             this.children = new ArrayList<>();
         }
         this.children.add(child);
     }
 
+    @Nullable
     public DBXTreeNode getRecursiveLink()
     {
         return recursiveLink;
     }
 
+    @Nullable
     public DBPImage getDefaultIcon() {
         if (defaultIcon == null && this instanceof DBXTreeFolder) {
             return DBIcon.TREE_FOLDER;
@@ -275,47 +280,50 @@ public abstract class DBXTreeNode
         return defaultIcon;
     }
 
-    public void setDefaultIcon(DBPImage defaultIcon)
+    public void setDefaultIcon(@Nullable DBPImage defaultIcon)
     {
         this.defaultIcon = defaultIcon;
     }
 
+    @NotNull
     public List<DBXTreeIcon> getIcons()
     {
         return icons;
     }
 
-    public void addIcon(DBXTreeIcon icon)
-    {
+    public void addIcon(@NotNull DBXTreeIcon icon) {
         if (this.icons == null) {
             this.icons = new ArrayList<>();
         }
         this.icons.add(icon);
     }
 
-    public DBPImage getIcon(DBNNode context)
-    {
+    @Nullable
+    public DBPImage getIcon(@Nullable DBNNode context) {
         List<DBXTreeIcon> extIcons = getIcons();
         if (!CommonUtils.isEmpty(extIcons) && context != null) {
             // Try to get some icon depending on it's condition
             for (DBXTreeIcon icon : extIcons) {
-                if (icon.getExpression() == null) {
+                JexlExpression iconExpression = icon.getExpression();
+                if (iconExpression == null) {
                     continue;
                 }
                 try {
-                    Object result = icon.getExpression().evaluate(DBNUtils.makeContext(context));
+                    Object result = iconExpression.evaluate(DBNUtils.makeContext(context));
                     if (Boolean.TRUE.equals(result)) {
                         return icon.getIcon();
                     }
                 } catch (JexlException e) {
                     // do nothing
-                    log.debug("Error evaluating expression '" + icon.getExprString() + "' on node '" + context.getName() + "': " + GeneralUtils.getExpressionParseMessage(e));
+                    log.trace("Error evaluating node icon expression '" + icon.getExprString() +
+                        "' on node '" + context.getName() + "': " + GeneralUtils.getExpressionParseMessage(e));
                 }
             }
         }
         return getDefaultIcon();
     }
 
+    @Nullable
     public JexlExpression getVisibleIf()
     {
         return visibleIf;
@@ -326,14 +334,19 @@ public abstract class DBXTreeNode
         return "Node " + id;
     }
 
-    public void addActionHandler(DBXTreeNodeHandler.Action action, DBXTreeNodeHandler.Perform perform, String command) {
+    public void addActionHandler(
+        @NotNull DBXTreeNodeHandler.Action action,
+        @NotNull DBXTreeNodeHandler.Perform perform,
+        @NotNull String command
+    ) {
         if (handlers == null) {
             handlers = new ArrayList<>();
         }
         handlers.add(new DBXTreeNodeHandler(action, perform, command));
     }
 
-    public DBXTreeNodeHandler getHandler(DBXTreeNodeHandler.Action action) {
+    @Nullable
+    public DBXTreeNodeHandler getHandler(@NotNull DBXTreeNodeHandler.Action action) {
         if (handlers != null) {
             for (DBXTreeNodeHandler handler : handlers) {
                 if (handler.getAction() == action) {
@@ -344,11 +357,11 @@ public abstract class DBXTreeNode
         return null;
     }
 
-    public void moveChildAfter(DBXTreeNode child, DBXTreeNode afterItem) {
+    public void moveChildAfter(@NotNull DBXTreeNode child, @NotNull DBXTreeNode afterItem) {
         int afterIndex = -1;
         for (int i = 0; i < children.size(); i++) {
             DBXTreeNode n = children.get(i);
-            if (n == afterItem || (n instanceof DBXTreeFolder && n.getChildren() != null && n.getChildren().size() == 1 && n.getChildren().get(0) == afterItem)) {
+            if (n == afterItem || (n instanceof DBXTreeFolder && n.getChildren() != null && n.getChildren().size() == 1 && n.getChildren().getFirst() == afterItem)) {
                 afterIndex = i;
                 break;
             }
@@ -359,4 +372,18 @@ public abstract class DBXTreeNode
         }
     }
 
+    /**
+     * Remove node item from the node list
+     *
+     * @param item - node for remove
+     */
+    public void removeChild(DBXTreeItem item) {
+        if (children != null) {
+            children.remove(item);
+        }
+    }
+
+    public static boolean hasNonFolderNode(@NotNull List<DBXTreeNode> list) {
+        return list.stream().anyMatch(dbxTreeNode -> !(dbxTreeNode instanceof DBXTreeFolder));
+    }
 }

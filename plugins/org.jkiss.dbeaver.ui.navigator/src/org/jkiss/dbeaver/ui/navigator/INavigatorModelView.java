@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,13 +19,11 @@ package org.jkiss.dbeaver.ui.navigator;
 
 import org.eclipse.jface.viewers.Viewer;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.model.navigator.DBNNode;
 
 /**
  * INavigatorView
  */
-public interface INavigatorModelView
-{
+public interface INavigatorModelView extends INavigatorNodeContainer {
     String NAVIGATOR_CONTEXT_ID = "org.jkiss.dbeaver.ui.context.navigator";
     String NAVIGATOR_VIEW_CONTEXT_ID = "org.jkiss.dbeaver.ui.context.navigator.view";
     // Control-based handler activation disabled for now (as it requires workbench site and thus doesn't work in dialogs)
@@ -33,8 +31,6 @@ public interface INavigatorModelView
     // TODO: find some solution.
     String NAVIGATOR_CONTROL_ID = "org.jkiss.dbeaver.core.ui.navigator.control";
 
-    DBNNode getRootNode();
-    
     @Nullable
     Viewer getNavigatorViewer();
 

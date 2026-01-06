@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.model.sql.parser.tokens.predicates;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.sql.parser.SQLRuleManager;
 import org.jkiss.dbeaver.model.sql.parser.tokens.SQLTokenType;
@@ -37,13 +38,15 @@ class SQLTokenPredicateFactory extends TokenPredicateFactory {
         private final String string;
         private int pos = 0;
 
+        public static final char[][] DELIMITERS = { {'\r'}, {'\n'}, {'\r', '\n'} }; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+
         public StringScanner(@NotNull String string) {
             this.string = string;
         }
 
         @Override
         public char[][] getLegalLineDelimiters() {
-            throw new UnsupportedOperationException();
+            return DELIMITERS;
         }
 
         @Override
@@ -77,22 +80,24 @@ class SQLTokenPredicateFactory extends TokenPredicateFactory {
     }
 
     @Override
-    @NotNull
-    protected SQLTokenEntry classifyToken(@NotNull String string) {
+    @Nullable
+    protected SQLTokenType classifyToken(@NotNull String string) {
         StringScanner scanner = new StringScanner(string);
-        for (TPRule fRule : allRules) {
+        for (TPRule rule : allRules) {
             try {
                 scanner.reset();
-                TPToken token = fRule.evaluate(scanner);
+                TPToken token = rule.evaluate(scanner);
                 if (!token.isUndefined()) {
-                    SQLTokenType tokenType = token instanceof TPTokenDefault ? (SQLTokenType) ((TPTokenDefault) token).getData() : SQLTokenType.T_OTHER;
-                    return new SQLTokenEntry(string, tokenType, false);
+                    SQLTokenType tokenType = token instanceof TPTokenDefault
+                        ? (SQLTokenType) ((TPTokenDefault) token).getData()
+                        : SQLTokenType.T_OTHER;
+                    return tokenType;
                 }
             } catch (Throwable e) {
                 // some rules raise exceptions in a certain situations when the string does not correspond the rule
-                log.debug(e.getMessage());
+                log.debug(e);
             }
         }
-        return new SQLTokenEntry(string, null, false);
+        return null;
     }
 }

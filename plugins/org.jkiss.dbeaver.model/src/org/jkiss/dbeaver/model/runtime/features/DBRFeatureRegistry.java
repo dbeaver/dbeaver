@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,7 +35,7 @@ public class DBRFeatureRegistry {
 
     private final Map<String, DBRFeature> allFeatures = new LinkedHashMap<>();
     private final Map<String, DBRFeature> commandFeatures = new HashMap<>();
-    private DBRFeatureTracker tracker;
+    private final DBRFeatureTracker tracker;
 
     private static DBRFeatureRegistry instance = null;
 
@@ -48,8 +48,11 @@ public class DBRFeatureRegistry {
 
     private DBRFeatureRegistry() {
         this.tracker = GeneralUtils.adapt(this, DBRFeatureTracker.class);
-        if (this.tracker != null) {
-            this.tracker.startTracking();
+    }
+
+    public void startTracking() {
+        if (tracker != null) {
+            tracker.startTracking();
         }
     }
 

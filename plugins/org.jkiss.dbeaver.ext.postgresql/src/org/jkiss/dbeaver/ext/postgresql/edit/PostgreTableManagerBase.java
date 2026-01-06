@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.ext.postgresql.edit;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
 import org.jkiss.dbeaver.ext.postgresql.model.*;
 import org.jkiss.dbeaver.model.DBConstants;
@@ -44,7 +45,7 @@ import java.util.Map;
 public abstract class PostgreTableManagerBase extends SQLTableManager<PostgreTableBase, PostgreSchema> {
 
     @Override
-    protected void addObjectExtraActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, NestedObjectCommand<PostgreTableBase, PropertyHandler> command, Map<String, Object> options) {
+    protected void addObjectExtraActions(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext executionContext, @NotNull List<DBEPersistAction> actions, @NotNull NestedObjectCommand<PostgreTableBase, PropertyHandler> command, @NotNull Map<String, Object> options) {
         boolean isDDL = CommonUtils.getOption(options, DBPScriptObject.OPTION_DDL_SOURCE);
         PostgreTableBase table = command.getObject();
         // Add comments
@@ -67,13 +68,15 @@ public abstract class PostgreTableManagerBase extends SQLTableManager<PostgreTab
         if (isDDL || !table.isPersisted()) {
             // show comment commands for DDL and new objects
             PostgreDataSource dataSource = table.getDataSource();
+            boolean addExtraActionComment =
+                table.getDataSource().getContainer().getPreferenceStore().getBoolean(ModelPreferences.META_EXTRA_DDL_INFO);
             try {
                 if (showComments) {
                     // Column comments
                     boolean hasComments = false;
                     for (PostgreTableColumn column : CommonUtils.safeCollection(table.getAttributes(monitor))) {
                         if (!CommonUtils.isEmpty(column.getDescription())) {
-                            if (!hasComments) {
+                            if (!hasComments && addExtraActionComment) {
                                 actions.add(new SQLDatabasePersistActionComment(dataSource, "Column comments"));
                             }
                             PostgreTableColumnManager.addColumnCommentAction(actions, column);
@@ -82,12 +85,12 @@ public abstract class PostgreTableManagerBase extends SQLTableManager<PostgreTab
                     }
                 }
 
-                if (showComments) {
+                if (showComments && !table.isPartition() && !monitor.isCanceled()) {
                     // Constraint comments
                     boolean hasComments = false;
                     for (PostgreTableConstraintBase constr : CommonUtils.safeCollection(table.getConstraints(monitor))) {
                         if (!CommonUtils.isEmpty(constr.getDescription())) {
-                            if (!hasComments) {
+                            if (!hasComments && addExtraActionComment) {
                                 actions.add(new SQLDatabasePersistActionComment(dataSource, "Constraint comments"));
                             }
                             PostgreConstraintManager.addConstraintCommentAction(actions, constr);
@@ -96,7 +99,7 @@ public abstract class PostgreTableManagerBase extends SQLTableManager<PostgreTab
                     }
                     for (DBSEntityAssociation fk : CommonUtils.safeCollection(table.getAssociations(monitor))) {
                         if (fk instanceof PostgreTableForeignKey && !CommonUtils.isEmpty(fk.getDescription())) {
-                            if (!hasComments) {
+                            if (!hasComments && addExtraActionComment) {
                                 actions.add(new SQLDatabasePersistActionComment(dataSource, "Foreign key comments"));
                             }
                             PostgreConstraintManager.addConstraintCommentAction(actions, (PostgreTableForeignKey)fk);
@@ -105,11 +108,29 @@ public abstract class PostgreTableManagerBase extends SQLTableManager<PostgreTab
                     }
                 }
 
+                // Column storage
+                if (!table.isPartition() && !monitor.isCanceled()
+                    && table.getDataSource().getServerType().supportsAlterStorageStrategy()
+                    && !table.getDataSource().getServerType().supportsStorageModifier()) {
+                    boolean hasStorage = false;
+                    for (PostgreTableColumn column : CommonUtils.safeCollection(table.getAttributes(monitor))) {
+                        if (!column.isHidden() && !column.hasDefaultStorage()) {
+                            if (!hasStorage && addExtraActionComment) {
+                                actions.add(new SQLDatabasePersistActionComment(dataSource, "Column storage"));
+                            }
+                            PostgreTableColumnManager.addColumnStorageAction(actions, column);
+                            hasStorage = true;
+                        }
+                    }
+                }
+
                 // Triggers
-                if (table instanceof PostgreTableReal) {
+                if (table instanceof PostgreTableReal && !table.isPartition() && !monitor.isCanceled()) {
                     Collection<PostgreTrigger> triggers = ((PostgreTableReal) table).getTriggers(monitor);
                     if (!CommonUtils.isEmpty(triggers)) {
-                        actions.add(new SQLDatabasePersistActionComment(dataSource, "Table Triggers"));
+                        if (addExtraActionComment) {
+                            actions.add(new SQLDatabasePersistActionComment(dataSource, "Table Triggers"));
+                        }
 
                         for (PostgreTrigger trigger : triggers) {
                             actions.add(new SQLDatabasePersistAction("Create trigger", trigger.getObjectDefinitionText(monitor, options)));
@@ -118,10 +139,12 @@ public abstract class PostgreTableManagerBase extends SQLTableManager<PostgreTab
                 }
 
                 // Rules
-                if (table instanceof PostgreTableReal) {
+                if (table instanceof PostgreTableReal && !table.isPartition() && !monitor.isCanceled()) {
                     Collection<PostgreRule> rules = ((PostgreTableReal) table).getRules(monitor);
                     if (!CommonUtils.isEmpty(rules)) {
-                        actions.add(new SQLDatabasePersistActionComment(dataSource, "Table Rules"));
+                        if (addExtraActionComment) {
+                            actions.add(new SQLDatabasePersistActionComment(dataSource, "Table Rules"));
+                        }
 
                         for (PostgreRule rule : rules) {
                             actions.add(new SQLDatabasePersistAction("Create rule", rule.getObjectDefinitionText(monitor, options)));
@@ -130,11 +153,16 @@ public abstract class PostgreTableManagerBase extends SQLTableManager<PostgreTab
                 }
 
                 // Partitions
-                if (CommonUtils.getOption(options, DBPScriptObject.OPTION_INCLUDE_PARTITIONS) && table instanceof PostgreTable) {
+                if (CommonUtils.getOption(options, DBPScriptObject.OPTION_INCLUDE_PARTITIONS)
+                    && table instanceof PostgreTable
+                    && !monitor.isCanceled()
+                ) {
                     PostgreTable postgreTable = (PostgreTable) table;
                     List<PostgreTableBase> partitions = postgreTable.getPartitions(monitor);
                     if (postgreTable.hasPartitions() && !CommonUtils.isEmpty(partitions)) {
-                        actions.add(new SQLDatabasePersistActionComment(dataSource, "Partitions"));
+                        if (addExtraActionComment) {
+                            actions.add(new SQLDatabasePersistActionComment(dataSource, "Partitions"));
+                        }
                         for (PostgreTableBase partition : partitions) {
                             actions.add(
                                 new SQLDatabasePersistAction("Create partition", partition.getObjectDefinitionText(monitor, options)));
@@ -142,7 +170,7 @@ public abstract class PostgreTableManagerBase extends SQLTableManager<PostgreTab
                     }
                 }
 
-                if (isDDL && !table.isPartition()) {
+                if (isDDL && !table.isPartition() && !monitor.isCanceled()) {
                     PostgreUtils.getObjectGrantPermissionActions(monitor, table, actions, options);
                 }
             } catch (DBException e) {

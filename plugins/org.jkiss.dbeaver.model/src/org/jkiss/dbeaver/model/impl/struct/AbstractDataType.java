@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -67,11 +67,13 @@ public abstract class AbstractDataType<DS extends DBPDataSource> implements DBSD
         return true;
     }
 
+    @NotNull
     @Override
     public String getFullTypeName() {
         return DBUtils.getFullTypeName(this);
     }
 
+    @Nullable
     @Override
     public Integer getScale() {
         return 0;
@@ -89,7 +91,7 @@ public abstract class AbstractDataType<DS extends DBPDataSource> implements DBSD
 
     @NotNull
     @Override
-    public DBCLogicalOperator[] getSupportedOperators(DBSTypedObject attribute) {
+    public DBCLogicalOperator[] getSupportedOperators(@NotNull DBSTypedObject attribute) {
         return DBUtils.getDefaultOperators(this);
     }
 

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,10 @@
 package org.jkiss.dbeaver.ui.dialogs;
 
 import org.eclipse.jface.wizard.IWizard;
+import org.eclipse.jface.wizard.IWizardContainer;
+import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.jface.wizard.WizardPage;
+import org.jkiss.dbeaver.ui.ICompositeDialogPageContainer;
 
 /**
  * ActiveWizardPage
@@ -45,6 +48,17 @@ public abstract class ActiveWizardPage<WIZARD extends IWizard> extends WizardPag
         }
     }
 
+    @Override
+    protected boolean isCurrentPage() {
+        final IWizardContainer container = getContainer();
+        if (container == null) {
+            return false;
+        }
+        final IWizardPage page = container.getCurrentPage();
+        return page == this
+            || page instanceof ICompositeDialogPageContainer cc && cc.getCurrentSubPage() == this;
+    }
+
     protected boolean determinePageCompletion() {
         return true;
     }
@@ -64,5 +78,9 @@ public abstract class ActiveWizardPage<WIZARD extends IWizard> extends WizardPag
     @Override
     public void deactivatePage() {
 
+    }
+
+    public boolean isAutoResizeEnabled() {
+        return true;
     }
 }

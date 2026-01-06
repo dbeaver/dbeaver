@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
 
 package org.jkiss.dbeaver.model.edit.prop;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.edit.DBECommand;
 import org.jkiss.dbeaver.model.impl.edit.DBECommandAbstract;
@@ -35,8 +36,9 @@ public abstract class DBECommandDeleteObject<OBJECT_TYPE extends DBPObject> exte
         super(object, title);
     }
 
+    @NotNull
     @Override
-    public DBECommand<?> merge(DBECommand<?> prevCommand, Map<Object, Object> userParams)
+    public DBECommand<?> merge(@NotNull DBECommand<?> prevCommand, @NotNull Map<Object, Object> userParams)
     {
         if (prevCommand != null && prevCommand.getObject() == getObject()) {
             return null;

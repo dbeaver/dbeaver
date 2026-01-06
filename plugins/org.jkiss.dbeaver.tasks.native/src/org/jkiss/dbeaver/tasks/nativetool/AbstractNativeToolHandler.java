@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -42,6 +42,7 @@ import org.jkiss.dbeaver.model.task.DBTTaskHandler;
 import org.jkiss.dbeaver.model.task.DBTTaskRunStatus;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.ProgressStreamReader;
+import org.jkiss.dbeaver.runtime.ui.UIServiceSystemAgent;
 import org.jkiss.dbeaver.tasks.nativetool.messages.NativeToolMessages;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
@@ -49,13 +50,14 @@ import org.jkiss.utils.IOUtils;
 
 import java.io.*;
 import java.lang.reflect.InvocationTargetException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.text.NumberFormat;
 import java.util.*;
 
 public abstract class AbstractNativeToolHandler<SETTINGS extends AbstractNativeToolSettings<BASE_OBJECT>, BASE_OBJECT extends DBSObject, PROCESS_ARG> implements DBTTaskHandler {
 
     private String taskErrorMessage;
-
 
     @Override
     @NotNull
@@ -65,7 +67,8 @@ public abstract class AbstractNativeToolHandler<SETTINGS extends AbstractNativeT
         @NotNull Locale locale,
         @NotNull Log log,
         @NotNull PrintStream logStream,
-        @NotNull DBTTaskExecutionListener listener) throws DBException {
+        @NotNull DBTTaskExecutionListener listener
+    ) throws DBException {
         SETTINGS settings = createTaskSettings(runnableContext, task);
         settings.setLogWriter(logStream);
         if (!validateTaskParameters(task, settings, log)) {
@@ -143,7 +146,7 @@ public abstract class AbstractNativeToolHandler<SETTINGS extends AbstractNativeT
                 settings.setClientHome(clientHome);
             }
             if (settings.getClientHome() == null) {
-                throw new DBCException("Native client home '" + clientHomeId + "' not found");
+                throw new DBCException("Local client home '" + clientHomeId + "' not found");
             }
         }
 
@@ -184,7 +187,15 @@ public abstract class AbstractNativeToolHandler<SETTINGS extends AbstractNativeT
         return true;
     }
 
-    protected void startProcessHandler(DBRProgressMonitor monitor, DBTTask task, SETTINGS settings, PROCESS_ARG arg, ProcessBuilder processBuilder, Process process, Log log) throws IOException {
+    protected void startProcessHandler(
+        DBRProgressMonitor monitor,
+        DBTTask task,
+        SETTINGS settings,
+        PROCESS_ARG arg,
+        ProcessBuilder processBuilder,
+        Process process,
+        Log log
+    ) throws IOException, DBException {
         LogReaderJob logReaderJob = new LogReaderJob(
             task,
             settings,
@@ -194,10 +205,16 @@ public abstract class AbstractNativeToolHandler<SETTINGS extends AbstractNativeT
         logReaderJob.start();
     }
 
-    public boolean executeProcess(DBRProgressMonitor monitor, DBTTask task, SETTINGS settings, PROCESS_ARG arg, Log log) throws IOException, InterruptedException {
+    public boolean executeProcess(
+        DBRProgressMonitor monitor,
+        DBTTask task,
+        SETTINGS settings,
+        PROCESS_ARG arg,
+        Log log
+    ) throws IOException, InterruptedException {
         monitor.beginTask(task.getType().getName(), 1);
         try {
-            monitor.subTask("Start native tool");
+            monitor.subTask("Start native tool " + getClass().getSimpleName());
             final List<String> commandLine = getCommandLine(settings, arg);
             final File execPath = new File(commandLine.get(0));
 
@@ -233,6 +250,9 @@ public abstract class AbstractNativeToolHandler<SETTINGS extends AbstractNativeT
         } catch (IOException e) {
             log.error("IO error: " + e.getMessage());
             throw e;
+        } catch (DBException e) {
+            log.error("Process error: " + e.getMessage());
+            throw new IOException(e);
         } finally {
             monitor.done();
         }
@@ -247,8 +267,9 @@ public abstract class AbstractNativeToolHandler<SETTINGS extends AbstractNativeT
 
     protected void notifyToolFinish(String toolName, long workTime) {
         // Notify agent
-        if (workTime > DBWorkbench.getPlatformUI().getLongOperationTimeout() * 1000) {
-            DBWorkbench.getPlatformUI().notifyAgent(toolName, IStatus.INFO);
+        UIServiceSystemAgent serviceSystemAgent = DBWorkbench.getService(UIServiceSystemAgent.class);
+        if (serviceSystemAgent != null && workTime > serviceSystemAgent.getLongOperationTimeout() * 1000) {
+            serviceSystemAgent.notifyAgent(toolName, IStatus.INFO);
         }
     }
 
@@ -295,10 +316,10 @@ public abstract class AbstractNativeToolHandler<SETTINGS extends AbstractNativeT
     public static abstract class DumpJob extends Thread {
         protected DBRProgressMonitor monitor;
         protected InputStream input;
-        protected File outFile;
+        protected Path outFile;
         protected Log log;
 
-        protected DumpJob(String name, DBRProgressMonitor monitor, InputStream stream, File outFile, Log log) {
+        protected DumpJob(String name, DBRProgressMonitor monitor, InputStream stream, Path outFile, Log log) {
             super(name);
             this.monitor = monitor;
             this.input = stream;
@@ -320,7 +341,7 @@ public abstract class AbstractNativeToolHandler<SETTINGS extends AbstractNativeT
     }
 
     public static class DumpCopierJob extends DumpJob {
-        public DumpCopierJob(DBRProgressMonitor monitor, String name, InputStream stream, File outFile, Log log) {
+        public DumpCopierJob(DBRProgressMonitor monitor, String name, InputStream stream, Path outFile, Log log) {
             super(name, monitor, stream, outFile, log);
         }
 
@@ -333,7 +354,7 @@ public abstract class AbstractNativeToolHandler<SETTINGS extends AbstractNativeT
             try {
                 NumberFormat numberFormat = NumberFormat.getInstance();
 
-                try (OutputStream output = new FileOutputStream(outFile)) {
+                try (OutputStream output = Files.newOutputStream(outFile)) {
                     for (; ; ) {
                         int count = input.read(buffer);
                         if (count <= 0) {
@@ -342,7 +363,9 @@ public abstract class AbstractNativeToolHandler<SETTINGS extends AbstractNativeT
                         totalBytesDumped += count;
                         long currentTime = System.currentTimeMillis();
                         if (currentTime - prevStatusUpdateTime > 300) {
-                            monitor.subTask(numberFormat.format(totalBytesDumped) + " bytes");
+                            if (!DBWorkbench.getPlatform().getApplication().isHeadlessMode()) {
+                                monitor.subTask(numberFormat.format(totalBytesDumped) + " bytes");
+                            }
                             prevStatusUpdateTime = currentTime;
                         }
                         output.write(buffer, 0, count);
@@ -358,13 +381,13 @@ public abstract class AbstractNativeToolHandler<SETTINGS extends AbstractNativeT
     public static class TextFileTransformerJob extends Thread {
         private final DBRProgressMonitor monitor;
         private final DBTTask task;
-        private OutputStream output;
-        private File inputFile;
-        private String inputCharset;
-        private String outputCharset;
-        private Log log;
+        private final OutputStream output;
+        private final Path inputFile;
+        private final String inputCharset;
+        private final String outputCharset;
+        private final Log log;
 
-        public TextFileTransformerJob(DBRProgressMonitor monitor, DBTTask task, File inputFile, OutputStream stream, String inputCharset, String outputCharset, Log log) {
+        public TextFileTransformerJob(DBRProgressMonitor monitor, DBTTask task, Path inputFile, OutputStream stream, String inputCharset, String outputCharset, Log log) {
             super(task.getName());
             this.monitor = monitor;
             this.task = task;
@@ -381,8 +404,9 @@ public abstract class AbstractNativeToolHandler<SETTINGS extends AbstractNativeT
                 try (InputStream scriptStream = new ProgressStreamReader(
                     monitor,
                     task.getName(),
-                    new FileInputStream(inputFile),
-                    inputFile.length())) {
+                    Files.newInputStream(inputFile),
+                    Files.size(inputFile))
+                ) {
                     BufferedReader reader = new BufferedReader(new InputStreamReader(scriptStream, inputCharset));
                     PrintWriter writer = new PrintWriter(new OutputStreamWriter(output, outputCharset));
                     while (!monitor.isCanceled()) {
@@ -408,11 +432,11 @@ public abstract class AbstractNativeToolHandler<SETTINGS extends AbstractNativeT
     public static class BinaryFileTransformerJob extends Thread {
         private final DBRProgressMonitor monitor;
         private final DBTTask task;
-        private OutputStream output;
-        private File inputFile;
-        private Log log;
+        private final OutputStream output;
+        private final Path inputFile;
+        private final Log log;
 
-        public BinaryFileTransformerJob(DBRProgressMonitor monitor, DBTTask task, File inputFile, OutputStream stream, Log log) {
+        public BinaryFileTransformerJob(DBRProgressMonitor monitor, DBTTask task, Path inputFile, OutputStream stream, Log log) {
             super(task.getName());
             this.monitor = monitor;
             this.task = task;
@@ -426,8 +450,9 @@ public abstract class AbstractNativeToolHandler<SETTINGS extends AbstractNativeT
             try (InputStream scriptStream = new ProgressStreamReader(
                 monitor,
                 task.getName(),
-                new FileInputStream(inputFile),
-                inputFile.length())) {
+                Files.newInputStream(inputFile),
+                Files.size(inputFile))
+            ) {
                 byte[] buffer = new byte[100000];
                 while (!monitor.isCanceled()) {
                     int readSize = scriptStream.read(buffer);
@@ -485,7 +510,7 @@ public abstract class AbstractNativeToolHandler<SETTINGS extends AbstractNativeT
             cmdString.append(lf);
 
             try {
-                logWriter.print(cmdString.toString());
+                logWriter.print(cmdString);
 
                 logWriter.print(
                     NLS.bind(NativeToolMessages.native_tool_handler_log_task, task.getName(), new Date() + lf));
@@ -582,7 +607,7 @@ public abstract class AbstractNativeToolHandler<SETTINGS extends AbstractNativeT
     }
 
     protected String getDataSourcePassword(DBRProgressMonitor monitor, SETTINGS settings) {
-        // Try to obtain password thru auth model (mnakes sense for IAM-like models)
+        // Try to obtain password through auth model (makes sense for IAM-like models)
         String userPassword = null;
         DBPDataSourceContainer dataSourceContainer = settings.getDataSourceContainer();
         DBPConnectionConfiguration cfg = new DBPConnectionConfiguration(dataSourceContainer.getActualConnectionConfiguration());

@@ -1,7 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2013-2016 Denis Forveille (titou10.titou10@gmail.com)
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,6 +21,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.db2.DB2Constants;
+import org.jkiss.dbeaver.ext.db2.DB2Messages;
 import org.jkiss.dbeaver.ext.db2.DB2Utils;
 import org.jkiss.dbeaver.ext.db2.editors.DB2SourceObject;
 import org.jkiss.dbeaver.ext.db2.editors.DB2TableTablespaceListProvider;
@@ -32,6 +32,7 @@ import org.jkiss.dbeaver.model.DBPRefreshableObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDPseudoAttribute;
 import org.jkiss.dbeaver.model.data.DBDPseudoAttributeContainer;
+import org.jkiss.dbeaver.model.data.DBDPseudoAttributeType;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
@@ -45,9 +46,9 @@ import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCStructCache;
 import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.model.struct.DBSObjectState;
+import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.struct.cache.DBSObjectCache;
+import org.jkiss.dbeaver.model.struct.rdb.DBSPartitionContainer;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -65,7 +66,7 @@ import java.util.Map;
  * @author Denis Forveille
  */
 public class DB2Table extends DB2TableBase
-    implements DBPRefreshableObject, DB2SourceObject, DBDPseudoAttributeContainer {
+    implements DBPRefreshableObject, DB2SourceObject, DBDPseudoAttributeContainer, DBSPartitionContainer, DBSEntityConstrainable {
 
     protected static final Log log = Log.getLog(DB2Table.class);
 
@@ -73,6 +74,18 @@ public class DB2Table extends DB2TableBase
 
     private static final String C_PT = "SELECT * FROM SYSCAT.DATAPARTITIONS WHERE TABSCHEMA = ? AND TABNAME = ? ORDER BY SEQNO WITH UR";
     private static final String C_PE = "SELECT * FROM SYSCAT.PERIODS WHERE TABSCHEMA = ? AND TABNAME = ? ORDER BY PERIODNAME WITH UR";
+
+    private static final DBDPseudoAttribute[] PRESENTED_PSEUDO_ATTRS = new DBDPseudoAttribute[] {
+        new DBDPseudoAttribute(
+            DBDPseudoAttributeType.OTHER,
+            "DATASLICEID",
+            null,
+            null,
+            DB2Messages.pseudo_column_datasliceid_description,
+            true,
+            DBDPseudoAttribute.PropagationPolicy.TABLE_NORMAL
+        )
+    };
 
     private DB2TableTriggerCache tableTriggerCache = new DB2TableTriggerCache();
 
@@ -198,6 +211,16 @@ public class DB2Table extends DB2TableBase
         return getContainer().getTableCache().refreshObject(monitor, getContainer(), this);
     }
 
+    @Override
+    public DB2TableColumn getAttribute(@NotNull DBRProgressMonitor monitor, @NotNull String attributeName) throws DBException {
+        return getContainer().getTableCache().getChild(monitor, getContainer(), this, attributeName);
+    }
+
+    @Override
+    public List<DB2TableColumn> getAttributes(@NotNull DBRProgressMonitor monitor) throws DBException {
+        return getContainer().getTableCache().getChildren(monitor, getContainer(), this);
+    }
+
     @NotNull
     @Override
     public DBSObjectState getObjectState()
@@ -210,8 +233,9 @@ public class DB2Table extends DB2TableBase
     {
     }
 
+    @NotNull
     @Override
-    public String getObjectDefinitionText(DBRProgressMonitor monitor, Map<String, Object> options) throws DBException {
+    public String getObjectDefinitionText(@NotNull DBRProgressMonitor monitor, @NotNull Map<String, Object> options) throws DBException {
         boolean includeViews = CommonUtils.getOption(options, OPTION_SCRIPT_INCLUDE_VIEWS);
         return DB2Utils.generateDDLforTable(monitor, LINE_SEPARATOR, getDataSource(), this, includeViews);
     }
@@ -280,30 +304,34 @@ public class DB2Table extends DB2TableBase
         if (referenceCache != null) {
             return new ArrayList<>(referenceCache);
         }
+        if (monitor == null) {
+            return null;
+        }
         try (JDBCSession session = DBUtils.openMetaSession(monitor, getDataSource(), "Find table references")) {
-            JDBCPreparedStatement dbStat = session.prepareStatement(
+            try (JDBCPreparedStatement dbStat = session.prepareStatement(
                 "SELECT R.* FROM SYSCAT.REFERENCES R\n" +
                     "WHERE R.REFTABSCHEMA = ? AND R.REFTABNAME = ?\n" +
                     "ORDER BY R.REFKEYNAME\n" +
-                    "WITH UR");
-            dbStat.setString(1, this.getSchema().getName());
-            dbStat.setString(2, this.getName());
-            try (JDBCResultSet dbResult = dbStat.executeQuery()) {
-                List<DB2TableForeignKey> result = new ArrayList<>();
-                while (dbResult.nextRow()) {
-                    String ownerSchemaName = JDBCUtils.safeGetStringTrimmed(dbResult, "TABSCHEMA");
-                    String ownerTableName = JDBCUtils.safeGetString(dbResult, "TABNAME");
-                    String fkName = JDBCUtils.safeGetStringTrimmed(dbResult, "CONSTNAME");
-                    DB2Table ownerTable = DB2Utils.findTableBySchemaNameAndName(
-                        session.getProgressMonitor(), this.getDataSource(), ownerSchemaName, ownerTableName);
-                    if (ownerTable == null) {
-                        log.error("Cannot find reference owner table " + ownerSchemaName + "." + ownerTableName);
-                        continue;
+                    "WITH UR")) {
+                dbStat.setString(1, this.getSchema().getName());
+                dbStat.setString(2, this.getName());
+                try (JDBCResultSet dbResult = dbStat.executeQuery()) {
+                    List<DB2TableForeignKey> result = new ArrayList<>();
+                    while (dbResult.nextRow()) {
+                        String ownerSchemaName = JDBCUtils.safeGetStringTrimmed(dbResult, "TABSCHEMA");
+                        String ownerTableName = JDBCUtils.safeGetString(dbResult, "TABNAME");
+                        String fkName = JDBCUtils.safeGetStringTrimmed(dbResult, "CONSTNAME");
+                        DB2Table ownerTable = DB2Utils.findTableBySchemaNameAndName(
+                            session.getProgressMonitor(), this.getDataSource(), ownerSchemaName, ownerTableName);
+                        if (ownerTable == null) {
+                            log.error("Cannot find reference owner table " + ownerSchemaName + "." + ownerTableName);
+                            continue;
+                        }
+                        DB2TableForeignKey fk = ownerTable.getAssociation(monitor, fkName);
+                        result.add(fk);
                     }
-                    DB2TableForeignKey fk = ownerTable.getAssociation(monitor, fkName);
-                    result.add(fk);
+                    referenceCache = result;
                 }
-                referenceCache = result;
             }
         } catch (SQLException e) {
             throw new DBCException("Error reading table references", e);
@@ -523,6 +551,20 @@ public class DB2Table extends DB2TableBase
         } else {
             return null;
         }
+    }
+
+    @Override
+    public DBDPseudoAttribute[] getAllPseudoAttributes(@NotNull DBRProgressMonitor monitor) throws DBException {
+        return PRESENTED_PSEUDO_ATTRS;
+    }
+
+    @NotNull
+    @Override
+    public List<DBSEntityConstraintInfo> getSupportedConstraints() {
+        return List.of(
+            DBSEntityConstraintInfo.of(DBSEntityConstraintType.PRIMARY_KEY, DB2TableUniqueKey.class),
+            DBSEntityConstraintInfo.of(DBSEntityConstraintType.UNIQUE_KEY, DB2TableUniqueKey.class)
+        );
     }
 
     public class ColumnMaskCache extends JDBCObjectLookupCache<DB2Table, DB2ColumnMask> {

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -69,7 +69,7 @@ public class SQLServerViewManager extends SQLServerBaseTableManager<SQLServerVie
     }
 
     @Override
-    protected SQLServerView createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, Object container, Object copyFrom, Map<String, Object> options)
+    protected SQLServerView createDatabaseObject(@NotNull DBRProgressMonitor monitor, @NotNull DBECommandContext context, Object container, Object copyFrom, @NotNull Map<String, Object> options)
     {
         SQLServerView newView = new SQLServerView((SQLServerSchema) container);
         setNewObjectName(monitor, (SQLServerSchema) container, newView);
@@ -82,14 +82,14 @@ public class SQLServerViewManager extends SQLServerBaseTableManager<SQLServerVie
     }
 
     @Override
-    protected void addObjectModifyActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actionList, ObjectChangeCommand command, Map<String, Object> options) throws DBException {
+    protected void addObjectModifyActions(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext executionContext, @NotNull List<DBEPersistAction> actionList, @NotNull ObjectChangeCommand command, @NotNull Map<String, Object> options) throws DBException {
         if (command.getProperties().size() > 1 || command.getProperty(DBConstants.PROP_ID_DESCRIPTION) == null) {
             createOrReplaceViewQuery(monitor, executionContext, actionList, command.getObject(), ViewAction.ALTER);
         }
     }
 
     @Override
-    protected void addObjectDeleteActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, ObjectDeleteCommand command, Map<String, Object> options) {
+    protected void addObjectDeleteActions(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext executionContext, @NotNull List<DBEPersistAction> actions, @NotNull ObjectDeleteCommand command, @NotNull Map<String, Object> options) {
         createOrReplaceViewQuery(monitor, executionContext, actions, command.getObject(), ViewAction.DROP);
     }
 
@@ -104,10 +104,10 @@ public class SQLServerViewManager extends SQLServerBaseTableManager<SQLServerVie
 
         switch (action) {
             case CREATE:
-                actions.add(new SQLDatabasePersistAction("Create view", view.getDDL()));
+                actions.add(new SQLDatabasePersistAction("Create view", view.getName()));
                 break;
             case ALTER:
-                actions.add(new SQLDatabasePersistAction("Alter view", SQLServerUtils.changeCreateToAlterDDL(view.getDataSource().getSQLDialect(), view.getDDL())));
+                actions.add(new SQLDatabasePersistAction("Alter view", SQLServerUtils.changeCreateToAlterDDL(view.getDataSource(), view.getDDL())));
                 break;
             case DROP:
                 actions.add(new SQLDatabasePersistAction("Drop view", "DROP VIEW " + view.getFullyQualifiedName(DBPEvaluationContext.DDL))); //$NON-NLS-2$
@@ -126,4 +126,3 @@ public class SQLServerViewManager extends SQLServerBaseTableManager<SQLServerVie
 
 
 }
-

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,13 +17,15 @@
 package org.jkiss.dbeaver.model.security;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.DBInternalDatabaseInformationProvider;
 import org.jkiss.dbeaver.model.DBPObjectController;
 import org.jkiss.dbeaver.model.auth.SMAuthCredentialsManager;
 import org.jkiss.dbeaver.model.security.user.SMAuthPermissions;
 import org.jkiss.dbeaver.model.security.user.SMObjectPermissions;
-import org.jkiss.dbeaver.model.security.user.SMTeam;
 import org.jkiss.dbeaver.model.security.user.SMUser;
+import org.jkiss.dbeaver.model.security.user.SMUserTeam;
 
 import java.util.List;
 import java.util.Map;
@@ -32,7 +34,7 @@ import java.util.Set;
 /**
  * Admin interface
  */
-public interface SMController extends DBPObjectController,
+public interface SMController extends DBPObjectController, DBInternalDatabaseInformationProvider,
     SMAuthCredentialsManager, SMAuthController {
 
 
@@ -46,7 +48,7 @@ public interface SMController extends DBPObjectController,
      * @throws DBException the db exception
      */
     @NotNull
-    SMTeam[] getCurrentUserTeams() throws DBException;
+    SMUserTeam[] getCurrentUserTeams() throws DBException;
 
     /**
      * Gets current active user.
@@ -63,6 +65,7 @@ public interface SMController extends DBPObjectController,
      * @return the user parameters
      * @throws DBException the db exception
      */
+    @NotNull
     Map<String, Object> getCurrentUserParameters() throws DBException;
 
     /**
@@ -72,7 +75,14 @@ public interface SMController extends DBPObjectController,
      * @param value the value
      * @throws DBException the db exception
      */
-    void setCurrentUserParameter(String name, Object value) throws DBException;
+    void setCurrentUserParameter(@NotNull String name, @Nullable Object value) throws DBException;
+
+    /**
+     * Sets user parameters.
+     *
+     * @throws DBException the db exception
+     */
+    void setCurrentUserParameters(@NotNull Map<String, Object> parameters) throws DBException;
 
     ///////////////////////////////////////////
     // Credentials
@@ -105,6 +115,7 @@ public interface SMController extends DBPObjectController,
      * @return the string [ ]
      * @throws DBException the db exception
      */
+    @NotNull
     String[] getCurrentUserLinkedProviders() throws DBException;
 
     ///////////////////////////////////////////
@@ -123,7 +134,7 @@ public interface SMController extends DBPObjectController,
     ///////////////////////////////////////////
     // Sessions
 
-    boolean isSessionPersisted(String id) throws DBException;
+    boolean isSessionPersisted(@NotNull String id) throws DBException;
 
 
     /**
@@ -163,6 +174,7 @@ public interface SMController extends DBPObjectController,
     ///////////////////////////////////////////
     // Auth providers
 
+    @NotNull
     SMAuthProviderDescriptor[] getAvailableAuthProviders() throws DBException;
 
     /**
@@ -175,6 +187,10 @@ public interface SMController extends DBPObjectController,
     @NotNull
     List<SMObjectPermissions> getAllAvailableObjectsPermissions(@NotNull SMObjectType objectType) throws DBException;
 
+    /**
+     * @deprecated use {@link SMAdminController#addObjectPermissions} or {@link SMAdminController#deleteObjectPermissions}
+     */
+    @Deprecated
     void setObjectPermissions(
         @NotNull Set<String> objectIds,
         @NotNull SMObjectType objectType,
@@ -209,4 +225,37 @@ public interface SMController extends DBPObjectController,
         @NotNull String objectId,
         @NotNull SMObjectType objectType
     ) throws DBException;
+
+    /**
+     * checks that the current suer has the required role and is a member of the same teams as the specified list of
+     * users
+     */
+    boolean hasAccessToUsers(@NotNull String teamRole, @NotNull Set<String> userIds) throws DBException;
+
+    @NotNull
+    String[] getTeamMembers(@NotNull String teamId) throws DBException;
+
+    /**
+     * Reads user settings.
+     * IF object type and id are null then returns all project swettings
+     */
+    @NotNull
+    List<SMObjectSettings> getObjectSettings(
+        @NotNull String projectId,
+        @Nullable SMObjectType objectType,
+        @Nullable String objectId,
+        @Nullable String[] settingIds
+    ) throws DBException;
+
+    /**
+     * Sets user settings for a specified object.
+     * If value in map entry is null then setting is deleted.
+     */
+    void setObjectSettings(
+        @NotNull String projectId,
+        @NotNull SMObjectType objectType,
+        @NotNull String objectId,
+        @NotNull Map<String, String> settings
+    ) throws DBException;
+
 }

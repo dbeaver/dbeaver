@@ -2,18 +2,14 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: DBeaver SQL Terminal
 Bundle-SymbolicName: org.jkiss.dbeaver.ui.editors.sql.terminal;singleton:=true
-Bundle-Version: 1.0.86.qualifier
-Bundle-Release-Date: 20230724
+Bundle-Version: 1.0.147.qualifier
+Bundle-Release-Date: 20260119
 Bundle-Vendor: DBeaver Corp
-Bundle-RequiredExecutionEnvironment: JavaSE-11
+Bundle-RequiredExecutionEnvironment: JavaSE-21
 Bundle-ActivationPolicy: lazy
 Bundle-Activator: org.jkiss.dbeaver.ui.editors.sql.terminal.internal.SQLTerminalActivator
-Require-Bundle: org.eclipse.core.runtime,
- org.eclipse.ui.console,
- org.eclipse.osgi,
- org.jkiss.dbeaver.ui,
- org.eclipse.swt,
- org.jkiss.dbeaver.core,
+Require-Bundle: org.eclipse.ui.console,
+ org.jkiss.dbeaver.ui.navigator,
  org.jkiss.dbeaver.ui.editors.data,
  org.jkiss.dbeaver.ui.editors.sql
 Export-Package: org.jkiss.dbeaver.ui.editors.sql.terminal

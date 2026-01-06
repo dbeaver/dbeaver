@@ -1,17 +1,6 @@
 /*
- * Copyright (c) 2001, 2012 IBM Corporation and others.
- * All rights reserved. This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License v1.0
- * which accompanies this distribution, and is available at
- * http://www.eclipse.org/legal/epl-v10.html
- *
- * Contributors:
- *     IBM Corporation - initial API and implementation
- *     Mariot Chauvin <mariot.chauvin@obeo.fr> - bug 259553
- *     Amit Joglekar <joglekar@us.ibm.com> - Support for dynamic images (bug 385795)
- *
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,10 +26,13 @@ import org.eclipse.swt.layout.FormAttachment;
 import org.eclipse.swt.layout.FormData;
 import org.eclipse.swt.layout.FormLayout;
 import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.widgets.*;
-import org.jkiss.dbeaver.ui.DBeaverIcons;
-import org.jkiss.dbeaver.ui.UIStyles;
-import org.jkiss.dbeaver.ui.UIUtils;
+import org.eclipse.swt.widgets.Canvas;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Event;
+import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.ui.*;
+import org.jkiss.dbeaver.ui.css.CSSUtils;
 
 import java.util.IdentityHashMap;
 import java.util.Map;
@@ -52,7 +44,7 @@ import java.util.Map;
  * @author Anthony Hunter
  * @author Serge Rider
  */
-public class TabbedFolderList extends Composite {
+public class TabbedFolderList extends ConComposite {
 
     private static final ListElement[] ELEMENTS_EMPTY = new ListElement[0];
 
@@ -62,6 +54,10 @@ public class TabbedFolderList extends Composite {
     protected static final int INDENT_RIGHT = 10;
     public static final String LABEL_NA = "N/A";
     public static final int SECTION_DIV_HEIGHT = 7;
+    private static final RGB white = new RGB(255, 255, 255);
+    private static final RGB black = new RGB(0, 0, 0);
+
+
     private final boolean section;
 
     private boolean focus = false;
@@ -72,8 +68,8 @@ public class TabbedFolderList extends Composite {
     private int topVisibleIndex = NONE;
     private int bottomVisibleIndex = NONE;
 
-    private TopNavigationElement topNavigationElement;
-    private BottomNavigationElement bottomNavigationElement;
+    private final TopNavigationElement topNavigationElement;
+    private final BottomNavigationElement bottomNavigationElement;
 
     private int widestLabelIndex = NONE;
     private int tabsThatFitInComposite = NONE;
@@ -91,8 +87,6 @@ public class TabbedFolderList extends Composite {
     private Color bottomNavigationElementShadowStroke1;
     private Color bottomNavigationElementShadowStroke2;
 
-    private Font boldFont;
-
     private final Map<Image, Image> grayedImages = new IdentityHashMap<>();
 
     /**
@@ -100,8 +94,8 @@ public class TabbedFolderList extends Composite {
      */
     public class ListElement extends Canvas {
 
-        private TabbedFolderInfo tab;
-        private int index;
+        private final TabbedFolderInfo tab;
+        private final int index;
         private boolean selected;
         private boolean hover;
 
@@ -112,7 +106,7 @@ public class TabbedFolderList extends Composite {
          * @param tab    the tab item for the element.
          * @param index  the index in the list.
          */
-        public ListElement(Composite parent, final TabbedFolderInfo tab, int index) {
+        public ListElement(@NotNull Composite parent, @NotNull TabbedFolderInfo tab, int index) {
             super(parent, SWT.NO_FOCUS);
             this.tab = tab;
             hover = false;
@@ -120,21 +114,18 @@ public class TabbedFolderList extends Composite {
             this.index = index;
 
             addPaintListener(this::paint);
-            addMouseListener(new MouseAdapter() {
-
-                public void mouseUp(MouseEvent e) {
-                    if (!selected) {
-                        select(getIndex(ListElement.this));
-                        /*
-						 * We set focus to the tabbed property composite so that
-						 * focus is moved to the appropriate widget in the
-						 * section.
-						 */
-                        Composite tabbedPropertyComposite = getParent();
-                        tabbedPropertyComposite.setFocus();
-                    }
+            addMouseListener(MouseListener.mouseUpAdapter(mouseEvent -> {
+                if (!selected) {
+                    select(getIndex(ListElement.this));
+                    /*
+                     * We set focus to the tabbed property composite so that
+                     * focus is moved to the appropriate widget in the
+                     * section.
+                     */
+                    Composite tabbedPropertyComposite = getParent();
+                    tabbedPropertyComposite.setFocus();
                 }
-            });
+            }));
             addMouseMoveListener(e -> {
                 String tooltip = tab.getTooltip();
                 if (tooltip != null) {
@@ -145,13 +136,10 @@ public class TabbedFolderList extends Composite {
                     redraw();
                 }
             });
-            addMouseTrackListener(new MouseTrackAdapter() {
-
-                public void mouseExit(MouseEvent e) {
-                    hover = false;
-                    redraw();
-                }
-            });
+            addMouseTrackListener(MouseTrackListener.mouseExitAdapter(e -> {
+                hover = false;
+                redraw();
+            }));
             setFont(TabbedFolderList.this.getFont());
         }
 
@@ -172,19 +160,20 @@ public class TabbedFolderList extends Composite {
          * @param e the paint event.
          */
         private void paint(PaintEvent e) {
-			/*
+            Color bgColor = listBackground;//getWidgetBackgrund();
+            /*
 			 * draw the top two lines of the tab, same for selected, hover and
 			 * default
 			 */
             Rectangle bounds = getBounds();
             e.gc.setForeground(widgetNormalShadow);
             e.gc.drawLine(0, 0, bounds.width - 1, 0);
-            e.gc.setForeground(listBackground);
+            e.gc.setForeground(bgColor);
             e.gc.drawLine(0, 1, bounds.width - 1, 1);
 
 			/* draw the fill in the tab */
             if (selected) {
-                e.gc.setBackground(listBackground);
+                e.gc.setBackground(bgColor);
                 e.gc.fillRectangle(0, 2, bounds.width, bounds.height - 1);
             } else if (hover && tab.isIndented()) {
                 e.gc.setBackground(indentedHoverBackground);
@@ -241,7 +230,9 @@ public class TabbedFolderList extends Composite {
             e.gc.setForeground(widgetForeground);
             if (selected) {
 				/* selected tab is bold font */
-                e.gc.setFont(boldFont);
+                e.gc.setFont(BaseThemeSettings.instance.partTitleBoldFont);
+            } else {
+                e.gc.setFont(BaseThemeSettings.instance.partTitleFont);
             }
             e.gc.drawText(tab.getText(), textIndent, textMiddle, true);
             if (((TabbedFolderList) getParent()).focus && selected) {
@@ -252,7 +243,7 @@ public class TabbedFolderList extends Composite {
 
 			/* draw the bottom line on the tab for selected and default */
             if (!hover) {
-                e.gc.setForeground(listBackground);
+                e.gc.setForeground(bgColor);
                 e.gc.drawLine(0, bounds.height - 1, bounds.width - 2, bounds.height - 1);
             }
         }
@@ -296,20 +287,17 @@ public class TabbedFolderList extends Composite {
         public TopNavigationElement(Composite parent) {
             super(parent, SWT.NO_FOCUS);
             addPaintListener(this::paint);
-            addMouseListener(new MouseAdapter() {
-
-                public void mouseUp(MouseEvent e) {
-                    if (isUpScrollRequired()) {
-                        bottomVisibleIndex--;
-                        if (topVisibleIndex != 0) {
-                            topVisibleIndex--;
-                        }
-                        layoutTabs();
-                        topNavigationElement.redraw();
-                        bottomNavigationElement.redraw();
+            addMouseListener(MouseListener.mouseUpAdapter(mouseEvent -> {
+                if (isUpScrollRequired()) {
+                    bottomVisibleIndex--;
+                    if (topVisibleIndex != 0) {
+                        topVisibleIndex--;
                     }
+                    layoutTabs();
+                    topNavigationElement.redraw();
+                    bottomNavigationElement.redraw();
                 }
-            });
+            }));
             setFont(TabbedFolderList.this.getFont());
         }
 
@@ -319,16 +307,18 @@ public class TabbedFolderList extends Composite {
          * @param e the paint event.
          */
         private void paint(PaintEvent e) {
+            Color bgColor = getWidgetBackgrund(false);
             e.gc.setForeground(widgetForeground);
             Rectangle bounds = getBounds();
 
             if (elements.length != 0) {
+                e.gc.setBackground(bgColor);
                 e.gc.fillRectangle(0, 0, bounds.width, bounds.height);
                 e.gc.setForeground(widgetNormalShadow);
                 e.gc.drawLine(bounds.width - 1, 0, bounds.width - 1,
                     bounds.height - 1);
             } else {
-                e.gc.setBackground(listBackground);
+                e.gc.setBackground(bgColor);
                 e.gc.fillRectangle(0, 0, bounds.width, bounds.height);
                 int textIndent = INDENT_LEFT;
                 FontMetrics fm = e.gc.getFontMetrics();
@@ -375,20 +365,17 @@ public class TabbedFolderList extends Composite {
         public BottomNavigationElement(Composite parent) {
             super(parent, SWT.NO_FOCUS);
             addPaintListener(this::paint);
-            addMouseListener(new MouseAdapter() {
-
-                public void mouseUp(MouseEvent e) {
-                    if (isDownScrollRequired()) {
-                        topVisibleIndex++;
-                        if (bottomVisibleIndex != elements.length - 1) {
-                            bottomVisibleIndex++;
-                        }
-                        layoutTabs();
-                        topNavigationElement.redraw();
-                        bottomNavigationElement.redraw();
+            addMouseListener(MouseListener.mouseUpAdapter(mouseEvent -> {
+                if (isDownScrollRequired()) {
+                    topVisibleIndex++;
+                    if (bottomVisibleIndex != elements.length - 1) {
+                        bottomVisibleIndex++;
                     }
+                    layoutTabs();
+                    topNavigationElement.redraw();
+                    bottomNavigationElement.redraw();
                 }
-            });
+            }));
             setFont(TabbedFolderList.this.getFont());
         }
 
@@ -398,10 +385,13 @@ public class TabbedFolderList extends Composite {
          * @param e the paint event.
          */
         private void paint(PaintEvent e) {
+            Color bgColor = getWidgetBackgrund(true);
+
             e.gc.setForeground(widgetForeground);
             Rectangle bounds = getBounds();
 
             if (elements.length != 0) {
+                e.gc.setBackground(bgColor);
                 e.gc.fillRectangle(0, 0, bounds.width, bounds.height);
                 e.gc.setForeground(widgetNormalShadow);
                 if (!section || isDownScrollRequired()) {
@@ -417,7 +407,7 @@ public class TabbedFolderList extends Composite {
                 e.gc.setForeground(bottomNavigationElementShadowStroke2);
                 e.gc.drawLine(0, 2, bounds.width - 2, 2);
             } else {
-                e.gc.setBackground(listBackground);
+                e.gc.setBackground(bgColor);
                 e.gc.fillRectangle(0, 0, bounds.width, bounds.height);
             }
 
@@ -443,6 +433,25 @@ public class TabbedFolderList extends Composite {
         }
     }
 
+    private Color getWidgetBackgrund(boolean adapt) {
+        Color connectionColor = CSSUtils.getCurrentEditorConnectionColor(this);
+        if (connectionColor != null) {
+            if (adapt) {
+                SharedTextColors sharedColors = UIUtils.getSharedTextColors();
+                if (listBackground.hashCode() < connectionColor.hashCode()) {
+                    // Foreground darker than background - make element background darker
+                    connectionColor = sharedColors.getColor(UIUtils.blend(black, connectionColor.getRGB(), 15));
+                } else {
+                    // Make element background lighter
+                    connectionColor = sharedColors.getColor(UIUtils.blend(white, connectionColor.getRGB(), 15));
+                }
+            }
+
+            return connectionColor;
+        }
+        return listBackground;
+    }
+
     public TabbedFolderList(Composite parent, boolean section) {
         super(parent, SWT.NO_FOCUS);
         //CSSUtils.setCSSClass(this, "MPartStack");
@@ -454,8 +463,6 @@ public class TabbedFolderList extends Composite {
 
         initColours();
         initAccessible();
-
-        boldFont = UIUtils.makeBoldFont(getFont());
 
         this.addFocusListener(new FocusListener() {
 
@@ -475,19 +482,16 @@ public class TabbedFolderList extends Composite {
                 }
             }
         });
-        this.addControlListener(new ControlAdapter() {
-
-            public void controlResized(ControlEvent e) {
-                computeTopAndBottomTab();
-            }
-        });
+        this.addControlListener(ControlListener.controlResizedAdapter(e -> {
+            computeTopAndBottomTab();
+            UIUtils.asyncExec(() -> { if (!isDisposed()) redraw(); });
+        }));
         this.addTraverseListener(this::handleTraverse);
         addDisposeListener(e -> {
             for (Image di : grayedImages.values()) {
                 UIUtils.dispose(di);
             }
             grayedImages.clear();
-            UIUtils.dispose(boldFont);
         });
 
         UIUtils.installAndUpdateMainFont(this);
@@ -498,7 +502,7 @@ public class TabbedFolderList extends Composite {
      */
     protected void computeTabsThatFitInComposite() {
         tabsThatFitInComposite = Math
-            .round((getSize().y - 22) / getTabHeight());
+            .round((float) (getSize().y - 22) / getTabHeight());
         if (tabsThatFitInComposite <= 0) {
             tabsThatFitInComposite = 1;
         }
@@ -704,7 +708,7 @@ public class TabbedFolderList extends Composite {
      */
     private Point getTextDimension(String text) {
         GC gc = new GC(this);
-        gc.setFont(boldFont);
+        gc.setFont(BaseThemeSettings.instance.partTitleBoldFont);
         Point point = gc.textExtent(text);
         point.x++;
         gc.dispose();
@@ -715,14 +719,14 @@ public class TabbedFolderList extends Composite {
      * Initialize the colours used in the list.
      */
     private void initColours() {
-        Display display = Display.getCurrent();
+        Display display = getDisplay();
         ISharedTextColors sharedColors = UIUtils.getSharedTextColors();
 
         listBackground = UIStyles.getDefaultTextBackground();
         Color widgetBackground;
         if (UIStyles.isDarkTheme()) {
             // By some reason E4 sets white background in dark theme.
-            widgetBackground = UIStyles.getDefaultTextBackground();
+            widgetBackground = UIStyles.getDefaultWidgetBackground();
             super.setBackground(widgetBackground);
             topNavigationElement.setBackground(widgetBackground);
             bottomNavigationElement.setBackground(widgetBackground);
@@ -732,9 +736,6 @@ public class TabbedFolderList extends Composite {
         widgetForeground = UIStyles.getDefaultTextForeground();
         widgetDarkShadow = display.getSystemColor(SWT.COLOR_WIDGET_DARK_SHADOW);
         widgetNormalShadow = display.getSystemColor(SWT.COLOR_WIDGET_NORMAL_SHADOW);
-
-        RGB white = display.getSystemColor(SWT.COLOR_WHITE).getRGB();
-        RGB black = display.getSystemColor(SWT.COLOR_BLACK).getRGB();
 
 		/*
 		 * gradient in the default tab: start colour WIDGET_NORMAL_SHADOW 100% +
@@ -773,34 +774,8 @@ public class TabbedFolderList extends Composite {
     }
 
     @Override
-    public void setBackground(Color color) {
-        super.setBackground(color);
-        UIUtils.asyncExec(() -> {
-            if (isDisposed()) {
-                return;
-            }
-            initColours();
-            for (ListElement e : elements) {
-                e.redraw();
-            }
-            topNavigationElement.redraw();
-            bottomNavigationElement.redraw();
-        });
-    }
-
-    @Override
     public void setFont(Font font) {
         super.setFont(font);
-
-        if (boldFont != null) {
-            boldFont.dispose();
-            boldFont = null;
-        }
-
-        if (font != null) {
-            boldFont = UIUtils.makeBoldFont(font);
-        }
-
         computeTabsWidth();
     }
 
@@ -958,7 +933,6 @@ public class TabbedFolderList extends Composite {
     private void initAccessible() {
         final Accessible accessible = getAccessible();
         accessible.addAccessibleListener(new AccessibleAdapter() {
-
             public void getName(AccessibleEvent e) {
                 if (getSelectionIndex() != NONE) {
                     e.result = elements[getSelectionIndex()].getInfo().getText();
@@ -1013,15 +987,14 @@ public class TabbedFolderList extends Composite {
     }
 
     public void addSelectionListener(SelectionListener listener) {
-        checkWidget ();
-        TypedListener typedListener = new TypedListener (listener);
-        addListener (SWT.Selection,typedListener);
-        addListener (SWT.DefaultSelection,typedListener);
+        checkWidget();
+        addListener(SWT.Selection, event -> listener.widgetSelected(new SelectionEvent(event)));
+        addListener(SWT.DefaultSelection, event -> listener.widgetDefaultSelected(new SelectionEvent(event)));
     }
 
     public void handleTraverse(TraverseEvent e) {
         if (e.detail == SWT.TRAVERSE_PAGE_PREVIOUS || e.detail == SWT.TRAVERSE_PAGE_NEXT) {
-            if ((e.stateMask & SWT.ALT) != SWT.ALT) {
+            if ((e.stateMask & SWT.CTRL) != SWT.CTRL && (e.stateMask & SWT.ALT) != SWT.ALT) {
                 // Only in case of CTRL+ALT+PG
                 return;
             }

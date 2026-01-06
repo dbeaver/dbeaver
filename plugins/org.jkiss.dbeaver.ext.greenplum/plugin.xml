@@ -10,6 +10,23 @@
                     customURL="true" turnOffPreparedStatements="true"/>
     </extension>
 
+    <extension point="org.jkiss.dbeaver.postgresql.serverType">
+        <serverType id="cloudberry"
+                    name="Cloudberry"
+                    class="org.jkiss.dbeaver.ext.greenplum.model.PostgreServerCloudberry"
+                    logo="icons/cloudberry_logo.png"
+                    customURL="true" turnOffPreparedStatements="true"/>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.postgresql.serverType">
+        <serverType id="greengage"
+                    name="Greengage"
+                    class="org.jkiss.dbeaver.ext.greenplum.model.PostgreServerGreengage"
+                    logo="icons/greengage_logo.svg"
+                    customURL="true"
+                    turnOffPreparedStatements="true"/>
+    </extension>
+
     <extension point="org.jkiss.dbeaver.dataSourceProvider">
         <datasource
                 class="org.jkiss.dbeaver.ext.greenplum.GreenplumDataSourceProvider"
@@ -19,7 +36,8 @@
                 label="Greenplum"
                 icon="icons/greenplum_icon.png"
                 dialect="greenplum"
-                inheritClients="true">
+                inheritClients="true"
+                inheritProviderProperties="true">
 
             <treeInjection path="postgresql/database/schema/table"
                            changeFolderType="org.jkiss.dbeaver.ext.greenplum.model.GreenplumTable"/>
@@ -49,11 +67,12 @@
                         defaultPort="5432"
                         webURL="https://greenplum.org/"
                         propertiesURL="https://jdbc.postgresql.org/documentation/head/connect.html#connection-parameters"
+                        databaseDocumentationSuffixURL="Database-driver-Greenplum"
                         description="%driver.greenplum.description"
                         categories="sql,analytic">
                     <replace provider="postgresql" driver="postgres-greenplum-jdbc"/>
 
-                    <file type="jar" path="maven:/org.postgresql:postgresql:RELEASE[42.5.2]"
+                    <file type="jar" path="maven:/org.postgresql:postgresql:RELEASE[42.7.2]"
                           bundle="!drivers.postgresql"/>
                     <file type="jar" path="maven:/net.postgis:postgis-jdbc:RELEASE[2.5.0]" ignore-dependencies="true"
                           optional="true" bundle="!drivers.postgresql"/>
@@ -61,9 +80,7 @@
                           ignore-dependencies="true" optional="true" bundle="!drivers.postgresql"/>
                     <file type="jar" path="maven:/net.postgis:postgis-geometry:RELEASE[2.5.0]"
                           ignore-dependencies="true" optional="true" bundle="!drivers.postgresql"/>
-                    <file type="license" path="https://raw.githubusercontent.com/pgjdbc/pgjdbc/master/LICENSE" bundle="!drivers.postgresql"/>
-
-                    <file type="license" path="drivers/postgresql/LICENSE.txt" bundle="drivers.postgresql"/>
+                    <file type="license" path="licenses/external/pg.txt"/>
                     <file type="jar" path="drivers/postgresql" bundle="drivers.postgresql"/>
                     <file type="jar" path="drivers/postgis" bundle="drivers.postgresql"/>
 <!--                    <file type="jar" path="drivers/waffle" bundle="drivers.postgresql"/>-->
@@ -72,16 +89,96 @@
                     <property name="connectTimeout" value="20"/>
                     <property name="prepareThreshold" value="0"/>
                 </driver>
+            </drivers>
+        </datasource>
+        <datasource
+                class="org.jkiss.dbeaver.ext.greenplum.CloudberryDataSourceProvider"
+                description="%datasource.cloudberry.description"
+                id="cloudberry"
+                parent="greenplum"
+                label="Cloudberry"
+                icon="icons/cloudberry_icon.png"
+                dialect="greenplum"
+                inheritClients="true"
+                inheritProviderProperties="true">
 
-                <provider-properties drivers="*">
-                    <propertyGroup label="Database list">
-                        <property id="@dbeaver-show-non-default-db@" label="Show all databases" type="boolean" description="Show all databases on server. Otherwise show current database only."/>
-                        <property id="@dbeaver-show-unavailable-db@" label="Show unavailable databases" type="boolean" description="Show databases not unavailable for connection."/>
-                    </propertyGroup>
-                    <propertyGroup label="Misc">
-                        <property id="@dbeaver-chosen-role@" label="User role" type="string" description="User role for connection"/>
-                    </propertyGroup>
-                </provider-properties>
+            <drivers managable="true">
+                <driver
+                        id="cloudberry-jdbc"
+                        label="Cloudberry"
+                        icon="icons/cloudberry_icon.png"
+                        iconBig="icons/cloudberry_icon_big.png"
+                        class="org.postgresql.Driver"
+                        sampleURL="jdbc:postgresql://{host}[:{port}]/[{database}]"
+                        defaultPort="5432"
+                        webURL="https://cloudberry.apache.org/"
+                        propertiesURL="https://jdbc.postgresql.org/documentation/head/connect.html#connection-parameters"
+                        databaseDocumentationSuffixURL=""
+                        description="%driver.cloudberry.description"
+                        categories="sql,analytic">
+                    <replace provider="postgresql" driver="postgres-cloudberry-jdbc"/>
+
+                    <file type="jar" path="maven:/org.postgresql:postgresql:RELEASE[42.7.2]"
+                          bundle="!drivers.postgresql"/>
+                    <file type="jar" path="maven:/net.postgis:postgis-jdbc:RELEASE[2.5.0]" ignore-dependencies="true"
+                          optional="true" bundle="!drivers.postgresql"/>
+                    <file type="jar" path="maven:/net.postgis:postgis-jdbc-jtsparser:RELEASE[2.5.0]"
+                          ignore-dependencies="true" optional="true" bundle="!drivers.postgresql"/>
+                    <file type="jar" path="maven:/net.postgis:postgis-geometry:RELEASE[2.5.0]"
+                          ignore-dependencies="true" optional="true" bundle="!drivers.postgresql"/>
+                    <file type="license" path="licenses/external/pg.txt"/>
+                    <file type="jar" path="drivers/postgresql" bundle="drivers.postgresql"/>
+                    <file type="jar" path="drivers/postgis" bundle="drivers.postgresql"/>
+                    <parameter name="serverType" value="cloudberry"/>
+                    <property name="loginTimeout" value="20"/>
+                    <property name="connectTimeout" value="20"/>
+                    <property name="prepareThreshold" value="0"/>
+                </driver>
+            </drivers>
+        </datasource>
+        <datasource
+                class="org.jkiss.dbeaver.ext.greenplum.GreengageDataSourceProvider"
+                description="%datasource.greengage.description"
+                id="greengage"
+                parent="greenplum"
+                label="Greengage"
+                icon="icons/greengage_icon.svg"
+                dialect="greenplum"
+                inheritClients="true"
+                inheritProviderProperties="true">
+
+            <drivers managable="true">
+                <driver
+                        id="greengage-jdbc"
+                        label="Greengage"
+                        icon="icons/greengage_icon.svg"
+                        iconBig="icons/greengage_icon_big.svg"
+                        class="org.postgresql.Driver"
+                        sampleURL="jdbc:postgresql://{host}[:{port}]/[{database}]"
+                        defaultPort="5432"
+                        webURL="https://greengagedb.org/"
+                        propertiesURL="https://jdbc.postgresql.org/documentation/head/connect.html#connection-parameters"
+                        databaseDocumentationSuffixURL="Database-driver-Greengage"
+                        description="%driver.greengage.description"
+                        categories="sql,analytic">
+                    <replace provider="postgresql" driver="postgres-greengage-jdbc"/>
+
+                    <file type="jar" path="maven:/org.postgresql:postgresql:RELEASE[42.7.2]"
+                          bundle="!drivers.postgresql"/>
+                    <file type="jar" path="maven:/net.postgis:postgis-jdbc:RELEASE[2.5.0]" ignore-dependencies="true"
+                          optional="true" bundle="!drivers.postgresql"/>
+                    <file type="jar" path="maven:/net.postgis:postgis-jdbc-jtsparser:RELEASE[2.5.0]"
+                          ignore-dependencies="true" optional="true" bundle="!drivers.postgresql"/>
+                    <file type="jar" path="maven:/net.postgis:postgis-geometry:RELEASE[2.5.0]"
+                          ignore-dependencies="true" optional="true" bundle="!drivers.postgresql"/>
+                    <file type="license" path="licenses/external/pg.txt"/>
+                    <file type="jar" path="drivers/postgresql" bundle="drivers.postgresql"/>
+                    <file type="jar" path="drivers/postgis" bundle="drivers.postgresql"/>
+                    <parameter name="serverType" value="greengage"/>
+                    <property name="loginTimeout" value="20"/>
+                    <property name="connectTimeout" value="20"/>
+                    <property name="prepareThreshold" value="0"/>
+                </driver>
             </drivers>
         </datasource>
     </extension>

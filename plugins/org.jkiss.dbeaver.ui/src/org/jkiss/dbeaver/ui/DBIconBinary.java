@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,8 @@ package org.jkiss.dbeaver.ui;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.ImageData;
+import org.eclipse.swt.widgets.Display;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.utils.CommonUtils;
 
@@ -29,12 +31,12 @@ import org.jkiss.utils.CommonUtils;
 public class DBIconBinary implements DBPImage
 {
     private final String location;
-    private Image image;
-    private ImageDescriptor imageDescriptor;
+    private final Image image;
+    private final ImageDescriptor imageDescriptor;
 
     public DBIconBinary(final String location, final ImageData data) {
         this.location = "binary:" + location;
-        this.image = new Image(null, data);
+        this.image = new Image(Display.getCurrent(), data);
         this.imageDescriptor = ImageDescriptor.createFromImageData(data);
     }
 
@@ -52,6 +54,7 @@ public class DBIconBinary implements DBPImage
         return imageDescriptor;
     }
 
+    @NotNull
     @Override
     public String getLocation() {
         return location;
@@ -70,4 +73,7 @@ public class DBIconBinary implements DBPImage
         return location;
     }
 
+    public void dispose() {
+        this.image.dispose();
+    }
 }

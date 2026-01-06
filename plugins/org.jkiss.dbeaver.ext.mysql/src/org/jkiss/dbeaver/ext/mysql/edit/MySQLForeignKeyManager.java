@@ -1,7 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
- * Copyright (C) 2011-2012 Eugene Fradkin (eugene.fradkin@gmail.com)
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ext.mysql.edit;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLEngine;
@@ -50,7 +50,7 @@ public class MySQLForeignKeyManager extends SQLForeignKeyManager<MySQLTableForei
     }
 
     @Override
-    protected MySQLTableForeignKey createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, final Object container, Object from, Map<String, Object> options)
+    protected MySQLTableForeignKey createDatabaseObject(@NotNull DBRProgressMonitor monitor, @NotNull DBECommandContext context, final Object container, Object from, @NotNull Map<String, Object> options)
     {
         MySQLTable table = (MySQLTable) container;
         try {
@@ -76,7 +76,7 @@ public class MySQLForeignKeyManager extends SQLForeignKeyManager<MySQLTableForei
     }
 
     @Override
-    protected void addObjectModifyActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, ObjectChangeCommand command, Map<String, Object> options) throws DBException {
+    protected void addObjectModifyActions(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext executionContext, @NotNull List<DBEPersistAction> actions, @NotNull ObjectChangeCommand command, @NotNull Map<String, Object> options) throws DBException {
         addObjectDeleteActions(monitor, executionContext, actions, new ObjectDeleteCommand(command.getObject(), command.getTitle()), options);
         addObjectCreateActions(monitor, executionContext, actions, makeCreateCommand(command.getObject(), options), options);
     }

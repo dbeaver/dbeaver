@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -70,6 +70,11 @@ public abstract class PostgreServerExtensionBase implements PostgreServerExtensi
     }
 
     @Override
+    public boolean supportsForeignKeys() {
+        return true;
+    }
+
+    @Override
     public boolean supportsMaterializedViews() {
         return dataSource.isServerVersionAtLeast(9, 3);
     }
@@ -92,6 +97,11 @@ public abstract class PostgreServerExtensionBase implements PostgreServerExtensi
     @Override
     public boolean supportsEventTriggers() {
         return false;
+    }
+
+    @Override
+    public boolean supportsDependencies() {
+        return true;
     }
 
     @Override
@@ -122,6 +132,11 @@ public abstract class PostgreServerExtensionBase implements PostgreServerExtensi
     @Override
     public boolean supportsCollations() {
         return dataSource.isServerVersionAtLeast(9, 1);
+    }
+
+    @Override
+    public boolean supportsLanguages() {
+        return true;
     }
 
     @Override
@@ -176,6 +191,11 @@ public abstract class PostgreServerExtensionBase implements PostgreServerExtensi
 
     @Override
     public String readTableDDL(DBRProgressMonitor monitor, PostgreTableBase table) throws DBException {
+        return null;
+    }
+
+    @Override
+    public String readViewDDL(DBRProgressMonitor monitor, PostgreViewBase view) throws DBException {
         return null;
     }
 
@@ -248,7 +268,7 @@ public abstract class PostgreServerExtensionBase implements PostgreServerExtensi
     }
 
     @Override
-    public String getTableModifiers(DBRProgressMonitor monitor, PostgreTableBase tableBase, boolean alter) {
+    public String getTableModifiers(DBRProgressMonitor monitor, PostgreTableBase tableBase, boolean alter, String delimiter) {
         StringBuilder ddl = new StringBuilder();
         if (tableBase instanceof PostgreTable) {
             PostgreTable table = (PostgreTable) tableBase;
@@ -256,7 +276,7 @@ public abstract class PostgreServerExtensionBase implements PostgreServerExtensi
                 try {
                     final List<PostgreTableInheritance> superTables = table.getSuperInheritance(monitor);
                     if (!CommonUtils.isEmpty(superTables) && ! tableBase.isPartition()) {
-                        ddl.append("\nINHERITS (");
+                        ddl.append(delimiter).append("INHERITS (");
                         for (int i = 0; i < superTables.size(); i++) {
                             if (i > 0) ddl.append(",");
                             ddl.append(superTables.get(i).getAssociatedEntity().getFullyQualifiedName(DBPEvaluationContext.DDL));
@@ -267,7 +287,7 @@ public abstract class PostgreServerExtensionBase implements PostgreServerExtensi
                     log.error(e);
                 }
                 if (!CommonUtils.isEmpty(table.getPartitionKey())) {
-                    ddl.append("\nPARTITION BY ").append(table.getPartitionKey());
+                    ddl.append(delimiter).append("PARTITION BY ").append(table.getPartitionKey());
                 }
             }
             if (tableBase instanceof PostgreTablePartition && !alter) {
@@ -279,7 +299,12 @@ public abstract class PostgreServerExtensionBase implements PostgreServerExtensi
         }
 
         if (tableBase instanceof PostgreTableRegular) {
-            PostgreTableRegular table = (PostgreTableRegular) tableBase;
+            if (!alter) {
+                createUsingClause((PostgreTableRegular) tableBase, ddl);
+            }
+        }
+
+        if (tableBase instanceof PostgreTableRegular table) {
             try {
                 if (!alter) {
                     ddl.append(createWithClause(table, tableBase));
@@ -289,19 +314,18 @@ public abstract class PostgreServerExtensionBase implements PostgreServerExtensi
                     PostgreTablespace tablespace = table.getTablespace(monitor);
                     if (tablespace != null) {
                         if (!alter) {
-                            ddl.append("\nTABLESPACE ").append(tablespace.getName());
+                            ddl.append(delimiter).append("TABLESPACE ").append(tablespace.getName());
                         }
                         hasOtherSpecs = true;
                     }
                 }
                 if (!alter && hasOtherSpecs) {
-                    ddl.append("\n");
+                    ddl.append(delimiter);
                 }
             } catch (DBException e) {
                 log.error(e);
             }
-        } else if (tableBase instanceof PostgreTableForeign) {
-            PostgreTableForeign table = (PostgreTableForeign)tableBase;
+        } else if (tableBase instanceof PostgreTableForeign table) {
             try {
                 String foreignServerName = table.getForeignServerName();
                 if (CommonUtils.isEmpty(foreignServerName)) {
@@ -310,12 +334,12 @@ public abstract class PostgreServerExtensionBase implements PostgreServerExtensi
                         foreignServerName = DBUtils.getQuotedIdentifier(foreignServer);
                     }
                 }
-                if (foreignServerName != null ) {
-                    ddl.append("\nSERVER ").append(foreignServerName);
+                if (foreignServerName != null) {
+                    ddl.append(delimiter).append("SERVER ").append(foreignServerName);
                 }
                 String[] foreignOptions = table.getForeignOptions(monitor);
                 if (!ArrayUtils.isEmpty(foreignOptions)) {
-                    ddl.append("\nOPTIONS ").append(PostgreUtils.getOptionsString(foreignOptions));
+                    ddl.append(delimiter).append("OPTIONS ").append(PostgreUtils.getOptionsString(foreignOptions));
                 }
             } catch (DBException e) {
                 log.error(e);
@@ -324,11 +348,6 @@ public abstract class PostgreServerExtensionBase implements PostgreServerExtensi
         tableBase.appendTableModifiers(monitor, ddl);
 
         return ddl.toString();
-    }
-
-    @Override
-    public PostgreTableColumn createTableColumn(DBRProgressMonitor monitor, PostgreSchema schema, PostgreTableBase table, JDBCResultSet dbResult) throws DBException {
-        return new PostgreTableColumn(monitor, table, dbResult);
     }
 
     @Override
@@ -341,7 +360,7 @@ public abstract class PostgreServerExtensionBase implements PostgreServerExtensi
 
     @Override
     public List<PostgrePrivilege> readObjectPermissions(DBRProgressMonitor monitor, PostgreTableBase object, boolean includeNestedObjects) throws DBException {
-        List<PostgrePrivilege> tablePermissions = PostgreUtils.extractPermissionsFromACL(monitor, object, object.getAcl());
+        List<PostgrePrivilege> tablePermissions = PostgreUtils.extractPermissionsFromACL(monitor, object, object.getAcl(), false);
         if (!includeNestedObjects) {
             return tablePermissions;
         }
@@ -400,7 +419,7 @@ public abstract class PostgreServerExtensionBase implements PostgreServerExtensi
     }
 
     @Override
-    public boolean supportsTeblespaceLocation() {
+    public boolean supportsTablespaceLocation() {
         return dataSource.isServerVersionAtLeast(9, 2);
     }
 
@@ -449,6 +468,10 @@ public abstract class PostgreServerExtensionBase implements PostgreServerExtensi
         return withClauseBuilder.toString();
     }
 
+    public void createUsingClause(@NotNull PostgreTableRegular table, @NotNull StringBuilder ddl) {
+        // Do nothing
+    }
+
     @Override
     public boolean supportsPGConstraintExpressionColumn() {
         return true;
@@ -456,6 +479,11 @@ public abstract class PostgreServerExtensionBase implements PostgreServerExtensi
 
     @Override
     public boolean supportsHasOidsColumn() {
+        return true;
+    }
+
+    @Override
+    public boolean supportsColumnsRequiring() {
         return true;
     }
 
@@ -492,6 +520,11 @@ public abstract class PostgreServerExtensionBase implements PostgreServerExtensi
     @Override
     public boolean supportsCommentsOnRole() {
         return supportsRoles();
+    }
+
+    @Override
+    public boolean supportsDefaultPrivileges() {
+        return dataSource.isServerVersionAtLeast(9, 0);
     }
 
     @Override
@@ -535,6 +568,16 @@ public abstract class PostgreServerExtensionBase implements PostgreServerExtensi
     }
 
     @Override
+    public boolean supportsAlterStorageStrategy() {
+        return false;
+    }
+
+    @Override
+    public boolean supportsStorageModifier() {
+        return false;
+    }
+
+    @Override
     public boolean supportsAlterUserChangePassword() {
         return false;
     }
@@ -555,6 +598,16 @@ public abstract class PostgreServerExtensionBase implements PostgreServerExtensi
     }
 
     @Override
+    public boolean supportsAcl() {
+        return true;
+    }
+
+    @Override
+    public boolean supportsCustomDataTypes() {
+        return true;
+    }
+
+    @Override
     public boolean supportsDistinctForStatementsWithAcl() {
         return true;
     }
@@ -572,5 +625,21 @@ public abstract class PostgreServerExtensionBase implements PostgreServerExtensi
     @Override
     public boolean supportsAlterTableForViewRename() {
         return false;
+    }
+
+    @Override
+    public boolean supportsNativeClient() {
+        return true;
+    }
+
+    @Override
+    public boolean supportsJobs() {
+        return false;
+    }
+
+    @Override
+    public boolean isPGObject(@NotNull Object object) {
+        String className = object.getClass().getName();
+        return PostgreConstants.PG_OBJECT_CLASS.equals(className);
     }
 }

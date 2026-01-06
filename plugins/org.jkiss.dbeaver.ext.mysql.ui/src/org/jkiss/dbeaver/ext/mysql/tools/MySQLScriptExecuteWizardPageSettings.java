@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,32 +23,28 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.ext.mysql.tasks.MySQLScriptExecuteSettings;
 import org.jkiss.dbeaver.ext.mysql.ui.internal.MySQLUIMessages;
-import org.jkiss.dbeaver.model.DBIcon;
-import org.jkiss.dbeaver.ui.DBeaverIcons;
+import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.dialogs.DialogUtils;
+import org.jkiss.dbeaver.ui.controls.TextWithOpenFile;
+import org.jkiss.dbeaver.ui.controls.TextWithOpenFileRemote;
 import org.jkiss.utils.CommonUtils;
 
-import java.io.File;
 
-
-public class MySQLScriptExecuteWizardPageSettings extends MySQLWizardPageSettings<MySQLScriptExecuteWizard>
-{
+public class MySQLScriptExecuteWizardPageSettings extends MySQLWizardPageSettings<MySQLScriptExecuteWizard> {
     private Text inputFileText;
     private Combo logLevelCombo;
     private Button disableForeignKeyChecks;
 
-    MySQLScriptExecuteWizardPageSettings(MySQLScriptExecuteWizard wizard)
-    {
+    MySQLScriptExecuteWizardPageSettings(MySQLScriptExecuteWizard wizard) {
         super(wizard, wizard.isImport() ?
-                MySQLUIMessages.tools_script_execute_wizard_page_settings_import_configuration :
-                MySQLUIMessages.tools_script_execute_wizard_page_settings_script_configuration);
+            MySQLUIMessages.tools_script_execute_wizard_page_settings_import_configuration :
+            MySQLUIMessages.tools_script_execute_wizard_page_settings_script_configuration);
         setTitle(wizard.isImport() ?
-                MySQLUIMessages.tools_script_execute_wizard_page_settings_import_configuration :
-                MySQLUIMessages.tools_script_execute_wizard_page_settings_script_configuration);
+            MySQLUIMessages.tools_script_execute_wizard_page_settings_import_configuration :
+            MySQLUIMessages.tools_script_execute_wizard_page_settings_script_configuration);
         setDescription(wizard.isImport() ?
-                MySQLUIMessages.tools_script_execute_wizard_page_settings_set_db_import_settings :
-                MySQLUIMessages.tools_script_execute_wizard_page_settings_set_script_execution_settings);
+            MySQLUIMessages.tools_script_execute_wizard_page_settings_set_db_import_settings :
+            MySQLUIMessages.tools_script_execute_wizard_page_settings_set_script_execution_settings);
     }
 
     @Override
@@ -61,51 +57,49 @@ public class MySQLScriptExecuteWizardPageSettings extends MySQLWizardPageSetting
     }
 
     @Override
-    public void createControl(Composite parent)
-    {
+    public void createControl(Composite parent) {
         Composite composite = UIUtils.createPlaceholder(parent, 1);
 
         Group outputGroup = UIUtils.createControlGroup(
-                composite, MySQLUIMessages.tools_script_execute_wizard_page_settings_group_input, 3, GridData.FILL_HORIZONTAL, 0);
-        inputFileText = UIUtils.createLabelText(
-                outputGroup, MySQLUIMessages.tools_script_execute_wizard_page_settings_label_input_file, "", SWT.BORDER); //$NON-NLS-2$
-        Button browseButton = new Button(outputGroup, SWT.PUSH);
-        browseButton.setImage(DBeaverIcons.getImage(DBIcon.TREE_FOLDER));
-        browseButton.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e)
-            {
-                chooseInputFile();
-            }
-        });
+            composite, MySQLUIMessages.tools_script_execute_wizard_page_settings_group_input, 3, GridData.FILL_HORIZONTAL, 0);
+
+        DBPProject project = getWizard().getProject();
+        TextWithOpenFile inputText = new TextWithOpenFileRemote(
+            outputGroup,
+            MySQLUIMessages.tools_script_execute_wizard_page_settings_label_input_file,
+            new String[]{"*.sql", "*.txt", "*"},
+            SWT.OPEN | SWT.SINGLE,
+            true,
+            project);
+        inputText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        inputFileText = inputText.getTextControl();
 
         if (wizard.getSettings().getInputFile() != null) {
             inputFileText.setText(wizard.getSettings().getInputFile());
         }
 
         Group settingsGroup = UIUtils.createControlGroup(
-                composite, MySQLUIMessages.tools_script_execute_wizard_page_settings_group_settings, 2, GridData.HORIZONTAL_ALIGN_BEGINNING, 0);
+            composite, MySQLUIMessages.tools_script_execute_wizard_page_settings_group_settings, 2, GridData.HORIZONTAL_ALIGN_BEGINNING, 0);
         settingsGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         logLevelCombo = UIUtils.createLabelCombo(
-                settingsGroup, MySQLUIMessages.tools_script_execute_wizard_page_settings_label_log_level, SWT.DROP_DOWN | SWT.READ_ONLY);
+            settingsGroup, MySQLUIMessages.tools_script_execute_wizard_page_settings_label_log_level, SWT.DROP_DOWN | SWT.READ_ONLY);
         for (MySQLScriptExecuteSettings.LogLevel logLevel : MySQLScriptExecuteSettings.LogLevel.values()) {
             logLevelCombo.add(logLevel.name());
         }
         logLevelCombo.select(wizard.getLogLevel().ordinal());
         logLevelCombo.addSelectionListener(new SelectionAdapter() {
             @Override
-            public void widgetSelected(SelectionEvent e)
-            {
+            public void widgetSelected(SelectionEvent e) {
                 wizard.getSettings().setLogLevel(CommonUtils.valueOf(MySQLScriptExecuteSettings.LogLevel.class, logLevelCombo.getText()));
             }
         });
         createExtraArgsInput(settingsGroup);
         disableForeignKeyChecks = UIUtils.createCheckbox(
-                settingsGroup,
-                MySQLUIMessages.tools_script_execute_wizard_page_settings_checkbox_disable_foreign_key_checks,
-                MySQLUIMessages.tools_script_execute_wizard_page_settings_checkbox_disable_foreign_key_checks_tooltip,
-                false,
-                2
+            settingsGroup,
+            MySQLUIMessages.tools_script_execute_wizard_page_settings_checkbox_disable_foreign_key_checks,
+            MySQLUIMessages.tools_script_execute_wizard_page_settings_checkbox_disable_foreign_key_checks_tooltip,
+            false,
+            2
         );
 
         Composite extraGroup = UIUtils.createComposite(composite, 2);
@@ -114,15 +108,6 @@ public class MySQLScriptExecuteWizardPageSettings extends MySQLWizardPageSetting
         setControl(composite);
 
         //updateState();
-    }
-
-    private void chooseInputFile()
-    {
-        File file = DialogUtils.openFile(getShell(), new String[]{"*.sql", "*.txt", "*.*"}); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
-        if (file != null) {
-            inputFileText.setText(file.getAbsolutePath());
-        }
-        updateState();
     }
 
     @Override
@@ -138,8 +123,7 @@ public class MySQLScriptExecuteWizardPageSettings extends MySQLWizardPageSetting
     }
 
     @Override
-    protected void updateState()
-    {
+    protected void updateState() {
         saveState();
         updatePageCompletion();
     }

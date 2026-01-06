@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.ext.mysql.model;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBDatabaseException;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
@@ -26,6 +27,7 @@ import org.jkiss.dbeaver.ext.mysql.MySQLDataSourceProvider;
 import org.jkiss.dbeaver.ext.mysql.model.plan.MySQLPlanAnalyser;
 import org.jkiss.dbeaver.ext.mysql.model.session.MySQLSessionManager;
 import org.jkiss.dbeaver.model.*;
+import org.jkiss.dbeaver.model.access.DBAuthUtils;
 import org.jkiss.dbeaver.model.admin.sessions.DBAServerSessionManager;
 import org.jkiss.dbeaver.model.app.DBACertificateStorage;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
@@ -42,27 +44,29 @@ import org.jkiss.dbeaver.model.impl.jdbc.*;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCBasicDataTypeCache;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCDataType;
+import org.jkiss.dbeaver.model.impl.net.SSLConstants;
 import org.jkiss.dbeaver.model.impl.net.SSLHandlerTrustStoreImpl;
 import org.jkiss.dbeaver.model.impl.sql.QueryTransformerLimit;
 import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
+import org.jkiss.dbeaver.model.net.DBWUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLHelpProvider;
 import org.jkiss.dbeaver.model.sql.SQLState;
+import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectFilter;
 import org.jkiss.dbeaver.model.struct.DBSStructureAssistant;
+import org.jkiss.dbeaver.model.struct.rdb.DBSIndexType;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.CommonUtils;
+import org.osgi.framework.Version;
 
 import java.net.MalformedURLException;
 import java.nio.file.Path;
-import java.sql.Connection;
-import java.sql.Driver;
-import java.sql.SQLException;
-import java.sql.Types;
+import java.sql.*;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -72,10 +76,28 @@ import java.util.regex.Pattern;
  */
 public class MySQLDataSource extends JDBCDataSource implements DBPObjectStatisticsCollector {
     private static final Log log = Log.getLog(MySQLDataSource.class);
+    private static final Pattern VERSION_PATTERN = Pattern.compile("([0-9]+\\.[0-9]+\\.[0-9]+).+");
+
+    private static final Map<String, String> PROHIBITED_DRIVER_PROPERTIES = new HashMap<>();
+
+    static {
+        PROHIBITED_DRIVER_PROPERTIES.putAll(Map.of(
+            "autoDeserialize", "false",
+            "allowLocalInfile", "false",
+            "allowLoadLocalInfile", "false",
+            "allowUrlInLocalInfile", "false"
+        ));
+        PROHIBITED_DRIVER_PROPERTIES.put("allowLoadLocalInfileInPath", null);
+    }
 
     private final JDBCBasicDataTypeCache<MySQLDataSource, JDBCDataType> dataTypeCache;
     private List<MySQLEngine> engines;
-    private final CatalogCache catalogCache = new CatalogCache();
+    private final CatalogCache catalogCache = new CatalogCache() {
+        @Override
+        protected void detectCaseSensitivity(DBSObject object) {
+            setCaseSensitive(!getDataSource().getSQLDialect().useCaseInsensitiveNameLookup());
+        }
+    };
     private List<MySQLPrivilege> privileges;
     private List<MySQLUser> users;
     private List<MySQLCharset> charsets;
@@ -88,6 +110,9 @@ public class MySQLDataSource extends JDBCDataSource implements DBPObjectStatisti
     private boolean containsCheckConstraintTable;
 
     private transient boolean inServerTimezoneHandle;
+
+    private Boolean readeAllCaches;
+    private Version version;
 
     public MySQLDataSource(DBRProgressMonitor monitor, DBPDataSourceContainer container) throws DBException {
         this(monitor, container, new MySQLDialect());
@@ -109,6 +134,8 @@ public class MySQLDataSource extends JDBCDataSource implements DBPObjectStatisti
                 } else {
                     return 255;
                 }
+            case DBPDataSource.FEATURE_LIMIT_AFFECTS_DML:
+                return true;
         }
         return super.getDataSourceFeature(featureId);
     }
@@ -118,8 +145,13 @@ public class MySQLDataSource extends JDBCDataSource implements DBPObjectStatisti
     }
 
     @Override
-    protected Map<String, String> getInternalConnectionProperties(DBRProgressMonitor monitor, DBPDriver driver, JDBCExecutionContext context, String purpose, DBPConnectionConfiguration connectionInfo)
-        throws DBCException {
+    protected Map<String, String> getInternalConnectionProperties(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBPDriver driver,
+        @NotNull JDBCExecutionContext context,
+        @NotNull String purpose,
+        @NotNull DBPConnectionConfiguration connectionInfo
+    ) throws DBCException {
         Map<String, String> props = new LinkedHashMap<>(MySQLDataSourceProvider.getConnectionsProps());
         final DBWHandlerConfiguration sslConfig = getContainer().getActualConnectionConfiguration().getHandler(MySQLConstants.HANDLER_SSL);
         if (sslConfig != null && sslConfig.isEnabled()) {
@@ -146,7 +178,7 @@ public class MySQLDataSource extends JDBCDataSource implements DBPObjectStatisti
             String zeroDateTimeBehavior = connectionInfo.getProperty(MySQLConstants.PROP_ZERO_DATETIME_BEHAVIOR);
             if (zeroDateTimeBehavior == null) {
                 try {
-                    Driver driverInstance = (Driver) driver.getDriverInstance(monitor);
+                    Driver driverInstance = driver.getDriverLoader(getContainer()).getDriverInstance(monitor);
                     if (driverInstance != null) {
                         if (driverInstance.getMajorVersion() >= 8) {
                             props.put(MySQLConstants.PROP_ZERO_DATETIME_BEHAVIOR, "CONVERT_TO_NULL");
@@ -186,12 +218,12 @@ public class MySQLDataSource extends JDBCDataSource implements DBPObjectStatisti
             byte[] clientCertData = SSLHandlerTrustStoreImpl.readCertificate(sslConfig, SSLHandlerTrustStoreImpl.PROP_SSL_CLIENT_CERT, MySQLConstants.PROP_SSL_CLIENT_CERT);
             byte[] keyData = SSLHandlerTrustStoreImpl.readCertificate(sslConfig, SSLHandlerTrustStoreImpl.PROP_SSL_CLIENT_KEY, MySQLConstants.PROP_SSL_CLIENT_KEY);
             if (caCertData != null || clientCertData != null) {
-                securityManager.addCertificate(getContainer(), "ssl", caCertData, clientCertData, keyData);
+                securityManager.addCertificate(getContainer(), SSLConstants.SSL_CERT_TYPE, caCertData, clientCertData, keyData);
             } else {
-                securityManager.deleteCertificate(getContainer(), "ssl");
+                securityManager.deleteCertificate(getContainer(), SSLConstants.SSL_CERT_TYPE);
             }
-            final String ksPath = makeKeyStorePath(securityManager.getKeyStorePath(getContainer(), "ssl"));
-            final char[] ksPass = securityManager.getKeyStorePassword(getContainer(), "ssl");
+            final String ksPath = makeKeyStorePath(securityManager.getKeyStorePath(getContainer(), SSLConstants.SSL_CERT_TYPE));
+            final char[] ksPass = securityManager.getKeyStorePassword(getContainer(), SSLConstants.SSL_CERT_TYPE);
             if (isMariaDB()) {
                 props.put("trustStore", ksPath);
                 props.put("trustStorePassword", String.valueOf(ksPass));
@@ -209,10 +241,6 @@ public class MySQLDataSource extends JDBCDataSource implements DBPObjectStatisti
         final boolean retrievePublicKey = sslConfig.getBooleanProperty(MySQLConstants.PROP_SSL_PUBLIC_KEY_RETRIEVE);
         if (retrievePublicKey) {
             props.put("allowPublicKeyRetrieval", "true");
-        }
-
-        if (sslConfig.getBooleanProperty(MySQLConstants.PROP_SSL_DEBUG)) {
-            System.setProperty("javax.net.debug", "all");
         }
     }
 
@@ -279,6 +307,19 @@ public class MySQLDataSource extends JDBCDataSource implements DBPObjectStatisti
                     0,
                     0));
         }
+        if ((isMariaDB() && isServerVersionAtLeast(5, 4))
+            || (!isMariaDB() && isServerVersionAtLeast(5, 7))
+            && dataTypeCache.getCachedObject(MySQLConstants.TYPE_GEOMETRY) == null) {
+            addGISDatatype(MySQLConstants.TYPE_GEOMETRY);
+            addGISDatatype(MySQLConstants.TYPE_POINT);
+            addGISDatatype(MySQLConstants.TYPE_LINESTRING);
+            addGISDatatype(MySQLConstants.TYPE_POLYGON);
+            addGISDatatype(MySQLConstants.TYPE_MULTIPOINT);
+            addGISDatatype(MySQLConstants.TYPE_MULTILINESTRING);
+            addGISDatatype(MySQLConstants.TYPE_MULTIPOLYGON);
+            addGISDatatype(MySQLConstants.TYPE_GEOMETRYCOLLECTION);
+
+        }
         if (isMariaDB() && isServerVersionAtLeast(10, 7) && dataTypeCache.getCachedObject(MySQLConstants.TYPE_UUID) == null) {
             // Not supported by MariaDB driver for now (3.0.8). Waiting for the driver support
             dataTypeCache.cacheObject(
@@ -329,6 +370,9 @@ public class MySQLDataSource extends JDBCDataSource implements DBPObjectStatisti
                     try (JDBCResultSet dbResult = dbStat.executeQuery()) {
                         while (dbResult.next()) {
                             String charsetName = JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_CHARSET);
+                            if (charsetName == null) {
+                                continue;
+                            }
                             MySQLCharset charset = getCharset(charsetName);
                             if (charset == null) {
                                 log.warn("Charset '" + charsetName + "' not found.");
@@ -359,14 +403,16 @@ public class MySQLDataSource extends JDBCDataSource implements DBPObjectStatisti
             // Read plugins
             {
                 plugins = new ArrayList<>();
-                try (JDBCPreparedStatement dbStat = session.prepareStatement("SHOW PLUGINS")) {
-                    try (JDBCResultSet dbResult = dbStat.executeQuery()) {
-                        while (dbResult.next()) {
-                            plugins.add(new MySQLPlugin(this, dbResult));
+                if (supportsPlugins()) {
+                    try (JDBCPreparedStatement dbStat = session.prepareStatement("SHOW PLUGINS")) {
+                        try (JDBCResultSet dbResult = dbStat.executeQuery()) {
+                            while (dbResult.next()) {
+                                plugins.add(new MySQLPlugin(this, dbResult));
+                            }
                         }
+                    } catch (SQLException e) {
+                        log.debug("Error reading plugins information", e);
                     }
-                } catch (SQLException e) {
-                    log.debug("Error reading plugins information", e);
                 }
             }
 
@@ -399,6 +445,18 @@ public class MySQLDataSource extends JDBCDataSource implements DBPObjectStatisti
         }
     }
 
+    private void addGISDatatype(String typeGeometry) {
+        dataTypeCache.cacheObject(new JDBCDataType<>(this,
+            Types.OTHER,
+            typeGeometry.toUpperCase(Locale.ROOT),
+            typeGeometry.toUpperCase(Locale.ROOT),
+            false,
+            true,
+            0,
+            0,
+            0));
+    }
+
     @Override
     public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor)
         throws DBException {
@@ -411,6 +469,10 @@ public class MySQLDataSource extends JDBCDataSource implements DBPObjectStatisti
         this.initialize(monitor);
 
         return this;
+    }
+
+    public void resetUsers() {
+        this.users = null;
     }
 
     MySQLTable findTable(DBRProgressMonitor monitor, String catalogName, String tableName)
@@ -452,6 +514,15 @@ public class MySQLDataSource extends JDBCDataSource implements DBPObjectStatisti
         Connection mysqlConnection;
         try {
             mysqlConnection = super.openConnection(monitor, context, purpose);
+
+            if (isMariaDB()) {
+                // Execute a dummy statement that will cause an exception to be thrown if the password is expired
+                try (Statement stmt = mysqlConnection.createStatement()) {
+                    stmt.execute("SELECT 1");
+                } catch (SQLException e) {
+                    throw new DBCException(e, context);
+                }
+            }
         } catch (DBCException e) {
             if (e.getCause() instanceof SQLException &&
                 SQLState.SQL_01S00.getCode().equals (((SQLException) e.getCause()).getSQLState()) &&
@@ -466,6 +537,11 @@ public class MySQLDataSource extends JDBCDataSource implements DBPObjectStatisti
                     inServerTimezoneHandle = false;
                     throw e2;
                 }
+            } else if (
+                isPasswordExpired(e) &&
+                DBAuthUtils.promptAndChangePasswordForCurrentUser(monitor, container, this::changeUserPassword)
+            ) {
+                return openConnection(monitor, context, purpose);
             } else {
                 throw e;
             }
@@ -511,7 +587,7 @@ public class MySQLDataSource extends JDBCDataSource implements DBPObjectStatisti
                 }
             }
         } catch (SQLException ex) {
-            throw new DBException(ex, this);
+            throw new DBDatabaseException(ex, this);
         }
     }
 
@@ -603,14 +679,19 @@ public class MySQLDataSource extends JDBCDataSource implements DBPObjectStatisti
                 try (JDBCResultSet dbResult = dbStat.executeQuery()) {
                     List<MySQLPrivilege> privileges = new ArrayList<>();
                     while (dbResult.next()) {
-                        MySQLPrivilege user = new MySQLPrivilege(this, dbResult);
+                        String context = JDBCUtils.safeGetString(dbResult, "context");
+                        if (CommonUtils.isEmpty(context)) {
+                            log.debug("Skip privilege with an empty context.");
+                            continue;
+                        }
+                        MySQLPrivilege user = new MySQLPrivilege(this, context, dbResult);
                         privileges.add(user);
                     }
                     return privileges;
                 }
             }
         } catch (SQLException ex) {
-            throw new DBException(ex, this);
+            throw new DBDatabaseException(ex, this);
         }
     }
 
@@ -657,7 +738,7 @@ public class MySQLDataSource extends JDBCDataSource implements DBPObjectStatisti
                 }
             }
         } catch (SQLException ex) {
-            throw new DBException(ex, this);
+            throw new DBDatabaseException(ex, this);
         }
     }
 
@@ -672,7 +753,7 @@ public class MySQLDataSource extends JDBCDataSource implements DBPObjectStatisti
     }
 
     @Override
-    public <T> T getAdapter(Class<T> adapter) {
+    public <T> T getAdapter(@NotNull Class<T> adapter) {
         if (adapter == DBSStructureAssistant.class) {
             return adapter.cast(new MySQLStructureAssistant(this));
         } else if (adapter == SQLHelpProvider.class) {
@@ -699,23 +780,31 @@ public class MySQLDataSource extends JDBCDataSource implements DBPObjectStatisti
         return super.getAdapter(adapter);
     }
 
+    @NotNull
     @Override
     public Collection<? extends DBSDataType> getLocalDataTypes() {
         return dataTypeCache.getCachedObjects();
     }
 
+    public JDBCBasicDataTypeCache<MySQLDataSource, JDBCDataType> getDataTypeCache() {
+        return dataTypeCache;
+    }
+
+    @Nullable
     @Override
     public DBSDataType getLocalDataType(String typeName) {
         return dataTypeCache.getCachedObject(typeName);
     }
 
+    @Nullable
     @Override
     public DBSDataType getLocalDataType(int typeID) {
         return dataTypeCache.getCachedObject(typeID);
     }
 
+    @NotNull
     @Override
-    public String getDefaultDataTypeName(DBPDataKind dataKind) {
+    public String getDefaultDataTypeName(@NotNull DBPDataKind dataKind) {
         switch (dataKind) {
             case BOOLEAN:
                 return "TINYINT(1)";
@@ -740,7 +829,7 @@ public class MySQLDataSource extends JDBCDataSource implements DBPObjectStatisti
     }
 
     @Override
-    public void collectObjectStatistics(DBRProgressMonitor monitor, boolean totalSizeOnly, boolean forceRefresh) throws DBException {
+    public void collectObjectStatistics(@NotNull DBRProgressMonitor monitor, boolean totalSizeOnly, boolean forceRefresh) throws DBException {
         if (hasStatistics && !forceRefresh) {
             return;
         }
@@ -774,14 +863,35 @@ public class MySQLDataSource extends JDBCDataSource implements DBPObjectStatisti
         }
     }
 
-    static class CatalogCache extends JDBCObjectCache<MySQLDataSource, MySQLCatalog> {
+    public class CatalogCache extends JDBCObjectCache<MySQLDataSource, MySQLCatalog> {
         @NotNull
         @Override
         protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull MySQLDataSource owner) throws SQLException {
             StringBuilder catalogQuery = new StringBuilder("show databases");
             DBSObjectFilter catalogFilters = owner.getContainer().getObjectFilter(MySQLCatalog.class, null, false);
+            DBPConnectionConfiguration configuration = owner.getContainer().getConnectionConfiguration();
+            boolean showAllDatabases = CommonUtils.getBoolean(
+                configuration.getProviderProperty(MySQLConstants.PROP_SHOW_ALL_DBS),
+                MySQLConstants.PROP_SHOW_ALL_DBS_DEFAULT
+            );
+            String databaseName = getDatabaseName(configuration);
+            if (!showAllDatabases && CommonUtils.isNotEmpty(databaseName)) {
+                catalogFilters = new DBSObjectFilter();
+                catalogFilters.addInclude(databaseName);
+            }
             if (catalogFilters != null) {
-                JDBCUtils.appendFilterClause(catalogQuery, catalogFilters, MySQLConstants.COL_DATABASE_NAME, true, owner);
+                boolean supportsCondition = owner.supportsConditionForShowDatabasesStatement();
+                if (!supportsCondition) {
+                    catalogQuery.setLength(0);
+                    catalogQuery.append("SELECT SCHEMA_NAME FROM ").append(MySQLConstants.META_TABLE_SCHEMATA);
+                }
+                JDBCUtils.appendFilterClause(
+                    catalogQuery,
+                    catalogFilters,
+                    supportsCondition ? MySQLConstants.COL_DATABASE_NAME : MySQLConstants.COL_SCHEMA_NAME,
+                    true,
+                    owner
+                );
             }
             JDBCPreparedStatement dbStat = session.prepareStatement(catalogQuery.toString());
             if (catalogFilters != null) {
@@ -792,9 +902,33 @@ public class MySQLDataSource extends JDBCDataSource implements DBPObjectStatisti
 
         @Override
         protected MySQLCatalog fetchObject(@NotNull JDBCSession session, @NotNull MySQLDataSource owner, @NotNull JDBCResultSet resultSet) throws SQLException, DBException {
-            return new MySQLCatalog(owner, resultSet);
+            return createCatalogInstance(owner, resultSet);
         }
 
+        @Override
+        protected boolean handleCacheReadError(@NotNull Exception error) {
+            String sqlState = SQLState.getStateFromException(error);
+            return SQLState.SQL_42000.getCode().equals(sqlState);
+        }
+
+        @Nullable
+        private String getDatabaseName(@NotNull DBPConnectionConfiguration configuration) {
+            try {
+                DBWUtils.ConnectivityParameters connectivityParameters = DBWUtils.getConnectivityParameters(
+                    configuration,
+                    getContainer().getDriver()
+                );
+                return connectivityParameters.databaseName();
+            } catch (DBException e) {
+                log.error(e);
+                return null;
+            }
+        }
+    }
+
+    @NotNull
+    public MySQLCatalog createCatalogInstance(@NotNull MySQLDataSource owner, @NotNull JDBCResultSet resultSet) {
+        return new MySQLCatalog(owner, resultSet);
     }
 
     public boolean isMariaDB() {
@@ -802,6 +936,7 @@ public class MySQLDataSource extends JDBCDataSource implements DBPObjectStatisti
             getContainer().getDriver().getDriverClassName());
     }
 
+    @NotNull
     @Override
     public ErrorType discoverErrorType(@NotNull Throwable error) {
         if (isMariaDB()) {
@@ -878,6 +1013,16 @@ public class MySQLDataSource extends JDBCDataSource implements DBPObjectStatisti
         return CommonUtils.getBoolean(getContainer().getDriver().getDriverParameter("supports-alter-view"), false);
     }
 
+    /**
+     * Checks plugins list reading is supported.
+     *
+     * @return {@code true} if plugins list reading is supported
+     */
+    @Association
+    public boolean supportsPlugins() {
+        return CommonUtils.getBoolean(getContainer().getDriver().getDriverParameter("supports-plugins"), true);
+    }
+
 
     /**
      * Checks if table partitioning is supported.
@@ -899,6 +1044,30 @@ public class MySQLDataSource extends JDBCDataSource implements DBPObjectStatisti
         return CommonUtils.getBoolean(getContainer().getDriver().getDriverParameter("supports-triggers"), true);
     }
 
+    /**
+     * Returns true if the charsets information is supported. Ex. for table creation.
+     */
+    @Association
+    public boolean supportsCharsets() {
+        return CommonUtils.getBoolean(getContainer().getDriver().getDriverParameter("supports-charsets"), true);
+    }
+
+    /**
+     * Returns true if the collation information is supported. Ex. for table creation.
+     */
+    @Association
+    public boolean supportsCollations() {
+        return CommonUtils.getBoolean(getContainer().getDriver().getDriverParameter("supports-collations"), true);
+    }
+
+    /**
+     * Returns true if local clients using is supported.
+     */
+    @Association
+    public boolean supportsNativeClients() {
+        return CommonUtils.getBoolean(getContainer().getDriver().getDriverParameter(MySQLConstants.DRIVER_PARAM_CLIENTS), true);
+    }
+
     public boolean isSystemCatalog(String name) {
         return MySQLConstants.INFO_SCHEMA_NAME.equalsIgnoreCase(name) ||
             MySQLConstants.PERFORMANCE_SCHEMA_NAME.equalsIgnoreCase(name) ||
@@ -912,4 +1081,120 @@ public class MySQLDataSource extends JDBCDataSource implements DBPObjectStatisti
         return CommonUtils.getBoolean(getContainer().getDriver().getDriverParameter("supports-mysql-fetch-transform"), true);
     }
 
+    public boolean supportsSysSchema() {
+        return isMariaDB() ? isServerVersionAtLeast(10, 6) : isServerVersionAtLeast(5, 7);
+    }
+
+    /**
+     * Returns list of supported index types
+     */
+    public List<DBSIndexType> supportedIndexTypes() {
+        return Arrays.asList(MySQLConstants.INDEX_TYPE_BTREE,
+            MySQLConstants.INDEX_TYPE_FULLTEXT,
+            MySQLConstants.INDEX_TYPE_HASH,
+            MySQLConstants.INDEX_TYPE_RTREE);
+    }
+
+    /**
+     * Returns true if different rename table syntax is used
+     */
+    public boolean supportsAlterTableRenameSyntax() {
+        return false;
+    }
+
+    /**
+     * Return true if WHERE condition can be added for SHOW DATABASES statement
+     */
+    public boolean supportsConditionForShowDatabasesStatement() {
+        return true;
+    }
+
+    private Version getVersion() {
+        if (version == null) {
+            String versionInfo = getInfo().getDatabaseProductVersion(); // getInfo().getDatabaseVersion() can return incorrect value
+            Matcher matcher = VERSION_PATTERN.matcher(versionInfo);
+            if (matcher.matches()) {
+                version = new Version(matcher.group(1));
+            }
+        }
+        return version;
+    }
+
+    /**
+     * Return true if a special setting about metadata cache reading was enabled in advanced driver parameters or by version number.
+     */
+    public boolean readKeysWithColumns() {
+        if (readeAllCaches == null) {
+            readeAllCaches = CommonUtils.getBoolean(getContainer().getDriver().getDriverParameter(
+                MySQLConstants.PROP_CACHE_META_DATA),
+                true);
+            if (readeAllCaches) {
+                if (isMariaDB()) {
+                    readeAllCaches = isServerVersionAtLeast(10, 4);
+                } else if (getVersion() != null) {
+                    Version version = getVersion();
+                    readeAllCaches = version.getMajor() >= 8 && version.getMinor() >= 0 && version.getMicro() >= 21;
+                }
+            }
+        }
+        return readeAllCaches;
+    }
+
+    @Override
+    protected void fillConnectionProperties(DBPConnectionConfiguration connectionInfo, Properties connectProps) {
+        super.fillConnectionProperties(connectionInfo, connectProps);
+
+        if (!DBWorkbench.getPlatform().getApplication().isMultiuser()) {
+            return;
+        }
+
+        for (String prohibitedDriverProperty : PROHIBITED_DRIVER_PROPERTIES.keySet()) {
+            if (connectProps.containsKey(prohibitedDriverProperty)) {
+                log.warn("The driver settings contain a prohibited property, this property will be forcibly removed: "
+                    + prohibitedDriverProperty);
+            }
+            String propertyValue = PROHIBITED_DRIVER_PROPERTIES.get(prohibitedDriverProperty);
+            if (propertyValue == null) {
+                connectProps.remove(prohibitedDriverProperty);
+            } else {
+                log.trace("Set " + prohibitedDriverProperty + ":" + propertyValue);
+                connectProps.put(prohibitedDriverProperty, propertyValue);
+            }
+        }
+    }
+
+    private boolean isPasswordExpired(@NotNull DBCException e) {
+        int code = SQLState.getCodeFromException(e);
+        if (isMariaDB()) {
+            return code == MySQLConstants.MARIA_ER_MUST_CHANGE_PASSWORD_LOGIN;
+        } else {
+            return code == MySQLConstants.ER_MUST_CHANGE_PASSWORD_LOGIN;
+        }
+    }
+
+    private void changeUserPassword(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull String userName,
+        @NotNull String newPassword,
+        @NotNull String oldPassword
+    ) throws DBException {
+        container.getActualConnectionConfiguration().setProperty("disconnectOnExpiredPasswords", "false");
+        try (Connection connection = super.openConnection(monitor, null, "Change expired password")) {
+            try (Statement stmt = connection.createStatement()) {
+                if (isMariaDB()) {
+                    stmt.execute("SET PASSWORD FOR %s = PASSWORD(%s)".formatted(
+                        SQLUtils.quoteString(this, userName),
+                        SQLUtils.quoteString(this, newPassword)
+                    ));
+                } else {
+                    stmt.execute("SET PASSWORD = %s REPLACE %s".formatted(
+                        SQLUtils.quoteString(this, newPassword),
+                        SQLUtils.quoteString(this, oldPassword)
+                    ));
+                }
+            }
+        } catch (SQLException e) {
+            throw new DBDatabaseException("Unable to change expired password", e);
+        }
+    }
 }

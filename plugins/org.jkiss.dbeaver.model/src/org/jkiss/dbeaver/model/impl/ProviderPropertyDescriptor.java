@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,7 +37,7 @@ public class ProviderPropertyDescriptor extends PropertyDescriptor {
         super(category, config);
         var configurationTypes = config.getAttribute(ATTR_SUPPORTED_CONFIGURATION_TYPES);
         if (CommonUtils.isEmpty(configurationTypes)) {
-            this.configurationTypes = Set.of(DBPDriverConfigurationType.MANUAL); // by default
+            this.configurationTypes = Set.of(DBPDriverConfigurationType.MANUAL, DBPDriverConfigurationType.URL); // by default
         } else {
             String[] supportedConfigurationTypes = CommonUtils.split(configurationTypes, ",");
             this.configurationTypes = Stream.of(supportedConfigurationTypes)

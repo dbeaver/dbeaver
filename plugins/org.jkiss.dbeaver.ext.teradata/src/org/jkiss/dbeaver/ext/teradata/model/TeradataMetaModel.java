@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.ext.teradata.model;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBDatabaseException;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.generic.model.*;
 import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaModel;
@@ -55,13 +56,14 @@ public class TeradataMetaModel extends GenericMetaModel implements DBDValueHandl
         super();
     }
 
+    @NotNull
     @Override
-    public GenericDataSource createDataSourceImpl(DBRProgressMonitor monitor, DBPDataSourceContainer container) throws DBException {
+    public GenericDataSource createDataSourceImpl(@NotNull DBRProgressMonitor monitor, @NotNull DBPDataSourceContainer container) throws DBException {
         return new GenericDataSource(monitor, container, this, new TeradataSQLDialect());
     }
 
     @Override
-    public GenericTableBase createTableImpl(GenericStructContainer container, @Nullable String tableName, @Nullable String tableType, @Nullable JDBCResultSet dbResult) {
+    public GenericTableBase createTableOrViewImpl(GenericStructContainer container, @Nullable String tableName, @Nullable String tableType, @Nullable JDBCResultSet dbResult) {
         if (tableType != null && isView(tableType)) {
             return new GenericView(container, tableName, tableType, dbResult);
         } else {
@@ -70,7 +72,11 @@ public class TeradataMetaModel extends GenericMetaModel implements DBDValueHandl
     }
 
     @Override
-    public String getTableDDL(DBRProgressMonitor monitor, GenericTableBase sourceObject, Map<String, Object> options) throws DBException {
+    public String getTableDDL(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull GenericTableBase sourceObject,
+        @NotNull Map<String, Object> options
+    ) throws DBException {
         GenericDataSource dataSource = sourceObject.getDataSource();
         boolean isView = sourceObject.isView();
         try (JDBCSession session = DBUtils.openMetaSession(monitor, sourceObject, "Read Teradata object DDL")) {
@@ -90,36 +96,45 @@ public class TeradataMetaModel extends GenericMetaModel implements DBDValueHandl
                 }
             }
         } catch (SQLException e) {
-            throw new DBException(e, dataSource);
+            throw new DBDatabaseException(e, dataSource);
         }
     }
 
     @Override
-    public boolean supportsTableDDLSplit(GenericTableBase sourceObject) {
+    public boolean supportsTableDDLSplit(@NotNull GenericTableBase sourceObject) {
         return false;
     }
 
     @Override
-    public String getViewDDL(DBRProgressMonitor monitor, GenericView sourceObject, Map<String, Object> options) throws DBException {
+    public String getViewDDL(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull GenericView sourceObject,
+        @NotNull Map<String, Object> options
+    ) throws DBException {
         return getTableDDL(monitor, sourceObject, options);
     }
 
     @Override
-    public String getProcedureDDL(DBRProgressMonitor monitor, GenericProcedure sourceObject) throws DBException {
+    public String getProcedureDDL(@NotNull DBRProgressMonitor monitor, @NotNull GenericProcedure sourceObject) throws DBException {
         GenericDataSource dataSource = sourceObject.getDataSource();
         try (JDBCSession session = DBUtils.openMetaSession(monitor, sourceObject, "Read Teradata procedure source")) {
             try (JDBCPreparedStatement dbStat = session.prepareStatement(
-                "SHOW PROCEDURE " + sourceObject.getFullyQualifiedName(DBPEvaluationContext.DDL))) {
+                "SHOW " + sourceObject.getProcedureType().name() + " " +
+                    sourceObject.getFullyQualifiedName(DBPEvaluationContext.DDL))
+            ) {
                 try (JDBCResultSet dbResult = dbStat.executeQuery()) {
                     StringBuilder sql = new StringBuilder();
                     while (dbResult.nextRow()) {
                         sql.append(dbResult.getString(1));
                     }
+                    if (sql.isEmpty()) {
+                        return super.getProcedureDDL(monitor, sourceObject);
+                    }
                     return sql.toString();
                 }
             }
         } catch (SQLException e) {
-            throw new DBException(e, dataSource);
+            throw new DBDatabaseException(e, dataSource);
         }
     }
 
@@ -152,6 +167,7 @@ public class TeradataMetaModel extends GenericMetaModel implements DBDValueHandl
         return true;
     }
 
+    @NotNull
     @Override
     public JDBCStatement prepareTableTriggersLoadStatement(@NotNull JDBCSession session, @NotNull GenericStructContainer genericStructContainer, @Nullable GenericTableBase forParent) throws SQLException {
         String sql = "SELECT TriggerName as TRIGGER_NAME, TableName as OWNER,\n" +
@@ -179,8 +195,15 @@ public class TeradataMetaModel extends GenericMetaModel implements DBDValueHandl
         return dbStat;
     }
 
+    @NotNull
     @Override
-    public GenericTableTrigger createTableTriggerImpl(@NotNull JDBCSession session, @NotNull GenericStructContainer genericStructContainer, @NotNull GenericTableBase genericTableBase, String triggerName, @NotNull JDBCResultSet dbResult) throws DBException {
+    public GenericTableTrigger createTableTriggerImpl(
+        @NotNull JDBCSession session,
+        @NotNull GenericStructContainer genericStructContainer,
+        @NotNull GenericTableBase genericTableBase,
+        String triggerName,
+        @NotNull JDBCResultSet dbResult
+    ) {
         if (CommonUtils.isEmpty(triggerName)) {
             triggerName = JDBCUtils.safeGetString(dbResult, 1);
         }
@@ -189,7 +212,7 @@ public class TeradataMetaModel extends GenericMetaModel implements DBDValueHandl
     }
 
     @Override
-    public List<? extends GenericTrigger> loadTriggers(DBRProgressMonitor monitor, @NotNull GenericStructContainer container, @Nullable GenericTableBase table) throws DBException {
+    public List<? extends GenericTrigger> loadTriggers(@NotNull DBRProgressMonitor monitor, @NotNull GenericStructContainer container, @Nullable GenericTableBase table) throws DBException {
         if (table == null) {
             return Collections.emptyList();
         }
@@ -225,7 +248,7 @@ public class TeradataMetaModel extends GenericMetaModel implements DBDValueHandl
                 return result;
             }
         } catch (SQLException e) {
-            throw new DBException(e, container.getDataSource());
+            throw new DBDatabaseException(e, container.getDataSource());
         }
     }
 

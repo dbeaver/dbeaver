@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,7 +30,7 @@ import java.sql.SQLException;
 /**
  * PostgreCollation
  */
-public class PostgreCollation implements PostgreObject {
+public class PostgreCollation extends PostgreInformation {
 
     private PostgreDatabase database;
     private PostgreSchema schema;
@@ -44,6 +44,7 @@ public class PostgreCollation implements PostgreObject {
 
     public PostgreCollation(DBRProgressMonitor monitor, PostgreDatabase database, ResultSet dbResult)
         throws SQLException, DBException {
+        super(database);
         this.database = database;
         this.loadInfo(monitor, dbResult);
     }

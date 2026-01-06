@@ -1,7 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
- * Copyright (C) 2011-2012 Eugene Fradkin (eugene.fradkin@gmail.com)
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,10 +20,11 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.mysql.MySQLDataSourceProvider;
-import org.jkiss.dbeaver.ext.mysql.MySQLServerHome;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLCatalog;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLTableBase;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.app.DBPProject;
+import org.jkiss.dbeaver.model.connection.DBPNativeClientLocation;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceMap;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
@@ -33,7 +33,6 @@ import org.jkiss.dbeaver.tasks.nativetool.AbstractImportExportSettings;
 import org.jkiss.dbeaver.tasks.nativetool.ExportSettingsExtension;
 import org.jkiss.utils.CommonUtils;
 
-import java.io.File;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -41,9 +40,8 @@ import java.util.List;
 import java.util.Map;
 
 public class MySQLExportSettings extends AbstractImportExportSettings<DBSObject>
-        implements MySQLNativeCredentialsSettings, ExportSettingsExtension<MySQLDatabaseExportInfo> {
+    implements MySQLNativeCredentialsSettings, ExportSettingsExtension<MySQLDatabaseExportInfo> {
     private static final Log log = Log.getLog(MySQLExportSettings.class);
-    private File outputFolder;
 
     public enum DumpMethod {
         ONLINE("--single-transaction"),
@@ -64,6 +62,7 @@ public class MySQLExportSettings extends AbstractImportExportSettings<DBSObject>
 
     private DumpMethod method = DumpMethod.NORMAL;
     private boolean noCreateStatements;
+    private boolean compressed;
     private boolean addDropStatements = true;
     private boolean disableKeys = true;
     private boolean extendedInserts = true;
@@ -72,10 +71,19 @@ public class MySQLExportSettings extends AbstractImportExportSettings<DBSObject>
     private boolean removeDefiner;
     private boolean binariesInHex;
     private boolean noData;
+    private boolean noRoutines;
     private boolean showViews;
     private boolean overrideCredentials;
 
     public List<MySQLDatabaseExportInfo> exportObjects = new ArrayList<>();
+
+    public MySQLExportSettings() {
+        super();
+    }
+
+    public MySQLExportSettings(@NotNull DBPProject project) {
+        super(project);
+    }
 
     @NotNull
     public DumpMethod getMethod() {
@@ -92,6 +100,14 @@ public class MySQLExportSettings extends AbstractImportExportSettings<DBSObject>
 
     public void setNoCreateStatements(boolean noCreateStatements) {
         this.noCreateStatements = noCreateStatements;
+    }
+
+    public boolean isCompressed() {
+        return compressed;
+    }
+
+    public void setCompressed(boolean compressed) {
+        this.compressed = compressed;
     }
 
     public boolean isAddDropStatements() {
@@ -158,6 +174,14 @@ public class MySQLExportSettings extends AbstractImportExportSettings<DBSObject>
         this.noData = noData;
     }
 
+    public boolean isNoRoutines() {
+        return noRoutines;
+    }
+
+    public void setNoRoutines(boolean noRoutines) {
+        this.noRoutines = noRoutines;
+    }
+
     public boolean isShowViews() {
         return showViews;
     }
@@ -211,15 +235,15 @@ public class MySQLExportSettings extends AbstractImportExportSettings<DBSObject>
     }
 
     @Override
-    public MySQLServerHome findNativeClientHome(String clientHomeId) {
+    public DBPNativeClientLocation findNativeClientHome(String clientHomeId) {
         return MySQLDataSourceProvider.getServerHome(clientHomeId);
     }
 
     @Override
     public void loadSettings(DBRRunnableContext runnableContext, DBPPreferenceStore store) throws DBException {
-        super.loadSettings(runnableContext, store);
         method = CommonUtils.valueOf(DumpMethod.class, store.getString("MySQL.export.method"), DumpMethod.NORMAL);
         noCreateStatements = CommonUtils.getBoolean(store.getString("MySQL.export.noCreateStatements"), false);
+        compressed = CommonUtils.getBoolean(store.getString("MySQL.export.compressed"), false);
         addDropStatements = CommonUtils.getBoolean(store.getString("MySQL.export.addDropStatements"), true);
         disableKeys = CommonUtils.getBoolean(store.getString("MySQL.export.disableKeys"), true);
         extendedInserts = CommonUtils.getBoolean(store.getString("MySQL.export.extendedInserts"), true);
@@ -228,6 +252,7 @@ public class MySQLExportSettings extends AbstractImportExportSettings<DBSObject>
         removeDefiner = CommonUtils.getBoolean(store.getString("MySQL.export.removeDefiner"), false);
         binariesInHex = CommonUtils.getBoolean(store.getString("MySQL.export.binariesInHex"), false);
         noData = CommonUtils.getBoolean(store.getString("MySQL.export.noData"), false);
+        noRoutines = CommonUtils.getBoolean(store.getString("MySQL.export.noRoutines"), false);
         showViews = CommonUtils.getBoolean(store.getString("MySQL.export.showViews"), false);
         overrideCredentials = CommonUtils.getBoolean(store.getString(MySQLNativeCredentialsSettings.PREFERENCE_NAME), false);
         if (CommonUtils.isEmpty(getExtraCommandArgs())) {
@@ -235,6 +260,7 @@ public class MySQLExportSettings extends AbstractImportExportSettings<DBSObject>
             setExtraCommandArgs(store.getString("MySQL.export.extraArgs"));
         }
 
+        super.loadSettings(runnableContext, store);
         if (store instanceof DBPPreferenceMap) {
             // Save input objects to task properties
             List<Map<String, Object>> objectList = ((DBPPreferenceMap) store).getObject("exportObjects");
@@ -244,7 +270,7 @@ public class MySQLExportSettings extends AbstractImportExportSettings<DBSObject>
                     if (!CommonUtils.isEmpty(catalogId)) {
                         List<String> tableNames = (List<String>) object.get("tables");
                         MySQLDatabaseExportInfo exportInfo = loadDatabaseExportInfo(runnableContext, catalogId, tableNames);
-                        if (exportInfo != null) {
+                        if (exportInfo != null && !exportObjects.contains(exportInfo)) {
                             exportObjects.add(exportInfo);
                         }
                     }
@@ -290,6 +316,7 @@ public class MySQLExportSettings extends AbstractImportExportSettings<DBSObject>
         super.saveSettings(runnableContext, store);
         store.setValue("MySQL.export.method", method.name());
         store.setValue("MySQL.export.noCreateStatements", noCreateStatements);
+        store.setValue("MySQL.export.compressed", compressed);
         store.setValue("MySQL.export.addDropStatements", addDropStatements);
         store.setValue("MySQL.export.disableKeys", disableKeys);
         store.setValue("MySQL.export.extendedInserts", extendedInserts);
@@ -298,6 +325,7 @@ public class MySQLExportSettings extends AbstractImportExportSettings<DBSObject>
         store.setValue("MySQL.export.removeDefiner", removeDefiner);
         store.setValue("MySQL.export.binariesInHex", binariesInHex);
         store.setValue("MySQL.export.noData", noData);
+        store.setValue("MySQL.export.noRoutines", noRoutines);
         store.setValue("MySQL.export.showViews", showViews);
         store.setValue(MySQLNativeCredentialsSettings.PREFERENCE_NAME, overrideCredentials);
 
@@ -323,17 +351,14 @@ public class MySQLExportSettings extends AbstractImportExportSettings<DBSObject>
 
 
     @NotNull
-    public File getOutputFolder(@NotNull MySQLDatabaseExportInfo info) {
-        if (outputFolder == null) {
-            outputFolder = new File(resolveVars(info.getDatabase(), null, info.getTables(), getOutputFolderPattern()));
-        }
-        return outputFolder;
+    public String getOutputFolder(@NotNull MySQLDatabaseExportInfo info) {
+        return resolveVars(info.getDatabase(), null, info.getTables(), getOutputFolderPattern());
     }
 
     @NotNull
-    public File getOutputFile(@NotNull MySQLDatabaseExportInfo info) {
+    public String getOutputFile(@NotNull MySQLDatabaseExportInfo info) {
         String outFileName = resolveVars(info.getDatabase(), null, info.getTables(), getOutputFilePattern());
-        return new File(getOutputFolder(info), outFileName);
+        return makeOutFilePath(getOutputFolder(info), outFileName);
     }
 
 }

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,6 +39,7 @@ public class NavigatorPreferences {
     public static final String NAVIGATOR_SHOW_CONNECTION_HOST_NAME = "navigator.show.connection.host"; //$NON-NLS-1$
     public static final String NAVIGATOR_SHOW_OBJECTS_DESCRIPTION = "navigator.show.objects.description"; //$NON-NLS-1$
     public static final String NAVIGATOR_SHOW_NODE_ACTIONS = "navigator.show.node.actions"; //$NON-NLS-1$
+    public static final String NAVIGATOR_SHOW_CHILD_COUNT = "navigator.show.child.count"; //$NON-NLS-1$
 
     public static final String NAVIGATOR_SHOW_TOOLTIPS = "navigator.show.tooltips"; //$NON-NLS-1$
     public static final String NAVIGATOR_SHOW_CONTENTS_IN_TOOLTIP = "navigator.show.tooltips.file.contents"; //$NON-NLS-1$

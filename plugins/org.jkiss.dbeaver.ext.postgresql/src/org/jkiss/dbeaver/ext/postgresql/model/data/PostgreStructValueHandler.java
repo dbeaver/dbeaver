@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -40,6 +40,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.data.JDBCCompositeStatic;
 import org.jkiss.dbeaver.model.impl.jdbc.data.handlers.JDBCStructValueHandler;
 import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
+import org.jkiss.utils.CommonUtils;
 
 import java.sql.SQLException;
 import java.sql.Struct;
@@ -49,7 +50,7 @@ import java.util.Iterator;
 import java.util.StringJoiner;
 
 /**
- * PostgreArrayValueHandler
+ * PostgreStructValueHandler
  */
 public class PostgreStructValueHandler extends JDBCStructValueHandler {
     private static final Log log = Log.getLog(PostgreStructValueHandler.class);
@@ -66,8 +67,7 @@ public class PostgreStructValueHandler extends JDBCStructValueHandler {
     {
         if (value == null) {
             statement.setNull(paramIndex, Types.STRUCT);
-        } else if (value instanceof DBDComposite) {
-            DBDComposite struct = (DBDComposite) value;
+        } else if (value instanceof DBDComposite struct) {
             if (struct.isNull()) {
                 statement.setNull(paramIndex, Types.STRUCT);
             } else if (struct instanceof JDBCComposite) {
@@ -81,9 +81,15 @@ public class PostgreStructValueHandler extends JDBCStructValueHandler {
     }
 
     @Override
-    public Object getValueFromObject(@NotNull DBCSession session, @NotNull DBSTypedObject type, Object object, boolean copy, boolean validateValue) throws DBCException
-    {
-        PostgreDataType structType = PostgreUtils.findDataType(session, (PostgreDataSource)session.getDataSource(), type);
+    public Object getValueFromObject(
+        @NotNull DBCSession session,
+        @NotNull DBSTypedObject type,
+        Object object,
+        boolean copy,
+        boolean validateValue
+    ) throws DBCException {
+        PostgreDataSource dataSource = (PostgreDataSource) session.getDataSource();
+        PostgreDataType structType = PostgreUtils.findDataType(session, dataSource, type);
         if (structType == null) {
             log.debug("Can't resolve struct type '" + type.getTypeName() + "'");
             return object;
@@ -95,16 +101,17 @@ public class PostgreStructValueHandler extends JDBCStructValueHandler {
         try {
             if (object == null) {
                 return new JDBCCompositeStatic(session, structType, null);
-            } else if (object instanceof JDBCCompositeStatic) {
-                return copy ? ((JDBCCompositeStatic) object).cloneValue(session.getProgressMonitor()) : object;
+            } else if (object instanceof JDBCCompositeStatic jdbcCompositeStatic) {
+                return copy ? jdbcCompositeStatic.cloneValue(session.getProgressMonitor()) : object;
             } else {
                 Object value;
-                if (PostgreUtils.isPGObject(object)) {
-                    value = PostgreUtils.extractPGObjectValue(object);
+                boolean isPgObject = PostgreUtils.isPgObject(dataSource, object);
+                if (isPgObject) {
+                    value = PostgreUtils.extractPGObjectValue(object, dataSource);
                 } else {
                     value = object.toString();
                 }
-                return convertStringToStruct(session, structType, (String) value);
+                return convertStringToStruct(session, structType, CommonUtils.toString(value));
             }
         } catch (DBException e) {
             throw new DBCException("Error converting string to composite type", e, session.getExecutionContext());
@@ -114,8 +121,7 @@ public class PostgreStructValueHandler extends JDBCStructValueHandler {
     @NotNull
     @Override
     public synchronized String getValueDisplayString(@NotNull DBSTypedObject column, Object value, @NotNull DBDDisplayFormat format) {
-        if (!DBUtils.isNullValue(value) && value instanceof JDBCComposite) {
-            final JDBCComposite composite = (JDBCComposite) value;
+        if (!DBUtils.isNullValue(value) && value instanceof JDBCComposite composite) {
             final StringJoiner output = new StringJoiner(",", "(", ")");
 
             for (DBSAttributeBase attribute : composite.getAttributes()) {

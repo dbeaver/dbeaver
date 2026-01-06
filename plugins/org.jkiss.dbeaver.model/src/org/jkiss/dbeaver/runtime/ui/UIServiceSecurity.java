@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.runtime.ui;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.app.DBPProject;
 
 /**
@@ -28,9 +29,29 @@ public interface UIServiceSecurity {
 
     String askForPassword(@NotNull String title, String message, @Nullable String defPassword, boolean emptyPasswordAllowed);
 
+    /**
+     * Ask the password for specific project
+     *
+     * @return - password
+     */
+    String askForPassword(
+        @NotNull DBPProject project,
+        @NotNull String title,
+        String message,
+        @Nullable String defPassword,
+        boolean emptyPasswordAllowed);
+
     String askForNewPassword(@NotNull String title, @Nullable String defPassword);
 
     String askForPasswordChange(@NotNull String title, @NotNull String currentPassword);
 
     boolean validatePassword(DBPProject project, String title, String message, boolean forceEncryption);
+
+    /**
+     * Reset project password
+     *
+     * @param project - current project
+     * @throws DBException - thrown exception
+     */
+    void resetProjectPassword(DBPProject project) throws DBException;
 }

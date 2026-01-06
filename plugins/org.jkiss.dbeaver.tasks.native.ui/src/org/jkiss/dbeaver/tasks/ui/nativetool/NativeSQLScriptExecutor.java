@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,16 +20,15 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.tasks.ui.nativetool.NativeToolWizardDialog;
 import org.jkiss.dbeaver.tasks.ui.wizard.TaskConfigurationWizard;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.actions.exec.SQLScriptExecutor;
 
-import java.io.File;
+import java.nio.file.Path;
 
 public abstract class NativeSQLScriptExecutor<CONTAINER extends DBSObject> implements SQLScriptExecutor<CONTAINER> {
 
-    public void execute(@NotNull CONTAINER container, @Nullable File file) throws DBException {
+    public void execute(@NotNull CONTAINER container, @Nullable Path file) throws DBException {
         NativeToolWizardDialog dialog = new NativeToolWizardDialog(
             UIUtils.getActiveWorkbenchWindow(),
             createTaskConfigurationWizard(container, file));
@@ -39,5 +38,5 @@ public abstract class NativeSQLScriptExecutor<CONTAINER extends DBSObject> imple
     @NotNull
     protected abstract TaskConfigurationWizard<?> createTaskConfigurationWizard(
         @NotNull CONTAINER container,
-        @Nullable File editor);
+        @Nullable Path editor);
 }

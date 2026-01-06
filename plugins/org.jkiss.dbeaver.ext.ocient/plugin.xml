@@ -30,10 +30,14 @@
                         webURL=""
                         categories="sql,analytic">
                     <file type="jar" path="maven:/com.ocient:ocient-jdbc4:RELEASE"/>
-                    <file type="license" path="https://www.apache.org/licenses/LICENSE-2.0.txt"/>
+                    <file type="license" path="licenses/external/asl-2.0.txt"/>
                 </driver>
              </drivers>
         </datasource>
+    </extension>
+    
+    <extension point="org.jkiss.dbeaver.generic.meta">
+        <meta id="ocient" class="org.jkiss.dbeaver.ext.ocient.model.OcientMetaModel" driverClass="com.ocient.jdbc.Driver"/>
     </extension>
 
 </plugin>

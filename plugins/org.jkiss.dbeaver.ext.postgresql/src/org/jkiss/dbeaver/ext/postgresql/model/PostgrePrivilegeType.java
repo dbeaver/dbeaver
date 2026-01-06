@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ext.postgresql.model;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.access.DBAPrivilegeType;
 
 /**
@@ -39,6 +40,7 @@ public enum PostgrePrivilegeType implements DBAPrivilegeType {
     TEMPORARY('T', true, PostgreDatabase.class),
     EXECUTE('X', true, PostgreProcedure.class),
     USAGE('U', true, PostgreSequence.class, PostgreDataType.class, PostgreSchema.class),
+    MAINTAIN('m', true, PostgreTable.class, PostgreMaterializedView.class),
 
     // Redshift-specific types
     RULE('R', true, PostgreTableReal.class),
@@ -46,6 +48,7 @@ public enum PostgrePrivilegeType implements DBAPrivilegeType {
     // Specific Cockroach types
     GRANT('g', true, PostgreDatabase.class, PostgreSchema.class, PostgreTableReal.class, PostgreDataType.class),
     ZONECONFIG('z', true, PostgreDatabase.class, PostgreTableReal.class),
+    ALTER('A', true, PostgreDatabase.class, PostgreSchema.class, PostgreTableReal.class), // Redshift-specific
 
     UNKNOWN((char)0, false);
 
@@ -73,7 +76,7 @@ public enum PostgrePrivilegeType implements DBAPrivilegeType {
     }
 
     @Override
-    public boolean supportsType(Class<?> objectType) {
+    public boolean supportsType(@NotNull Class<?> objectType) {
         if (PostgreRole.class.isAssignableFrom(objectType)) {
             return true;
         }
@@ -85,6 +88,7 @@ public enum PostgrePrivilegeType implements DBAPrivilegeType {
         return false;
     }
 
+    @NotNull
     @Override
     public String getName() {
         return name();

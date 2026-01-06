@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.model.connection;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPDataSourceProvider;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.DBPNamedObject;
@@ -36,8 +37,8 @@ import java.util.Set;
 /**
  * DBPDriver
  */
-public interface DBPDriver extends DBPNamedObject
-{
+public interface DBPDriver extends DBPNamedObject, DBPDriverLibraryProvider {
+
     /**
      * Driver contributor
      */
@@ -105,6 +106,9 @@ public interface DBPDriver extends DBPNamedObject
     @Nullable
     String getPropertiesWebURL();
 
+    @Nullable
+    String getDatabaseDocumentationSuffixURL();
+
     @NotNull
     SQLDialectMetadata getScriptDialect();
 
@@ -113,6 +117,7 @@ public interface DBPDriver extends DBPNamedObject
     boolean supportsDriverProperties();
 
     boolean isEmbedded();
+    boolean isPropagateDriverProperties();
     boolean isAnonymousAccess();
     boolean isAllowsEmptyPassword();
     boolean isLicenseRequired();
@@ -120,8 +125,11 @@ public interface DBPDriver extends DBPNamedObject
     boolean isSampleURLApplicable();
     boolean isCustomEndpointInformation();
 
+    // Check that driver needs only on connection for all operations
     boolean isSingleConnection();
-    
+    // Check that driver is thread safe (default mode)
+    boolean isThreadSafeDriver();
+
     // Can be created
     boolean isInstantiable();
     // Driver shipped along with JDK/DBeaver, doesn't need any additional libraries. Basically it is ODBC driver.
@@ -134,20 +142,30 @@ public interface DBPDriver extends DBPNamedObject
     boolean isDisabled();
     DBPDriver getReplacedBy();
 
-    boolean isDeprecated();
+    boolean isNotAvailable();
 
-    @NotNull
-    String getDeprecationReason();
+    @Nullable
+    String getNonAvailabilityTitle();
+
+    @Nullable
+    String getNonAvailabilityDescription();
+
+    @Nullable
+    String getNonAvailabilityReason();
 
     /**
      * @return a pair of providerId and driverId for each of driver replacement
      */
+    @NotNull
     List<Pair<String,String>> getDriverReplacementsInfo();
 
     int getPromotedScore();
 
     @Nullable
     DBXTreeNode getNavigatorRoot();
+
+    @NotNull
+    DBPPropertyDescriptor[] getMainPropertyDescriptors();
 
     @NotNull
     DBPPropertyDescriptor[] getProviderPropertyDescriptors();
@@ -166,6 +184,7 @@ public interface DBPDriver extends DBPNamedObject
 
     boolean isSupportedByLocalSystem();
 
+    @Nullable
     String getLicense();
 
     /**
@@ -177,41 +196,63 @@ public interface DBPDriver extends DBPNamedObject
     @NotNull
     List<DBPNativeClientLocation> getNativeClientLocations();
 
-    @Nullable
-    ClassLoader getClassLoader();
-
     @NotNull
-    List<? extends DBPDriverLibrary> getDriverLibraries();
-
     List<? extends DBPDriverFileSource> getDriverFileSources();
 
-    boolean needsExternalDependencies();
+    @NotNull
+    DBPDriverLoader getDefaultDriverLoader();
 
     @NotNull
-    <T> T getDriverInstance(@NotNull DBRProgressMonitor monitor) throws DBException;
+    DBPDriverLoader getDriverLoader(@NotNull DBPDataSourceContainer dataSourceContainer);
 
-    void loadDriver(DBRProgressMonitor monitor) throws DBException;
+    @NotNull
+    List<DBPDriverLoader> getAllDriverLoaders();
 
+    void validateFilesPresence(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBPDataSourceContainer dataSourceContainer
+    ) throws DBException;
+
+    void resetDriverInstance();
+
+    @Nullable
     String getConnectionURL(DBPConnectionConfiguration configuration);
 
     /**
      * Create copy of
-     * @return
      */
+    @NotNull
     DBPDriver createOriginalCopy();
 
     /**
      * Show supported configuration types
      */
+    @NotNull
     Set<DBPDriverConfigurationType> getSupportedConfigurationTypes();
 
+    @NotNull
+    Set<String> getSupportedPageFields();
+
+    @NotNull
     default String getFullId() {
         return getProviderId() + ":" + getId();
     }
 
     // Anonymized driver ID for statistics
+    @NotNull
     default String getPreconfiguredId() {
         return isCustom() ? getProviderId() + ":custom-driver" : getFullId();
     }
+
+    /**
+     * Compare driverId to this driver and its replacements
+     */
+    boolean matchesId(@NotNull String driverId);
+
+    /**
+     * Returns true if the driver supports virtual keys.
+     * @return true or false
+     */
+    boolean supportsVirtualKeys();
 
 }

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,84 +21,74 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.impl.struct.AbstractTableIndexColumn;
 import org.jkiss.dbeaver.model.meta.Property;
 
-/**
- * GenericIndexColumn
- */
 public class YashanDBTableIndexColumn extends AbstractTableIndexColumn {
-    private YashanDBTableIndex index;
-    private YashanDBTableColumn tableColumn;
-    private int ordinalPosition;
-    private boolean ascending;
 
+	private YashanDBTableIndex index;
+	private YashanDBTableColumn tableColumn;
+	private int ordinalPosition;
+	private boolean ascending;
 
-    /**
-     * YashanDB does not have ALL_IND_EXPRESSIONS, columnExpression will not be showed.
-     */
-    public YashanDBTableIndexColumn(
-            YashanDBTableIndex index,
-            YashanDBTableColumn tableColumn,
-            int ordinalPosition,
-            boolean ascending
-    ) {
-        this.index = index;
-        this.tableColumn = tableColumn;
-        this.ordinalPosition = ordinalPosition;
-        this.ascending = ascending;
-    }
+	public YashanDBTableIndexColumn(YashanDBTableIndex index, YashanDBTableColumn tableColumn, int ordinalPosition,
+			boolean ascending) {
+		this.index = index;
+		this.tableColumn = tableColumn;
+		this.ordinalPosition = ordinalPosition;
+		this.ascending = ascending;
+	}
 
-    YashanDBTableIndexColumn(YashanDBTableIndex toIndex, YashanDBTableIndexColumn source) {
-        this.index = toIndex;
-        this.tableColumn = source.tableColumn;
-        this.ordinalPosition = source.ordinalPosition;
-        this.ascending = source.ascending;
-    }
+	YashanDBTableIndexColumn(YashanDBTableIndex toIndex, YashanDBTableIndexColumn source) {
+		this.index = toIndex;
+		this.tableColumn = source.tableColumn;
+		this.ordinalPosition = source.ordinalPosition;
+		this.ascending = source.ascending;
+	}
 
-    @NotNull
-    @Override
-    public YashanDBTableIndex getIndex() {
-        return index;
-    }
+	@NotNull
+	@Override
+	public YashanDBTableIndex getIndex() {
+		return index;
+	}
 
-    @NotNull
-    @Override
-    public String getName() {
-        return tableColumn.getName();
-    }
+	@NotNull
+	@Override
+	public String getName() {
+		return tableColumn.getName();
+	}
 
-    @Nullable
-    @Override
-    @Property(id = "name", viewable = true, order = 1)
-    public YashanDBTableColumn getTableColumn() {
-        return tableColumn;
-    }
+	@Nullable
+	@Override
+	@Property(id = "name", viewable = true, order = 1)
+	public YashanDBTableColumn getTableColumn() {
+		return tableColumn;
+	}
 
-    @Override
-    @Property(viewable = false, order = 2)
-    public int getOrdinalPosition() {
-        return ordinalPosition;
-    }
+	@Override
+	@Property(viewable = false, order = 2)
+	public int getOrdinalPosition() {
+		return ordinalPosition;
+	}
 
-    @Override
-    @Property(viewable = true, order = 3)
-    public boolean isAscending() {
-        return ascending;
-    }
+	@Override
+	@Property(viewable = true, order = 3)
+	public boolean isAscending() {
+		return ascending;
+	}
 
-    @Nullable
-    @Override
-    public String getDescription() {
-        return tableColumn.getDescription();
-    }
+	@Nullable
+	@Override
+	public String getDescription() {
+		return tableColumn.getDescription();
+	}
 
-    @Override
-    public YashanDBTableIndex getParentObject() {
-        return index;
-    }
+	@Override
+	public YashanDBTableIndex getParentObject() {
+		return index;
+	}
 
-    @NotNull
-    @Override
-    public YashanDBDataSource getDataSource() {
-        return index.getDataSource();
-    }
+	@NotNull
+	@Override
+	public YashanDBDataSource getDataSource() {
+		return index.getDataSource();
+	}
 
 }

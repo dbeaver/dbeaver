@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,8 +31,9 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
  */
 public class DBObjectNameCaseTransformer implements IPropertyValueTransformer<DBSObject, String> {
 
+    @Nullable
     @Override
-    public String transform(DBSObject object, String value)
+    public String transform(@NotNull DBSObject object, @Nullable String value)
     {
         return transformName(object.getDataSource(), value);
     }
@@ -48,7 +49,10 @@ public class DBObjectNameCaseTransformer implements IPropertyValueTransformer<DB
         if (value == null) {
             return null;
         }
-
+        // condition added for mock test cases
+        if (dataSource == null) {
+            return value;
+        }
         final SQLDialect dialect = dataSource.getSQLDialect();
         final boolean isNameCaseSensitive = dataSource.getContainer().getPreferenceStore().getBoolean(ModelPreferences.META_CASE_SENSITIVE) ||
             dialect.storesUnquotedCase() == DBPIdentifierCase.MIXED;

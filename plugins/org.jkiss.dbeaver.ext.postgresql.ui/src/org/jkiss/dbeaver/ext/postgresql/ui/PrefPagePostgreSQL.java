@@ -1,7 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
- * Copyright (C) 2011-2012 Eugene Fradkin (eugene.fradkin@gmail.com)
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -47,6 +46,7 @@ public class PrefPagePostgreSQL extends AbstractPrefPage implements IWorkbenchPr
     private Button showDatabaseStatistics;
     private Button readAllDataTypes;
     private Button readKeysWithColumns;
+    private Button replaceLegacyTimezone;
 
     private Combo ddPlainBehaviorCombo;
     private Combo ddTagBehaviorCombo;
@@ -117,6 +117,11 @@ public class PrefPagePostgreSQL extends AbstractPrefPage implements IWorkbenchPr
                 PostgreMessages.dialog_setting_connection_read_keys_with_columns_tip,
                 globalPrefs.getBoolean(PostgreConstants.PROP_READ_KEYS_WITH_COLUMNS),
                 2);
+            replaceLegacyTimezone = UIUtils.createCheckbox(secureGroup,
+                PostgreMessages.dialog_setting_connection_replace_legacy_timezone,
+                PostgreMessages.dialog_setting_connection_replace_legacy_timezone_tip,
+                globalPrefs.getBoolean(PostgreConstants.PROP_REPLACE_LEGACY_TIMEZONE),
+                2);
         }
 
         {
@@ -158,11 +163,28 @@ public class PrefPagePostgreSQL extends AbstractPrefPage implements IWorkbenchPr
         preferenceStore.setValue(PostgreConstants.PROP_SHOW_DATABASE_STATISTICS, String.valueOf(showDatabaseStatistics.getSelection()));
         preferenceStore.setValue(PostgreConstants.PROP_READ_ALL_DATA_TYPES, String.valueOf(readAllDataTypes.getSelection()));
         preferenceStore.setValue(PostgreConstants.PROP_READ_KEYS_WITH_COLUMNS, String.valueOf(readKeysWithColumns.getSelection()));
+        preferenceStore.setValue(PostgreConstants.PROP_REPLACE_LEGACY_TIMEZONE, String.valueOf(replaceLegacyTimezone.getSelection()));
 
         preferenceStore.setValue(PostgreConstants.PROP_DD_PLAIN_STRING, ddPlainBehaviorCombo.getSelectionIndex() == 0);
         preferenceStore.setValue(PostgreConstants.PROP_DD_TAG_STRING, ddTagBehaviorCombo.getSelectionIndex() == 0);
 
         return super.performOk();
+    }
+
+    @Override
+    protected void performDefaults() {
+        DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
+        showNonDefault.setSelection(store.getDefaultBoolean(PostgreConstants.PROP_SHOW_NON_DEFAULT_DB));
+        showTemplates.setSelection(store.getDefaultBoolean(PostgreConstants.PROP_SHOW_TEMPLATES_DB));
+        showUnavailable.setSelection(store.getDefaultBoolean(PostgreConstants.PROP_SHOW_UNAVAILABLE_DB));
+        showDatabaseStatistics.setSelection(store.getDefaultBoolean(PostgreConstants.PROP_SHOW_DATABASE_STATISTICS));
+        readAllDataTypes.setSelection(store.getDefaultBoolean(PostgreConstants.PROP_READ_ALL_DATA_TYPES));
+        readKeysWithColumns.setSelection(store.getDefaultBoolean(PostgreConstants.PROP_READ_KEYS_WITH_COLUMNS));
+        replaceLegacyTimezone.setSelection(store.getDefaultBoolean(PostgreConstants.PROP_REPLACE_LEGACY_TIMEZONE));
+        ddPlainBehaviorCombo.select(store.getDefaultInt(PostgreConstants.PROP_DD_PLAIN_STRING));
+        ddTagBehaviorCombo.select(store.getDefaultInt(PostgreConstants.PROP_DD_TAG_STRING));
+        setCheckboxesState();
+        super.performDefaults();
     }
 
     @Override

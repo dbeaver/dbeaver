@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -840,11 +840,16 @@ public class ViewerColumnController<COLUMN, ELEMENT> {
             Item column = (Item)e.widget;
             if (prevColumn == column) {
                 // Set reverse order
-                sortDirection = sortDirection == SWT.UP ? SWT.DOWN : SWT.UP;
+                if (sortDirection == SWT.NONE) {
+                    sortDirection = SWT.UP;
+                } else if (sortDirection == SWT.UP) {
+                    sortDirection = SWT.DOWN;
+                } else {
+                    sortDirection = SWT.NONE;
+                }
             }
             prevColumn = column;
-
-            sortViewer(column, sortDirection);
+            sortViewer(sortDirection == SWT.NONE ? null : column, sortDirection);
         }
 
         private void sortViewer(final Item column, final int sortDirection) {
@@ -872,6 +877,13 @@ public class ViewerColumnController<COLUMN, ELEMENT> {
 
             if (cat1 != cat2) {
                 return cat1 - cat2;
+            }
+
+            // NOTE: In tree viewers, only parent elements (present in input) should be sorted.
+            // If both e1 and e2 are not in the input collection, they are children — skip sorting.
+            Object input = viewer.getInput();
+            if (input instanceof Collection<?> list && !list.contains(e1) && !list.contains(e2)) {
+                return 0;
             }
 
             final String name1 = getLabel(viewer, e1);

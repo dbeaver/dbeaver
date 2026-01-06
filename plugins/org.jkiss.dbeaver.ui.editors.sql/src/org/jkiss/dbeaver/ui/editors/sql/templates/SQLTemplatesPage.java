@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -172,7 +172,7 @@ public class SQLTemplatesPage extends AbstractTemplatesPage {
         IDocument document = new Document();
         SQLEditorSourceViewer viewer = new SQLEditorSourceViewer(
                 parent, null, null, false, SWT.V_SCROLL | SWT.H_SCROLL,
-                DBWorkbench.getPlatform()::getPreferenceStore
+                DBWorkbench.getPlatform()::getPreferenceStore, sqlEditor
         );
         //FIXME: reconciling is turned off here because it's a cause of deadlocks and severe UI glitches. The exact cause is unknown, find a more precise solution. [dbeaver/dbeaver#11452]
         SQLEditorSourceViewerConfiguration configuration = new SQLEditorSourceViewerConfiguration(sqlEditor, EditorsPlugin.getDefault().getPreferenceStore(), null);

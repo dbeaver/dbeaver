@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -87,12 +87,12 @@ public class MySQLGrant implements DBSObject, DBAPrivilegeGrant {
         return true;
     }
 
-    public MySQLUser getSubject(DBRProgressMonitor monitor) {
+    public MySQLUser getSubject(@NotNull DBRProgressMonitor monitor) {
         return user;
     }
 
     @Override
-    public Object getObject(DBRProgressMonitor monitor) throws DBException {
+    public Object getObject(@NotNull DBRProgressMonitor monitor) throws DBException {
         if (catalogName != null) {
             if (!isAllCatalogs()) {
                 MySQLCatalog catalog = user.getDataSource().getCatalog(catalogName);

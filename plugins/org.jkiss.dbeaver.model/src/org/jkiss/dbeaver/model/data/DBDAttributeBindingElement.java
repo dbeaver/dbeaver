@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -118,11 +118,13 @@ public class DBDAttributeBindingElement extends DBDAttributeBindingNested implem
         return collection.getItem(index);
     }
 
+    @NotNull
     @Override
     public String getTypeName() {
         return collection.getComponentType().getTypeName();
     }
 
+    @NotNull
     @Override
     public String getFullTypeName() {
         return DBUtils.getFullTypeName(collection.getComponentType());
@@ -133,16 +135,19 @@ public class DBDAttributeBindingElement extends DBDAttributeBindingNested implem
         return collection.getComponentType().getTypeID();
     }
 
+    @NotNull
     @Override
     public DBPDataKind getDataKind() {
         return collection.getComponentType().getDataKind();
     }
 
+    @Nullable
     @Override
     public Integer getScale() {
         return collection.getComponentType().getScale();
     }
 
+    @Nullable
     @Override
     public Integer getPrecision() {
         return collection.getComponentType().getPrecision();

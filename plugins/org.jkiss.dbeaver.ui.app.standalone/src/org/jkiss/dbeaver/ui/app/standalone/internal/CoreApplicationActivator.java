@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,9 +33,7 @@ import org.osgi.framework.BundleEvent;
 import org.osgi.framework.hooks.bundle.EventHook;
 
 import java.lang.reflect.Field;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 public class CoreApplicationActivator extends AbstractUIPlugin {
 
@@ -43,6 +41,7 @@ public class CoreApplicationActivator extends AbstractUIPlugin {
     public static final String PLUGIN_ID = "org.jkiss.dbeaver.ui.app.standalone";
 
     private static final boolean PATCH_ECLIPSE_CLASSES = false;
+
 
     // The shared instance
     private static CoreApplicationActivator plugin;
@@ -58,6 +57,29 @@ public class CoreApplicationActivator extends AbstractUIPlugin {
             activateHooks(context);
         }
 
+        // Add bundle load logger
+        if (!Log.isQuietMode()) {
+            Set<String> activatedBundles = new HashSet<>();
+            context.registerService(EventHook.class, (event, contexts) -> {
+                String message = null;
+                Bundle bundle = event.getBundle();
+                if (event.getType() == BundleEvent.STARTED) {
+                    if (bundle.getState() == Bundle.ACTIVE) {
+                        message = "> Start " + getBundleName(bundle) + " [" + bundle.getSymbolicName() + " " + bundle.getVersion() + "]";
+                        activatedBundles.add(bundle.getSymbolicName());
+                    }
+                } else if (event.getType() == BundleEvent.STOPPING) {
+                    if (activatedBundles.remove(bundle.getSymbolicName())) {
+                        //message = "< Stop " + getBundleName(bundle) + " [" + bundle.getSymbolicName() + " " + bundle.getVersion() + "]";
+                    }
+                }
+                if (message != null) {
+                    System.err.println(message);
+                }
+            }, null);
+            //context.addBundleListener(new BundleLoadListener());
+        }
+
         // Set notifications handler
         DBeaverNotifications.setHandler(new DBeaverNotifications.NotificationHandler() {
             @Override
@@ -70,27 +92,6 @@ public class CoreApplicationActivator extends AbstractUIPlugin {
                 NotificationUtils.sendNotification(id, title, text, messageType, feedback);
             }
         });
-
-        // Add bundle load logger
-        if (!Log.isQuietMode()) {
-            context.registerService(EventHook.class, (event, contexts) -> {
-                String message = null;
-                Bundle bundle = event.getBundle();
-                if (event.getType() == BundleEvent.STARTED) {
-                    if (bundle.getState() == Bundle.ACTIVE) {
-                        message = "> Start " + getBundleName(bundle) + " [" + bundle.getSymbolicName() + " " + bundle.getVersion() + "]";
-                    }
-                } else if (event.getType() == BundleEvent.STOPPING) {
-                    if (bundle.getState() != BundleEvent.STOPPING && bundle.getState() != BundleEvent.UNINSTALLED) {
-                        message = "< Stop " + getBundleName(bundle) + " [" + bundle.getSymbolicName() + " " + bundle.getVersion() + "]";
-                    }
-                }
-                if (message != null) {
-                    System.err.println(message);
-                }
-            }, null);
-            //context.addBundleListener(new BundleLoadListener());
-        }
 
         plugin = this;
     }

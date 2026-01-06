@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,34 +18,39 @@ package org.jkiss.dbeaver.ui.dialogs.connection;
 
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
+import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.IDialogPage;
 import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.osgi.util.NLS;
+import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.ui.INewWizard;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.ModelPreferences.SeparateConnectionBehavior;
-import org.jkiss.dbeaver.core.CoreFeatures;
 import org.jkiss.dbeaver.core.CoreMessages;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
 import org.jkiss.dbeaver.model.app.DBPProject;
-import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
-import org.jkiss.dbeaver.model.connection.DBPDriver;
-import org.jkiss.dbeaver.model.connection.DBPDriverSubstitutionDescriptor;
-import org.jkiss.dbeaver.model.connection.DBPNativeClientLocation;
+import org.jkiss.dbeaver.model.connection.*;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.navigator.DBNBrowseSettings;
+import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
+import org.jkiss.dbeaver.model.rm.RMConstants;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.jobs.ConnectionTestJob;
+import org.jkiss.dbeaver.ui.ConnectionFeatures;
 import org.jkiss.dbeaver.ui.IDataSourceConnectionTester;
 import org.jkiss.dbeaver.ui.IDialogPageProvider;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizard;
+import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
 import org.jkiss.dbeaver.ui.dialogs.IConnectionWizard;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.ArrayUtils;
@@ -68,7 +73,6 @@ public abstract class ConnectionWizard extends ActiveWizard implements IConnecti
 
     protected ConnectionWizard() {
         setNeedsProgressMonitor(true);
-        //setDefaultPageImageDescriptor(DBeaverActivator.getImageDescriptor("icons/driver-logo.png"));
     }
 
     @Override
@@ -120,11 +124,11 @@ public abstract class ConnectionWizard extends ActiveWizard implements IConnecti
         }
         if (info == null && driver != null) {
             DBPConnectionConfiguration connectionInfo = getDefaultConnectionConfiguration();
-            info = new DataSourceDescriptor(
-                registry,
+            info = registry.createDataSource(
                 DataSourceDescriptor.generateNewId(driver),
                 driver,
-                connectionInfo);
+                connectionInfo
+            );
             DBPNativeClientLocation defaultClientLocation = driver.getDefaultClientLocation();
             if (defaultClientLocation != null) {
                 info.getConnectionConfiguration().setClientHomeId(defaultClientLocation.getName());
@@ -135,9 +139,8 @@ public abstract class ConnectionWizard extends ActiveWizard implements IConnecti
         return info;
     }
 
-    public DataSourceDescriptor getOriginalDataSource() {
-        return null;
-    }
+    @Nullable
+    public abstract DataSourceDescriptor getOriginalDataSource();
 
     @Nullable
     @Override
@@ -145,30 +148,63 @@ public abstract class ConnectionWizard extends ActiveWizard implements IConnecti
         return driverSubstitution;
     }
 
+    @NotNull
+    protected abstract PersistResult persistDataSource();
+
     public void setDriverSubstitution(@Nullable DBPDriverSubstitutionDescriptor driverSubstitution) {
         this.driverSubstitution = driverSubstitution;
         getActiveDataSource().setDriverSubstitution(driverSubstitution);
     }
 
     public void testConnection() {
-        DataSourceDescriptor dataSource = getPageSettings().getActiveDataSource();
-        DataSourceDescriptor testDataSource = new DataSourceDescriptor(dataSource, dataSource.getRegistry());
+        DataSourceDescriptor activeDataSource = getActiveDataSource();
+        DataSourceDescriptor targetDataSource;
 
-        saveSettings(testDataSource);
-        testDataSource.setTemporary(true);
+        if (canUseTemporaryDataSource(activeDataSource)) {
+            targetDataSource = activeDataSource.getRegistry().createDataSource(activeDataSource);
+            // Generate new ID to avoid session conflicts in QM
+            targetDataSource.setId(DataSourceDescriptor.generateNewId(activeDataSource.getDriver()));
+            targetDataSource.setTemporary(true);
+            targetDataSource.getPreferenceStore().setValue(
+                ModelPreferences.META_SEPARATE_CONNECTION,
+                SeparateConnectionBehavior.NEVER.name()
+            );
+        } else {
+            int decision = ConfirmationDialog.confirmAction(
+                getShell(),
+                ConfirmationDialog.WARNING,
+                DBeaverPreferences.CONFIRM_TEST_CONNECTION_PERSIST,
+                ConfirmationDialog.CONFIRM
+            );
+            if (decision != IDialogConstants.OK_ID) {
+                return;
+            }
+            targetDataSource = activeDataSource;
+        }
 
-        // Generate new ID to avoid session conflicts in QM
-        testDataSource.setId(DataSourceDescriptor.generateNewId(dataSource.getDriver()));
-        testDataSource.getPreferenceStore().setValue(
-            ModelPreferences.META_SEPARATE_CONNECTION,
-            SeparateConnectionBehavior.NEVER.name()
-        );
+        saveSettings(targetDataSource);
 
-        CoreFeatures.CONNECTION_TEST.use(Map.of("driver", dataSource.getDriver().getPreconfiguredId()));
+        if (activeDataSource == targetDataSource) {
+            persistDataSource();
+        }
+
+        if (targetDataSource.isSharedCredentials()) {
+            if (!targetDataSource.getProject().getWorkspace().hasRealmPermission(RMConstants.PERMISSION_PROJECT_ADMIN)) {
+                UIUtils.showMessageBox(getShell(), "Credentials edit restricted",
+                    "Shared credentials edit is available for administrators only.",
+                    SWT.ICON_ERROR);
+            } else {
+                UIUtils.showMessageBox(getShell(), "Use credentials manager",
+                    "Direct connection test is not available for shared connections.\nGo to shared credentials manager dialog.",
+                    SWT.ICON_WARNING);
+            }
+            return;
+        }
+
+        ConnectionFeatures.CONNECTION_TEST.use(Map.of("driver", targetDataSource.getDriver().getPreconfiguredId()));
 
         try {
-
-            final ConnectionTestJob op = new ConnectionTestJob(testDataSource, session -> {
+            final ConnectionTestJob op = new ConnectionTestJob(targetDataSource, session -> {
                 for (IWizardPage page : getPages()) {
                     testInPage(session, page);
                 }
@@ -198,9 +234,15 @@ public abstract class ConnectionWizard extends ActiveWizard implements IConnecti
                     }
                 });
 
+                var oldUserPassword = activeDataSource.getActualConnectionConfiguration().getUserPassword();
+                var newUserPassword = targetDataSource.getActualConnectionConfiguration().getUserPassword();
+                if (newUserPassword != null && !newUserPassword.equals(oldUserPassword)) {
+                    DBUtils.fireObjectUpdate(activeDataSource, targetDataSource.getActualConnectionConfiguration());
+                }
+
                 new ConnectionTestDialog(
                     getShell(),
-                    dataSource,
+                    targetDataSource,
                     op.getServerVersion(),
                     op.getClientVersion(),
                     op.getConnectTime()).open();
@@ -211,9 +253,10 @@ public abstract class ConnectionWizard extends ActiveWizard implements IConnecti
                         CoreMessages.dialog_connection_wizard_start_dialog_interrupted_message);
                 }
             } catch (InvocationTargetException ex) {
+                String msg = GeneralUtils.getExceptionMessage(ex);
                 DBWorkbench.getPlatformUI().showError(
                     CoreMessages.dialog_connection_wizard_start_dialog_error_title,
-                    null,
+                    msg,
                     GeneralUtils.makeExceptionStatus(ex.getTargetException()));
             } catch (Throwable ex) {
                 DBWorkbench.getPlatformUI().showError(
@@ -222,7 +265,9 @@ public abstract class ConnectionWizard extends ActiveWizard implements IConnecti
                     GeneralUtils.makeExceptionStatus(ex));
             }
         } finally {
-            testDataSource.dispose();
+            if (activeDataSource != targetDataSource) {
+                targetDataSource.dispose();
+            }
         }
     }
 
@@ -271,6 +316,27 @@ public abstract class ConnectionWizard extends ActiveWizard implements IConnecti
 
     @NotNull
     protected DBPConnectionConfiguration getDefaultConnectionConfiguration() {
-        return new DBPConnectionConfiguration();
+        DBPConnectionType type = DBPConnectionType.getDefaultConnectionType();
+
+        DBPConnectionConfiguration config = new DBPConnectionConfiguration();
+        config.setConnectionType(type);
+        config.setCloseIdleConnection(type.isAutoCloseConnections());
+
+        return config;
+    }
+
+    private static boolean canUseTemporaryDataSource(@NotNull DataSourceDescriptor descriptor) {
+        for (DBWHandlerConfiguration handler : descriptor.getConnectionConfiguration().getHandlers()) {
+            if (handler.isEnabled() && handler.getHandlerDescriptor().isDistributed()) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    protected enum PersistResult {
+        UNCHANGED,
+        CHANGED,
+        ERROR
     }
 }

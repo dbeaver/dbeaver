@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ui.editors.acl;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.access.DBAPrivilege;
 import org.jkiss.dbeaver.model.access.DBAPrivilegeOwner;
 import org.jkiss.dbeaver.model.access.DBAPrivilegeType;
@@ -54,8 +55,9 @@ public class ACLCommandChangePrivilege extends DBECommandAbstract<DBAPrivilegeOw
         //getObject().clearGrantsCache();
     }
 
+    @NotNull
     @Override
-    public DBEPersistAction[] getPersistActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, Map<String, Object> options)
+    public DBEPersistAction[] getPersistActions(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext executionContext, @NotNull Map<String, Object> options)
     {
         DBAPrivilegeOwner object = getObject();
 
@@ -67,8 +69,9 @@ public class ACLCommandChangePrivilege extends DBECommandAbstract<DBAPrivilegeOw
         };
     }
 
+    @NotNull
     @Override
-    public DBECommand<?> merge(DBECommand<?> prevCommand, Map<Object, Object> userParams)
+    public DBECommand<?> merge(@NotNull DBECommand<?> prevCommand, @NotNull Map<Object, Object> userParams)
     {
         if (prevCommand instanceof ACLCommandChangePrivilege) {
             ACLCommandChangePrivilege prevGrant = (ACLCommandChangePrivilege) prevCommand;

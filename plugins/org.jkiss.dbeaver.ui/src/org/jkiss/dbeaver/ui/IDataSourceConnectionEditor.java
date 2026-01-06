@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,19 +18,47 @@
 package org.jkiss.dbeaver.ui;
 
 import org.eclipse.jface.dialogs.IDialogPage;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 
 /**
  * IDataSourceConnectionEditor
  */
-public interface IDataSourceConnectionEditor extends IDialogPage
-{
-    void setSite(IDataSourceConnectionEditorSite site);
+public interface IDataSourceConnectionEditor extends IDialogPage {
+    /**
+     * Sets editor site
+     */
+    void setSite(@NotNull IDataSourceConnectionEditorSite site);
 
+    /**
+     * @return true if all mandatory fields were completed
+     */
     boolean isComplete();
 
+    /**
+     * @return true if all parameters are provided by some external source.
+     *     In this case all mandatory connection parameters become optional (as they could be populated externally).
+     */
+    default boolean isExternalConfigurationProvided() {
+        return false;
+    }
+
+    /**
+     * Load settings from active datasource info UI
+     */
     void loadSettings();
 
+    /**
+     * Save all properties info passed datasource
+     */
     void saveSettings(DBPDataSourceContainer dataSource);
+
+    // Called once after page activation
+    default void activateEditor() {
+//        Control control = getControl();
+//        if (control != null) {
+//            control.setFocus();
+//        }
+    }
 
 }

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,24 +16,25 @@
  */
 package org.jkiss.dbeaver.model.navigator;
 
-import org.eclipse.core.resources.*;
-import org.eclipse.core.runtime.CoreException;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBIconComposite;
 import org.jkiss.dbeaver.model.DBPImage;
-import org.jkiss.dbeaver.model.app.*;
+import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
+import org.jkiss.dbeaver.model.app.DBPProject;
+import org.jkiss.dbeaver.model.exec.DBCFeatureNotSupportedException;
 import org.jkiss.dbeaver.model.navigator.registry.DBNRegistry;
 import org.jkiss.dbeaver.model.rm.RMConstants;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
-import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -42,18 +43,17 @@ import java.util.List;
 /**
  * DBNProject
  */
-public class DBNProject extends DBNResource implements DBNNodeExtendable {
+public class DBNProject extends DBNNode implements DBNNodeWithCache, DBNNodeExtendable {
     private static final Log log = Log.getLog(DBNProject.class);
 
     private final DBPProject project;
     private List<DBNNode> extraNodes;
+    private DBNNode[] children;
 
-    public DBNProject(DBNNode parentNode, DBPProject project, DBPResourceHandler handler) {
-        super(parentNode, project.getEclipseProject(), handler);
+    public DBNProject(DBNNode parentNode, DBPProject project) {
+        super(parentNode);
         this.project = project;
-        if (DBWorkbench.getPlatform().getApplication().isMultiuser()) {
-            DBNRegistry.getInstance().extendNode(this, false);
-        }
+        DBNRegistry.getInstance().extendNode(this, false);
     }
 
     @NotNull
@@ -63,9 +63,12 @@ public class DBNProject extends DBNResource implements DBNNodeExtendable {
 
     public DBNProjectDatabases getDatabases() {
         try {
-            for (DBNNode db : getChildren(new VoidProgressMonitor())) {
-                if (db instanceof DBNProjectDatabases) {
-                    return (DBNProjectDatabases) db;
+            DBNNode[] dbNodes = getChildren(new VoidProgressMonitor());
+            if (dbNodes != null) {
+                for (DBNNode db : dbNodes) {
+                    if (db instanceof DBNProjectDatabases databases) {
+                        return databases;
+                    }
                 }
             }
         } catch (DBException e) {
@@ -74,45 +77,43 @@ public class DBNProject extends DBNResource implements DBNNodeExtendable {
         throw new IllegalStateException("No databases resource in project");
     }
 
-    @Override
-    public String getNodeName() {
-        return project.getDisplayName();
-    }
-
-    protected String getResourceNodeType() {
-        return "project";
-    }
-
-    @Override
-    public String getNodeDescription() {
-        if (project.isVirtual()) {
-            return null;
-        }
-        project.ensureOpen();
-        try {
-            return project.getEclipseProject().getDescription().getComment();
-        } catch (CoreException e) {
-            log.debug(e);
-            return null;
-        }
-    }
-
     @NotNull
     @Override
     public String getName() {
         return project.getId();
     }
 
+    @NotNull
     @Override
-    public String getLocalizedName(String locale) {
-        return getNodeName();
+    public String getNodeDisplayName() {
+        return project.getDisplayName();
     }
 
+    @Nullable
+    @Override
+    public String getNodeDescription() {
+        return null;
+    }
+
+    @NotNull
+    @Override
+    public String getLocalizedName(@NotNull String locale) {
+        return getNodeDisplayName();
+    }
+
+    @NotNull
+    @Override
+    public String getNodeType() {
+        return "project";
+    }
+
+    @Nullable
     @Override
     public DBPImage getNodeIcon() {
         DBPImage image = DBIcon.PROJECT;
-
-        if (!getProject().hasRealmPermission(RMConstants.PERMISSION_PROJECT_DATASOURCES_EDIT)) {
+        if (getProject().isPrivateProject()) {
+            image = new DBIconComposite(image, false, null, null, null, DBIcon.OVER_LAMP);
+        } else if (!getProject().hasRealmPermission(RMConstants.PERMISSION_PROJECT_DATASOURCES_EDIT)) {
             image = new DBIconComposite(image, false, null, null, null, DBIcon.OVER_LOCK);
         }
 
@@ -125,18 +126,20 @@ public class DBNProject extends DBNResource implements DBNNodeExtendable {
     }
 
     @Override
-    public <T> T getAdapter(Class<T> adapter) {
+    public <T> T getAdapter(@NotNull Class<T> adapter) {
         if (adapter == DBNProject.class) {
             return adapter.cast(this);
         }
         return super.getAdapter(adapter);
     }
 
+    @Nullable
     @Override
-    public DBPProject getOwnerProject() {
+    public DBPProject getOwnerProjectOrNull() {
         return project;
     }
 
+    @Nullable
     @Override
     public Throwable getLastLoadError() {
         return getProject().getDataSourceRegistry().getLastError();
@@ -144,131 +147,65 @@ public class DBNProject extends DBNResource implements DBNNodeExtendable {
 
     @Override
     public boolean supportsRename() {
-        return !project.isVirtual();
+        return DBWorkbench.isDistributed() || !project.isVirtual();
     }
 
     @Override
-    public void rename(DBRProgressMonitor monitor, String newName) throws DBException {
-        project.ensureOpen();
-
-        try {
-            final IProjectDescription description = project.getEclipseProject().getDescription();
-            description.setName(newName);
-            project.getEclipseProject().move(description, true, monitor.getNestedMonitor());
-        } catch (CoreException e) {
-            throw new DBException("Can't rename project", e);
-        }
+    public void rename(@NotNull DBRProgressMonitor monitor, @NotNull String newName) throws DBException {
+        throw new DBCFeatureNotSupportedException("Project rename is not supported");
     }
 
-    @Override
-    public DBNNode[] getChildren(DBRProgressMonitor monitor) throws DBException {
-        project.ensureOpen();
-
-        if (project.getEclipseProject() != null && !project.getEclipseProject().isOpen()) {
-            return new DBNNode[0];
-        }
-        List<DBNNode> childrenFiltered = new ArrayList<>();
-        Collections.addAll(childrenFiltered, super.getChildren(monitor));
-        if (!DBWorkbench.getPlatform().getPreferenceStore().getBoolean(ModelPreferences.NAVIGATOR_SHOW_FOLDER_PLACEHOLDERS)) {
-            // Remove non-existing resources (placeholders)
-            childrenFiltered.removeIf(node ->
-                node instanceof DBNResource && !((DBNResource) node).isResourceExists());
-        }
-        if (!CommonUtils.isEmpty(extraNodes)) {
-            childrenFiltered.addAll(extraNodes);
-        }
-        return childrenFiltered.toArray(new DBNNode[0]);
-    }
-
-    @Override
     protected DBNNode[] readChildNodes(DBRProgressMonitor monitor) throws DBException {
-        DBNModel model = getModel();
-        if (model.isGlobal() && !project.isOpen()) {
+        if (getModel().isGlobal() && !project.isOpen()) {
             project.ensureOpen();
         }
-        DBNNode[] children = super.readChildNodes(monitor);
 
-        DBPDataSourceRegistry dataSourceRegistry = project.getDataSourceRegistry();
-        children = ArrayUtils.insertArea(DBNNode.class, children, 0, new Object[]{
-            new DBNProjectDatabases(this, dataSourceRegistry)});
+        final DBPDataSourceRegistry dataSourceRegistry = project.getDataSourceRegistry();
 
-        return children;
-    }
-
-    @Override
-    protected IResource[] addImplicitMembers(IResource[] members) {
-        DBPWorkspace workspace = project.getWorkspace();
-        if (workspace instanceof DBPWorkspaceDesktop) {
-            for (DBPResourceHandlerDescriptor rh : ((DBPWorkspaceDesktop)workspace).getAllResourceHandlers()) {
-                IFolder rhDefaultRoot = ((DBPWorkspaceDesktop)workspace).getResourceDefaultRoot(getProject(), rh, false);
-                if (rhDefaultRoot != null && !rhDefaultRoot.exists()) {
-                    // Add as explicit member
-                    members = ArrayUtils.add(IResource.class, members, rhDefaultRoot);
-                }
-            }
+        try {
+            dataSourceRegistry.checkForErrors();
+        } catch (Throwable e) {
+            project.dispose();
+            throw e;
         }
-        return super.addImplicitMembers(members);
+
+        final List<DBNNode> children = new ArrayList<>();
+
+        children.add(new DBNProjectDatabases(this, dataSourceRegistry));
+        addProjectNodes(monitor, children);
+
+        if (!CommonUtils.isEmpty(extraNodes)) {
+            children.addAll(extraNodes);
+        }
+        filterChildren(children);
+        return children.toArray(DBNNode[]::new);
     }
 
+    protected void addProjectNodes(DBRProgressMonitor monitor, List<DBNNode> children) throws DBException {
+
+    }
+
+    protected void filterChildren(List<DBNNode> children) {
+    }
+
+    @Nullable
     @Override
-    public DBNNode refreshNode(DBRProgressMonitor monitor, Object source) throws DBException {
+    public DBNNode refreshNode(@NotNull DBRProgressMonitor monitor, @Nullable Object source) throws DBException {
         project.getDataSourceRegistry().refreshConfig();
-        super.refreshThisResource(monitor);
         return this;
     }
 
-    public DBNResource findResource(IResource resource) {
-        List<IResource> path = new ArrayList<>();
-        for (IResource parent = resource;
-             !(parent instanceof IProject) && !CommonUtils.equalObjects(parent, project.getRootResource());
-             parent = parent.getParent())
-        {
-            path.add(0, parent);
-        }
+    public DBNNode findResource(DBRProgressMonitor monitor, Path path) throws DBException {
+        Path relativePath = getProject().getAbsolutePath().relativize(path);
 
-        DBNResource resNode = this;
-        for (IResource res : path) {
-            try {
-                resNode.getChildren(new VoidProgressMonitor());
-            } catch (DBException e) {
-                log.error(e);
-            }
-            resNode = resNode.getChild(res);
+        DBNNode resNode = this;
+        for (Path fileName : relativePath) {
+            resNode = DBUtils.findObject(resNode.getChildren(monitor), fileName.toString());
             if (resNode == null) {
-                return null;
+                break;
             }
         }
         return resNode;
-    }
-
-    @Override
-    protected void handleChildResourceChange(IResourceDelta delta) {
-        if (CommonUtils.equalObjects(delta.getResource(), project.getRootResource())) {
-            // Go inside root resource
-            for (IResourceDelta cChild : delta.getAffectedChildren()) {
-                handleChildResourceChange(cChild);
-            }
-            return;
-        }
-        final String name = delta.getResource().getName();
-        if (name.equals(DBPProject.METADATA_FOLDER)) {
-            // Metadata configuration changed
-            IResourceDelta[] configFiles = delta.getAffectedChildren();
-            boolean dsChanged = false;
-            if (configFiles != null) {
-                for (IResourceDelta rd : configFiles) {
-                    IResource childRes = rd.getResource();
-                    if (childRes instanceof IFile && childRes.getName().startsWith(DBPDataSourceRegistry.MODERN_CONFIG_FILE_PREFIX)) {
-                        dsChanged = true;
-                    }
-                }
-            }
-            if (dsChanged) {
-                getDatabases().getDataSourceRegistry().refreshConfig();
-            }
-        } else {
-            super.handleChildResourceChange(delta);
-        }
     }
 
     @NotNull
@@ -281,9 +218,6 @@ public class DBNProject extends DBNResource implements DBNNodeExtendable {
     }
 
     public <T> T getExtraNode(Class<T> nodeType) {
-        if (extraNodes == null) {
-            DBNRegistry.getInstance().extendNode(this, false);
-        }
         if (extraNodes != null) {
             for (DBNNode node : extraNodes) {
                 if (nodeType.isAssignableFrom(node.getClass())) {
@@ -300,7 +234,7 @@ public class DBNProject extends DBNResource implements DBNNodeExtendable {
             extraNodes = new ArrayList<>();
         }
         extraNodes.add(node);
-        extraNodes.sort(Comparator.comparing(DBNNode::getNodeName));
+        extraNodes.sort(Comparator.comparing(DBNNode::getNodeDisplayName));
         if (reflect) {
             getModel().fireNodeEvent(new DBNEvent(this, DBNEvent.Action.ADD, node));
         }
@@ -314,21 +248,33 @@ public class DBNProject extends DBNResource implements DBNNodeExtendable {
     }
 
     @Override
-    protected IResource getContentLocationResource() {
-        return project.getRootResource();
-    }
-
-    @Override
     protected void dispose(boolean reflect) {
         if (extraNodes != null) {
             for (DBNNode node : extraNodes) {
-                node.dispose(reflect);
+                DBNUtils.disposeNode(node, reflect);
             }
             extraNodes.clear();
+        }
+        if (children != null) {
+            for (DBNNode child : children) {
+                DBNUtils.disposeNode(child, reflect);
+            }
+            children = null;
+        }
+        if (reflect) {
+            getModel().fireNodeEvent(new DBNEvent(this, DBNEvent.Action.REMOVE, this));
         }
         super.dispose(reflect);
     }
 
+    @NotNull
+    @Override
+    public String getNodeId() {
+        return project.getId();
+    }
+
+    @NotNull
+    @Deprecated
     @Override
     public String getNodeItemPath() {
         return NodePathType.resource.getPrefix() + project.getId();
@@ -337,5 +283,35 @@ public class DBNProject extends DBNResource implements DBNNodeExtendable {
     @Override
     public boolean hasChildren(boolean navigableOnly) {
         return true;
+    }
+
+    @Override
+    protected boolean allowsChildren() {
+        return true;
+    }
+
+    @Nullable
+    @Override
+    public DBNNode[] getChildren(@NotNull DBRProgressMonitor monitor) throws DBException {
+        if (children != null) {
+            return children;
+        }
+        children = readChildNodes(monitor);
+        return children;
+    }
+
+    @Override
+    public boolean needsInitialization() {
+        return children == null;
+    }
+
+    @Override
+    public DBNNode[] getCachedChildren() {
+        return children;
+    }
+
+    @Override
+    public void setCachedChildren(DBNNode[] children) {
+        this.children = children;
     }
 }

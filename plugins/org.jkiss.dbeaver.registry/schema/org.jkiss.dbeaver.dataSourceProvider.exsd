@@ -366,7 +366,7 @@
             <element ref="os" minOccurs="0" maxOccurs="unbounded"/>
             <element ref="replace" minOccurs="0" maxOccurs="unbounded"/>
          </sequence>
-         <attribute name="label" type="string" use="required">
+         <attribute name="label" type="string">
             <annotation>
                <documentation>
                   Driver name
@@ -393,7 +393,7 @@
                </documentation>
             </annotation>
          </attribute>
-         <attribute name="class" type="string" use="required">
+         <attribute name="class" type="string">
             <annotation>
                <documentation>
                   Driver implementation class
@@ -721,7 +721,6 @@
    <element name="tools">
       <complexType>
          <sequence>
-            <element ref="tool" minOccurs="1" maxOccurs="unbounded"/>
          </sequence>
       </complexType>
    </element>

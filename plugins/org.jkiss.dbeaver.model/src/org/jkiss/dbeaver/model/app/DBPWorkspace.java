@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,19 +19,23 @@ package org.jkiss.dbeaver.model.app;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.DBPAdaptable;
+import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.access.DBAPermissionRealm;
 import org.jkiss.dbeaver.model.auth.SMAuthSpace;
 import org.jkiss.dbeaver.model.auth.SMSession;
 import org.jkiss.dbeaver.model.auth.SMSessionContext;
+import org.jkiss.dbeaver.model.rm.RMConstants;
 
 import java.nio.file.Path;
 import java.util.List;
 
 /**
- * DBPWorkspace
+ * User workspace.
+ * *
+ * Operates with projects, resources and user session.
  */
-public interface DBPWorkspace extends SMAuthSpace, DBAPermissionRealm
-{
+public interface DBPWorkspace extends SMAuthSpace, DBAPermissionRealm {
     String METADATA_FOLDER = ".metadata";
 
     @NotNull
@@ -50,7 +54,9 @@ public interface DBPWorkspace extends SMAuthSpace, DBAPermissionRealm
 
     @NotNull
     List<? extends DBPProject> getProjects();
+    @Nullable
     DBPProject getActiveProject();
+    @Nullable
     DBPProject getProject(@NotNull String projectName);
 
     /**
@@ -65,10 +71,32 @@ public interface DBPWorkspace extends SMAuthSpace, DBAPermissionRealm
     @NotNull
     SMSessionContext getAuthContext();
 
+    /**
+     * Initializes workspace state.
+     * Called once during workspace instantiation. Mustn't be called directly by user.
+     */
+    void initializeProjects();
+
+    /**
+     * Disposes workspace caches.
+     * Mustn't be called directly by user.
+     */
     void dispose();
 
+    @Nullable
     default SMSession getWorkspaceSession() {
         return getAuthContext().findSpaceSession(this);
     }
+
+    default boolean canManageProjects() {
+        return hasRealmPermission(RMConstants.PERMISSION_PROJECT_ADMIN);
+    }
+
+    default boolean isEnabledSecretProviders() {
+        return true;
+    }
+
+    @Nullable
+    DBPImage getResourceIcon(DBPAdaptable resourceAdapter);
 
 }

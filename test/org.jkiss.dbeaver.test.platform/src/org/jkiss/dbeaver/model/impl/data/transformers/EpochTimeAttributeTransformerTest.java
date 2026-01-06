@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,10 +31,9 @@ import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.model.struct.DBSEntityReferrer;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
+import org.jkiss.junit.DBeaverUnitTest;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.junit.MockitoJUnitRunner;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -43,9 +42,7 @@ import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.mock;
-
-@RunWith(MockitoJUnitRunner.class)
-public class EpochTimeAttributeTransformerTest {
+public class EpochTimeAttributeTransformerTest extends DBeaverUnitTest {
     private static final String NANOS = "nanoseconds";
     private static final String MILLIS = "milliseconds";
     private static final String SECONDS = "seconds";
@@ -219,11 +216,13 @@ public class EpochTimeAttributeTransformerTest {
             return null;
         }
 
+        @NotNull
         @Override
         public String getTypeName() {
             return null;
         }
 
+        @NotNull
         @Override
         public String getFullTypeName() {
             return null;
@@ -234,16 +233,19 @@ public class EpochTimeAttributeTransformerTest {
             return 0;
         }
 
+        @NotNull
         @Override
         public DBPDataKind getDataKind() {
             return null;
         }
 
+        @Nullable
         @Override
         public Integer getScale() {
             return null;
         }
 
+        @Nullable
         @Override
         public Integer getPrecision() {
             return null;

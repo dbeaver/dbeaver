@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,11 +21,10 @@ import org.eclipse.core.resources.IResource;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.app.DBPPlatformDesktop;
 import org.jkiss.dbeaver.model.app.DBPProject;
-import org.jkiss.dbeaver.model.navigator.DBNNode;
-import org.jkiss.dbeaver.model.navigator.DBNProject;
+import org.jkiss.dbeaver.model.rcp.RCPProject;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.actions.GlobalPropertyTester;
+import org.jkiss.dbeaver.ui.actions.GlobalUIPropertyTester;
 import org.jkiss.dbeaver.ui.dialogs.MultiPageWizardDialog;
 import org.jkiss.dbeaver.ui.project.EditProjectWizard;
 import org.jkiss.dbeaver.ui.resources.AbstractResourceHandler;
@@ -44,10 +43,10 @@ public class ProjectHandlerImpl extends AbstractResourceHandler {
     @Override
     public int getFeatures(IResource resource) {
         int features = FEATURE_CREATE_FOLDER;
-        if (GlobalPropertyTester.canManageProjects()) {
+        if (GlobalUIPropertyTester.canManageProjects()) {
             features |= FEATURE_RENAME;
             DBPProject activeProject = DBWorkbench.getPlatform().getWorkspace().getActiveProject();
-            if (activeProject == null || resource != activeProject.getEclipseProject()) {
+            if (!(activeProject instanceof RCPProject rcpProject) || resource != rcpProject.getEclipseProject()) {
                 // FIXME: restrict private projects delete
                 boolean isPrivateProject = false;//activeProject.isPrivateProject()
                 if (!(DBWorkbench.isDistributed() && isPrivateProject)) {
@@ -58,25 +57,16 @@ public class ProjectHandlerImpl extends AbstractResourceHandler {
         return features;
     }
 
-    @NotNull
-    @Override
-    public DBNProject makeNavigatorNode(@NotNull DBNNode parentNode, @NotNull IResource resource) {
-        return new DBNProject(
-            parentNode,
-            DBPPlatformDesktop.getInstance().getWorkspace().getProject((IProject) resource),
-            this);
-    }
-
     @Override
     public void openResource(@NotNull IResource resource) {
         DBPProject project = DBPPlatformDesktop.getInstance().getWorkspace().getProject((IProject) resource);
-        if (project == null) {
+        if (!(project instanceof RCPProject rcpProject)) {
             DBWorkbench.getPlatformUI().showError("No project", "Can't get project metadata for resource " + resource.getName());
             return;
         }
         MultiPageWizardDialog dialog = new MultiPageWizardDialog(
             UIUtils.getActiveWorkbenchWindow(),
-            new EditProjectWizard(project));
+            new EditProjectWizard(rcpProject));
         dialog.open();
     }
 }

@@ -17,6 +17,7 @@
  */
 package org.jkiss.dbeaver.ext.postgresql.model.lock;
 
+import org.jkiss.dbeaver.DBDatabaseException;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataSource;
 import org.jkiss.dbeaver.model.DBPDataSource;
@@ -163,7 +164,7 @@ public class PostgreLockManager extends LockGraphManager implements DBAServerLoc
             return locks;
 
         } catch (SQLException e) {
-            throw new DBException(e, session.getDataSource());
+            throw new DBDatabaseException(e, session.getDataSource());
         }
 
     }
@@ -176,7 +177,7 @@ public class PostgreLockManager extends LockGraphManager implements DBAServerLoc
                 dbStat.execute();
             }
         } catch (SQLException e) {
-            throw new DBException(e, session.getDataSource());
+            throw new DBDatabaseException(e, session.getDataSource());
         }
     }
 
@@ -222,7 +223,7 @@ public class PostgreLockManager extends LockGraphManager implements DBAServerLoc
             return locks;
 
         } catch (SQLException e) {
-            throw new DBException(e, session.getDataSource());
+            throw new DBDatabaseException(e, session.getDataSource());
         }
     }
 

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -52,6 +52,7 @@ public interface DBSObjectContainer extends DBSObject
      * @throws DBException on any DB error
      * @param monitor progress monitor
      */
+    @Nullable
     Collection<? extends DBSObject> getChildren(@NotNull DBRProgressMonitor monitor) throws DBException;
 
     /**
@@ -81,7 +82,7 @@ public interface DBSObjectContainer extends DBSObject
     /**
      * Caches all underlying structure contents.
      * Reads tables, columns, foreign keys and other RDB information.
-     * This method is invoked when view want to draw something like ER diagramm which
+     * This method is invoked when view want to draw something like ER diagram which
      * includes all container entities.
      * @throws DBException on any DB error
      * @param monitor progress monitor

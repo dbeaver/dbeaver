@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,8 @@
 
 package org.jkiss.dbeaver.model.app;
 
+import org.jkiss.code.NotNull;
+
 import java.util.Map;
 
 /**
@@ -24,10 +26,10 @@ import java.util.Map;
  */
 public interface DBPGlobalEventManager {
 
-    void fireGlobalEvent(String eventId, Map<String, Object> properties);
+    void fireGlobalEvent(@NotNull String eventId, @NotNull Map<String, Object> properties);
 
-    void addEventListener(DBPGlobalEventListener listener);
+    void addEventListener(@NotNull DBPGlobalEventListener listener);
 
-    void removeEventListener(DBPGlobalEventListener listener);
+    void removeEventListener(@NotNull DBPGlobalEventListener listener);
 
 }

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,6 +34,7 @@ import org.eclipse.ui.*;
 import org.eclipse.ui.internal.PartSite;
 import org.eclipse.ui.part.MultiPageEditorPart;
 import org.eclipse.ui.part.MultiPageEditorSite;
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
@@ -44,6 +45,7 @@ import org.jkiss.dbeaver.model.navigator.*;
 import org.jkiss.dbeaver.model.navigator.meta.DBXTreeFolder;
 import org.jkiss.dbeaver.model.navigator.meta.DBXTreeItem;
 import org.jkiss.dbeaver.model.navigator.meta.DBXTreeNode;
+import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
@@ -60,12 +62,12 @@ import org.jkiss.dbeaver.ui.controls.ObjectEditorPageControl;
 import org.jkiss.dbeaver.ui.controls.ProgressPageControl;
 import org.jkiss.dbeaver.ui.controls.folders.*;
 import org.jkiss.dbeaver.ui.css.CSSUtils;
-import org.jkiss.dbeaver.ui.css.DBStyles;
 import org.jkiss.dbeaver.ui.editors.*;
 import org.jkiss.dbeaver.ui.editors.entity.*;
 import org.jkiss.dbeaver.ui.internal.UINavigatorMessages;
 import org.jkiss.dbeaver.ui.navigator.INavigatorModelView;
 import org.jkiss.dbeaver.ui.navigator.NavigatorPreferences;
+import org.jkiss.dbeaver.ui.screenreaders.ScreenReaderPreferences;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
@@ -111,19 +113,19 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
         pageControl = new ObjectEditorPageControl(parent, SWT.SHEET, this) {
             @Override
             public void fillCustomActions(IContributionManager contributionManager) {
-                createPropertyRefreshAction(contributionManager);
-
                 super.fillCustomActions(contributionManager);
+
                 if (propertiesPanel != null && folderComposite == null) {
                     // We have object editor and no folders - contribute default actions
                     DatabaseEditorUtils.contributeStandardEditorActions(getSite(), contributionManager);
                 }
+                createPropertyRefreshAction(contributionManager);
             }
         };
-        CSSUtils.setCSSClass(pageControl, DBStyles.COLORED_BY_CONNECTION_TYPE);
+        CSSUtils.markConnectionTypeColor(pageControl);
         pageControl.setShowDivider(true);
 
-        mainComposite = new Composite(pageControl, SWT.NONE);
+        mainComposite = new ConComposite(pageControl, SWT.NONE);
         GridLayout gl = new GridLayout(1, false);
         gl.verticalSpacing = 5;
         gl.horizontalSpacing = 0;
@@ -148,15 +150,15 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
         try {
             TabbedFolderInfo[] folders = collectFolders(this);
             if (folders.length == 0) {
-                createPropertiesPanel(container);
+                propsPlaceholder = createPropertiesPanel(container);
+                propsPlaceholder.setLayoutData(new GridData(GridData.FILL_BOTH));
             } else {
                 Composite foldersParent = container;
                 if (hasPropertiesEditor() && DBWorkbench.getPlatform().getPreferenceStore().getBoolean(NavigatorPreferences.ENTITY_EDITOR_DETACH_INFO)) {
                     sashForm = UIUtils.createPartDivider(getSite().getPart(), container, SWT.VERTICAL);
                     sashForm.setLayoutData(new GridData(GridData.FILL_BOTH));
+                    propsPlaceholder = createPropertiesPanel(sashForm);
                     foldersParent = sashForm;
-
-                    createPropertiesPanel(sashForm);
                 }
                 createFoldersPanel(foldersParent, folders);
             }
@@ -169,12 +171,8 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
                     propertiesPanel.createControl(propsPlaceholder);
                 }
             }
-
             if (sashForm != null) {
-                //Runnable sashUpdater = this::updateSashWidths;
-                //sashUpdater.run();
-                //UIUtils.asyncExec(sashUpdater);
-                updateSashWidths();
+                UIUtils.asyncExec(this::updateSashWidths);
             }
             pageControl.layout(true, true);
         } finally {
@@ -182,15 +180,17 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
         }
     }
 
-    private void createPropertiesPanel(Composite container) {
-        // Main panel
-        propsPlaceholder = new Composite(container, SWT.NONE);
-        propsPlaceholder.setLayout(new FillLayout());
+    @NotNull
+    private Composite createPropertiesPanel(@NotNull Composite parent) {
+        Composite composite = new ConComposite(parent);
+        composite.setLayout(new FillLayout());
+        return composite;
     }
 
     private Composite createFoldersPanel(Composite parent, TabbedFolderInfo[] folders) {
         // Properties
-        Composite foldersPlaceholder = UIUtils.createPlaceholder(parent, 1, 0);
+        ConComposite foldersPlaceholder = new ConComposite(parent);
+        foldersPlaceholder.setGridLayout(1);
         foldersPlaceholder.setLayoutData(new GridData(GridData.FILL_BOTH));
 
         boolean single = folders.length < 4;
@@ -267,8 +267,19 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
                 }
             }
         });
-        
-        folderComposite.switchFolder(curFolderId);
+
+        boolean validFolder = false;
+        for (TabbedFolderInfo folder : folders) {
+            if (folder.getId().equals(curFolderId)) {
+                validFolder = true;
+                break;
+            }
+        }
+        if (!validFolder && folders.length > 0) {
+            curFolderId = folders[0].getId();
+        }
+
+        UIUtils.syncExec(() -> folderComposite.switchFolder(curFolderId));
         
         return foldersPlaceholder;
     }
@@ -290,47 +301,23 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
             return;
         }
 
-//        if (propsPlaceholder != null) {
-            Point propsSize = propsPlaceholder.computeSize(SWT.DEFAULT, SWT.DEFAULT, true);
-            propsSize.y += 10;
-            Point sashSize = sashForm.getParent().getSize();
-            if (sashSize.x <= 0 || sashSize.y <= 0) {
-                // This may happen if EntityEditor created with some other active editor (i.e. props editor not visible)
-                sashSize = getParentSize(sashForm);
-                //sashSize.y += 20;
-            }
-            if (sashSize.x > 0 && sashSize.y > 0) {
-                float ratio = (float) propsSize.y / (float) sashSize.y;
-                int propsRatio = Math.min(1000, (int) (1000 * ratio));
-                int[] newWeights = {propsRatio, 1000 - propsRatio};
+        Point sashSize = sashForm.getParent().getSize();
+        if (sashSize.x <= 0 || sashSize.y <= 0) {
+            // This may happen if EntityEditor created with some other active editor (i.e. props editor not visible)
+            sashSize = getParentSize(sashForm);
+        }
+
+        if (sashSize.x > 0 && sashSize.y > 0) {
+            Point propsSize = propsPlaceholder.getSize();
+            int budget = sashSize.y - sashForm.getSashWidth();
+            int height = propsPlaceholder.computeSize(propsSize.x, SWT.DEFAULT).y;
+            if (height < budget) {
+                int[] newWeights = {height, budget - height};
                 if (!Arrays.equals(newWeights, sashForm.getWeights())) {
                     sashForm.setWeights(newWeights);
-                    //sashForm.layout();
                 }
             }
-
-/*
-        } else {
-            String sashStateStr = DBWorkbench.getPlatform().getPreferenceStore().getString(NavigatorPreferences.ENTITY_EDITOR_INFO_SASH_STATE);
-            int sashPanelHeight = !CommonUtils.isEmpty(sashStateStr) ? Integer.parseInt(sashStateStr) : 400;
-            if (sashPanelHeight < 0) sashPanelHeight = 0;
-            if (sashPanelHeight > 1000) sashPanelHeight = 1000;
-
-            sashForm.setWeights(new int[] { sashPanelHeight, 1000 - sashPanelHeight });
-            //sashForm.layout();
-
-            sashForm.getChildren()[0].addListener(SWT.Resize, event -> {
-                if (sashForm != null) {
-                    int[] weights = sashForm.getWeights();
-                    if (weights != null && weights.length > 0) {
-                        int topWeight = weights[0];
-                        if (topWeight == 0) topWeight = 1;
-                        DBWorkbench.getPlatform().getPreferenceStore().setValue(NavigatorPreferences.ENTITY_EDITOR_INFO_SASH_STATE, topWeight);
-                    }
-                }
-            });
         }
-*/
     }
 
     @Override
@@ -368,14 +355,20 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
     {
         // do not force focus in active editor. We can't do it properly because folderComposite detects
         // active folder by focus (which it doesn't have)
-        if (folderComposite != null) {
-            ITabbedFolder selectedPage = folderComposite.getActiveFolder();
-            if (selectedPage != null) {
-                selectedPage.setFocus();
-                //            IEditorActionBarContributor contributor = pageContributors.get(selectedPage);
-            }
-        } else if (pageControl != null) {
+        // If accessibility is active, set focus to the page control rather the active editor so
+        // the tab names can be read correctly
+        final DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
+        if (store.getBoolean(ScreenReaderPreferences.PREF_SCREEN_READER_ACCESSIBILITY)) {
             pageControl.setFocus();
+        } else {
+            if (folderComposite != null) {
+                ITabbedFolder selectedPage = folderComposite.getActiveFolder();
+                if (selectedPage != null) {
+                    selectedPage.setFocus();
+                }
+            } else if (pageControl != null) {
+                pageControl.setFocus();
+            }
         }
     }
 
@@ -509,20 +502,29 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
 
     @Override
     public RefreshResult refreshPart(Object source, boolean force) {
-        if (propertiesPanel != null) {
-            if (propertiesPanel.refreshPart(source, force) == RefreshResult.CANCELED) {
-                return RefreshResult.CANCELED;
-            }
-        }
-        if (folderComposite != null && folderComposite.getFolders() != null) {
-            for (TabbedFolderInfo folder : folderComposite.getFolders()) {
-                if (folder.getContents() instanceof IRefreshablePart) {
-                    if (((IRefreshablePart) folder.getContents()).refreshPart(source, force) == RefreshResult.CANCELED) {
-                        return RefreshResult.CANCELED;
+
+        Runnable afterRefresh = () -> {
+            if (folderComposite != null && folderComposite.getFolders() != null) {
+                for (TabbedFolderInfo folder : folderComposite.getFolders()) {
+                    if (folder.getContents() instanceof IRefreshablePart) {
+                        ((IRefreshablePart) folder.getContents()).refreshPart(source, force);
                     }
                 }
             }
+        };
+
+        if (propertiesPanel != null) {
+            RefreshResult result = propertiesPanel.refreshPart(force, afterRefresh);
+            if (result == RefreshResult.CANCELED) {
+                return RefreshResult.CANCELED;
+            } else if (result == RefreshResult.IGNORED) {
+                UIUtils.asyncExec(afterRefresh);
+            }
+        } else {
+            // we still have to refresh folders in that way
+            UIUtils.asyncExec(afterRefresh);
         }
+
         return RefreshResult.REFRESHED;
     }
 
@@ -600,7 +602,7 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
             if (!extraCategories.isEmpty()) {
                 tabList.add(new TabbedFolderInfo(
                     PropertiesContributor.TAB_PROPERTIES,
-                    extraCategories.get(0) + (extraCategories.size() == 1 ? "" :" / ... "),
+                    extraCategories.getFirst() + (extraCategories.size() == 1 ? "" :" / ... "),
                     DBIcon.TREE_INFO,
                     String.join(", ", extraCategories),
                     false,
@@ -629,7 +631,7 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
     {
         monitor.beginTask("Collect tabs", 1);
         // Add all nested folders as tabs
-        if (node instanceof DBNDataSource && !((DBNDataSource)node).getDataSourceContainer().isConnected()) {
+        if (node instanceof DBNDataSource ds && !ds.getDataSourceContainer().isConnected()) {
             // Do not add children tabs
         } else if (node != null) {
             try {
@@ -665,11 +667,11 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
                     for (DBNNode child : children) {
                         if (child instanceof DBNDatabaseFolder) {
                             DBNDatabaseFolder folder = (DBNDatabaseFolder)child;
-                            monitor.subTask(UINavigatorMessages.ui_properties_task_add_folder + " '" + child.getNodeName() + "'"); //$NON-NLS-2$
+                            monitor.subTask(UINavigatorMessages.ui_properties_task_add_folder + " '" + child.getNodeDisplayName() + "'"); //$NON-NLS-2$
                             tabList.add(
                                 new TabbedFolderInfo(
-                                    folder.getNodeName(),
-                                    folder.getNodeName(),
+                                    folder.getNodeDisplayName(),
+                                    folder.getNodeDisplayName(),
                                     folder.getNodeIconDefault(),
                                     child.getNodeDescription(),
                                     false,//folder.getMeta().isInline(),
@@ -682,15 +684,14 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
                 log.error("Error initializing property tabs", e); //$NON-NLS-1$
             }
             // Add itself as tab (if it has child items)
-            if (node instanceof DBNDatabaseNode) {
-                DBNDatabaseNode databaseNode = (DBNDatabaseNode)node;
+            if (node instanceof DBNDatabaseNode databaseNode) {
                 List<DBXTreeNode> subNodes = databaseNode.getMeta().getChildren(databaseNode);
                 if (subNodes != null) {
                     for (DBXTreeNode child : subNodes) {
                         if (child instanceof DBXTreeItem) {
                             try {
                                 if (!((DBXTreeItem)child).isOptional() || databaseNode.hasChildren(monitor, child)) {
-                                    monitor.subTask(UINavigatorMessages.ui_properties_task_add_node + " '" + node.getNodeName() + "'"); //$NON-NLS-2$
+                                    monitor.subTask(UINavigatorMessages.ui_properties_task_add_node + " '" + node.getNodeDisplayName() + "'"); //$NON-NLS-2$
                                     String nodeName = child.getChildrenTypeLabel(databaseNode.getObject().getDataSource(), null);
                                     tabList.add(
                                         new TabbedFolderInfo(

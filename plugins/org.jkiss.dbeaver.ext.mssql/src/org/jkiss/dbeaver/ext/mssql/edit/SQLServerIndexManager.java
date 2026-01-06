@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ext.mssql.edit;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.mssql.SQLServerConstants;
@@ -53,8 +54,8 @@ public class SQLServerIndexManager extends SQLIndexManager<SQLServerTableIndex, 
 
     @Override
     protected SQLServerTableIndex createDatabaseObject(
-        DBRProgressMonitor monitor, DBECommandContext context, final Object container,
-        Object from, Map<String, Object> options)
+        @NotNull DBRProgressMonitor monitor, @NotNull DBECommandContext context, final Object container,
+        Object from, @NotNull Map<String, Object> options)
     {
         SQLServerTable table = (SQLServerTable) container;
 
@@ -69,7 +70,7 @@ public class SQLServerIndexManager extends SQLIndexManager<SQLServerTableIndex, 
     }
 
     @Override
-    protected void addObjectCreateActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, ObjectCreateCommand command, Map<String, Object> options) {
+    protected void addObjectCreateActions(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext executionContext, @NotNull List<DBEPersistAction> actions, @NotNull ObjectCreateCommand command, @NotNull Map<String, Object> options) {
         SQLServerTableIndex index = command.getObject();
         SQLServerTableBase indexTable = index.getTable();
         if (indexTable instanceof SQLServerTableType) {
@@ -77,6 +78,7 @@ public class SQLServerIndexManager extends SQLIndexManager<SQLServerTableIndex, 
         }
         if (index.isPersisted()) {
             try {
+
                 String indexDDL = index.getObjectDefinitionText(monitor, DBPScriptObject.EMPTY_OPTIONS);
                 if (!CommonUtils.isEmpty(indexDDL)) {
                     actions.add(
@@ -107,7 +109,7 @@ public class SQLServerIndexManager extends SQLIndexManager<SQLServerTableIndex, 
                 ddl.append("COLUMNSTORE ");
             }
         }
-        ddl.append("INDEX ").append(index.getName()).append(" ON ").append(indexTable.getFullyQualifiedName(DBPEvaluationContext.DDL));
+        ddl.append("INDEX ").append(DBUtils.getQuotedIdentifier(index)).append(" ON ").append(indexTable.getFullyQualifiedName(DBPEvaluationContext.DDL));
         List<SQLServerTableIndexColumn> indexColumns = index.getAttributeReferences(monitor);
         if (columnStore && index.getIndexType() == DBSIndexType.CLUSTERED) {
             // Do not add columns list in this case, it will not work (SQL Error [35335] [S0001])
@@ -139,7 +141,20 @@ public class SQLServerIndexManager extends SQLIndexManager<SQLServerTableIndex, 
 
     protected String getDropIndexPattern(SQLServerTableIndex index)
     {
-        return "DROP INDEX " + index.getName() + " ON " + index.getTable().getFullyQualifiedName(DBPEvaluationContext.DDL);
+        return "DROP INDEX " + DBUtils.getQuotedIdentifier(index) + " ON " + index.getTable().getFullyQualifiedName(DBPEvaluationContext.DDL);
+    }
+
+
+    @Override
+    protected void addObjectModifyActions(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBCExecutionContext executionContext,
+        @NotNull List<DBEPersistAction> actionList,
+        @NotNull ObjectChangeCommand command,
+        @NotNull Map<String, Object> options
+    ) throws DBException {
+        addObjectDeleteActions(monitor, executionContext, actionList, new ObjectDeleteCommand(command.getObject(), command.getTitle()), options);
+        addObjectCreateActions(monitor, executionContext, actionList, makeCreateCommand(command.getObject(), options), options);
     }
 
 }

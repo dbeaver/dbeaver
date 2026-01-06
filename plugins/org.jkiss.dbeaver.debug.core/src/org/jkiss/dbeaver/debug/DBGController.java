@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  * Copyright (C) 2017-2018 Andrew Khitrin (ahitrin@gmail.com)
  * Copyright (C) 2017-2018 Alexander Fedorov (alexander.fedorov@jkiss.org)
  *
@@ -38,7 +38,7 @@ public interface DBGController {
      */
     DBGSession openSession(DBRProgressMonitor monitor) throws DBGException;
 
-    DBGBreakpointDescriptor describeBreakpoint(Map<String, Object> attributes) throws DBGException;
+    DBGBreakpointDescriptor describeBreakpoint(Map<String, Object> attributes);
 
     /*
      * Events

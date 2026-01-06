@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,6 @@
  */
 package org.jkiss.dbeaver.registry.rm;
 
-import org.eclipse.core.resources.IProject;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -75,13 +74,7 @@ public class DataSourceConfigurationManagerRM implements DataSourceConfiguration
         if (!name.equals(project.getName())) {
             throw new DBException("Wrong storage name: " + name);
         }
-        IProject eclipseProject = project.getEclipseProject();
-        String projectId;
-        if (eclipseProject != null) {
-            projectId = project.getEclipseProject().getLocation().lastSegment();
-        } else {
-            projectId = project.getId();
-        }
+        String projectId = project.getId();
         try {
             String dsContent = rmController.getProjectsDataSources(
                 projectId,

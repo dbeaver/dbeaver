@@ -1,22 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?eclipse version="3.2"?>
-<!--
- * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
-  -->
-
 <plugin>
 
     <extension point="org.eclipse.ui.commands">
@@ -28,7 +11,6 @@
 
     <extension point="org.eclipse.ui.commandImages">
         <image commandId="org.jkiss.dbeaver.ext.oracle.code.compile" icon="icons/compile.png"/>
-        <image commandId="org.jkiss.dbeaver.ext.oracle.code.package.navigate" icon="icons/source_navigate.png"/>
         <image commandId="org.jkiss.dbeaver.ext.oracle.job.run" icon="icons/run.png"/>
     </extension>
 
@@ -110,15 +92,15 @@
 
     <extension point="org.eclipse.ui.editors">
         <editor
-                name="Session Manager"
-                icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/sessions.png"
+                name="%editor.session_manager.name"
+                icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/sessions.svg"
                 class="org.jkiss.dbeaver.ext.oracle.ui.editors.OracleSessionEditor"
                 id="org.jkiss.dbeaver.ext.oracle.ui.editors.OracleSessionEditor"
                 contributorClass="org.jkiss.dbeaver.ui.editors.EditorSearchActionsContributor">
         </editor>
         <editor
-                name="Lock Manager"
-                icon="#locked"
+                name="%editor.session_manager.name"
+                icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/locked.svg"
                 class="org.jkiss.dbeaver.ext.oracle.ui.editors.OracleLockEditor"
                 id="org.jkiss.dbeaver.ext.oracle.ui.editors.OracleLockEditor">
         </editor>
@@ -130,7 +112,7 @@
     </extension>
 
     <extension point="org.jkiss.dbeaver.dataSourceProvider">
-        <editorContribution editorId="org.jkiss.dbeaver.ext.oracle.ui.editors.OracleSessionEditor" category="connectionEditor" label="%editor.session_manager.name" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/sessions.png">
+        <editorContribution editorId="org.jkiss.dbeaver.ext.oracle.ui.editors.OracleSessionEditor" category="connectionEditor" label="%editor.session_manager.name" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/sessions.svg">
             <supports dataSource="oracle"/>
         </editorContribution>
         <editorContribution editorId="org.jkiss.dbeaver.ext.oracle.ui.editors.OracleLockEditor" category="connectionEditor" label="%editor.lock_manager.name" icon="#locked">
@@ -156,12 +138,20 @@
 
     <extension point="org.eclipse.ui.importWizards">
         <wizard
-                category="org.jkiss.dbeaver.import_config.third-party"
+                category="org.jkiss.dbeaver.config.migration.third-party"
                 class="org.jkiss.dbeaver.ext.oracle.ui.tools.sqldeveloper.ConfigImportWizardSqlDeveloper"
-                id="org.jkiss.dbeaver.import_config.sqldeveloper"
+                id="org.jkiss.dbeaver.config.migration.sqldeveloper"
                 name="Oracle SQL Developer"
                 icon="icons/sqldeveloper.png">
             <description>Oracle SQL Developer</description>
+        </wizard>
+        <wizard
+                category="org.jkiss.dbeaver.config.migration.third-party"
+                class="org.jkiss.dbeaver.ext.oracle.ui.tools.toad.ConfigImportWizardToad"
+                id="org.jkiss.dbeaver.config.migration.toad"
+                name="Toad"
+                icon="icons/toad_icon.png">
+            <description>Toad</description>
         </wizard>
     </extension>
 
@@ -203,7 +193,7 @@
             <objectType name="org.jkiss.dbeaver.ext.oracle.model.OracleDataType" if="!object.predefined"/>
         </editor>
         <editor id="schedulerJob.action" class="org.jkiss.dbeaver.ext.oracle.ui.editors.SchedulerJobActionEditor"
-                label="%editor.scheduler.job.action.name" description="%editor.schedulerJob.action.description" icon="#sql_text" position="additions_middle"
+                label="%editor.scheduler.job.action.name" description="%editor.scheduler.job.action.description" icon="#sql_text" position="additions_middle"
                 contributor="org.jkiss.dbeaver.ui.editors.sql.SQLEditorContributorNested" type="folder" embeddable="false">
             <objectType name="org.jkiss.dbeaver.ext.oracle.model.OracleSchedulerJob"/>
         </editor>
@@ -219,6 +209,7 @@
             <objectType name="org.jkiss.dbeaver.ext.oracle.model.OracleSchema"/>
             <objectType name="org.jkiss.dbeaver.ext.oracle.model.OracleTableIndex"/>
             <objectType name="org.jkiss.dbeaver.ext.oracle.model.OracleSequence"/>
+            <objectType name="org.jkiss.dbeaver.ext.oracle.model.OracleTablespace"/>
         </editor>
         <editor
                 id="org.jkiss.dbeaver.ext.oracle.ui.editors.SchedulerJobLogEditor"
@@ -269,68 +260,59 @@
             <toolGroup id="org.jkiss.dbeaver.ext.oracle.ui.tools.statistics" label="%tool.org.jkiss.dbeaver.ext.oracle.ui.tools.statistics.label"/>
             <toolGroup id="org.jkiss.dbeaver.ext.oracle.ui.tools.maintenance" label="%tool.org.jkiss.dbeaver.ext.oracle.ui.tools.maintenance.label"/>
             <tool
-                    class="org.jkiss.dbeaver.ext.oracle.ui.tools.OracleToolScript"
                     description="%tool.org.jkiss.dbeaver.ext.oracle.ui.tools.OracleToolScript.description"
                     id="org.jkiss.dbeaver.ext.oracle.ui.tools.OracleToolScript"
                     label="%tool.org.jkiss.dbeaver.ext.oracle.ui.tools.OracleToolScript.label">
-                <objectType name="org.jkiss.dbeaver.ext.oracle.model.OracleDataSource"/>
-                <objectType name="org.jkiss.dbeaver.ext.oracle.model.OracleSchema"/>
+                <task id="oracleScriptExecute"/>
             </tool>
             <tool
-                    class="org.jkiss.dbeaver.ext.oracle.ui.tools.maintenance.OracleToolValidateStructure"
                     description="%tool.org.jkiss.dbeaver.ext.oracle.ui.tools.maintenance.OracleToolValidateStructure.label"
                     id="org.jkiss.dbeaver.ext.oracle.ui.tools.maintenance.OracleToolValidateStructure"
                     group="org.jkiss.dbeaver.ext.oracle.ui.tools.statistics"
                     label="%tool.org.jkiss.dbeaver.ext.oracle.ui.tools.maintenance.OracleToolValidateStructure.label"
                     singleton="false">
-                <objectType name="org.jkiss.dbeaver.ext.oracle.model.OracleTable"/>
+                <task id="oracleToolValidateStructure"/>
             </tool>
             <tool
-                    class="org.jkiss.dbeaver.ext.oracle.ui.tools.maintenance.OracleToolRefreshMView"
                     description="%tool.org.jkiss.dbeaver.ext.oracle.ui.tools.maintenance.OracleToolRefreshMView.label"
                     id="org.jkiss.dbeaver.ext.oracle.ui.tools.maintenance.OracleToolRefreshMView"
                     group="org.jkiss.dbeaver.ext.oracle.ui.tools.maintenance"
                     label="%tool.org.jkiss.dbeaver.ext.oracle.ui.tools.maintenance.OracleToolRefreshMView.label"
                     singleton="false">
-                <objectType name="org.jkiss.dbeaver.ext.oracle.model.OracleMaterializedView"/>
+                <task id="oracleToolMViewRefresh"/>
             </tool>
             <tool
-                    class="org.jkiss.dbeaver.ext.oracle.ui.tools.maintenance.OracleToolGatherStatistics"
                     description="%tool.org.jkiss.dbeaver.ext.oracle.ui.tools.maintenance.OracleToolGatherStatistics.label"
                     id="org.jkiss.dbeaver.ext.oracle.ui.tools.maintenance.OracleToolGatherStatistics"
                     group="org.jkiss.dbeaver.ext.oracle.ui.tools.statistics"
                     label="%tool.org.jkiss.dbeaver.ext.oracle.ui.tools.maintenance.OracleToolGatherStatistics.label"
                     singleton="false">
-                <objectType name="org.jkiss.dbeaver.ext.oracle.model.OracleTable"/>
-                <objectType name="org.jkiss.dbeaver.ext.oracle.model.OracleTableIndex"/>
-                <!--<objectType name="org.jkiss.dbeaver.ext.oracle.model.OracleSchema"/>-->
+                <task id="oracleToolTableGatherStatistics"/>
+                <task id="oracleToolIndexGatherStatistics"/>
             </tool>
             <tool
-                    class="org.jkiss.dbeaver.ext.oracle.ui.tools.maintenance.OracleToolTruncate"
                     description="%tool.org.jkiss.dbeaver.ext.oracle.ui.tools.maintenance.OracleToolTruncate.description"
                     id="org.jkiss.dbeaver.ext.oracle.ui.tools.maintenance.OracleToolTruncate"
                     group="org.jkiss.dbeaver.ext.oracle.ui.tools.maintenance"
                     label="%tool.org.jkiss.dbeaver.ext.oracle.ui.tools.maintenance.OracleToolTruncate.label"
                     singleton="false">
-                <objectType name="org.jkiss.dbeaver.ext.oracle.model.OracleTable"/>
+                <task id="oracleToolTableTruncate"/>
             </tool>
             <tool
-                    class="org.jkiss.dbeaver.ext.oracle.ui.tools.maintenance.OracleToolTriggerDisable"
                     description="%tool.org.jkiss.dbeaver.ext.oracle.ui.tools.maintenance.OracleToolTriggerDisable.description"
                     id="org.jkiss.dbeaver.ext.oracle.ui.tools.maintenance.OracleToolTriggerDisable"
                     group="org.jkiss.dbeaver.ext.oracle.ui.tools.maintenance"
                     label="%tool.org.jkiss.dbeaver.ext.oracle.ui.tools.maintenance.OracleToolTriggerDisable.label"
                     singleton="false">
-                <objectType name="org.jkiss.dbeaver.ext.oracle.model.OracleTableTrigger" if="object.status == 'ENABLED'"/>
+                <task id="oracleToolTriggerDisable"/>
             </tool>
             <tool
-                    class="org.jkiss.dbeaver.ext.oracle.ui.tools.maintenance.OracleToolTriggerEnable"
                     description="%tool.org.jkiss.dbeaver.ext.oracle.ui.tools.maintenance.OracleToolTriggerEnable.description"
                     id="org.jkiss.dbeaver.ext.oracle.ui.tools.maintenance.OracleToolTriggerEnable"
                     group="org.jkiss.dbeaver.ext.oracle.ui.tools.maintenance"
                     label="%tool.org.jkiss.dbeaver.ext.oracle.ui.tools.maintenance.OracleToolTriggerEnable.label"
                     singleton="false">
-                <objectType name="org.jkiss.dbeaver.ext.oracle.model.OracleTableTrigger" if="object.status == 'DISABLED'"/>
+                <task id="oracleToolTriggerEnable"/>
             </tool>
         </tools>
     </extension>
@@ -339,6 +321,10 @@
     </extension>
     <extension point="org.jkiss.dbeaver.task.ui">
         <configurator type="oracleScriptExecute" class="org.jkiss.dbeaver.ext.oracle.ui.tools.OracleTaskConfigurator"/>
+    </extension>
+
+    <extension point="org.eclipse.core.runtime.preferences">
+        <initializer class="org.jkiss.dbeaver.ext.oracle.ui.internal.OraclePreferencesInitializer"/>
     </extension>
 
 </plugin>

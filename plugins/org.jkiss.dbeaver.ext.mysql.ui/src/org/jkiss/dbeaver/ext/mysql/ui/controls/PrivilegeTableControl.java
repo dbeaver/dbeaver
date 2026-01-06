@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,6 +25,7 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Table;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ext.mysql.MySQLConstants;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLDataSource;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLGrant;
@@ -183,8 +184,8 @@ public class PrivilegeTableControl extends Composite {
         super.notifyListeners(SWT.Modify, event);
     }
 
-    public void fillPrivileges(List<MySQLPrivilege> privs) {
-        this.privileges = privs;
+    public void fillPrivileges(@NotNull List<MySQLPrivilege> privs) {
+        this.privileges = new ArrayList<>(privs);
         boolean hasGrantOption = false;
         for (MySQLPrivilege privilege : privileges) {
             if (privilege.getName().equalsIgnoreCase(MySQLConstants.PRIVILEGE_GRANT_OPTION_NAME)) {
@@ -205,6 +206,8 @@ public class PrivilegeTableControl extends Composite {
                 "To give to other users those privileges you possess",
                 MySQLPrivilege.Kind.DDL));
         }
+        // Remove the "Usage" privilege - it has no real privileges.
+        privileges.removeIf(p -> p.getName().equals(MySQLConstants.PRIVILEGE_USAGE_NAME));
     }
 
     public void fillGrants(List<MySQLGrant> grants, boolean editable) {
@@ -236,10 +239,12 @@ public class PrivilegeTableControl extends Composite {
                 if (isStatic && !grant.isStatic()) {
                     continue;
                 }
-                if (privilege.getName().equalsIgnoreCase(MySQLConstants.PRIVILEGE_GRANT_OPTION_NAME) && grant.isGrantOption()) {
-                    // WITH GRANT OPTION is enabled only in this case
-                    privilegeEnabled = true;
-                    break;
+                if (privilege.getName().equalsIgnoreCase(MySQLConstants.PRIVILEGE_GRANT_OPTION_NAME)) {
+                    if (grant.isGrantOption()) {
+                        // WITH GRANT OPTION is enabled only in this case
+                        privilegeEnabled = true;
+                        break;
+                    }
                 } else if (grant.isAllPrivileges() || ArrayUtils.contains(grant.getPrivileges(), privilege)) {
                     privilegeEnabled = true;
                     break;

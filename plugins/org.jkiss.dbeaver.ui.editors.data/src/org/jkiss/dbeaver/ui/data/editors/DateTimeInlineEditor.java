@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,7 +39,6 @@ import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
-import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.controls.CustomTimeEditor;
 import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
 import org.jkiss.dbeaver.ui.data.IValueController;
@@ -69,7 +68,7 @@ public class DateTimeInlineEditor extends BaseValueEditor<Control> {
             this.valueController = valueController;
             this.parent = parent;
             super.setText("Text");
-            super.setImageDescriptor(DBeaverIcons.getImageDescriptor(UIIcon.SQL_TEXT));
+            super.setImageDescriptor(DBeaverIcons.getImageDescriptor(DBIcon.SQL_TEXT));
         }
 
         @Override
@@ -85,7 +84,7 @@ public class DateTimeInlineEditor extends BaseValueEditor<Control> {
                 }
             }
             editor.setToTextComposite();
-            ModelPreferences.getPreferences().setValue(ModelPreferences.RESULT_SET_USE_DATETIME_EDITOR, false);
+            DBWorkbench.getPlatform().getPreferenceStore().setValue(ModelPreferences.RESULT_SET_USE_DATETIME_EDITOR, false);
         }
     }
 
@@ -130,12 +129,12 @@ public class DateTimeInlineEditor extends BaseValueEditor<Control> {
                         ResultSetMessages.dialog_value_view_error_parsing_date_title,
                         ResultSetMessages.dialog_value_view_error_parsing_date_message
                     );
-                ModelPreferences.getPreferences().setValue(ModelPreferences.RESULT_SET_USE_DATETIME_EDITOR, false);
+                DBWorkbench.getPlatform().getPreferenceStore().setValue(ModelPreferences.RESULT_SET_USE_DATETIME_EDITOR, false);
                 this.setChecked(false);
                 parent.textMode.setChecked(true);
                 return;
             }
-            ModelPreferences.getPreferences().setValue(ModelPreferences.RESULT_SET_USE_DATETIME_EDITOR, true);
+            DBWorkbench.getPlatform().getPreferenceStore().setValue(ModelPreferences.RESULT_SET_USE_DATETIME_EDITOR, true);
         }
 
     }
@@ -166,8 +165,9 @@ public class DateTimeInlineEditor extends BaseValueEditor<Control> {
     protected Control createControl(Composite editPlaceholder) {
         Object value = valueController.getValue();
         valueController.getEditPlaceholder();
-        boolean inline = valueController.getEditType() == IValueController.EditType.INLINE;
-        timeEditor = new CustomTimeEditor(
+        boolean inline = valueController.getEditType() == IValueController.EditType.INLINE ||
+            valueController.getEditType() == IValueController.EditType.PANEL;
+            timeEditor = new CustomTimeEditor(
                 editPlaceholder,
                 SWT.MULTI, true, inline);
         textMode = new TextMode(this, timeEditor, valueController);
@@ -186,7 +186,7 @@ public class DateTimeInlineEditor extends BaseValueEditor<Control> {
     }
 
     private boolean isCalendarMode() {
-        return ModelPreferences.getPreferences().getBoolean(ModelPreferences.RESULT_SET_USE_DATETIME_EDITOR);
+        return DBWorkbench.getPlatform().getPreferenceStore().getBoolean(ModelPreferences.RESULT_SET_USE_DATETIME_EDITOR);
     }
 
     @Override

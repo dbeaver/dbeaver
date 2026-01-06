@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -50,9 +50,6 @@ public class PropertyDescriptor implements DBPPropertyDescriptor, IPropertyValue
         t_double(Double.class),
         t_numeric(Double.class),
         t_file(String.class);
-        // Removed because it is initialized before workbench start and breaks init queue
-        //t_resource(IResource.class);
-
         private final Class<?> valueType;
 
         PropertyType(Class<?> valueType) {
@@ -73,6 +70,7 @@ public class PropertyDescriptor implements DBPPropertyDescriptor, IPropertyValue
     public static final String ATTR_ID = "id"; //NON-NLS-1
     public static final String ATTR_LABEL = "label"; //NON-NLS-1
     public static final String ATTR_DESCRIPTION = "description"; //NON-NLS-1
+    public static final String ATTR_HINT = "hint"; //NON-NLS-1
     public static final String ATTR_TYPE = "type"; //NON-NLS-1
     private static final String ATTR_REQUIRED = "required"; //NON-NLS-1
     private static final String ATTR_DEFAULT_VALUE = "defaultValue"; //NON-NLS-1
@@ -87,6 +85,7 @@ public class PropertyDescriptor implements DBPPropertyDescriptor, IPropertyValue
     private final String id;
     private String name;
     private final String description;
+    private final String hint;
     private final String category;
     private transient Class<?> type;
     private PropertyType propertyType;
@@ -149,6 +148,7 @@ public class PropertyDescriptor implements DBPPropertyDescriptor, IPropertyValue
         this.validValues = validValues;
         this.editable = true;
         this.length = PropertyLength.LONG;
+        this.hint = null;
     }
 
     public PropertyDescriptor(String category, IConfigurationElement config) {
@@ -159,6 +159,7 @@ public class PropertyDescriptor implements DBPPropertyDescriptor, IPropertyValue
             this.name = CommonUtils.toString(this.id);
         }
         this.description = config.getAttribute(ATTR_DESCRIPTION);
+        this.hint = config.getAttribute(ATTR_HINT);
         this.required = CommonUtils.getBoolean(config.getAttribute(ATTR_REQUIRED));
         String typeString = config.getAttribute(ATTR_TYPE);
         if (typeString == null) {
@@ -213,6 +214,7 @@ public class PropertyDescriptor implements DBPPropertyDescriptor, IPropertyValue
         this.validValues = validValues;
         this.editable = editable;
         this.length = PropertyLength.LONG;
+        this.hint = null;
     }
 
     @NotNull
@@ -222,7 +224,7 @@ public class PropertyDescriptor implements DBPPropertyDescriptor, IPropertyValue
     }
 
     @Override
-    public void setName(String name) {
+    public void setName(@NotNull String name) {
         this.name = name;
     }
 
@@ -247,6 +249,11 @@ public class PropertyDescriptor implements DBPPropertyDescriptor, IPropertyValue
     @Override
     public String getDescription() {
         return description;
+    }
+
+    @Override
+    public String getHint() {
+        return hint;
     }
 
     @Override
@@ -288,6 +295,7 @@ public class PropertyDescriptor implements DBPPropertyDescriptor, IPropertyValue
         return ArrayUtils.isEmpty(validValues) || allowCustomValues;
     }
 
+    @Nullable
     @Override
     public Object[] getPossibleValues(Object object) {
         return validValues;
@@ -303,6 +311,12 @@ public class PropertyDescriptor implements DBPPropertyDescriptor, IPropertyValue
             }
         }
         return allFeatures;
+    }
+
+    @Nullable
+    @Override
+    public String[] getRequiredFeatures() {
+        return null;
     }
 
     @Override

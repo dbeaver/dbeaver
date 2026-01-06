@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -51,6 +51,7 @@ public class DBNDatabaseFolder extends DBNDatabaseNode implements DBNContainer, 
         super.dispose(reflect);
     }
 
+    @NotNull
     @Override
     public DBXTreeFolder getMeta() {
         return meta;
@@ -62,16 +63,19 @@ public class DBNDatabaseFolder extends DBNDatabaseNode implements DBNContainer, 
         return false;
     }
 
+    @Nullable
     @Override
     public DBSObject getObject() {
         return this;
     }
 
+    @Nullable
     @Override
     public Object getValueObject() {
         return ((DBNDatabaseNode) getParentNode()).getValueObject();
     }
 
+    @NotNull
     @Override
     public String getChildrenType() {
         final List<DBXTreeNode> metaChildren = meta.getChildren(this);
@@ -84,13 +88,20 @@ public class DBNDatabaseFolder extends DBNDatabaseNode implements DBNContainer, 
 
     @NotNull
     @Override
+    public String getNodeId() {
+        return meta.getHumanReadableId();
+    }
+
+    @NotNull
+    @Override
     @Property(viewable = true)
     public String getName() {
         return meta.getChildrenTypeLabel(getDataSource(), null);
     }
 
+    @NotNull
     @Override
-    public String getLocalizedName(String locale) {
+    public String getLocalizedName(@NotNull String locale) {
         return meta.getChildrenTypeLabel(getDataSource(), locale);
     }
 
@@ -116,13 +127,15 @@ public class DBNDatabaseFolder extends DBNDatabaseNode implements DBNContainer, 
         return getParentNode() != null && getParentNode().isPersisted();
     }
 
+    @Nullable
     @Override
     public Class<? extends DBSObject> getChildrenClass() {
         return getFolderChildrenClass(meta);
     }
 
+    @NotNull
     @Override
-    public Collection<DBSObject> getChildrenObjects(DBRProgressMonitor monitor) throws DBException {
+    public Collection<DBSObject> getChildrenObjects(@NotNull DBRProgressMonitor monitor) throws DBException {
         DBNDatabaseNode[] children = getChildren(monitor);
         List<DBSObject> childObjects = new ArrayList<>();
         if (!ArrayUtils.isEmpty(children)) {
@@ -133,6 +146,7 @@ public class DBNDatabaseFolder extends DBNDatabaseNode implements DBNContainer, 
         return childObjects;
     }
 
+    @NotNull
     @Override
     public String toString() {
         return meta.getChildrenTypeLabel(getDataSource(), null);

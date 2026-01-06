@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -36,6 +36,7 @@ import org.jkiss.dbeaver.model.meta.PropertyLength;
 import org.jkiss.dbeaver.model.preferences.DBPPropertySource;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
+import org.jkiss.dbeaver.model.sql.DBSQLException;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectFilter;
 import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
@@ -63,6 +64,7 @@ public class SQLServerDatabase
 
     private final SQLServerDataSource dataSource;
     private final long databaseId;
+    private final boolean isTempDatabase;
     private boolean persisted;
     private String name;
     private String description;
@@ -81,6 +83,7 @@ public class SQLServerDatabase
         this.dataSource = dataSource;
         this.databaseId = JDBCUtils.safeGetLong(resultSet, "database_id");
         this.name = name;
+        this.isTempDatabase = name.equalsIgnoreCase(SQLServerConstants.TEMPDB_DATABASE);
         //this.description = JDBCUtils.safeGetString(resultSet, "description");
 
         this.persisted = true;
@@ -101,6 +104,7 @@ public class SQLServerDatabase
         this.dataSource = dataSource;
         this.databaseId = 0;
         this.persisted = false;
+        this.isTempDatabase = false;
     }
 
     @NotNull
@@ -117,7 +121,7 @@ public class SQLServerDatabase
     }
 
     @Override
-    public void setName(String newName) {
+    public void setName(@NotNull String newName) {
         name = newName;
     }
 
@@ -174,6 +178,12 @@ public class SQLServerDatabase
         typesCache.clearCache();
     }
 
+    /**
+     * Whether this database represents the {@code tempdb} database.
+     */
+    public boolean isTempDatabase() {
+        return isTempDatabase;
+    }
 
     //////////////////////////////////////////////////
     // Data types
@@ -237,7 +247,7 @@ public class SQLServerDatabase
 
     private class DataTypeCache extends JDBCObjectCache<SQLServerDatabase, SQLServerDataType> {
 
-        private LongKeyMap<SQLServerDataType> dataTypeMap = new LongKeyMap<>();
+        private final LongKeyMap<SQLServerDataType> dataTypeMap = new LongKeyMap<>();
         
         @NotNull
         @Override
@@ -247,10 +257,13 @@ public class SQLServerDatabase
                 // sys.table_types is supported only for SQL Server and Azure SQL Database, not for Azure Synapse.
                 statement = "SELECT * FROM " + SQLServerUtils.getSystemTableName(database, "types") + " WHERE is_user_defined = 1";
             } else {
-                statement = "SELECT ss.*, tt.type_table_object_id FROM " + SQLServerUtils.getSystemTableName(database, "types") +
-                    " ss\nLEFT JOIN " + SQLServerUtils.getSystemTableName(database, "table_types") + " tt ON\n" +
-                    "ss.name = tt.name AND ss.user_type_id = tt.user_type_id" +
-                    "\nWHERE ss.is_user_defined = 1";
+                statement = "SELECT ss.*, tt.type_table_object_id,tto.schema_id as type_table_schema_id\n" +
+                    "FROM " + SQLServerUtils.getSystemTableName(database, "types") + " ss\n" +
+                    "LEFT JOIN " + SQLServerUtils.getSystemTableName(database, "table_types") + " tt ON " +
+                        "ss.name = tt.name AND ss.user_type_id = tt.user_type_id\n" +
+                    "LEFT OUTER JOIN " + SQLServerUtils.getSystemTableName(database, "objects") + " tto ON " +
+                        "tto.object_id = tt.type_table_object_id\n" +
+                    "WHERE ss.is_user_defined = 1";
             }
             return session.prepareStatement(statement);
         }
@@ -283,7 +296,7 @@ public class SQLServerDatabase
         }
 
         @Override
-        public void setCache(List<SQLServerDataType> cache) {
+        public void setCache(@NotNull List<SQLServerDataType> cache) {
             super.setCache(cache);
             for (SQLServerDataType dt : cache) {
                 dataTypeMap.put(dt.getObjectId(), dt);
@@ -332,9 +345,14 @@ public class SQLServerDatabase
         return null;
     }
 
+    @Nullable
     @Override
     public Collection<SQLServerSchema> getChildren(@NotNull DBRProgressMonitor monitor) throws DBException {
-        return schemaCache.getAllObjects(monitor, this);
+        try {
+            return schemaCache.getAllObjects(monitor, this);
+        } catch (DBSQLException exception) {
+            throw SQLServerUtils.mapException(exception);
+        }
     }
 
     @Override
@@ -413,7 +431,11 @@ public class SQLServerDatabase
 
     @Association
     public Collection<SQLServerDatabaseTrigger> getTriggers(DBRProgressMonitor monitor) throws DBException {
-        return triggerCache.getAllObjects(monitor, this);
+        try {
+            return triggerCache.getAllObjects(monitor, this);
+        } catch (DBSQLException exception) {
+            throw SQLServerUtils.mapException(exception);
+        }
     }
 
     TriggerCache getTriggerCache() {
@@ -424,7 +446,7 @@ public class SQLServerDatabase
 
         @NotNull
         @Override
-        public JDBCStatement prepareLookupStatement(@NotNull JDBCSession session, @NotNull SQLServerDatabase database, SQLServerDatabaseTrigger object, String objectName) throws SQLException {
+        public JDBCStatement prepareLookupStatement(@NotNull JDBCSession session, @NotNull SQLServerDatabase database, @Nullable SQLServerDatabaseTrigger object, @Nullable String objectName) throws SQLException {
             StringBuilder sql = new StringBuilder(500);
             sql.append(
                 "SELECT t.* FROM \n")

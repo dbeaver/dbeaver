@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -52,6 +52,7 @@ public interface DBTScheduler {
     String FEATURE_FREQUENCY_HOURLY_RECURRENCE_GREATER_THAN_23 = FEATURE_FREQUENCY_HOURLY + ".recurrence.greaterThan23";
     String FEATURE_FREQUENCY_MINUTELY_RECURRENCE_GREATER_THAN_59 = FEATURE_FREQUENCY_MINUTELY + ".recurrence.greaterThan59";
     String FEATURE_FREQUENCY_DAILY_RECURRENCE_GREATER_THAN_31 = FEATURE_FREQUENCY_DAILY + ".recurrence.greaterThan31";
+    String FEATURE_OPEN_EXTERNAL_SETTINGS = "openExternalSettings";
 
     @NotNull
     String getSchedulerName();
@@ -61,7 +62,7 @@ public interface DBTScheduler {
     RecurrenceType getRecurrenceType();
 
     @NotNull
-    List<DBTTaskScheduleInfo> getAllScheduledTasks();
+    List<DBTTaskScheduleInfo> getAllScheduledTasks() throws DBException;
 
     @Nullable
     DBTTaskScheduleInfo getScheduledTaskInfo(@NotNull DBTTask task);
@@ -69,11 +70,17 @@ public interface DBTScheduler {
     @Nullable
     DBTTaskScheduleConfiguration getScheduledTaskConfiguration(@NotNull DBTTask task) throws DBException;
 
-    default boolean canSchedule(@NotNull DBTTask task) throws DBException {
+    default boolean canSchedule(@NotNull DBTTask task, List<String> warnings) throws DBException {
         return true;
     }
 
-    void setTaskSchedule(@NotNull DBTTask task, @NotNull DBTTaskScheduleConfiguration scheduleConfiguration) throws DBException;
+    /**
+     * Sets task schedule.
+     *
+     * @return {@code true} if task schedule was set successfully, or {@code false} if the operation was cancelled.
+     * @throws DBException on any error
+     */
+    boolean setTaskSchedule(@NotNull DBTTask task, @NotNull DBTTaskScheduleConfiguration scheduleConfiguration) throws DBException;
 
     void removeTaskSchedule(@NotNull DBTTask task, DBTTaskScheduleInfo scheduleInfo) throws DBException;
 

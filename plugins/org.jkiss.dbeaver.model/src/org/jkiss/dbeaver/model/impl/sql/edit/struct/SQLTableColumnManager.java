@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -81,7 +81,7 @@ public abstract class SQLTableColumnManager<OBJECT_TYPE extends DBSEntityAttribu
         sql.append(column.isRequired() ? " NOT NULL" : " NULL");
 
     protected final ColumnModifier<OBJECT_TYPE> NullNotNullModifierConditional = (monitor, column, sql, command) -> {
-        if (command instanceof DBECommandComposite) {
+        if (column.isPersisted() && command instanceof DBECommandComposite) {
             if (((DBECommandComposite) command).getProperty("required") == null) {
                 // Do not set NULL/NOT NULL if it wasn't changed
                 return;
@@ -98,26 +98,26 @@ public abstract class SQLTableColumnManager<OBJECT_TYPE extends DBSEntityAttribu
     }
 
     @Override
-    public boolean canEditObject(OBJECT_TYPE object)
+    public boolean canEditObject(@NotNull OBJECT_TYPE object)
     {
         DBSEntity table = object.getParentObject();
         return table != null && !DBUtils.isView(table);
     }
 
     @Override
-    public boolean canCreateObject(Object container)
+    public boolean canCreateObject(@NotNull Object container)
     {
         return container instanceof DBSTable && !((DBSTable) container).isView();
     }
 
     @Override
-    public boolean canDeleteObject(OBJECT_TYPE object)
+    public boolean canDeleteObject(@NotNull OBJECT_TYPE object)
     {
         return canEditObject(object);
     }
 
     @Override
-    public long getMakerOptions(DBPDataSource dataSource)
+    public long getMakerOptions(@NotNull DBPDataSource dataSource)
     {
         return FEATURE_EDITOR_ON_CREATE;
     }
@@ -133,8 +133,13 @@ public abstract class SQLTableColumnManager<OBJECT_TYPE extends DBSEntityAttribu
     }
 
     @Override
-    protected void addObjectCreateActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, ObjectCreateCommand command, Map<String, Object> options)
-    {
+    protected void addObjectCreateActions(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBCExecutionContext executionContext,
+        @NotNull List<DBEPersistAction> actions,
+        @NotNull ObjectCreateCommand command,
+        @NotNull Map<String, Object> options
+    ) throws DBException {
         final TABLE_TYPE table = (TABLE_TYPE) command.getObject().getParentObject();
         StringBuilder sql = new StringBuilder(256);
         sql.append("ALTER TABLE ").append(DBUtils.getObjectFullName(table, DBPEvaluationContext.DDL)).append(" ADD ");
@@ -149,7 +154,13 @@ public abstract class SQLTableColumnManager<OBJECT_TYPE extends DBSEntityAttribu
     }
 
     @Override
-    protected void addObjectDeleteActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, ObjectDeleteCommand command, Map<String, Object> options) throws DBException
+    protected void addObjectDeleteActions(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBCExecutionContext executionContext,
+        @NotNull List<DBEPersistAction> actions,
+        @NotNull ObjectDeleteCommand command,
+        @NotNull Map<String, Object> options
+    ) throws DBException
     {
         boolean useBrackets = hasDDLFeature(command.getObject(), DDL_FEATURE_USER_BRACKETS_IN_DROP);
         StringBuilder ddl = new StringBuilder();
@@ -172,8 +183,12 @@ public abstract class SQLTableColumnManager<OBJECT_TYPE extends DBSEntityAttribu
     }
 
     @Override
-    protected StringBuilder getNestedDeclaration(DBRProgressMonitor monitor, TABLE_TYPE owner, DBECommandAbstract<OBJECT_TYPE> command, Map<String, Object> options)
-    {
+    protected StringBuilder getNestedDeclaration(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull TABLE_TYPE owner,
+        @NotNull DBECommandAbstract<OBJECT_TYPE> command,
+        @NotNull Map<String, Object> options
+    ) {
         OBJECT_TYPE column = command.getObject();
 
         // Create column
@@ -304,16 +319,17 @@ public abstract class SQLTableColumnManager<OBJECT_TYPE extends DBSEntityAttribu
         }
 
         protected boolean isUsesQuotes(@NotNull String defaultValue, @NotNull DBPDataKind dataKind) {
-            boolean useQuotes = false;
             if (!defaultValue.startsWith(QUOTE) && !defaultValue.endsWith(QUOTE)) {
-                if (dataKind == DBPDataKind.DATETIME) {
-                    final char firstChar = defaultValue.trim().charAt(0);
-                    if (!Character.isLetter(firstChar) && firstChar != '(' && firstChar != '[') {
-                        useQuotes = true;
+                if (dataKind == DBPDataKind.STRING || dataKind == DBPDataKind.DATETIME) {
+                    final String trimmed = defaultValue.trim();
+                    if (trimmed.isEmpty()) {
+                        return true;
                     }
+                    final char firstChar = trimmed.charAt(0);
+                    return !Character.isLetter(firstChar) && firstChar != '(' && firstChar != '[';
                 }
             }
-            return useQuotes;
+            return false;
         }
 
         protected void appendDefaultValue(@NotNull StringBuilder sql, @NotNull String defaultValue, boolean useQuotes) {

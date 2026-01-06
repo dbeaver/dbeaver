@@ -30,14 +30,14 @@
 
                 <module>org.jkiss.dbeaver.db.ui.feature</module>
                 <module>org.jkiss.dbeaver.git.feature</module>
-                <module>org.jkiss.dbeaver.ext.ai.feature</module>
                 <module>org.jkiss.dbeaver.ext.office.feature</module>
-                <module>org.jkiss.dbeaver.ext.ui.svg.feature</module>
 
                 <module>org.jkiss.dbeaver.ide.feature</module>
                 <module>org.jkiss.dbeaver.app.base.feature</module>
                 <module>org.jkiss.dbeaver.app.local.feature</module>
                 <module>org.jkiss.dbeaver.standalone.feature</module>
+                <module>org.jkiss.dbeaver.test.feature</module>
+                <module>org.jkiss.dbeaver.test.base.feature</module>
                 <module>org.jkiss.dbeaver.appstore.feature</module>
                 <module>org.jkiss.dbeaver.ce.feature</module>
             </modules>

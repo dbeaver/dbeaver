@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,12 +21,14 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
 import org.jkiss.dbeaver.ext.postgresql.model.*;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
+import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.DBECommand;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.edit.DBECommandAbstract;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
+import org.jkiss.dbeaver.model.navigator.DBNDatabaseFolder;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.utils.CommonUtils;
@@ -63,7 +65,7 @@ public class PostgreCommandGrantPrivilege extends DBECommandAbstract<PostgrePriv
 
     @NotNull
     @Override
-    public DBEPersistAction[] getPersistActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, Map<String, Object> options) {
+    public DBEPersistAction[] getPersistActions(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext executionContext, @NotNull Map<String, Object> options) {
         if (privilegeTypes.isEmpty()) {
             return new DBEPersistAction[0];
         }
@@ -81,26 +83,25 @@ public class PostgreCommandGrantPrivilege extends DBECommandAbstract<PostgrePriv
         }
 
         PostgrePrivilegeOwner object = getObject();
-        String objectName, roleName;
-        if (object instanceof PostgreRole) {
+        String objectName = "", roleName;
+        String roleType = null;
+        if (object instanceof PostgreRole role) {
             roleName = DBUtils.getQuotedIdentifier(object);
             if (privilegeOwner instanceof PostgreProcedure) {
                 objectName = ((PostgreProcedure) privilegeOwner).getFullQualifiedSignature();
-            } else {
+            } else if (privilege instanceof PostgreRolePrivilege) {
                 objectName = ((PostgreRolePrivilege) privilege).getFullObjectName();
             }
+            roleType = role.getSpecificRoleType();
         } else {
             PostgreObjectPrivilege permission = (PostgreObjectPrivilege) this.privilege;
             if (permission.getGrantee() != null) {
-                roleName = permission.getGrantee();
-                if (!roleName.toLowerCase(Locale.ENGLISH).startsWith("group ")) {
-                    // Group names already can be quoted
-                    roleName = DBUtils.getQuotedIdentifier(object.getDataSource(), roleName);
-                }
+                roleName = DBUtils.getQuotedIdentifier(object.getDataSource(), permission.getGrantee().getRoleName());
+                roleType = permission.getGrantee().getRoleType();
             } else {
                 roleName = "";
             }
-            objectName = PostgreUtils.getObjectUniqueName(object);
+            objectName = PostgreUtils.getObjectUniqueName(object, options);
         }
 
         String objectType;
@@ -115,31 +116,53 @@ public class PostgreCommandGrantPrivilege extends DBECommandAbstract<PostgrePriv
             objectType = PostgreUtils.getObjectTypeName(object);
         }
 
-        String grantedCols = "", grantedTypedObject = "";
+        String grantedCols = "", grantedTypedObject;
         if (object instanceof PostgreTableColumn) {
             grantedCols = "(" + DBUtils.getQuotedIdentifier(object) + ")";
             grantedTypedObject = ((PostgreTableColumn) object).getTable().getFullyQualifiedName(DBPEvaluationContext.DDL);
+        } else if (privilege instanceof PostgreDefaultPrivilege) {
+            PostgrePrivilegeGrant.Kind underKind = ((PostgreDefaultPrivilege) privilege).getUnderKind();
+            if (underKind == PostgrePrivilegeGrant.Kind.TYPE) {
+                grantedTypedObject = "TYPES";
+            } else if (underKind == PostgrePrivilegeGrant.Kind.SEQUENCE) {
+                grantedTypedObject = "SEQUENCES";
+            } else if (underKind == PostgrePrivilegeGrant.Kind.FUNCTION) {
+                grantedTypedObject = "FUNCTIONS";
+            } else {
+                grantedTypedObject = "TABLES";
+            }
         } else {
             grantedTypedObject = objectType + " " + objectName;
         }
 
-        String grantScript = (grant ? "GRANT " : "REVOKE ") + privName + grantedCols +
-            " ON " + grantedTypedObject +
-            (grant ? " TO " : " FROM ") + roleName;
+        StringBuilder ddl = new StringBuilder();
+        if (privilege instanceof PostgreDefaultPrivilege dp) {
+            ddl.append("ALTER DEFAULT PRIVILEGES");
+            if (dp.getGrantor() != null) {
+                ddl.append(" FOR ROLE ").append(DBUtils.getQuotedIdentifier(dp.getDataSource(), dp.getGrantor().getRoleName()));
+            }
+            ddl.append(" IN SCHEMA ").append(DBUtils.getQuotedIdentifier(privilege.getOwner())).append(" ");
+        }
+        ddl.append(grant ? "GRANT " : "REVOKE ").append(privName).append(grantedCols).append(" ON ").append(grantedTypedObject);
+        ddl.append(grant ? " TO" : " FROM");
+        if (roleType != null) {
+            ddl.append(" ").append(roleType.toUpperCase());
+        }
+        ddl.append(" ").append(roleName);
         if (grant && withGrantOption) {
-            grantScript += " WITH GRANT OPTION";
+            ddl.append(" WITH GRANT OPTION");
         }
         return new DBEPersistAction[] {
             new SQLDatabasePersistAction(
                 grant ? "Grant" : "Revoke",
-                grantScript
+                ddl.toString()
             )
         };
     }
 
-    @Nullable
+    @NotNull
     @Override
-    public DBECommand<?> merge(DBECommand<?> prevCommand, Map<Object, Object> userParams) {
+    public DBECommand<?> merge(@NotNull DBECommand<?> prevCommand, @NotNull Map<Object, Object> userParams) {
         // In order to properly merge grant/revoke commands, we need to capture
         // the first one which grants and one which revokes and merge privileges
         // from other commands into them. Other commands are consumed later in process.
@@ -180,8 +203,15 @@ public class PostgreCommandGrantPrivilege extends DBECommandAbstract<PostgrePriv
     }
 
     private boolean hasAllPrivilegeTypes() {
+        Class<? extends DBSObject> ownerClass = null;
+        if (privilegeOwner instanceof DBNDatabaseFolder) {
+            ownerClass = ((DBNDatabaseFolder) privilegeOwner).getChildrenClass();
+        }
+        if (ownerClass == null) {
+            ownerClass = privilegeOwner.getClass();
+        }
         for (PostgrePrivilegeType type : getObject().getDataSource().getSupportedPrivilegeTypes()) {
-            if (type.supportsType(privilegeOwner.getClass()) && !privilegeTypes.contains(type)) {
+            if (type.supportsType(ownerClass) && !privilegeTypes.contains(type)) {
                 return false;
             }
         }

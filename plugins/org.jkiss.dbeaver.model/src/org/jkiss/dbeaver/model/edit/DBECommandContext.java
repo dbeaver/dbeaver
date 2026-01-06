@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,8 @@
 
 package org.jkiss.dbeaver.model.edit;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPContextProvider;
 import org.jkiss.dbeaver.model.DBPObject;
@@ -36,11 +38,13 @@ public interface DBECommandContext extends DBPContextProvider {
 
     boolean isDirty();
 
-    DBECommand getUndoCommand();
+    @Nullable
+    DBECommand<?> getUndoCommand();
 
-    DBECommand getRedoCommand();
+    @Nullable
+    DBECommand<?> getRedoCommand();
 
-    void saveChanges(DBRProgressMonitor monitor, Map<String, Object> options) throws DBException;
+    void saveChanges(@NotNull DBRProgressMonitor monitor, @NotNull Map<String, Object> options) throws DBException;
 
     void resetChanges(boolean undoCommands);
 
@@ -48,25 +52,28 @@ public interface DBECommandContext extends DBPContextProvider {
 
     void redoCommand();
 
+    @NotNull
     Collection<? extends DBECommand<?>> getFinalCommands();
 
+    @NotNull
     Collection<? extends DBECommand<?>> getUndoCommands();
 
+    @NotNull
     Collection<DBPObject> getEditedObjects();
 
-    void addCommand(DBECommand command, DBECommandReflector reflector);
+    void addCommand(@NotNull DBECommand<?> command, @Nullable DBECommandReflector reflector);
 
-    void addCommand(DBECommand command, DBECommandReflector reflector, boolean execute);
+    void addCommand(@NotNull DBECommand<?> command, @Nullable DBECommandReflector reflector, boolean execute);
 
     //void addCommandBatch(List<DBECommand> commands, DBECommandReflector reflector, boolean execute);
 
-    void removeCommand(DBECommand<?> command);
+    void removeCommand(@NotNull DBECommand<?> command);
 
-    void updateCommand(DBECommand<?> command, DBECommandReflector commandReflector);
+    void updateCommand(@NotNull DBECommand<?> command, @Nullable DBECommandReflector commandReflector);
 
-    void addCommandListener(DBECommandListener listener);
+    void addCommandListener(@NotNull DBECommandListener listener);
 
-    void removeCommandListener(DBECommandListener listener);
+    void removeCommandListener(@NotNull DBECommandListener listener);
 
     Map<Object, Object> getUserParams();
 

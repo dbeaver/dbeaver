@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,8 +17,10 @@
 package org.jkiss.dbeaver.tools.transfer;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.task.DBTTask;
 
 import java.util.Map;
 
@@ -27,13 +29,15 @@ public interface IDataTransferEventProcessor<T extends IDataTransferConsumer<?, 
         @NotNull DBRProgressMonitor monitor,
         @NotNull Event event,
         @NotNull T consumer,
+        @Nullable DBTTask task,
         @NotNull Map<String, Object> settings
     ) throws DBException;
 
     default void processError(
         @NotNull DBRProgressMonitor monitor,
-        @NotNull Exception exception,
+        @NotNull Throwable error,
         @NotNull T consumer,
+        @Nullable DBTTask task,
         @NotNull Map<String, Object> settings
     ) throws DBException {
         // do nothing by default

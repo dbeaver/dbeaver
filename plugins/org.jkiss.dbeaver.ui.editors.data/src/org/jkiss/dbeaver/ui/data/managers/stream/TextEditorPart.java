@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,9 +16,10 @@
  */
 package org.jkiss.dbeaver.ui.data.managers.stream;
 
+import org.eclipse.jface.text.source.CompositeRuler;
 import org.eclipse.jface.text.source.ISourceViewer;
 import org.eclipse.jface.text.source.IVerticalRuler;
-import org.eclipse.jface.text.source.projection.ProjectionViewer;
+import org.eclipse.jface.text.source.SourceViewer;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IEditorPart;
@@ -58,7 +59,12 @@ public class TextEditorPart extends BaseTextEditor implements IEditorPart {
 
     @Override
     protected ISourceViewer createSourceViewer(Composite parent, IVerticalRuler ruler, int styles) {
-        return new ProjectionViewer(parent, ruler, null, false, styles);
+        return new SourceViewer(parent, ruler, null, false, styles);
+        //return new ProjectionViewer(parent, ruler, null, false, styles);
     }
 
+    @Override
+    protected void updateContributedRulerColumns(CompositeRuler ruler) {
+        // do nothing
+    }
 }

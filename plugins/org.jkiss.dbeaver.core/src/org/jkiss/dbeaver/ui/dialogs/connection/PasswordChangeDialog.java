@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,6 +24,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.access.DBAPasswordChangeInfo;
@@ -49,8 +50,8 @@ public class PasswordChangeDialog extends BaseDialog
         this.oldPasswordVisible = oldPasswordVisible;
     }
 
-    public DBAPasswordChangeInfo getPasswordInfo()
-    {
+    @NotNull
+    public DBAPasswordChangeInfo getPasswordInfo() {
         return passwordInfo;
     }
 
@@ -87,12 +88,15 @@ public class PasswordChangeDialog extends BaseDialog
             updateButtons();
         });
 
+        UIUtils.asyncExec(this::updateButtons);
+
         return credGroup;
     }
 
     private void updateButtons() {
         getButton(IDialogConstants.OK_ID).setEnabled(
             !CommonUtils.isEmpty(passwordInfo.getUserName()) &&
+            !CommonUtils.isEmpty(passwordInfo.getNewPassword()) &&
             CommonUtils.equalObjects(passwordInfo.getNewPassword(), verifyText));
     }
 

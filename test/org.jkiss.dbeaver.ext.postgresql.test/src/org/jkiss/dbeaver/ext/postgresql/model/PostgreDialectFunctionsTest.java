@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ext.postgresql.model;
 
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
 import org.jkiss.dbeaver.ext.postgresql.PostgreTestUtils;
@@ -26,18 +27,16 @@ import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.junit.DBeaverUnitTest;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.mockito.junit.MockitoJUnitRunner;
 
 import java.sql.Types;
 
-@RunWith(MockitoJUnitRunner.class)
-public class PostgreDialectFunctionsTest {
+public class PostgreDialectFunctionsTest extends DBeaverUnitTest {
 
     @Mock
     DBRProgressMonitor monitor;
@@ -66,6 +65,7 @@ public class PostgreDialectFunctionsTest {
                 return major <= 10;
             }
 
+            @Nullable
             @Override
             public PostgreDataType getLocalDataType(String typeName) {
                 return super.getLocalDataType(typeName);

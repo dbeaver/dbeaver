@@ -1,7 +1,7 @@
 /*
  * DBeaver - Universal Database Manager
  * Copyright (C) 2013-2015 Denis Forveille (titou10.titou10@gmail.com)
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,8 @@
  */
 package org.jkiss.dbeaver.ext.db2.model.app;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.DBDatabaseException;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.db2.DB2Utils;
 import org.jkiss.dbeaver.ext.db2.model.DB2DataSource;
@@ -37,7 +39,7 @@ import java.util.Map;
  */
 public class DB2ServerApplicationManager implements DBAServerSessionManager<DB2ServerApplication>, DBAServerSessionManagerSQL {
 
-    private static final String FORCE_APP_CMD = "FORCE APPLICATION (%d)";
+    private static final String FORCE_APP_CMD = "FORCE APPLICATION (%s)";
 
     private final DB2DataSource dataSource;
 
@@ -46,31 +48,39 @@ public class DB2ServerApplicationManager implements DBAServerSessionManager<DB2S
         this.dataSource = dataSource;
     }
 
+    @NotNull
     @Override
     public DBPDataSource getDataSource()
     {
         return dataSource;
     }
 
+    @NotNull
     @Override
-    public Collection<DB2ServerApplication> getSessions(DBCSession session, Map<String, Object> options) throws DBException
+    public Collection<DB2ServerApplication> getSessions(@NotNull DBCSession session, @NotNull Map<String, Object> options) throws DBException
     {
         try {
             return DB2Utils.readApplications(session.getProgressMonitor(), (JDBCSession) session);
         } catch (SQLException e) {
-            throw new DBException(e, session.getDataSource());
+            throw new DBDatabaseException(e, session.getDataSource());
         }
     }
 
     @Override
-    public void alterSession(DBCSession session, DB2ServerApplication sessionType, Map<String, Object> options) throws DBException
+    public void alterSession(@NotNull DBCSession session, @NotNull String sessionId, @NotNull Map<String, Object> options) throws DBException
     {
         try {
-            String cmd = String.format(FORCE_APP_CMD, sessionType.getAgentId());
+            String cmd = String.format(FORCE_APP_CMD, sessionId);
             DB2Utils.callAdminCmd(session.getProgressMonitor(), dataSource, cmd);
         } catch (SQLException e) {
-            throw new DBException(e, session.getDataSource());
+            throw new DBDatabaseException(e, session.getDataSource());
         }
+    }
+
+    @NotNull
+    @Override
+    public Map<String, Object> getTerminateOptions() {
+        return Map.of();
     }
 
     @Override
@@ -78,8 +88,9 @@ public class DB2ServerApplicationManager implements DBAServerSessionManager<DB2S
         return true;
     }
 
+    @NotNull
     @Override
-    public String generateSessionReadQuery(Map<String, Object> options) {
+    public String generateSessionReadQuery(@NotNull Map<String, Object> options) {
         return DB2Utils.SEL_APP;
     }
 }

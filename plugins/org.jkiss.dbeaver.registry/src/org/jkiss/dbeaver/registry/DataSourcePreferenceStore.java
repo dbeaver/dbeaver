@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.registry;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
@@ -36,12 +37,15 @@ public class DataSourcePreferenceStore extends SimplePreferenceStore implements 
 {
     private final DataSourceDescriptor dataSourceDescriptor;
 
-    DataSourcePreferenceStore(DataSourceDescriptor dataSourceDescriptor)
-    {
-        super(DBWorkbench.getPlatform().getPreferenceStore());
+    DataSourcePreferenceStore(
+        @NotNull DBPPreferenceStore parentStore,
+        @NotNull DataSourceDescriptor dataSourceDescriptor
+    ) {
+        super(parentStore);
         this.dataSourceDescriptor = dataSourceDescriptor;
         // Init default properties from driver overrides
-        Map<String,Object> defaultConnectionProperties = dataSourceDescriptor.getDriver().getDefaultConnectionProperties();
+        Map<String, Object> defaultConnectionProperties = dataSourceDescriptor.getDriver()
+            .getDefaultConnectionProperties();
         for (Map.Entry<String, Object> prop : defaultConnectionProperties.entrySet()) {
             String propName = prop.getKey();
             if (propName.startsWith(DBConstants.DEFAULT_DRIVER_PROP_PREFIX)) {
@@ -50,6 +54,10 @@ public class DataSourcePreferenceStore extends SimplePreferenceStore implements 
                     CommonUtils.toString(prop.getValue()));
             }
         }
+    }
+
+    DataSourcePreferenceStore(DataSourceDescriptor dataSourceDescriptor) {
+        this(dataSourceDescriptor.getRegistry().getPreferenceStore(), dataSourceDescriptor);
     }
 
     @Override
@@ -66,7 +74,7 @@ public class DataSourcePreferenceStore extends SimplePreferenceStore implements 
     }
 
     @Override
-    public void firePropertyChangeEvent(String name, Object oldValue, Object newValue) {
+    public void firePropertyChangeEvent(@NotNull String name, @Nullable Object oldValue, @Nullable Object newValue) {
         super.firePropertyChangeEvent(name, oldValue, newValue);
 
         // Forward event to global DS prefs store

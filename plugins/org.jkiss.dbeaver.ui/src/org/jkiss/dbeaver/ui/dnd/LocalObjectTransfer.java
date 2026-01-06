@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -60,7 +60,7 @@ public abstract class LocalObjectTransfer<OBJECT_TYPE> extends ByteArrayTransfer
 	/**
 	 * The data object is not converted to bytes. It is held onto in a field.
 	 * Instead, a checksum is written out to prevent unwanted drags across
-	 * mulitple running. copies of Eclipse.
+	 * multiple running. copies of Eclipse.
 	 *
 	 * @see org.eclipse.swt.dnd.Transfer#nativeToJava(org.eclipse.swt.dnd.TransferData)
 	 */

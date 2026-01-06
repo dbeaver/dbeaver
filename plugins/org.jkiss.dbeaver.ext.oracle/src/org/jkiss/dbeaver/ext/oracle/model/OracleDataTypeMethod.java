@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@
 package org.jkiss.dbeaver.ext.oracle.model;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
@@ -120,8 +121,9 @@ public class OracleDataTypeMethod extends OracleDataTypeMember implements DBSEnt
         return flagOverriding;
     }
 
+    @Nullable
     @Association
-    public Collection<OracleDataTypeMethodParameter> getParameters(DBRProgressMonitor monitor)
+    public Collection<OracleDataTypeMethodParameter> getParameters(@NotNull DBRProgressMonitor monitor)
         throws DBException
     {
         return parameterCache == null ? null : parameterCache.getAllObjects(monitor, this);

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -68,12 +68,7 @@ public class SharedTextColors implements ISharedTextColors {
             if (colorTable == null) {
                 colorTable = new HashMap<>(10);
                 fDisplayTable.put(curDisplay, colorTable);
-                display.disposeExec(new Runnable() {
-                    @Override
-                    public void run() {
-                        dispose(curDisplay);
-                    }
-                });
+                display.disposeExec(() -> dispose(curDisplay));
             }
         }
 
@@ -95,9 +90,7 @@ public class SharedTextColors implements ISharedTextColors {
     }
 
     private void dispose(Display display) {
-        if (fDisplayTable != null) {
-            dispose(fDisplayTable.remove(display));
-        }
+        dispose(fDisplayTable.remove(display));
     }
 
     private void dispose(Map<RGB, Color> colorTable) {

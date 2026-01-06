@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,7 +30,8 @@ import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.css.DBStyles;
+import org.jkiss.dbeaver.ui.controls.ToolbarSeparatorContribution;
+import org.jkiss.dbeaver.ui.css.CSSUtils;
 import org.jkiss.dbeaver.ui.editors.internal.EditorsMessages;
 
 /**
@@ -38,8 +39,8 @@ import org.jkiss.dbeaver.ui.editors.internal.EditorsMessages;
  */
 public class DatabaseEditorUtils {
 
-    public static void setPartBackground(IEditorPart editor, Composite composite)
-    {
+    // Associates editor with datasource
+    public static void setPartBackground(IEditorPart editor, Composite composite) {
         if (composite == null || composite.isDisposed()) {
             return;
         }
@@ -57,10 +58,10 @@ public class DatabaseEditorUtils {
         }
 
         DBPDataSourceContainer dsContainer = null;
-        if (editor instanceof DBPDataSourceContainerProvider) {
-            dsContainer = ((DBPDataSourceContainerProvider) editor).getDataSourceContainer();
-        } else if (editor instanceof DBPContextProvider) {
-            DBCExecutionContext context = ((DBPContextProvider) editor).getExecutionContext();
+        if (editor instanceof DBPDataSourceContainerProvider dscp) {
+            dsContainer = dscp.getDataSourceContainer();
+        } else if (editor instanceof DBPContextProvider cp) {
+            DBCExecutionContext context = cp.getExecutionContext();
             if (context != null) {
                 dsContainer = context.getDataSource().getContainer();
             }
@@ -71,34 +72,38 @@ public class DatabaseEditorUtils {
         } else {
             Color bgColor = UIUtils.getConnectionColor(dsContainer.getConnectionConfiguration());
 
-            rootComposite.setData(DBStyles.DATABASE_EDITOR_COMPOSITE_DATASOURCE, dsContainer);
+            rootComposite.setData(CSSUtils.DATABASE_EDITOR_COMPOSITE_DATASOURCE, dsContainer);
             rootComposite.setBackground(bgColor);
         }
     }
 
-    public static void contributeStandardEditorActions(IWorkbenchSite workbenchSite, IContributionManager contributionManager)
-    {
-        contributionManager.add(ActionUtils.makeCommandContribution(
-            workbenchSite,
-            IWorkbenchCommandConstants.FILE_SAVE,
-            EditorsMessages.database_editor_command_save_name,
-            UIIcon.SAVE,
-            EditorsMessages.database_editor_command_save_tip,
-            true));
-        contributionManager.add(ActionUtils.makeCommandContribution(
-            workbenchSite,
-            IWorkbenchCommandConstants.FILE_REVERT,
-            EditorsMessages.database_editor_command_revert_name,
-            UIIcon.RESET,
-            EditorsMessages.database_editor_command_revert_tip,
-            true));
+    public static void contributeStandardEditorActions(IWorkbenchSite workbenchSite, IContributionManager contributionManager) {
         contributionManager.add(ActionUtils.makeCommandContribution(
             workbenchSite,
             IWorkbenchCommandConstants.FILE_REFRESH,
             EditorsMessages.database_editor_command_refresh_name,
             UIIcon.REFRESH,
             EditorsMessages.database_editor_command_refresh_tip,
-            true));
+            true
+        ));
+        contributionManager.add(new ToolbarSeparatorContribution(true));
+        contributionManager.add(ActionUtils.makeCommandContribution(
+            workbenchSite,
+            IWorkbenchCommandConstants.FILE_SAVE,
+            EditorsMessages.database_editor_command_save_name,
+            UIIcon.SAVE,
+            EditorsMessages.database_editor_command_save_tip,
+            true
+        ));
+        contributionManager.add(ActionUtils.makeCommandContribution(
+            workbenchSite,
+            IWorkbenchCommandConstants.FILE_REVERT,
+            EditorsMessages.database_editor_command_revert_name,
+            UIIcon.RESET,
+            EditorsMessages.database_editor_command_revert_tip,
+            true
+        ));
+        contributionManager.add(new ToolbarSeparatorContribution(true));
     }
 
 }

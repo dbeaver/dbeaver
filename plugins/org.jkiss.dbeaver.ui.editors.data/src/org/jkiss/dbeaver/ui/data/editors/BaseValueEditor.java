@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,7 +27,6 @@ import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.widgets.*;
-import org.eclipse.ui.themes.ITheme;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -36,7 +35,7 @@ import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetPreferences;
-import org.jkiss.dbeaver.ui.controls.resultset.ThemeConstants;
+import org.jkiss.dbeaver.ui.controls.resultset.ResultSetThemeSettings;
 import org.jkiss.dbeaver.ui.data.IMultiController;
 import org.jkiss.dbeaver.ui.data.IValueController;
 import org.jkiss.dbeaver.ui.data.IValueEditor;
@@ -73,6 +72,7 @@ public abstract class BaseValueEditor<T extends Control> implements IValueEditor
     public void createControl() {
         T control = createControl(valueController.getEditPlaceholder());
         setControl(control);
+        control.setFont(getDefaultFont());
     }
 
     @Override
@@ -89,6 +89,11 @@ public abstract class BaseValueEditor<T extends Control> implements IValueEditor
     @Override
     public void dispose() {
 
+    }
+
+    @NotNull
+    protected Font getDefaultFont() {
+        return ResultSetThemeSettings.instance.resultSetFont;
     }
 
     public void setControl(T control) {
@@ -176,13 +181,7 @@ public abstract class BaseValueEditor<T extends Control> implements IValueEditor
 
             if (!UIUtils.isInDialog(inlineControl)) {
                 // Set control font (the same as for results viewer)
-                ITheme currentTheme = valueController.getValueSite().getWorkbenchWindow().getWorkbench().getThemeManager().getCurrentTheme();
-                if (currentTheme != null) {
-                    Font rsFont = currentTheme.getFontRegistry().get(ThemeConstants.FONT_SQL_RESULT_SET);
-                    if (rsFont != null) {
-                        inlineControl.setFont(rsFont);
-                    }
-                }
+                inlineControl.setFont(ResultSetThemeSettings.instance.resultSetFont);
             }
         }
         final ControlModifyListener modifyListener = new ControlModifyListener();

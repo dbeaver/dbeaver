@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.ext.postgresql.model.impls.redshift;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBDatabaseException;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.postgresql.model.*;
@@ -25,6 +26,7 @@ import org.jkiss.dbeaver.ext.postgresql.model.impls.PostgreServerExtensionBase;
 import org.jkiss.dbeaver.model.DBPErrorAssistant;
 import org.jkiss.dbeaver.model.DBPKeywordType;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
@@ -53,6 +55,8 @@ public class PostgreServerRedshift extends PostgreServerExtensionBase implements
     private static final Log log = Log.getLog(PostgreServerRedshift.class);
     public static final int RS_ERROR_CODE_CHANNEL_CLOSE = 500366;
     public static final int RS_ERROR_CODE_NOT_CONNECTED = 500150;
+
+    public static final String RS_OBJECT_CLASS = "com.amazon.redshift.util.RedshiftObject";
 
     private Version redshiftVersion;
 
@@ -305,7 +309,7 @@ public class PostgreServerRedshift extends PostgreServerExtensionBase implements
                 }
             }
         } catch (Exception e) {
-            throw new DBException(e, table.getDataSource());
+            throw new DBDatabaseException(e, table.getDataSource());
         }
     }
 
@@ -313,7 +317,7 @@ public class PostgreServerRedshift extends PostgreServerExtensionBase implements
     public PostgreTableBase createNewRelation(DBRProgressMonitor monitor, PostgreSchema schema, PostgreClass.RelKind kind, Object copyFrom) throws DBException {
         if (kind == PostgreClass.RelKind.r) {
             return new RedshiftTable(schema);
-        } else if (kind == PostgreClass.RelKind.v) {
+        } else if (kind == PostgreClass.RelKind.v || kind == PostgreClass.RelKind.m) {
             return new RedshiftView(schema);
         }
         return super.createNewRelation(monitor, schema, kind, copyFrom);
@@ -323,23 +327,15 @@ public class PostgreServerRedshift extends PostgreServerExtensionBase implements
     public PostgreTableBase createRelationOfClass(PostgreSchema schema, PostgreClass.RelKind kind, JDBCResultSet dbResult) {
         if (kind == PostgreClass.RelKind.r) {
             return new RedshiftTable(schema, dbResult);
-        } else if (kind == PostgreClass.RelKind.v) {
+        } else if (kind == PostgreClass.RelKind.v || kind == PostgreClass.RelKind.m) {
             return new RedshiftView(schema, dbResult);
         }
         return super.createRelationOfClass(schema, kind, dbResult);
     }
 
     @Override
-    public PostgreTableColumn createTableColumn(DBRProgressMonitor monitor, PostgreSchema schema, PostgreTableBase table, JDBCResultSet dbResult) throws DBException {
-        if (table instanceof RedshiftTable) {
-            return new RedshiftTableColumn(monitor, (RedshiftTable)table, dbResult);
-        }
-        return super.createTableColumn(monitor, schema, table, dbResult);
-    }
-
-    @Override
     public boolean supportsStoredProcedures() {
-        return isRedshiftVersionAtLeast(1, 0, 7562);
+        return isRedshiftVersionAtLeast(1, 0, 6118);
     }
 
     @Override
@@ -372,6 +368,7 @@ public class PostgreServerRedshift extends PostgreServerExtensionBase implements
         return new RedshiftSchemaCache();
     }
 
+    @NotNull
     @Override
     public ErrorType discoverErrorType(@NotNull Throwable error) {
         int errorCode = SQLState.getCodeFromException(error);
@@ -387,12 +384,12 @@ public class PostgreServerRedshift extends PostgreServerExtensionBase implements
         return null;
     }
 
-    private class RedshiftSchemaCache extends PostgreDatabase.SchemaCache {
+    private static class RedshiftSchemaCache extends PostgreDatabase.SchemaCache {
         private final Map<String, String> esSchemaMap = new HashMap<>();
 
         @NotNull
         @Override
-        public JDBCStatement prepareLookupStatement(@NotNull JDBCSession session, @NotNull PostgreDatabase database, PostgreSchema object, String objectName) throws SQLException {
+        public JDBCStatement prepareLookupStatement(@NotNull JDBCSession session, @NotNull PostgreDatabase database, @Nullable PostgreSchema object, @Nullable String objectName) throws SQLException {
             // 1. Read all external schemas info
             esSchemaMap.clear();
             try (JDBCPreparedStatement dbStat = session.prepareStatement(
@@ -443,6 +440,11 @@ public class PostgreServerRedshift extends PostgreServerExtensionBase implements
     }
 
     @Override
+    public void initDefaultSSLConfig(DBPConnectionConfiguration connectionInfo, Map<String, String> props) {
+        // Do not populate default PG properties like "ssl"
+    }
+
+    @Override
     public boolean supportsBackslashStringEscape() {
         return true;
     }
@@ -476,6 +478,16 @@ public class PostgreServerRedshift extends PostgreServerExtensionBase implements
     }
 
     @Override
+    public boolean supportsAcl() {
+        return false;
+    }
+
+    @Override
+    public boolean supportsCustomDataTypes() {
+        return false;
+    }
+
+    @Override
     public boolean supportsAlterTableColumnWithUSING() {
         return false;
     }
@@ -483,5 +495,16 @@ public class PostgreServerRedshift extends PostgreServerExtensionBase implements
     @Override
     public boolean supportsAlterTableForViewRename() {
         return true;
+    }
+
+    @Override
+    public boolean supportsNativeClient() {
+        return false;
+    }
+
+    @Override
+    public boolean isPGObject(@NotNull Object object) {
+        String className = object.getClass().getName();
+        return className.equals(RS_OBJECT_CLASS);
     }
 }

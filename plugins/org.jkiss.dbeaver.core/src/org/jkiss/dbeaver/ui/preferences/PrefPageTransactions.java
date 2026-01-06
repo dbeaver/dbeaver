@@ -1,7 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
- * Copyright (C) 2011-2012 Eugene Fradkin (eugene.fradkin@gmail.com)
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,13 +21,14 @@ import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
-import org.eclipse.ui.dialogs.PreferenceLinkArea;
 import org.eclipse.ui.preferences.IWorkbenchPreferenceContainer;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.connection.DBPConnectionType;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.utils.PrefUtils;
 
@@ -93,7 +93,7 @@ public class PrefPageTransactions extends TargetPrefPage
             smartCommitCheck.addSelectionListener(new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
-                    updateButtons();
+                    updateCommitRecoverCheckBox();
                 }
             });
             smartCommitRecoverCheck = UIUtils.createCheckbox(
@@ -131,10 +131,13 @@ public class PrefPageTransactions extends TargetPrefPage
             settingsTipString = CoreMessages.action_menu_transaction_pref_page_link;
         }
 
-        new PreferenceLinkArea(txnNameGroup, SWT.NONE,
-            PrefPageConnectionTypes.PAGE_ID,
+        UIUtils.createPreferenceLink(
+            txnNameGroup,
             settingsTipString,
-            (IWorkbenchPreferenceContainer) getContainer(), null);
+            PrefPageConnectionTypes.PAGE_ID,
+            (IWorkbenchPreferenceContainer) getContainer(),
+            null
+        );
 
         {
             Group notifyNameGroup = UIUtils.createControlGroup(
@@ -151,7 +154,7 @@ public class PrefPageTransactions extends TargetPrefPage
         return composite;
     }
 
-    private void updateButtons() {
+    private void updateCommitRecoverCheckBox() {
         if (!smartCommitCheck.getSelection()) {
             // Works only with the smart commit mode
             smartCommitRecoverCheck.setEnabled(false);
@@ -165,18 +168,32 @@ public class PrefPageTransactions extends TargetPrefPage
     protected void loadPreferences(DBPPreferenceStore store)
     {
         try {
+            // First check data source settings, second - connection type, third - global settings.
+            DBPDataSourceContainer dataSourceContainer = getDataSourceContainer();
+            DBPConnectionType connectionType = null;
+            if (dataSourceContainer != null) {
+                connectionType = dataSourceContainer.getConnectionConfiguration().getConnectionType();
+            }
             if (smartCommitCheck != null) {
-                smartCommitCheck.setSelection(store.getBoolean(ModelPreferences.TRANSACTIONS_SMART_COMMIT));
+                smartCommitCheck.setSelection(store.contains(ModelPreferences.TRANSACTIONS_SMART_COMMIT) || connectionType == null ?
+                    store.getBoolean(ModelPreferences.TRANSACTIONS_SMART_COMMIT) : connectionType.isSmartCommit());
             }
             if (smartCommitRecoverCheck != null) {
-                smartCommitRecoverCheck.setSelection(store.getBoolean(ModelPreferences.TRANSACTIONS_SMART_COMMIT_RECOVER));
+                smartCommitRecoverCheck.setSelection(
+                    store.contains(ModelPreferences.TRANSACTIONS_SMART_COMMIT_RECOVER) || connectionType == null ?
+                        store.getBoolean(ModelPreferences.TRANSACTIONS_SMART_COMMIT_RECOVER) : connectionType.isSmartCommitRecover());
                 if (smartCommitCheck != null) {
-                    updateButtons();
+                    updateCommitRecoverCheckBox();
                 }
             }
             if (autoCloseTransactionsCheck != null) {
-                autoCloseTransactionsCheck.setSelection(store.getBoolean(ModelPreferences.TRANSACTIONS_AUTO_CLOSE_ENABLED));
-                autoCloseTransactionsTtlText.setText(store.getString(ModelPreferences.TRANSACTIONS_AUTO_CLOSE_TTL));
+                autoCloseTransactionsCheck.setSelection(
+                    store.contains(ModelPreferences.TRANSACTIONS_AUTO_CLOSE_ENABLED) || connectionType == null ?
+                        store.getBoolean(ModelPreferences.TRANSACTIONS_AUTO_CLOSE_ENABLED) : connectionType.isAutoCloseTransactions());
+                autoCloseTransactionsTtlText.setText(
+                    store.contains(ModelPreferences.TRANSACTIONS_AUTO_CLOSE_TTL) || connectionType == null ?
+                        store.getString(ModelPreferences.TRANSACTIONS_AUTO_CLOSE_TTL) :
+                        String.valueOf(connectionType.getCloseIdleConnectionPeriod()));
             }
             //autoCloseTransactionsTtlText.setEnabled(autoCloseTransactionsCheck.getSelection());
 
@@ -217,6 +234,13 @@ public class PrefPageTransactions extends TargetPrefPage
         store.setToDefault(ModelPreferences.TRANSACTIONS_AUTO_CLOSE_TTL);
 
         store.setToDefault(ModelPreferences.TRANSACTIONS_SHOW_NOTIFICATIONS);
+    }
+
+    @Override
+    protected void performDefaults() {
+        showTransactionNotificationsCheck.setSelection(
+            DBWorkbench.getPlatform().getPreferenceStore().getDefaultBoolean(ModelPreferences.TRANSACTIONS_SHOW_NOTIFICATIONS));
+        super.performDefaults();
     }
 
     @Override

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,11 @@
  */
 package org.jkiss.dbeaver.model;
 
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.runtime.DBRInvoker;
+
+import java.util.Collections;
 import java.util.Map;
 
 /**
@@ -23,12 +28,14 @@ import java.util.Map;
  */
 public class DBPExternalConfiguration {
 
-    private final String id;
-    private final Map<String, Object> properties;
+    private static final Log log = Log.getLog(DBPExternalConfiguration.class);
 
-    public DBPExternalConfiguration(String id, Map<String, Object> properties) {
+    private final String id;
+    private final DBRInvoker<Map<String, Object>> propertiesGetter;
+
+    public DBPExternalConfiguration(String id, DBRInvoker<Map<String, Object>> propertiesGetter) {
         this.id = id;
-        this.properties = properties;
+        this.propertiesGetter = propertiesGetter;
     }
 
     public String getId() {
@@ -36,6 +43,11 @@ public class DBPExternalConfiguration {
     }
 
     public Map<String, Object> getProperties() {
-        return properties;
+        try {
+            return propertiesGetter.invoke();
+        } catch (DBException e) {
+            log.debug(e);
+            return Collections.emptyMap();
+        }
     }
 }

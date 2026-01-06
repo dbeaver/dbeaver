@@ -1,7 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
- * Copyright (C) 2011-2012 Eugene Fradkin (eugene.fradkin@gmail.com)
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,11 +28,10 @@ import org.eclipse.jface.viewers.*;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.dnd.TextTransfer;
-import org.eclipse.swt.events.MouseAdapter;
-import org.eclipse.swt.events.MouseEvent;
-import org.eclipse.swt.events.TraverseListener;
+import org.eclipse.swt.events.*;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.code.NotNull;
@@ -42,6 +40,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
+import org.jkiss.dbeaver.model.navigator.DBNNodeReference;
 import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -87,7 +86,8 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
     private IDoubleClickListener doubleClickHandler;
     private PropertySourceAbstract listPropertySource;
 
-    private ObjectViewerRenderer renderer;
+    @NotNull
+    private final ObjectViewerRenderer renderer;
     protected ViewerColumnController<ObjectColumn, Object> columnController;
 
     // Sample flag. True only when initial content is packed. Used to provide actual cell data to Tree/Table pack() methods
@@ -106,12 +106,12 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
     private ObjectColumn focusColumn;
 
     private ObjectColumn groupingColumn;
-    private IContentProvider originalContentProvider;
+    private final IContentProvider originalContentProvider;
 
     public ObjectListControl(
-        Composite parent,
+        @NotNull Composite parent,
         int style,
-        IContentProvider contentProvider)
+        @NotNull IContentProvider contentProvider)
     {
         super(parent, style);
 
@@ -174,6 +174,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
             TableViewerEditor.create(tableViewer, editorActivationStrategy, ColumnViewerEditor.TABBING_VERTICAL | ColumnViewerEditor.TABBING_HORIZONTAL);
             table.addTraverseListener(traverseListener);
         }
+
         //editorActivationStrategy.setEnableEditorActivationWithKeyboard(true);
         renderer = createRenderer();
         itemsViewer.getColumnViewerEditor().addEditorActivationListener(new EditorActivationListener());
@@ -189,7 +190,8 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
                 }
             }
         });
-        itemsViewer.getControl().addListener(SWT.PaintItem, new PaintListener());
+        itemsViewer.getControl().addListener(SWT.PaintItem, new ItemPaintListener());
+        itemsViewer.getControl().addPaintListener(new ListPaintListener());
         GridData gd = new GridData(GridData.FILL_BOTH);
         itemsViewer.getControl().setLayoutData(gd);
         //PropertiesContributor.getInstance().addLazyListener(this);
@@ -232,6 +234,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
         return SWT.MULTI | SWT.FULL_SELECTION;
     }
 
+    @NotNull
     public ObjectViewerRenderer getRenderer() {
         return renderer;
     }
@@ -374,7 +377,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
     }
 
     protected int getDataLoadTimeout() {
-        return 4000;
+        return 10000;
     }
 
     protected void setListData(Collection<OBJECT_TYPE> items, boolean append, boolean forUpdate) {
@@ -382,6 +385,9 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
     }
 
     protected void setListData(Collection<OBJECT_TYPE> items, boolean append, boolean forUpdate, boolean forceUpdateItems) {
+        if (items == null) {
+            return;
+        }
         final Control itemsControl = itemsViewer.getControl();
         if (itemsControl.isDisposed()) {
             return;
@@ -401,19 +407,22 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
                 if (!CommonUtils.isEmpty(items)) {
                     for (OBJECT_TYPE item : items) {
                         Object object = getObjectValue(item);
-                        if (object != null && !classList.contains(object.getClass())) {
-                            // Remove all base classes if we have sub class
-                            // But keep interfaces because we may have multiple implementations of e.g. DBPNamedObject
-                            // and we need to show "Name" instead of particular name props
-                            for (int i = 0; i < classList.size(); i++) {
-                                Class<?> c = classList.get(i);
-                                if (!c.isInterface() && c.isAssignableFrom(object.getClass())) {
-                                    classList.remove(i);
-                                } else {
-                                    i++;
+                        if (object != null) {
+                            Class<?> theClass = ObjectPropertyDescriptor.getObjectClass(object);
+                            if (!classList.contains(theClass)) {
+                                // Remove all base classes if we have sub class
+                                // But keep interfaces because we may have multiple implementations of e.g. DBPNamedObject
+                                // and we need to show "Name" instead of particular name props
+                                for (int i = 0; i < classList.size(); i++) {
+                                    Class<?> c = classList.get(i);
+                                    if (!c.isInterface() && c.isAssignableFrom(theClass)) {
+                                        classList.remove(i);
+                                    } else {
+                                        i++;
+                                    }
                                 }
+                                classList.add(theClass);
                             }
-                            classList.add(object.getClass());
                         }
                         if (isTree) {
                             Map<OBJECT_TYPE, Boolean> collectedSet = new IdentityHashMap<>();
@@ -491,7 +500,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
             }
             if (reload || objectList.isEmpty()) {
                 // Set viewer content
-                objectList = CommonUtils.isEmpty(items) ? new ArrayList<>() : new ArrayList<>(items);
+                objectList = createViewerInput(items);
 
                 // Pack columns
                 sampleItems = true;
@@ -502,7 +511,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
                     } else {
                         sampleList = objectList;
                     }
-                    itemsViewer.setInput(sampleList);
+                    itemsViewer.setInput(createViewerInput(sampleList));
 
                     if (isTree) {
                         ((TreeViewer) itemsViewer).expandToLevel(4);
@@ -555,6 +564,10 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
         setInfo(getItemsLoadMessage(objectList.size()));
     }
 
+    protected List<OBJECT_TYPE> createViewerInput(Collection<OBJECT_TYPE> objectList) {
+        return new ArrayList<>(objectList);
+    }
+
     protected void addExtraColumns(ViewerColumnController<ObjectColumn, Object> columnController, Collection<OBJECT_TYPE> items) {
 
     }
@@ -580,7 +593,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
         }
 
         if (!itemsViewer.getControl().isDisposed()) {
-            itemsViewer.setInput(Collections.emptyList());
+            itemsViewer.setInput(createViewerInput(Collections.emptyList()));
         }
         if (listPropertySource != null) {
             listPropertySource.clearProperties();
@@ -652,11 +665,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
         if (lazyObjects == null) {
             lazyObjects = new LinkedHashMap<>();
         }
-        List<ObjectColumn> objectColumns = lazyObjects.get(object);
-        if (objectColumns == null) {
-            objectColumns = new ArrayList<>();
-            lazyObjects.put(object, objectColumns);
-        }
+        List<ObjectColumn> objectColumns = lazyObjects.computeIfAbsent(object, k -> new ArrayList<>());
         if (!objectColumns.contains(column)) {
             objectColumns.add(column);
         }
@@ -691,7 +700,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
     }
 
     @Nullable
-    protected final Object getCellValue(Object element, int columnIndex) {
+    protected final Object getCellValue(@NotNull Object element, int columnIndex) {
         final ObjectColumn columnInfo = getColumnByIndex(columnIndex);
         if (columnInfo == null) {
             return null;
@@ -700,7 +709,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
     }
 
     @Nullable
-    protected Object getCellValue(Object element, ObjectColumn objectColumn, boolean formatValue) {
+    protected Object getCellValue(@NotNull Object element, @NotNull ObjectColumn objectColumn, boolean formatValue) {
         if (element instanceof ObjectsGroupingWrapper) {
             if (objectColumn == groupingColumn) {
                 Object groupingKey = ((ObjectsGroupingWrapper) element).groupingKey;
@@ -730,7 +739,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
         // Non-editable properties are empty for new objects
         //return null;
         //}
-        if (prop.isLazy(objectValue, true)) {
+        if (!isDynamicObject(object) && prop.isLazy(objectValue, true)) {
             synchronized (lazyCache) {
                 final Map<String, Object> cache = lazyCache.get(object);
                 if (cache != null) {
@@ -805,8 +814,13 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
      * @param item list item
      * @return object which will be examined for properties
      */
-    protected Object getObjectValue(OBJECT_TYPE item) {
+    @NotNull
+    protected Object getObjectValue(@NotNull OBJECT_TYPE item) {
         return item;
+    }
+
+    protected boolean isDynamicObject(OBJECT_TYPE object) {
+        return false;
     }
 
     /**
@@ -820,10 +834,12 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
         return null;
     }
 
+    @Nullable
     protected Color getObjectBackground(OBJECT_TYPE item) {
         return null;
     }
 
+    @Nullable
     protected Color getObjectForeground(OBJECT_TYPE item) {
         return null;
     }
@@ -846,7 +862,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
         return props;
     }
 
-    public void setIsColumnVisibleById(String id, boolean visible) {
+    public void setIsColumnVisibleById(@NotNull String id, boolean visible) {
         if (columnController != null) {
             ObjectColumn[] columnsData = columnController.getColumnsData(ObjectColumn.class);
             for (int i = 0; i < columnsData.length; i++) {
@@ -857,7 +873,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
         }
     }
 
-    protected void createColumn(ObjectPropertyDescriptor prop) {
+    protected void createColumn(@NotNull ObjectPropertyDescriptor prop) {
         ObjectColumn objectColumn = null;
         for (ObjectColumn col : columnController.getColumnsData(ObjectColumn.class)) {
             if (CommonUtils.equalObjects(col.id, prop.getId()) || CommonUtils.equalObjects(col.displayName, prop.getDisplayName())) {
@@ -907,6 +923,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
      */
     protected abstract LoadingJob<Collection<OBJECT_TYPE>> createLoadService(boolean forUpdate);
 
+    @NotNull
     protected ObjectViewerRenderer createRenderer() {
         return new ViewerRenderer();
     }
@@ -972,7 +989,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
                             objectName = DBValueFormatting.getDefaultValueDisplayString(object, DBDDisplayFormat.UI);
                         }
                     }
-                    if (buf.length() > 0) buf.append("\n");
+                    if (!buf.isEmpty()) buf.append("\n");
                     if (selection instanceof TreeSelection) {
                         final TreePath[] paths = ((TreeSelection) selection).getPathsFor(o);
                         if (!ArrayUtils.isEmpty(paths)) {
@@ -1039,7 +1056,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
     //////////////////////////////////////////////////////
     // Property source implementation
 
-    private class DefaultListPropertySource extends PropertySourceAbstract {
+    private class DefaultListPropertySource extends PropertySourceAbstract implements DBNNodeReference {
 
         DefaultListPropertySource() {
             super(ObjectListControl.this, ObjectListControl.this, true);
@@ -1050,16 +1067,25 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
             return getCurrentListObject();
         }
 
+        @NotNull
         @Override
         public Object getEditableValue() {
             return getObjectValue(getCurrentListObject());
         }
 
+        @NotNull
         @Override
         public DBPPropertyDescriptor[] getProperties() {
             return getAllProperties().toArray(new DBPPropertyDescriptor[0]);
         }
 
+        @Override
+        public DBNNode getReferencedNode() {
+            if (ObjectListControl.this instanceof DBNNodeReference nnc) {
+                return nnc.getReferencedNode();
+            }
+            return null;
+        }
     }
 
     //////////////////////////////////////////////////////
@@ -1095,6 +1121,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
     // List sorter
 
     protected class ObjectColumnLabelProvider extends ColumnLabelProvider implements ILabelProviderEx {
+        private static final int MAX_TOOLTIP_LENGTH = 250;
         protected final ObjectColumn objectColumn;
 
         protected ObjectColumnLabelProvider(ObjectColumn objectColumn) {
@@ -1193,6 +1220,9 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
             if (CommonUtils.isEmpty(text)) {
                 return null;
             }
+            if (text.length() > MAX_TOOLTIP_LENGTH) {
+                text = text.substring(0, MAX_TOOLTIP_LENGTH) + "...";
+            }
             return text;
         }
     }
@@ -1244,7 +1274,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
         }
     }
 
-    class PaintListener implements Listener {
+    class ItemPaintListener implements Listener {
 
         @Override
         public void handleEvent(Event e) {
@@ -1294,8 +1324,9 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
             super(UINavigatorMessages.controls_object_list_job_props_read);
         }
 
+        @NotNull
         @Override
-        protected IStatus run(final DBRProgressMonitor monitor) {
+        protected IStatus run(@NotNull final DBRProgressMonitor monitor) {
             final Map<OBJECT_TYPE, List<ObjectColumn>> objectMap = obtainLazyObjects();
             if (isDisposed()) {
                 return Status.OK_STATUS;
@@ -1417,11 +1448,8 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
 
         @Override
         public boolean select(Viewer viewer, Object parentElement, Object element) {
-            if (!(element instanceof DBNNode)) {
-                return false;
-            }
-            DBNNode node = (DBNNode) element;
-            return matches(node.getName()) || matches(node.getNodeDescription());
+            return (element instanceof DBPNamedObject namedObject && matches(namedObject.getName())) ||
+                (element instanceof DBPObjectWithDescription owd && matches(owd.getDescription()));
         }
 
         private boolean matches(@Nullable CharSequence charSequence) {
@@ -1618,6 +1646,43 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
         @Override
         public String toString() {
             return (groupingKey != null ? "Grouped by: " + groupingKey.toString() + ". " : "") + "Elements amount: " + groupedElements.size();
+        }
+    }
+
+    private class ListPaintListener implements PaintListener {
+        private int tickCount = 0;
+        @Override
+        public void paintControl(PaintEvent e) {
+            if (ObjectListControl.this.isLoading()) {
+                Image image = DBeaverIcons.getImage(UIIcon.LOADING.get(tickCount % UIIcon.LOADING.size()));
+                Rectangle bounds = getControl().getBounds();
+                Rectangle ext = image.getBounds();
+
+
+                e.gc.drawImage(image,
+                    (bounds.width - ext.width) / 2,
+                    (bounds.height - ext.height) / 2);
+                new AbstractUIJob("Progress painter") {
+                    @Override
+                    protected IStatus runInUIThread(DBRProgressMonitor monitor) {
+                        if (ObjectListControl.this.isLoading()) {
+                            tickCount++;
+                            getControl().redraw();
+                        }
+                        return Status.OK_STATUS;
+                    }
+                }.schedule();
+                return;
+            }
+            boolean isEmpty;
+            if (isTree) {
+                isEmpty = ObjectListControl.this.getTree().getItemCount() == 0;
+            } else {
+                isEmpty = ObjectListControl.this.getTable().getItemCount() == 0;
+            }
+            if (isEmpty) {
+                UIUtils.drawMessageOverControl(itemsViewer.getControl(), e.gc, "No items", 0);
+            }
         }
     }
 }

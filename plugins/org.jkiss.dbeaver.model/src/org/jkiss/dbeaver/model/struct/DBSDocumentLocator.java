@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,7 +20,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.data.DBDDocument;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.exec.DBCSession;
 
 import java.util.Map;
 
@@ -31,10 +31,18 @@ public interface DBSDocumentLocator extends DBSDocumentContainer
 {
     /**
      * Find document by key attributes
-     * @param monitor progress monitor
+     * @param session session
+     *
      * @throws DBException on any DB error
      */
     @Nullable
-    DBDDocument findDocument(@NotNull DBRProgressMonitor monitor, Map<String, Object> key) throws DBException;
+    DBDDocument findDocument(
+        @NotNull DBCSession session,
+        @NotNull Map<String, Object> key,
+        @Nullable Map<String, Object> metaData
+    ) throws DBException;
+
+
+    boolean isDocumentValid(@NotNull DBDDocument documentId) throws DBException;
 
 }

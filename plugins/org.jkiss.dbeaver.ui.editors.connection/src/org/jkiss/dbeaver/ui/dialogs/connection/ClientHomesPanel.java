@@ -1,7 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
- * Copyright (C) 2011-2012 Eugene Fradkin (eugene.fradkin@gmail.com)
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,7 +21,6 @@ import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
@@ -36,10 +34,9 @@ import org.jkiss.dbeaver.model.connection.LocalNativeClientLocation;
 import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
 import org.jkiss.dbeaver.registry.driver.RemoteNativeClientLocation;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
-import org.jkiss.dbeaver.ui.DBeaverIcons;
-import org.jkiss.dbeaver.ui.UIIcon;
-import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.internal.UIConnectionMessages;
+import org.jkiss.dbeaver.utils.HelpUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -52,18 +49,17 @@ import java.util.*;
  */
 public class ClientHomesPanel extends Composite {
     private static final Log log = Log.getLog(ClientHomesPanel.class);
+    public static final String WIKI_CONFIGURE_CLIENT = "Local-Client-Configuration";
 
     private static String lastHomeDirectory;
 
-    private Table homesTable;
-    private Text idText;
-    private Text pathText;
-    private Text nameText;
-    private Text productNameText;
-    private Text productVersionText;
-    private Button removeButton;
-    private Font fontBold;
-    private Font fontItalic;
+    private final Table homesTable;
+    private final Text idText;
+    private final Text pathText;
+    private final Text nameText;
+    private final Text productNameText;
+    private final Text productVersionText;
+    private final Button removeButton;
 
     private DBPDriver driver;
 
@@ -82,13 +78,6 @@ public class ClientHomesPanel extends Composite {
         Composite parent,
         int style) {
         super(parent, style);
-
-        fontBold = UIUtils.makeBoldFont(parent.getFont());
-        fontItalic = UIUtils.modifyFont(parent.getFont(), SWT.ITALIC);
-        addDisposeListener(e -> {
-            UIUtils.dispose(fontBold);
-            UIUtils.dispose(fontItalic);
-        });
 
         GridLayout layout = new GridLayout(2, false);
         setLayout(layout);
@@ -139,6 +128,23 @@ public class ClientHomesPanel extends Composite {
         nameText = UIUtils.createLabelText(infoGroup, UIConnectionMessages.controls_client_homes_panel_label_name, null, SWT.BORDER | SWT.READ_ONLY);
         productNameText = UIUtils.createLabelText(infoGroup, UIConnectionMessages.controls_client_homes_panel_label_product_name, null, SWT.BORDER | SWT.READ_ONLY);
         productVersionText = UIUtils.createLabelText(infoGroup, UIConnectionMessages.controls_client_homes_panel_label_product_version, null, SWT.BORDER | SWT.READ_ONLY);
+
+        {
+            Composite infoPanel = new Composite(parent, SWT.NONE);
+            infoPanel.setLayout(new GridLayout(1, false));
+            UIUtils.createLink(
+                infoPanel,
+                UIConnectionMessages.controls_client_homes_panel_link_message,
+                new SelectionAdapter() {
+                    @Override
+                    public void widgetSelected(SelectionEvent e) {
+                        ShellUtils.launchProgram(HelpUtils.getHelpExternalReference(WIKI_CONFIGURE_CLIENT));
+                    }
+                });
+            GridData gridData = new GridData(GridData.FILL, SWT.END, true, true);
+            gridData.horizontalSpan = 2;
+            infoPanel.setLayoutData(gridData);
+        }
     }
 
     private void removeClientHome() {
@@ -237,12 +243,10 @@ public class ClientHomesPanel extends Composite {
 
         for (DBPNativeClientLocation home : allHomes) {
             TableItem item = createHomeItem(clientManager, home, home instanceof RemoteNativeClientLocation || providedHomes.contains(home));
-            if (item != null) {
-                HomeInfo homeInfo = (HomeInfo) item.getData();
-                if (homeInfo.isDefault) {
-                    homesTable.setSelection(homesTable.indexOf(item));
-                    selectHome(homeInfo);
-                }
+            HomeInfo homeInfo = (HomeInfo) item.getData();
+            if (homeInfo.isDefault) {
+                homesTable.setSelection(homesTable.indexOf(item));
+                selectHome(homeInfo);
             }
         }
     }
@@ -263,10 +267,10 @@ public class ClientHomesPanel extends Composite {
         homeItem.setImage(DBeaverIcons.getImage(UIIcon.HOME));
         homeItem.setData(homeInfo);
         if (!homeInfo.isProvided) {
-            homeItem.setFont(fontItalic);
+            homeItem.setFont(BaseThemeSettings.instance.treeAndTableFontItalic);
         } else {
             if (homeInfo.isDefault) {
-                homeItem.setFont(fontBold);
+                homeItem.setFont(BaseThemeSettings.instance.treeAndTableFontBold);
             }
         }
         return homeItem;
@@ -282,7 +286,7 @@ public class ClientHomesPanel extends Composite {
     }
 
     private static class ChooserDialog extends org.eclipse.jface.dialogs.Dialog {
-        private DBPDriver driver;
+        private final DBPDriver driver;
         private ClientHomesPanel panel;
         private String selectedHome;
 
@@ -313,9 +317,14 @@ public class ClientHomesPanel extends Composite {
         protected void buttonPressed(int buttonId) {
             if (IDialogConstants.OK_ID == buttonId) {
                 selectedHome = panel.getSelectedHome();
-                if (driver instanceof DriverDescriptor) {
-                    ((DriverDescriptor) driver).setNativeClientLocations(panel.getLocalLocations());
-                    ((DriverDescriptor) driver).getProviderDescriptor().getRegistry().saveDrivers();
+                if (driver instanceof DriverDescriptor descriptor) {
+                    descriptor.setNativeClientLocations(panel.getLocalLocations());
+                    try {
+                        descriptor.getProviderDescriptor().getRegistry().saveDrivers();
+                    } catch (DBException e) {
+                        DBWorkbench.getPlatformUI().showError("Save error", "Error saving drivers", e);
+                        return;
+                    }
                 }
             }
             super.buttonPressed(buttonId);

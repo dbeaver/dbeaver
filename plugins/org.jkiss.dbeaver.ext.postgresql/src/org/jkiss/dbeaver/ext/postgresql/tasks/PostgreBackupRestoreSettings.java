@@ -1,7 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
- * Copyright (C) 2011-2012 Eugene Fradkin (eugene.fradkin@gmail.com)
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +18,7 @@ package org.jkiss.dbeaver.ext.postgresql.tasks;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -33,7 +33,7 @@ public class PostgreBackupRestoreSettings extends AbstractImportExportSettings<D
         TAR("t", "Tar", "tar");
 
         private final String id;
-        private String title;
+        private final String title;
         @NotNull
         private final String ext;
 
@@ -59,6 +59,13 @@ public class PostgreBackupRestoreSettings extends AbstractImportExportSettings<D
 
     private ExportFormat format = ExportFormat.CUSTOM;
 
+    public PostgreBackupRestoreSettings() {
+    }
+
+    public PostgreBackupRestoreSettings(@NotNull DBPProject project) {
+        super(project);
+    }
+    
     public ExportFormat getFormat() {
         return format;
     }
@@ -66,12 +73,10 @@ public class PostgreBackupRestoreSettings extends AbstractImportExportSettings<D
     public void setFormat(ExportFormat format) {
         this.format = format;
     }
-
     @Override
     public void loadSettings(DBRRunnableContext runnableContext, DBPPreferenceStore store) throws DBException {
-        super.loadSettings(runnableContext, store);
-
         this.format = CommonUtils.valueOf(ExportFormat.class, store.getString("pg.format"), ExportFormat.CUSTOM);
+        super.loadSettings(runnableContext, store);
     }
 
     @Override

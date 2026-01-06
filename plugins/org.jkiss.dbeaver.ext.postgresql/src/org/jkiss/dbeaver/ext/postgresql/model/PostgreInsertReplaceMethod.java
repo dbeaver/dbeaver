@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,6 +29,8 @@ import org.jkiss.dbeaver.model.struct.DBSEntityAttributeRef;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTable;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableConstraint;
+import org.jkiss.dbeaver.model.struct.rdb.DBSTableIndex;
+import org.jkiss.dbeaver.model.struct.rdb.DBSTableIndexColumn;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.Collection;
@@ -40,40 +42,55 @@ public class PostgreInsertReplaceMethod implements DBDInsertReplaceMethod {
 
     @NotNull
     @Override
-    public String getOpeningClause(DBSTable table, DBRProgressMonitor monitor) {
+    public String getOpeningClause(@NotNull DBSTable table, @NotNull DBRProgressMonitor monitor) {
         return "INSERT INTO";
     }
 
     @Override
-    public String getTrailingClause(DBSTable table, DBRProgressMonitor monitor, DBSAttributeBase[] attributes) {
+    public String getTrailingClause(@NotNull DBSTable table, @NotNull DBRProgressMonitor monitor, DBSAttributeBase[] attributes) {
         StringBuilder query = new StringBuilder();
         try {
             String onConflictExpression = "ON CONFLICT (%s) DO UPDATE SET %s";
+            StringBuilder constraintAttrNames = new StringBuilder();
             Collection<? extends DBSTableConstraint> constraints = table.getConstraints(monitor);
             if (!CommonUtils.isEmpty(constraints)) {
-                StringBuilder pkNames = new StringBuilder();
-                Optional<? extends DBSTableConstraint> tableConstraint = constraints.stream().filter(key -> key.getConstraintType() == DBSEntityConstraintType.PRIMARY_KEY).findFirst();
+                // First we are looking for a primary key
+                Optional<? extends DBSTableConstraint> tableConstraint = constraints.stream()
+                    .filter(key -> key.getConstraintType() == DBSEntityConstraintType.PRIMARY_KEY)
+                    .findFirst();
                 if (tableConstraint.isPresent()) {
                     DBSTableConstraint dbsTableConstraint = tableConstraint.get();
                     List<? extends DBSEntityAttributeRef> attributeReferences = dbsTableConstraint.getAttributeReferences(monitor);
                     if (!CommonUtils.isEmpty(attributeReferences)) {
-                        boolean hasKey = false;
-                        for (DBSEntityAttributeRef column : attributeReferences) {
-                            if (hasKey) pkNames.append(",");
-                            DBSEntityAttribute attribute = column.getAttribute();
-                            if (attribute == null) continue;
-                            pkNames.append(DBUtils.getQuotedIdentifier(attribute));
-                            hasKey = true;
-                        }
-                        StringBuilder updateExpression = new StringBuilder();
-                        updateExpression.append("(");
-                        addAttributesNamesList(table, attributes, false, updateExpression);
-                        updateExpression.append(") = (");
-                        addAttributesNamesList(table, attributes, true, updateExpression);
-                        updateExpression.append(")");
-                        query.append(" ").append(String.format(onConflictExpression, pkNames, updateExpression));
+                        getConstraintAttributesNames(constraintAttrNames, attributeReferences);
                     }
                 }
+            }
+            if (constraintAttrNames.isEmpty()) {
+                // Let's search for a unique index
+                Collection<? extends DBSTableIndex> indexes = table.getIndexes(monitor);
+                if (!CommonUtils.isEmpty(indexes)) {
+                    Optional<? extends DBSTableIndex> optional = indexes.stream().filter(DBSTableIndex::isUnique).findFirst();
+                    if (optional.isPresent()) {
+                        DBSTableIndex tableIndex = optional.get();
+                        List<? extends DBSTableIndexColumn> references = tableIndex.getAttributeReferences(monitor);
+                        if (!CommonUtils.isEmpty(references)) {
+                            getConstraintAttributesNames(constraintAttrNames, references);
+                        }
+                    }
+                }
+            }
+            if (!constraintAttrNames.isEmpty()) {
+                StringBuilder updateExpression = new StringBuilder();
+                updateExpression.append("(");
+                addAttributesNamesList(table, attributes, false, updateExpression);
+                updateExpression.append(") = (");
+                addAttributesNamesList(table, attributes, true, updateExpression);
+                updateExpression.append(")");
+                query.append(" ").append(String.format(onConflictExpression, constraintAttrNames, updateExpression));
+            } else {
+                log.debug("Can't find table constraints for the correct update on conflict operation.");
+                return null;
             }
         } catch (DBException e) {
             log.debug("Can't read table constraints list", e);
@@ -81,7 +98,30 @@ public class PostgreInsertReplaceMethod implements DBDInsertReplaceMethod {
         return query.toString();
     }
 
-    private void addAttributesNamesList(DBSTable table, DBSAttributeBase[] attributes, boolean isExcluded, StringBuilder updateExpression) {
+    private void getConstraintAttributesNames(
+        @NotNull StringBuilder constraintAttrNames,
+        @NotNull List<? extends DBSEntityAttributeRef> attributeReferences
+    ) {
+        boolean hasKey = false;
+        for (DBSEntityAttributeRef column : attributeReferences) {
+            DBSEntityAttribute attribute = column.getAttribute();
+            if (attribute == null) {
+                continue;
+            }
+            if (hasKey) {
+                constraintAttrNames.append(",");
+            }
+            constraintAttrNames.append(DBUtils.getQuotedIdentifier(attribute));
+            hasKey = true;
+        }
+    }
+
+    private void addAttributesNamesList(
+        @NotNull DBSTable table,
+        @NotNull DBSAttributeBase[] attributes,
+        boolean isExcluded,
+        @NotNull StringBuilder updateExpression
+    ) {
         boolean hasKey = false;
         for (DBSAttributeBase attribute : attributes) {
             if (DBUtils.isPseudoAttribute(attribute)) {
@@ -90,13 +130,13 @@ public class PostgreInsertReplaceMethod implements DBDInsertReplaceMethod {
             if (hasKey) updateExpression.append(","); //$NON-NLS-1$
             hasKey = true;
             if (isExcluded) {
-                updateExpression.append("EXCLUDED.");
+                updateExpression.append("EXCLUDED."); //$NON-NLS-1$
             }
             updateExpression.append(getAttributeName(table, attribute));
         }
     }
 
-    private String getAttributeName(DBSTable table, @NotNull DBSAttributeBase attribute) {
+    private String getAttributeName(@NotNull DBSTable table, @NotNull DBSAttributeBase attribute) {
         // Do not quote pseudo attribute name
         return DBUtils.isPseudoAttribute(attribute) ? attribute.getName() : DBUtils.getObjectFullName(table.getDataSource(), attribute, DBPEvaluationContext.DML);
     }

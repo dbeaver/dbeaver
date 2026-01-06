@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ext.mysql.model;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -35,7 +36,7 @@ import java.util.List;
 /**
  * GenericForeignKey
  */
-public class MySQLTableForeignKey extends JDBCTableForeignKey<MySQLTable, MySQLTableConstraint>
+public class MySQLTableForeignKey extends JDBCTableForeignKey<MySQLTable, MySQLTableForeignKeyColumn, MySQLTableConstraint>
 {
     private List<MySQLTableForeignKeyColumn> columns;
 
@@ -77,9 +78,14 @@ public class MySQLTableForeignKey extends JDBCTableForeignKey<MySQLTable, MySQLT
     }
 
     @Override
-    public List<MySQLTableForeignKeyColumn> getAttributeReferences(DBRProgressMonitor monitor)
+    public List<MySQLTableForeignKeyColumn> getAttributeReferences(@Nullable DBRProgressMonitor monitor)
     {
         return columns;
+    }
+
+    @Override
+    public void setAttributeReferences(List<MySQLTableForeignKeyColumn> columns) throws DBException {
+        this.columns = columns;
     }
 
     @NotNull
@@ -120,7 +126,7 @@ public class MySQLTableForeignKey extends JDBCTableForeignKey<MySQLTable, MySQLT
 
     @NotNull
     @Override
-    public String getFullyQualifiedName(DBPEvaluationContext context)
+    public String getFullyQualifiedName(@NotNull DBPEvaluationContext context)
     {
         return DBUtils.getFullQualifiedName(getDataSource(),
             getTable().getContainer(),

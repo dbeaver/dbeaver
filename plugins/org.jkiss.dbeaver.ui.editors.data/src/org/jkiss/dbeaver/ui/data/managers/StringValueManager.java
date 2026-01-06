@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,6 +30,8 @@ import org.jkiss.dbeaver.ui.data.editors.StringInlineEditor;
 import org.jkiss.dbeaver.ui.editors.content.ContentEditor;
 import org.jkiss.dbeaver.utils.ContentUtils;
 
+import java.util.Collection;
+
 /**
  * String value manager
  */
@@ -52,6 +54,9 @@ public class StringValueManager extends ContentValueManager {
             case INLINE:
                 // Open inline/panel editor
                 Object value = controller.getValue();
+                if (dataKind == DBPDataKind.ARRAY && !(value instanceof Collection)) {
+                    dataKind = DBPDataKind.OBJECT;
+                }
                 if (dataKind == DBPDataKind.STRING || dataKind == DBPDataKind.NUMERIC || dataKind == DBPDataKind.DATETIME || dataKind == DBPDataKind.BOOLEAN || dataKind == DBPDataKind.OBJECT) {
                     return new StringInlineEditor(controller);
                 } else if (value instanceof DBDContentCached &&

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,12 +31,15 @@ import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.exec.DBCException;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.PropertyDescriptor;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCExecutionContext;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.utils.CommonUtils;
 
+import java.sql.SQLException;
 import java.sql.Types;
 import java.util.HashMap;
 import java.util.Map;
@@ -46,6 +49,7 @@ public class SQLServerGenericDataSource extends GenericDataSource {
     private static final Log log = Log.getLog(SQLServerGenericDataSource.class);
 
     private static final String PROP_ENCRYPT_PASS = "ENCRYPT_PASSWORD";
+    private boolean hasMetaDataProcedureView = false;
 
     public SQLServerGenericDataSource(DBRProgressMonitor monitor, DBPDataSourceContainer container)
         throws DBException
@@ -63,7 +67,13 @@ public class SQLServerGenericDataSource extends GenericDataSource {
     }
 
     @Override
-    protected Map<String, String> getInternalConnectionProperties(DBRProgressMonitor monitor, DBPDriver driver, JDBCExecutionContext context, String purpose, DBPConnectionConfiguration connectionInfo) throws DBCException {
+    protected Map<String, String> getInternalConnectionProperties(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBPDriver driver,
+        @NotNull JDBCExecutionContext context,
+        @NotNull String purpose,
+        @NotNull DBPConnectionConfiguration connectionInfo
+    ) throws DBCException {
         Map<String, String> connectionsProps = new HashMap<>();
         if (!getContainer().getPreferenceStore().getBoolean(ModelPreferences.META_CLIENT_NAME_DISABLE)) {
             // App name
@@ -122,6 +132,24 @@ public class SQLServerGenericDataSource extends GenericDataSource {
     @Override
     protected boolean isPopulateClientAppName() {
         return false;
+    }
+
+    @Override
+    public void initialize(@NotNull DBRProgressMonitor monitor) throws DBException {
+        super.initialize(monitor);
+        try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Read server information")) {
+            JDBCUtils.executeStatement(session, "SELECT TOP 1 1 FROM SYS.SYSPROCEDURE WHERE 1 <> 1");
+            hasMetaDataProcedureView = true;
+        } catch (SQLException e) {
+            hasMetaDataProcedureView = false;
+        }
+    }
+
+    /**
+     * Is meta info SYS.SYSPROCEDURE available for the data source
+     */
+    public boolean hasMetaDataProcedureView() {
+        return hasMetaDataProcedureView;
     }
 
 }

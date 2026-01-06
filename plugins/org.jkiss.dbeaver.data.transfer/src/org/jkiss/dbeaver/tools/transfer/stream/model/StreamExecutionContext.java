@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,22 +20,17 @@ package org.jkiss.dbeaver.tools.transfer.stream.model;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
+import org.jkiss.dbeaver.model.exec.DBCInvalidatePhase;
 import org.jkiss.dbeaver.model.impl.AbstractExecutionContext;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSInstance;
 
 /**
  * Data container transfer producer
  */
-public class StreamExecutionContext extends AbstractExecutionContext<StreamDataSource> {
+public class StreamExecutionContext extends AbstractExecutionContext<StreamDataSource, StreamDataSource> {
 
     StreamExecutionContext(@NotNull StreamDataSource dataSource, String purpose) {
         super(dataSource, purpose);
-    }
-
-    @Override
-    public DBSInstance getOwnerInstance() {
-        return dataSource;
     }
 
     @Override
@@ -54,10 +49,9 @@ public class StreamExecutionContext extends AbstractExecutionContext<StreamDataS
 
     }
 
-    @NotNull
     @Override
-    public InvalidateResult invalidateContext(@NotNull DBRProgressMonitor monitor, boolean closeOnFailure) throws DBException {
-        return InvalidateResult.ALIVE;
+    public void invalidateContext(@NotNull DBRProgressMonitor monitor, @NotNull DBCInvalidatePhase phase) throws DBException {
+        // nothing to do
     }
 
     @Override

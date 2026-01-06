@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,10 +26,12 @@ import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.jface.text.Document;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.source.IAnnotationModel;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.exec.DBExecUtils;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
+import org.jkiss.dbeaver.model.rcp.RCPProject;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
@@ -41,8 +43,6 @@ import org.jkiss.dbeaver.ui.editors.text.BaseTextDocumentProvider;
 import org.jkiss.dbeaver.ui.editors.text.DatabaseMarkerAnnotationModel;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
-
-import java.lang.reflect.InvocationTargetException;
 
 public abstract class SQLObjectDocumentProvider extends BaseTextDocumentProvider {
 
@@ -95,19 +95,16 @@ public abstract class SQLObjectDocumentProvider extends BaseTextDocumentProvider
                     setUser(true);
                 }
 
+                @NotNull
                 @Override
-                protected IStatus run(DBRProgressMonitor monitor) {
+                protected IStatus run(@NotNull DBRProgressMonitor monitor) {
                     monitor.beginTask(getName(), 1);
                     try {
                         if (dataSource != null) {
                             DBExecUtils.tryExecuteRecover(monitor, dataSource, param -> {
-                                try {
-                                    sourceText = loadSourceText(monitor);
-                                    if (sourceText == null) {
-                                        sourceText = SQLUtils.generateCommentLine(dataSource, "Empty source");
-                                    }
-                                } catch (DBException e) {
-                                    throw new InvocationTargetException(e);
+                                sourceText = loadSourceText(monitor);
+                                if (sourceText == null) {
+                                    sourceText = SQLUtils.generateCommentLine(dataSource, "Empty source");
                                 }
                             });
                         } else {
@@ -147,7 +144,7 @@ public abstract class SQLObjectDocumentProvider extends BaseTextDocumentProvider
         DBSObject databaseObject = getProviderObject();
         if (databaseObject != null) {
             DBNDatabaseNode node = DBWorkbench.getPlatform().getNavigatorModel().getNodeByObject(databaseObject);
-            IResource resource = node == null || node.getOwnerProject() == null ? null : node.getOwnerProject().getEclipseProject();
+            IResource resource = node == null || !(node.getOwnerProject() instanceof RCPProject rcpProject) ? null : rcpProject.getEclipseProject();
             if (resource != null) {
                 return new DatabaseMarkerAnnotationModel(databaseObject, node, resource);
             }

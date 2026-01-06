@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,7 +20,9 @@ import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExtension;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.jface.action.*;
+import org.eclipse.jface.preference.PreferenceDialog;
 import org.eclipse.jface.resource.ImageDescriptor;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.ui.*;
 import org.eclipse.ui.actions.ActionFactory;
@@ -29,21 +31,23 @@ import org.eclipse.ui.actions.ContributionItemFactory;
 import org.eclipse.ui.application.ActionBarAdvisor;
 import org.eclipse.ui.application.IActionBarConfigurer;
 import org.eclipse.ui.commands.ICommandImageService;
+import org.eclipse.ui.commands.ICommandService;
+import org.eclipse.ui.dialogs.PreferencesUtil;
 import org.eclipse.ui.ide.IDEActionFactory;
 import org.eclipse.ui.internal.WorkbenchPlugin;
 import org.eclipse.ui.internal.commands.CommandImageManager;
 import org.eclipse.ui.internal.commands.CommandImageService;
 import org.eclipse.ui.internal.registry.ActionSetRegistry;
 import org.eclipse.ui.internal.registry.IActionSetDescriptor;
+import org.eclipse.ui.texteditor.ITextEditorActionDefinitionIds;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.core.CoreMessages;
+import org.jkiss.dbeaver.core.ui.services.ApplicationPolicyService;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.app.standalone.about.AboutBoxAction;
-import org.jkiss.dbeaver.ui.app.standalone.actions.EmergentExitAction;
-import org.jkiss.dbeaver.ui.app.standalone.internal.CoreApplicationActivator;
 import org.jkiss.dbeaver.ui.app.standalone.internal.CoreApplicationMessages;
 import org.jkiss.dbeaver.ui.app.standalone.update.CheckForUpdateAction;
 import org.jkiss.dbeaver.ui.controls.StatusLineContributionItemEx;
@@ -51,6 +55,7 @@ import org.jkiss.dbeaver.ui.navigator.actions.ToggleViewAction;
 import org.jkiss.dbeaver.ui.navigator.database.DatabaseNavigatorView;
 import org.jkiss.dbeaver.ui.navigator.project.ProjectExplorerView;
 import org.jkiss.dbeaver.ui.navigator.project.ProjectNavigatorView;
+import org.jkiss.dbeaver.ui.preferences.PrefPageDatabaseUserInterface;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.BeanUtils;
 import org.jkiss.utils.CommonUtils;
@@ -58,6 +63,7 @@ import org.jkiss.utils.StandardConstants;
 import org.osgi.framework.Bundle;
 
 import java.lang.reflect.Field;
+import java.util.Date;
 import java.util.Locale;
 import java.util.TimeZone;
 
@@ -107,7 +113,7 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
                 patchSearchIcons(actionSet);
             } else {
                 if (ArrayUtils.contains(REDUNTANT_ACTIONS_SETS, actionSet.getId())) {
-                    log.debug("Disable Eclipse action set '" + actionSet.getId() + "'");
+                    log.trace("Disable Eclipse action set '" + actionSet.getId() + "'");
                     IExtension ext = actionSet.getConfigurationElement().getDeclaringExtension();
                     asr.removeExtension(ext, new Object[]{actionSet});
                 }
@@ -121,7 +127,7 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
         for (IConfigurationElement searchActionItem : actionSet.getConfigurationElement().getChildren()) {
             String saId = searchActionItem.getAttribute("id");
             if ("org.eclipse.search.OpenSearchDialog".equals(saId) || "org.eclipse.search.OpenSearchDialogPage".equals(saId)) {
-                patchActionSetIcon(searchActionItem, "platform:/plugin/" + CoreApplicationActivator.PLUGIN_ID + "/icons/eclipse/search.png");
+                patchActionSetIcon(searchActionItem, "platform:/plugin/org.jkiss.dbeaver.ui/icons/misc/search.svg");
             } else if ("org.eclipse.search.OpenFileSearchPage".equals(saId)) {
                 patchActionSetIcon(searchActionItem, UIIcon.FIND_TEXT.getLocation());
             }
@@ -155,6 +161,7 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
     protected void makeActions(final IWorkbenchWindow window)
     {
         removeUnWantedActions();
+        log.trace("Create workbench actions");
 
         register(ActionFactory.SAVE.create(window));
         register(ActionFactory.SAVE_AS.create(window));
@@ -173,9 +180,10 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
         newWindowAction = ActionFactory.OPEN_NEW_WINDOW.create(window);
         register(newWindowAction);
 
-        openWorkspaceAction = IDEActionFactory.OPEN_WORKSPACE.create(window);
-        register(openWorkspaceAction);
-
+        if (DBWorkbench.getPlatform().getApplication().isWorkspaceSwitchingAllowed()) {
+            openWorkspaceAction = IDEActionFactory.OPEN_WORKSPACE.create(window);
+            register(openWorkspaceAction);
+        }
 
 //        historyBackAction = ActionFactory.BACKWARD_HISTORY.create(window);
 //        register(historyBackAction);
@@ -183,6 +191,7 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
 //        register(historyForwardAction);
 
         CheckForUpdateAction.deactivateStandardHandler(window);
+        ApplicationPolicyService.getInstance().disableStandardProductModification(window.getService(ICommandService.class));
     }
 
 
@@ -200,16 +209,12 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
                 bindImage(cis, IWorkbenchCommandConstants.FILE_SAVE_AS, UIIcon.SAVE_AS);
                 bindImage(cis, IWorkbenchCommandConstants.FILE_SAVE_ALL, UIIcon.SAVE_ALL);
 
-/*
-                bindImage(cis, IWorkbenchCommandConstants.EDIT_COPY, UIIcon.EDIT_COPY);
-                bindImage(cis, IWorkbenchCommandConstants.EDIT_COPY, UIIcon.EDIT_COPY);
-                bindImage(cis, IWorkbenchCommandConstants.EDIT_COPY, UIIcon.EDIT_COPY);
-                bindImage(cis, IWorkbenchCommandConstants.EDIT_COPY, UIIcon.EDIT_COPY);
-*/
-
                 bindImage(cis, IWorkbenchCommandConstants.FILE_IMPORT, UIIcon.IMPORT);
                 bindImage(cis, IWorkbenchCommandConstants.FILE_EXPORT, UIIcon.EXPORT);
                 bindImage(cis, IWorkbenchCommandConstants.FILE_REFRESH, UIIcon.REFRESH);
+
+                bindImage(cis, ITextEditorActionDefinitionIds.GOTO_LAST_EDIT_POSITION, UIIcon.RS_BACK);
+                bindImage(cis, ITextEditorActionDefinitionIds.GOTO_NEXT_EDIT_POSITION, UIIcon.RS_FORWARD);
             }
         }
     }
@@ -255,17 +260,19 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
             if (!DBWorkbench.isDistributed()) {
                 // Local FS operations are not needed
                 fileMenu.add(ActionUtils.makeCommandContribution(workbenchWindow, "org.eclipse.ui.edit.text.openLocalFile"));
-                fileMenu.add(new GroupMarker(IWorkbenchActionConstants.FILE_START));
-                fileMenu.add(new GroupMarker(IWorkbenchActionConstants.NEW_EXT));
+                //fileMenu.add(new GroupMarker(IWorkbenchActionConstants.FILE_START));
+                //fileMenu.add(new GroupMarker(IWorkbenchActionConstants.NEW_EXT));
             }
             fileMenu.add(new GroupMarker(IWorkbenchActionConstants.MB_ADDITIONS));
 
-            fileMenu.add(openWorkspaceAction);
+            if (openWorkspaceAction != null) {
+                fileMenu.add(openWorkspaceAction);
+            }
 
-            fileMenu.add(new Separator());
-            fileMenu.add(new EmergentExitAction(workbenchWindow));
+//            fileMenu.add(new Separator());
+//            fileMenu.add(new EmergentExitAction(workbenchWindow));
 
-            fileMenu.add(new GroupMarker(IWorkbenchActionConstants.FILE_END));
+            //fileMenu.add(new GroupMarker(IWorkbenchActionConstants.FILE_END));
         }
 
         if (false) {
@@ -347,8 +354,9 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
 
     private void updateTimezoneItem(StatusLineContributionItemEx tzItem) {
         TimeZone tzDefault = TimeZone.getDefault();
-        tzItem.setText(tzDefault.getDisplayName(false, TimeZone.SHORT));
-        tzItem.setToolTip(tzDefault.getDisplayName(false, TimeZone.LONG));
+        boolean inDaylight = tzDefault.inDaylightTime(new Date());
+        tzItem.setText(tzDefault.getDisplayName(inDaylight, TimeZone.SHORT));
+        tzItem.setToolTip(tzDefault.getDisplayName(inDaylight, TimeZone.LONG));
     }
 
     @Override
@@ -359,15 +367,29 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
 
             DBWorkbench.getPlatform().getPreferenceStore().addPropertyChangeListener(event -> {
                 if (event.getProperty().equals(ModelPreferences.CLIENT_TIMEZONE)) {
-                    updateTimezoneItem(tzItem);
+                    UIUtils.syncExec(() -> updateTimezoneItem(tzItem));
                 }
             });
 
             tzItem.setDoubleClickListener(() -> {
-                UIUtils.showMessageBox(null, "Time zone", "You can change time zone by changing 'client timezone' in 'Settings' -> 'User Interface' or by adding parameter:\n" +
-                        "-D" + StandardConstants.ENV_USER_TIMEZONE + "=<TimeZone>\n" +
-                        "in the end of file'\n" + DBWorkbench.getPlatform().getApplicationConfiguration().toAbsolutePath().toString() + "'\n" , SWT.ICON_INFORMATION
-                );
+                PreferenceDialog preferenceDialog = PreferencesUtil.createPreferenceDialogOn(
+                    UIUtils.getActiveWorkbenchShell(),
+                    PrefPageDatabaseUserInterface.PAGE_ID,
+                    null,
+                    null);
+                if (preferenceDialog != null) {
+                    preferenceDialog.open();
+                } else {
+                    UIUtils.showMessageBox(
+                        null,
+                        CoreApplicationMessages.timezone_change_info_title,
+                        NLS.bind(
+                            CoreApplicationMessages.timezone_change_info_message,
+                            StandardConstants.ENV_USER_TIMEZONE,
+                            DBWorkbench.getPlatform().getApplicationConfiguration().toAbsolutePath()),
+                        SWT.ICON_INFORMATION
+                    );
+                }
             });
             statusLine.add(tzItem);
         }
@@ -376,10 +398,22 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
             localeItem.setText(Locale.getDefault().toString());
             localeItem.setToolTip(Locale.getDefault().getDisplayName());
             localeItem.setDoubleClickListener(() -> {
-                UIUtils.showMessageBox(null, "Locale", "You can change locale by adding parameters\n" +
-                    "-nl\n<language_iso_code>\n" +
-                    "in file '" + DBWorkbench.getPlatform().getApplicationConfiguration().toAbsolutePath().toString() + "'.\n" +
-                    "Or by passing command line parameter -nl <language_iso_code>", SWT.ICON_INFORMATION);
+                PreferenceDialog preferenceDialog = PreferencesUtil.createPreferenceDialogOn(
+                    UIUtils.getActiveWorkbenchShell(),
+                    PrefPageDatabaseUserInterface.PAGE_ID,
+                    null,
+                    null);
+                if (preferenceDialog != null) {
+                    preferenceDialog.open();
+                } else {
+                    UIUtils.showMessageBox(
+                        null,
+                        CoreApplicationMessages.locale_change_info_title,
+                        NLS.bind(
+                            CoreApplicationMessages.locale_change_info_message,
+                            DBWorkbench.getPlatform().getApplicationConfiguration().toAbsolutePath()),
+                        SWT.ICON_INFORMATION);
+                }
             });
             statusLine.add(localeItem);
         }

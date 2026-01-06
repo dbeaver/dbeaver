@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,14 +20,18 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ext.generic.model.GenericSQLDialect;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBPKeywordType;
+import org.jkiss.dbeaver.model.data.DBDBinaryFormatter;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
+import org.jkiss.dbeaver.model.impl.data.formatters.BinaryFormatterHexString;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedure;
 
 import java.util.Arrays;
 
 public class FireBirdSQLDialect extends GenericSQLDialect {
+
+    private boolean supportsAsBeforeTableAlias = true;
 
     private static final String[] FB_BLOCK_HEADERS = new String[]{
         "EXECUTE BLOCK",
@@ -44,11 +48,38 @@ public class FireBirdSQLDialect extends GenericSQLDialect {
     };
 
     private static final String[] FIREBIRD_KEYWORDS = new String[] {
+        "ACCENT",
+        "BLOCK",
+        "BREAK",
         "COMMENT",
+        "COMPUTED",
+        "CONTAINING",
         "CURRENT_USER",
         "CURRENT_ROLE",
+        "GENERATOR",
         "NCHAR",
-        "VALUE"
+        "STARTING",
+        "VALUE",
+        "WEEKDAY",
+        "YEARDAY",
+    };
+
+    private static final String[] FIREBIRD_FUNCTIONS = {
+    	"CEIL",
+    	"CEILING",
+    	"COALESCE",
+        "DATEADD",
+        "DATEDIFF",
+        "EXTRACT",
+        "IIF",
+        "MAXVALUE",
+        "MINVALUE",
+        "NULLIF",
+        "RAND",
+        "REVERSE",
+        "RPAD",
+        "SINH",
+        "TRUNC",
     };
 
     public FireBirdSQLDialect() {
@@ -73,8 +104,14 @@ public class FireBirdSQLDialect extends GenericSQLDialect {
 
     public void initDriverSettings(JDBCSession session, JDBCDataSource dataSource, JDBCDatabaseMetaData metaData) {
         super.initDriverSettings(session, dataSource, metaData);
+        if (!dataSource.isServerVersionAtLeast(2, 0)) {
+            // we don't know the exact version actually
+            // it's probably in servers older than 2.0 https://www.firebirdsql.org/refdocs/langrefupd20-select.html
+            supportsAsBeforeTableAlias = false;
+        }
         turnFunctionIntoKeyword("TRUNCATE");
         addKeywords(Arrays.asList(FIREBIRD_KEYWORDS), DBPKeywordType.KEYWORD);
+        addFunctions(Arrays.asList(FIREBIRD_FUNCTIONS));
     }
 
     @Override
@@ -85,6 +122,11 @@ public class FireBirdSQLDialect extends GenericSQLDialect {
     @Override
     public boolean supportsAliasInHaving() {
         return false;
+    }
+
+    @Override
+    public boolean supportsAsKeywordBeforeAliasInFromClause() {
+        return supportsAsBeforeTableAlias;
     }
 
     @Override
@@ -100,5 +142,11 @@ public class FireBirdSQLDialect extends GenericSQLDialect {
     @Override
     public boolean supportsInsertAllDefaultValuesStatement() {
         return true;
+    }
+
+    @NotNull
+    @Override
+    public DBDBinaryFormatter getNativeBinaryFormatter() {
+        return BinaryFormatterHexString.INSTANCE;
     }
 }

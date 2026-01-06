@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ui.navigator.dialogs;
 
 import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -42,7 +43,8 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.internal.UINavigatorMessages;
+import org.jkiss.dbeaver.ui.actions.ConnectionCommands;
+import org.jkiss.dbeaver.ui.internal.UIMessages;
 import org.jkiss.dbeaver.ui.navigator.NavigatorPreferences;
 import org.jkiss.dbeaver.ui.navigator.itemlist.DatabaseObjectListControl;
 import org.jkiss.utils.CommonUtils;
@@ -59,12 +61,10 @@ import java.util.List;
 public class SelectDatabaseDialog extends ObjectListDialog<DBNDatabaseNode>
 {
     private static final Log log = Log.getLog(SelectDatabaseDialog.class);
-    private static final String CMD_ACTIVE_DATASOURCE = "org.jkiss.dbeaver.ui.tools.select.connection";
 
     private final DBPDataSourceContainer dataSourceContainer;
     private volatile String currentInstanceName;
 
-    private DatabaseObjectListControl<DBNDatabaseNode> instanceList;
     private final List<DBNDatabaseNode> selectedInstances = new ArrayList<>();
 
     public SelectDatabaseDialog(
@@ -75,7 +75,9 @@ public class SelectDatabaseDialog extends ObjectListDialog<DBNDatabaseNode>
         Collection<DBNDatabaseNode> selected)
     {
         super(parentShell,
-            UINavigatorMessages.label_choose_catalog,
+            NLS.bind(
+                UIMessages.label_choose,
+                UIUtils.getCatalogSchemaTerms(dataSourceContainer, true)),
             true,
             "SchemaSelector", //$NON-NLS-1$
             objects,
@@ -90,12 +92,12 @@ public class SelectDatabaseDialog extends ObjectListDialog<DBNDatabaseNode>
         if (currentInstanceName == null || dataSource == null) {
             return;
         }
-        DBCExecutionContextDefaults contextDefaults = getContextDefaults();
+        DBCExecutionContextDefaults<?,?> contextDefaults = getContextDefaults();
         if (contextDefaults != null && contextDefaults.supportsCatalogChange() && contextDefaults.supportsSchemaChange()) {
             DBSObjectContainer instanceContainer = DBUtils.getAdapter(DBSObjectContainer.class, dataSource);
             if (instanceContainer == null) {
                 UIUtils.showMessageBox(getShell(), "No database objects were found", "No database objects were found. Please set active datasource (" +
-                    ActionUtils.findCommandDescription(CMD_ACTIVE_DATASOURCE, UIUtils.getActiveWorkbenchWindow(), true) +
+                    ActionUtils.findCommandDescription(ConnectionCommands.CMD_SELECT_CONNECTION, UIUtils.getActiveWorkbenchWindow(), true) +
                     ") for this editor.", SWT.ICON_ERROR);
                 return;
             }
@@ -104,7 +106,7 @@ public class SelectDatabaseDialog extends ObjectListDialog<DBNDatabaseNode>
     }
 
     @Nullable
-    private DBCExecutionContextDefaults getContextDefaults() {
+    private DBCExecutionContextDefaults<?,?> getContextDefaults() {
         DBPDataSource dataSource = dataSourceContainer.getDataSource();
         DBSObjectContainer instanceContainer = DBUtils.getAdapter(DBSObjectContainer.class, dataSource);
         DBCExecutionContext defaultContext = DBUtils.getDefaultContext(instanceContainer, true);
@@ -116,7 +118,7 @@ public class SelectDatabaseDialog extends ObjectListDialog<DBNDatabaseNode>
 
     private void createInstanceSelector(Composite group, DBSObjectContainer instanceContainer) {
         ((GridLayout)group.getLayout()).numColumns++;
-        instanceList = createObjectSelector(group, true, "DatabaseInstanceSelector", selectedInstances, new DBRRunnableWithResult<List<DBNDatabaseNode>>() {
+        DatabaseObjectListControl<DBNDatabaseNode> instanceList = createObjectSelector(group, true, "DatabaseInstanceSelector", selectedInstances, new DBRRunnableWithResult<>() {
             @Override
             public void run(DBRProgressMonitor monitor) throws InvocationTargetException {
                 try {
@@ -140,24 +142,24 @@ public class SelectDatabaseDialog extends ObjectListDialog<DBNDatabaseNode>
         instanceList.createProgressPanel();
         GridData gd = new GridData(GridData.FILL_BOTH);
         gd.heightHint = 300;
-        gd.minimumWidth = 300;
+        gd.minimumWidth = 500;
         instanceList.setLayoutData(gd);
         instanceList.getSelectionProvider().addSelectionChangedListener(event -> {
             IStructuredSelection selection = (IStructuredSelection) event.getSelection();
             selectedInstances.clear();
             selectedInstances.addAll(selection.toList());
             DBNDatabaseNode instance = selectedInstances.isEmpty() ? null : selectedInstances.get(0);
-            if (instance != null && !CommonUtils.equalObjects(instance.getNodeName(), currentInstanceName)) {
-                currentInstanceName = instance.getNodeName();
+            if (instance != null && !CommonUtils.equalObjects(instance.getNodeDisplayName(), currentInstanceName)) {
+                currentInstanceName = instance.getNodeDisplayName();
                 objectList.loadData();
             }
         });
 
         instanceList.loadData();
-        closeOnFocusLost(instanceList);
+        closeOnFocusLost(instanceList.getItemsViewer().getControl());
     }
 
-    protected List<DBNDatabaseNode> getObjects(DBRProgressMonitor monitor) throws DBException {
+    protected List<DBNDatabaseNode> getObjects(DBRProgressMonitor monitor) {
         DBSObject rootObject;
         if (selectedInstances != null && currentInstanceName != null && getContextDefaults() != null
             && getContextDefaults().supportsSchemaChange()) {
@@ -168,7 +170,7 @@ public class SelectDatabaseDialog extends ObjectListDialog<DBNDatabaseNode>
         }
         if (rootObject instanceof DBSObjectContainer) {
             try {
-                DBCExecutionContextDefaults contextDefaults = getContextDefaults();
+                DBCExecutionContextDefaults<?,?> contextDefaults = getContextDefaults();
                 Collection<? extends DBSObject> objectsCollection;
                 if (rootObject instanceof DBSCatalog && contextDefaults != null && !contextDefaults.supportsSchemaChange()) {
                     DBSSchema schema = contextDefaults.getDefaultSchema();

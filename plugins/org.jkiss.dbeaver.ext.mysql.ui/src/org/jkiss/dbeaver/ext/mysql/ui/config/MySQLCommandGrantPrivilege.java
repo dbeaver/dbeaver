@@ -1,7 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
- * Copyright (C) 2011-2012 Eugene Fradkin (eugene.fradkin@gmail.com)
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ext.mysql.ui.config;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ext.mysql.MySQLConstants;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLCatalog;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLPrivilege;
@@ -31,6 +31,7 @@ import org.jkiss.dbeaver.model.impl.edit.DBECommandAbstract;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
+import java.util.Locale;
 import java.util.Map;
 
 /**
@@ -60,10 +61,11 @@ public class MySQLCommandGrantPrivilege extends DBECommandAbstract<MySQLUser> {
         getObject().clearGrantsCache();
     }
 
+    @NotNull
     @Override
-    public DBEPersistAction[] getPersistActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, Map<String, Object> options)
+    public DBEPersistAction[] getPersistActions(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext executionContext, @NotNull Map<String, Object> options)
     {
-        String privName = privilege.getFixedPrivilegeName();
+        String privName = privilege.getFixedPrivilegeName().toUpperCase(Locale.ROOT);
         String grantScript = "GRANT " + privName + //$NON-NLS-1$
             " ON " + getObjectName() + //$NON-NLS-1$
             " TO " + getObject().getFullName() + (withGrantOption ? " WITH GRANT OPTION" : ""); //$NON-NLS-1$ //$NON-NLS-2$
@@ -77,8 +79,9 @@ public class MySQLCommandGrantPrivilege extends DBECommandAbstract<MySQLUser> {
         };
     }
 
+    @NotNull
     @Override
-    public DBECommand<?> merge(DBECommand<?> prevCommand, Map<Object, Object> userParams)
+    public DBECommand<?> merge(@NotNull DBECommand<?> prevCommand, @NotNull Map<Object, Object> userParams)
     {
         if (prevCommand instanceof MySQLCommandGrantPrivilege) {
             MySQLCommandGrantPrivilege prevGrant = (MySQLCommandGrantPrivilege) prevCommand;

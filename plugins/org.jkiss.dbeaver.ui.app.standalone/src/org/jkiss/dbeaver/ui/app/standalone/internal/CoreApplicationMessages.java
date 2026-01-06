@@ -1,7 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
- * Copyright (C) 2011-2012 Eugene Fradkin (eugene.fradkin@gmail.com)
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,11 +19,11 @@ package org.jkiss.dbeaver.ui.app.standalone.internal;
 import org.eclipse.osgi.util.NLS;
 
 public class CoreApplicationMessages extends NLS {
-	public static final String BUNDLE_NAME = "org.jkiss.dbeaver.ui.app.standalone.internal.CoreApplicationMessages"; //$NON-NLS-1$
-	
-	public static String actions_menu_exit_emergency;
+    public static final String BUNDLE_NAME = "org.jkiss.dbeaver.ui.app.standalone.internal.CoreApplicationMessages"; //$NON-NLS-1$
+
+    public static String actions_menu_exit_emergency;
     public static String actions_menu_exit_emergency_message;
-	public static String actions_menu_recent_editors;
+    public static String actions_menu_recent_editors;
 
     public static String button_apply_and_restart;
 
@@ -42,14 +41,30 @@ public class CoreApplicationMessages extends NLS {
     public static String clear_history_error_title;
     public static String clear_history_error_message;
 
-	public static String confirmation_cancel_database_tasks_title;
-	public static String confirmation_cancel_database_tasks_message;
+    public static String confirmation_cancel_database_tasks_title;
+    public static String confirmation_cancel_database_tasks_message;
+
+    public static String collect_diagnostic_info_pick_path_title;
+    public static String collect_diagnostic_info_pick_path_label;
+    public static String collect_diagnostic_info_pick_path_warning;
+    public static String collect_diagnostic_info_error_message_title;
+    public static String collect_diagnostic_info_error_message_text;
+    public static String collect_diagnostic_info_error_message_hint;
+
+    public static String timezone_change_info_title;
+    public static String timezone_change_info_message;
+
+    public static String locale_change_info_title;
+    public static String locale_change_info_message;
+
+    public static String notification_perspective_reset_title;
+    public static String notification_perspective_reset_message;
 
     static {
-		// initialize resource bundle
-		NLS.initializeMessages(BUNDLE_NAME, CoreApplicationMessages.class);
-	}
+        // initialize resource bundle
+        NLS.initializeMessages(BUNDLE_NAME, CoreApplicationMessages.class);
+    }
 
-	private CoreApplicationMessages() {
-	}
+    private CoreApplicationMessages() {
+    }
 }

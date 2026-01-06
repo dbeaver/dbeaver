@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,13 +23,10 @@ import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IWorkbenchPartSite;
-import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.console.MessageConsole;
 import org.eclipse.ui.console.TextConsoleViewer;
-import org.eclipse.ui.themes.ITheme;
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.model.sql.SQLConstants;
-import org.jkiss.dbeaver.ui.UIFonts;
+import org.jkiss.dbeaver.ui.BaseThemeSettings;
 import org.jkiss.dbeaver.ui.UIStyles;
 import org.jkiss.dbeaver.ui.controls.StyledTextUtils;
 import org.jkiss.dbeaver.ui.editors.TextEditorUtils;
@@ -119,13 +116,20 @@ public class SQLEditorOutputConsoleViewer extends TextConsoleViewer {
     }
 
     public void refreshStyles() {
-        ITheme currentTheme = PlatformUI.getWorkbench().getThemeManager().getCurrentTheme();
-        Font outputFont = currentTheme.getFontRegistry().get(UIFonts.DBEAVER_FONTS_MONOSPACE);
-        if (outputFont != null) {
-            getTextWidget().setFont(outputFont);
+        Font outputFont = BaseThemeSettings.instance.monospaceFont;
+        StyledText textWidget = getTextWidget();
+        if (textWidget != null && !textWidget.isDisposed()) {
+            if (outputFont != null) {
+                textWidget.setFont(outputFont);
+            }
+            if (UIStyles.isDarkHighContrastTheme()) {
+                textWidget.setForeground(UIStyles.COLOR_WHITE);
+                textWidget.setBackground(UIStyles.getDefaultWidgetBackground());
+            } else {
+                textWidget.setForeground(UIStyles.getDefaultTextForeground());
+                textWidget.setBackground(UIStyles.getDefaultTextBackground());
+            }
         }
-        getTextWidget().setForeground(UIStyles.getDefaultTextForeground());
-        getTextWidget().setBackground(UIStyles.getDefaultTextBackground());
     }
 
     public StyledText getText() {
@@ -139,7 +143,10 @@ public class SQLEditorOutputConsoleViewer extends TextConsoleViewer {
     private void createContextMenu() {
         MenuManager menuMgr = new MenuManager();
         menuMgr.addMenuListener(manager -> {
-            StyledTextUtils.fillDefaultStyledTextContextMenu(manager, getTextWidget());
+            StyledText textWidget = getTextWidget();
+            if (textWidget != null && !textWidget.isDisposed()) {
+                StyledTextUtils.fillDefaultStyledTextContextMenu(manager, textWidget);
+            }
             manager.add(new Separator());
             manager.add(new Action(SQLEditorMessages.sql_editor_action_clear) {
                 @Override
@@ -149,8 +156,11 @@ public class SQLEditorOutputConsoleViewer extends TextConsoleViewer {
             });
         });
         menuMgr.setRemoveAllWhenShown(true);
-        getTextWidget().setMenu(menuMgr.createContextMenu(getTextWidget()));
-        getTextWidget().addDisposeListener(e -> menuMgr.dispose());
+        StyledText textWidget = getTextWidget();
+        if (textWidget != null && !textWidget.isDisposed()) {
+            textWidget.setMenu(menuMgr.createContextMenu(textWidget));
+            textWidget.addDisposeListener(e -> menuMgr.dispose());
+        }
     }
 
 }

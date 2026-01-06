@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.ext.h2.model;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBDatabaseException;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.generic.model.*;
 import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaModel;
@@ -50,8 +51,9 @@ public class H2MetaModel extends GenericMetaModel
         super();
     }
 
+    @NotNull
     @Override
-    public GenericDataSource createDataSourceImpl(DBRProgressMonitor monitor, DBPDataSourceContainer container) throws DBException {
+    public GenericDataSource createDataSourceImpl(@NotNull DBRProgressMonitor monitor, @NotNull DBPDataSourceContainer container) throws DBException {
         return new H2DataSource(monitor, container, new H2MetaModel());
     }
 
@@ -61,7 +63,7 @@ public class H2MetaModel extends GenericMetaModel
     }
 
     @Override
-    public GenericTableBase createTableImpl(GenericStructContainer container, @Nullable String tableName, @Nullable String tableType, @Nullable JDBCResultSet dbResult) {
+    public GenericTableBase createTableOrViewImpl(GenericStructContainer container, @Nullable String tableName, @Nullable String tableType, @Nullable JDBCResultSet dbResult) {
         if (tableType != null && isView(tableType)) {
             return new GenericView(container, tableName, tableType, dbResult);
         }
@@ -69,14 +71,14 @@ public class H2MetaModel extends GenericMetaModel
     }
 
     @Override
-    public String getTableDDL(DBRProgressMonitor monitor, GenericTableBase sourceObject, Map<String, Object> options) throws DBException {
+    public String getTableDDL(@NotNull DBRProgressMonitor monitor, @NotNull GenericTableBase sourceObject, @NotNull Map<String, Object> options) throws DBException {
         // We tried here using SELECT SQL FROM INFORMATION_SCHEMA.TABLES, but it is not good
         // And this SQL result does not have info about keys or indexes
         return super.getTableDDL(monitor, sourceObject, options);
     }
 
     @Override
-    public String getViewDDL(DBRProgressMonitor monitor, GenericView sourceObject, Map<String, Object> options) throws DBException {
+    public String getViewDDL(@NotNull DBRProgressMonitor monitor, @NotNull GenericView sourceObject, @NotNull Map<String, Object> options) throws DBException {
         // Since version 2 H2 keeps part of data in the system views.
         // But VIEW_DEFINITION field is empty for system views in the INFORMATION_SCHEMA.VIEWS
         // Maybe someday something will change, but until we will show anything for system views
@@ -96,7 +98,7 @@ public class H2MetaModel extends GenericMetaModel
                     }
                 }
             } catch (SQLException e) {
-                throw new DBException(e, dataSource);
+                throw new DBDatabaseException(e, dataSource);
             }
         }
         return super.getViewDDL(monitor, sourceObject, options);
@@ -119,7 +121,7 @@ public class H2MetaModel extends GenericMetaModel
             dbStat = session.prepareStatement("SELECT tc.*, tc.CONSTRAINT_NAME AS PK_NAME, ccu.COLUMN_NAME, cc.CHECK_CLAUSE AS CHECK_EXPRESSION FROM INFORMATION_SCHEMA.TABLE_CONSTRAINTS tc LEFT JOIN\n" +
                 "INFORMATION_SCHEMA.CONSTRAINT_COLUMN_USAGE ccu ON tc.CONSTRAINT_SCHEMA = ccu.CONSTRAINT_SCHEMA AND tc.CONSTRAINT_NAME = ccu.CONSTRAINT_NAME\n" +
                 "LEFT JOIN INFORMATION_SCHEMA.CHECK_CONSTRAINTS cc ON tc.CONSTRAINT_SCHEMA = cc.CONSTRAINT_SCHEMA AND tc.CONSTRAINT_NAME = cc.CONSTRAINT_NAME\n" +
-                "WHERE tc.CONSTRAINT_TYPE <> 'REFERENTIAL' AND tc.CONSTRAINT_SCHEMA = ?"
+                "WHERE tc.CONSTRAINT_TYPE NOT IN ('REFERENTIAL', 'FOREIGN KEY') AND tc.CONSTRAINT_SCHEMA = ?"
                 + (forParent != null ? "AND tc.TABLE_NAME = ?" : ""));
             dbStat.setString(1, owner.getName());
             if (forParent != null) {
@@ -130,7 +132,7 @@ public class H2MetaModel extends GenericMetaModel
     }
 
     @Override
-    public DBSEntityConstraintType getUniqueConstraintType(JDBCResultSet dbResult) throws DBException, SQLException {
+    public DBSEntityConstraintType getUniqueConstraintType(@NotNull JDBCResultSet dbResult) throws DBException, SQLException {
         String type = JDBCUtils.safeGetString(dbResult, "CONSTRAINT_TYPE");
         if (CommonUtils.isNotEmpty(type)) {
             if ("UNIQUE".equals(type)) {
@@ -144,8 +146,9 @@ public class H2MetaModel extends GenericMetaModel
         return super.getUniqueConstraintType(dbResult);
     }
 
+    @NotNull
     @Override
-    public GenericUniqueKey createConstraintImpl(GenericTableBase table, String constraintName, DBSEntityConstraintType constraintType, JDBCResultSet dbResult, boolean persisted) {
+    public GenericUniqueKey createConstraintImpl(@NotNull GenericTableBase table, String constraintName, DBSEntityConstraintType constraintType, JDBCResultSet dbResult, boolean persisted) {
         if (dbResult != null) {
             String description = JDBCUtils.safeGetString(dbResult, "REMARKS");
             String checkExpression = JDBCUtils.safeGetString(dbResult, "CHECK_EXPRESSION");
@@ -154,8 +157,10 @@ public class H2MetaModel extends GenericMetaModel
         return new H2Constraint(table, constraintName, null, constraintType, persisted, null);
     }
 
+    @Nullable
     @Override
-    public GenericTableConstraintColumn[] createConstraintColumnsImpl(JDBCSession session, GenericTableBase parent, GenericUniqueKey object, GenericMetaObject pkObject, JDBCResultSet dbResult) throws DBException {
+    public GenericTableConstraintColumn[] createConstraintColumnsImpl(@NotNull JDBCSession session, @NotNull GenericTableBase parent, @NotNull
+    GenericUniqueKey object, GenericMetaObject pkObject, JDBCResultSet dbResult) throws DBException {
         GenericDataSource dataSource = parent.getDataSource();
         if (!dataSource.isServerVersionAtLeast(2, 0) && dbResult != null) { // H2 Version 2 has COLUMN_NAME and works fine
             List<GenericTableConstraintColumn> constraintColumns = new ArrayList<>();
@@ -188,6 +193,11 @@ public class H2MetaModel extends GenericMetaModel
 
     @Override
     public boolean supportsCheckConstraints() {
+        return true;
+    }
+
+    @Override
+    public boolean supportsUniqueKeys() {
         return true;
     }
 
@@ -251,7 +261,7 @@ public class H2MetaModel extends GenericMetaModel
     }
 
     @Override
-    public void loadProcedures(DBRProgressMonitor monitor, @NotNull GenericObjectContainer container) throws DBException {
+    public void loadProcedures(@NotNull DBRProgressMonitor monitor, @NotNull GenericObjectContainer container) throws DBException {
         String sql;
         boolean new2H2 = container.getDataSource().isServerVersionAtLeast(2, 0);
         if (new2H2) {
@@ -289,7 +299,7 @@ public class H2MetaModel extends GenericMetaModel
                     }
                 }
             } catch (SQLException e) {
-                throw new DBException(e, container.getDataSource());
+                throw new DBDatabaseException(e, container.getDataSource());
             }
         }
     }

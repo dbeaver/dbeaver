@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,7 +23,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.app.DBPPlatformDesktop;
+import org.jkiss.dbeaver.model.app.DBPPlatformEventManager;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.task.*;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -85,35 +85,37 @@ public class TaskRegistry implements DBTTaskRegistry
         if (DBWorkbench.getPlatform().getApplication().isMultiuser()) {
             return;
         }
-        DBPPlatformDesktop.getInstance().getGlobalEventManager().addEventListener((eventId, properties) -> {
-            if (eventId.equals(EVENT_TASK_EXECUTE)) {
-                String projectName = CommonUtils.toString(properties.get(EVENT_PARAM_PROJECT));
-                String taskId = CommonUtils.toString(properties.get(EVENT_PARAM_TASK));
-                DBPProject project = DBWorkbench.getPlatform().getWorkspace().getProject(projectName);
-                if (project != null) {
-                    DBTTask task = project.getTaskManager().getTaskById(taskId);
-                    if (task != null) {
-                        task.refreshRunStatistics();
-                    }
-                    DBTTaskEvent event = new DBTTaskEvent(task, DBTTaskEvent.Action.TASK_EXECUTE);
-                    notifyTaskListeners(event);
-                }
-            }
-            if (eventId.equals(EVENT_BEFORE_PROJECT_DELETE)) {
-                final String projectName = CommonUtils.toString(properties.get(EVENT_PARAM_PROJECT));
-                final DBPProject project = DBWorkbench.getPlatform().getWorkspace().getProject(projectName);
-                if (project != null) {
-                    final DBTTaskManager manager = project.getTaskManager();
-                    for (DBTTask task : manager.getAllTasks()) {
-                        try {
-                            manager.deleteTaskConfiguration(task);
-                        } catch (DBException e) {
-                            log.warn("Can't delete configuration for task: " + task.getName());
+        if (DBWorkbench.getPlatform() instanceof DBPPlatformEventManager eventManager) {
+            eventManager.getGlobalEventManager().addEventListener((eventId, properties) -> {
+                if (eventId.equals(EVENT_TASK_EXECUTE)) {
+                    String projectName = CommonUtils.toString(properties.get(EVENT_PARAM_PROJECT));
+                    String taskId = CommonUtils.toString(properties.get(EVENT_PARAM_TASK));
+                    DBPProject project = DBWorkbench.getPlatform().getWorkspace().getProject(projectName);
+                    if (project != null) {
+                        DBTTask task = project.getTaskManager().getTaskById(taskId);
+                        if (task != null) {
+                            task.refreshRunStatistics();
+                            DBTTaskEvent event = new DBTTaskEvent(task, DBTTaskEvent.Action.TASK_EXECUTE);
+                            notifyTaskListeners(event);
                         }
                     }
                 }
-            }
-        });
+                if (eventId.equals(EVENT_BEFORE_PROJECT_DELETE)) {
+                    final String projectName = CommonUtils.toString(properties.get(EVENT_PARAM_PROJECT));
+                    final DBPProject project = DBWorkbench.getPlatform().getWorkspace().getProject(projectName);
+                    if (project != null) {
+                        final DBTTaskManager manager = project.getTaskManager();
+                        for (DBTTask task : manager.getAllTasks()) {
+                            try {
+                                manager.deleteTaskConfiguration(task);
+                            } catch (DBException e) {
+                                log.warn("Can't delete configuration for task: " + task.getName());
+                            }
+                        }
+                    }
+                }
+            });
+        }
     }
 
     @NotNull
@@ -154,10 +156,12 @@ public class TaskRegistry implements DBTTaskRegistry
 
     @Override
     public DBTSchedulerDescriptor getActiveScheduler() {
-        // TODO: support active scheduler configuration
-        return schedulers.isEmpty() ? null : schedulers.get(0);
+        return schedulers.stream()
+            .filter(SchedulerDescriptor::isEnabled)
+            .findFirst().orElse(null);
     }
 
+    @Nullable
     public DBTScheduler getActiveSchedulerInstance() {
         DBTSchedulerDescriptor activeScheduler = getActiveScheduler();
         if (activeScheduler != null) {
@@ -186,7 +190,7 @@ public class TaskRegistry implements DBTTaskRegistry
         }
     }
 
-    void notifyTaskListeners(DBTTaskEvent event) {
+    public void notifyTaskListeners(DBTTaskEvent event) {
         DBTTaskListener[] listenersCopy;
         synchronized (taskListeners) {
             listenersCopy = taskListeners.toArray(new DBTTaskListener[0]);

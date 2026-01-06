@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,33 +18,41 @@ package org.jkiss.dbeaver.ui.resources;
 
 import org.eclipse.core.filesystem.EFS;
 import org.eclipse.core.filesystem.IFileInfo;
+import org.eclipse.core.filesystem.IFileStore;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.OperationCanceledException;
 import org.eclipse.swt.program.Program;
 import org.eclipse.ui.IEditorDescriptor;
 import org.eclipse.ui.IEditorRegistry;
 import org.eclipse.ui.ide.IDE;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.fs.nio.NIOFile;
-import org.jkiss.dbeaver.model.fs.nio.NIOFileStore;
-import org.jkiss.dbeaver.model.navigator.DBNNode;
-import org.jkiss.dbeaver.model.navigator.DBNNodeWithResource;
-import org.jkiss.dbeaver.model.navigator.DBNResource;
+import org.jkiss.dbeaver.model.fs.DBFFileStoreProvider;
+import org.jkiss.dbeaver.model.fs.DBFUtils;
+import org.jkiss.dbeaver.model.fs.nio.EFSNIOResource;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.ProgramInfo;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.editors.file.FileTypeHandlerDescriptor;
+import org.jkiss.dbeaver.ui.editors.file.FileTypeHandlerRegistry;
+import org.jkiss.dbeaver.ui.editors.file.IFileTypeHandler;
 import org.jkiss.dbeaver.utils.ContentUtils;
+import org.jkiss.utils.ByteNumberFormat;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.IOUtils;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Collections;
+import java.util.Map;
 
 /**
  * Default resource handler
@@ -73,39 +81,41 @@ public class DefaultResourceHandlerImpl extends AbstractResourceHandler {
         return "resource"; //$NON-NLS-1$
     }
 
+    @Nullable
     @Override
     public String getResourceDescription(@NotNull IResource resource) {
         return "";
     }
 
-    @NotNull
-    @Override
-    public DBNResource makeNavigatorNode(@NotNull DBNNode parentNode, @NotNull IResource resource) throws CoreException, DBException {
-        DBNResource node = super.makeNavigatorNode(parentNode, resource);
-        updateNavigatorNodeFromResource(node, resource);
-        return node;
-    }
-
-    @Override
-    public void updateNavigatorNodeFromResource(@NotNull DBNNodeWithResource node, @NotNull IResource resource) {
-        super.updateNavigatorNodeFromResource(node, resource);
-        String fileExtension = resource.getFileExtension();
-        if (!CommonUtils.isEmpty(fileExtension)) {
-            setNodeIconFromFileType(node, fileExtension);
-        }
-    }
-
-    public void setNodeIconFromFileType(@NotNull DBNNodeWithResource node, @NotNull String fileExt) {
-        ProgramInfo program = ProgramInfo.getProgram(fileExt);
-        if (program != null && program.getImage() != null) {
-            node.setResourceImage(program.getImage());
-        }
-    }
-
     @Override
     public void openResource(@NotNull IResource resource) throws CoreException, DBException {
-        if (resource instanceof NIOFile) {
-            NIOFileStore fileStore = new NIOFileStore(resource.getLocationURI(), ((NIOFile) resource).getNioPath());
+        IPath location = resource instanceof EFSNIOResource ? null : resource.getLocation();
+        if (location != null) {
+            // Try to open using file handler
+            Path path = location.toPath();
+            if (Files.exists(path)) {
+                String fileExtension = IOUtils.getFileExtension(path);
+                if (!CommonUtils.isEmpty(fileExtension)) {
+                    FileTypeHandlerDescriptor fthd = FileTypeHandlerRegistry.getInstance().findHandler(fileExtension);
+                    if (fthd != null) {
+                        try {
+                            IFileTypeHandler handler = fthd.createHandler();
+                            handler.openFiles(Collections.singletonList(path), Map.of(), null);
+                            return;
+                        } catch (ReflectiveOperationException e) {
+                            throw new DBException("Cannot create file handler", e);
+                        }
+                    }
+                }
+            }
+        }
+        if (resource instanceof DBFFileStoreProvider) {
+            IFileStore fileStore = ((DBFFileStoreProvider) resource).getFileStore();
+            long length = fileStore.fetchInfo().getLength();
+            if (!UIUtils.confirmAction(resource.getFullPath().toString(), "Open remote resource '" + resource.getFullPath() +
+                "'?\nSize = " + ByteNumberFormat.getInstance().format(length) + " bytes")) {
+                return;
+            }
 
             // open the editor on the file
             IEditorDescriptor editorDesc;
@@ -116,24 +126,23 @@ public class DefaultResourceHandlerImpl extends AbstractResourceHandler {
             }
 
             try {
-                final Path[] target = new Path[1];
-
-                UIUtils.runInProgressService(monitor -> {
+                final Path target = UIUtils.runWithMonitor(monitor -> {
                     try {
-                        target[0] = Files.createTempFile(
+                        Path tempFile = Files.createTempFile(
                             DBWorkbench.getPlatform().getTempFolder(monitor, "external-files"),
                             null,
                             fileStore.getName()
                         );
 
                         try (InputStream is = fileStore.openInputStream(EFS.NONE, null)) {
-                            try (OutputStream os = Files.newOutputStream(target[0])) {
+                            try (OutputStream os = Files.newOutputStream(tempFile)) {
                                 final IFileInfo info = fileStore.fetchInfo(EFS.NONE, null);
                                 ContentUtils.copyStreams(is, info.getLength(), os, monitor);
                             }
                         }
-                    } catch (Exception e) {
-                        throw new InvocationTargetException(e);
+                        return tempFile;
+                    } catch (IOException | CoreException e) {
+                        throw new DBException("Error copying file", e);
                     }
                 });
 
@@ -144,23 +153,24 @@ public class DefaultResourceHandlerImpl extends AbstractResourceHandler {
                     //  2. Detect changes made by an external editor
                     // But for now it's okay, I assume.
 
-                    Program.launch(target[0].toString());
+                    Program.launch(target.toString());
                 } else {
                     IDE.openEditor(
                         UIUtils.getActiveWorkbenchWindow().getActivePage(),
-                        target[0].toUri(),
+                        DBFUtils.getUriFromPath(target),
                         editorDesc.getId(),
                         true
                     );
                 }
-            } catch (InvocationTargetException e) {
-                DBWorkbench.getPlatformUI().showError("Error opening resource", "Can't open resource using external editor", e.getTargetException());
-            } catch (InterruptedException ignored) {
+            } catch (DBException e) {
+                DBWorkbench.getPlatformUI().showError("Error opening resource", "Can't open resource using external editor", e);
             }
         } else if (resource instanceof IFile) {
             IDE.openEditor(UIUtils.getActiveWorkbenchWindow().getActivePage(), (IFile) resource);
-        } else if (resource instanceof IFolder) {
-            DBWorkbench.getPlatformUI().executeShellProgram(resource.getLocation().toOSString());
+        } else if (resource instanceof IFolder && location != null) {
+            DBWorkbench.getPlatformUI().executeShellProgram(location.toOSString());
+        } else {
+            DBWorkbench.getPlatformUI().showError("Error opening resource", "Do not know how to open resource '" + resource + "'");
         }
     }
 

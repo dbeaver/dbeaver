@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,12 +17,15 @@
 
 package org.jkiss.dbeaver.ext.mysql.ui.config;
 
-import org.jkiss.dbeaver.ext.mysql.model.MySQLTableColumn;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLTableConstraint;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLTableForeignKey;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLTableForeignKeyColumn;
 import org.jkiss.dbeaver.ext.mysql.ui.internal.MySQLUIMessages;
+import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEObjectConfigurator;
+import org.jkiss.dbeaver.model.impl.sql.edit.struct.SQLForeignKeyManager;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.rdb.DBSForeignKeyModifyRule;
 import org.jkiss.dbeaver.ui.UITask;
@@ -37,7 +40,7 @@ public class MySQLForeignKeyConfigurator implements DBEObjectConfigurator<MySQLT
 
 
     @Override
-    public MySQLTableForeignKey configureObject(DBRProgressMonitor monitor, Object table, MySQLTableForeignKey foreignKey, Map<String, Object> options) {
+    public MySQLTableForeignKey configureObject(@NotNull DBRProgressMonitor monitor, @Nullable DBECommandContext commandContext, @Nullable Object table, @NotNull MySQLTableForeignKey foreignKey, @NotNull Map<String, Object> options) {
         return UITask.run(() -> {
             EditForeignKeyPage editPage = new EditForeignKeyPage(
                 MySQLUIMessages.edit_foreign_key_manager_title,
@@ -52,7 +55,7 @@ public class MySQLForeignKeyConfigurator implements DBEObjectConfigurator<MySQLT
                 return null;
             }
 
-            foreignKey.setReferencedKey((MySQLTableConstraint) editPage.getUniqueConstraint());
+            foreignKey.setReferencedConstraint((MySQLTableConstraint) editPage.getUniqueConstraint());
             foreignKey.setDeleteRule(editPage.getOnDeleteRule());
             foreignKey.setUpdateRule(editPage.getOnUpdateRule());
             int colIndex = 1;
@@ -60,10 +63,11 @@ public class MySQLForeignKeyConfigurator implements DBEObjectConfigurator<MySQLT
                 foreignKey.addColumn(
                     new MySQLTableForeignKeyColumn(
                         foreignKey,
-                        (MySQLTableColumn) tableColumn.getOwnColumn(),
+                        tableColumn.getOrCreateOwnColumn(monitor, commandContext, foreignKey.getTable()),
                         colIndex++,
-                        (MySQLTableColumn) tableColumn.getRefColumn()));
+                        tableColumn.getRefColumn()));
             }
+            SQLForeignKeyManager.updateForeignKeyName(monitor, foreignKey);
             return foreignKey;
         });
     }

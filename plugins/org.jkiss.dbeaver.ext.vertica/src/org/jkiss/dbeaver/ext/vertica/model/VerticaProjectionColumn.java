@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,8 @@
  */
 package org.jkiss.dbeaver.ext.vertica.model;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.vertica.VerticaUtils;
 import org.jkiss.dbeaver.model.DBPDataKind;
@@ -81,6 +83,7 @@ public class VerticaProjectionColumn extends JDBCTableColumn<VerticaProjection>
         return getTable().getDataSource();
     }
 
+    @NotNull
     @Override
     public DBPDataKind getDataKind() {
         return super.getDataKind();
@@ -101,6 +104,7 @@ public class VerticaProjectionColumn extends JDBCTableColumn<VerticaProjection>
         return super.getDefaultValue();
     }
 
+    @Nullable
     @Override
     public Integer getPrecision() {
         return super.getPrecision();

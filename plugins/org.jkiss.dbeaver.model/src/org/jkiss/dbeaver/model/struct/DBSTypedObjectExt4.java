@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.model.struct;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.DBPObject;
 
 /**
@@ -25,6 +26,6 @@ public interface DBSTypedObjectExt4<DATA_TYPE extends DBSDataType> extends DBPOb
     /**
      * Data type. Can be obtained from DBPDataTypeProvider.
      */
-    void setDataType(DATA_TYPE dataType);
+    void setDataType(@NotNull DATA_TYPE dataType);
 
 }

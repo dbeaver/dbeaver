@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,7 +23,6 @@ import org.eclipse.ui.IWorkbench;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.core.CoreFeatures;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
 import org.jkiss.dbeaver.model.app.DBPProject;
@@ -39,13 +38,11 @@ import org.jkiss.dbeaver.registry.DataSourceViewDescriptor;
 import org.jkiss.dbeaver.registry.DataSourceViewRegistry;
 import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.ui.ConnectionFeatures;
 import org.jkiss.dbeaver.ui.IActionConstants;
 import org.jkiss.dbeaver.ui.UIUtils;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * This is a sample new wizard.
@@ -60,7 +57,10 @@ public class NewConnectionWizard extends ConnectionWizard
     private ConnectionPageDriver pageDrivers;
     private final Map<DBPDataSourceProviderDescriptor, ConnectionPageSettings> settingsPages = new HashMap<>();
     private ConnectionPageGeneral pageGeneral;
+    private DataSourceDescriptor dataSourceNew;
 
+    /** A default constructor used by Eclipse's "New" command */
+    @SuppressWarnings("unused")
     public NewConnectionWizard() {
         this(null, null);
     }
@@ -150,7 +150,7 @@ public class NewConnectionWizard extends ConnectionWizard
             availableProvides.add(provider);
             DataSourceViewDescriptor view = DataSourceViewRegistry.getInstance().findView(provider, IActionConstants.NEW_CONNECTION_POINT);
             if (view != null) {
-                ConnectionPageSettings pageSettings = new ConnectionPageSettings(this, view, null, getDriverSubstitution());
+                ConnectionPageSettings pageSettings = new ConnectionPageSettings(this, view, getDriverSubstitution());
                 settingsPages.put(provider, pageSettings);
                 addPage(pageSettings);
             }
@@ -193,7 +193,7 @@ public class NewConnectionWizard extends ConnectionWizard
     {
         if (page == pageDrivers) {
             final DBPDriver driver = getSelectedDriver();
-            if (driver.isDeprecated()) {
+            if (driver.isNotAvailable()) {
                 final ConnectionPageDeprecation nextPage = new ConnectionPageDeprecation(driver);
                 nextPage.setWizard(this);
                 return nextPage;
@@ -211,6 +211,51 @@ public class NewConnectionWizard extends ConnectionWizard
         }
     }
 
+    @NotNull
+    @Override
+    protected PersistResult persistDataSource() {
+        DriverDescriptor driver = (DriverDescriptor) getSelectedDriver();
+        if (driver.isNotAvailable()) {
+            return PersistResult.UNCHANGED;
+        }
+
+        DBPDataSourceRegistry dataSourceRegistry = Objects.requireNonNull(getDataSourceRegistry());
+
+        if (dataSourceNew == null) {
+            ConnectionPageSettings pageSettings = getPageSettings();
+            DataSourceDescriptor dataSourceTpl = pageSettings == null ? getActiveDataSource() : pageSettings.getActiveDataSource();
+            dataSourceNew = dataSourceRegistry.createDataSource(
+                dataSourceTpl.getId(),
+                driver,
+                dataSourceTpl.getConnectionConfiguration()
+            );
+
+            dataSourceNew.copyFrom(dataSourceTpl);
+            saveSettings(dataSourceNew);
+
+            try {
+                dataSourceRegistry.addDataSource(dataSourceNew);
+            } catch (DBException e) {
+                DBWorkbench.getPlatformUI().showError("Create failed", "Error adding new connections", e);
+                return PersistResult.ERROR;
+            }
+
+            ConnectionFeatures.CONNECTION_CREATE.use(Map.of("driver", dataSourceNew.getDriver().getPreconfiguredId()));
+        } else {
+            saveSettings(dataSourceNew);
+            dataSourceNew.persistConfiguration();
+
+            try {
+                dataSourceRegistry.checkForErrors();
+            } catch (DBException e) {
+                DBWorkbench.getPlatformUI().showError("Persist failed", "Error persisting connection", e);
+                return PersistResult.ERROR;
+            }
+        }
+
+        return PersistResult.CHANGED;
+    }
+
     /**
      * This method is called when 'Finish' button is pressed in
      * the wizard. We will create an operation and run it
@@ -218,26 +263,7 @@ public class NewConnectionWizard extends ConnectionWizard
      */
     @Override
     public boolean performFinish() {
-        DriverDescriptor driver = (DriverDescriptor) getSelectedDriver();
-        if (driver.isDeprecated()) {
-            return true;
-        }
-        ConnectionPageSettings pageSettings = getPageSettings();
-        DataSourceDescriptor dataSourceTpl = pageSettings == null ? getActiveDataSource() : pageSettings.getActiveDataSource();
-        DBPDataSourceRegistry dataSourceRegistry = getDataSourceRegistry();
-
-        DataSourceDescriptor dataSourceNew = new DataSourceDescriptor(
-            dataSourceRegistry, dataSourceTpl.getId(), driver, dataSourceTpl.getConnectionConfiguration());
-        dataSourceNew.copyFrom(dataSourceTpl);
-        saveSettings(dataSourceNew);
-        try {
-            dataSourceRegistry.addDataSource(dataSourceNew);
-        } catch (DBException e) {
-            DBWorkbench.getPlatformUI().showError("Create failed", "Error adding new connections", e);
-            return false;
-        }
-        CoreFeatures.CONNECTION_CREATE.use(Map.of("driver", dataSourceNew.getDriver().getPreconfiguredId()));
-        return true;
+        return persistDataSource() != PersistResult.ERROR;
     }
 
     @Override
@@ -249,7 +275,7 @@ public class NewConnectionWizard extends ConnectionWizard
     @Override
     protected void saveSettings(DataSourceDescriptor dataSource) {
         final DBPDriver driver = dataSource.getDriver();
-        if (driver.isDeprecated()) {
+        if (driver.isNotAvailable()) {
             return;
         }
         ConnectionPageSettings pageSettings = getPageSettings(driver);
@@ -258,6 +284,12 @@ public class NewConnectionWizard extends ConnectionWizard
         }
         pageGeneral.saveSettings(dataSource);
         //pageNetwork.saveSettings(dataSource);
+    }
+
+    @Nullable
+    @Override
+    public DataSourceDescriptor getOriginalDataSource() {
+        return dataSourceNew;
     }
 
     @Override

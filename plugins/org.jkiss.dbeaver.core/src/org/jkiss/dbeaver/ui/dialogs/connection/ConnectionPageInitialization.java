@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,9 +21,10 @@ import org.eclipse.jface.wizard.IWizard;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.graphics.Font;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.CoreMessages;
@@ -41,10 +42,9 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
 import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
-import org.jkiss.dbeaver.ui.DBeaverIcons;
-import org.jkiss.dbeaver.ui.IDataSourceConnectionTester;
-import org.jkiss.dbeaver.ui.IHelpContextIds;
-import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.*;
+import org.jkiss.dbeaver.ui.preferences.PrefPageConnectionTypes;
+import org.jkiss.dbeaver.utils.HelpUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
@@ -60,6 +60,8 @@ class ConnectionPageInitialization extends ConnectionWizardPage implements IData
 
     private static final Log log = Log.getLog(ConnectionPageInitialization.class);
 
+    private static final String PAGE_DOCS_LINK = "Configure-Connection-Initialization-Settings";
+
     private DataSourceDescriptor dataSourceDescriptor;
 
     private Button autocommit;
@@ -67,10 +69,8 @@ class ConnectionPageInitialization extends ConnectionWizardPage implements IData
     private Combo defaultCatalog;
     private Combo defaultSchema;
     private Spinner keepAliveInterval;
-
-    private Spinner autoCloseIdleConnectionsText;
-
-    private Font boldFont;
+    private Button closeIdleConnectionsCheck;
+    private Spinner closeIdleConnectionsPeriod;
 
     private boolean activated = false;
     private final List<DBPTransactionIsolation> supportedLevels = new ArrayList<>();
@@ -97,7 +97,6 @@ class ConnectionPageInitialization extends ConnectionWizardPage implements IData
 
     @Override
     public void dispose() {
-        UIUtils.dispose(boldFont);
         super.dispose();
     }
 
@@ -105,8 +104,8 @@ class ConnectionPageInitialization extends ConnectionWizardPage implements IData
     public void activatePage() {
         if (dataSourceDescriptor != null) {
             if (!activated) {
-                // Get settings from data source descriptor
                 final DBPConnectionConfiguration conConfig = dataSourceDescriptor.getConnectionConfiguration();
+                // Get settings from data source descriptor
                 autocommit.setSelection(dataSourceDescriptor.isDefaultAutoCommit());
                 isolationLevel.add("");
 
@@ -118,7 +117,12 @@ class ConnectionPageInitialization extends ConnectionWizardPage implements IData
                 defaultCatalog.setText(CommonUtils.notEmpty(conConfig.getBootstrap().getDefaultCatalogName()));
                 defaultSchema.setText(CommonUtils.notEmpty(conConfig.getBootstrap().getDefaultSchemaName()));
                 keepAliveInterval.setSelection(conConfig.getKeepAliveInterval());
-                autoCloseIdleConnectionsText.setSelection(conConfig.getCloseIdleInterval());
+                closeIdleConnectionsCheck.setSelection(conConfig.isCloseIdleConnection());
+                closeIdleConnectionsPeriod.setSelection(
+                    conConfig.getCloseIdleInterval() > 0 ?
+                        conConfig.getCloseIdleInterval() :
+                        conConfig.getConnectionType().getCloseIdleConnectionPeriod());
+                closeIdleConnectionsPeriod.setEnabled(closeIdleConnectionsCheck.getSelection());
                 activated = true;
             }
         } else {
@@ -238,7 +242,6 @@ class ConnectionPageInitialization extends ConnectionWizardPage implements IData
 
     @Override
     public void createControl(Composite parent) {
-        boldFont = UIUtils.makeBoldFont(parent.getFont());
         Composite group = UIUtils.createPlaceholder(parent, 1, 5);
 
         {
@@ -267,8 +270,23 @@ class ConnectionPageInitialization extends ConnectionWizardPage implements IData
             keepAliveInterval = UIUtils.createLabelSpinner(txnGroup, CoreMessages.dialog_connection_wizard_final_label_keepalive,
                 CoreMessages.dialog_connection_wizard_final_label_keepalive_tooltip, 0, 0, Short.MAX_VALUE);
 
-            autoCloseIdleConnectionsText = UIUtils.createLabelSpinner(txnGroup, CoreMessages.dialog_connection_wizard_final_label_close_idle_connections,
+            closeIdleConnectionsCheck = UIUtils.createCheckbox(txnGroup,
+                CoreMessages.dialog_connection_wizard_final_label_close_idle_connections,
+                CoreMessages.dialog_connection_wizard_final_label_close_idle_connections_tooltip, true, 1);
+            closeIdleConnectionsCheck.addSelectionListener(SelectionListener.widgetSelectedAdapter(selectionEvent -> {
+                closeIdleConnectionsPeriod.setEnabled(closeIdleConnectionsCheck.getSelection());
+            }));
+            closeIdleConnectionsPeriod = UIUtils.createSpinner(txnGroup,
                 CoreMessages.dialog_connection_wizard_final_label_close_idle_connections_tooltip, 0, 0, Short.MAX_VALUE);
+
+            GridData gd = new GridData(GridData.FILL_HORIZONTAL);
+            gd.horizontalSpan = 2;
+            UIUtils.createPreferenceLink(
+                txnGroup,
+                CoreMessages.action_menu_transaction_pref_page_link_extended,
+                PrefPageConnectionTypes.PAGE_ID,
+                null, null
+            ).setLayoutData(gd);
 
             {
                 String bootstrapTooltip = CoreMessages.dialog_connection_wizard_final_label_bootstrap_tooltip;
@@ -276,7 +294,7 @@ class ConnectionPageInitialization extends ConnectionWizardPage implements IData
                 final Button queriesConfigButton = UIUtils.createPushButton(txnGroup, CoreMessages.dialog_connection_wizard_configure, DBeaverIcons.getImage(DBIcon.TREE_SCRIPT));
                 queriesConfigButton.setToolTipText(bootstrapTooltip);
                 if (dataSourceDescriptor != null && !CommonUtils.isEmpty(dataSourceDescriptor.getConnectionConfiguration().getBootstrap().getInitQueries())) {
-                    queriesConfigButton.setFont(boldFont);
+                    queriesConfigButton.setFont(BaseThemeSettings.instance.baseFontBold);
                 }
                 queriesConfigButton.addSelectionListener(new SelectionAdapter() {
                     @Override
@@ -300,7 +318,17 @@ class ConnectionPageInitialization extends ConnectionWizardPage implements IData
         gd.grabExcessHorizontalSpace = true;
         infoLabel.setLayoutData(gd);
         infoLabel.setToolTipText(CoreMessages.dialog_connection_wizard_connection_init_hint_tip);
-
+        Link urlHelpLabel = UIUtils.createLink(
+            group,
+            CoreMessages.dialog_connection_wizard_connection_init_docs_hint,
+            new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    ShellUtils.launchProgram(HelpUtils.getHelpExternalReference(PAGE_DOCS_LINK));
+                }
+            }
+        );
+        urlHelpLabel.setLayoutData(new GridData(GridData.FILL, GridData.VERTICAL_ALIGN_BEGINNING, false, false, 2, 1));
 
         setControl(group);
 
@@ -313,7 +341,7 @@ class ConnectionPageInitialization extends ConnectionWizardPage implements IData
     }
 
     @Override
-    public void saveSettings(DBPDataSourceContainer dataSource) {
+    public void saveSettings(@NotNull DBPDataSourceContainer dataSource) {
         if (dataSourceDescriptor != null && !activated) {
             // No changes anyway
             return;
@@ -338,7 +366,13 @@ class ConnectionPageInitialization extends ConnectionWizardPage implements IData
         bootstrap.setInitQueries(bootstrapQueries);
 
         confConfig.setKeepAliveInterval(keepAliveInterval.getSelection());
-        confConfig.setCloseIdleInterval(autoCloseIdleConnectionsText.getSelection());
+        confConfig.setCloseIdleConnection(closeIdleConnectionsCheck.getSelection());
+        if (confConfig.isCloseIdleConnection() && closeIdleConnectionsPeriod.getSelection() != confConfig.getConnectionType().getCloseIdleConnectionPeriod()) {
+            // Save only if it is enabled and not equals to default
+            confConfig.setCloseIdleInterval(closeIdleConnectionsPeriod.getSelection());
+        } else {
+            confConfig.setCloseIdleInterval(0);
+        }
     }
 
     @Override
@@ -351,6 +385,12 @@ class ConnectionPageInitialization extends ConnectionWizardPage implements IData
                     DBPConnectionType type = (DBPConnectionType) event.getNewValue();
                     if (autocommit != null) {
                         autocommit.setSelection(type.isAutocommit());
+                    }
+                    if (closeIdleConnectionsCheck != null) {
+                        closeIdleConnectionsCheck.setSelection(type.isAutoCloseConnections());
+                    }
+                    if (closeIdleConnectionsPeriod != null) {
+                        closeIdleConnectionsPeriod.setSelection(type.getCloseIdleConnectionPeriod());
                     }
                 }
             });

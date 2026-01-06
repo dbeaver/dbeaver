@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,6 +31,7 @@ import org.jkiss.dbeaver.model.app.DBPPlatformDesktop;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.connection.DBPDriverLibrary;
+import org.jkiss.dbeaver.model.rcp.RCPProject;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.registry.RegistryConstants;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -119,6 +120,19 @@ public class ProjectExportWizard extends Wizard implements IExportWizard {
 
         String archiveName = exportData.getArchiveFileName() + ExportConstants.ARCHIVE_FILE_EXT;
         File archiveFile = new File(exportData.getOutputFolder(), archiveName);
+        
+        if (archiveFile.exists()) {
+            boolean overwrite = DBWorkbench.getPlatformUI().confirmAction(
+                CoreMessages.dialog_project_export_wizard_file_overwrite_window_title,
+                NLS.bind(CoreMessages.dialog_project_export_wizard_file_overwrite_confirm, archiveName),
+                true
+            );
+
+            if (!overwrite) {
+                return;
+            }
+        }
+        
         FileOutputStream exportStream = new FileOutputStream(archiveFile);
 
         try {
@@ -134,16 +148,17 @@ public class ProjectExportWizard extends Wizard implements IExportWizard {
 
             {
                 // Export source info
+                InetAddress localHost = RuntimeUtils.getLocalHostOrLoopback();
                 meta.startElement(ExportConstants.TAG_SOURCE);
                 meta.addAttribute(ExportConstants.ATTR_TIME, System.currentTimeMillis());
-                meta.addAttribute(ExportConstants.ATTR_ADDRESS, InetAddress.getLocalHost().getHostAddress());
-                meta.addAttribute(ExportConstants.ATTR_HOST, InetAddress.getLocalHost().getHostName());
+                meta.addAttribute(ExportConstants.ATTR_ADDRESS, localHost.getHostAddress());
+                meta.addAttribute(ExportConstants.ATTR_HOST, localHost.getHostName());
                 meta.endElement();
             }
 
             Map<DBPProject, Integer> resCountMap = new HashMap<>();
             monitor.beginTask(CoreMessages.dialog_project_export_wizard_monitor_collect_info, exportData.getProjectsToExport().size());
-            for (DBPProject project : exportData.getProjectsToExport()) {
+            for (RCPProject project : exportData.getProjectsToExport()) {
                 // Add used drivers to export data
                 final DBPDataSourceRegistry dataSourceRegistry = project.getDataSourceRegistry();
                 if (dataSourceRegistry != null) {
@@ -159,16 +174,16 @@ public class ProjectExportWizard extends Wizard implements IExportWizard {
 
             {
                 // Export projects
-                exportData.meta.startElement(ExportConstants.TAG_PROJECTS);
-                for (DBPProject project : exportData.getProjectsToExport()) {
-                    monitor.beginTask(NLS.bind(CoreMessages.dialog_project_export_wizard_monitor_export_project, project.getName()), resCountMap.get(project));
-                    try {
-                        exportProject(monitor, exportData, project.getEclipseProject());
-                    } finally {
-                        monitor.done();
+                try (var ignored = exportData.meta.startElement(ExportConstants.TAG_PROJECTS)) {
+                    for (RCPProject project : exportData.getProjectsToExport()) {
+                        monitor.beginTask(NLS.bind(CoreMessages.dialog_project_export_wizard_monitor_export_project, project.getName()), resCountMap.get(project));
+                        try {
+                            exportProject(monitor, exportData, project.getEclipseProject());
+                        } finally {
+                            monitor.done();
+                        }
                     }
                 }
-                exportData.meta.endElement();
             }
 
             if (exportData.isExportDrivers()) {
@@ -197,6 +212,9 @@ public class ProjectExportWizard extends Wizard implements IExportWizard {
                     Set<String> libFileNames = new HashSet<>();
                     for (String libPath : libPathMap.keySet()) {
                         final Path libFile = libPathMap.get(libPath);
+                        if (Files.isDirectory(libFile)) {
+                            continue;
+                        }
                         // Check for file name duplications
                         final String libFileName = libFile.getFileName().toString();
                         if (libFileNames.contains(libFileName)) {

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@ import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.impl.preferences.BundlePreferenceStore;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.osgi.framework.BundleContext;
 
 import java.io.IOException;
@@ -33,19 +34,19 @@ public class UIStatisticsActivator extends AbstractUIPlugin {
     public static final String PLUGIN_ID = "org.jkiss.dbeaver.ui.statistics";
 
     public static final String PREF_FEATURE_TRACKING_ENABLED = "feature.tracking.enabled";
-    public static final String PREF_STATISTICS_PREVIEW_ENABLED = "feature.statistics.preview.enabled";
     public static final String PREF_SKIP_DATA_SHARE_CONFIRMATION = "feature.tracking.skipConfirmation";
 
     // The shared instance
     private static UIStatisticsActivator plugin;
     private DBPPreferenceStore preferences;
-    private static FeatureStatisticsCollector tracker;
 
     public UIStatisticsActivator() {
     }
 
     public static boolean isTrackingEnabled() {
-        return getDefault().getPreferences().getBoolean(PREF_FEATURE_TRACKING_ENABLED);
+        return DBWorkbench.isPlatformStarted() &&
+            (DBWorkbench.getPlatform().getApplication().isStatisticsCollectionRequired()
+            || getDefault().getPreferences().getBoolean(PREF_FEATURE_TRACKING_ENABLED));
     }
 
     public static void setTrackingEnabled(boolean enabled) {
@@ -53,21 +54,6 @@ public class UIStatisticsActivator extends AbstractUIPlugin {
             return;
         }
         setPreferenceValue(PREF_FEATURE_TRACKING_ENABLED, enabled);
-        if (tracker != null) {
-            if (enabled) {
-                tracker.startMonitor();
-            } else {
-                tracker.stopMonitor();
-            }
-        }
-    }
-
-    public static boolean isDetailsPreviewEnabled() {
-        return getDefault().getPreferences().getBoolean(PREF_STATISTICS_PREVIEW_ENABLED);
-    }
-
-    public static void setDetailsPreviewEnabled(boolean enabled) {
-        setPreferenceValue(PREF_STATISTICS_PREVIEW_ENABLED, enabled);
     }
 
     public static boolean isSkipDataShareConfirmation() {

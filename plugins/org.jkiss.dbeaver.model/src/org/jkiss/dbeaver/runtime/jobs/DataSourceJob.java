@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,7 +35,7 @@ public abstract class DataSourceJob extends AbstractJob implements DBPDataSource
 
     protected DataSourceJob(String name, @NotNull DBCExecutionContext executionContext)
     {
-        super(CommonUtils.truncateString(name, 1000)); // Trunkate just in case
+        super(CommonUtils.truncateString(name, 1000)); // Truncate just in case
         this.executionContext = executionContext;
         final DBPDataSourceContainer dataSourceContainer = executionContext.getDataSource().getContainer();
 

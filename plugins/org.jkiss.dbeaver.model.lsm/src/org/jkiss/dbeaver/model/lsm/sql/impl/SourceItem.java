@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,26 +16,13 @@
  */
 package org.jkiss.dbeaver.model.lsm.sql.impl;
 
-import org.jkiss.dbeaver.model.lsm.mapping.AbstractSyntaxNode;
-import org.jkiss.dbeaver.model.lsm.mapping.SyntaxNode;
-import org.jkiss.dbeaver.model.lsm.mapping.SyntaxTerm;
-
 import java.util.List;
 
-@SyntaxNode(name = "nonjoinedTableReference")
-public class SourceItem extends AbstractSyntaxNode {
-    
-    @SyntaxTerm(xpath = ".//tableName//qualifiedName/schemaName/catalogName/identifier")
+public class SourceItem {
     public String catalogName;
-    @SyntaxTerm(xpath = ".//tableName//qualifiedName/schemaName/unqualifiedSchemaName/identifier")
     public String schemaName;
-    @SyntaxTerm(xpath = ".//tableName//qualifiedName/qualifiedIdentifier/identifier")
     public String tableName;
-    
-    @SyntaxTerm(xpath = "./correlationSpecification/correlationName/identifier")
     public String alias;
-
-    //TODO:
     public List<String> derivedColumns;
 
 }

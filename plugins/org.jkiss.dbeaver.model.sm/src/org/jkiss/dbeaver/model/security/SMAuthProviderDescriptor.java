@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,6 +15,8 @@
  * limitations under the License.
  */
 package org.jkiss.dbeaver.model.security;
+
+import org.jkiss.dbeaver.model.auth.AuthPropertyDescriptor;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -87,6 +89,22 @@ public class SMAuthProviderDescriptor {
             this.customConfigurations = new ArrayList<>();
         }
         this.customConfigurations.add(customConfiguration);
+    }
+
+    public boolean hasUserParameters() {
+        for (SMAuthCredentialsProfile profile : credentialProfiles) {
+            for (AuthPropertyDescriptor prop : profile.getCredentialParameters()) {
+                if (prop.isUser()) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    @Override
+    public String toString() {
+        return id + " (" + label + ")";
     }
 
 }

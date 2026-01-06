@@ -13,7 +13,6 @@
     <extension-point id="org.jkiss.dbeaver.dataSourceHandler" name="%extension-point.org.jkiss.dbeaver.dataSourceHandler.name" schema="schema/org.jkiss.dbeaver.dataSourceHandler.exsd"/>
     <extension-point id="org.jkiss.dbeaver.driverManager" name="%extension-point.org.jkiss.dbeaver.driverManager.name" schema="schema/org.jkiss.dbeaver.driverManager.exsd"/>
     <extension-point id="org.jkiss.dbeaver.resourceType" name="%extension-point.org.jkiss.dbeaver.resourceType.name" schema="schema/org.jkiss.dbeaver.resourceType.exsd"/>
-    <extension-point id="org.jkiss.dbeaver.resourceHandler" name="%extension-point.org.jkiss.dbeaver.resourceHandler.name" schema="schema/org.jkiss.dbeaver.resourceHandler.exsd"/>
     <extension-point id="org.jkiss.dbeaver.networkHandler" name="%extension-point.org.jkiss.dbeaver.networkHandler.name" schema="schema/org.jkiss.dbeaver.networkHandler.exsd"/>
     <extension-point id="org.jkiss.dbeaver.resources" name="%extension-point.org.jkiss.dbeaver.resources.name" schema="schema/org.jkiss.dbeaver.resources.exsd"/>
     <extension-point id="org.jkiss.dbeaver.product.bundles" name="%extension-point.org.jkiss.dbeaver.product.bundles.name" schema="schema/org.jkiss.dbeaver.product.bundles.exsd"/>
@@ -22,26 +21,31 @@
     <extension-point id="org.jkiss.dbeaver.task" name="%extension-point.org.jkiss.dbeaver.task.name" schema="schema/org.jkiss.dbeaver.task.exsd"/>
     <extension-point id="org.jkiss.dbeaver.productFeature" name="%extension-point.org.jkiss.dbeaver.productFeature.name" schema="schema/org.jkiss.dbeaver.productFeature.exsd"/>
 
+    <!-- Language names should be written in their respective languages. Do not localize them -->
     <extension point="org.jkiss.dbeaver.language">
-        <language code="en" label="%language.en.label"/>
-        <language code="zh" label="%language.zh.label"/>
-        <language code="ru" label="%language.ru.label"/>
-        <language code="fr" label="%language.fr.label"/>
-        <language code="de" label="%language.de.label"/>
-        <language code="it" label="%language.it.label"/>
-        <language code="ja" label="%language.ja.label"/>
-        <language code="es" label="%language.es.label"/>
-        <language code="pt_BR" label="%language.pt_BR.label"/>
-        <language code="ko" label="%language.ko.label"/>
-        <language code="tw" label="%language.tw.label"/>
+        <language code="en" label="English"/>
+        <language code="fr" label="Français"/>
+        <language code="de" label="Deutsch"/>
+        <language code="it" label="Italiano"/>
+        <language code="ja" label="日本語"/>
+        <language code="ko" label="한국어"/>
+        <language code="pt_BR" label="Português (BR)"/>
+        <language code="ro" label="Română"/>
+        <language code="ru" label="Русский"/>
+        <language code="zh" label="简体中文"/>
+        <language code="es" label="Español"/>
+        <language code="tw" label="繁體中文"/>
+        <language code="uk" label="Українська"/>
+        <language code="ar" label="العربية"/>
     </extension>
 
     <extension point="org.jkiss.dbeaver.driverManager">
         <category id="sql" name="%driver.category.sql.name" description="%driver.category.sql.description" icon="#folder_database" rank="4" promoted="true"/>
         <category id="nosql" name="%driver.category.nosql.name" description="%driver.category.nosql.description" icon="#folder_database" rank="5" promoted="true"/>
         <category id="analytic" name="%driver.category.analytical.name" description="%driver.category.analytical.description" icon="#folder_database" rank="10" promoted="true"/>
-        <category id="timeseries" name="%driver.category.timeseries.name" description="%driver.category.timeseries.description" icon="#folder_database" rank="11" promoted="true"/>
-        <category id="embedded" name="%driver.category.embedded.name" description="%driver.category.embedded.description" icon="#folder_database" rank="15" promoted="true"/>
+        <category id="file" name="%driver.category.file.name" description="%driver.category.file.description" icon="#folder_database" rank="11" promoted="true"/>
+        <category id="embedded" name="%driver.category.embedded.name" description="%driver.category.embedded.description" icon="#folder_database" rank="12" promoted="true"/>
+        <category id="timeseries" name="%driver.category.timeseries.name" description="%driver.category.timeseries.description" icon="#folder_database" rank="15" promoted="true"/>
         <category id="hadoop" name="%driver.category.hadoop.name" description="%driver.category.hadoop.description" icon="#folder_database" rank="20" promoted="true"/>
         <category id="fulltext" name="%driver.category.fulltext.name" description="%driver.category.fulltext.description" icon="#folder_database" rank="22" promoted="true"/>
         <category id="graph" name="%driver.category.graph.name" description="%driver.category.graph.description" icon="#folder_database" rank="23" promoted="true"/>
@@ -56,7 +60,7 @@
             description="%handler.socks_proxy.description"
             desktop="true"
             secured="true"
-            order="10"
+            order="3"
             handlerClass="org.jkiss.dbeaver.model.impl.net.SocksProxyImpl"/>
     </extension>
 
@@ -99,16 +103,16 @@
 
     <extension point="org.jkiss.dbeaver.resourceType">
         <type id="default"/>
-        <type id="project">
-            <resourceTypeBinding resourceType="org.eclipse.core.resources.IProject"/>
-        </type>
-        <type id="bookmark" name="Navigator bookmarks" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/bookmark_folder.png" managable="true">
-            <root folder="Bookmarks"/>
-            <contentTypeBinding contentTypeId="org.jkiss.dbeaver.bookmark"/>
-        </type>
-        <type id="shortcut">
-            <contentTypeBinding contentTypeId="org.jkiss.dbeaver.shortcut"/>
-        </type>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.mavenRepository">
+        <repository id="maven-central" name="%maven.respository.central" url="https://repo1.maven.org/maven2/" order="0"/>
+        <repository id="oss.sonatype.org" snapshot="true" name="%maven.repository.sonatype" url="https://oss.sonatype.org/content/repositories/snapshots/" order="0"/>
+
+        <!-- Non-HTTPS Maven Central is no longer alive. Hooray. -->
+        <!--
+                <repository id="maven-central-unsecure" name="%maven.respository.central.unsecure" url="http://central.maven.org/maven2/" order="99999"/>
+        -->
     </extension>
 
 </plugin>

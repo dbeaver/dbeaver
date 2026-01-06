@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -74,7 +74,7 @@ public class RedshiftExternalSchema extends PostgreSchema {
     }
 
     @Override
-    public void collectObjectStatistics(DBRProgressMonitor monitor, boolean totalSizeOnly, boolean forceRefresh) throws DBException {
+    public void collectObjectStatistics(@NotNull DBRProgressMonitor monitor, boolean totalSizeOnly, boolean forceRefresh) throws DBException {
         // Not supported
     }
 
@@ -101,7 +101,7 @@ public class RedshiftExternalSchema extends PostgreSchema {
 
     @Association
     public List<RedshiftExternalTable> getExternalTables(DBRProgressMonitor monitor) throws DBException {
-        return externalTableCache.getAllObjects(monitor, this);
+        return monitor == null ? externalTableCache.getCachedObjects() : externalTableCache.getAllObjects(monitor, this);
     }
 
     @Override

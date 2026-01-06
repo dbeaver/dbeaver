@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,7 +37,7 @@ import java.text.CharacterIterator;
  */
 public class SQLDocumentCharacterIterator implements CharacterIterator, CharSequence {
 
-    private int index = -1;
+    private int index;
     private final IDocument document;
     private final int first;
     private final int last;
@@ -88,8 +88,8 @@ public class SQLDocumentCharacterIterator implements CharacterIterator, CharSequ
         this.document = document;
         this.first = first;
         this.last = last;
-        index = first;
-        invariant();
+        this.index = first;
+        this.invariant();
     }
 
     @Override

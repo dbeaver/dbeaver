@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.model.struct;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.data.DBDDataFilter;
 import org.jkiss.dbeaver.model.data.DBDDataReceiver;
@@ -49,16 +50,17 @@ public interface DBSDataContainer extends DBSObject {
     long FLAG_FETCH_SEGMENT         = 1 << 4;
     long FLAG_REFRESH               = 1 << 8;
 
-    @Nullable
+    @NotNull
     DBPDataSource getDataSource();
 
     /**
      * Features supported by implementation
      * @return supported features
      */
+    @NotNull
     String[] getSupportedFeatures();
 
-    default boolean isFeatureSupported(String feature) {
+    default boolean isFeatureSupported(@NotNull String feature) {
         return ArrayUtils.contains(getSupportedFeatures(), feature);
     }
 
@@ -78,7 +80,7 @@ public interface DBSDataContainer extends DBSObject {
      */
     @NotNull
     DBCStatistics readData(
-        @NotNull DBCExecutionSource source,
+        @Nullable DBCExecutionSource source,
         @NotNull DBCSession session,
         @NotNull DBDDataReceiver dataReceiver,
         @Nullable DBDDataFilter dataFilter,
@@ -86,7 +88,7 @@ public interface DBSDataContainer extends DBSObject {
         long maxRows,
         long flags,
         int fetchSize)
-        throws DBCException;
+        throws DBException;
 
     /**
      * Counts data rows in container.
@@ -103,6 +105,6 @@ public interface DBSDataContainer extends DBSObject {
         @NotNull DBCSession session,
         @Nullable DBDDataFilter dataFilter,
         long flags)
-        throws DBCException;
+        throws DBException;
 
 }

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,23 +27,21 @@ import java.util.Collection;
 import java.util.List;
 
 /**
- * Legacy datasource serialization (xml)
+ * Datasource serializer interface
  */
-interface DataSourceSerializer
-{
+public interface DataSourceSerializer<T extends DataSourceDescriptor> {
 
     void saveDataSources(
-        DBRProgressMonitor monitor,
-        DataSourceConfigurationManager configurationManager,
-        DBPDataSourceConfigurationStorage configurationStorage,
-        List<DataSourceDescriptor> localDataSources)
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DataSourceConfigurationManager configurationManager,
+        @NotNull DBPDataSourceConfigurationStorage configurationStorage,
+        @NotNull List<T> localDataSources)
         throws DBException, IOException;
 
     boolean parseDataSources(
         @NotNull DBPDataSourceConfigurationStorage configurationStorage,
         @NotNull DataSourceConfigurationManager configurationManager,
-        @NotNull DataSourceRegistry.ParseResults parseResults,
-        @Nullable Collection<String> dataSourceIds,
-        boolean refresh
+        @NotNull DataSourceParseResults parseResults,
+        @Nullable Collection<String> dataSourceIds
     ) throws DBException, IOException;
 }

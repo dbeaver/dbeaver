@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,22 +28,19 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
 import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.properties.PropertySourceEditable;
-import org.jkiss.utils.StandardConstants;
+import org.jkiss.junit.DBeaverUnitTest;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.mockito.junit.MockitoJUnitRunner;
 
+import java.sql.Types;
 import java.util.Collections;
 import java.util.List;
 
-@RunWith(MockitoJUnitRunner.class)
-public class OracleBaseTableTest {
+public class OracleBaseTableTest extends DBeaverUnitTest {
 
     @Mock
     private DBRProgressMonitor monitor;
@@ -55,16 +52,11 @@ public class OracleBaseTableTest {
     private DBEObjectMaker<OracleTable, OracleSchema> objectMaker;
 
     @Mock
-    private DBPDataSourceContainer mockDataSourceContainer;
-    @Mock
     private JDBCRemoteInstance mockRemoteInstance;
-
-    private final String lineBreak = System.getProperty(StandardConstants.ENV_LINE_SEPARATOR);
 
     @Before
     public void setUp() throws DBException {
-        Mockito.when(mockDataSourceContainer.getDriver()).thenReturn(DBWorkbench.getPlatform().getDataSourceProviderRegistry().findDriver("oracle"));
-
+        DBPDataSourceContainer mockDataSourceContainer = configureTestContainer("oracle");
         testDataSource = new OracleDataSource(mockDataSourceContainer);
 
         Mockito.when(mockRemoteInstance.getDataSource()).thenReturn(testDataSource);
@@ -72,11 +64,10 @@ public class OracleBaseTableTest {
         executionContext = new OracleExecutionContext(mockRemoteInstance, "Test");
         testSchema = new OracleSchema(testDataSource, -1, "TEST_SCHEMA");
 
-        Mockito.when(mockDataSourceContainer.getPreferenceStore()).thenReturn(DBWorkbench.getPlatform().getPreferenceStore());
-
         objectMaker = OracleTestUtils.getManagerForClass(OracleTable.class);
 
         oracleTable = new OracleTable(testSchema, "TEST_TABLE");
+        oracleTable.setPersisted(true);
         OracleTableColumn tableColumn = OracleTestUtils.addColumn(oracleTable, "COLUMN1", "VARCHAR", 1);
         tableColumn.setMaxLength(100);
         OracleTableColumn tableColumn1 = OracleTestUtils.addColumn(oracleTable, "COLUMN2", "NUMBER", 2);
@@ -92,15 +83,38 @@ public class OracleBaseTableTest {
 
         OracleTable newObject = objectMaker.createNewObject(monitor, commandContext, testSchema, null, Collections.emptyMap());
         DBEObjectMaker objectManager = OracleTestUtils.getManagerForClass(OracleTableColumn.class);
-        objectManager.createNewObject(monitor, commandContext, newObject, null, Collections.emptyMap());
-        objectManager.createNewObject(monitor, commandContext, newObject, null, Collections.emptyMap());
-        List<DBEPersistAction> actions = DBExecUtils.getActionsListFromCommandContext(monitor, commandContext, executionContext, Collections.emptyMap(), null);
+        OracleTableColumn column1 = (OracleTableColumn) objectManager.createNewObject(
+            monitor,
+            commandContext,
+            newObject,
+            null,
+            Collections.emptyMap()
+        );
+        column1.setTypeName("INTEGER");
+        column1.setValueType(Types.INTEGER);
+
+        OracleTableColumn column2 = (OracleTableColumn) objectManager.createNewObject(
+            monitor,
+            commandContext,
+            newObject,
+            null,
+            Collections.emptyMap()
+        );
+        column2.setTypeName("INTEGER");
+        column2.setValueType(Types.INTEGER);
+        List<DBEPersistAction> actions = DBExecUtils.getActionsListFromCommandContext(
+            monitor,
+            commandContext,
+            executionContext,
+            Collections.emptyMap(),
+            null
+        );
         String script = SQLUtils.generateScript(testDataSource, actions.toArray(new DBEPersistAction[0]), false);
 
         String expectedDDL = "CREATE TABLE TEST_SCHEMA.NEWTABLE (" + lineBreak +
-                "\tCOLUMN1 INTEGER NULL," + lineBreak +
-                "\tCOLUMN2 INTEGER NULL" + lineBreak +
-                ");" + lineBreak;
+            "\tCOLUMN1 INTEGER NULL," + lineBreak +
+            "\tCOLUMN2 INTEGER NULL" + lineBreak +
+            ");" + lineBreak;
 
         Assert.assertEquals(script, expectedDDL);
     }
@@ -114,24 +128,34 @@ public class OracleBaseTableTest {
             commandContext,
             testSchema,
             null,
-            Collections.emptyMap());
+            Collections.emptyMap()
+        );
         DBEObjectMaker objectManager = OracleTestUtils.getManagerForClass(OracleTableColumn.class);
-        objectManager.createNewObject(monitor, commandContext, newObject, null, Collections.emptyMap());
-        final DBSObject newColumn =
-            objectManager.createNewObject(monitor, commandContext, newObject, null, Collections.emptyMap());
-        if (newColumn instanceof OracleTableColumn) {
-            ((OracleTableColumn) newColumn).setRequired(true);
+        OracleTableColumn column1 = (OracleTableColumn) objectManager.createNewObject(
+            monitor, commandContext, newObject, null, Collections.emptyMap());
+        column1.setTypeName("INTEGER");
+        column1.setValueType(Types.INTEGER);
+
+        final DBSObject newColumn = objectManager.createNewObject(
+            monitor, commandContext, newObject, null, Collections.emptyMap());
+        if (newColumn instanceof OracleTableColumn oracleTableColumn) {
+            oracleTableColumn.setTypeName("INTEGER");
+            oracleTableColumn.setValueType(Types.INTEGER);
+            oracleTableColumn.setRequired(true);
         }
+
         List<DBEPersistAction> actions = DBExecUtils.getActionsListFromCommandContext(
             monitor,
             commandContext,
             executionContext,
             Collections.emptyMap(),
-            null);
+            null
+        );
         String script = SQLUtils.generateScript(
             testDataSource,
             actions.toArray(new DBEPersistAction[0]),
-            false);
+            false
+        );
 
         String expectedDDL = "CREATE TABLE TEST_SCHEMA.NEWTABLE (" + lineBreak +
             "\tCOLUMN1 INTEGER NULL," + lineBreak +
@@ -148,22 +172,41 @@ public class OracleBaseTableTest {
         OracleTable newObject = objectMaker.createNewObject(monitor, commandContext, testSchema, null, Collections.emptyMap());
         DBEObjectMaker<OracleTableColumn, OracleTableBase> objectManager = OracleTestUtils.getManagerForClass(OracleTableColumn.class);
         OracleTableColumn column1 = objectManager.createNewObject(monitor, commandContext, newObject, null, Collections.emptyMap());
-        objectManager.createNewObject(monitor, commandContext, newObject, null, Collections.emptyMap());
-        DBEObjectMaker<OracleTableConstraint, OracleTableBase> constraintManager = OracleTestUtils.getManagerForClass(OracleTableConstraint.class);
-        OracleTableConstraint constraint = constraintManager.createNewObject(monitor, commandContext, newObject, null, Collections.emptyMap());
+        column1.setTypeName("INTEGER");
+        column1.setValueType(Types.INTEGER);
+
+        OracleTableColumn column2 = objectManager.createNewObject(monitor, commandContext, newObject, null, Collections.emptyMap());
+        column2.setTypeName("INTEGER");
+        column2.setValueType(Types.INTEGER);
+
+        DBEObjectMaker<OracleTableConstraint, OracleTableBase> constraintManager
+            = OracleTestUtils.getManagerForClass(OracleTableConstraint.class);
+        OracleTableConstraint constraint = constraintManager.createNewObject(
+            monitor,
+            commandContext,
+            newObject,
+            null,
+            Collections.emptyMap()
+        );
         constraint.setName("NEWTABLE_PK");
         constraint.setConstraintType(DBSEntityConstraintType.PRIMARY_KEY);
         OracleTableConstraintColumn constraintColumn = new OracleTableConstraintColumn(constraint, column1, 1);
-        constraint.setColumns(Collections.singletonList(constraintColumn));
+        constraint.setAttributeReferences(Collections.singletonList(constraintColumn));
 
-        List<DBEPersistAction> actions = DBExecUtils.getActionsListFromCommandContext(monitor, commandContext, executionContext, Collections.emptyMap(), null);
+        List<DBEPersistAction> actions = DBExecUtils.getActionsListFromCommandContext(
+            monitor,
+            commandContext,
+            executionContext,
+            Collections.emptyMap(),
+            null
+        );
         String script = SQLUtils.generateScript(testDataSource, actions.toArray(new DBEPersistAction[0]), false);
 
         String expectedDDL = "CREATE TABLE TEST_SCHEMA.NEWTABLE (" + lineBreak +
-                "\tCOLUMN1 INTEGER NULL," + lineBreak +
-                "\tCOLUMN2 INTEGER NULL," + lineBreak +
-                "\tCONSTRAINT NEWTABLE_PK PRIMARY KEY (COLUMN1)" + lineBreak +
-                ");" + lineBreak;
+            "\tCOLUMN1 INTEGER NULL," + lineBreak +
+            "\tCOLUMN2 INTEGER NULL," + lineBreak +
+            "\tCONSTRAINT NEWTABLE_PK PRIMARY KEY (COLUMN1)" + lineBreak +
+            ");" + lineBreak;
 
         Assert.assertEquals(script, expectedDDL);
     }
@@ -175,9 +218,13 @@ public class OracleBaseTableTest {
         OracleTable newObject = objectMaker.createNewObject(monitor, commandContext, testSchema, null, Collections.emptyMap());
         DBEObjectMaker<OracleTableColumn, OracleTableBase> objectManager = OracleTestUtils.getManagerForClass(OracleTableColumn.class);
         OracleTableColumn column1 = objectManager.createNewObject(monitor, commandContext, newObject, null, Collections.emptyMap());
+        column1.setTypeName("INTEGER");
+        column1.setValueType(Types.INTEGER);
         column1.setComment("Test comment 1");
         OracleTableColumn column2 = objectManager.createNewObject(monitor, commandContext, newObject, null, Collections.emptyMap());
         column2.setComment("Test comment 2");
+        column2.setTypeName("INTEGER");
+        column2.setValueType(Types.INTEGER);
 
         List<DBEPersistAction> actions = DBExecUtils.getActionsListFromCommandContext(monitor, commandContext, executionContext, Collections.emptyMap(), null);
         String script = SQLUtils.generateScript(testDataSource, actions.toArray(new DBEPersistAction[0]), false);

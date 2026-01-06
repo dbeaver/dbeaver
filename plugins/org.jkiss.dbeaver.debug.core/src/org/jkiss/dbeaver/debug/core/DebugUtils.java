@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  * Copyright (C) 2017-2018 Alexander Fedorov (alexander.fedorov@jkiss.org)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -141,7 +141,7 @@ public class DebugUtils {
             final DBNModel navigatorModel = DBWorkbench.getPlatform().getNavigatorModel();
             DBNDatabaseNode node = navigatorModel.getNodeByObject(new VoidProgressMonitor(), dbsObject, false);
             if (node != null) {
-                return node.getNodeItemPath();
+                return node.getNodeUri();
             }
         }
         if (object instanceof String) {
@@ -173,9 +173,7 @@ public class DebugUtils {
             } else if (value instanceof Boolean) {
                 configuration.setAttribute(entry.getKey(), (Boolean) value);
             } else if (value instanceof List) {
-                configuration.setAttribute(entry.getKey(), (List<String>) value);
-            } else if (value instanceof Map) {
-                configuration.setAttribute(entry.getKey(), (Map<String, String>) value);
+                configuration.setAttribute(entry.getKey(), (List<String>)value);
             } else {
                 configuration.setAttribute(entry.getKey(), value.toString());
             }

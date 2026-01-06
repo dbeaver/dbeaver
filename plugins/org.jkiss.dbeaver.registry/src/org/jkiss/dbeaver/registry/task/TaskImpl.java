@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.registry.task;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.Strictness;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -32,8 +33,10 @@ import java.io.InputStream;
 import java.io.Writer;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.Duration;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * TaskImpl
@@ -44,7 +47,7 @@ public class TaskImpl implements DBTTask, DBPNamedObject2 {
     private static final Log log = Log.getLog(TaskImpl.class);
     private static final int MAX_RUNS_IN_STATS = 100;
     private static final Gson gson = new GsonBuilder()
-        .setLenient()
+        .setStrictness(Strictness.LENIENT)
         .setDateFormat(GeneralUtils.DEFAULT_TIMESTAMP_PATTERN)
         .create();
 
@@ -56,8 +59,9 @@ public class TaskImpl implements DBTTask, DBPNamedObject2 {
     private Date updateTime;
     private DBTTaskType type;
     private Map<String, Object> properties;
-    private List<DBTTaskRun> runs;
+    private volatile List<DBTTaskRun> runs;
     private DBTTaskFolder taskFolder;
+    private Duration maxExecutionTime = Duration.ZERO;
 
     protected TaskImpl(
         @NotNull DBPProject project,
@@ -208,8 +212,8 @@ public class TaskImpl implements DBTTask, DBPNamedObject2 {
     public void cleanRunStatistics() {
         Path statsFolder = getTaskStatsFolder(false);
         if (Files.exists(statsFolder)) {
-            try {
-                List<Path> taskFiles = Files.list(statsFolder).collect(Collectors.toList());
+            try (Stream<Path> list = Files.list(statsFolder)) {
+                List<Path> taskFiles = list.toList();
                 for (Path file : taskFiles) {
                     try {
                         Files.delete(file);
@@ -242,6 +246,16 @@ public class TaskImpl implements DBTTask, DBPNamedObject2 {
     @Override
     public boolean isTemporary() {
         return TaskConstants.TEMPORARY_ID.equals(id);
+    }
+
+    @NotNull
+    @Override
+    public Duration getMaxExecutionTime() {
+        return maxExecutionTime;
+    }
+
+    public void setMaxExecutionTime(@NotNull Duration maxExecutionTime) {
+        this.maxExecutionTime = maxExecutionTime;
     }
 
     protected Path getTaskStatsFolder(boolean create) {

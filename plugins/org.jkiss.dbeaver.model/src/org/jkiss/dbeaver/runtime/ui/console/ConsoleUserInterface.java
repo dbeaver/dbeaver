@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,9 +26,8 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.access.DBAPasswordChangeInfo;
 import org.jkiss.dbeaver.model.connection.DBPAuthInfo;
-import org.jkiss.dbeaver.model.connection.DBPDriver;
-import org.jkiss.dbeaver.model.connection.DBPDriverDependencies;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
+import org.jkiss.dbeaver.model.navigator.fs.DBNPathBase;
 import org.jkiss.dbeaver.model.runtime.*;
 import org.jkiss.dbeaver.model.runtime.load.ILoadService;
 import org.jkiss.dbeaver.model.runtime.load.ILoadVisualizer;
@@ -37,14 +36,20 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.ui.DBPPlatformUI;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 
-import java.io.File;
 import java.lang.reflect.InvocationTargetException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
 
 public class ConsoleUserInterface implements DBPPlatformUI {
     private static final Log log = Log.getLog(ConsoleUserInterface.class);
+
+
+    protected void initialize() {
+        // just a placeholder for injection
+    }
 
     @Override
     public UserResponse showError(@NotNull String title, @Nullable String message, @NotNull IStatus status) {
@@ -95,7 +100,12 @@ public class ConsoleUserInterface implements DBPPlatformUI {
     public boolean confirmAction(String title, String message, boolean isWarning) {
         return false;
     }
-    
+
+    @Override
+    public boolean confirmAction(@NotNull String title, @NotNull String message, @NotNull String buttonLabel, boolean isWarning) {
+        return false;
+    }
+
     @NotNull
     @Override
     public UserChoiceResponse showUserChoice(
@@ -116,16 +126,6 @@ public class ConsoleUserInterface implements DBPPlatformUI {
         return UserResponse.IGNORE;
     }
 
-    @Override
-    public long getLongOperationTimeout() {
-        return 0;
-    }
-
-    @Override
-    public void notifyAgent(String message, int status) {
-        // do nothing
-    }
-
     private void printStatus(@NotNull IStatus status, int level) {
         char[] indent = new char[level * 4];
         for (int i = 0; i < indent.length; i++) indent[i] = ' ';
@@ -137,16 +137,35 @@ public class ConsoleUserInterface implements DBPPlatformUI {
         }
     }
 
+    @Nullable
     @Override
-    public DBPAuthInfo promptUserCredentials(String prompt, String userName, String userPassword, boolean passwordOnly, boolean showSavePassword) {
+    public DBPAuthInfo promptUserCredentials(
+        @Nullable String prompt,
+        @Nullable String description,
+        @Nullable String userName,
+        @Nullable String userPassword,
+        boolean passwordOnly,
+        boolean showSavePassword
+    ) {
         throw new IllegalStateException("Can not prompt user credentials in non-interactive mode");
     }
 
+    @Nullable
     @Override
-    public DBPAuthInfo promptUserCredentials(String prompt, String userNameLabel, String userName, String passwordLabel, String userPassword, boolean passwordOnly, boolean showSavePassword) {
+    public DBPAuthInfo promptUserCredentials(
+        @Nullable String prompt,
+        @Nullable String description,
+        @NotNull String userNameLabel,
+        @Nullable String userName,
+        @NotNull String passwordLabel,
+        @Nullable String userPassword,
+        boolean passwordOnly,
+        boolean showSavePassword
+    ) {
         throw new IllegalStateException("Can not prompt user credentials in non-interactive mode");
     }
 
+    @Nullable
     @Override
     public DBAPasswordChangeInfo promptUserPasswordChange(String prompt, String userName, String oldPassword, boolean userEditable, boolean oldPasswordEditable) {
         throw new IllegalStateException("Can not prompt user password change in non-interactive mode");
@@ -160,11 +179,6 @@ public class ConsoleUserInterface implements DBPPlatformUI {
     @Override
     public boolean acceptLicense(String message, String licenseText) {
         return true;
-    }
-
-    @Override
-    public boolean downloadDriverFiles(DBPDriver driverDescriptor, DBPDriverDependencies dependencies) {
-        return false;
     }
 
     @Override
@@ -197,13 +211,8 @@ public class ConsoleUserInterface implements DBPPlatformUI {
     }
 
     @Override
-    public void executeWithProgress(@NotNull Runnable runnable) {
+    public void executeInMainThread(@NotNull Runnable runnable) {
         runnable.run();
-    }
-
-    @Override
-    public void executeWithProgress(@NotNull DBRRunnableWithProgress runnable) throws InvocationTargetException, InterruptedException {
-        runnable.run(new LoggingProgressMonitor());
     }
 
     @NotNull
@@ -220,12 +229,23 @@ public class ConsoleUserInterface implements DBPPlatformUI {
         }
     }
 
+    @Override
+    public <T> T runWithMonitor(@NotNull DBRRunnableWithReturn<T> runnable) throws DBException {
+        return runnable.runTask(new LoggingProgressMonitor(log));
+    }
+
+    @Override
+    public <T> T runWithProgress(@NotNull DBRRunnableWithReturn<T> runnable) throws DBException {
+        return runnable.runTask(new LoggingProgressMonitor(log));
+    }
+
     @NotNull
     @Override
-    public <RESULT> Job createLoadingService(ILoadService<RESULT> loadingService, ILoadVisualizer<RESULT> visualizer) {
+    public <RESULT> Job createLoadingService(@NotNull ILoadService<RESULT> loadingService, @NotNull ILoadVisualizer<RESULT> visualizer) {
         return new AbstractJob(loadingService.getServiceName()) {
+            @NotNull
             @Override
-            protected IStatus run(DBRProgressMonitor monitor) {
+            protected IStatus run(@NotNull DBRProgressMonitor monitor) {
                 try {
                     RESULT result = loadingService.evaluate(monitor);
                     visualizer.completeLoading(result);
@@ -240,19 +260,14 @@ public class ConsoleUserInterface implements DBPPlatformUI {
     }
 
     @Override
-    public void refreshPartState(Object part) {
+    public void copyTextToClipboard(@NotNull String text, boolean htmlFormat) {
         // do nothing
     }
 
     @Override
-    public void copyTextToClipboard(String text, boolean htmlFormat) {
-        // do nothing
-    }
-
-    @Override
-    public void executeShellProgram(String shellCommand) {
-        File filePath = new File(shellCommand);
-        if (filePath.exists() && filePath.isDirectory()) {
+    public void executeShellProgram(@NotNull String shellCommand) {
+        Path filePath = Path.of(shellCommand);
+        if (Files.exists(filePath) && Files.isDirectory(filePath)) {
             System.out.println("Open directory '" + shellCommand + "'");
             return;
         }
@@ -266,6 +281,18 @@ public class ConsoleUserInterface implements DBPPlatformUI {
     @Override
     public void showInSystemExplorer(@NotNull String path) {
         // do nothing
+    }
+
+    @Override
+    public DBNPathBase openFileSystemSelector(
+        @NotNull String title,
+        boolean folder,
+        int style,
+        boolean binary,
+        String[] filterExt,
+        String defaultValue
+    ) {
+        return null;
     }
 
     @Override

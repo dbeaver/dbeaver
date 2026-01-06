@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -47,12 +47,12 @@ public class SQLServerDataType implements DBSDataType, SQLServerObject, DBPQuali
 
     private static final Log log = Log.getLog(SQLServerDataType.class);
 
-    private DBSObject owner;
-    private String name;
-    private int valueType;
-    private DBPDataKind dataKind;
-    private int systemTypeId;
-    private int userTypeId;
+    private final DBSObject owner;
+    private final String name;
+    private final int valueType;
+    private final DBPDataKind dataKind;
+    private final int systemTypeId;
+    private final int userTypeId;
     private long schemaId;
     private int maxLength;
     private int scale;
@@ -60,9 +60,9 @@ public class SQLServerDataType implements DBSDataType, SQLServerObject, DBPQuali
     private boolean nullable;
     private boolean userType;
     private boolean assemblyType;
-    private boolean tableType;
     private String collationName;
     private int tableTypeId = 0;
+    private int tableTypeSchemaId = 0;
 
     private boolean persisted;
 
@@ -81,12 +81,13 @@ public class SQLServerDataType implements DBSDataType, SQLServerObject, DBPQuali
         this.nullable = JDBCUtils.safeGetInt(dbResult, "is_nullable") != 0;
         this.userType = JDBCUtils.safeGetInt(dbResult, "is_user_defined") != 0;
         this.assemblyType = JDBCUtils.safeGetInt(dbResult, "is_assembly_type") != 0;
-        this.tableType = JDBCUtils.safeGetInt(dbResult, "is_table_type") != 0;
+        boolean isTableType = JDBCUtils.safeGetInt(dbResult, "is_table_type") != 0;
 
         this.collationName = JDBCUtils.safeGetString(dbResult, "collation_name");
 
-        if (tableType) {
+        if (isTableType) {
             this.tableTypeId = JDBCUtils.safeGetInt(dbResult, "type_table_object_id");
+            this.tableTypeSchemaId = JDBCUtils.safeGetInt(dbResult, "type_table_schema_id");
         }
 
         if (userType) {
@@ -120,7 +121,7 @@ public class SQLServerDataType implements DBSDataType, SQLServerObject, DBPQuali
         return (SQLServerDataSource) owner.getDataSource();
     }
 
-    @Property(viewable = false, order = 80)
+    @Property(order = 80)
     @Override
     public long getObjectId() {
         return userTypeId;
@@ -134,14 +135,22 @@ public class SQLServerDataType implements DBSDataType, SQLServerObject, DBPQuali
         return schemaId;
     }
 
-    @Property(viewable = false, order = 5)
+    @Property(order = 5)
     @Nullable
     public SQLServerSchema getSchema(DBRProgressMonitor monitor) throws DBException {
-        return owner instanceof SQLServerDatabase ? ((SQLServerDatabase) owner).getSchema(monitor, schemaId) : null;
+        return owner instanceof SQLServerDatabase db ? db.getSchema(monitor, schemaId) : null;
     }
 
+    @Nullable
     public SQLServerSchema getSysSchema(DBRProgressMonitor monitor) throws DBException {
-        return owner instanceof SQLServerDatabase ? ((SQLServerDatabase) owner).getSchema(monitor, 4) : null;
+        if (owner instanceof SQLServerDatabase db) {
+            return db.getSysSchema(monitor);
+        } else {
+            if (owner instanceof SQLServerDataSource ds) {
+                return ds.getDefaultDatabase(monitor) != null ? ds.getDefaultDatabase(monitor).getSysSchema(monitor) : null;
+            }
+        }
+        return null;
     }
 
     public SQLServerDataType getSystemDataType() {
@@ -164,12 +173,13 @@ public class SQLServerDataType implements DBSDataType, SQLServerObject, DBPQuali
         return ((SQLServerDataSource) owner).getDefaultDatabase(new VoidProgressMonitor()); // Monitor is not significant here, so we can use Void monitor
     }
 
+    @NotNull
     @Override
     @Property(hidden = true, editable = true, updatable = true, order = -1)
-    public String getObjectDefinitionText(DBRProgressMonitor monitor, Map<String, Object> options) throws DBCException {
+    public String getObjectDefinitionText(@NotNull DBRProgressMonitor monitor, @NotNull Map<String, Object> options) throws DBCException {
         StringBuilder sql = new StringBuilder();
         sql.append("-- DROP TYPE ").append(getFullyQualifiedName(DBPEvaluationContext.DDL)).append(";\n\n"); //$NON-NLS-1$ //$NON-NLS-2$
-        if (!tableType) {
+        if (tableTypeId == 0) {
             sql.append("CREATE TYPE ").append(getFullyQualifiedName(DBPEvaluationContext.DDL)).append("\n").append("FROM ");
             SQLServerDataType systemDataType = getSystemDataType();
             String typeName = systemDataType.getName();
@@ -182,27 +192,33 @@ public class SQLServerDataType implements DBSDataType, SQLServerObject, DBPQuali
             if (!nullable) {
                 sql.append(" NOT NULL;");
             }
-        } else if (tableTypeId != 0) {
+        } else {
             try {
-                SQLServerTableType tableType = getSysSchema(monitor).getTableType(monitor, tableTypeId);
+                SQLServerTableType tableType = getTableType(monitor);
                 if (tableType != null) {
                     options.put(DBPScriptObject.OPTION_USE_SPECIAL_NAME, name);
                     String objectDefinitionText = tableType.getObjectDefinitionText(monitor, options);
                     sql.append(objectDefinitionText);
+                } else {
+                    return
+                        "-- Error generating table DDL\n" +
+                        "-- Table type " + tableTypeId + " not found in system catalog (" + tableTypeSchemaId + ")";
                 }
             } catch (DBException e) {
-                log.debug("Schema not found. ", e);
+                log.debug("Cannot load table type definition", e);
             }
         }
         return sql.toString();
     }
 
+    @NotNull
     @Override
     public String getTypeName() {
         return getFullyQualifiedName(DBPEvaluationContext.DDL);
     }
 
-    @Property(viewable = false, order = 70)
+    @NotNull
+    @Property(order = 70)
     @Override
     public String getFullTypeName() {
         return DBUtils.getFullTypeName(this);
@@ -213,25 +229,28 @@ public class SQLServerDataType implements DBSDataType, SQLServerObject, DBPQuali
         return valueType;
     }
 
+    @NotNull
     @Override
     public DBPDataKind getDataKind() {
         return dataKind;
     }
 
+    @Nullable
     @Override
-    @Property(viewable = false, order = 20)
+    @Property(order = 20)
     public Integer getScale() {
         return scale == 0 ? null : scale;
     }
 
+    @Nullable
     @Override
-    @Property(viewable = false, order = 21)
+    @Property(order = 21)
     public Integer getPrecision() {
         return precision == 0 ? null : precision;
     }
 
     @Override
-    @Property(viewable = false, order = 22)
+    @Property(order = 22)
     public long getMaxLength() {
         return maxLength;
     }
@@ -251,22 +270,22 @@ public class SQLServerDataType implements DBSDataType, SQLServerObject, DBPQuali
         return scale;
     }
 
-    @Property(viewable = false, order = 23)
+    @Property(order = 23)
     public boolean isNullable() {
         return nullable;
     }
 
-    @Property(viewable = false, order = 24)
+    @Property(order = 24)
     public boolean isAssemblyType() {
         return assemblyType;
     }
 
-    @Property(viewable = false, order = 25)
+    @Property(order = 25)
     public boolean isTableType() {
-        return tableType;
+        return tableTypeId != 0;
     }
 
-    @Property(viewable = false, order = 26)
+    @Property(order = 26)
     public String getCollationName() {
         return collationName;
     }
@@ -277,7 +296,7 @@ public class SQLServerDataType implements DBSDataType, SQLServerObject, DBPQuali
 
     @NotNull
     @Override
-    public DBCLogicalOperator[] getSupportedOperators(DBSTypedObject attribute) {
+    public DBCLogicalOperator[] getSupportedOperators(@NotNull DBSTypedObject attribute) {
         return DBUtils.getDefaultOperators(this);
     }
 
@@ -304,15 +323,13 @@ public class SQLServerDataType implements DBSDataType, SQLServerObject, DBPQuali
         return userTypeId;
     }
 
-    public SQLServerDataType getComponentType(@NotNull DBRProgressMonitor monitor)
-        throws DBException
-    {
+    public SQLServerDataType getComponentType(@NotNull DBRProgressMonitor monitor) {
         return null;
     }
 
     @NotNull
     @Override
-    public String getFullyQualifiedName(DBPEvaluationContext context) {
+    public String getFullyQualifiedName(@NotNull DBPEvaluationContext context) {
         return owner instanceof SQLServerSchema ?
             DBUtils.getFullQualifiedName(getDataSource(), ((SQLServerSchema) owner).getDatabase(), owner, this) :
             name;
@@ -467,33 +484,67 @@ public class SQLServerDataType implements DBSDataType, SQLServerObject, DBPQuali
         
     }
 
+    @NotNull
     @Override
     public DBSEntityType getEntityType() {
         return DBSEntityType.TYPE;
     }
 
+    @Nullable
     @Override
-    public List<SQLServerTableColumn> getAttributes(DBRProgressMonitor monitor) throws DBException {
-        return getSysSchema(monitor).getTableType(monitor, tableTypeId).getAttributes(monitor);
+    public List<SQLServerTableColumn> getAttributes(@NotNull DBRProgressMonitor monitor) throws DBException {
+        SQLServerTableType type = getTableType(monitor);
+        if (type != null) {
+            return type.getAttributes(monitor);
+        }
+        return null;
     }
 
+    @Nullable
     @Override
-    public SQLServerTableColumn getAttribute(DBRProgressMonitor monitor, String attributeName) throws DBException {
-        return getSysSchema(monitor).getTableType(monitor, tableTypeId).getAttribute(monitor, attributeName);
+    public SQLServerTableColumn getAttribute(@NotNull DBRProgressMonitor monitor, @NotNull String attributeName) throws DBException {
+        SQLServerTableType type = getTableType(monitor);
+        if (type != null) {
+            return type.getAttribute(monitor, attributeName);
+        }
+        return null;
     }
 
+    @Nullable
     @Override
-    public Collection<SQLServerTableUniqueKey> getConstraints(DBRProgressMonitor monitor) throws DBException {
-        return getSysSchema(monitor).getTableType(monitor, tableTypeId).getConstraints(monitor);
+    public Collection<SQLServerTableUniqueKey> getConstraints(@NotNull DBRProgressMonitor monitor) throws DBException {
+        SQLServerTableType type = getTableType(monitor);
+        if (type != null) {
+            return type.getConstraints(monitor);
+        }
+        return null;
     }
 
-    @Override
-    public Collection<SQLServerTableForeignKey> getAssociations(DBRProgressMonitor monitor) throws DBException {
+    private SQLServerTableType getTableType(@NotNull DBRProgressMonitor monitor) throws DBException {
+        if (!isTableType()) {
+            return null;
+        }
+        SQLServerSchema sysSchema = owner instanceof SQLServerDatabase db ? db.getSchema(monitor, tableTypeSchemaId) : null;
+        if (sysSchema != null) {
+            SQLServerTableType tableType = sysSchema.getTableType(monitor, tableTypeId);
+            if (tableType != null) {
+                return tableType;
+            } else {
+                log.debug("Table type " + tableTypeId + " not found in schema " + sysSchema.getName());
+            }
+        } else {
+            log.debug("Table type " + tableTypeId + " schema " + tableTypeSchemaId + " not found in database");
+        }
         return null;
     }
 
     @Override
-    public Collection<SQLServerTableForeignKey> getReferences(DBRProgressMonitor monitor) throws DBException {
+    public Collection<SQLServerTableForeignKey> getAssociations(@NotNull DBRProgressMonitor monitor) throws DBException {
+        return null;
+    }
+
+    @Override
+    public Collection<SQLServerTableForeignKey> getReferences(@NotNull DBRProgressMonitor monitor) throws DBException {
         return null;
     }
 

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,57 +23,72 @@ import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBPQualifiedObject;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.data.DBDDataFilter;
 import org.jkiss.dbeaver.model.data.DBDDataReceiver;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionSource;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.DBCStatistics;
+import org.jkiss.dbeaver.model.fs.DBFUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.tools.transfer.stream.model.StreamDataSource;
 import org.jkiss.utils.CommonUtils;
 
-import java.io.File;
+import java.nio.file.Path;
 import java.util.*;
 
 public class StreamEntityMapping implements DBSEntity, DBSDataContainer, DBPQualifiedObject {
-    private final File inputFile;
+    @NotNull
+    private final Path inputFile;
+    @NotNull
     private final DBPDataSource dataSource;
+    @NotNull
     private final String entityName;
     private final List<StreamDataImporterColumnInfo> streamColumns = new ArrayList<>();
     private final boolean child;
 
-    public StreamEntityMapping(@NotNull File inputFile) {
-        this(inputFile, inputFile.getName());
+    public StreamEntityMapping(@NotNull Path inputFile) {
+        this(inputFile, getEntityNameFromFile(inputFile), false);
     }
 
-    public StreamEntityMapping(@NotNull File inputFile, @NotNull String entityName) {
-        this(inputFile, entityName, false);
+    @NotNull
+    private static String getEntityNameFromFile(@NotNull Path inputFile) {
+        Path fileName = inputFile.getFileName();
+        if (fileName != null) {
+            return fileName.toString();
+        } else {
+            return inputFile.toUri().toString();
+        }
     }
 
-    public StreamEntityMapping(@NotNull File inputFile, @NotNull String entityName, boolean child) {
+    public StreamEntityMapping(@NotNull Path inputFile, @NotNull String entityName, boolean child) {
         this.inputFile = inputFile;
         this.entityName = entityName;
         this.dataSource = new StreamDataSource(entityName);
         this.child = child;
     }
 
-    StreamEntityMapping(Map<String, Object> config) throws DBCException {
+    StreamEntityMapping(
+        @NotNull DBRProgressMonitor monitor,
+        @Nullable DBPProject project,
+        @NotNull Map<String, Object> config
+    ) throws DBException {
         this.entityName = CommonUtils.toString(config.get("entityId"));
 
         String inputFileName = CommonUtils.toString(config.get("inputFile"));
         if (CommonUtils.isEmpty(inputFileName)) {
             inputFileName = this.entityName;
         }
-        this.inputFile = new File(inputFileName);
+        this.inputFile = DBFUtils.resolvePathFromString(monitor, project, inputFileName);
 
         this.dataSource = new StreamDataSource(entityName);
         this.child = false;
     }
 
     @NotNull
-    public File getInputFile() {
+    public Path getInputFile() {
         return inputFile;
     }
 
@@ -104,12 +119,12 @@ public class StreamEntityMapping implements DBSEntity, DBSDataContainer, DBPQual
     }
 
     @Override
-    public Collection<? extends DBSEntityAssociation> getAssociations(@NotNull DBRProgressMonitor monitor) throws DBException {
+    public Collection<? extends DBSEntityAssociation> getAssociations(@NotNull DBRProgressMonitor monitor) {
         return null;
     }
 
     @Override
-    public Collection<? extends DBSEntityAssociation> getReferences(@NotNull DBRProgressMonitor monitor) throws DBException {
+    public Collection<? extends DBSEntityAssociation> getReferences(@NotNull DBRProgressMonitor monitor) {
         return null;
     }
 
@@ -129,6 +144,7 @@ public class StreamEntityMapping implements DBSEntity, DBSDataContainer, DBPQual
         return dataSource;
     }
 
+    @NotNull
     @Override
     public String[] getSupportedFeatures() {
         return new String[] {FEATURE_DATA_SELECT};
@@ -136,12 +152,21 @@ public class StreamEntityMapping implements DBSEntity, DBSDataContainer, DBPQual
 
     @NotNull
     @Override
-    public DBCStatistics readData(@NotNull DBCExecutionSource source, @NotNull DBCSession session, @NotNull DBDDataReceiver dataReceiver, DBDDataFilter dataFilter, long firstRow, long maxRows, long flags, int fetchSize) throws DBCException {
+    public DBCStatistics readData(
+        @Nullable DBCExecutionSource source,
+        @NotNull DBCSession session,
+        @NotNull DBDDataReceiver dataReceiver,
+        DBDDataFilter dataFilter,
+        long firstRow,
+        long maxRows,
+        long flags,
+        int fetchSize
+    ) throws DBCException {
         throw new DBCException("Not implemented");
     }
 
     @Override
-    public long countData(@NotNull DBCExecutionSource source, @NotNull DBCSession session, @Nullable DBDDataFilter dataFilter, long flags) throws DBCException {
+    public long countData(@NotNull DBCExecutionSource source, @NotNull DBCSession session, @Nullable DBDDataFilter dataFilter, long flags) {
         return -1;
     }
 
@@ -158,7 +183,7 @@ public class StreamEntityMapping implements DBSEntity, DBSDataContainer, DBPQual
 
     @NotNull
     @Override
-    public String getFullyQualifiedName(DBPEvaluationContext context) {
+    public String getFullyQualifiedName(@NotNull DBPEvaluationContext context) {
         return getName();
     }
 
@@ -172,7 +197,11 @@ public class StreamEntityMapping implements DBSEntity, DBSDataContainer, DBPQual
 
     void setStreamColumns(List<StreamDataImporterColumnInfo> streamColumns) {
         this.streamColumns.clear();
-        this.streamColumns.addAll(streamColumns);
+
+        for (StreamDataImporterColumnInfo column : streamColumns) {
+            ensureNameIsUnique(column);
+            this.streamColumns.add(column);
+        }
     }
 
     public StreamDataImporterColumnInfo getStreamColumn(String name) {
@@ -215,5 +244,22 @@ public class StreamEntityMapping implements DBSEntity, DBSDataContainer, DBPQual
     @Override
     public int hashCode() {
         return Objects.hash(inputFile, entityName);
+    }
+
+    private void ensureNameIsUnique(@NotNull StreamDataImporterColumnInfo column) {
+        for (int i = 0; i < streamColumns.size() + 1; i++) {
+            final String name = i > 0 ? column.getName() + '_' + i : column.getName();
+            boolean collides = false;
+            for (StreamDataImporterColumnInfo other : streamColumns) {
+                if (other.getName().equalsIgnoreCase(name)) {
+                    collides = true;
+                    break;
+                }
+            }
+            if (!collides) {
+                column.setName(name);
+                return;
+            }
+        }
     }
 }

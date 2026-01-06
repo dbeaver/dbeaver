@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,6 +25,7 @@ import org.jkiss.dbeaver.model.app.DBPPlatformDesktop;
 import org.jkiss.dbeaver.model.runtime.DefaultProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.DBeaverNotifications;
+import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
 
@@ -33,6 +34,13 @@ public class NavigatorHandlerProjectRefresh extends NavigatorHandlerObjectBase {
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException {
         final IWorkbenchWindow workbenchWindow = HandlerUtil.getActiveWorkbenchWindow(event);
+        if (CommonUtils.toBoolean(event.getParameter("singleProject"))) {
+            NavigatorHandlerRefresh.refreshInNavigator(
+                event,
+                HandlerUtil.getActivePart(event),
+                true);
+            return null;
+        }
         try {
             workbenchWindow.run(true, true, monitor -> {
                 try {
@@ -41,7 +49,7 @@ public class NavigatorHandlerProjectRefresh extends NavigatorHandlerObjectBase {
                     throw new InvocationTargetException(e);
                 }
                 DBeaverNotifications.showNotification(
-                    "projects_refresh",
+                    DBeaverNotifications.NT_GENERIC,
                     "Projects refresh",
                     "Project list was synchronized with local file system",
                     DBPMessageType.INFORMATION,

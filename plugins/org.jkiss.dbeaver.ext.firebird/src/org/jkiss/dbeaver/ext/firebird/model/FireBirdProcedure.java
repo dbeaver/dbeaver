@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,8 @@
  */
 package org.jkiss.dbeaver.ext.firebird.model;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.DBDatabaseException;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.generic.model.*;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -54,9 +56,10 @@ public class FireBirdProcedure extends GenericProcedure implements DBSObjectWith
         super(container, procedureName, specificName, description, procedureType, functionResultType);
     }
 
+    @NotNull
     @Override
     @Property(hidden = true, editable = true, updatable = true)
-    public String getObjectDefinitionText(DBRProgressMonitor monitor, Map<String, Object> options) throws DBException {
+    public String getObjectDefinitionText(@NotNull DBRProgressMonitor monitor, @NotNull Map<String, Object> options) throws DBException {
         return super.getObjectDefinitionText(monitor, options);
     }
 
@@ -65,7 +68,8 @@ public class FireBirdProcedure extends GenericProcedure implements DBSObjectWith
         try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Load procedure columns")) {
             String sql;
             boolean isProcedure = getProcedureType() == DBSProcedureType.PROCEDURE;
-            if (!isProcedure && getDataSource().isServerVersionAtLeast(3, 0)) {
+            boolean versionAtLeast3 = getDataSource().isServerVersionAtLeast(3, 0);
+            if (!isProcedure && versionAtLeast3) {
                 sql = "SELECT\n" +
                         "COALESCE(FUNA.RDB$ARGUMENT_NAME, 'PARAM_' || FUNA.RDB$ARGUMENT_POSITION) AS COLUMN_NAME,\n" +
                         "COALESCE(FUNA.RDB$FIELD_TYPE, F.RDB$FIELD_TYPE) AS DATA_TYPE,\n" +
@@ -76,6 +80,8 @@ public class FireBirdProcedure extends GenericProcedure implements DBSObjectWith
                         "COALESCE(FUNA.RDB$CHARACTER_LENGTH, F.RDB$CHARACTER_LENGTH) AS CHAR_LEN,\n" +
                         "COALESCE(FUNA.RDB$DEFAULT_SOURCE, F.RDB$DEFAULT_SOURCE) AS DEFAULT_VALUE,\n" +
                         "COALESCE(FUNA.RDB$CHARACTER_SET_ID, F.RDB$CHARACTER_SET_ID) AS CHARACTER_SET_ID,\n" +
+                        "COALESCE(FUNA.RDB$FIELD_NAME, F.RDB$FIELD_NAME) AS FIELD_NAME,\n" +
+                        "FUNA.RDB$RELATION_NAME AS RELATION_NAME,\n" +
                         "CASE\n" +
                         "   WHEN FUN.RDB$RETURN_ARGUMENT = FUNA.RDB$ARGUMENT_POSITION THEN 0\n" +
                         "   ELSE FUNA.RDB$ARGUMENT_POSITION\n" +
@@ -111,7 +117,8 @@ public class FireBirdProcedure extends GenericProcedure implements DBSObjectWith
                         "F.RDB$CHARACTER_LENGTH AS CHAR_LEN,\n" +
                         "PP.RDB$PARAMETER_NUMBER + 1 AS ORDINAL_POSITION,\n" +
                         "F.RDB$CHARACTER_SET_ID,\n" +
-                        "F.RDB$DEFAULT_SOURCE AS DEFAULT_VALUE\n" +
+                        "COALESCE(PP.RDB$DEFAULT_SOURCE, F.RDB$DEFAULT_SOURCE) AS DEFAULT_VALUE\n" +
+                        (versionAtLeast3 ? ",PP.RDB$FIELD_NAME AS FIELD_NAME,\nPP.RDB$RELATION_NAME AS RELATION_NAME\n" : "") +
                         "FROM\n" +
                         "   RDB$PROCEDURE_PARAMETERS PP,\n" +
                         "   RDB$FIELDS F\n" +
@@ -149,6 +156,12 @@ public class FireBirdProcedure extends GenericProcedure implements DBSObjectWith
                         int position = JDBCUtils.safeGetInt(dbResult, JDBCConstants.ORDINAL_POSITION);
 
                         String defaultValue = JDBCUtils.safeGetStringTrimmed(dbResult, "DEFAULT_VALUE");
+                        String fieldName = null;
+                        String relationName = null;
+                        if (versionAtLeast3) {
+                            fieldName = JDBCUtils.safeGetStringTrimmed(dbResult, "FIELD_NAME");
+                            relationName = JDBCUtils.safeGetStringTrimmed(dbResult, "RELATION_NAME");
+                        }
 
                         DBSProcedureParameterKind parameterType;
                         if (isProcedure) {
@@ -183,13 +196,15 @@ public class FireBirdProcedure extends GenericProcedure implements DBSObjectWith
                                 notNull,
                                 remarks,
                                 parameterType,
-                                defaultValue);
+                                defaultValue,
+                                fieldName,
+                                relationName);
                         addColumn(parameter);
                     }
                 }
             }
         } catch (SQLException e) {
-            throw new DBException(e, getDataSource());
+            throw new DBDatabaseException(e, getDataSource());
         }
     }
 

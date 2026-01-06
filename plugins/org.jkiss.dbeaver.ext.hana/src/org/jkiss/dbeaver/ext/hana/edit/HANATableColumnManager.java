@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ext.hana.edit;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ext.generic.edit.GenericTableColumnManager;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableBase;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableColumn;
@@ -30,7 +31,12 @@ import java.util.Map;
 public class HANATableColumnManager extends GenericTableColumnManager {
 
     @Override
-    public StringBuilder getNestedDeclaration(DBRProgressMonitor monitor, GenericTableBase owner, DBECommandAbstract<GenericTableColumn> command, Map<String, Object> options) {
+    public StringBuilder getNestedDeclaration(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull GenericTableBase owner,
+        @NotNull DBECommandAbstract<GenericTableColumn> command,
+        @NotNull Map<String, Object> options
+    ) {
         StringBuilder decl = super.getNestedDeclaration(monitor, owner, command, options);
         if (owner.isPersisted()) {
             decl.insert(0, "(");

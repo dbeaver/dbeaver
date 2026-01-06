@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -61,6 +61,7 @@ public class NavigatorHandlerObjectGoto extends NavigatorHandlerObjectBase {
                         while (container instanceof DBSFolder) {
                             container = container.getParentObject();
                         }
+                        
                         context = DBUtils.getDefaultContext(object, true);
                     }
                 }
@@ -69,7 +70,7 @@ public class NavigatorHandlerObjectGoto extends NavigatorHandlerObjectBase {
         if (context == null) {
             DBWorkbench.getPlatformUI().showError(
                 "Go to object",
-                "No active datasource");
+                "You must select a connected datasource");
             return null;
         }
         IWorkbenchWindow workbenchWindow = HandlerUtil.getActiveWorkbenchWindow(event);

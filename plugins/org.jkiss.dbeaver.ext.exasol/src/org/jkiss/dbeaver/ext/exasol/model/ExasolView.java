@@ -1,7 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2016-2016 Karl Griesser (fullref@gmail.com)
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -42,6 +41,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 
 public class ExasolView extends ExasolTableBase implements ExasolSourceObject, DBSView {
@@ -71,6 +71,7 @@ public class ExasolView extends ExasolTableBase implements ExasolSourceObject, D
     }
 
 
+    @NotNull
     @Override
     public DBSObjectState getObjectState() {
         return DBSObjectState.NORMAL;
@@ -142,7 +143,7 @@ public class ExasolView extends ExasolTableBase implements ExasolSourceObject, D
 
     @NotNull
     @Override
-    public String getFullyQualifiedName(DBPEvaluationContext context) {
+    public String getFullyQualifiedName(@NotNull DBPEvaluationContext context) {
         return DBUtils.getFullQualifiedName(getDataSource(), getSchema(), this);
     }
 
@@ -153,6 +154,16 @@ public class ExasolView extends ExasolTableBase implements ExasolSourceObject, D
         //force reading of attributes
         hasRead = false;
         return this;
+    }
+
+    @Override
+    public ExasolTableColumn getAttribute(@NotNull DBRProgressMonitor monitor, @NotNull String attributeName) throws DBException {
+        return getContainer().getViewCache().getChild(monitor, getSchema(), (ExasolView) this, attributeName);
+    }
+
+    @Override
+    public List<ExasolTableColumn> getAttributes(@NotNull DBRProgressMonitor monitor) throws DBException {
+        return getContainer().getViewCache().getChildren(monitor, getContainer(), this);
     }
 
 
@@ -171,9 +182,10 @@ public class ExasolView extends ExasolTableBase implements ExasolSourceObject, D
         return Collections.emptyList();
     }
 
+    @NotNull
     @Override
     @Property(hidden = true, editable = true, updatable = true, order = -1)
-    public String getObjectDefinitionText(DBRProgressMonitor monitor, Map<String, Object> options) throws DBException {
+    public String getObjectDefinitionText(@NotNull DBRProgressMonitor monitor, @NotNull Map<String, Object> options) throws DBException {
         read();
         //return SQLFormatUtils.formatSQL(getDataSource(), this.text);
         return this.text;

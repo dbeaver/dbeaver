@@ -1,7 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2013-2015 Denis Forveille (titou10.titou10@gmail.com)
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -82,13 +81,12 @@ public class DB2Trigger extends DB2SchemaObject implements DBSTrigger, DB2Source
     // Constructors
     // -----------------------
 
-    public DB2Trigger(DBRProgressMonitor monitor, DB2Schema schema, DB2Table table, ResultSet dbResult)
-    {
+    public DB2Trigger(@NotNull DB2Schema schema, @NotNull DB2Table table, @NotNull ResultSet dbResult) {
         super(schema, JDBCUtils.safeGetString(dbResult, "TRIGNAME"), true);
 
         this.table = table;
 
-        DB2DataSource db2DataSource = table.getDataSource();
+        DB2DataSource db2DataSource = schema.getDataSource();
 
         this.owner = JDBCUtils.safeGetString(dbResult, DB2Constants.SYSCOLUMN_OWNER);
         this.time = CommonUtils.valueOf(DB2TriggerTime.class, JDBCUtils.safeGetString(dbResult, "TRIGTIME"));
@@ -121,8 +119,7 @@ public class DB2Trigger extends DB2SchemaObject implements DBSTrigger, DB2Source
         }
     }
 
-    public DB2Trigger(DB2Schema schema, DB2Table table, String name)
-    {
+    public DB2Trigger(@NotNull DB2Schema schema, @NotNull String name) {
         super(schema, name, false);
 
         this.ownerType = DB2OwnerType.U;
@@ -153,8 +150,9 @@ public class DB2Trigger extends DB2SchemaObject implements DBSTrigger, DB2Source
     // Source
     // -----------------
 
+    @NotNull
     @Override
-    public String getObjectDefinitionText(DBRProgressMonitor monitor, Map<String, Object> options) throws DBException
+    public String getObjectDefinitionText(@NotNull DBRProgressMonitor monitor, @NotNull Map<String, Object> options) throws DBException
     {
         return SQLFormatUtils.formatSQL(getDataSource(), text);
     }

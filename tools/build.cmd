@@ -1,0 +1,5 @@
+set "scriptDir=%~dp0"
+set "workspaceDir=%scriptDir%..\.."
+IF NOT EXIST "%workspaceDir%\dbeaver-common" git clone https://github.com/dbeaver/dbeaver-common.git "%workspaceDir%\dbeaver-common"
+IF NOT EXIST "%workspaceDir%\dbeaver-jdbc-libsql" git clone https://github.com/dbeaver/dbeaver-jdbc-libsql.git "%workspaceDir%\dbeaver-jdbc-libsql"
+call "%workspaceDir%\dbeaver-common\mvnw.cmd" clean package -Pall-platforms -T 1C -f "%workspaceDir%\dbeaver\product\aggregate"

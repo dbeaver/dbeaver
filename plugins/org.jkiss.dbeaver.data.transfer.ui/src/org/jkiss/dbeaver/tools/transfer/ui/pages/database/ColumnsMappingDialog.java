@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,7 +21,6 @@ import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.KeyAdapter;
 import org.eclipse.swt.events.KeyEvent;
-import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
@@ -44,7 +43,7 @@ import org.jkiss.dbeaver.tools.transfer.database.DatabaseMappingContainer;
 import org.jkiss.dbeaver.tools.transfer.database.DatabaseMappingType;
 import org.jkiss.dbeaver.tools.transfer.registry.DataTransferAttributeTransformerDescriptor;
 import org.jkiss.dbeaver.tools.transfer.ui.internal.DTUIMessages;
-import org.jkiss.dbeaver.tools.transfer.ui.wizard.DataTransferWizard;
+import org.jkiss.dbeaver.ui.BaseThemeSettings;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.SharedTextColors;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -64,19 +63,16 @@ class ColumnsMappingDialog extends DialogPage {
     private final DatabaseMappingContainer mapping;
     private final Collection<DatabaseMappingAttribute> attributeMappings;
     private TableViewer mappingViewer;
-    private Font boldFont;
 
-    ColumnsMappingDialog(DataTransferWizard wizard, DatabaseConsumerSettings settings, DatabaseMappingContainer mapping) {
+    ColumnsMappingDialog(DatabaseConsumerSettings settings, DatabaseMappingContainer mapping) {
         this.settings = settings;
         this.mapping = mapping;
-        attributeMappings = mapping.getAttributeMappings(wizard.getRunnableContext());
+        attributeMappings = mapping.getAttributeMappings();
     }
 
     @Override
     public void createControl(Composite parent) {
         DBPDataSource targetDataSource = settings.getTargetDataSource(mapping);
-
-        boldFont = UIUtils.makeBoldFont(parent.getFont());
 
         Composite composite = new Composite(parent, SWT.NONE);
         composite.setLayout(new GridLayout(2, false));
@@ -88,8 +84,18 @@ class ColumnsMappingDialog extends DialogPage {
         Text sourceEntity = UIUtils.createLabelText(composite, DTUIMessages.columns_mapping_dialog_composite_label_text_source_entity, DBUtils.getObjectFullName(mapping.getSource(), DBPEvaluationContext.UI), SWT.BORDER | SWT.READ_ONLY | SWT.MULTI | SWT.V_SCROLL);
         ((GridData) sourceEntity.getLayoutData()).widthHint = 600;
         ((GridData) sourceEntity.getLayoutData()).heightHint = UIUtils.getFontHeight(sourceEntity) * 3;
-        UIUtils.createLabelText(composite, DTUIMessages.columns_mapping_dialog_composite_label_text_target_container, (targetDataSource == null ? "?" : targetDataSource.getContainer().getName()), SWT.BORDER | SWT.READ_ONLY);
-        Text targetEntity = UIUtils.createLabelText(composite, DTUIMessages.columns_mapping_dialog_composite_label_text_target_entity, mapping.getTargetName(), SWT.BORDER | SWT.READ_ONLY);
+        UIUtils.createLabelText(
+            composite,
+            DTUIMessages.columns_mapping_dialog_composite_label_text_target_container,
+            (targetDataSource == null ? "?" : targetDataSource.getContainer().getName()),
+            SWT.BORDER | SWT.READ_ONLY
+        );
+        Text targetEntity = UIUtils.createLabelText(
+            composite,
+            DTUIMessages.columns_mapping_dialog_composite_label_text_target_entity,
+            mapping.getTargetName(),
+            SWT.BORDER | SWT.READ_ONLY
+        );
         ((GridData) targetEntity.getLayoutData()).widthHint = 600;
         ((GridData) targetEntity.getLayoutData()).heightHint = UIUtils.getFontHeight(sourceEntity) * 3;
 
@@ -156,7 +162,7 @@ class ColumnsMappingDialog extends DialogPage {
                 } else {
                     cell.setBackground(null);
                 }
-                cell.setFont(boldFont);
+                cell.setFont(BaseThemeSettings.instance.treeAndTableFontBold);
             }
         }, new EditingSupport(mappingViewer) {
             @Override
@@ -166,8 +172,7 @@ class ColumnsMappingDialog extends DialogPage {
                     DatabaseMappingAttribute mapping = (DatabaseMappingAttribute) element;
                     DatabaseMappingContainer container = mapping.getParent();
                     if ((container.getMappingType() == DatabaseMappingType.existing || container.getMappingType() == DatabaseMappingType.recreate) &&
-                        container.getTarget() instanceof DBSEntity) {
-                        DBSEntity parentEntity = (DBSEntity) container.getTarget();
+                        container.getTarget() instanceof DBSEntity parentEntity) {
                         for (DBSEntityAttribute attr : CommonUtils.safeCollection(parentEntity.getAttributes(new VoidProgressMonitor()))) {
                             items.add(attr.getName());
                         }
@@ -205,8 +210,7 @@ class ColumnsMappingDialog extends DialogPage {
                     } else {
                         DatabaseMappingContainer container = attrMapping.getParent();
                         if ((container.getMappingType() == DatabaseMappingType.existing || container.getMappingType() == DatabaseMappingType.recreate) &&
-                            container.getTarget() instanceof DBSEntity) {
-                            DBSEntity parentEntity = (DBSEntity) container.getTarget();
+                            container.getTarget() instanceof DBSEntity parentEntity) {
                             for (DBSEntityAttribute attr : CommonUtils.safeCollection(parentEntity.getAttributes(new VoidProgressMonitor()))) {
                                 if (name.equalsIgnoreCase(attr.getName())) {
                                     attrMapping.setTarget(attr);
@@ -233,7 +237,7 @@ class ColumnsMappingDialog extends DialogPage {
                 DatabaseMappingAttribute attrMapping = (DatabaseMappingAttribute) cell.getElement();
                 DBPDataSource dataSource = settings.getTargetDataSource(attrMapping);
                 cell.setText(attrMapping.getTargetType(dataSource, true));
-                cell.setFont(boldFont);
+                cell.setFont(BaseThemeSettings.instance.treeAndTableFontBold);
             }
         }, new EditingSupport(mappingViewer) {
             @Override
@@ -272,7 +276,8 @@ class ColumnsMappingDialog extends DialogPage {
 
             @Override
             protected boolean canEdit(Object element) {
-                return true;
+                DatabaseMappingAttribute attrMapping = (DatabaseMappingAttribute) element;
+                return attrMapping.getMappingType() == DatabaseMappingType.create;
             }
 
             @Override
@@ -293,16 +298,12 @@ class ColumnsMappingDialog extends DialogPage {
             @Override
             public String getText(Object element) {
                 DatabaseMappingAttribute mapping = (DatabaseMappingAttribute) element;
-                switch (mapping.getMappingType()) {
-                    case existing:
-                        return DTUIMessages.columns_mapping_dialog_cell_text_existing;
-                    case create:
-                        return DTUIMessages.columns_mapping_dialog_cell_text_new;
-                    case skip:
-                        return DTUIMessages.columns_mapping_dialog_cell_text_skip;
-                    default:
-                        return "?";
-                }
+                return switch (mapping.getMappingType()) {
+                    case existing -> DTUIMessages.columns_mapping_dialog_cell_text_existing;
+                    case create -> DTUIMessages.columns_mapping_dialog_cell_text_new;
+                    case skip -> DTUIMessages.columns_mapping_dialog_cell_text_skip;
+                    default -> "?";
+                };
             }
         });
 

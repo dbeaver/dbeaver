@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -134,7 +134,7 @@ public class OracleContentBFILE extends JDBCContentLOB {
     }
 
     @Override
-    public DBDContentStorage getContents(DBRProgressMonitor monitor)
+    public DBDContentStorage getContents(@NotNull DBRProgressMonitor monitor)
         throws DBCException
     {
         if (storage == null && bfile != null) {
@@ -222,7 +222,7 @@ public class OracleContentBFILE extends JDBCContentLOB {
     }
 
     @Override
-    public String getDisplayString(DBDDisplayFormat format)
+    public String getDisplayString(@NotNull DBDDisplayFormat format)
     {
         return bfile == null && storage == null ? null : "[BFILE:" + name + "]";
     }

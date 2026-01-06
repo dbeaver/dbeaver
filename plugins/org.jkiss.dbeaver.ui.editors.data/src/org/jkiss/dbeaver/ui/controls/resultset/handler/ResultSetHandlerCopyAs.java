@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,6 +23,7 @@ import org.eclipse.core.commands.IParameterValues;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.action.*;
+import org.eclipse.swt.SWT;
 import org.eclipse.ui.IWorkbenchPartSite;
 import org.eclipse.ui.actions.CompoundContributionItem;
 import org.eclipse.ui.commands.IElementUpdater;
@@ -30,6 +31,7 @@ import org.eclipse.ui.handlers.HandlerUtil;
 import org.eclipse.ui.menus.CommandContributionItem;
 import org.eclipse.ui.menus.CommandContributionItemParameter;
 import org.eclipse.ui.menus.UIElement;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDDataFilter;
@@ -38,6 +40,7 @@ import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataManipulator;
+import org.jkiss.dbeaver.registry.ApplicationPolicyProvider;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.ui.UIServiceSQL;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferConsumer;
@@ -55,6 +58,7 @@ import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.resultset.*;
 import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
+import org.jkiss.dbeaver.ui.internal.UIMessages;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.*;
@@ -70,8 +74,15 @@ public class ResultSetHandlerCopyAs extends AbstractHandler implements IElementU
     public static final String PARAM_PROCESSOR_ID = "processorId";
 
     @Override
-    public Object execute(ExecutionEvent event) throws ExecutionException
-    {
+    public Object execute(ExecutionEvent event) throws ExecutionException {
+        if (ApplicationPolicyProvider.getInstance().isPolicyEnabled(ApplicationPolicyProvider.POLICY_DATA_COPY)) {
+            UIUtils.showMessageBox(HandlerUtil.getActiveShell(event),
+                UIMessages.dialog_policy_data_copy_title,
+                UIMessages.dialog_policy_data_copy_msg,
+                SWT.ICON_WARNING
+            );
+            return null;
+        }
         IResultSetController resultSet = ResultSetHandlerMain.getActiveResultSet(HandlerUtil.getActivePart(event));
         if (resultSet == null) {
             return null;
@@ -126,8 +137,9 @@ public class ResultSetHandlerCopyAs extends AbstractHandler implements IElementU
                 setSystem(false);
             }
 
+            @NotNull
             @Override
-            protected IStatus run(DBRProgressMonitor monitor) {
+            protected IStatus run(@NotNull DBRProgressMonitor monitor) {
                 monitor.beginTask("Copy data as", 3);
                 try {
                     monitor.subTask("Init");
@@ -158,7 +170,8 @@ public class ResultSetHandlerCopyAs extends AbstractHandler implements IElementU
                         settings,
                         new IDataTransferConsumer.TransferParameters(processor.isBinaryFormat(), processor.isHTMLFormat()),
                         exporter,
-                        properties);
+                        properties,
+                        null);
 
                     DBDDataFilter dataFilter = resultSet.getModel().getDataFilter();
                     DatabaseTransferProducer producer = new DatabaseTransferProducer(dataContainer, dataFilter);
@@ -252,8 +265,8 @@ public class ResultSetHandlerCopyAs extends AbstractHandler implements IElementU
 
         IWorkbenchPartSite site = viewer.getSite();
         copyAsMenu.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerCopySpecial.CMD_COPY_SPECIAL));
-        copyAsMenu.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerCopySpecial.CMD_COPY_COLUMN_NAMES));
-        copyAsMenu.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_COPY_ROW_NAMES));
+        copyAsMenu.add(ActionUtils.makeCommandContribution(site, IResultSetCommands.CMD_COPY_COLUMN_NAMES));
+        copyAsMenu.add(ActionUtils.makeCommandContribution(site, IResultSetCommands.CMD_COPY_ROW_NAMES));
         // Add copy commands for different formats
         copyAsMenu.add(new Separator());
 

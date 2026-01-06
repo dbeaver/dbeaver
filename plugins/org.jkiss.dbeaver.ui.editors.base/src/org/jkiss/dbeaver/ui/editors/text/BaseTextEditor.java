@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,6 @@
  */
 package org.jkiss.dbeaver.ui.editors.text;
 
-import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.action.GroupMarker;
@@ -69,7 +68,7 @@ public abstract class BaseTextEditor extends AbstractDecoratedTextEditor impleme
     public static final String GROUP_SQL_ADDITIONS = "sql.additions";
     public static final String GROUP_SQL_EXTRAS = "sql.extras";
 
-    private List<IActionContributor> actionContributors = new ArrayList<>();
+    private final List<IActionContributor> actionContributors = new ArrayList<>();
 
     public void addContextMenuContributor(IActionContributor contributor) {
         actionContributors.add(contributor);
@@ -222,11 +221,6 @@ public abstract class BaseTextEditor extends AbstractDecoratedTextEditor impleme
         }
     }
 
-    public void handleActivate()
-    {
-        safelySanityCheckState(getEditorInput());
-    }
-
     @Nullable
     public ICommentsSupport getCommentsSupport()
     {
@@ -270,7 +264,7 @@ public abstract class BaseTextEditor extends AbstractDecoratedTextEditor impleme
 
     public void saveToExternalFile(@Nullable String currentDirectory) {
         IEditorInput editorInput = getEditorInput();
-        IFile curFile = EditorUtils.getFileFromInput(editorInput);
+        File curFile = EditorUtils.getLocalFileFromInput(editorInput);
         String fileName = curFile == null ? null : curFile.getName();
 
         if (CommonUtils.isNotEmpty(currentDirectory)) {
@@ -313,6 +307,16 @@ public abstract class BaseTextEditor extends AbstractDecoratedTextEditor impleme
 
     protected boolean isNonPersistentEditor() {
         return getEditorInput() instanceof INonPersistentEditorInput;
+    }
+
+    protected void setFocusToTextControl() {
+        SourceViewer viewer = getViewer();
+        if (viewer != null) {
+            StyledText textWidget = viewer.getTextWidget();
+            if (textWidget != null && !textWidget.isDisposed()) {
+                textWidget.setFocus();
+            }
+        }
     }
 
 }

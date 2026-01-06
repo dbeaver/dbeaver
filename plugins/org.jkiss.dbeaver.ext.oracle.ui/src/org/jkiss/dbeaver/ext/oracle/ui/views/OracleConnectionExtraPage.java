@@ -1,7 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
- * Copyright (C) 2011-2012 Eugene Fradkin (eugene.fradkin@gmail.com)
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +17,7 @@
 package org.jkiss.dbeaver.ext.oracle.ui.views;
 
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
@@ -57,7 +57,9 @@ public class OracleConnectionExtraPage extends ConnectionPageAbstract
     private Button useSimpleConstraints;
     private Button useAlternativeTableMetadataQuery;
     private Button searchInSynonyms;
+    private Button searchInSequences;
     private Button showDateAsDate;
+    private Combo optimizerVersionText;
 
     public OracleConnectionExtraPage()
     {
@@ -114,6 +116,19 @@ public class OracleConnectionExtraPage extends ConnectionPageAbstract
             useOptimizerHint = UIUtils.createCheckbox(performanceGroup, OracleUIMessages.edit_create_checkbox_group_use_metadata_optimizer, true);
             useOptimizerHint.setToolTipText(OracleUIMessages.edit_create_checkbox_group_use_metadata_optimizer_tip);
 
+            Composite optimizerPlaceholder = UIUtils.createPlaceholder(performanceGroup, 3);
+            optimizerPlaceholder.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+            optimizerVersionText = UIUtils.createLabelCombo(optimizerPlaceholder, "Optimizer version", SWT.DROP_DOWN);
+            optimizerVersionText.setToolTipText("Oracle optimizer versions.\n"
+                + "May affect metadata read performance or even break some metadata reads.");
+            for (String version : OracleConstants.OPTIMIZER_VERSIONS) {
+                optimizerVersionText.add(version);
+            }
+            optimizerVersionText.setText(OracleConstants.OPTIMIZER_VERSION_DEFAULT);
+            optimizerVersionText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+            UIUtils.createLink(optimizerPlaceholder, "<a>Info</a>", SelectionListener.widgetSelectedAdapter(
+                e -> UIUtils.openWebBrowser(OracleConstants.OPTIMIZER_DOCS_LINK)));
+
             useRuleHint = UIUtils.createCheckbox(performanceGroup, OracleUIMessages.edit_create_checkbox_group_use_rule, true);
             useRuleHint.setToolTipText(OracleUIMessages.edit_create_checkbox_adds_rule_tool_tip_text);
 
@@ -128,6 +143,13 @@ public class OracleConnectionExtraPage extends ConnectionPageAbstract
                 false
             );
             searchInSynonyms.setToolTipText(OracleUIMessages.edit_create_checkbox_content_group_search_metadata_in_synonyms_tooltip);
+
+            searchInSequences = UIUtils.createCheckbox(
+                performanceGroup,
+                OracleUIMessages.edit_create_checkbox_content_group_search_metadata_in_sequences,
+                false
+            );
+            searchInSequences.setToolTipText(OracleUIMessages.edit_create_checkbox_content_group_search_metadata_in_sequences_tooltip);
         }
 
         {
@@ -231,6 +253,8 @@ public class OracleConnectionExtraPage extends ConnectionPageAbstract
             providerProperties.get(OracleConstants.PROP_USE_META_OPTIMIZER),
             globalPreferences.getBoolean(OracleConstants.PROP_USE_META_OPTIMIZER)
         ));
+        optimizerVersionText.setText(CommonUtils.notEmpty(
+            providerProperties.get(OracleConstants.PROP_USE_META_OPTIMIZER_VERSION)));
         useAlternativeTableMetadataQuery.setSelection(CommonUtils.getBoolean(
             providerProperties.get(OracleConstants.PROP_METADATA_USE_ALTERNATIVE_TABLE_QUERY),
             globalPreferences.getBoolean(OracleConstants.PROP_METADATA_USE_ALTERNATIVE_TABLE_QUERY)
@@ -238,6 +262,10 @@ public class OracleConnectionExtraPage extends ConnectionPageAbstract
         searchInSynonyms.setSelection(CommonUtils.getBoolean(
             providerProperties.get(OracleConstants.PROP_SEARCH_METADATA_IN_SYNONYMS),
             globalPreferences.getBoolean(OracleConstants.PROP_SEARCH_METADATA_IN_SYNONYMS)
+        ));
+        searchInSequences.setSelection(CommonUtils.getBoolean(
+            providerProperties.get(OracleConstants.PROP_SEARCH_METADATA_IN_SEQUENCES),
+            globalPreferences.getBoolean(OracleConstants.PROP_SEARCH_METADATA_IN_SEQUENCES)
         ));
 
         showDateAsDate.setSelection(CommonUtils.getBoolean(
@@ -296,9 +324,13 @@ public class OracleConnectionExtraPage extends ConnectionPageAbstract
                 OracleConstants.PROP_USE_META_OPTIMIZER,
                 String.valueOf(useOptimizerHint.getSelection()));
             providerProperties.put(
+                OracleConstants.PROP_USE_META_OPTIMIZER_VERSION,
+                optimizerVersionText.getText());
+            providerProperties.put(
                     OracleConstants.PROP_METADATA_USE_ALTERNATIVE_TABLE_QUERY,
                     String.valueOf(useAlternativeTableMetadataQuery.getSelection()));
             providerProperties.put(OracleConstants.PROP_SEARCH_METADATA_IN_SYNONYMS, String.valueOf(searchInSynonyms.getSelection()));
+            providerProperties.put(OracleConstants.PROP_SEARCH_METADATA_IN_SEQUENCES, String.valueOf(searchInSequences.getSelection()));
 
             providerProperties.put(OracleConstants.PROP_SHOW_DATE_AS_DATE, String.valueOf(showDateAsDate.getSelection()));
         }

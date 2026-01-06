@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,7 +24,9 @@ import org.jkiss.dbeaver.ext.mysql.MySQLConstants;
 import org.jkiss.dbeaver.ext.mysql.MySQLUtils;
 import org.jkiss.dbeaver.model.DBPNamedObject2;
 import org.jkiss.dbeaver.model.DBPOrderedObject;
+import org.jkiss.dbeaver.model.DBPScriptObject;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.gis.GisAttribute;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCColumnKeyType;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTableColumn;
@@ -34,28 +36,29 @@ import org.jkiss.dbeaver.model.meta.PropertyLength;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLConstants;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
-import org.jkiss.dbeaver.model.struct.DBSDataType;
-import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
-import org.jkiss.dbeaver.model.struct.DBSTypedObject;
-import org.jkiss.dbeaver.model.struct.DBSTypedObjectExt3;
+import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableColumn;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * MySQLTableColumn
  */
-public class MySQLTableColumn extends JDBCTableColumn<MySQLTableBase> implements DBSTableColumn, DBSTypedObjectExt3, DBPNamedObject2, DBPOrderedObject
+public class MySQLTableColumn
+    extends JDBCTableColumn<MySQLTableBase>
+    implements DBSTableColumn, DBPScriptObject, DBSTypedObjectExt3, DBPNamedObject2, DBPOrderedObject, GisAttribute
 {
     private static final Log log = Log.getLog(MySQLTableColumn.class);
 
     public enum KeyType implements JDBCColumnKeyType {
         PRI,
         UNI,
-        MUL;
+        MUL,
+        DUP, AGG; // StarRocks
 
         @Override
         public boolean isInUniqueKey()
@@ -77,6 +80,7 @@ public class MySQLTableColumn extends JDBCTableColumn<MySQLTableBase> implements
     private String extraInfo;
     private String genExpression;
     private long modifiers;
+    private Integer srid;
 
     private String fullTypeName;
     private List<String> enumValues;
@@ -193,6 +197,10 @@ public class MySQLTableColumn extends JDBCTableColumn<MySQLTableBase> implements
                     break;
             }
         }
+
+        if (MySQLUtils.isColumnSridSupported(getDataSource())) {
+            srid = JDBCUtils.safeGetInteger(dbResult, MySQLConstants.COL_SRS_ID);
+        }
     }
 
     private static List<String> parseEnumValues(String typeName) {
@@ -236,17 +244,19 @@ public class MySQLTableColumn extends JDBCTableColumn<MySQLTableBase> implements
         return getTable().getDataSource();
     }
 
+    @NotNull
     @Property(viewable = true, editable = true, updatable = true, order = 20, listProvider = ColumnTypeNameListProvider.class)
     public String getFullTypeName() {
         return fullTypeName;
     }
 
     @Override
-    public void setFullTypeName(String fullTypeName) throws DBException {
+    public void setFullTypeName(@NotNull String fullTypeName) throws DBException {
         super.setFullTypeName(fullTypeName);
         this.fullTypeName = fullTypeName;
     }
 
+    @NotNull
     @Override
     public String getTypeName()
     {
@@ -273,6 +283,7 @@ public class MySQLTableColumn extends JDBCTableColumn<MySQLTableBase> implements
         return super.getMaxLength();
     }
 
+    @Nullable
     @Override
     //@Property(viewable = true, order = 41)
     public Integer getScale()
@@ -280,6 +291,7 @@ public class MySQLTableColumn extends JDBCTableColumn<MySQLTableBase> implements
         return super.getScale();
     }
 
+    @Nullable
     @Override
     //@Property(viewable = true, order = 42)
     public Integer getPrecision()
@@ -390,12 +402,29 @@ public class MySQLTableColumn extends JDBCTableColumn<MySQLTableBase> implements
         return getComment();
     }
 
+    @Override
+    public int getAttributeGeometrySRID(DBRProgressMonitor monitor) {
+        return srid != null ? srid : -1;
+    }
+
+    @Nullable
+    @Override
+    public String getAttributeGeometryType(DBRProgressMonitor monitor) {
+        return MySQLUtils.isSpatialDataType(typeName) ? typeName : null;
+    }
+
+    @Nullable
+    public Integer getSrid() {
+        return srid;
+    }
+
     public static class CharsetListProvider implements IPropertyValueListProvider<MySQLTableColumn> {
         @Override
         public boolean allowCustomValue()
         {
             return false;
         }
+        @Nullable
         @Override
         public Object[] getPossibleValues(MySQLTableColumn object)
         {
@@ -409,6 +438,7 @@ public class MySQLTableColumn extends JDBCTableColumn<MySQLTableBase> implements
         {
             return false;
         }
+        @Nullable
         @Override
         public Object[] getPossibleValues(MySQLTableColumn object)
         {
@@ -419,4 +449,10 @@ public class MySQLTableColumn extends JDBCTableColumn<MySQLTableBase> implements
             }
         }
     }
+
+    @Override
+    public String getObjectDefinitionText(@NotNull DBRProgressMonitor monitor, @NotNull Map<String, Object> options) throws DBException {
+        return DBStructUtils.generateObjectDDL(monitor, this, options, false);
+    }
+
 }

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,16 +29,14 @@ import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCStructImpl;
-import org.jkiss.dbeaver.model.impl.jdbc.data.JDBCComposite;
-import org.jkiss.dbeaver.model.impl.jdbc.data.JDBCCompositeDynamic;
-import org.jkiss.dbeaver.model.impl.jdbc.data.JDBCCompositeStatic;
-import org.jkiss.dbeaver.model.impl.jdbc.data.JDBCCompositeUnknown;
+import org.jkiss.dbeaver.model.impl.jdbc.data.*;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 
 import java.sql.SQLException;
 import java.sql.Struct;
 import java.sql.Types;
+import java.util.Map;
 
 /**
  * JDBC Struct value handler.
@@ -138,6 +136,8 @@ public class JDBCStructValueHandler extends JDBCComplexValueHandler implements D
             return new JDBCCompositeStatic(session, dataType, new JDBCStructImpl(dataType.getTypeName(), null, ""));
         } else if (object instanceof Struct) {
             return new JDBCCompositeStatic(session, dataType, (Struct) object);
+        } else if (object instanceof Map) {
+            return new JDBCCompositeMap(session, dataType, (Map<?,?>) object);
         } else {
             return new JDBCCompositeUnknown(session, object);
         }

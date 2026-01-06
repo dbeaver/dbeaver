@@ -1,7 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
- * Copyright (C) 2011-2012 Eugene Fradkin (eugene.fradkin@gmail.com)
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,7 +28,8 @@ import org.jkiss.dbeaver.tasks.nativetool.AbstractScriptExecuteSettings;
 import org.jkiss.dbeaver.tasks.ui.nativetool.internal.TaskNativeUIMessages;
 import org.jkiss.dbeaver.ui.UIUtils;
 
-import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Collection;
 
 public abstract class AbstractNativeScriptExecuteWizard<SETTINGS extends AbstractScriptExecuteSettings<BASE_OBJECT>, BASE_OBJECT extends DBSObject, PROCESS_ARG>
@@ -39,7 +39,7 @@ public abstract class AbstractNativeScriptExecuteWizard<SETTINGS extends Abstrac
         super(dbObject, task);
     }
 
-    protected AbstractNativeScriptExecuteWizard(Collection<BASE_OBJECT> dbObject, String task, @Nullable File file) {
+    protected AbstractNativeScriptExecuteWizard(Collection<BASE_OBJECT> dbObject, String task, @Nullable Path file) {
         super(dbObject, task);
         updateFileSettings(file);
     }
@@ -74,8 +74,8 @@ public abstract class AbstractNativeScriptExecuteWizard<SETTINGS extends Abstrac
                         SWT.ICON_INFORMATION);
     }
 
-    protected void updateFileSettings(@Nullable File file) {
-        getSettings().setInputFile(file != null && file.exists() ? file.getAbsolutePath() : null);
+    protected void updateFileSettings(@Nullable Path file) {
+        getSettings().setInputFile(file != null && Files.exists(file) ? file.toAbsolutePath().toString() : null);
     }
 
 }

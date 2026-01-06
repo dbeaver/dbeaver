@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,9 +17,12 @@
 
 package org.jkiss.dbeaver.ext.postgresql.ui.config;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreAttribute;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreIndex;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreIndexColumn;
+import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEObjectConfigurator;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -30,6 +33,7 @@ import org.jkiss.dbeaver.ui.UITask;
 import org.jkiss.dbeaver.ui.editors.object.struct.EditIndexPage;
 import org.jkiss.utils.CommonUtils;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Map;
 
@@ -40,14 +44,14 @@ public class PostgreIndexConfigurator implements DBEObjectConfigurator<PostgreIn
 
 
     @Override
-    public PostgreIndex configureObject(DBRProgressMonitor monitor, Object parent, PostgreIndex index, Map<String, Object> options) {
+    public PostgreIndex configureObject(@NotNull DBRProgressMonitor monitor, @Nullable DBECommandContext commandContext, @Nullable Object parent, @NotNull PostgreIndex index, @NotNull Map<String, Object> options) {
         return new UITask<PostgreIndex>() {
             @Override
             protected PostgreIndex runTask() {
                 EditIndexPage editPage = new EditIndexPage(
                     "Edit index",
                     index,
-                    Collections.singletonList(DBSIndexType.OTHER));
+                    Arrays.asList(DBSIndexType.OTHER, DBSIndexType.HASHED));
                 if (!editPage.edit()) {
                     return null;
                 }

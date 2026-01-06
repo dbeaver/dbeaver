@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -40,7 +40,7 @@ public interface SMAuthProvider<AUTH_SESSION extends SMSession> {
     String validateLocalAuth(
         @NotNull DBRProgressMonitor monitor,
         @NotNull SMController securityController,
-        @NotNull Map<String, Object> providerConfig,
+        @NotNull SMAuthProviderCustomConfiguration providerConfig,
         @NotNull Map<String, Object> userCredentials,
         @Nullable String activeUserId) throws DBException;
 
@@ -59,5 +59,7 @@ public interface SMAuthProvider<AUTH_SESSION extends SMSession> {
         @NotNull DBRProgressMonitor monitor,
         @NotNull SMSession mainSession,
         AUTH_SESSION session) throws DBException;
+
+    boolean supportsOpeningSessionAsChild();
 
 }

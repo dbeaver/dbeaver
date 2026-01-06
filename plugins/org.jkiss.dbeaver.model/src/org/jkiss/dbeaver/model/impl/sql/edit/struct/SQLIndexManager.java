@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.model.impl.sql.edit.struct;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
@@ -44,13 +45,13 @@ public abstract class SQLIndexManager<OBJECT_TYPE extends AbstractTableIndex, TA
 {
 
     @Override
-    public long getMakerOptions(DBPDataSource dataSource)
+    public long getMakerOptions(@NotNull DBPDataSource dataSource)
     {
         return FEATURE_EDITOR_ON_CREATE;
     }
 
     @Override
-    protected void addObjectCreateActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, ObjectCreateCommand command, Map<String, Object> options)
+    protected void addObjectCreateActions(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext executionContext, @NotNull List<DBEPersistAction> actions, @NotNull ObjectCreateCommand command, @NotNull Map<String, Object> options)
     {
         final TABLE_TYPE table = (TABLE_TYPE)command.getObject().getTable();
         final OBJECT_TYPE index = command.getObject();
@@ -70,8 +71,9 @@ public abstract class SQLIndexManager<OBJECT_TYPE extends AbstractTableIndex, TA
         appendIndexModifiers(index, decl);
         decl.append(" INDEX ").append(indexName); //$NON-NLS-1$
         appendIndexType(index, decl);
-        decl.append(" ON ").append(tableName) //$NON-NLS-1$
-            .append(" ("); //$NON-NLS-1$
+        decl.append(" ON ").append(tableName); //$NON-NLS-1$
+        appendIndexTypeAfterOn(index, decl);
+        decl.append(" ("); //$NON-NLS-1$
         try {
             // Get columns using void monitor
             boolean firstColumn = true;
@@ -95,6 +97,10 @@ public abstract class SQLIndexManager<OBJECT_TYPE extends AbstractTableIndex, TA
 
     }
 
+    protected void appendIndexTypeAfterOn(OBJECT_TYPE index, StringBuilder decl) {
+
+    }
+
     protected void appendIndexModifiers(OBJECT_TYPE index, StringBuilder decl) {
         if (index.isUnique()) {
             decl.append(" UNIQUE");
@@ -108,7 +114,7 @@ public abstract class SQLIndexManager<OBJECT_TYPE extends AbstractTableIndex, TA
     }
 
     @Override
-    protected void addObjectDeleteActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, ObjectDeleteCommand command, Map<String, Object> options)
+    protected void addObjectDeleteActions(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext executionContext, @NotNull List<DBEPersistAction> actions, @NotNull ObjectDeleteCommand command, @NotNull Map<String, Object> options)
     {
         actions.add(
             new SQLDatabasePersistAction(

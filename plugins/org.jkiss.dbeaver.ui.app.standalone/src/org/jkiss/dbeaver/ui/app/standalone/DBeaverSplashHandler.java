@@ -1,7 +1,7 @@
 
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,6 @@
 package org.jkiss.dbeaver.ui.app.standalone;
 
 import org.eclipse.core.runtime.IProduct;
-import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.jface.resource.StringConverter;
 import org.eclipse.swt.SWT;
@@ -37,20 +36,6 @@ public class DBeaverSplashHandler extends BasicSplashHandler {
 	public static final int TOTAL_LOADING_TASKS = 20;
 	private static DBeaverSplashHandler instance;
 
-    public static IProgressMonitor getActiveMonitor()
-    {
-        if (instance == null) {
-            return null;
-        } else {
-            try {
-                return instance.getBundleProgressMonitor();
-            } catch (Exception e) {
-                e.printStackTrace(System.err);
-                return null;
-            }
-        }
-    }
-
     private Font normalFont;
     private Font boldFont;
 
@@ -65,41 +50,30 @@ public class DBeaverSplashHandler extends BasicSplashHandler {
 
         try {
             initVisualization();
-
-            getBundleProgressMonitor().beginTask("Loading", TOTAL_LOADING_TASKS);
         } catch (Exception e) {
             e.printStackTrace(System.err);
         }
 
     }
-
+    
     private void initVisualization() {
         String progressRectString = null, messageRectString = null, foregroundColorString = null,
-            versionCoordString = null, versionInfoSizeString = null, versionInfoColorString = null;
+            versionCoordString = null, versionInfoSizeString = null;
         final IProduct product = Platform.getProduct();
         if (product != null) {
             progressRectString = product.getProperty(IProductConstants.STARTUP_PROGRESS_RECT);
             messageRectString = product.getProperty(IProductConstants.STARTUP_MESSAGE_RECT);
-            foregroundColorString = product.getProperty(IProductConstants.STARTUP_FOREGROUND_COLOR);
             versionCoordString = product.getProperty("versionInfoCoord");
             versionInfoSizeString = product.getProperty("versionInfoSize");
-            versionInfoColorString = product.getProperty("versionInfoColor");
         }
 
         setProgressRect(StringConverter.asRectangle(progressRectString, new Rectangle(275, 300, 280, 10)));
         setMessageRect(StringConverter.asRectangle(messageRectString, new Rectangle(275,275,280,25)));
         final Point versionCoord = StringConverter.asPoint(versionCoordString, new Point(485, 215));
         final int versionInfoSize = StringConverter.asInt(versionInfoSizeString, 22);
-        final RGB versionInfoRGB = StringConverter.asRGB(versionInfoColorString, new RGB(255,255,255));
+        final RGB versionInfoRGB = new RGB(255,255,255);
 
-        int foregroundColorInteger = 0xD2D7FF;
-        try {
-			if (foregroundColorString != null) {
-				foregroundColorInteger = Integer.parseInt(foregroundColorString, 16);
-			}
-        } catch (Exception ex) {
-            // ignore
-        }
+        int foregroundColorInteger = 0xFFFFFF;
 
         setForeground(
 			new RGB(
@@ -141,26 +115,6 @@ public class DBeaverSplashHandler extends BasicSplashHandler {
             boldFont = null;
         }
         instance = null;
-    }
-
-	public static void showMessage(String message) {
-        IProgressMonitor activeMonitor = getActiveMonitor();
-		if (activeMonitor == null || message == null || message.isEmpty()) {
-			return;
-		}
-		if (message.startsWith(">") || message.startsWith("<")) {
-            message = message.substring(2);
-            int divPos = message.indexOf("[");
-            if (divPos != -1) {
-                message = message.substring(0, divPos);
-            }
-        }
-        try {
-            activeMonitor.setTaskName(message);
-            activeMonitor.worked(1);
-        } catch (Throwable e) {
-            e.printStackTrace(System.err);
-        }
     }
 
 }

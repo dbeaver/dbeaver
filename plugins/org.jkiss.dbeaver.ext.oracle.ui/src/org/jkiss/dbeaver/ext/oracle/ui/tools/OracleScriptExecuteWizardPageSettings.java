@@ -1,7 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
- * Copyright (C) 2011-2012 Eugene Fradkin (eugene.fradkin@gmail.com)
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ext.oracle.ui.tools;
 
+import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Group;
@@ -26,6 +26,7 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.tasks.ui.nativetool.AbstractNativeToolWizardPage;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.TextWithOpenFile;
+import org.jkiss.dbeaver.ui.controls.TextWithOpenFileRemote;
 
 import java.util.List;
 
@@ -54,7 +55,13 @@ class OracleScriptExecuteWizardPageSettings extends AbstractNativeToolWizardPage
 
         Group outputGroup = UIUtils.createControlGroup(composite, OracleUIMessages.tools_script_execute_wizard_page_settings_group_input, 3, GridData.FILL_HORIZONTAL, 0);
         outputGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        inputFileText = new TextWithOpenFile(outputGroup, OracleUIMessages.tools_script_execute_wizard_page_settings_label_input_file, new String[] { "*.sql", "*.txt", "*" } );
+        inputFileText = new TextWithOpenFileRemote(
+            outputGroup,
+            OracleUIMessages.tools_script_execute_wizard_page_settings_label_input_file,
+            new String[] { "*.sql", "*.txt", "*" },
+            SWT.OPEN | SWT.SINGLE,
+            false,
+            getWizard().getProject());
         inputFileText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
         setControl(composite);

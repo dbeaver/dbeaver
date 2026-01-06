@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,7 +34,6 @@ import org.jkiss.dbeaver.model.navigator.DBNContainer;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.rm.RMConstants;
-import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.TasksJob;
@@ -44,6 +43,7 @@ import org.jkiss.dbeaver.ui.internal.UINavigatorMessages;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -53,8 +53,7 @@ public class NavigatorHandlerObjectRename extends NavigatorHandlerObjectBase {
     public Object execute(ExecutionEvent event) throws ExecutionException {
         final ISelection selection = HandlerUtil.getCurrentSelection(event);
 
-        if (selection instanceof IStructuredSelection) {
-            IStructuredSelection structSelection = (IStructuredSelection) selection;
+        if (selection instanceof IStructuredSelection structSelection) {
             Object element = structSelection.getFirstElement();
             DBNNode node = RuntimeUtils.getObjectAdapter(element, DBNNode.class);
             if (node != null) {
@@ -69,13 +68,14 @@ public class NavigatorHandlerObjectRename extends NavigatorHandlerObjectBase {
 
     public static boolean renameNode(IWorkbenchWindow workbenchWindow, Shell shell, final DBNNode node, String newName, Object uiSource)
     {
-        String oldName = node instanceof DBNDatabaseNode ? ((DBNDatabaseNode) node).getPlainNodeName(true, false) : node.getNodeName();
+        String oldName = node instanceof DBNDatabaseNode ? ((DBNDatabaseNode) node).getPlainNodeName(true,
+            false) : node.getNodeDisplayName();
         if (oldName == null) {
             oldName = "?";
         }
         if (newName == null) {
             newName = EnterNameDialog.chooseName(shell,
-                NLS.bind(UINavigatorMessages.actions_navigator_rename_object, node.getNodeType()), oldName);
+                NLS.bind(UINavigatorMessages.actions_navigator_rename_object, node.getNodeTypeLabel()), oldName);
         }
         if (CommonUtils.isEmpty(newName) || newName.equals(oldName)) {
             return false;
@@ -84,18 +84,25 @@ public class NavigatorHandlerObjectRename extends NavigatorHandlerObjectBase {
         if (node.supportsRename()) {
             try {
                 // Rename with null monitor because it is some local resource
-                node.rename(new VoidProgressMonitor(), newName);
+                String finalNewName = newName;
+                UIUtils.runInProgressService(monitor -> {
+                    try {
+                        node.rename(monitor, finalNewName);
+                    } catch (DBException e) {
+                        throw new InvocationTargetException(e);
+                    }
+                });
                 return true;
-            } catch (DBException e) {
+            } catch (Exception e) {
                 DBWorkbench.getPlatformUI().showError(
                     UINavigatorMessages.actions_navigator_rename_object_exception_title,
                     NLS.bind(UINavigatorMessages.actions_navigator_rename_object_exception_message, oldName), e);
             }
         }
-        if (node instanceof DBNDatabaseNode) {
+        if (node instanceof DBNDatabaseNode dbNode) {
             return renameDatabaseObject(
                 workbenchWindow,
-                (DBNDatabaseNode) node,
+                dbNode,
                 CommonUtils.toString(UIUtils.normalizePropertyValue(newName)), uiSource);
         }
         return false;
@@ -142,7 +149,7 @@ public class NavigatorHandlerObjectRename extends NavigatorHandlerObjectBase {
             DBWorkbench.getPlatformUI().showError(
                 UINavigatorMessages.actions_navigator_rename_database_object_exception_title,
                 NLS.bind(UINavigatorMessages.actions_navigator_rename_database_object_exception_message,
-                    node.getNodeName()),
+                    node.getNodeDisplayName()),
                 e);
             return false;
         }

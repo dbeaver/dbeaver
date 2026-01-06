@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,12 +22,14 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.impl.struct.AbstractTableIndexColumn;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.rdb.DBSTableColumn;
+import org.jkiss.dbeaver.model.struct.rdb.DBSTableConstraintColumn;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableIndexColumn;
 
 /**
  * SQLServerTableIndexColumn
  */
-public class SQLServerTableIndexColumn extends AbstractTableIndexColumn implements SQLServerObject
+public class SQLServerTableIndexColumn extends AbstractTableIndexColumn implements SQLServerObject, DBSTableConstraintColumn
 {
     private SQLServerTableIndex index;
     private SQLServerTableColumn tableColumn;
@@ -80,6 +82,12 @@ public class SQLServerTableIndexColumn extends AbstractTableIndexColumn implemen
     public String getName()
     {
         return tableColumn.getName();
+    }
+
+    @Nullable
+    @Override
+    public DBSTableColumn getAttribute() {
+        return tableColumn;
     }
 
     @Nullable

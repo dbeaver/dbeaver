@@ -1,7 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
- * Copyright (C) 2012 Eugene Fradkin (eugene.fradkin@gmail.com)
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,10 +32,7 @@ import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.utils.Base64;
 import org.jkiss.utils.CommonUtils;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.PrintWriter;
-import java.io.Reader;
+import java.io.*;
 import java.math.BigDecimal;
 import java.sql.Date;
 import java.sql.Time;
@@ -46,7 +42,7 @@ import java.util.Locale;
 /**
  * DbUnit Dataset Exporter
  * 
- * DbUnit is a framwork for populating a database with test data before 
+ * DbUnit is a framework for populating a database with test data before
  * running an integration test. This export uses the format used by FlatXmlDataSet/ReplacementDataSet
  * described at http://dbunit.sourceforge.net/components.html
  */
@@ -184,11 +180,9 @@ public class DataExporterDbUnit extends StreamExporterAbstract {
         getWriter().write("</dataset>\n");
     }
 
-    private void writeTextCell(@Nullable String value)
-    {
+    private void writeTextCell(@Nullable String value) throws IOException {
         if (value != null) {
-            value = value.replace("<", "&lt;").replace(">", "&gt;").replace("&", "&amp;");
-            getWriter().write(value);
+            writeCellValue(new StringReader(value));
         }
     }
 
@@ -210,6 +204,8 @@ public class DataExporterDbUnit extends StreamExporterAbstract {
                     out.write("&gt;");
                 } else if (buffer[i] == '&') {
                     out.write("&amp;");
+                } else if (buffer[i] == '"') {
+                    out.write("&quot;");
                 } else {
                     out.write(buffer[i]);
                 }

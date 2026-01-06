@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ext.mssql.model;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.DBDatabaseException;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.mssql.SQLServerConstants;
@@ -36,6 +37,7 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectReference;
 import org.jkiss.dbeaver.model.struct.DBSObjectType;
 import org.jkiss.dbeaver.model.struct.DBSStructureAssistant;
+import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.SQLException;
@@ -57,6 +59,7 @@ public class SQLServerStructureAssistant implements DBSStructureAssistant<SQLSer
         this.dataSource = dataSource;
     }
 
+    @NotNull
     @Override
     public DBSObjectType[] getSupportedObjectTypes()
     {
@@ -74,6 +77,7 @@ public class SQLServerStructureAssistant implements DBSStructureAssistant<SQLSer
             };
     }
 
+    @NotNull
     @Override
     public DBSObjectType[] getSearchObjectTypes() {
         return new DBSObjectType[] {
@@ -81,9 +85,11 @@ public class SQLServerStructureAssistant implements DBSStructureAssistant<SQLSer
             RelationalObjectType.TYPE_VIEW,
             SQLServerObjectType.SN,
             RelationalObjectType.TYPE_PROCEDURE,
+            SQLServerObjectType.SCHEMA
         };
     }
 
+    @NotNull
     @Override
     public DBSObjectType[] getHyperlinkObjectTypes()
     {
@@ -96,6 +102,7 @@ public class SQLServerStructureAssistant implements DBSStructureAssistant<SQLSer
         };
     }
 
+    @NotNull
     @Override
     public DBSObjectType[] getAutoCompleteObjectTypes()
     {
@@ -134,7 +141,7 @@ public class SQLServerStructureAssistant implements DBSStructureAssistant<SQLSer
         Collection<SQLServerDatabase> databases;
         SQLServerSchema schema = null;
 
-        if (parentObject == null || parentObject instanceof SQLServerDataSource) {
+        if (parentObject == null || parentObject instanceof DataSourceDescriptor) {
             if (globalSearch) {
                 databases = executionContext.getDataSource().getDatabases(monitor);
             } else {
@@ -207,7 +214,7 @@ public class SQLServerStructureAssistant implements DBSStructureAssistant<SQLSer
         }
         boolean hasMask = !CommonUtils.isEmpty(params.getMask()) && !params.getMask().equals("%");
 
-        StringBuilder sqlBuilder = new StringBuilder("SELECT TOP %d * FROM %s o");
+        StringBuilder sqlBuilder = new StringBuilder("SELECT TOP %d schema_id, name, type FROM %s o");
         if (params.isSearchInComments()) {
             sqlBuilder.append(" LEFT JOIN sys.extended_properties ep ON ((o.parent_object_id = 0 AND ep.minor_id = 0 AND o.object_id = ep.major_id) OR (o.parent_object_id <> 0 AND ep.minor_id = o.parent_object_id AND ep.major_id = o.object_id)) ");
         }
@@ -232,10 +239,15 @@ public class SQLServerStructureAssistant implements DBSStructureAssistant<SQLSer
                 sqlBuilder.append(") ");
             }
         }
+        boolean isNeedSchemaSearch = supObjectTypes.contains(SQLServerObjectType.SCHEMA);
         if (schema != null) {
             sqlBuilder.append("AND o.schema_id = ? ");
+        } else if (isNeedSchemaSearch) {
+            sqlBuilder.append(" UNION ALL\nSELECT TOP %d schema_id, name, 'SCHEMA'\n");
+            sqlBuilder.append("FROM %s\n");
+            sqlBuilder.append("WHERE name LIKE ? \n");
+            sqlBuilder.append("ORDER BY o.name");
         }
-        sqlBuilder.append("ORDER BY o.name");
         String template = sqlBuilder.toString();
 
         List<DBSObjectReference> objects = new ArrayList<>();
@@ -245,7 +257,11 @@ public class SQLServerStructureAssistant implements DBSStructureAssistant<SQLSer
                 if (rowsToFetch < 1) {
                     break;
                 }
-                String sql = String.format(template, rowsToFetch, SQLServerUtils.getSystemTableName(database, "all_objects"));
+                String sql = String.format(template,
+                    rowsToFetch,
+                    SQLServerUtils.getSystemTableName(database, "all_objects"),
+                    rowsToFetch,
+                    SQLServerUtils.getSystemTableName(database, "schemas"));
                 try (JDBCPreparedStatement dbStat = session.prepareStatement(sql)) {
                     int idx = 1;
                     if (hasMask) {
@@ -262,6 +278,8 @@ public class SQLServerStructureAssistant implements DBSStructureAssistant<SQLSer
                     }
                     if (schema != null) {
                         dbStat.setLong(idx, schema.getObjectId());
+                    } else if (isNeedSchemaSearch) {
+                        dbStat.setString(idx++, params.getMask());
                     }
                     dbStat.setFetchSize(DBConstants.METADATA_FETCH_SIZE);
 
@@ -281,7 +299,7 @@ public class SQLServerStructureAssistant implements DBSStructureAssistant<SQLSer
                             {
                                 @Override
                                 public DBSObject resolveObject(DBRProgressMonitor monitor) throws DBException {
-                                    DBSObject object = objectType.findObject(session.getProgressMonitor(), database, objectSchema, objectName);
+                                    DBSObject object = objectType.findObject(session.getProgressMonitor(), objectSchema, objectName);
                                     if (object == null) {
                                         throw new DBException(objectTypeName + " '" + objectName + "' not found");
                                     }
@@ -353,14 +371,14 @@ public class SQLServerStructureAssistant implements DBSStructureAssistant<SQLSer
 
                         @NotNull
                         @Override
-                        public String getFullyQualifiedName(DBPEvaluationContext context) {
+                        public String getFullyQualifiedName(@NotNull DBPEvaluationContext context) {
                             return objectNameTrimmed;
                         }
                     });
                 }
             }
         } catch (Throwable e) {
-            throw new DBException("Error while searching in system catalog", e, dataSource);
+            throw new DBDatabaseException("Error while searching in system catalog", e, dataSource);
         }
     }
 

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,15 +19,16 @@ package org.jkiss.dbeaver.runtime.qm;
 import org.eclipse.core.runtime.IStatus;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceListener;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.qm.*;
 import org.jkiss.dbeaver.model.qm.meta.*;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
+import org.jkiss.utils.CommonUtils;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -41,6 +42,7 @@ import java.time.format.DateTimeParseException;
 import java.util.Calendar;
 import java.util.List;
 import java.util.Locale;
+import java.util.stream.Stream;
 
 /**
  * Query manager log writer
@@ -61,23 +63,25 @@ public class QMLogFileWriter implements QMMetaListener, DBPPreferenceListener {
     public QMLogFileWriter()
     {
         lineSeparator = GeneralUtils.getDefaultLineSeparator();
-        ModelPreferences.getPreferences().addPropertyChangeListener(this);
+        DBWorkbench.getPlatform().getPreferenceStore().addPropertyChangeListener(this);
         initLogFile();
     }
 
     public void dispose()
     {
-        ModelPreferences.getPreferences().removePropertyChangeListener(this);
+        DBWorkbench.getPlatform().getPreferenceStore().removePropertyChangeListener(this);
     }
 
     private synchronized void initLogFile()
     {
-        final DBPPreferenceStore preferences = ModelPreferences.getPreferences();
+        final DBPPreferenceStore preferences = DBWorkbench.getPlatform().getPreferenceStore();
         enabled = preferences.getBoolean(QMConstants.PROP_STORE_LOG_FILE);
         if (enabled) {
             final int daysToKeepLogs = preferences.getInt(QMConstants.PROP_HISTORY_DAYS);
-            final String logFolderPath = preferences.getString(QMConstants.PROP_LOG_DIRECTORY);
-
+            String logFolderPath = preferences.getString(QMConstants.PROP_LOG_DIRECTORY);
+            if (CommonUtils.isEmpty(logFolderPath)) {
+                logFolderPath = GeneralUtils.getMetadataFolder().toAbsolutePath().toString();
+            }
             try {
                 purgeOldLogs(Path.of(logFolderPath), daysToKeepLogs);
             } catch (IOException e) {
@@ -109,22 +113,24 @@ public class QMLogFileWriter implements QMMetaListener, DBPPreferenceListener {
         final LocalDate today = LocalDate.now();
         final LocalDate judgementDay = today.minusDays(daysToKeep);
 
-        Files.list(logDirectory)
-            .filter(file -> {
-                try {
-                    final LocalDate date = LOG_FILENAME_FORMATTER.parse(file.getFileName().toString(), LocalDate::from);
-                    return judgementDay.isAfter(date);
-                } catch (DateTimeParseException e) {
-                    return false;
-                }
-            })
-            .forEach(file -> {
-                try {
-                    Files.delete(file);
-                } catch (IOException e) {
-                    log.debug("Unable to purge the old log file '" + file + "': " + e.getMessage());
-                }
-            });
+        try (Stream<Path> list = Files.list(logDirectory)) {
+            list
+                .filter(file -> {
+                    try {
+                        final LocalDate date = LOG_FILENAME_FORMATTER.parse(file.getFileName().toString(), LocalDate::from);
+                        return judgementDay.isAfter(date);
+                    } catch (DateTimeParseException e) {
+                        return false;
+                    }
+                })
+                .forEach(file -> {
+                    try {
+                        Files.delete(file);
+                    } catch (IOException e) {
+                        log.debug("Unable to purge the old log file '" + file + "': " + e.getMessage());
+                    }
+                });
+        }
     }
 
     @Override

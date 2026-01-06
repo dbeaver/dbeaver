@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,8 +35,12 @@ public class SQLConstants {
     public static final String ML_COMMENT_START = "/*";
     public static final String ML_COMMENT_END = "*/";
     public static final String SL_COMMENT = "--";
+    public static final String ASTERISK = "*";
+    public static final String QUESTION = "?";
+    public static final String DOT = ".";
 
     public static final String KEYWORD_SELECT = "SELECT";
+    public static final String KEYWORD_SEL = "SEL";
     public static final String KEYWORD_INSERT = "INSERT";
     public static final String KEYWORD_UPDATE = "UPDATE";
     public static final String KEYWORD_DELETE = "DELETE";
@@ -47,15 +51,22 @@ public class SQLConstants {
     public static final String KEYWORD_FROM = "FROM";
     public static final String KEYWORD_INTO = "INTO";
     public static final String KEYWORD_JOIN = "JOIN";
+    public static final String KEYWORD_CROSS_JOIN = "CROSS JOIN";
+    public static final String KEYWORD_NATURAL_JOIN = "NATURAL JOIN";
     public static final String KEYWORD_WHERE = "WHERE";
     public static final String KEYWORD_SET = "SET";
     public static final String KEYWORD_ON = "ON";
     public static final String KEYWORD_AND = "AND";
     public static final String KEYWORD_OR = "OR";
+    public static final String KEYWORD_BETWEEN = "BETWEEN";
     public static final String KEYWORD_IS = "IS";
     public static final String KEYWORD_NOT = "NOT";
     public static final String KEYWORD_NULL = "NULL";
     public static final String KEYWORD_IN = "IN";
+    public static final String KEYWORD_VALUES = "VALUES";
+    public static final String KEYWORD_ORDER_BY = "ORDER BY";
+    public static final String KEYWORD_GROUP_BY = "GROUP BY";
+    public static final String KEYWORD_HAVING = "HAVING";
 
     public static final String KEYWORD_LIKE = "LIKE";
     public static final String KEYWORD_ILIKE = "ILIKE";
@@ -69,8 +80,14 @@ public class SQLConstants {
     public static final String KEYWORD_EXPLAIN = "EXPLAIN";
 
     public static final String KEYWORD_CASE = "CASE";
+    
+    public static final String KEYWORD_QUALIFY = "QUALIFY";
+
+    public static final String KEYWORD_AS = "AS";
+    public static final String KEYWORD_USING = "USING";
 
     public static final String DATA_TYPE_VARCHAR = "varchar";
+    public static final String DATA_TYPE_NVARCHAR = "nvarchar";
     public static final String DATA_TYPE_BIGINT = "BIGINT";
     public static final String DATA_TYPE_BINARY = "BINARY";
     public static final String DATA_TYPE_BOOLEAN = "BOOLEAN";
@@ -80,6 +97,16 @@ public class SQLConstants {
     public static final String DATA_TYPE_SMALLINT = "SMALLINT";
     public static final String DATA_TYPE_STRING = "STRING";
     public static final String DATA_TYPE_TINYINT = "TINYINT";
+
+    public static final String[] QUERY_KEYWORDS = {
+        KEYWORD_SELECT,
+        KEYWORD_INSERT,
+        KEYWORD_UPDATE,
+        KEYWORD_DELETE,
+        KEYWORD_MERGE,
+        KEYWORD_UPSERT,
+        KEYWORD_TRUNCATE
+    };
 
     public static final String[] TABLE_KEYWORDS = {
         KEYWORD_FROM,
@@ -126,7 +153,7 @@ public class SQLConstants {
         "ATOMIC",
         "AUTHORIZATION",
         "BEGIN",
-        "BETWEEN",
+        KEYWORD_BETWEEN,
         //"BIGINT",
         DATA_TYPE_BINARY,
         "BOTH",
@@ -138,8 +165,6 @@ public class SQLConstants {
         "CASCADED",
         KEYWORD_CASE,
         "CAST",
-        "CEIL",
-        "CEILING",
         "CHARACTER",
         "CHECK",
         "CLOSE",
@@ -299,6 +324,7 @@ public class SQLConstants {
         "SEARCH",
         "SECOND",
         KEYWORD_SELECT,
+        KEYWORD_SEL,
         "SENSITIVE",
         "SESSION_USER",
         KEYWORD_SET,
@@ -339,7 +365,7 @@ public class SQLConstants {
         "USER",
         "USING",
         //"VALUE", // too common for column names
-        "VALUES",
+        KEYWORD_VALUES,
 //        "VAR_POP",
 //        "VAR_SAMP",
         //"VARCHAR",
@@ -575,7 +601,8 @@ public class SQLConstants {
 //        "USER_DEFINED_TYPE_SCHEMA",
         "WORK",
         "WRITE",
-        "ZONE"
+        "ZONE",
+        KEYWORD_QUALIFY
     };
 
     public static final String[] SQL2003_FUNCTIONS = {
@@ -658,17 +685,6 @@ public class SQLConstants {
     };
 
     public static final char STRUCT_SEPARATOR = '.'; //$NON-NLS-1$
-    public static final String CONFIG_COLOR_KEYWORD = "org.jkiss.dbeaver.sql.editor.color.keyword.foreground";
-    public static final String CONFIG_COLOR_DATATYPE = "org.jkiss.dbeaver.sql.editor.color.datatype.foreground";
-    public static final String CONFIG_COLOR_STRING = "org.jkiss.dbeaver.sql.editor.color.string.foreground";
-    public static final String CONFIG_COLOR_NUMBER = "org.jkiss.dbeaver.sql.editor.color.number.foreground";
-    public static final String CONFIG_COLOR_COMMENT = "org.jkiss.dbeaver.sql.editor.color.comment.foreground";
-    public static final String CONFIG_COLOR_DELIMITER = "org.jkiss.dbeaver.sql.editor.color.delimiter.foreground";
-    public static final String CONFIG_COLOR_PARAMETER = "org.jkiss.dbeaver.sql.editor.color.parameter.foreground";
-    public static final String CONFIG_COLOR_COMMAND = "org.jkiss.dbeaver.sql.editor.color.command.foreground";
-    public static final String CONFIG_COLOR_TEXT = "org.jkiss.dbeaver.sql.editor.color.text.foreground";
-    public static final String CONFIG_COLOR_BACKGROUND = "org.jkiss.dbeaver.sql.editor.color.text.background";
-    public static final String CONFIG_COLOR_DISABLED = "org.jkiss.dbeaver.sql.editor.color.disabled.background";
 
     public static final char DEFAULT_PARAMETER_MARK = '?';
     public static final char DEFAULT_PARAMETER_PREFIX = ':';
@@ -678,6 +694,6 @@ public class SQLConstants {
     public static final String DEFAULT_CONTROL_COMMAND_PREFIX = "@";
 
     public final static char[] BRACKETS = {'{', '}', '(', ')', '[', ']', '<', '>'};
-
+    public static final String COLUMN_ASTERISK = "*";
 
 }

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,20 +19,24 @@ package org.jkiss.dbeaver.model.websocket.event.permissions;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.security.SMObjectType;
+import org.jkiss.dbeaver.model.websocket.WSConstants;
 import org.jkiss.dbeaver.model.websocket.event.WSAbstractEvent;
-import org.jkiss.dbeaver.model.websocket.event.WSEventType;
 
 public class WSObjectPermissionEvent extends WSAbstractEvent {
+    public static final String UPDATED = "cb_object_permissions_updated";
+    public static final String DELETED = "cb_object_permissions_deleted";
+
     private final SMObjectType smObjectType;
     private final String objectId;
+
     protected WSObjectPermissionEvent(
-        @NotNull WSEventType eventType,
+        @NotNull String eventId,
         @NotNull SMObjectType smObjectType,
         @NotNull String objectId,
         @Nullable String sessionId,
         @Nullable String userId
     ) {
-        super(eventType, sessionId, userId);
+        super(eventId, WSConstants.TOPIC_OBJECT_PERMISSIONS, sessionId, userId);
         this.smObjectType = smObjectType;
         this.objectId = objectId;
     }
@@ -44,7 +48,22 @@ public class WSObjectPermissionEvent extends WSAbstractEvent {
         @NotNull String objectId
     ) {
         return new WSObjectPermissionEvent(
-            WSEventType.OBJECT_PERMISSIONS_UPDATED,
+            UPDATED,
+            objectType,
+            objectId,
+            sessionId,
+            userId
+        );
+    }
+
+    public static WSObjectPermissionEvent delete(
+        @Nullable String sessionId,
+        @Nullable String userId,
+        @NotNull SMObjectType objectType,
+        @NotNull String objectId
+    ) {
+        return new WSObjectPermissionEvent(
+            DELETED,
             objectType,
             objectId,
             sessionId,

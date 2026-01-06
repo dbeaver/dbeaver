@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,7 +33,7 @@ public class QMEventCriteria {
     @Nullable
     private String containerId;
     @Nullable
-    private String sessionId;
+    private Long sessionId;
     @NotNull
     private QMObjectType[] objectTypes = new QMObjectType[0];
     @NotNull
@@ -48,7 +48,13 @@ public class QMEventCriteria {
     @NotNull
     private Set<QMEventStatus> eventStatuses = Collections.emptySet();
     @NotNull
-    private Set<String> projectNames = Collections.emptySet();
+    private Set<String> projectIds = Collections.emptySet();
+    @NotNull
+    private Set<String> dataSourceIds = Collections.emptySet();
+    @NotNull
+    private Set<String> schemas = Collections.emptySet();
+    @NotNull
+    private Set<String> catalogs = Collections.emptySet();
     @NotNull
     private QMSortField sortField = QMSortField.DATE;
     @Nullable
@@ -65,12 +71,16 @@ public class QMEventCriteria {
         this.containerId = containerId;
     }
 
+    public boolean hasSessionId() {
+        return !(sessionId == null || sessionId == 0);
+    }
+
     @Nullable
-    public String getSessionId() {
+    public Long getSessionId() {
         return sessionId;
     }
 
-    public void setSessionId(String sessionId) {
+    public void setSessionId(Long sessionId) {
         this.sessionId = sessionId;
     }
 
@@ -178,11 +188,11 @@ public class QMEventCriteria {
     }
 
     @Nullable
-    public QMDateRange getStartDateRange() {
+    public QMDateRange getDateRange() {
         return startDateRange;
     }
 
-    public void setStartDateRange(@Nullable QMDateRange startDateRange) {
+    public void setDateRange(@Nullable QMDateRange startDateRange) {
         this.startDateRange = startDateRange;
     }
 
@@ -200,15 +210,42 @@ public class QMEventCriteria {
     }
 
     @NotNull
-    public Set<String> getProjectNames() {
-        return projectNames;
+    public Set<String> getProjectIds() {
+        return projectIds;
     }
 
-    public void setProjectNames(@NotNull Set<String> projectNames) {
-        this.projectNames = projectNames;
+    public void setProjectIds(@NotNull Set<String> projectIds) {
+        this.projectIds = projectIds;
     }
 
-    public boolean hasProjectNames() {
-        return !projectNames.isEmpty();
+    public boolean hasProjectIds() {
+        return !projectIds.isEmpty();
+    }
+
+    @NotNull
+    public Set<String> getDataSourceIds() {
+        return dataSourceIds;
+    }
+
+    public void setDataSourceIds(@NotNull Set<String> dataSourceIds) {
+        this.dataSourceIds = dataSourceIds;
+    }
+
+    @NotNull
+    public Set<String> getCatalogs() {
+        return catalogs;
+    }
+
+    public void setCatalogs(@NotNull Set<String> catalogs) {
+        this.catalogs = catalogs;
+    }
+
+    @NotNull
+    public Set<String> getSchemas() {
+        return schemas;
+    }
+
+    public void setSchemas(@NotNull Set<String> schemas) {
+        this.schemas = schemas;
     }
 }

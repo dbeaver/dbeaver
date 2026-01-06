@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,50 +18,28 @@ package org.jkiss.dbeaver.ext.yashandb;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.ext.generic.GenericDataSourceProvider;
 import org.jkiss.dbeaver.ext.yashandb.model.YashanDBDataSource;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
-import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
-import org.jkiss.dbeaver.model.connection.DBPDriver;
-import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSourceProvider;
-//import org.jkiss.dbeaver.model.impl.jdbc.JDBCURL;
-import org.jkiss.dbeaver.model.DatabaseURL;
-
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
-/**
- * YashanDB 自定义
- */
+public class YashanDBDataSourceProvider extends GenericDataSourceProvider {
 
-public class YashanDBDataSourceProvider extends JDBCDataSourceProvider {
+	public static final String PROVIDER_ID = "yashandb";
 
-    private static final Log log = Log.getLog(YashanDBDataSourceProvider.class);
+	public YashanDBDataSourceProvider() {
+	}
 
-    public static final String PROVIDER_ID = "yashandb";
+	@Override
+	public long getFeatures() {
+		return FEATURE_SCHEMAS;
+	}
 
-    public YashanDBDataSourceProvider() {
-    }
-
-    @Override
-    public long getFeatures() {
-        return FEATURE_SCHEMAS;
-    }
-
-    @NotNull
-    @Override
-    public DBPDataSource openDataSource(@NotNull DBRProgressMonitor monitor,
-                                        @NotNull DBPDataSourceContainer container) throws DBException {
-        log.debug(">>>Initialize {YashanDBDataSourceProvider2}....");
-        return new YashanDBDataSource(monitor, container);
-    }
-
-    @Override
-    public String getConnectionURL(DBPDriver driver, DBPConnectionConfiguration connectionInfo) {
-        return DatabaseURL.generateUrlByTemplate(driver, connectionInfo);
-    }
-
+	@NotNull
+	@Override
+	public DBPDataSource openDataSource(@NotNull DBRProgressMonitor monitor, @NotNull DBPDataSourceContainer container)
+			throws DBException {
+		return new YashanDBDataSource(monitor, container);
+	}
 }
-
-
-

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,7 +32,6 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSInstance;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
-import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -98,7 +97,11 @@ public class JDBCRemoteInstance implements DBSInstance {
             return;
         }
         if (executionContext == null) {
-            this.executionContext = dataSource.createExecutionContext(this, getMainContextName());
+            String mainContextName = dataSource.getContainer().getClientApplicationName();
+            if (mainContextName == null) {
+                mainContextName = getMainContextName();
+            }
+            this.executionContext = dataSource.createExecutionContext(this, mainContextName);
             this.executionContext.connect(monitor, null, null, null, true);
         }
     }
@@ -154,18 +157,17 @@ public class JDBCRemoteInstance implements DBSInstance {
 
     @NotNull
     @Override
-    public DBCExecutionContext openIsolatedContext(@NotNull DBRProgressMonitor monitor, @NotNull String purpose, @Nullable DBCExecutionContext initFrom) throws DBException {
+    public DBCExecutionContext openIsolatedContext(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull String purpose,
+        @Nullable DBCExecutionContext initFrom
+    ) throws DBException {
         if (sharedInstance != null) {
             return sharedInstance.openIsolatedContext(monitor, purpose, initFrom);
         }
         JDBCExecutionContext context = dataSource.createExecutionContext(this, purpose);
-        DBExecUtils.tryExecuteRecover(monitor, getDataSource(), monitor1 -> {
-            try {
-                context.connect(monitor1, null, null, (JDBCExecutionContext) initFrom, true);
-            } catch (DBCException e) {
-                throw new InvocationTargetException(e);
-            }
-        });
+        DBExecUtils.tryExecuteRecover(monitor, getDataSource(), monitor1 ->
+            context.connect(monitor1, null, null, (JDBCExecutionContext) initFrom, true));
         return context;
     }
 
@@ -182,7 +184,7 @@ public class JDBCRemoteInstance implements DBSInstance {
 
     @NotNull
     @Override
-    public JDBCExecutionContext getDefaultContext(DBRProgressMonitor monitor, boolean meta) {
+    public JDBCExecutionContext getDefaultContext(@NotNull DBRProgressMonitor monitor, boolean meta) {
         if (sharedInstance != null) {
             return sharedInstance.getDefaultContext(monitor, meta);
         }
@@ -243,7 +245,11 @@ public class JDBCRemoteInstance implements DBSInstance {
 
     void addContext(JDBCExecutionContext context) {
         synchronized (allContexts) {
-            allContexts.add(context);
+            if (allContexts.contains(context)) {
+                log.debug("Duplicate execution context add");
+            } else {
+                allContexts.add(context);
+            }
         }
     }
 

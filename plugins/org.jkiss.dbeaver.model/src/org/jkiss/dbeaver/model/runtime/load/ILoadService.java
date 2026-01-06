@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
 
 package org.jkiss.dbeaver.model.runtime.load;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 import java.lang.reflect.InvocationTargetException;
@@ -29,9 +30,17 @@ public interface ILoadService<RESULT> {
 
     String getServiceName();
 
-    RESULT evaluate(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException;
+    RESULT evaluate(@NotNull DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException;
 
     boolean cancel() throws InvocationTargetException;
 
     Object getFamily();
+
+    /**
+     * Force cancel will kill database service/job if there are no other active blocks
+     */
+    default boolean isForceCancel() {
+        return true;
+    }
+
 }

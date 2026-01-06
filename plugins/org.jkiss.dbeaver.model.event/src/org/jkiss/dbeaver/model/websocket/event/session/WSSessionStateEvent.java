@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,17 +16,37 @@
  */
 package org.jkiss.dbeaver.model.websocket.event.session;
 
-import org.jkiss.dbeaver.model.websocket.event.WSAbstractEvent;
-import org.jkiss.dbeaver.model.websocket.event.WSEventType;
+import org.jkiss.dbeaver.model.websocket.WSConstants;
 
-public class WSSessionStateEvent extends WSAbstractEvent {
+import java.util.Map;
+
+public class WSSessionStateEvent extends WSAbstractSessionEvent {
+    private final long lastAccessTime;
     private final long remainingTime;
     private final boolean isValid;
+    private final boolean isCacheExpired;
+    private final String locale;
+    private final Map<String, Object> actionParameters;
 
-    public WSSessionStateEvent(long remainingTime, boolean isValid) {
-        super(WSEventType.SESSION_STATE);
+    public WSSessionStateEvent(
+        long lastAccessTime,
+        long remainingTime,
+        boolean isValid,
+        boolean isCacheExpired,
+        String locale,
+        Map<String, Object> actionParameters
+    ) {
+        super("cb_session_state", WSConstants.TOPIC_SESSION);
+        this.lastAccessTime = lastAccessTime;
         this.remainingTime = remainingTime;
         this.isValid = isValid;
+        this.isCacheExpired = isCacheExpired;
+        this.locale = locale;
+        this.actionParameters = actionParameters;
+    }
+
+    public long getLastAccessTime() {
+        return lastAccessTime;
     }
 
     public long getRemainingTime() {
@@ -35,5 +55,17 @@ public class WSSessionStateEvent extends WSAbstractEvent {
 
     public boolean isValid() {
         return isValid;
+    }
+
+    public boolean isCacheExpired() {
+        return isCacheExpired;
+    }
+
+    public String getLocale() {
+        return locale;
+    }
+
+    public Map<String, Object> getActionParameters() {
+        return actionParameters;
     }
 }

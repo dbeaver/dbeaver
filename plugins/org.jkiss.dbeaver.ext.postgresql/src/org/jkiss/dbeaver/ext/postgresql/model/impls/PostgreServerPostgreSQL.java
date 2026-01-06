@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -42,7 +42,7 @@ public class PostgreServerPostgreSQL extends PostgreServerExtensionBase {
 
     @Override
     public boolean supportsPGConstraintExpressionColumn() {
-        return !dataSource.isServerVersionAtLeast(12, 0);
+        return dataSource.isServerVersionAtLeast(8, 0);
     }
 
     @Override
@@ -92,7 +92,22 @@ public class PostgreServerPostgreSQL extends PostgreServerExtensionBase {
     }
 
     @Override
+    public boolean supportsJobs() {
+        return true;
+    }
+
+    @Override
     public boolean supportsEventTriggers() {
         return dataSource.isServerVersionAtLeast(9, 3);
+    }
+
+    @Override
+    public boolean supportsAlterStorageStrategy() {
+        return true;
+    }
+
+    @Override
+    public boolean supportsStorageModifier() {
+        return dataSource.isServerVersionAtLeast(16, 0);
     }
 }

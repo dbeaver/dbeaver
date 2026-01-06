@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -59,7 +59,7 @@ class SelectContentPartDialog extends Dialog {
         group.setLayoutData(gd);
 
         Label infoLabel = new Label(group, SWT.NONE);
-        infoLabel.setText("Content was modified in mutliple editors. Choose correct one:");
+        infoLabel.setText("Content was modified in multiple editors. Choose correct one:");
         gd = new GridData(GridData.FILL_HORIZONTAL);
         infoLabel.setLayoutData(gd);
 

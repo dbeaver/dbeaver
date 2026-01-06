@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -52,7 +52,15 @@ public class MapAttributeTransformer implements DBDAttributeTransformer {
             // Do not transform structs to avoid double transformation
             return;
         }
-        resolveMapsFromData(session, attribute, rows);
+        if (rows.isEmpty()) {
+            // Make a fake row with empty document in it
+            int attrIndex = attribute.getOrdinalPosition();
+            Object[] fakeRow = new Object[attrIndex + 1];
+            fakeRow[attrIndex] = attribute.getValueHandler().createNewValueObject(session, attribute);
+            resolveMapsFromData(session, attribute, Collections.singletonList(fakeRow));
+        } else {
+            resolveMapsFromData(session, attribute, rows);
+        }
     }
 
     static void resolveMapsFromData(DBCSession session, DBDAttributeBinding attribute, List<Object[]> rows) throws DBException {
@@ -72,24 +80,28 @@ public class MapAttributeTransformer implements DBDAttributeTransformer {
                 }
             }
 
-            if (value instanceof DBDComposite) {
+            if (value instanceof DBDComposite composite) {
                 // Fill value attributes for all rows
-                DBSAttributeBase[] attributes = ((DBDComposite) value).getAttributes();
+                DBSAttributeBase[] attributes = composite.getAttributes();
                 for (DBSAttributeBase attr : attributes) {
                     Pair<DBSAttributeBase, Object[]> attrValue = findAttributeValue(attr, valueAttributes);
                     if (attrValue != null) {
                         // Update attr value
-                        attrValue.getSecond()[i] = ((DBDComposite) value).getAttributeValue(attr);
+                        attrValue.getSecond()[i] = composite.getAttributeValue(attr);
                     } else {
                         Object[] valueList = new Object[rows.size()];
-                        valueList[i] = ((DBDComposite) value).getAttributeValue(attr);
+                        valueList[i] = composite.getAttributeValue(attr);
                         if (valueAttributes == null) {
                             valueAttributes = new ArrayList<>();
                         }
-                        valueAttributes.add(
-                            new Pair<>(
-                                attr,
-                                valueList));
+                        Pair<DBSAttributeBase, Object[]> attributePair = new Pair<>(
+                            attr,
+                            valueList);
+                        if (valueAttributes.size() >= attr.getOrdinalPosition()) {
+                            valueAttributes.add(attr.getOrdinalPosition(), attributePair);
+                        } else {
+                            valueAttributes.add(attributePair);
+                        }
                     }
                 }
             }

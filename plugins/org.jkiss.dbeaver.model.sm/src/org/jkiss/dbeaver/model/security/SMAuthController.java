@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,12 +25,14 @@ import org.jkiss.dbeaver.model.auth.SMSessionType;
 import java.util.Map;
 
 public interface SMAuthController {
+    @NotNull
     SMAuthInfo authenticateAnonymousUser(
         @NotNull String appSessionId,
         @NotNull Map<String, Object> sessionParameters,
         @NotNull SMSessionType sessionType
     ) throws DBException;
 
+    @NotNull
     SMAuthInfo authenticate(
         @NotNull String appSessionId,
         @Nullable String previousSmSessionId,
@@ -38,9 +40,16 @@ public interface SMAuthController {
         @NotNull SMSessionType sessionType,
         @NotNull String authProviderId,
         @Nullable String authProviderConfigurationId,
-        @NotNull Map<String, Object> userCredentials
+        @NotNull Map<String, Object> userCredentials,
+        boolean forceSessionsLogout
     ) throws DBException;
 
+    /**
+     * Check auth status.
+     * We have a newer push mechanism (over websockets) which obsoletes this functions.
+     * However, we still use it widely and we cannot stop using because push is not always enabled.
+     */
+    @NotNull
     SMAuthInfo getAuthStatus(@NotNull String authId) throws DBException;
 
     @Nullable

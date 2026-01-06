@@ -1,7 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
- * Copyright (C) 2011-2012 Eugene Fradkin (eugene.fradkin@gmail.com)
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,13 +26,14 @@ import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 import org.eclipse.ui.IWorkbenchPropertyPage;
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
+import org.jkiss.dbeaver.model.connection.DBPAuthInfo;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
-import org.jkiss.dbeaver.runtime.encode.EncryptionException;
-import org.jkiss.dbeaver.runtime.encode.SecuredPasswordEncrypter;
+import org.jkiss.dbeaver.runtime.net.GlobalProxyAuthenticator;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.DialogUtils;
@@ -61,42 +61,53 @@ public class PrefPageDrivers extends AbstractPrefPage implements IWorkbenchPrefe
     private Spinner proxyPortSpinner;
     private Text proxyUserText;
     private Text proxyPasswordText;
-    private SecuredPasswordEncrypter encrypter;
 
     private Text customDriversHome;
 
     @Override
-    public void init(IWorkbench workbench)
-    {
-        try {
-            encrypter = new SecuredPasswordEncrypter();
-        } catch (EncryptionException e) {
-            // ignore
-            log.warn(e);
-        }
+    public void init(IWorkbench workbench) {
+        // nothing to initialize
     }
 
     @NotNull
     @Override
     protected Control createPreferenceContent(@NotNull Composite parent) {
         Composite composite = UIUtils.createPlaceholder(parent, 1, 5);
+        DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
 
         {
             Group settings = UIUtils.createControlGroup(composite, UIConnectionMessages.pref_page_ui_general_group_settings, 2, GridData.FILL_HORIZONTAL, 300);
-            versionUpdateCheck = UIUtils.createCheckbox(settings, UIConnectionMessages.pref_page_ui_general_check_new_driver_versions, false);
+            versionUpdateCheck = UIUtils.createCheckbox(
+                settings,
+                UIConnectionMessages.pref_page_ui_general_check_new_driver_versions,
+                UIConnectionMessages.pref_page_ui_general_check_new_driver_versions_tip,
+                store.getBoolean(ModelPreferences.UI_DRIVERS_VERSION_UPDATE), 1
+            );
         }
 
         {
             Group proxyObjects = UIUtils.createControlGroup(composite, UIConnectionMessages.pref_page_ui_general_group_http_proxy, 4, GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING, 300);
-            proxyHostText = UIUtils.createLabelText(proxyObjects, UIConnectionMessages.pref_page_ui_general_label_proxy_host, null); //$NON-NLS-2$
-            proxyPortSpinner = UIUtils.createLabelSpinner(proxyObjects, UIConnectionMessages.pref_page_ui_general_spinner_proxy_port, 0, 0, 65535);
-            proxyUserText = UIUtils.createLabelText(proxyObjects, UIConnectionMessages.pref_page_ui_general_label_proxy_user, null); //$NON-NLS-2$
+            proxyHostText = UIUtils.createLabelText(
+                proxyObjects,
+                UIConnectionMessages.pref_page_ui_general_label_proxy_host,
+                store.getString(ModelPreferences.UI_PROXY_HOST));
+            proxyPortSpinner = UIUtils.createLabelSpinner(
+                proxyObjects,
+                UIConnectionMessages.pref_page_ui_general_spinner_proxy_port,
+                store.getInt(ModelPreferences.UI_PROXY_PORT),
+                0,
+                65535);
+            proxyUserText = UIUtils.createLabelText(
+                proxyObjects,
+                UIConnectionMessages.pref_page_ui_general_label_proxy_user,
+                null);
             proxyPasswordText = UIUtils.createLabelText(proxyObjects, UIConnectionMessages.pref_page_ui_general_label_proxy_password, null, SWT.PASSWORD | SWT.BORDER); //$NON-NLS-2$
         }
 
         {
             Group drivers = UIUtils.createControlGroup(composite, UIConnectionMessages.pref_page_drivers_group_location, 2, GridData.FILL_HORIZONTAL, 300);
-            customDriversHome = DialogUtils.createOutputFolderChooser(drivers, UIConnectionMessages.pref_page_drivers_local_folder, null);
+            customDriversHome = DialogUtils.createOutputFolderChooser(drivers, UIConnectionMessages.pref_page_drivers_local_folder, null, null, null, false, null);
+            customDriversHome.setText(store.getString(ModelPreferences.UI_DRIVERS_HOME));
         }
 
         {
@@ -143,32 +154,35 @@ public class PrefPageDrivers extends AbstractPrefPage implements IWorkbenchPrefe
             tip.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING, GridData.VERTICAL_ALIGN_BEGINNING, false, false, 2, 1));
         }
 
-        performDefaults();
+        DBPAuthInfo credentials = null;
+        try {
+            credentials = GlobalProxyAuthenticator.readCredentials();
+        } catch (DBException e) {
+            log.error("Error reading proxy credentials", e);
+        }
+        if (credentials != null) {
+            proxyUserText.setText(CommonUtils.notEmpty(credentials.getUserName()));
+            proxyPasswordText.setText(CommonUtils.notEmpty(credentials.getUserPassword()));
+        }
+
+        sourceList.removeAll();
+        for (String source : DriverDescriptor.getDriversSources()) {
+            sourceList.add(source);
+        }
 
         return composite;
     }
 
     @Override
-    protected void performDefaults()
-    {
+    protected void performDefaults() {
         DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
+        versionUpdateCheck.setSelection(store.getDefaultBoolean(ModelPreferences.UI_DRIVERS_VERSION_UPDATE));
 
-        versionUpdateCheck.setSelection(store.getBoolean(ModelPreferences.UI_DRIVERS_VERSION_UPDATE));
-
-        proxyHostText.setText(store.getString(ModelPreferences.UI_PROXY_HOST));
-        proxyPortSpinner.setSelection(store.getInt(ModelPreferences.UI_PROXY_PORT));
-        proxyUserText.setText(store.getString(ModelPreferences.UI_PROXY_USER));
-        // Load and decrypt password
-        String passwordString = store.getString(ModelPreferences.UI_PROXY_PASSWORD);
-        if (!CommonUtils.isEmpty(passwordString) && encrypter != null) {
-            try {
-                passwordString = encrypter.decrypt(passwordString);
-            } catch (EncryptionException e) {
-                log.warn(e);
-            }
-        }
-        proxyPasswordText.setText(passwordString);
-        customDriversHome.setText(DriverDescriptor.getCustomDriversHome().toAbsolutePath().toString());
+        proxyHostText.setText(store.getDefaultString(ModelPreferences.UI_PROXY_HOST));
+        proxyPortSpinner.setSelection(store.getDefaultInt(ModelPreferences.UI_PROXY_PORT));
+        proxyUserText.setText(store.getDefaultString(ModelPreferences.UI_PROXY_USER));
+        proxyPasswordText.setText("");
+        customDriversHome.setText(store.getDefaultString(ModelPreferences.UI_DRIVERS_HOME));
 
         sourceList.removeAll();
         for (String source : DriverDescriptor.getDriversSources()) {
@@ -178,24 +192,18 @@ public class PrefPageDrivers extends AbstractPrefPage implements IWorkbenchPrefe
     }
 
     @Override
-    public boolean performOk()
-    {
+    public boolean performOk() {
+        try {
+            GlobalProxyAuthenticator.saveCredentials(proxyUserText.getText(), proxyPasswordText.getText());
+        } catch (DBException e) {
+            DBWorkbench.getPlatformUI().showError("Unable to save proxy credentials", e.getMessage(), e);
+            return false;
+        }
+
         DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
         store.setValue(ModelPreferences.UI_DRIVERS_VERSION_UPDATE, versionUpdateCheck.getSelection());
-
         store.setValue(ModelPreferences.UI_PROXY_HOST, proxyHostText.getText());
         store.setValue(ModelPreferences.UI_PROXY_PORT, proxyPortSpinner.getSelection());
-        store.setValue(ModelPreferences.UI_PROXY_USER, proxyUserText.getText());
-        String password = proxyPasswordText.getText();
-        if (!CommonUtils.isEmpty(password) && encrypter != null) {
-            // Encrypt password
-            try {
-                password = encrypter.encrypt(password);
-            } catch (EncryptionException e) {
-                log.warn(e);
-            }
-        }
-        store.setValue(ModelPreferences.UI_PROXY_PASSWORD, password);
         store.setValue(ModelPreferences.UI_DRIVERS_HOME, customDriversHome.getText());
 
         {

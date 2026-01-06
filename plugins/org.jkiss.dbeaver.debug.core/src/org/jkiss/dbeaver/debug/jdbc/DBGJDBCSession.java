@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  * Copyright (C) 2017-2018 Andrew Khitrin (ahitrin@gmail.com)
  * Copyright (C) 2017-2018 Alexander Fedorov (alexander.fedorov@jkiss.org)
  *
@@ -39,8 +39,6 @@ public abstract class DBGJDBCSession implements DBGSession {
     private final DBGBaseController controller;
 
     protected volatile DBGJDBCWorker workerJob;
-    
-    protected  DBGObjectDescriptor dbgObjectDescriptor;
 
     private final List<DBGBreakpointDescriptor> breakpoints = new ArrayList<>(1);
 
@@ -108,16 +106,11 @@ public abstract class DBGJDBCSession implements DBGSession {
         return new ArrayList<>(breakpoints);
     }
 
-    //这里区分ys和其他类型: descriptor
     @Override
     public void addBreakpoint(DBRProgressMonitor monitor, DBGBreakpointDescriptor descriptor) throws DBGException {
         try (JDBCSession session = getControllerConnection().openSession(monitor, DBCExecutionPurpose.UTIL, "Add breakpoint")) {
             try (Statement stmt = session.createStatement()) {
                 String sqlQuery = composeAddBreakpointCommand(descriptor);
-                if (getDatabaseProductName(session).equalsIgnoreCase("yashandb")){
-                    breakpoints.add(descriptor);
-                    return;
-                }
                 stmt.execute(sqlQuery);
             } catch (SQLException e) {
                 throw new DBGException("SQL error", e);
@@ -125,11 +118,6 @@ public abstract class DBGJDBCSession implements DBGSession {
             breakpoints.add(descriptor);
         }
     }
-    
-    private String getDatabaseProductName(JDBCSession session) throws SQLException {
-        return session.getMetaData().getConnection().getMetaData().getDatabaseProductName();
-    }
-
 
     protected abstract String composeAddBreakpointCommand(DBGBreakpointDescriptor descriptor);
 
@@ -138,11 +126,6 @@ public abstract class DBGJDBCSession implements DBGSession {
         try (JDBCSession session = getControllerConnection().openSession(monitor, DBCExecutionPurpose.UTIL, "Remove breakpoint")) {
             try (Statement stmt = session.createStatement()) {
                 String sqlCommand = composeRemoveBreakpointCommand(bp);
-                if (getDatabaseProductName(session).equalsIgnoreCase("yashandb")){
-                    breakpoints.remove(bp);
-                    return;
-                }
-
                 stmt.execute(sqlCommand);
             } catch (SQLException e) {
                 throw new DBGException("SQL error", e);
@@ -153,18 +136,8 @@ public abstract class DBGJDBCSession implements DBGSession {
 
     protected abstract String composeRemoveBreakpointCommand(DBGBreakpointDescriptor descriptor);
 
-    public void fireEvent(DBGEvent event) {
+    protected void fireEvent(DBGEvent event) {
         controller.fireEvent(event);
     }
-    
-//    @Override
-    public DBGObjectDescriptor getObjectDesc() {
-        return this.dbgObjectDescriptor;
-    }
-
-    public void setDbgObjectDescriptor(DBGObjectDescriptor dbgObjectDescriptor) {
-        this.dbgObjectDescriptor = dbgObjectDescriptor;
-    }
-
 
 }

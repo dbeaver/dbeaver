@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,6 @@
 package org.jkiss.dbeaver.model.struct;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.model.DPIElement;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 import java.util.Collection;
@@ -27,14 +26,12 @@ import java.util.Collection;
  */
 public interface DBSInstanceContainer extends DBSObject {
 
-    @DPIElement
     @NotNull
     DBSInstance getDefaultInstance();
 
-    @DPIElement
     @NotNull
     Collection<? extends DBSInstance> getAvailableInstances();
 
-    void shutdown(DBRProgressMonitor monitor);
+    void shutdown(@NotNull DBRProgressMonitor monitor);
 
 }

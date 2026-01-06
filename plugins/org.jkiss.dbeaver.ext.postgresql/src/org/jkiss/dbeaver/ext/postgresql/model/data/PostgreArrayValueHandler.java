@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,7 +24,6 @@ import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
 import org.jkiss.dbeaver.ext.postgresql.PostgreValueParser;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataSource;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataType;
-import org.jkiss.dbeaver.ext.postgresql.model.PostgreTypeType;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDCollection;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
@@ -57,54 +56,56 @@ public class PostgreArrayValueHandler extends JDBCArrayValueHandler {
     }
 
     @Override
-    public DBDCollection getValueFromObject(@NotNull DBCSession session, @NotNull DBSTypedObject type, Object object, boolean copy, boolean validateValue) throws DBCException
-    {
+    public Object getValueFromObject(
+        @NotNull DBCSession session,
+        @NotNull DBSTypedObject type,
+        Object object,
+        boolean copy,
+        boolean validateValue
+    ) throws DBCException {
         if (object != null) {
-            final PostgreDataType arrayType = PostgreUtils.findDataType(session, (PostgreDataSource) session.getDataSource(), type);
+            PostgreDataSource dataSource = (PostgreDataSource) session.getDataSource();
+            final PostgreDataType arrayType = PostgreUtils.findDataType(session, dataSource, type);
             if (arrayType == null) {
                 throw new DBCException("Can't resolve data type " + type.getFullTypeName());
             }
 
             PostgreDataType itemType = arrayType.getElementType(session.getProgressMonitor());
-            if (itemType == null && arrayType.getTypeType() == PostgreTypeType.d) {
-                // Domains store component type information in another field
-                itemType = arrayType.getBaseType(session.getProgressMonitor());
-            }
             if (itemType == null) {
                 throw new DBCException("Array type " + arrayType.getFullTypeName() + " doesn't have a component type");
             }
 
             String className = object.getClass().getName();
+            boolean isPgObject = PostgreUtils.isPgObject(dataSource, object);
             if (object instanceof String ||
-                PostgreUtils.isPGObject(object) ||
-                className.equals(PostgreConstants.PG_ARRAY_CLASS))
-            {
+                isPgObject ||
+                className.equals(PostgreConstants.PG_ARRAY_CLASS)) {
                 if (className.equals(PostgreConstants.PG_ARRAY_CLASS)) {
                     // Convert arrays to string representation (#7468)
                     // Otherwise we may have problems with domain types decoding (as they come in form of PgObject)
                     String strValue = object.toString();
                     return convertStringArrayToCollection(session, arrayType, itemType, strValue);
-                } else if (PostgreUtils.isPGObject(object)) {
-                    final Object value = PostgreUtils.extractPGObjectValue(object);
-                    if (value instanceof String) {
-                        return convertStringArrayToCollection(session, arrayType, itemType, (String) value);
+                } else if (isPgObject) {
+                    final Object value = PostgreUtils.extractPGObjectValue(object, dataSource);
+                    if (value instanceof String stringValue) {
+                        return convertStringArrayToCollection(session, arrayType, itemType, stringValue);
                     } else {
                         log.error("Can't parse array");
                         return new JDBCCollection(
-                                session.getProgressMonitor(), itemType,
+                            session.getProgressMonitor(), itemType,
                             DBUtils.findValueHandler(session, itemType),
-                            value == null ? null : new Object[]{value}
+                            value == null ? null : new Object[] {value}
                         );
                     }
                 } else {
                     return convertStringArrayToCollection(session, arrayType, itemType, (String) object);
                 }
-            } else if (object instanceof Object[]) {
+            } else if (object instanceof Object[] objects) {
                 return new JDBCCollection(
                     session.getProgressMonitor(),
                     itemType,
                     DBUtils.findValueHandler(session, itemType),
-                    (Object[]) object
+                    objects
                 );
             }
         }
@@ -133,9 +134,9 @@ public class PostgreArrayValueHandler extends JDBCArrayValueHandler {
     @NotNull
     @Override
     public String getValueDisplayString(@NotNull DBSTypedObject column, Object value, @NotNull DBDDisplayFormat format) {
-        if (!DBUtils.isNullValue(value) && value instanceof DBDCollection) {
-            final DBDCollection collection = (DBDCollection) value;
-            final StringJoiner output = new StringJoiner(PostgreUtils.getArrayDelimiter(collection.getComponentType()), "{", "}");
+        if (!DBUtils.isNullValue(value) && value instanceof DBDCollection collection) {
+            final StringJoiner output = new StringJoiner(
+                PostgreUtils.getArrayDelimiter(collection.getComponentType()), "{", "}");
 
             for (int i = 0; i < collection.getItemCount(); i++) {
                 final Object item = collection.getItem(i);
@@ -171,7 +172,7 @@ public class PostgreArrayValueHandler extends JDBCArrayValueHandler {
 
         final String string = handler.getValueDisplayString(type, value, format);
 
-        if (isQuotingRequired(type, string)) {
+        if (format != DBDDisplayFormat.NATIVE && isQuotingRequired(type, string)) {
             return '"' + string.replaceAll("[\\\\\"]", "\\\\$0") + '"';
         }
 
@@ -207,6 +208,6 @@ public class PostgreArrayValueHandler extends JDBCArrayValueHandler {
             }
         }
 
-        return value.equals(PostgreUtils.getArrayDelimiter(type));
+        return value.contains(PostgreUtils.getArrayDelimiter(type));
     }
 }

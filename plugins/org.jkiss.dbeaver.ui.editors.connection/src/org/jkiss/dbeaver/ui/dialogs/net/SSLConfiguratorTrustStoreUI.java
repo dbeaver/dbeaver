@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,6 +26,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.impl.net.SSLConfigurationMethod;
 import org.jkiss.dbeaver.model.impl.net.SSLHandlerTrustStoreImpl;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
+import org.jkiss.dbeaver.registry.configurator.DBPConnectionEditIntention;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.ConfigurationFileSelector;
@@ -155,7 +156,10 @@ public class SSLConfiguratorTrustStoreUI extends SSLConfiguratorAbstractUI {
 
         if (isKeystoreSupported()) {
             keyStorePath.setText(getCertProperty(configuration, SSLHandlerTrustStoreImpl.PROP_SSL_KEYSTORE));
-            keyStorePassword.setText(CommonUtils.notEmpty(configuration.getPassword()));
+            keyStorePassword.setText(CommonUtils.notEmpty(
+                DBWorkbench.isDistributed() ?
+                    configuration.getSecureProperty(SSLHandlerTrustStoreImpl.PROP_SSL_KEYSTORE_PASSWORD) :
+                    configuration.getPassword()));
         }
 
         final SSLConfigurationMethod method;
@@ -211,9 +215,15 @@ public class SSLConfiguratorTrustStoreUI extends SSLConfiguratorAbstractUI {
 
             final String password = keyStorePassword.getText().trim();
             if (!CommonUtils.isEmptyTrimmed(password)) {
-                configuration.setPassword(password);
+                if (DBWorkbench.isDistributed()) {
+                    configuration.setSecureProperty(SSLHandlerTrustStoreImpl.PROP_SSL_KEYSTORE_PASSWORD, password);
+                } else {
+                    configuration.setPassword(password);
+                }
                 configuration.setSavePassword(true);
             }
+        } else if (this.getEditIntention() == DBPConnectionEditIntention.CREDENTIALS_ONLY) {
+            configuration.setSavePassword(true);
         }
 
         configuration.setProperty(SSLHandlerTrustStoreImpl.PROP_SSL_METHOD, method.name());

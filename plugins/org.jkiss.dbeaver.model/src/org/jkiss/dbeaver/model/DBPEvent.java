@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,32 +35,38 @@ public class DBPEvent
         OBJECT_UPDATE,
         OBJECT_REMOVE,
         OBJECT_SELECT,
+        BEFORE_CONNECT,
+        AFTER_CONNECT,
     }
 
     public static final Object REORDER = new Object();
     public static final Object RENAME = new Object();
 
-    private Action action;
+    private final Action action;
 
-    private DBSObject object;
+    private final DBSObject object;
     private Boolean enabled;
-    private Object data;
+    private final Object data;
     private Map<String, Object> options;
 
     public DBPEvent(Action action, DBSObject object) {
-        this.action = action;
-        this.object = object;
+        this(action, object, null);
     }
 
     public DBPEvent(Action action, DBSObject object, boolean enabled) {
-        this.action = action;
-        this.object = object;
-        this.enabled = enabled;
+        this(action, object, enabled, null);
     }
 
     public DBPEvent(Action action, DBSObject object, @Nullable Object data) {
         this.action = action;
         this.object = object;
+        this.data = data;
+    }
+
+    public DBPEvent(Action action, DBSObject object, boolean enabled, @Nullable Object data) {
+        this.action = action;
+        this.object = object;
+        this.enabled = enabled;
         this.data = data;
     }
 

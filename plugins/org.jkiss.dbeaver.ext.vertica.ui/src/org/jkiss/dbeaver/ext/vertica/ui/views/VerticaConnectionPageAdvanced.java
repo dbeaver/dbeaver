@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Group;
 import org.jkiss.dbeaver.ext.vertica.VerticaConstants;
@@ -33,6 +34,7 @@ import org.jkiss.utils.CommonUtils;
 public class VerticaConnectionPageAdvanced extends ConnectionPageAbstract {
 
     private Button disableCommentsReading;
+    private Combo sqlDollarQuoteBehaviorCombo;
 
     public VerticaConnectionPageAdvanced() {
         setTitle("Vertica");
@@ -60,6 +62,20 @@ public class VerticaConnectionPageAdvanced extends ConnectionPageAbstract {
                 1);
         }
 
+        {
+            Group sqlGroup = new Group(group, SWT.NONE);
+            sqlGroup.setText(VerticaUIMessages.connection_page_setting_sql);
+            sqlGroup.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
+            sqlGroup.setLayout(new GridLayout(2, false));
+
+            sqlDollarQuoteBehaviorCombo = UIUtils.createLabelCombo(
+                sqlGroup,
+                VerticaUIMessages.connection_page_sql_dd_label,
+                SWT.DROP_DOWN | SWT.READ_ONLY);
+            sqlDollarQuoteBehaviorCombo.add(VerticaUIMessages.connection_page_sql_dd_string);
+            sqlDollarQuoteBehaviorCombo.add(VerticaUIMessages.connection_page_sql_dd_code_block);
+        }
+
         setControl(group);
         loadSettings();
 
@@ -70,6 +86,8 @@ public class VerticaConnectionPageAdvanced extends ConnectionPageAbstract {
         DBPConnectionConfiguration connectionInfo = site.getActiveDataSource().getConnectionConfiguration();
         disableCommentsReading.setSelection(CommonUtils.toBoolean(
             connectionInfo.getProviderProperty(VerticaConstants.PROP_DISABLE_COMMENTS_READING)));
+        sqlDollarQuoteBehaviorCombo.select(CommonUtils.toBoolean(
+            connectionInfo.getProviderProperty(VerticaConstants.PROP_DOLLAR_QUOTES_AS_STRING)) ? 0 : 1);
         super.loadSettings();
     }
 
@@ -80,6 +98,11 @@ public class VerticaConnectionPageAdvanced extends ConnectionPageAbstract {
             connectionInfo.setProviderProperty(
                 VerticaConstants.PROP_DISABLE_COMMENTS_READING,
                 String.valueOf(disableCommentsReading.getSelection()));
+        }
+        if (sqlDollarQuoteBehaviorCombo != null) {
+            connectionInfo.setProviderProperty(
+                VerticaConstants.PROP_DOLLAR_QUOTES_AS_STRING,
+                String.valueOf(sqlDollarQuoteBehaviorCombo.getSelectionIndex() == 0));
         }
         super.saveSettings(dataSource);
     }

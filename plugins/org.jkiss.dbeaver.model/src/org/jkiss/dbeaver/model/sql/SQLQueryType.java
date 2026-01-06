@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,16 +17,31 @@
 
 package org.jkiss.dbeaver.model.sql;
 
+import org.jkiss.code.NotNull;
+
 /**
  * Statement type
  */
 public enum SQLQueryType {
-    UNKNOWN,
-    SELECT,
-    INSERT,
-    DELETE,
-    UPDATE,
-    MERGE,
-    DDL,
-    USE
+    UNKNOWN(SQLQueryCategory.UNKNOWN),
+    SELECT(SQLQueryCategory.SQL),
+    INSERT(SQLQueryCategory.DML),
+    DELETE(SQLQueryCategory.DML),
+    UPDATE(SQLQueryCategory.DML),
+    MERGE(SQLQueryCategory.DML),
+    DDL(SQLQueryCategory.DDL),
+    USE(SQLQueryCategory.DDL),
+    COMMIT(SQLQueryCategory.TCL),
+    ROLLBACK(SQLQueryCategory.TCL);
+
+    private final SQLQueryCategory category;
+
+    SQLQueryType(@NotNull SQLQueryCategory category) {
+        this.category = category;
+    }
+
+    @NotNull
+    public SQLQueryCategory getCategory() {
+        return category;
+    }
 }

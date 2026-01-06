@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,48 +29,38 @@ import java.util.List;
 /**
  * Table
  */
-public interface DBSTable extends DBSEntity, DBPQualifiedObject
-{
+public interface DBSTable extends DBSEntity, DBPQualifiedObject {
 
     boolean isView();
 
     /**
      * Table indices
-     * @return list of indices
-     * @throws DBException  on any DB error
+     *
      * @param monitor progress monitor
+     * @return list of indices
+     * @throws DBException on any DB error
      */
-    Collection<? extends DBSTableIndex> getIndexes(DBRProgressMonitor monitor) throws DBException;
+    Collection<? extends DBSTableIndex> getIndexes(@NotNull DBRProgressMonitor monitor) throws DBException;
 
     /**
      * Keys are: primary keys and unique keys.
      * Foreign keys can be obtained with {@link #getReferences(org.jkiss.dbeaver.model.runtime.DBRProgressMonitor)}
+     *
+     * @param monitor progress monitor
      * @return list of constraints
      * @throws DBException on any DB error
-     * @param monitor progress monitor
      */
     @Nullable
     @Override
     Collection<? extends DBSTableConstraint> getConstraints(@NotNull DBRProgressMonitor monitor) throws DBException;
 
     /**
-     * Gets this table foreign keys
-     * @return foreign keys list
-     * @throws DBException on any DB error
-     * @param monitor progress monitor
-     */
-//    @Override
-//    Collection<? extends DBSTableForeignKey> getAssociations(@NotNull DBRProgressMonitor monitor) throws DBException;
-
-    /**
      * Gets foreign keys which refers this table
+     *
+     * @param monitor progress monitor
      * @return foreign keys list
      * @throws DBException on any DB error
-     * @param monitor progress monitor
      */
-//    @Override
-//    Collection<? extends DBSTableForeignKey> getReferences(@NotNull DBRProgressMonitor monitor) throws DBException;
-
     @Nullable
     List<? extends DBSTrigger> getTriggers(@NotNull DBRProgressMonitor monitor) throws DBException;
 

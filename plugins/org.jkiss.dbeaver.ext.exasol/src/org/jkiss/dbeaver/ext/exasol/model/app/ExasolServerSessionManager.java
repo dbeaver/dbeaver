@@ -1,7 +1,7 @@
 /*
  * DBeaver - Universal Database Manager
  * Copyright (C) 2016-2016 Karl Griesser (fullref@gmail.com)
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,8 @@
  */
 package org.jkiss.dbeaver.ext.exasol.model.app;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.DBDatabaseException;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.exasol.model.ExasolDataSource;
@@ -60,34 +62,42 @@ public class ExasolServerSessionManager implements DBAServerSessionManager<Exaso
         this.dataSource = dataSource;
     }
 
+    @NotNull
     @Override
     public DBPDataSource getDataSource() {
         return this.dataSource;
     }
 
+    @NotNull
     @Override
-    public Collection<ExasolServerSession> getSessions(DBCSession session, Map<String, Object> options)
+    public Collection<ExasolServerSession> getSessions(@NotNull DBCSession session, @NotNull Map<String, Object> options)
         throws DBException {
         try {
             return readSessions((JDBCSession) session);
         } catch (SQLException e) {
-            throw new DBException(e, session.getDataSource());
+            throw new DBDatabaseException(e, session.getDataSource());
         }
     }
 
     @Override
-    public void alterSession(DBCSession session, ExasolServerSession sessionType, Map<String, Object> options)
+    public void alterSession(@NotNull DBCSession session, @NotNull String sessionId, @NotNull Map<String, Object> options)
         throws DBException {
         try {
-            String cmd = String.format(Boolean.TRUE.equals(options.get(PROP_KILL_QUERY)) ? KILL_STMT_CMD : KILL_APP_CMD, sessionType.getSessionID().toString());
+            String cmd = String.format(Boolean.TRUE.equals(options.get(PROP_KILL_QUERY)) ? KILL_STMT_CMD : KILL_APP_CMD, sessionId);
             PreparedStatement dbStat = ((JDBCSession) session).prepareStatement(cmd);
             dbStat.execute();
 
 
         } catch (SQLException e) {
-            throw new DBException(e, session.getDataSource());
+            throw new DBDatabaseException(e, session.getDataSource());
         }
 
+    }
+
+    @NotNull
+    @Override
+    public Map<String, Object> getTerminateOptions() {
+        return Map.of();
     }
 
     public static Collection<ExasolServerSession> readSessions(JDBCSession session) throws SQLException {
@@ -125,8 +135,9 @@ public class ExasolServerSessionManager implements DBAServerSessionManager<Exaso
         return true;
     }
 
+    @NotNull
     @Override
-    public String generateSessionReadQuery(Map<String, Object> options) {
+    public String generateSessionReadQuery(@NotNull Map<String, Object> options) {
         return SESS_ALL_QUERY;
     }
 }

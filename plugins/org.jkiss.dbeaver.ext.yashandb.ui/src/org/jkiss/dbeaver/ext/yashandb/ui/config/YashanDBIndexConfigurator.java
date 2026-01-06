@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,64 +16,51 @@
  */
 package org.jkiss.dbeaver.ext.yashandb.ui.config;
 
-import org.jkiss.dbeaver.ext.yashandb.model.YashanDBExecutionContext;
+import java.util.Collections;
+import java.util.Map;
+
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.yashandb.model.YashanDBTableColumn;
 import org.jkiss.dbeaver.ext.yashandb.model.YashanDBTableIndex;
 import org.jkiss.dbeaver.ext.yashandb.model.YashanDBTableIndexColumn;
 import org.jkiss.dbeaver.ext.yashandb.ui.internal.YashanDBUIMessages;
+import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEObjectConfigurator;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.model.struct.rdb.DBSIndexType;
-import org.jkiss.dbeaver.runtime.DBWorkbench;
-import org.jkiss.dbeaver.runtime.ui.UIServiceSQL;
-import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UITask;
-import org.jkiss.dbeaver.ui.editors.entity.EntityEditor;
 import org.jkiss.dbeaver.ui.editors.object.struct.EditIndexPage;
-import org.jkiss.dbeaver.ui.internal.UINavigatorMessages;
 import org.jkiss.utils.CommonUtils;
 
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.util.Collections;
-import java.util.Map;
-
-/**
- * YashanDB index manager
- */
 public class YashanDBIndexConfigurator implements DBEObjectConfigurator<YashanDBTableIndex> {
 
-    @Override
-    public YashanDBTableIndex configureObject(DBRProgressMonitor monitor, Object container, YashanDBTableIndex index, Map<String, Object> options) {
-        return UITask.run(() -> {
-            EditIndexPage editPage = new EditIndexPage(
-                    YashanDBUIMessages.edit_yashandb_index_manager_dialog_title,
-                    index,
-                    Collections.singletonList(DBSIndexType.OTHER));
-            if (!editPage.edit()) {
-                return null;
-            }
+	@Override
+	public YashanDBTableIndex configureObject(@Nullable DBRProgressMonitor monitor,
+			@Nullable DBECommandContext commandContext, @Nullable Object container, @Nullable YashanDBTableIndex index,
+			@Nullable Map<String, Object> options) {
+		return UITask.run(() -> {
+			EditIndexPage editPage = new EditIndexPage(YashanDBUIMessages.edit_yashandb_index_manager_dialog_title,
+					index, Collections.singletonList(DBSIndexType.OTHER));
+			if (!editPage.edit()) {
+				return null;
+			}
 
-            StringBuilder idxName = new StringBuilder(64);
-            idxName.append(CommonUtils.escapeIdentifier(index.getTable().getName())).append("_") //$NON-NLS-1$
-                    .append(CommonUtils.escapeIdentifier(editPage.getSelectedAttributes().iterator().next().getName()))
-                    .append("_IDX");
-            index.setName(DBObjectNameCaseTransformer.transformName(index.getDataSource(), idxName.toString()));
-            index.setUnique(editPage.isUnique());
-            index.setIndexType(editPage.getIndexType());
-            int colIndex = 1;
-            for (DBSEntityAttribute tableColumn : editPage.getSelectedAttributes()) {
-                index.addColumn(
-                        new YashanDBTableIndexColumn(
-                                index,
-                                (YashanDBTableColumn) tableColumn,
-                                colIndex++,
-                                !Boolean.TRUE.equals(editPage.getAttributeProperty(tableColumn, EditIndexPage.PROP_DESC))));
-            }
-            return index;
-        });
-    }
+			StringBuilder idxName = new StringBuilder(64);
+			idxName.append(CommonUtils.escapeIdentifier(index.getTable().getName())).append("_")
+					.append(CommonUtils.escapeIdentifier(editPage.getSelectedAttributes().iterator().next().getName()))
+					.append("_IDX");
+			index.setName(DBObjectNameCaseTransformer.transformName(index.getDataSource(), idxName.toString()));
+			index.setUnique(editPage.isUnique());
+			index.setIndexType(editPage.getIndexType());
+			int colIndex = 1;
+			for (DBSEntityAttribute tableColumn : editPage.getSelectedAttributes()) {
+				index.addColumn(new YashanDBTableIndexColumn(index, (YashanDBTableColumn) tableColumn, colIndex++,
+						!Boolean.TRUE.equals(editPage.getAttributeProperty(tableColumn, EditIndexPage.PROP_DESC))));
+			}
+			return index;
+		});
+	}
 
 }

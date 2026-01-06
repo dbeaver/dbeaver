@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,14 +16,17 @@
  */
 package org.jkiss.dbeaver.data.transfer;
 
+
 import org.jkiss.dbeaver.tools.transfer.stream.StreamTransferUtils;
+import org.jkiss.junit.DBeaverUnitTest;
 import org.junit.Assert;
 import org.junit.Test;
 
 import java.util.HashMap;
 import java.util.Map;
 
-public class StreamTransferUtilsTest {
+public class StreamTransferUtilsTest extends DBeaverUnitTest {
+
     @Test
     public void testDelimiterString() {
         Map<String, Object> props = new HashMap<>();

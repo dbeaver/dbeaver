@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,16 +17,20 @@
 
 package org.jkiss.dbeaver.ui.editors.sql.registry;
 
+import org.eclipse.core.expressions.Expression;
 import org.eclipse.core.runtime.IConfigurationElement;
+import org.eclipse.ui.IWorkbenchSite;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.impl.AbstractContextDescriptor;
+import org.jkiss.dbeaver.registry.RegistryConstants;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorPresentation;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
 
 /**
  * SQLPresentationDescriptor
@@ -35,14 +39,27 @@ public class SQLPresentationDescriptor extends AbstractContextDescriptor {
 
     public static final String EXTENSION_ID = "org.jkiss.dbeaver.sqlPresentation"; //$NON-NLS-1$
 
+    public enum QueryMode {
+        /** The presentation can work with a single statement */
+        SINGLE,
+        /** The presentation can work with multiple statements (script) */
+        MULTIPLE,
+        /** The presentation doesn't support queries */
+        NONE
+    }
+
     private final String id;
     private final String label;
     private final String description;
     private final ObjectType implClass;
     private final DBPImage icon;
-    private final SQLEditorPresentation.ActivationType activationType;
-    private final String toggleCommandId;
+    private final int order;
     private final List<SQLPresentationPanelDescriptor> panels = new ArrayList<>();
+    private final Expression enabledWhen;
+    private final QueryMode queryMode;
+    private final String settingKey;
+    private final String prefLabel;
+    private final String prefTip;
 
     public SQLPresentationDescriptor(IConfigurationElement config)
     {
@@ -52,18 +69,15 @@ public class SQLPresentationDescriptor extends AbstractContextDescriptor {
         this.description = config.getAttribute("description");
         this.implClass = new ObjectType(config.getAttribute("class"));
         this.icon = iconToImage(config.getAttribute("icon"));
-        String activationStr = config.getAttribute("activation");
-        if (CommonUtils.isEmpty(activationStr)) {
-            this.activationType = SQLEditorPresentation.ActivationType.HIDDEN;
-        } else {
-            this.activationType = SQLEditorPresentation.ActivationType.valueOf(activationStr.toUpperCase(Locale.ENGLISH));
-        }
-        toggleCommandId = config.getAttribute("toggleCommand");
+        this.order = CommonUtils.toInt(config.getAttribute(RegistryConstants.ATTR_ORDER));
         for (IConfigurationElement panelConfig : config.getChildren("panel")) {
-            // Load functions
-            SQLPresentationPanelDescriptor presentationDescriptor = new SQLPresentationPanelDescriptor(panelConfig);
-            this.panels.add(presentationDescriptor);
+            this.panels.add(new SQLPresentationPanelDescriptor(panelConfig));
         }
+        this.enabledWhen = getEnablementExpression(config);
+        this.queryMode = CommonUtils.valueOf(QueryMode.class, config.getAttribute("queryMode"), QueryMode.MULTIPLE);
+        this.settingKey = config.getAttribute("settingKey");
+        this.prefLabel = config.getAttribute("prefLabel");
+        this.prefTip = config.getAttribute("prefTooltip");
     }
 
     public String getId() {
@@ -82,16 +96,38 @@ public class SQLPresentationDescriptor extends AbstractContextDescriptor {
         return icon;
     }
 
-    public SQLEditorPresentation.ActivationType getActivationType() {
-        return activationType;
-    }
-
-    public String getToggleCommandId() {
-        return toggleCommandId;
+    public int getOrder() {
+        return order;
     }
 
     public List<SQLPresentationPanelDescriptor> getPanels() {
         return panels;
+    }
+
+    @Nullable
+    public Expression getEnabledWhen() {
+        return enabledWhen;
+    }
+
+    public boolean isEnabled(@NotNull IWorkbenchSite site) {
+        return isExpressionTrue(enabledWhen, site);
+    }
+
+    public String getSettingKey() {
+        return settingKey;
+    }
+
+    public String getPrefLabel() {
+        return prefLabel;
+    }
+
+    public String getPrefTip() {
+        return prefTip;
+    }
+
+    @NotNull
+    public QueryMode getQueryMode() {
+        return queryMode;
     }
 
     public SQLEditorPresentation createPresentation()
@@ -99,5 +135,6 @@ public class SQLPresentationDescriptor extends AbstractContextDescriptor {
     {
         return implClass.createInstance(SQLEditorPresentation.class);
     }
+
 
 }

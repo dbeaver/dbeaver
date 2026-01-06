@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,9 +32,10 @@ import org.eclipse.ui.handlers.HandlerUtil;
 import org.eclipse.ui.ide.ResourceUtil;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.app.DBPPlatformDesktop;
+import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.DBNResource;
-import org.jkiss.dbeaver.model.navigator.DBNUtils;
+import org.jkiss.dbeaver.model.navigator.NavigatorResources;
 import org.jkiss.dbeaver.ui.IDataSourceContainerUpdate;
 import org.jkiss.dbeaver.ui.editors.EditorUtils;
 import org.jkiss.dbeaver.ui.editors.SimpleDatabaseEditorContext;
@@ -74,7 +75,15 @@ public class NavigatorHandlerAssociateScript extends NavigatorHandlerObjectBase 
             for (IFile script : selectedScripts) {
                 EditorUtils.setFileDataSource(script, new SimpleDatabaseEditorContext(dataSource));
                 setEditorDataSource(script, dataSource);
-                DBNUtils.refreshNavigatorResource(dataSource.getProject(), script, dataSource);
+                DBPProject project;
+                if (dataSource != null) {
+                    project = dataSource.getProject();
+                } else  {
+                    project = DBPPlatformDesktop.getInstance().getWorkspace().getProject(script.getProject());
+                }
+                if (project != null) {
+                    NavigatorResources.refreshNavigatorResource(project, script, dataSource);
+                }
             }
         }
         return null;

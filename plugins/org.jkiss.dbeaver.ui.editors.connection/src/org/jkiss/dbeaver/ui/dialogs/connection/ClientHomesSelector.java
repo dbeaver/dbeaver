@@ -1,7 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
- * Copyright (C) 2011-2012 Eugene Fradkin (eugene.fradkin@gmail.com)
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,6 +30,7 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.connection.DBPNativeClientLocation;
 import org.jkiss.dbeaver.model.connection.DBPNativeClientLocationManager;
@@ -123,10 +123,11 @@ public class ClientHomesSelector implements ISelectionProvider {
 
         Map<String, DBPNativeClientLocation> homes = new LinkedHashMap<>();
 
-        AbstractJob hlJob = new AbstractJob("Find native client homes") {
+        AbstractJob hlJob = new AbstractJob("Find local client homes") {
 
+            @NotNull
             @Override
-            protected IStatus run(DBRProgressMonitor monitor) {
+            protected IStatus run(@NotNull DBRProgressMonitor monitor) {
                 for (DBPNativeClientLocation ncl : driver.getNativeClientLocations()) {
                     homes.put(ncl.getName(), ncl);
                 }

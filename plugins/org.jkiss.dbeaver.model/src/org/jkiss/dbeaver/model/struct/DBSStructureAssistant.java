@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,17 +29,23 @@ import java.util.List;
  * DBSStructureAssistant
  */
 public interface DBSStructureAssistant<CONTEXT extends DBCExecutionContext> {
+    @NotNull
     DBSObjectType[] getSupportedObjectTypes();
 
+    @NotNull
     DBSObjectType[] getSearchObjectTypes();
 
+    @NotNull
     DBSObjectType[] getHyperlinkObjectTypes();
 
+    @NotNull
     DBSObjectType[] getAutoCompleteObjectTypes();
 
     @NotNull
-    List<DBSObjectReference> findObjectsByMask(@NotNull DBRProgressMonitor monitor, @NotNull CONTEXT executionContext,
-                                               @NotNull ObjectsSearchParams params) throws DBException;
+    List<DBSObjectReference> findObjectsByMask(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull CONTEXT executionContext,
+        @NotNull ObjectsSearchParams params) throws DBException;
 
     default boolean supportsSearchInCommentsFor(@NotNull DBSObjectType objectType) {
         return false;

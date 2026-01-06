@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -105,6 +105,7 @@ public abstract class JDBCTableColumn<TABLE_TYPE extends DBSEntity> extends JDBC
         return super.getName();
     }
 
+    @NotNull
     @Property(viewable = true, editable = true, order = 20, listProvider = ColumnTypeNameListProvider.class)
     @Override
     public String getTypeName()
@@ -113,16 +114,16 @@ public abstract class JDBCTableColumn<TABLE_TYPE extends DBSEntity> extends JDBC
     }
 
     @Override
-    public void setTypeName(String typeName) throws DBException {
+    public void setTypeName(@NotNull String typeName) throws DBException {
         super.setTypeName(typeName);
         final DBPDataTypeProvider dataTypeProvider = DBUtils.getParentOfType(DBPDataTypeProvider.class, this);
         if (dataTypeProvider != null) {
             DBSDataType dataType = dataTypeProvider.getLocalDataType(typeName);
             if (dataType != null) {
                 this.valueType = dataType.getTypeID();
-                if (this instanceof DBSTypedObjectExt4) {
+                if (this instanceof DBSTypedObjectExt4 toe) {
                     try {
-                        ((DBSTypedObjectExt4) this).setDataType(dataType);
+                        toe.setDataType(dataType);
                     } catch (Throwable e) {
                         log.debug(e);
                     }
@@ -192,7 +193,13 @@ public abstract class JDBCTableColumn<TABLE_TYPE extends DBSEntity> extends JDBC
         }
         query.append(identifier);
         if (calcCount) {
-            query.append(", count(*)");
+            query.append(", count(");
+            String asterisk = dialect.getDefaultGroupAttribute();
+            if (asterisk == null) {
+                asterisk = "";
+            }
+            query.append(asterisk);
+            query.append(")");
         }
         // Do not use description columns because they duplicate distinct value
 //        String descColumns = DBVUtils.getDictionaryDescriptionColumns(session.getProgressMonitor(), this);
@@ -200,7 +207,7 @@ public abstract class JDBCTableColumn<TABLE_TYPE extends DBSEntity> extends JDBC
 //            query.append(", ").append(descColumns);
 //        }
         query.append("\nFROM ").append(DBUtils.getObjectFullName(getTable(), DBPEvaluationContext.DML));
-        if (valuePattern instanceof String) {
+        if (valuePattern instanceof String str && !str.isBlank()) {
             query.append("\nWHERE ");
             if (getDataKind() == DBPDataKind.STRING) {
                 final SQLExpressionFormatter caseInsensitiveFormatter = caseInsensitiveSearch
@@ -223,7 +230,7 @@ public abstract class JDBCTableColumn<TABLE_TYPE extends DBSEntity> extends JDBC
         }
 
         try (DBCStatement dbStat = session.prepareStatement(DBCStatementType.QUERY, query.toString(), false, false, false)) {
-            if (valuePattern instanceof String) {
+            if (valuePattern instanceof String str && !str.isBlank()) {
                 if (getDataKind() == DBPDataKind.STRING) {
                     valueHandler.bindValueObject(session, dbStat, this, 0, "%" + valuePattern + "%");
                 } else {
@@ -233,7 +240,13 @@ public abstract class JDBCTableColumn<TABLE_TYPE extends DBSEntity> extends JDBC
             dbStat.setLimit(0, maxResults);
             if (dbStat.executeStatement()) {
                 try (DBCResultSet dbResult = dbStat.openResultSet()) {
-                    return DBVUtils.readDictionaryRows(session, this, valueHandler, dbResult, formatValues, calcCount);
+                    return DBVUtils.readDictionaryRows(
+                        session,
+                        Collections.singletonList(this),
+                        Collections.singletonList(valueHandler),
+                        dbResult,
+                        formatValues,
+                        calcCount);
                 }
             } else {
                 return Collections.emptyList();
@@ -269,6 +282,7 @@ public abstract class JDBCTableColumn<TABLE_TYPE extends DBSEntity> extends JDBC
             return true;
         }
 
+        @Nullable
         @Override
         public Object[] getPossibleValues(JDBCTableColumn<?> column)
         {

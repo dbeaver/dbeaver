@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,9 +20,11 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.ext.oracle.internal.OracleMessages;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.data.DBDPseudoAttribute;
 import org.jkiss.dbeaver.model.data.DBDPseudoAttributeContainer;
+import org.jkiss.dbeaver.model.data.DBDPseudoAttributeType;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
@@ -50,6 +52,17 @@ import java.util.*;
 public class OracleTable extends OracleTablePhysical implements DBPScriptObject, DBDPseudoAttributeContainer,
         DBPObjectStatistics, DBPImageProvider, DBPReferentialIntegrityController, DBPScriptObjectExt2 {
     private static final Log log = Log.getLog(OracleTable.class);
+
+    private static final DBDPseudoAttribute ROWSCN_PSEUDO_ATTRIBUTE = new DBDPseudoAttribute(
+        DBDPseudoAttributeType.OTHER,
+        "ORA_ROWSCN",
+        null,
+        null,
+        OracleMessages.pseudo_column_ora_rowscn_description,
+        true,
+        DBDPseudoAttribute.PropagationPolicy.TABLE_LOCAL
+    );
+
 
     private static final CharSequence TABLE_NAME_PLACEHOLDER = "%table_name%";
     private static final CharSequence FOREIGN_KEY_NAME_PLACEHOLDER = "%foreign_key_name%";
@@ -137,6 +150,7 @@ public class OracleTable extends OracleTablePhysical implements DBPScriptObject,
     }
 
     private final AdditionalInfo additionalInfo = new AdditionalInfo();
+    private DBDPseudoAttribute[] allPseudoAttributes = null;
 
     public OracleTable(OracleSchema schema, String name)
     {
@@ -237,7 +251,7 @@ public class OracleTable extends OracleTablePhysical implements DBPScriptObject,
                 }
             }
         } catch (Exception e) {
-            log.error("Error reading table statistics", e);
+            log.debug("Error reading table statistics", e);
         } finally {
             if (tableSize == null) {
                 tableSize = 0L;
@@ -326,6 +340,9 @@ public class OracleTable extends OracleTablePhysical implements DBPScriptObject,
         throws DBException
     {
         List<OracleTableForeignKey> refs = new ArrayList<>();
+        if (monitor.isForceCacheUsage()) {
+            return refs;
+        }
         // This is dummy implementation
         // Get references from this schema only
         final Collection<OracleTableForeignKey> allForeignKeys =
@@ -358,10 +375,14 @@ public class OracleTable extends OracleTablePhysical implements DBPScriptObject,
         return super.refreshObject(monitor);
     }
 
+    private boolean hasRowIdPseudoAttribute() {
+        return CommonUtils.isEmpty(this.iotType)
+            && getDataSource().getContainer().getPreferenceStore().getBoolean(OracleConstants.PREF_SUPPORT_ROWID);
+    }
+
     @Override
-    public DBDPseudoAttribute[] getPseudoAttributes() throws DBException
-    {
-        if (CommonUtils.isEmpty(this.iotType) && getDataSource().getContainer().getPreferenceStore().getBoolean(OracleConstants.PREF_SUPPORT_ROWID)) {
+    public DBDPseudoAttribute[] getPseudoAttributes() throws DBException {
+        if (this.hasRowIdPseudoAttribute()) {
             // IOT tables have index id instead of ROWID
             return new DBDPseudoAttribute[] {
                 OracleConstants.PSEUDO_ATTR_ROWID
@@ -372,7 +393,21 @@ public class OracleTable extends OracleTablePhysical implements DBPScriptObject,
     }
 
     @Override
-    protected void appendSelectSource(DBRProgressMonitor monitor, StringBuilder query, String tableAlias, DBDPseudoAttribute rowIdAttribute) {
+    public DBDPseudoAttribute[] getAllPseudoAttributes(@NotNull DBRProgressMonitor monitor) throws DBException {
+        if (this.allPseudoAttributes == null) {
+            // https://docs.oracle.com/en/database/oracle/oracle-database/19/sqlrf/Pseudocolumns.html
+            List<DBDPseudoAttribute> attrs = new ArrayList<>(2);
+            if (this.hasRowIdPseudoAttribute()) {
+                attrs.add(OracleConstants.PSEUDO_ATTR_ROWID);
+            }
+            attrs.add(ROWSCN_PSEUDO_ATTRIBUTE);
+            this.allPseudoAttributes = attrs.toArray(DBDPseudoAttribute.EMPTY_ARRAY);
+        }
+        return this.allPseudoAttributes;
+    }
+
+    @Override
+    protected void appendSelectSource(DBRProgressMonitor monitor, StringBuilder query, String tableAlias, DBDPseudoAttribute rowIdAttribute) throws DBCException {
         if (tableType != null && tableType.getName().equals(OracleConstants.TYPE_NAME_XML)) {
             try {
                 OracleTableColumn xmlColumn = getXMLColumn(monitor);
@@ -390,8 +425,9 @@ public class OracleTable extends OracleTablePhysical implements DBPScriptObject,
         super.appendSelectSource(monitor, query, tableAlias, rowIdAttribute);
     }
 
+    @NotNull
     @Override
-    public String getObjectDefinitionText(DBRProgressMonitor monitor, Map<String, Object> options) throws DBException {
+    public String getObjectDefinitionText(@NotNull DBRProgressMonitor monitor, @NotNull Map<String, Object> options) throws DBException {
         return getDDL(monitor, OracleDDLFormat.getCurrentFormat(getDataSource()), options);
     }
 
@@ -501,7 +537,7 @@ public class OracleTable extends OracleTablePhysical implements DBPScriptObject,
     }
 
     @Override
-    public boolean supportsObjectDefinitionOption(String option) {
+    public boolean supportsObjectDefinitionOption(@NotNull String option) {
         return ArrayUtils.contains(supportedOptions, option);
     }
 }

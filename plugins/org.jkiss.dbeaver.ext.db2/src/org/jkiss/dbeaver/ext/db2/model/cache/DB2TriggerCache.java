@@ -1,7 +1,7 @@
 /*
  * DBeaver - Universal Database Manager
  * Copyright (C) 2013-2015 Denis Forveille (titou10.titou10@gmail.com)
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ext.db2.model.cache;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.db2.DB2Utils;
 import org.jkiss.dbeaver.ext.db2.model.DB2Schema;
 import org.jkiss.dbeaver.ext.db2.model.DB2Table;
@@ -29,6 +30,7 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
+import org.jkiss.utils.CommonUtils;
 
 import java.sql.SQLException;
 
@@ -38,6 +40,8 @@ import java.sql.SQLException;
  * @author Denis Forveille
  */
 public class DB2TriggerCache extends JDBCObjectCache<DB2Schema, DB2Trigger> {
+
+    private static final Log log = Log.getLog(DB2TriggerCache.class);
 
     private static final String SQL_TRIG_ALL = "SELECT * FROM SYSCAT.TRIGGERS WHERE TRIGSCHEMA = ? ORDER BY TRIGNAME WITH UR";
 
@@ -54,13 +58,19 @@ public class DB2TriggerCache extends JDBCObjectCache<DB2Schema, DB2Trigger> {
     protected DB2Trigger fetchObject(@NotNull JDBCSession session, @NotNull DB2Schema db2Schema, @NotNull JDBCResultSet dbResult) throws SQLException,
         DBException
     {
-
         // Look for related table
         String tableSchemaName = JDBCUtils.safeGetStringTrimmed(dbResult, "TABSCHEMA");
         String tableName = JDBCUtils.safeGetStringTrimmed(dbResult, "TABNAME");
+        if (CommonUtils.isEmpty(tableName)) {
+            log.debug("A table name for trigger is empty");
+            return null;
+        }
         DB2Table db2Table = DB2Utils.findTableBySchemaNameAndName(session.getProgressMonitor(), db2Schema.getDataSource(),
             tableSchemaName, tableName);
-
-        return new DB2Trigger(session.getProgressMonitor(), db2Schema, db2Table, dbResult);
+        if (db2Table == null) {
+            log.debug("Can't find trigger's table " + tableName);
+            return null;
+        }
+        return new DB2Trigger(db2Schema, db2Table, dbResult);
     }
 }

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,10 +18,13 @@ package org.jkiss.dbeaver.ui.dashboard.view;
 
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Job which runs every second and updates necessary dashboards
@@ -31,28 +34,51 @@ public class DashboardUpdateJob extends AbstractJob {
     private static final Log log = Log.getLog(DashboardUpdateJob.class);
 
     private static final int JOB_DELAY = 1000;
+    
+    private static DashboardUpdateJob updateJob;
+    
+    private final AtomicBoolean isSchedule = new AtomicBoolean(true);
 
     private DashboardUpdateJob() {
         super("Dashboard update");
     }
 
+    @NotNull
     @Override
-    protected IStatus run(DBRProgressMonitor monitor) {
+    protected IStatus run(@NotNull DBRProgressMonitor monitor) {
 
         try {
-            new DashboardUpdater().updateDashboards(monitor);
+            if (new DashboardUpdater().updateDashboards(monitor)) {
+                pauseDashboardUpdate();
+            }
         } catch (Exception e) {
             log.error("Error running dashboard updater", e);
         }
 
-        if (!DBWorkbench.getPlatform().isShuttingDown()) {
+        if (isSchedule.get() && !DBWorkbench.getPlatform().isShuttingDown()) {
             schedule(JOB_DELAY);
         }
+
         return Status.OK_STATUS;
     }
 
     public static void startUpdating() {
-        new DashboardUpdateJob().schedule(JOB_DELAY);
+        updateJob = new DashboardUpdateJob();
+        updateJob.schedule(JOB_DELAY);
+    }
+    
+    public static DashboardUpdateJob getDefault() {
+        return updateJob;
+    }
+    
+    public void resumeDashboardUpdate() {
+        if (isSchedule.compareAndSet(false, true)) {
+            schedule(JOB_DELAY);
+        }
+    }
+    
+    public void pauseDashboardUpdate() {
+        isSchedule.set(false);
     }
 
 }

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -49,15 +49,21 @@ public class SQLServerTableTypeManager extends SQLServerBaseTableManager<SQLServ
     }
 
     @Override
-    protected SQLServerTableType createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, Object container, Object copyFrom, Map<String, Object> options) throws DBException {
+    protected SQLServerTableType createDatabaseObject(@NotNull DBRProgressMonitor monitor, @NotNull DBECommandContext context, Object container, Object copyFrom, @NotNull Map<String, Object> options) throws DBException {
         throw new IllegalStateException("Not implemented");
     }
 
     @Override
-    protected String beginCreateTableStatement(DBRProgressMonitor monitor, SQLServerTableType table, String tableName, Map<String, Object> options) throws DBException {
+    protected String beginCreateTableStatement(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull SQLServerTableType table,
+        @NotNull String tableName,
+        @NotNull Map<String, Object> options) throws DBException {
+
         if (!options.isEmpty() && options.containsKey(DBPScriptObject.OPTION_USE_SPECIAL_NAME)) {
             return "CREATE TYPE " + options.get(DBPScriptObject.OPTION_USE_SPECIAL_NAME) + " AS TABLE (\n";
         }
+
         return "CREATE TYPE " + tableName + " AS TABLE\n (";
     }
 

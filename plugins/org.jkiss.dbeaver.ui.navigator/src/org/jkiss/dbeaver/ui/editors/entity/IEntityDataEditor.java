@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,7 @@ package org.jkiss.dbeaver.ui.editors.entity;
 
 /**
  * Entity data container.
- * Implementors are EntityEditor sub-editors which contain soem data which must be saved before context save.
+ * Implementors are EntityEditor sub-editors which contain some data which must be saved before context save.
  */
 public interface IEntityDataEditor {
 

@@ -1,7 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
- * Copyright (C) 2011-2012 Eugene Fradkin (eugene.fradkin@gmail.com)
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +19,7 @@ package org.jkiss.dbeaver.tasks.ui.nativetool;
 
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.IDialogSettings;
+import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
@@ -29,6 +29,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IWorkbenchWindow;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.tasks.ui.nativetool.internal.TaskNativeUIMessages;
 import org.jkiss.dbeaver.tasks.ui.wizard.TaskConfigurationWizard;
@@ -37,6 +38,8 @@ import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
 import org.jkiss.dbeaver.ui.dialogs.connection.ClientHomesSelector;
 import org.jkiss.dbeaver.ui.internal.UIMessages;
 
+import java.util.Map;
+
 /**
  * Tool wizard dialog
  */
@@ -44,8 +47,21 @@ public class NativeToolWizardDialog extends TaskConfigurationWizardDialog {
 
     public static final int CLIENT_CONFIG_ID = 1000;
 
-    public NativeToolWizardDialog(IWorkbenchWindow window, TaskConfigurationWizard wizard) {
+    public NativeToolWizardDialog(@NotNull IWorkbenchWindow window, @NotNull TaskConfigurationWizard<?> wizard) {
         super(window, wizard);
+        setupDialog();
+    }
+    
+    public NativeToolWizardDialog(
+        @NotNull IWorkbenchWindow window,
+        @NotNull TaskConfigurationWizard<?> wizard,
+        @NotNull IStructuredSelection selection
+    ) {
+        super(window, wizard, selection, Map.of());
+        setupDialog();
+    }
+
+    protected void setupDialog() {
         setShellStyle(SWT.CLOSE | SWT.MAX | SWT.TITLE | SWT.BORDER | SWT.RESIZE | getDefaultOrientation());
         setHelpAvailable(false);
         setFinishButtonLabel(UIMessages.button_start);

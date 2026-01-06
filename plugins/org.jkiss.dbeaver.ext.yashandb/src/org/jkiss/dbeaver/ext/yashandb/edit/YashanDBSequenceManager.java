@@ -1,4 +1,23 @@
+/*
+ * DBeaver - Universal Database Manager
+ * Copyright (C) 2010-2025 DBeaver Corp and others
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.jkiss.dbeaver.ext.yashandb.edit;
+
+import java.util.List;
+import java.util.Map;
 
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -17,76 +36,71 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.cache.DBSObjectCache;
 import org.jkiss.utils.CommonUtils;
 
-import java.util.List;
-import java.util.Map;
-
-/**
- * @Author: donghy
- * @Date: 2022/08
- * @Description:
- */
 public class YashanDBSequenceManager extends SQLObjectEditor<YashanDBSequence, YashanDBSchema> {
 
-    @Override
-    public long getMakerOptions(DBPDataSource dataSource) {
-        return FEATURE_EDITOR_ON_CREATE;
-    }
+	@Override
+	public long getMakerOptions(DBPDataSource dataSource) {
+		return FEATURE_EDITOR_ON_CREATE;
+	}
 
-    @Override
-    protected void validateObjectProperties(DBRProgressMonitor monitor, ObjectChangeCommand command, Map<String, Object> options) throws DBException {
-        if (CommonUtils.isEmpty(command.getObject().getName())) {
-            throw new DBException("Sequence name cannot be empty");
-        }
-    }
+	@Override
+	protected void validateObjectProperties(DBRProgressMonitor monitor, ObjectChangeCommand command,
+			Map<String, Object> options) throws DBException {
+		if (CommonUtils.isEmpty(command.getObject().getName())) {
+			throw new DBException("Sequence name cannot be empty");
+		}
+	}
 
-    @Nullable
-    @Override
-    public DBSObjectCache<? extends DBSObject, YashanDBSequence> getObjectsCache(YashanDBSequence object) {
-        return object.getSchema().sequenceCache;
-    }
+	@Nullable
+	@Override
+	public DBSObjectCache<? extends DBSObject, YashanDBSequence> getObjectsCache(YashanDBSequence object) {
+		return object.getSchema().sequenceCache;
+	}
 
-    @Override
-    protected YashanDBSequence createDatabaseObject(
-            DBRProgressMonitor monitor, DBECommandContext context,
-            final Object container,
-            Object copyFrom, Map<String, Object> options) {
-        YashanDBSchema schema = (YashanDBSchema) container;
-        return new YashanDBSequence(schema, "NEW_SEQUENCE");
-    }
+	@Override
+	protected YashanDBSequence createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context,
+			final Object container, Object copyFrom, Map<String, Object> options) {
+		YashanDBSchema schema = (YashanDBSchema) container;
+		return new YashanDBSequence(schema, "NEW_SEQUENCE");
+	}
 
-    @Override
-    protected void addObjectCreateActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, ObjectCreateCommand command, Map<String, Object> options) {
-        String sql = command.getObject().buildStatement(false);
-        actions.add(new SQLDatabasePersistAction("Create Sequence", sql));
+	@Override
+	protected void addObjectCreateActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext,
+			List<DBEPersistAction> actions, ObjectCreateCommand command, Map<String, Object> options) {
+		String sql = command.getObject().buildStatement(false);
+		actions.add(new SQLDatabasePersistAction("Create Sequence", sql));
 
-        String comment = buildComment(command.getObject());
-        if (comment != null) {
-            actions.add(new SQLDatabasePersistAction("Comment on Sequence", comment));
-        }
-    }
+		String comment = buildComment(command.getObject());
+		if (comment != null) {
+			actions.add(new SQLDatabasePersistAction("Comment on Sequence", comment));
+		}
+	}
 
-    @Override
-    protected void addObjectModifyActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actionList, ObjectChangeCommand command, Map<String, Object> options) {
-        String sql = command.getObject().buildStatement(true);
-        actionList.add(new SQLDatabasePersistAction("Alter Sequence", sql));
+	@Override
+	protected void addObjectModifyActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext,
+			List<DBEPersistAction> actionList, ObjectChangeCommand command, Map<String, Object> options) {
+		String sql = command.getObject().buildStatement(true);
+		actionList.add(new SQLDatabasePersistAction("Alter Sequence", sql));
 
-        String comment = buildComment(command.getObject());
-        if (comment != null) {
-            actionList.add(new SQLDatabasePersistAction("Comment on Sequence", comment));
-        }
-    }
+		String comment = buildComment(command.getObject());
+		if (comment != null) {
+			actionList.add(new SQLDatabasePersistAction("Comment on Sequence", comment));
+		}
+	}
 
-    @Override
-    protected void addObjectDeleteActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, ObjectDeleteCommand command, Map<String, Object> options) {
-        String sql = "DROP SEQUENCE " + command.getObject().getFullyQualifiedName(DBPEvaluationContext.DDL);
-        DBEPersistAction action = new SQLDatabasePersistAction("Drop Sequence", sql);
-        actions.add(action);
-    }
+	@Override
+	protected void addObjectDeleteActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext,
+			List<DBEPersistAction> actions, ObjectDeleteCommand command, Map<String, Object> options) {
+		String sql = "DROP SEQUENCE " + command.getObject().getFullyQualifiedName(DBPEvaluationContext.DDL);
+		DBEPersistAction action = new SQLDatabasePersistAction("Drop Sequence", sql);
+		actions.add(action);
+	}
 
-    private String buildComment(YashanDBSequence sequence) {
-        if (!CommonUtils.isEmpty(sequence.getDescription())) {
-            return "COMMENT ON SEQUENCE " + sequence.getFullyQualifiedName(DBPEvaluationContext.DDL) + " IS " + SQLUtils.quoteString(sequence, sequence.getDescription());
-        }
-        return null;
-    }
+	private String buildComment(YashanDBSequence sequence) {
+		if (!CommonUtils.isEmpty(sequence.getDescription())) {
+			return "COMMENT ON SEQUENCE " + sequence.getFullyQualifiedName(DBPEvaluationContext.DDL) + " IS "
+					+ SQLUtils.quoteString(sequence, sequence.getDescription());
+		}
+		return null;
+	}
 }

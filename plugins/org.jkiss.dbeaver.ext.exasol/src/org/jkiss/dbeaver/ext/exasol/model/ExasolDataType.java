@@ -1,7 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2016 Karl Griesser (fullref@gmail.com)
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -156,11 +155,13 @@ public class ExasolDataType extends ExasolObject<DBSObject> implements DBSDataTy
         return parentNode;
     }
 
+    @NotNull
     @Override
     public String getTypeName() {
         return name;
     }
 
+    @NotNull
     @Override
     public String getFullTypeName() {
         return DBUtils.getFullTypeName(this);
@@ -171,6 +172,7 @@ public class ExasolDataType extends ExasolObject<DBSObject> implements DBSDataTy
         return typeDesc.sqlType;
     }
 
+    @Nullable
     @Override
     public Integer getPrecision() {
         if (typeDesc.precision != null) {
@@ -207,7 +209,7 @@ public class ExasolDataType extends ExasolObject<DBSObject> implements DBSDataTy
 
     @NotNull
     @Override
-    public DBCLogicalOperator[] getSupportedOperators(DBSTypedObject attribute) {
+    public DBCLogicalOperator[] getSupportedOperators(@NotNull DBSTypedObject attribute) {
         return DBUtils.getDefaultOperators(this);
     }
 
@@ -228,6 +230,7 @@ public class ExasolDataType extends ExasolObject<DBSObject> implements DBSDataTy
     }
 
 
+    @NotNull
     @Override
     @Property(viewable = true, editable = false, order = 4)
     public DBPDataKind getDataKind() {
@@ -311,8 +314,9 @@ public class ExasolDataType extends ExasolObject<DBSObject> implements DBSDataTy
         return null;
     }
 
+    @NotNull
     @Override
-    public String getFullyQualifiedName(DBPEvaluationContext context) {
+    public String getFullyQualifiedName(@NotNull DBPEvaluationContext context) {
         return name;
     }
 

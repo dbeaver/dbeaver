@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
 
 package org.jkiss.dbeaver.model.access;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
@@ -28,12 +29,12 @@ public interface DBAPrivilegeGrant {
     /**
      * Role which owns this privilege
      */
-    Object getSubject(DBRProgressMonitor monitor) throws DBException;
+    Object getSubject(@NotNull DBRProgressMonitor monitor) throws DBException;
 
     /**
      * Object to which privilege was granted. Can be null in case of global privileges (e.g. CONNECT).
      */
-    Object getObject(DBRProgressMonitor monitor) throws DBException;
+    Object getObject(@NotNull DBRProgressMonitor monitor) throws DBException;
 
     /**
      * Privilege

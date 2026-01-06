@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -53,21 +53,21 @@ public class GlobalEventManagerImpl implements DBPGlobalEventManager {
     }
 
     @Override
-    public void fireGlobalEvent(String eventId, Map<String, Object> properties) {
+    public void fireGlobalEvent(@NotNull String eventId, @NotNull Map<String, Object> properties) {
         for (DBPGlobalEventListener listener : getListenersCopy()) {
             listener.handleGlobalEvent(eventId, properties);
         }
     }
 
     @Override
-    public void addEventListener(DBPGlobalEventListener listener) {
+    public void addEventListener(@NotNull DBPGlobalEventListener listener) {
         synchronized (listeners) {
             listeners.add(listener);
         }
     }
 
     @Override
-    public void removeEventListener(DBPGlobalEventListener listener) {
+    public void removeEventListener(@NotNull DBPGlobalEventListener listener) {
         synchronized (listeners) {
             listeners.remove(listener);
         }

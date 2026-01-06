@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,13 +17,16 @@
 
 package org.jkiss.dbeaver.model.app;
 
+import org.jkiss.code.NotNull;
+
 /**
  * DBPRegistryDescriptor
  */
-public interface DBPRegistryDescriptor<TYPE>
-{
+public interface DBPRegistryDescriptor<TYPE> {
+    @NotNull
     String getId();
 
+    @NotNull
     TYPE getInstance();
 
 }

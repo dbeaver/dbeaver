@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -36,6 +36,7 @@ public class ResultSetFilterContentAdapter extends StyledTextContentAdapter {
         StyledText text = (StyledText) control;
         String curValue = text.getText().toUpperCase();
         Point selection = text.getSelection();
+        int wordStartingPosition = -1;
 
         if (selection.x == selection.y) {
             // Try to replace text under cursor contents starts with
@@ -49,6 +50,7 @@ public class ResultSetFilterContentAdapter extends StyledTextContentAdapter {
                 if (contentsUC.startsWith(prefix)) {
                     if (i == 0 || !Character.isJavaIdentifierPart(curValue.charAt(i - 1))) {
                         text.setSelection(i, selection.x);
+                        wordStartingPosition = i;
                         break;
                     }
                 }
@@ -61,11 +63,11 @@ public class ResultSetFilterContentAdapter extends StyledTextContentAdapter {
         }
         text.insert(contents);
 
-        // Insert will leave the cursor at the end of the inserted text. If this
-        // is not what we wanted, reset the selection.
-        if (cursorPosition <= contents.length()) {
-            text.setSelection(selection.x + cursorPosition,
-                selection.x + cursorPosition);
+        // Always insert the cursor at the end of inserted text
+        if (wordStartingPosition != -1) {
+            text.setSelection(wordStartingPosition + contents.length(), wordStartingPosition + contents.length());
+        } else {
+            text.setSelection(text.getSelection().x + contents.length());
         }
     }
 

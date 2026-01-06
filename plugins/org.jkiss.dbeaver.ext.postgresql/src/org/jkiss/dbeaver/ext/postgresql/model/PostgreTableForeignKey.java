@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -40,7 +40,7 @@ import java.util.List;
 /**
  * PostgreTableForeignKey
  */
-public class PostgreTableForeignKey extends PostgreTableConstraintBase implements DBSTableForeignKey
+public class PostgreTableForeignKey extends PostgreTableConstraintBase<PostgreTableForeignKeyColumn> implements DBSTableForeignKey
 {
     private static final Log log = Log.getLog(PostgreTableForeignKey.class);
 
@@ -56,6 +56,7 @@ public class PostgreTableForeignKey extends PostgreTableConstraintBase implement
             this.title = title;
         }
 
+        @NotNull
         @Override
         public String getName() {
             return title;
@@ -67,7 +68,7 @@ public class PostgreTableForeignKey extends PostgreTableConstraintBase implement
     private DBSForeignKeyModifyRule deleteRule;
     private DBSEntityConstraint refConstraint;
     private PostgreTableBase refTable;
-    private final List<PostgreTableForeignKeyColumn> columns = new ArrayList<>();
+    private List<PostgreTableForeignKeyColumn> columns = new ArrayList<>();
 
 /*
     public PostgreTableForeignKey(DBRProgressMonitor monitor, PostgreTable table, PostgreTableForeignKey source) {
@@ -129,6 +130,7 @@ public class PostgreTableForeignKey extends PostgreTableConstraintBase implement
         }
     }
 
+    @Nullable
     @Override
     @Property(viewable = true, specific = true, order = 50)
     public PostgreTableBase getAssociatedEntity() {
@@ -176,8 +178,13 @@ public class PostgreTableForeignKey extends PostgreTableConstraintBase implement
 
     @Nullable
     @Override
-    public List<PostgreTableForeignKeyColumn> getAttributeReferences(DBRProgressMonitor monitor) throws DBException {
+    public List<PostgreTableForeignKeyColumn> getAttributeReferences(@Nullable DBRProgressMonitor monitor) throws DBException {
         return columns;
+    }
+
+    @Override
+    public void setAttributeReferences(List<PostgreTableForeignKeyColumn> columns) throws DBException {
+        this.columns = columns;
     }
 
     void cacheAttributes(DBRProgressMonitor monitor, List<? extends PostgreTableConstraintColumn> children, boolean secondPass) {
@@ -213,6 +220,7 @@ public class PostgreTableForeignKey extends PostgreTableConstraintBase implement
             return false;
         }
 
+        @Nullable
         @Override
         public Object[] getPossibleValues(PostgreTableForeignKey foreignKey)
         {

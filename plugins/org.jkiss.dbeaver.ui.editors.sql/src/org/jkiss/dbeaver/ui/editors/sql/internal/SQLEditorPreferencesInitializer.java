@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,6 +28,7 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditor;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorCommands;
 import org.jkiss.dbeaver.ui.editors.sql.SQLPreferenceConstants;
+import org.jkiss.dbeaver.ui.editors.sql.SQLPreferenceConstants.SQLAutocompletionMode;
 import org.jkiss.dbeaver.ui.editors.sql.SQLScriptBindingType;
 import org.jkiss.dbeaver.utils.PrefUtils;
 
@@ -54,12 +55,12 @@ public class SQLEditorPreferencesInitializer extends AbstractPreferenceInitializ
             store, SQLPreferenceConstants.EDITOR_SEPARATE_CONNECTION, SeparateConnectionBehavior.DEFAULT.name()
         );
         PrefUtils.setDefaultPreferenceValue(store, SQLPreferenceConstants.EDITOR_CONNECT_ON_ACTIVATE, true);
-        PrefUtils.setDefaultPreferenceValue(store, SQLPreferenceConstants.EDITOR_CONNECT_ON_EXECUTE, false);
+        PrefUtils.setDefaultPreferenceValue(store, SQLPreferenceConstants.EDITOR_CONNECT_ON_EXECUTE, true);
 
         {
             // SQL prefs
             PrefUtils.setDefaultPreferenceValue(store, SQLPreferenceConstants.AUTO_SAVE_ON_CHANGE, false);
-            PrefUtils.setDefaultPreferenceValue(store, SQLPreferenceConstants.AUTO_SAVE_ON_CLOSE, false);
+            PrefUtils.setDefaultPreferenceValue(store, SQLPreferenceConstants.AUTO_SAVE_ON_CLOSE, true);
             PrefUtils.setDefaultPreferenceValue(store, SQLPreferenceConstants.AUTO_SAVE_ON_EXECUTE, false);
             PrefUtils.setDefaultPreferenceValue(store, SQLPreferenceConstants.AUTO_SAVE_ACTIVE_SCHEMA, true);
 
@@ -78,7 +79,7 @@ public class SQLEditorPreferencesInitializer extends AbstractPreferenceInitializ
 
             PrefUtils.setDefaultPreferenceValue(store, SQLPreferenceConstants.ENABLE_HIPPIE, false);
             PrefUtils.setDefaultPreferenceValue(store, SQLPreferenceConstants.ENABLE_AUTO_ACTIVATION, true);
-            PrefUtils.setDefaultPreferenceValue(store, SQLPreferenceConstants.ENABLE_EXPERIMENTAL_FEATURES, false);
+            PrefUtils.setDefaultPreferenceValue(store, SQLPreferenceConstants.AUTOCOMPLETION_MODE, SQLAutocompletionMode.NEW.getName());
             PrefUtils.setDefaultPreferenceValue(store, SQLPreferenceConstants.ENABLE_KEYSTROKE_ACTIVATION, true);
             PrefUtils.setDefaultPreferenceValue(store, SQLPreferenceConstants.AUTO_ACTIVATION_DELAY, 0);
             PrefUtils.setDefaultPreferenceValue(store, SQLPreferenceConstants.INSERT_SINGLE_PROPOSALS_AUTO, true);
@@ -86,9 +87,8 @@ public class SQLEditorPreferencesInitializer extends AbstractPreferenceInitializ
             PrefUtils.setDefaultPreferenceValue(store, SQLPreferenceConstants.PROPOSAL_INSERT_CASE, SQLCompletionContext.PROPOSAL_CASE_DEFAULT);
             PrefUtils.setDefaultPreferenceValue(store, SQLPreferenceConstants.PROPOSAL_REPLACE_WORD, false);
             PrefUtils.setDefaultPreferenceValue(store, SQLPreferenceConstants.HIDE_DUPLICATE_PROPOSALS, false);
-            PrefUtils.setDefaultPreferenceValue(store, SQLPreferenceConstants.SHOW_VALUES, true);
-            PrefUtils.setDefaultPreferenceValue(store, SQLPreferenceConstants.PROPOSAL_SHORT_NAME, false);
-            PrefUtils.setDefaultPreferenceValue(store, SQLPreferenceConstants.PROPOSAL_ALWAYS_FQ, false);
+            PrefUtils.setDefaultPreferenceValue(store, SQLPreferenceConstants.SHOW_VALUES, false);
+            PrefUtils.setDefaultPreferenceValue(store, SQLPreferenceConstants.QUALIFIED_COLUMN_NAMES, false);
             PrefUtils.setDefaultPreferenceValue(store, SQLPreferenceConstants.INSERT_SPACE_AFTER_PROPOSALS, true);
             PrefUtils.setDefaultPreferenceValue(store, SQLPreferenceConstants.PROPOSAL_SORT_ALPHABETICALLY, true);
             PrefUtils.setDefaultPreferenceValue(store, SQLPreferenceConstants.USE_GLOBAL_ASSISTANT, false);
@@ -100,6 +100,9 @@ public class SQLEditorPreferencesInitializer extends AbstractPreferenceInitializ
             PrefUtils.setDefaultPreferenceValue(store, SQLPreferenceConstants.MARK_OCCURRENCES_FOR_SELECTION, true);
             PrefUtils.setDefaultPreferenceValue(store, SQLPreferenceConstants.FOLDING_ENABLED, true);
             PrefUtils.setDefaultPreferenceValue(store, SQLPreferenceConstants.PROBLEM_MARKERS_ENABLED, true);
+            PrefUtils.setDefaultPreferenceValue(store, SQLPreferenceConstants.ADVANCED_HIGHLIGHTING_ENABLE, true);
+            PrefUtils.setDefaultPreferenceValue(store, SQLPreferenceConstants.READ_METADATA_FOR_SEMANTIC_ANALYSIS, true);
+            PrefUtils.setDefaultPreferenceValue(store, SQLPreferenceConstants.VALIDATE_FUNCTIONS, false);
 
             PrefUtils.setDefaultPreferenceValue(store, SQLPreferenceConstants.SQLEDITOR_CLOSE_SINGLE_QUOTES, true);
             PrefUtils.setDefaultPreferenceValue(store, SQLPreferenceConstants.SQLEDITOR_CLOSE_DOUBLE_QUOTES, true);
@@ -114,12 +117,16 @@ public class SQLEditorPreferencesInitializer extends AbstractPreferenceInitializ
             PrefUtils.setDefaultPreferenceValue(store, SQLPreferenceConstants.SQL_FORMAT_ACTIVE_QUERY, true);
         }
 
-        PrefUtils.setDefaultPreferenceValue(store, SQLPreferenceConstants.RESET_CURSOR_ON_EXECUTE, false);
         PrefUtils.setDefaultPreferenceValue(store, SQLPreferenceConstants.MAXIMIZE_EDITOR_ON_SCRIPT_EXECUTE, true);
-        PrefUtils.setDefaultPreferenceValue(store, SQLPreferenceConstants.SHOW_STATISTICS_FOR_QUERIES_WITH_RESULTS, true);
+        PrefUtils.setDefaultPreferenceValue(
+            store,
+            SQLPreferenceConstants.SHOW_STATISTICS_ON_EXECUTION,
+            SQLPreferenceConstants.StatisticsTabOnExecutionBehavior.FOR_MULTIPLE_QUERIES
+        );
+        PrefUtils.setDefaultPreferenceValue(store, SQLPreferenceConstants.CLOSE_INCLUDED_SCRIPT_AFTER_EXECUTION, true);
         PrefUtils.setDefaultPreferenceValue(store, SQLPreferenceConstants.BEEP_ON_QUERY_END, false);
         PrefUtils.setDefaultPreferenceValue(store, SQLPreferenceConstants.RESULT_SET_MAX_TABS_PER_QUERY, 20);
-        PrefUtils.setDefaultPreferenceValue(store, SQLPreferenceConstants.REFRESH_DEFAULTS_AFTER_EXECUTE, true);
+        PrefUtils.setDefaultPreferenceValue(store, SQLPreferenceConstants.REFRESH_DEFAULTS_AFTER_EXECUTE, false);
         PrefUtils.setDefaultPreferenceValue(store, SQLPreferenceConstants.CLEAR_OUTPUT_BEFORE_EXECUTE, false);
 
         PrefUtils.setDefaultPreferenceValue(store, SQLPreferenceConstants.RESULT_SET_CLOSE_ON_ERROR, false);

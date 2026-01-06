@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -48,14 +48,9 @@ public class QueryTransformerRowNum implements DBCQueryTransformer {
         if (query.isPlainSelect()) {
             try {
                 Statement statement = query.getStatement();
-                if (statement instanceof Select) {
-                    Select select = (Select) statement;
-                    if (select.getSelectBody() instanceof PlainSelect) {
-                        SQLSemanticProcessor.addWhereToSelect(
-                            (PlainSelect) select.getSelectBody(),
-                            "ROWNUM <= " + totalRows);
-                        return statement.toString();
-                    }
+                if (statement instanceof PlainSelect select) {
+                    SQLSemanticProcessor.addWhereToSelect(select, "ROWNUM <= " + totalRows);
+                    return statement.toString();
                 }
             } catch (Throwable e) {
                 // ignore

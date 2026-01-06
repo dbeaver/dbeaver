@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,24 +29,25 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
+import org.jkiss.dbeaver.model.sql.SQLGroupingAttribute;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.MenuCreator;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.controls.ToolbarSeparatorContribution;
 import org.jkiss.dbeaver.ui.controls.resultset.*;
 import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
+import org.jkiss.dbeaver.ui.controls.resultset.panel.ResultSetPanelBase;
+import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
-import java.util.Collections;
 import java.util.List;
 
 /**
  * RSV grouping panel
  */
-public class GroupingPanel implements IResultSetPanel {
-
-    //private static final Log log = Log.getLog(GroupingPanel.class);
+public class GroupingPanel extends ResultSetPanelBase {
 
     private static final String PANEL_ID = "results-grouping";
 
@@ -100,7 +101,7 @@ public class GroupingPanel implements IResultSetPanel {
 
                 @Override
                 public void handleResultSetSelectionChange(SelectionChangedEvent event) {
-                    updateControls();
+                    //updateControls();
                 }
             };
             groupingViewer.addListener(groupingResultsListener);
@@ -168,14 +169,15 @@ public class GroupingPanel implements IResultSetPanel {
         fillToolBar(manager);
     }
 
-    private void fillToolBar(IContributionManager contributionManager)
-    {
-        contributionManager.add(new DefaultSortingAction());
+    private void fillToolBar(IContributionManager contributionManager) {
+        ActionContributionItem sortAction = new ActionContributionItem(new DefaultSortingAction());
+        sortAction.setMode(ActionContributionItem.MODE_FORCE_TEXT);
+        contributionManager.add(sortAction);
         contributionManager.add(new DuplicatesOnlyAction());
-        contributionManager.add(new Separator());
+        contributionManager.add(new ToolbarSeparatorContribution(true));
         contributionManager.add(new EditColumnsAction(getGroupingResultsContainer()));
         contributionManager.add(new DeleteColumnAction(getGroupingResultsContainer()));
-        contributionManager.add(new Separator());
+        contributionManager.add(new ToolbarSeparatorContribution(true));
         contributionManager.add(new ClearGroupingAction(getGroupingResultsContainer()));
     }
 
@@ -190,7 +192,7 @@ public class GroupingPanel implements IResultSetPanel {
 
     static class EditColumnsAction extends GroupingAction {
         EditColumnsAction(GroupingResultsContainer resultsContainer) {
-            super(resultsContainer, ResultSetMessages.controls_resultset_grouping_edit, DBeaverIcons.getImageDescriptor(UIIcon.ADD));
+            super(resultsContainer, ResultSetMessages.controls_resultset_grouping_edit, DBeaverIcons.getImageDescriptor(UIIcon.EDIT_COLUMN));
         }
 
         @Override
@@ -208,7 +210,7 @@ public class GroupingPanel implements IResultSetPanel {
 
     static class DeleteColumnAction extends GroupingAction {
         DeleteColumnAction(GroupingResultsContainer resultsContainer) {
-            super(resultsContainer, ResultSetMessages.controls_resultset_grouping_remove_column, DBeaverIcons.getImageDescriptor(UIIcon.DELETE));
+            super(resultsContainer, ResultSetMessages.controls_resultset_grouping_remove_column, DBeaverIcons.getImageDescriptor(UIIcon.CLOSE));
         }
 
         @Override
@@ -218,14 +220,26 @@ public class GroupingPanel implements IResultSetPanel {
 
         @Override
         public void run() {
-            DBDAttributeBinding currentAttribute = groupingResultsContainer.getResultSetController().getActivePresentation().getCurrentAttribute();
-            if (currentAttribute != null) {
-                List<String> attributes = Collections.singletonList(currentAttribute.getFullyQualifiedName(DBPEvaluationContext.UI));
-                if (groupingResultsContainer.removeGroupingAttribute(attributes) || groupingResultsContainer.removeGroupingFunction(attributes)) {
-                    try {
-                        groupingResultsContainer.rebuildGrouping();
-                    } catch (DBException e) {
-                        DBWorkbench.getPlatformUI().showError("Grouping error", "Can't change grouping query", e);
+            IResultSetController resultSetController = groupingResultsContainer.getResultSetController();
+            DBDAttributeBinding currentBinding = resultSetController.getActivePresentation().getCurrentAttribute();
+            if (currentBinding != null) {
+                int attrBindingIndex = ArrayUtils.indexOf(resultSetController.getModel().getAttributes(), currentBinding);
+                if (attrBindingIndex >= 0 && currentBinding.getDataContainer() instanceof GroupingDataContainer dataContainer) {
+                    SQLGroupingAttribute[] currAttrs = dataContainer.getGroupingAttributes();
+                    boolean removed;
+                    if (currAttrs != null && attrBindingIndex < currAttrs.length) {
+                        removed = groupingResultsContainer.removeGroupingAttribute(List.of(currAttrs[attrBindingIndex]));
+                    } else {
+                        removed = groupingResultsContainer.removeGroupingFunction(
+                            List.of(currentBinding.getFullyQualifiedName(DBPEvaluationContext.UI))
+                        );
+                    }
+                    if (removed) {
+                        try {
+                            groupingResultsContainer.rebuildGrouping();
+                        } catch (DBException e) {
+                            DBWorkbench.getPlatformUI().showError("Grouping error", "Can't change grouping query", e);
+                        }
                     }
                 }
             }
@@ -234,7 +248,8 @@ public class GroupingPanel implements IResultSetPanel {
 
     static class ClearGroupingAction extends GroupingAction {
         ClearGroupingAction(GroupingResultsContainer resultsContainer) {
-            super(resultsContainer, ResultSetMessages.controls_resultset_grouping_clear, DBeaverIcons.getImageDescriptor(UIIcon.CANCEL));
+            super(resultsContainer, ResultSetMessages.controls_resultset_grouping_clear,
+                DBeaverIcons.getImageDescriptor(UIIcon.CLEAN));
         }
 
         @Override
@@ -252,8 +267,9 @@ public class GroupingPanel implements IResultSetPanel {
     class DefaultSortingAction extends Action {
 
         DefaultSortingAction() {
-            super(ResultSetMessages.controls_resultset_grouping_default_sorting, Action.AS_DROP_DOWN_MENU);
+            super(ResultSetMessages.dialog_toolbar_sort, Action.AS_DROP_DOWN_MENU);
             setImageDescriptor(DBeaverIcons.getImageDescriptor(UIIcon.SORT_CONFIG));
+            setToolTipText(ResultSetMessages.controls_resultset_grouping_default_sorting);
         }
 
         @Override
@@ -274,9 +290,10 @@ public class GroupingPanel implements IResultSetPanel {
         ChangeSortingAction(Boolean descending) {
             super(descending == null ?
                 ResultSetMessages.grouping_panel_sorting_action_unsorted :
-                (descending ? ResultSetMessages.grouping_panel_sorting_action_decending : ResultSetMessages.grouping_panel_sorting_action_ascending),
-                Action.AS_CHECK_BOX);
-            setImageDescriptor(DBeaverIcons.getImageDescriptor(descending == null ? UIIcon.SORT_UNKNOWN : (descending ? UIIcon.SORT_INCREASE : UIIcon.SORT_DECREASE)));
+                (descending ?
+                    ResultSetMessages.grouping_panel_sorting_action_decending :
+                    ResultSetMessages.grouping_panel_sorting_action_ascending),
+                Action.AS_RADIO_BUTTON);
             this.descending = descending;
         }
 

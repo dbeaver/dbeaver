@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,9 +26,12 @@ import org.antlr.v4.runtime.tree.TerminalNode;
 import org.antlr.v4.runtime.tree.Trees;
 import org.jkiss.code.NotNull;
 
+
 public class STMTreeRuleNode extends ParserRuleContext implements STMTreeNode {
     
     private String nodeName = null;
+
+    private boolean hasErrorChildren = false;
     
     public STMTreeRuleNode() {
         super();
@@ -36,6 +39,16 @@ public class STMTreeRuleNode extends ParserRuleContext implements STMTreeNode {
     
     public STMTreeRuleNode(@NotNull ParserRuleContext parent, int invokingStateNumber) {
         super(parent, invokingStateNumber);
+    }
+    
+    @Override
+    public int getAtnState() {
+        return super.invokingState;
+    }
+    
+    @Override
+    public int getNodeKindId() {
+        return super.getRuleContext().getRuleIndex();
     }
 
     @Override
@@ -53,7 +66,19 @@ public class STMTreeRuleNode extends ParserRuleContext implements STMTreeNode {
     
     @NotNull
     public Interval getRealInterval() {
-        return new Interval(this.getStart().getStartIndex(), this.getStop().getStopIndex());
+        if (this.start == null || this.stop == null) {
+            return Interval.INVALID;
+        }
+        int start = this.getStart().getStartIndex();
+        int end = this.getStop().getStopIndex();
+        return new Interval(start, Math.max(start, end));
+    }
+
+    @NotNull
+    @Override
+    public String getTextContent() {
+        Interval textRange = this.getRealInterval();
+        return this.getStart().getInputStream().getText(textRange);
     }
 
     @NotNull
@@ -88,6 +113,7 @@ public class STMTreeRuleNode extends ParserRuleContext implements STMTreeNode {
         if (!(t instanceof STMTreeNode)) {
             throw new IllegalStateException();
         } else {
+            this.hasErrorChildren |= t instanceof ErrorNode;
             return super.addAnyChild(t);
         }
     }
@@ -106,5 +132,17 @@ public class STMTreeRuleNode extends ParserRuleContext implements STMTreeNode {
         } else {
             return super.addErrorNode(errorNode);
         }
+    }
+    
+    @Override
+    public STMTreeNode getChildNode(int index) {
+        return (STMTreeNode) super.getChild(index);
+    }
+
+    /**
+     * Returns true, if some parsing errors happen, while analysing this node
+     */
+    public boolean hasErrorChildren() {
+        return this.hasErrorChildren;
     }
 }

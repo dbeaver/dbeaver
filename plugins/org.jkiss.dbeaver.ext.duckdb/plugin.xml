@@ -7,7 +7,37 @@
         <meta id="duckdb_jdbc"
               class="org.jkiss.dbeaver.ext.duckdb.model.DuckMetaModel"
               driverClass="org.duckdb.DuckDBDriver"
-              dialect="generic"/>
+              dialect="duckdb"/>
     </extension>
+
+    <extension point="org.jkiss.dbeaver.sqlDialect">
+        <dialect id="duckdb"
+                 parent="generic"
+                 class="org.jkiss.dbeaver.ext.duckdb.model.DuckDBSQLDialect"
+                 label="DuckDB"
+                 description="DuckDB dialect"
+                 icon="platform:/plugin/org.jkiss.dbeaver.ext.generic/icons/duckdb_icon.png"/>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.objectManager">
+        <manager class="org.jkiss.dbeaver.ext.duckdb.edit.DuckDBSequenceManager"
+                 objectType="org.jkiss.dbeaver.ext.duckdb.model.DuckDBSequence"/>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.dataTypeProvider">
+        <provider
+                class="org.jkiss.dbeaver.ext.duckdb.model.data.DuckDBValueHandlerProvider"
+                description="DuckDB data types provider"
+                id="DuckDBValueHandlerProvider"
+                parent="GenericValueHandlerProvider"
+                label="DuckDB data types provider">
+
+            <datasource class="org.jkiss.dbeaver.ext.duckdb.model.DuckDBDataSource"/>
+            <type name="GEOMETRY"/>
+            <type name="BLOB"/>
+            <type kind="STRUCT"/>
+        </provider>
+    </extension>
+
 
 </plugin>

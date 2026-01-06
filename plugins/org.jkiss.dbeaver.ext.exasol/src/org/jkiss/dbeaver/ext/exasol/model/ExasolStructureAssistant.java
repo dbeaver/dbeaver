@@ -1,7 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2016-2016 Karl Griesser (fullref@gmail.com)
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -46,8 +45,8 @@ import java.util.Locale;
 public class ExasolStructureAssistant extends JDBCStructureAssistant<ExasolExecutionContext> {
     private static final Log log = Log.getLog(ExasolStructureAssistant.class);
 
-    private static final DBSObjectType[] SUPP_OBJ_TYPES = {ExasolObjectType.TABLE, ExasolObjectType.VIEW, ExasolObjectType.COLUMN, ExasolObjectType.SCHEMA, ExasolObjectType.SCRIPT, ExasolObjectType.FOREIGNKEY, ExasolObjectType.PRIMARYKEY};
     private static final DBSObjectType[] HYPER_LINKS_TYPES = {ExasolObjectType.TABLE, ExasolObjectType.COLUMN, ExasolObjectType.VIEW, ExasolObjectType.SCHEMA, ExasolObjectType.SCRIPT, ExasolObjectType.FOREIGNKEY, ExasolObjectType.PRIMARYKEY};
+    private static final DBSObjectType[] SUPP_OBJ_TYPES = {ExasolObjectType.TABLE, ExasolObjectType.VIEW, ExasolObjectType.COLUMN, ExasolObjectType.SCRIPT, ExasolObjectType.FOREIGNKEY, ExasolObjectType.PRIMARYKEY};
     private static final DBSObjectType[] AUTOC_OBJ_TYPES = {ExasolObjectType.TABLE, ExasolObjectType.VIEW, ExasolObjectType.COLUMN, ExasolObjectType.SCHEMA, ExasolObjectType.SCRIPT};
 
     private final ExasolDataSource dataSource;
@@ -68,21 +67,25 @@ public class ExasolStructureAssistant extends JDBCStructureAssistant<ExasolExecu
     // -----------------
     // Method Interface
     // -----------------
+    @NotNull
     @Override
     public DBSObjectType[] getSupportedObjectTypes() {
         return SUPP_OBJ_TYPES;
     }
 
+    @NotNull
     @Override
     public DBSObjectType[] getSearchObjectTypes() {
         return getSupportedObjectTypes();
     }
 
+    @NotNull
     @Override
     public DBSObjectType[] getHyperlinkObjectTypes() {
         return HYPER_LINKS_TYPES;
     }
 
+    @NotNull
     @Override
     public DBSObjectType[] getAutoCompleteObjectTypes() {
         return AUTOC_OBJ_TYPES;

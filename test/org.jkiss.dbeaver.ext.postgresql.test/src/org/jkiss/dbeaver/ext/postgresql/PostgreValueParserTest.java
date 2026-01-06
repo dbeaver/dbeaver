@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,21 +31,19 @@ import org.jkiss.dbeaver.model.impl.jdbc.data.JDBCCollection;
 import org.jkiss.dbeaver.model.impl.jdbc.data.handlers.JDBCNumberValueHandler;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.registry.formatter.DataFormatterProfile;
+import org.jkiss.junit.DBeaverUnitTest;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.mockito.junit.MockitoJUnitRunner;
 
 import java.sql.Types;
 import java.util.*;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
 
-@RunWith(MockitoJUnitRunner.class)
-public class PostgreValueParserTest {
+public class PostgreValueParserTest extends DBeaverUnitTest {
 
     private final PostgreDialect sqlDialect = new PostgreDialect();
 
@@ -168,7 +166,7 @@ public class PostgreValueParserTest {
     }
 
     @Test
-    public void convertArrayToString() {
+    public void convertArrayToStringShouldEscapeQuotesCases() {
         final Function<String[], DBDCollection> make2d = values ->
             new JDBCCollection(session.getProgressMonitor(), stringItemType, PostgreArrayValueHandler.INSTANCE, values);
 
@@ -176,7 +174,7 @@ public class PostgreValueParserTest {
             new JDBCCollection(session.getProgressMonitor(), arrayStringItemType, PostgreArrayValueHandler.INSTANCE, Arrays.stream(values).map(make2d).toArray());
 
         final BiConsumer<String, DBDCollection> tester = (expected, collection) ->
-            Assert.assertEquals(expected, PostgreArrayValueHandler.INSTANCE.getValueDisplayString(collection.getComponentType(), collection, DBDDisplayFormat.NATIVE));
+            Assert.assertEquals(expected, PostgreArrayValueHandler.INSTANCE.getValueDisplayString(collection.getComponentType(), collection, DBDDisplayFormat.UI));
 
         tester.accept("NULL", make2d.apply(null));
         tester.accept("{}", make2d.apply(new String[]{}));
@@ -184,6 +182,39 @@ public class PostgreValueParserTest {
         tester.accept("{one,two,\" four with spaces \",\"f{i,v}e\"}", make2d.apply(new String[]{"one", "two", " four with spaces ", "f{i,v}e"}));
         tester.accept("{{a,b,c},{d,e,f}}", make3d.apply(new String[][]{{"a", "b", "c"}, {"d", "e", "f"}}));
         tester.accept("{{\"\"},{\"{}\"},{\"\\\"\"}}", make3d.apply(new String[][]{{""}, {"{}"}, {"\""}}));
+    }
+
+    @Test
+    public void convertArrayToStringShouldNotEscapeQuotesForNativeFormat() {
+        final Function<String[], DBDCollection> make2d = values ->
+            new JDBCCollection(session.getProgressMonitor(), stringItemType, PostgreArrayValueHandler.INSTANCE, values);
+
+        final Function<String[][], DBDCollection> make3d = values ->
+            new JDBCCollection(
+                session.getProgressMonitor(),
+                arrayStringItemType,
+                PostgreArrayValueHandler.INSTANCE,
+                Arrays.stream(values).map(make2d).toArray()
+            );
+
+        final BiConsumer<String, DBDCollection> tester = (expected, collection) ->
+            Assert.assertEquals(
+                expected,
+                PostgreArrayValueHandler.INSTANCE.getValueDisplayString(collection.getComponentType(), collection, DBDDisplayFormat.NATIVE)
+            );
+
+        tester.accept("NULL", make2d.apply(null));
+        tester.accept("{NULL,NULL}", make2d.apply(new String[] {null, "NULL"}));
+
+        tester.accept("{}", make2d.apply(new String[] {}));
+        tester.accept("{one,two, four with spaces ,f{i,v}e}",
+            make2d.apply(new String[] {"one", "two", " four with spaces ", "f{i,v}e"})
+        );
+
+        tester.accept("{\"quote\"}", make2d.apply(new String[] {"\"quote\""}));
+
+        tester.accept("{{a,b,c},{d,e,f}}", make3d.apply(new String[][] {{"a", "b", "c"}, {"d", "e", "f"}}));
+        tester.accept("{{},{{}},{\"}}", make3d.apply(new String[][] {{""}, {"{}"}, {"\""}}));
     }
 
     @Test

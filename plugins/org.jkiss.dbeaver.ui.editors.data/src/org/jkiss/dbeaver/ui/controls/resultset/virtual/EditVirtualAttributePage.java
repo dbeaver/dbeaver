@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,6 +28,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.virtual.DBVEntityAttribute;
 import org.jkiss.dbeaver.model.virtual.DBVUtils;
 import org.jkiss.dbeaver.ui.IHelpContextIdProvider;
@@ -181,12 +182,22 @@ public class EditVirtualAttributePage extends BaseObjectEditPage implements IHel
         }
         try {
             JexlExpression parsedExpression = DBVUtils.parseExpression(expression);
-            Object result = DBVUtils.evaluateDataExpression(viewer.getModel().getAttributes(), currentRow.values, parsedExpression, nameText.getText());
+            Object result = DBVUtils.evaluateDataExpression(
+                viewer.getDataContainer(),
+                viewer.getModel().getAttributes(),
+                currentRow.values,
+                parsedExpression,
+                nameText.getText());
 
             previewText.setText(CommonUtils.toString(result));
         } catch (Exception e) {
             previewText.setText(GeneralUtils.getExpressionParseMessage(e));
         }
+    }
+
+    @Override
+    public DBSObject getObject() {
+        return vAttr;
     }
 
     @Override

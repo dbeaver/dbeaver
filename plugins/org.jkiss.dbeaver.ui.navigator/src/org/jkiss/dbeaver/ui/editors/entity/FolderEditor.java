@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,9 +17,11 @@
 package org.jkiss.dbeaver.ui.editors.entity;
 
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.action.IContributionManager;
 import org.eclipse.jface.action.Separator;
+import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
@@ -28,6 +30,7 @@ import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.IWorkbenchCommandConstants;
 import org.eclipse.ui.menus.CommandContributionItem;
 import org.eclipse.ui.part.EditorPart;
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
@@ -48,8 +51,7 @@ import java.util.List;
 /**
  * FolderEditor
  */
-public class FolderEditor extends EditorPart implements INavigatorModelView, IRefreshablePart, ISearchContextProvider
-{
+public class FolderEditor extends EditorPart implements INavigatorModelView, IRefreshablePart, ISearchContextProvider {
     private static final Log log = Log.getLog(FolderEditor.class);
 
     private FolderListControl itemControl;
@@ -57,20 +59,39 @@ public class FolderEditor extends EditorPart implements INavigatorModelView, IRe
     private int historyPosition = 0;
 
     @Override
-    public void createPartControl(Composite parent)
-    {
+    public void createPartControl(Composite parent) {
         itemControl = new FolderListControl(parent);
         itemControl.createProgressPanel();
-        itemControl.loadData();
         getSite().setSelectionProvider(itemControl.getSelectionProvider());
 
-        DBNNode rootNode = getRootNode();
-        history.add(rootNode.getNodeItemPath());
+        UIExecutionQueue.queueExec(() -> {
+            final DBNNode navigatorNode = getEditorInput().getNavigatorNode();
+            if (navigatorNode == null) {
+                // We don't have a node - can't do much.
+                getEditorSite().getPage().closeEditor(this, false);
+                return;
+            }
+
+            setTitleImage(DBeaverIcons.getImage(navigatorNode.getNodeIconDefault()));
+            setPartName(navigatorNode.getNodeDisplayName());
+
+            itemControl.setRootNode(navigatorNode);
+            itemControl.loadData();
+
+            DBNNode rootNode = getRootNode();
+            history.add(rootNode.getNodeUri());
+
+            itemControl.getSelectionProvider().setDefaultSelection(new StructuredSelection(navigatorNode));
+
+            parent.layout(true, true);
+        });
     }
 
     @Override
     public void setFocus() {
-        itemControl.setFocus();
+        if (itemControl != null) {
+            itemControl.setFocus();
+        }
     }
 
     @Override
@@ -92,11 +113,6 @@ public class FolderEditor extends EditorPart implements INavigatorModelView, IRe
     public void init(IEditorSite site, IEditorInput input) {
         setSite(site);
         setInput(input);
-        if (input != null) {
-            final DBNNode navigatorNode = getEditorInput().getNavigatorNode();
-            setTitleImage(DBeaverIcons.getImage(navigatorNode.getNodeIcon()));
-            setPartName(navigatorNode.getNodeName());
-        }
     }
 
     @Override
@@ -109,6 +125,7 @@ public class FolderEditor extends EditorPart implements INavigatorModelView, IRe
         return false;
     }
 
+    @Nullable
     @Override
     public DBNNode getRootNode() {
         return getEditorInput().getNavigatorNode();
@@ -116,14 +133,12 @@ public class FolderEditor extends EditorPart implements INavigatorModelView, IRe
 
     @Nullable
     @Override
-    public Viewer getNavigatorViewer()
-    {
-        return itemControl.getNavigatorViewer();
+    public Viewer getNavigatorViewer() {
+        return itemControl == null ? null : itemControl.getNavigatorViewer();
     }
 
     @Override
-    public RefreshResult refreshPart(Object source, boolean force)
-    {
+    public RefreshResult refreshPart(Object source, boolean force) {
         UIUtils.asyncExec(() -> {
             if (!itemControl.isDisposed()) {
                 itemControl.loadData(false);
@@ -133,20 +148,17 @@ public class FolderEditor extends EditorPart implements INavigatorModelView, IRe
     }
 
     @Override
-    public boolean isSearchPossible()
-    {
-        return itemControl.isSearchPossible();
+    public boolean isSearchPossible() {
+        return itemControl != null && itemControl.isSearchPossible();
     }
 
     @Override
-    public boolean isSearchEnabled()
-    {
-        return itemControl.isSearchEnabled();
+    public boolean isSearchEnabled() {
+        return itemControl != null && itemControl.isSearchEnabled();
     }
 
     @Override
-    public boolean performSearch(SearchType searchType)
-    {
+    public boolean performSearch(SearchType searchType) {
         return itemControl.performSearch(searchType);
     }
 
@@ -186,7 +198,7 @@ public class FolderEditor extends EditorPart implements INavigatorModelView, IRe
 
     private class FolderListControl extends ItemListControl {
         public FolderListControl(Composite parent) {
-            super(parent, SWT.SHEET, FolderEditor.this.getSite(), FolderEditor.this.getEditorInput().getNavigatorNode(), null);
+            super(parent, SWT.SHEET, FolderEditor.this.getSite(), DBWorkbench.getPlatform().getNavigatorModel().getRoot(), null);
         }
 
         @Override
@@ -209,9 +221,9 @@ public class FolderEditor extends EditorPart implements INavigatorModelView, IRe
 
         @Nullable
         @Override
-        protected Object getCellValue(Object element, ObjectColumn objectColumn, boolean formatValue) {
+        protected Object getCellValue(@NotNull Object element, @NotNull ObjectColumn objectColumn, boolean formatValue) {
             if (element instanceof DBNRoot) {
-                return objectColumn.isNameColumn(getObjectValue((DBNRoot)element)) ? ".." : "";
+                return objectColumn.isNameColumn(getObjectValue((DBNRoot) element)) ? ".." : "";
             }
             return super.getCellValue(element, objectColumn, formatValue);
         }
@@ -234,7 +246,7 @@ public class FolderEditor extends EditorPart implements INavigatorModelView, IRe
                     }
                 }
                 historyPosition++;
-                history.add(node.getNodeItemPath());
+                history.add(node.getNodeUri());
                 changeCurrentNode(node);
             } else {
                 super.openNodeEditor(node);
@@ -248,8 +260,8 @@ public class FolderEditor extends EditorPart implements INavigatorModelView, IRe
             }
             setRootNode(node);
             loadData();
-            setPartName(node.getNodeName());
-            setTitleImage(DBeaverIcons.getImage(node.getNodeIcon()));
+            setPartName(node.getNodeDisplayName());
+            setTitleImage(DBeaverIcons.getImage(node.getNodeIconDefault()));
             updateActions();
 
             // Update editor input
@@ -269,8 +281,7 @@ public class FolderEditor extends EditorPart implements INavigatorModelView, IRe
     }
 
     private boolean canOpenNode(DBNNode node) {
-        return node instanceof DBNDatabaseNode ||
-            (node instanceof DBNResource && ((DBNResource) node).getResource() instanceof IFile);
+        return node instanceof DBNDatabaseNode || node.getAdapter(IResource.class) instanceof IFile;
     }
 
 }

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,14 +19,16 @@ package org.jkiss.dbeaver.registry.network;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExtensionRegistry;
 import org.eclipse.core.runtime.Platform;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
+import org.jkiss.dbeaver.model.net.DBWHandlerRegistry;
 
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
-public class NetworkHandlerRegistry {
+public class NetworkHandlerRegistry implements DBWHandlerRegistry {
     private static NetworkHandlerRegistry instance = null;
 
     public synchronized static NetworkHandlerRegistry getInstance() {
@@ -61,13 +63,14 @@ public class NetworkHandlerRegistry {
         }
     }
 
+    @NotNull
     public List<NetworkHandlerDescriptor> getDescriptors() {
         List<NetworkHandlerDescriptor> descList = new ArrayList<>(descriptors);
         descList.removeIf(nhd -> nhd.getReplacedBy() != null);
         return descList;
     }
 
-    public NetworkHandlerDescriptor getDescriptor(String id) {
+    public NetworkHandlerDescriptor getDescriptor(@NotNull String id) {
         for (NetworkHandlerDescriptor descriptor : descriptors) {
             if (descriptor.getId().equals(id)) {
                 if (descriptor.getReplacedBy() != null) {
@@ -79,11 +82,13 @@ public class NetworkHandlerRegistry {
         return null;
     }
 
-    public List<NetworkHandlerDescriptor> getDescriptors(DBPDataSourceContainer dataSource) {
+    @NotNull
+    public List<NetworkHandlerDescriptor> getDescriptors(@NotNull DBPDataSourceContainer dataSource) {
         return getDescriptors(dataSource.getDriver());
     }
 
-    public List<NetworkHandlerDescriptor> getDescriptors(DBPDriver driver) {
+    @NotNull
+    public List<NetworkHandlerDescriptor> getDescriptors(@NotNull DBPDriver driver) {
         List<NetworkHandlerDescriptor> result = new ArrayList<>();
         for (NetworkHandlerDescriptor d : descriptors) {
             if (d.getReplacedBy() == null && !d.hasObjectTypes() || d.matches(driver)) {

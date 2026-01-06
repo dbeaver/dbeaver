@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,6 +39,8 @@ import org.eclipse.ui.handlers.HandlerUtil;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
+import org.jkiss.dbeaver.model.navigator.DBNRoot;
+import org.jkiss.dbeaver.model.rcp.RCPProject;
 import org.jkiss.dbeaver.ui.editors.EditorUtils;
 import org.jkiss.dbeaver.ui.navigator.INavigatorModelView;
 import org.jkiss.dbeaver.utils.GeneralUtils;
@@ -117,10 +119,10 @@ public abstract class GITAbstractHandler extends AbstractHandler {
             INavigatorModelView navigatorModelView = GeneralUtils.adapt(activePart, INavigatorModelView.class);
             if (navigatorModelView != null) {
                 DBNNode rootNode = navigatorModelView.getRootNode();
-                if (rootNode != null) {
+                if (!(rootNode instanceof DBNRoot) && rootNode != null) {
                     DBPProject ownerProject = rootNode.getOwnerProject();
-                    if (ownerProject != null) {
-                        return getRepositories(new StructuredSelection(ownerProject.getEclipseProject()));
+                    if (ownerProject instanceof RCPProject rcpProject) {
+                        return getRepositories(new StructuredSelection(rcpProject.getEclipseProject()));
                     }
                 }
             }

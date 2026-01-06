@@ -1,91 +1,56 @@
+/*
+ * DBeaver - Universal Database Manager
+ * Copyright (C) 2010-2025 DBeaver Corp and others
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.jkiss.dbeaver.ext.yashandb.model;
 
+import java.sql.ResultSet;
+import java.util.Collection;
+
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSEntity;
+import org.jkiss.dbeaver.model.struct.rdb.DBSTable;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTablePartition;
 
-import java.sql.ResultSet;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-
-/**
- * @Author: donghy
- * @Date: 2022/08
- * @Description:
- */
 public class YashanDBTablePartition extends YashanDBPartitionBase<YashanDBTablePhysical> implements DBSTablePartition {
 
+	private boolean subPartition;
 
-    //TMP, SAIXI测试
-    private String partitionNames;
+	protected YashanDBTablePartition(YashanDBTablePhysical yashandbTable, boolean subpartition, ResultSet dbResult) {
+		super(yashandbTable, subpartition, dbResult);
+		this.subPartition = subpartition;
+	}
 
-    //TMP
-    private String partitionType;
+	@Association
+	public Collection<YashanDBTablePartition> getSubPartitions(DBRProgressMonitor monitor) throws DBException {
+		return getParentObject().getSubPartitions(monitor, this);
+	}
 
-    private String value;
+	@Override
+	public DBSTable getParentTable() {
+		return parent;
+	}
 
-    private List<YashanDBTableColumn> columns;
+	@Override
+	public boolean isSubPartition() {
+		return this.subPartition;
+	}
 
-    public List<YashanDBTableColumn> getColumns() {
-        return columns;
-    }
-
-    public void setColumns(List<YashanDBTableColumn> columns) {
-        this.columns = columns;
-    }
-
-    public YashanDBTablePartition(
-            YashanDBTablePhysical yashandbTable,
-            boolean subpartition,
-            ResultSet dbResult) {
-        super(yashandbTable, subpartition, dbResult);
-        this.partitionType = JDBCUtils.safeGetString(dbResult, "PARTITIONING_TYPE");
-    }
-
-    @Association
-    public Collection<YashanDBTablePartition> getSubPartitions(DBRProgressMonitor monitor) throws DBException {
-        return getParentObject().getSubPartitions(monitor, this);
-    }
-
-
-    @Override
-    public DBSEntity getTable() {
-        return parent;
-    }
-
-    public String getPartitionNames() {
-        return partitionNames;
-    }
-
-    public void setPartitionNames(String partitionNames) {
-        this.partitionNames = partitionNames;
-    }
-
-    public String getPartitionType() {
-        return partitionType;
-    }
-
-    public void setPartitionType(String partitionType) {
-        this.partitionType = partitionType;
-    }
-
-    public String getValue() {
-        return value;
-    }
-
-    public void setValue(String value) {
-        this.value = value;
-    }
-
-    public void addColumn(YashanDBTableColumn column)
-    {
-        if (columns == null) {
-            columns = new ArrayList<>();
-        }
-        this.columns.add(column);
-    }
+	@Override
+	public DBSTablePartition getPartitionParent() {
+		return this.subPartition ? null : this;
+	}
 }

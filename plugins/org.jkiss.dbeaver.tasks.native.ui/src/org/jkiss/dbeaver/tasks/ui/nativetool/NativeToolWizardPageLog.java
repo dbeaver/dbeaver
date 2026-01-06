@@ -1,7 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
- * Copyright (C) 2011-2012 Eugene Fradkin (eugene.fradkin@gmail.com)
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,6 +22,7 @@ import org.eclipse.jface.text.IDocumentListener;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
@@ -69,11 +69,7 @@ public class NativeToolWizardPageLog extends WizardPage implements IWizardPageNa
         consoleViewer = new LogConsoleViewer(composite);
         console.setWaterMarks(1024*1024*3, 1024*1024*4);
 
-        try {
-            writer = new PrintStream(console.newMessageStream(), true, StandardCharsets.UTF_8.name());
-        } catch (UnsupportedEncodingException e) {
-            writer = new PrintStream(console.newMessageStream(), true);
-        }
+        writer = new PrintStream(console.newMessageStream(), true, StandardCharsets.UTF_8);
 
         setControl(composite);
     }
@@ -214,6 +210,13 @@ public class NativeToolWizardPageLog extends WizardPage implements IWizardPageNa
     private class LogConsoleViewer extends TextConsoleViewer implements IDocumentListener {
         LogConsoleViewer(Composite composite) {
             super(composite, NativeToolWizardPageLog.this.console);
+        }
+
+        @Override
+        protected void createControl(Composite parent, int styles) {
+            super.createControl(parent, styles);
+            StyledText textWidget = getTextWidget();
+            textWidget.setWordWrap(true);
         }
 
         @Override

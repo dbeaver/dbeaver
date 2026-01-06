@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ext.generic.edit;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.generic.model.GenericTable;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableBase;
@@ -43,26 +44,26 @@ public class GenericIndexManager extends SQLIndexManager<GenericTableIndex, Gene
     }
 
     @Override
-    public boolean canCreateObject(Object container) {
+    public boolean canCreateObject(@NotNull Object container) {
         return (container instanceof GenericTable)
             && ((GenericTable) container).getDataSource().getInfo().supportsIndexes()
             && ((GenericTable) container).getDataSource().getSQLDialect().supportsIndexCreateAndDrop();
     }
 
     @Override
-    public boolean canEditObject(GenericTableIndex object) {
+    public boolean canEditObject(@NotNull GenericTableIndex object) {
         return GenericUtils.canAlterTable(object);
     }
 
     @Override
-    public boolean canDeleteObject(GenericTableIndex object) {
+    public boolean canDeleteObject(@NotNull GenericTableIndex object) {
         return object.getDataSource().getSQLDialect().supportsIndexCreateAndDrop();
     }
 
     @Override
     protected GenericTableIndex createDatabaseObject(
-        DBRProgressMonitor monitor, DBECommandContext context, final Object container,
-        Object from, Map<String, Object> options)
+        @NotNull DBRProgressMonitor monitor, @NotNull DBECommandContext context, final Object container,
+        Object from, @NotNull Map<String, Object> options)
     {
         GenericTableBase tableBase = (GenericTableBase) container;
         return tableBase.getDataSource().getMetaModel().createIndexImpl(

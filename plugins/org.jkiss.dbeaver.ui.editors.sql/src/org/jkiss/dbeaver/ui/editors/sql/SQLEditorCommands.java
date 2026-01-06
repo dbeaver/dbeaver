@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,6 +34,7 @@ public interface SQLEditorCommands
     String CMD_EXECUTE_ALL_ROWS = "org.jkiss.dbeaver.ui.editors.sql.run.all.rows"; //$NON-NLS-1$
     String CMD_EXPLAIN_PLAN = "org.jkiss.dbeaver.ui.editors.sql.run.explain"; //$NON-NLS-1$
     String CMD_LOAD_PLAN = "org.jkiss.dbeaver.ui.editors.sql.load.plan"; //$NON-NLS-1$
+    String CMD_MULTIPLE_RESULTS_PER_TAB = "org.jkiss.dbeaver.ui.editors.sql.multipleResultsPerTab"; //$NON-NLS-1$
     String CMD_SQL_EDITOR_DEF_COMMAND = "org.jkiss.dbeaver.core.sql.editor.defaultCommand";
     String CMD_SQL_EDITOR_OPEN = "org.jkiss.dbeaver.core.sql.editor.open";
     String CMD_SQL_EDITOR_NEW = "org.jkiss.dbeaver.core.sql.editor.create";
@@ -42,10 +43,12 @@ public interface SQLEditorCommands
     String CMD_SQL_QUERY_NEXT = "org.jkiss.dbeaver.ui.editors.sql.query.next";
     String CMD_SQL_QUERY_PREV = "org.jkiss.dbeaver.ui.editors.sql.query.prev";
     String CMD_SQL_GOTO_MATCHING_BRACKET = "org.jkiss.dbeaver.ui.editors.sql.gotoMatchingBracket";
+    String CMD_SQL_SELECT_TO_MATCHING_BRACKET = "org.jkiss.dbeaver.ui.editors.sql.selectToMatchingBracket";
     String CMD_SQL_SWITCH_PANEL = "org.jkiss.dbeaver.ui.editors.sql.switch.panel";
     String CMD_SQL_SHOW_OUTPUT = "org.jkiss.dbeaver.ui.editors.sql.show.output";
     String CMD_SQL_SHOW_LOG = "org.jkiss.dbeaver.ui.editors.sql.show.log";
     String CMD_SQL_SHOW_VARIABLES = "org.jkiss.dbeaver.ui.editors.sql.show.variables";
+    String CMD_SQL_SHOW_OUTLINE = "org.jkiss.dbeaver.ui.editors.sql.show.outline";
     String CMD_SQL_EDITOR_MAXIMIZE_PANEL = "org.jkiss.dbeaver.ui.editors.sql.maximize.result.panel";
     String CMD_SQL_EDITOR_CLOSE_TAB = "org.jkiss.dbeaver.ui.editors.sql.close.tab";
     String CMD_SQL_EDITOR_TOGGLE_TAB_PINNED = "org.jkiss.dbeaver.ui.editors.sql.toggle.pinned.tab";
@@ -61,4 +64,6 @@ public interface SQLEditorCommands
     String CMD_TOGGLE_LAYOUT = "org.jkiss.dbeaver.ui.editors.sql.toggleLayout";
     String CMD_TOGGLE_SEPARATE_CONNECTION = "org.jkiss.dbeaver.ui.editors.sql.connection.separate";
 
+    String CMD_AI_SUGGESTION = "com.dbeaver.ai.sql.suggestion";
+    String CMD_AI_CHAT_TOGGLE = "com.dbeaver.ai.chat.toggle"; //$NON-NLS-1$
 }

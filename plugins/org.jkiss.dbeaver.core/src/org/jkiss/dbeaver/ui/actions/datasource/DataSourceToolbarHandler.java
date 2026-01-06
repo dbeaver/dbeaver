@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.ui.*;
 import org.eclipse.ui.internal.WorkbenchWindow;
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPEvent;
@@ -132,14 +133,14 @@ public class DataSourceToolbarHandler implements DBPRegistryListener, DBPEventLi
 
     public void setActivePart(@Nullable IWorkbenchPart part) {
         activePart = part;
-        if (activePart instanceof IEditorPart) {
+        {
             updateToolbar();
         }
         DataSourceToolbarUtils.triggerRefreshReadonlyElement();
     }
 
     @Override
-    public void handleDataSourceEvent(final DBPEvent event) {
+    public void handleDataSourceEvent(@NotNull final DBPEvent event) {
         if (workbenchWindow.getWorkbench().isClosing()) {
             return;
         }
@@ -178,13 +179,13 @@ public class DataSourceToolbarHandler implements DBPRegistryListener, DBPEventLi
     }
 
     @Override
-    public void handleRegistryLoad(DBPDataSourceRegistry registry) {
+    public void handleRegistryLoad(@NotNull DBPDataSourceRegistry registry) {
         registry.addDataSourceListener(this);
         handledRegistries.add(registry);
     }
 
     @Override
-    public void handleRegistryUnload(DBPDataSourceRegistry registry) {
+    public void handleRegistryUnload(@NotNull DBPDataSourceRegistry registry) {
         handledRegistries.remove(registry);
         registry.removeDataSourceListener(this);
     }

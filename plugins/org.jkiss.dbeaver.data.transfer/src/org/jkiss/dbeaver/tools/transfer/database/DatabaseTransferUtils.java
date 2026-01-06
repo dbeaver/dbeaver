@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.sql.edit.SQLObjectEditor;
 import org.jkiss.dbeaver.model.navigator.DBNModel;
 import org.jkiss.dbeaver.model.navigator.DBNUtils;
+import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
@@ -38,6 +39,7 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.properties.ObjectPropertyDescriptor;
 import org.jkiss.dbeaver.runtime.properties.PropertySourceEditable;
+import org.jkiss.dbeaver.tools.transfer.internal.DTActivator;
 import org.jkiss.utils.BeanUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.Pair;
@@ -55,9 +57,11 @@ public class DatabaseTransferUtils {
 
     private static final Pair<DBPDataKind, String> DATA_TYPE_UNKNOWN = new Pair<>(DBPDataKind.UNKNOWN, null);
     private static final Pair<DBPDataKind, String> DATA_TYPE_INTEGER = new Pair<>(DBPDataKind.NUMERIC, "INTEGER");
+    private static final Pair<DBPDataKind, String> DATA_TYPE_BIGINT = new Pair<>(DBPDataKind.NUMERIC, "BIGINT");
     private static final Pair<DBPDataKind, String> DATA_TYPE_REAL = new Pair<>(DBPDataKind.NUMERIC, "REAL");
     private static final Pair<DBPDataKind, String> DATA_TYPE_BOOLEAN = new Pair<>(DBPDataKind.BOOLEAN, "BOOLEAN");
     private static final Pair<DBPDataKind, String> DATA_TYPE_STRING = new Pair<>(DBPDataKind.STRING, "VARCHAR");
+    private static final Pair<DBPDataKind, String> DATA_TYPE_NATIONAL_STRING = new Pair<>(DBPDataKind.STRING, "NVARCHAR");
 
     public static void refreshDatabaseModel(DBRProgressMonitor monitor, DatabaseConsumerSettings consumerSettings, DatabaseMappingContainer containerMapping) throws DBException {
         monitor.subTask("Refresh database model");
@@ -78,6 +82,7 @@ public class DatabaseTransferUtils {
         DBSObjectContainer container = consumerSettings.getContainer();
         if (container == null) {
             log.debug("Null target container");
+            return;
         }
         if (containerMapping == null) {
             log.debug("Null container mapping");
@@ -86,8 +91,6 @@ public class DatabaseTransferUtils {
 
         // Reflect database changes in mappings
         {
-            monitor.subTask("Refresh database mappings");
-
             boolean updateMappingTarget = false;
             boolean updateMappingAttributes = false;
 
@@ -106,6 +109,8 @@ public class DatabaseTransferUtils {
             }
 
             if (updateMappingTarget || force) {
+                monitor.subTask("Refresh database mappings");
+
                 DBSObject newTarget = container.getChild(monitor, DBUtils.getUnQuotedIdentifier(container.getDataSource(), containerMapping.getTargetName()));
                 if (newTarget == null) {
                     throw new DBCException("New table " + containerMapping.getTargetName() + " not found in container " + DBUtils.getObjectFullName(container, DBPEvaluationContext.UI));
@@ -190,7 +195,12 @@ public class DatabaseTransferUtils {
         DBPDataSource dataSource = executionContext.getDataSource();
         StringBuilder sql = new StringBuilder(500);
 
-        String tableName = DBObjectNameCaseTransformer.transformName(dataSource, containerMapping.getTargetName());
+        String tableName;
+        if (containerMapping.getMappingType() == DatabaseMappingType.create) {
+            tableName = getTransformedName(dataSource, containerMapping.getTargetName(), false);
+        } else {
+            tableName = DBObjectNameCaseTransformer.transformName(dataSource, containerMapping.getTargetName());
+        }
         containerMapping.setTargetName(tableName);
 
         if (CommonUtils.isEmpty(tableName)) {
@@ -253,6 +263,47 @@ public class DatabaseTransferUtils {
             }
         }
         return actions.toArray(new DBEPersistAction[0]);
+    }
+
+    /**
+     * Transform target mapping name by mapping rules (if we have them)
+     *
+     * @param dataSource for preferences and dialect info
+     * @param targetName name for transformation
+     * @param skipCaseChanging true if we do not want to change name case of the original name
+     * @return transformed target name (container or attribute)
+     */
+    @NotNull
+    public static String getTransformedName(@NotNull DBPDataSource dataSource, @NotNull String targetName, boolean skipCaseChanging) {
+        String finalName = targetName;
+        DBPPreferenceStore dbpPreferenceStore = dataSource.getContainer().getPreferenceStore();
+        DBPPreferenceStore store = DTActivator.getDefault().getPreferences();
+        MappingNameCase nameCase = MappingNameCase.getCaseFromPreferences(dbpPreferenceStore, store);
+        MappingReplaceMechanism mechanism = MappingReplaceMechanism.getCaseFromPreferences(dbpPreferenceStore, store);
+        if (nameCase != MappingNameCase.DEFAULT) {
+            finalName = nameCase.getIdentifierCase().transform(targetName);
+        } else if (!skipCaseChanging && mechanism != MappingReplaceMechanism.CAMELCASE) {
+            finalName = DBObjectNameCaseTransformer.transformName(dataSource, targetName);
+        }
+        if (mechanism != MappingReplaceMechanism.ABSENT && CommonUtils.isNotEmpty(finalName) && finalName.contains(" ")) {
+            if (MappingReplaceMechanism.UNDERSCORES == mechanism) {
+                finalName = finalName.replaceAll(" ", "_");
+            } else if (MappingReplaceMechanism.CAMELCASE == mechanism
+                && !(nameCase == MappingNameCase.DEFAULT && dataSource.getSQLDialect().storesUnquotedCase() == DBPIdentifierCase.UPPER)
+                && nameCase != MappingNameCase.UPPER // No need to transform upper case names
+            ) {
+                String camelCaseName = CommonUtils.toCamelCase(finalName);
+                if (CommonUtils.isNotEmpty(camelCaseName)) {
+                    finalName = camelCaseName.replaceAll(" ", "");
+                }
+            }
+        }
+        if (CommonUtils.isNotEmpty(finalName)) {
+            // Add quotes for the result name if needed
+            return DBUtils.getQuotedIdentifier(dataSource, finalName);
+        }
+        log.debug("Can't transform target attribute name");
+        return targetName;
     }
 
     private static void getTableFullName(@Nullable DBSObjectContainer schema, @NotNull DBPDataSource dataSource, @NotNull StringBuilder sql, @NotNull String tableName) {
@@ -343,7 +394,7 @@ public class DatabaseTransferUtils {
             {
                 table = tableManager.createNewObject(monitor, commandContext, schema, null, options);
                 applyPropertyChanges(monitor, changedProperties, commandContext, containerMapping, table);
-                tableFinalName = getTableFinalName(containerMapping.getTargetName(), tableClass, table);
+                tableFinalName = getTableFinalName(containerMapping.getTargetName(), tableClass, table, true);
                 createCommand = tableManager.makeCreateCommand(table, options);
             } else {
                 table = (DBSEntity) containerMapping.getTarget();
@@ -359,7 +410,7 @@ public class DatabaseTransferUtils {
                         null,
                         options);
                     applyPropertyChanges(monitor, changedProperties, commandContext, containerMapping, table);
-                    tableFinalName = getTableFinalName(containerMapping.getTargetName(), tableClass, table);
+                    tableFinalName = getTableFinalName(containerMapping.getTargetName(), tableClass, table, false);
                     createCommand = tableManager.makeCreateCommand(table, options);
                 } else {
                     tableFinalName = table.getName();
@@ -376,8 +427,7 @@ public class DatabaseTransferUtils {
                         throw new DBException("Table column name cannot be set for " + attrClass.getName());
                     }
                     ((DBPNamedObject2) newAttribute).setName(
-                        DBObjectNameCaseTransformer.transformName(newAttribute.getDataSource(),
-                            attributeMapping.getTargetName()));
+                        getTransformedName(newAttribute.getDataSource(), attributeMapping.getTargetName(), false));
 
                     // Set attribute properties
                     if (newAttribute instanceof DBSTypedObjectExt2) {
@@ -456,11 +506,24 @@ public class DatabaseTransferUtils {
         }
     }
 
-    private static String getTableFinalName(String targetName, @NotNull Class<? extends DBSObject> tableClass, DBSEntity table) throws DBException {
+    private static String getTableFinalName(
+        String targetName,
+        @NotNull Class<? extends DBSObject> tableClass,
+        DBSEntity table,
+        boolean extraTransform
+    ) throws DBException {
         if (table == null) {
             throw new DBException("Internal error - target table not set");
         }
-        String tableFinalName = DBObjectNameCaseTransformer.transformName(table.getDataSource(), targetName);
+        if (table.getDataSource() == null) {
+            return targetName;
+        }
+        String tableFinalName;
+        if (extraTransform) {
+            tableFinalName = getTransformedName(table.getDataSource(), targetName, false);
+        } else {
+            tableFinalName = DBObjectNameCaseTransformer.transformName(table.getDataSource(), targetName);
+        }
         if (table instanceof DBPNamedObject2) {
             ((DBPNamedObject2) table).setName(tableFinalName);
         } else {
@@ -479,14 +542,18 @@ public class DatabaseTransferUtils {
     }
 
     private static void appendAttributeClause(DBPDataSource dataSource, StringBuilder sql, DatabaseMappingAttribute attr) {
-        String attrName = DBObjectNameCaseTransformer.transformName(dataSource, attr.getTargetName());
+        String attrName = getTransformedName(dataSource, attr.getTargetName(), false);
         sql.append(DBUtils.getQuotedIdentifier(dataSource, attrName)).append(" ").append(attr.getTargetType(dataSource, true));
         if (SQLUtils.getDialectFromDataSource(dataSource).supportsNullability()) {
             if (attr.getSource().isRequired()) sql.append(" NOT NULL");
         }
     }
 
-    public static void executeDDL(DBCSession session, DBEPersistAction[] actions) throws DBCException {
+    public static void executeDDL(DBCSession session, DBEPersistAction[] actions) throws DBException {
+        if (actions.length == 0) {
+            return;
+        }
+        ensureHasEditMetadataPermission(session.getDataSource().getContainer());
         // Process actions
         DBExecUtils.executePersistActions(session, actions);
         // Commit DDL changes
@@ -497,6 +564,7 @@ public class DatabaseTransferUtils {
     }
 
     static void createTargetDynamicTable(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext executionContext, @NotNull DBSObjectContainer schema, @NotNull DatabaseMappingContainer containerMapping, boolean recreate) throws DBException {
+        ensureHasEditMetadataPermission(executionContext.getDataSource().getContainer());
         final DBERegistry editorsRegistry = DBWorkbench.getPlatform().getEditorsRegistry();
 
         Class<? extends DBSObject> tableClass = getTableClass(monitor, schema);
@@ -520,27 +588,57 @@ public class DatabaseTransferUtils {
         commandContext.saveChanges(monitor, options);
     }
 
-    public static Pair<DBPDataKind, String> getDataType(String value) {
+    @NotNull
+    public static Pair<DBPDataKind, String> getDataType(@Nullable String value) {
         if (CommonUtils.isEmpty(value)) {
             return DATA_TYPE_UNKNOWN;
         }
+
         char firstChar = value.charAt(0);
-        if (Character.isDigit(firstChar) || firstChar == '+' || firstChar == '-' || firstChar == '.') {
-            try {
-                Long.parseLong(value);
-                return DATA_TYPE_INTEGER;
-            } catch (NumberFormatException ignored) {
-            }
-            try {
-                Double.parseDouble(value);
-                return DATA_TYPE_REAL;
-            } catch (NumberFormatException ignored) {
+        if (isNumericStart(firstChar)) {
+            Pair<DBPDataKind, String> numeric = tryClassifyNumber(value);
+            if (numeric != null) {
+                return numeric;
             }
         }
+
         if (value.equalsIgnoreCase("true") || value.equalsIgnoreCase("false")) {
             return DATA_TYPE_BOOLEAN;
         }
+        if (!SQLUtils.isLatinLetter(firstChar)) {
+            return DATA_TYPE_NATIONAL_STRING;
+        }
         return DATA_TYPE_STRING;
+    }
+
+    private static boolean isNumericStart(char c) {
+        return Character.isDigit(c) || c == '+' || c == '-' || c == '.';
+    }
+
+    @Nullable
+    private static Pair<DBPDataKind, String> tryClassifyNumber(@NotNull String value) {
+        try {
+            Integer.parseInt(value);
+            return DATA_TYPE_INTEGER;
+        } catch (NumberFormatException ignore) {
+        }
+        try {
+            Long.parseLong(value);
+            return DATA_TYPE_BIGINT;
+        } catch (NumberFormatException ignore) {
+        }
+        try {
+            Double.parseDouble(value);
+            return DATA_TYPE_REAL;
+        } catch (NumberFormatException ignore) {
+            return null;
+        }
+    }
+
+    private static void ensureHasEditMetadataPermission(@NotNull DBPDataSourceContainer container) throws DBCException {
+        if (!container.hasModifyPermission(DBPDataSourcePermission.PERMISSION_EDIT_METADATA)) {
+            throw new DBCException("New table creation in database [" + container.getName() + "] restricted by connection configuration");
+        }
     }
 
     static class TargetCommandContext extends AbstractCommandContext {

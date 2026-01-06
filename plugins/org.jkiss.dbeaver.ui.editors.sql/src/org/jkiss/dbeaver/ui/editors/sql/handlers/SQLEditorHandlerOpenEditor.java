@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,17 +33,14 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPContextProvider;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPDataSourceContainerProvider;
-import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
 import org.jkiss.dbeaver.model.app.DBPPlatformDesktop;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.app.DBPResourceHandler;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
-import org.jkiss.dbeaver.model.navigator.DBNDataSource;
-import org.jkiss.dbeaver.model.navigator.DBNLocalFolder;
 import org.jkiss.dbeaver.model.navigator.DBNResource;
+import org.jkiss.dbeaver.model.rcp.RCPProject;
 import org.jkiss.dbeaver.model.rm.RMConstants;
-import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.actions.AbstractDataSourceHandler;
@@ -61,7 +58,6 @@ import org.jkiss.dbeaver.ui.navigator.dialogs.SelectDataSourceDialog;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class SQLEditorHandlerOpenEditor extends AbstractDataSourceHandler {
@@ -80,7 +76,10 @@ public class SQLEditorHandlerOpenEditor extends AbstractDataSourceHandler {
                 handler.openResource(resource);
             }
         } catch (Exception e) {
-            DBWorkbench.getPlatformUI().showError(UINavigatorMessages.actions_navigator_error_dialog_open_resource_title, "Can't open resource '" + resource.getName() + "'", e); //$NON-NLS-3$
+            DBWorkbench.getPlatformUI().showError(
+                UINavigatorMessages.actions_navigator_error_dialog_open_resource_title,
+                "Can't open resource '" + resource.getName() + "'",
+                e); //$NON-NLS-3$
         }
     }
 
@@ -138,7 +137,7 @@ public class SQLEditorHandlerOpenEditor extends AbstractDataSourceHandler {
         return null;
     }
 
-    private static void openEditor(ExecutionEvent event) throws ExecutionException, CoreException, InterruptedException {
+    private static void openEditor(ExecutionEvent event) throws CoreException, InterruptedException {
         SQLNavigatorContext editorContext = getCurrentContext(event);
         IWorkbenchWindow workbenchWindow = HandlerUtil.getActiveWorkbenchWindow(event);
 
@@ -146,7 +145,7 @@ public class SQLEditorHandlerOpenEditor extends AbstractDataSourceHandler {
     }
 
     private static void openEditor(IWorkbenchWindow workbenchWindow, SQLNavigatorContext editorContext) throws CoreException {
-        DBPProject project = editorContext.getProject();
+        RCPProject project = editorContext.getProject();
         checkProjectIsOpen(project);
 
         final IFolder rootFolder = SQLEditorUtils.getScriptsFolder(project, true);
@@ -186,7 +185,6 @@ public class SQLEditorHandlerOpenEditor extends AbstractDataSourceHandler {
     }
 
     private static void openNewEditor(ExecutionEvent event) throws CoreException, InterruptedException {
-        IWorkbenchWindow workbenchWindow = HandlerUtil.getActiveWorkbenchWindow(event);
         SQLNavigatorContext context = getCurrentContext(event);
 
         openNewEditor(context, HandlerUtil.getCurrentSelection(event));
@@ -220,39 +218,6 @@ public class SQLEditorHandlerOpenEditor extends AbstractDataSourceHandler {
         return context;
     }
 
-    private static List<DBPDataSourceContainer> getDataSourceContainers(ExecutionEvent event) {
-        List<DBPDataSourceContainer> containers = new ArrayList<>();
-        ISelection selection = HandlerUtil.getCurrentSelection(event);
-        if (selection instanceof IStructuredSelection) {
-            for (Object obj : ((IStructuredSelection) selection).toArray()) {
-                if (obj instanceof DBNLocalFolder) {
-                    for (DBNDataSource ds : ((DBNLocalFolder) obj).getDataSources()) {
-                        containers.add(ds.getDataSourceContainer());
-                    }
-                } else {
-                    DBSObject selectedObject = DBUtils.getFromObject(obj);
-                    if (selectedObject != null) {
-                        if (selectedObject instanceof DBPDataSourceContainer) {
-                            containers.add((DBPDataSourceContainer) selectedObject);
-                        } else {
-                            containers.add(selectedObject.getDataSource().getContainer());
-                        }
-                    }
-                }
-            }
-        }
-
-        if (containers.isEmpty()) {
-            IWorkbenchPart activePart = HandlerUtil.getActivePart(event);
-            DBPDataSourceContainer partContainer = getDataSourceContainers(activePart);
-            if (partContainer != null) {
-                containers.add(partContainer);
-            }
-        }
-
-        return containers;
-    }
-
     private static DBPDataSourceContainer getDataSourceContainers(IWorkbenchPart activePart) {
         if (activePart instanceof DBPDataSourceContainerProvider) {
             return ((DBPDataSourceContainerProvider) activePart).getDataSourceContainer();
@@ -264,8 +229,12 @@ public class SQLEditorHandlerOpenEditor extends AbstractDataSourceHandler {
         return null;
     }
 
-    public static void openRecentScript(@NotNull IWorkbenchWindow workbenchWindow, @NotNull SQLNavigatorContext editorContext, @Nullable IFolder scriptFolder) throws CoreException {
-        final DBPProject project = editorContext.getProject();
+    public static void openRecentScript(
+        @NotNull IWorkbenchWindow workbenchWindow,
+        @NotNull SQLNavigatorContext editorContext,
+        @Nullable IFolder scriptFolder
+    ) throws CoreException {
+        final RCPProject project = editorContext.getProject();
         checkProjectIsOpen(project);
         SQLEditorUtils.ResourceInfo res = SQLEditorUtils.findRecentScript(project, editorContext);
         if (res != null) {
@@ -305,21 +274,63 @@ public class SQLEditorHandlerOpenEditor extends AbstractDataSourceHandler {
         return openSQLConsole(workbenchWindow, context, sqlInput);
     }
 
-    public static SQLEditor openSQLConsole(IWorkbenchWindow workbenchWindow, SQLNavigatorContext context, IEditorInput sqlInput) {
+    public static SQLEditor openSQLConsole(
+        @NotNull IWorkbenchWindow workbenchWindow,
+        @NotNull SQLNavigatorContext context,
+        @NotNull IEditorInput sqlInput
+    ) {
         EditorUtils.setInputDataSource(sqlInput, context);
         return openSQLEditor(workbenchWindow, sqlInput);
     }
 
+    /**
+     * Open a new SQL console editor.
+     * <p>
+     * This method always opens a new editor instance even if an editor with the same input
+     * is already opened. The provided {@code sqlInput} will be associated with the
+     * supplied {@code context}.
+     * </p>
+     *
+     * @param workbenchWindow the workbench window used to open the editor (must not be null)
+     * @param context the navigator context that provides project and datasource information (must not be null)
+     * @param sqlInput the editor input to open (must not be null). May be an instance of
+     *                 {@link INonPersistentEditorInput} for transient consoles.
+     * @return the opened {@link SQLEditor} instance or {@code null} if the editor could not be opened
+     */
+    @Nullable
+    public static SQLEditor openNewSQLConsole(
+        @NotNull IWorkbenchWindow workbenchWindow,
+        @NotNull SQLNavigatorContext context,
+        @NotNull IEditorInput sqlInput
+    ) {
+        EditorUtils.setInputDataSource(sqlInput, context);
+        return openSQLEditor(workbenchWindow, sqlInput, IWorkbenchPage.MATCH_NONE);
+    }
+
     private static SQLEditor openSQLEditor(
-        IWorkbenchWindow workbenchWindow,
-        IEditorInput sqlInput) {
+        @NotNull IWorkbenchWindow workbenchWindow,
+        @NotNull IEditorInput sqlInput
+    ) {
+        boolean isConsole = sqlInput instanceof INonPersistentEditorInput;
+        return openSQLEditor(
+            workbenchWindow,
+            sqlInput,
+            isConsole ? IWorkbenchPage.MATCH_NONE : IWorkbenchPage.MATCH_INPUT
+        );
+    }
+
+    private static SQLEditor openSQLEditor(
+        @NotNull IWorkbenchWindow workbenchWindow,
+        @NotNull IEditorInput sqlInput,
+        int matchFlags
+    ) {
         try {
-            boolean isConsole = sqlInput instanceof INonPersistentEditorInput;
             return (SQLEditor) workbenchWindow.getActivePage().openEditor(
                 sqlInput,
                 SQLEditor.class.getName(),
                 true,
-                isConsole ? IWorkbenchPage.MATCH_NONE : IWorkbenchPage.MATCH_INPUT);
+                matchFlags
+            );
         } catch (PartInitException e) {
             DBWorkbench.getPlatformUI().showError("Can't open editor", null, e);
         }

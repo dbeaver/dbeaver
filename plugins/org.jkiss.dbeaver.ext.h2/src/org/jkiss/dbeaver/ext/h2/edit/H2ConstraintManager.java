@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ext.h2.edit;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.generic.edit.GenericPrimaryKeyManager;
 import org.jkiss.dbeaver.ext.generic.model.GenericStructContainer;
@@ -40,7 +41,7 @@ import java.util.Map;
 public class H2ConstraintManager extends GenericPrimaryKeyManager {
 
     @Override
-    protected void addObjectCreateActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, ObjectCreateCommand command, Map<String, Object> options) {
+    protected void addObjectCreateActions(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext executionContext, @NotNull List<DBEPersistAction> actions, @NotNull ObjectCreateCommand command, @NotNull Map<String, Object> options) {
         GenericUniqueKey key = command.getObject();
         GenericStructContainer container = key.getParentObject().getParentObject();
         if (key.getConstraintType() == DBSEntityConstraintType.CHECK && key instanceof H2Constraint && container != null) {
@@ -70,7 +71,7 @@ public class H2ConstraintManager extends GenericPrimaryKeyManager {
     }
 
     @Override
-    protected void addObjectExtraActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, NestedObjectCommand<GenericUniqueKey, PropertyHandler> command, Map<String, Object> options) throws DBException {
+    protected void addObjectExtraActions(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext executionContext, @NotNull List<DBEPersistAction> actions, @NotNull NestedObjectCommand<GenericUniqueKey, PropertyHandler> command, @NotNull Map<String, Object> options) throws DBException {
         GenericUniqueKey constraint = command.getObject();
         GenericStructContainer container = constraint.getParentObject().getParentObject();
         if (container != null && command.getProperties().containsKey(DBConstants.PROP_ID_DESCRIPTION)) {
@@ -80,15 +81,6 @@ public class H2ConstraintManager extends GenericPrimaryKeyManager {
                         SQLUtils.quoteString(constraint, CommonUtils.notEmpty(constraint.getDescription()))
                 )
             );
-        }
-    }
-
-    @Override
-    protected void appendConstraintDefinition(StringBuilder decl, DBECommandAbstract<GenericUniqueKey> command) {
-        if (command.getObject().getConstraintType() == DBSEntityConstraintType.CHECK) {
-            decl.append("(").append(((H2Constraint)command.getObject()).getCheckConstraintDefinition()).append(")");
-        } else {
-            super.appendConstraintDefinition(decl, command);
         }
     }
 }

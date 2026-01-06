@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,13 +19,12 @@ package org.jkiss.dbeaver.registry;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExtensionRegistry;
 import org.eclipse.core.runtime.Platform;
+import org.jkiss.api.CompositeObjectId;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.DBConfigurationController;
-import org.jkiss.dbeaver.model.DBPDataSourceContainer;
-import org.jkiss.dbeaver.model.DBPDataSourceOriginProvider;
-import org.jkiss.dbeaver.model.DBPDataSourcePermission;
+import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.app.DBPRegistryListener;
 import org.jkiss.dbeaver.model.connection.*;
 import org.jkiss.dbeaver.model.impl.preferences.SimplePreferenceStore;
@@ -51,6 +50,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 public class DataSourceProviderRegistry implements DBPDataSourceProviderRegistry {
@@ -58,7 +58,7 @@ public class DataSourceProviderRegistry implements DBPDataSourceProviderRegistry
 
     private static DataSourceProviderRegistry instance = null;
 
-    public synchronized static DataSourceProviderRegistry getInstance() {
+    public static synchronized DataSourceProviderRegistry getInstance() {
         if (instance == null) {
             instance = new DataSourceProviderRegistry();
             instance.loadExtensions(Platform.getExtensionRegistry());
@@ -67,6 +67,7 @@ public class DataSourceProviderRegistry implements DBPDataSourceProviderRegistry
     }
 
     private final List<DataSourceProviderDescriptor> dataSourceProviders = new ArrayList<>();
+    private final Map<String, DataSourceProviderDescriptor> dataSourceProvidersMap = new HashMap<>();
     private final List<DBPRegistryListener> registryListeners = new ArrayList<>();
     private final List<DataSourceHandlerDescriptor> dataSourceHandlers = new ArrayList<>();
     private final Map<String, DBPConnectionType> connectionTypes = new LinkedHashMap<>();
@@ -83,15 +84,16 @@ public class DataSourceProviderRegistry implements DBPDataSourceProviderRegistry
     private final Map<String, DataSourceOriginProviderDescriptor> dataSourceOrigins = new LinkedHashMap<>();
     private final Map<String, DBPDriverSubstitutionDescriptor> driverSubstitutions = new HashMap<>();
 
+
     private DataSourceProviderRegistry() {
         globalDataSourcePreferenceStore = new SimplePreferenceStore() {
             @Override
-            public void addPropertyChangeListener(DBPPreferenceListener listener) {
+            public void addPropertyChangeListener(@NotNull DBPPreferenceListener listener) {
                 super.addPropertyChangeListener(listener);
             }
 
             @Override
-            public void removePropertyChangeListener(DBPPreferenceListener listener) {
+            public void removePropertyChangeListener(@NotNull DBPPreferenceListener listener) {
                 super.removePropertyChangeListener(listener);
             }
 
@@ -100,28 +102,35 @@ public class DataSourceProviderRegistry implements DBPDataSourceProviderRegistry
                 // do nothing
             }
         };
+        WorkspaceConfigEventManager.addConfigChangedListener(DriverDescriptorSerializerLegacy.DRIVERS_FILE_NAME,
+            o -> onDriversConfigChanged()
+        );
+    }
+
+    private void onDriversConfigChanged() {
+        // Delete custom drivers because they are removed from drivers.xml
+        for (DataSourceProviderDescriptor dsp : dataSourceProviders) {
+            dsp.removeCustomAndDisabledDrivers();
+        }
+        readDriversConfig();
+
+        fireRegistryReload();
     }
 
     private void loadExtensions(IExtensionRegistry registry) {
         // Load datasource providers from external plugins
         {
-            IConfigurationElement[] extElements = registry.getConfigurationElementsFor(DataSourceProviderDescriptor.EXTENSION_ID);
             // Sort - parse providers with parent in the end
-            Arrays.sort(extElements, (o1, o2) -> {
-                String p1 = o1.getAttribute(RegistryConstants.ATTR_PARENT);
-                String p2 = o2.getAttribute(RegistryConstants.ATTR_PARENT);
-                if (CommonUtils.equalObjects(p1, p2)) return 0;
-                if (p1 == null) return -1;
-                if (p2 == null) return 1;
-                return 0;
-            });
+            List<IConfigurationElement> configurationElements = sortConfigurationElements(
+                registry.getConfigurationElementsFor(DataSourceProviderDescriptor.EXTENSION_ID));
 
             // Load datasource providers in three steps to link them with parent providers and load the rest of config
-            for (IConfigurationElement ext : extElements) {
+            for (IConfigurationElement ext : configurationElements) {
                 switch (ext.getName()) {
                     case RegistryConstants.TAG_DATASOURCE: {
                         DataSourceProviderDescriptor provider = new DataSourceProviderDescriptor(this, ext);
                         dataSourceProviders.add(provider);
+                        dataSourceProvidersMap.put(provider.getId(), provider);
                         break;
                     }
                     case RegistryConstants.TAG_DATASOURCE_ORIGIN: {
@@ -132,7 +141,7 @@ public class DataSourceProviderRegistry implements DBPDataSourceProviderRegistry
                 }
             }
 
-            for (IConfigurationElement ext : extElements) {
+            for (IConfigurationElement ext : configurationElements) {
                 switch (ext.getName()) {
                     case RegistryConstants.TAG_DATASOURCE: {
                         DataSourceProviderDescriptor provider = getDataSourceProvider(ext.getAttribute(RegistryConstants.ATTR_ID));
@@ -180,7 +189,7 @@ public class DataSourceProviderRegistry implements DBPDataSourceProviderRegistry
                     }
                 }
             }
-            for (IConfigurationElement ext : extElements) {
+            for (IConfigurationElement ext : configurationElements) {
                 if (RegistryConstants.TAG_DATASOURCE.equals(ext.getName())) {
                     DataSourceProviderDescriptor provider = getDataSourceProvider(ext.getAttribute(RegistryConstants.ATTR_ID));
                     if (provider != null) {
@@ -190,58 +199,15 @@ public class DataSourceProviderRegistry implements DBPDataSourceProviderRegistry
             }
 
             dataSourceProviders.sort((o1, o2) -> {
-                if (o1.isDriversManagable() && !o2.isDriversManagable()) {
+                if (o1.isDriversManageable() && !o2.isDriversManageable()) {
                     return 1;
                 }
-                if (o2.isDriversManagable() && !o1.isDriversManagable()) {
+                if (o2.isDriversManageable() && !o1.isDriversManageable()) {
                     return -1;
                 }
                 return o1.getName().compareToIgnoreCase(o2.getName());
             });
         }
-
-        {
-            // Try to load initial drivers config
-            String providedDriversConfig = System.getProperty("dbeaver.drivers.configuration-file");
-            if (!CommonUtils.isEmpty(providedDriversConfig)) {
-                Path configFile = Path.of(providedDriversConfig);
-                if (Files.exists(configFile)) {
-                    log.debug("Loading provided drivers configuration from '" + configFile.toAbsolutePath() + "'");
-                    loadDrivers(providedDriversConfig, true);
-                } else {
-                    log.debug("Provided drivers configuration file '" + configFile.toAbsolutePath() + "' doesn't exist");
-                }
-            }
-
-            // Load user drivers
-            loadDrivers(DriverDescriptorSerializerLegacy.DRIVERS_FILE_NAME, false);
-        }
-
-        // Resolve all driver replacements
-        {
-            List<DriverDescriptor> allDrivers = new ArrayList<>();
-            for (DataSourceProviderDescriptor provider : dataSourceProviders) {
-                allDrivers.addAll(provider.getDrivers());
-            }
-            for (DriverDescriptor driver1 : allDrivers) {
-                for (DriverDescriptor driver2 : allDrivers) {
-                    if (driver1 != driver2 && driver1.replaces(driver2)) {
-                        driver2.setReplacedBy(driver1);
-                    }
-                }
-            }
-        }
-
-        int driverCount = 0, customDriverCount = 0;
-        for (DataSourceProviderDescriptor pd : dataSourceProviders) {
-            for (DBPDriver dd : pd.getDrivers()) {
-                if (!dd.isDisabled() && dd.getReplacedBy() == null) {
-                    driverCount++;
-                    if (dd.isCustom()) customDriverCount++;
-                }
-            }
-        }
-        log.debug("Total database drivers: " + driverCount + " (" + (driverCount - customDriverCount) + ")");
 
         // Load connection types
         {
@@ -274,7 +240,7 @@ public class DataSourceProviderRegistry implements DBPDataSourceProviderRegistry
             }
         }
 
-        // Load external resources information
+        // Load auth models
         {
             IConfigurationElement[] extElements = registry.getConfigurationElementsFor(DataSourceAuthModelDescriptor.EXTENSION_ID);
             for (IConfigurationElement ext : extElements) {
@@ -291,9 +257,114 @@ public class DataSourceProviderRegistry implements DBPDataSourceProviderRegistry
                 dataSourceConfigurationStorageDescriptors.add(descriptor);
             }
         }
+
+        // Load initial drivers config
+        readDriversConfig();
     }
 
-    public void dispose() {
+    /**
+     * Sorts extension elements so parents appear before their children.
+     * Scans remaining elements, appends those with no parent or whose parent was processed,
+     * removes appended items and repeats until all are processed.
+     */
+    @NotNull
+    private List<IConfigurationElement> sortConfigurationElements(@NotNull IConfigurationElement[] extElements) {
+
+        List<IConfigurationElement> sortedElements = new ArrayList<>();
+        List<IConfigurationElement> remainingElements = new ArrayList<>(Arrays.asList(extElements));
+        Set<String> processedIds = new HashSet<>();
+
+        // Progress flag: if a full pass over `remaining` doesn't process any element,
+        // then further passes are pointless (cycle or missing parents detected).
+        boolean progress = true;
+        while (!remainingElements.isEmpty() && progress) {
+            progress = false;
+            Iterator<IConfigurationElement> it = remainingElements.iterator();
+            while (it.hasNext()) {
+                IConfigurationElement element = it.next();
+                String parentId = element.getAttribute(RegistryConstants.ATTR_PARENT);
+                String id = element.getAttribute(RegistryConstants.ATTR_ID);
+
+                // If element has no parent (root) or its parent was already processed,
+                // it is safe to append it to the result now.
+                if (CommonUtils.isEmpty(parentId) || processedIds.contains(parentId)) {
+                    sortedElements.add(element);
+                    processedIds.add(id);
+                    it.remove();
+                    progress = true;
+                }
+            }
+        }
+        // If there are still remaining elements, then we have a cycle or broken dependencies
+        if (!remainingElements.isEmpty()) {
+            log.error("Cyclic or broken dependencies detected among datasource providers: " +
+                remainingElements.stream()
+                    .map(e -> e.getAttribute(RegistryConstants.ATTR_ID))
+                    .collect(Collectors.joining(", ")));
+        }
+        if (sortedElements.size() != extElements.length) {
+            log.error("Sorted elements size doesn't match the original one");
+        }
+
+        return sortedElements;
+    }
+
+    public void readDriversConfig() {
+        String providedDriversConfig = System.getProperty("dbeaver.drivers.configuration-file");
+        if (!CommonUtils.isEmpty(providedDriversConfig)) {
+            Path configFile = Path.of(providedDriversConfig);
+            if (Files.exists(configFile)) {
+                log.debug("Loading provided drivers configuration from '" + configFile.toAbsolutePath() + "'");
+                loadDrivers(providedDriversConfig, true);
+            } else {
+                log.debug("Provided drivers configuration file '" + configFile.toAbsolutePath() + "' doesn't exist");
+            }
+        }
+
+        // Load user drivers
+        loadDrivers(DriverDescriptorSerializerLegacy.DRIVERS_FILE_NAME, false);
+
+        // Resolve all driver replacements
+        {
+            List<DriverDescriptor> allDrivers = new ArrayList<>();
+            for (DataSourceProviderDescriptor provider : dataSourceProviders) {
+                allDrivers.addAll(provider.getDrivers());
+            }
+            for (DriverDescriptor driver1 : allDrivers) {
+                for (DriverDescriptor driver2 : allDrivers) {
+                    if (driver1 != driver2 && driver1.replaces(driver2)) {
+                        driver2.setReplacedBy(driver1);
+                    }
+                }
+            }
+        }
+
+        // Set provider properties to drivers
+        dataSourceProviders.forEach(DataSourceProviderDescriptor::setDriverProviderProperties);
+
+        int driverCount = 0;
+        int customDriverCount = 0;
+        for (DataSourceProviderDescriptor pd : dataSourceProviders) {
+            for (DBPDriver dd : pd.getDrivers()) {
+                if (!dd.isDisabled() && dd.getReplacedBy() == null) {
+                    driverCount++;
+                    if (dd.isCustom()) {
+                        customDriverCount++;
+                    }
+                }
+            }
+        }
+        log.debug("Total database drivers: " + driverCount + " (" + (driverCount - customDriverCount) + ")");
+    }
+
+    public static void dispose() {
+        if (instance != null) {
+            instance.dispose0();
+            instance = null;
+        }
+    }
+
+    private void dispose0() {
         synchronized (registryListeners) {
             if (!registryListeners.isEmpty()) {
                 log.warn("Some datasource registry listeners are still registered: " + registryListeners);
@@ -311,18 +382,14 @@ public class DataSourceProviderRegistry implements DBPDataSourceProviderRegistry
     @Override
     @Nullable
     public DataSourceProviderDescriptor getDataSourceProvider(String id) {
-        for (DataSourceProviderDescriptor provider : dataSourceProviders) {
-            if (provider.getId().equals(id)) {
-                return provider;
-            }
-        }
-        return null;
+        return dataSourceProvidersMap.get(id);
     }
 
     @Override
     public DBPDataSourceProviderDescriptor makeFakeProvider(String providerID) {
         DataSourceProviderDescriptor provider = new DataSourceProviderDescriptor(this, providerID);
         dataSourceProviders.add(provider);
+        dataSourceProvidersMap.put(providerID, provider);
         return provider;
     }
 
@@ -339,6 +406,12 @@ public class DataSourceProviderRegistry implements DBPDataSourceProviderRegistry
         );
 */
         return enabled;
+    }
+
+    @Nullable
+    @Override
+    public DBPDriver findDriver(@NotNull CompositeObjectId ref) {
+        return findDriver(ref.shortId());
     }
 
     @Nullable
@@ -444,11 +517,15 @@ public class DataSourceProviderRegistry implements DBPDataSourceProviderRegistry
         }
     }
 
-    public void saveDrivers() {
+    public void saveDrivers() throws DBException {
         saveDrivers(DBWorkbench.getPlatform().getConfigurationController());
     }
 
-    public void saveDrivers(DBConfigurationController configurationController) {
+    public void saveDrivers(DBConfigurationController configurationController) throws DBException {
+        saveDriversConfigFile(configurationController);
+    }
+
+    public void saveDriversConfigFile(DBConfigurationController configurationController) throws DBException {
         try {
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             new DriverDescriptorSerializerLegacy().serializeDrivers(baos, this.dataSourceProviders);
@@ -456,23 +533,25 @@ public class DataSourceProviderRegistry implements DBPDataSourceProviderRegistry
                 DriverDescriptorSerializerLegacy.DRIVERS_FILE_NAME,
                 baos.toString(StandardCharsets.UTF_8)
             );
-        } catch (Exception ex) {
-            log.error("Error saving drivers", ex);
+        } catch (IOException e) {
+            throw new DBException("Error serializing drivers configuration file", e);
         }
     }
 
     /**
      * Resolve all jar files in all enabled drivers.
      */
-    public void linkDriverFiles(Path targetFileLocation) {
+    public void linkDriverFiles(Path targetFileLocation) throws DBException {
         boolean didResolve = false;
         for (DataSourceProviderDescriptor dspd : this.dataSourceProviders) {
             for (DriverDescriptor driver : dspd.getDrivers()) {
                 if (driver.isDisabled() || driver.getReplacedBy() != null) {
                     continue;
                 }
-                if (driver.resolveDriverFiles(targetFileLocation)) {
-                    didResolve = true;
+                for (DBPDriverLoader driverLoader : driver.getAllDriverLoaders()) {
+                    if (driverLoader.resolveDriverFiles(targetFileLocation)) {
+                        didResolve = true;
+                    }
                 }
             }
         }
@@ -529,7 +608,7 @@ public class DataSourceProviderRegistry implements DBPDataSourceProviderRegistry
         try {
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             XMLBuilder xml = new XMLBuilder(baos, GeneralUtils.UTF8_ENCODING);
-            xml.setButify(true);
+            xml.setBeautify(true);
             xml.startElement(RegistryConstants.TAG_TYPES);
             for (DBPConnectionType connectionType : connectionTypes.values()) {
                 xml.startElement(RegistryConstants.TAG_TYPE);
@@ -543,7 +622,9 @@ public class DataSourceProviderRegistry implements DBPDataSourceProviderRegistry
                 xml.addAttribute(RegistryConstants.ATTR_SMART_COMMIT, connectionType.isSmartCommit());
                 xml.addAttribute(RegistryConstants.ATTR_SMART_COMMIT_RECOVER, connectionType.isSmartCommitRecover());
                 xml.addAttribute(RegistryConstants.ATTR_AUTO_CLOSE_TRANSACTIONS, connectionType.isAutoCloseTransactions());
-                xml.addAttribute(RegistryConstants.ATTR_CLOSE_TRANSACTIONS_PERIOD, connectionType.getCloseIdleConnectionPeriod());
+                xml.addAttribute(RegistryConstants.ATTR_CLOSE_TRANSACTIONS_PERIOD, connectionType.getCloseIdleTransactionPeriod());
+                xml.addAttribute(RegistryConstants.ATTR_AUTO_CLOSE_CONNECTIONS, connectionType.isAutoCloseConnections());
+                xml.addAttribute(RegistryConstants.ATTR_CLOSE_CONNECTIONS_PERIOD, connectionType.getCloseIdleConnectionPeriod());
                 List<DBPDataSourcePermission> modifyPermission = connectionType.getModifyPermission();
                 if (modifyPermission != null) {
                     xml.addAttribute("modifyPermission",
@@ -565,12 +646,14 @@ public class DataSourceProviderRegistry implements DBPDataSourceProviderRegistry
     //////////////////////////////////////////////
     // Configuration storages
 
+    @NotNull
     public List<DataSourceConfigurationStorageDescriptor> getDataSourceConfigurationStorages() {
         return dataSourceConfigurationStorageDescriptors;
     }
 
+    @Nullable
     @Override
-    public DBPDataSourceOriginProvider getDataSourceOriginProvider(String id) {
+    public DBPDataSourceOriginProvider getDataSourceOriginProvider(@NotNull String id) {
         DataSourceOriginProviderDescriptor descriptor = dataSourceOrigins.get(id);
         if (descriptor == null) {
             return null;
@@ -593,14 +676,17 @@ public class DataSourceProviderRegistry implements DBPDataSourceProviderRegistry
     //////////////////////////////////////////////
     // Auth models
 
+    @Nullable
     public DataSourceAuthModelDescriptor getAuthModel(String id) {
         return authModels.get(id);
     }
 
+    @NotNull
     public List<DataSourceAuthModelDescriptor> getAllAuthModels() {
         return new ArrayList<>(authModels.values());
     }
 
+    @NotNull
     @Override
     public List<? extends DBPAuthModelDescriptor> getApplicableAuthModels(DBPDriver driver) {
         List<DataSourceAuthModelDescriptor> models = new ArrayList<>();
@@ -632,43 +718,54 @@ public class DataSourceProviderRegistry implements DBPDataSourceProviderRegistry
      * @return URL or null if specified resource not found
      */
     @Nullable
-    public URL findResourceURL(String resourcePath) {
+    public URL findResourceURL(@NotNull String resourcePath) {
         ExternalResourceDescriptor descriptor = resourceContributions.get(resourcePath);
         return descriptor == null ? null : descriptor.getURL();
     }
 
-    public void addDataSourceRegistryListener(DBPRegistryListener listener) {
+    public void addDataSourceRegistryListener(@NotNull DBPRegistryListener listener) {
         synchronized (registryListeners) {
             registryListeners.add(listener);
         }
     }
 
-    public void removeDataSourceRegistryListener(DBPRegistryListener listener) {
+    public void removeDataSourceRegistryListener(@NotNull DBPRegistryListener listener) {
         synchronized (registryListeners) {
             registryListeners.remove(listener);
         }
     }
 
-    void fireRegistryChange(DataSourceRegistry registry, boolean load) {
+    void fireRegistryChange(@NotNull DataSourceRegistry<?> registry, boolean load) {
+
+        forEachRegistryListener(l -> {
+            if (load) {
+                l.handleRegistryLoad(registry);
+            } else {
+                l.handleRegistryUnload(registry);
+            }
+        });
+    }
+
+    void fireRegistryReload() {
+        forEachRegistryListener(DBPRegistryListener::handleRegistryReload);
+    }
+
+    private void forEachRegistryListener(@NotNull Consumer<DBPRegistryListener> consumer) {
         List<DBPRegistryListener> lCopy;
         synchronized (registryListeners) {
             lCopy = new ArrayList<>(registryListeners);
         }
         for (DBPRegistryListener listener : lCopy) {
-            if (load) {
-                listener.handleRegistryLoad(registry);
-            } else {
-                listener.handleRegistryUnload(registry);
-            }
+            consumer.accept(listener);
         }
     }
 
     class ConnectionTypeParser implements SAXListener {
         @Override
-        public void saxStartElement(SAXReader reader, String namespaceURI, String localName, Attributes atts)
+        public void saxStartElement(@NotNull SAXReader reader, @Nullable String namespaceURI, @NotNull String localName, @NotNull Attributes attributes)
             throws XMLException {
             if (localName.equals(RegistryConstants.TAG_TYPE)) {
-                String typeId = atts.getValue(RegistryConstants.ATTR_ID);
+                String typeId = attributes.getValue(RegistryConstants.ATTR_ID);
                 DBPConnectionType origType = null;
                 for (DBPConnectionType ct : DBPConnectionType.SYSTEM_TYPES) {
                     if (ct.getId().equals(typeId)) {
@@ -678,25 +775,32 @@ public class DataSourceProviderRegistry implements DBPDataSourceProviderRegistry
                 }
                 DBPConnectionType connectionType = new DBPConnectionType(
                     typeId,
-                    atts.getValue(RegistryConstants.ATTR_NAME),
-                    atts.getValue(RegistryConstants.ATTR_COLOR),
-                    atts.getValue(RegistryConstants.ATTR_DESCRIPTION),
-                    CommonUtils.getBoolean(atts.getValue(RegistryConstants.ATTR_AUTOCOMMIT), origType != null && origType.isAutocommit()),
-                    CommonUtils.getBoolean(atts.getValue(RegistryConstants.ATTR_CONFIRM_EXECUTE), origType != null && origType.isConfirmExecute()),
-                    CommonUtils.getBoolean(atts.getValue(RegistryConstants.ATTR_CONFIRM_DATA_CHANGE), origType != null && origType.isConfirmDataChange()),
+                    attributes.getValue(RegistryConstants.ATTR_NAME),
+                    attributes.getValue(RegistryConstants.ATTR_COLOR),
+                    attributes.getValue(RegistryConstants.ATTR_DESCRIPTION),
+                    CommonUtils.getBoolean(attributes.getValue(RegistryConstants.ATTR_AUTOCOMMIT), origType != null && origType.isAutocommit()),
+                    CommonUtils.getBoolean(attributes.getValue(RegistryConstants.ATTR_CONFIRM_EXECUTE), origType != null && origType.isConfirmExecute()),
+                    CommonUtils.getBoolean(attributes.getValue(RegistryConstants.ATTR_CONFIRM_DATA_CHANGE), origType != null && origType.isConfirmDataChange()),
                     CommonUtils.getBoolean(
-                        atts.getValue(RegistryConstants.ATTR_SMART_COMMIT),
+                        attributes.getValue(RegistryConstants.ATTR_SMART_COMMIT),
                         origType != null && origType.isSmartCommit()),
                     CommonUtils.getBoolean(
-                        atts.getValue(RegistryConstants.ATTR_SMART_COMMIT_RECOVER),
+                        attributes.getValue(RegistryConstants.ATTR_SMART_COMMIT_RECOVER),
                         origType != null && origType.isSmartCommitRecover()),
                     CommonUtils.getBoolean(
-                        atts.getValue(RegistryConstants.ATTR_AUTO_CLOSE_TRANSACTIONS),
+                        attributes.getValue(RegistryConstants.ATTR_AUTO_CLOSE_TRANSACTIONS),
                         origType != null && origType.isAutoCloseTransactions()),
-                    CommonUtils.toLong(
-                        atts.getValue(RegistryConstants.ATTR_CLOSE_TRANSACTIONS_PERIOD),
-                        origType != null ? origType.getCloseIdleConnectionPeriod() : RegistryConstants.DEFAULT_IDLE_TRANSACTION_PERIOD));
-                String modifyPermissionList = atts.getValue("modifyPermission");
+                    CommonUtils.toInt(
+                        attributes.getValue(RegistryConstants.ATTR_CLOSE_TRANSACTIONS_PERIOD),
+                        origType != null ? origType.getCloseIdleTransactionPeriod() : DBPConnectionType.DEFAULT_TYPE.getCloseIdleTransactionPeriod()),
+                    CommonUtils.getBoolean(
+                        attributes.getValue(RegistryConstants.ATTR_AUTO_CLOSE_CONNECTIONS),
+                        origType != null && origType.isAutoCloseConnections()),
+                    CommonUtils.toInt(
+                        attributes.getValue(RegistryConstants.ATTR_CLOSE_CONNECTIONS_PERIOD),
+                        origType != null ? origType.getCloseIdleConnectionPeriod() : DBPConnectionType.DEFAULT_TYPE.getCloseIdleConnectionPeriod())
+                    );
+                String modifyPermissionList = attributes.getValue("modifyPermission");
                 if (!CommonUtils.isEmpty(modifyPermissionList)) {
                     List<DBPDataSourcePermission> permList = new ArrayList<>();
                     for (String permItem : modifyPermissionList.split(",")) {
@@ -709,13 +813,12 @@ public class DataSourceProviderRegistry implements DBPDataSourceProviderRegistry
         }
 
         @Override
-        public void saxText(SAXReader reader, String data) {
+        public void saxText(@NotNull SAXReader reader, @NotNull String data) {
         }
 
         @Override
-        public void saxEndElement(SAXReader reader, String namespaceURI, String localName) {
+        public void saxEndElement(@NotNull SAXReader reader, @Nullable String namespaceURI, @NotNull String localName) {
         }
     }
-
 
 }

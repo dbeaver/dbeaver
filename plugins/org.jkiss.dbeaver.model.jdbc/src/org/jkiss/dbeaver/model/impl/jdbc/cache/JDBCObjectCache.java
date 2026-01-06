@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.model.impl.jdbc.cache;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBDatabaseException;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBConstants;
@@ -30,6 +31,7 @@ import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.cache.AbstractObjectCache;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.SQLException;
@@ -70,7 +72,7 @@ public abstract class JDBCObjectCache<OWNER extends DBSObject, OBJECT extends DB
     public List<OBJECT> getAllObjects(@NotNull DBRProgressMonitor monitor, @Nullable OWNER owner)
         throws DBException
     {
-        if (!isFullyCached()) {
+        if (!isFullyCached() && !monitor.isForceCacheUsage()) {
             loadObjects(monitor, owner);
         }
         return getCachedObjects();
@@ -80,7 +82,7 @@ public abstract class JDBCObjectCache<OWNER extends DBSObject, OBJECT extends DB
     public OBJECT getObject(@NotNull DBRProgressMonitor monitor, @NotNull OWNER owner, @NotNull String name)
         throws DBException
     {
-        if (!isFullyCached()) {
+        if (!isFullyCached() && !monitor.isForceCacheUsage()) {
             this.loadObjects(monitor, owner);
         }
         return getCachedObject(name);
@@ -89,7 +91,11 @@ public abstract class JDBCObjectCache<OWNER extends DBSObject, OBJECT extends DB
     protected synchronized void loadObjects(DBRProgressMonitor monitor, OWNER owner)
         throws DBException
     {
-        if (isFullyCached() || monitor.isCanceled()) {
+        if (isFullyCached() || monitor.isForceCacheUsage() || monitor.isCanceled()) {
+            return;
+        }
+        if (DBWorkbench.getPlatform().isUnitTestMode()) {
+            log.debug("[TEST] Skip cache read in test mode");
             return;
         }
 
@@ -102,7 +108,7 @@ public abstract class JDBCObjectCache<OWNER extends DBSObject, OBJECT extends DB
         if (owner.isPersisted()) {
             // Load cache from database only for persisted objects
             try {
-                try (JDBCSession session = DBUtils.openMetaSession(monitor, owner, "Load objects from " + owner.getName())) {
+                try (JDBCSession session = DBUtils.openMetaSession(monitor, owner, "Load objects from " + DBUtils.getObjectTypeName(owner) + " '" + owner.getName() + "'")) {
                     beforeCacheLoading(session, owner);
                     try (JDBCStatement dbStat = prepareObjectsStatement(session, owner)) {
                         monitor.subTask("Load " + getCacheName());
@@ -137,7 +143,7 @@ public abstract class JDBCObjectCache<OWNER extends DBSObject, OBJECT extends DB
                         afterCacheLoading(session, owner);
                     }
                 } catch (SQLException ex) {
-                    throw new DBException(ex, dataSource);
+                    throw new DBDatabaseException(ex, dataSource);
                 } catch (DBException ex) {
                     throw ex;
                 } catch (Exception ex) {
@@ -150,7 +156,7 @@ public abstract class JDBCObjectCache<OWNER extends DBSObject, OBJECT extends DB
             }
         }
 
-        addCustomObjects(tmpObjectList);
+        addCustomObjects(monitor, owner, tmpObjectList);
 
         Comparator<OBJECT> comparator = getListOrderComparator();
         if (comparator != null && !CommonUtils.isEmpty(tmpObjectList)) {
@@ -162,20 +168,21 @@ public abstract class JDBCObjectCache<OWNER extends DBSObject, OBJECT extends DB
         this.invalidateObjects(monitor, owner, new CacheIterator());
     }
 
-    public void beforeCacheLoading(JDBCSession session, OWNER owner) throws DBException {
+    public void beforeCacheLoading(@NotNull JDBCSession session, OWNER owner) throws DBException {
         // Do nothing
     }
 
-    public void afterCacheLoading(JDBCSession session, OWNER owner) {
+    public void afterCacheLoading(@NotNull JDBCSession session, OWNER owner) throws DBException {
         // Do nothing
     }
 
+    @NotNull
     protected String getCacheName() {
         return getClass().getSimpleName();
     }
 
     // Can be implemented to provide custom cache error handler
-    protected boolean handleCacheReadError(Exception error) {
+    protected boolean handleCacheReadError(@NotNull Exception error) {
         return false;
     }
 

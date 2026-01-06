@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,17 +28,15 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
 import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTable;
+import org.jkiss.junit.DBeaverUnitTest;
 import org.jkiss.utils.Pair;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.mockito.junit.MockitoJUnitRunner;
 
-@RunWith(MockitoJUnitRunner.class)
-public class DBUtilsTest {
+public class DBUtilsTest extends DBeaverUnitTest {
 
     BasicSQLDialect sqlDialect = new BasicSQLDialect() {
         @NotNull
@@ -59,7 +57,6 @@ public class DBUtilsTest {
             return DBPIdentifierCase.MIXED;
         }
     };
-    @Mock
     JDBCDataSource mockDataSource;
     @Mock
     private JDBCDataSource mockDataSourceSchemaTable;
@@ -97,12 +94,19 @@ public class DBUtilsTest {
 
     @Before
     public void setUp() throws Exception {
+        DBPDataSourceContainer dataSourceContainer = configureTestContainer("sqlite_jdbc");
+        mockDataSource = Mockito.mock(JDBCDataSource.class);//new GenericDataSource(monitor, dataSourceContainer, new GenericMetaModel(), sqlDialect);
+        Mockito.when(mockDataSource.getContainer()).thenReturn(dataSourceContainer);
         Mockito.when(mockDataSource.getSQLDialect()).thenReturn(sqlDialect);
+
+        Mockito.when(mockDataSourceSchemaTable.getContainer()).thenReturn(dataSourceContainer);
+        Mockito.when(mockDataSourceCatalogSchema.getContainer()).thenReturn(dataSourceContainer);
+        Mockito.when(mockDataSourceTable.getContainer()).thenReturn(dataSourceContainer);
 
         // Datasource 1. Catalog-table structure
         Mockito.lenient().when(mockRemoteInstance.getDataSource()).thenReturn(mockDataSource);
         Mockito.lenient().when(mockDataSource.getName()).thenReturn("test_name");
-        executionContext = new JDBCExecutionContext(mockRemoteInstance, "Test");
+        executionContext = new JDBCExecutionContext(mockRemoteInstance, true);
         Mockito.lenient().<Class<?>>when(mockDataSource.getPrimaryChildType(monitor)).thenReturn(DBSCatalog.class);
         Mockito.lenient().when(mockDataSource.getChild(monitor, "catalog_test")).thenReturn(mockCatalog);
         Mockito.lenient().<Class<?>>when(mockCatalog.getPrimaryChildType(monitor)).thenReturn(DBSTable.class);
@@ -111,7 +115,7 @@ public class DBUtilsTest {
         // Datasource 2. Schema-table structure
         Mockito.lenient().when(mockRemoteInstanceSchema.getDataSource()).thenReturn(mockDataSourceSchemaTable);
         Mockito.lenient().when(mockDataSourceSchemaTable.getName()).thenReturn("test_name");
-        executionContextSchema = new JDBCExecutionContext(mockRemoteInstanceSchema, "Test");
+        executionContextSchema = new JDBCExecutionContext(mockRemoteInstanceSchema, true);
         Mockito.lenient().<Class<?>>when(mockDataSourceSchemaTable.getPrimaryChildType(monitor)).thenReturn(DBSSchema.class);
         Mockito.lenient().when(mockDataSourceSchemaTable.getChild(monitor, "schema_test")).thenReturn(mockSchema);
         Mockito.lenient().when(mockSchema.getChild(monitor, "table_test")).thenReturn(mockEntity);
@@ -119,14 +123,14 @@ public class DBUtilsTest {
         // Datasource 3. Datasource-table structure (like SQLite)
         Mockito.lenient().when(mockRemoteInstanceTable.getDataSource()).thenReturn(mockDataSourceTable);
         Mockito.lenient().when(mockDataSourceTable.getName()).thenReturn("test_name");
-        executionContextTable = new JDBCExecutionContext(mockRemoteInstanceTable, "Test");
+        executionContextTable = new JDBCExecutionContext(mockRemoteInstanceTable, true);
         Mockito.lenient().<Class<?>>when(mockDataSourceTable.getPrimaryChildType(monitor)).thenReturn(DBSTable.class);
         Mockito.lenient().when(mockDataSourceTable.getChild(monitor, "table_test")).thenReturn(mockEntity);
 
         // Datasource 4. Catalog-schema-table structure
         Mockito.lenient().when(mockRemoteInstanceCatalogSchema.getDataSource()).thenReturn(mockDataSourceCatalogSchema);
         Mockito.lenient().when(mockDataSourceCatalogSchema.getName()).thenReturn("test_name");
-        executionContextCatalogSchema = new JDBCExecutionContext(mockRemoteInstanceCatalogSchema, "Test");
+        executionContextCatalogSchema = new JDBCExecutionContext(mockRemoteInstanceCatalogSchema, true);
         Mockito.lenient().<Class<?>>when(mockDataSourceCatalogSchema.getPrimaryChildType(monitor)).thenReturn(DBSCatalog.class);
         Mockito.lenient().when(mockDataSourceCatalogSchema.getChild(monitor, "catalog_test")).thenReturn(mockCatalog);
         Mockito.lenient().when(mockDataSourceCatalogSchema.getChild(monitor, "DBO")).thenReturn(mockCatalogDBO);

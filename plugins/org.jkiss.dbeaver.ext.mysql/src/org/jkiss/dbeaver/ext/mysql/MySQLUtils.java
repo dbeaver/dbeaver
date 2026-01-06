@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,16 +17,21 @@
 
 package org.jkiss.dbeaver.ext.mysql;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLDataSource;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
+import org.jkiss.dbeaver.model.connection.DBPNativeClientLocation;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
+import org.jkiss.dbeaver.tasks.nativetool.AbstractNativeToolSettings;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 
+import java.io.File;
+import java.io.IOException;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
@@ -128,6 +133,11 @@ public class MySQLUtils {
         return RuntimeUtils.getNativeBinaryName("mysql");
     }
 
+    @NotNull
+    public static String getMariaDBConsoleBinaryName() {
+        return RuntimeUtils.getNativeBinaryName("mariadb");
+    }
+
     public static String determineCurrentDatabase(JDBCSession session) throws DBCException {
         // Get active schema
         try {
@@ -151,5 +161,60 @@ public class MySQLUtils {
 
     public static boolean isAlterUSerSupported(MySQLDataSource dataSource) {
         return dataSource.isMariaDB() ? dataSource.isServerVersionAtLeast(10, 2) : dataSource.isServerVersionAtLeast(5, 7);
+    }
+
+    /**
+     * Check if column SRID ({@code SRID <srid>} attribute) is supported
+     */
+    public static boolean isColumnSridSupported(@NotNull MySQLDataSource dataSource) {
+        // There's no any documentation in which version this feature was added
+        return !dataSource.isMariaDB() && dataSource.isServerVersionAtLeast(8, 0);
+    }
+
+    /**
+     * Check if given type name is a spatial data type
+     */
+    public static boolean isSpatialDataType(@NotNull String name) {
+        // Switch expression looks ugly here, sorry
+        switch (name.toLowerCase(Locale.ROOT)) {
+            case MySQLConstants.TYPE_GEOMETRY:
+            case MySQLConstants.TYPE_POINT:
+            case MySQLConstants.TYPE_LINESTRING:
+            case MySQLConstants.TYPE_POLYGON:
+            case MySQLConstants.TYPE_MULTIPOINT:
+            case MySQLConstants.TYPE_MULTILINESTRING:
+            case MySQLConstants.TYPE_MULTIPOLYGON:
+            case MySQLConstants.TYPE_GEOMETRYCOLLECTION:
+                return true;
+            default:
+                return false;
+        }
+    }
+
+    @NotNull
+    public static File getClientExecutablePath(@NotNull AbstractNativeToolSettings<?> settings) throws IOException {
+        return getExecutablePath(settings, "mysql", "mariadb"); //$NON-NLS-1$ //$NON-NLS-2$
+    }
+
+    @NotNull
+    public static File getDumpExecutablePath(@NotNull AbstractNativeToolSettings<?> settings) throws IOException {
+        return getExecutablePath(settings, "mysqldump", "mariadb-dump"); //$NON-NLS-1$ //$NON-NLS-2$
+    }
+
+    @NotNull
+    private static File getExecutablePath(
+        @NotNull AbstractNativeToolSettings<?> settings,
+        @NotNull String mysqlName,
+        @NotNull String mariaName
+    ) throws IOException {
+        DBPNativeClientLocation location = settings.getClientHome();
+        if (location == null) {
+            throw new IOException("MySQL client location is not specified");
+        }
+        try {
+            return RuntimeUtils.getNativeClientBinary(location, MySQLConstants.BIN_FOLDER, mysqlName);
+        } catch (IOException ignored) {
+            return RuntimeUtils.getNativeClientBinary(location, MySQLConstants.BIN_FOLDER, mariaName);
+        }
     }
 }

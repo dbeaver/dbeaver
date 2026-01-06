@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -36,13 +36,6 @@ public class DBSEntityType
     public static final DBSEntityType SEQUENCE = new DBSEntityType("sequence", "Sequence", DBIcon.TREE_SEQUENCE, true);
     public static final DBSEntityType PACKAGE = new DBSEntityType("package", "Package", DBIcon.TREE_PACKAGE, true);
     public static final DBSEntityType EVENT = new DBSEntityType("event", "Event", DBIcon.TREE_EVENT, true);
-    
-    public static final DBSEntityType PROFILE = new DBSEntityType("profile", "Profile", DBIcon.TREE_LINK, true);
-    public static final DBSEntityType DBLINK = new DBSEntityType("dblink", "DBLink", DBIcon.TREE_LINK, true);
-    public static final DBSEntityType SCHEDULER_JOB = new DBSEntityType("scheduler_job", "Scheduler Job", DBIcon.TREE_JOB_SCHEDULE, true);
-    public static final DBSEntityType SYNONYM = new DBSEntityType("synonym", "Synonym", DBIcon.TREE_SYNONYM, true);
-
-
 
     private final String id;
     private final String name;

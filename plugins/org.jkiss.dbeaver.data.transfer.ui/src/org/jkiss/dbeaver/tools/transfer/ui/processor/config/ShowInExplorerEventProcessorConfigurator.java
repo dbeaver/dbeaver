@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,9 +23,9 @@ import org.jkiss.dbeaver.tools.transfer.ui.IDataTransferEventProcessorConfigurat
 
 import java.util.Map;
 
-public class ShowInExplorerEventProcessorConfigurator implements IDataTransferEventProcessorConfigurator {
+public class ShowInExplorerEventProcessorConfigurator implements IDataTransferEventProcessorConfigurator<StreamConsumerSettings> {
     @Override
-    public void createControl(@NotNull Composite parent, Object object, @NotNull Runnable propertyChangeListener) {
+    public void createControl(@NotNull Composite parent, @NotNull StreamConsumerSettings settings, @NotNull Runnable propertyChangeListener) {
         // not implemented
     }
 

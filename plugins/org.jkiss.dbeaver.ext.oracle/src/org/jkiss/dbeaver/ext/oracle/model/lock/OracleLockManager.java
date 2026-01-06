@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ext.oracle.model.lock;
 
+import org.jkiss.dbeaver.DBDatabaseException;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.oracle.model.OracleDataSource;
 import org.jkiss.dbeaver.model.DBPDataSource;
@@ -143,7 +144,7 @@ public class OracleLockManager extends LockGraphManager implements DBAServerLock
             return locks;
 
         } catch (SQLException e) {
-            throw new DBException(e, session.getDataSource());
+            throw new DBDatabaseException(e, session.getDataSource());
         }
 
     }
@@ -159,7 +160,7 @@ public class OracleLockManager extends LockGraphManager implements DBAServerLock
                 dbStat.execute();
             }
         } catch (SQLException e) {
-            throw new DBException(e, session.getDataSource());
+            throw new DBDatabaseException(e, session.getDataSource());
         }
 
     }
@@ -211,7 +212,7 @@ public class OracleLockManager extends LockGraphManager implements DBAServerLock
             return locks;
 
         } catch (SQLException e) {
-            throw new DBException(e, session.getDataSource());
+            throw new DBDatabaseException(e, session.getDataSource());
         }
     }
 }

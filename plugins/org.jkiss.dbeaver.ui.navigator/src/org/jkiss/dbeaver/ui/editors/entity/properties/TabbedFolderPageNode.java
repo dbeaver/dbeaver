@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,12 +19,15 @@ package org.jkiss.dbeaver.ui.editors.entity.properties;
 import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.accessibility.*;
 import org.eclipse.swt.events.FocusEvent;
 import org.eclipse.swt.events.FocusListener;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.part.MultiPageEditorPart;
 import org.eclipse.ui.part.MultiPageEditorSite;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.DBPAdaptable;
 import org.jkiss.dbeaver.model.DBPEvent;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
@@ -39,6 +42,7 @@ import org.jkiss.dbeaver.ui.controls.folders.TabbedFolderPage;
 import org.jkiss.dbeaver.ui.editors.IDatabaseEditor;
 import org.jkiss.dbeaver.ui.navigator.INavigatorModelView;
 import org.jkiss.dbeaver.ui.navigator.itemlist.ItemListControl;
+import org.jkiss.utils.CommonUtils;
 
 import java.util.Collection;
 
@@ -86,7 +90,8 @@ class TabbedFolderPageNode extends TabbedFolderPage implements ISearchContextPro
         parent.layout();
 
         // Activate items control on focus
-        itemControl.getItemsViewer().getControl().addFocusListener(new FocusListener() {
+        Control nodeItemsViewer = itemControl.getItemsViewer().getControl();
+        nodeItemsViewer.addFocusListener(new FocusListener() {
             @Override
             public void focusGained(FocusEvent e) {
                 // Update selection provider and selection
@@ -112,6 +117,11 @@ class TabbedFolderPageNode extends TabbedFolderPage implements ISearchContextPro
                 itemControl.activate(false);
             }
         });
+
+        {
+            final Accessible accessible = nodeItemsViewer.getAccessible();
+            accessible.addAccessibleListener(new FolderAccessibleAdapter());
+        }
     }
 
     @Override
@@ -216,10 +226,93 @@ class TabbedFolderPageNode extends TabbedFolderPage implements ISearchContextPro
     }
 
     @Override
-    public <T> T getAdapter(Class<T> adapter) {
+    public <T> T getAdapter(@NotNull Class<T> adapter) {
+        if (itemControl == null) {
+            return null;
+        }
         if (adapter.isAssignableFrom(itemControl.getClass())) {
             return adapter.cast(itemControl);
         }
         return null;
+    }
+
+
+    private class FolderSimpleAccessibleAdapter extends AccessibleAdapter {
+        public void getName(AccessibleEvent e) {
+            if (e.childID == ACC.CHILDID_SELF) {
+                e.result = CommonUtils.notNull(node.getNodeDescription(), node.getName());
+            }
+        }
+    }
+
+    private class FolderAccessibleAdapter extends AccessibleControlAdapter implements AccessibleListener {
+        public void getName(AccessibleEvent e) {
+            if (e.childID == ACC.CHILDID_SELF) {
+                e.result = CommonUtils.notNull(node.getNodeDescription(), node.getName());
+            }
+        }
+
+        @Override
+        public void getDescription(AccessibleEvent e) {
+            if (e.childID == ACC.CHILDID_SELF) {
+                e.result = node.getNodeDescription();
+            }
+        }
+
+        @Override
+        public void getHelp(AccessibleEvent e) {
+
+        }
+
+        @Override
+        public void getKeyboardShortcut(AccessibleEvent e) {
+
+        }
+
+        /////////////////////////////
+
+
+        @Override
+        public void getDefaultAction(AccessibleControlEvent e) {
+        }
+
+        @Override
+        public void getFocus(AccessibleControlEvent e) {
+            e.childID = ACC.CHILDID_SELF;
+        }
+
+
+        @Override
+        public void getRole(AccessibleControlEvent e) {
+            int role;
+            int childID = e.childID;
+            if (childID == ACC.CHILDID_SELF) {
+                role = ACC.ROLE_TABFOLDER;
+            } else {
+                role = ACC.ROLE_TABITEM;
+            }
+            e.detail = role;
+        }
+
+        @Override
+        public void getState(AccessibleControlEvent e) {
+            int state = 0;
+            int childID = e.childID;
+            if (childID == ACC.CHILDID_SELF) {
+                state = ACC.STATE_NORMAL;
+            } else {
+                state = ACC.STATE_SELECTABLE;
+                if (itemControl.getItemsViewer().getControl().isFocusControl()) {
+                    state |= ACC.STATE_FOCUSABLE;
+                }
+                if (!itemControl.getItemsViewer().getSelection().isEmpty()) {
+                    state |= ACC.STATE_SELECTED;
+                    if ((state & ACC.STATE_FOCUSABLE) != 0) {
+                        state |= ACC.STATE_FOCUSED;
+                    }
+                }
+            }
+            e.detail = state;
+        }
     }
 }

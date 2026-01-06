@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,7 @@
 package org.jkiss.dbeaver.tools.transfer.serialize;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.model.exec.DBCException;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 
 import java.util.Map;
@@ -32,12 +32,12 @@ public interface DTObjectSerializer<CONTEXT_TYPE, OBJECT_TYPE> {
         @NotNull DBRRunnableContext runnableContext,
         @NotNull CONTEXT_TYPE context,
         @NotNull OBJECT_TYPE object,
-        @NotNull Map<String, Object> state);
+        @NotNull Map<String, Object> state) throws DBException;
 
     OBJECT_TYPE deserializeObject(
         @NotNull DBRRunnableContext runnableContext,
         @NotNull SerializerContext serializeContext,
         @NotNull CONTEXT_TYPE objectContext,
-        @NotNull Map<String, Object> state) throws DBCException;
+        @NotNull Map<String, Object> state) throws DBException;
 
 }

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,16 +23,27 @@ import org.jkiss.code.NotNull;
 import java.io.IOException;
 import java.io.Reader;
 
-
+/**
+ * Source stream for syntax analysis
+ */
 public interface STMSource {
 
+    /**
+     * Get characters stream
+     */
     CharStream getStream();
 
+    /**
+     * Prepare source based on text reader
+     */
     @NotNull
     public static STMSource fromReader(@NotNull Reader reader) throws IOException {
         return new STMSourceImpl(reader);
     }
-    
+
+    /**
+     * Prepare source based on text string
+     */
     public static STMSource fromString(String string) {
         return () -> CharStreams.fromString(string);
     }

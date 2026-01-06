@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,15 +34,15 @@ public abstract class SQLServerObjectManager<OBJECT_TYPE extends DBSObject, CONT
     extends SQLObjectEditor<OBJECT_TYPE, CONTAINER_TYPE> {
 
     protected void addDatabaseSwitchAction1(DBCExecutionContext executionContext, List<DBEPersistAction> actions, SQLServerDatabase objDatabase) {
-        SQLServerDatabase defaultDatabase = ((SQLServerExecutionContext)executionContext).getDefaultCatalog();
-        if (defaultDatabase != objDatabase) {
+        SQLServerDatabase defaultDatabase = ((SQLServerExecutionContext) executionContext).getDefaultCatalog();
+        if (defaultDatabase != null && defaultDatabase != objDatabase) {
             actions.add(new SQLDatabasePersistAction("Set current database", "USE " + DBUtils.getQuotedIdentifier(objDatabase), false)); //$NON-NLS-2$
         }
     }
 
     protected void addDatabaseSwitchAction2(DBCExecutionContext executionContext, List<DBEPersistAction> actions, SQLServerDatabase objDatabase) {
-        SQLServerDatabase defaultDatabase = ((SQLServerExecutionContext)executionContext).getDefaultCatalog();
-        if (defaultDatabase != objDatabase) {
+        SQLServerDatabase defaultDatabase = ((SQLServerExecutionContext) executionContext).getDefaultCatalog();
+        if (defaultDatabase != null && defaultDatabase != objDatabase) {
             actions.add(new SQLDatabasePersistAction("Set current database ", "USE " + DBUtils.getQuotedIdentifier(defaultDatabase), false)); //$NON-NLS-2$
         }
     }

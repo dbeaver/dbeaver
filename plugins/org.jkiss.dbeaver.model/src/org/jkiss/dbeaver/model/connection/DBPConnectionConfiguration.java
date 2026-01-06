@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -41,6 +41,7 @@ import java.util.*;
 public class DBPConnectionConfiguration implements DBPObject {
     // Variables
     public static final String VARIABLE_HOST = "host";
+    public static final String VARIABLE_HOST_TUNNEL = "host.tunnel";
     public static final String VARIABLE_PORT = "port";
     public static final String VARIABLE_SERVER = "server";
     public static final String VARIABLE_DATABASE = "database";
@@ -48,15 +49,22 @@ public class DBPConnectionConfiguration implements DBPObject {
     public static final String VARIABLE_PASSWORD = "password";
     public static final String VARIABLE_URL = "url";
     public static final String VARIABLE_CONN_TYPE = "connection.type";
+    public static final String VARIABLE_CONN_TYPE_LEGACY = "connectionType";
     public static final String VARIABLE_DATASOURCE = "datasource";
     public static final String VAR_PROJECT_PATH = "project.path";
     public static final String VAR_PROJECT_NAME = "project.name";
     public static final String VAR_HOST_OR_DATABASE = "host_or_database";
+    public static final String VARIABLE_PREFIX_PROPERTIES = "properties.";
+    public static final String VARIABLE_PREFIX_AUTH = "auth.";
+    public static final String VARIABLE_PREFIX_ORIGIN = "origin.";
+    public static final String VARIABLE_PREFIX_TAG = "tag.";
 
     public static final String VARIABLE_DATE = "date";
+    public static final String VARIABLE_TIME = "time";
 
     public static final String[][] CONNECT_VARIABLES = new String[][]{
         {VARIABLE_HOST, "target database host"},
+        {VARIABLE_HOST_TUNNEL, "tunnel host name"},
         {VARIABLE_PORT, "target database port"},
         {VARIABLE_SERVER, "target server name"},
         {VARIABLE_DATABASE, "target database name"},
@@ -80,8 +88,10 @@ public class DBPConnectionConfiguration implements DBPObject {
     public static final String[][] INTERNAL_CONNECT_VARIABLES = ArrayUtils.concatArrays(
         CONNECT_VARIABLES,
         new String[][]{
-            {VARIABLE_PASSWORD, "database password (plain)"},
+            // {VARIABLE_PASSWORD, "database password (plain)"},  see dbeaver/pro#1861
         });
+
+    public static final String PROP_SECRET_SUBJECT_ID = "shared.credentials.default.subject";
 
     private static final Log log = Log.getLog(DBPConnectionConfiguration.class);
 
@@ -94,6 +104,7 @@ public class DBPConnectionConfiguration implements DBPObject {
     private String url;
     private String clientHomeId;
 
+    private String configProfileSource;
     private String configProfileName;
 
     @NotNull
@@ -111,6 +122,7 @@ public class DBPConnectionConfiguration implements DBPObject {
     private DBPDriverConfigurationType configurationType;
     private String connectionColor;
     private int keepAliveInterval;
+    private boolean closeIdleConnection;
     private int closeIdleInterval;
 
     private String authModelId;
@@ -126,6 +138,7 @@ public class DBPConnectionConfiguration implements DBPObject {
         this.handlers = new ArrayList<>();
         this.bootstrap = new DBPConnectionBootstrap();
         this.keepAliveInterval = 0;
+        this.closeIdleConnection = true;
         this.closeIdleInterval = 0;
     }
 
@@ -138,6 +151,7 @@ public class DBPConnectionConfiguration implements DBPObject {
         this.userPassword = info.userPassword;
         this.url = info.url;
         this.clientHomeId = info.clientHomeId;
+        this.configProfileSource = info.configProfileSource;
         this.configProfileName = info.configProfileName;
         this.authModelId = info.authModelId;
         this.authProperties = info.authProperties == null ? null : new LinkedHashMap<>(info.authProperties);
@@ -145,7 +159,7 @@ public class DBPConnectionConfiguration implements DBPObject {
         this.configurationType = info.configurationType;
         this.properties = new LinkedHashMap<>(info.properties);
         this.providerProperties = new LinkedHashMap<>(info.providerProperties);
-        this.runtimeAttributes = new HashMap<>(info.runtimeAttributes);
+        this.runtimeAttributes = info.runtimeAttributes;
         this.events = new LinkedHashMap<>(info.events.size());
         for (Map.Entry<DBPConnectionEventType, DBRShellCommand> entry : info.events.entrySet()) {
             this.events.put(entry.getKey(), new DBRShellCommand(entry.getValue()));
@@ -157,6 +171,7 @@ public class DBPConnectionConfiguration implements DBPObject {
         this.bootstrap = new DBPConnectionBootstrap(info.bootstrap);
         this.connectionColor = info.connectionColor;
         this.keepAliveInterval = info.keepAliveInterval;
+        this.closeIdleConnection = info.closeIdleConnection;
         this.closeIdleInterval = info.closeIdleInterval;
     }
 
@@ -168,6 +183,7 @@ public class DBPConnectionConfiguration implements DBPObject {
         this.clientHomeId = clientHomeId;
     }
 
+    @Nullable
     public String getHostName() {
         return hostName;
     }
@@ -329,7 +345,7 @@ public class DBPConnectionConfiguration implements DBPObject {
         }
     }
 
-    public void updateHandler(DBWHandlerConfiguration handler) {
+    public void updateHandler(@NotNull DBWHandlerConfiguration handler) {
         synchronized (handlers) {
             for (int i = 0; i < handlers.size(); i++) {
                 if (handlers.get(i).getId().equals(handler.getId())) {
@@ -342,7 +358,7 @@ public class DBPConnectionConfiguration implements DBPObject {
     }
 
     @Nullable
-    public DBWHandlerConfiguration getHandler(String id) {
+    public DBWHandlerConfiguration getHandler(@NotNull String id) {
         synchronized (handlers) {
             for (DBWHandlerConfiguration cfg : handlers) {
                 if (cfg.getId().equals(id)) {
@@ -351,6 +367,16 @@ public class DBPConnectionConfiguration implements DBPObject {
             }
             return null;
         }
+    }
+
+    public void removeHandler(@NotNull String id) {
+        synchronized (handlers) {
+            handlers.removeIf(handler -> handler.getId().equals(id));
+        }
+    }
+
+    public boolean hasHandler(@NotNull String id) {
+        return getHandler(id) != null;
     }
 
     ////////////////////////////////////////////////////
@@ -403,6 +429,14 @@ public class DBPConnectionConfiguration implements DBPObject {
         this.keepAliveInterval = keepAliveInterval;
     }
 
+    public boolean isCloseIdleConnection() {
+        return closeIdleConnection;
+    }
+
+    public void setCloseIdleConnection(boolean closeIdleConnection) {
+        this.closeIdleConnection = closeIdleConnection;
+    }
+
     public int getCloseIdleInterval() {
         return closeIdleInterval;
     }
@@ -411,22 +445,48 @@ public class DBPConnectionConfiguration implements DBPObject {
         this.closeIdleInterval = closeIdleInterval;
     }
 
+    @Nullable
+    public String getConfigProfileSource() {
+        return configProfileSource;
+    }
+
+    public void setConfigProfileSource(@Nullable String configProfileSource) {
+        this.configProfileSource = configProfileSource;
+    }
+
+    @Nullable
     public String getConfigProfileName() {
         return configProfileName;
     }
 
-    public void setConfigProfileName(String configProfileName) {
+    public void setConfigProfileName(@Nullable String configProfileName) {
         this.configProfileName = configProfileName;
     }
 
-    public void setConfigProfile(DBWNetworkProfile profile) {
+    /**
+     * Sets the network profile for this configuration.
+     * <p>
+     * If {@code null} is passed, only the profile configuration is cleared.
+     * Otherwise, the profile configuration is updated, and the connection's
+     * network handlers are replaced with the profile's.
+     *
+     * @param profile the network profile
+     */
+    public void setConfigProfile(@Nullable DBWNetworkProfile profile) {
         if (profile == null) {
+            configProfileSource = null;
             configProfileName = null;
         } else {
-            configProfileName = profile.getProfileName();
-            for (DBWHandlerConfiguration handlerConfig : profile.getConfigurations()) {
-                if (handlerConfig.isEnabled()) {
-                    updateHandler(new DBWHandlerConfiguration(handlerConfig));
+            configProfileSource = profile.getProfileSource();
+            configProfileName = profile.getProfileId();
+
+            synchronized (handlers) {
+                handlers.clear();
+
+                for (DBWHandlerConfiguration handlerConfig : profile.getConfigurations()) {
+                    if (handlerConfig.isEnabled()) {
+                        updateHandler(new DBWHandlerConfiguration(handlerConfig));
+                    }
                 }
             }
         }
@@ -482,13 +542,17 @@ public class DBPConnectionConfiguration implements DBPObject {
         return authProperties;
     }
 
-    public void setAuthProperties(Map<String, String> authProperties) {
-        this.authProperties = authProperties;
+    public void setAuthProperties(@Nullable Map<String, String> authProperties) {
+        if (authProperties == null) {
+            this.authProperties = null;
+        } else {
+            this.authProperties = new LinkedHashMap<>(authProperties);
+        }
     }
 
-    public void setAuthProperty(String name, String value) {
+    public void setAuthProperty(@NotNull String name, @Nullable String value) {
         if (authProperties == null) {
-            authProperties = new HashMap<>();
+            authProperties = new LinkedHashMap<>();
         }
         if (value == null) {
             this.authProperties.remove(name);
@@ -521,6 +585,7 @@ public class DBPConnectionConfiguration implements DBPObject {
                 CommonUtils.equalOrEmptyStrings(this.url, source.url) &&
                 CommonUtils.equalObjects(this.configurationType, source.configurationType) &&
                 CommonUtils.equalObjects(this.clientHomeId, source.clientHomeId) &&
+                CommonUtils.equalObjects(this.configProfileSource, source.configProfileSource) &&
                 CommonUtils.equalObjects(this.configProfileName, source.configProfileName) &&
                 CommonUtils.equalObjects(this.authModelId, source.authModelId) &&
                 CommonUtils.equalObjects(this.authProperties, source.authProperties) &&
@@ -531,6 +596,7 @@ public class DBPConnectionConfiguration implements DBPObject {
                 CommonUtils.equalObjects(this.handlers, source.handlers) &&
                 CommonUtils.equalObjects(this.bootstrap, source.bootstrap) &&
                 this.keepAliveInterval == source.keepAliveInterval &&
+                this.closeIdleConnection == source.closeIdleConnection &&
                 this.closeIdleInterval == source.closeIdleInterval;
     }
 

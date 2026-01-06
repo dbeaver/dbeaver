@@ -1,7 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2016 Karl Griesser (fullref@gmail.com)
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -236,7 +235,7 @@ public class ExasolDataSource extends JDBCDataSource implements IAdaptable {
 				
 				
 				@Override
-				public void setCache(List<ExasolPriorityGroup> objects) {
+				public void setCache(@NotNull List<ExasolPriorityGroup> objects) {
 				}
 				
 				@Override
@@ -257,13 +256,14 @@ public class ExasolDataSource extends JDBCDataSource implements IAdaptable {
 					return getCachedObject(name);
 				}
 				
+				@NotNull
 				@Override
 				public List<ExasolPriorityGroup> getCachedObjects() {
 					return groups;
 				}
 				
 				@Override
-				public ExasolPriorityGroup getCachedObject(String name) {
+				public ExasolPriorityGroup getCachedObject(@NotNull String name) {
 					for(ExasolPriorityGroup p: groups)
 					{
 						if (p.getName().equals(name))
@@ -272,8 +272,9 @@ public class ExasolDataSource extends JDBCDataSource implements IAdaptable {
 					return null;
 				}
 				
-				@Override
-				public Collection<ExasolPriorityGroup> getAllObjects(DBRProgressMonitor monitor, ExasolDataSource owner)
+				@NotNull
+                @Override
+				public Collection<ExasolPriorityGroup> getAllObjects(@NotNull DBRProgressMonitor monitor, ExasolDataSource owner)
 						throws DBException {
 					groups = new ArrayList<>();
 					groups.add(new ExasolPriorityGroup(owner, "HIGH", "Default High Group", 900));
@@ -354,6 +355,7 @@ public class ExasolDataSource extends JDBCDataSource implements IAdaptable {
     	return this.driverMajorVersion;
     }
     
+    @NotNull
     @Override
     protected Properties getAllConnectionProperties(@NotNull DBRProgressMonitor monitor, JDBCExecutionContext context, String purpose,
                                                     DBPConnectionConfiguration connectionInfo) throws DBCException {
@@ -413,7 +415,7 @@ public class ExasolDataSource extends JDBCDataSource implements IAdaptable {
 	}
 
 	@Override
-	public <T> T getAdapter(Class<T> adapter)
+	public <T> T getAdapter(@NotNull Class<T> adapter)
 	{
 		if (adapter == DBSStructureAssistant.class) {
 			return adapter.cast(new ExasolStructureAssistant(this));
@@ -451,8 +453,12 @@ public class ExasolDataSource extends JDBCDataSource implements IAdaptable {
 
 	@Override
 	protected Map<String, String> getInternalConnectionProperties(
-		DBRProgressMonitor monitor, DBPDriver driver, JDBCExecutionContext context, String purpose, DBPConnectionConfiguration connectionInfo) throws DBCException
-	{
+		@NotNull DBRProgressMonitor monitor,
+		@NotNull DBPDriver driver,
+		@NotNull JDBCExecutionContext context,
+		@NotNull String purpose,
+		@NotNull DBPConnectionConfiguration connectionInfo
+	) throws DBCException {
 		Map<String, String> props = new HashMap<>(ExasolDataSourceProvider.getConnectionsProps());
 		if (CommonUtils.getBoolean(connectionInfo.getProviderProperty(ExasolConstants.DRV_USE_LEGACY_ENCRYPTION), false)) {
 			props.put(ExasolConstants.DRV_LEGACY_ENCRYPTION, "1");
@@ -504,7 +510,7 @@ public class ExasolDataSource extends JDBCDataSource implements IAdaptable {
 
 	@Override
 	public ExasolSchema getChild(@NotNull DBRProgressMonitor monitor,
-			@NotNull String childName) throws DBException
+								 @NotNull String childName) throws DBException
 	{
 		if (exasolCurrentUserPrivileges.getAtLeastV6())
 			return getSchema(monitor, childName) != null ? getSchema(monitor,childName) : getVirtualSchema(monitor, childName);
@@ -516,7 +522,7 @@ public class ExasolDataSource extends JDBCDataSource implements IAdaptable {
 	// --------------
 
 	@Association
-	public Collection<ExasolSchema> getSchemas(DBRProgressMonitor monitor)
+	public Collection<ExasolSchema> getSchemas(@NotNull DBRProgressMonitor monitor)
 			throws DBException
 	{
 		return schemaCache.getAllObjects(monitor, this);
@@ -834,6 +840,7 @@ public class ExasolDataSource extends JDBCDataSource implements IAdaptable {
 	
 	
 
+	@NotNull
 	@Override
 	public Collection<? extends DBSDataType> getLocalDataTypes()
 	{
@@ -901,7 +908,8 @@ public class ExasolDataSource extends JDBCDataSource implements IAdaptable {
     }
 	
 
-	@Override
+	@Nullable
+    @Override
 	public DBSDataType getLocalDataType(String typeName)
 	{
 		try {
@@ -937,6 +945,7 @@ public class ExasolDataSource extends JDBCDataSource implements IAdaptable {
         return super.createQueryTransformer(type);
     }
     
+    @NotNull
     @Override
     public ErrorType discoverErrorType(@NotNull Throwable error) {
     	// exasol has no sqlstates 

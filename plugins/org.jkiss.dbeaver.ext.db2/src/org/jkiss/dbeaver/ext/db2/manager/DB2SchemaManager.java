@@ -1,7 +1,7 @@
 /*
  * DBeaver - Universal Database Manager
  * Copyright (C) 2013-2015 Denis Forveille (titou10.titou10@gmail.com)
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
  */
 package org.jkiss.dbeaver.ext.db2.manager;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.db2.model.DB2DataSource;
 import org.jkiss.dbeaver.ext.db2.model.DB2Schema;
@@ -45,7 +46,7 @@ public class DB2SchemaManager extends SQLObjectEditor<DB2Schema, DB2DataSource> 
     private static final String SQL_DROP_SCHEMA = "DROP SCHEMA %s RESTRICT";
 
     @Override
-    public long getMakerOptions(DBPDataSource dataSource)
+    public long getMakerOptions(@NotNull DBPDataSource dataSource)
     {
         return FEATURE_SAVE_IMMEDIATELY;
     }
@@ -58,14 +59,14 @@ public class DB2SchemaManager extends SQLObjectEditor<DB2Schema, DB2DataSource> 
     }
 
     @Override
-    protected DB2Schema createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, final Object container,
-                                             Object copyFrom, Map<String, Object> options)
+    protected DB2Schema createDatabaseObject(@NotNull DBRProgressMonitor monitor, @NotNull DBECommandContext context, final Object container,
+                                             Object copyFrom, @NotNull Map<String, Object> options)
     {
         return new DB2Schema((DB2DataSource) container, "NEW_SCHEMA");
     }
 
     @Override
-    protected void addObjectCreateActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, ObjectCreateCommand command, Map<String, Object> options)
+    protected void addObjectCreateActions(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext executionContext, @NotNull List<DBEPersistAction> actions, @NotNull ObjectCreateCommand command, @NotNull Map<String, Object> options)
     {
         SQLDatabasePersistAction action = new SQLDatabasePersistAction("Create schema", String.format(SQL_CREATE_SCHEMA,
             DBUtils.getQuotedIdentifier(command.getObject())));
@@ -73,7 +74,7 @@ public class DB2SchemaManager extends SQLObjectEditor<DB2Schema, DB2DataSource> 
     }
 
     @Override
-    protected void addObjectDeleteActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, ObjectDeleteCommand command, Map<String, Object> options)
+    protected void addObjectDeleteActions(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext executionContext, @NotNull List<DBEPersistAction> actions, @NotNull ObjectDeleteCommand command, @NotNull Map<String, Object> options)
     {
         String schemaName = command.getObject().getName();
         DBEPersistAction action = new SQLDatabasePersistAction("Drop schema (SQL)", String.format(SQL_DROP_SCHEMA,

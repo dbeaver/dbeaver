@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -41,6 +41,10 @@ import java.sql.SQLException;
  * @author Serge Rider
  */
 public class JDBCContentChars extends JDBCContentAbstract implements DBDContentStorage, DBDContentCached {
+
+    //+1 due to tooltip truncation is done at 250 chars. So must be more to see if truncated or not
+    private static final int MAX_LENGTH_REMOVE_WHITESPACES = 250 + 1;
+
 
     private String originalData;
     protected String data;
@@ -96,7 +100,7 @@ public class JDBCContentChars extends JDBCContentAbstract implements DBDContentS
     }
 
     @Override
-    public DBDContentStorage getContents(DBRProgressMonitor monitor)
+    public DBDContentStorage getContents(@NotNull DBRProgressMonitor monitor)
         throws DBCException
     {
         return this;
@@ -104,8 +108,8 @@ public class JDBCContentChars extends JDBCContentAbstract implements DBDContentS
 
     @Override
     public boolean updateContents(
-        DBRProgressMonitor monitor,
-        DBDContentStorage storage)
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBDContentStorage storage)
         throws DBException
     {
         if (storage == null) {
@@ -197,8 +201,10 @@ public class JDBCContentChars extends JDBCContentAbstract implements DBDContentS
     }
 
     @Override
-    public String getDisplayString(DBDDisplayFormat format) {
-        return data;
+    public String getDisplayString(@NotNull DBDDisplayFormat format) {
+        return data == null || format == DBDDisplayFormat.EDIT || data.length() > MAX_LENGTH_REMOVE_WHITESPACES
+                ? data
+                : CommonUtils.compactWhiteSpaces(data);
     }
 
     @Override

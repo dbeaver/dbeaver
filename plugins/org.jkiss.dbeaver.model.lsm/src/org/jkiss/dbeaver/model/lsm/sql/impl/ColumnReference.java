@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,21 +16,10 @@
  */
 package org.jkiss.dbeaver.model.lsm.sql.impl;
 
-import org.jkiss.dbeaver.model.lsm.mapping.AbstractSyntaxNode;
-import org.jkiss.dbeaver.model.lsm.mapping.SyntaxNode;
-import org.jkiss.dbeaver.model.lsm.mapping.SyntaxTerm;
-
-
-@SyntaxNode(name = "columnReference")
-public class ColumnReference extends AbstractSyntaxNode {
-    @SyntaxTerm(xpath = ".//catalogName/identifier")
+public class ColumnReference {
     public String catalogName;
-    @SyntaxTerm(xpath = ".//schemaName/unqualifiedSchemaName/identifier")
     public String schemaName;
-    @SyntaxTerm(xpath = ".//tableName/qualifiedName/qualifiedIdentifier/identifier")
     public String tableName;
-    @SyntaxTerm(xpath = ".//correlationName/identifier")
     public String tableAlias;
-    @SyntaxTerm(xpath = ".//columnName/identifier")
     public String columnName;
 }

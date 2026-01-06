@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,7 +20,6 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
-import org.eclipse.jface.resource.ColorRegistry;
 import org.eclipse.jface.text.source.ISharedTextColors;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.MouseAdapter;
@@ -49,11 +48,9 @@ import org.jkiss.dbeaver.model.qm.QMUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DefaultProgressMonitor;
 import org.jkiss.dbeaver.runtime.qm.DefaultExecutionHandler;
-import org.jkiss.dbeaver.ui.AbstractPartListener;
-import org.jkiss.dbeaver.ui.IActionConstants;
-import org.jkiss.dbeaver.ui.UIStyles;
-import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.controls.querylog.QueryLogViewer;
+import org.jkiss.dbeaver.ui.*;
+import org.jkiss.dbeaver.ui.actions.ConnectionCommands;
+import org.jkiss.dbeaver.ui.controls.querylog.QueryLogThemeSettings;
 
 /**
  * DataSource Toolbar
@@ -169,20 +166,18 @@ public class TransactionMonitorToolbar {
         private void paint(PaintEvent e) {
             Color bg;
 
-            ColorRegistry colorRegistry = workbenchWindow.getWorkbench().getThemeManager().getCurrentTheme().getColorRegistry();
-
             final int updateCount = txnState == null ? 0 : txnState.getUpdateCount();
 
             if (txnState == null || !txnState.isTransactionMode()) {
                 bg = UIStyles.getDefaultTextBackground();
             } else if (updateCount == 0) {
-                bg = colorRegistry.get(QueryLogViewer.COLOR_TRANSACTION);
+                bg = QueryLogThemeSettings.instance.colorTransaction;
             } else {
                 // Use gradient depending on update count
                 ISharedTextColors sharedColors = UIUtils.getSharedTextColors();
 
-                Color colorReverted = colorRegistry.get(QueryLogViewer.COLOR_REVERTED);
-                Color colorCommitted = colorRegistry.get(QueryLogViewer.COLOR_UNCOMMITTED);
+                Color colorReverted = QueryLogThemeSettings.instance.colorReverted;
+                Color colorCommitted = QueryLogThemeSettings.instance.colorUncommitted;
                 final RGB COLOR_FULL = colorReverted == null ? RGB_DARK_YELLOW : colorReverted.getRGB();
                 final RGB COLOR_EMPTY = colorCommitted == null ? RGB_DARK_GREEN : colorCommitted.getRGB();
 
@@ -232,6 +227,7 @@ public class TransactionMonitorToolbar {
                 }
                 redraw();
                 updateToolTipText();
+                ActionUtils.fireCommandRefresh(ConnectionCommands.CMD_TOGGLE_AUTOCOMMIT);
             });
         }
 

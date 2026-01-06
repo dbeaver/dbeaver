@@ -1,0 +1,15 @@
+ IEclipsePreferences#org-eclipse-ui-workbench:dbeaver-erd-editor {
+        preferences:
+            'org.jkiss.dbeaver.erd.diagram.background=47,47,47'
+            'org.jkiss.dbeaver.erd.diagram.entity.regular.background=32,32,32'
+            'org.jkiss.dbeaver.erd.diagram.entity.primary.background=128,64,32'
+            'org.jkiss.dbeaver.erd.diagram.entity.association.background=64,64,64'
+            'org.jkiss.dbeaver.erd.diagram.entity.name.foreground=196,196,196'
+            'org.jkiss.dbeaver.erd.diagram.attributes.background=64,64,64'
+            'org.jkiss.dbeaver.erd.diagram.attributes.foreground=196,196,196'
+            'org.jkiss.dbeaver.erd.diagram.search.highlighting=155,130,0'
+            'org.jkiss.dbeaver.erd.diagram.fk.highlighting=65,125,35'
+            'org.jkiss.dbeaver.erd.diagram.notes.background=64,64,64'
+            'org.jkiss.dbeaver.erd.diagram.notes.foreground=196,196,196'
+            'org.jkiss.dbeaver.erd.diagram.lines.foreground=0, 100, 174'
+}

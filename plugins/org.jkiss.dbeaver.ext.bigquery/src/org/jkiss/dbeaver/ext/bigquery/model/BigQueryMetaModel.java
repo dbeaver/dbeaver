@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,12 +18,19 @@ package org.jkiss.dbeaver.ext.bigquery.model;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ext.generic.model.GenericDataSource;
+import org.jkiss.dbeaver.ext.generic.model.GenericStructContainer;
 import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaModel;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPErrorAssistant;
 import org.jkiss.dbeaver.model.exec.DBCQueryTransformProvider;
 import org.jkiss.dbeaver.model.exec.DBCQueryTransformType;
 import org.jkiss.dbeaver.model.exec.DBCQueryTransformer;
+import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCBasicDataTypeCache;
+import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCDataType;
 import org.jkiss.dbeaver.model.impl.sql.QueryTransformerLimit;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.regex.Matcher;
@@ -39,6 +46,17 @@ public class BigQueryMetaModel extends GenericMetaModel implements DBCQueryTrans
     public BigQueryMetaModel() {
     }
 
+    @NotNull
+    @Override
+    public GenericDataSource createDataSourceImpl(@NotNull DBRProgressMonitor monitor, @NotNull DBPDataSourceContainer container) throws DBException {
+        return new BigQueryDataSource(monitor, container, this);
+    }
+
+    @Override
+    public JDBCBasicDataTypeCache<GenericStructContainer, ? extends JDBCDataType> createDataTypeCache(@NotNull GenericStructContainer container) {
+        return new BigQueryDataTypeCache(container);
+    }
+
     @Nullable
     @Override
     public DBCQueryTransformer createQueryTransformer(@NotNull DBCQueryTransformType type) {
@@ -48,8 +66,9 @@ public class BigQueryMetaModel extends GenericMetaModel implements DBCQueryTrans
         return null;
     }
 
+    @Nullable
     @Override
-    public DBPErrorAssistant.ErrorPosition getErrorPosition(Throwable error) {
+    public DBPErrorAssistant.ErrorPosition getErrorPosition(@NotNull Throwable error) {
         String message = error.getMessage();
         if (!CommonUtils.isEmpty(message)) {
             Matcher matcher = ERROR_POSITION_PATTERN.matcher(message);

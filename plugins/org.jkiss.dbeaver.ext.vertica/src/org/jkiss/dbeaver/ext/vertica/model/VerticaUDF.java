@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ext.vertica.model;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.generic.model.*;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
@@ -67,7 +68,7 @@ public class VerticaUDF extends AbstractProcedure<GenericDataSource, GenericStru
         setDescription(JDBCUtils.safeGetString(dbResult, "comment"));
     }
 
-    @Property(viewable = true, order = 3)
+    @Property(viewable = true, order = 3, labelProvider = GenericCatalog.CatalogNameTermProvider.class)
     public GenericCatalog getCatalog()
     {
         return getContainer().getCatalog();
@@ -79,8 +80,9 @@ public class VerticaUDF extends AbstractProcedure<GenericDataSource, GenericStru
         return DBSProcedureType.FUNCTION;
     }
 
+    @Nullable
     @Override
-    public Collection<GenericProcedureParameter> getParameters(DBRProgressMonitor monitor)
+    public Collection<GenericProcedureParameter> getParameters(@NotNull DBRProgressMonitor monitor)
         throws DBException
     {
         return null;
@@ -232,7 +234,7 @@ public class VerticaUDF extends AbstractProcedure<GenericDataSource, GenericStru
 
     @NotNull
     @Override
-    public String getFullyQualifiedName(DBPEvaluationContext context)
+    public String getFullyQualifiedName(@NotNull DBPEvaluationContext context)
     {
         return DBUtils.getFullQualifiedName(getDataSource(),
             getContainer(),
@@ -246,8 +248,9 @@ public class VerticaUDF extends AbstractProcedure<GenericDataSource, GenericStru
         return getName();
     }
 
+    @NotNull
     @Override
-    public String getObjectDefinitionText(DBRProgressMonitor monitor, Map<String, Object> options) throws DBException {
+    public String getObjectDefinitionText(@NotNull DBRProgressMonitor monitor, @NotNull Map<String, Object> options) throws DBException {
         return definition;
     }
 

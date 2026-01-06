@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.model.DBFetchProgress;
 import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.data.DBDDataReceiver;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.DBCSession;
@@ -34,6 +35,7 @@ import org.jkiss.dbeaver.tools.transfer.stream.*;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.Pair;
+import org.jkiss.utils.csv.CSVParser;
 import org.jkiss.utils.csv.CSVReader;
 import org.jkiss.utils.io.BOMInputStream;
 
@@ -56,6 +58,7 @@ public class DataImporterCSV extends StreamImporterAbstract {
     private static final String PROP_NULL_STRING = "nullString";
     private static final String PROP_EMPTY_STRING_NULL = "emptyStringNull";
     private static final String PROP_ESCAPE_CHAR = "escapeChar";
+    private static final String PROP_STRICT_QUOTES = "strictQuotes";
     private static final String PROP_TRIM_WHITESPACES = "trimWhitespaces";
     public static final int READ_BUFFER_SIZE = 255 * 1024;
 
@@ -94,7 +97,13 @@ public class DataImporterCSV extends StreamImporterAbstract {
                     if (CommonUtils.isEmptyTrimmed(column)) {
                         column = "Column" + (i + 1);
                     }
-                    StreamDataImporterColumnInfo columnInfo = new StreamDataImporterColumnInfo(entityMapping, i, column, null, columnMinimalLength, DBPDataKind.UNKNOWN);
+                    StreamDataImporterColumnInfo columnInfo = new StreamDataImporterColumnInfo(
+                        entityMapping,
+                        i,
+                        column,
+                        STRING_DATA_TYPE,
+                        columnMinimalLength,
+                        DBPDataKind.UNKNOWN);
                     columnInfo.setMappingMetadataPresent(headerPosition != HeaderPosition.none);
                     columnsInfo.add(columnInfo);
                 }
@@ -118,7 +127,9 @@ public class DataImporterCSV extends StreamImporterAbstract {
 
                         switch (dataType.getFirst()) {
                             case STRING:
-                                columnInfo.updateMaxLength(columnIsByteLength ? line[i].getBytes(encoding).length : line[i].length());
+                                columnInfo.updateMaxLength(
+                                    entityMapping.getDataSource(),
+                                    columnIsByteLength ? line[i].getBytes(encoding).length : line[i].length());
                                 /* fall-through */
                             case NUMERIC:
                             case BOOLEAN:
@@ -132,7 +143,7 @@ public class DataImporterCSV extends StreamImporterAbstract {
 
                 for (StreamDataImporterColumnInfo columnInfo : columnsInfo) {
                     if (columnInfo.getDataKind() == DBPDataKind.UNKNOWN) {
-                        log.warn("Cannot guess data type for column '" + columnInfo.getName() + "', defaulting to VARCHAR");
+                        log.debug("Cannot guess data type for column '" + columnInfo.getName() + "', defaulting to VARCHAR");
                         columnInfo.updateType(DBPDataKind.STRING, "VARCHAR");
                     }
                 }
@@ -144,13 +155,6 @@ public class DataImporterCSV extends StreamImporterAbstract {
         return columnsInfo;
     }
 
-    private int roundToNextPowerOf2(int value) {
-        int power = 1;
-        while(power < value)
-            power*=2;
-        return power;
-    }
-
     private HeaderPosition getHeaderPosition(Map<String, Object> processorProperties) {
         return CommonUtils.valueOf(HeaderPosition.class, CommonUtils.toString(processorProperties.get(PROP_HEADER)), HeaderPosition.top);
     }
@@ -159,13 +163,14 @@ public class DataImporterCSV extends StreamImporterAbstract {
         String delimiter = StreamTransferUtils.getDelimiterString(processorProperties, PROP_DELIMITER);
         String quoteChar = CommonUtils.toString(processorProperties.get(PROP_QUOTE_CHAR));
         if (CommonUtils.isEmpty(quoteChar)) {
-            quoteChar = "'";
+            quoteChar = String.valueOf(CSVParser.NULL_CHARACTER);
         }
         String escapeChar = CommonUtils.toString(processorProperties.get(PROP_ESCAPE_CHAR));
         if (CommonUtils.isEmpty(escapeChar)) {
-            escapeChar = "\\";
+            escapeChar = String.valueOf(CSVParser.NULL_CHARACTER);
         }
-        return new CSVReader(reader, delimiter.charAt(0), quoteChar.charAt(0), escapeChar.charAt(0));
+        boolean strictQuotes = CommonUtils.toBoolean(processorProperties.get(PROP_STRICT_QUOTES));
+        return new CSVReader(reader, delimiter.charAt(0), quoteChar.charAt(0), escapeChar.charAt(0), 0, strictQuotes);
     }
 
     private Reader openStreamReader(InputStream inputStream, Map<String, Object> processorProperties, boolean useBufferedStream) throws UnsupportedEncodingException {
@@ -196,7 +201,12 @@ public class DataImporterCSV extends StreamImporterAbstract {
     }
 
     @Override
-    public void runImport(@NotNull DBRProgressMonitor monitor, @NotNull DBPDataSource streamDataSource, @NotNull InputStream inputStream, @NotNull IDataTransferConsumer consumer) throws DBException {
+    public void runImport(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBPDataSource streamDataSource,
+        @NotNull InputStream inputStream,
+        @NotNull IDataTransferConsumer<?, ?> consumer
+    ) throws DBException {
         IStreamDataImporterSite site = getSite();
         StreamEntityMapping entityMapping = site.getSourceObject();
         Map<String, Object> properties = site.getProcessorProperties();
@@ -207,87 +217,82 @@ public class DataImporterCSV extends StreamImporterAbstract {
 
         DBCExecutionContext context = streamDataSource.getDefaultInstance().getDefaultContext(monitor, false);
         try (DBCSession producerSession = context.openSession(monitor, DBCExecutionPurpose.UTIL, "Transfer stream data")) {
-            LocalStatement localStatement = new LocalStatement(producerSession, "SELECT * FROM Stream");
-            StreamTransferResultSet resultSet = new StreamTransferResultSet(producerSession, localStatement, entityMapping);
+            try (LocalStatement localStatement = new LocalStatement(producerSession, "SELECT * FROM Stream")) {
+                try (StreamTransferResultSet resultSet = new StreamTransferResultSet(producerSession, localStatement, entityMapping)) {
+                    DBDDataReceiver.startFetchWorkflow(consumer, producerSession, resultSet, -1, -1);
 
-            consumer.fetchStart(producerSession, resultSet, -1, -1);
+                    applyTransformHints(resultSet, consumer, properties, PROP_TIMESTAMP_FORMAT, PROP_TIMESTAMP_ZONE);
 
-            applyTransformHints(resultSet, consumer, properties, PROP_TIMESTAMP_FORMAT, PROP_TIMESTAMP_ZONE);
+                    try (Reader reader = openStreamReader(inputStream, properties, true)) {
+                        try (CSVReader csvReader = openCSVReader(reader, properties)) {
 
-            try (Reader reader = openStreamReader(inputStream, properties, true)) {
-                try (CSVReader csvReader = openCSVReader(reader, properties)) {
+                            int maxRows = site.getSettings().getMaxRows();
+                            int targetAttrSize = entityMapping.getStreamColumns().size();
+                            boolean headerRead = false;
+                            for (long lineNum = 0; ; ) {
+                                if (monitor.isCanceled()) {
+                                    break;
+                                }
+                                String[] line = csvReader.readNext();
+                                if (line == null) {
+                                    if (csvReader.getParser().isPending()) {
+                                        throw new IOException("Un-terminated quote sequence was detected");
+                                    }
+                                    break;
+                                }
+                                if (line.length == 0) {
+                                    continue;
+                                }
+                                if (headerPosition != HeaderPosition.none && !headerRead) {
+                                    // First line is a header
+                                    headerRead = true;
+                                    continue;
+                                }
+                                if (maxRows > 0 && lineNum >= maxRows) {
+                                    break;
+                                }
 
-                    int maxRows = site.getSettings().getMaxRows();
-                    int targetAttrSize = entityMapping.getStreamColumns().size();
-                    boolean headerRead = false;
-                    for (long lineNum = 0; ; ) {
-                        if (monitor.isCanceled()) {
-                            break;
-                        }
-                        String[] line = csvReader.readNext();
-                        if (line == null) {
-                            if (csvReader.getParser().isPending()) {
-                                throw new IOException("Un-terminated quote sequence was detected");
-                            }
-                            break;
-                        }
-                        if (line.length == 0) {
-                            continue;
-                        }
-                        if (headerPosition != HeaderPosition.none && !headerRead) {
-                            // First line is a header
-                            headerRead = true;
-                            continue;
-                        }
-                        if (maxRows > 0 && lineNum >= maxRows) {
-                            break;
-                        }
+                                if (line.length < targetAttrSize) {
+                                    // Stream row may be shorter than header
+                                    String[] newLine = new String[targetAttrSize];
+                                    System.arraycopy(line, 0, newLine, 0, line.length);
+                                    for (int i = line.length; i < targetAttrSize; i++) {
+                                        newLine[i] = null;
+                                    }
+                                    line = newLine;
+                                }
+                                if (trimWhitespaces) {
+                                    for (int i = 0; i < line.length; i++) {
+                                        line[i] = line[i].trim();
+                                    }
+                                }
+                                if (emptyStringNull) {
+                                    for (int i = 0; i < line.length; i++) {
+                                        if ("".equals(line[i])) {
+                                            line[i] = null;
+                                        }
+                                    }
+                                }
+                                if (!CommonUtils.isEmpty(nullValueMark)) {
+                                    for (int i = 0; i < line.length; i++) {
+                                        if (nullValueMark.equals(line[i])) {
+                                            line[i] = null;
+                                        }
+                                    }
+                                }
 
-                        if (line.length < targetAttrSize) {
-                            // Stream row may be shorter than header
-                            String[] newLine = new String[targetAttrSize];
-                            System.arraycopy(line, 0, newLine, 0, line.length);
-                            for (int i = line.length; i < targetAttrSize; i++) {
-                                newLine[i] = null;
-                            }
-                            line = newLine;
-                        }
-                        if (trimWhitespaces) {
-                            for (int i = 0; i < line.length; i++) {
-                                line[i] = line[i].trim();
-                            }
-                        }
-                        if (emptyStringNull) {
-                            for (int i = 0; i < line.length; i++) {
-                                if ("".equals(line[i])) {
-                                    line[i] = null;
+                                resultSet.setStreamRow(line);
+                                consumer.fetchRow(producerSession, resultSet);
+                                lineNum++;
+
+                                if (DBFetchProgress.monitorFetchProgress(lineNum)) {
+                                    monitor.subTask(Long.toUnsignedString(lineNum) + " rows processed");
                                 }
                             }
                         }
-                        if (!CommonUtils.isEmpty(nullValueMark)) {
-                            for (int i = 0; i < line.length; i++) {
-                                if (nullValueMark.equals(line[i])) {
-                                    line[i] = null;
-                                }
-                            }
-                        }
-
-                        resultSet.setStreamRow(line);
-                        consumer.fetchRow(producerSession, resultSet);
-                        lineNum++;
-
-                        if (DBFetchProgress.monitorFetchProgress(lineNum)) {
-                            monitor.subTask(Long.toUnsignedString(lineNum) + " rows processed");
-                        }
+                    } catch (IOException e) {
+                        throw new DBException("IO error reading CSV", e);
                     }
-                }
-            } catch (IOException e) {
-                throw new DBException("IO error reading CSV", e);
-            } finally {
-                try {
-                    consumer.fetchEnd(producerSession, resultSet);
-                } finally {
-                    consumer.close();
                 }
             }
         }

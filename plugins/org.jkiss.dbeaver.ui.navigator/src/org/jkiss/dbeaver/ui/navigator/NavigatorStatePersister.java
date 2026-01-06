@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Lorant Oroszlany (github.com/loro2)
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,6 +33,7 @@ import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
+import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.navigator.database.DatabaseNavigatorTree;
 import org.jkiss.dbeaver.ui.navigator.database.DatabaseNavigatorTreeFilterObjectType;
@@ -94,8 +95,9 @@ public class NavigatorStatePersister {
                 setUser(true);
             }
 
+            @NotNull
             @Override
-            protected IStatus run(DBRProgressMonitor monitor) {
+            protected IStatus run(@NotNull DBRProgressMonitor monitor) {
                 try {
                     runnable.run(monitor);
                 } catch (InvocationTargetException e) {
@@ -121,7 +123,8 @@ public class NavigatorStatePersister {
         UIUtils.syncExec(() -> {
             final DatabaseNavigatorTreeFilterObjectType type = CommonUtils.valueOf(
                 DatabaseNavigatorTreeFilterObjectType.class,
-                memento.getString(PROP_FILTER_TYPE)
+                memento.getString(PROP_FILTER_TYPE),
+                DatabaseNavigatorTreeFilterObjectType.connection
             );
             if (type != null && tree.getFilterObjectType() != type) {
                 tree.setFilterObjectType(type);
@@ -131,6 +134,7 @@ public class NavigatorStatePersister {
                 } finally {
                     tree.getViewer().getControl().setRedraw(true);
                 }
+                ActionUtils.fireCommandRefresh(NavigatorCommands.CMD_FILTER_OBJECT_TYPE);
             }
 
             final String text = memento.getString(PROP_FILTER_TEXT);
@@ -177,8 +181,9 @@ public class NavigatorStatePersister {
 
     private static String createNodeIdentifier(DBNNode node) {
         StringBuilder identifier = new StringBuilder();
-        for (DBNNode currentNode = node; currentNode != null; currentNode = currentNode.getParentNode())
-            identifier.append(currentNode.getNodeName()).append("/");
+        for (DBNNode currentNode = node; currentNode != null; currentNode = currentNode.getParentNode()) {
+            identifier.append(currentNode.getNodeDisplayName()).append("/");
+        }
         return identifier.toString();
     }
 

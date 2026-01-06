@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -52,8 +52,16 @@ public class DBConstants {
     public static final String VAR_CONTEXT_ID = "context.id";
 
     /////////////////////////////////
+    // Object context parameters
+
+    public static final String CONTEXT_PARAMETER_PROJECT = "dbeaver.project";
+    public static final String CONTEXT_PARAMETER_DATA_SOURCE = "dbeaver.datasource";
+
+    /////////////////////////////////
     // Misc
     public static final String IS_WINDOWS_STORE_APP = "dbeaver.windows.store.app";
+
+    public static final String DEFAULT_PROJECT_NAME = "General";
 
     public static final int METADATA_FETCH_SIZE = 1000;
 
@@ -83,9 +91,8 @@ public class DBConstants {
     public static final String BOOLEAN_PROP_NO = "no";
 
     public static final DBDBinaryFormatter[] BINARY_FORMATS = {
-
-        new BinaryFormatterHex(),
         new BinaryFormatterString(),
+        new BinaryFormatterHex(),
         new BinaryFormatterBase64(),
     };
 
@@ -101,15 +108,10 @@ public class DBConstants {
     public static final String DEFAULT_TIME_FORMAT = "HH:mm:ss";
     public static final String DEFAULT_TIME_TZ_FORMAT = "HH:mm:ss Z";
     public static final String DEFAULT_DATE_FORMAT = "yyyy-MM-dd";
-//    public static final String DEFAULT_TIMESTAMP_FORMAT = "yyyy-MM-dd HH:mm:ss.SSS";
-//    public static final String DEFAULT_TIMESTAMP_TZ_FORMAT = "yyyy-MM-dd HH:mm:ss.SSS Z";
-    
-    public static final String DEFAULT_TIMESTAMP_FORMAT = "yyyy-MM-dd HH:mm:ss.SSSSSS";
-    public static final String DEFAULT_TIMESTAMP_TZ_FORMAT = "yyyy-MM-dd HH:mm:ss.SSSSSS Z";
+    public static final String DEFAULT_TIMESTAMP_FORMAT = "yyyy-MM-dd HH:mm:ss.SSS";
+    public static final String DEFAULT_TIMESTAMP_TZ_FORMAT = "yyyy-MM-dd HH:mm:ss.SSS Z";
 
     public static final String DEFAULT_ISO_TIMESTAMP_FORMAT = "yyyy-MM-dd'T'HH:mm:ss'Z'";
-    
-    
 
     public static final String LEGACY_DRIVERS_FOLDER = ".dbeaver-drivers";
     public static final String DEFAULT_DRIVERS_FOLDER = "drivers";
@@ -144,13 +146,20 @@ public class DBConstants {
     public static final String PROP_FEATURE_LINK_POSSIBLE = "linkPossible";
     public static final String PROP_FEATURE_HREF = "href";
     public static final String PROP_FEATURE_VIEWABLE = "viewable";
+    public static final String PROP_FEATURE_INFO = "info";
+
+    public static final String PRODUCT_FEATURE_DISTRIBUTED = "distributed";
 
     public static final String LOCAL_DOMAIN_NAME = "local";
 
     public static final String HOST_LOCALHOST = "localhost";
+    public static final String HOST_LOCALHOST_IP = "127.0.0.1";
 
 
     public static final String DRIVER_PARAM_DISABLE_NETWORK_PARAMETERS = "disableNetworkParameters";
+    public static final String DRIVER_PARAM_ENABLE_NETWORK_PARAMETERS = "enableNetworkParameters";
+    public static final String PARAM_DATABASE_FILE_EXTENSIONS = "database-file-extensions";
+    public static final String PARAM_SAFE_EMBEDDED_DRIVER = "safe-embedded-driver";
     public static final String PROP_HOST = "host"; //$NON-NLS-1$
     public static final String PROP_PORT = "port"; //$NON-NLS-1$
     public static final String PROP_DATABASE = "database"; //$NON-NLS-1$
@@ -159,4 +168,7 @@ public class DBConstants {
     public static final String PROP_FILE = "file"; //$NON-NLS-1$
     public static final String PROP_USER = "user"; //$NON-NLS-1$
     public static final String PROP_PASSWORD = "password"; //$NON-NLS-1$
+    public static final String PROP_ORIGINAL_FILE_PATH = "originalFilePath";
+
+    public static final String CERTIFICATE_STORAGE_FOLDER = "security";
 }

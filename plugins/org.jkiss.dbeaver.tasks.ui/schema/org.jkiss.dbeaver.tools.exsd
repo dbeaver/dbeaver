@@ -100,7 +100,7 @@
                   
                </documentation>
                <appInfo>
-                  <meta.attribute kind="java" basedOn=":org.jkiss.dbeaver.ui.tools.IUserInterfaceTool"/>
+                  <meta.attribute kind="java"/>
                </appInfo>
             </annotation>
          </attribute>

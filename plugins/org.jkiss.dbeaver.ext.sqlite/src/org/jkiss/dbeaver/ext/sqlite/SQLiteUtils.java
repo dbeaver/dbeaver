@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,13 +17,17 @@
 
 package org.jkiss.dbeaver.ext.sqlite;
 
+import org.jkiss.api.CompositeObjectId;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.generic.model.GenericSchema;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableBase;
+import org.jkiss.dbeaver.ext.generic.model.GenericTableColumn;
 import org.jkiss.dbeaver.ext.sqlite.model.SQLiteObjectType;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
+import org.jkiss.dbeaver.model.DBPPersistedObject;
+import org.jkiss.dbeaver.model.DBPScriptObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
@@ -32,12 +36,12 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistActionComment;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBStructUtils;
+import org.jkiss.utils.CommonUtils;
 
 import java.util.Collection;
-import java.util.Collections;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
@@ -45,6 +49,7 @@ import java.util.stream.Collectors;
  */
 public class SQLiteUtils {
 
+    public static final CompositeObjectId DRIVER_REFERENCE = new CompositeObjectId("sqlite", "sqlite_jdbc");
     private static final Log log = Log.getLog(SQLiteUtils.class);
 
 
@@ -89,7 +94,18 @@ public class SQLiteUtils {
         }
     }
 
-    public static void createTableAlterActions(@NotNull DBRProgressMonitor monitor, @NotNull String reason, @NotNull GenericTableBase table, @NotNull Collection<DBSAttributeBase> attributes, @NotNull Collection<DBEPersistAction> actions) throws DBException {
+    public static void createTableAlterActions(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull String reason,
+        @NotNull GenericTableBase table,
+        @NotNull Collection<DBEPersistAction> actions
+    ) throws DBException {
+        final Collection<? extends GenericTableColumn> attributes = CommonUtils.safeCollection(table.getAttributes(monitor)).stream()
+            .filter(DBPPersistedObject::isPersisted)
+            .toList();
+        if (CommonUtils.isEmpty(attributes)) {
+            throw new DBException("Table has no attributes");
+        }
         final String columns = attributes.stream()
             .map(DBUtils::getQuotedIdentifier)
             .collect(Collectors.joining(",\n  "));
@@ -111,7 +127,7 @@ public class SQLiteUtils {
         ));
         actions.add(new SQLDatabasePersistAction(
             "Create new table",
-            DBStructUtils.generateTableDDL(monitor, table, Collections.emptyMap(), false)
+            DBStructUtils.generateTableDDL(monitor, table, Map.of(DBPScriptObject.OPTION_DDL_ONLY_PERSISTED_ATTRIBUTES, true), false)
         ));
         actions.add(new SQLDatabasePersistAction(
             "Insert values from temporary table to new table",

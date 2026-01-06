@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -47,10 +47,8 @@ public class StatusLineContributionItemEx extends ContributionItem {
 
     @Override
     public void fill(Composite parent) {
-        Composite statusLine = parent;
-
         Label sep = new Label(parent, SWT.SEPARATOR);
-        label = new CLabel(statusLine, SWT.SHADOW_NONE);
+        label = new CLabel(parent, SWT.SHADOW_NONE);
         label.setText(text);
         if (toolTip != null) {
             label.setToolTipText(toolTip);

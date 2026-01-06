@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,10 +22,12 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.Separator;
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.data.DBDValueRow;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
@@ -62,7 +64,7 @@ public class ResultSetReferenceMenu
     }
 
 
-    static void fillRefTablesActions(@Nullable DBRProgressMonitor extMonitor, ResultSetViewer viewer, List<ResultSetRow> rows, DBSEntity singleSource, IMenuManager manager, boolean openInNewWindow) {
+    static void fillRefTablesActions(@Nullable DBRProgressMonitor extMonitor, ResultSetViewer viewer, List<? extends DBDValueRow> rows, DBSEntity singleSource, IMenuManager manager, boolean openInNewWindow) {
 
         final List<DBSEntityAssociation> references = new ArrayList<>();
         final List<DBSEntityAssociation> associations = new ArrayList<>();
@@ -162,8 +164,9 @@ public class ResultSetReferenceMenu
                     @Override
                     public void run() {
                         new AbstractJob("Navigate association") {
+                            @NotNull
                             @Override
-                            protected IStatus run(DBRProgressMonitor monitor) {
+                            protected IStatus run(@NotNull DBRProgressMonitor monitor) {
                                 try {
                                     viewer.navigateAssociation(new VoidProgressMonitor(), viewer.getModel(), association, rows, openInNewWindow);
                                 } catch (DBException e) {
@@ -195,8 +198,9 @@ public class ResultSetReferenceMenu
                     @Override
                     public void run() {
                         new AbstractJob("Navigate reference") {
+                            @NotNull
                             @Override
-                            protected IStatus run(DBRProgressMonitor monitor) {
+                            protected IStatus run(@NotNull DBRProgressMonitor monitor) {
                                 try {
                                     viewer.navigateReference(
                                         new VoidProgressMonitor(),

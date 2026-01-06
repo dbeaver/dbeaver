@@ -1,7 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
- * Copyright (C) 2011-2012 Eugene Fradkin (eugene.fradkin@gmail.com)
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,6 +25,7 @@ public class UIConnectionMessages extends NLS {
     public static String dialog_connection_edit_wizard_conn_conf_general_link;
     public static String dialog_connection_edit_wizard_conn_conf_network_link;
     public static String dialog_connection_edit_connection_settings_variables_hint_label;
+    public static String dialog_connection_database_documentation;
     public static String dialog_connection_advanced_settings;
     public static String dialog_connection_env_variables_hint;
 
@@ -48,6 +48,7 @@ public class UIConnectionMessages extends NLS {
     public static String controls_client_homes_panel_label_path;
     public static String controls_client_homes_panel_label_product_name;
     public static String controls_client_homes_panel_label_product_version;
+    public static String controls_client_homes_panel_link_message;
 
     public static String dialog_setting_connection_driver_properties_title;
     public static String dialog_setting_connection_driver_properties_description;
@@ -57,6 +58,7 @@ public class UIConnectionMessages extends NLS {
 
     public static String dialog_setting_ssl_configurator_label_optional;
     public static String dialog_setting_ssl_configurator_label_description;
+    public static String dialog_setting_ssl_configurator_label_note;
     public static String dialog_setting_ssl_configurator_legend_parameters;
     public static String dialog_setting_ssl_configurator_method;
     public static String dialog_setting_ssl_configurator_method_certs;
@@ -116,6 +118,8 @@ public class UIConnectionMessages extends NLS {
     public static String dialog_edit_driver_label_default_user;
     public static String dialog_edit_driver_label_id;
     public static String dialog_edit_driver_label_id_tip;
+    public static String dialog_edit_driver_label_provider_id;
+    public static String dialog_edit_driver_label_provider_id_tip;
     public static String dialog_edit_driver_label_description;
     public static String dialog_edit_driver_label_driver_class;
     public static String dialog_edit_driver_label_driver_name;
@@ -151,6 +155,8 @@ public class UIConnectionMessages extends NLS {
     public static String dialog_driver_download_auto_page_driver_file_missing_text;
     public static String dialog_driver_download_auto_page_force_download;
     public static String dialog_driver_download_auto_page_force_download_tooltip;
+    public static String dialog_driver_download_auto_page_show_details;
+    public static String dialog_driver_download_auto_page_driver_description;
     public static String dialog_driver_download_auto_page_required_files;
     public static String dialog_driver_download_auto_page_change_driver_version_text;
     public static String dialog_driver_download_auto_page_obtain_driver_files_text;
@@ -162,13 +168,20 @@ public class UIConnectionMessages extends NLS {
     public static String dialog_driver_download_auto_page_download_rate;
     public static String dialog_driver_download_auto_page_download_failed_msg;
     public static String dialog_driver_download_auto_page_download_failed_cert_msg;
+    public static String dialog_driver_download_auto_page_download_failed_cert_msg_advanced;
     public static String dialog_driver_download_network_unavailable_msg;
     public static String dialog_driver_download_network_unavailable_cert_msg;
+    public static String dialog_driver_download_network_unavailable_cert_msg_advanced;
+    public static String dialog_driver_download_version_change_label;
+    public static String dialog_driver_download_current_version_label;
+
     // Driver edit
 	public static String dialog_edit_driver_setting;
     public static String dialog_edit_driver_type_label;
     public static String dialog_edit_driver_embedded_label;
     public static String dialog_edit_driver_embedded_tip;
+    public static String dialog_edit_driver_propagate_driver_properties_label;
+    public static String dialog_edit_driver_propagate_driver_properties_tip;
     public static String dialog_edit_driver_anonymous_label;
     public static String dialog_edit_driver_anonymous_tip;
     public static String dialog_edit_driver_allows_empty_password_label;
@@ -221,6 +234,7 @@ public class UIConnectionMessages extends NLS {
     public static String dialog_driver_manager_message_delete_driver_text;
     public static String dialog_driver_manager_message_delete_driver_title;
     public static String dialog_driver_manager_title;
+    public static String dialog_driver_manager_preferences_link;
 
     public static String viewer_selector_control_text_classic;
     public static String viewer_selector_control_text_gallery;
@@ -229,6 +243,7 @@ public class UIConnectionMessages extends NLS {
     // Drivers
     public static String pref_page_ui_general_group_settings;
     public static String pref_page_ui_general_check_new_driver_versions;
+    public static String pref_page_ui_general_check_new_driver_versions_tip;
     public static String pref_page_drivers_local_folder;
     public static String pref_page_drivers_group_file_repositories;
     public static String pref_page_drivers_button_add;
@@ -298,6 +313,28 @@ public class UIConnectionMessages extends NLS {
     public static String dialog_driver_select_viewer_order_by_name_description;
     public static String dialog_driver_select_viewer_order_by_score_label;
     public static String dialog_driver_select_viewer_order_by_score_description;
+
+    public static String pref_page_network_profiles_tool_create_title;
+    public static String pref_page_network_profiles_tool_create_text;
+    public static String pref_page_network_profiles_tool_create_dialog_profile_name;
+    public static String pref_page_network_profiles_tool_create_dialog_error_title;
+    public static String pref_page_network_profiles_tool_create_dialog_error_info;
+    public static String pref_page_network_profiles_tool_delete_title;
+    public static String pref_page_network_profiles_tool_delete_text;
+    public static String pref_page_network_profiles_tool_copy_title;
+    public static String pref_page_network_profiles_tool_copy_text;
+    public static String pref_page_network_profiles_tool_delete_dialog_error_title;
+    public static String pref_page_network_profiles_tool_delete_dialog_error_info;
+    public static String pref_page_network_profiles_tool_delete_confirmation_title;
+    public static String pref_page_network_profiles_tool_delete_confirmation_question;
+    public static String pref_page_network_profiles_tool_no_profile_error_title;
+    public static String pref_page_network_profiles_tool_no_profile_error_info;
+    public static String pref_page_network_profiles_tool_no_profile_error_information;
+    public static String pref_page_network_profiles_global_project_label;
+    public static String pref_page_network_profiles_global_project_hint;
+    public static String dialog_tunnel_checkbox_use_handler;
+    public static String dialog_tunnel_title;
+
 
     static {
         // initialize resource bundle

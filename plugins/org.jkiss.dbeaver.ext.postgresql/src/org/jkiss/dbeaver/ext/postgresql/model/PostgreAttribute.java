@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,14 +29,12 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTableColumn;
 import org.jkiss.dbeaver.model.meta.IPropertyValueListProvider;
+import org.jkiss.dbeaver.model.meta.IPropertyValueValidator;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.meta.PropertyLength;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSEntity;
-import org.jkiss.dbeaver.model.struct.DBSTypedObject;
-import org.jkiss.dbeaver.model.struct.DBSTypedObjectEx;
-import org.jkiss.dbeaver.model.struct.DBSTypedObjectExt4;
+import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.Pair;
 
@@ -51,7 +49,7 @@ import java.util.function.Function;
  * PostgreAttribute
  */
 public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> extends JDBCTableColumn<OWNER>
-    implements PostgreObject, DBSTypedObjectEx, DBPNamedObject2, DBPHiddenObject, DBPInheritedObject, DBSTypedObjectExt4<PostgreDataType>
+    implements PostgreObject, DBSTypedObjectEx, DBPNamedObject2, DBPHiddenObject, DBPInheritedObject, DBSTypedObjectExt4<PostgreDataType>, DBSTypedObjectEx2
 {
     private static final Log log = Log.getLog(PostgreAttribute.class);
 
@@ -75,6 +73,7 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
     @Nullable
     private boolean isGeneratedColumn;
     private long depObjectId;
+    private PostgreAttributeStorage storage;
 
     protected PostgreAttribute(
         OWNER table)
@@ -113,6 +112,7 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
         this.typeId = source.typeId;
         this.typeMod = source.typeMod;
         this.defaultValue = source.defaultValue;
+        this.storage = source.storage;
     }
 
     @NotNull
@@ -183,6 +183,9 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
         this.isLocal =
             !serverType.supportsInheritance() ||
             JDBCUtils.safeGetBoolean(dbResult, "attislocal", true);
+        if (serverType.supportsAlterStorageStrategy()) {
+            this.storage = PostgreAttributeStorage.getByCode(JDBCUtils.safeGetString(dbResult, "attstorage"));
+        }
 
         if (dataSource.isServerVersionAtLeast(10, 0)) {
             String identityStr = JDBCUtils.safeGetString(dbResult, "attidentity");
@@ -196,7 +199,9 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
             this.collationId = JDBCUtils.safeGetLong(dbResult, "attcollation");
         }
 
-        this.acl = JDBCUtils.safeGetObject(dbResult, "attacl");
+        if (serverType.supportsAcl()) {
+            this.acl = JDBCUtils.safeGetObject(dbResult, "attacl");
+        }
 
         if (getTable() instanceof PostgreTableForeign) {
             foreignTableColumnOptions = PostgreUtils.safeGetStringArray(dbResult, "attfdwoptions");
@@ -204,13 +209,13 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
 
         setPersisted(true);
 
-        if (getTable() instanceof PostgreTable) {
-            PostgreTable postgreTable = (PostgreTable) getTable();
-            if (postgreTable.getDepObjectAttrNumber() == getOrdinalPosition()) {
-                // ID of object which has dependency with this column
-                this.depObjectId = (postgreTable).getDepObjectId();
-            }
+        if (supportsDependencies() && serverType.supportsSequences()) {
+            this.depObjectId = JDBCUtils.safeGetLong(dbResult, "objid"); // ID of object which has dependency with this column
         }
+    }
+
+    protected boolean supportsDependencies() {
+        return false;
     }
 
     @NotNull
@@ -237,6 +242,7 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
         this.valueType = dataType.getTypeID();
     }
 
+    @NotNull
     @Override
     public DBPDataKind getDataKind() {
         return dataType == null ? super.getDataKind() : dataType.getDataKind();
@@ -259,6 +265,7 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
         log.debug("Attribute does not support updating its max length");
     }
 
+    @Nullable
     @Override
     public Integer getPrecision() {
         final PostgreTypeHandler handler = PostgreTypeHandlerProvider.getTypeHandler(dataType);
@@ -269,7 +276,7 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
     }
 
     @Override
-    public void setPrecision(Integer precision) {
+    public void setPrecision(@Nullable Integer precision) {
         log.debug("Attribute does not support updating its precision");
     }
 
@@ -283,7 +290,7 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
     }
 
     @Override
-    public void setScale(Integer scale) {
+    public void setScale(@Nullable Integer scale) {
         log.debug("Attribute does not support updating its scale");
     }
 
@@ -312,7 +319,7 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
     @Override
     public boolean isAutoGenerated()
     {
-        if (identity != null) {
+        if (isGeneratedColumn || identity != null) {
             return true;
         }
         // Also check sequence in def value
@@ -346,6 +353,26 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
         return null;
     }
 
+    public boolean supportsAlterStorageStrategy() {
+        return getDataSource().getServerType().supportsAlterStorageStrategy();
+    }
+
+    @Nullable
+    @Property(order = 85, visibleIf = AttributeStorageValueValidator.class, editableExpr = "object.supportsAlterStorageStrategy()", updatableExpr = "object.supportsAlterStorageStrategy()", listProvider = StorageListProvider.class)
+    public PostgreAttributeStorage getStorage() {
+        return this.storage;
+    }
+
+    public void setStorage(PostgreAttributeStorage storage) {
+        this.storage = storage;
+    }
+
+    public boolean hasDefaultStorage() {
+        return getStorage() == null
+            || (getDataType().getStorage() == null && getStorage() == PostgreAttributeStorage.PLAIN)
+            || (getStorage().getCode().equals(getDataType().getStorage().name()));
+    }
+
     public long getTypeId() {
         return typeId;
     }
@@ -375,7 +402,7 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
 
     @Property(viewable = true, editableExpr = "!object.table.view", order = 30, listProvider = CollationListProvider.class)
     public PostgreCollation getCollation(DBRProgressMonitor monitor) throws DBException {
-        if (collationId <= 0) {
+        if (collationId <= 0 || !getDataSource().getServerType().supportsCollations()) {
             return null;
         } else {
             return getDatabase().getCollation(monitor, collationId);
@@ -399,6 +426,7 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
         return !isLocal;
     }
 
+    @NotNull
     @Override
     public String getTypeName() {
         if (dataType != null) {
@@ -408,13 +436,14 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
     }
 
     @Override
-    public void setTypeName(String typeName) throws DBException {
+    public void setTypeName(@NotNull String typeName) throws DBException {
         final PostgreDataType dataType = resolveOrCreateDataType(typeName);
         this.typeName = typeName;
         this.typeId = dataType.getTypeID();
         this.dataType = dataType;
     }
 
+    @NotNull
     @Override
     @Property(viewable = true, editableExpr = "!object.table.view", updatableExpr = "!object.table.view", order = 20, listProvider = DataTypeListProvider.class)
     public String getFullTypeName() {
@@ -422,14 +451,15 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
             return getTypeName();
         }
         final PostgreTypeHandler handler = PostgreTypeHandlerProvider.getTypeHandler(dataType);
+        String typeName = dataType.getFullyQualifiedName(DBPEvaluationContext.DDL);
         if (handler != null) {
-            return dataType.getTypeName() + handler.getTypeModifiersString(dataType, typeMod);
+            return typeName + handler.getTypeModifiersString(dataType, typeMod);
         }
-        return dataType.getTypeName();
+        return typeName;
     }
 
     @Override
-    public void setFullTypeName(String fullTypeName) throws DBException {
+    public void setFullTypeName(@NotNull String fullTypeName) throws DBException {
         final Pair<String, String[]> type = DBUtils.getTypeModifiers(fullTypeName);
         final String typeName = type.getFirst();
         final String[] typeMods = type.getSecond();
@@ -487,6 +517,7 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
             return true;
         }
 
+        @Nullable
         @Override
         public Object[] getPossibleValues(PostgreAttribute<?> column) {
             List<PostgreDataType> types = new ArrayList<>();
@@ -515,14 +546,133 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
             return false;
         }
 
+        @Nullable
         @Override
         public Object[] getPossibleValues(PostgreAttribute object) {
             try {
-                return object.getDatabase().getCollations(new VoidProgressMonitor()).toArray();
+                Collection<PostgreCollation> collations = object.getDatabase().getCollations(new VoidProgressMonitor());
+                if (collations == null) {
+                    return new Object[0];
+                }
+                return collations.toArray();
             } catch (DBException e) {
                 log.error(e);
                 return new Object[0];
             }
         }
     }
+
+    public static class AttributeStorageValueValidator implements IPropertyValueValidator<PostgreAttribute, Object> {
+
+        @Override
+        public boolean isValidValue(@NotNull PostgreAttribute object, @Nullable Object value) throws IllegalArgumentException {
+            return object.getTable() instanceof PostgreTable && object.getDataSource().getServerType().supportsAlterStorageStrategy();
+        }
+    }
+
+    public static class StorageListProvider implements IPropertyValueListProvider<PostgreAttribute> {
+        @Override
+        public boolean allowCustomValue() {
+            return false;
+        }
+
+        @Nullable
+        @Override
+        public Object[] getPossibleValues(PostgreAttribute object) {
+            return PostgreAttributeStorage.getValues(object.getDataSource());
+        }
+    }
+
+    @Nullable
+    @Override
+    public DBSTypeDescriptor getTypeDescriptor(@NotNull DBRProgressMonitor monitor) {
+        PostgreDataType type = this.getDataType();
+        return this.arrayDim > 0 && type != null && type.isArray()
+            ? new PostgreArrayAttrTypeDescriptor(false, this.arrayDim, type, type.getElementType(monitor))
+            : null;
+    }
+
+    /**
+     * Represents the type description for the attribute of the array type
+     * <p>
+     * Array column type in postgre can
+     *     either be completely indexed through all the dimensions till the single item reflected with its data type,
+     *     or sliced with any other way of indexing producing an array of the same structural type.
+     * Partial exposure is questionable, didn't find working example for PostgreSQL, but some other databases supports that.
+     */
+    private static class PostgreArrayAttrTypeDescriptor implements DBSTypeDescriptor {
+        private final boolean isItemType;
+        private final int arrayDim;
+        private final PostgreDataType arrayType;
+        private final PostgreDataType elementType;
+
+        public  PostgreArrayAttrTypeDescriptor(boolean isItemType, int arrayDim, PostgreDataType arrayType, PostgreDataType elementType) {
+            this.isItemType = isItemType;
+            this.arrayDim = arrayDim;
+            this.arrayType = arrayType;
+            this.elementType = elementType;
+        }
+
+        @Nullable
+        @Override
+        public DBSDataType getUnderlyingType() {
+            if (this.isItemType) {
+                return this.elementType;
+            } else if (this.arrayDim == this.arrayType.getArrayDim()) {
+                return this.arrayType;
+            } else {
+                return null;
+            }
+        }
+
+        @NotNull
+        @Override
+        public Kind getKind() {
+            return !isItemType ? Kind.INDEXABLE : Kind.UNKNOWN;
+        }
+
+        @NotNull
+        @Override
+        public String getTypeName() {
+            return this.elementType.getFullTypeName() + "[]".repeat(isItemType ? 0 : arrayDim);
+        }
+
+        @Override
+        public int getIndexableDimensions() {
+            return isItemType ? 0 : arrayDim;
+        }
+
+        @Nullable
+        @Override
+        public DBSTypeDescriptor getIndexableItemType(int depth, boolean[] slicingSpecOrNull) {
+            // TODO clarify postgre indexing and slicing rules
+            if (isItemType) {
+                return null;
+            } else {
+                if (slicingSpecOrNull == null) {
+                    return depth == arrayDim ? new PostgreArrayAttrTypeDescriptor(true, this.arrayDim, this.arrayType, this.elementType)
+                        : (depth > arrayDim ? null : this);
+                } else if (slicingSpecOrNull.length != arrayDim) {
+                    return slicingSpecOrNull.length > arrayDim ? null : this;
+                } else {
+                    for (int i = 0; i < slicingSpecOrNull.length; i++) {
+                        if (slicingSpecOrNull[i]) {
+                            return this;
+                        }
+                    }
+                    return new PostgreArrayAttrTypeDescriptor(true, this.arrayDim, this.arrayType, this.elementType);
+                }
+            }
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            return obj instanceof PostgreArrayAttrTypeDescriptor other && ((
+                    !this.isItemType && !other.isItemType && this.arrayDim == other.arrayDim && this.arrayType.equals(other.arrayType) && this.elementType.equals(other.elementType)
+                ) || (
+                    this.isItemType && other.isItemType && this.elementType.equals(other.elementType)
+                ));
+        }
+    }
+    
 }

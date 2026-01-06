@@ -1,7 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
- * Copyright (C) 2011-2012 Eugene Fradkin (eugene.fradkin@gmail.com)
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ext.oracle.edit;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.oracle.model.OracleDataSource;
 import org.jkiss.dbeaver.ext.oracle.model.OracleSchema;
@@ -42,7 +42,7 @@ import java.util.Map;
 public class OracleSchemaManager extends SQLObjectEditor<OracleSchema, OracleDataSource> /*implements DBEObjectRenamer<OracleSchema>*/ {
 
     @Override
-    public long getMakerOptions(DBPDataSource dataSource) {
+    public long getMakerOptions(@NotNull DBPDataSource dataSource) {
         return FEATURE_SAVE_IMMEDIATELY;
     }
 
@@ -53,12 +53,12 @@ public class OracleSchemaManager extends SQLObjectEditor<OracleSchema, OracleDat
     }
 
     @Override
-    protected OracleSchema createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, final Object container, Object copyFrom, Map<String, Object> options) {
+    protected OracleSchema createDatabaseObject(@NotNull DBRProgressMonitor monitor, @NotNull DBECommandContext context, final Object container, Object copyFrom, @NotNull Map<String, Object> options) {
         return new OracleSchema((OracleDataSource) container, -1, "NEW_SCHEMA");
     }
 
     @Override
-    protected void addObjectCreateActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, ObjectCreateCommand command, Map<String, Object> options) {
+    protected void addObjectCreateActions(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext executionContext, @NotNull List<DBEPersistAction> actions, @NotNull ObjectCreateCommand command, @NotNull Map<String, Object> options) {
         OracleUser user = command.getObject().getUser();
         String sql = "CREATE USER " + DBUtils.getQuotedIdentifier(user);
         if (!CommonUtils.isEmpty(user.getPassword())) {
@@ -69,7 +69,7 @@ public class OracleSchemaManager extends SQLObjectEditor<OracleSchema, OracleDat
     }
 
     @Override
-    protected void addObjectDeleteActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, ObjectDeleteCommand command, Map<String, Object> options) {
+    protected void addObjectDeleteActions(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext executionContext, @NotNull List<DBEPersistAction> actions, @NotNull ObjectDeleteCommand command, @NotNull Map<String, Object> options) {
         actions.add(
             new SQLDatabasePersistAction("Drop schema",
                 "DROP USER " + DBUtils.getQuotedIdentifier(command.getObject()) + " CASCADE") //$NON-NLS-2$

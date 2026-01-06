@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,14 +18,14 @@ package org.jkiss.dbeaver.model.impl;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.impl.app.DefaultCertificateStorage;
+import org.jkiss.junit.DBeaverUnitTest;
 import org.junit.Assert;
 import org.junit.Test;
 
 import java.io.StringReader;
 import java.security.SecureRandom;
 import java.util.Base64;
-
-public class DefaultCertificateStorageTest {
+public class DefaultCertificateStorageTest extends DBeaverUnitTest {
     @Test
     public void loadDerFromPem() throws Exception {
         final var derKey = makeKey();

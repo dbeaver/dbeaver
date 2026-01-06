@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -65,7 +65,6 @@ public class PrefPageDataViewer extends TargetPrefPage {
     @Override
     protected Control createPreferenceContent(@NotNull Composite parent) {
         final Composite composite = UIUtils.createPlaceholder(parent, 1, 5);
-
         {
             final Group group = UIUtils.createControlGroup(composite, ResultSetMessages.pref_page_data_viewer_reference_panel_group, 2, GridData.FILL_HORIZONTAL, 0);
 
@@ -121,13 +120,17 @@ public class PrefPageDataViewer extends TargetPrefPage {
         {
             final Group group = UIUtils.createControlGroup(composite,
                 ResultSetMessages.pref_page_data_viewer_dictionary_panel_group, 1, GridData.FILL_HORIZONTAL, 0);
-            maxAmountText = UIUtils.createLabelText(group,
-                ResultSetMessages.getPref_page_data_viewer_dictionary_panel_results_max_size, "200");
+            maxAmountText = UIUtils.createLabelText(
+                group,
+                ResultSetMessages.getPref_page_data_viewer_dictionary_panel_results_max_size,
+                "200"
+            );
             maxAmountText.addVerifyListener(UIUtils.getNumberVerifyListener(Locale.getDefault()));
             maxAmountText.addModifyListener((event) -> {
                 updateApplyButton();
                 getContainer().updateButtons();
             });
+            UIUtils.createInfoLabel(group, ResultSetMessages.getPref_page_data_viewer_dictionary_panel_results_max_size_tip);
         }
         return composite;
     }
@@ -165,9 +168,11 @@ public class PrefPageDataViewer extends TargetPrefPage {
 
     @Override
     protected void performDefaults() {
-        final DBPPreferenceStore store = getTargetPreferenceStore();
-        clearPreferences(store);
-        loadPreferences(store);
+        maxAmountText.setText(getTargetPreferenceStore().getDefaultString(ModelPreferences.DICTIONARY_MAX_ROWS));
+        refPanelDescColumnKeywords.removeAll();
+        for (String pattern : DBVEntity.DEFAULT_DESCRIPTION_COLUMN_PATTERNS) {
+            refPanelDescColumnKeywords.add(pattern);
+        }
     }
 
     @Override

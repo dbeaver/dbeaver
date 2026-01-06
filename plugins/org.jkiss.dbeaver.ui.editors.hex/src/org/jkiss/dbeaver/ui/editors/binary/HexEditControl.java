@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,10 +25,8 @@ import org.eclipse.swt.graphics.*;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
-import org.eclipse.ui.PlatformUI;
-import org.eclipse.ui.themes.ITheme;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.ui.UIFonts;
+import org.jkiss.dbeaver.ui.BaseThemeSettings;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.binary.pref.HexPreferencesPage;
 import org.jkiss.dbeaver.utils.GeneralUtils;
@@ -60,7 +58,6 @@ public class HexEditControl extends Composite {
     public static final String DEFAULT_FONT_NAME = "Courier New"; //$NON-NLS-1$"
     public static final FontData DEFAULT_FONT_DATA = new FontData(DEFAULT_FONT_NAME, 10, SWT.NORMAL);
 
-    static final Color COLOR_BLUE = Display.getCurrent().getSystemColor(SWT.COLOR_BLUE);
     static final Color COLOR_LIGHT_SHADOW = Display.getCurrent().getSystemColor(SWT.COLOR_WIDGET_LIGHT_SHADOW);
     static final Color COLOR_NORMAL_SHADOW = Display.getCurrent().getSystemColor(SWT.COLOR_WIDGET_NORMAL_SHADOW);
 
@@ -147,8 +144,6 @@ public class HexEditControl extends Composite {
 
     private int defWidth = Integer.valueOf(HexPreferencesPage.getDefaultWidth());
 
-    private Color colorText;
-    private Color colorCaretLine = null;
     private Color colorHighlightText = null;
 
     public HexEditControl(final Composite parent, int style)
@@ -191,11 +186,10 @@ public class HexEditControl extends Composite {
     }
 
     private void loadSettings() {
-        ITheme currentTheme = PlatformUI.getWorkbench().getThemeManager().getCurrentTheme();
-        this.colorCaretLine = currentTheme.getColorRegistry().get("org.jkiss.dbeaver.hex.editor.color.caret");
-        this.colorText = currentTheme.getColorRegistry().get("org.jkiss.dbeaver.hex.editor.color.text");
-        this.colorHighlightText = UIUtils.getSharedColor(UIUtils.blend(this.colorText.getRGB(), this.colorCaretLine.getRGB(), 50));
-        this.fontDefault = currentTheme.getFontRegistry().get(UIFonts.DBEAVER_FONTS_MONOSPACE);
+        this.colorHighlightText = UIUtils.getSharedColor(UIUtils.blend(
+            HexEditThemeSettings.instance.colorText.getRGB(),
+            HexEditThemeSettings.instance.colorCaretLine.getRGB(), 50));
+        this.fontDefault = BaseThemeSettings.instance.monospaceFont;
     }
 
     /**
@@ -380,7 +374,7 @@ public class HexEditControl extends Composite {
         @Override
         public void paintControl(PaintEvent event)
         {
-            event.gc.setForeground(COLOR_LIGHT_SHADOW);
+            event.gc.setForeground(HexEditThemeSettings.instance.cellHeaderBackground);
             int lineWidth = 1;
             int charLen = 1;
             int rightHalfWidth = 0;  // is 1, but better to tread on leftmost char pixel than rightmost one
@@ -579,6 +573,12 @@ public class HexEditControl extends Composite {
      * This method initializes composite
      */
     private void initialize() {
+        Color headerRowBackgroundColor = UIUtils.getSharedTextColors().getColor(UIUtils.blend(
+            COLOR_LIGHT_SHADOW.getRGB(),
+            HexEditThemeSettings.instance.cellHeaderBackground.getRGB(),
+            15
+        ));
+
         GridLayout gridLayout1 = new GridLayout();
         gridLayout1.numColumns = 3;
         gridLayout1.marginHeight = 0;
@@ -617,12 +617,15 @@ public class HexEditControl extends Composite {
             gridDataTextSeparator.widthHint = 10;
             linesTextSeparator = new Text(linesColumn, SWT.SEPARATOR);
             linesTextSeparator.setEnabled(false);
-            linesTextSeparator.setBackground(COLOR_LIGHT_SHADOW);
+            linesTextSeparator.setBackground(headerRowBackgroundColor);
             linesTextSeparator.setLayoutData(gridDataTextSeparator);
 
             linesText = new StyledText(linesColumn, SWT.MULTI | SWT.READ_ONLY);
             linesText.setEditable(false);
             linesText.setEnabled(false);
+            linesText.setBackground(HexEditThemeSettings.instance.cellHeaderBackground);
+            linesText.setForeground(HexEditThemeSettings.instance.cellHeaderForeground);
+
             //linesText.setBackground(COLOR_LIGHT_SHADOW);
             //linesText.setForeground(Display.getCurrent().getSystemColor(SWT.COLOR_BLACK));
 //            fontDefault = new Font(Display.getCurrent(), DEFAULT_FONT_DATA);
@@ -665,8 +668,9 @@ public class HexEditControl extends Composite {
             hexHeaderText = new StyledText(hexHeaderGroup, SWT.SINGLE | SWT.READ_ONLY);
             hexHeaderText.setEditable(false);
             hexHeaderText.setEnabled(false);
-            hexHeaderText.setBackground(COLOR_LIGHT_SHADOW);
-            //hexHeaderText.setForeground(Display.getCurrent().getSystemColor(SWT.COLOR_BLACK));
+            hexHeaderText.setBackground(headerRowBackgroundColor);
+            hexHeaderText.setForeground(HexEditThemeSettings.instance.cellHeaderForeground);
+        //hexHeaderText.setForeground(Display.getCurrent().getSystemColor(SWT.COLOR_BLACK));
             hexHeaderText.setLayoutData(gridData);
             hexHeaderText.setFont(fontCurrent);
             refreshHeader();
@@ -720,7 +724,7 @@ public class HexEditControl extends Composite {
             gridDataTextSeparator2.grabExcessHorizontalSpace = true;
             previewTextSeparator = new Text(previewColumn, SWT.SEPARATOR);
             previewTextSeparator.setEnabled(false);
-            previewTextSeparator.setBackground(COLOR_LIGHT_SHADOW);
+            previewTextSeparator.setBackground(headerRowBackgroundColor);
             previewTextSeparator.setLayoutData(gridDataTextSeparator2);
             makeFirstRowSameHeight();
 
@@ -1063,7 +1067,7 @@ public class HexEditControl extends Composite {
             }
             if (unfocusedCaret.getVisible()) {
                 Rectangle unfocused = unfocusedCaret.getBounds();
-                unfocusedGC.setForeground(visible ? COLOR_NORMAL_SHADOW : colorCaretLine);
+                unfocusedGC.setForeground(visible ? COLOR_NORMAL_SHADOW : HexEditThemeSettings.instance.colorCaretLine);
                 unfocusedGC.drawRectangle(unfocused.x + shift * unfocused.width,
                     unfocused.y,
                     unfocused.width << chars,
@@ -1321,7 +1325,7 @@ public class HexEditControl extends Composite {
         boolean highlight = mergeRangesIsHighlight;
         while (mergerNext()) {
             if (blue || highlight) {
-                result.add(new StyleRange(start, mergeRangesPosition - start, blue ? colorText : null,
+                result.add(new StyleRange(start, mergeRangesPosition - start, blue ? HexEditThemeSettings.instance.colorText : null,
                     highlight ? colorHighlightText : null));
             }
             start = mergeRangesPosition;
@@ -1584,8 +1588,8 @@ public class HexEditControl extends Composite {
                     hexText.setLineBackground(previousLine, 1, null);
                     previewText.setLineBackground(previousLine, 1, null);
                 }
-                hexText.setLineBackground(line, 1, colorCaretLine);
-                previewText.setLineBackground(line, 1, colorCaretLine);
+                hexText.setLineBackground(line, 1, HexEditThemeSettings.instance.colorCaretLine);
+                previewText.setLineBackground(line, 1, HexEditThemeSettings.instance.colorCaretLine);
                 previousLine = line;
             }
             hexText.getCaret().setVisible(true);

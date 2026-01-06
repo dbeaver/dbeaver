@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,16 +21,16 @@ import org.jkiss.code.NotNull;
 /**
  * Named object extension
  */
-public interface DBPQualifiedObject extends DBPObject
-{
+public interface DBPQualifiedObject extends DBPObject {
 
     /**
      * Entity full qualified name.
      * Should include all parent objects' names and thus uniquely identify this entity within database.
-     * @return full qualified name, never returns null.
+     *
      * @param context evaluation context
+     * @return full qualified name, never returns null.
      */
     @NotNull
-    String getFullyQualifiedName(DBPEvaluationContext context);
+    String getFullyQualifiedName(@NotNull DBPEvaluationContext context);
 
 }

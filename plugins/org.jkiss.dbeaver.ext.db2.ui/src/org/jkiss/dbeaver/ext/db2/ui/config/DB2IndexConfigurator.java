@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,8 @@
  */
 package org.jkiss.dbeaver.ext.db2.ui.config;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.db2.model.DB2Index;
 import org.jkiss.dbeaver.ext.db2.model.DB2IndexColumn;
 import org.jkiss.dbeaver.ext.db2.model.DB2TableBase;
@@ -23,6 +25,7 @@ import org.jkiss.dbeaver.ext.db2.model.DB2TableColumn;
 import org.jkiss.dbeaver.ext.db2.model.dict.DB2IndexType;
 import org.jkiss.dbeaver.ext.db2.model.dict.DB2UniqueRule;
 import org.jkiss.dbeaver.ext.db2.ui.internal.DB2Messages;
+import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEObjectConfigurator;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -54,7 +57,7 @@ public class DB2IndexConfigurator implements DBEObjectConfigurator<DB2Index> {
     }
 
     @Override
-    public DB2Index configureObject(DBRProgressMonitor monitor, Object container, DB2Index index, Map<String, Object> options) {
+    public DB2Index configureObject(@NotNull DBRProgressMonitor monitor, @Nullable DBECommandContext commandContext, @Nullable Object container, @NotNull DB2Index index, @NotNull Map<String, Object> options) {
         return UITask.run(() -> {
         	DB2TableBase table = (DB2TableBase) container;
         	EditIndexPage editPage = new EditIndexPage(

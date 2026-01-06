@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ext.postgresql.model.impls.cockroach;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.DBDatabaseException;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.postgresql.model.*;
 import org.jkiss.dbeaver.ext.postgresql.model.impls.PostgreServerExtensionBase;
@@ -173,7 +174,7 @@ public class PostgreServerCockroachDB extends PostgreServerExtensionBase {
     }
 
     @Override
-    public boolean supportsTeblespaceLocation() {
+    public boolean supportsTablespaceLocation() {
         return false;
     }
 
@@ -197,17 +198,20 @@ public class PostgreServerCockroachDB extends PostgreServerExtensionBase {
                         String privilege = JDBCUtils.safeGetString(resultSet, "privilege_type");
                         List<PostgrePrivilegeGrant> privList = privilegeMap.computeIfAbsent(grantee, k -> new ArrayList<>());
                         PostgrePrivilegeType privType = CommonUtils.valueOf(PostgrePrivilegeType.class, privilege, PostgrePrivilegeType.UNKNOWN);
-                        privList.add(new PostgrePrivilegeGrant("", grantee, databaseName, schemaName, tableName, privType, true, true));
+                        assert grantee != null;
+                        privList.add(new PostgrePrivilegeGrant(null, new PostgreRoleReference(table.getDatabase(), grantee, null),
+                            databaseName, schemaName, tableName, privType, true, true
+                        ));
                     }
                     for (Map.Entry<String, List<PostgrePrivilegeGrant>> entry : privilegeMap.entrySet()) {
-                        PostgrePrivilege permission = new PostgreObjectPrivilege(table, entry.getKey(), entry.getValue());
+                        PostgrePrivilege permission = new PostgreObjectPrivilege(table, new PostgreRoleReference(table.getDatabase(), entry.getKey(), null), entry.getValue());
                         permissions.add(permission);
                     }
                     return permissions;
                 }
             }
         } catch (Exception e) {
-            throw new DBException(e, table.getDataSource());
+            throw new DBDatabaseException(e, table.getDataSource());
         }
     }
 
@@ -247,7 +251,7 @@ public class PostgreServerCockroachDB extends PostgreServerExtensionBase {
                 }
             }
         } catch (Exception e) {
-            throw new DBException(e, table.getDataSource());
+            throw new DBDatabaseException(e, table.getDataSource());
         }
     }
 

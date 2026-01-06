@@ -82,6 +82,12 @@
                </appInfo>
             </annotation>
          </attribute>
+         <attribute name="order" type="int" use="optional">
+             <annotation>
+                 <documentation>
+                 </documentation>
+             </annotation>
+         </attribute>
       </complexType>
    </element>
 

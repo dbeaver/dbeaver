@@ -1,7 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
- * Copyright (C) 2011-2012 Eugene Fradkin (eugene.fradkin@gmail.com)
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,7 +22,7 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.ui.dialogs.PreferencesUtil;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBIcon;
-import org.jkiss.dbeaver.model.app.DBPProject;
+import org.jkiss.dbeaver.model.rcp.RCPProject;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizard;
 
@@ -34,9 +33,9 @@ public class EditProjectWizard extends ActiveWizard {
 
     private static final Log log = Log.getLog(EditProjectWizard.class);
 
-    private final DBPProject project;
+    private final RCPProject project;
 
-    public EditProjectWizard(DBPProject project) {
+    public EditProjectWizard(RCPProject project) {
         this.project = project;
     }
 

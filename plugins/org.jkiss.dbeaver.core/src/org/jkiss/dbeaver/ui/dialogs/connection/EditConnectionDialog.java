@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,6 @@ package org.jkiss.dbeaver.ui.dialogs.connection;
 
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.IDialogSettings;
-import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -26,10 +25,10 @@ import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.core.CoreFeatures;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
+import org.jkiss.dbeaver.ui.ConnectionFeatures;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.MultiPageWizardDialog;
 import org.jkiss.utils.CommonUtils;
@@ -74,24 +73,6 @@ public class EditConnectionDialog extends MultiPageWizardDialog {
         return UIUtils.getDialogSettings("DBeaver.EditConnectionDialog");
     }
 
-    @NotNull
-    @Override
-    protected IWizardPage getStartingPage() {
-/*
-        String defPage = defaultPageName;
-        if (defPage == null) {
-            defPage = lastActivePage;
-        }
-        if (defPage != null) {
-            IWizardPage page = getWizard().getPage(defPage);
-            if (page != null) {
-                return page;
-            }
-        }
-*/
-        return super.getStartingPage();
-    }
-
     @Override
     protected Control createContents(Composite parent) {
         Control contents = super.createContents(parent);
@@ -113,8 +94,8 @@ public class EditConnectionDialog extends MultiPageWizardDialog {
     }
 
     @Override
-    protected boolean isAutoLayoutAvailable() {
-        return true;
+    protected boolean isShowTreeIcons() {
+        return false;
     }
 
     @Override
@@ -168,6 +149,7 @@ public class EditConnectionDialog extends MultiPageWizardDialog {
         getWizard().testConnection();
     }
 
+
     public static boolean openEditConnectionDialog(IWorkbenchWindow window, DBPDataSourceContainer dataSource, String defaultPageName) {
         return openEditConnectionDialog(window, dataSource, defaultPageName, null);
     }
@@ -179,7 +161,7 @@ public class EditConnectionDialog extends MultiPageWizardDialog {
         @Nullable Consumer<EditConnectionWizard> wizardConfigurer
     ) {
         EditConnectionDialog dialog = openDialogs.get(dataSource);
-        if (dialog != null) {
+        if (dialog != null && dialog.getShell() != null && !dialog.getShell().isDisposed()) {
             if (defaultPageName != null) {
                 dialog.showPage(defaultPageName);
             }
@@ -187,7 +169,7 @@ public class EditConnectionDialog extends MultiPageWizardDialog {
             return true;
         }
 
-        CoreFeatures.CONNECTION_EDIT.use(Map.of("driver", dataSource.getDriver().getPreconfiguredId()));
+        ConnectionFeatures.CONNECTION_EDIT.use(Map.of("driver", dataSource.getDriver().getPreconfiguredId()));
 
         EditConnectionWizard wizard = new EditConnectionWizard((DataSourceDescriptor) dataSource);
 

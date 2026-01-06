@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,19 +16,22 @@
  */
 package org.jkiss.dbeaver.runtime.properties;
 
-import org.eclipse.core.internal.runtime.Activator;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBConstants;
+import org.jkiss.dbeaver.model.DBPConditionalProperty;
 import org.jkiss.dbeaver.model.DBPPersistedObject;
 import org.jkiss.dbeaver.model.exec.DBExecUtils;
 import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
 import org.jkiss.dbeaver.model.meta.*;
+import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
+import org.jkiss.dbeaver.model.navigator.DBNNodeReference;
 import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.model.preferences.DBPPropertySource;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.BeanUtils;
 import org.jkiss.utils.CommonUtils;
@@ -50,18 +53,21 @@ import java.util.stream.Collectors;
 /**
  * ObjectPropertyDescriptor
 */
-public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor implements DBPPropertyDescriptor, IPropertyValueListProvider<Object>
+public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor
+    implements DBPPropertyDescriptor, DBPConditionalProperty, IPropertyValueListProvider<Object>
 {
 
     private final Property propInfo;
     private final String propName;
     private final String propDescription;
+    private final String propHint;
     private Method setter;
     private IPropertyValueTransformer valueTransformer;
     private IPropertyValueTransformer valueRenderer;
     private IPropertyValueValidator valueValidator;
     private final Class<?> declaringClass;
     private Format displayFormat = null;
+    private IPropertyValueTransformer labelProvider;
 
     public ObjectPropertyDescriptor(
         DBPPropertySource source,
@@ -95,7 +101,7 @@ public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor implemen
             }
         }
 
-        // Obtain value transformer
+        // Obtain value render
         Class<? extends IPropertyValueTransformer> valueRendererClass = propInfo.valueRenderer();
         if (valueRendererClass != IPropertyValueTransformer.class) {
             try {
@@ -115,10 +121,30 @@ public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor implemen
             }
         }
 
+        // Obtain label provider
+        Class<? extends IPropertyValueTransformer> labelProviderClass = propInfo.labelProvider();
+        labelProvider = null;
+        if (labelProviderClass != IPropertyValueTransformer.class) {
+            try {
+                labelProvider = labelProviderClass.getConstructor().newInstance();
+            } catch (Throwable e) {
+                log.warn("Can't create label provider", e);
+            }
+        }
+
         this.propName = getLocalizedString(propInfo.name(), Property.RESOURCE_TYPE_NAME, getId(), !propInfo.hidden(), locale);
-        this.propDescription = CommonUtils.isEmpty(propInfo.description()) ?
-                propName :
-                getLocalizedString(propInfo.name(), Property.RESOURCE_TYPE_DESCRIPTION, propName, false, locale);
+        this.propDescription = CommonUtils.isEmpty(propInfo.description())
+            ? propName
+            : getLocalizedString(
+                propInfo.name(),
+                Property.RESOURCE_TYPE_DESCRIPTION,
+                Property.DEFAULT_LOCAL_STRING.equals(propInfo.description()) ? propName : propInfo.description(),
+                false,
+                locale
+            );
+        this.propHint = CommonUtils.isEmpty(propInfo.hint()) ?
+            null :
+            getLocalizedString(propInfo.name(), Property.RESOURCE_TYPE_HINT, null, false, locale);
     }
 
     @Override
@@ -140,6 +166,10 @@ public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor implemen
     public boolean isExpensive()
     {
         return propInfo.expensive();
+    }
+
+    public boolean isInfo() {
+        return propInfo.info();
     }
 
     public boolean isNumeric() {
@@ -220,10 +250,9 @@ public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor implemen
     }
 
     @Override
-    public boolean isEditable(Object object)
-    {
+    public boolean isEditable(Object object) {
         final DBPPropertySource propertySource = getSource();
-        if (!(propertySource instanceof IPropertySourceEditable) || !((IPropertySourceEditable) propertySource).isEditable(object)) {
+        if (!(propertySource instanceof IPropertySourceEditable pse) || !pse.isEditable(object)) {
             return false;
         }
         // Read-only or non-updatable property for non-new object
@@ -233,7 +262,6 @@ public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor implemen
     @Nullable
     @Override
     public String[] getFeatures() {
-
         List<String> features = Arrays.stream(propInfo.features())
             .collect(Collectors.toList());
 
@@ -259,49 +287,36 @@ public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor implemen
         return features.toArray(new String[0]);
     }
 
+    @Nullable
     @Override
-    public boolean hasFeature(@NotNull String feature) {
-
-        switch (feature) {
-            case DBConstants.PROP_FEATURE_REQUIRED:
-                return this.isRequired();
-            case DBConstants.PROP_FEATURE_SPECIFIC:
-                return this.isSpecific();
-            case DBConstants.PROP_FEATURE_OPTIONAL:
-                return this.isOptional();
-            case DBConstants.PROP_FEATURE_HIDDEN:
-                return this.isHidden();
-
-            case DBConstants.PROP_FEATURE_DATETME:
-                return this.isDateTime();
-            case DBConstants.PROP_FEATURE_NUMERIC:
-                return this.isNumeric();
-            case DBConstants.PROP_FEATURE_NAME:
-                return this.isNameProperty();
-
-            case DBConstants.PROP_FEATURE_MULTILINE:
-                return this.getLength() == PropertyLength.MULTILINE;
-            case DBConstants.PROP_FEATURE_EXPENSIVE:
-                return this.isExpensive();
-            case DBConstants.PROP_FEATURE_EDIT_POSSIBLE:
-                return this.isEditPossible();
-            case DBConstants.PROP_FEATURE_LINK_POSSIBLE:
-                return this.isLinkPossible();
-            case DBConstants.PROP_FEATURE_HREF:
-                return this.isHref();
-            case DBConstants.PROP_FEATURE_VIEWABLE:
-                return this.isViewable();
-            case DBConstants.PROP_FEATURE_PASSWORD:
-                return this.isPassword();
-            case DBConstants.PROP_FEATURE_NON_SECURED:
-                return this.isNonSecuredProperty();
-        }
-
-        return ArrayUtils.contains(propInfo.features(), feature);
+    public String[] getRequiredFeatures() {
+        return propInfo.requiredFeatures();
     }
 
-    private boolean getEditableValue(Object object)
-    {
+    @Override
+    public boolean hasFeature(@NotNull String feature) {
+        return switch (feature) {
+            case DBConstants.PROP_FEATURE_REQUIRED -> this.isRequired();
+            case DBConstants.PROP_FEATURE_SPECIFIC -> this.isSpecific();
+            case DBConstants.PROP_FEATURE_OPTIONAL -> this.isOptional();
+            case DBConstants.PROP_FEATURE_HIDDEN -> this.isHidden();
+            case DBConstants.PROP_FEATURE_DATETME -> this.isDateTime();
+            case DBConstants.PROP_FEATURE_NUMERIC -> this.isNumeric();
+            case DBConstants.PROP_FEATURE_NAME -> this.isNameProperty();
+            case DBConstants.PROP_FEATURE_MULTILINE -> this.getLength() == PropertyLength.MULTILINE;
+            case DBConstants.PROP_FEATURE_EXPENSIVE -> this.isExpensive();
+            case DBConstants.PROP_FEATURE_EDIT_POSSIBLE -> this.isEditPossible();
+            case DBConstants.PROP_FEATURE_LINK_POSSIBLE -> this.isLinkPossible();
+            case DBConstants.PROP_FEATURE_HREF -> this.isHref();
+            case DBConstants.PROP_FEATURE_VIEWABLE -> this.isViewable();
+            case DBConstants.PROP_FEATURE_PASSWORD -> this.isPassword();
+            case DBConstants.PROP_FEATURE_NON_SECURED -> this.isNonSecuredProperty();
+            case DBConstants.PROP_FEATURE_INFO -> this.isInfo();
+            default -> ArrayUtils.contains(propInfo.features(), feature);
+        };
+    }
+
+    private boolean getEditableValue(Object object) {
         boolean isNew = isNewObject(object);
         String expr = isNew ? propInfo.editableExpr() : propInfo.updatableExpr();
         if (!expr.isEmpty()) {
@@ -320,13 +335,11 @@ public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor implemen
         return propInfo.editable();
     }
 
-    private boolean isNewObject(Object object)
-    {
-        return object instanceof DBPPersistedObject && !((DBPPersistedObject) object).isPersisted();
+    private boolean isNewObject(Object object) {
+        return object instanceof DBPPersistedObject po && !po.isPersisted();
     }
 
-    public boolean isEditPossible(Object context)
-    {
+    public boolean isEditPossible(Object context) {
         String expr = propInfo.editableExpr();
         if (!CommonUtils.isEmpty(expr)) {
             return Boolean.TRUE.equals(evaluateExpression(context, expr));
@@ -335,9 +348,10 @@ public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor implemen
     }
 
     @Override
-    public String getCategory()
-    {
-        return CommonUtils.isEmpty(propInfo.category()) ? null : propInfo.category();
+    public String getCategory() {
+        return CommonUtils.isEmpty(propInfo.category()) ?
+            getParent() == null ? null : CommonUtils.notEmpty(getParent().getCategory()) :
+            propInfo.category();
     }
 
     @Override
@@ -346,10 +360,30 @@ public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor implemen
         return propDescription;
     }
 
+    @Override
+    public String getHint()
+    {
+        return propHint;
+    }
+
     @NotNull
     @Override
-    public String getDisplayName()
-    {
+    public String getDisplayName() {
+        if (labelProvider != null && getSource() != null) {
+            Object editableValue = getSource().getEditableValue();
+            if (editableValue == null) {
+                if (getSource() instanceof DBNNodeReference nodeReference &&
+                    nodeReference.getReferencedNode() instanceof DBNDatabaseNode dbNode) {
+                    editableValue = dbNode.getObject();
+                }
+            }
+            if (editableValue != null) {
+                String propLabel = CommonUtils.toString(labelProvider.transform(editableValue, null), null);
+                if (propLabel != null) {
+                    return propLabel;
+                }
+            }
+        }
         return propName;
     }
 
@@ -394,9 +428,20 @@ public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor implemen
                 return null;
             }
         }
+
         Method getter = getGetter();
         Object[] params = getter.getParameterCount() > 0 ?
             new Object[getter.getParameterCount()] : null;
+        Object finalObject = object;
+
+
+        InvocationSupplier<Object> readPropertyMethod = () -> {
+            try {
+                return getter.invoke(finalObject, params);
+            } catch (Exception e) {
+                throw new InvocationTargetException(e, e.getMessage());
+            }
+        };
 
         if (isLazy() && params != null) {
             // Lazy (probably cached)
@@ -405,23 +450,18 @@ public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor implemen
             }
             params[0] = progressMonitor;
         }
-        if (progressMonitor != null && isLazy() && object instanceof DBSObject) {
-            Object finalObject = object;
+        if (progressMonitor != null && isLazy() && object instanceof DBSObject dbsObject) {
             Object[] finalResult = new Object[1];
             try {
-                DBExecUtils.tryExecuteRecover(progressMonitor, ((DBSObject) object).getDataSource(), param -> {
-                    try {
-                        finalResult[0] = getter.invoke(finalObject, params);
-                    } catch (Exception e) {
-                        throw new InvocationTargetException(e);
-                    }
-                });
+                progressMonitor.subTask("Read " + this.getDisplayName());
+                DBExecUtils.tryExecuteRecover(progressMonitor, dbsObject.getDataSource(), param ->
+                    finalResult[0] = readPropertyMethod.get());
             } catch (Exception e) {
                 throw new InvocationTargetException(e);
             }
             value = finalResult[0];
         } else {
-            value = getter.invoke(object, params);
+            value = readPropertyMethod.get();
         }
 
         if (formatValue) {
@@ -481,10 +521,12 @@ public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor implemen
             } else {
                 if (argType == Boolean.TYPE || argType == Boolean.class && !(value instanceof Boolean)) {
                     value = CommonUtils.toBoolean(value);
-                } else if (argType == Long.TYPE) {
+                } else if (argType == Long.TYPE || argType == Long.class) {
                     value = CommonUtils.toLong(value);
-                } else if (argType == Integer.TYPE) {
+                } else if (argType == Integer.TYPE || argType == Integer.class) {
                     value = CommonUtils.toInt(value);
+                } else if (argType == Double.TYPE || argType == Double.class) {
+                    value = CommonUtils.toDouble(value);
                 }
             }
             setter.invoke(object, value);
@@ -508,7 +550,7 @@ public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor implemen
     @Override
     public boolean isRequired()
     {
-        return false;
+        return propInfo.required();
     }
 
     @Override
@@ -535,6 +577,7 @@ public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor implemen
         return (propInfo.listProvider() != IPropertyValueListProvider.class);
     }
 
+    @Nullable
     @Override
     public Object[] getPossibleValues(Object object)
     {
@@ -561,11 +604,10 @@ public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor implemen
     }
 
     @Override
-    public boolean equals(Object obj)
-    {
-        return obj instanceof ObjectPropertyDescriptor &&
-            propInfo.equals(((ObjectPropertyDescriptor)obj).propInfo) &&
-            CommonUtils.equalObjects(getGetter(), ((ObjectPropertyDescriptor)obj).getGetter());
+    public boolean equals(Object obj) {
+        return obj instanceof ObjectPropertyDescriptor opd &&
+            propInfo.equals(opd.propInfo) &&
+            CommonUtils.equalObjects(getGetter(), opd.getGetter());
     }
 
     private String getLocalizedString(String string, String type, String defaultValue, boolean warnMissing, String locale) {
@@ -617,11 +659,22 @@ public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor implemen
     }
 
     private ResourceBundle getPluginResourceBundle(Bundle bundle, Class<?> ownerClass, String language) {
-        return Activator.getDefault().getLocalization(bundle, language);
+        return RuntimeUtils.getBundleLocalization(bundle, language);
         // Copied from ResourceTranslator.getResourceBundle
 //        Locale locale = (language == null) ? Locale.getDefault() : new Locale(language);
 //        return ResourceBundle.getBundle("plugin", locale, ownerClass.getClassLoader()); //$NON-NLS-1$
     }
 
+    @Nullable
+    @Override
+    public String getHideExpression() {
+        return CommonUtils.nullIfEmpty(propInfo.hideExpr());
+    }
+
+    @Nullable
+    @Override
+    public String getReadOnlyExpression() {
+        return CommonUtils.nullIfEmpty(propInfo.readOnlyExpr());
+    }
 
 }

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -43,7 +43,7 @@ public class SQLDoubleClickStrategy implements ITextDoubleClickStrategy {
     }
 
     /**
-     * Handles a double-click action by selecting the current word.
+     * Handles a double click action by selecting the current word.
      *
      * @see org.eclipse.jface.text.ITextDoubleClickStrategy#doubleClicked(ITextViewer)
      */
@@ -52,7 +52,7 @@ public class SQLDoubleClickStrategy implements ITextDoubleClickStrategy {
         // Get the viewer we are dealing with.
         fText = viewer;
 
-        // Get the double-click location in the document.
+        // Get the double click location in the document.
         curPos = viewer.getSelectedRange().x;
 
         if (curPos < 0 || curPos >= fText.getDocument().getLength()) {
@@ -66,7 +66,7 @@ public class SQLDoubleClickStrategy implements ITextDoubleClickStrategy {
 
     /**
      * Attempts to find and match opening or closing brackets just ahead of the
-     * double-click location.  Sets fStartPos and fEndPos to the bracket locations
+     * double click location.  Sets fStartPos and fEndPos to the bracket locations
      * if found.
      *
      * @return true if brackets found and matched, otherwise false
@@ -175,11 +175,11 @@ public class SQLDoubleClickStrategy implements ITextDoubleClickStrategy {
      *
      * @param startPosition the starting position for the search
      * @param openBracket the open bracket character
-     * @param closeBracket the close bracker character
+     * @param closeBracket the close bracket character
      * @param document the document being searched
      * @return the location of the closing bracket
      */
-     protected int searchForClosingBracket( int startPosition, char openBracket, char closeBracket, IDocument document ) throws BadLocationException {
+     protected int searchForClosingBracket(int startPosition, char openBracket, char closeBracket, IDocument document ) throws BadLocationException {
         int stack = 1;
         int closePosition = startPosition + 1;
         int length = document.getLength();

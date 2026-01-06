@@ -13,10 +13,10 @@
     </extension>
     <extension point="org.eclipse.ui.commandImages">
         <image commandId="org.jkiss.dbeaver.git.commands.share" icon="icons/share.png"/>
-        <image commandId="org.jkiss.dbeaver.git.commands.projectFromGit" icon="icons/clone.png"/>
+        <image commandId="org.jkiss.dbeaver.git.commands.projectFromGit" icon="icons/clone.svg"/>
 
-        <image commandId="org.jkiss.dbeaver.git.commands.update" icon="icons/pull.png"/>
-        <image commandId="org.jkiss.dbeaver.git.commands.commit" icon="icons/push.png"/>
+        <image commandId="org.jkiss.dbeaver.git.commands.update" icon="icons/pull.svg"/>
+        <image commandId="org.jkiss.dbeaver.git.commands.commit" icon="icons/push.svg"/>
     </extension>
 
     <extension point="org.eclipse.core.expressions.propertyTesters">
@@ -37,7 +37,11 @@
                 </not>
             </activeWhen>
         </handler>
-        <handler commandId="org.jkiss.dbeaver.git.commands.projectFromGit" class="org.jkiss.dbeaver.team.git.ui.handlers.ProjectCloneHandler"/>
+        <handler commandId="org.jkiss.dbeaver.git.commands.projectFromGit" class="org.jkiss.dbeaver.team.git.ui.handlers.ProjectCloneHandler">
+            <enabledWhen>
+                <test property="org.jkiss.dbeaver.core.global.ui.canCreateProject"/>
+            </enabledWhen>
+        </handler>
         <handler commandId="org.jkiss.dbeaver.git.commands.update" class="org.jkiss.dbeaver.team.git.ui.handlers.GITUpdateHandler">
             <activeWhen>
                 <test property="GitSelection.resourcesSingleRepository"/>
@@ -89,18 +93,26 @@
 
         <menuContribution allPopups="false" locationURI="toolbar:dbeaver-tools?after=additions">
             <separator name="git" visible="false"/>
-            <command commandId="org.jkiss.dbeaver.git.commands.showHistory" icon="icons/clone.png" label="Git" style="pulldown" id="org.jkiss.dbeaver.menu.git">
+            <command commandId="org.jkiss.dbeaver.git.commands.showHistory" icon="icons/clone.svg" label="Git" style="pulldown" id="org.jkiss.dbeaver.menu.git">
                 <visibleWhen><reference definitionId="DBeaverPerspectiveActive"/></visibleWhen>
             </command>
         </menuContribution>
 
         <menuContribution allPopups="false" locationURI="toolbar:org.jkiss.dbeaver.core.projectNavigator?before=additions">
-            <command commandId="org.jkiss.dbeaver.git.commands.projectFromGit"/>
+            <command commandId="org.jkiss.dbeaver.git.commands.projectFromGit">
+                <visibleWhen checkEnabled="true"/>
+            </command>
         </menuContribution>
         <menuContribution allPopups="false" locationURI="menu:org.jkiss.dbeaver.core.projectNavigator?before=additions">
-            <command commandId="org.jkiss.dbeaver.git.commands.projectFromGit"/>
+            <command commandId="org.jkiss.dbeaver.git.commands.projectFromGit">
+                <visibleWhen checkEnabled="true"/>
+            </command>
         </menuContribution>
 
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.notifications">
+        <notification id="git.project.added" name="Project was added to Git"/>
     </extension>
 
 </plugin>

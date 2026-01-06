@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,7 +22,14 @@ package org.jkiss.dbeaver.model.sql;
  */
 public final class SQLModelPreferences {
 
-    public final static String SQL_FORMAT_FORMATTER             = "sql.format.formatter";
+    public static final String SQL_FORMAT_FORMATTER             = "sql.format.formatter";
     public static final String SQL_PROPOSAL_INSERT_TABLE_ALIAS  = "sql.proposals.insert.table.alias";
+    public static final String SQL_EDITOR_PROPOSAL_SHORT_NAME = "SQLEditor.ContentAssistant.proposals.short.name";
+    public static final String SQL_EDITOR_PROPOSAL_ALWAYS_FQ = "SQLEditor.ContentAssistant.proposals.long.name";
+
+    public static final String ADVANCED_HIGHLIGHTING_ENABLE = "SQLEditor.Highlighting.advanced.enable";
+    public static final String READ_METADATA_FOR_SEMANTIC_ANALYSIS = "SQLEditor.Semantics.metadata.read.enable";
+    public static final String VALIDATE_FUNCTIONS = "SQLEditor.Semantics.validate.functions.enable";
+    public static final String AUTOCOMPLETION_MODE = "SQLEditor.ContentAssistant.experimental.mode";
 
 }

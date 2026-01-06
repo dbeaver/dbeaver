@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,7 +31,6 @@ import org.jkiss.dbeaver.model.struct.DBSInstanceContainer;
  * datasource instance may be refreshed at any moment. Obtain references on datasource only
  * from DBSObject or DBPContextProvider interfaces.
  */
-@DPIObject
 public interface DBPDataSource extends DBSInstanceContainer, DBPContextWithAttributes
 {
     /**
@@ -58,7 +57,6 @@ public interface DBPDataSource extends DBSInstanceContainer, DBPContextWithAttri
      * Datasource container
      * @return container implementation
      */
-    @DPIContainer(root = true)
     @NotNull
     DBPDataSourceContainer getContainer();
 
@@ -68,20 +66,18 @@ public interface DBPDataSource extends DBSInstanceContainer, DBPContextWithAttri
      * at the moment of invocation of this function.
      * @return datasource info.
      */
-    @DPIElement
     @NotNull
     DBPDataSourceInfo getInfo();
 
     /**
      * Data source feature
      */
-    @DPIElement
     Object getDataSourceFeature(String featureId);
 
     /**
      * SQL dialect
      */
-    @DPIElement
+    @NotNull
     SQLDialect getSQLDialect();
 
     /**
@@ -91,4 +87,14 @@ public interface DBPDataSource extends DBSInstanceContainer, DBPContextWithAttri
      */
     void initialize(@NotNull DBRProgressMonitor monitor) throws DBException;
 
+    /**
+     * Indicates whether the connection is currently refreshing.
+     * This method returns a default value of {@code false}, meaning that the connection is not refreshing
+     * unless explicitly overridden by an implementing class.
+     *
+     * @return {@code true} if the connection is being refreshed; otherwise {@code false}.
+     */
+    default boolean isConnectionRefreshing() {
+        return false;
+    }
 }

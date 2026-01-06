@@ -1,10 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
- * Copyright (C) 2019 Dmitriy Dubson (ddubson@pivotal.io)
- * Copyright (C) 2019 Gavin Shaw (gshaw@pivotal.io)
- * Copyright (C) 2019 Zach Marcin (zmarcin@pivotal.io)
- * Copyright (C) 2019 Nikhil Pawar (npawar@pivotal.io)
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,11 +16,12 @@
  */
 package org.jkiss.dbeaver.ext.greenplum.model;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreSchema;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreTable;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreTableColumn;
-import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.IPropertyValueListProvider;
@@ -35,10 +32,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.ResultSet;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -268,10 +262,10 @@ public class GreenplumExternalTable extends PostgreTable {
     }
 
     @Override
-    public String generateChangeOwnerQuery(String owner) {
+    public String generateChangeOwnerQuery(@NotNull String owner, @NotNull Map<String, Object> options) {
         assert CommonUtils.isNotEmpty(owner);
 
-        return "ALTER EXTERNAL TABLE " + DBUtils.getObjectFullName(this, DBPEvaluationContext.DDL) + " OWNER TO " + owner;
+        return "ALTER EXTERNAL TABLE " + DBUtils.getEntityScriptName(this, options) + " OWNER TO " + owner;
     }
 
     private List<PostgreTableColumn> filterOutNonMetadataColumns(DBRProgressMonitor monitor) throws DBException {
@@ -337,6 +331,7 @@ public class GreenplumExternalTable extends PostgreTable {
             return false;
         }
 
+        @Nullable
         public Object[] getPossibleValues(GreenplumExternalTable object) {
             Predicate<FormatType> excludeCustomTypes = formatType -> !formatType.equals(FormatType.b);
 
@@ -351,6 +346,7 @@ public class GreenplumExternalTable extends PostgreTable {
             return false;
         }
 
+        @Nullable
         public Object[] getPossibleValues(GreenplumExternalTable object) {
             return Arrays.stream(GreenplumCharacterSet.values())
                     .map(GreenplumCharacterSet::getCharacterSetValue).toArray();
@@ -359,9 +355,11 @@ public class GreenplumExternalTable extends PostgreTable {
 
     public static class ExternalTableUriLocationsRenderer
             implements IPropertyValueTransformer<GreenplumExternalTable, String> {
+        @Nullable
         @Override
-        public String transform(GreenplumExternalTable greenplumExternalTable,
-                                String commaSeparatedListUriLocations) throws IllegalArgumentException {
+        public String transform(
+            @NotNull GreenplumExternalTable greenplumExternalTable,
+            @Nullable String commaSeparatedListUriLocations) throws IllegalArgumentException {
             return greenplumExternalTable.uriLocationsHandler.getLineFeedSeparatedList();
         }
     }

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.meta.Property;
 
+import java.time.Instant;
 import java.util.Map;
 
 public class SMUser extends SMSubject {
@@ -27,26 +28,52 @@ public class SMUser extends SMSubject {
     private String[] userTeams;
     private boolean enabled;
     private String authRole;
+    @Nullable
+    private Instant disableDate;
+    @Nullable
+    private String disabledBy;
+    @Nullable
+    private String disableReason;
 
     public SMUser(
         @NotNull String userId,
         boolean enabled,
         @Nullable String authRole
     ) {
-        this(userId, null, new String[0], enabled, authRole);
+        this(userId, null, new String[0], enabled, authRole, true, null, null, null);
     }
+
+    public SMUser(
+        @NotNull String userId,
+        boolean enabled,
+        @Nullable String authRole,
+        boolean secretStorage,
+        @Nullable Instant disableDate,
+        @Nullable String disabledBy,
+        @Nullable String disableReason
+    ) {
+        this(userId, null, new String[0], enabled, authRole, secretStorage, disableDate, disabledBy, disableReason);
+    }
+
 
     public SMUser(
         @NotNull String userId,
         @Nullable Map<String, String> metaParameters,
         @NotNull String[] teams,
         boolean enabled,
-        @Nullable String authRole
+        @Nullable String authRole,
+        boolean secretStorage,
+        @Nullable Instant disableDate,
+        @Nullable String disabledBy,
+        @Nullable String disableReason
     ) {
-        super(userId, metaParameters);
+        super(userId, metaParameters, secretStorage);
         this.userTeams = teams;
         this.enabled = enabled;
         this.authRole = authRole;
+        this.disableDate = disableDate;
+        this.disabledBy = disabledBy;
+        this.disableReason = disableReason;
     }
 
     @NotNull
@@ -86,5 +113,20 @@ public class SMUser extends SMSubject {
 
     public void setAuthRole(String authRole) {
         this.authRole = authRole;
+    }
+
+    @Nullable
+    public Instant getDisableDate() {
+        return enabled ? null : disableDate;
+    }
+
+    @Nullable
+    public String getDisabledBy() {
+        return enabled ? null : disabledBy;
+    }
+
+    @Nullable
+    public String getDisableReason() {
+        return enabled ? null : disableReason;
     }
 }

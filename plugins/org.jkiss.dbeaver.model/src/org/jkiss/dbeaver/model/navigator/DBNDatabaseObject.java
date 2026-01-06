@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,16 +30,16 @@ import org.jkiss.utils.CommonUtils;
  * DBNDatabaseObject
  */
 public class DBNDatabaseObject extends DBNDatabaseNode implements DBSObject {
-    private DBXTreeObject meta;
+    private final DBXTreeObject meta;
 
-    DBNDatabaseObject(DBNNode parent, DBXTreeObject meta) {
+    DBNDatabaseObject(@NotNull DBNNode parent, @NotNull DBXTreeObject meta) {
         super(parent);
         this.meta = meta;
         registerNode();
     }
 
     @Override
-    public <T> T getAdapter(Class<T> adapter) {
+    public <T> T getAdapter(@NotNull Class<T> adapter) {
         if (adapter == DBSObject.class) {
             DBSObject databaseObject = getObject();
             return adapter.cast(databaseObject);
@@ -53,17 +53,19 @@ public class DBNDatabaseObject extends DBNDatabaseNode implements DBSObject {
         super.dispose(reflect);
     }
 
+    @NotNull
     @Override
     public DBXTreeObject getMeta() {
         return meta;
     }
 
     @Override
-    protected boolean reloadObject(DBRProgressMonitor monitor, DBSObject object) {
+    protected boolean reloadObject(@NotNull DBRProgressMonitor monitor, DBSObject object) {
         // do nothing
         return false;
     }
 
+    @Nullable
     @Override
     public DBSObject getObject() {
         return this;
@@ -74,6 +76,7 @@ public class DBNDatabaseObject extends DBNDatabaseNode implements DBSObject {
         return this;
     }
 
+    @NotNull
     @Override
     public String getNodeFullName() {
         StringBuilder pathName = new StringBuilder();
@@ -82,15 +85,15 @@ public class DBNDatabaseObject extends DBNDatabaseNode implements DBSObject {
                 // skip folders
                 continue;
             }
-            String parentName = parent.getNodeName();
+            String parentName = parent.getNodeDisplayName();
             if (!CommonUtils.isEmpty(parentName)) {
-                if (pathName.length() > 0) {
+                if (!pathName.isEmpty()) {
                     pathName.insert(0, '.');
                 }
                 pathName.insert(0, parentName);
             }
         }
-        pathName.insert(0, getNodeName() + " (");
+        pathName.insert(0, getNodeDisplayName() + " (");
         pathName.append(")");
         return pathName.toString();
     }
@@ -103,8 +106,9 @@ public class DBNDatabaseObject extends DBNDatabaseNode implements DBSObject {
         return meta.getNodeTypeLabel(getDataSource(), null);
     }
 
+    @NotNull
     @Override
-    public String getLocalizedName(String locale) {
+    public String getLocalizedName(@NotNull String locale) {
         return meta.getNodeTypeLabel(getDataSource(), locale);
     }
 
@@ -123,12 +127,10 @@ public class DBNDatabaseObject extends DBNDatabaseNode implements DBSObject {
     @Override
     public DBPDataSource getDataSource() {
         DBSObject parentObject = getParentObject();
-        return parentObject == null ? null : parentObject.getDataSource();
-    }
-
-    @Override
-    public boolean isPersisted() {
-        return true;
+        if (parentObject == null) {
+            throw new IllegalStateException("No parent database object for object node");
+        }
+        return parentObject.getDataSource();
     }
 
 }

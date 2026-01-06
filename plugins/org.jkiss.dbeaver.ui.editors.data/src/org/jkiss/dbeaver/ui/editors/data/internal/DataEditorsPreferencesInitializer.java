@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,7 +21,6 @@ import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetPreferences;
-import org.jkiss.dbeaver.ui.controls.resultset.ResultSetUtils;
 import org.jkiss.dbeaver.ui.controls.resultset.spreadsheet.Spreadsheet;
 import org.jkiss.dbeaver.ui.data.IValueController;
 import org.jkiss.dbeaver.utils.PrefUtils;
@@ -41,7 +40,7 @@ public class DataEditorsPreferencesInitializer extends AbstractPreferenceInitial
 
         PrefUtils.setDefaultPreferenceValue(store, ResultSetPreferences.RS_EDIT_USE_ALL_COLUMNS, false);
         PrefUtils.setDefaultPreferenceValue(store, ResultSetPreferences.RS_EDIT_DISABLE_IF_KEY_MISSING, false);
-        PrefUtils.setDefaultPreferenceValue(store, ResultSetPreferences.RS_EDIT_MAX_TEXT_SIZE, 10 * 1000000);
+        PrefUtils.setDefaultPreferenceValue(store, ResultSetPreferences.RS_EDIT_MAX_TEXT_SIZE, 100);
         PrefUtils.setDefaultPreferenceValue(store, ResultSetPreferences.RS_EDIT_LONG_AS_LOB, true);
         PrefUtils.setDefaultPreferenceValue(store, ResultSetPreferences.RS_EDIT_AUTO_UPDATE_VALUE, true);
         PrefUtils.setDefaultPreferenceValue(store, ResultSetPreferences.RS_COMMIT_ON_EDIT_APPLY, false);
@@ -53,9 +52,9 @@ public class DataEditorsPreferencesInitializer extends AbstractPreferenceInitial
 
         // ResultSet
         PrefUtils.setDefaultPreferenceValue(store, ResultSetPreferences.RESULT_SET_AUTO_FETCH_NEXT_SEGMENT, true);
+        PrefUtils.setDefaultPreferenceValue(store, ResultSetPreferences.RESULT_SET_AUTOMATIC_ROW_COUNT, false);
         PrefUtils.setDefaultPreferenceValue(store, ResultSetPreferences.RESULT_SET_CANCEL_TIMEOUT, 5000);
         PrefUtils.setDefaultPreferenceValue(store, ResultSetPreferences.RESULT_SET_BINARY_EDITOR_TYPE, IValueController.EditType.EDITOR);
-        PrefUtils.setDefaultPreferenceValue(store, ResultSetPreferences.RESULT_SET_ORDERING_MODE, ResultSetUtils.OrderingMode.SMART);
         PrefUtils.setDefaultPreferenceValue(store, ResultSetPreferences.RESULT_SET_SHOW_ODD_ROWS, true);
         PrefUtils.setDefaultPreferenceValue(store, ResultSetPreferences.RESULT_SET_HIGHLIGHT_SELECTED_ROWS, true);
         PrefUtils.setDefaultPreferenceValue(store, ResultSetPreferences.RESULT_SET_SHOW_CELL_ICONS, true);
@@ -63,13 +62,13 @@ public class DataEditorsPreferencesInitializer extends AbstractPreferenceInitial
         PrefUtils.setDefaultPreferenceValue(store, ResultSetPreferences.RESULT_SET_SHOW_ATTR_FILTERS, true);
         PrefUtils.setDefaultPreferenceValue(store, ResultSetPreferences.RESULT_SET_SHOW_ATTR_ORDERING, false);
         PrefUtils.setDefaultPreferenceValue(store, ResultSetPreferences.RESULT_SET_USE_SMOOTH_SCROLLING, true);
-        PrefUtils.setDefaultPreferenceValue(store, ResultSetPreferences.RESULT_SET_SHOW_COLLECTIONS_INLINE, false);
         PrefUtils.setDefaultPreferenceValue(store, ResultSetPreferences.RESULT_SET_SHOW_BOOLEAN_AS_CHECKBOX, true);
         PrefUtils.setDefaultPreferenceValue(store, ResultSetPreferences.RESULT_SET_SHOW_WHITESPACE_CHARACTERS, false);
         PrefUtils.setDefaultPreferenceValue(store, ResultSetPreferences.RESULT_SET_CLICK_TOGGLE_BOOLEAN, true);
 
         PrefUtils.setDefaultPreferenceValue(store, ResultSetPreferences.RESULT_SET_DOUBLE_CLICK, Spreadsheet.DoubleClickBehavior.INLINE_EDITOR.name());
         PrefUtils.setDefaultPreferenceValue(store, ResultSetPreferences.RESULT_SET_AUTO_SWITCH_MODE, false);
+        PrefUtils.setDefaultPreferenceValue(store, ResultSetPreferences.RESULT_SET_SHOW_FILTERS_IN_SINGLE_TAB_MODE, true);
         PrefUtils.setDefaultPreferenceValue(store, ResultSetPreferences.RESULT_SET_SHOW_DESCRIPTION, false);
         PrefUtils.setDefaultPreferenceValue(store, ResultSetPreferences.RESULT_SET_CALC_COLUMN_WIDTH_BY_VALUES, false);
         PrefUtils.setDefaultPreferenceValue(store, ResultSetPreferences.RESULT_SET_SHOW_CONNECTION_NAME, false);

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,23 +27,56 @@ import org.eclipse.jface.viewers.ILabelProvider;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.Control;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.CComboContentAdapter;
+
+import java.util.Objects;
 
 public class ContentAssistUtils {
 
     private static final Log log = Log.getLog(UIUtils.class);
 
-    public static ContentProposalAdapter installContentProposal(Control control, IControlContentAdapter contentAdapter, IContentProposalProvider provider) {
+    public static ContentProposalAdapter installContentProposal(
+        @NotNull Control control,
+        @NotNull IControlContentAdapter contentAdapter,
+        @NotNull IContentProposalProvider provider
+    ) {
         return installContentProposal(control, contentAdapter, provider, null, true);
     }
 
-    public static ContentProposalAdapter installContentProposal(Control control, IControlContentAdapter contentAdapter, IContentProposalProvider provider, boolean autoActivation) {
+    public static ContentProposalAdapter installContentProposal(
+        @NotNull Control control,
+        @NotNull IControlContentAdapter contentAdapter,
+        @NotNull IContentProposalProvider provider,
+        boolean autoActivation
+    ) {
         return installContentProposal(control, contentAdapter, provider, null, autoActivation);
     }
 
-    public static ContentProposalAdapter installContentProposal(Control control, IControlContentAdapter contentAdapter, IContentProposalProvider provider, ILabelProvider labelProvider, boolean autoActivation) {
+   
+    public static ContentProposalAdapter installContentProposal(
+        @NotNull Control control,
+        @NotNull IControlContentAdapter contentAdapter,
+        @NotNull IContentProposalProvider provider,
+        @Nullable ILabelProvider labelProvider,
+        boolean autoActivation
+    ) {
+        return installContentProposal(control, contentAdapter, provider, labelProvider, null, autoActivation);
+    }
+    
+   
+    
+    public static ContentProposalAdapter installContentProposal(
+        @NotNull Control control,
+        @NotNull IControlContentAdapter contentAdapter,
+        @NotNull IContentProposalProvider provider,
+        @Nullable ILabelProvider labelProvider,
+        @Nullable Boolean replace,
+        boolean autoActivation
+    ) {
         IKeyLookup keyLookup = KeyLookupFactory.getDefault();
         KeyStroke keyStroke = KeyStroke.getInstance(keyLookup.getCtrl(), SWT.SPACE); //$NON-NLS-1$
         final ContentProposalAdapter proposalAdapter = new ContentProposalAdapter(
@@ -52,7 +85,11 @@ public class ContentAssistUtils {
             provider,
             keyStroke,
             autoActivation ? ".abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_$([{".toCharArray() : null);
-        boolean isSingleValueAdapter = contentAdapter instanceof CComboContentAdapter || contentAdapter instanceof ComboContentAdapter;
+        boolean isSingleValueAdapter;
+        isSingleValueAdapter = Objects.requireNonNullElseGet(
+            replace,
+            () -> contentAdapter instanceof CComboContentAdapter || contentAdapter instanceof ComboContentAdapter
+        );
         proposalAdapter.setProposalAcceptanceStyle(isSingleValueAdapter ? ContentProposalAdapter.PROPOSAL_REPLACE : ContentProposalAdapter.PROPOSAL_INSERT);
         proposalAdapter.setPopupSize(new Point(300, 200));
         if (labelProvider == null) {

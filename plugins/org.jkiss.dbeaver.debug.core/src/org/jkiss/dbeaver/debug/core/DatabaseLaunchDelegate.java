@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  * Copyright (C) 2017-2018 Alexander Fedorov (alexander.fedorov@jkiss.org)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -23,7 +23,6 @@ import org.eclipse.debug.core.ILaunch;
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.core.model.LaunchConfigurationDelegate;
 import org.eclipse.osgi.util.NLS;
-import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.debug.DBGConstants;
 import org.jkiss.dbeaver.debug.DBGController;
 import org.jkiss.dbeaver.debug.DBGControllerFactory;
@@ -36,9 +35,6 @@ import org.jkiss.dbeaver.utils.GeneralUtils;
 import java.util.Map;
 
 public class DatabaseLaunchDelegate extends LaunchConfigurationDelegate {
-	
-    private static final Log log = Log.getLog(DatabaseLaunchDelegate.class);
-
 
     @Override
     public void launch(ILaunchConfiguration configuration, String mode, ILaunch launch, IProgressMonitor monitor)
@@ -50,7 +46,6 @@ public class DatabaseLaunchDelegate extends LaunchConfigurationDelegate {
             throw new CoreException(DebugUtils.newErrorStatus(message));
         }
         DatabaseProcess process = createProcess(launch, configuration.getName());
-        log.info(datasourceDescriptor.getName()+"的"+configuration.getName()+"对象开始调试....");
         DatabaseDebugTarget target = createDebugTarget(launch, controller, process);
         target.connect(monitor);
         launch.addDebugTarget(target);

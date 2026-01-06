@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,11 +16,14 @@
  */
 package org.jkiss.dbeaver.model.navigator.fs;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.app.DBPWorkspace;
-import org.jkiss.dbeaver.model.app.DBPWorkspaceDesktop;
+import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.DBNStreamData;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -30,21 +33,14 @@ import java.nio.file.Path;
 /**
  * DBNPath
  */
-public class DBNPath extends DBNPathBase implements DBNStreamData
-{
+public class DBNPath extends DBNPathBase implements DBNStreamData {
     private static final Log log = Log.getLog(DBNPath.class);
 
     private Path path;
-    private Boolean isDirectory;
 
     public DBNPath(DBNNode parentNode, Path path) {
         super(parentNode);
         this.path = path;
-
-        DBPWorkspace workspace = getOwnerProject().getWorkspace();
-        if (workspace instanceof DBPWorkspaceDesktop) {
-            ((DBPWorkspaceDesktop)workspace).getDefaultResourceHandler().updateNavigatorNodeFromResource(this, getResource());
-        }
     }
 
     @Override
@@ -53,8 +49,13 @@ public class DBNPath extends DBNPathBase implements DBNStreamData
     }
 
     @Override
-    public Path getPath() {
+    public synchronized Path getPath() {
         return path;
+    }
+
+    @Override
+    protected void setPath(Path path) {
+        this.path = path;
     }
 
     @Override
@@ -63,28 +64,49 @@ public class DBNPath extends DBNPathBase implements DBNStreamData
         super.dispose(reflect);
     }
 
+    @NotNull
+    @Override
+    public String getNodeType() {
+        return NodePathType.dbvfs.name() + (isDirectory() ? ".folder" : ".file");
+    }
+
+    @NotNull
+    @Override
+    public String getNodeTypeLabel() {
+        return isDirectory() ? ModelMessages.fs_folder : ModelMessages.fs_file;
+    }
+
+
+    @Nullable
     @Override
     public String getNodeDescription() {
         return null;
     }
 
+    @NotNull
     @Override
     public String getNodeTargetName() {
         return super.getNodeTargetName();
     }
 
+    @Nullable
     @Override
-    public boolean allowsChildren() {
-        if (isDirectory == null) {
-            // Cache it. It is called very frequently
-            isDirectory = Files.isDirectory(path);
+    public DBNNode refreshNode(@NotNull DBRProgressMonitor monitor, @Nullable Object source) throws DBException {
+
+        return super.refreshNode(monitor, source);
+    }
+
+    @Override
+    protected boolean isTheSameFileSystem(DBNNode node) {
+        if (node instanceof DBNPath pn) {
+            return path.getFileSystem().equals(pn.path.getFileSystem());
         }
-        return isDirectory;
+        return super.isTheSameFileSystem(node);
     }
 
     @Override
     public boolean supportsStreamData() {
-        return !allowsChildren();
+        return !isDirectory();
     }
 
     @Override
@@ -94,7 +116,7 @@ public class DBNPath extends DBNPathBase implements DBNStreamData
 
     @Override
     public InputStream openInputStream() throws IOException {
-        if (allowsChildren()) {
+        if (isDirectory()) {
             return null;
         }
         return Files.newInputStream(path);

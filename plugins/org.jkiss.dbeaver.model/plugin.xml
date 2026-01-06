@@ -1,48 +1,20 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?eclipse version="3.2"?>
-<!--
- * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
-  -->
-
 <plugin>
 
     <extension-point id="org.jkiss.dbeaver.service" name="%extension-point.org.jkiss.dbeaver.service.name" schema="schema/org.jkiss.dbeaver.service.exsd"/>
     <extension-point id="org.jkiss.dbeaver.application" name="%extension-point.org.jkiss.dbeaver.application.name" schema="schema/org.jkiss.dbeaver.application.exsd"/>
     <extension-point id="org.jkiss.dbeaver.expressions" name="%extension-point.org.jkiss.dbeaver.expressions.name" schema="schema/org.jkiss.dbeaver.expressions.exsd"/>
+    <extension-point id="org.jkiss.dbeaver.dataHintProvider" name="Data editor hint provider" schema="schema/org.jkiss.dbeaver.dataHintProvider.exsd"/>
     <extension-point id="org.jkiss.dbeaver.dataFormatter" name="%extension-point.org.jkiss.dbeaver.dataFormatter.name" schema="schema/org.jkiss.dbeaver.dataFormatter.exsd"/>
     <extension-point id="org.jkiss.dbeaver.dataTypeProvider" name="%extension-point.org.jkiss.dbeaver.dataTypeProvider.name" schema="schema/org.jkiss.dbeaver.dataTypeProvider.exsd"/>
     <extension-point id="org.jkiss.dbeaver.serialize" name="%extension-point.org.jkiss.dbeaver.serialize.name" schema="schema/org.jkiss.dbeaver.serialize.exsd"/>
     <extension-point id="org.jkiss.dbeaver.navigator" name="%extension-point.org.jkiss.dbeaver.navigator.name" schema="schema/org.jkiss.dbeaver.navigator.exsd"/>
-
-    <extension point="org.eclipse.core.resources.natures" id="org.jkiss.dbeaver.DBeaverNature" name="%extension.org.jkiss.dbeaver.DBeaverNature.name">
-        <runtime>
-            <run class="org.jkiss.dbeaver.runtime.resource.DBeaverNature">
-            </run>
-        </runtime>
-    </extension>
+    <extension-point id="org.jkiss.dbeaver.settings" name="DBeaver Settings" schema="schema/org.jkiss.dbeaver.settings.exsd"/>
 
     <extension point="org.jkiss.dbeaver.expressions">
         <namespace id="math" class="java.lang.Math" description="Math functions"/>
         <namespace id="content" class="org.jkiss.dbeaver.registry.expressions.ContentExpressionFunctions" description="Content handling functions"/>
-    </extension>
-
-    <extension point="org.eclipse.core.filesystem.filesystems">
-        <filesystem scheme="dbvfs">
-            <run class="org.jkiss.dbeaver.model.fs.nio.NIOFileSystem"/>
-        </filesystem>
     </extension>
 
     <extension point="org.jkiss.dbeaver.dataFormatter">
@@ -57,6 +29,7 @@
                 <property id="useTypeScale" label="%DateFormatter.number.general.useTypeScale.label" type="boolean" description="%DateFormatter.number.general.useTypeScale.description"/>
                 <property id="roundingMode" label="%DateFormatter.number.general.roundingMode.label" type="string" description="%DateFormatter.number.general.roundingMode.description" validValues="UP,DOWN,CEILING,FLOOR,HALF_UP,HALF_DOWN,HALF_EVEN,UNNECESSARY"/>
                 <property id="nativeSpecialValues" label="%DateFormatter.number.general.nativeSpecialValues.label" type="boolean" description="%DateFormatter.number.general.nativeSpecialValues.description"/>
+                <property id="excludeIdColumns" label="%DateFormatter.number.general.excludeIdColumns.label" type="boolean" description="%DateFormatter.number.general.excludeIdColumns.description"/>
             </propertyGroup>
         </formatter>
         <formatter id="timestamp" label="%DateFormatter.timestamp.label" class="org.jkiss.dbeaver.model.impl.data.formatters.DateTimeDataFormatter" sampleClass="org.jkiss.dbeaver.model.impl.data.formatters.TimestampFormatSample">
@@ -212,6 +185,39 @@
             </propertyGroup>
         </transformer>
 
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.dataHintProvider">
+        <hintProvider id="attr-keys" for="column" class="org.jkiss.dbeaver.model.data.hints.standard.AttributeKeysHintProvider" label="%hints.attr-keys.label" description="%hints.attr-keys.description"/>
+        <hintProvider id="attr-status" for="column" class="org.jkiss.dbeaver.model.data.hints.standard.AttributeStatusHintProvider" label="%hints.attr-status.label" description="%hints.attr-status.description"/>
+        <hintProvider id="array-size" for="cell" class="org.jkiss.dbeaver.model.data.hints.standard.ArrayCellHintProvider" label="%hints.array-size.label" description="%hints.array-size.description">
+            <supports kind="ARRAY"/>
+        </hintProvider>
+        <hintProvider id="binary-size" for="cell" class="org.jkiss.dbeaver.model.data.hints.standard.BinaryCellHintProvider" label="Binary data" description="Shows size of binary value">
+            <supports kind="BINARY"/>
+        </hintProvider>
+        <hintProvider id="date-timezone" for="cell" class="org.jkiss.dbeaver.model.data.hints.standard.TimeZoneCellHintProvider" label="%hints.date-timezone.label" description="%hints.date-timezone.description">
+            <supports kind="DATETIME"/>
+        </hintProvider>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.settings">
+        <propertyGroup id="editors" label="Editors">
+            <propertyGroup id="dataEditor" label="Data Editor">
+                <property id="resultset.maxrows" label="Default fetch size" description="Default number of rows to fetch" type="integer"
+                          defaultValue="200"
+                          scopes="global,user"/>
+            </propertyGroup>
+        </propertyGroup>
+    </extension>
+
+    <extension point="org.eclipse.core.expressions.propertyTesters">
+        <propertyTester
+            class="org.jkiss.dbeaver.model.impl.GlobalPropertyTester"
+            id="org.jkiss.dbeaver.model.impl.GlobalPropertyTester"
+            namespace="org.jkiss.dbeaver.core.global"
+            properties="standalone,distributed,bundleInstalled,hasPreference,hasEnvVariable"
+            type="java.lang.Object"/>
     </extension>
 
 </plugin>

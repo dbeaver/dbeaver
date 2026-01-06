@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.model.sql.data;
 import org.eclipse.jface.text.Document;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.data.DBDDataFilter;
@@ -54,11 +55,13 @@ public class SQLQueryDataContainer implements DBSDataContainer, SQLQueryContaine
         this.log = log;
     }
 
+    @Nullable
     @Override
     public DBCExecutionContext getExecutionContext() {
         return contextProvider.getExecutionContext();
     }
 
+    @NotNull
     @Override
     public String[] getSupportedFeatures() {
         return new String[] {FEATURE_DATA_SELECT, FEATURE_DATA_COUNT, FEATURE_DATA_FILTER};
@@ -71,7 +74,16 @@ public class SQLQueryDataContainer implements DBSDataContainer, SQLQueryContaine
 
     @NotNull
     @Override
-    public DBCStatistics readData(@NotNull DBCExecutionSource source, @NotNull DBCSession session, @NotNull DBDDataReceiver dataReceiver, DBDDataFilter dataFilter, long firstRow, long maxRows, long flags, int fetchSize) throws DBCException
+    public DBCStatistics readData(
+        @Nullable DBCExecutionSource source,
+        @NotNull DBCSession session,
+        @NotNull DBDDataReceiver dataReceiver,
+        DBDDataFilter dataFilter,
+        long firstRow,
+        long maxRows,
+        long flags,
+        int fetchSize
+    ) throws DBException
     {
         DBCStatistics statistics = new DBCStatistics();
         // Modify query (filters + parameters)
@@ -79,9 +91,17 @@ public class SQLQueryDataContainer implements DBSDataContainer, SQLQueryContaine
         SQLQuery sqlQuery = query;
         String queryText = sqlQuery.getText();//.trim();
         if (dataFilter != null && dataFilter.hasFilters()) {
-            String filteredQueryText = dataSource.getSQLDialect().addFiltersToQuery(
-                session.getProgressMonitor(),
-                dataSource, queryText, dataFilter);
+            String filteredQueryText;
+            try {
+                filteredQueryText = dataSource.getSQLDialect().addFiltersToQuery(
+                    session.getProgressMonitor(),
+                    dataSource,
+                    queryText,
+                    dataFilter
+                );
+            } catch (DBException e) {
+                throw new DBCException("Unable to apply filters to query", e, session.getExecutionContext());
+            }
             sqlQuery = new SQLQuery(dataSource, filteredQueryText, sqlQuery);
         } else {
             sqlQuery = new SQLQuery(dataSource, queryText, sqlQuery);
@@ -94,7 +114,7 @@ public class SQLQueryDataContainer implements DBSDataContainer, SQLQueryContaine
             ruleManager.loadRules(dataSource, false);
             SQLParserContext parserContext = new SQLParserContext(getDataSource(), syntaxManager, ruleManager, new Document(query.getText()));
             sqlQuery.setParameters(SQLScriptParser.parseParametersAndVariables(parserContext, 0, sqlQuery.getLength()));
-            if (!scriptContext.fillQueryParameters(sqlQuery, CommonUtils.isBitSet(flags, DBSDataContainer.FLAG_REFRESH))) {
+            if (!scriptContext.fillQueryParameters(sqlQuery, () -> dataReceiver, CommonUtils.isBitSet(flags, DBSDataContainer.FLAG_REFRESH))) {
                 // User canceled
                 return statistics;
             }
@@ -137,9 +157,9 @@ public class SQLQueryDataContainer implements DBSDataContainer, SQLQueryContaine
                     monitor.subTask("Fetch result set");
                     DBFetchProgress fetchProgress = new DBFetchProgress(session.getProgressMonitor());
 
-                    dataReceiver.fetchStart(session, resultSet, firstRow, maxRows);
+                    DBDDataReceiver.startFetchWorkflow(dataReceiver, session, resultSet, firstRow, maxRows);
 
-                    try {
+                    try (resultSet) {
                         long fetchStartTime = System.currentTimeMillis();
 
                         // Fetch all rows
@@ -148,19 +168,6 @@ public class SQLQueryDataContainer implements DBSDataContainer, SQLQueryContaine
                             fetchProgress.monitorRowFetch();
                         }
                         statistics.addFetchTime(System.currentTimeMillis() - fetchStartTime);
-                    }
-                    finally {
-                        try {
-                            resultSet.close();
-                        } catch (Throwable e) {
-                            log.error("Error while closing resultset", e);
-                        }
-                        try {
-                            dataReceiver.fetchEnd(session, resultSet);
-                        } catch (Throwable e) {
-                            log.error("Error while handling end of result set fetch", e);
-                        }
-                        dataReceiver.close();
                     }
 
                     if (executeResult != null) {
@@ -203,7 +210,7 @@ public class SQLQueryDataContainer implements DBSDataContainer, SQLQueryContaine
         return getDataSource();
     }
 
-    @Nullable
+    @NotNull
     @Override
     public DBPDataSource getDataSource()
     {

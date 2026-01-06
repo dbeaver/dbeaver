@@ -1,7 +1,7 @@
 /*
  * DBeaver - Universal Database Manager
  * Copyright (C) 2013-2017 Denis Forveille (titou10.titou10@gmail.com)
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -77,6 +77,9 @@ public class DB2Constants {
     public static final int                TRACE_ALL_EXTERNAL_CALLS    = 59399;
     public static final int                TRACE_ALL                   = -1;
     public static final int                TRACE_NOTSET                = 2147483647;
+    public static final int                ER_MUST_CHANGE_PASSWORD_LOGIN = -4214;
+    public static final String             ER_STATE_MUST_CHANGE_PASSWORD_LOGIN = "28000";
+    public static final String             ER_PASSWORD_EXPIRED         = "11248";
 
     // Display Categories
     public static final String             CAT_AUDIT                   = "Audit";
@@ -133,8 +136,15 @@ public class DB2Constants {
         "TRIGGER", "TYPE", "UNDO", "UNTIL", "VALIDPROC", "VARIABLE", "VARIANT", "VCAT", "VOLATILE", "VOLUMES", "WHILE", "WLM",
         "IMPLICITLY", "HIDDEN" };
 
-    public static final DBDPseudoAttribute PSEUDO_ATTR_RID_BIT         = new DBDPseudoAttribute(DBDPseudoAttributeType.ROWID,
-        "RID_BIT()", "RID_BIT($alias)", "RID_BIT", "Unique physical row identifier", false);
+    public static final DBDPseudoAttribute PSEUDO_ATTR_RID_BIT = new DBDPseudoAttribute(
+        DBDPseudoAttributeType.ROWID,
+        "RID_BIT()",
+        "RID_BIT($alias)",
+        "RID_BIT",
+        DB2Messages.pseudo_column_rid_bit_description,
+        false,
+        DBDPseudoAttribute.PropagationPolicy.TABLE_NORMAL
+    );
 
     static final String[] ROUTINES = {
         "ABS",
