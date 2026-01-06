@@ -16,13 +16,24 @@
  */
 package org.jkiss.dbeaver.ext.duckdb.model;
 
-public class DuckDBConstants {
-    public static final String TYPE_GEOMETRY = "GEOMETRY";
-    public static final String TYPE_BLOB = "BLOB";
+import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ext.generic.GenericDataSourceProvider;
+import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
-    public static final String PROP_DD_PLAIN_STRING = "duckdb.dd.plain.string";
-    public static final String PROP_DD_TAG_STRING = "duckdb.dd.tag.string";
+public class DuckDBDataSourceProvider extends GenericDataSourceProvider {
+    public DuckDBDataSourceProvider() {
+    }
 
-    private DuckDBConstants() {
+    @NotNull
+    @Override
+    public DBPDataSource openDataSource(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBPDataSourceContainer container)
+        throws DBException
+    {
+        return super.openDataSource(monitor, container);
     }
 }

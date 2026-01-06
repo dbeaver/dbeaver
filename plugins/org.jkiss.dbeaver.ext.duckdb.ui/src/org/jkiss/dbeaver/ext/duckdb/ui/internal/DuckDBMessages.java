@@ -14,15 +14,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ext.duckdb.model;
+package org.jkiss.dbeaver.ext.duckdb.ui.internal;
 
-public class DuckDBConstants {
-    public static final String TYPE_GEOMETRY = "GEOMETRY";
-    public static final String TYPE_BLOB = "BLOB";
+import org.eclipse.osgi.util.NLS;
 
-    public static final String PROP_DD_PLAIN_STRING = "duckdb.dd.plain.string";
-    public static final String PROP_DD_TAG_STRING = "duckdb.dd.tag.string";
+public class DuckDBMessages extends NLS {
+	private static final String BUNDLE_NAME = "org.jkiss.dbeaver.ext.duckdb.ui.internal.DuckDBResources"; //$NON-NLS-1$
+	public static String dialog_setting_sql;
+	public static String dialog_setting_sql_dd_plain_label;
+	public static String dialog_setting_sql_dd_tag_label;
+	public static String dialog_setting_sql_dd_string;
+	public static String dialog_setting_sql_dd_code_block;
 
-    private DuckDBConstants() {
-    }
+	static {
+		// initialize resource bundle
+		NLS.initializeMessages(BUNDLE_NAME, DuckDBMessages.class);
+	}
+
+	private DuckDBMessages() {
+	}
 }

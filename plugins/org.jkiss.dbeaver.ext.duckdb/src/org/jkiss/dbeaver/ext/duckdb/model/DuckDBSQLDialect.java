@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,6 +26,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
 import org.jkiss.dbeaver.model.sql.parser.rules.SQLDollarQuoteRule;
 import org.jkiss.dbeaver.model.text.parser.TPRule;
 import org.jkiss.dbeaver.model.text.parser.TPRuleProvider;
+import org.jkiss.utils.CommonUtils;
 
 import java.util.List;
 
@@ -45,13 +46,19 @@ public final class DuckDBSQLDialect extends GenericSQLDialect implements TPRuleP
     @Override
     public TPRule[] extendRules(@Nullable DBPDataSourceContainer dataSource, @NotNull TPRuleProvider.RulePosition position) {
         if (position == TPRuleProvider.RulePosition.INITIAL || position == TPRuleProvider.RulePosition.PARTITION) {
+            boolean ddPlain = false;
+            boolean ddTag = false;
+            if (dataSource != null) {
+                ddPlain = CommonUtils.getBoolean(dataSource.getConnectionConfiguration().getProviderProperty(DuckDBConstants.PROP_DD_PLAIN_STRING), false);
+                ddTag = CommonUtils.getBoolean(dataSource.getConnectionConfiguration().getProviderProperty(DuckDBConstants.PROP_DD_TAG_STRING), false);
+            }
 
             return new TPRule[] {
                 new SQLDollarQuoteRule(
                     position == RulePosition.PARTITION,
-                    false,
-                    false,
-                    false
+                    true,
+                    ddTag,
+                    ddPlain
                 )
             };
         }
