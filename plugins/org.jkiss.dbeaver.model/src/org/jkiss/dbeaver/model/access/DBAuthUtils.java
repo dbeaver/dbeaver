@@ -17,12 +17,14 @@
 package org.jkiss.dbeaver.model.access;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
 public class DBAuthUtils {
@@ -85,5 +87,13 @@ public class DBAuthUtils {
             }
         }
         return false;
+    }
+
+    @NotNull
+    public static String getExternalBrowserSuccessResponse(@Nullable String providerName) {
+        return "<h2>Authentication complete</h2>"
+            + "<div>It was requested by <b>" + GeneralUtils.getProductTitle() + "</b></div>"
+            + "<div>You successfully authorized %s</div>".formatted(providerName == null ? "for using database" : "in " + providerName)
+            + "<div>You can <a href=\"#\" onclick=\"javascript:window.close()\">close this page</a> and return to the application.</div>";
     }
 }
