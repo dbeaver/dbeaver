@@ -1,8 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
- * Copyright (C) 2017-2018 Andrew Khitrin (ahitrin@gmail.com)
- * Copyright (C) 2017-2018 Alexander Fedorov (alexander.fedorov@jkiss.org)
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,6 +19,7 @@ package org.jkiss.dbeaver.debug.jdbc;
 
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.debug.DBGEvent;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
@@ -46,8 +45,9 @@ public class DBGJDBCWorker extends AbstractJob {
         this.after = end;
     }
 
+    @NotNull
     @Override
-    protected IStatus run(DBRProgressMonitor monitor) {
+    protected IStatus run(@NotNull DBRProgressMonitor monitor) {
         monitor.beginTask("Execute debug job", 1);
         try (JDBCSession session = debugSession.getControllerConnection().openSession(monitor, DBCExecutionPurpose.UTIL, "Run debug job")) {
             monitor.subTask(sql);

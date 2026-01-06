@@ -411,8 +411,9 @@ public class EntityEditor extends MultiPageDatabaseEditor
             final DBNDatabaseNode treeNode = getEditorInput().getNavigatorNode();
             boolean doRefresh = isNewObject;
             new AbstractJob("Database node refresh") { //$NON-NLS-1$
+                @NotNull
                 @Override
-                protected IStatus run(DBRProgressMonitor monitor) {
+                protected IStatus run(@NotNull DBRProgressMonitor monitor) {
                     try {
                         treeNode.refreshNode(monitor, doRefresh ? DBNEvent.FORCE_REFRESH : DBNEvent.UPDATE_ON_SAVE);
                     } catch (DBException e) {
@@ -1168,8 +1169,9 @@ public class EntityEditor extends MultiPageDatabaseEditor
             setUser(true);
         }
 
+        @NotNull
         @Override
-        protected IStatus run(DBRProgressMonitor monitor) {
+        protected IStatus run(@NotNull DBRProgressMonitor monitor) {
             try {
                 final DBECommandContext commandContext = getCommandContext();
                 if (commandContext != null && commandContext.isDirty()) {

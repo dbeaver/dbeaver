@@ -39,6 +39,7 @@ public class DBWUtils {
     public static final String LOOPBACK_IPV6_FULL_HOST_NAME = "0:0:0:0:0:0:0:1";
     public static final String LOCALHOST_NAME = "localhost";
     public static final String LOCAL_NAME = "local";
+    public static final String SSH_TUNNEL = "ssh_tunnel";
 
     public static void updateConfigWithTunnelInfo(
         DBWHandlerConfiguration configuration,

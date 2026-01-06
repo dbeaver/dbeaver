@@ -25,6 +25,7 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.ide.IDE;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -44,7 +45,7 @@ import java.nio.file.Path;
 public class TextWithOpen {
     private static final Log log = Log.getLog(TextWithOpen.class);
 
-    private final Composite panel;
+    protected final Composite panel;
     private final Text text;
     private final ToolBar toolbar;
     private final boolean multiFS;
@@ -90,11 +91,7 @@ public class TextWithOpen {
             toolItem.addSelectionListener(new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
-                    String newText = EditTextDialog.editText(
-                        panel.getShell(),
-                        secured ? UIMessages.text_with_open_dialog_set_text : UIMessages.text_with_open_dialog_edit_text,
-                        secured ? "" : getText()
-                    );
+                    String newText = getNewTextFromUser(secured);
                     if (newText != null) {
                         setText(newText);
                     }
@@ -244,5 +241,14 @@ public class TextWithOpen {
 
     public Composite getParent() {
         return panel.getParent();
+    }
+
+    @Nullable
+    protected String getNewTextFromUser(boolean secured) {
+        return EditTextDialog.editText(
+            panel.getShell(),
+            secured ? UIMessages.text_with_open_dialog_set_text : UIMessages.text_with_open_dialog_edit_text,
+            secured ? "" : getText()
+        );
     }
 }
