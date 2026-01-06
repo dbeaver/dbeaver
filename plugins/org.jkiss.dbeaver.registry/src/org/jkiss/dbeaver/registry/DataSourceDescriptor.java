@@ -16,7 +16,6 @@
  */
 package org.jkiss.dbeaver.registry;
 
-import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
@@ -83,7 +82,7 @@ public class DataSourceDescriptor
     implements
     DBPDataSourceContainer,
     DBPImageProvider,
-    IAdaptable,
+    DBPAdaptable,
     DBPStatefulObject,
     DBPRefreshableObject,
     DBSSecretObject {
@@ -1747,7 +1746,7 @@ public class DataSourceDescriptor
 
     @Nullable
     @Override
-    public <T> T getAdapter(Class<T> adapter) {
+    public <T> T getAdapter(@NotNull Class<T> adapter) {
         if (DBPDataSourceContainer.class.isAssignableFrom(adapter)) {
             return adapter.cast(this);
         } else if (adapter == DBPPropertySource.class) {

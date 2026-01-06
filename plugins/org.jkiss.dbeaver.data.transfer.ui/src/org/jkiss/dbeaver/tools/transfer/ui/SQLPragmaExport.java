@@ -101,7 +101,7 @@ public class SQLPragmaExport implements SQLPragmaHandler {
                 }
             };
 
-            new TaskConfigurationWizardDialog(UIUtils.getActiveWorkbenchWindow(), wizard, null).open();
+            new TaskConfigurationWizardDialog(UIUtils.getActiveWorkbenchWindow(), wizard).open();
         });
 
         return RESULT_CONSUME_PRAGMA | RESULT_CONSUME_QUERY;
