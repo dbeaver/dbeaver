@@ -35,5 +35,4 @@ public class YashanDBObjectPersistAction extends SQLDatabasePersistAction {
 	public YashanDBObjectType getObjectType() {
 		return objectType;
 	}
-
 }
