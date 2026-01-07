@@ -20,7 +20,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTableConstraint;
 import org.jkiss.dbeaver.model.meta.Property;
@@ -30,8 +29,6 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSTableColumn;
 
 public abstract class YashanDBTableConstraintBase
 		extends JDBCTableConstraint<YashanDBTableBase, YashanDBTableConstraintColumn> {
-
-	private static final Log log = Log.getLog(YashanDBTableConstraintBase.class);
 
 	private YashanDBObjectStatus status;
 	private List<YashanDBTableConstraintColumn> columns = new ArrayList<>();

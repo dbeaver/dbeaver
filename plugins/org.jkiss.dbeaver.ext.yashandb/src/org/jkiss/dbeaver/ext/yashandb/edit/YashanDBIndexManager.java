@@ -50,7 +50,6 @@ public class YashanDBIndexManager extends SQLIndexManager<YashanDBTableIndex, Ya
 	protected YashanDBTableIndex createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context,
 			final Object container, Object from, Map<String, Object> options) {
 		YashanDBTablePhysical table = (YashanDBTablePhysical) container;
-
 		return new YashanDBTableIndex(table.getSchema(), table, "INDEX", true, DBSIndexType.UNKNOWN);
 	}
 

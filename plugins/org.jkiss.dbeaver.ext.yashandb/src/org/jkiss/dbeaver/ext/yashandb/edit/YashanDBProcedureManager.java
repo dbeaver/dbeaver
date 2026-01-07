@@ -21,8 +21,8 @@ import java.util.List;
 import java.util.Map;
 
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.ext.yashandb.model.YashanDBObjectPersistAction;
 import org.jkiss.dbeaver.ext.yashandb.model.YashanDBObjectType;
-import org.jkiss.dbeaver.ext.yashandb.model.YashanDBObjectValidateAction;
 import org.jkiss.dbeaver.ext.yashandb.model.YashanDBProcedureStandalone;
 import org.jkiss.dbeaver.ext.yashandb.model.YashanDBSchema;
 import org.jkiss.dbeaver.ext.yashandb.model.util.YashanDBUtils;
@@ -81,12 +81,10 @@ public class YashanDBProcedureManager extends SQLObjectEditor<YashanDBProcedureS
 	private void createOrReplaceProcedureQuery(DBCExecutionContext executionContext, List<DBEPersistAction> actionList,
 			YashanDBProcedureStandalone procedure) {
 		String source = YashanDBUtils.normalizeSourceName(procedure, false);
-		if (source == null) {
-			return;
+		if (source != null) {
+			actionList.add(new YashanDBObjectPersistAction(YashanDBObjectType.PROCEDURE, "Create procedure", source));
+			YashanDBUtils.addSchemaChangeActions(executionContext, actionList, procedure);
 		}
-		actionList.add(
-				new YashanDBObjectValidateAction(procedure, YashanDBObjectType.PROCEDURE, "Create procedure", source));
-		YashanDBUtils.addSchemaChangeActions(executionContext, actionList, procedure);
 	}
 
 }

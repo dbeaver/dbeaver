@@ -21,15 +21,12 @@ import java.sql.ResultSet;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.struct.AbstractTriggerColumn;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 public class YashanDBTriggerColumn extends AbstractTriggerColumn {
-
-	private static final Log log = Log.getLog(YashanDBTriggerColumn.class);
 
 	private YashanDBTrigger trigger;
 	private String name;

@@ -6,7 +6,13 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSIndexType;
 
 public class YashanDBConstants {
 
-	public static final String[] SYSTEM_SCHEMAS = {};
+	public static final String[] SYSTEM_SCHEMAS = {
+			"SYS",
+			"MDSYS",
+			"AUDITOR",
+			"SECURITOR",
+			"XA_SYS"
+	};
 
 	public static final String SCHEMA_SYS = "SYS";
 	public static final String USER_PUBLIC = "PUBLIC";

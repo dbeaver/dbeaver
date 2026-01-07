@@ -22,8 +22,8 @@ import java.util.Map;
 
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ext.yashandb.model.YashanDBObjectPersistAction;
 import org.jkiss.dbeaver.ext.yashandb.model.YashanDBObjectType;
-import org.jkiss.dbeaver.ext.yashandb.model.YashanDBObjectValidateAction;
 import org.jkiss.dbeaver.ext.yashandb.model.YashanDBPackage;
 import org.jkiss.dbeaver.ext.yashandb.model.YashanDBSchema;
 import org.jkiss.dbeaver.ext.yashandb.model.util.YashanDBUtils;
@@ -89,8 +89,8 @@ public class YashanDBPackageManager extends SQLObjectEditor<YashanDBPackage, Yas
 				header += ";";
 			}
 			if (!CommonUtils.isEmpty(header)) {
-				actionList.add(new YashanDBObjectValidateAction(pack, YashanDBObjectType.PACKAGE,
-						"Create package header", header));
+				actionList.add(
+						new YashanDBObjectPersistAction(YashanDBObjectType.PACKAGE, "Create package header", header));
 			}
 			String body = pack.getExtendedDefinitionText(new VoidProgressMonitor());
 			if (!CommonUtils.isEmpty(body)) {
@@ -98,8 +98,8 @@ public class YashanDBPackageManager extends SQLObjectEditor<YashanDBPackage, Yas
 				if (!body.endsWith(";")) {
 					body += ";";
 				}
-				actionList.add(new YashanDBObjectValidateAction(pack, YashanDBObjectType.PACKAGE_BODY,
-						"Create package body", body));
+				actionList.add(
+						new YashanDBObjectPersistAction(YashanDBObjectType.PACKAGE_BODY, "Create package body", body));
 			} else {
 				actionList.add(new SQLDatabasePersistAction("Drop package header",
 						"DROP PACKAGE BODY " + pack.getFullyQualifiedName(DBPEvaluationContext.DDL),

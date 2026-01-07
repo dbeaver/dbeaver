@@ -23,7 +23,6 @@ import java.util.Collection;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.yashandb.model.util.YashanDBUtils;
 import org.jkiss.dbeaver.model.access.DBARole;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
@@ -38,8 +37,6 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
 public class YashanDBRole extends YashanDBGrantee implements DBARole {
-
-	private static final Log log = Log.getLog(YashanDBRole.class);
 
 	private String name;
 	private boolean sysMaintained;

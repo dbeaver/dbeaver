@@ -22,11 +22,8 @@ import java.util.Map;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.ext.yashandb.model.YashanDBTableBase.CommentsValidator;
 import org.jkiss.dbeaver.ext.yashandb.model.util.YashanDBUtils;
 import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
@@ -44,8 +41,6 @@ import org.jkiss.dbeaver.model.struct.DBSObjectState;
 
 public class YashanDBMaterializedView extends YashanDBTableBase
 		implements YashanDBSourceObject, DBSObjectLazy<YashanDBDataSource> {
-
-	private static final Log log = Log.getLog(YashanDBMaterializedView.class);
 
 	private String viewText;
 

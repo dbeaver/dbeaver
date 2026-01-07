@@ -21,9 +21,7 @@ import java.util.Map;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.yashandb.model.util.YashanDBUtils;
-import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.meta.Property;
@@ -33,8 +31,6 @@ import org.jkiss.dbeaver.model.struct.DBSObjectState;
 import org.jkiss.dbeaver.model.struct.rdb.DBSView;
 
 public class YashanDBView extends YashanDBTableBase implements YashanDBSourceObject, DBSView {
-
-	private static final Log log = Log.getLog(YashanDBView.class);
 
 	private String viewText;
 

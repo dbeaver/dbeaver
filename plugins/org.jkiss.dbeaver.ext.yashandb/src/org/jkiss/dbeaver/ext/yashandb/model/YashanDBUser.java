@@ -23,7 +23,6 @@ import java.util.Collection;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.access.DBAUser;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Association;
@@ -34,8 +33,6 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectLazy;
 
 public class YashanDBUser extends YashanDBGrantee implements DBAUser, DBSObjectLazy<YashanDBDataSource> {
-
-	private static final Log log = Log.getLog(YashanDBUser.class);
 
 	public YashanDBUser(YashanDBDataSource dataSource) {
 		super(dataSource);

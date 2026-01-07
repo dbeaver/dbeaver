@@ -18,13 +18,10 @@ package org.jkiss.dbeaver.ext.yashandb.model;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPSaveableObject;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
 public abstract class YashanDBGlobalObject implements DBSObject, DBPSaveableObject {
-
-	private static final Log log = Log.getLog(YashanDBGlobalObject.class);
 
 	private final YashanDBDataSource dataSource;
 	private boolean persisted;

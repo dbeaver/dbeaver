@@ -19,7 +19,6 @@ package org.jkiss.dbeaver.ext.yashandb.model;
 import java.sql.ResultSet;
 
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBPHiddenObject;
 import org.jkiss.dbeaver.model.DBPNamedObject2;
@@ -41,8 +40,6 @@ import org.jkiss.utils.CommonUtils;
 public class YashanDBTableColumn extends JDBCTableColumn<YashanDBTableBase>
 		implements DBSTableColumn, DBSTypedObjectEx, DBSTypedObjectExt3, DBPHiddenObject, DBPNamedObject2,
 		DBSTypedObjectExt4<YashanDBDataType>, DBPObjectWithLazyDescription {
-
-	private static final Log log = Log.getLog(YashanDBTableColumn.class);
 
 	public YashanDBTableColumn(YashanDBTableBase table) {
 		super(table, false);

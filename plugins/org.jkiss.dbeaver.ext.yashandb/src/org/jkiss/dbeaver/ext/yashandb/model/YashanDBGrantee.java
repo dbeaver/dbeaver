@@ -22,7 +22,6 @@ import java.util.Collection;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.yashandb.model.util.YashanDBUtils;
 import org.jkiss.dbeaver.model.DBPRefreshableObject;
 import org.jkiss.dbeaver.model.DBPSaveableObject;
@@ -38,8 +37,6 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 
 public abstract class YashanDBGrantee extends YashanDBGlobalObject
 		implements DBAUser, DBPSaveableObject, DBPRefreshableObject {
-
-	private static final Log log = Log.getLog(YashanDBGrantee.class);
 
 	final RolePrivCache rolePrivCache = new RolePrivCache();
 	private final SystemPrivCache systemPrivCache = new SystemPrivCache();

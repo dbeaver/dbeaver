@@ -28,7 +28,6 @@ import java.util.stream.Collectors;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.yashandb.model.util.YashanDBUtils;
 import org.jkiss.dbeaver.model.DBPRefreshableObject;
 import org.jkiss.dbeaver.model.DBPScriptObjectExt;
@@ -52,8 +51,6 @@ import org.jkiss.utils.CommonUtils;
 
 public class YashanDBPackage extends YashanDBSchemaObject implements YashanDBSourceObject, DBPScriptObjectExt,
 		DBSObjectContainer, DBSPackage, DBPRefreshableObject, DBSProcedureContainer {
-
-	private static final Log log = Log.getLog(YashanDBPackage.class);
 
 	private Timestamp created;
 	private Timestamp lastDDLTime;

@@ -20,7 +20,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -53,7 +52,6 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureContainer;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureType;
 import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
 import org.jkiss.utils.ArrayUtils;
-import org.jkiss.utils.CommonUtils;
 
 public class YashanDBSchema extends YashanDBGlobalObject implements DBSSchema, DBPRefreshableObject, DBPSystemObject,
 		DBSProcedureContainer, DBPObjectStatisticsCollector {
@@ -154,7 +152,6 @@ public class YashanDBSchema extends YashanDBGlobalObject implements DBSSchema, D
 				try (JDBCResultSet dbResult = dbStat.executeQuery()) {
 					while (dbResult.next()) {
 						String tableName = dbResult.getString(1);
-						long bytes = dbResult.getLong(2);
 						YashanDBTable table = getTable(monitor, tableName);
 						if (table != null) {
 							table.fetchTableSize(dbResult);
@@ -176,7 +173,6 @@ public class YashanDBSchema extends YashanDBGlobalObject implements DBSSchema, D
 
 	private static YashanDBTableColumn getTableColumn(JDBCSession session, YashanDBTableBase parent, ResultSet dbResult,
 			String columnName) throws DBException {
-
 		YashanDBTableColumn tableColumn = columnName == null ? null
 				: parent.getAttribute(session.getProgressMonitor(), columnName);
 		if (tableColumn == null) {
@@ -748,22 +744,6 @@ public class YashanDBSchema extends YashanDBGlobalObject implements DBSSchema, D
 	@Override
 	public YashanDBProcedureStandalone getProcedure(DBRProgressMonitor monitor, String uniqueName) throws DBException {
 		return proceduresCache.getObject(monitor, this, uniqueName);
-	}
-
-	private List<SpecialPosition> parsePositions(String value) {
-		if (value == null) {
-			return Collections.emptyList();
-		}
-		if (value.length() < 3) {
-			return Collections.emptyList();
-		}
-		List<SpecialPosition> result = new ArrayList<>(1);
-		String data[] = value.split(",");
-		for (String s : data) {
-			result.add(new SpecialPosition(s));
-		}
-		return result;
-
 	}
 
 	@Override

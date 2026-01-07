@@ -20,14 +20,11 @@ import java.sql.ResultSet;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.struct.DBSEntityElement;
 
 public class YashanDBDataTypeMember implements DBSEntityElement {
-
-	private static final Log log = Log.getLog(YashanDBDataTypeMember.class);
 
 	private YashanDBDataType ownerType;
 	protected String name;
