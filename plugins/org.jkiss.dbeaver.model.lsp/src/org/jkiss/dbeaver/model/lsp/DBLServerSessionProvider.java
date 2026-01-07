@@ -14,17 +14,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.cli;
+package org.jkiss.dbeaver.model.lsp;
 
-public interface CLIConstants {
-    short EXIT_CODE_CONTINUE = -1;
-    short EXIT_CODE_OK = 0;
-    short EXIT_CODE_ERROR = 1;
-    short EXIT_CODE_ILLEGAL_ARGUMENTS = 2;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.app.DBPWorkspace;
+import org.jkiss.dbeaver.model.auth.impl.AbstractSessionPersistent;
 
-    String COMMAND_REUSE_WORKSPACE = "-reuseWorkspace";
+/**
+ * Represents a provider for session handling on the LSP server side.
+ * This interface defines methods to retrieve session details and workspace context.
+ */
+public interface DBLServerSessionProvider {
 
-    String PARAM_PROJECT = "--project";
+    @Nullable
+    AbstractSessionPersistent getSession();
 
-    String CONTEXT_PARAM_AUTHENTICATOR = "authenticator";
+    @NotNull
+    DBPWorkspace getWorkspace();
 }

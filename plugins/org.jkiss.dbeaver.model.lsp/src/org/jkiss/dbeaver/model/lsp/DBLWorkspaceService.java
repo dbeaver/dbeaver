@@ -14,27 +14,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.cli;
+package org.jkiss.dbeaver.model.lsp;
 
+import org.eclipse.lsp4j.DidChangeConfigurationParams;
+import org.eclipse.lsp4j.DidChangeWatchedFilesParams;
+import org.eclipse.lsp4j.services.WorkspaceService;
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.model.cli.model.option.HiddenOptionsForSubcommands;
-import picocli.CommandLine;
+import org.jkiss.dbeaver.Log;
 
-import java.util.concurrent.Callable;
-
-public abstract class AbstractCommandLineParameterHandler implements Callable<Void> {
-
-    @CommandLine.Mixin
-    private HiddenOptionsForSubcommands eclipseHiddenOptions;
+class DBLWorkspaceService implements WorkspaceService {
+    private static final Log log = Log.getLog(DBLWorkspaceService.class);
 
     @Override
-    public Void call() throws CLIException {
-        run();
-        return null;
+    public void didChangeConfiguration(@NotNull DidChangeConfigurationParams params) {
+        log.debug(params);
     }
 
-    public abstract void run() throws CLIException;
-
-    @NotNull
-    protected abstract CommandLineContext context();
+    @Override
+    public void didChangeWatchedFiles(@NotNull DidChangeWatchedFilesParams params) {
+        log.debug(params);
+    }
 }
