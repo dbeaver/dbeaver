@@ -38,6 +38,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ui.DBIconBinary;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.preferences.PrefPageConstants;
 
 import java.util.*;
 
@@ -466,7 +467,7 @@ public class FontPreferenceOverrides {
     public static void hideFontPrefs(@NotNull Set<String> prefIdsToHide) {
         PreferenceManager pm = PlatformUI.getWorkbench().getPreferenceManager();
 
-        String wbPrefPageId = ApplicationWorkbenchAdvisor.WORKBENCH_PREF_PAGE_ID ;
+        String wbPrefPageId = PrefPageConstants.WORKBENCH_PREF_PAGE_ID ;
         String viewsCatId = wbPrefPageId  + "/org.eclipse.ui.preferencePages.Views";
         String fontsPrefPageId = wbPrefPageId + "/org.eclipse.ui.preferencePages.Views/org.eclipse.ui.preferencePages.ColorsAndFonts";
         

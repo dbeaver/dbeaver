@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ui.ai.format;
 
+import org.eclipse.jface.layout.GridDataFactory;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Button;
@@ -65,7 +66,7 @@ public class DefaultFormattingConfigurator implements IObjectPropertyConfigurato
         settingsPanel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
         Composite leftPanel = UIUtils.createComposite(settingsPanel, 1);
-        leftPanel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        leftPanel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
         createLeftPanel(leftPanel, propertyChangeListener);
 
         Composite rightPanel = UIUtils.createComposite(settingsPanel, 1);
@@ -83,7 +84,7 @@ public class DefaultFormattingConfigurator implements IObjectPropertyConfigurato
             UIMessages.controls_locale_selector_label_language,
             SWT.DROP_DOWN
         );
-        ((GridData)languageText.getLayoutData()).widthHint = 100;
+        languageText.setLayoutData(GridDataFactory.create(GridData.HORIZONTAL_ALIGN_BEGINNING).hint(150, SWT.DEFAULT).create());
         languageText.setToolTipText(
             """
                 Language AI engine should use in chat by default.
