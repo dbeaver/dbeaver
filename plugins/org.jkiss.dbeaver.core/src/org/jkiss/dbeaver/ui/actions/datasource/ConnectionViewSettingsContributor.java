@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,6 +24,7 @@ import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.ui.IViewPart;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.CoreMessages;
@@ -71,6 +72,11 @@ public class ConnectionViewSettingsContributor extends DataSourceMenuContributor
         menuItems.add(new ActionContributionItem(new ShowObjectsDescriptionAction(dsContainer)));
         menuItems.add(new ActionContributionItem(new ShowStatisticsAction(dsContainer)));
         menuItems.add(new ActionContributionItem(new ShowStatusIconsAction(dsContainer)));
+        if (DBWorkbench.isDistributed()) {
+            menuItems.add(new Separator());
+            menuItems.add(new ActionContributionItem(new ClearCurrentUserSettings(dsContainer)));
+        }
+
     }
 
     private abstract static class SettingsAction extends Action {
@@ -82,9 +88,10 @@ public class ConnectionViewSettingsContributor extends DataSourceMenuContributor
         }
 
         void updateSettings(DBNBrowseSettings settings) {
-            if (DBWorkbench.isDistributed()) {
+            if (DBWorkbench.isDistributed() && settings instanceof DataSourceNavigatorSettings dataSourceNavigatorSettings) {
                 try {
-                    DataSourceNavigatorSettingsUtils.updateCustomNavigatorSettings(dsContainer, (DataSourceNavigatorSettings) settings);
+                    DataSourceNavigatorSettingsUtils.updateCustomNavigatorSettings(dsContainer, dataSourceNavigatorSettings);
+                    dataSourceNavigatorSettings.setUserSettings(true);
                 } catch (DBException e) {
                     log.error("Error updating custom navigator settings", e);
                     return;
@@ -101,6 +108,17 @@ public class ConnectionViewSettingsContributor extends DataSourceMenuContributor
                     NLS.bind(CoreMessages.dialog_connection_edit_wizard_conn_change_question, dsContainer.getName()) ))
                 {
                     DataSourceHandler.reconnectDataSource(null, dsContainer);
+                }
+            }
+        }
+
+        void clearCurrentUserSettings(DBNBrowseSettings settings) {
+            if (DBWorkbench.isDistributed() && settings instanceof DataSourceNavigatorSettings dataSourceNavigatorSettings) {
+                try {
+                    DataSourceNavigatorSettingsUtils.clearCustomNavigatorSettings(dsContainer);
+                    dataSourceNavigatorSettings.setUserSettings(false);
+                } catch (DBException logged) {
+                    log.error("Error updating custom navigator settings", logged);
                 }
             }
         }
@@ -224,6 +242,22 @@ public class ConnectionViewSettingsContributor extends DataSourceMenuContributor
         public void run() {
             DBWorkbench.getPlatform().getPreferenceStore().setValue(NavigatorPreferences.NAVIGATOR_SHOW_NODE_ACTIONS, isChecked());
             refreshNavigator();
+        }
+    }
+
+    private static class ClearCurrentUserSettings extends SettingsAction {
+
+        ClearCurrentUserSettings(@NotNull DBPDataSourceContainer container) {
+            super(container, UINavigatorMessages.dialog_connection_current_user_view_settings_label, AS_CHECK_BOX);
+            setToolTipText(UINavigatorMessages.dialog_connection_current_user_view_settings_tip);
+            setChecked(dsContainer.getNavigatorSettings().isUserSettings());
+        }
+
+        @Override
+        public void run() {
+            if (!isChecked()) {
+                clearCurrentUserSettings(dsContainer.getNavigatorSettings());
+            }
         }
     }
 

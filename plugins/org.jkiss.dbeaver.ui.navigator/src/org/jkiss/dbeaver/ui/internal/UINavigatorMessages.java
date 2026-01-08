@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -142,6 +142,8 @@ public class UINavigatorMessages extends NLS {
     public static String pref_page_database_general_label_show_statistics_tip;
     public static String pref_page_database_general_label_show_node_actions;
     public static String pref_page_database_general_label_show_node_actions_tip;
+    public static String dialog_connection_current_user_view_settings_label;
+    public static String dialog_connection_current_user_view_settings_tip;
     public static String pref_page_database_general_label_show_child_count;
     public static String pref_page_database_general_label_show_child_count_tip;
     public static String pref_page_database_general_label_color_all_nodes;
