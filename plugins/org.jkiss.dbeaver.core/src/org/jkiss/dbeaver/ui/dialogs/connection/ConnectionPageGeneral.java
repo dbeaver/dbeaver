@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ui.dialogs.connection;
 
 import org.eclipse.jface.dialogs.IDialogConstants;
+import org.eclipse.jface.layout.GridDataFactory;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionListener;
@@ -479,10 +480,13 @@ public class ConnectionPageGeneral extends ConnectionWizardPage implements Navig
         }
 
         {
-            Composite linkGroup = UIUtils.createComposite(refsGroup, 1);
-            gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
-            gd.horizontalSpan = 3;
-            linkGroup.setLayoutData(gd);
+            Composite linkGroup = UIUtils.createComposite(group, 1);
+
+            // Fill all the space so links are bottom-aligned
+            GridDataFactory.fillDefaults()
+                .align(SWT.BEGINNING, SWT.END)
+                .grab(true, true)
+                .applyTo(linkGroup);
 
             Link initConfigLink = new Link(linkGroup, SWT.NONE);
             initConfigLink.setText("<a>" + CoreMessages.dialog_connection_wizard_connection_init_description + "</a>");

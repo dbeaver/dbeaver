@@ -150,8 +150,8 @@ import java.net.URI;
 import java.nio.file.Path;
 import java.text.SimpleDateFormat;
 import java.time.Duration;
-import java.util.*;
 import java.util.List;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
@@ -337,6 +337,7 @@ public class SQLEditor extends SQLEditorBase implements
         return container == null ? null : container.getDataSource();
     }
 
+    @Nullable
     @Override
     public DBCExecutionContext getExecutionContext() {
         if (isolatedExecutionContext != null) {
@@ -711,7 +712,7 @@ public class SQLEditor extends SQLEditorBase implements
 
     @Override
     public boolean isSmartAutoCommit() {
-        DBPDataSourceContainer container = ((DBPDataSourceContainerProvider) this).getDataSourceContainer();
+        DBPDataSourceContainer container = this.getDataSourceContainer();
         if (container == null) {
             DBPDataSource dataSource = getDataSource();
             if (dataSource != null) {
@@ -780,8 +781,9 @@ public class SQLEditor extends SQLEditorBase implements
             return super.belongsTo(family);
         }
 
+        @NotNull
         @Override
-        protected IStatus run(DBRProgressMonitor monitor) {
+        protected IStatus run(@NotNull DBRProgressMonitor monitor) {
             monitor.beginTask("Open SQLEditor isolated connection", 1);
             try {
                 String title = "SQLEditor <" + getEditorInput().getName() + ">";
@@ -827,8 +829,9 @@ public class SQLEditor extends SQLEditorBase implements
                 // FIXME: silly workaround. Command state update doesn't happen in some cases
                 // FIXME: but it works after short pause. Seems to be a bug in E4 command framework
                 new AbstractJob("Notify context change") {
+                    @NotNull
                     @Override
-                    protected IStatus run(DBRProgressMonitor monitor) {
+                    protected IStatus run(@NotNull DBRProgressMonitor monitor) {
                         DBUtils.fireObjectSelect(instance, true, newContext);
                         return Status.OK_STATUS;
                     }
@@ -877,8 +880,9 @@ public class SQLEditor extends SQLEditorBase implements
             setUser(true);
         }
 
+        @NotNull
         @Override
-        protected IStatus run(DBRProgressMonitor monitor) {
+        protected IStatus run(@NotNull DBRProgressMonitor monitor) {
             monitor.beginTask("Close SQLEditor isolated connection", 1);
             try {
                 if (QMUtils.isTransactionActive(context)) {
@@ -2355,8 +2359,9 @@ public class SQLEditor extends SQLEditorBase implements
 
             private void saveContextVariables() {
                 new AbstractJob("Save variables") {
+                    @NotNull
                     @Override
-                    protected IStatus run(DBRProgressMonitor monitor) {
+                    protected IStatus run(@NotNull DBRProgressMonitor monitor) {
                         DBPDataSourceContainer ds = getDataSourceContainer();
                         if (ds != null) {
                             globalScriptContext.saveVariables(ds.getDriver(), null);
@@ -2501,23 +2506,23 @@ public class SQLEditor extends SQLEditorBase implements
         }
         final IEditorInput editorInput = getEditorInput();
         String scriptPath;
-        if (editorInput instanceof IFileEditorInput fei) {
-            scriptPath = fei.getFile().getFullPath().toString();
-        } else if (editorInput instanceof IPathEditorInput pei) {
-            scriptPath = pei.getPath().toString();
-        } else if (editorInput instanceof IURIEditorInput iei) {
-            final URI uri = iei.getURI();
-            if ("file".equals(uri.getScheme())) {
-                scriptPath = new File(uri).getAbsolutePath();
-            } else {
-                scriptPath = uri.toString();
+        switch (editorInput) {
+            case IFileEditorInput fei -> scriptPath = fei.getFile().getFullPath().toString();
+            case IPathEditorInput pei -> scriptPath = pei.getPath().toString();
+            case IURIEditorInput iei -> {
+                final URI uri = iei.getURI();
+                if ("file".equals(uri.getScheme())) {
+                    scriptPath = new File(uri).getAbsolutePath();
+                } else {
+                    scriptPath = uri.toString();
+                }
             }
-        } else if (editorInput instanceof INonPersistentEditorInput) {
-            scriptPath = "SQL Console";
-        } else {
-            scriptPath = editorInput.getName();
-            if (CommonUtils.isEmpty(scriptPath)) {
-                scriptPath = "<not a file>";
+            case INonPersistentEditorInput npi -> scriptPath = "SQL Console";
+            case null, default -> {
+                scriptPath = editorInput.getName();
+                if (CommonUtils.isEmpty(scriptPath)) {
+                    scriptPath = "<not a file>";
+                }
             }
         }
 
@@ -4523,6 +4528,7 @@ public class SQLEditor extends SQLEditorBase implements
             return SQLEditor.this.getProject();
         }
 
+        @Nullable
         @Override
         public DBCExecutionContext getExecutionContext() {
             return SQLEditor.this.getExecutionContext();
@@ -5742,8 +5748,9 @@ public class SQLEditor extends SQLEditorBase implements
             setSystem(true);
         }
 
+        @NotNull
         @Override
-        protected IStatus run(DBRProgressMonitor monitor) {
+        protected IStatus run(@NotNull DBRProgressMonitor monitor) {
             if (EditorUtils.isInAutoSaveJob()) {
                 return Status.CANCEL_STATUS;
             }
@@ -5768,8 +5775,9 @@ public class SQLEditor extends SQLEditorBase implements
             setUser(true);
         }
 
+        @NotNull
         @Override
-        protected IStatus run(DBRProgressMonitor monitor) {
+        protected IStatus run(@NotNull DBRProgressMonitor monitor) {
             monitor.beginTask("Save query processors", queryProcessors.size());
             try {
                 for (QueryProcessor queryProcessor : queryProcessors) {
@@ -5823,8 +5831,9 @@ public class SQLEditor extends SQLEditorBase implements
             setSystem(true);
         }
 
+        @NotNull
         @Override
-        protected IStatus run(DBRProgressMonitor monitor) {
+        protected IStatus run(@NotNull DBRProgressMonitor monitor) {
             if (!DBWorkbench.getPlatform().isShuttingDown() && resultsSash != null && !resultsSash.isDisposed()) {
                 try {
                     dumpOutput(monitor);
@@ -6060,8 +6069,9 @@ public class SQLEditor extends SQLEditorBase implements
             setSystem(true);
         }
 
+        @NotNull
         @Override
-        protected IStatus run(DBRProgressMonitor monitor) {
+        protected IStatus run(@NotNull DBRProgressMonitor monitor) {
             if (monitor.isCanceled() || DBWorkbench.getPlatform().isShuttingDown()) {
                 return Status.CANCEL_STATUS;
             }

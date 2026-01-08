@@ -23,28 +23,19 @@ import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.exec.DBExecUtils;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.impl.edit.TestCommandContext;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
-import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.properties.PropertySourceEditable;
 import org.jkiss.junit.DBeaverUnitTest;
-import org.jkiss.utils.StandardConstants;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.Mock;
-import org.mockito.Mockito;
 
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 
 public class PostgreTableBaseTest extends DBeaverUnitTest {
-
-    @Mock
-    DBRProgressMonitor monitor;
 
     private PostgreDataSource testDataSource;
     private PostgreDatabase testDatabase;
@@ -54,18 +45,11 @@ public class PostgreTableBaseTest extends DBeaverUnitTest {
 
     private PostgreExecutionContext postgreExecutionContext;
 
-    @Mock
-    JDBCResultSet mockResults;
-    @Mock
-    DBPDataSourceContainer mockDataSourceContainer;
-
-    private final String lineBreak = System.getProperty(StandardConstants.ENV_LINE_SEPARATOR);
-
     @Before
     public void setUp() throws Exception {
-        Mockito.when(mockDataSourceContainer.getDriver()).thenReturn(DBWorkbench.getPlatform().getDataSourceProviderRegistry().findDriver("postgresql"));
+        DBPDataSourceContainer dataSourceContainer = configureTestContainer("postgresql");
 
-        testDataSource = new PostgreDataSource(mockDataSourceContainer, "PG Test", "postgres") {
+        testDataSource = new PostgreDataSource(dataSourceContainer, "PG Test", "postgres") {
             @Override
             public boolean isServerVersionAtLeast(int major, int minor) {
                 return major <= 10;
@@ -81,8 +65,6 @@ public class PostgreTableBaseTest extends DBeaverUnitTest {
         PostgreRole testUser = new PostgreRole(null, "tester", "test", true);
         testDatabase = testDataSource.createDatabaseImpl(monitor, "testdb", testUser, null, null, null);
         testSchema = new PostgreSchema(testDatabase, "test_schema", testUser);
-
-        Mockito.when(mockDataSourceContainer.getPreferenceStore()).thenReturn(DBWorkbench.getPlatform().getPreferenceStore());
 
 //        Mockito.when(mockResults.getString("relname")).thenReturn("sampleTable");
 //        long sampleId = 111111;

@@ -28,6 +28,7 @@ import org.eclipse.swt.widgets.Item;
 import org.eclipse.swt.widgets.Tree;
 import org.eclipse.swt.widgets.TreeItem;
 import org.eclipse.ui.dialogs.PatternFilter;
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
@@ -463,8 +464,9 @@ public class DatabaseTasksTree {
         DBTScheduler scheduler = TaskRegistry.getInstance().getActiveSchedulerInstance();
         if (scheduler != null) {
             new AbstractJob("Refresh scheduled tasks") {
+                @NotNull
                 @Override
-                protected IStatus run(DBRProgressMonitor monitor) {
+                protected IStatus run(@NotNull DBRProgressMonitor monitor) {
 
                     try {
                         scheduler.refreshScheduledTasks(monitor);

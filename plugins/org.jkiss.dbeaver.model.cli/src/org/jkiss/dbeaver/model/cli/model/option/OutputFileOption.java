@@ -21,7 +21,7 @@ import picocli.CommandLine;
 
 import java.nio.file.Path;
 
-public class OutputFileOption {
+public class OutputFileOption extends AbstractFileOption {
     //stdin file name
 
     @Nullable
@@ -30,10 +30,10 @@ public class OutputFileOption {
         arity = "1",
         description = "Write the execution result to a file."
     )
-    private Path outputFile;
+    private String outputFile;
 
     @Nullable
     public Path getOutputFile() {
-        return outputFile;
+        return getPath(outputFile);
     }
 }

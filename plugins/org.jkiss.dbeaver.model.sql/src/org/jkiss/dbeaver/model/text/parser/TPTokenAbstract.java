@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,11 +24,13 @@ public class TPTokenAbstract<DATA> implements TPToken {
     private static final int T_UNDEFINED    = 0;
     private static final int T_EOF          = 1;
     private static final int T_WHITESPACE   = 2;
-    static final int T_OTHER        = 3;
+    private static final int T_NEWLINE   = 3;
+    static final int T_OTHER        = 4;
 
     public static final TPToken UNDEFINED = new TPTokenAbstract(T_UNDEFINED);
     public static final TPToken EOF = new TPTokenAbstract(T_EOF);
     public static final TPToken WHITESPACE = new TPTokenAbstract(T_WHITESPACE);
+    public static final TPToken NEWLINE = new TPTokenAbstract(T_NEWLINE);
 
     /**
      * The type of this token
@@ -66,7 +68,12 @@ public class TPTokenAbstract<DATA> implements TPToken {
 
     @Override
     public boolean isWhitespace() {
-        return (type == T_WHITESPACE);
+        return type == T_WHITESPACE || type == T_NEWLINE;
+    }
+
+    @Override
+    public boolean isNewline() {
+        return type == T_NEWLINE;
     }
 
     @Override

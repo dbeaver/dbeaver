@@ -54,6 +54,7 @@ import org.jkiss.dbeaver.model.data.hints.DBDCellHintProvider;
 import org.jkiss.dbeaver.model.data.hints.DBDValueHint;
 import org.jkiss.dbeaver.model.data.hints.DBDValueHintProvider;
 import org.jkiss.dbeaver.model.exec.DBCException;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.DBExecUtils;
 import org.jkiss.dbeaver.model.impl.data.DBDValueError;
@@ -71,7 +72,6 @@ import org.jkiss.dbeaver.ui.controls.bool.BooleanStyleSet;
 import org.jkiss.dbeaver.ui.controls.lightgrid.*;
 import org.jkiss.dbeaver.ui.controls.resultset.*;
 import org.jkiss.dbeaver.ui.controls.resultset.IResultSetController.RowPlacement;
-import org.jkiss.dbeaver.ui.controls.resultset.handler.ResultSetHandlerMain;
 import org.jkiss.dbeaver.ui.controls.resultset.handler.ResultSetPropertyTester;
 import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
 import org.jkiss.dbeaver.ui.controls.resultset.panel.valueviewer.ValueViewerPanel;
@@ -965,7 +965,7 @@ public class SpreadsheetPresentation extends AbstractPresentation
     public void fillMenu(@NotNull IMenuManager menu) {
         menu.add(ActionUtils.makeCommandContribution(
             controller.getSite(),
-            ResultSetHandlerMain.CMD_TOGGLE_PANELS,
+            IResultSetCommands.CMD_TOGGLE_PANELS,
             CommandContributionItem.STYLE_CHECK));
     }
 
@@ -2137,6 +2137,17 @@ public class SpreadsheetPresentation extends AbstractPresentation
                             }
                             if (rowIdentifier == null) {
                                 return "Table metadata not found. Data edit is not possible.";
+                            }
+                            DBCExecutionContext executionContext = getController().getExecutionContext();
+                            if (executionContext != null) {
+                                boolean useAllColumnsAsKey = executionContext
+                                    .getDataSource()
+                                    .getContainer()
+                                    .getPreferenceStore()
+                                    .getBoolean(ResultSetPreferences.RS_EDIT_USE_ALL_COLUMNS);
+                                if (useAllColumnsAsKey) {
+                                    return "Virtual key is used";
+                                }
                             }
                             if (rowIdentifier.isIncomplete()) {
                                 return "No unique key was found. Data modification is not possible.";

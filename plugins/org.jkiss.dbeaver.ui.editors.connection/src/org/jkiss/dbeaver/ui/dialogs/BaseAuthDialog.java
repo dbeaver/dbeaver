@@ -24,7 +24,6 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.connection.DBPAuthInfo;
 import org.jkiss.dbeaver.registry.ApplicationPolicyProvider;
-import org.jkiss.dbeaver.registry.DBConnectionConstants;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.internal.UIConnectionMessages;
 import org.jkiss.utils.CommonUtils;
@@ -52,7 +51,7 @@ public class BaseAuthDialog extends BaseDialog implements BlockingPopupDialog {
         this.passwordOnly = passwordOnly;
         this.showSavePassword = showSavePassword &&
             !ApplicationPolicyProvider.getInstance()
-                .isPolicyEnabled(DBConnectionConstants.POLICY_RESTRICT_PASSWORD_SAVE);
+                .isPolicyEnabled(ApplicationPolicyProvider.POLICY_CREDENTIALS_EDIT);
     }
 
 //    @Override

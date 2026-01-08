@@ -16,7 +16,6 @@
  */
 package org.jkiss.dbeaver.registry;
 
-import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
@@ -83,7 +82,7 @@ public class DataSourceDescriptor
     implements
     DBPDataSourceContainer,
     DBPImageProvider,
-    IAdaptable,
+    DBPAdaptable,
     DBPStatefulObject,
     DBPRefreshableObject,
     DBSSecretObject {
@@ -190,7 +189,7 @@ public class DataSourceDescriptor
         @NotNull String id,
         @NotNull DBPDriver driver,
         @NotNull DBPConnectionConfiguration connectionInfo) {
-        this(registry, ((DataSourceRegistry) registry).getDefaultStorage(), DataSourceOriginLocal.INSTANCE, id, driver, connectionInfo);
+        this(registry, ((DataSourceRegistry<?>) registry).getDefaultStorage(), DataSourceOriginLocal.INSTANCE, id, driver, connectionInfo);
     }
 
     public DataSourceDescriptor(
@@ -241,9 +240,9 @@ public class DataSourceDescriptor
      */
     public DataSourceDescriptor(@NotNull DataSourceDescriptor source, @NotNull DBPDataSourceRegistry registry, boolean setDefaultStorage) {
         this.registry = registry;
-        this.storage = setDefaultStorage ? ((DataSourceRegistry) registry).getDefaultStorage() : source.storage;
+        this.storage = setDefaultStorage ? ((DataSourceRegistry<?>) registry).getDefaultStorage() : source.storage;
         this.origin = source.origin;
-        this.manageable = setDefaultStorage && ((DataSourceRegistry) registry).getDefaultStorage().isDefault();
+        this.manageable = setDefaultStorage && ((DataSourceRegistry<?>) registry).getDefaultStorage().isDefault();
         this.accessCheckRequired = manageable;
         this.id = source.id;
         this.name = source.name;
@@ -347,10 +346,10 @@ public class DataSourceDescriptor
     @NotNull
     @Override
     public DBPDataSourceOrigin getOrigin() {
-        if (origin instanceof DataSourceOriginLazy) {
+        if (origin instanceof DataSourceOriginLazy dsoLazy) {
             DBPDataSourceOrigin realOrigin;
             try {
-                realOrigin = ((DataSourceOriginLazy) this.origin).resolveRealOrigin();
+                realOrigin = dsoLazy.resolveRealOrigin();
             } catch (DBException e) {
                 log.debug("Error reading datasource origin", e);
                 realOrigin = null;
@@ -395,6 +394,11 @@ public class DataSourceDescriptor
     @NotNull
     @Override
     public DataSourceNavigatorSettings getNavigatorSettings() {
+        return navigatorSettings;
+    }
+
+    @NotNull
+    public DataSourceNavigatorSettings getOriginalNavigatorSettings() {
         return navigatorSettings;
     }
 
@@ -1010,7 +1014,7 @@ public class DataSourceDescriptor
         } else {
             this.availableSharedCredentials = secretController.discoverCurrentUserSecrets(this);
             if (this.availableSharedCredentials.size() == 1) {
-                setSelectedSharedCredentials(availableSharedCredentials.get(0));
+                setSelectedSharedCredentials(availableSharedCredentials.getFirst());
             }
         }
 
@@ -1104,8 +1108,8 @@ public class DataSourceDescriptor
                 }
                 setSelectedSharedCredentials(found);
             } else if (!CommonUtils.isEmpty(sharedCreds)) {
-                log.debug("Shared credentials not selected - use first one: " + sharedCreds.get(0).getDisplayName());
-                setSelectedSharedCredentials(sharedCreds.get(0));
+                log.debug("Shared credentials not selected - use first one: " + sharedCreds.getFirst().getDisplayName());
+                setSelectedSharedCredentials(sharedCreds.getFirst());
                 monitor.subTask("Use first available shared credentials");
             } else {
                 log.debug("Shared credentials not found - attempt to connect as is");
@@ -1411,8 +1415,9 @@ public class DataSourceDescriptor
             {
                 // Run output grab job
                 new AbstractJob(processDescriptor.getName() + ": output reader") {
+                    @NotNull
                     @Override
-                    protected IStatus run(DBRProgressMonitor monitor) {
+                    protected IStatus run(@NotNull DBRProgressMonitor monitor) {
                         try {
                             String output = processDescriptor.dumpErrors();
                             log.debug("Process error output:\n" + output);
@@ -1741,7 +1746,7 @@ public class DataSourceDescriptor
 
     @Nullable
     @Override
-    public <T> T getAdapter(Class<T> adapter) {
+    public <T> T getAdapter(@NotNull Class<T> adapter) {
         if (DBPDataSourceContainer.class.isAssignableFrom(adapter)) {
             return adapter.cast(this);
         } else if (adapter == DBPPropertySource.class) {
@@ -1898,7 +1903,7 @@ public class DataSourceDescriptor
         this.connectionReadOnly = descriptor.connectionReadOnly;
         this.forceUseSingleConnection = descriptor.forceUseSingleConnection;
 
-        this.navigatorSettings = new DataSourceNavigatorSettings(descriptor.getNavigatorSettings());
+        this.navigatorSettings = new DataSourceNavigatorSettings(descriptor.getOriginalNavigatorSettings());
     }
 
     @Override
@@ -2247,6 +2252,10 @@ public class DataSourceDescriptor
         if (!CommonUtils.isEmpty(handlerList)) {
             for (Map<String, Object> handlerMap : handlerList) {
                 String handlerId = JSONUtils.getString(handlerMap, RegistryConstants.ATTR_ID);
+                if (handlerId == null) {
+                    log.warn("Network handler ID is missing in the configuration");
+                    continue;
+                }
                 DBWHandlerConfiguration hc = connectionInfo.getHandler(handlerId);
                 if (hc == null) {
                     log.warn("Handler '" + handlerId + "' not found in datasource '" + getId() + "'. Secret configuration will be lost.");
@@ -2314,6 +2323,4 @@ public class DataSourceDescriptor
             log.error("Error reading datasource '" + getId() + "' legacy secrets", e);
         }
     }
-
-
 }

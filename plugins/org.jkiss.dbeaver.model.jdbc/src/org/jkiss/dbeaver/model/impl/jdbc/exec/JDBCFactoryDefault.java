@@ -65,10 +65,11 @@ public class JDBCFactoryDefault implements JDBCFactory {
         return new JDBCCallableStatementImpl(session, stmtSupplier, sql, disableLogging);
     }
 
+    @NotNull
     @Override
     public JDBCResultSet createResultSet(
         @NotNull JDBCSession session,
-        @Nullable JDBCStatement statement,
+        @NotNull JDBCStatement statement,
         @NotNull ResultSet original,
         boolean disableLogging
     ) throws SQLException {

@@ -154,8 +154,9 @@ class SQLToolTaskWizardPageStatus extends ActiveWizardPage<SQLToolTaskWizard> im
                     setSystem(true);
                     setUser(false);
                 }
+                @NotNull
                 @Override
-                protected IStatus run(DBRProgressMonitor monitor) {
+                protected IStatus run(@NotNull DBRProgressMonitor monitor) {
                     List<SQLToolStatistics> statsCopy;
                     synchronized (toolStatistics) {
                         statsCopy = new ArrayList<>(SQLToolTaskWizardPageStatus.this.toolStatistics);
