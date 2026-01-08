@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -182,14 +182,7 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
 
         var args = preprocessCommandLine();
         Location instanceLoc = Platform.getInstanceLocation();
-
         Path defaultHomePath = getDefaultInstanceLocation();
-
-        if (!isWorkspaceSwitchingAllowed() && !WORKSPACE_DIR_CURRENT.equals(defaultHomePath)) {
-            log.error("Workspace switching is not allowed when participating in the early access program. Exiting "
-                + GeneralUtils.getProductName() + ".");
-            return IApplication.EXIT_OK;
-        }
 
         boolean ideWorkspaceSet = setIDEWorkspace(instanceLoc);
 
@@ -280,6 +273,12 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
         }
 
         DBWorkbench.getPlatform();
+
+        if (!isWorkspaceSwitchingAllowed() && !WORKSPACE_DIR_CURRENT.equals(defaultHomePath)) {
+            log.error("Workspace switching is not allowed when participating in the early access program. Exiting "
+                + GeneralUtils.getProductName() + ".");
+            return IApplication.EXIT_OK;
+        }
 
         WorkbenchPatcher.patchWorkbenchXmi(instanceLoc);
         // Init application
