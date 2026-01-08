@@ -171,4 +171,6 @@ public class DBConstants {
     public static final String PROP_ORIGINAL_FILE_PATH = "originalFilePath";
 
     public static final String CERTIFICATE_STORAGE_FOLDER = "security";
+
+    public static final String PROP_RESOURCE_DEFAULT_DATASOURCE = "default-datasource"; //$NON-NLS-1$
 }
