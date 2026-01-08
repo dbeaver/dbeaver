@@ -5201,7 +5201,7 @@ public class SQLEditor extends SQLEditorBase implements
             public long getDecoratorFeatures() {
                 long features = super.getDecoratorFeatures();
                 if (!singleQuery) {
-                    features |= FEATURE_ON_DEMAND_STATUS;
+                    features |= FEATURE_DECORATE_ON_DEMAND;
                 }
                 return features;
             }

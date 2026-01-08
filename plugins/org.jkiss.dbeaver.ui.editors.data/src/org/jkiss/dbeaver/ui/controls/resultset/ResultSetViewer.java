@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -168,7 +168,6 @@ public class ResultSetViewer extends Viewer
     private final ConComposite mainPanel;
     private final Composite viewerPanel;
     private final IResultSetDecorator decorator;
-    private Composite filtersPanelPlaceholder;
     @Nullable
     private ResultSetFilterPanel filtersPanel;
     private final CustomSashForm viewerSash;
@@ -298,11 +297,11 @@ public class ResultSetViewer extends Viewer
         });
 
         if (supportsDecoratorFeature(IResultSetDecorator.FEATURE_FILTERS)) {
-            this.filtersPanel = new ResultSetFilterPanel(this, this.mainPanel,
-                supportsDecoratorFeature(IResultSetDecorator.FEATURE_COMPACT_FILTERS));
-            GridData gd = new GridData(GridData.FILL_HORIZONTAL);
+            var gd = new GridData(GridData.FILL_HORIZONTAL);
             gd.horizontalSpan = ((GridLayout) mainPanel.getLayout()).numColumns;
-            this.filtersPanel.setLayoutData(gd);
+
+            var composite = createFilterPanel();
+            composite.setLayoutData(gd);
         }
 
         if (supportsDecoratorFeature(IResultSetDecorator.FEATURE_PRESENTATIONS)) {
@@ -414,27 +413,8 @@ public class ResultSetViewer extends Viewer
                 GridData gd = new GridData(GridData.FILL_HORIZONTAL);
                 gd.horizontalSpan = ((GridLayout) mainPanel.getLayout()).numColumns;
 
-                filtersPanelPlaceholder = new ConComposite(mainPanel);
-                filtersPanelPlaceholder.setLayoutData(gd);
-                filtersPanelPlaceholder.setLayout(GridLayoutFactory.fillDefaults().create());
-
-                if (supportsDecoratorFeature(IResultSetDecorator.FEATURE_ON_DEMAND_STATUS)) {
-                    mainPanel.addListener(SWT.Activate, new Listener() {
-                        @Override
-                        public void handleEvent(@NotNull Event event) {
-                            if (supportsStatusBar()) {
-                                createStatusBar(filtersPanelPlaceholder);
-
-                                updateStatusMessage();
-                                updateEditControls();
-                                updateFiltersText(false);
-                            }
-                            mainPanel.removeListener(SWT.Activate, this);
-                        }
-                    });
-                } else {
-                    createStatusBar(filtersPanelPlaceholder);
-                }
+                Composite composite = createStatusBar();
+                composite.setLayoutData(gd);
             }
 
             this.viewerPanel.addDisposeListener(e -> dispose());
@@ -702,9 +682,7 @@ public class ResultSetViewer extends Viewer
                     }
                 }
             }
-            boolean enableFilters = readyToRun
-                && getDataContainer() != null
-                && getDataContainer().isFeatureSupported(DBSDataContainer.FEATURE_DATA_FILTER);
+            boolean enableFilters = readyToRun && supportsDataFilter();
             filtersPanel.enableFilters(enableFilters);
             //presentationSwitchToolbar.setEnabled(enableFilters);
         } finally {
@@ -1878,7 +1856,61 @@ public class ResultSetViewer extends Viewer
         }
     };
 
-    private void createStatusBar(@NotNull Composite parent) {
+    @NotNull
+    private Composite createFilterPanel() {
+        var composite = new ConComposite(mainPanel);
+        composite.setLayout(new FillLayout());
+
+        if (supportsDecoratorFeature(IResultSetDecorator.FEATURE_DECORATE_ON_DEMAND)) {
+            mainPanel.addListener(SWT.Activate, new Listener() {
+                @Override
+                public void handleEvent(@NotNull Event event) {
+                    createFilterPanel0(composite);
+                    updateFiltersText(false);
+                    mainPanel.removeListener(SWT.Activate, this);
+                }
+            });
+        } else {
+            createFilterPanel0(composite);
+        }
+
+        return composite;
+    }
+
+    private void createFilterPanel0(@NotNull Composite parent) {
+        filtersPanel = new ResultSetFilterPanel(
+            this,
+            parent,
+            supportsDecoratorFeature(IResultSetDecorator.FEATURE_COMPACT_FILTERS)
+        );
+    }
+
+    @NotNull
+    private Composite createStatusBar() {
+        var composite = new ConComposite(mainPanel);
+        composite.setLayout(GridLayoutFactory.fillDefaults().create());
+
+        if (supportsDecoratorFeature(IResultSetDecorator.FEATURE_DECORATE_ON_DEMAND)) {
+            mainPanel.addListener(SWT.Activate, new Listener() {
+                @Override
+                public void handleEvent(@NotNull Event event) {
+                    createStatusBar0(composite);
+
+                    updateStatusMessage();
+                    updateEditControls();
+                    updateFiltersText(false);
+
+                    mainPanel.removeListener(SWT.Activate, this);
+                }
+            });
+        } else {
+            createStatusBar0(composite);
+        }
+
+        return composite;
+    }
+
+    private void createStatusBar0(@NotNull Composite parent) {
         ActionUtils.addPropertyEvaluationRequestListener(propertyEvaluationRequestListener);
 
         statusBar = new ConComposite(parent, SWT.NONE);
