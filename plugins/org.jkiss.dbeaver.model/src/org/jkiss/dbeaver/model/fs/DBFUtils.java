@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,6 +30,7 @@ import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
+import org.jkiss.dbeaver.registry.fs.FileSystemProviderRegistry;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.IOUtils;
@@ -256,7 +257,7 @@ public class DBFUtils {
             return defaultFs.provider().getPath(fileUri);
         } else {
             var externalFsProvider =
-                DBWorkbench.getPlatform().getFileSystemRegistry().getFileSystemProviderBySchema(fileUri.getScheme());
+                FileSystemProviderRegistry.getInstance().getFileSystemProviderBySchema(fileUri.getScheme());
             if (externalFsProvider == null) {
                 log.error("File system not found for scheme: " + fileUri.getScheme());
                 return null;

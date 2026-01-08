@@ -16,15 +16,20 @@
  */
 package org.jkiss.dbeaver.model.cli;
 
-public interface CLIConstants {
-    short EXIT_CODE_CONTINUE = -1;
-    short EXIT_CODE_OK = 0;
-    short EXIT_CODE_ERROR = 1;
-    short EXIT_CODE_ILLEGAL_ARGUMENTS = 2;
+import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.model.cli.command.AbstractTopLevelCommand;
+import picocli.CommandLine;
 
-    String COMMAND_REUSE_WORKSPACE = "-reuseWorkspace";
+// Base class for first level commands, which use AbstractTopLevelCommand as parent
+public abstract class AbstractRootCommandLineParameterHandler extends AbstractCommandLineParameterHandler {
+    /**
+     * Root command uses as context
+     */
+    @CommandLine.ParentCommand
+    private AbstractTopLevelCommand parent;
 
-    String PARAM_PROJECT = "--project";
-
-    String CONTEXT_PARAM_AUTHENTICATOR = "authenticator";
+    @NotNull
+    public CommandLineContext context() {
+        return parent.getContext();
+    }
 }
