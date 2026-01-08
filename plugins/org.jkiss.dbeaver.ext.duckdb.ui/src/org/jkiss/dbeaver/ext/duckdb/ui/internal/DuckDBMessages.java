@@ -19,18 +19,18 @@ package org.jkiss.dbeaver.ext.duckdb.ui.internal;
 import org.eclipse.osgi.util.NLS;
 
 public class DuckDBMessages extends NLS {
-	private static final String BUNDLE_NAME = "org.jkiss.dbeaver.ext.duckdb.ui.internal.DuckDBResources"; //$NON-NLS-1$
-	public static String dialog_setting_sql;
-	public static String dialog_setting_sql_dd_plain_label;
-	public static String dialog_setting_sql_dd_tag_label;
-	public static String dialog_setting_sql_dd_string;
-	public static String dialog_setting_sql_dd_code_block;
+    private static final String BUNDLE_NAME = "org.jkiss.dbeaver.ext.duckdb.ui.internal.DuckDBResources"; //$NON-NLS-1$
+    public static String dialog_setting_sql;
+    public static String dialog_setting_sql_dd_plain_label;
+    public static String dialog_setting_sql_dd_tag_label;
+    public static String dialog_setting_sql_dd_string;
+    public static String dialog_setting_sql_dd_code_block;
 
-	static {
-		// initialize resource bundle
-		NLS.initializeMessages(BUNDLE_NAME, DuckDBMessages.class);
-	}
+    static {
+        // initialize resource bundle
+        NLS.initializeMessages(BUNDLE_NAME, DuckDBMessages.class);
+    }
 
-	private DuckDBMessages() {
-	}
+    private DuckDBMessages() {
+    }
 }
