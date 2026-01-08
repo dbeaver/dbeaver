@@ -338,6 +338,8 @@ public class ResultSetMessages extends NLS {
     public static String pref_page_database_resultsets_label_auto_fetch_segment_tip;
     public static String pref_page_database_resultsets_label_automatic_row_count;
     public static String pref_page_database_resultsets_label_automatic_row_count_tip;
+    public static String pref_page_database_resultsets_label_skip_metadata_reading;
+    public static String pref_page_database_resultsets_label_skip_metadata_reading_tip;
     public static String pref_page_database_resultsets_label_reread_on_scrolling;
     public static String pref_page_database_resultsets_label_reread_on_scrolling_tip;
     public static String pref_page_database_resultsets_label_use_sql;

@@ -76,6 +76,7 @@ public final class ResultSetPreferences {
     public static final String RESULT_SET_PRESENTATION = "resultset.presentation.active"; //$NON-NLS-1$
     public static final String RESULT_SET_STRING_USE_CONTENT_EDITOR = "resultset.string.use.content.editor"; //$NON-NLS-1$
     public static final String RESULT_SET_USE_NAVIGATOR_FILTERS = "resultset.filter.use.navigator"; //$NON-NLS-1$
+    public static final String RESULT_SET_SKIP_METADATA_READING = "resultset.skip.metadata.reading"; //$NON-NLS-1$
 
     public static final String RESULT_SET_CONFIRM_BEFORE_SAVE = "resultset.confirm.beforeSave"; //$NON-NLS-1$
     public static final String RESULT_SET_SHOW_ERRORS_IN_DIALOG = "resultset.show.errorDialog"; //$NON-NLS-1$
@@ -106,3 +107,5 @@ public final class ResultSetPreferences {
     public static final String KEEP_STATEMENT_OPEN = "keep.statement.open"; //$NON-NLS-1$
 
 }
+
+

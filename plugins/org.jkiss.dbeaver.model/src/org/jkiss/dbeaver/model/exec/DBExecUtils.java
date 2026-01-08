@@ -730,6 +730,15 @@ public class DBExecUtils {
 
             boolean needsTableMetaForColumnResolution = dataSource.getInfo().needsTableMetaForColumnResolution();
 
+            // Check if metadata reading should be skipped for resultset
+            boolean skipMetadataReading = session.getDataSource().getContainer()
+                .getPreferenceStore().getBoolean(ModelPreferences.RESULT_SET_SKIP_METADATA_READING);
+
+            if (skipMetadataReading) {
+                // Skip metadata reading when preference is enabled
+                return;
+            }
+
             monitor.subTask("Discover attributes");
             for (DBDAttributeBinding binding : bindings) {
                 monitor.subTask("Discover attribute '" + binding.getName() + "'");

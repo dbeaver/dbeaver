@@ -56,6 +56,7 @@ public class PrefPageResultSetMain extends TargetPrefPage
 
     private Button autoFetchNextSegmentCheck;
     private Button automaticRowCountCheck;
+    private Button skipMetadataReadingCheck;
     private Button rereadOnScrollingCheck;
     private Text resultSetSize;
     private Button resultSetUseSQLCheck;
@@ -107,6 +108,7 @@ public class PrefPageResultSetMain extends TargetPrefPage
             store.contains(ModelPreferences.RESULT_SET_ORDERING_POLICY) ||
             store.contains(ModelPreferences.RESULT_SET_USE_FETCH_SIZE) ||
             store.contains(ResultSetPreferences.RESULT_SET_USE_NAVIGATOR_FILTERS) ||
+            store.contains(ResultSetPreferences.RESULT_SET_SKIP_METADATA_READING) ||
             store.contains(ResultSetPreferences.RESULT_SET_CONFIRM_BEFORE_SAVE) ||
             store.contains(ResultSetPreferences.RESULT_SET_SHOW_ERRORS_IN_DIALOG) ||
             store.contains(ResultSetPreferences.RESULT_SET_MARK_CELL_VALUE_OCCURRENCES) ||
@@ -149,6 +151,7 @@ public class PrefPageResultSetMain extends TargetPrefPage
             rereadOnScrollingCheck = UIUtils.createCheckbox(queriesGroup, ResultSetMessages.pref_page_database_resultsets_label_reread_on_scrolling, ResultSetMessages.pref_page_database_resultsets_label_reread_on_scrolling_tip, true, 2);
             resultSetUseSQLCheck = UIUtils.createCheckbox(queriesGroup, ResultSetMessages.pref_page_database_resultsets_label_use_sql, ResultSetMessages.pref_page_database_resultsets_label_use_sql_tip, false, 2);
             automaticRowCountCheck = UIUtils.createCheckbox(queriesGroup, ResultSetMessages.pref_page_database_resultsets_label_automatic_row_count, ResultSetMessages.pref_page_database_resultsets_label_automatic_row_count_tip, false, 2);
+            skipMetadataReadingCheck = UIUtils.createCheckbox(queriesGroup, ResultSetMessages.pref_page_database_resultsets_label_skip_metadata_reading, ResultSetMessages.pref_page_database_resultsets_label_skip_metadata_reading_tip, false, 2);
 
             orderingStrategyCombo = UIUtils.createLabelCombo(
                 queriesGroup,
@@ -277,6 +280,7 @@ public class PrefPageResultSetMain extends TargetPrefPage
             resultSetSize.setText(String.valueOf(rsSegmentSize));
             resultSetUseSQLCheck.setSelection(store.getBoolean(ModelPreferences.RESULT_SET_MAX_ROWS_USE_SQL));
             automaticRowCountCheck.setSelection(store.getBoolean(ResultSetPreferences.RESULT_SET_AUTOMATIC_ROW_COUNT));
+            skipMetadataReadingCheck.setSelection(store.getBoolean(ResultSetPreferences.RESULT_SET_SKIP_METADATA_READING));
             orderingStrategyCombo.select(CommonUtils.valueOf(
                 OrderingStrategy.class,
                 store.getString(ModelPreferences.RESULT_SET_ORDERING_STRATEGY),
@@ -322,6 +326,7 @@ public class PrefPageResultSetMain extends TargetPrefPage
             store.setValue(ModelPreferences.RESULT_SET_MAX_ROWS, resultSetSize.getText());
             store.setValue(ModelPreferences.RESULT_SET_MAX_ROWS_USE_SQL, resultSetUseSQLCheck.getSelection());
             store.setValue(ResultSetPreferences.RESULT_SET_AUTOMATIC_ROW_COUNT, automaticRowCountCheck.getSelection());
+            store.setValue(ResultSetPreferences.RESULT_SET_SKIP_METADATA_READING, skipMetadataReadingCheck.getSelection());
             store.setValue(
                 ModelPreferences.RESULT_SET_ORDERING_STRATEGY,
                 OrderingStrategy.values()[orderingStrategyCombo.getSelectionIndex()].toString()
@@ -394,6 +399,7 @@ public class PrefPageResultSetMain extends TargetPrefPage
         resultSetSize.setText(String.valueOf(store.getDefaultInt(ModelPreferences.RESULT_SET_MAX_ROWS)));
         resultSetUseSQLCheck.setSelection(store.getDefaultBoolean(ModelPreferences.RESULT_SET_MAX_ROWS_USE_SQL));
         automaticRowCountCheck.setSelection(store.getDefaultBoolean(ResultSetPreferences.RESULT_SET_AUTOMATIC_ROW_COUNT));
+        skipMetadataReadingCheck.setSelection(store.getDefaultBoolean(ResultSetPreferences.RESULT_SET_SKIP_METADATA_READING));
         orderingStrategyCombo.select(OrderingStrategy.SMART.ordinal());
         queryCancelTimeout.setText(String.valueOf(store.getDefaultInt(ResultSetPreferences.RESULT_SET_CANCEL_TIMEOUT)));
         filterForceSubselect.setSelection(store.getDefaultBoolean(ModelPreferences.SQL_FILTER_FORCE_SUBSELECT));

@@ -225,6 +225,7 @@ public final class ModelPreferences
     // ResultSet
     public static final String RESULT_SET_USE_FETCH_SIZE = "resultset.fetch.size"; //$NON-NLS-1$
     public static final String RESULT_SET_MAX_ROWS_USE_SQL = "resultset.maxrows.sql"; //$NON-NLS-1$
+    public static final String RESULT_SET_SKIP_METADATA_READING = "resultset.skip.metadata.reading"; //$NON-NLS-1$
     public static final String RESULT_SET_BINARY_PRESENTATION = "resultset.binary.representation"; //$NON-NLS-1$
     public static final String RESULT_SET_BINARY_STRING_MAX_LEN = "resultset.binary.stringMaxLength"; //$NON-NLS-1$
     // This will ignore label in result set metadata and will use names always (some buggy drivers return description or other crap in labels - #1952)
@@ -427,3 +428,4 @@ public final class ModelPreferences
         PrefUtils.setDefaultPreferenceValue(store, PROP_PREFERRED_IP_ADDRESSES, IPType.AUTO.name());
     }
 }
+
