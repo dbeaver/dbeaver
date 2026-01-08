@@ -730,6 +730,9 @@ public class DBExecUtils {
 
             boolean needsTableMetaForColumnResolution = dataSource.getInfo().needsTableMetaForColumnResolution();
 
+            // Cache for entity attributes to avoid repeated getAttribute() calls (#40057)
+            Map<DBSEntity, Map<String, DBSEntityAttribute>> entityAttributesCache = new HashMap<>();
+
             monitor.subTask("Discover attributes");
             for (DBDAttributeBinding binding : bindings) {
                 monitor.subTask("Discover attribute '" + binding.getName() + "'");
@@ -825,12 +828,30 @@ public class DBExecUtils {
                     if (bindingMeta.getPseudoAttribute() != null) {
                         tableColumn = bindingMeta.getPseudoAttribute().createFakeAttribute(attrEntity, attrMeta);
                     } else if (columnName != null) {
+                        // Use cached attributes to avoid repeated database metadata queries (#40057)
+                        Map<String, DBSEntityAttribute> attributesMap = entityAttributesCache.get(attrEntity);
+                        if (attributesMap == null) {
+                            // Load all attributes once for this entity
+                            attributesMap = new HashMap<>();
+                            try {
+                                Collection<? extends DBSEntityAttribute> attributes = attrEntity.getAttributes(mdMonitor);
+                                if (attributes != null) {
+                                    for (DBSEntityAttribute attr : attributes) {
+                                        attributesMap.put(attr.getName(), attr);
+                                    }
+                                }
+                            } catch (DBException e) {
+                                log.debug("Error loading entity attributes: " + e.getMessage());
+                            }
+                            entityAttributesCache.put(attrEntity, attributesMap);
+                        }
+                        
                         if (sqlQuery == null) {
-                            tableColumn = attrEntity.getAttribute(mdMonitor, columnName);
+                            tableColumn = attributesMap.get(columnName);
                         } else {
                             boolean isAllColumns = sqlQuery.getSelectItemAsteriskIndex() != -1;
                             if (isAllColumns || (selectItem != null && (selectItem.isPlainColumn() || selectItem.getName().equals("*")))) {
-                                tableColumn = attrEntity.getAttribute(mdMonitor, columnName);
+                                tableColumn = attributesMap.get(columnName);
                             }
                         }
                     }
