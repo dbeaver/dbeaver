@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -105,8 +105,8 @@ public class DataTransferPagePipes extends ActiveWizardPage<DataTransferWizard> 
 
         nodesTable = new TableViewer(panel, SWT.BORDER | SWT.SINGLE | SWT.FULL_SELECTION);
         GridData gd = new GridData(GridData.FILL_BOTH);
-        gd.heightHint = 400;
-        gd.widthHint = 500;
+        gd.heightHint = 200;
+        gd.widthHint = 300;
         nodesTable.getTable().setLayoutData(gd);
         nodesTable.getTable().setLinesVisible(true);
         nodesTable.setContentProvider((IStructuredContentProvider) inputElement -> {
@@ -202,7 +202,7 @@ public class DataTransferPagePipes extends ActiveWizardPage<DataTransferWizard> 
         inputsTable = new TableViewer(panel, SWT.BORDER | SWT.SINGLE | SWT.FULL_SELECTION);
         GridData gd = new GridData(GridData.FILL_BOTH);
         //gd.widthHint = 300;
-        gd.heightHint = 300;
+        gd.heightHint = 200;
         inputsTable.getTable().setLayoutData(gd);
         inputsTable.getTable().setLinesVisible(true);
         inputsTable.setContentProvider(new ListContentProvider());
