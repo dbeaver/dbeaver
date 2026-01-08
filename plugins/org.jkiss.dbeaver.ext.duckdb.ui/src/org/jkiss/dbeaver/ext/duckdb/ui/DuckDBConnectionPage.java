@@ -25,16 +25,14 @@ import org.jkiss.dbeaver.ui.dialogs.connection.DriverPropertiesDialogPage;
  */
 public class DuckDBConnectionPage extends GenericConnectionPage {
     @Override
-    public IDialogPage[] getDialogPages(boolean extrasOnly, boolean forceCreate)
-    {
+    public IDialogPage[] getDialogPages(boolean extrasOnly, boolean forceCreate) {
         if (extrasOnly) {
             return new IDialogPage[] {
                 new DuckDBConnectionPageAdvanced()
             };
         }
         return new IDialogPage[] {
-            new DuckDBConnectionPageAdvanced(),
-            new DriverPropertiesDialogPage(this)
+            new DuckDBConnectionPageAdvanced(), new DriverPropertiesDialogPage(this)
         };
     }
 }

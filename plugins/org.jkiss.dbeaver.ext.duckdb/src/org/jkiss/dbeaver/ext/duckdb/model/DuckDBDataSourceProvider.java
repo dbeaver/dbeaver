@@ -24,16 +24,9 @@ import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 public class DuckDBDataSourceProvider extends GenericDataSourceProvider {
-    public DuckDBDataSourceProvider() {
-    }
-
     @NotNull
     @Override
-    public DBPDataSource openDataSource(
-        @NotNull DBRProgressMonitor monitor,
-        @NotNull DBPDataSourceContainer container)
-        throws DBException
-    {
+    public DBPDataSource openDataSource(@NotNull DBRProgressMonitor monitor, @NotNull DBPDataSourceContainer container) throws DBException {
         return super.openDataSource(monitor, container);
     }
 }

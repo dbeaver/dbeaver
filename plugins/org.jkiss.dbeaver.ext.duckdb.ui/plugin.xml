@@ -8,7 +8,7 @@
                 id="org.jkiss.dbeaver.ext.duckdb.dataSourceWizardView"
                 targetID="org.jkiss.dbeaver.ext.ui.newConnectionWizard"
                 dataSource="duckdb"
-                label="DuckDB"
+                label="%duckdb.dialog.connection.header"
                 class="org.jkiss.dbeaver.ext.duckdb.ui.DuckDBConnectionPage"
                 icon="platform:/plugin/org.jkiss.dbeaver.ext.generic/icons/duckdb_icon.png">
         </view>
@@ -17,7 +17,7 @@
                 icon="platform:/plugin/org.jkiss.dbeaver.ext.generic/icons/duckdb_icon.png"
                 id="org.jkiss.dbeaver.ext.duckdb.dataSourceEditorView"
                 dataSource="duckdb"
-                label="DuckDB"
+                label="%duckdb.dialog.connection.header"
                 targetID="org.jkiss.dbeaver.ext.ui.editConnectionDialog">
         </view>
     </extension>
