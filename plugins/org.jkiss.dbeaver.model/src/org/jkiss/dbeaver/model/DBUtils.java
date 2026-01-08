@@ -2072,7 +2072,8 @@ public final class DBUtils {
         return dataSource.getDefaultInstance();
     }
 
-    public static DBCExecutionContext getDefaultContext(DBSObject object, boolean meta) {
+    @Nullable
+    public static DBCExecutionContext getDefaultContext(@Nullable DBSObject object, boolean meta) {
         if (object == null) {
             return null;
         }
