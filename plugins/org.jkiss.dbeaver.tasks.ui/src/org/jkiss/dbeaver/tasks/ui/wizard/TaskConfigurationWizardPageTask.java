@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -45,8 +45,8 @@ import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
-import java.util.*;
 import java.util.List;
+import java.util.*;
 
 /**
  * Create task wizard page
@@ -122,8 +122,9 @@ class TaskConfigurationWizardPageTask extends ActiveWizardPage<TaskConfiguration
         composite.setLayoutData(new GridData(GridData.FILL_BOTH));
 
         {
-            Composite formPanel = UIUtils.createControlGroup(composite, TaskUIMessages.task_config_wizard_page_task_label_task_type, task == null ? 1 : 2, GridData.FILL_BOTH, 0);
+            Composite formPanel = UIUtils.createComposite(composite, task == null ? 1 : 2);
             formPanel.setLayoutData(new GridData(GridData.FILL_BOTH));
+            UIUtils.createControlLabel(formPanel, TaskUIMessages.task_config_wizard_page_task_label_task_type, task == null ? 1 : 2);
 
             {
                 Composite infoPanel = UIUtils.createComposite(formPanel, 2);
@@ -131,7 +132,12 @@ class TaskConfigurationWizardPageTask extends ActiveWizardPage<TaskConfiguration
 
                 ModifyListener modifyListener = e -> updatePageCompletion();
 
-                taskLabelText = UIUtils.createLabelText(infoPanel, TaskUIMessages.task_config_wizard_page_task_text_label_name, task == null ? "" : CommonUtils.notEmpty(task.getName()), SWT.BORDER);
+                taskLabelText = UIUtils.createLabelText(
+                    infoPanel,
+                    TaskUIMessages.task_config_wizard_page_task_text_label_name,
+                    task == null ? "" : CommonUtils.notEmpty(task.getName()),
+                    SWT.BORDER
+                );
                 if (taskSaved) {
                     taskLabelText.setEditable(false);
                     //taskLabelText.setEnabled(false);
@@ -141,7 +147,10 @@ class TaskConfigurationWizardPageTask extends ActiveWizardPage<TaskConfiguration
                     modifyListener.modifyText(e);
                 });
 
-                UIUtils.createControlLabel(infoPanel, TaskUIMessages.task_config_wizard_page_task_control_label_descr).setLayoutData(new GridData(GridData.VERTICAL_ALIGN_BEGINNING));
+                UIUtils.createControlLabel(
+                    infoPanel,
+                    TaskUIMessages.task_config_wizard_page_task_control_label_descr
+                ).setLayoutData(new GridData(GridData.VERTICAL_ALIGN_BEGINNING));
 
                 taskDescriptionText = new Text(infoPanel, SWT.BORDER | SWT.MULTI);
                 taskDescriptionText.setText(task == null ? "" : CommonUtils.notEmpty(task.getDescription()));

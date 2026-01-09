@@ -187,14 +187,14 @@ class DataSourceSerializerLegacy<T extends DataSourceDescriptor> implements Data
                     curDataSource.setName(name);
                     curDataSource.setSavePassword(CommonUtils.getBoolean(attributes.getValue(RegistryConstants.ATTR_SAVE_PASSWORD)));
 
-                    DataSourceNavigatorSettings navSettings = curDataSource.getNavigatorSettings();
-                    navSettings.setShowSystemObjects(CommonUtils.getBoolean(attributes.getValue(DataSourceSerializerModern.ATTR_NAVIGATOR_SHOW_SYSTEM_OBJECTS)));
-                    navSettings.setShowUtilityObjects(CommonUtils.getBoolean(attributes.getValue(DataSourceSerializerModern.ATTR_NAVIGATOR_SHOW_UTIL_OBJECTS)));
-                    navSettings.setShowOnlyEntities(CommonUtils.getBoolean(attributes.getValue(DataSourceSerializerModern.ATTR_NAVIGATOR_SHOW_ONLY_ENTITIES)));
-                    navSettings.setHideFolders(CommonUtils.getBoolean(attributes.getValue(DataSourceSerializerModern.ATTR_NAVIGATOR_HIDE_FOLDERS)));
-                    navSettings.setHideSchemas(CommonUtils.getBoolean(attributes.getValue(DataSourceSerializerModern.ATTR_NAVIGATOR_HIDE_SCHEMAS)));
-                    navSettings.setHideVirtualModel(CommonUtils.getBoolean(attributes.getValue(DataSourceSerializerModern.ATTR_NAVIGATOR_HIDE_VIRTUAL)));
-                    navSettings.setMergeEntities(CommonUtils.getBoolean(attributes.getValue(DataSourceSerializerModern.ATTR_NAVIGATOR_MERGE_ENTITIES)));
+                    DataSourceNavigatorSettings navSettings = curDataSource.getOriginalNavigatorSettings();
+                    navSettings.setShowSystemObjects(CommonUtils.getBoolean(attributes.getValue(DataSourceNavigatorSettings.ATTR_NAVIGATOR_SHOW_SYSTEM_OBJECTS)));
+                    navSettings.setShowUtilityObjects(CommonUtils.getBoolean(attributes.getValue(DataSourceNavigatorSettings.ATTR_NAVIGATOR_SHOW_UTIL_OBJECTS)));
+                    navSettings.setShowOnlyEntities(CommonUtils.getBoolean(attributes.getValue(DataSourceNavigatorSettings.ATTR_NAVIGATOR_SHOW_ONLY_ENTITIES)));
+                    navSettings.setHideFolders(CommonUtils.getBoolean(attributes.getValue(DataSourceNavigatorSettings.ATTR_NAVIGATOR_HIDE_FOLDERS)));
+                    navSettings.setHideSchemas(CommonUtils.getBoolean(attributes.getValue(DataSourceNavigatorSettings.ATTR_NAVIGATOR_HIDE_SCHEMAS)));
+                    navSettings.setHideVirtualModel(CommonUtils.getBoolean(attributes.getValue(DataSourceNavigatorSettings.ATTR_NAVIGATOR_HIDE_VIRTUAL)));
+                    navSettings.setMergeEntities(CommonUtils.getBoolean(attributes.getValue(DataSourceNavigatorSettings.ATTR_NAVIGATOR_MERGE_ENTITIES)));
 
                     curDataSource.setConnectionReadOnly(CommonUtils.getBoolean(attributes.getValue(RegistryConstants.ATTR_READ_ONLY)));
                     final String folderPath = attributes.getValue(RegistryConstants.ATTR_FOLDER);

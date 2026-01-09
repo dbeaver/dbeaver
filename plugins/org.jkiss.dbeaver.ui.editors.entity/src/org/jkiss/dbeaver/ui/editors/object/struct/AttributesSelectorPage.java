@@ -20,6 +20,7 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
+import org.eclipse.jface.layout.GridLayoutFactory;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.jface.viewers.IStructuredSelection;
@@ -52,8 +53,8 @@ import org.jkiss.dbeaver.ui.editors.object.internal.ObjectEditorMessages;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 
-import java.util.List;
 import java.util.*;
+import java.util.List;
 import java.util.function.Predicate;
 
 /**
@@ -151,10 +152,9 @@ public abstract class AttributesSelectorPage<T_OBJECT extends DBSObject, T_ATTRI
         return panel;
     }
 
-    protected void createColumnsGroup(Composite panel)
-    {
+    protected void createColumnsGroup(Composite panel) {
         columnsGroup = new Composite(panel, SWT.NONE);
-        columnsGroup.setLayout(new GridLayout(1, false));
+        columnsGroup.setLayout(GridLayoutFactory.fillDefaults().create());
         columnsGroup.setLayoutData(new GridData(GridData.FILL_BOTH));
 
         UIUtils.createControlLabel(columnsGroup, ObjectEditorMessages.dialog_struct_columns_select_group_columns);
@@ -437,15 +437,11 @@ public abstract class AttributesSelectorPage<T_OBJECT extends DBSObject, T_ATTRI
 
     @NotNull
     public List<T_ATTRIBUTE> getSelectedAttributes() {
-        List<T_ATTRIBUTE> tableColumns = new ArrayList<>();
-        Set<AttributeInfo<T_ATTRIBUTE>> orderedAttributes = new TreeSet<>(Comparator.comparingInt(o -> o.position));
-        orderedAttributes.addAll(attributes);
-        for (AttributeInfo<T_ATTRIBUTE> col : orderedAttributes) {
-            if (col.position >= 0) {
-                tableColumns.add(col.attribute);
-            }
-        }
-        return tableColumns;
+        return attributes.stream()
+            .filter(o -> o.position >= 0)
+            .sorted(Comparator.comparingInt(AttributeInfo::getPosition))
+            .map(AttributeInfo::getAttribute)
+            .toList();
     }
 
     protected void createContentsBeforeColumns(Composite panel)
@@ -462,7 +458,32 @@ public abstract class AttributesSelectorPage<T_OBJECT extends DBSObject, T_ATTRI
         return true;
     }
 
-    public void updateColumnSelection(@NotNull Predicate<T_ATTRIBUTE> predicate) {
+    public void setSelectedColumns(@NotNull Collection<? extends DBSAttributeBase> attributes) {
+        // Reset checked columns
+        for (TableItem item : columnsTable.getItems()) {
+            if (item.getChecked()) {
+                item.setChecked(false);
+                handleItemSelect(item, false);
+            }
+        }
+        // Check columns, in order
+        for (DBSAttributeBase attribute : attributes) {
+            setColumnSelected(attribute, true);
+        }
+    }
+
+    public void setColumnSelected(@NotNull DBSAttributeBase attribute, boolean selected) {
+        for (TableItem item : columnsTable.getItems()) {
+            if (item.getData() instanceof AttributeInfo<?> info && attribute.equals(info.attribute)) {
+                item.setChecked(selected);
+                handleItemSelect(item, false);
+                break;
+            }
+        }
+        updateToggleButton();
+    }
+
+    private void updateColumnSelection(@NotNull Predicate<T_ATTRIBUTE> predicate) {
         for (TableItem item : columnsTable.getItems()) {
             item.setChecked(false);
             if (item.getData() instanceof AttributeInfo<?> info) {

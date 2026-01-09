@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,13 +17,14 @@
 package org.jkiss.dbeaver.ext.postgresql.model.impls.redshift;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreSchema;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreTableColumn;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreTableRegular;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreTablespace;
-import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
@@ -37,24 +38,25 @@ import java.sql.SQLException;
 /**
  * RedshiftTable base
  */
-public class RedshiftTable extends PostgreTableRegular
-{
+public class RedshiftTable extends PostgreTableRegular implements DBPSystemObject, DBPImageProvider {
     private static final Log log = Log.getLog(RedshiftTable.class);
+
+    private static final String MVIEW_TBL_PREFIX = "mv_tbl__";
 
     @Override
     public boolean isRefreshSchemaStatisticsOnTableRefresh() {
         return false;
     }
 
-    public RedshiftTable(PostgreSchema catalog) {
+    public RedshiftTable(@NotNull PostgreSchema catalog) {
         super(catalog);
     }
 
-    public RedshiftTable(PostgreSchema catalog, ResultSet dbResult) {
+    public RedshiftTable(@NotNull PostgreSchema catalog, @NotNull ResultSet dbResult) {
         super(catalog, dbResult);
     }
 
-    protected void readTableStatistics(JDBCSession session) throws SQLException {
+    protected void readTableStatistics(@NotNull JDBCSession session) throws SQLException {
         try (JDBCPreparedStatement dbStat = session.prepareStatement(
             "SELECT size, tbl_rows FROM SVV_TABLE_INFO WHERE \"schema\"=? AND table_id=?"))
         {
@@ -84,6 +86,22 @@ public class RedshiftTable extends PostgreTableRegular
     protected void fetchStatistics(JDBCResultSet dbResult) throws SQLException {
         diskSpace = dbResult.getLong("size") * 1024 * 1024;
         rowCountEstimate = rowCount = dbResult.getLong("tbl_rows");
+    }
+
+    @Override
+    public boolean isSystem() {
+        return false;//isMviewTable();
+    }
+
+    // Tables created by Redshift for materialized views
+    public boolean isMviewTable() {
+        return getName().startsWith(MVIEW_TBL_PREFIX);
+    }
+
+    @Nullable
+    @Override
+    public DBPImage getObjectImage() {
+        return isMviewTable() ? DBIcon.TREE_TABLE_SYSTEM : null;
     }
 
     // Not supported
