@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,10 +24,8 @@ import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.exec.DBExecUtils;
 import org.jkiss.dbeaver.model.impl.edit.TestCommandContext;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCRemoteInstance;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
-import org.jkiss.dbeaver.registry.DataSourceNavigatorSettings;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.junit.DBeaverUnitTest;
 import org.junit.Assert;
@@ -41,12 +39,6 @@ import java.util.List;
 
 public class SQLiteBaseTableDDLTest extends DBeaverUnitTest {
 
-    private final String lineBreak = System.lineSeparator();
-
-    @Mock
-    private DBRProgressMonitor mockMonitor;
-    @Mock
-    private DBPDataSourceContainer mockDataSourceContainer;
     @Mock
     private JDBCRemoteInstance mockRemoteInstance;
 
@@ -58,12 +50,8 @@ public class SQLiteBaseTableDDLTest extends DBeaverUnitTest {
 
     @Before
     public void setUp() throws DBException {
-        Mockito.when(mockDataSourceContainer.getDriver())
-            .thenReturn(DBWorkbench.getPlatform().getDataSourceProviderRegistry().findDriver("sqlite_jdbc"));
-
-        Mockito.when(mockDataSourceContainer.getPreferenceStore()).thenReturn(DBWorkbench.getPlatform().getPreferenceStore());
-        dataSource = new GenericDataSource(mockMonitor, new SQLiteMetaModel(), mockDataSourceContainer, new SQLiteSQLDialect());
-        Mockito.when(mockDataSourceContainer.getNavigatorSettings()).thenReturn(new DataSourceNavigatorSettings());
+        DBPDataSourceContainer mockDataSourceContainer = configureTestContainer("sqlite_jdbc");
+        dataSource = new GenericDataSource(monitor, new SQLiteMetaModel(), mockDataSourceContainer, new SQLiteSQLDialect());
         Mockito.when(mockRemoteInstance.getDataSource()).thenReturn(dataSource);
         executionContext = new GenericExecutionContext(mockRemoteInstance, "Test");
         container = new GenericDataSourceObjectContainer(dataSource);
@@ -85,16 +73,16 @@ public class SQLiteBaseTableDDLTest extends DBeaverUnitTest {
         TestCommandContext commandContext = new TestCommandContext(executionContext, false);
 
         GenericTableBase table = objectMaker.createNewObject(
-            mockMonitor,
+            monitor,
             commandContext,
             container,
             null,
             Collections.emptyMap());
         DBEObjectMaker objectManager = getManagerForClass(SQLiteTableColumn.class);
-        objectManager.createNewObject(mockMonitor, commandContext, table, null, Collections.emptyMap());
-        objectManager.createNewObject(mockMonitor, commandContext, table, null, Collections.emptyMap());
+        objectManager.createNewObject(monitor, commandContext, table, null, Collections.emptyMap());
+        objectManager.createNewObject(monitor, commandContext, table, null, Collections.emptyMap());
         List<DBEPersistAction> actions = DBExecUtils.getActionsListFromCommandContext(
-            mockMonitor,
+            monitor,
             commandContext,
             executionContext,
             Collections.emptyMap(),
@@ -114,22 +102,22 @@ public class SQLiteBaseTableDDLTest extends DBeaverUnitTest {
         TestCommandContext commandContext = new TestCommandContext(executionContext, false);
 
         GenericTableBase table = objectMaker.createNewObject(
-            mockMonitor,
+            monitor,
             commandContext,
             container,
             null,
             Collections.emptyMap());
         DBEObjectMaker<SQLiteTableColumn, SQLiteTable> objectManager = getManagerForClass(SQLiteTableColumn.class);
         SQLiteTableColumn column1 = objectManager.createNewObject(
-                mockMonitor,
+            monitor,
                 commandContext,
                 table,
                 null,
                 Collections.emptyMap());
-        objectManager.createNewObject(mockMonitor, commandContext, table, null, Collections.emptyMap());
+        objectManager.createNewObject(monitor, commandContext, table, null, Collections.emptyMap());
         objectManager.deleteObject(commandContext, column1, Collections.emptyMap());
         List<DBEPersistAction> actions = DBExecUtils.getActionsListFromCommandContext(
-            mockMonitor,
+            monitor,
             commandContext,
             executionContext,
             Collections.emptyMap(),
@@ -148,18 +136,18 @@ public class SQLiteBaseTableDDLTest extends DBeaverUnitTest {
         TestCommandContext commandContext = new TestCommandContext(executionContext, false);
 
         GenericTableBase table = objectMaker.createNewObject(
-            mockMonitor,
+            monitor,
             commandContext,
             container,
             null,
             Collections.emptyMap());
         DBEObjectMaker<SQLiteTableColumn, SQLiteTable> objectManager = getManagerForClass(SQLiteTableColumn.class);
-        objectManager.createNewObject(mockMonitor, commandContext, table, null, Collections.emptyMap());
+        objectManager.createNewObject(monitor, commandContext, table, null, Collections.emptyMap());
         final SQLiteTableColumn newColumn =
-            objectManager.createNewObject(mockMonitor, commandContext, table, null, Collections.emptyMap());
+            objectManager.createNewObject(monitor, commandContext, table, null, Collections.emptyMap());
         newColumn.setRequired(true);
         List<DBEPersistAction> actions = DBExecUtils.getActionsListFromCommandContext(
-            mockMonitor,
+            monitor,
             commandContext,
             executionContext,
             Collections.emptyMap(),
@@ -182,23 +170,23 @@ public class SQLiteBaseTableDDLTest extends DBeaverUnitTest {
         TestCommandContext commandContext = new TestCommandContext(executionContext, false);
 
         GenericTableBase table = objectMaker.createNewObject(
-            mockMonitor,
+            monitor,
             commandContext,
             container,
             null,
             Collections.emptyMap());
         DBEObjectMaker<SQLiteTableColumn, SQLiteTable> objectManager = getManagerForClass(SQLiteTableColumn.class);
         SQLiteTableColumn column1 = objectManager.createNewObject(
-            mockMonitor,
+            monitor,
             commandContext,
             table,
             null,
             Collections.emptyMap());
         column1.setRequired(true);
-        objectManager.createNewObject(mockMonitor, commandContext, table, null, Collections.emptyMap());
+        objectManager.createNewObject(monitor, commandContext, table, null, Collections.emptyMap());
         DBEObjectMaker<GenericUniqueKey, SQLiteTable> constraintManager = getManagerForClass(GenericUniqueKey.class);
         GenericUniqueKey constraint = constraintManager.createNewObject(
-            mockMonitor,
+            monitor,
             commandContext,
             table,
             null,
@@ -209,7 +197,7 @@ public class SQLiteBaseTableDDLTest extends DBeaverUnitTest {
         constraint.setAttributeReferences(Collections.singletonList(constraintColumn));
 
         List<DBEPersistAction> actions = DBExecUtils.getActionsListFromCommandContext(
-            mockMonitor,
+            monitor,
             commandContext,
             executionContext,
             Collections.emptyMap(),
@@ -230,14 +218,14 @@ public class SQLiteBaseTableDDLTest extends DBeaverUnitTest {
         TestCommandContext commandContext = new TestCommandContext(executionContext, false);
 
         GenericTableBase table = objectMaker.createNewObject(
-            mockMonitor,
+            monitor,
             commandContext,
             container,
             null,
             Collections.emptyMap());
         DBEObjectMaker<SQLiteTableColumn, SQLiteTable> objectManager = getManagerForClass(SQLiteTableColumn.class);
         SQLiteTableColumn column1 = objectManager.createNewObject(
-            mockMonitor,
+            monitor,
             commandContext,
             table,
             null,
@@ -245,7 +233,7 @@ public class SQLiteBaseTableDDLTest extends DBeaverUnitTest {
         column1.setDefaultValue("'Default Value'");
         column1.setFullTypeName("TEXT");
         SQLiteTableColumn column2 = objectManager.createNewObject(
-            mockMonitor,
+            monitor,
             commandContext,
             table,
             null,
@@ -253,7 +241,7 @@ public class SQLiteBaseTableDDLTest extends DBeaverUnitTest {
         column2.setDefaultValue("42");
 
         List<DBEPersistAction> actions = DBExecUtils.getActionsListFromCommandContext(
-            mockMonitor,
+            monitor,
             commandContext,
             executionContext,
             Collections.emptyMap(),
@@ -273,21 +261,21 @@ public class SQLiteBaseTableDDLTest extends DBeaverUnitTest {
         TestCommandContext commandContext = new TestCommandContext(executionContext, false);
 
         GenericTableBase table = objectMaker.createNewObject(
-            mockMonitor,
+            monitor,
             commandContext,
             container,
             null,
             Collections.emptyMap());
         table.setName("Table_SQLite_&#@*_bad_symbols");
         DBEObjectMaker<SQLiteTableColumn, SQLiteTable> objectManager = getManagerForClass(SQLiteTableColumn.class);
-        SQLiteTableColumn newColumn = objectManager.createNewObject(mockMonitor, commandContext, table, null, Collections.emptyMap());
+        SQLiteTableColumn newColumn = objectManager.createNewObject(monitor, commandContext, table, null, Collections.emptyMap());
         newColumn.setAutoIncrement(true);
         newColumn.setName("Column1_?>|(!_bas_symbols");
-        SQLiteTableColumn newColumn2 = objectManager.createNewObject(mockMonitor, commandContext, table, null, Collections.emptyMap());
+        SQLiteTableColumn newColumn2 = objectManager.createNewObject(monitor, commandContext, table, null, Collections.emptyMap());
         newColumn2.setRequired(true);
         newColumn2.setName("Column2_#$%^_bas_symbols");
         List<DBEPersistAction> actions = DBExecUtils.getActionsListFromCommandContext(
-            mockMonitor,
+            monitor,
             commandContext,
             executionContext,
             Collections.emptyMap(),
@@ -312,7 +300,7 @@ public class SQLiteBaseTableDDLTest extends DBeaverUnitTest {
         objectMaker.deleteObject(commandContext, table, Collections.emptyMap());
 
         List<DBEPersistAction> actions = DBExecUtils.getActionsListFromCommandContext(
-            mockMonitor,
+            monitor,
             commandContext,
             executionContext,
             Collections.emptyMap(),
