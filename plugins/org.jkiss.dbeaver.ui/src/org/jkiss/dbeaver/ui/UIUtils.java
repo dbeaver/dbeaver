@@ -608,7 +608,7 @@ public class UIUtils {
         int layoutStyle,
         int widthHint
     ) {
-        Composite group = new Composite(parent, SWT.NONE);
+        Composite group = createComposite(parent, columns);
         if (parent.getLayout() instanceof GridLayout) {
             GridData gd = new GridData(layoutStyle);
             if (widthHint > 0) {
@@ -616,9 +616,6 @@ public class UIUtils {
             }
             group.setLayoutData(gd);
         }
-
-        GridLayout gl = new GridLayout(columns, false);
-        group.setLayout(gl);
 
         Label titleLabel = UIUtils.createControlLabel(group, label, columns);
         titleLabel.setFont(BaseThemeSettings.instance.baseFontBold);
