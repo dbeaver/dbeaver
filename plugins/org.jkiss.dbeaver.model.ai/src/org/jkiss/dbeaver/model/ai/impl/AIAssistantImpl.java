@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -94,15 +94,21 @@ public class AIAssistantImpl implements AIAssistant {
             AIFunctionContext functionContext = createAiFunctionContext(monitor, context, systemGenerator, messages);
 
             AIEngineRequest request = completionRequest;
+
             for (int tryIndex = 0; tryIndex < MAX_FUNCTION_CALLS; tryIndex++) {
                 Instant now = Instant.now();
                 AIEngineResponse completionResponse = requestCompletion(engine, monitor, request);
+                int systemPromptLength = completionRequest.getMessages().stream()
+                    .filter(it -> it.getRole() == AIMessageType.SYSTEM)
+                    .mapToInt(it -> it.getContent().length())
+                    .sum();
 
                 AIMessageMeta requestMeta = new AIMessageMeta(
                     engineDescriptor.getId(),
                     engine.getProperties().getModel(),
                     completionResponse.usage(),
-                    Duration.between(now, Instant.now())
+                    Duration.between(now, Instant.now()),
+                    systemPromptLength
                 );
 
                 if (completionResponse.getType() == AIMessageType.FUNCTION) {

@@ -32,5 +32,7 @@ public interface AIEngineResponseConsumer {
 
     void usage(AIUsage usage);
 
+    void systemPromptLength(int length);
+
     void warning(@NotNull String message);
 }

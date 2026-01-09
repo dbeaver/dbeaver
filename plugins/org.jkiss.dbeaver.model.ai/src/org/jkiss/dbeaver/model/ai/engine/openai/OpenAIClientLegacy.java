@@ -37,6 +37,7 @@ import java.net.http.HttpRequest;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
+import java.util.Locale;
 
 public class OpenAIClientLegacy extends OpenAIClient {
     private static final Duration TIMEOUT = Duration.ofSeconds(30);
@@ -86,6 +87,11 @@ public class OpenAIClientLegacy extends OpenAIClient {
         ChatCompletionResult chatCompletionResult = GSON.fromJson(response, ChatCompletionResult.class);
         OAIResponsesResponse oaiResponse = new OAIResponsesResponse();
 
+        int systemPromptLength = completionRequest.input.stream()
+            .filter(it -> it.role.toLowerCase(Locale.ROOT).equals("system"))
+            .mapToInt(it -> it.content.getFirst().text.length())
+            .sum();
+
         AIMessageMeta messageMeta = new AIMessageMeta(
             OpenAIConstants.OPENAI_ENGINE,
             completionRequest.model,
@@ -95,7 +101,8 @@ public class OpenAIClientLegacy extends OpenAIClient {
                 oaiResponse.usage.outputTokens(),
                 oaiResponse.usage.outputTokensDetails().reasoningTokens()
             ),
-            Duration.between(now, Instant.now())
+            Duration.between(now, Instant.now()),
+            systemPromptLength
         );
 
         oaiResponse.output = chatCompletionResult.getChoices().stream().map(
