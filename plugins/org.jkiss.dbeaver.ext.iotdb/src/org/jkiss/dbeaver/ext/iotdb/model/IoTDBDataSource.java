@@ -80,14 +80,14 @@ public class IoTDBDataSource extends GenericDataSource {
     private List<IoTDBAbstractUser> loadUsers(DBRProgressMonitor monitor) throws DBException {
 
         List<IoTDBAbstractUser> userList = new ArrayList<>();
-        String currentUserName = null;
+        String currentUserName = "";
         boolean hasManageUserPrivilege = false;
 
         try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Show Current User & Check Privileges")) {
             String sql = "show current_user";
             try (JDBCStatement stmt = session.createStatement()) {
                 try (JDBCResultSet rs = stmt.executeQuery(sql)) {
-                    while (rs.next()) {
+                    if (rs.next()) {
                         currentUserName = rs.getString("CurrentUser");
                         IoTDBAbstractUser user = isTree ? new IoTDBUser(this, currentUserName) :
                                 new IoTDBRelationalUser(this, currentUserName, monitor);
@@ -98,7 +98,7 @@ public class IoTDBDataSource extends GenericDataSource {
                     try (JDBCStatement stmt2 = session.createStatement()) {
                         try (JDBCResultSet rs2 = stmt2.executeQuery(sql)) {
                             while (rs2.next()) {
-                                if (rs2.getString("Privileges").equals("MANAGE_USER")) {
+                                if ("MANAGE_USER".equals(rs2.getString("Privileges"))) {
                                     hasManageUserPrivilege = true;
                                     break;
                                 }
@@ -122,7 +122,7 @@ public class IoTDBDataSource extends GenericDataSource {
                 try (JDBCResultSet rs = stmt.executeQuery(sql)) {
                     while (rs.next()) {
                         String tmpUserName = rs.getString("User");
-                        if (tmpUserName.equals(currentUserName)) {
+                        if (currentUserName.equals(tmpUserName)) {
                             continue;
                         }
                         IoTDBAbstractUser user = isTree ? new IoTDBUser(this, tmpUserName) :

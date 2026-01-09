@@ -83,13 +83,13 @@ public class IoTDBDataSourceProvider extends GenericDataSourceProvider {
         return url.toString();
     }
 
-    private String processUrl(String url) {
-        String processedUrl = url;
+    @NotNull
+    private String processUrl(@NotNull String url) {
         int index = url.indexOf("?");
         if (index > 0 && url.charAt(index - 1) == '/') {
-            processedUrl = url.substring(0, index - 1).concat(url.substring(index));
+            return url.substring(0, index - 1).concat(url.substring(index));
         }
-        return processedUrl;
+        return url;
     }
 
     @NotNull

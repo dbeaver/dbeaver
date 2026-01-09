@@ -61,7 +61,7 @@ public class IoTDBMetaModel extends GenericMetaModel {
             String sql = String.format("show devices %s", device);
             try (JDBCStatement stmt = session.createStatement()) {
                 try (JDBCResultSet rs = stmt.executeQuery(sql)) {
-                    while (rs.next()) {
+                    if (rs.next()) {
                         isAligned = (rs.getString("IsAligned")).equals("true");
                     }
                 }
