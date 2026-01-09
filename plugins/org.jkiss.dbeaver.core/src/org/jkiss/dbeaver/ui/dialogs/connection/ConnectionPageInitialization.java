@@ -436,7 +436,9 @@ class ConnectionPageInitialization extends ConnectionWizardPage implements IDial
         }
 
         shellCommandPage.saveSettings(dataSource);
-        clientAppPage.performFinish();
+        if (clientAppPage != null) {
+            clientAppPage.performFinish();
+        }
     }
 
     @Override
