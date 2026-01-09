@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,7 +35,7 @@ import org.jkiss.dbeaver.utils.PrefUtils;
 import org.jkiss.dbeaver.utils.SystemVariablesResolver;
 
 /**
- * PrefPageConnections
+ * PrefPageConnectionClient
  */
 public class PrefPageConnectionClient extends TargetPrefPage {
     public static final String PAGE_ID = "org.jkiss.dbeaver.preferences.client.connections"; //$NON-NLS-1$
@@ -134,7 +134,10 @@ public class PrefPageConnectionClient extends TargetPrefPage {
     }
 
     @Override
-    protected void loadPreferences(DBPPreferenceStore store) {
+    protected void loadPreferences(@NotNull DBPPreferenceStore store) {
+        if (disableClientApplicationNameCheck == null) {
+            return;
+        }
         try {
             disableClientApplicationNameCheck.setSelection(store.getBoolean(ModelPreferences.META_CLIENT_NAME_DISABLE));
             overrideClientApplicationNameCheck.setSelection(store.getBoolean(ModelPreferences.META_CLIENT_NAME_OVERRIDE));
@@ -148,7 +151,10 @@ public class PrefPageConnectionClient extends TargetPrefPage {
     }
 
     @Override
-    protected void savePreferences(DBPPreferenceStore store) {
+    protected void savePreferences(@NotNull DBPPreferenceStore store) {
+        if (disableClientApplicationNameCheck == null) {
+            return;
+        }
         try {
             store.setValue(ModelPreferences.META_CLIENT_NAME_DISABLE, disableClientApplicationNameCheck.getSelection());
             store.setValue(ModelPreferences.META_CLIENT_NAME_OVERRIDE, overrideClientApplicationNameCheck.getSelection());
@@ -168,6 +174,7 @@ public class PrefPageConnectionClient extends TargetPrefPage {
         store.setToDefault(ModelPreferences.CONNECT_USE_ENV_VARS);
     }
 
+    @NotNull
     @Override
     protected String getPropertyPageID() {
         return PAGE_ID;
