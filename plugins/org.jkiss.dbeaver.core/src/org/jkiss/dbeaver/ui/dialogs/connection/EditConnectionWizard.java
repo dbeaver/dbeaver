@@ -48,7 +48,10 @@ import org.jkiss.dbeaver.ui.IDialogPageProvider;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.actions.datasource.DataSourceHandler;
 import org.jkiss.dbeaver.ui.dialogs.BaseAuthDialog;
-import org.jkiss.dbeaver.ui.preferences.*;
+import org.jkiss.dbeaver.ui.preferences.PrefPageErrorHandle;
+import org.jkiss.dbeaver.ui.preferences.PrefPageMetaData;
+import org.jkiss.dbeaver.ui.preferences.PrefPageTransactions;
+import org.jkiss.dbeaver.ui.preferences.WizardPrefPage;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -173,7 +176,6 @@ public class EditConnectionWizard extends ConnectionWizard {
             addPage(pageSettings);
         }
 
-        boolean embedded = dataSource.getDriver().isEmbedded();
         pageGeneral = new ConnectionPageGeneral(this, dataSource);
         pageInternalParameters = new ConnectionPageInternalParameters(dataSource);
 
@@ -185,15 +187,6 @@ public class EditConnectionWizard extends ConnectionWizard {
         addPage(pageGeneral);
         if (pageSettings != null) {
             pageSettings.addSubPage(pageInit);
-
-            if (!embedded) {
-                pageSettings.addSubPage(createPreferencePage(
-                    new PrefPageConnectionClient(),
-                    CoreMessages.dialog_connection_edit_wizard_connections,
-                    CoreMessages.dialog_connection_edit_wizard_connections_description
-                ));
-            }
-
             pageSettings.addSubPage(createPreferencePage(
                 new PrefPageTransactions(),
                 CoreMessages.dialog_connection_edit_wizard_transactions,
@@ -425,25 +418,9 @@ public class EditConnectionWizard extends ConnectionWizard {
                 }
             }
         }
-        if (page instanceof IWorkbenchPropertyPage) {
-            ((IWorkbenchPropertyPage) page).setElement(dataSource);
+        if (page instanceof IWorkbenchPropertyPage wpp) {
+            wpp.setElement(dataSource);
         }
-    }
-
-    private void savePageSettings(WizardPrefPage prefPage) {
-        if (isPageActive(prefPage)) {
-            prefPage.performFinish();
-        }
-/*
-        final WizardPrefPage[] subPages = prefPage.getDialogPages();
-        if (subPages != null) {
-            for (WizardPrefPage subPage : subPages) {
-                if (isPageActive(subPage)) {
-                    subPage.performFinish();
-                }
-            }
-        }
-*/
     }
 
     @Override

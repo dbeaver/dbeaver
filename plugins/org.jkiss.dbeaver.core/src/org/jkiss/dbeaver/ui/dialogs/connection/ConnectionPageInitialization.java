@@ -46,7 +46,9 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.*;
+import org.jkiss.dbeaver.ui.preferences.PrefPageConnectionClient;
 import org.jkiss.dbeaver.ui.preferences.PrefPageConnectionTypes;
+import org.jkiss.dbeaver.ui.preferences.WizardPrefPage;
 import org.jkiss.dbeaver.utils.HelpUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -82,6 +84,7 @@ class ConnectionPageInitialization extends ConnectionWizardPage implements IDial
 
     private boolean txnOptionsLoaded = false;
     private ConnectionPageShellCommands shellCommandPage;
+    private WizardPrefPage clientAppPage;
 
     private ConnectionPageInitialization() {
         super(PAGE_NAME); //$NON-NLS-1$
@@ -96,6 +99,13 @@ class ConnectionPageInitialization extends ConnectionWizardPage implements IDial
         bootstrapQueries = new ArrayList<>(dataSourceDescriptor.getConnectionConfiguration().getBootstrap().getInitQueries());
         ignoreBootstrapErrors = dataSourceDescriptor.getConnectionConfiguration().getBootstrap().isIgnoreErrors();
         shellCommandPage = new ConnectionPageShellCommands(dataSourceDescriptor);
+        if (!dataSourceDescriptor.getDriver().isEmbedded()) {
+            clientAppPage = new WizardPrefPage(
+                new PrefPageConnectionClient(),
+                CoreMessages.dialog_connection_edit_wizard_connections,
+                CoreMessages.dialog_connection_edit_wizard_connections_description
+            );
+        }
     }
 
     @Override
@@ -139,9 +149,12 @@ class ConnectionPageInitialization extends ConnectionWizardPage implements IDial
     @Nullable
     @Override
     public IDialogPage[] getDialogPages(boolean extrasOnly, boolean forceCreate) {
-        return new IDialogPage[]{
-            shellCommandPage
-        };
+        List<IDialogPage> pages = new ArrayList<>();
+        pages.add(shellCommandPage);
+        if (clientAppPage != null) {
+            pages.add(clientAppPage);
+        }
+        return pages.toArray(new IDialogPage[0]);
     }
 
     private void loadDatabaseSettings(DBPDataSource dataSource) {
@@ -321,9 +334,8 @@ class ConnectionPageInitialization extends ConnectionWizardPage implements IDial
             closeIdleConnectionsCheck = UIUtils.createCheckbox(idleConComp,
                 CoreMessages.dialog_connection_wizard_final_label_close_idle_connections,
                 CoreMessages.dialog_connection_wizard_final_label_close_idle_connections_tooltip, true, 1);
-            closeIdleConnectionsCheck.addSelectionListener(SelectionListener.widgetSelectedAdapter(selectionEvent -> {
-                closeIdleConnectionsPeriod.setEnabled(closeIdleConnectionsCheck.getSelection());
-            }));
+            closeIdleConnectionsCheck.addSelectionListener(SelectionListener.widgetSelectedAdapter(selectionEvent ->
+                closeIdleConnectionsPeriod.setEnabled(closeIdleConnectionsCheck.getSelection())));
             closeIdleConnectionsPeriod = UIUtils.createSpinner(idleConComp,
                 CoreMessages.dialog_connection_wizard_final_label_close_idle_connections_tooltip, 0, 0, Short.MAX_VALUE);
 
@@ -379,39 +391,39 @@ class ConnectionPageInitialization extends ConnectionWizardPage implements IDial
 
     @Override
     public void saveSettings(@NotNull DBPDataSourceContainer dataSource) {
-        if (dataSourceDescriptor != null && !activated) {
-            // No changes anyway
-            return;
-        }
-        dataSource.setDefaultAutoCommit(autocommit.getSelection());
-        if (txnOptionsLoaded) {
-            if (CommonUtils.isEmpty(isolationLevel.getText())) {
-                dataSource.setDefaultTransactionsIsolation(null);
-            } else {
-                int levelIndex = isolationLevel.getSelectionIndex();
-                if (levelIndex >= 0) {
-                    dataSource.setDefaultTransactionsIsolation(supportedLevels.get(levelIndex));
+        if (activated) {
+            dataSource.setDefaultAutoCommit(autocommit.getSelection());
+            if (txnOptionsLoaded) {
+                if (CommonUtils.isEmpty(isolationLevel.getText())) {
+                    dataSource.setDefaultTransactionsIsolation(null);
+                } else {
+                    int levelIndex = isolationLevel.getSelectionIndex();
+                    if (levelIndex >= 0) {
+                        dataSource.setDefaultTransactionsIsolation(supportedLevels.get(levelIndex));
+                    }
                 }
             }
-        }
-        final DBPConnectionConfiguration confConfig = dataSource.getConnectionConfiguration();
-        DBPConnectionBootstrap bootstrap = confConfig.getBootstrap();
-        bootstrap.setDefaultCatalogName(defaultCatalog.getText());
-        bootstrap.setDefaultSchemaName(defaultSchema.getText());
+            final DBPConnectionConfiguration confConfig = dataSource.getConnectionConfiguration();
+            DBPConnectionBootstrap bootstrap = confConfig.getBootstrap();
+            bootstrap.setDefaultCatalogName(defaultCatalog.getText());
+            bootstrap.setDefaultSchemaName(defaultSchema.getText());
 
-        bootstrap.setIgnoreErrors(ignoreBootstrapErrors);
-        bootstrap.setInitQueries(bootstrapQueries);
+            bootstrap.setIgnoreErrors(ignoreBootstrapErrors);
+            bootstrap.setInitQueries(bootstrapQueries);
 
-        confConfig.setKeepAliveInterval(keepAliveInterval.getSelection());
-        confConfig.setCloseIdleConnection(closeIdleConnectionsCheck.getSelection());
-        if (confConfig.isCloseIdleConnection() && closeIdleConnectionsPeriod.getSelection() != confConfig.getConnectionType().getCloseIdleConnectionPeriod()) {
-            // Save only if it is enabled and not equals to default
-            confConfig.setCloseIdleInterval(closeIdleConnectionsPeriod.getSelection());
-        } else {
-            confConfig.setCloseIdleInterval(0);
+            confConfig.setKeepAliveInterval(keepAliveInterval.getSelection());
+            confConfig.setCloseIdleConnection(closeIdleConnectionsCheck.getSelection());
+            if (confConfig.isCloseIdleConnection() && closeIdleConnectionsPeriod.getSelection() != confConfig.getConnectionType()
+                .getCloseIdleConnectionPeriod()) {
+                // Save only if it is enabled and not equals to default
+                confConfig.setCloseIdleInterval(closeIdleConnectionsPeriod.getSelection());
+            } else {
+                confConfig.setCloseIdleInterval(0);
+            }
         }
 
         shellCommandPage.saveSettings(dataSource);
+        clientAppPage.performFinish();
     }
 
     @Override
