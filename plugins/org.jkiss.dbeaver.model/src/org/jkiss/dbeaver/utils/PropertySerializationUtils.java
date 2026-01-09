@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,9 +20,20 @@ import com.google.gson.ExclusionStrategy;
 import com.google.gson.FieldAttributes;
 import com.google.gson.GsonBuilder;
 import com.google.gson.Strictness;
+import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.access.DBAAuthCredentials;
+import org.jkiss.dbeaver.model.access.DBAAuthCredentialsWithComplexProperties;
 import org.jkiss.dbeaver.model.meta.SecureProperty;
+import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.runtime.properties.PropertySourceEditable;
+
+import java.util.Map;
 
 public class PropertySerializationUtils {
+    private static final Log log = Log.getLog(PropertySerializationUtils.class);
+
     public static String EMPTY_JSON_OBJECT = "{}";
 
     private static class SecurePropertiesExclusionStrategy implements ExclusionStrategy {
@@ -66,5 +77,29 @@ public class PropertySerializationUtils {
         return new GsonBuilder().setExclusionStrategies(new NonSecurePropertiesExclusionStrategy())
             .setPrettyPrinting()
             .setStrictness(Strictness.LENIENT);
+    }
+
+    public static void updateCredentialsFromProperties(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBAAuthCredentials credentials,
+        @NotNull Map<String, ?> properties
+    ) {
+        if (credentials instanceof DBAAuthCredentialsWithComplexProperties complexProperties) {
+            complexProperties.updateCredentialsFromComplexProperties(properties);
+        }
+        PropertySourceEditable editable = new PropertySourceEditable(credentials, credentials);
+        editable.collectProperties();
+        for (Map.Entry<String, ?> entry : properties.entrySet()) {
+            String propId = entry.getKey();
+            Object propValue = entry.getValue();
+            DBPPropertyDescriptor propDesc = editable.getProperty(propId);
+            if (propDesc != null) {
+                try {
+                    editable.setPropertyValue(monitor, propId, propValue);
+                } catch (Exception e) {
+                    log.error("Error setting credential property '" + propId + "'", e);
+                }
+            }
+        }
     }
 }
