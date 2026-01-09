@@ -109,7 +109,7 @@ public class ConnectionViewSettingsContributor extends DataSourceMenuContributor
                     DataSourceNavigatorSettingsUtils.clearCustomNavigatorSettings(dsContainer);
                     dataSourceNavigatorSettings.setUserSettings(false);
                 } catch (DBException logged) {
-                    log.error("Error updating custom navigator settings", logged);
+                    log.error("Error clearing custom navigator settings", logged);
                 }
             }
             askToReconnectIfNeeded();
