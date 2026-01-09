@@ -303,7 +303,7 @@ class ConnectionPageInitialization extends ConnectionWizardPage implements IDial
 
             autocommit = UIUtils.createLabelCombo(
                 txnGroup,
-                CoreMessages.dialog_connection_wizard_final_checkbox_auto_commit,
+                CoreMessages.action_menu_transactionMonitor_autocommitMode,
                 "Sets auto-commit mode for this connection.\nIf set to default then connection type configuration will be used.",
                 SWT.DROP_DOWN | SWT.READ_ONLY);
             autocommit.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
