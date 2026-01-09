@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2026 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,7 +39,6 @@ public class AIFunctionContext {
     @NotNull
     private final List<AIMessage> promptMessages;
     private final List<AIFunctionCall> functionCalls = new ArrayList<>();
-    private boolean restoreMode;
 
     public AIFunctionContext(
         @NotNull DBRProgressMonitor monitor,
@@ -79,13 +78,5 @@ public class AIFunctionContext {
 
     public void addFunctionCall(@NotNull AIFunctionCall functionCall) {
         this.functionCalls.add(functionCall);
-    }
-
-    public boolean isRestoreMode() {
-        return restoreMode;
-    }
-
-    public void setRestoreMode(boolean restoreMode) {
-        this.restoreMode = restoreMode;
     }
 }
