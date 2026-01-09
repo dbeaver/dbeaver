@@ -233,25 +233,29 @@ public interface SMController extends DBPObjectController, DBInternalDatabaseInf
     boolean hasAccessToUsers(@NotNull String teamRole, @NotNull Set<String> userIds) throws DBException;
 
     @NotNull
-    String[] getTeamMembers(String teamId) throws DBException;
+    String[] getTeamMembers(@NotNull String teamId) throws DBException;
 
+    /**
+     * Reads user settings.
+     * IF object type and id are null then returns all project swettings
+     */
     @NotNull
-    Map<String, Object> getObjectSettings(
-        @NotNull String objectId,
-        @NotNull SMObjectType objectType,
-        @Nullable String settingId
+    List<SMObjectSettings> getObjectSettings(
+        @NotNull String projectId,
+        @Nullable SMObjectType objectType,
+        @Nullable String objectId,
+        @Nullable String[] settingIds
     ) throws DBException;
 
+    /**
+     * Sets user settings for a specified object.
+     * If value in map entry is null then setting is deleted.
+     */
     void setObjectSettings(
-        @NotNull String objectId,
+        @NotNull String projectId,
         @NotNull SMObjectType objectType,
-        @NotNull Map<String, Object> settings
-    ) throws DBException;
-
-    void deleteObjectSettings(
         @NotNull String objectId,
-        @NotNull SMObjectType objectType,
-        @Nullable Set<String> settingIds
+        @NotNull Map<String, String> settings
     ) throws DBException;
 
 }

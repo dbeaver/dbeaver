@@ -23,7 +23,6 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
@@ -48,6 +47,7 @@ import org.jkiss.utils.CommonUtils;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Abstract wizard
@@ -279,7 +279,11 @@ public abstract class AbstractNativeToolWizard<SETTINGS extends AbstractNativeTo
 
     @NotNull
     @Override
-    public TaskConfigurationWizardDialog createWizardDialog(@NotNull IWorkbenchWindow window, @Nullable IStructuredSelection selection) {
+    public TaskConfigurationWizardDialog createWizardDialog(
+        @NotNull IWorkbenchWindow window,
+        @NotNull IStructuredSelection selection,
+        @NotNull Map<String, Object> options
+    ) {
         return new NativeToolWizardDialog(window, this, selection);
     }
 }

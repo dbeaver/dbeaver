@@ -41,9 +41,6 @@ public interface DBPDataSourceConfigurationStorage {
      */
     boolean isVirtual();
 
-    @NotNull
-    String getStatus();
-
     // Used for secure credentials save/load (it is a prt of credentials file name)
     @Nullable
     String getStorageSubId();

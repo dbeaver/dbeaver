@@ -16,10 +16,10 @@
  */
 package org.jkiss.dbeaver.model.ai;
 
-import org.eclipse.core.runtime.IAdaptable;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.DBPAdaptable;
 import org.jkiss.dbeaver.model.ai.engine.AIEngineProperties;
 import org.jkiss.dbeaver.model.ai.registry.AIEngineDescriptor;
 import org.jkiss.dbeaver.model.ai.registry.AIEngineRegistry;
@@ -31,7 +31,7 @@ import java.util.*;
  * AI global settings.
  * Keeps global parameters and configuration of all AI engines
  */
-public class AISettings implements IAdaptable {
+public class AISettings implements DBPAdaptable {
     private boolean aiDisabled;
     private String activeEngine;
     private final Map<String, AIEngineProperties> engineConfigurations = new LinkedHashMap<>();
