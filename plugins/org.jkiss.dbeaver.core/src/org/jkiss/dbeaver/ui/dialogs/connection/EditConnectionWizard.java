@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -76,7 +76,6 @@ public class EditConnectionWizard extends ConnectionWizard {
     private ConnectionPageInternalParameters pageInternalParameters;
     //private ConnectionPageNetwork pageNetwork;
     private ConnectionPageInitialization pageInit;
-    private ConnectionPageShellCommands pageEvents;
 
     /**
      * Constructor for SampleNewWizard.
@@ -182,12 +181,10 @@ public class EditConnectionWizard extends ConnectionWizard {
 //            pageNetwork = new ConnectionPageNetwork(this);
 //        }
         pageInit = new ConnectionPageInitialization(dataSource);
-        pageEvents = new ConnectionPageShellCommands(dataSource);
 
         addPage(pageGeneral);
         if (pageSettings != null) {
             pageSettings.addSubPage(pageInit);
-            pageSettings.addSubPage(pageEvents);
 
             if (!embedded) {
                 pageSettings.addSubPage(createPreferencePage(
@@ -395,7 +392,6 @@ public class EditConnectionWizard extends ConnectionWizard {
         pageGeneral.saveSettings(dataSource);
         pageInternalParameters.saveSettings(dataSource);
         pageInit.saveSettings(dataSource);
-        pageEvents.saveSettings(dataSource);
         for (IDialogPage page : getPages()) {
             setPageDataSourceElement(dataSource, page);
         }
