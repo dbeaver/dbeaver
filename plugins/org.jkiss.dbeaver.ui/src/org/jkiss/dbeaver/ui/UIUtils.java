@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -607,6 +607,28 @@ public class UIUtils {
 
         GridLayout gl = new GridLayout(columns, false);
         group.setLayout(gl);
+
+        return group;
+    }
+
+    public static Composite createTitledComposite(
+        @NotNull Composite parent,
+        @NotNull String label,
+        int columns,
+        int layoutStyle,
+        int widthHint
+    ) {
+        Composite group = createComposite(parent, columns);
+        if (parent.getLayout() instanceof GridLayout) {
+            GridData gd = new GridData(layoutStyle);
+            if (widthHint > 0) {
+                gd.widthHint = widthHint;
+            }
+            group.setLayoutData(gd);
+        }
+
+        Label titleLabel = UIUtils.createControlLabel(group, label, columns);
+        titleLabel.setFont(BaseThemeSettings.instance.baseFontBold);
 
         return group;
     }
