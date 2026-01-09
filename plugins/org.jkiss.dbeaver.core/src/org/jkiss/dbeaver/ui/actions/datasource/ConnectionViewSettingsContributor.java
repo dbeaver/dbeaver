@@ -100,16 +100,7 @@ public class ConnectionViewSettingsContributor extends DataSourceMenuContributor
                 ((DataSourceDescriptor) this.dsContainer).setNavigatorSettings(settings);
                 dsContainer.persistConfiguration();
             }
-
-            if (dsContainer.isConnected()) {
-                if (UIUtils.confirmAction(
-                    UIUtils.getActiveWorkbenchShell(),
-                    CoreMessages.dialog_connection_edit_wizard_conn_change_title,
-                    NLS.bind(CoreMessages.dialog_connection_edit_wizard_conn_change_question, dsContainer.getName()) ))
-                {
-                    DataSourceHandler.reconnectDataSource(null, dsContainer);
-                }
-            }
+            askToReconnectIfNeeded();
         }
 
         void clearCurrentUserSettings(DBNBrowseSettings settings) {
@@ -119,6 +110,19 @@ public class ConnectionViewSettingsContributor extends DataSourceMenuContributor
                     dataSourceNavigatorSettings.setUserSettings(false);
                 } catch (DBException logged) {
                     log.error("Error updating custom navigator settings", logged);
+                }
+            }
+            askToReconnectIfNeeded();
+        }
+
+        private void askToReconnectIfNeeded() {
+            if (dsContainer.isConnected()) {
+                if (UIUtils.confirmAction(
+                    UIUtils.getActiveWorkbenchShell(),
+                    CoreMessages.dialog_connection_edit_wizard_conn_change_title,
+                    NLS.bind(CoreMessages.dialog_connection_edit_wizard_conn_change_question, dsContainer.getName())
+                )) {
+                    DataSourceHandler.reconnectDataSource(null, dsContainer);
                 }
             }
         }
