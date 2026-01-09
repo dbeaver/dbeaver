@@ -69,7 +69,7 @@ class ConnectionPageInitialization extends ConnectionWizardPage implements IDial
 
     private DataSourceDescriptor dataSourceDescriptor;
 
-    private Button autocommit;
+    private Combo autocommit;
     private Combo isolationLevel;
     private Combo defaultCatalog;
     private Combo defaultSchema;
@@ -113,13 +113,26 @@ class ConnectionPageInitialization extends ConnectionWizardPage implements IDial
         super.dispose();
     }
 
+    private static int getAutocommitSelIndex(DBPConnectionConfiguration configuration) {
+        Boolean defaultAutoCommit = configuration.getBootstrap().getDefaultAutoCommit();
+        return defaultAutoCommit == null ? 0 : defaultAutoCommit ? 1 : 2;
+    }
+
+    private static Boolean getAutocommitValueFromIndex(int index) {
+        return switch (index) {
+            case 1 -> true;
+            case 2 -> false;
+            default -> null;
+        };
+    }
+
     @Override
     public void activatePage() {
         if (dataSourceDescriptor != null) {
             if (!activated) {
                 final DBPConnectionConfiguration conConfig = dataSourceDescriptor.getConnectionConfiguration();
                 // Get settings from data source descriptor
-                autocommit.setSelection(dataSourceDescriptor.isDefaultAutoCommit());
+                autocommit.select(getAutocommitSelIndex(dataSourceDescriptor.getConnectionConfiguration()));
                 isolationLevel.add("");
 
                 DataSourceDescriptor originalDataSource = getWizard().getOriginalDataSource();
@@ -174,7 +187,7 @@ class ConnectionPageInitialization extends ConnectionWizardPage implements IDial
         Integer levelCode = dataSourceContainer.getDefaultTransactionsIsolation();
 
         UIUtils.syncExec(() -> {
-            autocommit.setSelection(dataSourceContainer.isDefaultAutoCommit());
+            autocommit.select(getAutocommitSelIndex(dataSourceDescriptor.getConnectionConfiguration()));
             //isolationLevel.setEnabled(!autocommit.getSelection());
             supportedLevels.clear();
 
@@ -288,18 +301,15 @@ class ConnectionPageInitialization extends ConnectionWizardPage implements IDial
                 -1
             );
 
-            autocommit = UIUtils.createLabelCheckbox(
+            autocommit = UIUtils.createLabelCombo(
                 txnGroup,
                 CoreMessages.dialog_connection_wizard_final_checkbox_auto_commit,
-                "Sets auto-commit mode for this connection",
-                dataSourceDescriptor != null && dataSourceDescriptor.isDefaultAutoCommit());
+                "Sets auto-commit mode for this connection.\nIf set to default then connection type configuration will be used.",
+                SWT.DROP_DOWN | SWT.READ_ONLY);
             autocommit.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
-            autocommit.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
-                    isolationLevel.setEnabled(!autocommit.getSelection());
-                }
-            });
+            autocommit.add("Default");
+            autocommit.add("Auto commit");
+            autocommit.add("Manual commit");
 
             isolationLevel = UIUtils.createLabelCombo(txnGroup, CoreMessages.dialog_connection_wizard_final_label_isolation_level,
                 CoreMessages.dialog_connection_wizard_final_label_isolation_level_tooltip, SWT.DROP_DOWN | SWT.READ_ONLY);
@@ -392,16 +402,19 @@ class ConnectionPageInitialization extends ConnectionWizardPage implements IDial
     @Override
     public void saveSettings(@NotNull DBPDataSourceContainer dataSource) {
         if (activated) {
-            dataSource.setDefaultAutoCommit(autocommit.getSelection());
+            dataSource.getConnectionConfiguration().getBootstrap().setDefaultAutoCommit(
+                getAutocommitValueFromIndex(autocommit.getSelectionIndex()));
             if (txnOptionsLoaded) {
-                if (CommonUtils.isEmpty(isolationLevel.getText())) {
-                    dataSource.setDefaultTransactionsIsolation(null);
-                } else {
+                DBPTransactionIsolation level = null;
+                if (!CommonUtils.isEmpty(isolationLevel.getText())) {
                     int levelIndex = isolationLevel.getSelectionIndex();
                     if (levelIndex >= 0) {
-                        dataSource.setDefaultTransactionsIsolation(supportedLevels.get(levelIndex));
+                        level = supportedLevels.get(levelIndex);
                     }
                 }
+                dataSource.getConnectionConfiguration().getBootstrap().setDefaultTransactionIsolation(
+                    level == null ? null : level.getCode());
+
             }
             final DBPConnectionConfiguration confConfig = dataSource.getConnectionConfiguration();
             DBPConnectionBootstrap bootstrap = confConfig.getBootstrap();
@@ -429,14 +442,11 @@ class ConnectionPageInitialization extends ConnectionWizardPage implements IDial
     @Override
     public void setWizard(IWizard newWizard) {
         super.setWizard(newWizard);
-        if (newWizard instanceof ConnectionWizard && !((ConnectionWizard) newWizard).isNew()) {
+        if (newWizard instanceof ConnectionWizard connectionWizard && !connectionWizard.isNew()) {
             // Listen for connection type change
-            ((ConnectionWizard) newWizard).addPropertyChangeListener(event -> {
+            connectionWizard.addPropertyChangeListener(event -> {
                 if (ConnectionWizard.PROP_CONNECTION_TYPE.equals(event.getProperty())) {
                     DBPConnectionType type = (DBPConnectionType) event.getNewValue();
-                    if (autocommit != null) {
-                        autocommit.setSelection(type.isAutocommit());
-                    }
                     if (closeIdleConnectionsCheck != null) {
                         closeIdleConnectionsCheck.setSelection(type.isAutoCloseConnections());
                     }
