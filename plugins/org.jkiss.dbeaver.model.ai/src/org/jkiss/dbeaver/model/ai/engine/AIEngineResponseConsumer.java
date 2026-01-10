@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.model.ai.engine;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.ai.AIUsage;
 
 /**
@@ -30,7 +31,7 @@ public interface AIEngineResponseConsumer {
 
     void completeBlock();
 
-    void usage(AIUsage usage);
+    void usage(@Nullable AIUsage usage);
 
     void systemPromptLength(int length);
 

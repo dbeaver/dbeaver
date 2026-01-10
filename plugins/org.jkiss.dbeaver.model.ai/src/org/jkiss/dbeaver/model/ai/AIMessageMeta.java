@@ -17,13 +17,14 @@
 package org.jkiss.dbeaver.model.ai;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 
 import java.time.Duration;
 
 public record AIMessageMeta(
     @NotNull String engineId,
     @NotNull String modelId,
-    @NotNull AIUsage usage,
+    @Nullable AIUsage usage,
     @NotNull Duration timeSpent,
     int systemPromptLength
 ) {

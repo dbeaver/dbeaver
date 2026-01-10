@@ -98,15 +98,12 @@ public class AIAssistantImpl implements AIAssistant {
             for (int tryIndex = 0; tryIndex < MAX_FUNCTION_CALLS; tryIndex++) {
                 Instant now = Instant.now();
                 AIEngineResponse completionResponse = requestCompletion(engine, monitor, request);
-                int systemPromptLength = completionRequest.getMessages().stream()
-                    .filter(it -> it.getRole() == AIMessageType.SYSTEM)
-                    .mapToInt(it -> it.getContent().length())
-                    .sum();
+                int systemPromptLength = AIPromptUtils.calcSystemPromptLength(completionRequest.getMessages());
 
                 AIMessageMeta requestMeta = new AIMessageMeta(
                     engineDescriptor.getId(),
                     engine.getProperties().getModel(),
-                    completionResponse.usage(),
+                    completionResponse.getUsage(),
                     Duration.between(now, Instant.now()),
                     systemPromptLength
                 );
@@ -267,14 +264,19 @@ public class AIAssistantImpl implements AIAssistant {
         }
     }
 
-    protected boolean isLoggingEnabled() throws DBException {
-        AIEngineProperties activeEngineConfiguration = getActiveEngineConfiguration();
-        if (activeEngineConfiguration == null) {
-            log.warn("No active AI engine configuration found");
+    protected boolean isLoggingEnabled() {
+        try {
+            AIEngineProperties activeEngineConfiguration = getActiveEngineConfiguration();
+            if (activeEngineConfiguration == null) {
+                log.warn("No active AI engine configuration found");
+                return false;
+            }
+
+            return activeEngineConfiguration.isLoggingEnabled();
+        } catch (DBException e) {
+            log.debug("Error getting AI configuration: " + e.getMessage());
             return false;
         }
-
-        return activeEngineConfiguration.isLoggingEnabled();
     }
 
     @Nullable

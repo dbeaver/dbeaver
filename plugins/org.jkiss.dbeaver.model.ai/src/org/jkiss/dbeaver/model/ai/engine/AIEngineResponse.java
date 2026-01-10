@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,6 +34,7 @@ public class AIEngineResponse {
     private final List<String> variants;
     @Nullable
     private final AIFunctionCall functionCall;
+    @Nullable
     private final AIUsage usage;
     private int processingTime;
 
@@ -42,7 +43,8 @@ public class AIEngineResponse {
      */
     public AIEngineResponse(
         @NotNull AIMessageType type,
-        @NotNull List<String> variants, AIUsage usage
+        @NotNull List<String> variants,
+        @Nullable AIUsage usage
     ) {
         this.type = type;
         this.variants = variants;
@@ -53,7 +55,7 @@ public class AIEngineResponse {
     /**
      * Constructs response with function call
      */
-    public AIEngineResponse(@NotNull AIFunctionCall functionCall, AIUsage usage) {
+    public AIEngineResponse(@NotNull AIFunctionCall functionCall, @Nullable AIUsage usage) {
         this.usage = usage;
         this.type = AIMessageType.FUNCTION;
         this.variants = null;
@@ -75,7 +77,8 @@ public class AIEngineResponse {
         return functionCall;
     }
 
-    public AIUsage usage() {
+    @Nullable
+    public AIUsage getUsage() {
         return usage;
     }
 
