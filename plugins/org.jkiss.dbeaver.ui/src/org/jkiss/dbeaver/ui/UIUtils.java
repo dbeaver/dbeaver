@@ -614,11 +614,51 @@ public class UIUtils {
     public static Composite createTitledComposite(
         @NotNull Composite parent,
         @NotNull String label,
+        int columns
+    ) {
+        return createTitledComposite(parent, label, columns, GridData.HORIZONTAL_ALIGN_BEGINNING, SWT.DEFAULT);
+    }
+
+    public static Composite createTitledComposite(
+        @NotNull Composite parent,
+        @NotNull String label,
+        int columns,
+        int layoutStyle
+    ) {
+        return createTitledComposite(parent, label, columns, layoutStyle, SWT.DEFAULT);
+    }
+
+    public static Composite createTitledComposite(
+        @NotNull Composite parent,
+        @NotNull String label,
         int columns,
         int layoutStyle,
         int widthHint
     ) {
-        Composite group = createComposite(parent, columns);
+        Label titleLabel = new Label(parent, SWT.NONE);
+        titleLabel.setText(label);
+        titleLabel.setFont(BaseThemeSettings.instance.baseFontBold);
+        if (false) {
+            titleLabel.addPaintListener(e -> {
+                e.gc.setForeground(titleLabel.getDisplay().getSystemColor(SWT.COLOR_WIDGET_NORMAL_SHADOW));
+                e.gc.drawLine(0, e.height - 1, e.width, e.height - 1);
+            });
+        }
+        GridData lgd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
+        if (parent.getLayout() instanceof GridLayout pgl) {
+            lgd.horizontalSpan = pgl.numColumns;
+        }
+        titleLabel.setLayoutData(lgd);
+
+        Composite group = new Composite(parent, SWT.NONE);
+        GridLayout layout = new GridLayout(columns, false);
+        layout.marginHeight = 0;
+        layout.marginWidth = 0;
+        layout.marginTop = 3;
+        layout.marginLeft = 7;
+        layout.marginBottom = 3;
+        group.setLayout(layout);
+
         if (parent.getLayout() instanceof GridLayout) {
             GridData gd = new GridData(layoutStyle);
             if (widthHint > 0) {
@@ -626,9 +666,6 @@ public class UIUtils {
             }
             group.setLayoutData(gd);
         }
-
-        Label titleLabel = UIUtils.createControlLabel(group, label, columns);
-        titleLabel.setFont(BaseThemeSettings.instance.baseFontBold);
 
         return group;
     }
