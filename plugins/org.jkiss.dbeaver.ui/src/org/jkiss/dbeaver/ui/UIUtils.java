@@ -635,6 +635,11 @@ public class UIUtils {
         int layoutStyle,
         int widthHint
     ) {
+        if (parent.getLayout() instanceof GridLayout gl && gl.numColumns > 1) {
+            parent = UIUtils.createPlaceholder(parent, 1, 10);
+            parent.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING | GridData.VERTICAL_ALIGN_BEGINNING));
+        }
+
         Label titleLabel = new Label(parent, SWT.NONE);
         titleLabel.setText(label);
         titleLabel.setFont(BaseThemeSettings.instance.baseFontBold);
@@ -646,7 +651,7 @@ public class UIUtils {
         }
         GridData lgd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
         if (parent.getLayout() instanceof GridLayout pgl) {
-            lgd.horizontalSpan = pgl.numColumns;
+            //lgd.horizontalSpan = pgl.numColumns;
         }
         titleLabel.setLayoutData(lgd);
 
