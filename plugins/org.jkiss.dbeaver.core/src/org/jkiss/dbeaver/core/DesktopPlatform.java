@@ -259,7 +259,6 @@ public class DesktopPlatform extends BasePlatformImpl implements DBPPlatformDesk
     public Path getTempFolder(@NotNull DBRProgressMonitor monitor, @NotNull String name) {
         if (tempFolder == null) {
             // Make temp folder
-            monitor.subTask("Create temp folder");
             try {
                 String tempFolderPath = System.getProperty("dbeaver.io.tmpdir");
                 if (!CommonUtils.isEmpty(tempFolderPath)) {
@@ -272,6 +271,7 @@ public class DesktopPlatform extends BasePlatformImpl implements DBPPlatformDesk
                 } else {
                     tempFolderPath = System.getProperty(StandardConstants.ENV_TMP_DIR);
                 }
+                monitor.subTask("Create temp folder '" + tempFolderPath + "'");
                 Path tmpFolder = Paths.get(tempFolderPath);
                 if (!Files.exists(tmpFolder)) {
                     log.debug("Create global temp folder '" + tmpFolder + "'");

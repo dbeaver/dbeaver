@@ -62,7 +62,7 @@ public class AIPromptGenerateSql extends AIPromptAbstract {
         if (dataSource != null) {
             builder
                 .addContexts(AIPromptUtils.describeDataSourceInfo(dataSource))
-                .addInstructions(AIPromptUtils.createDatabaseInstructions(dataSource));
+                .addInstructions(AIPromptUtils.createGenerateQueryInstructions(dataSource));
         }
         builder
             .addGoals(SQL_GENERATE_GOALS)

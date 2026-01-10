@@ -31,6 +31,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.IEditorSite;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSource;
@@ -179,6 +180,7 @@ public class PrefPageSQLFormat extends TargetPrefPage
             previewGroup.setLayout(new FillLayout());
 
             sqlViewer = new SQLEditorBase() {
+                @Nullable
                 @Override
                 public DBCExecutionContext getExecutionContext() {
                     final DBPDataSourceContainer container = getDataSourceContainer();

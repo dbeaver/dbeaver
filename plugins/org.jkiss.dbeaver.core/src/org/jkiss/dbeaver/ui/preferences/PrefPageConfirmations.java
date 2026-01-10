@@ -30,6 +30,7 @@ import org.eclipse.ui.IWorkbenchPreferencePage;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
+import org.jkiss.dbeaver.registry.confirmation.ConfirmationConstants;
 import org.jkiss.dbeaver.registry.confirmation.ConfirmationDescriptor;
 import org.jkiss.dbeaver.registry.confirmation.ConfirmationRegistry;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -251,7 +252,7 @@ public class PrefPageConfirmations extends AbstractPrefPage implements IWorkbenc
     private String getCurrentConfirmValue(String id) {
         DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
 
-        String value = store.getString(ConfirmationDialog.PREF_KEY_PREFIX + id);
+        String value = store.getString(ConfirmationConstants.CONFIRM_PREF_KEY_PREFIX + id);
         if (CommonUtils.isEmpty(value)) {
             return ConfirmationDialog.PROMPT;
         }
@@ -270,7 +271,7 @@ public class PrefPageConfirmations extends AbstractPrefPage implements IWorkbenc
         DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
         for (Map.Entry<ConfirmationDescriptor, String> entry : changedConfirmations.entrySet()) {
             String id = entry.getKey().getId();
-            store.setValue(ConfirmationDialog.PREF_KEY_PREFIX + id, entry.getValue());
+            store.setValue(ConfirmationConstants.CONFIRM_PREF_KEY_PREFIX + id, entry.getValue());
         }
         PrefUtils.savePreferenceStore(store);
         return super.performOk();

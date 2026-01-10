@@ -447,7 +447,10 @@ public class SQLSemanticProcessor {
         if (sourceWhere == null) {
             select.setWhere(conditionExpr);
         } else {
-            select.setWhere(new AndExpression(new ParenthesedExpressionList<>(sourceWhere), conditionExpr));
+            select.setWhere(new AndExpression(
+                new ParenthesedExpressionList<>(sourceWhere),
+                new ParenthesedExpressionList<>(conditionExpr)
+            ));
         }
     }
 

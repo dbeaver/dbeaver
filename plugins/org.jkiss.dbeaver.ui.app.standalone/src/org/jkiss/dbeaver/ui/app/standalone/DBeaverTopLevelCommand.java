@@ -32,12 +32,21 @@ import picocli.CommandLine;
 
 import java.io.FileInputStream;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
-@CommandLine.Command(name = "dbeaver", description = "DBeaver commands", mixinStandardHelpOptions = true)
+@CommandLine.Command(name = "dbeaver", description = "DBeaver commands")
 public class DBeaverTopLevelCommand extends AbstractTopLevelCommand {
     private static final Log log = Log.getLog(DBeaverTopLevelCommand.class);
+
+    // Eclipse cmd for desktop
+    @CommandLine.Option(
+        names = {NOSPASH_OPTION},
+        description = "Hide splash screen on start",
+        scope = CommandLine.ScopeType.INHERIT
+    )
+    private boolean noSplash;
 
     @CommandLine.Option(names = {"-vars", "-variablesFile"}, description = "Uses a specified configuration file for variable resolving")
     private String variablesFile;
@@ -53,6 +62,11 @@ public class DBeaverTopLevelCommand extends AbstractTopLevelCommand {
 
     @CommandLine.Option(names = {"-f", "-file"}, arity = "1", split = ",", description = "Open a file")
     private List<String> filesToOpen;
+
+    // open files via double-click or "Open with DBeaver"
+    @CommandLine.Parameters(index = "0", arity = "0..*", description = "Open files", hidden = true)
+    private List<String> filesToOpenParams;
+
 
     @CommandLine.Option(names = {"-con", "-connect"}, arity = "1", split = ",", description = "Connects to a specified database")
     private List<String> connectionSpecs;
@@ -117,9 +131,15 @@ public class DBeaverTopLevelCommand extends AbstractTopLevelCommand {
         }
 
 
-        // Open files
+        List<String> allFilesToOpen = new ArrayList<>();
+        if (!CommonUtils.isEmpty(filesToOpenParams)) {
+            allFilesToOpen.addAll(filesToOpenParams);
+        }
         if (!CommonUtils.isEmpty(filesToOpen)) {
-            instanceController.openExternalFiles(filesToOpen.toArray(new String[0]));
+            allFilesToOpen.addAll(filesToOpen);
+        }
+        if (!CommonUtils.isEmpty(allFilesToOpen)) {
+            instanceController.openExternalFiles(allFilesToOpen.toArray(new String[0]));
             exitAfterExecute = true;
         }
 

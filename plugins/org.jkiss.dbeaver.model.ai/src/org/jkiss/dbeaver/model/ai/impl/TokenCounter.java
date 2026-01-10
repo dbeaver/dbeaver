@@ -21,4 +21,6 @@ public interface TokenCounter {
      * Count tokens for the WHOLE message as the model sees it (role + content if applicable).
      */
     int count(String message);
+
+    String truncateToTokenLimit(String message, int tokenLimit);
 }

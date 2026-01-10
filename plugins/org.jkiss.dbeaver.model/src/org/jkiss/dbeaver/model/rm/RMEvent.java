@@ -70,6 +70,7 @@ public class RMEvent {
         return resourcePath;
     }
 
+    @NotNull
     public Map<String, Object> getParameters() {
         return Map.copyOf(parameters);
     }

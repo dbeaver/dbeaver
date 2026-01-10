@@ -139,10 +139,7 @@ import org.jkiss.dbeaver.ui.editors.sql.variables.SQLVariablesPanel;
 import org.jkiss.dbeaver.ui.editors.text.ScriptPositionColumn;
 import org.jkiss.dbeaver.ui.internal.UIMessages;
 import org.jkiss.dbeaver.ui.navigator.INavigatorModelView;
-import org.jkiss.dbeaver.utils.GeneralUtils;
-import org.jkiss.dbeaver.utils.PrefUtils;
-import org.jkiss.dbeaver.utils.ResourceUtils;
-import org.jkiss.dbeaver.utils.RuntimeUtils;
+import org.jkiss.dbeaver.utils.*;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.IOUtils;
@@ -153,9 +150,10 @@ import java.net.URI;
 import java.nio.file.Path;
 import java.text.SimpleDateFormat;
 import java.time.Duration;
-import java.util.*;
 import java.util.List;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -339,6 +337,7 @@ public class SQLEditor extends SQLEditorBase implements
         return container == null ? null : container.getDataSource();
     }
 
+    @Nullable
     @Override
     public DBCExecutionContext getExecutionContext() {
         if (isolatedExecutionContext != null) {
@@ -713,7 +712,7 @@ public class SQLEditor extends SQLEditorBase implements
 
     @Override
     public boolean isSmartAutoCommit() {
-        DBPDataSourceContainer container = ((DBPDataSourceContainerProvider) this).getDataSourceContainer();
+        DBPDataSourceContainer container = this.getDataSourceContainer();
         if (container == null) {
             DBPDataSource dataSource = getDataSource();
             if (dataSource != null) {
@@ -782,8 +781,9 @@ public class SQLEditor extends SQLEditorBase implements
             return super.belongsTo(family);
         }
 
+        @NotNull
         @Override
-        protected IStatus run(DBRProgressMonitor monitor) {
+        protected IStatus run(@NotNull DBRProgressMonitor monitor) {
             monitor.beginTask("Open SQLEditor isolated connection", 1);
             try {
                 String title = "SQLEditor <" + getEditorInput().getName() + ">";
@@ -829,8 +829,9 @@ public class SQLEditor extends SQLEditorBase implements
                 // FIXME: silly workaround. Command state update doesn't happen in some cases
                 // FIXME: but it works after short pause. Seems to be a bug in E4 command framework
                 new AbstractJob("Notify context change") {
+                    @NotNull
                     @Override
-                    protected IStatus run(DBRProgressMonitor monitor) {
+                    protected IStatus run(@NotNull DBRProgressMonitor monitor) {
                         DBUtils.fireObjectSelect(instance, true, newContext);
                         return Status.OK_STATUS;
                     }
@@ -879,8 +880,9 @@ public class SQLEditor extends SQLEditorBase implements
             setUser(true);
         }
 
+        @NotNull
         @Override
-        protected IStatus run(DBRProgressMonitor monitor) {
+        protected IStatus run(@NotNull DBRProgressMonitor monitor) {
             monitor.beginTask("Close SQLEditor isolated connection", 1);
             try {
                 if (QMUtils.isTransactionActive(context)) {
@@ -891,7 +893,7 @@ public class SQLEditor extends SQLEditorBase implements
                 }
 
                 monitor.subTask("Close context " + context.getContextName());
-                context.close();
+                DBUtils.closeSafely(context);
 
             } finally {
                 monitor.done();
@@ -2357,8 +2359,9 @@ public class SQLEditor extends SQLEditorBase implements
 
             private void saveContextVariables() {
                 new AbstractJob("Save variables") {
+                    @NotNull
                     @Override
-                    protected IStatus run(DBRProgressMonitor monitor) {
+                    protected IStatus run(@NotNull DBRProgressMonitor monitor) {
                         DBPDataSourceContainer ds = getDataSourceContainer();
                         if (ds != null) {
                             globalScriptContext.saveVariables(ds.getDriver(), null);
@@ -2503,23 +2506,23 @@ public class SQLEditor extends SQLEditorBase implements
         }
         final IEditorInput editorInput = getEditorInput();
         String scriptPath;
-        if (editorInput instanceof IFileEditorInput fei) {
-            scriptPath = fei.getFile().getFullPath().toString();
-        } else if (editorInput instanceof IPathEditorInput pei) {
-            scriptPath = pei.getPath().toString();
-        } else if (editorInput instanceof IURIEditorInput iei) {
-            final URI uri = iei.getURI();
-            if ("file".equals(uri.getScheme())) {
-                scriptPath = new File(uri).getAbsolutePath();
-            } else {
-                scriptPath = uri.toString();
+        switch (editorInput) {
+            case IFileEditorInput fei -> scriptPath = fei.getFile().getFullPath().toString();
+            case IPathEditorInput pei -> scriptPath = pei.getPath().toString();
+            case IURIEditorInput iei -> {
+                final URI uri = iei.getURI();
+                if ("file".equals(uri.getScheme())) {
+                    scriptPath = new File(uri).getAbsolutePath();
+                } else {
+                    scriptPath = uri.toString();
+                }
             }
-        } else if (editorInput instanceof INonPersistentEditorInput) {
-            scriptPath = "SQL Console";
-        } else {
-            scriptPath = editorInput.getName();
-            if (CommonUtils.isEmpty(scriptPath)) {
-                scriptPath = "<not a file>";
+            case INonPersistentEditorInput npi -> scriptPath = "SQL Console";
+            case null, default -> {
+                scriptPath = editorInput.getName();
+                if (CommonUtils.isEmpty(scriptPath)) {
+                    scriptPath = "<not a file>";
+                }
             }
         }
 
@@ -2931,29 +2934,11 @@ public class SQLEditor extends SQLEditorBase implements
             scriptContext = createScriptContext();
         }
 
-        final boolean isSingleQuery = !forceScript && (queries.size() == 1);
-        if (isSingleQuery && queries.getFirst() instanceof SQLQuery query) {
-            boolean isDropTable = query.isDropTableDangerous();
-            if (query.isDeleteUpdateDangerous() || isDropTable) {
-                String targetName = "multiple tables";
-                if (query.getEntityMetadata(false) != null) {
-                    targetName = query.getEntityMetadata(false).getEntityName();
-                }
-                if (ConfirmationDialog.confirmAction(
-                    getSite().getShell(),
-                    ConfirmationDialog.WARNING,
-                    isDropTable ? ConfirmationConstants.CONFIRM_DROP_SQL : ConfirmationConstants.CONFIRM_DANGER_SQL,
-                    ConfirmationDialog.CONFIRM,
-                    query.getType().name(),
-                    targetName
-                ) != IDialogConstants.OK_ID
-                ) {
-                    return false;
-                }
-            }
+        if (stopDangerousQueriesExecutionConfirmation(queries)) {
+            return false;
         }
 
-
+        final boolean isSingleQuery = !forceScript && (queries.size() == 1);
         if (!isHideQueryText() && resultsSash.getMaximizedControl() != null) {
             resultsSash.setMaximizedControl(null);
         }
@@ -3078,6 +3063,84 @@ public class SQLEditor extends SQLEditorBase implements
             localFile,
             new OutputLogWriter(),
             new SQLEditorParametersProvider(getSite())
+        );
+    }
+
+    private boolean stopDangerousQueriesExecutionConfirmation(@NotNull List<SQLScriptElement> queries) {
+        boolean isStopDropQueriesConfirmed = showDangerousQueriesStopExecutionConfirmation(
+            getDropQueries(queries),
+            this::createDropQueryConfirmationDialog
+        );
+        return isStopDropQueriesConfirmed ||
+            showDangerousQueriesStopExecutionConfirmation(
+                getDangerousUpdateDeleteQueries(queries),
+                this::createDangerousUpdateDeleteQueryConfirmationDialog
+            );
+    }
+
+    @NotNull
+    private List<SQLQuery> getDropQueries(@NotNull List<SQLScriptElement> queries) {
+        return queries
+            .stream()
+            .filter(q -> q instanceof SQLQuery)
+            .map(q -> (SQLQuery) q)
+            .filter(SQLQuery::isDropDangerous)
+            .toList();
+    }
+
+    @NotNull
+    private List<SQLQuery> getDangerousUpdateDeleteQueries(@NotNull List<SQLScriptElement> queries) {
+        return queries
+            .stream()
+            .filter(q -> q instanceof SQLQuery)
+            .map(q -> (SQLQuery) q)
+            .filter(SQLQuery::isDeleteUpdateDangerous)
+            .toList();
+    }
+
+    private boolean showDangerousQueriesStopExecutionConfirmation(
+        @NotNull List<SQLQuery> dangerousQueries,
+        @NotNull BiFunction<SQLQuery, Integer, Integer> dialogCreator
+    ) {
+        if (dangerousQueries.isEmpty()) {
+            return false;
+        }
+        if (dangerousQueries.size() == 1) {
+            return dialogCreator.apply(dangerousQueries.getFirst(), ConfirmationDialog.CONFIRM) != IDialogConstants.OK_ID;
+        }
+        for (SQLQuery query : dangerousQueries) {
+            int dialogResult = dialogCreator.apply(query, ConfirmationDialog.CONFIRM_WITH_YES_TO_ALL);
+            if (dialogResult == IDialogConstants.YES_TO_ALL_ID) {
+                return false;
+            } else if (dialogResult != IDialogConstants.OK_ID) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private int createDropQueryConfirmationDialog(@NotNull SQLQuery dropQuery, int dialogType) {
+        return ConfirmationDialog.confirmAction(
+            getSite().getShell(),
+            ConfirmationDialog.WARNING,
+            ConfirmationConstants.CONFIRM_DROP_SQL_ID,
+            dialogType,
+            dropQuery.getText()
+        );
+    }
+
+    private int createDangerousUpdateDeleteQueryConfirmationDialog(@NotNull SQLQuery dangerousQuery, int dialogType) {
+        String targetName = "multiple rows";
+        if (dangerousQuery.getEntityMetadata(false) != null) {
+            targetName = dangerousQuery.getEntityMetadata(false).getEntityName();
+        }
+        return ConfirmationDialog.confirmAction(
+            getSite().getShell(),
+            ConfirmationDialog.WARNING,
+            ConfirmationConstants.CONFIRM_DANGER_SQL_ID,
+            dialogType,
+            dangerousQuery.getType().name(),
+            targetName
         );
     }
 
@@ -4465,6 +4528,7 @@ public class SQLEditor extends SQLEditorBase implements
             return SQLEditor.this.getProject();
         }
 
+        @Nullable
         @Override
         public DBCExecutionContext getExecutionContext() {
             return SQLEditor.this.getExecutionContext();
@@ -4543,7 +4607,7 @@ public class SQLEditor extends SQLEditorBase implements
             long maxRows,
             long flags,
             int fetchSize
-        ) throws DBCException {
+        ) throws DBException {
             if (dataContainer != null) {
                 return dataContainer.readData(source, session, dataReceiver, dataFilter, firstRow, maxRows, flags, fetchSize);
             }
@@ -4606,8 +4670,7 @@ public class SQLEditor extends SQLEditorBase implements
             @NotNull DBCSession session,
             @Nullable DBDDataFilter dataFilter,
             long flags
-        )
-        throws DBCException {
+        ) throws DBException {
             if (dataContainer != null) {
                 return dataContainer.countData(source, session, dataFilter, DBSDataContainer.FLAG_NONE);
             }
@@ -5685,8 +5748,9 @@ public class SQLEditor extends SQLEditorBase implements
             setSystem(true);
         }
 
+        @NotNull
         @Override
-        protected IStatus run(DBRProgressMonitor monitor) {
+        protected IStatus run(@NotNull DBRProgressMonitor monitor) {
             if (EditorUtils.isInAutoSaveJob()) {
                 return Status.CANCEL_STATUS;
             }
@@ -5711,8 +5775,9 @@ public class SQLEditor extends SQLEditorBase implements
             setUser(true);
         }
 
+        @NotNull
         @Override
-        protected IStatus run(DBRProgressMonitor monitor) {
+        protected IStatus run(@NotNull DBRProgressMonitor monitor) {
             monitor.beginTask("Save query processors", queryProcessors.size());
             try {
                 for (QueryProcessor queryProcessor : queryProcessors) {
@@ -5766,8 +5831,9 @@ public class SQLEditor extends SQLEditorBase implements
             setSystem(true);
         }
 
+        @NotNull
         @Override
-        protected IStatus run(DBRProgressMonitor monitor) {
+        protected IStatus run(@NotNull DBRProgressMonitor monitor) {
             if (!DBWorkbench.getPlatform().isShuttingDown() && resultsSash != null && !resultsSash.isDisposed()) {
                 try {
                     dumpOutput(monitor);
@@ -5982,12 +6048,12 @@ public class SQLEditor extends SQLEditorBase implements
         ) {
             return NLS.bind(
                 SQLEditorMessages.sql_editor_status_bar_rollback_label,
-                RuntimeUtils.formatExecutionTime(Duration.ofSeconds(rollbackTimeoutSeconds - elapsedSeconds))
+                DurationFormatter.format(Duration.ofSeconds(rollbackTimeoutSeconds - elapsedSeconds), DurationFormat.MEDIUM)
             );
         } else if (disconnectTimeoutSeconds > 0 && disconnectTimeoutSeconds > elapsedSeconds) {
             return NLS.bind(
                 SQLEditorMessages.sql_editor_status_bar_disconnect_label,
-                RuntimeUtils.formatExecutionTime(Duration.ofSeconds(disconnectTimeoutSeconds - elapsedSeconds))
+                DurationFormatter.format(Duration.ofSeconds(disconnectTimeoutSeconds - elapsedSeconds), DurationFormat.MEDIUM)
             );
         } else {
             return null;
@@ -6003,8 +6069,9 @@ public class SQLEditor extends SQLEditorBase implements
             setSystem(true);
         }
 
+        @NotNull
         @Override
-        protected IStatus run(DBRProgressMonitor monitor) {
+        protected IStatus run(@NotNull DBRProgressMonitor monitor) {
             if (monitor.isCanceled() || DBWorkbench.getPlatform().isShuttingDown()) {
                 return Status.CANCEL_STATUS;
             }

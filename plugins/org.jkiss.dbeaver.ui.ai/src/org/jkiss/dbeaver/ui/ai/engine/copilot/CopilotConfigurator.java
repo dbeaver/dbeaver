@@ -139,7 +139,7 @@ public class CopilotConfigurator<ENGINE extends AIEngineDescriptor, PROPERTIES e
         modelSelectorField = ModelSelectorField.builder()
             .withParent(parent)
             .withGridData(new GridData(GridData.FILL_HORIZONTAL))
-            .withSelectionListener(SelectionListener.widgetSelectedAdapter((e) -> {
+            .withModifyListener(() -> {
                 CopilotModels.getModelByName(modelSelectorField.getSelectedModel())
                     .ifPresentOrElse(
                         model -> {
@@ -150,7 +150,7 @@ public class CopilotConfigurator<ENGINE extends AIEngineDescriptor, PROPERTIES e
                             temperatureText.setText("0.0");
                         }
                     );
-            }))
+            })
             .withModelListSupplier(modelListProvider)
             .build();
 
@@ -162,7 +162,6 @@ public class CopilotConfigurator<ENGINE extends AIEngineDescriptor, PROPERTIES e
         GridData gridData = new GridData(GridData.FILL_HORIZONTAL);
         gridData.horizontalSpan = 2;
         temperatureText = UIUtils.createLabelText(parent, AIUIMessages.gpt_preference_page_text_temperature, "0.0");
-        temperatureText.addVerifyListener(UIUtils.getNumberVerifyListener(Locale.getDefault()));
         temperatureText.setLayoutData(gridData);
         temperatureText.setToolTipText("Lower temperatures give more precise results");
         temperatureText.addVerifyListener(UIUtils.getNumberVerifyListener(Locale.getDefault()));

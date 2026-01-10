@@ -23,7 +23,7 @@ import com.google.gson.stream.JsonWriter;
 import org.eclipse.core.runtime.Platform;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.cli.AbstractCommandLineParameterHandler;
+import org.jkiss.dbeaver.model.cli.AbstractRootCommandLineParameterHandler;
 import org.jkiss.dbeaver.model.connection.DBPDriverLibrary;
 import org.jkiss.dbeaver.model.data.json.JSONUtils;
 import org.jkiss.dbeaver.registry.DataSourceProviderDescriptor;
@@ -43,8 +43,8 @@ import java.util.List;
 import java.util.Objects;
 
 @CommandLine.Command(name = "database-driver-list", aliases = {"-database-driver-list", "-databaseList"},
-    description = "Show list of supported database drivers in json format.", mixinStandardHelpOptions = true)
-public class DataBaseInfoHandler extends AbstractCommandLineParameterHandler {
+    description = "Show list of supported database drivers in json format.")
+public class DataBaseInfoHandler extends AbstractRootCommandLineParameterHandler {
     private static final String OUTPUT_DATABASES_JSON = "database.drivers.json"; //$NON-NLS-1$
     private static final String PRODUCT_ID_LABEL = "id"; //$NON-NLS-1$
     private static final String PRODUCT_NAME_LABEL = "name"; //$NON-NLS-1$

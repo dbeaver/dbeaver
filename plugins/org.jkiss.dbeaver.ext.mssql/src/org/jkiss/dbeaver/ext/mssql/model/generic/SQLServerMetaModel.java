@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,11 +25,11 @@ import org.jkiss.dbeaver.ext.generic.model.*;
 import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaModel;
 import org.jkiss.dbeaver.ext.mssql.SQLServerConstants;
 import org.jkiss.dbeaver.ext.mssql.SQLServerUtils;
+import org.jkiss.dbeaver.ext.mssql.model.SQLServerObject;
 import org.jkiss.dbeaver.ext.mssql.model.SQLServerView;
 import org.jkiss.dbeaver.ext.mssql.model.ServerType;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPErrorAssistant;
-import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCQueryTransformProvider;
 import org.jkiss.dbeaver.model.exec.DBCQueryTransformType;
@@ -163,22 +163,10 @@ public class SQLServerMetaModel extends GenericMetaModel implements DBCQueryTran
     public String getProcedureDDL(@NotNull DBRProgressMonitor monitor, @NotNull GenericProcedure sourceObject) throws DBException {
         String objectName = sourceObject.getName();
         GenericDataSource dataSource = sourceObject.getDataSource();
-        if (isSqlServer() && dataSource.isServerVersionAtLeast(SQLServerConstants.SQL_SERVER_2005_VERSION_MAJOR, 0)) {
-            try (JDBCSession session = DBUtils.openMetaSession(monitor, sourceObject, "Read routine definition")) {
-                try (JDBCPreparedStatement dbStat = session.prepareStatement(
-                    "SELECT definition FROM " + DBUtils.getQuotedIdentifier(sourceObject.getCatalog()) + ".sys.sql_modules WHERE object_id=OBJECT_ID(?)"
-                )) {
-                    dbStat.setString(1, sourceObject.getFullyQualifiedName(DBPEvaluationContext.DML));
-                    try (JDBCResultSet dbResult = dbStat.executeQuery()) {
-                        if (dbResult.nextRow()) {
-                            return dbResult.getString(1);
-                        }
-                        return "-- Routine '" + objectName + "' definition not found";
-                    }
-                }
-            } catch (SQLException e) {
-                throw new DBDatabaseException(e, dataSource);
-            }
+        if (isSqlServer()
+            && dataSource.isServerVersionAtLeast(SQLServerConstants.SQL_SERVER_2005_VERSION_MAJOR, 0)
+            && sourceObject instanceof SQLServerObject sqlServerObject) {
+            return SQLServerUtils.extractSource(monitor, sqlServerObject);
         }
         if (getServerType() == ServerType.SYBASE) {
             try (JDBCSession session = DBUtils.openMetaSession(monitor, sourceObject, "Read routine definition")) {
@@ -190,8 +178,12 @@ public class SQLServerMetaModel extends GenericMetaModel implements DBCQueryTran
                             "LEFT JOIN " +
                             DBUtils.getQuotedIdentifier(sourceObject.getCatalog()) + ".dbo.sysobjects so " +
                             "ON so.id = s.object_id\n" +
-                            "WHERE s.proc_name=?")) {
+                            "LEFT JOIN " +
+                            DBUtils.getQuotedIdentifier(sourceObject.getCatalog()) + ".dbo.sysusers su " +
+                            "ON s.creator = su.uid\n" +
+                            "WHERE s.proc_name=? AND su.name=?")) {
                         dbStat.setString(1, objectName);
+                        dbStat.setString(2, sourceObject.getSchema().getName());
                         try (JDBCResultSet dbResult = dbStat.executeQuery()) {
                             if (dbResult.nextRow()) {
                                 String source = dbResult.getString(1);
@@ -309,18 +301,20 @@ public class SQLServerMetaModel extends GenericMetaModel implements DBCQueryTran
         return null;
     }
 
-    private String extractSource(DBRProgressMonitor monitor, GenericDataSource dataSource, DBSObject object, GenericCatalog catalog, String schema, String name) throws DBException {
+    private String extractSource(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull GenericDataSource dataSource,
+        @NotNull DBSObject object,
+        @Nullable GenericCatalog catalog,
+        @NotNull String schema,
+        @NotNull String name
+    ) throws DBException {
         ServerType serverType = getServerType();
-        String systemSchema = SQLServerUtils.getSystemSchemaFQN(dataSource, catalog.getName(), getSystemSchema());
+        String systemSchema = SQLServerUtils.getSystemSchemaFQN(dataSource, catalog != null ? catalog.getName() : null, getSystemSchema());
         try (JDBCSession session = DBUtils.openMetaSession(monitor, dataSource, "Read source code")) {
             String mdQuery;
-            if (serverType == ServerType.SQL_SERVER) {
-                final String objectFQN = DBUtils.getQuotedIdentifier(dataSource, schema) + "." + DBUtils.getQuotedIdentifier(dataSource, name);
-                if (SQLServerUtils.isDriverBabelfish(dataSource.getContainer().getDriver())) {
-                    mdQuery = "SELECT definition FROM sys.sql_modules WHERE object_id = (OBJECT_ID(N'" + objectFQN + "'))";
-                } else {
-                    mdQuery = systemSchema + ".sp_helptext '" + objectFQN + "'";
-                }
+            if (serverType == ServerType.SQL_SERVER && object instanceof SQLServerObject sqlServerObject) {
+                mdQuery = SQLServerUtils.selectObjectDefinitionDescriptionSQL(monitor, sqlServerObject);
             } else {
                 if (isSapIQ(dataSource)) {
                     mdQuery = "SELECT s.source\n" +
@@ -551,6 +545,7 @@ public class SQLServerMetaModel extends GenericMetaModel implements DBCQueryTran
             JDBCUtils.safeGetString(dbResult, "base_object_name"));
     }
 
+    @NotNull
     @Override
     public GenericTableBase createTableOrViewImpl(
         @NotNull GenericStructContainer container,

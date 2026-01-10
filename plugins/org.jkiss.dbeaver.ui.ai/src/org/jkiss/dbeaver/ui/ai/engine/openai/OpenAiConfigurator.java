@@ -101,6 +101,7 @@ public class OpenAiConfigurator<ENGINE extends AIEngineDescriptor, PROPERTIES ex
             CommonUtils.toString(configuration.getModel(), OpenAIModels.DEFAULT_MODEL)
         );
         temperature = CommonUtils.toString(configuration.getTemperature(), "0.0");
+
         useLegacyApi = configuration.isLegacyApi();
         logQuery = CommonUtils.toBoolean(configuration.isLoggingEnabled());
         applySettings();
@@ -159,17 +160,19 @@ public class OpenAiConfigurator<ENGINE extends AIEngineDescriptor, PROPERTIES ex
                     .map(AIModel::name)
                     .toList()
             )
-            .withSelectionListener(SelectionListener.widgetSelectedAdapter(e ->
+            .withModifyListener(() ->
                 OpenAIModels.getModelByName(modelSelectorField.getSelectedModel())
                     .ifPresentOrElse(
                         model -> {
                             contextWindowSizeField.setValue(model.contextWindowSize());
                             temperatureText.setText(String.valueOf(model.defaultTemperature()));
+                            temperatureText.setEnabled(OpenAIModels.isTemperatureEditable(model));
                         }, () -> {
                             contextWindowSizeField.setValue(null);
                             temperatureText.setText("0.0");
+                            temperatureText.setEnabled(true);
                         }
-                    )))
+                    ))
                 .build();
 
         contextWindowSizeField = ContextWindowSizeField.builder()
@@ -180,9 +183,7 @@ public class OpenAiConfigurator<ENGINE extends AIEngineDescriptor, PROPERTIES ex
         temperatureText = UIUtils.createLabelText(parent, AIUIMessages.gpt_preference_page_text_temperature, "0.0");
         temperatureText.addVerifyListener(UIUtils.getNumberVerifyListener(Locale.getDefault()));
         temperatureText.setLayoutData(GridDataFactory.fillDefaults().span(2, 1).create());
-
         temperatureText.setToolTipText("Lower temperatures give more precise results");
-        temperatureText.addVerifyListener(UIUtils.getNumberVerifyListener(Locale.getDefault()));
         temperatureText.addModifyListener((e) -> temperature = temperatureText.getText());
     }
 

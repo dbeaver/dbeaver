@@ -24,6 +24,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -57,6 +58,11 @@ public class AIPromptGeneratorRegistry {
     @Nullable
     public AIPromptGeneratorDescriptor getPromptGenerator(@NotNull String id) {
         return descriptorMap.get(id);
+    }
+
+    @NotNull
+    public List<AIPromptGeneratorDescriptor> getAllPromptGenerator() {
+        return descriptorMap.values().stream().toList();
     }
 
 }

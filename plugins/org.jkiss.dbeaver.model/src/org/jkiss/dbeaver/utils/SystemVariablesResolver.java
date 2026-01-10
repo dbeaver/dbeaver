@@ -25,8 +25,8 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.IVariableResolver;
 import org.jkiss.utils.StandardConstants;
 
-import java.io.File;
 import java.net.URL;
+import java.nio.file.Path;
 import java.util.Properties;
 
 /**
@@ -117,8 +117,8 @@ public class SystemVariablesResolver implements IVariableResolver {
     @NotNull
     private static String getPlainPath(@NotNull URL url) {
         try {
-            File file = RuntimeUtils.getLocalFileFromURL(url);
-            return file.getAbsolutePath();
+            Path file = RuntimeUtils.getLocalFileFromURL(url);
+            return file.toAbsolutePath().toString();
         } catch (Exception e) {
             return url.toString();
         }

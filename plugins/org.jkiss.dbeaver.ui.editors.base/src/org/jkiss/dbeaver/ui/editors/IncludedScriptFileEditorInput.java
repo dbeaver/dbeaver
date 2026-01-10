@@ -16,20 +16,20 @@
  */
 package org.jkiss.dbeaver.ui.editors;
 
-import org.eclipse.core.resources.IFile;
-import org.eclipse.ui.part.FileEditorInput;
+import org.eclipse.core.filesystem.IFileStore;
+import org.eclipse.ui.ide.FileStoreEditorInput;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 
 import java.net.URI;
 import java.nio.file.Path;
 
-public class IncludedScriptFileEditorInput extends FileEditorInput {
+public class IncludedScriptFileEditorInput extends FileStoreEditorInput {
 
     private final Path includedScriptFile;
     private DatabaseEditorContext databaseEditorContext;
 
-    public IncludedScriptFileEditorInput(@NotNull IFile incIFile, @NotNull Path includedScriptFile) {
+    public IncludedScriptFileEditorInput(@NotNull IFileStore incIFile, @NotNull Path includedScriptFile) {
         super(incIFile);
         this.includedScriptFile = includedScriptFile;
     }

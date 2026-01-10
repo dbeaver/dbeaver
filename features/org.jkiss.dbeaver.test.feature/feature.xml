@@ -2,7 +2,7 @@
 <feature
         id="org.jkiss.dbeaver.test.feature"
         label="DBeaver test plugins"
-        version="25.2.5.qualifier"
+        version="25.3.3.qualifier"
         provider-name="DBeaver Corp"
         plugin="org.jkiss.dbeaver.headless.application">
 
@@ -25,4 +25,6 @@
     <plugin id="org.jkiss.dbeaver.ext.generic.test" version="0.0.0"/>
     <plugin id="org.jkiss.dbeaver.model.ai.test" version="0.0.0"/>
     <plugin id="org.jkiss.dbeaver.model.navigator.test" version="0.0.0"/>
+    <plugin id="org.jkiss.dbeaver.model.sql.test" version="0.0.0"/>
+    <plugin id="org.jkiss.dbeaver.data.transfer.test" version="0.0.0"/>
 </feature>

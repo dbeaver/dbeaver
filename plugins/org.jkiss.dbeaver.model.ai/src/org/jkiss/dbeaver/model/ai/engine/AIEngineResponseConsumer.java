@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,8 @@
 package org.jkiss.dbeaver.model.ai.engine;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.ai.AIUsage;
 
 /**
  * Subscriber which listens for response stream
@@ -27,5 +29,11 @@ public interface AIEngineResponseConsumer {
 
     void error(@NotNull Throwable throwable);
 
-    void close();
+    void completeBlock();
+
+    void usage(@Nullable AIUsage usage);
+
+    void systemPromptLength(int length);
+
+    void warning(@NotNull String message);
 }

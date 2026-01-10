@@ -20,19 +20,14 @@ package org.jkiss.dbeaver.ext.oracle.model;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.oracle.edit.OracleTableColumnManager;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
-import org.jkiss.dbeaver.model.app.DBPPlatform;
-import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.edit.DBEObjectMaker;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.exec.DBExecUtils;
 import org.jkiss.dbeaver.model.impl.edit.TestCommandContext;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCRemoteInstance;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
-import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.properties.PropertySourceEditable;
 import org.jkiss.junit.DBeaverUnitTest;
-import org.jkiss.utils.StandardConstants;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -45,9 +40,6 @@ import java.util.List;
 
 public class OracleAlterTableColumnTest extends DBeaverUnitTest {
 
-    @Mock
-    private DBRProgressMonitor monitor;
-
     private OracleDataSource testDataSource;
     private OracleTableBase oracleTableBase;
     private OracleTableColumn testColumnVarchar;
@@ -57,28 +49,17 @@ public class OracleAlterTableColumnTest extends DBeaverUnitTest {
     private DBEObjectMaker<OracleTableColumn, OracleTableBase> objectMaker;
 
     @Mock
-    private DBPDataSourceContainer mockDataSourceContainer;
-    @Mock
     private JDBCRemoteInstance mockRemoteInstance;
-    @Mock
-    private DBPConnectionConfiguration mockConnectionConfiguration;
-
-    private final String lineBreak = System.getProperty(StandardConstants.ENV_LINE_SEPARATOR);
 
     @Before
     public void setUp() throws DBException {
-        DBPPlatform dbpPlatform = DBWorkbench.getPlatform();
-        Mockito.when(mockDataSourceContainer.getDriver()).thenReturn(dbpPlatform.getDataSourceProviderRegistry().findDriver("oracle"));
-        Mockito.when(mockDataSourceContainer.getConnectionConfiguration()).thenReturn(mockConnectionConfiguration);
-
-        testDataSource = new OracleDataSource(mockDataSourceContainer);
+        DBPDataSourceContainer dataSourceContainer = configureTestContainer("oracle");
+        testDataSource = new OracleDataSource(dataSourceContainer);
 
         Mockito.when(mockRemoteInstance.getDataSource()).thenReturn(testDataSource);
 
         executionContext = new OracleExecutionContext(mockRemoteInstance, "Test");
         OracleSchema testSchema = new OracleSchema(testDataSource, -1, "TEST_SCHEMA");
-
-        Mockito.when(mockDataSourceContainer.getPreferenceStore()).thenReturn(dbpPlatform.getPreferenceStore());
 
         objectMaker = OracleTestUtils.getManagerForClass(OracleTableColumn.class);
 

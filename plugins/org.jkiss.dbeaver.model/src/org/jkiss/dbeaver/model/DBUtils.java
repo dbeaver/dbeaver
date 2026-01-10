@@ -80,6 +80,14 @@ public final class DBUtils {
         }
     }
 
+    public static void closeSafely(@NotNull AutoCloseable object) {
+        try {
+            object.close();
+        } catch (Exception e) {
+            log.error("Error when closing object '" + object + "'", e);
+        }
+    }
+
     /**
      * Get object name in quotes if they are needed.
      *
@@ -2064,7 +2072,8 @@ public final class DBUtils {
         return dataSource.getDefaultInstance();
     }
 
-    public static DBCExecutionContext getDefaultContext(DBSObject object, boolean meta) {
+    @Nullable
+    public static DBCExecutionContext getDefaultContext(@Nullable DBSObject object, boolean meta) {
         if (object == null) {
             return null;
         }
@@ -2291,6 +2300,13 @@ public final class DBUtils {
                 return ot.getTypeName();
             }
         }
+        if (object instanceof DBSSchema) {
+            return "Schema";
+        } else if (object instanceof DBSCatalog) {
+            return "Catalog";
+        } else if (object instanceof DBSEntity) {
+            return "Entity";
+        }
         return "Object";
     }
 
@@ -2498,8 +2514,6 @@ public final class DBUtils {
                     dataFilter,
                     DBSDataContainer.FLAG_NONE);
                 result[0] = rowCount;
-            } catch (DBCException e) {
-                throw new InvocationTargetException(e);
             }
         });
         return result[0];
@@ -2509,7 +2523,7 @@ public final class DBUtils {
         @NotNull DBCExecutionSource source,
         @NotNull DBCSession session,
         @NotNull SQLQuery query
-    ) throws DBCException {
+    ) throws DBException {
         try (DBCStatement dbStatement = makeStatement(source, session, DBCStatementType.SCRIPT, query, 0, 0)) {
             if (dbStatement.executeStatement()) {
                 try (DBCResultSet rs = dbStatement.openResultSet()) {

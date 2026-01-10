@@ -26,6 +26,7 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
@@ -217,7 +218,7 @@ public class GenericConnectionPage extends ConnectionPageWithAuth implements IDi
             UIUtils.setDefaultTextControlWidthHint(dbText);
             dbText.addModifyListener(textListener);
 
-            Control emptyLabel = UIUtils.createEmptyLabel(settingsGroup, 2, 1);
+            Control emptyLabel = createDatabasePropsPanel(settingsGroup);
 
             addControlToGroup(GROUP_DB, dbLabel);
             addControlToGroup(GROUP_DB, dbText);
@@ -292,6 +293,11 @@ public class GenericConnectionPage extends ConnectionPageWithAuth implements IDi
 
         createDriverPanel(addrGroup);
         setControl(addrGroup);
+    }
+
+    @NotNull
+    protected Control createDatabasePropsPanel(Composite parent) {
+        return UIUtils.createEmptyLabel(parent, 2, 1);
     }
 
     @Nullable
@@ -478,6 +484,7 @@ public class GenericConnectionPage extends ConnectionPageWithAuth implements IDi
 
         activated = true;
 
+/*
         UIUtils.asyncExec(() -> {
             // Set first control
             if (CommonUtils.isEmpty(site.getDriver().getSampleURL())) {
@@ -492,6 +499,7 @@ public class GenericConnectionPage extends ConnectionPageWithAuth implements IDi
                 pathText.setFocus();
             }
         });
+*/
 
     }
 
