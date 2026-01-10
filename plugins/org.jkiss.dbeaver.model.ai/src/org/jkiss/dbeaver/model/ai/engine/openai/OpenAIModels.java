@@ -23,10 +23,13 @@ import org.jkiss.dbeaver.model.ai.engine.AIModelFeature;
 
 import java.util.*;
 import java.util.function.Function;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public final class OpenAIModels {
+    private static final Pattern EMBEDDING_MODEL_PATTERN = Pattern.compile("text-embedding-.*");
+
     private OpenAIModels() {
     }
 
@@ -52,7 +55,11 @@ public final class OpenAIModels {
 
         new AIModel("gpt-4o-transcribe", 128_000, Set.of(AIModelFeature.SPEECH_TO_TEXT)),
         new AIModel("gpt-4o-mini-transcribe", 128_000, Set.of(AIModelFeature.SPEECH_TO_TEXT)),
-        new AIModel("whisper-1", 30_000, Set.of(AIModelFeature.SPEECH_TO_TEXT))
+        new AIModel("whisper-1", 30_000, Set.of(AIModelFeature.SPEECH_TO_TEXT)),
+
+        new AIModel("text-embedding-3-small", 65_536, Set.of(AIModelFeature.EMBEDDING)),
+        new AIModel("text-embedding-3-large", 65_536, Set.of(AIModelFeature.EMBEDDING)),
+        new AIModel("text-embedding-ada-002", 65_536, Set.of(AIModelFeature.EMBEDDING))
     ).collect(Collectors.toMap(
         AIModel::name,
         Function.identity()
@@ -111,6 +118,10 @@ public final class OpenAIModels {
         if (isChatModel(modelName)) {
             features.add(AIModelFeature.CHAT);
             features.add(AIModelFeature.STREAMING);
+        }
+
+        if (EMBEDDING_MODEL_PATTERN.matcher(modelName).matches()) {
+            features.add(AIModelFeature.EMBEDDING);
         }
 
         return features;

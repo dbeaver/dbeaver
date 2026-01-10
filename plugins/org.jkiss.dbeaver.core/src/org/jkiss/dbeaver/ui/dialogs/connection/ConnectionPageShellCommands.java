@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -48,7 +48,7 @@ public class ConnectionPageShellCommands extends ConnectionWizardPage {
     public static final String PAGE_NAME = ConnectionPageShellCommands.class.getSimpleName();
 
     private static final String CoreMessagesdialog_connection_edit_wizard_shell_cmd_directory_title = null;
-    private DataSourceDescriptor dataSource;
+    private final DataSourceDescriptor dataSource;
     private Text commandText;
     private Button showProcessCheck;
     private Button waitFinishCheck;
@@ -198,12 +198,7 @@ public class ConnectionPageShellCommands extends ConnectionWizardPage {
     private DBRShellCommand getActiveCommand() {
         DBPConnectionEventType eventType = getSelectedEventType();
         if (eventType != null) {
-            DBRShellCommand command = eventsCache.get(eventType);
-            if (command == null) {
-                command = new DBRShellCommand(""); //$NON-NLS-1$
-                eventsCache.put(eventType, command);
-            }
-            return command;
+            return eventsCache.computeIfAbsent(eventType, k -> new DBRShellCommand("")); //$NON-NLS-1$
         }
         return null;
     }
