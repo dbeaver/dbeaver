@@ -86,4 +86,6 @@ public abstract class OAIResponsesBase {
     @SerializedName("truncation")
     public String truncation;
 
+    @SerializedName("usage")
+    public OAIUsage usage;
 }

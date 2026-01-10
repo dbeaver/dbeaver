@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,7 +25,6 @@ import org.eclipse.jface.viewers.TableViewerColumn;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Text;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.core.CoreMessages;
@@ -71,7 +70,7 @@ public class ConnectionPageInternalParameters extends ConnectionWizardPage {
     }
 
     private void createParametersGroup(@NotNull Composite parent) {
-        Group group = UIUtils.createControlGroup(
+        Composite group = UIUtils.createTitledComposite(
             parent,
             CoreMessages.dialog_connection_internal_parameters_parameters,
             4,
@@ -113,7 +112,7 @@ public class ConnectionPageInternalParameters extends ConnectionWizardPage {
     }
 
     private void createCustomPropertiesGroup(@NotNull Composite parent) {
-        Group group = UIUtils.createControlGroup(
+        Composite group = UIUtils.createTitledComposite(
             parent,
             CoreMessages.dialog_connection_internal_parameters_custom,
             1,
@@ -126,7 +125,7 @@ public class ConnectionPageInternalParameters extends ConnectionWizardPage {
 
         GridDataFactory.fillDefaults()
             .grab(true, true)
-            .hint(500, 200)
+            .hint(200, 100)
             .applyTo(viewer.getControl());
 
         TableViewerColumn keyColumn = new TableViewerColumn(viewer, SWT.NONE);

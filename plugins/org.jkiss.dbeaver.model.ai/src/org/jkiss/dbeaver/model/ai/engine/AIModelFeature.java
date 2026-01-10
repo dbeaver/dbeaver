@@ -20,5 +20,6 @@ public enum AIModelFeature {
     CHAT,
     STREAMING,
     SPEECH_TO_TEXT,
+    EMBEDDING,
     ALWAYS_DEFAULT_TEMPERATURE
 }
