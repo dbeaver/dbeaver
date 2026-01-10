@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,29 +17,16 @@
 package org.jkiss.dbeaver.ext.hana.model;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTable;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTablePartition;
-import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
-import org.jkiss.dbeaver.model.meta.IPropertyValueListProvider;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.ext.generic.model.GenericSchema;
-import org.jkiss.dbeaver.ext.generic.model.GenericStructContainer;
-import org.jkiss.dbeaver.ext.generic.model.GenericTable;
-import org.jkiss.dbeaver.model.DBPEvaluationContext;
-import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
-import org.jkiss.dbeaver.model.preferences.DBPPropertySource;
-import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.ByteNumberFormat;
-import java.sql.Timestamp;
+import org.jkiss.utils.CommonUtils;
+
 import java.math.BigDecimal;
+import java.sql.Timestamp;
 
 public class HANAPartition extends HANATable implements DBSTablePartition {
 
@@ -156,14 +143,9 @@ public class HANAPartition extends HANATable implements DBSTablePartition {
     @Override
     public long getStatObjectSize() {
         return 0;
-    }    
-
-    @Nullable
-    public DBPPropertySource getStatProperties() {
-        return null;
     }
 
-    @Override 
+    @Override
     public DBSTable getParentTable() {
         return this.parentTable;
     }
