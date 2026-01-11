@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -210,7 +210,7 @@ public class DriverSelectViewer extends Viewer {
 
         createExtraFilterControlsBefore(filterGroup);
 
-        Composite filterComposite = new Composite(filterGroup, SWT.BORDER);
+        Composite filterComposite = new Composite(filterGroup, SWT.NONE);
         filterComposite.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
         GridLayout filterLayout = new GridLayout(2, false);
@@ -219,7 +219,7 @@ public class DriverSelectViewer extends Viewer {
         filterComposite.setLayout(filterLayout);
         filterComposite.setFont(composite.getFont());
 
-        filterText = new Text(filterComposite, SWT.SINGLE);
+        filterText = new Text(filterComposite, SWT.BORDER | SWT.SINGLE);
         filterText.setMessage(UIConnectionMessages.dialog_connection_driver_treecontrol_initialText);
         filterText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         filterText.addModifyListener(e -> textChanged());
