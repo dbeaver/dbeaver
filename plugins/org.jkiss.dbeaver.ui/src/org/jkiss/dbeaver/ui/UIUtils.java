@@ -178,8 +178,27 @@ public class UIUtils {
     }
 
     public static void createLabelSeparator(Composite toolBar, int style) {
-        Label label = new Label(toolBar, SWT.SEPARATOR | style);
-        label.setLayoutData(new GridData(style == SWT.HORIZONTAL ? GridData.FILL_HORIZONTAL : GridData.FILL_VERTICAL));
+        //Label label = new Label(toolBar, SWT.SEPARATOR | style);
+        //label.setLayoutData(new GridData(style == SWT.HORIZONTAL ? GridData.FILL_HORIZONTAL : GridData.FILL_VERTICAL));
+        Canvas canvas = new Canvas(toolBar, SWT.NONE);
+        GridData gd = new GridData(style == SWT.HORIZONTAL ? GridData.FILL_HORIZONTAL : GridData.FILL_VERTICAL);
+        if (style == SWT.HORIZONTAL) {
+            gd = new GridData(GridData.FILL_HORIZONTAL);
+            gd.heightHint = 1;
+        } else {
+            gd = new GridData(GridData.FILL_VERTICAL);
+            gd.widthHint = 1;
+        }
+        canvas.addPaintListener(e -> {
+            e.gc.setForeground(e.display.getSystemColor(
+                UIStyles.isDarkTheme() ? SWT.COLOR_WIDGET_DARK_SHADOW : SWT.COLOR_WIDGET_LIGHT_SHADOW));
+            if (style == SWT.HORIZONTAL) {
+                e.gc.drawLine(e.x, e.y, e.x + e.width, e.y);
+            } else {
+                e.gc.drawLine(e.x, e.y, e.x, e.y + e.height);
+            }
+        });
+        canvas.setLayoutData(gd);
     }
 
     public static void createToolBarSeparator(ToolBar toolBar, int style) {
