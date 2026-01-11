@@ -177,11 +177,11 @@ public class PostgreTablePolicy implements DBSObject, DBPNamedObject2, DBPSaveab
     public String getObjectDefinitionText(DBRProgressMonitor monitor, Map<String, Object> options) throws DBException {
         StringBuilder sql = new StringBuilder();
         sql.append("CREATE POLICY ")
-                .append(DBUtils.getQuotedIdentifier(this))
-                .append(" ON ")
-                .append(table.getFullyQualifiedName(DBPEvaluationContext.DDL))
-                .append("\n AS ").append(type)
-                .append("\n FOR ").append(event);
+            .append(DBUtils.getQuotedIdentifier(this))
+            .append(" ON ")
+            .append(table.getFullyQualifiedName(DBPEvaluationContext.DDL))
+            .append("\n AS ").append(type)
+            .append("\n FOR ").append(event);
 
         if (role != null) {
             sql.append("\n TO ").append(DBUtils.getQuotedIdentifier(role));
