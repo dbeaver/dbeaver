@@ -150,8 +150,8 @@ import java.net.URI;
 import java.nio.file.Path;
 import java.text.SimpleDateFormat;
 import java.time.Duration;
-import java.util.*;
 import java.util.List;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
@@ -5460,6 +5460,13 @@ public class SQLEditor extends SQLEditorBase implements
                         }
                         resultsIndex++;
                     }
+
+                    if (!getActivePreferenceStore().getBoolean(SQLPreferenceConstants.MAXIMIZE_EDITOR_ON_SCRIPT_EXECUTE)) {
+                        if (resultsSash.getMaximizedControl() == sqlEditorPanel) {
+                            toggleResultPanel(false, false);
+                        }
+                    }
+
                 } else {
                     dumpQueryServerOutput(result);
                 }

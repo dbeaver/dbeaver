@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -113,12 +113,12 @@ public class PrefPageSQLEditor extends TargetPrefPage {
                 NLS.bind(SQLEditorMessages.pref_page_sql_editor_label_separate_connection_each_editor_tip, DriverUtils.collectSingleConnectionDrivers()),
                 SWT.READ_ONLY | SWT.DROP_DOWN
             );
+            editorSeparateConnectionCombo.setItems(editorUseSeparateConnectionValues.stream()
+                .map(SeparateConnectionBehavior::getTitle).toArray(String[]::new));
             if (this.getDataSourceContainer() != null && this.getDataSourceContainer().getDriver().isEmbedded()) {
                 editorSeparateConnectionCombo.setEnabled(false);
-            } else {
-                editorSeparateConnectionCombo.setItems(editorUseSeparateConnectionValues.stream()
-                    .map(SeparateConnectionBehavior::getTitle).toArray(String[]::new));
             }
+
             editorSeparateConnectionCombo.setToolTipText(
                 NLS.bind(SQLEditorMessages.pref_page_sql_editor_label_separate_connection_each_editor_tip, DriverUtils.collectSingleConnectionDrivers())
             );
@@ -206,17 +206,19 @@ public class PrefPageSQLEditor extends TargetPrefPage {
     }
 
     @Override
-    protected void loadPreferences(DBPPreferenceStore store) {
+    protected void loadPreferences(@NotNull DBPPreferenceStore store) {
         loadPreferences(getTargetPreferenceStore(), false);
     }
 
     @Override
-    protected void savePreferences(DBPPreferenceStore store) {
+    protected void savePreferences(@NotNull DBPPreferenceStore store) {
         try {
-            store.setValue(
-                SQLPreferenceConstants.EDITOR_SEPARATE_CONNECTION,
-                editorUseSeparateConnectionValues.get(editorSeparateConnectionCombo.getSelectionIndex()).name()
-            );
+            if (this.getDataSourceContainer() != null && !this.getDataSourceContainer().getDriver().isEmbedded()) {
+                store.setValue(
+                    SQLPreferenceConstants.EDITOR_SEPARATE_CONNECTION,
+                    editorUseSeparateConnectionValues.get(editorSeparateConnectionCombo.getSelectionIndex()).name()
+                );
+            }
             store.setValue(SQLPreferenceConstants.EDITOR_CONNECT_ON_ACTIVATE, connectOnActivationCheck.getSelection());
             store.setValue(SQLPreferenceConstants.EDITOR_CONNECT_ON_EXECUTE, connectOnExecuteCheck.getSelection());
 
@@ -275,6 +277,7 @@ public class PrefPageSQLEditor extends TargetPrefPage {
         super.performDefaults();
     }
 
+    @NotNull
     @Override
     protected String getPropertyPageID() {
         return PAGE_ID;
