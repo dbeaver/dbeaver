@@ -684,7 +684,7 @@ public class UIUtils {
         GridLayout layout = new GridLayout(columns, false);
         layout.marginHeight = 0;
         layout.marginWidth = 0;
-        layout.marginTop = 3;
+        layout.marginTop = 0;
         layout.marginLeft = 7;
         layout.marginBottom = 3;
         group.setLayout(layout);
