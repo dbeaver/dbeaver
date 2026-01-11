@@ -152,8 +152,6 @@ public class DriverSelectViewer extends Viewer {
 
         selectorComposite = UIUtils.createComposite(composite, 1);
         selectorComposite.setLayoutData(new GridData(GridData.FILL_BOTH));
-        selectorComposite.setForeground(filterText.getForeground());
-        selectorComposite.setBackground(filterText.getBackground());
 
         createSelectorControl();
 
@@ -231,7 +229,6 @@ public class DriverSelectViewer extends Viewer {
                 }
             }
         });
-        filterComposite.setBackground(filterText.getBackground());
         filterComposite.setLayoutData(new GridData(SWT.FILL, SWT.BEGINNING, true, false));
 
         createFilterToolbar(filterComposite);
@@ -274,7 +271,6 @@ public class DriverSelectViewer extends Viewer {
                 }
             });
         }
-        switcherToolbar.setBackground(filterText.getBackground());
     }
 
     private void clearText() {
