@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,8 @@
  */
 package org.jkiss.dbeaver.model.connection;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.runtime.IVariableResolver;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
@@ -41,7 +43,7 @@ public class DBPConnectionBootstrap {
         this.ignoreErrors = false;
     }
 
-    public DBPConnectionBootstrap(DBPConnectionBootstrap info) {
+    public DBPConnectionBootstrap(@NotNull DBPConnectionBootstrap info) {
         this.defaultCatalogName = info.defaultCatalogName;
         this.defaultSchemaName = info.defaultSchemaName;
         this.defaultAutoCommit = info.defaultAutoCommit;
@@ -50,6 +52,7 @@ public class DBPConnectionBootstrap {
         this.ignoreErrors = info.ignoreErrors;
     }
 
+    @NotNull
     public List<String> getInitQueries() {
         return initQueries;
     }
@@ -59,35 +62,39 @@ public class DBPConnectionBootstrap {
         initQueries.addAll(queries);
     }
 
+    @Nullable
     public String getDefaultCatalogName() {
         return defaultCatalogName;
     }
 
-    public void setDefaultCatalogName(String defaultCatalogName) {
+    public void setDefaultCatalogName(@Nullable String defaultCatalogName) {
         this.defaultCatalogName = defaultCatalogName;
     }
 
+    @Nullable
     public String getDefaultSchemaName() {
         return defaultSchemaName;
     }
 
-    public void setDefaultSchemaName(String defaultSchemaName) {
+    public void setDefaultSchemaName(@Nullable String defaultSchemaName) {
         this.defaultSchemaName = defaultSchemaName;
     }
 
+    @Nullable
     public Boolean getDefaultAutoCommit() {
         return defaultAutoCommit;
     }
 
-    public void setDefaultAutoCommit(Boolean defaultAutoCommit) {
+    public void setDefaultAutoCommit(@Nullable Boolean defaultAutoCommit) {
         this.defaultAutoCommit = defaultAutoCommit;
     }
 
+    @Nullable
     public Integer getDefaultTransactionIsolation() {
         return defaultTransactionIsolation;
     }
 
-    public void setDefaultTransactionIsolation(Integer defaultTransactionIsolation) {
+    public void setDefaultTransactionIsolation(@Nullable Integer defaultTransactionIsolation) {
         this.defaultTransactionIsolation = defaultTransactionIsolation;
     }
 
@@ -101,20 +108,19 @@ public class DBPConnectionBootstrap {
 
     public boolean hasData() {
         return
-                defaultAutoCommit != null ||
-                defaultTransactionIsolation != null ||
-                !CommonUtils.isEmpty(defaultCatalogName) ||
-                !CommonUtils.isEmpty(defaultSchemaName) ||
-                ignoreErrors ||
-                !CommonUtils.isEmpty(initQueries);
+            defaultAutoCommit != null ||
+            defaultTransactionIsolation != null ||
+            !CommonUtils.isEmpty(defaultCatalogName) ||
+            !CommonUtils.isEmpty(defaultSchemaName) ||
+            ignoreErrors ||
+            !CommonUtils.isEmpty(initQueries);
     }
 
     @Override
     public boolean equals(Object obj) {
-        if (!(obj instanceof DBPConnectionBootstrap)) {
+        if (!(obj instanceof DBPConnectionBootstrap source)) {
             return false;
         }
-        DBPConnectionBootstrap source = (DBPConnectionBootstrap) obj;
         return
                 CommonUtils.equalObjects(this.defaultCatalogName, source.defaultCatalogName) &&
                 CommonUtils.equalObjects(this.defaultSchemaName, source.defaultSchemaName) &&

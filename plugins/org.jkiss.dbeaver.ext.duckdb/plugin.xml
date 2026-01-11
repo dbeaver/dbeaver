@@ -3,6 +3,46 @@
 
 <plugin>
 
+    <extension point="org.jkiss.dbeaver.dataSourceProvider">
+        <datasource
+                class="org.jkiss.dbeaver.ext.duckdb.model.DuckDBDataSourceProvider"
+                description="DuckDB JDBC connector"
+                id="duckdb"
+                parent="generic"
+                inheritProviderProperties="true"
+                label="DuckDB"
+                icon="platform:/plugin/org.jkiss.dbeaver.ext.generic/icons/duckdb_icon.png"
+                dialect="duckdb">
+            <drivers managable="true">
+                <driver
+                        id="duckdb_jdbc"
+                        label="DuckDB"
+                        icon="platform:/plugin/org.jkiss.dbeaver.ext.generic/icons/duckdb_icon.png"
+                        iconBig="platform:/plugin/org.jkiss.dbeaver.ext.generic/icons/duckdb_icon_big.png"
+                        class="org.duckdb.DuckDBDriver"
+                        sampleURL="jdbc:duckdb:{file}"
+                        defaultPort=""
+                        webURL="https://duckdb.org/docs/api/java"
+                        embedded="true"
+                        anonymous="true"
+                        description="DuckDB JDBC driver"
+                        supportedConfigurationTypes="MANUAL,URL"
+                        categories="sql,embedded">
+                    <replace provider="generic" driver="duckdb_jdbc"/>
+                    <file type="jar" path="maven:/org.duckdb:duckdb_jdbc:RELEASE" bundle="!drivers.duckdb"/>
+                    <file type="license" path="https://raw.githubusercontent.com/duckdb/duckdb/master/LICENSE" bundle="!drivers.duckdb"/>
+                    <file type="jar" path="drivers/duckdb" bundle="drivers.duckdb"/>
+                </driver>
+                <provider-properties>
+                    <propertyGroup label="SQL">
+                        <property id="duckdb.dd.plain.string" label="Show $$ quote as String" type="boolean" description="Show $$ quote as String"/>
+                        <property id="duckdb.dd.tag.string" label="Show $tagName$ quote as String" type="boolean" description="Show $tagName$ quote as String"/>
+                    </propertyGroup>
+                </provider-properties>
+            </drivers>
+        </datasource>
+    </extension>
+
     <extension point="org.jkiss.dbeaver.generic.meta">
         <meta id="duckdb_jdbc"
               class="org.jkiss.dbeaver.ext.duckdb.model.DuckMetaModel"
