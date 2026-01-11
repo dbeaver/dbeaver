@@ -100,8 +100,10 @@ class ConnectionPageInitialization extends ConnectionWizardPage implements IDial
         ignoreBootstrapErrors = dataSourceDescriptor.getConnectionConfiguration().getBootstrap().isIgnoreErrors();
         shellCommandPage = new ConnectionPageShellCommands(dataSourceDescriptor);
         if (!dataSourceDescriptor.getDriver().isEmbedded()) {
+            PrefPageConnectionClient pageConnectionClient = new PrefPageConnectionClient();
+            pageConnectionClient.setElement(dataSourceDescriptor);
             clientAppPage = new WizardPrefPage(
-                new PrefPageConnectionClient(),
+                pageConnectionClient,
                 CoreMessages.dialog_connection_edit_wizard_connections,
                 CoreMessages.dialog_connection_edit_wizard_connections_description
             );
