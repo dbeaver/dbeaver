@@ -187,7 +187,7 @@ public class PrefPageSQLEditor extends TargetPrefPage {
         }
 
         {
-            Composite linksGroup = UIUtils.createTitledComposite(composite, "", 1, GridData.HORIZONTAL_ALIGN_BEGINNING, 0);
+            Composite linksGroup = UIUtils.createComposite(composite, 1);
 
             UIUtils.createPreferenceLink(
                 linksGroup,
