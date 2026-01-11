@@ -177,7 +177,11 @@ public class UIUtils {
         };
     }
 
-    public static void createLabelSeparator(Composite toolBar, int style) {
+    public static void createLabelSeparator(@NotNull Composite toolBar, int style) {
+        createLabelSeparator(toolBar, style, 0);
+    }
+
+    public static void createLabelSeparator(@NotNull Composite toolBar, int style, int span) {
         //Label label = new Label(toolBar, SWT.SEPARATOR | style);
         //label.setLayoutData(new GridData(style == SWT.HORIZONTAL ? GridData.FILL_HORIZONTAL : GridData.FILL_VERTICAL));
         Canvas canvas = new Canvas(toolBar, SWT.NONE);
@@ -185,9 +189,11 @@ public class UIUtils {
         if (style == SWT.HORIZONTAL) {
             gd = new GridData(GridData.FILL_HORIZONTAL);
             gd.heightHint = 1;
+            gd.horizontalSpan = span;
         } else {
             gd = new GridData(GridData.FILL_VERTICAL);
             gd.widthHint = 1;
+            gd.verticalSpan = span;
         }
         canvas.addPaintListener(e -> {
             e.gc.setForeground(e.display.getSystemColor(
@@ -692,6 +698,15 @@ public class UIUtils {
         }
 
         return group;
+    }
+
+    public static void updateTitledComposite(@NotNull Composite titledComposite, @NotNull String title) {
+        Control[] children = titledComposite.getChildren();
+        if (children.length > 0 && children[0] instanceof Label label) {
+            label.setText(title);
+        } else {
+            log.error("Composite is not titled!");
+        }
     }
 
     public static Label createControlLabel(Composite parent, String label) {

@@ -322,15 +322,6 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
                 page.setVisible(true);
             }
 
-            GridLayout pageLayout = (GridLayout) pageArea.getLayout();
-            if (isFullscreenPage(page)) {
-                pageLayout.marginWidth = 0;
-                pageLayout.marginHeight = 0;
-            } else {
-                pageLayout.marginWidth = 5; // default
-                pageLayout.marginHeight = 5; // default
-            }
-
             setTitle(page.getTitle());
             setMessage(page.getDescription());
 
