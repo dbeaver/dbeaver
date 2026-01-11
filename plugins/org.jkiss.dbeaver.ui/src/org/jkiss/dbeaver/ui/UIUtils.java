@@ -701,12 +701,15 @@ public class UIUtils {
     }
 
     public static void updateTitledComposite(@NotNull Composite titledComposite, @NotNull String title) {
-        Control[] children = titledComposite.getChildren();
-        if (children.length > 0 && children[0] instanceof Label label) {
-            label.setText(title);
-        } else {
-            log.error("Composite is not titled!");
+        Control[] children = titledComposite.getParent().getChildren();
+        if (children.length > 0) {
+            int index = ArrayUtils.indexOf(children, titledComposite);
+            if (index > 0 && children[index - 1] instanceof Label label) {
+                label.setText(title);
+                return;
+            }
         }
+        log.error("Composite is not titled!");
     }
 
     public static Label createControlLabel(Composite parent, String label) {
