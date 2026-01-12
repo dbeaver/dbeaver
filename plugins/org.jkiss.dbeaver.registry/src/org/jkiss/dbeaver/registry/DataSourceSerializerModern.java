@@ -850,6 +850,7 @@ public class DataSourceSerializerModern<T extends DataSourceDescriptor> implemen
             dataSource.getNavigatorSettings().setUserSettings(true);
         } else {
             DataSourceNavigatorSettingsUtils.loadSettingsFromMap(dataSource.getNavigatorSettings(), conObject);
+            dataSource.getNavigatorSettings().setUserSettings(false);
         }
 
         dataSource.setConnectionReadOnly(JSONUtils.getBoolean(conObject, RegistryConstants.ATTR_READ_ONLY));
