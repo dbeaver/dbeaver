@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -217,10 +217,7 @@ public abstract class ConnectionPageAbstract extends DialogPage implements IData
             UIUtils.createEmptyLabel(panel, 1, 1);
         }
 
-        Label divLabel = new Label(panel, SWT.SEPARATOR | SWT.HORIZONTAL);
-        gd = new GridData(GridData.FILL_HORIZONTAL);
-        gd.horizontalSpan = 5;
-        divLabel.setLayoutData(gd);
+        UIUtils.createLabelSeparator(panel, SWT.HORIZONTAL, 5);
 
         {
             Composite driverInfoComp = UIUtils.createComposite(panel, 5);

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -102,10 +102,10 @@ public class PrefPageSQLEditor extends TargetPrefPage {
     @NotNull
     @Override
     protected Control createPreferenceContent(@NotNull Composite parent) {
-        Composite composite = UIUtils.createPlaceholder(parent, 2, 5);
+        Composite composite = UIUtils.createPlaceholder(parent, 2, 10);
 
         {
-            Group connectionsGroup = UIUtils.createControlGroup(composite, SQLEditorMessages.pref_page_sql_editor_group_connections, 1, GridData.VERTICAL_ALIGN_BEGINNING, 0);
+            Composite connectionsGroup = UIUtils.createTitledComposite(composite, SQLEditorMessages.pref_page_sql_editor_group_connections, 1, GridData.VERTICAL_ALIGN_BEGINNING, 0);
             ((GridData) connectionsGroup.getLayoutData()).horizontalSpan = 2;
             editorSeparateConnectionCombo = UIUtils.createLabelCombo(
                 UIUtils.createComposite(connectionsGroup, 3),
@@ -128,7 +128,7 @@ public class PrefPageSQLEditor extends TargetPrefPage {
         }
 
         {
-            Group autoSaveGroup = UIUtils.createControlGroup(composite, SQLEditorMessages.pref_page_sql_editor_group_auto_save, 1, GridData.VERTICAL_ALIGN_BEGINNING, 0);
+            Composite autoSaveGroup = UIUtils.createTitledComposite(composite, SQLEditorMessages.pref_page_sql_editor_group_auto_save, 1, GridData.VERTICAL_ALIGN_BEGINNING, 0);
             autoSaveOnChange = UIUtils.createCheckbox(autoSaveGroup, SQLEditorMessages.pref_page_sql_editor_label_auto_save_on_change, SQLEditorMessages.pref_page_sql_editor_label_auto_save_on_change_tip, false, 1);
             autoSaveOnClose = UIUtils.createCheckbox(autoSaveGroup, SQLEditorMessages.pref_page_sql_editor_label_auto_save_on_close, false);
             saveOnQueryExecution = UIUtils.createCheckbox(autoSaveGroup, SQLEditorMessages.pref_page_sql_editor_label_save_on_query_execute, SQLEditorMessages.pref_page_sql_editor_label_save_on_query_execute, false, 1);
@@ -136,7 +136,7 @@ public class PrefPageSQLEditor extends TargetPrefPage {
         }
 
         {
-            Composite layoutGroup = UIUtils.createControlGroup(composite, SQLEditorMessages.pref_page_sql_editor_group_result_view, 1, GridData.HORIZONTAL_ALIGN_BEGINNING, 0);
+            Composite layoutGroup = UIUtils.createTitledComposite(composite, SQLEditorMessages.pref_page_sql_editor_group_result_view, 1, GridData.HORIZONTAL_ALIGN_BEGINNING, 0);
             ((GridData) layoutGroup.getLayoutData()).horizontalSpan = 2;
 
             closeTabOnErrorCheck = UIUtils.createCheckbox(
@@ -172,7 +172,7 @@ public class PrefPageSQLEditor extends TargetPrefPage {
                 .toList();
 
             if (!presentationToggles.isEmpty()) {
-                Group group = UIUtils.createControlGroup(
+                Composite group = UIUtils.createTitledComposite(
                     composite,
                     SQLEditorMessages.pref_page_sql_editor_group_presentations,
                     1,
@@ -187,7 +187,7 @@ public class PrefPageSQLEditor extends TargetPrefPage {
         }
 
         {
-            Composite linksGroup = UIUtils.createControlGroup(composite, "", 1, GridData.HORIZONTAL_ALIGN_BEGINNING, 0);
+            Composite linksGroup = UIUtils.createComposite(composite, 1);
 
             UIUtils.createPreferenceLink(
                 linksGroup,
@@ -206,12 +206,12 @@ public class PrefPageSQLEditor extends TargetPrefPage {
     }
 
     @Override
-    protected void loadPreferences(DBPPreferenceStore store) {
+    protected void loadPreferences(@NotNull DBPPreferenceStore store) {
         loadPreferences(getTargetPreferenceStore(), false);
     }
 
     @Override
-    protected void savePreferences(DBPPreferenceStore store) {
+    protected void savePreferences(@NotNull DBPPreferenceStore store) {
         try {
             store.setValue(
                 SQLPreferenceConstants.EDITOR_SEPARATE_CONNECTION,
@@ -275,6 +275,7 @@ public class PrefPageSQLEditor extends TargetPrefPage {
         super.performDefaults();
     }
 
+    @NotNull
     @Override
     protected String getPropertyPageID() {
         return PAGE_ID;

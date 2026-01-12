@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,10 @@
 package org.jkiss.dbeaver.ui.preferences;
 
 import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.widgets.*;
+import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Spinner;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.core.CoreMessages;
@@ -31,8 +34,7 @@ import org.jkiss.dbeaver.utils.PrefUtils;
 /**
  * PrefPageErrorHandle
  */
-public class PrefPageErrorHandle extends TargetPrefPage
-{
+public class PrefPageErrorHandle extends TargetPrefPage {
     public static final String PAGE_ID = "org.jkiss.dbeaver.preferences.main.errorHandle"; //$NON-NLS-1$
 
     private Spinner connectionOpenTimeout;
@@ -80,35 +82,99 @@ public class PrefPageErrorHandle extends TargetPrefPage
 
         // Misc settings
         {
-            Group timeoutsGroup = UIUtils.createControlGroup(composite, CoreMessages.pref_page_error_handle_group_timeouts_title, 2, GridData.VERTICAL_ALIGN_BEGINNING, 0);
+            Composite timeoutsGroup = UIUtils.createTitledComposite(
+                composite,
+                CoreMessages.pref_page_error_handle_group_timeouts_title,
+                2,
+                GridData.VERTICAL_ALIGN_BEGINNING,
+                0
+            );
 
-            connectionOpenTimeout = UIUtils.createLabelSpinner(timeoutsGroup, CoreMessages.pref_page_error_handle_connection_open_timeout_label + UIMessages.label_ms, CoreMessages.pref_page_error_handle_connection_open_timeout_label_tip, 0, 0, Integer.MAX_VALUE);
-            connectionCloseTimeout = UIUtils.createLabelSpinner(timeoutsGroup, CoreMessages.pref_page_error_handle_connection_close_timeout_label + UIMessages.label_ms, CoreMessages.pref_page_error_handle_connection_close_timeout_label_tip, 0, 0, Integer.MAX_VALUE);
-            connectionValidateTimeout = UIUtils.createLabelSpinner(timeoutsGroup, CoreMessages.pref_page_error_handle_connection_validate_timeout_label + UIMessages.label_ms, CoreMessages.pref_page_error_handle_connection_validate_timeout_label_tip, 0, 0, Integer.MAX_VALUE);
+            connectionOpenTimeout = UIUtils.createLabelSpinner(
+                timeoutsGroup,
+                CoreMessages.pref_page_error_handle_connection_open_timeout_label + UIMessages.label_ms,
+                CoreMessages.pref_page_error_handle_connection_open_timeout_label_tip,
+                0,
+                0,
+                Integer.MAX_VALUE
+            );
+            connectionCloseTimeout = UIUtils.createLabelSpinner(
+                timeoutsGroup,
+                CoreMessages.pref_page_error_handle_connection_close_timeout_label + UIMessages.label_ms,
+                CoreMessages.pref_page_error_handle_connection_close_timeout_label_tip,
+                0,
+                0,
+                Integer.MAX_VALUE
+            );
+            connectionValidateTimeout = UIUtils.createLabelSpinner(
+                timeoutsGroup,
+                CoreMessages.pref_page_error_handle_connection_validate_timeout_label + UIMessages.label_ms,
+                CoreMessages.pref_page_error_handle_connection_validate_timeout_label_tip,
+                0,
+                0,
+                Integer.MAX_VALUE
+            );
         }
 
         // Misc settings
         {
-            Group errorGroup = UIUtils.createControlGroup(composite, CoreMessages.pref_page_error_handle_group_execute_title, 2, GridData.VERTICAL_ALIGN_BEGINNING, 0);
+            Composite errorGroup = UIUtils.createTitledComposite(
+                composite,
+                CoreMessages.pref_page_error_handle_group_execute_title,
+                2,
+                GridData.VERTICAL_ALIGN_BEGINNING,
+                0
+            );
 
-            rollbackOnErrorCheck = UIUtils.createCheckbox(errorGroup, CoreMessages.pref_page_database_general_checkbox_rollback_on_error, null, false, 2);
-            connectionAutoRecoverEnabled = UIUtils.createCheckbox(errorGroup, CoreMessages.pref_page_error_handle_recover_enabled_label, CoreMessages.pref_page_error_handle_recover_enabled_tip, false, 2);
-            connectionAutoRecoverRetryCount = UIUtils.createLabelSpinner(errorGroup, CoreMessages.pref_page_error_handle_recover_retry_count_label, CoreMessages.pref_page_error_handle_recover_retry_count_tip, 0, 0, Integer.MAX_VALUE);
+            rollbackOnErrorCheck = UIUtils.createCheckbox(
+                errorGroup,
+                CoreMessages.pref_page_database_general_checkbox_rollback_on_error,
+                null,
+                false,
+                2
+            );
+            connectionAutoRecoverEnabled = UIUtils.createCheckbox(
+                errorGroup,
+                CoreMessages.pref_page_error_handle_recover_enabled_label,
+                CoreMessages.pref_page_error_handle_recover_enabled_tip,
+                false,
+                2
+            );
+            connectionAutoRecoverRetryCount = UIUtils.createLabelSpinner(
+                errorGroup,
+                CoreMessages.pref_page_error_handle_recover_retry_count_label,
+                CoreMessages.pref_page_error_handle_recover_retry_count_tip,
+                0,
+                0,
+                Integer.MAX_VALUE
+            );
         }
 
         // Canceling
         {
-            Group errorGroup = UIUtils.createControlGroup(composite, CoreMessages.pref_page_error_handle_group_cancel_title, 2, GridData.VERTICAL_ALIGN_BEGINNING, 0);
+            Composite errorGroup = UIUtils.createTitledComposite(
+                composite,
+                CoreMessages.pref_page_error_handle_group_cancel_title,
+                2,
+                GridData.VERTICAL_ALIGN_BEGINNING,
+                0
+            );
 
-            cancelCheckTimeout = UIUtils.createLabelSpinner(errorGroup, CoreMessages.pref_page_error_handle_cancel_check_timeout, CoreMessages.pref_page_error_handle_cancel_check_timeout_tip, 0, 0, Integer.MAX_VALUE);
+            cancelCheckTimeout = UIUtils.createLabelSpinner(
+                errorGroup,
+                CoreMessages.pref_page_error_handle_cancel_check_timeout,
+                CoreMessages.pref_page_error_handle_cancel_check_timeout_tip,
+                0,
+                0,
+                Integer.MAX_VALUE
+            );
         }
 
         return composite;
     }
 
     @Override
-    protected void loadPreferences(DBPPreferenceStore store)
-    {
+    protected void loadPreferences(@NotNull DBPPreferenceStore store) {
         try {
             connectionOpenTimeout.setSelection(store.getInt(ModelPreferences.CONNECTION_OPEN_TIMEOUT));
             connectionCloseTimeout.setSelection(store.getInt(ModelPreferences.CONNECTION_CLOSE_TIMEOUT));
@@ -125,8 +191,7 @@ public class PrefPageErrorHandle extends TargetPrefPage
     }
 
     @Override
-    protected void savePreferences(DBPPreferenceStore store)
-    {
+    protected void savePreferences(@NotNull DBPPreferenceStore store) {
         try {
             store.setValue(ModelPreferences.CONNECTION_OPEN_TIMEOUT, connectionOpenTimeout.getSelection());
             store.setValue(ModelPreferences.CONNECTION_CLOSE_TIMEOUT, connectionCloseTimeout.getSelection());
@@ -144,8 +209,7 @@ public class PrefPageErrorHandle extends TargetPrefPage
     }
 
     @Override
-    protected void clearPreferences(DBPPreferenceStore store)
-    {
+    protected void clearPreferences(DBPPreferenceStore store) {
         store.setToDefault(ModelPreferences.CONNECTION_OPEN_TIMEOUT);
         store.setToDefault(ModelPreferences.CONNECTION_CLOSE_TIMEOUT);
         store.setToDefault(ModelPreferences.CONNECTION_VALIDATION_TIMEOUT);
@@ -170,6 +234,7 @@ public class PrefPageErrorHandle extends TargetPrefPage
         super.performDefaults();
     }
 
+    @NotNull
     @Override
     protected String getPropertyPageID()
     {

@@ -177,9 +177,34 @@ public class UIUtils {
         };
     }
 
-    public static void createLabelSeparator(Composite toolBar, int style) {
-        Label label = new Label(toolBar, SWT.SEPARATOR | style);
-        label.setLayoutData(new GridData(style == SWT.HORIZONTAL ? GridData.FILL_HORIZONTAL : GridData.FILL_VERTICAL));
+    public static void createLabelSeparator(@NotNull Composite toolBar, int style) {
+        createLabelSeparator(toolBar, style, 0);
+    }
+
+    public static void createLabelSeparator(@NotNull Composite toolBar, int style, int span) {
+        //Label label = new Label(toolBar, SWT.SEPARATOR | style);
+        //label.setLayoutData(new GridData(style == SWT.HORIZONTAL ? GridData.FILL_HORIZONTAL : GridData.FILL_VERTICAL));
+        Canvas canvas = new Canvas(toolBar, SWT.NONE);
+        GridData gd = new GridData(style == SWT.HORIZONTAL ? GridData.FILL_HORIZONTAL : GridData.FILL_VERTICAL);
+        if (style == SWT.HORIZONTAL) {
+            gd = new GridData(GridData.FILL_HORIZONTAL);
+            gd.heightHint = 1;
+            gd.horizontalSpan = span;
+        } else {
+            gd = new GridData(GridData.FILL_VERTICAL);
+            gd.widthHint = 1;
+            gd.verticalSpan = span;
+        }
+        canvas.addPaintListener(e -> {
+            e.gc.setForeground(e.display.getSystemColor(
+                UIStyles.isDarkTheme() ? SWT.COLOR_WIDGET_DARK_SHADOW : SWT.COLOR_WIDGET_LIGHT_SHADOW));
+            if (style == SWT.HORIZONTAL) {
+                e.gc.drawLine(e.x, e.y, e.x + e.width, e.y);
+            } else {
+                e.gc.drawLine(e.x, e.y, e.x, e.y + e.height);
+            }
+        });
+        canvas.setLayoutData(gd);
     }
 
     public static void createToolBarSeparator(ToolBar toolBar, int style) {
@@ -614,11 +639,56 @@ public class UIUtils {
     public static Composite createTitledComposite(
         @NotNull Composite parent,
         @NotNull String label,
+        int columns
+    ) {
+        return createTitledComposite(parent, label, columns, GridData.HORIZONTAL_ALIGN_BEGINNING, SWT.DEFAULT);
+    }
+
+    public static Composite createTitledComposite(
+        @NotNull Composite parent,
+        @NotNull String label,
+        int columns,
+        int layoutStyle
+    ) {
+        return createTitledComposite(parent, label, columns, layoutStyle, SWT.DEFAULT);
+    }
+
+    public static Composite createTitledComposite(
+        @NotNull Composite parent,
+        @NotNull String label,
         int columns,
         int layoutStyle,
         int widthHint
     ) {
-        Composite group = createComposite(parent, columns);
+        if (parent.getLayout() instanceof GridLayout gl && gl.numColumns > 1) {
+            parent = UIUtils.createPlaceholder(parent, 1, 10);
+            parent.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING | GridData.VERTICAL_ALIGN_BEGINNING));
+        }
+
+        Label titleLabel = new Label(parent, SWT.NONE);
+        titleLabel.setText(label);
+        titleLabel.setFont(BaseThemeSettings.instance.baseFontBold);
+        if (false) {
+            titleLabel.addPaintListener(e -> {
+                e.gc.setForeground(titleLabel.getDisplay().getSystemColor(SWT.COLOR_WIDGET_NORMAL_SHADOW));
+                e.gc.drawLine(0, e.height - 1, e.width, e.height - 1);
+            });
+        }
+        GridData lgd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
+        if (parent.getLayout() instanceof GridLayout pgl) {
+            //lgd.horizontalSpan = pgl.numColumns;
+        }
+        titleLabel.setLayoutData(lgd);
+
+        Composite group = new Composite(parent, SWT.NONE);
+        GridLayout layout = new GridLayout(columns, false);
+        layout.marginHeight = 0;
+        layout.marginWidth = 0;
+        layout.marginTop = 0;
+        layout.marginLeft = 7;
+        layout.marginBottom = 3;
+        group.setLayout(layout);
+
         if (parent.getLayout() instanceof GridLayout) {
             GridData gd = new GridData(layoutStyle);
             if (widthHint > 0) {
@@ -627,10 +697,19 @@ public class UIUtils {
             group.setLayoutData(gd);
         }
 
-        Label titleLabel = UIUtils.createControlLabel(group, label, columns);
-        titleLabel.setFont(BaseThemeSettings.instance.baseFontBold);
-
         return group;
+    }
+
+    public static void updateTitledComposite(@NotNull Composite titledComposite, @NotNull String title) {
+        Control[] children = titledComposite.getParent().getChildren();
+        if (children.length > 0) {
+            int index = ArrayUtils.indexOf(children, titledComposite);
+            if (index > 0 && children[index - 1] instanceof Label label) {
+                label.setText(title);
+                return;
+            }
+        }
+        log.error("Composite is not titled!");
     }
 
     public static Label createControlLabel(Composite parent, String label) {
