@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.registry.driver;
 
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSource;
@@ -56,6 +57,7 @@ import java.util.zip.ZipInputStream;
 public class DriverUtils {
     private static final Log log = Log.getLog(DriverUtils.class);
 
+    public static final String PROP_DRIVER_VERSION = "driver-version";
     public static final String ZIP_EXTRACT_DIR = "zip-cache";
 
     public static boolean matchesBundle(IConfigurationElement config) {
@@ -289,6 +291,35 @@ public class DriverUtils {
             crc.update(buffer, 0, bytesRead);
         }
         return crc.getValue();
+    }
+
+    public static boolean isDriverVersionConfigurable(@NotNull DBPDriver driver) {
+        int dlCount = 0;
+        for (DBPDriverLibrary dl : driver.getDriverLibraries()) {
+            if (isLibraryVersionConfigurable(dl)) {
+                dlCount++;
+            }
+        }
+        return dlCount == 1;
+    }
+
+    private static boolean isLibraryVersionConfigurable(@NotNull DBPDriverLibrary dl) {
+        return !dl.isDisabled() && dl.getType() == DBPDriverLibrary.FileType.jar &&
+            dl.isDownloadable() && !CommonUtils.isEmpty(dl.getVersion());
+    }
+
+    @Nullable
+    public static String getCurrentDriverVersion(@NotNull DBPDataSourceContainer dataSource) {
+        DBPDriver driver = dataSource.getDriver();
+        if (!isDriverVersionConfigurable(driver)) {
+            return null;
+        }
+        for (DBPDriverLibrary dl : driver.getDriverLibraries()) {
+            if (isLibraryVersionConfigurable(dl)) {
+                return dl.getVersion();
+            }
+        }
+        return null;
     }
 
     /**

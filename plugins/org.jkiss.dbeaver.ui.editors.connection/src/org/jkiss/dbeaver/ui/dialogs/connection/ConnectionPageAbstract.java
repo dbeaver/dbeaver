@@ -38,6 +38,7 @@ import org.jkiss.dbeaver.model.connection.DataSourceVariableResolver;
 import org.jkiss.dbeaver.model.rm.RMConstants;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
+import org.jkiss.dbeaver.registry.driver.DriverUtils;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.ui.UIServiceSecurity;
 import org.jkiss.dbeaver.ui.*;
@@ -83,6 +84,7 @@ public abstract class ConnectionPageAbstract extends DialogPage implements IData
     private Button licenseButton;
     @Nullable
     private Control databaseDocumentationInfoLabel;
+    private Combo driverVersionSelector;
 
     public IDataSourceConnectionEditorSite getSite() {
         return site;
@@ -108,6 +110,13 @@ public abstract class ConnectionPageAbstract extends DialogPage implements IData
         DBPDriver driver = site.getDriver();
         if (driver != null && driverText != null) {
             driverText.setText(CommonUtils.toString(driver.getFullName()));
+        }
+        if (driverVersionSelector != null) {
+            boolean driverVersionConfigurable = DriverUtils.isDriverVersionConfigurable(driver);
+            UIUtils.setControlVisible(driverVersionSelector, driver != null && driverVersionConfigurable);
+            if (driverVersionConfigurable) {
+                driverVersionSelector.setText(DriverUtils.getCurrentDriverVersion(getSite().getActiveDataSource()));
+            }
         }
         if (licenseButton != null) {
             UIUtils.setControlVisible(licenseButton, driver != null && !CommonUtils.isEmpty(driver.getLicense()));
@@ -223,7 +232,7 @@ public abstract class ConnectionPageAbstract extends DialogPage implements IData
         divLabel.setLayoutData(gd);
 
         {
-            Composite driverInfoComp = UIUtils.createComposite(panel, 5);
+            Composite driverInfoComp = UIUtils.createComposite(panel, 6);
             gd = new GridData(GridData.FILL_HORIZONTAL);
             gd.horizontalSpan = 5;
             driverInfoComp.setLayoutData(gd);
@@ -238,6 +247,8 @@ public abstract class ConnectionPageAbstract extends DialogPage implements IData
             gd.horizontalSpan = 2;
             //gd.widthHint = 200;
             driverText.setLayoutData(gd);
+
+            driverVersionSelector = new Combo(driverInfoComp, SWT.DROP_DOWN | SWT.BORDER);
 
             if (DBWorkbench.getPlatform().getWorkspace().hasRealmPermission(RMConstants.PERMISSION_DRIVER_MANAGER)) {
                 Button driverButton = UIUtils.createDialogButton(driverInfoComp, UIConnectionMessages.dialog_connection_edit_driver_button,
