@@ -839,6 +839,8 @@ public class DataSourceSerializerModern<T extends DataSourceDescriptor> implemen
             null :
             settingsProvider.getObjectSettings(SMObjectType.datasource, dataSource.getId());
 
+        dataSource.getNavigatorSettings().reset();
+
         if (!CommonUtils.isEmpty(userSettings) && userSettings.keySet().stream().anyMatch(
             DataSourceNavigatorSettings.NAVIGATOR_SETTINGS::contains)
         ) {
@@ -847,10 +849,8 @@ public class DataSourceSerializerModern<T extends DataSourceDescriptor> implemen
             DataSourceNavigatorSettings originalSettings = new DataSourceNavigatorSettings();
             DataSourceNavigatorSettingsUtils.loadSettingsFromMap(originalSettings, conObject);
             dataSource.getNavigatorSettings().setOriginalSettings(originalSettings);
-            dataSource.getNavigatorSettings().setUserSettings(true);
         } else {
             DataSourceNavigatorSettingsUtils.loadSettingsFromMap(dataSource.getNavigatorSettings(), conObject);
-            dataSource.getNavigatorSettings().setUserSettings(false);
         }
 
         dataSource.setConnectionReadOnly(JSONUtils.getBoolean(conObject, RegistryConstants.ATTR_READ_ONLY));

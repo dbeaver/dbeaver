@@ -217,6 +217,7 @@ public class DataSourceNavigatorSettings implements DBNBrowseSettings {
 
     public void setOriginalSettings(@Nullable DataSourceNavigatorSettings originalSettings) {
         this.originalSettings = originalSettings;
+        this.userSettings = true;
     }
 
     public void copyFrom(@NotNull DBNBrowseSettings source) {
@@ -227,6 +228,11 @@ public class DataSourceNavigatorSettings implements DBNBrowseSettings {
         this.hideFolders = source.isHideFolders();
         this.hideSchemas = source.isHideSchemas();
         this.hideVirtualModel = source.isHideVirtualModel();
+    }
+
+    public void reset() {
+        this.userSettings = false;
+        this.originalSettings = null;
     }
 
     @Override
