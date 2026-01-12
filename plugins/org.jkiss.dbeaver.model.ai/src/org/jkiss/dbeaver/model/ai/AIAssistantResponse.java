@@ -35,11 +35,17 @@ public class AIAssistantResponse {
 
     private final Type type;
     private final Object result;
+    private final AIMessageMeta meta;
     private List<AIFunctionReference> functionsRefs;
 
-    public AIAssistantResponse(@NotNull Type type, @NotNull Object result) {
+    public AIAssistantResponse(
+        @NotNull Type type,
+        @NotNull Object result,
+        @NotNull AIMessageMeta meta
+    ) {
         this.type = type;
         this.result = result;
+        this.meta = meta;
     }
 
     @NotNull
@@ -57,6 +63,11 @@ public class AIAssistantResponse {
 
     public String getText() {
         return CommonUtils.toString(result);
+    }
+
+    @NotNull
+    public AIMessageMeta getMeta() {
+        return meta;
     }
 
     @Nullable
