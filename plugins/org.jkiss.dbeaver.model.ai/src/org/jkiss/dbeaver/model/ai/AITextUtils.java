@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -252,7 +252,7 @@ public class AITextUtils {
         try {
             return loadCheckedEntitiesById(monitor, dataSource.getContainer().getProject(), ids);
         } catch (Exception e) {
-            log.error(e);
+            log.debug(e);
             return List.of();
         } finally {
             monitor.done();
@@ -268,9 +268,13 @@ public class AITextUtils {
         final List<DBSObject> output = new ArrayList<>();
 
         for (String id : ids) {
-            DBSObject object = DBUtils.findObjectById(monitor, project, id);
-            if (object != null) {
-                output.add(object);
+            try {
+                DBSObject object = DBUtils.findObjectById(monitor, project, id);
+                if (object != null) {
+                    output.add(object);
+                }
+            } catch (DBException e) {
+                log.debug("Error loading object '" + id + "': " + e.getMessage());
             }
             monitor.worked(1);
         }

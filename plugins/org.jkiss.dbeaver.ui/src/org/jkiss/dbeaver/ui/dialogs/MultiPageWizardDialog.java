@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -176,14 +176,24 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
 
     @Override
     protected Control createDialogArea(Composite parent) {
-        Composite composite = (Composite) super.createDialogArea(parent);
+        Composite mainComposite = new Composite(parent, SWT.NONE);
+        GridLayout layout = new GridLayout();
+        layout.marginHeight = 0;
+        layout.marginWidth = 0;
+        layout.verticalSpacing = 0;
+        layout.horizontalSpacing = 0;
+        mainComposite.setLayout(layout);
+        mainComposite.setLayoutData(new GridData(GridData.FILL_BOTH));
+        mainComposite.setFont(parent.getFont());
+
+        UIUtils.createLabelSeparator(mainComposite, SWT.HORIZONTAL);
 
         wizard.addPages();
 
-        wizardSash = new SashForm(composite, SWT.HORIZONTAL);
+        wizardSash = new SashForm(mainComposite, SWT.HORIZONTAL);
         wizardSash.setLayoutData(new GridData(GridData.FILL_BOTH));
 
-        Composite leftPane = UIUtils.createComposite(wizardSash, 1);
+        Composite leftPane = UIUtils.createPlaceholder(wizardSash, 1);
         pagesTree = new Tree(leftPane, SWT.SINGLE);
         pagesTree.setLayoutData(new GridData(GridData.FILL_BOTH));
 
@@ -192,12 +202,7 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
         leftBottomPanel.setBackground(pagesTree.getBackground());
         createBottomLeftArea(leftBottomPanel);
 
-        Composite pageContainer = UIUtils.createPlaceholder(wizardSash, 2);
-
-        // Vertical separator
-        new Label(pageContainer, SWT.SEPARATOR | SWT.VERTICAL)
-            .setLayoutData(new GridData(SWT.LEFT, SWT.FILL, false, true));
-        pageArea = UIUtils.createPlaceholder(pageContainer, 1);
+        pageArea = UIUtils.createPlaceholder(wizardSash, 1);
         GridData gd = new GridData(GridData.FILL_BOTH);
         pageArea.setLayoutData(gd);
         pageArea.setLayout(new GridLayout(1, true));
@@ -235,11 +240,10 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
         });
 
         // Horizontal separator
-        new Label(composite, SWT.HORIZONTAL | SWT.SEPARATOR)
-            .setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        UIUtils.createLabelSeparator(mainComposite, SWT.HORIZONTAL);
 
         // Progress monitor
-        monitorPart = new ProgressMonitorPart(composite, null, true) {
+        monitorPart = new ProgressMonitorPart(mainComposite, null, true) {
             @Override
             public void setCanceled(boolean b) {
                 super.setCanceled(b);
@@ -255,7 +259,7 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
         monitorPart.setLayoutData(gd);
         monitorPart.setVisible(false);
 
-        return composite;
+        return mainComposite;
     }
 
     protected void createBottomLeftArea(Composite pane) {
@@ -316,15 +320,6 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
                 gd = (GridData) pageControl.getLayoutData();
                 gd.exclude = false;
                 page.setVisible(true);
-            }
-
-            GridLayout pageLayout = (GridLayout) pageArea.getLayout();
-            if (isFullscreenPage(page)) {
-                pageLayout.marginWidth = 0;
-                pageLayout.marginHeight = 0;
-            } else {
-                pageLayout.marginWidth = 5; // default
-                pageLayout.marginHeight = 5; // default
             }
 
             setTitle(page.getTitle());

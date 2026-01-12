@@ -137,7 +137,7 @@ public class ConnectionPageShellCommands extends ConnectionWizardPage {
                 }
             };
 
-            Composite settingsGroup = UIUtils.createControlGroup(detailsGroup, CoreMessages.dialog_connection_events_settings_group, 2, GridData.FILL_HORIZONTAL, 0);
+            Composite settingsGroup = UIUtils.createTitledComposite(detailsGroup, CoreMessages.dialog_connection_events_settings_group, 2, GridData.FILL_HORIZONTAL, 0);
 
             showProcessCheck = UIUtils.createCheckbox(settingsGroup, CoreMessages.dialog_connection_events_checkbox_show_process, false);
             showProcessCheck.addSelectionListener(eventEditAdapter);
