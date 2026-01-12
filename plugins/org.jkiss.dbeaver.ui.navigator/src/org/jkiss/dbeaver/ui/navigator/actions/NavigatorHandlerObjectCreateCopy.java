@@ -89,17 +89,6 @@ public class NavigatorHandlerObjectCreateCopy extends NavigatorHandlerObjectCrea
             @SuppressWarnings("unchecked")
             Collection<DBNNode> cbNodes = (Collection<DBNNode>) clipboard.getContents(TreeNodeTransfer.getInstance());
             if (cbNodes != null) {
-                if (curNode instanceof DBNResource currentResource) {
-                    try {
-                        UIUtils.runWithMonitor(monitor -> {
-                            currentResource.dropNodes(monitor, cbNodes);
-                            return null;
-                        });
-                    } catch (DBException e) {
-                        DBWorkbench.getPlatformUI().showError("Paste error", "Can't paste nodes", e);
-                        failedToPasteResources.addAll(cbNodes.stream().map(DBNNode::getNodeDisplayName).toList());
-                    }
-                }
                 for (DBNNode nodeObject : cbNodes) {
                     if (nodeObject instanceof DBNResource && curNode instanceof DBNResource) {
                         if (!toProject.hasRealmPermission(RMConstants.PERMISSION_PROJECT_RESOURCE_EDIT)) {
@@ -120,17 +109,18 @@ public class NavigatorHandlerObjectCreateCopy extends NavigatorHandlerObjectCrea
                         }
                     } else {
                         for (DBNNode nodeObject : cbNodes) {
-                            if (curNode instanceof DBNResource && ((DBNResource) curNode).supportsPaste(nodeObject)) {
+                            if (nodeObject instanceof DBNDatabaseNode) {
+                                createNewObject(HandlerUtil.getActiveWorkbenchWindow(event), curNode, ((DBNDatabaseNode) nodeObject));
+                            } else if (curNode instanceof DBNResource currentResource) {
                                 try {
-                                    ((DBNResource) curNode).pasteNodes(List.of(nodeObject));
+                                    UIUtils.runWithMonitor(monitor -> {
+                                        pastNodeToResource(monitor, currentResource, nodeObject);
+                                        return null;
+                                    });
                                 } catch (DBException e) {
                                     DBWorkbench.getPlatformUI().showError("Paste error", "Can't paste node '" + nodeObject.getName() + "'", e);
                                     failedToPasteResources.add(nodeObject.getName());
                                 }
-                            } else if (nodeObject instanceof DBNDatabaseNode) {
-                                createNewObject(HandlerUtil.getActiveWorkbenchWindow(event), curNode, ((DBNDatabaseNode) nodeObject));
-                            } else if (nodeObject instanceof DBNResource && curNode instanceof DBNResource) {
-                                pasteResource((DBNResource) nodeObject, (DBNResource) curNode);
                             } else {
                                 log.error("Paste is not supported for " + curNode);
                             }
@@ -179,6 +169,19 @@ public class NavigatorHandlerObjectCreateCopy extends NavigatorHandlerObjectCrea
         }
 
         return null;
+    }
+
+    private void pastNodeToResource(@NotNull DBRProgressMonitor monitor, @NotNull DBNResource currentNode, @NotNull DBNNode nodeToPaste)
+    throws DBException {
+        if (currentNode.supportsPaste(nodeToPaste)) {
+            currentNode.pasteNodes(List.of(nodeToPaste));
+        } else if (nodeToPaste instanceof DBNResource fromResource) {
+            pasteResource(fromResource, currentNode);
+        } else if (currentNode.supportsDrop(nodeToPaste)) {
+            currentNode.dropNodes(monitor, List.of(nodeToPaste));
+        } else {
+            log.error("Paste or drop is not supported for " + currentNode);
+        }
     }
 
     private void pasteResource(DBNResource resourceNode, DBNResource toFolder) {
