@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -174,7 +174,7 @@ public class PropertySourceEditable extends PropertySourceAbstract implements DB
                     if (items.length > 0) {
                         for (int i = 0, itemsLength = items.length; i < itemsLength; i++) {
                             if ((items[i] instanceof DBPNamedObject namedObject && value.equals(namedObject.getName())) ||
-                                (items[i] instanceof Enum<?> anEnum && value.equals(anEnum.name()))
+                                (items[i] instanceof Enum<?> anEnum && (value.equals(anEnum.name()) || value.equals(anEnum.toString())))
                             ) {
                                 value = items[i];
                                 found = true;
