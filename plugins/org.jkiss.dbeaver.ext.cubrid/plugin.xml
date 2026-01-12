@@ -246,7 +246,7 @@
     <extension point="org.jkiss.dbeaver.dataTypeProvider">
         <provider id="CubridValueHandlerProvider" parent="GenericValueHandlerProvider" class="org.jkiss.dbeaver.ext.cubrid.data.CubridValueHandlerProvider" label="Cubrid data types provider" description="Cubrid data types provider">
             <datasource id="cubrid"/>
-            <type name="*"/>
+            <type name="CLASS"/>
         </provider>
     </extension>
 </plugin>
