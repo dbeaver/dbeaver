@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -844,6 +844,9 @@ public class DataSourceSerializerModern<T extends DataSourceDescriptor> implemen
         ) {
             // There are custom navigator settings
             DataSourceNavigatorSettingsUtils.loadSettingsFromMap(dataSource.getNavigatorSettings(), userSettings);
+            DataSourceNavigatorSettings originalSettings = new DataSourceNavigatorSettings();
+            DataSourceNavigatorSettingsUtils.loadSettingsFromMap(originalSettings, conObject);
+            dataSource.getNavigatorSettings().setOriginalSettings(originalSettings);
             dataSource.getNavigatorSettings().setUserSettings(true);
         } else {
             DataSourceNavigatorSettingsUtils.loadSettingsFromMap(dataSource.getNavigatorSettings(), conObject);
