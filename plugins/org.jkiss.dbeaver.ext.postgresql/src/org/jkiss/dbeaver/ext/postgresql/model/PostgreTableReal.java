@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,7 +35,6 @@ import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectLookupCache;
 import org.jkiss.dbeaver.model.impl.struct.RelationalObjectType;
 import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.meta.Property;
-import org.jkiss.dbeaver.model.preferences.DBPPropertySource;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -149,12 +148,6 @@ public abstract class PostgreTableReal extends PostgreTableBase implements DBPOb
         return diskSpace == null ? 0 : diskSpace;
     }
 
-    @Nullable
-    @Override
-    public DBPPropertySource getStatProperties() {
-        return null;
-    }
-
     private void readTableStats(DBRProgressMonitor monitor) {
         if (diskSpace != null || !getDataSource().getServerType().supportsTableStatistics()) {
             return;
@@ -180,7 +173,7 @@ public abstract class PostgreTableReal extends PostgreTableBase implements DBPOb
         }
     }
 
-    protected void readTableStatistics(JDBCSession session) throws DBException, SQLException {
+    protected void readTableStatistics(@NotNull JDBCSession session) throws DBException, SQLException {
         if (!getDataSource().getServerType().supportsTableStatistics()) {
             return;
         }
