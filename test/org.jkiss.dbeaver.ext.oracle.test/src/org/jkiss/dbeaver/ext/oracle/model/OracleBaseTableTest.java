@@ -19,7 +19,6 @@ package org.jkiss.dbeaver.ext.oracle.model;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.oracle.edit.OracleTableManager;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
-import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.edit.DBEObjectMaker;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.exec.DBExecUtils;
@@ -29,10 +28,8 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
 import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.properties.PropertySourceEditable;
 import org.jkiss.junit.DBeaverUnitTest;
-import org.jkiss.utils.StandardConstants;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -55,26 +52,17 @@ public class OracleBaseTableTest extends DBeaverUnitTest {
     private DBEObjectMaker<OracleTable, OracleSchema> objectMaker;
 
     @Mock
-    private DBPDataSourceContainer mockDataSourceContainer;
-    @Mock
     private JDBCRemoteInstance mockRemoteInstance;
-    @Mock
-    private DBPConnectionConfiguration mockConnectionConfiguration;
-
-    private final String lineBreak = System.getProperty(StandardConstants.ENV_LINE_SEPARATOR);
 
     @Before
     public void setUp() throws DBException {
-        Mockito.when(mockDataSourceContainer.getDriver()).thenReturn(DBWorkbench.getPlatform().getDataSourceProviderRegistry().findDriver("oracle"));
-        Mockito.when(mockDataSourceContainer.getConnectionConfiguration()).thenReturn(mockConnectionConfiguration);
+        DBPDataSourceContainer mockDataSourceContainer = configureTestContainer("oracle");
         testDataSource = new OracleDataSource(mockDataSourceContainer);
 
         Mockito.when(mockRemoteInstance.getDataSource()).thenReturn(testDataSource);
 
         executionContext = new OracleExecutionContext(mockRemoteInstance, "Test");
         testSchema = new OracleSchema(testDataSource, -1, "TEST_SCHEMA");
-
-        Mockito.when(mockDataSourceContainer.getPreferenceStore()).thenReturn(DBWorkbench.getPlatform().getPreferenceStore());
 
         objectMaker = OracleTestUtils.getManagerForClass(OracleTable.class);
 

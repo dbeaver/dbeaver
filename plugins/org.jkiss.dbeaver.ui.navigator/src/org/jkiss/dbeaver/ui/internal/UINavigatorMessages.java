@@ -84,6 +84,8 @@ public class UINavigatorMessages extends NLS {
     public static String actions_navigator_search_filter_container_description;
     public static String actions_navigator_search_filter_object_name;
     public static String actions_navigator_search_filter_object_description;
+    public static String actions_navigator_search_filter_file_name;
+    public static String actions_navigator_search_filter_file_description;
     public static String actions_navigator_show_only_selected_objects;
     public static String actions_navigator_show_only_object;
     public static String actions_navigator_folder_name;

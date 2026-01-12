@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.ai.*;
 import org.jkiss.dbeaver.model.ai.engine.AIEngineProperties;
+import org.jkiss.dbeaver.model.ai.engine.AIModel;
 import org.jkiss.dbeaver.model.ai.internal.AIMessages;
 import org.jkiss.dbeaver.model.ai.registry.AIEngineDescriptor;
 import org.jkiss.dbeaver.model.ai.registry.AIEngineRegistry;
@@ -31,6 +32,7 @@ import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContextDefaults;
 import org.jkiss.dbeaver.model.exec.DBCTransactionManager;
 import org.jkiss.dbeaver.model.impl.DataSourceContextProvider;
+import org.jkiss.dbeaver.model.navigator.DBNUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.secret.DBSSecretController;
 import org.jkiss.dbeaver.model.sql.SQLQueryCategory;
@@ -45,10 +47,10 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.ui.UIServiceSQL;
 import org.jkiss.utils.CommonUtils;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public final class AIUtils {
     private static final Log log = Log.getLog(AIUtils.class);
@@ -248,5 +250,47 @@ public final class AIUtils {
         }
     }
 
+    public static boolean isExcludableObject(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBSObject obj
+    ) {
+        return DBUtils.isSystemObject(obj)
+            || DBUtils.isHiddenObject(obj)
+            || obj instanceof DBSTablePartition
+            || DBNUtils.getNodeByObject(monitor, obj, false) == null;
+    }
+
+    @NotNull
+    public static Map<String, AIModel> modelMap(@NotNull AIModel ... models) {
+        return Stream.of(models).collect(Collectors.toMap(
+            AIModel::name,
+            Function.identity()
+        ));
+    }
+
+    @NotNull
+    public static Optional<AIModel> getModelByName(@NotNull Map<String, AIModel> models, @Nullable String modelName) {
+        if (modelName == null || modelName.isEmpty()) {
+            return Optional.empty();
+        }
+        modelName = modelName.toLowerCase(Locale.ROOT);
+
+        // Try to find more generic model
+        String tmpName = modelName;
+        for (;;) {
+            AIModel model = models.get(tmpName);
+            if (model != null) {
+                return Optional.of(model);
+            }
+            int divPos = tmpName.lastIndexOf('-');
+            if (divPos > 0) {
+                tmpName = tmpName.substring(0, divPos);
+            } else {
+                break;
+            }
+        }
+
+        return Optional.empty();
+    }
 
 }

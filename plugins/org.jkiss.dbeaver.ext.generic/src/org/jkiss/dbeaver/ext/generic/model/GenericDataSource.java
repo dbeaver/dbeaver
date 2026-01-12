@@ -62,7 +62,7 @@ import java.util.Properties;
 /**
  * GenericDataSource
  */
-public class GenericDataSource extends JDBCDataSource implements DBPTermProvider, DBPAdaptable, GenericStructContainer {
+public class GenericDataSource extends JDBCDataSource implements DBPTermProvider, GenericStructContainer {
     private static final Log log = Log.getLog(GenericDataSource.class);
 
     private final TableTypeCache tableTypeCache;
@@ -300,6 +300,7 @@ public class GenericDataSource extends JDBCDataSource implements DBPTermProvider
         return catalogs;
     }
 
+    @Nullable
     public GenericCatalog getCatalog(String name) {
         return DBUtils.findObject(getCatalogs(), name);
     }

@@ -55,6 +55,7 @@ public class SQLQueryDataContainer implements DBSDataContainer, SQLQueryContaine
         this.log = log;
     }
 
+    @Nullable
     @Override
     public DBCExecutionContext getExecutionContext() {
         return contextProvider.getExecutionContext();

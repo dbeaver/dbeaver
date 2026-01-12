@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,6 +24,7 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectLookupCache;
 
 import java.sql.SQLException;
@@ -34,11 +35,10 @@ public class SQLServerExtendedPropertyCache extends JDBCObjectLookupCache<SQLSer
     public JDBCStatement prepareLookupStatement(@NotNull JDBCSession session, @NotNull SQLServerExtendedPropertyOwner owner, @Nullable SQLServerExtendedProperty object, @Nullable String objectName) throws SQLException {
         StringBuilder sql = new StringBuilder();
         sql.append("SELECT ep.*, ");
-        if (SQLServerUtils.isDriverBabelfish(session.getDataSource().getContainer().getDriver())) {
-            sql.append("NULL AS value_type ");
-        }
-        else {
+        if (isSupportVariantProperty(session)) {
             sql.append("TYPE_ID(CAST(SQL_VARIANT_PROPERTY(value, 'BaseType') as nvarchar)) AS value_type ");
+        } else {
+            sql.append("NULL AS value_type ");
         }
         sql.append("FROM ");
         sql.append(SQLServerUtils.getExtendedPropsTableName(owner.getDatabase()));
@@ -55,5 +55,13 @@ public class SQLServerExtendedPropertyCache extends JDBCObjectLookupCache<SQLSer
     @Override
     protected SQLServerExtendedProperty fetchObject(@NotNull JDBCSession session, @NotNull SQLServerExtendedPropertyOwner owner, @NotNull JDBCResultSet resultSet) throws SQLException, DBException {
         return new SQLServerExtendedProperty(session.getProgressMonitor(), owner, resultSet);
+    }
+
+    private boolean isSupportVariantProperty(@NotNull JDBCSession session) {
+        JDBCDataSource dataSource = session.getDataSource();
+        if (dataSource instanceof SQLServerDataSource sqlServerDataSource) {
+            return !sqlServerDataSource.isDataWarehouseServer(session.getProgressMonitor());
+        }
+        return !SQLServerUtils.isDriverBabelfish(dataSource.getContainer().getDriver());
     }
 }

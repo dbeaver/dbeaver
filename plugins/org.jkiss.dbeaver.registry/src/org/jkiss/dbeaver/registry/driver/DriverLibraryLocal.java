@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.IOUtils;
 
 import java.io.IOException;
 import java.net.URL;
@@ -158,7 +159,10 @@ public class DriverLibraryLocal extends DriverLibraryAbstract {
         if (DBWorkbench.isDistributed() || isCustom()) {
             return DriverDescriptor.getExternalDriversStorageFolder();
         }
-
+        var providedFolder = DriverDescriptor.getProvidedDriversStorageFolder();
+        if (!IOUtils.isFileFromDefaultFS(providedFolder) && isDownloadable()) {
+            return DriverDescriptor.getExternalDriversStorageFolder();
+        }
         return DriverDescriptor.getProvidedDriversStorageFolder();
     }
 

@@ -28,6 +28,7 @@ import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.eclipse.ui.part.FileEditorInput;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -157,8 +158,9 @@ public class SQLEditorHandlerOpenObjectConsole extends AbstractHandler {
         if (editor != null && editor.getDocument() != null) {
             editor.getDocument().set(sql);
             AbstractJob execJob = new AbstractJob("Execute SQL in console") {
+                @NotNull
                 @Override
-                protected IStatus run(DBRProgressMonitor monitor) {
+                protected IStatus run(@NotNull DBRProgressMonitor monitor) {
                     // If we open new connection for each editor it may take some time
                     // So let's give it a chance and wait for 10 seconds
                     if (editor.getExecutionContext() != null) {

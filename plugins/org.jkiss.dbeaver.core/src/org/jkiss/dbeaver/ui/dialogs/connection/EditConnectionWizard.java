@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -48,7 +48,10 @@ import org.jkiss.dbeaver.ui.IDialogPageProvider;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.actions.datasource.DataSourceHandler;
 import org.jkiss.dbeaver.ui.dialogs.BaseAuthDialog;
-import org.jkiss.dbeaver.ui.preferences.*;
+import org.jkiss.dbeaver.ui.preferences.PrefPageErrorHandle;
+import org.jkiss.dbeaver.ui.preferences.PrefPageMetaData;
+import org.jkiss.dbeaver.ui.preferences.PrefPageTransactions;
+import org.jkiss.dbeaver.ui.preferences.WizardPrefPage;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -73,9 +76,9 @@ public class EditConnectionWizard extends ConnectionWizard {
     @Nullable
     private ConnectionPageSettings pageSettings;
     private ConnectionPageGeneral pageGeneral;
+    private ConnectionPageInternalParameters pageInternalParameters;
     //private ConnectionPageNetwork pageNetwork;
     private ConnectionPageInitialization pageInit;
-    private ConnectionPageShellCommands pageEvents;
 
     /**
      * Constructor for SampleNewWizard.
@@ -173,30 +176,24 @@ public class EditConnectionWizard extends ConnectionWizard {
             addPage(pageSettings);
         }
 
-        boolean embedded = dataSource.getDriver().isEmbedded();
         pageGeneral = new ConnectionPageGeneral(this, dataSource);
+        pageInternalParameters = new ConnectionPageInternalParameters(dataSource);
 
 //        if (!embedded) {
 //            pageNetwork = new ConnectionPageNetwork(this);
 //        }
         pageInit = new ConnectionPageInitialization(dataSource);
-        pageEvents = new ConnectionPageShellCommands(dataSource);
 
         addPage(pageGeneral);
         if (pageSettings != null) {
             pageSettings.addSubPage(pageInit);
-            pageSettings.addSubPage(pageEvents);
-        }
+            pageSettings.addSubPage(createPreferencePage(
+                new PrefPageTransactions(),
+                CoreMessages.dialog_connection_edit_wizard_transactions,
+                CoreMessages.dialog_connection_edit_wizard_transactions_description
+            ));
 
-        if (!embedded && pageSettings != null) {
-            PrefPageConnectionClient pageClientSettings = new PrefPageConnectionClient();
-            pageSettings.addSubPage(
-                createPreferencePage(pageClientSettings, CoreMessages.dialog_connection_edit_wizard_connections, CoreMessages.dialog_connection_edit_wizard_connections_description));
-        }
-        if (pageSettings != null) {
-            PrefPageTransactions pageClientTransactions = new PrefPageTransactions();
-            pageSettings.addSubPage(
-                createPreferencePage(pageClientTransactions, CoreMessages.dialog_connection_edit_wizard_transactions, CoreMessages.dialog_connection_edit_wizard_transactions_description));
+            pageSettings.addSubPage(pageInternalParameters);
         }
 
         addPreferencePage(new PrefPageMetaData(), CoreMessages.dialog_connection_edit_wizard_metadata,  CoreMessages.dialog_connection_edit_wizard_metadata_description);
@@ -386,8 +383,8 @@ public class EditConnectionWizard extends ConnectionWizard {
             pageSettings.saveSettings(dataSource);
         }
         pageGeneral.saveSettings(dataSource);
+        pageInternalParameters.saveSettings(dataSource);
         pageInit.saveSettings(dataSource);
-        pageEvents.saveSettings(dataSource);
         for (IDialogPage page : getPages()) {
             setPageDataSourceElement(dataSource, page);
         }
@@ -421,25 +418,9 @@ public class EditConnectionWizard extends ConnectionWizard {
                 }
             }
         }
-        if (page instanceof IWorkbenchPropertyPage) {
-            ((IWorkbenchPropertyPage) page).setElement(dataSource);
+        if (page instanceof IWorkbenchPropertyPage wpp) {
+            wpp.setElement(dataSource);
         }
-    }
-
-    private void savePageSettings(WizardPrefPage prefPage) {
-        if (isPageActive(prefPage)) {
-            prefPage.performFinish();
-        }
-/*
-        final WizardPrefPage[] subPages = prefPage.getDialogPages();
-        if (subPages != null) {
-            for (WizardPrefPage subPage : subPages) {
-                if (isPageActive(subPage)) {
-                    subPage.performFinish();
-                }
-            }
-        }
-*/
     }
 
     @Override

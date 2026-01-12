@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -115,12 +115,13 @@ public class AltibaseMetaModel extends GenericMetaModel {
         return table;
     }
 
+    @NotNull
     @Override
     public GenericTableBase createTableOrViewImpl(
-            GenericStructContainer container,
-            @Nullable String tableName,
-            @Nullable String tableType,
-            @Nullable JDBCResultSet dbResult) {
+        @NotNull GenericStructContainer container,
+        @Nullable String tableName,
+        @Nullable String tableType,
+        @Nullable JDBCResultSet dbResult) {
         if (tableType != null && isView(tableType)) {
 
             if (tableType.equalsIgnoreCase(AltibaseConstants.OBJ_TYPE_MATERIALIZED_VIEW)) {

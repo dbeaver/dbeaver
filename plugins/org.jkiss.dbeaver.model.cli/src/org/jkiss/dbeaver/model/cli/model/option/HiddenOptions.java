@@ -25,9 +25,6 @@ import picocli.CommandLine;
 public class HiddenOptions {
     public static final String PRODUCT_OPTION = "-product";
 
-    @CommandLine.Option(names = {"-web-config"}, arity = "1", hidden = true)
-    private String webConfig;
-
     @CommandLine.Option(names = {"-cli-mode"}, hidden = true)
     private boolean cliMode;
 
@@ -57,4 +54,10 @@ public class HiddenOptions {
 
     @CommandLine.Option(names = {"-launcher"}, arity = "1", hidden = true)
     private String launcher;
+
+    @CommandLine.Option(names = {"-showsplash"}, hidden = true)
+    private boolean showSplash;
+
+    @CommandLine.Option(names = {"-debug"}, hidden = true)
+    private boolean debug;
 }

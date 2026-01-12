@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -88,7 +88,6 @@ import org.jkiss.dbeaver.ui.contentassist.ContentAssistUtils;
 import org.jkiss.dbeaver.ui.contentassist.SmartTextContentAdapter;
 import org.jkiss.dbeaver.ui.contentassist.StringContentProposalProvider;
 import org.jkiss.dbeaver.ui.controls.CustomSashForm;
-import org.jkiss.dbeaver.ui.controls.LineSeparator;
 import org.jkiss.dbeaver.ui.dialogs.EditTextDialog;
 import org.jkiss.dbeaver.ui.dialogs.MessageBoxBuilder;
 import org.jkiss.dbeaver.ui.dialogs.Reply;
@@ -189,8 +188,19 @@ public class UIUtils {
         new ToolItem(toolBar, SWT.SEPARATOR).setControl(label);
     }
 
-    public static void createLineSeparator(Composite toolBar, int style) {
-        new LineSeparator(toolBar, style);
+    public static void createLineSeparator(@NotNull Composite parent, int style) {
+        if (style != SWT.HORIZONTAL && style != SWT.VERTICAL) {
+            throw new IllegalArgumentException("style must be SWT.HORIZONTAL or SWT.VERTICAL");
+        }
+        Composite composite = new Composite(parent, SWT.NONE);
+        composite.addPaintListener(e -> {
+            e.gc.setBackground(Display.getDefault().getSystemColor(SWT.COLOR_WIDGET_NORMAL_SHADOW));
+            e.gc.fillRectangle(0, 0, e.width, e.height);
+        });
+        GridDataFactory.fillDefaults()
+            .grab(style == SWT.HORIZONTAL, style == SWT.VERTICAL)
+            .hint(1, 1)
+            .applyTo(composite);
     }
 
     public static TableColumn createTableColumn(Table table, int style, String text) {
@@ -597,6 +607,28 @@ public class UIUtils {
 
         GridLayout gl = new GridLayout(columns, false);
         group.setLayout(gl);
+
+        return group;
+    }
+
+    public static Composite createTitledComposite(
+        @NotNull Composite parent,
+        @NotNull String label,
+        int columns,
+        int layoutStyle,
+        int widthHint
+    ) {
+        Composite group = createComposite(parent, columns);
+        if (parent.getLayout() instanceof GridLayout) {
+            GridData gd = new GridData(layoutStyle);
+            if (widthHint > 0) {
+                gd.widthHint = widthHint;
+            }
+            group.setLayoutData(gd);
+        }
+
+        Label titleLabel = UIUtils.createControlLabel(group, label, columns);
+        titleLabel.setFont(BaseThemeSettings.instance.baseFontBold);
 
         return group;
     }
@@ -1884,8 +1916,7 @@ public class UIUtils {
      * Runs task in Eclipse progress service.
      * NOTE: this call can't be canceled if it will block in IO
      */
-    public static void runInProgressService(final DBRRunnableWithProgress runnable)
-    throws InvocationTargetException, InterruptedException {
+    public static void runInProgressService(final DBRRunnableWithProgress runnable) throws InvocationTargetException, InterruptedException {
         getDefaultRunnableContext().run(true, true, runnable);
     }
 
@@ -1979,6 +2010,7 @@ public class UIUtils {
         runInUI(context, runnable);
     }
 
+    @NotNull
     public static Display getDisplay() {
         try {
             return PlatformUI.getWorkbench().getDisplay();
@@ -2472,7 +2504,7 @@ public class UIUtils {
     }
 
     public static void populateToolItemCommandIds(ToolBarManager toolbarManager) {
-        // used for accessibility automation, see dbeaver-qa-auto
+        // used for accessibility automation, see qa-auto-dbeaver
         ToolBar toolBar = toolbarManager.getControl();
         if (toolBar == null || toolBar.isDisposed()) {
             return;

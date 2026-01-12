@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.tools.transfer.ui.pages.stream;
 
 import org.eclipse.jface.dialogs.IDialogConstants;
+import org.eclipse.jface.layout.GridDataFactory;
 import org.eclipse.jface.preference.PreferenceDialog;
 import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.SWT;
@@ -153,8 +154,8 @@ public class StreamConsumerPageSettings extends DataTransferPageNodeSettings {
                 }
             });
 
-            Composite generalSettings = UIUtils.createControlGroup(generalExpander, DTMessages.data_transfer_wizard_settings_group_general, 5, GridData.HORIZONTAL_ALIGN_BEGINNING, -1);
-            //generalSettings.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
+            Composite generalSettings = UIUtils.createComposite(generalExpander, 5);
+            UIUtils.createControlLabel(generalSettings, DTMessages.data_transfer_wizard_settings_group_general, 5);
 
             generalExpander.setClient(generalSettings);
             {
@@ -210,7 +211,7 @@ public class StreamConsumerPageSettings extends DataTransferPageNodeSettings {
                 valueFormatSelector.getCombo().setLayoutData(new GridData(SWT.BEGINNING, SWT.BEGINNING, false, false, 4, 1));
 
                 UIUtils.createControlLabel(generalSettings, DTUIMessages.stream_consumer_page_mapping_label_configure);
-                final Button button = UIUtils.createDialogButton(generalSettings, DTUIMessages.stream_consumer_page_mapping_button_configure, new SelectionAdapter() {
+                UIUtils.createDialogButton(generalSettings, DTUIMessages.stream_consumer_page_mapping_button_configure, new SelectionAdapter() {
                     @Override
                     public void widgetSelected(SelectionEvent event) {
                         final List<StreamMappingContainer> mappings = new ArrayList<>();
@@ -233,9 +234,12 @@ public class StreamConsumerPageSettings extends DataTransferPageNodeSettings {
         }
 
         {
-            Composite exporterSettings = UIUtils.createControlGroup(composite, DTMessages.data_transfer_wizard_settings_group_exporter, 1, GridData.FILL_BOTH, 0);
+            Composite exporterSettings = UIUtils.createComposite(composite, 1);
+            exporterSettings.setLayoutData(new GridData(GridData.FILL_BOTH));
+            UIUtils.createControlLabel(exporterSettings, DTMessages.data_transfer_wizard_settings_group_exporter);
 
             propsEditor = new PropertyTreeViewer(exporterSettings, SWT.BORDER);
+            propsEditor.getControl().setLayoutData(GridDataFactory.create(GridData.FILL_BOTH).hint(200, 150).create());
         }
 
         setControl(composite);
@@ -337,20 +341,21 @@ public class StreamConsumerPageSettings extends DataTransferPageNodeSettings {
             this.mappings = mappings;
         }
 
+        @NotNull
         @Override
-        protected Composite createDialogArea(Composite parent) {
+        protected Composite createDialogArea(@NotNull Composite parent) {
             Composite group = super.createDialogArea(parent);
 
             GridData gd = new GridData(SWT.FILL, SWT.FILL, true, true);
-            gd.widthHint = 400;
-            gd.heightHint = 450;
+            gd.widthHint = 300;
+            gd.heightHint = 200;
 
             Composite composite = UIUtils.createComposite(group, 1);
             composite.setLayoutData(gd);
 
             viewer = new TreeViewer(composite, SWT.MULTI | SWT.BORDER | SWT.FULL_SELECTION);
             viewer.getTree().setLayoutData(new GridData(GridData.FILL_BOTH));
-            viewer.getTree().setLinesVisible(true);
+            viewer.getTree().setLinesVisible(false);
             viewer.getTree().setHeaderVisible(true);
             viewer.getTree().setLayoutData(gd);
 
