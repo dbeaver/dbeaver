@@ -50,18 +50,32 @@
                             <arch>x86_64</arch>
                         </environment>
                         <environment>
+                            <os>win32</os>
+                            <ws>win32</ws>
+                            <arch>aarch64</arch>
+                        </environment>
+                        <environment>
                             <os>linux</os>
                             <ws>gtk</ws>
                             <arch>x86_64</arch>
+                        </environment>
+                        <environment>
+                            <os>linux</os>
+                            <ws>gtk</ws>
+                            <arch>aarch64</arch>
                         </environment>
                         <environment>
                             <os>macosx</os>
                             <ws>cocoa</ws>
                             <arch>x86_64</arch>
                         </environment>
+                        <environment>
+                            <os>macosx</os>
+                            <ws>cocoa</ws>
+                            <arch>aarch64</arch>
+                        </environment>
                     </environments>
                 </configuration>
-
             </plugin>
 
             <plugin>
@@ -113,58 +127,6 @@
                 <!-- Tests -->
                 <module>test</module>
             </modules>
-        </profile>
-
-        <!-- Enables build for all platforms including ARM -->
-        <profile>
-            <id>all-platforms</id>
-            <activation>
-                <activeByDefault>false</activeByDefault>
-            </activation>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.eclipse.tycho</groupId>
-                        <artifactId>target-platform-configuration</artifactId>
-                        <version>${tycho-version}</version>
-                        <configuration>
-                            <pomDependencies>consider</pomDependencies>
-                            <environments>
-                                <environment>
-                                    <os>win32</os>
-                                    <ws>win32</ws>
-                                    <arch>x86_64</arch>
-                                </environment>
-                                <environment>
-                                    <os>win32</os>
-                                    <ws>win32</ws>
-                                    <arch>aarch64</arch>
-                                </environment>
-                                <environment>
-                                    <os>linux</os>
-                                    <ws>gtk</ws>
-                                    <arch>x86_64</arch>
-                                </environment>
-                                <environment>
-                                    <os>linux</os>
-                                    <ws>gtk</ws>
-                                    <arch>aarch64</arch>
-                                </environment>
-                                <environment>
-                                    <os>macosx</os>
-                                    <ws>cocoa</ws>
-                                    <arch>x86_64</arch>
-                                </environment>
-                                <environment>
-                                    <os>macosx</os>
-                                    <ws>cocoa</ws>
-                                    <arch>aarch64</arch>
-                                </environment>
-                            </environments>
-                        </configuration>
-                    </plugin>
-                </plugins>
-            </build>
         </profile>
 
     </profiles>
