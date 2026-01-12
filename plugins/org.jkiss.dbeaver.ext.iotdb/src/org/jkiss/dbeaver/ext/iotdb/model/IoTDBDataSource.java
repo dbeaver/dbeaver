@@ -25,6 +25,7 @@ import org.jkiss.dbeaver.ext.generic.model.GenericDataSource;
 import org.jkiss.dbeaver.ext.generic.model.GenericSQLDialect;
 import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaModel;
 import org.jkiss.dbeaver.ext.iotdb.IoTDBPrivilegeInfo;
+import org.jkiss.dbeaver.ext.iotdb.model.dialect.IoTDBTreeSQLDialect;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
@@ -87,7 +88,7 @@ public class IoTDBDataSource extends GenericDataSource {
             String sql = "show current_user";
             try (JDBCStatement stmt = session.createStatement()) {
                 try (JDBCResultSet rs = stmt.executeQuery(sql)) {
-                    if (rs.next()) {
+                    if (rs != null && rs.next()) {
                         currentUserName = rs.getString("CurrentUser");
                         IoTDBAbstractUser user = isTree ? new IoTDBUser(this, currentUserName) :
                                 new IoTDBRelationalUser(this, currentUserName, monitor);
@@ -97,7 +98,7 @@ public class IoTDBDataSource extends GenericDataSource {
                     sql = "list privileges of user " + currentUserName;
                     try (JDBCStatement stmt2 = session.createStatement()) {
                         try (JDBCResultSet rs2 = stmt2.executeQuery(sql)) {
-                            while (rs2.next()) {
+                            while (rs2 != null && rs2.next()) {
                                 if ("MANAGE_USER".equals(rs2.getString("Privileges"))) {
                                     hasManageUserPrivilege = true;
                                     break;
@@ -120,7 +121,7 @@ public class IoTDBDataSource extends GenericDataSource {
             String sql = "list user";
             try (JDBCStatement stmt = session.createStatement()) {
                 try (JDBCResultSet rs = stmt.executeQuery(sql)) {
-                    while (rs.next()) {
+                    while (rs != null && rs.next()) {
                         String tmpUserName = rs.getString("User");
                         if (currentUserName.equals(tmpUserName)) {
                             continue;

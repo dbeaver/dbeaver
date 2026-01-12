@@ -142,7 +142,7 @@ public class IoTDBTableMetaModel extends GenericMetaModel {
             String sql = String.format("select * from information_schema.tables where database like '%s'", databaseName);
             try (JDBCStatement stmt = session.createStatement()) {
                 try (JDBCResultSet rs = stmt.executeQuery(sql)) {
-                    if (rs.next()) {
+                    if (rs != null && rs.next()) {
                         ttl = rs.getString("ttl(ms)");
                     }
                 }
@@ -152,7 +152,7 @@ public class IoTDBTableMetaModel extends GenericMetaModel {
                 String sql = String.format("show tables details from %s", databaseName);
                 try (JDBCStatement stmt = session.createStatement()) {
                     try (JDBCResultSet rs = stmt.executeQuery(sql)) {
-                        if (rs.next()) {
+                        if (rs != null && rs.next()) {
                             ttl = rs.getString("TTL(ms)");
                         }
                     }
@@ -213,7 +213,7 @@ public class IoTDBTableMetaModel extends GenericMetaModel {
                 if (hasColumn) {
                     toAppend.setLength(toAppend.length() - 2);
                 }
-                String tableComment = ((DBSEntity) sourceObject).getDescription();
+                String tableComment = sourceObject.getDescription();
                 toAppend.append("\n) ");
                 if (tableComment != null && !tableComment.isEmpty()) {
                     toAppend.append("COMMENT ").append(SQLUtils.quoteString(sourceObject, tableComment)).append(" ");

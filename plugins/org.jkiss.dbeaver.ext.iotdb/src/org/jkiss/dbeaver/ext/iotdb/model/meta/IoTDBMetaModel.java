@@ -61,7 +61,7 @@ public class IoTDBMetaModel extends GenericMetaModel {
             String sql = String.format("show devices %s", device);
             try (JDBCStatement stmt = session.createStatement()) {
                 try (JDBCResultSet rs = stmt.executeQuery(sql)) {
-                    if (rs.next()) {
+                    if (rs != null && rs.next()) {
                         isAligned = (rs.getString("IsAligned")).equals("true");
                     }
                 }
@@ -74,8 +74,10 @@ public class IoTDBMetaModel extends GenericMetaModel {
             String sql = String.format("show timeseries %s.**", device);
             try (JDBCStatement stmt = session.createStatement()) {
                 try (JDBCResultSet rs = stmt.executeQuery(sql)) {
-                    while (rs.next()) {
-                        ddl.append("delete timeseries ").append(rs.getString("Timeseries")).append(";\n");
+                    if (rs.next()) {
+                        while (rs.next()) {
+                            ddl.append("delete timeseries ").append(rs.getString("Timeseries")).append(";\n");
+                        }
                     }
                 }
             }
@@ -89,23 +91,25 @@ public class IoTDBMetaModel extends GenericMetaModel {
             String sql = String.format("show timeseries %s.**", device);
             try (JDBCStatement stmt = session.createStatement()) {
                 try (JDBCResultSet rs = stmt.executeQuery(sql)) {
-                    if (isAligned) {
-                        String prefix = device + ".";
-                        ddl.append("create aligned timeseries ").append(device).append("(");
-                        while (rs.next()) {
-                            String timeseries = rs.getString("Timeseries").replaceFirst("^" + prefix, "");
-                            ddl.append(timeseries).append(" ");
-                            ddl.append(rs.getString("DataType")).append(" ");
-                            ddl.append("encoding=").append(rs.getString("Encoding")).append(" ");
-                            ddl.append("compressor=").append(rs.getString("Compression")).append(", ");
-                        }
-                        ddl.setLength(ddl.length() - 2);
-                        ddl.append(");\n");
-                    } else {
-                        while (rs.next()) {
-                            ddl.append("create timeseries ").append(rs.getString("Timeseries"));
-                            ddl.append(" with datatype=").append(rs.getString("DataType"));
-                            ddl.append(", encoding=").append(rs.getString("Encoding")).append(";\n");
+                    if (rs != null) {
+                        if (isAligned) {
+                            String prefix = device + ".";
+                            ddl.append("create aligned timeseries ").append(device).append("(");
+                            while (rs.next()) {
+                                String timeseries = rs.getString("Timeseries").replaceFirst("^" + prefix, "");
+                                ddl.append(timeseries).append(" ");
+                                ddl.append(rs.getString("DataType")).append(" ");
+                                ddl.append("encoding=").append(rs.getString("Encoding")).append(" ");
+                                ddl.append("compressor=").append(rs.getString("Compression")).append(", ");
+                            }
+                            ddl.setLength(ddl.length() - 2);
+                            ddl.append(");\n");
+                        } else {
+                            while (rs.next()) {
+                                ddl.append("create timeseries ").append(rs.getString("Timeseries"));
+                                ddl.append(" with datatype=").append(rs.getString("DataType"));
+                                ddl.append(", encoding=").append(rs.getString("Encoding")).append(";\n");
+                            }
                         }
                     }
                 }

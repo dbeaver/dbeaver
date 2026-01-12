@@ -85,18 +85,22 @@ public class IoTDBRelationalUser extends IoTDBAbstractUser {
             String sql = "show databases"; // use this instead of select * from information_schema to prevent permission issues
             try (JDBCStatement stmt = session.createStatement()) {
                 try (JDBCResultSet rs = stmt.executeQuery(sql)) {
-                    while (rs.next()) {
-                        String currentDatabase = rs.getString("Database");
-                        List<String> currentTables = new ArrayList<>();
+                    if (rs != null) {
+                        while (rs.next()) {
+                            String currentDatabase = rs.getString("Database");
+                            List<String> currentTables = new ArrayList<>();
 
-                        sql = "show tables in " + currentDatabase;
-                        try (JDBCStatement stmt2 = session.createStatement()) {
-                            try (JDBCResultSet rs2 = stmt2.executeQuery(sql)) {
-                                while (rs2.next()) {
-                                    currentTables.add(rs2.getString("TableName"));
+                            sql = "show tables in " + currentDatabase;
+                            try (JDBCStatement stmt2 = session.createStatement()) {
+                                try (JDBCResultSet rs2 = stmt2.executeQuery(sql)) {
+                                    if (rs2 != null) {
+                                        while (rs2.next()) {
+                                            currentTables.add(rs2.getString("TableName"));
+                                        }
+                                    }
+                                    IoTDBDatabase newDatabase = new IoTDBDatabase(currentDatabase, currentTables);
+                                    databases.add(newDatabase);
                                 }
-                                IoTDBDatabase newDatabase = new IoTDBDatabase(currentDatabase, currentTables);
-                                databases.add(newDatabase);
                             }
                         }
                     }
@@ -122,13 +126,7 @@ public class IoTDBRelationalUser extends IoTDBAbstractUser {
                         String currentDatabase = rs.getString("Database");
                         int prefixLength = currentDatabase.length() + 1;
                         String currentTableName = rs.getString("Device").substring(prefixLength);
-                        if (databaseDevicesMap.containsKey(currentDatabase)) {
-                            databaseDevicesMap.get(currentDatabase).add(currentTableName);
-                        } else {
-                            List<String> currentTables = new ArrayList<>();
-                            currentTables.add(currentTableName);
-                            databaseDevicesMap.put(currentDatabase, currentTables);
-                        }
+                        databaseDevicesMap.computeIfAbsent(currentDatabase, ignored -> new ArrayList<>()).add(currentTableName);
                     }
                     for (Map.Entry<String, List<String>> entry : databaseDevicesMap.entrySet()) {
                         IoTDBDatabase newDatabase = new IoTDBDatabase(entry.getKey(), entry.getValue());
