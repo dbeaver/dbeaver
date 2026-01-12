@@ -13,24 +13,22 @@
     <packaging>pom</packaging>
 
     <profiles>
-        <!-- desktop build: includes UI components and products -->
         <profile>
-            <id>desktop</id>
-            <activation><property><name>!headless-platform</name></property></activation>
+            <id>product-dbeaver-ce</id>
             <modules>
-                <!-- Products -->
                 <module>community</module>
+            </modules>
+        </profile>
+        <profile>
+            <id>product-dbeaver-eclipse-ce</id>
+            <modules>
                 <module>repositories</module>
             </modules>
         </profile>
-
-        <!-- desktop build: includes UI components and products -->
         <profile>
             <id>appstore</id>
-            <activation><activeByDefault>false</activeByDefault></activation>
             <modules>
-                <!-- Products -->
-                <module>product/appstore</module>
+                <module>appstore</module>
             </modules>
         </profile>
     </profiles>
