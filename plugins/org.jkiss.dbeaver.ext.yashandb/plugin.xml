@@ -33,7 +33,7 @@
                         webURL="https://doc.yashandb.com/yashandb/23.4/zh/All-Manuals/Development-Guide/JDBC-Driver/00JDBC-Driver.html"
                         description="%driver.yashandb.description"
                         categories="sql">
-                    <file type="jar" path="maven:/com.yashandb:yashandb-jdbc:[1.7.10]" bundle="!drivers.yashandb"/>
+                    <file type="jar" path="maven:/com.yashandb:yashandb-jdbc:[LATEST]" bundle="!drivers.yashandb"/>
                     <file type="license" path="licenses/external/asl-2.0.txt"/>
                     <file type="jar" path="drivers/yashandb" bundle="drivers.yashandb"/>
                 </driver>
