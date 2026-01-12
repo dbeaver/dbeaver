@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -156,11 +156,13 @@ abstract class ActiveStatusMessage extends Composite {
         @Override
         public void completeLoading(String message) {
             completed = true;
-            if (!CommonUtils.isEmpty(message) && !CommonUtils.equalObjects(getMessage(), message)) {
+            if (!messageText.isDisposed() && !CommonUtils.isEmpty(message) && !CommonUtils.equalObjects(getMessage(), message)) {
                 setMessage(message);
                 getParent().layout(true, true);
             }
-            actionItem.setImage(actionImage);
+            if (!actionItem.isDisposed()) {
+                actionItem.setImage(actionImage);
+            }
             loadService = null;
         }
     }

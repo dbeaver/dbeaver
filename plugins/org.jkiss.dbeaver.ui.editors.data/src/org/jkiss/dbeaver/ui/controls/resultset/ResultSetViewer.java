@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -122,8 +122,8 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
-import java.util.*;
 import java.util.List;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 /**
@@ -5227,6 +5227,11 @@ public class ResultSetViewer extends Viewer
             this.scroll = scroll;
             this.finalizer = finalizer;
             this.presentationState = savePresentationState();
+        }
+
+        @Override
+        public String toString() {
+            return "ResultSetDataPumpJob: " + getName();
         }
 
         @NotNull

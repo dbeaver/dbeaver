@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -90,8 +90,7 @@ import java.util.Map;
  *
  * @author Serge Rider
  */
-public class SQLQueryJob extends DataSourceJob
-{
+public class SQLQueryJob extends DataSourceJob {
     private static final Log log = Log.getLog(SQLQueryJob.class);
 
     public static final Object STATS_RESULTS = new Object();
@@ -160,6 +159,11 @@ public class SQLQueryJob extends DataSourceJob
             );
             this.rsMaxRows = preferenceStore.getInt(ModelPreferences.RESULT_SET_MAX_ROWS);
         }
+    }
+
+    @Override
+    public String toString() {
+        return "SQLQueryJob (" + queries + ")";
     }
 
     public void setFetchResultSets(boolean fetchResultSets)
