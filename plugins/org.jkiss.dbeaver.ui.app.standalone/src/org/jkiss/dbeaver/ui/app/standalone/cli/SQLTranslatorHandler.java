@@ -18,7 +18,7 @@ package org.jkiss.dbeaver.ui.app.standalone.cli;
 
 
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.cli.AbstractCommandLineParameterHandler;
+import org.jkiss.dbeaver.model.cli.AbstractRootCommandLineParameterHandler;
 import org.jkiss.dbeaver.model.impl.preferences.SimplePreferenceStore;
 import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
@@ -34,7 +34,7 @@ import java.io.IOException;
 
 @CommandLine.Command(name = "translateSQL", aliases = {"-translateSQL", "-translate-sql-script"},
     description = "Translate SQL script from one dialect to another")
-public class SQLTranslatorHandler extends AbstractCommandLineParameterHandler {
+public class SQLTranslatorHandler extends AbstractRootCommandLineParameterHandler {
     private static final Log log = Log.getLog(SQLTranslatorHandler.class);
 
     @CommandLine.Parameters(index = "0", description = "Parameter in the form dialect=filePath", arity = "1")

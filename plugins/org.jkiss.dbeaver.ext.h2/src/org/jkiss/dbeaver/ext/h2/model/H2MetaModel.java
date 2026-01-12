@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -45,8 +45,7 @@ import java.util.Optional;
 /**
  * H2MetaModel
  */
-public class H2MetaModel extends GenericMetaModel
-{
+public class H2MetaModel extends GenericMetaModel {
     public H2MetaModel() {
         super();
     }
@@ -54,7 +53,16 @@ public class H2MetaModel extends GenericMetaModel
     @NotNull
     @Override
     public GenericDataSource createDataSourceImpl(@NotNull DBRProgressMonitor monitor, @NotNull DBPDataSourceContainer container) throws DBException {
-        return new H2DataSource(monitor, container, new H2MetaModel());
+        return new H2DataSource(monitor, container);
+    }
+
+    @Override
+    public GenericSchema createSchemaImpl(
+        @NotNull GenericDataSource dataSource,
+        @Nullable GenericCatalog catalog,
+        @NotNull String schemaName
+    ) {
+        return new H2Schema(dataSource, catalog, schemaName);
     }
 
     @Override
@@ -62,8 +70,14 @@ public class H2MetaModel extends GenericMetaModel
         return schema.getName().equals("INFORMATION_SCHEMA");
     }
 
+    @NotNull
     @Override
-    public GenericTableBase createTableOrViewImpl(GenericStructContainer container, @Nullable String tableName, @Nullable String tableType, @Nullable JDBCResultSet dbResult) {
+    public GenericTableBase createTableOrViewImpl(
+        @NotNull GenericStructContainer container,
+        @Nullable String tableName,
+        @Nullable String tableType,
+        @Nullable JDBCResultSet dbResult
+    ) {
         if (tableType != null && isView(tableType)) {
             return new GenericView(container, tableName, tableType, dbResult);
         }

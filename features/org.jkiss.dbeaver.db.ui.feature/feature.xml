@@ -2,7 +2,7 @@
 <feature
       id="org.jkiss.dbeaver.db.ui.feature"
       label="DBeaver Databases UI"
-      version="1.0.161.qualifier"
+      version="1.0.162.qualifier"
       provider-name="DBeaver Corp">
 
    <copyright>DBeaver Corp and others</copyright>
@@ -13,6 +13,7 @@
    <plugin id="org.jkiss.dbeaver.ext.mysql.ui" version="0.0.0" />
    <plugin id="org.jkiss.dbeaver.ext.dameng.ui" version="0.0.0"/>
    <plugin id="org.jkiss.dbeaver.ext.db2.ui" version="0.0.0"/>
+   <plugin id="org.jkiss.dbeaver.ext.duckdb.ui" version="0.0.0"/>
    <plugin id="org.jkiss.dbeaver.ext.exasol.ui" version="0.0.0" />
    <plugin id="org.jkiss.dbeaver.ext.hana.ui" version="0.0.0" />
    <plugin id="org.jkiss.dbeaver.ext.iotdb.ui" version="0.0.0" />

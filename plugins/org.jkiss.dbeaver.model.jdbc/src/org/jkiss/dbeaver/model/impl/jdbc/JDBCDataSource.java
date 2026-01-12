@@ -16,7 +16,6 @@
  */
 package org.jkiss.dbeaver.model.impl.jdbc;
 
-import org.eclipse.core.runtime.IAdaptable;
 import org.jkiss.api.ObjectWithContextParameters;
 import org.jkiss.api.verification.FileSystemAccessVerifyer;
 import org.jkiss.api.verification.ObjectWithVerification;
@@ -74,8 +73,7 @@ public abstract class JDBCDataSource extends AbstractDataSource
         DBSObject,
         DBSObjectContainer,
         DBSInstanceContainer,
-        DBCQueryTransformProvider,
-        IAdaptable
+        DBCQueryTransformProvider
 {
     private static final Log log = Log.getLog(JDBCDataSource.class);
 
@@ -858,7 +856,7 @@ public abstract class JDBCDataSource extends AbstractDataSource
     }
 
     @Override
-    public <T> T getAdapter(Class<T> adapter) {
+    public <T> T getAdapter(@NotNull Class<T> adapter) {
         if (adapter == DBCTransactionManager.class) {
             return adapter.cast(DBUtils.getDefaultContext(getDefaultInstance(), false));
         } else if (adapter == DBCQueryTransformProvider.class) {

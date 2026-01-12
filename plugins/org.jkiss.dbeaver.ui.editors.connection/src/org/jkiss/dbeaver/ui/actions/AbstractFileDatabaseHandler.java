@@ -122,16 +122,20 @@ public abstract class AbstractFileDatabaseHandler implements IFileTypeHandler {
     }
 
 
+    @Override
+    public void importFiles(@NotNull List<Path> filePath, @Nullable String extension) throws DBException {
+        throw new DBException("Importing files is not supported for " + getDatabaseTerm());
+    }
+
     protected abstract String getDatabaseTerm();
 
     protected abstract String createDatabaseName(@NotNull List<Path> fileList);
 
-    protected abstract String createConnectionName(List<Path> fileList);
+    protected abstract String createConnectionName(@NotNull List<Path> fileList);
 
     protected abstract CompositeObjectId getDriverReference();
 
     protected boolean isSingleDatabaseConnection() {
         return true;
     }
-
 }
