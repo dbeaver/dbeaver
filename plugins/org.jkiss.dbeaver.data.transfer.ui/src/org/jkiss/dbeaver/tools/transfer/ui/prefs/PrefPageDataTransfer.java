@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -74,8 +74,13 @@ public class PrefPageDataTransfer extends TargetPrefPage implements IWorkbenchPr
         final DBPPreferenceStore preferences = DTActivator.getDefault().getPreferences();
 
         if (!isDataSourcePreferencePage()) {
-            final Group group = UIUtils
-                .createControlGroup(composite, DTUIMessages.pref_data_transfer_wizard_title, 1, GridData.FILL_HORIZONTAL, 0);
+            final Composite group = UIUtils.createTitledComposite(
+                composite,
+                DTUIMessages.pref_data_transfer_wizard_title,
+                1,
+                GridData.FILL_HORIZONTAL,
+                0
+            );
 
             reconnectToLastDatabaseButton = UIUtils.createCheckbox(
                 group,
@@ -85,8 +90,13 @@ public class PrefPageDataTransfer extends TargetPrefPage implements IWorkbenchPr
         }
 
         if (!isDataSourcePreferencePage()) {
-            final Group group = UIUtils
-                .createControlGroup(composite, DTUIMessages.pref_data_transfer_options_title, 2, GridData.FILL_HORIZONTAL, 0);
+            Composite group = UIUtils.createTitledComposite(
+                composite,
+                DTUIMessages.pref_data_transfer_options_title,
+                2,
+                GridData.FILL_HORIZONTAL,
+                0
+            );
 
             fallbackOutputDirectoryText = DialogUtils.createOutputFolderChooser(
                 group,
@@ -101,7 +111,7 @@ public class PrefPageDataTransfer extends TargetPrefPage implements IWorkbenchPr
         }
 
         {
-            final Group mappingGroup = UIUtils.createControlGroup(
+            Composite mappingGroup = UIUtils.createTitledComposite(
                 composite,
                 DTUIMessages.pref_data_transfer_mapping_group,
                 2,

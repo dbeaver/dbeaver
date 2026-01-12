@@ -95,6 +95,11 @@
                 name="%command.org.jkiss.dbeaver.ext.ui.tipoftheday.showPopup.name"
                 description="%command.org.jkiss.dbeaver.ext.ui.tipoftheday.showPopup.description"
                 categoryId="org.jkiss.dbeaver.core.navigator"/>
+        <command
+                id="org.jkiss.dbeaver.ui.window.minimize"
+                name="Minimize Window"
+                description="Minimize the current window"
+                categoryId="org.eclipse.ui.category.window"/>
     </extension>
 
     <extension point="org.eclipse.ui.commandImages">
@@ -195,6 +200,7 @@
         <handler commandId="org.jkiss.dbeaver.core.util.clearHistory" class="org.jkiss.dbeaver.ui.app.standalone.actions.ClearHistoryHandler"/>
         <handler commandId="org.jkiss.dbeaver.ext.ui.tipoftheday.showPopup" class="org.jkiss.dbeaver.ui.app.standalone.tipoftheday.ShowTipOfTheDayHandler"/>
         <handler commandId="org.jkiss.dbeaver.core.try.pro" class="org.jkiss.dbeaver.ui.app.standalone.actions.TryPROHandler"/>
+        <handler commandId="org.jkiss.dbeaver.ui.window.minimize" class="org.jkiss.dbeaver.ui.app.standalone.actions.MinimizeWindowHandler"/>
     </extension>
 
     <extension point="org.eclipse.ui.menus">
@@ -361,6 +367,9 @@
         <key commandId="org.eclipse.ui.help.dynamicHelp" contextId="org.eclipse.ui.contexts.window" schemeId="org.jkiss.dbeaver.defaultKeyScheme" sequence="F1"/>
 
         <key commandId="org.eclipse.text.quicksearch.commands.quicksearchCommand" contextId="org.eclipse.ui.contexts.window" sequence="CTRL+ALT+SHIFT+F" schemeId="org.jkiss.dbeaver.defaultKeyScheme"/>
+        
+        <!-- Minimize window on macOS -->
+        <key commandId="org.jkiss.dbeaver.ui.window.minimize" contextId="org.eclipse.ui.contexts.window" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" platform="cocoa" sequence="COMMAND+M"/>
     </extension>
 
     <extension point="org.eclipse.ui.bindings">

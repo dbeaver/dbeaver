@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -74,8 +74,9 @@ public class DamengMetaModel extends GenericMetaModel {
         return new DamengSchema(dataSource, schemaName, true);
     }
 
+    @NotNull
     @Override
-    public GenericTableBase createTableOrViewImpl(GenericStructContainer container, String tableName, String tableType, JDBCResultSet dbResult) {
+    public GenericTableBase createTableOrViewImpl(@NotNull GenericStructContainer container, String tableName, String tableType, JDBCResultSet dbResult) {
         if (tableType != null && isView(tableType)) {
             return new GenericView(
                     container,
