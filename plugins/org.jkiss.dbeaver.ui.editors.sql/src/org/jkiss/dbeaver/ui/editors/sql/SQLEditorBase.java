@@ -771,11 +771,11 @@ public abstract class SQLEditorBase extends BaseTextEditor implements
 
         setAction(ITextEditorActionConstants.CONTEXT_PREFERENCES, new ShowPreferencesAction());
 
-        action = new SmartEditAction(ITextOperationTarget.COPY);
+        action = new SmartCopyCutAction(ITextOperationTarget.COPY);
         action.setActionDefinitionId(IWorkbenchCommandConstants.EDIT_COPY);
         setAction(ITextEditorActionConstants.COPY, action);
 
-        action = new SmartEditAction(ITextOperationTarget.CUT);
+        action = new SmartCopyCutAction(ITextOperationTarget.CUT);
         action.setActionDefinitionId(IWorkbenchCommandConstants.EDIT_CUT);
         setAction(ITextEditorActionConstants.CUT, action);
 
@@ -1381,10 +1381,10 @@ public abstract class SQLEditorBase extends BaseTextEditor implements
         }
     }
 
-    private class SmartEditAction extends Action {
+    private class SmartCopyCutAction extends Action {
         private final int operationCode;
 
-        public SmartEditAction(int operationCode) {
+        SmartCopyCutAction(int operationCode) {
             this.operationCode = operationCode;
         }
 
@@ -1399,32 +1399,35 @@ public abstract class SQLEditorBase extends BaseTextEditor implements
 
             if (textWidget.getSelectionCount() == 0) {
                 performSmartAction(textWidget);
-            } else {
-                if (operationCode == ITextOperationTarget.COPY) {
-                    textWidget.copy();
-                } else if (operationCode == ITextOperationTarget.CUT) {
-                    textWidget.cut();
-                }
-            }
-        }
-
-        private void performSmartAction(StyledText textWidget) {
-            int caretOffset = textWidget.getCaretOffset();
-            int lineIndex = textWidget.getLineAtOffset(caretOffset);
-
-            int start = textWidget.getOffsetAtLine(lineIndex);
-            int end = (lineIndex < textWidget.getLineCount() - 1)
-                    ? textWidget.getOffsetAtLine(lineIndex + 1)
-                    : textWidget.getCharCount();
-
-            textWidget.setSelection(start, end);
-
-            if (operationCode == ITextOperationTarget.COPY) {
+            } else if (operationCode == ITextOperationTarget.COPY) {
                 textWidget.copy();
-                textWidget.setSelection(caretOffset);
             } else if (operationCode == ITextOperationTarget.CUT) {
                 textWidget.cut();
             }
+        }
+
+        private void performSmartAction(@NotNull StyledText textWidget) {
+            try {
+                int caretOffset = textWidget.getCaretOffset();
+                int lineIndex = textWidget.getLineAtOffset(caretOffset);
+
+                int start = textWidget.getOffsetAtLine(lineIndex);
+                int end = (lineIndex < textWidget.getLineCount() - 1)
+                        ? textWidget.getOffsetAtLine(lineIndex + 1)
+                        : textWidget.getCharCount();
+
+                textWidget.setSelection(start, end);
+
+                if (operationCode == ITextOperationTarget.COPY) {
+                    textWidget.copy();
+                    textWidget.setSelection(caretOffset);
+                } else if (operationCode == ITextOperationTarget.CUT) {
+                    textWidget.cut();
+                }
+            } catch (Exception e) {
+                log.error("Error performing smart copy/cut actions", e);
+            }
+
         }
     }
 
