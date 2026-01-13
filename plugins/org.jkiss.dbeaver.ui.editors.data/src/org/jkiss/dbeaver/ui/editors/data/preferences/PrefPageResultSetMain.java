@@ -171,11 +171,10 @@ public class PrefPageResultSetMain extends TargetPrefPage {
             }
         }
         {
-            final Group group = UIUtils.createControlGroup(leftPane,
+            Composite group = UIUtils.createTitledComposite(leftPane,
                 ResultSetMessages.pref_page_content_editor_group_editing,
                 1,
-                GridData.VERTICAL_ALIGN_BEGINNING,
-                0
+                GridData.VERTICAL_ALIGN_BEGINNING
             );
 
             alwaysUseAllColumns = UIUtils.createCheckbox(
@@ -199,7 +198,7 @@ public class PrefPageResultSetMain extends TargetPrefPage {
         }
 
         {
-            Group advGroup = UIUtils.createControlGroup(leftPane, ResultSetMessages.pref_page_results_group_advanced, 2, GridData.VERTICAL_ALIGN_BEGINNING, 0);
+            Composite advGroup = UIUtils.createTitledComposite(leftPane, ResultSetMessages.pref_page_results_group_advanced, 2, GridData.VERTICAL_ALIGN_BEGINNING);
 
             queryCancelTimeout = UIUtils.createLabelText(advGroup, ResultSetMessages.pref_page_database_general_label_result_set_cancel_timeout + UIMessages.label_ms, "0");
             queryCancelTimeout.addVerifyListener(UIUtils.getIntegerVerifyListener(Locale.getDefault()));
