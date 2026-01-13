@@ -1472,8 +1472,8 @@ public class SQLEditor extends SQLEditorBase implements
             resultTabs.addSelectionListener(new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
-                    if (e.item instanceof CTabItem) {
-                        activeResultsTab = (CTabItem) e.item;
+                    if (e.item instanceof CTabItem cTabItem) {
+                        activeResultsTab = cTabItem;
                     }
                 }
             });
@@ -1881,6 +1881,7 @@ public class SQLEditor extends SQLEditorBase implements
         return viewItem;
     }
 
+    @Nullable
     private CTabItem getActiveResultsTab() {
         if (resultTabs == null || resultTabs.isDisposed()) {
             return null;
