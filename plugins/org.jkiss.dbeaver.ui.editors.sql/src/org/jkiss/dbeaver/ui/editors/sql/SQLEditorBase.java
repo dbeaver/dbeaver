@@ -1417,16 +1417,14 @@ public abstract class SQLEditorBase extends BaseTextEditor implements
                         : textWidget.getCharCount();
 
                 textWidget.setSelection(start, end);
-
-                if (operationCode == ITextOperationTarget.COPY) {
-                    textWidget.copy();
-                } else if (operationCode == ITextOperationTarget.CUT) {
-                    textWidget.cut();
-                }
             } catch (Exception e) {
                 log.error("Error performing smart copy/cut actions", e);
             }
-
+            if (operationCode == ITextOperationTarget.COPY) {
+                textWidget.copy();
+            } else if (operationCode == ITextOperationTarget.CUT) {
+                textWidget.cut();
+            }
         }
     }
 
