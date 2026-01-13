@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,7 +23,10 @@ import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.widgets.*;
+import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Combo;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 import org.eclipse.ui.IWorkbenchPropertyPage;
@@ -48,7 +51,6 @@ import org.jkiss.dbeaver.ui.preferences.AbstractPrefPage;
 
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
-import java.util.List;
 import java.util.*;
 
 public class AIPreferencePageMain extends AbstractPrefPage implements IWorkbenchPreferencePage, IWorkbenchPropertyPage {
@@ -171,7 +173,7 @@ public class AIPreferencePageMain extends AbstractPrefPage implements IWorkbench
             serviceCombo.select(defaultEngineSelection);
         }
 
-        final Group engineGroup = UIUtils.createControlGroup(composite, "Engine Settings", 2, SWT.BORDER, 5);
+        Composite engineGroup = UIUtils.createTitledComposite(composite, "Engine Settings", 2, SWT.BORDER, 5);
         engineGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         if (completionEngine != null) {
             drawConfiguratorComposite(this.settings.activeEngine(), engineGroup);
@@ -195,7 +197,7 @@ public class AIPreferencePageMain extends AbstractPrefPage implements IWorkbench
         return composite;
     }
 
-    private void drawConfiguratorComposite(@NotNull String id, @NotNull Group engineGroup) {
+    private void drawConfiguratorComposite(@NotNull String id, @NotNull Composite engineGroup) {
         activeEngineConfiguratorPage = engineConfiguratorMapping.get(id);
 
         if (activeEngineConfiguratorPage == null) {

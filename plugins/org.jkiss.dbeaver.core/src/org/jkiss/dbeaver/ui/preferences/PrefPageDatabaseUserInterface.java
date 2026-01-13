@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,7 +26,10 @@ import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.widgets.*;
+import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Combo;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 import org.eclipse.ui.IWorkbenchPropertyPage;
@@ -64,8 +67,7 @@ import java.util.List;
 /**
  * PrefPageDatabaseUserInterface
  */
-public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements IWorkbenchPreferencePage, IWorkbenchPropertyPage
-{
+public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements IWorkbenchPreferencePage, IWorkbenchPropertyPage {
     public static final String PAGE_ID = "org.jkiss.dbeaver.preferences.main"; //$NON-NLS-1$
 
     private Button automaticUpdateCheck;
@@ -100,10 +102,12 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
         Composite composite = UIUtils.createPlaceholder(parent, 1, 5);
 
         if (isStandalone && !ApplicationPolicyService.getInstance().isInstallUpdateDisabled()) {
-            Group groupObjects = UIUtils.createControlGroup(
-                composite, CoreMessages.pref_page_ui_general_group_general, 2,
-                GridData.VERTICAL_ALIGN_BEGINNING,
-                0);
+            Composite groupObjects = UIUtils.createTitledComposite(
+                composite,
+                CoreMessages.pref_page_ui_general_group_general,
+                2,
+                GridData.VERTICAL_ALIGN_BEGINNING
+            );
             automaticUpdateCheck = UIUtils.createCheckbox(
                 groupObjects,
                 CoreMessages.pref_page_ui_general_checkbox_automatic_updates,
@@ -112,7 +116,8 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
                 2);
         }
         if (isStandalone) {
-            Group regionalSettingsGroup = UIUtils.createControlGroup(composite,
+            Composite regionalSettingsGroup = UIUtils.createTitledComposite(
+                composite,
                 CoreMessages.pref_page_ui_general_group_regional,
                 2,
                 GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING,
@@ -173,10 +178,11 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
                 1
             ));
 
-            Group groupObjects = UIUtils.createControlGroup(
+            Composite groupObjects = UIUtils.createTitledComposite(
                 composite,
-                CoreMessages.pref_page_ui_general_group_browser, 2,
-                GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING, 0
+                CoreMessages.pref_page_ui_general_group_browser,
+                2,
+                GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING
             );
             if (RuntimeUtils.isWindows()) {
                 browserCombo = UIUtils.createLabelCombo(groupObjects, CoreMessages.pref_page_ui_general_combo_browser,
@@ -221,12 +227,11 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
             }
         }
 
-        Group breadcrumbs = UIUtils.createControlGroup(
+        Composite breadcrumbs = UIUtils.createTitledComposite(
             composite,
             CoreMessages.pref_page_ui_status_bar,
             2,
-            GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING,
-            0
+            GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING
         );
         statusBarShowBreadcrumbsCheck = UIUtils.createCheckbox(
             breadcrumbs,

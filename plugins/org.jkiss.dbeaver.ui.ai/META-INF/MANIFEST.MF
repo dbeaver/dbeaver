@@ -20,6 +20,7 @@ Bundle-ActivationPolicy: lazy
 Require-Bundle: org.jkiss.dbeaver.model.ai,
  org.jkiss.dbeaver.ui.navigator,
  org.eclipse.ui.workbench,
+ org.jkiss.dbeaver.core,
  org.jkiss.dbeaver.ui,
  org.eclipse.ui.forms,
  org.jkiss.dbeaver.model.ai,
