@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -109,7 +109,7 @@ public class GenericConnectionPage extends ConnectionPageWithAuth implements IDi
         GridData gd = new GridData(GridData.FILL_BOTH);
         addrGroup.setLayoutData(gd);
 
-        settingsGroup = UIUtils.createControlGroup(addrGroup, GenericMessages.dialog_connection_general_tab, 4, GridData.FILL_HORIZONTAL, 0);
+        settingsGroup = UIUtils.createTitledComposite(addrGroup, GenericMessages.dialog_connection_general_tab, 4, GridData.FILL_HORIZONTAL);
         GridLayout gl = new GridLayout(4, false);
         settingsGroup.setLayout(gl);
 
@@ -117,7 +117,7 @@ public class GenericConnectionPage extends ConnectionPageWithAuth implements IDi
             SelectionAdapter typeSwitcher = new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
-                    if (controlGroupsByUrl.size() > 0) {
+                    if (!controlGroupsByUrl.isEmpty()) {
                         setupConnectionModeSelection(urlText, typeURLRadio.getSelection(), controlGroupsByUrl);
                     }
                     saveAndUpdate();
@@ -133,7 +133,7 @@ public class GenericConnectionPage extends ConnectionPageWithAuth implements IDi
             gd = new GridData(GridData.FILL_HORIZONTAL);
             gd.horizontalSpan = 3;
             gd.grabExcessHorizontalSpace = true;
-            gd.widthHint = 355;
+            gd.widthHint = 200;
             urlText.setLayoutData(gd);
             urlText.addModifyListener(e -> site.updateButtons());
 
@@ -420,7 +420,7 @@ public class GenericConnectionPage extends ConnectionPageWithAuth implements IDi
         DBPConnectionConfiguration connectionInfo = dataSource.getConnectionConfiguration();
         this.parseSampleURL(site.getDriver());
         final boolean useURL = connectionInfo.getConfigurationType() == DBPDriverConfigurationType.URL;
-        if (controlGroupsByUrl.size() > 0) {
+        if (!controlGroupsByUrl.isEmpty()) {
             setupConnectionModeSelection(urlText, useURL, controlGroupsByUrl);
         }
         site.updateButtons();
