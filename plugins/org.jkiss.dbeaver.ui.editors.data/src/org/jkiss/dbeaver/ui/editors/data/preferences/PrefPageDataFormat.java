@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -56,8 +56,7 @@ import java.util.*;
 /**
  * PrefPageDataFormat
  */
-public class PrefPageDataFormat extends TargetPrefPage
-{
+public class PrefPageDataFormat extends TargetPrefPage {
     private static final Log log = Log.getLog(PrefPageDataFormat.class);
 
     public static final String PAGE_ID = "org.jkiss.dbeaver.preferences.main.dataformat"; //$NON-NLS-1$
@@ -75,33 +74,30 @@ public class PrefPageDataFormat extends TargetPrefPage
 
     private String profileName;
     private Locale profileLocale;
-    private Map<String, Map<String, Object>> profileProperties = new HashMap<>();
+    private final Map<String, Map<String, Object>> profileProperties = new HashMap<>();
     private Combo profilesCombo;
     private PropertySourceCustom propertySource;
     private Button datetimeNativeFormatCheck;
     private Button numericNativeFormatCheck;
     private Button numericScientificFormatCheck;
 
-    public PrefPageDataFormat()
-    {
+    public PrefPageDataFormat() {
         super();
         setPreferenceStore(new PreferenceStoreDelegate(DBWorkbench.getPlatform().getPreferenceStore()));
     }
 
     @Override
-    protected boolean hasDataSourceSpecificOptions(DBPDataSourceContainer dataSourceDescriptor)
-    {
+    protected boolean hasDataSourceSpecificOptions(DBPDataSourceContainer dataSourceDescriptor) {
         DBPPreferenceStore store = dataSourceDescriptor.getPreferenceStore();
         return
             store.contains(ModelPreferences.RESULT_NATIVE_DATETIME_FORMAT) ||
-            store.contains(ModelPreferences.RESULT_NATIVE_NUMERIC_FORMAT) ||
-            store.contains(ModelPreferences.RESULT_SCIENTIFIC_NUMERIC_FORMAT) ||
-            dataSourceDescriptor.getDataFormatterProfile().isOverridesParent();
+                store.contains(ModelPreferences.RESULT_NATIVE_NUMERIC_FORMAT) ||
+                store.contains(ModelPreferences.RESULT_SCIENTIFIC_NUMERIC_FORMAT) ||
+                dataSourceDescriptor.getDataFormatterProfile().isOverridesParent();
     }
 
     @Override
-    protected boolean supportsDataSourceSpecificOptions()
-    {
+    protected boolean supportsDataSourceSpecificOptions() {
         return true;
     }
 
@@ -127,7 +123,8 @@ public class PrefPageDataFormat extends TargetPrefPage
                         public void widgetSelected(SelectionEvent e) {
                             manageProfiles();
                         }
-                    });
+                    }
+                );
             }
         }
     }
@@ -149,14 +146,34 @@ public class PrefPageDataFormat extends TargetPrefPage
 
         // Settings
         {
-            Group settingsGroup = new Group(composite, SWT.NONE);
-            settingsGroup.setText(ResultSetMessages.pref_page_data_format_group_settings);
-            settingsGroup.setLayout(new GridLayout(2, false));
-            settingsGroup.setLayoutData(new GridData(GridData.VERTICAL_ALIGN_BEGINNING | GridData.FILL_HORIZONTAL));
+            Composite settingsGroup = UIUtils.createTitledComposite(
+                composite,
+                ResultSetMessages.pref_page_data_format_group_settings,
+                2,
+                GridData.VERTICAL_ALIGN_BEGINNING | GridData.FILL_HORIZONTAL
+            );
 
-            datetimeNativeFormatCheck = UIUtils.createCheckbox(settingsGroup, ResultSetMessages.pref_page_data_format_datetime_use_native_formatting, ResultSetMessages.pref_page_data_format_datetime_use_native_formatting_tip, false, 2);
-            numericNativeFormatCheck = UIUtils.createCheckbox(settingsGroup, ResultSetMessages.pref_page_data_format_numeric_use_native_formatting, ResultSetMessages.pref_page_data_format_numeric_use_native_formatting_tip, false, 2);
-            numericScientificFormatCheck = UIUtils.createCheckbox(settingsGroup, ResultSetMessages.pref_page_data_format_numeric_use_scientific_notation, ResultSetMessages.pref_page_data_format_numeric_use_scientific_notation_tip, false, 2);
+            datetimeNativeFormatCheck = UIUtils.createCheckbox(
+                settingsGroup,
+                ResultSetMessages.pref_page_data_format_datetime_use_native_formatting,
+                ResultSetMessages.pref_page_data_format_datetime_use_native_formatting_tip,
+                false,
+                2
+            );
+            numericNativeFormatCheck = UIUtils.createCheckbox(
+                settingsGroup,
+                ResultSetMessages.pref_page_data_format_numeric_use_native_formatting,
+                ResultSetMessages.pref_page_data_format_numeric_use_native_formatting_tip,
+                false,
+                2
+            );
+            numericScientificFormatCheck = UIUtils.createCheckbox(
+                settingsGroup,
+                ResultSetMessages.pref_page_data_format_numeric_use_scientific_notation,
+                ResultSetMessages.pref_page_data_format_numeric_use_scientific_notation_tip,
+                false,
+                2
+            );
             numericNativeFormatCheck.addSelectionListener(new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
@@ -167,19 +184,18 @@ public class PrefPageDataFormat extends TargetPrefPage
 
         // formats
         {
-            Group formatGroup = new Group(composite, SWT.NONE);
-            formatGroup.setText(ResultSetMessages.pref_page_data_format_group_format);
-            formatGroup.setLayout(new GridLayout(2, false));
-            GridData gd = new GridData(GridData.VERTICAL_ALIGN_BEGINNING | GridData.FILL_HORIZONTAL);
-            gd.horizontalSpan = 2;
-            formatGroup.setLayoutData(gd);
+            Composite formatGroup = UIUtils.createTitledComposite(
+                composite,
+                ResultSetMessages.pref_page_data_format_group_format,
+                2,
+                GridData.VERTICAL_ALIGN_BEGINNING | GridData.FILL_HORIZONTAL
+            );
 
             UIUtils.createControlLabel(formatGroup, ResultSetMessages.pref_page_data_format_label_type);
             typeCombo = new Combo(formatGroup, SWT.DROP_DOWN | SWT.READ_ONLY);
             typeCombo.addSelectionListener(new SelectionAdapter() {
                 @Override
-                public void widgetSelected(SelectionEvent e)
-                {
+                public void widgetSelected(SelectionEvent e) {
                     reloadFormatter();
                 }
             });
@@ -192,28 +208,30 @@ public class PrefPageDataFormat extends TargetPrefPage
             sampleText = new Text(formatGroup, SWT.BORDER | SWT.READ_ONLY);
             sampleText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
-            Link urlHelpLabel = UIUtils.createLink(formatGroup, "<a href=\"" + HelpUtils.getHelpExternalReference(HELP_DATA_FORMAT_LINK) + "\">"
-                    + ResultSetMessages.pref_page_data_format_link_patterns + "</a>", new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
-                    ShellUtils.launchProgram(HelpUtils.getHelpExternalReference(HELP_DATA_FORMAT_LINK));
+            Link urlHelpLabel = UIUtils.createLink(
+                formatGroup,
+                "<a href=\"" + HelpUtils.getHelpExternalReference(HELP_DATA_FORMAT_LINK) + "\">"
+                    + ResultSetMessages.pref_page_data_format_link_patterns + "</a>",
+                new SelectionAdapter() {
+                    @Override
+                    public void widgetSelected(SelectionEvent e) {
+                        ShellUtils.launchProgram(HelpUtils.getHelpExternalReference(HELP_DATA_FORMAT_LINK));
+                    }
                 }
-            });
+            );
             urlHelpLabel.setLayoutData(new GridData(GridData.FILL, GridData.VERTICAL_ALIGN_BEGINNING, false, false, 2, 1));
         }
 
         return composite;
     }
 
-    private void manageProfiles()
-    {
+    private void manageProfiles() {
         DataFormatProfilesEditDialog dialog = new DataFormatProfilesEditDialog(getShell());
         dialog.open();
         refreshProfileList();
     }
 
-    private DBDDataFormatterProfile getDefaultProfile()
-    {
+    private DBDDataFormatterProfile getDefaultProfile() {
         if (isDataSourcePreferencePage()) {
             return getDataSourceContainer().getDataFormatterProfile();
         } else {
@@ -232,7 +250,7 @@ public class PrefPageDataFormat extends TargetPrefPage
         DBDDataFormatterProfile newProfile;
         if (selectionIndex == 0) {
             newProfile = getDefaultProfile();
-            
+
         } else {
             String newProfileName = profilesCombo.getItem(selectionIndex);
             newProfile = DataFormatterRegistry.getInstance().getCustomProfile(newProfileName);
@@ -242,7 +260,7 @@ public class PrefPageDataFormat extends TargetPrefPage
                 DBWorkbench.getPlatform().getWorkspace().hasRealmPermission(RMConstants.PERMISSION_CONFIGURATION_MANAGER);
 
             setCurrentProfile(newProfile);
-            
+
             localeSelector.setEnabled(editable);
             datetimeNativeFormatCheck.setEnabled(editable);
             numericNativeFormatCheck.setEnabled(editable);
@@ -263,8 +281,7 @@ public class PrefPageDataFormat extends TargetPrefPage
         }
     }
 
-    private void setCurrentProfile(DBDDataFormatterProfile profile)
-    {
+    private void setCurrentProfile(DBDDataFormatterProfile profile) {
         if (formatterProfile == profile) {
             return;
         }
@@ -300,8 +317,7 @@ public class PrefPageDataFormat extends TargetPrefPage
         }
     }
 
-    private void refreshProfileList()
-    {
+    private void refreshProfileList() {
         if (isDataSourcePreferencePage()) {
             return;
         }
@@ -322,13 +338,12 @@ public class PrefPageDataFormat extends TargetPrefPage
             profilesCombo.select(0);
         }
         profilesCombo.setEnabled(profilesCombo.getItemCount() >= 2);
-        
+
         changeProfile();
     }
 
 
-    private DataFormatterDescriptor getCurrentFormatter()
-    {
+    private DataFormatterDescriptor getCurrentFormatter() {
         int selectionIndex = typeCombo.getSelectionIndex();
         if (selectionIndex < 0) {
             return null;
@@ -336,18 +351,18 @@ public class PrefPageDataFormat extends TargetPrefPage
         return formatterDescriptors.get(selectionIndex);
     }
 
-    private void reloadFormatter()
-    {
+    private void reloadFormatter() {
         DataFormatterDescriptor formatterDescriptor = getCurrentFormatter();
         if (formatterDescriptor == null) {
             return;
         }
 
-        Map<String,Object> formatterProps = profileProperties.get(formatterDescriptor.getId());
+        Map<String, Object> formatterProps = profileProperties.get(formatterDescriptor.getId());
         Map<String, Object> defaultProps = formatterDescriptor.getSample().getDefaultProperties(localeSelector.getSelectedLocale());
         propertySource = new VerifyingPropertySourceCustom(
             formatterDescriptor.getProperties(),
-            formatterProps);
+            formatterProps
+        );
         propertySource.setDefaultValues(defaultProps);
         propertiesControl.loadProperties(propertySource);
         reloadSample();
@@ -393,8 +408,7 @@ public class PrefPageDataFormat extends TargetPrefPage
         reloadSampleThrowable();
     }
 
-    private void onLocaleChange(Locale locale)
-    {
+    private void onLocaleChange(Locale locale) {
         if (!locale.equals(profileLocale)) {
             profileLocale = locale;
             DataFormatterDescriptor formatter = getCurrentFormatter();
@@ -439,8 +453,7 @@ public class PrefPageDataFormat extends TargetPrefPage
     }
 
     @Override
-    protected void loadPreferences(DBPPreferenceStore store)
-    {
+    protected void loadPreferences(DBPPreferenceStore store) {
         refreshProfileList();
 
         setCurrentProfile(getDefaultProfile());
@@ -452,7 +465,7 @@ public class PrefPageDataFormat extends TargetPrefPage
     }
 
     @Override
-    protected void savePreferences(DBPPreferenceStore store) {
+    protected void savePreferences(@NotNull DBPPreferenceStore store) {
         propertiesControl.saveEditorValues();
         try {
             formatterProfile.setProfileName(profileName);
@@ -471,8 +484,7 @@ public class PrefPageDataFormat extends TargetPrefPage
     }
 
     @Override
-    protected void clearPreferences(DBPPreferenceStore store)
-    {
+    protected void clearPreferences(@NotNull DBPPreferenceStore store) {
         if (formatterProfile != null) {
             formatterProfile.reset(store);
         }
@@ -481,18 +493,17 @@ public class PrefPageDataFormat extends TargetPrefPage
         store.setToDefault(ModelPreferences.RESULT_SCIENTIFIC_NUMERIC_FORMAT);
     }
 
+    @NotNull
     @Override
-    protected String getPropertyPageID()
-    {
+    protected String getPropertyPageID() {
         return PAGE_ID;
     }
 
     @Override
-    public void applyData(Object data)
-    {
+    public void applyData(Object data) {
         super.applyData(data);
         if (data instanceof DBDDataFormatterProfile) {
-            UIUtils.setComboSelection(profilesCombo, ((DBDDataFormatterProfile)data).getProfileName());
+            UIUtils.setComboSelection(profilesCombo, ((DBDDataFormatterProfile) data).getProfileName());
             changeProfile();
         }
     }
@@ -503,27 +514,24 @@ public class PrefPageDataFormat extends TargetPrefPage
     }
 
     /**
-    * DataFormatProfilesEditDialog
-    */
+     * DataFormatProfilesEditDialog
+     */
     public static class DataFormatProfilesEditDialog extends org.eclipse.jface.dialogs.Dialog {
         private static final int NEW_ID = IDialogConstants.CLIENT_ID + 1;
         private static final int DELETE_ID = IDialogConstants.CLIENT_ID + 2;
         private org.eclipse.swt.widgets.List profileList;
 
-        DataFormatProfilesEditDialog(Shell parentShell)
-        {
+        DataFormatProfilesEditDialog(Shell parentShell) {
             super(parentShell);
         }
 
         @Override
-        protected boolean isResizable()
-        {
+        protected boolean isResizable() {
             return true;
         }
 
         @Override
-        protected Control createDialogArea(Composite parent)
-        {
+        protected Control createDialogArea(Composite parent) {
             getShell().setText(ResultSetMessages.dialog_data_format_profiles_title);
 
             Composite group = new Composite(parent, SWT.NONE);
@@ -538,8 +546,7 @@ public class PrefPageDataFormat extends TargetPrefPage
 
             profileList.addSelectionListener(new SelectionAdapter() {
                 @Override
-                public void widgetSelected(SelectionEvent e)
-                {
+                public void widgetSelected(SelectionEvent e) {
                     getButton(DELETE_ID).setEnabled(profileList.getSelectionIndex() >= 0);
                 }
             });
@@ -549,8 +556,7 @@ public class PrefPageDataFormat extends TargetPrefPage
         }
 
         @Override
-        protected void createButtonsForButtonBar(Composite parent)
-        {
+        protected void createButtonsForButtonBar(Composite parent) {
             createButton(parent, NEW_ID, ResultSetMessages.dialog_data_format_profiles_button_new_profile, false);
             createButton(parent, DELETE_ID, ResultSetMessages.dialog_data_format_profiles_button_delete_profile, false);
             createButton(parent, IDialogConstants.OK_ID, IDialogConstants.CLOSE_LABEL, true);
@@ -566,15 +572,19 @@ public class PrefPageDataFormat extends TargetPrefPage
             }
             DataFormatterRegistry registry = DataFormatterRegistry.getInstance();
             if (buttonId == NEW_ID) {
-                String profileName = EnterNameDialog.chooseName(getShell(), ResultSetMessages.dialog_data_format_profiles_dialog_name_chooser_title);
+                String profileName = EnterNameDialog.chooseName(
+                    getShell(),
+                    ResultSetMessages.dialog_data_format_profiles_dialog_name_chooser_title
+                );
                 if (CommonUtils.isEmpty(profileName)) {
                     return;
                 }
                 if (registry.getCustomProfile(profileName) != null) {
                     UIUtils.showMessageBox(
-                            getShell(),
-                            ResultSetMessages.dialog_data_format_profiles_error_title,
-                            NLS.bind(ResultSetMessages.dialog_data_format_profiles_error_message, profileName), SWT.ICON_ERROR);
+                        getShell(),
+                        ResultSetMessages.dialog_data_format_profiles_error_title,
+                        NLS.bind(ResultSetMessages.dialog_data_format_profiles_error_message, profileName), SWT.ICON_ERROR
+                    );
                 } else {
                     registry.createCustomProfile(profileName);
                     loadProfiles();
@@ -585,9 +595,10 @@ public class PrefPageDataFormat extends TargetPrefPage
                     DBDDataFormatterProfile profile = registry.getCustomProfile(profileList.getItem(selectionIndex));
                     if (profile != null) {
                         if (UIUtils.confirmAction(
-                                getShell(),
-                                ResultSetMessages.dialog_data_format_profiles_confirm_delete_title,
-                                ResultSetMessages.dialog_data_format_profiles_confirm_delete_message)) {
+                            getShell(),
+                            ResultSetMessages.dialog_data_format_profiles_confirm_delete_title,
+                            ResultSetMessages.dialog_data_format_profiles_confirm_delete_message
+                        )) {
                             registry.deleteCustomProfile(profile);
                             loadProfiles();
                         }

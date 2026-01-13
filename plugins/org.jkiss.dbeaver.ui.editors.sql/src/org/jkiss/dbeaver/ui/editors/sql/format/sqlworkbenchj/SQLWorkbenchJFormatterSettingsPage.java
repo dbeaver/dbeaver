@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,10 +19,11 @@ package org.jkiss.dbeaver.ui.editors.sql.format.sqlworkbenchj;
 
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Group;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.TextWithOpenFolder;
+import org.jkiss.dbeaver.ui.editors.sql.internal.SQLEditorMessages;
 import org.jkiss.dbeaver.ui.editors.sql.preferences.format.BaseFormatterConfigurationPage;
 import org.jkiss.utils.CommonUtils;
 
@@ -37,7 +38,12 @@ public class SQLWorkbenchJFormatterSettingsPage extends BaseFormatterConfigurati
 
     @Override
     protected Composite createFormatSettings(Composite parent) {
-        Group settings = UIUtils.createControlGroup(parent, "Settings", 2, GridData.FILL_HORIZONTAL, 0);
+        Composite settings = UIUtils.createTitledComposite(
+            parent,
+            SQLEditorMessages.pref_page_sql_format_label_settings,
+            2,
+            GridData.FILL_HORIZONTAL
+        );
 
         UIUtils.createControlLabel(settings, label);
         pathEdit = new TextWithOpenFolder(settings, label);
@@ -47,7 +53,7 @@ public class SQLWorkbenchJFormatterSettingsPage extends BaseFormatterConfigurati
     }
 
     @Override
-    public void loadSettings(DBPPreferenceStore preferenceStore, boolean useDefaults) {
+    public void loadSettings(@NotNull DBPPreferenceStore preferenceStore, boolean useDefaults) {
         super.loadSettings(preferenceStore, useDefaults);
         pathEdit.setText(CommonUtils.toString(
             useDefaults
@@ -58,7 +64,7 @@ public class SQLWorkbenchJFormatterSettingsPage extends BaseFormatterConfigurati
     }
 
     @Override
-    public void saveSettings(DBPPreferenceStore preferenceStore) {
+    public void saveSettings(@NotNull DBPPreferenceStore preferenceStore) {
         super.saveSettings(preferenceStore);
         // Save formatter settings
         preferenceStore.setValue(SQLWorkbenchJConstants.PROP_WORKBENCH_PATH, pathEdit.getText());

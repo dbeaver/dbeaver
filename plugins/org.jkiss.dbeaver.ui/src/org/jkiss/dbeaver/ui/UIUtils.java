@@ -196,8 +196,7 @@ public class UIUtils {
             gd.verticalSpan = span;
         }
         canvas.addPaintListener(e -> {
-            e.gc.setForeground(e.display.getSystemColor(
-                UIStyles.isDarkTheme() ? SWT.COLOR_WIDGET_DARK_SHADOW : SWT.COLOR_WIDGET_LIGHT_SHADOW));
+            e.gc.setForeground(e.display.getSystemColor(getShadowColor()));
             if (style == SWT.HORIZONTAL) {
                 e.gc.drawLine(e.x, e.y, e.x + e.width, e.y);
             } else {
@@ -205,6 +204,12 @@ public class UIUtils {
             }
         });
         canvas.setLayoutData(gd);
+    }
+
+    public static int getShadowColor() {
+        return UIStyles.isDarkTheme() ?
+            (RuntimeUtils.isMacOS() ? SWT.COLOR_WIDGET_NORMAL_SHADOW : SWT.COLOR_WIDGET_DARK_SHADOW) :
+            SWT.COLOR_WIDGET_LIGHT_SHADOW;
     }
 
     public static void createToolBarSeparator(ToolBar toolBar, int style) {
