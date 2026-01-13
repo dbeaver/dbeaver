@@ -1466,8 +1466,6 @@ public class SQLEditor extends SQLEditorBase implements
         // Extra views
         createExtraViewControls();
 
-        // Create results tab
-        createQueryProcessor(true, true, true);
         if (isHideQueryText()) {
             resultsSash.setMaximizedControl(resultTabs);
         } else {
@@ -3852,7 +3850,7 @@ public class SQLEditor extends SQLEditorBase implements
 
     private QueryProcessor createQueryProcessor(boolean setSelection, boolean singleQuery, boolean makeDefault) {
         final QueryProcessor queryProcessor = useTabPerQuery(singleQuery)
-            ? new MultiTabsQueryProcessor(makeDefault)
+            ? new MultiTabsQueryProcessor(singleQuery, makeDefault)
             : new SingleTabQueryProcessor(makeDefault);
         curQueryProcessor = queryProcessor;
         curResultsContainer = queryProcessor.getFirstResults();
@@ -4014,11 +4012,13 @@ public class SQLEditor extends SQLEditorBase implements
     public abstract class QueryProcessor implements SQLResultsConsumer, ISmartTransactionManager, QueryProcessingComponent {
 
         private volatile SQLQueryJob curJob;
+        private final boolean singleQuery;
         private final AtomicInteger curJobRunning = new AtomicInteger(0);
         protected final List<QueryResultsContainer> resultContainers = new ArrayList<>();
         private volatile DBDDataReceiver curDataReceiver = null;
 
-        QueryProcessor(boolean makeDefault) {
+        QueryProcessor(boolean singleQuery, boolean makeDefault) {
+            this.singleQuery = singleQuery;
             // Create first (default) results provider
             if (makeDefault) {
                 queryProcessors.addFirst(this);
@@ -4032,28 +4032,44 @@ public class SQLEditor extends SQLEditorBase implements
             return curJobRunning.get();
         }
 
+        @NotNull
         private QueryResultsContainer createResultsProvider(int resultSetNumber, boolean makeDefault) {
-            QueryResultsContainer resultsProvider = createQueryResultsContainer(resultSetNumber, getMaxResultsTabIndex() + 1, makeDefault);
-            resultContainers.add(resultsProvider);
-            return resultsProvider;
-        }
-
-        private QueryResultsContainer createResultsProvider(@NotNull DBSDataContainer dataContainer) {
             QueryResultsContainer resultsProvider = createQueryResultsContainer(
-                resultContainers.size(),
-                getMaxResultsTabIndex(),
-                dataContainer
+                resultSetNumber,
+                getMaxResultsTabIndex() + 1,
+                singleQuery,
+                makeDefault
             );
             resultContainers.add(resultsProvider);
             return resultsProvider;
         }
 
-        protected abstract QueryResultsContainer createQueryResultsContainer(int resultSetNumber, int resultSetIndex, boolean makeDefault);
+        @NotNull
+        private QueryResultsContainer createResultsProvider(@NotNull DBSDataContainer dataContainer) {
+            QueryResultsContainer resultsProvider = createQueryResultsContainer(
+                resultContainers.size(),
+                getMaxResultsTabIndex(),
+                dataContainer,
+                singleQuery
+            );
+            resultContainers.add(resultsProvider);
+            return resultsProvider;
+        }
 
+        @NotNull
         protected abstract QueryResultsContainer createQueryResultsContainer(
             int resultSetNumber,
             int resultSetIndex,
-            DBSDataContainer dataContainer
+            boolean singleQuery,
+            boolean makeDefault
+        );
+
+        @NotNull
+        protected abstract QueryResultsContainer createQueryResultsContainer(
+            int resultSetNumber,
+            int resultSetIndex,
+            @NotNull DBSDataContainer dataContainer,
+            boolean singleQuery
         );
 
         public boolean hasPinnedTabs() {
@@ -4329,14 +4345,8 @@ public class SQLEditor extends SQLEditorBase implements
 
     class MultiTabsQueryProcessor extends QueryProcessor {
 
-        MultiTabsQueryProcessor(boolean makeDefault) {
-            super(makeDefault);
-        }
-
-        @NotNull
-        @Override
-        protected QueryResultsContainer createQueryResultsContainer(int resultSetNumber, int resultSetIndex, boolean makeDefault) {
-            return new MultiTabsQueryResultsContainer(this, resultSetNumber, resultSetIndex, makeDefault);
+        MultiTabsQueryProcessor(boolean singleQuery, boolean makeDefault) {
+            super(singleQuery, makeDefault);
         }
 
         @NotNull
@@ -4344,9 +4354,21 @@ public class SQLEditor extends SQLEditorBase implements
         protected QueryResultsContainer createQueryResultsContainer(
             int resultSetNumber,
             int resultSetIndex,
-            @NotNull DBSDataContainer dataContainer
+            boolean singleQuery,
+            boolean makeDefault
         ) {
-            return new MultiTabsQueryResultsContainer(this, resultSetNumber, resultSetIndex, dataContainer);
+            return new MultiTabsQueryResultsContainer(this, resultSetNumber, resultSetIndex, singleQuery, makeDefault);
+        }
+
+        @NotNull
+        @Override
+        protected QueryResultsContainer createQueryResultsContainer(
+            int resultSetNumber,
+            int resultSetIndex,
+            @NotNull DBSDataContainer dataContainer,
+            boolean singleQuery
+        ) {
+            return new MultiTabsQueryResultsContainer(this, resultSetNumber, resultSetIndex, dataContainer, singleQuery);
         }
     }
 
@@ -4358,22 +4380,43 @@ public class SQLEditor extends SQLEditorBase implements
         private Composite sectionsContainer;
 
         SingleTabQueryProcessor(boolean makeDefault) {
-            super(makeDefault);
+            super(false, makeDefault);
         }
 
         @NotNull
         @Override
-        protected QueryResultsContainer createQueryResultsContainer(int resultSetNumber, int resultSetIndex, boolean makeDefault) {
-            return new SingleTabQueryResultsContainer(createSection(makeDefault), this, resultSetNumber, resultSetIndex, makeDefault);
+        protected QueryResultsContainer createQueryResultsContainer(
+            int resultSetNumber,
+            int resultSetIndex,
+            boolean singleQuery,
+            boolean makeDefault
+        ) {
+            return new SingleTabQueryResultsContainer(
+                createSection(makeDefault),
+                this,
+                resultSetNumber,
+                resultSetIndex,
+                singleQuery,
+                makeDefault
+            );
         }
 
+        @NotNull
         @Override
         protected QueryResultsContainer createQueryResultsContainer(
             int resultSetNumber,
             int resultSetIndex,
-            @NotNull DBSDataContainer dataContainer
+            @NotNull DBSDataContainer dataContainer,
+            boolean singleQuery
         ) {
-            return new SingleTabQueryResultsContainer(createSection(false), this, resultSetNumber, resultSetIndex, dataContainer);
+            return new SingleTabQueryResultsContainer(
+                createSection(false),
+                this,
+                resultSetNumber,
+                resultSetIndex,
+                dataContainer,
+                singleQuery
+            );
         }
 
         @NotNull
@@ -4465,6 +4508,7 @@ public class SQLEditor extends SQLEditorBase implements
         protected final ResultSetViewer viewer;
         protected int resultSetNumber;
         protected final int resultSetIndex;
+        protected final boolean singleQuery;
         private SQLScriptElement query = null;
         private SQLScriptElement lastGoodQuery = null;
         // Data container and filter are non-null only in case of associations navigation
@@ -4477,11 +4521,13 @@ public class SQLEditor extends SQLEditorBase implements
             @NotNull QueryProcessor queryProcessor,
             int resultSetNumber,
             int resultSetIndex,
+            boolean singleQuery,
             boolean makeDefault
         ) {
             this.queryProcessor = queryProcessor;
             this.resultSetNumber = resultSetNumber;
             this.resultSetIndex = resultSetIndex;
+            this.singleQuery = singleQuery;
 
             this.viewer = new ResultSetViewer(resultSetViewerContainer, getSite(), this);
             this.viewer.addListener(this);
@@ -4501,9 +4547,10 @@ public class SQLEditor extends SQLEditorBase implements
             @NotNull QueryProcessor queryProcessor,
             int resultSetNumber,
             int resultSetIndex,
-            @NotNull DBSDataContainer dataContainer
+            @NotNull DBSDataContainer dataContainer,
+            boolean singleQuery
         ) {
-            this(resultSetViewerContainer, queryProcessor, resultSetNumber, resultSetIndex, false);
+            this(resultSetViewerContainer, queryProcessor, resultSetNumber, resultSetIndex, singleQuery, false);
             this.dataContainer = dataContainer;
             updateResultsName(getResultsTabName(resultSetNumber, 0, dataContainer.getName()), null);
         }
@@ -4585,7 +4632,7 @@ public class SQLEditor extends SQLEditorBase implements
 
         @Override
         public IResultSetDecorator createResultSetDecorator() {
-            return createQueryResultsDecorator();
+            return createQueryResultsDecorator(singleQuery);
         }
 
         @NotNull
@@ -4887,9 +4934,10 @@ public class SQLEditor extends SQLEditorBase implements
             @NotNull QueryProcessor queryProcessor,
             int resultSetNumber,
             int resultSetIndex,
+            boolean singleQuery,
             boolean makeDefault
         ) {
-            super(resultTabs, queryProcessor, resultSetNumber, resultSetIndex, makeDefault);
+            super(resultTabs, queryProcessor, resultSetNumber, resultSetIndex, singleQuery, makeDefault);
             resultsTab = createResultTab(makeDefault);
         }
 
@@ -4897,9 +4945,10 @@ public class SQLEditor extends SQLEditorBase implements
             @NotNull QueryProcessor queryProcessor,
             int resultSetNumber,
             int resultSetIndex,
-            @NotNull DBSDataContainer dataContainer
+            @NotNull DBSDataContainer dataContainer,
+            boolean singleQuery
         ) {
-            super(resultTabs, queryProcessor, resultSetNumber, resultSetIndex, dataContainer);
+            super(resultTabs, queryProcessor, resultSetNumber, resultSetIndex, dataContainer, singleQuery);
             resultsTab = createResultTab(false);
         }
 
@@ -4984,9 +5033,10 @@ public class SQLEditor extends SQLEditorBase implements
             @NotNull SingleTabQueryProcessor queryProcessor,
             int resultSetNumber,
             int resultSetIndex,
+            boolean singleQuery,
             boolean makeDefault
         ) {
-            super(sectionAndContents.getSecond(), queryProcessor, resultSetNumber, resultSetIndex, makeDefault);
+            super(sectionAndContents.getSecond(), queryProcessor, resultSetNumber, resultSetIndex, singleQuery, makeDefault);
             this.queryProcessor = queryProcessor;
             this.section = sectionAndContents.getFirst();
             this.setupSection(sectionAndContents.getSecond());
@@ -4997,9 +5047,10 @@ public class SQLEditor extends SQLEditorBase implements
             @NotNull SingleTabQueryProcessor queryProcessor,
             int resultSetNumber,
             int resultSetIndex,
-            @NotNull DBSDataContainer dataContainer
+            @NotNull DBSDataContainer dataContainer,
+            boolean singleQuery
         ) {
-            super(sectionAndContents.getSecond(), queryProcessor, resultSetNumber, resultSetIndex, dataContainer);
+            super(sectionAndContents.getSecond(), queryProcessor, resultSetNumber, resultSetIndex, dataContainer, singleQuery);
             this.queryProcessor = queryProcessor;
             this.section = sectionAndContents.getFirst();
             this.setupSection(sectionAndContents.getSecond());
@@ -5155,8 +5206,17 @@ public class SQLEditor extends SQLEditorBase implements
     }
 
     @NotNull
-    protected QueryResultsDecorator createQueryResultsDecorator() {
+    protected QueryResultsDecorator createQueryResultsDecorator(boolean singleQuery) {
         return new QueryResultsDecorator() {
+            @Override
+            public long getDecoratorFeatures() {
+                long features = super.getDecoratorFeatures();
+                if (!singleQuery) {
+                    features |= FEATURE_DECORATE_ON_DEMAND;
+                }
+                return features;
+            }
+
             @Override
             public String getEmptyDataDescription() {
                 String execQuery = ActionUtils.findCommandDescription(SQLEditorCommands.CMD_EXECUTE_STATEMENT, getSite(), true);
@@ -5411,6 +5471,13 @@ public class SQLEditor extends SQLEditorBase implements
                         }
                         resultsIndex++;
                     }
+
+                    if (!getActivePreferenceStore().getBoolean(SQLPreferenceConstants.MAXIMIZE_EDITOR_ON_SCRIPT_EXECUTE)) {
+                        if (resultsSash.getMaximizedControl() == sqlEditorPanel) {
+                            toggleResultPanel(false, false);
+                        }
+                    }
+
                 } else {
                     dumpQueryServerOutput(result);
                 }

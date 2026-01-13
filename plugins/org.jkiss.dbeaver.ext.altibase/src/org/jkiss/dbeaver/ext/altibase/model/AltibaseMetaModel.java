@@ -1123,10 +1123,10 @@ public class AltibaseMetaModel extends GenericMetaModel {
             String schemaName, String depObjectType) {
         String ddl = "";
         String sqlTerm = "SQLTERMINATOR";
-        String getDepDdlQry = "SELECT dbms_metadata.get_dependent_ddl('%s', '%s', '%s') FROM DUAL";
+        String getDepDdlQry = "SELECT dbms_metadata.get_dependent_ddl(?, ?, ?) FROM DUAL";
         
         Connection conn = null;
-        Statement stmt = null;
+        PreparedStatement pstmt = null;
         ResultSet rs = null;
         
         try (JDBCSession session = DBUtils.openMetaSession(monitor, sourceObject, "Get Dependent DDL from DBMS_METADATA")) {
@@ -1137,8 +1137,11 @@ public class AltibaseMetaModel extends GenericMetaModel {
                 setTransformParam(conn, sqlTerm, "T");
 
                 // get dependent ddl 
-                stmt = conn.createStatement();
-                rs = stmt.executeQuery(String.format(getDepDdlQry, depObjectType, sourceObject.getName(), schemaName));
+                pstmt = conn.prepareStatement(getDepDdlQry);
+                pstmt.setString(1, depObjectType);
+                pstmt.setString(2, sourceObject.getName());
+                pstmt.setString(3, schemaName);
+                rs = pstmt.executeQuery();
                 
                 if (rs.next()) {
                     ddl = rs.getString(1);
@@ -1158,8 +1161,8 @@ public class AltibaseMetaModel extends GenericMetaModel {
                     rs.close();
                 }
                 
-                if (stmt != null) {
-                    stmt.close();
+                if (pstmt != null) {
+                    pstmt.close();
                 }
                 
                 // SQLTERMINATOR: F

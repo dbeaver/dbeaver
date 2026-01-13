@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,13 +22,16 @@ import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.widgets.*;
+import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Combo;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Spinner;
 import org.eclipse.ui.internal.editors.text.EditorsPlugin;
 import org.eclipse.ui.texteditor.AbstractDecoratedTextEditorPreferenceConstants;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.DBPIdentifierCase;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
-import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.sql.internal.SQLEditorMessages;
 import org.jkiss.dbeaver.ui.editors.sql.preferences.format.BaseFormatterConfigurationPage;
@@ -47,7 +50,7 @@ public class SQLTokenizedFormatterConfigurationPage extends BaseFormatterConfigu
 
     @Override
     protected Composite createFormatSettings(Composite parent) {
-        Group settings = UIUtils.createControlGroup(parent, SQLEditorMessages.pref_page_sql_format_label_settings, 4, GridData.FILL_HORIZONTAL, 0);
+        Composite settings = UIUtils.createTitledComposite(parent, SQLEditorMessages.pref_page_sql_format_label_settings, 4, GridData.FILL_HORIZONTAL, 0);
         SelectionListener selectListener = new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
@@ -95,7 +98,7 @@ public class SQLTokenizedFormatterConfigurationPage extends BaseFormatterConfigu
     }
 
     @Override
-    public void loadSettings(DBPPreferenceStore preferenceStore, boolean useDefaults) {
+    public void loadSettings(@NotNull DBPPreferenceStore preferenceStore, boolean useDefaults) {
         super.loadSettings(preferenceStore, useDefaults);
 
         final String caseName = useDefaults
@@ -144,7 +147,7 @@ public class SQLTokenizedFormatterConfigurationPage extends BaseFormatterConfigu
     }
 
     @Override
-    public void saveSettings(DBPPreferenceStore preferenceStore) {
+    public void saveSettings(@NotNull DBPPreferenceStore preferenceStore) {
         super.saveSettings(preferenceStore);
         final String caseName;
         if (keywordCaseCombo.getSelectionIndex() == 0) {
@@ -167,7 +170,7 @@ public class SQLTokenizedFormatterConfigurationPage extends BaseFormatterConfigu
     }
 
     @Override
-    public void resetSettings(DBPPreferenceStore preferenceStore) {
+    public void resetSettings(@NotNull DBPPreferenceStore preferenceStore) {
         super.resetSettings(preferenceStore);
         preferenceStore.setToDefault(ModelPreferences.SQL_FORMAT_KEYWORD_CASE);
         preferenceStore.setToDefault(ModelPreferences.SQL_FORMAT_LF_BEFORE_COMMA);
