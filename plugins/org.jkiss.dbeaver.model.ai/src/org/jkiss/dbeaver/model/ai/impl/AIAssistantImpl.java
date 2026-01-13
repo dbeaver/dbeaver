@@ -101,6 +101,7 @@ public class AIAssistantImpl implements AIAssistant {
                 int systemPromptLength = AIPromptUtils.calcSystemPromptLength(completionRequest.getMessages());
 
                 AIMessageMeta requestMeta = new AIMessageMeta(
+                    AIMetaTypes.PROMPT,
                     engineDescriptor.getId(),
                     engine.getProperties().getModel(),
                     completionResponse.getUsage(),
@@ -118,7 +119,7 @@ public class AIAssistantImpl implements AIAssistant {
                             return new AIAssistantResponse(
                                 AIAssistantResponse.Type.FUNCTION,
                                 stringValue,
-                                requestMeta
+                                List.of(requestMeta)
                             );
                         } else {
                             List<AIMessage> newMessages = new ArrayList<>(request.getMessages());
@@ -136,14 +137,14 @@ public class AIAssistantImpl implements AIAssistant {
                         return new AIAssistantResponse(
                             AIAssistantResponse.Type.TEXT,
                             variants.getFirst(),
-                            requestMeta
+                            List.of(requestMeta)
                         );
                     }
                 }
                 return new AIAssistantResponse(
                     AIAssistantResponse.Type.ERROR,
                     AIMessages.ai_empty_engine_response,
-                    requestMeta
+                    List.of(requestMeta)
                 );
             }
             throw new DBException("Too many AI function calls (" + MAX_FUNCTION_CALLS + ")");

@@ -20,10 +20,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.ai.AIMessage;
-import org.jkiss.dbeaver.model.ai.AIMessageMeta;
-import org.jkiss.dbeaver.model.ai.AIMessageType;
-import org.jkiss.dbeaver.model.ai.AIUsage;
+import org.jkiss.dbeaver.model.ai.*;
 import org.jkiss.dbeaver.model.ai.engine.openai.dto.OAIMessage;
 import org.jkiss.dbeaver.model.ai.engine.openai.dto.OAIResponsesRequest;
 import org.jkiss.dbeaver.model.ai.engine.openai.dto.OAIResponsesResponse;
@@ -93,6 +90,7 @@ public class OpenAIClientLegacy extends OpenAIClient {
             .sum();
 
         AIMessageMeta messageMeta = new AIMessageMeta(
+            AIMetaTypes.PROMPT,
             OpenAIConstants.OPENAI_ENGINE,
             completionRequest.model,
             new AIUsage(
@@ -110,7 +108,7 @@ public class OpenAIClientLegacy extends OpenAIClient {
                 new AIMessage(
                     AIMessageType.ASSISTANT,
                     c.getMessage().getContent(),
-                    messageMeta
+                    List.of(messageMeta)
                 )
             )).toList();
         return oaiResponse;

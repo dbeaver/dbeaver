@@ -22,6 +22,7 @@ import org.jkiss.dbeaver.model.ai.engine.AIFunctionCall;
 import org.jkiss.utils.CommonUtils;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 /**
  * Represents a single AI message
@@ -40,7 +41,7 @@ public class AIMessage {
     @Nullable
     private final AIFunctionResult functionResult;
     @Nullable
-    private final AIMessageMeta meta;
+    private final List<AIMessageMeta> meta;
 
     /**
      * Creates AI message
@@ -50,7 +51,7 @@ public class AIMessage {
         @NotNull String content,
         @Nullable String displayMessage,
         @NotNull LocalDateTime time,
-        @Nullable AIMessageMeta meta
+        @Nullable List<AIMessageMeta> meta
     ) {
         this.role = role;
         this.content = content;
@@ -67,7 +68,7 @@ public class AIMessage {
     private AIMessage(
         @NotNull AIFunctionCall functionCall,
         @NotNull AIFunctionResult result,
-        @Nullable AIMessageMeta meta
+        @Nullable List<AIMessageMeta> meta
     ) {
         this.meta = meta;
         this.role = AIMessageType.FUNCTION;
@@ -89,7 +90,10 @@ public class AIMessage {
     }
 
     @NotNull
-    public static AIMessage assistantMessage(@NotNull String message, @Nullable AIMessageMeta meta) {
+    public static AIMessage assistantMessage(
+        @NotNull String message,
+        @Nullable List<AIMessageMeta> meta
+    ) {
         return new AIMessage(AIMessageType.ASSISTANT, message, meta);
     }
 
@@ -117,7 +121,11 @@ public class AIMessage {
         return new AIMessage(AIMessageType.USER, prompt, uiMessage, LocalDateTime.now(), null);
     }
 
-    public AIMessage(@NotNull AIMessageType role, @NotNull String content, AIMessageMeta meta) {
+    public AIMessage(
+        @NotNull AIMessageType role,
+        @NotNull String content,
+        @Nullable List<AIMessageMeta> meta
+    ) {
         this(role, content, content, LocalDateTime.now(), meta);
     }
 
@@ -164,7 +172,7 @@ public class AIMessage {
     }
 
     @Nullable
-    public AIMessageMeta getMeta() {
+    public List<AIMessageMeta> getMeta() {
         return meta;
     }
 
