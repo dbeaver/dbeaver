@@ -25,7 +25,6 @@ import org.jkiss.dbeaver.ext.generic.model.GenericDataSource;
 import org.jkiss.dbeaver.ext.generic.model.GenericSQLDialect;
 import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaModel;
 import org.jkiss.dbeaver.ext.iotdb.IoTDBPrivilegeInfo;
-import org.jkiss.dbeaver.ext.iotdb.model.dialect.IoTDBTreeSQLDialect;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
@@ -95,7 +94,7 @@ public class IoTDBDataSource extends GenericDataSource {
                         userList.add(user);
                     }
 
-                    sql = "list privileges of user " + currentUserName;
+                    sql = "list privileges of user " + (isTree ? currentUserName : DBUtils.getQuotedIdentifier(this, currentUserName, true, true));
                     try (JDBCStatement stmt2 = session.createStatement()) {
                         try (JDBCResultSet rs2 = stmt2.executeQuery(sql)) {
                             while (rs2 != null && rs2.next()) {

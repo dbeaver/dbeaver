@@ -149,7 +149,7 @@ public class IoTDBTableMetaModel extends GenericMetaModel {
             }
         } catch (Exception e) {
             try (JDBCSession session = DBUtils.openMetaSession(monitor, (DBSObject) sourceObject, "Get IoTDB table details")) {
-                String sql = String.format("show tables details from %s", databaseName);
+                String sql = String.format("show tables details from %s", DBUtils.getQuotedIdentifier(((DBSEntity)sourceObject).getDataSource(), databaseName, true, true));
                 try (JDBCStatement stmt = session.createStatement()) {
                     try (JDBCResultSet rs = stmt.executeQuery(sql)) {
                         if (rs != null && rs.next()) {
@@ -163,7 +163,7 @@ public class IoTDBTableMetaModel extends GenericMetaModel {
         }
 
         if (ttl.equals("INF")) {
-            ttl = "'INF'";
+            ttl = SQLUtils.quoteString(sourceObject, "INF");
         }
 
         return ttl;
@@ -197,7 +197,7 @@ public class IoTDBTableMetaModel extends GenericMetaModel {
         StringBuilder toAppend = new StringBuilder(200);
         try (JDBCStatement stmt = session.createStatement()) {
             try (JDBCResultSet rs = stmt.executeQuery(sql)) {
-                toAppend.append("CREATE TABLE ").append(insertTableName).append(" (\n");
+                toAppend.append("CREATE TABLE ").append(DBUtils.getQuotedIdentifier(((DBSEntity)sourceObject).getDataSource(), insertTableName)).append(" (\n");
                 boolean hasColumn = false;
                 while (rs.next()) {
                     hasColumn = true;
@@ -206,7 +206,7 @@ public class IoTDBTableMetaModel extends GenericMetaModel {
                     toAppend.append(rs.getString(columnTitles.get(2)));
                     String columnComment = rs.getString(columnTitles.get(3));
                     if (columnComment != null && !columnComment.isEmpty()) {
-                        toAppend.append(" COMMENT '").append(columnComment).append("'");
+                        toAppend.append(" COMMENT ").append(SQLUtils.quoteString(sourceObject, columnComment)).append("");
                     }
                     toAppend.append(",\n");
                 }

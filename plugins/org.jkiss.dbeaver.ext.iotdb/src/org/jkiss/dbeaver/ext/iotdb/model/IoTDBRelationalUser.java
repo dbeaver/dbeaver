@@ -17,6 +17,7 @@
 
 package org.jkiss.dbeaver.ext.iotdb.model;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBDatabaseException;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
@@ -90,7 +91,7 @@ public class IoTDBRelationalUser extends IoTDBAbstractUser {
                             String currentDatabase = rs.getString("Database");
                             List<String> currentTables = new ArrayList<>();
 
-                            sql = "show tables in " + currentDatabase;
+                            sql = "show tables in " + DBUtils.getQuotedIdentifier(dataSource, currentDatabase, true, true);
                             try (JDBCStatement stmt2 = session.createStatement()) {
                                 try (JDBCResultSet rs2 = stmt2.executeQuery(sql)) {
                                     if (rs2 != null) {
@@ -116,7 +117,7 @@ public class IoTDBRelationalUser extends IoTDBAbstractUser {
      *
      * @throws DBException if an error occurs
      */
-    public void loadTreeDatabasesAndDevices(DBRProgressMonitor monitor) throws DBException {
+    public void loadTreeDatabasesAndDevices(@NotNull DBRProgressMonitor monitor) throws DBException {
         databases = new ArrayList<>();
         Map<String, List<String>> databaseDevicesMap = new HashMap<>();
         try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Load Databases and Tables Info")) {
