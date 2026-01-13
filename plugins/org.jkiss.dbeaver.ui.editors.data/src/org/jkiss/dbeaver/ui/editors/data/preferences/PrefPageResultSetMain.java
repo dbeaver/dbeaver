@@ -49,8 +49,7 @@ import java.util.Locale;
 /**
  * PrefPageResultSetMain
  */
-public class PrefPageResultSetMain extends TargetPrefPage
-{
+public class PrefPageResultSetMain extends TargetPrefPage {
     static final Log log = Log.getLog(PrefPageResultSetMain.class);
 
     public static final String PAGE_ID = "org.jkiss.dbeaver.preferences.main.resultset"; //$NON-NLS-1$
@@ -124,14 +123,14 @@ public class PrefPageResultSetMain extends TargetPrefPage
     @NotNull
     @Override
     protected Control createPreferenceContent(@NotNull Composite parent) {
-        Composite composite = UIUtils.createPlaceholder(parent, 2, 5);
+        Composite composite = UIUtils.createPlaceholder(parent, 2, 10);
         Composite leftPane = UIUtils.createComposite(composite, 1);
         leftPane.setLayoutData(new GridData(GridData.VERTICAL_ALIGN_BEGINNING));
         Composite rightPane = UIUtils.createComposite(composite, 1);
         rightPane.setLayoutData(new GridData(GridData.VERTICAL_ALIGN_BEGINNING));
 
         {
-            Group queriesGroup = UIUtils.createControlGroup(leftPane, ResultSetMessages.pref_page_database_general_group_queries, 2, SWT.NONE, 0);
+            Composite queriesGroup = UIUtils.createTitledComposite(leftPane, ResultSetMessages.pref_page_database_general_group_queries, 2, SWT.NONE, 0);
             queriesGroup.setLayoutData(new GridData(GridData.VERTICAL_ALIGN_BEGINNING));
 
             resultSetSize = UIUtils.createLabelText(queriesGroup, ResultSetMessages.pref_page_database_general_label_result_set_max_size, "0", SWT.BORDER);
@@ -208,6 +207,9 @@ public class PrefPageResultSetMain extends TargetPrefPage
 
             filterForceSubselect = UIUtils.createCheckbox(advGroup, ResultSetMessages.pref_page_database_resultsets_label_filter_force_subselect,
                 ResultSetMessages.pref_page_database_resultsets_label_filter_force_subselect_tip, false, 2);
+        }
+        {
+            Composite advGroup = UIUtils.createTitledComposite(leftPane, ResultSetMessages.pref_page_results_group_advanced, 1, GridData.VERTICAL_ALIGN_BEGINNING, 0);
 
             ignoreColumnLabelCheck = UIUtils.createCheckbox(advGroup, ResultSetMessages.pref_page_database_general_use_column_names, ResultSetMessages.pref_page_database_general_use_column_names_tip, false, 2);
             advUseFetchSize = UIUtils.createCheckbox(advGroup, ResultSetMessages.pref_page_database_resultsets_label_fetch_size, ResultSetMessages.pref_page_database_resultsets_label_fetch_size_tip, false, 2);
@@ -215,7 +217,7 @@ public class PrefPageResultSetMain extends TargetPrefPage
 
         // Misc settings
         {
-            Group miscGroup = UIUtils.createControlGroup(rightPane, ResultSetMessages.pref_page_sql_editor_group_misc, 1, GridData.VERTICAL_ALIGN_BEGINNING, 0);
+            Composite miscGroup = UIUtils.createTitledComposite(rightPane, ResultSetMessages.pref_page_sql_editor_group_misc, 1, GridData.VERTICAL_ALIGN_BEGINNING, 0);
             miscGroup.setLayoutData(new GridData(GridData.VERTICAL_ALIGN_BEGINNING));
 
             keepStatementOpenCheck = UIUtils.createCheckbox(miscGroup, ResultSetMessages.pref_page_database_general_checkbox_keep_cursor, false);
@@ -227,7 +229,7 @@ public class PrefPageResultSetMain extends TargetPrefPage
         }
 
         {
-            Group uiGroup = UIUtils.createControlGroup(rightPane, "UI", 1, GridData.VERTICAL_ALIGN_BEGINNING, 0);
+            Composite uiGroup = UIUtils.createTitledComposite(rightPane, "UI", 1, GridData.VERTICAL_ALIGN_BEGINNING, 0);
             uiGroup.setLayoutData(new GridData(GridData.VERTICAL_ALIGN_BEGINNING));
 
             ICommandService commandService = UIUtils.getActiveWorkbenchWindow().getService(ICommandService.class);
@@ -249,6 +251,27 @@ public class PrefPageResultSetMain extends TargetPrefPage
             );
             useBrowserCheckbox.setToolTipText(DataEditorsMessages.pref_page_database_resultsets_label_image_browser_tip);
 
+        }
+        {
+            Composite group = UIUtils.createTitledComposite(
+                leftPane,
+                ResultSetMessages.pref_page_content_editor_group_editing,
+                1,
+                GridData.VERTICAL_ALIGN_BEGINNING,
+                0
+            );
+
+            alwaysUseAllColumns = UIUtils.createCheckbox(
+                group,
+                ResultSetMessages.pref_page_content_editor_checkbox_keys_always_use_all_columns,
+                false
+            );
+
+            disableEditingOnMissingKey = UIUtils.createCheckbox(
+                group,
+                ResultSetMessages.pref_page_content_editor_checkbox_disable_editing_if_key_missing,
+                false
+            );
         }
 
         return composite;

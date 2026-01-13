@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,12 +20,11 @@ import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
-import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Text;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ext.cubrid.CubridConstants;
 import org.jkiss.dbeaver.ext.cubrid.ui.internal.CubridMessages;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
@@ -38,8 +37,7 @@ import org.jkiss.dbeaver.utils.PrefUtils;
 
 import java.util.Locale;
 
-public class PrefPageCubrid extends TargetPrefPage
-{
+public class PrefPageCubrid extends TargetPrefPage {
     public static final String PAGE_ID = "org.jkiss.dbeaver.preferences.cubrid.general"; //$NON-NLS-1$
     private Button trace;
     private Button info;
@@ -101,25 +99,20 @@ public class PrefPageCubrid extends TargetPrefPage
         store.setToDefault(CubridConstants.PREF_DBMS_OUTPUT_BUFFER_SIZE);
     }
 
+    @NotNull
     @Override
     protected String getPropertyPageID() {
-
         return PAGE_ID;
     }
 
+    @NotNull
     @Override
-    protected Control createPreferenceContent(Composite parent) {
+    protected Control createPreferenceContent(@NotNull Composite parent) {
         DBPPreferenceStore preferenceStore = DBWorkbench.getPlatform().getPreferenceStore();
-        Composite composite = UIUtils.createPlaceholder(parent, 1);
-        GridLayout gl = new GridLayout(1, false);
-        gl.marginHeight = 10;
-        gl.marginWidth = 10;
-        composite.setLayout(gl);
-        composite.setLayoutData(new GridData(GridData.FILL_BOTH));
+        Composite composite = UIUtils.createComposite(parent, 1);
 
         {
-
-            Group planGroup = UIUtils.createControlGroup(composite, CubridMessages.statistic_group_editor_title, 1, GridData.FILL_HORIZONTAL, 0);
+            Composite planGroup = UIUtils.createTitledComposite(composite, CubridMessages.statistic_group_editor_title, 1, GridData.FILL_HORIZONTAL);
             trace = UIUtils.createCheckbox(planGroup, CubridMessages.statistic_trace_info, false);
 
             trace.addSelectionListener(new SelectionAdapter()
@@ -150,7 +143,7 @@ public class PrefPageCubrid extends TargetPrefPage
         }
 
         {
-            Group miscGroup = UIUtils.createControlGroup(composite, CubridMessages.pref_page_cubrid_group_dbms_output, 2, GridData.FILL_HORIZONTAL, 0);
+            Composite miscGroup = UIUtils.createTitledComposite(composite, CubridMessages.pref_page_cubrid_group_dbms_output, 2, GridData.FILL_HORIZONTAL);
             enableDbmsOutputCheck = UIUtils.createCheckbox(miscGroup, CubridMessages.pref_page_cubrid_checkbox_enable_dbms_output, "", true, 2);
             dbmsOutputBufferSize = UIUtils.createLabelText(miscGroup, CubridMessages.pref_page_cubrid_label_buffer_size, "");
             dbmsOutputBufferSize.addVerifyListener(UIUtils.getIntegerVerifyListener(Locale.ENGLISH));

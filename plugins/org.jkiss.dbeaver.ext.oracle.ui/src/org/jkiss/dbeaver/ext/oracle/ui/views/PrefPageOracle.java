@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,8 +33,7 @@ import org.jkiss.dbeaver.utils.PrefUtils;
 /**
  * PrefPageOracle
  */
-public class PrefPageOracle extends TargetPrefPage
-{
+public class PrefPageOracle extends TargetPrefPage {
     public static final String PAGE_ID = "org.jkiss.dbeaver.preferences.oracle.general"; //$NON-NLS-1$
 
     private Text explainTableText;
@@ -84,10 +83,10 @@ public class PrefPageOracle extends TargetPrefPage
     @NotNull
     @Override
     protected Control createPreferenceContent(@NotNull Composite parent) {
-        Composite composite = UIUtils.createPlaceholder(parent, 1);
+        Composite composite = UIUtils.createComposite(parent, 1);
 
         {
-            Group planGroup = UIUtils.createControlGroup(composite, OracleUIMessages.pref_page_oracle_legend_execution_plan, 2, GridData.FILL_HORIZONTAL, 0);
+            Composite planGroup = UIUtils.createTitledComposite(composite, OracleUIMessages.pref_page_oracle_legend_execution_plan, 2, GridData.FILL_HORIZONTAL);
 
             Label descLabel = new Label(planGroup, SWT.WRAP);
             descLabel.setText(OracleUIMessages.pref_page_oracle_label_by_default_plan_table);
@@ -99,7 +98,7 @@ public class PrefPageOracle extends TargetPrefPage
         }
 
         {
-            Group miscGroup = UIUtils.createControlGroup(composite, OracleUIMessages.pref_page_oracle_legend_misc, 1, GridData.FILL_HORIZONTAL, 0);
+            Composite miscGroup = UIUtils.createTitledComposite(composite, OracleUIMessages.pref_page_oracle_legend_misc, 1, GridData.FILL_HORIZONTAL);
             rowidSupportCheck = UIUtils.createCheckbox(miscGroup, OracleUIMessages.pref_page_oracle_checkbox_use_rowid_to_identify_rows, true);
             enableDbmsOutputCheck = UIUtils.createCheckbox(miscGroup, OracleUIMessages.pref_page_oracle_checkbox_enable_dbms_output, true);
             readAllSynonymsCheck = UIUtils.createCheckbox(miscGroup, OracleUIMessages.pref_page_oracle_checkbox_read_all_synonyms, OracleUIMessages.pref_page_oracle_label_if_unchecked_java_classes, true, 1);
@@ -109,12 +108,11 @@ public class PrefPageOracle extends TargetPrefPage
         DBPPreferenceStore globalPreferences = DBWorkbench.getPlatform().getPreferenceStore();
 
         {
-            Composite performanceGroup = UIUtils.createControlGroup(
+            Composite performanceGroup = UIUtils.createTitledComposite(
                 composite,
                 OracleUIMessages.pref_page_oracle_legend_performance,
                 1,
-                GridData.FILL_HORIZONTAL,
-                0
+                GridData.FILL_HORIZONTAL
             );
 
             useRuleHint = UIUtils.createCheckbox(
@@ -162,7 +160,7 @@ public class PrefPageOracle extends TargetPrefPage
         }
 
         {
-            final Group dataGroup = UIUtils.createControlGroup(
+            Composite dataGroup = UIUtils.createTitledComposite(
                 composite,
                 OracleUIMessages.pref_page_oracle_group_data,
                 1,
@@ -258,6 +256,7 @@ public class PrefPageOracle extends TargetPrefPage
         super.performDefaults();
     }
 
+    @NotNull
     @Override
     protected String getPropertyPageID()
     {

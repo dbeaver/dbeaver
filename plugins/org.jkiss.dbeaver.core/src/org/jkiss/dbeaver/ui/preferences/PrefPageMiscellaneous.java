@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -81,7 +81,12 @@ public class PrefPageMiscellaneous extends PrefPageMiscellaneousAbstract impleme
         final DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
 
         {
-            Group groupEditors = UIUtils.createControlGroup(composite, CoreMessages.pref_page_ui_general_boolean, 3, GridData.FILL_HORIZONTAL, 0);
+            Composite groupEditors = UIUtils.createTitledComposite(
+                composite,
+                CoreMessages.pref_page_ui_general_boolean,
+                3,
+                GridData.FILL_HORIZONTAL
+            );
 
             UIUtils.createControlLabel(groupEditors, CoreMessages.pref_page_ui_general_boolean_label_mode);
 
@@ -109,7 +114,7 @@ public class PrefPageMiscellaneous extends PrefPageMiscellaneousAbstract impleme
                 booleanStylesChangeListeners.add(value -> button.setSelection(button.getData() == value.getMode()));
             }
 
-            final Composite group = new Composite(groupEditors, SWT.BORDER);
+            final Composite group = new Composite(groupEditors, SWT.NONE);
             group.setLayout(GridLayoutFactory.swtDefaults().numColumns(7).create());
             group.setLayoutData(GridDataFactory.swtDefaults().span(3, 1).create());
 
@@ -152,7 +157,7 @@ public class PrefPageMiscellaneous extends PrefPageMiscellaneousAbstract impleme
         }
 
         {
-            final Group group = UIUtils.createControlGroup(composite, "Holiday decorations", 1, GridData.FILL_HORIZONTAL, 0);
+            Composite group = UIUtils.createTitledComposite(composite, "Holiday decorations", 1, GridData.FILL_HORIZONTAL);
 
             holidayDecorationsCheck = UIUtils.createCheckbox(group, "Show holiday decorations", false);
             holidayDecorationsCheck.setLayoutData(new GridData());

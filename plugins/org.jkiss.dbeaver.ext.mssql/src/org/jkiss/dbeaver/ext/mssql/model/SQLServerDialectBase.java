@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -44,14 +44,14 @@ import org.jkiss.utils.CommonUtils;
 
 import java.util.*;
 
-public class SQLServerDialect extends JDBCSQLDialect implements TPRuleProvider, SQLDialectDDLExtension, SQLDialectSchemaController {
+public abstract class SQLServerDialectBase extends JDBCSQLDialect implements TPRuleProvider, SQLDialectDDLExtension, SQLDialectSchemaController {
 
     private static final String[][] TSQL_BEGIN_END_BLOCK = new String[][]{
         {SQLConstants.BLOCK_BEGIN, SQLConstants.BLOCK_END}
     };
     public static final String AUTO_INCREMENT_KEYWORD = "IDENTITY";
 
-    private static String[] SQLSERVER_EXTRA_KEYWORDS = new String[]{
+    private static final String[] SQLSERVER_EXTRA_KEYWORDS = new String[]{
         "LOGIN",
         "TOP",
         "SYNONYM",
@@ -67,16 +67,16 @@ public class SQLServerDialect extends JDBCSQLDialect implements TPRuleProvider, 
         {"\"", "\""},
     };
 
-    private static String[] EXEC_KEYWORDS = {"CALL", "EXEC", "EXECUTE"};
+    private static final String[] EXEC_KEYWORDS = {"CALL", "EXEC", "EXECUTE"};
 
-    private static String[] PLAIN_TYPE_NAMES = {
+    private static final String[] PLAIN_TYPE_NAMES = {
         SQLServerConstants.TYPE_GEOGRAPHY,
         SQLServerConstants.TYPE_GEOMETRY,
         SQLServerConstants.TYPE_TIMESTAMP,
         SQLServerConstants.TYPE_IMAGE,
     };
 
-    private static String[] SQLSERVER_FUNCTIONS_DATETIME = new String[]{
+    private static final String[] SQLSERVER_FUNCTIONS_DATETIME = new String[]{
         "CURRENT_TIMEZONE",
         "DATEPART",
         "DATEADD",
@@ -100,8 +100,8 @@ public class SQLServerDialect extends JDBCSQLDialect implements TPRuleProvider, 
     private JDBCDataSource dataSource;
     private boolean isSqlServer;
 
-    public SQLServerDialect() {
-        super("SQLServer", "sqlserver");
+    protected SQLServerDialectBase(String name, String id) {
+        super(name, id);
     }
 
     public void initDriverSettings(JDBCSession session, JDBCDataSource dataSource, JDBCDatabaseMetaData metaData) {
