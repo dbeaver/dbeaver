@@ -1913,8 +1913,9 @@ public class UIUtils {
 
     public static AbstractUIJob runUIJob(String jobName, int timeout, final DBRRunnableWithProgress runnableWithProgress) {
         AbstractUIJob job = new AbstractUIJob(jobName) {
+            @NotNull
             @Override
-            public IStatus runInUIThread(DBRProgressMonitor monitor) {
+            public IStatus runInUIThread(@NotNull DBRProgressMonitor monitor) {
                 try {
                     runnableWithProgress.run(monitor);
                 } catch (InvocationTargetException e) {
