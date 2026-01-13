@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,7 +33,6 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.IPropertyValueListProvider;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.meta.PropertyLength;
-import org.jkiss.dbeaver.model.preferences.DBPPropertySource;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.utils.ByteNumberFormat;
@@ -162,12 +161,6 @@ public class ClickhouseTable extends GenericTable implements DBPObjectStatistics
         return super.getDescription();
     }
 
-    @Nullable
-    @Override
-    public DBPPropertySource getStatProperties() {
-        return null;
-    }
-
     private void readStatistics(DBRProgressMonitor monitor) {
         // Now this is a spare method of reading statistics, the main statistics will be read when reading the table data
         if (hasStatistics()) {
@@ -241,6 +234,7 @@ public class ClickhouseTable extends GenericTable implements DBPObjectStatistics
             return false;
         }
 
+        @Nullable
         @Override
         public Object[] getPossibleValues(ClickhouseTable object) {
             return object.getDataSource().getTableEngines().toArray();

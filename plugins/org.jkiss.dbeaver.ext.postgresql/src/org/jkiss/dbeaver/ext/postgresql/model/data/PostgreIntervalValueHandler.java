@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,13 +18,16 @@ package org.jkiss.dbeaver.ext.postgresql.model.data;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
+import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
+import org.jkiss.dbeaver.model.exec.DBCExecutionSource;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.data.handlers.JDBCStringValueHandler;
+import org.jkiss.dbeaver.model.impl.jdbc.exec.JDBCColumnMetaData;
+import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.utils.BeanUtils;
 
@@ -92,7 +95,17 @@ public class PostgreIntervalValueHandler extends JDBCStringValueHandler {
     @NotNull
     @Override
     public String getValueDisplayString(@NotNull DBSTypedObject column, Object value, @NotNull DBDDisplayFormat format) {
-        if (value != null && value.getClass().getName().equals(PostgreConstants.PG_INTERVAL_CLASS)) {
+        boolean isPgObject = false;
+        if (column instanceof JDBCColumnMetaData columnMetaData) {
+            DBCExecutionSource source = columnMetaData.getSource();
+            if (source != null) {
+                DBSDataContainer dataContainer = source.getDataContainer();
+                if (dataContainer != null) {
+                    isPgObject = PostgreUtils.isPgObject(dataContainer.getDataSource(), value);
+                }
+            }
+        }
+        if (value != null && isPgObject) {
             try {
                 Number years = (Number) BeanUtils.readObjectProperty(value, "years");
                 Number months = (Number) BeanUtils.readObjectProperty(value, "months");

@@ -130,6 +130,7 @@ public class SQLServerProcedure extends AbstractProcedure<SQLServerDataSource, S
     }
 
 
+    @NotNull
     @Property(hidden = true, editable = true, updatable = true, order = -1)
     public String getObjectDefinitionText(@NotNull DBRProgressMonitor monitor, @NotNull Map<String, Object> options) throws DBException {
         if (body == null) {
@@ -140,7 +141,7 @@ public class SQLServerProcedure extends AbstractProcedure<SQLServerDataSource, S
                         "AS " + GeneralUtils.getDefaultLineSeparator() +
                         "SELECT 1";
             } else {
-                this.body = SQLServerUtils.extractSource(monitor, getContainer(), getName());
+                this.body = SQLServerUtils.extractSource(monitor, this);
             }
         }
         return body;

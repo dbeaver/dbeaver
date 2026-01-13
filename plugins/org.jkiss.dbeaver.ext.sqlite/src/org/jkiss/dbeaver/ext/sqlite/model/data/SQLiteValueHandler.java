@@ -110,7 +110,7 @@ public class SQLiteValueHandler extends JDBCAbstractValueHandler implements DBDV
             } else {
                 if (numberFormatter == null) {
                     try {
-                        numberFormatter = formatSettings.getDataFormatterProfile().createFormatter(DBDDataFormatter.TYPE_NAME_NUMBER, type);
+                        numberFormatter = formatSettings.getDataFormatterProfile().createFormatter(DBDDataFormatter.TYPE_NAME_NUMBER, column);
                     } catch (Exception e) {
                         log.error("Can't create numberFormatter for number value handler", e); //$NON-NLS-1$
                         numberFormatter = DefaultDataFormatter.INSTANCE;

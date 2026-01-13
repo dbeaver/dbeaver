@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.*;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
@@ -113,11 +114,12 @@ public class JDBCContentValueHandler extends JDBCAbstractValueHandler implements
         JDBCPreparedStatement statement,
         DBSTypedObject paramType,
         int paramIndex,
-        Object value)
-        throws DBCException, SQLException
-    {
-        if (value instanceof JDBCContentAbstract) {
-            ((JDBCContentAbstract)value).bindParameter(session, statement, paramType, paramIndex);
+        Object value
+    ) throws DBCException, SQLException {
+        if (DBUtils.isNullValue(value)) {
+            statement.setNull(paramIndex, paramType.getTypeID(), paramType.getTypeName());
+        } else if (value instanceof JDBCContentAbstract content) {
+            content.bindParameter(session, statement, paramType, paramIndex);
         } else {
             throw new DBCException(ModelMessages.model_jdbc_unsupported_value_type_ + value);
         }

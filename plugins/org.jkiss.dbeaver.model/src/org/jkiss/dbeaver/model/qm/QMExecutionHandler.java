@@ -38,6 +38,8 @@ public interface QMExecutionHandler {
 
     void handleContextOpen(@NotNull DBCExecutionContext context, boolean transactional);
 
+    void handleContextUpdate(@NotNull DBCExecutionContext context, boolean transactional);
+
     void handleContextClose(@NotNull DBCExecutionContext context);
 
     void handleSessionOpen(@NotNull DBCSession session);
@@ -75,4 +77,5 @@ public interface QMExecutionHandler {
     void handleFeatureUsage(@NotNull DBRFeature feature, @Nullable Map<String, Object> parameters);
 
     void handleConnectError(@NotNull DBPDataSource dataSource, @NotNull Throwable error);
+
 }

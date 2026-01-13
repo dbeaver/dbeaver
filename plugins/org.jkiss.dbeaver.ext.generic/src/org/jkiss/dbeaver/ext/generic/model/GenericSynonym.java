@@ -50,7 +50,7 @@ public abstract class GenericSynonym implements DBSAlias, DBSObject, DBPQualifie
     }
 
     @Override
-    public void setName(String name) {
+    public void setName(@NotNull String name) {
         this.name = name;
     }
 

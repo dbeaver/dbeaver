@@ -22,6 +22,7 @@ import org.eclipse.jface.layout.GridLayoutFactory;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.viewers.ILabelProvider;
 import org.eclipse.jface.viewers.ITreeContentProvider;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.graphics.Image;
@@ -36,7 +37,6 @@ import org.jkiss.dbeaver.ui.EmptyAction;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.DoubleClickMouseAdapter;
-import org.jkiss.dbeaver.utils.NLS;
 import org.jkiss.utils.CommonUtils;
 
 final class BreadcrumbItem extends Item {

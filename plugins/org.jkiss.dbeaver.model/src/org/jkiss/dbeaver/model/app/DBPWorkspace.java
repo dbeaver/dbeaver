@@ -96,6 +96,7 @@ public interface DBPWorkspace extends SMAuthSpace, DBAPermissionRealm {
         return true;
     }
 
+    @Nullable
     DBPImage getResourceIcon(DBPAdaptable resourceAdapter);
 
 }

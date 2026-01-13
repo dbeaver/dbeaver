@@ -28,9 +28,7 @@ import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
 import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
 
-import java.util.Collections;
 import java.util.List;
-import java.util.Objects;
 
 public class AIDatabaseContext {
     private final DBSLogicalDataSource dataSource;
@@ -60,9 +58,9 @@ public class AIDatabaseContext {
         return scope;
     }
 
-    @NotNull
+    @Nullable
     public List<DBSObject> getCustomEntities() {
-        return Collections.unmodifiableList(Objects.requireNonNull(customEntities, "Scope is not custom"));
+        return customEntities;
     }
 
     @NotNull

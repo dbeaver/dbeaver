@@ -111,6 +111,11 @@ public @interface Property
     boolean expensive() default false;
 
     /**
+     * Indicates whether the property contains value for the information label
+     */
+    boolean info() default false;
+
+    /**
      * Multiline properties usually contain some big texts
      */
     PropertyLength length() default PropertyLength.LONG;

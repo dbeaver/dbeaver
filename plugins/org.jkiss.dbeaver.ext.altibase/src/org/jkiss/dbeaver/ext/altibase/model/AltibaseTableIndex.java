@@ -41,6 +41,7 @@ public class AltibaseTableIndex extends GenericTableIndex implements DBPScriptOb
         return this.getName().startsWith(AltibaseConstants.SYSTEM_GENERATED_PREFIX);
     }
     
+    @NotNull
     @Override
     public String getObjectDefinitionText(@NotNull DBRProgressMonitor monitor, @NotNull Map<String, Object> options) throws DBException {
         if (source == null && isPersisted()) {

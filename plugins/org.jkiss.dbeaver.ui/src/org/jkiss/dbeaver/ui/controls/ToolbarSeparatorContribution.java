@@ -50,7 +50,7 @@ public class ToolbarSeparatorContribution extends WorkbenchWindowControlContribu
 
     @Override
     protected Control createControl(Composite parent) {
-        Label label = new Label(parent, SWT.NONE);
+        Label label = new Label(parent, SWT.NONE);//SEPARATOR | (vertical ? SWT.VERTICAL : SWT.HORIZONTAL));
         label.setImage(DBeaverIcons.getImage(vertical ? UIIcon.SEPARATOR_V : UIIcon.SEPARATOR_H));
         return label;
     }

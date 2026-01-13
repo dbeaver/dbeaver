@@ -33,7 +33,6 @@ import org.jkiss.dbeaver.model.sql.SQLDialectSchemaController;
 import org.jkiss.dbeaver.model.sql.schema.ClassLoaderScriptSource;
 import org.jkiss.dbeaver.model.sql.schema.SQLSchemaConfig;
 import org.jkiss.dbeaver.model.sql.schema.SQLSchemaManager;
-import org.jkiss.dbeaver.model.sql.schema.UpdateSchemaResult;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.Connection;
@@ -85,7 +84,7 @@ public abstract class InternalDB<T extends InternalDatabaseConfig> {
     public synchronized Connection getDatabaseConnection() throws DBCException {
         Connection connection = tryGetDatabaseConnection();
         if (connection == null) {
-            throw new DBCException("QMDB database not initialized");
+            throw new DBCException("Internal database not initialized (" + databaseConfig.getUrl() + ")");
         }
         return connection;
     }
@@ -130,7 +129,6 @@ public abstract class InternalDB<T extends InternalDatabaseConfig> {
     ) throws DBException {
 
         List<SQLSchemaConfig> schemaConfigList = getSchemaConfigList();
-        UpdateSchemaResult updateSchemaResult = null;
         for (int i = 0; i < schemaConfigList.size(); i++) {
             SQLSchemaConfig schemaConfig = schemaConfigList.get(i);
             SQLSchemaManager schemaManager = new SQLSchemaManager(
@@ -148,7 +146,7 @@ public abstract class InternalDB<T extends InternalDatabaseConfig> {
                 databaseConfig,
                 schemaConfig.getInitialSchemaFiller()
             );
-            updateSchemaResult = schemaManager.updateSchema(monitor, updateSchemaResult);
+            schemaManager.updateSchema(monitor);
         }
     }
 

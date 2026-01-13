@@ -16,7 +16,7 @@
  */
 package org.jkiss.dbeaver.ui.internal;
 
-import org.jkiss.dbeaver.utils.NLS;
+import org.eclipse.osgi.util.NLS;
 
 public class UIMessages extends NLS {
     static final String BUNDLE_NAME = "org.jkiss.dbeaver.ui.internal.UIMessages"; //$NON-NLS-1$
@@ -124,8 +124,14 @@ public class UIMessages extends NLS {
     public static String label_choose;
     public static String dialog_policy_data_export_msg;
     public static String dialog_policy_data_export_title;
+    public static String dialog_policy_data_import_msg;
+    public static String dialog_policy_data_import_title;
     public static String dialog_policy_data_copy_title;
     public static String dialog_policy_data_copy_msg;
+    public static String dialog_policy_data_edit_title;
+    public static String dialog_policy_data_edit_msg;
+    public static String dialog_policy_sql_execution_title;
+    public static String dialog_policy_sql_execution_msg;
 
     public static String popup_open_browser_open_external_browser;
 
@@ -133,6 +139,9 @@ public class UIMessages extends NLS {
     public static String dialog_auth_code_browser_label;
     public static String dialog_auth_code_code_label;
     public static String dialog_auth_code_copy_and_open_label;
+
+    public static String dialog_confirm_action_query;
+    public static String dialog_confirm_action_show_query;
 
     static {
         // initialize resource bundle

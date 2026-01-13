@@ -51,7 +51,7 @@ public class GenericUniqueKey extends GenericTableConstraint {
     }
 
     @Override
-    public List<GenericTableConstraintColumn> getAttributeReferences(DBRProgressMonitor monitor) {
+    public List<GenericTableConstraintColumn> getAttributeReferences(@Nullable DBRProgressMonitor monitor) {
         return columns;
     }
 

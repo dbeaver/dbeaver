@@ -33,8 +33,6 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 import java.util.Properties;
 
 public class DatabricksDataSource extends GenericDataSource {
@@ -59,7 +57,7 @@ public class DatabricksDataSource extends GenericDataSource {
         return url;
     }
 
-    private boolean isLegacyDriver() {
+    public boolean isLegacyDriver() {
         return CommonUtils.equalObjects(DatabricksConstants.DRIVER_CLASS_LEGACY, getContainer().getDriver().getDriverClassName());
     }
 
@@ -71,10 +69,7 @@ public class DatabricksDataSource extends GenericDataSource {
         String purpose,
         DBPConnectionConfiguration connectionInfo
     ) throws DBCException {
-        String userAgent = URLEncoder.encode(
-            GeneralUtils.getProductName() + "/" + GeneralUtils.getProductVersion(),
-            StandardCharsets.UTF_8
-        );
+        String userAgent = GeneralUtils.getProductName().replace(" ", "+") + "/" + GeneralUtils.getProductVersion();
         connectionInfo.setProperty(DatabricksConstants.USER_AGENT_ENTRY, userAgent);
         return super.getAllConnectionProperties(monitor, context, purpose, connectionInfo);
     }

@@ -23,6 +23,7 @@ import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
@@ -139,7 +140,9 @@ public class HandlerConnectionStressTest extends AbstractHandler {
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
-            contexts.forEach(DBCExecutionContext::close);
+            for (var context : contexts) {
+                DBUtils.closeSafely(context);
+            }
         }
     }
 }

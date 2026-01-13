@@ -20,20 +20,27 @@ import org.eclipse.core.runtime.preferences.InstanceScope;
 import org.eclipse.e4.ui.css.swt.internal.theme.BootstrapTheme3x;
 import org.eclipse.e4.ui.css.swt.theme.IThemeEngine;
 import org.eclipse.e4.ui.css.swt.theme.IThemeManager;
+import org.eclipse.jface.action.ToolBarManager;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.ToolBar;
+import org.eclipse.swt.widgets.ToolItem;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.internal.IWorkbenchThemeConstants;
 import org.eclipse.ui.preferences.ScopedPreferenceStore;
+import org.eclipse.ui.themes.ITheme;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.FrameworkUtil;
 import org.osgi.framework.ServiceReference;
+
+import java.util.Collection;
 
 /**
  * UI Utils
@@ -103,7 +110,7 @@ public class UIStyles {
     }
 
     public static Color getDefaultWidgetBackground() {
-        org.eclipse.ui.themes.ITheme theme = PlatformUI.getWorkbench().getThemeManager().getCurrentTheme();
+        ITheme theme = UIUtils.getCurrentTheme();
         Color color = theme.getColorRegistry().get(IWorkbenchThemeConstants.INACTIVE_TAB_BG_START);
         if (color == null) {
             color = Display.getCurrent().getSystemColor(SWT.COLOR_WIDGET_BACKGROUND);
@@ -157,6 +164,37 @@ public class UIStyles {
 
     public static Color getInvertedColor(Color color) {
         return new Color(255 - color.getRed(), 255 - color.getGreen(), 255 - color.getBlue());
+    }
+
+    @NotNull
+    public static Color mix(@NotNull Color color1, @NotNull Color color2, float weight) {
+        // https://github.com/JFormDesigner/FlatLaf/blob/34b19f00e4488292f5dd7869205d41982bed317a/flatlaf-core/src/main/java/com/formdev/flatlaf/util/ColorFunctions.java#L133C1-L156C3
+        if (weight >= 1) {
+            return color1;
+        }
+        if (weight <= 0) {
+            return color2;
+        }
+        if (color1.equals(color2)) {
+            return color1;
+        }
+
+        int r1 = color1.getRed();
+        int g1 = color1.getGreen();
+        int b1 = color1.getBlue();
+        int a1 = color1.getAlpha();
+
+        int r2 = color2.getRed();
+        int g2 = color2.getGreen();
+        int b2 = color2.getBlue();
+        int a2 = color2.getAlpha();
+
+        return new Color(
+            Math.round(r2 + ((r1 - r2) * weight)),
+            Math.round(g2 + ((g1 - g2) * weight)),
+            Math.round(b2 + ((b1 - b2) * weight)),
+            Math.round(a2 + ((a1 - a2) * weight))
+        );
     }
 
     @NotNull
@@ -277,4 +315,30 @@ public class UIStyles {
         }
         return p;
     }
+
+    /**
+     * Fixes toolbars foreground colors on macOS to ensure proper text visibility
+     */
+    public static void fixToolBarForeground(@NotNull Collection<ToolBarManager> toolbarManagers) {
+        if (!RuntimeUtils.isMacOS()) {
+            return;
+        }
+        for (ToolBarManager toolbarManager : toolbarManagers) {
+            ToolBar toolbar = toolbarManager.getControl();
+            if (toolbar != null && !toolbar.isDisposed()) {
+                fixToolBarForeground(toolbar);
+            }
+        }
+    }
+
+    public static void fixToolBarForeground(@NotNull ToolBar toolBar) {
+        if (!toolBar.isDisposed()) {
+            Color textColor = getDefaultTextForeground();
+            toolBar.setForeground(textColor);
+            for (ToolItem item : toolBar.getItems()) {
+                item.setForeground(textColor);
+            }
+        }
+    }
+
 }

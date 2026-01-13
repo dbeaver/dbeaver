@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,7 +38,7 @@ import java.util.Map;
 public class DBXTreeItem extends DBXTreeNode {
     private static final Log log = Log.getLog(DBXTreeItem.class);
 
-    private String label;
+    private final String label;
     private String itemLabel;
     private final String path;
     private final String propertyName;
@@ -133,7 +133,7 @@ public class DBXTreeItem extends DBXTreeNode {
     private String getNodeTerm(@Nullable DBPDataSource dataSource, String termId, boolean multiple)
     {
         if (termId.startsWith("#") && dataSource instanceof DBPTermProvider) {
-            final String term = ((DBPTermProvider) dataSource).getObjectTypeTerm(getPath(), termId.substring(1), multiple);
+            String term = ((DBPTermProvider) dataSource).getObjectTypeTerm(getPath(), termId.substring(1), multiple);
             if (term != null) {
                 return term;
             }
@@ -142,10 +142,12 @@ public class DBXTreeItem extends DBXTreeNode {
     }
 
     public DBXTreeItem findChildItemByPath(String path) {
-        for (DBXTreeNode node : getChildren()) {
-            DBXTreeItem subItem = findChildItemByPath(node, path);
-            if (subItem != null) {
-                return subItem;
+        if (getChildren() != null) {
+            for (DBXTreeNode node : getChildren()) {
+                DBXTreeItem subItem = findChildItemByPath(node, path);
+                if (subItem != null) {
+                    return subItem;
+                }
             }
         }
         return null;
@@ -155,7 +157,7 @@ public class DBXTreeItem extends DBXTreeNode {
         if (node instanceof DBXTreeItem && CommonUtils.equalObjects(((DBXTreeItem) node).getPath(), path)) {
             return (DBXTreeItem) node;
         }
-        if (node instanceof DBXTreeFolder) {
+        if (node instanceof DBXTreeFolder && node.getChildren() != null) {
             for (DBXTreeNode subFolder : node.getChildren()) {
                 DBXTreeItem subItem = findChildItemByPath(subFolder, path);
                 if (subItem != null) {

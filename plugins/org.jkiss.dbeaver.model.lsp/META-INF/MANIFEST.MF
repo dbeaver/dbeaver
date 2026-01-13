@@ -1,0 +1,16 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: DBeaver LSP server implementation
+Bundle-Vendor: DBeaver Corp
+Bundle-Version: 0.0.1.qualifier
+Bundle-Release-Date: 20251207
+Bundle-SymbolicName: org.jkiss.dbeaver.model.lsp;singleton:=true
+Bundle-ActivationPolicy: lazy
+Bundle-RequiredExecutionEnvironment: JavaSE-21
+Require-Bundle: org.jkiss.dbeaver.model,
+ org.jkiss.dbeaver.model.sql,
+ org.eclipse.lsp4j,
+ org.eclipse.lsp4j.jsonrpc
+Automatic-Module-Name: org.jkiss.dbeaver.model.lsp
+Export-Package: org.jkiss.dbeaver.model.lsp,
+ org.jkiss.dbeaver.model.lsp.context

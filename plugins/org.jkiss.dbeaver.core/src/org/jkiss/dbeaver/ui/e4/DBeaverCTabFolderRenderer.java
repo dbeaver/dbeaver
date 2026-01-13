@@ -28,6 +28,7 @@ import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
+import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IEditorReference;
@@ -51,7 +52,9 @@ public final class DBeaverCTabFolderRenderer extends CTabRendering implements IC
     private static final Rectangle EMPTY_CLOSE_RECT = new Rectangle(0, 0, 0, 0);
     private static final String PART_SKIP_KEY = DBeaverCTabFolderRenderer.class.getName() + ".skipPart";
 
+    private static final FieldReflection<CTabRendering, Color> tabOutlineColorField;
     private static final FieldReflection<CTabRendering, Color> selectedTabHighlightColorField;
+    private static final FieldReflection<CTabRendering, Color[]> selectedTabFillColorsField;
     private static final FieldReflection<CTabRendering, Color> hotUnselectedTabsColorBackgroundField;
     private static final FieldReflection<CTabItem, Integer> closeImageStateField;
     private static final FieldReflection<CTabItem, Rectangle> closeRectField;
@@ -60,7 +63,9 @@ public final class DBeaverCTabFolderRenderer extends CTabRendering implements IC
     private static volatile boolean isInColor;
 
     static {
+        tabOutlineColorField = FieldReflection.of(CTabRendering.class, "tabOutlineColor");
         selectedTabHighlightColorField = FieldReflection.of(CTabRendering.class, "selectedTabHighlightColor");
+        selectedTabFillColorsField = FieldReflection.of(CTabRendering.class, "selectedTabFillColors");
         hotUnselectedTabsColorBackgroundField = FieldReflection.of(CTabRendering.class, "hotUnselectedTabsColorBackground");
         closeImageStateField = FieldReflection.of(CTabItem.class, "closeImageState");
         closeRectField = FieldReflection.of(CTabItem.class, "closeRect");
@@ -79,8 +84,10 @@ public final class DBeaverCTabFolderRenderer extends CTabRendering implements IC
             Color color = getConnectionColor(item);
 
             if (color != null) {
+                var oldTabOutlineColor = tabOutlineColorField.get(this);
                 var oldHotUnselectedTabsColorBackground = hotUnselectedTabsColorBackgroundField.get(this);
                 var oldSelectedTabHighlightColor = selectedTabHighlightColorField.get(this);
+                var oldSelectedTabFillColors = selectedTabFillColorsField.get(this);
                 var oldCloseRect = closeRectField.get(item);
                 var oldCloseImageState = closeImageStateField.get(item);
 
@@ -90,16 +97,34 @@ public final class DBeaverCTabFolderRenderer extends CTabRendering implements IC
                 }
 
                 // Replaces unselected and selected tab colors
-                boolean paintingHotTab = (state & SWT.HOT) != 0;
-                hotUnselectedTabsColorBackgroundField.set(this, paintingHotTab ? UIStyles.lighten(color, 0.1f) : color);
-                selectedTabHighlightColorField.set(this, color);
+                boolean isHot = (state & SWT.HOT) != 0;
+                boolean isSelected = (state & SWT.SELECTED) != 0;
+                boolean isDarkTheme = UIStyles.isDarkTheme();
+
+                Color fillColor = oldSelectedTabFillColors != null && oldSelectedTabFillColors.length == 1
+                    ? oldSelectedTabFillColors[0]
+                    : parent.getSelectionBackground();
+                Color highlightColor = isDarkTheme ? UIStyles.lighten(color, 0.2f) : UIStyles.darken(color, 0.2f);
+                Color selectedColor = UIStyles.mix(highlightColor, fillColor, 0.1f);
+
+                hotUnselectedTabsColorBackgroundField.set(this, isHot ? selectedColor : color);
+                selectedTabFillColorsField.set(this, new Color[]{selectedColor});
+                selectedTabHighlightColorField.set(this, highlightColor);
+
+                if (!isSelected) {
+                    // The outline bleeds over the hover tab. Since we're relying on SWT.HOT painting
+                    // logic, we need to override it to be the same color as the tab itself
+                    tabOutlineColorField.set(this, isHot ? selectedColor : color);
+                }
 
                 super.draw(part, state | SWT.HOT, bounds, gc);
 
                 // Restore whatever we have changed back to original values
                 closeRectField.set(item, oldCloseRect);
                 selectedTabHighlightColorField.set(this, oldSelectedTabHighlightColor);
+                selectedTabFillColorsField.set(this, oldSelectedTabFillColors);
                 hotUnselectedTabsColorBackgroundField.set(this, oldHotUnselectedTabsColorBackground);
+                tabOutlineColorField.set(this, oldTabOutlineColor);
 
                 return;
             }
@@ -138,11 +163,15 @@ public final class DBeaverCTabFolderRenderer extends CTabRendering implements IC
 
     @Nullable
     private static Color getConnectionColor(@NotNull CTabItem item) {
-        if (!(item.getData(AbstractPartRenderer.OWNING_ME) instanceof MPart part)) {
-            return null;
+        if (item.getData(AbstractPartRenderer.OWNING_ME) instanceof MPart part) {
+            return getConnectionColor(part);
         }
-
-        return getConnectionColor(part);
+        for (Control control = item.getParent(); control != null; control = control.getParent()) {
+            if (control.getData(AbstractPartRenderer.OWNING_ME) instanceof MPart part) {
+                return getConnectionColor(part);
+            }
+        }
+        return null;
     }
 
     @Nullable

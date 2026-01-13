@@ -1,7 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2013-2015 Denis Forveille (titou10.titou10@gmail.com)
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,7 +36,6 @@ import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectSimpleCache;
 import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.meta.PropertyLength;
-import org.jkiss.dbeaver.model.preferences.DBPPropertySource;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.cache.DBSObjectCache;
@@ -268,6 +266,7 @@ public class DB2Schema extends DB2GlobalObject implements DBSSchema, DBPRefresha
         return DB2Table.class;
     }
 
+    @Nullable
     @Override
     public Collection<DBSObject> getChildren(@NotNull DBRProgressMonitor monitor) throws DBException
     {
@@ -657,19 +656,13 @@ public class DB2Schema extends DB2GlobalObject implements DBSSchema, DBPRefresha
         this.schemaTotalSize = schemaTotalSize;
     }
 
-    @Nullable
-    @Override
-    public DBPPropertySource getStatProperties() {
-        return null;
-    }
-
     @Override
     public boolean isStatisticsCollected() {
         return hasTableStatistics;
     }
 
     @Override
-    public void collectObjectStatistics(DBRProgressMonitor monitor, boolean totalSizeOnly, boolean forceRefresh) throws DBException {
+    public void collectObjectStatistics(@NotNull DBRProgressMonitor monitor, boolean totalSizeOnly, boolean forceRefresh) throws DBException {
         if (hasTableStatistics && !forceRefresh) {
             return;
         }

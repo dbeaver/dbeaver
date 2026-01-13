@@ -63,7 +63,7 @@ public class ShowTipOfTheDayDialog extends AbstractPopupPanel {
     private int tipIndex;
 
     public ShowTipOfTheDayDialog(@NotNull Shell parentShell, @NotNull List<String> tips) {
-        super(parentShell, "Tip of the day");
+        super(parentShell, TipOfTheDayMessages.tip_of_the_day_title);
         this.tips = List.copyOf(tips);
         setModeless(true);
         setBlockOnOpen(false);
@@ -98,7 +98,7 @@ public class ShowTipOfTheDayDialog extends AbstractPopupPanel {
 
     @Override
     protected Composite createDialogArea(Composite parent) {
-        getShell().setText("Tip of the day");
+        getShell().setText(TipOfTheDayMessages.tip_of_the_day_title);
 
         tipIndex = new Random(System.currentTimeMillis()).nextInt(tips.size());
 
@@ -157,7 +157,7 @@ public class ShowTipOfTheDayDialog extends AbstractPopupPanel {
         showTip();
 
         if (displayShowOnStartup) {
-            Button showTipButton = toolkit.createButton(form.getBody(), "Show tips on startup", SWT.CHECK);
+            Button showTipButton = toolkit.createButton(form.getBody(), TipOfTheDayMessages.show_tips_on_startup, SWT.CHECK);
 
             showTipButton.setSelection(isShowOnStartup());
             showTipButton.addSelectionListener(new SelectionAdapter() {

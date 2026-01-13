@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,7 +21,6 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
-import org.eclipse.swt.widgets.Group;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 import org.eclipse.ui.IWorkbenchPropertyPage;
@@ -47,7 +46,6 @@ public class PrefPageDatabaseEditors extends AbstractPrefPage implements IWorkbe
     private Button disconnectOnEditorsClose;
     private Button refreshEditorOnOpen;
     private Button editorFullName;
-    private Button showTableGrid;
     private Button showPreviewOnSave;
     private Button syncEditorDataSourceWithNavigator;
 
@@ -66,11 +64,16 @@ public class PrefPageDatabaseEditors extends AbstractPrefPage implements IWorkbe
     @NotNull
     @Override
     protected Control createPreferenceContent(@NotNull Composite parent) {
-        Composite composite = UIUtils.createPlaceholder(parent, 1, 5);
+        Composite composite = UIUtils.createComposite(parent, 1);
         DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
 
         {
-            Group groupEditors = UIUtils.createControlGroup(composite, CoreMessages.pref_page_ui_general_group_editors, 1, GridData.VERTICAL_ALIGN_BEGINNING, 0);
+            Composite groupEditors = UIUtils.createTitledComposite(
+                composite,
+                CoreMessages.pref_page_ui_general_group_editors,
+                1,
+                GridData.VERTICAL_ALIGN_BEGINNING
+            );
 
             keepEditorsOnRestart = UIUtils.createCheckbox(
                 groupEditors,
@@ -104,10 +107,6 @@ public class PrefPageDatabaseEditors extends AbstractPrefPage implements IWorkbe
                 groupEditors,
                 CoreMessages.pref_page_ui_general_show_full_name_in_editor,
                 store.getBoolean(DBeaverPreferences.NAVIGATOR_EDITOR_FULL_NAME));
-            showTableGrid = UIUtils.createCheckbox(
-                groupEditors,
-                CoreMessages.pref_page_ui_general_show_table_grid,
-                store.getBoolean(NavigatorPreferences.NAVIGATOR_EDITOR_SHOW_TABLE_GRID));
             showPreviewOnSave = UIUtils.createCheckbox(
                 groupEditors,
                 CoreMessages.pref_page_ui_general_show_preview_on_save,
@@ -132,7 +131,6 @@ public class PrefPageDatabaseEditors extends AbstractPrefPage implements IWorkbe
         disconnectOnEditorsClose.setSelection(store.getDefaultBoolean(DBeaverPreferences.UI_DISCONNECT_ON_EDITORS_CLOSE));
         refreshEditorOnOpen.setSelection(store.getDefaultBoolean(NavigatorPreferences.NAVIGATOR_REFRESH_EDITORS_ON_OPEN));
         editorFullName.setSelection(store.getDefaultBoolean(DBeaverPreferences.NAVIGATOR_EDITOR_FULL_NAME));
-        showTableGrid.setSelection(store.getDefaultBoolean(NavigatorPreferences.NAVIGATOR_EDITOR_SHOW_TABLE_GRID));
         showPreviewOnSave.setSelection(store.getDefaultBoolean(NavigatorPreferences.NAVIGATOR_SHOW_SQL_PREVIEW));
         syncEditorDataSourceWithNavigator.setSelection(store.getDefaultBoolean(NavigatorPreferences.NAVIGATOR_SYNC_EDITOR_DATASOURCE));
     }
@@ -147,7 +145,6 @@ public class PrefPageDatabaseEditors extends AbstractPrefPage implements IWorkbe
         store.setValue(DBeaverPreferences.UI_DISCONNECT_ON_EDITORS_CLOSE, disconnectOnEditorsClose.getSelection());
         store.setValue(NavigatorPreferences.NAVIGATOR_REFRESH_EDITORS_ON_OPEN, refreshEditorOnOpen.getSelection());
         store.setValue(DBeaverPreferences.NAVIGATOR_EDITOR_FULL_NAME, editorFullName.getSelection());
-        store.setValue(NavigatorPreferences.NAVIGATOR_EDITOR_SHOW_TABLE_GRID, showTableGrid.getSelection());
         store.setValue(NavigatorPreferences.NAVIGATOR_SHOW_SQL_PREVIEW, showPreviewOnSave.getSelection());
         store.setValue(NavigatorPreferences.NAVIGATOR_SYNC_EDITOR_DATASOURCE, syncEditorDataSourceWithNavigator.getSelection());
 

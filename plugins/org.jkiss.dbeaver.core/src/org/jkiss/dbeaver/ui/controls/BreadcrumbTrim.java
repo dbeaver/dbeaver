@@ -27,7 +27,6 @@ import org.eclipse.ui.internal.WorkbenchWindow;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBeaverPreferences;
-import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourceContainerProvider;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
@@ -47,8 +46,6 @@ import org.jkiss.dbeaver.ui.navigator.breadcrumb.NodeBreadcrumbViewer;
 import java.util.function.Consumer;
 
 public class BreadcrumbTrim {
-    private static final Log log = Log.getLog(BreadcrumbTrim.class);
-
     private static final String BREADCRUMBS_ID = "org.jkiss.dbeaver.core.ui.Breadcrumb"; //$NON-NLS-1$
     private static final String BOTTOM_TRIM_ID = "org.eclipse.ui.trim.status"; //$NON-NLS-1$
 
@@ -116,34 +113,30 @@ public class BreadcrumbTrim {
             @Override
             public void partActivated(IWorkbenchPart part) {
                 if (part instanceof IEditorPart editorPart) {
-                    UIExecutionQueue.queueExec(() -> setLastEditorPart(editorPart));
-                }
-            }
-
-            @Override
-            public void partDeactivated(IWorkbenchPart part) {
-                if (part instanceof IEditorPart editorPart) {
-                    UIExecutionQueue.queueExec(() -> setLastEditorPart(editorPart));
+                    UIExecutionQueue.queueExec(() -> setLastEditorPart(editorPart, true));
                 }
             }
 
             @Override
             public void partClosed(IWorkbenchPart part) {
-                if (part instanceof IEditorPart && part == lastEditorPart) {
-                    setLastEditorPart(null);
+                if (part instanceof IEditorPart editorPart) {
+                    UIExecutionQueue.queueExec(() -> setLastEditorPart(editorPart, false));
                 }
             }
 
-            private void setLastEditorPart(@Nullable IEditorPart part) {
-                if (lastEditorPart == part || viewer.getControl() == null || viewer.getControl().isDisposed()) {
+            private void setLastEditorPart(@Nullable IEditorPart part, boolean activated) {
+                if (viewer.getControl() == null || viewer.getControl().isDisposed()) {
                     return;
                 }
-                if (lastEditorPart != null) {
+                // If activated, then part != lastEditorPart, otherwise part == lastEditorPart
+                boolean shouldRemoveLastEditor = activated != (lastEditorPart == part) && lastEditorPart != null;
+                boolean shouldSetLastEditor = activated && part != null;
+                if (shouldRemoveLastEditor) {
                     lastEditorPart.removePropertyListener(propertyListener);
                     lastEditorPart = null;
                     viewer.setInput(null);
                 }
-                if (part != null) {
+                if (shouldSetLastEditor) {
                     lastEditorPart = part;
                     lastEditorPart.addPropertyListener(propertyListener);
                     setInput(viewer, part.getEditorInput());

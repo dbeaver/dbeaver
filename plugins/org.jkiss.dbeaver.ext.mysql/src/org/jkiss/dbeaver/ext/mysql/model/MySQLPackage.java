@@ -86,6 +86,7 @@ public class MySQLPackage
         return persisted;
     }
 
+    @NotNull
     @Property(viewable = true, order = 1)
     @Override
     public String getName() {
@@ -110,6 +111,7 @@ public class MySQLPackage
         return catalog;
     }
 
+    @NotNull
     @Override
     @Property(hidden = true, editable = true, updatable = true, order = -1)
     public String getObjectDefinitionText(@NotNull DBRProgressMonitor monitor, @NotNull Map<String, Object> options) throws DBCException
@@ -125,9 +127,10 @@ public class MySQLPackage
         this.sourceDeclaration = sourceDeclaration;
     }
 
+    @NotNull
     @Override
     @Property(hidden = true, editable = true, updatable = true, order = -1)
-    public String getExtendedDefinitionText(DBRProgressMonitor monitor) throws DBException
+    public String getExtendedDefinitionText(@NotNull DBRProgressMonitor monitor) throws DBException
     {
         if (sourceDefinition == null && monitor != null) {
             sourceDefinition = readSource(monitor, true);

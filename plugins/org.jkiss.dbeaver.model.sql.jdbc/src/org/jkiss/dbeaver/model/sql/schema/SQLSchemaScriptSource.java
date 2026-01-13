@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,7 +33,10 @@ import java.io.Reader;
 public interface SQLSchemaScriptSource {
 
     @NotNull
-    Reader openSchemaCreateScript(@NotNull DBRProgressMonitor monitor) throws IOException, DBException;
+    Reader openSchemaCreateScript(
+        @NotNull DBRProgressMonitor monitor,
+        @Nullable String specificPrefix
+    ) throws IOException, DBException;
 
     @Nullable
     Reader openSchemaUpdateScript(

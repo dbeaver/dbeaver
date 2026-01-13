@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,7 +25,7 @@ import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 
 /**
  * DBNDatabaseDynamicItem.
- *
+ * *
  * Dynamic items are not in the main navigator model. They are created dynamically as child nodes for complex
  * database objects references (e.g. table columns struct data type attributes).
  */
@@ -91,10 +91,11 @@ public class DBNDatabaseDynamicItem extends DBNDatabaseNode {
     }
 
     @Override
-    public final boolean isManagable() {
+    public final boolean isManageable() {
         return true;
     }
 
+    @NotNull
     @Override
     public String toString() {
         return object == null ? super.toString() : object.toString();

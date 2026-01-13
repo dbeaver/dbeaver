@@ -27,9 +27,8 @@
         <module>org.jkiss.dbeaver.model.sm</module>
         <module>org.jkiss.dbeaver.model.sql</module>
         <module>org.jkiss.dbeaver.model.sql.jdbc</module>
+        <module>org.jkiss.dbeaver.model.lsp</module>
         <module>org.jkiss.dbeaver.registry</module>
-        <module>org.jkiss.dbeaver.dpi.app</module>
-        <module>org.jkiss.dbeaver.dpi.model</module>
 
         <module>org.jkiss.dbeaver.cmp.simple</module>
 
@@ -116,6 +115,7 @@
                 <module>org.jkiss.dbeaver.ext.databend.ui</module>
                 <module>org.jkiss.dbeaver.ext.exasol.ui</module>
                 <module>org.jkiss.dbeaver.ext.db2.ui</module>
+                <module>org.jkiss.dbeaver.ext.duckdb.ui</module>
                 <module>org.jkiss.dbeaver.ext.generic.ui</module>
                 <module>org.jkiss.dbeaver.ext.hana.ui</module>
                 <module>org.jkiss.dbeaver.ext.iotdb.ui</module>

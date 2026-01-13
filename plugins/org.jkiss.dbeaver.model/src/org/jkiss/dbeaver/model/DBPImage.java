@@ -17,12 +17,14 @@
 
 package org.jkiss.dbeaver.model;
 
+import org.jkiss.code.NotNull;
+
 /**
  * Image reference
  */
 public interface DBPImage
 {
-
+    @NotNull
     String getLocation();
 
     default void dispose() {}

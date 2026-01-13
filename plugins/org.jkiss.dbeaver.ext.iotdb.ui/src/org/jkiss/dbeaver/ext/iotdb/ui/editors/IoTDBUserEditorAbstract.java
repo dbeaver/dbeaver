@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.ext.iotdb.ui.editors;
 import org.eclipse.jface.action.IContributionManager;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.iotdb.model.IoTDBGrant;
 import org.jkiss.dbeaver.ext.iotdb.model.IoTDBRelationalUser;
@@ -44,7 +45,7 @@ public abstract class IoTDBUserEditorAbstract extends AbstractDatabaseObjectEdit
             new DatabaseLoadService<List<IoTDBGrant>>(IoTDBUiMessages.editors_user_editor_abstract_load_grants,
                     getDatabaseObject().getDataSource()) {
                 @Override
-                public List<IoTDBGrant> evaluate(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
+                public List<IoTDBGrant> evaluate(@NotNull DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
                     try {
                         return getDatabaseObject().getGrants(monitor);
                     } catch (DBException e) {

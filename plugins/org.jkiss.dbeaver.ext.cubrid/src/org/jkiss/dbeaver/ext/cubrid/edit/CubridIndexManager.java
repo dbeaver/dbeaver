@@ -21,6 +21,8 @@ import org.jkiss.dbeaver.ext.cubrid.model.CubridTable;
 import org.jkiss.dbeaver.ext.cubrid.model.CubridTableIndex;
 import org.jkiss.dbeaver.ext.generic.edit.GenericIndexManager;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableIndex;
+import org.jkiss.dbeaver.model.DBPEvaluationContext;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
@@ -56,7 +58,8 @@ public class CubridIndexManager extends GenericIndexManager {
         GenericTableIndex index = command.getObject();
         actions.add(new SQLDatabasePersistAction(
             "Drop Index",
-            "DROP INDEX " + index.getName() + " ON " + ((CubridTable) index.getTable()).getUniqueName()
+            "DROP INDEX " + DBUtils.getQuotedIdentifier(index.getDataSource(), index.getName()) + " ON "
+            + index.getTable().getFullyQualifiedName(DBPEvaluationContext.DDL)
         ));
     }
 }

@@ -29,7 +29,6 @@ import org.jkiss.dbeaver.model.connection.DBPDriverDependencies;
 import org.jkiss.dbeaver.model.connection.DBPDriverLibrary;
 import org.jkiss.dbeaver.model.connection.DBPDriverLibraryProvider;
 import org.jkiss.dbeaver.model.connection.DBPDriverLoader;
-import org.jkiss.dbeaver.model.dpi.DBPApplicationDPI;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.LoggingProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -193,7 +192,7 @@ public class DriverLoaderDescriptor implements DBPDriverLoader {
     private void loadLibraries(@NotNull DBRProgressMonitor monitor) throws DBException {
         this.classLoader = null;
 
-        List<Path> allLibraryFiles = validateFilesPresence(monitor, false);
+        List<Path> allLibraryFiles = validateFilesPresence(monitor);
 
         Set<URL> libraryURLs = new LinkedHashSet<>();
         // Load libraries
@@ -249,16 +248,17 @@ public class DriverLoaderDescriptor implements DBPDriverLoader {
     }
 
     public List<Path> getAllLibraryFiles(@NotNull DBRProgressMonitor monitor) {
-        return validateFilesPresence(monitor, false);
+        return validateFilesPresence(monitor);
     }
 
-    public void updateFiles() {
-        validateFilesPresence(new LoggingProgressMonitor(log), true);
+    public void updateFiles(boolean isExpanded) {
+        validateFilesPresence(new LoggingProgressMonitor(log), true, isExpanded);
     }
 
+    @NotNull
     @Override
-    public void validateFilesPresence(@NotNull DBRProgressMonitor monitor) {
-        validateFilesPresence(monitor, false);
+    public List<Path> validateFilesPresence(@NotNull DBRProgressMonitor monitor) {
+        return validateFilesPresence(monitor, false, false);
     }
 
     @Override
@@ -278,18 +278,15 @@ public class DriverLoaderDescriptor implements DBPDriverLoader {
     }
 
     @NotNull
-    private List<Path> validateFilesPresence(@NotNull DBRProgressMonitor monitor, boolean resetVersions) {
+    private List<Path> validateFilesPresence(@NotNull DBRProgressMonitor monitor, boolean resetVersions, boolean isShowExpanded) {
         if (DBWorkbench.isDistributed()) {
             // We are in distributed mode
             return syncDistributedDependencies(monitor);
         }
         DBPApplication application = DBWorkbench.getPlatform().getApplication();
-        if (application.isDetachedProcess()) {
-            return syncDpiDependencies(application);
-        }
 
         // don't download driver libraries in web application
-        if (!application.isMultiuser() && !downloadDriverLibraries(monitor, resetVersions)) {
+        if (!application.isMultiuser() && !downloadDriverLibraries(monitor, resetVersions, isShowExpanded)) {
             return Collections.emptyList();
         }
 
@@ -304,8 +301,12 @@ public class DriverLoaderDescriptor implements DBPDriverLoader {
                 List<DriverFileInfo> files = resolvedFiles.get(library);
                 if (files != null) {
                     for (DriverFileInfo file : files) {
-                        if (file.getFile() != null && !result.contains(file.getFile())) {
-                            result.add(file.getFile());
+                        if (!IOUtils.isFileFromDefaultFS(file.getFile())) {
+                            copyLibsFromExternalStorage(library, file.getFile(), result);
+                        } else {
+                            if (file.getFile() != null && !result.contains(file.getFile())) {
+                                result.add(file.getFile());
+                            }
                         }
                     }
                 }
@@ -326,52 +327,56 @@ public class DriverLoaderDescriptor implements DBPDriverLoader {
                         result.add(localFile);
                     }
                 } else {
-                    Path tempDriversDir = DriverDescriptor.getExternalDriversStorageFolder();
-                    Path driverLibsFolder = Files.isDirectory(localFile) ? Path.of(library.getPath()) :
-                                            Path.of(library.getPath()).getParent();
-                    Path realDriverLibsFolder = tempDriversDir.resolve(driverLibsFolder);
-
-                    List<Path> externalLibraryFiles = new ArrayList<>();
-
-                    if (Files.isDirectory(localFile)) {
-                        externalLibraryFiles.addAll(readJarsFromDir(localFile));
-                    } else {
-                        externalLibraryFiles.add(localFile);
-                    }
-
-                    try {
-                        for (Path externalLibraryFilePath : externalLibraryFiles) {
-                            // toString to avoid conflict between fs
-                            String jarName = externalLibraryFilePath.getFileName().toString();
-                            Path realLibraryPath = realDriverLibsFolder.resolve(jarName);
-
-                            if (!Files.exists(realLibraryPath.getParent())) {
-                                Files.createDirectories(realLibraryPath.getParent());
-                            }
-                            if (!Files.exists(realLibraryPath) ||
-                                Files.getLastModifiedTime(realLibraryPath).toInstant()
-                                    .isBefore(Files.getLastModifiedTime(externalLibraryFilePath).toInstant())) {
-                                log.info("Copy driver library from from external file system " + externalLibraryFilePath + " to " +
-                                    "the temporary location " + realLibraryPath);
-                                Files.copy(
-                                    externalLibraryFilePath,
-                                    realLibraryPath,
-                                    StandardCopyOption.REPLACE_EXISTING
-                                );
-                            }
-                            if (!result.contains(realLibraryPath)) {
-                                result.add(realLibraryPath);
-                            }
-                        }
-                    } catch (Exception e) {
-                        log.error("Error during copy of library file '" + library + "'", e);
-                    }
+                    copyLibsFromExternalStorage(library, localFile, result);
                 }
             }
         }
 
         // Check if local files are zip archives with jars inside
         return DriverUtils.extractZipArchives(result);
+    }
+
+    private void copyLibsFromExternalStorage(DBPDriverLibrary library, Path localFile, List<Path> result) {
+        Path tempDriversDir = DriverDescriptor.getExternalDriversStorageFolder();
+        Path driverLibsFolder = Files.isDirectory(localFile) ? Path.of(library.getPath()) :
+            Path.of(library.getPath()).getParent();
+        Path realDriverLibsFolder = tempDriversDir.resolve(driverLibsFolder);
+
+        List<Path> externalLibraryFiles = new ArrayList<>();
+
+        if (Files.isDirectory(localFile)) {
+            externalLibraryFiles.addAll(readJarsFromDir(localFile));
+        } else {
+            externalLibraryFiles.add(localFile);
+        }
+
+        try {
+            for (Path externalLibraryFilePath : externalLibraryFiles) {
+                // toString to avoid conflict between fs
+                String jarName = externalLibraryFilePath.getFileName().toString();
+                Path realLibraryPath = realDriverLibsFolder.resolve(jarName);
+
+                if (!Files.exists(realLibraryPath.getParent())) {
+                    Files.createDirectories(realLibraryPath.getParent());
+                }
+                if (!Files.exists(realLibraryPath) ||
+                    Files.getLastModifiedTime(realLibraryPath).toInstant()
+                        .isBefore(Files.getLastModifiedTime(externalLibraryFilePath).toInstant())) {
+                    log.info("Copy driver library from from external file system " + externalLibraryFilePath + " to " +
+                        "the temporary location " + realLibraryPath);
+                    Files.copy(
+                        externalLibraryFilePath,
+                        realLibraryPath,
+                        StandardCopyOption.REPLACE_EXISTING
+                    );
+                }
+                if (!result.contains(realLibraryPath)) {
+                    result.add(realLibraryPath);
+                }
+            }
+        } catch (Exception e) {
+            log.error("Error during copy of library file '" + library + "'", e);
+        }
     }
 
     @NotNull
@@ -387,13 +392,17 @@ public class DriverLoaderDescriptor implements DBPDriverLoader {
 
     @Override
     public boolean downloadDriverLibraries(@NotNull DBRProgressMonitor monitor, boolean resetVersions) {
+        return downloadDriverLibraries(monitor, resetVersions, false);
+    }
+
+    public boolean downloadDriverLibraries(@NotNull DBRProgressMonitor monitor, boolean resetVersions, boolean isShowExpanded) {
         final DriverDependencies dependencies = getDriverDependencies(resetVersions, false);
         if (dependencies == null) {
             return true;
         }
         UIServiceDrivers serviceDrivers = DBWorkbench.getService(UIServiceDrivers.class);
         boolean downloadOk = serviceDrivers != null ?
-                             serviceDrivers.downloadDriverFiles(monitor, driver, dependencies) :
+                             serviceDrivers.downloadDriverFiles(monitor, driver, dependencies, isShowExpanded) :
                              DriverUtils.downloadDriverFiles(monitor, driver, dependencies);
         if (!downloadOk) {
             return false;
@@ -502,7 +511,7 @@ public class DriverLoaderDescriptor implements DBPDriverLoader {
 
     private Path getDriverFilePath(@NotNull DriverFileInfo file) {
         if (DBWorkbench.isDistributed()) {
-            return DriverDescriptor.getWorkspaceDriversStorageFolder().resolve(file.getFile());
+            return DriverDescriptor.getExternalDriversStorageFolder().resolve(file.getFile());
         }
         return file.getFile();
     }
@@ -510,29 +519,6 @@ public class DriverLoaderDescriptor implements DBPDriverLoader {
 
     public Map<DBPDriverLibrary, List<DriverFileInfo>> getResolvedFiles() {
         return resolvedFiles;
-    }
-
-    @NotNull
-    private List<Path> syncDpiDependencies(@NotNull DBPApplication application) {
-        if (application instanceof DBPApplicationDPI driversProvider) {
-            List<Path> result = new ArrayList<>();
-            List<Path> librariesPath = driversProvider.getDriverLibsLocation(driver.getId());
-            for (Path path : librariesPath) {
-                if (Files.isDirectory(path)) {
-                    result.addAll(readJarsFromDir(path));
-                } else {
-                    if (!result.contains(path)) {
-                        result.add(path);
-                    }
-                }
-            }
-            return DriverUtils.extractZipArchives(result);
-        } else {
-            log.error("Detached process has no ability to find/download driver libraries, " +
-                "it must be specified directly"
-            );
-        }
-        return List.of();
     }
 
     @NotNull

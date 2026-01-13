@@ -34,6 +34,7 @@ import org.eclipse.ui.*;
 import org.eclipse.ui.internal.PartSite;
 import org.eclipse.ui.part.MultiPageEditorPart;
 import org.eclipse.ui.part.MultiPageEditorSite;
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
@@ -149,15 +150,15 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
         try {
             TabbedFolderInfo[] folders = collectFolders(this);
             if (folders.length == 0) {
-                createPropertiesPanel(container);
+                propsPlaceholder = createPropertiesPanel(container);
+                propsPlaceholder.setLayoutData(new GridData(GridData.FILL_BOTH));
             } else {
                 Composite foldersParent = container;
                 if (hasPropertiesEditor() && DBWorkbench.getPlatform().getPreferenceStore().getBoolean(NavigatorPreferences.ENTITY_EDITOR_DETACH_INFO)) {
                     sashForm = UIUtils.createPartDivider(getSite().getPart(), container, SWT.VERTICAL);
                     sashForm.setLayoutData(new GridData(GridData.FILL_BOTH));
+                    propsPlaceholder = createPropertiesPanel(sashForm);
                     foldersParent = sashForm;
-
-                    createPropertiesPanel(sashForm);
                 }
                 createFoldersPanel(foldersParent, folders);
             }
@@ -170,12 +171,8 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
                     propertiesPanel.createControl(propsPlaceholder);
                 }
             }
-
             if (sashForm != null) {
-                //Runnable sashUpdater = this::updateSashWidths;
-                //sashUpdater.run();
-                //UIUtils.asyncExec(sashUpdater);
-                updateSashWidths();
+                UIUtils.asyncExec(this::updateSashWidths);
             }
             pageControl.layout(true, true);
         } finally {
@@ -183,10 +180,11 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
         }
     }
 
-    private void createPropertiesPanel(Composite container) {
-        // Main panel
-        propsPlaceholder = new ConComposite(container);
-        propsPlaceholder.setLayout(new FillLayout());
+    @NotNull
+    private Composite createPropertiesPanel(@NotNull Composite parent) {
+        Composite composite = new ConComposite(parent);
+        composite.setLayout(new FillLayout());
+        return composite;
     }
 
     private Composite createFoldersPanel(Composite parent, TabbedFolderInfo[] folders) {
@@ -303,47 +301,23 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
             return;
         }
 
-//        if (propsPlaceholder != null) {
-            Point propsSize = propsPlaceholder.computeSize(SWT.DEFAULT, SWT.DEFAULT, true);
-            propsSize.y += 10;
-            Point sashSize = sashForm.getParent().getSize();
-            if (sashSize.x <= 0 || sashSize.y <= 0) {
-                // This may happen if EntityEditor created with some other active editor (i.e. props editor not visible)
-                sashSize = getParentSize(sashForm);
-                //sashSize.y += 20;
-            }
-            if (sashSize.x > 0 && sashSize.y > 0) {
-                float ratio = (float) propsSize.y / (float) sashSize.y;
-                int propsRatio = Math.min(1000, (int) (1000 * ratio));
-                int[] newWeights = {propsRatio, 1000 - propsRatio};
+        Point sashSize = sashForm.getParent().getSize();
+        if (sashSize.x <= 0 || sashSize.y <= 0) {
+            // This may happen if EntityEditor created with some other active editor (i.e. props editor not visible)
+            sashSize = getParentSize(sashForm);
+        }
+
+        if (sashSize.x > 0 && sashSize.y > 0) {
+            Point propsSize = propsPlaceholder.getSize();
+            int budget = sashSize.y - sashForm.getSashWidth();
+            int height = propsPlaceholder.computeSize(propsSize.x, SWT.DEFAULT).y;
+            if (height < budget) {
+                int[] newWeights = {height, budget - height};
                 if (!Arrays.equals(newWeights, sashForm.getWeights())) {
                     sashForm.setWeights(newWeights);
-                    //sashForm.layout();
                 }
             }
-
-/*
-        } else {
-            String sashStateStr = DBWorkbench.getPlatform().getPreferenceStore().getString(NavigatorPreferences.ENTITY_EDITOR_INFO_SASH_STATE);
-            int sashPanelHeight = !CommonUtils.isEmpty(sashStateStr) ? Integer.parseInt(sashStateStr) : 400;
-            if (sashPanelHeight < 0) sashPanelHeight = 0;
-            if (sashPanelHeight > 1000) sashPanelHeight = 1000;
-
-            sashForm.setWeights(new int[] { sashPanelHeight, 1000 - sashPanelHeight });
-            //sashForm.layout();
-
-            sashForm.getChildren()[0].addListener(SWT.Resize, event -> {
-                if (sashForm != null) {
-                    int[] weights = sashForm.getWeights();
-                    if (weights != null && weights.length > 0) {
-                        int topWeight = weights[0];
-                        if (topWeight == 0) topWeight = 1;
-                        DBWorkbench.getPlatform().getPreferenceStore().setValue(NavigatorPreferences.ENTITY_EDITOR_INFO_SASH_STATE, topWeight);
-                    }
-                }
-            });
         }
-*/
     }
 
     @Override

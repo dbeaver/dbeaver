@@ -58,6 +58,14 @@ public class PostgreIndexManager extends SQLIndexManager<PostgreIndex, PostgreTa
     }
 
     @Override
+    protected void appendIndexTypeAfterOn(PostgreIndex index, StringBuilder decl) {
+        DBSIndexType indexType = index.getIndexType();
+        if(indexType == DBSIndexType.HASHED){
+            decl.append(" USING ").append("HASH");
+        }
+    }
+
+    @Override
     protected PostgreIndex createDatabaseObject(
         @NotNull DBRProgressMonitor monitor, @NotNull DBECommandContext context, final Object container,
         Object from, @NotNull Map<String, Object> options)

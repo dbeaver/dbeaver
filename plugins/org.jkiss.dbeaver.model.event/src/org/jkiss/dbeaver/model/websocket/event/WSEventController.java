@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,9 +33,12 @@ import java.util.Map;
 public class WSEventController {
     private static final Log log = Log.getLog(WSEventController.class);
 
+    public static final Object JOB_EVENT_HANDLER_FAMILY = new Object();
+
     private final Map<String, List<WSEventHandler>> eventHandlersByType = new HashMap<>();
     protected final List<WSEvent> eventsPool = new ArrayList<>();
     private boolean forceSkipEvents = false;
+    private CBEventCheckJob eventCheckJob;
 
     public WSEventController() {
 
@@ -65,7 +68,15 @@ public class WSEventController {
      * Add cb event to the event pool
      */
     public void scheduleCheckJob() {
-        new CBEventCheckJob().schedule();
+        eventCheckJob = new CBEventCheckJob();
+        eventCheckJob.schedule();
+    }
+
+    public void stop() {
+        if (eventCheckJob != null) {
+            eventCheckJob.cancel();
+            eventCheckJob = null;
+        }
     }
 
     /**
@@ -85,32 +96,41 @@ public class WSEventController {
             setSystem(true);
         }
 
+        @NotNull
         @Override
-        protected IStatus run(DBRProgressMonitor monitor) {
+        protected IStatus run(@NotNull DBRProgressMonitor monitor) {
             List<WSEvent> events;
 
             synchronized (eventsPool) {
                 events = List.copyOf(eventsPool);
                 eventsPool.clear();
             }
-            if (events.isEmpty()) {
-                schedule(CHECK_PERIOD);
-                return Status.OK_STATUS;
+
+            if (monitor.isCanceled() || Thread.currentThread().isInterrupted()) {
+                return Status.CANCEL_STATUS;
             }
+
             for (WSEvent event : events) {
                 eventHandlersByType.getOrDefault(event.getTopicId(), List.of()).forEach(handler -> {
                     try {
                         handler.handleEvent(event);
                     } catch (Exception e) {
-                        log.error(
-                            "Error on event handle " + event.getTopicId(),
-                            e
-                        );
+                        log.error("Error on event handle " + event.getTopicId(), e);
                     }
                 });
             }
+
+            if (monitor.isCanceled() || Thread.currentThread().isInterrupted()) {
+                return Status.CANCEL_STATUS;
+            }
+
             schedule(CHECK_PERIOD);
             return Status.OK_STATUS;
+        }
+
+        @Override
+        public boolean belongsTo(Object family) {
+            return JOB_EVENT_HANDLER_FAMILY.equals(family);
         }
     }
 }

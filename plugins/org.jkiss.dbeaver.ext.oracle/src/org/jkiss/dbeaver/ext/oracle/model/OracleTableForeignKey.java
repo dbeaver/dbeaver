@@ -171,6 +171,7 @@ public class OracleTableForeignKey extends OracleTableConstraintBase implements 
             return false;
         }
 
+        @Nullable
         @Override
         public Object[] getPossibleValues(JDBCTableForeignKey foreignKey)
         {

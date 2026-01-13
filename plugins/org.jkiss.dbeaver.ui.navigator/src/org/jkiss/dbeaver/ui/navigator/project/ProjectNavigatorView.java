@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,21 +19,15 @@ package org.jkiss.dbeaver.ui.navigator.project;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IMemento;
 import org.eclipse.ui.IViewSite;
-import org.eclipse.ui.IWorkbenchCommandConstants;
 import org.eclipse.ui.PartInitException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
-import org.jkiss.dbeaver.model.rcp.RCPProject;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
-import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.IHelpContextIds;
 import org.jkiss.dbeaver.ui.UIExecutionQueue;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.navigator.NavigatorPreferences;
 import org.jkiss.dbeaver.ui.navigator.NavigatorStatePersister;
-import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
-import org.jkiss.dbeaver.ui.project.PrefPageProjectResourceSettings;
 
 /**
  * ProjectNavigatorView
@@ -86,14 +80,4 @@ public class ProjectNavigatorView extends DecoratedProjectView
         getNavigatorTree().setLabelDecorator(labelDecorator);
     }
 
-    @Override
-    public void configureView() {
-        DBPProject project = NavigatorUtils.getSelectedProject();
-        if (project instanceof RCPProject rcpProject) {
-            UIUtils.showPreferencesFor(getSite().getShell(), rcpProject.getEclipseProject(), PrefPageProjectResourceSettings.PAGE_ID);
-        } else {
-            ActionUtils.runCommand(IWorkbenchCommandConstants.WINDOW_PREFERENCES, UIUtils.getActiveWorkbenchWindow());
-        }
-
-    }
 }

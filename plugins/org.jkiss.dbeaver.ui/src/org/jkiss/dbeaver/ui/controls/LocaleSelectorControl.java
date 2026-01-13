@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,11 +17,12 @@
 package org.jkiss.dbeaver.ui.controls;
 
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.ModifyEvent;
-import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.*;
+import org.eclipse.swt.widgets.Combo;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Event;
+import org.eclipse.swt.widgets.Text;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.internal.UIMessages;
 import org.jkiss.utils.CommonUtils;
@@ -33,66 +34,47 @@ import java.util.TreeSet;
 /**
  * LocaleSelectorControl
  */
-public class LocaleSelectorControl extends Composite
-{
-    private Combo languageCombo;
-    private Combo countryCombo;
-    private Combo variantCombo;
-    private Text localeText;
+public class LocaleSelectorControl extends Composite {
+    private final Combo languageCombo;
+    private final Combo countryCombo;
+    private final Combo variantCombo;
+    private final Text localeText;
     private Locale currentLocale;
 
     private boolean localeChanging = false;
 
     public LocaleSelectorControl(
         Composite parent,
-        Locale defaultLocale)
-    {
+        Locale defaultLocale
+    ) {
         super(parent, SWT.NONE);
         GridLayout gl = new GridLayout(1, false);
         gl.marginHeight = 0;
         gl.marginWidth = 0;
         this.setLayout(gl);
 
-        Group group = new Group(this, SWT.NONE);
-        group.setLayoutData(new GridData(GridData.FILL_BOTH));
-        gl = new GridLayout(2, false);
-        group.setLayout(gl);
-        group.setText(UIMessages.controls_locale_selector_group_locale);
+        Composite group = UIUtils.createTitledComposite(this, UIMessages.controls_locale_selector_group_locale, 2, GridData.FILL_BOTH);
 
         UIUtils.createControlLabel(group, UIMessages.controls_locale_selector_label_language);
         languageCombo = new Combo(group, SWT.DROP_DOWN);
         languageCombo.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        languageCombo.addModifyListener(new ModifyListener() {
-            @Override
-            public void modifyText(ModifyEvent e)
-            {
-                onLanguageChange(null);
-                calculateLocale();
-            }
+        languageCombo.addModifyListener(e -> {
+            onLanguageChange(null);
+            calculateLocale();
         });
 
         UIUtils.createControlLabel(group, UIMessages.controls_locale_selector_label_country);
         countryCombo = new Combo(group, SWT.DROP_DOWN);
         countryCombo.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        countryCombo.addModifyListener(new ModifyListener() {
-            @Override
-            public void modifyText(ModifyEvent e)
-            {
-                onCountryChange(null);
-                calculateLocale();
-            }
+        countryCombo.addModifyListener(e -> {
+            onCountryChange(null);
+            calculateLocale();
         });
 
         UIUtils.createControlLabel(group, UIMessages.controls_locale_selector_label_variant);
         variantCombo = new Combo(group, SWT.DROP_DOWN);
         variantCombo.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        variantCombo.addModifyListener(new ModifyListener() {
-            @Override
-            public void modifyText(ModifyEvent e)
-            {
-                calculateLocale();
-            }
-        });
+        variantCombo.addModifyListener(e -> calculateLocale());
 
         UIUtils.createControlLabel(group, UIMessages.controls_locale_selector_label_locale);
         localeText = new Text(group, SWT.BORDER | SWT.READ_ONLY);
@@ -120,8 +102,7 @@ public class LocaleSelectorControl extends Composite
         onCountryChange(currentLocale.getVariant());
     }
 
-    private static String getIsoCode(String value)
-    {
+    private static String getIsoCode(String value) {
         for (int i = 0; i < value.length(); i++) {
             if (!Character.isLetter(value.charAt(i))) {
                 return value.substring(0, i);
@@ -130,8 +111,7 @@ public class LocaleSelectorControl extends Composite
         return value;
     }
 
-    private void onLocaleChange()
-    {
+    private void onLocaleChange() {
         try {
             localeChanging = true;
 
@@ -163,15 +143,13 @@ public class LocaleSelectorControl extends Composite
             }
             onCountryChange(currentLocale.getCountry());
             variantCombo.setText(currentLocale.getVariant());
-        }
-        finally {
+        } finally {
             localeChanging = false;
         }
         calculateLocale();
     }
 
-    private void onLanguageChange(String defCountry)
-    {
+    private void onLanguageChange(String defCountry) {
         String language = getIsoCode(languageCombo.getText());
         Locale[] locales = Locale.getAvailableLocales();
         countryCombo.removeAll();
@@ -195,8 +173,7 @@ public class LocaleSelectorControl extends Composite
         }
     }
 
-    private void onCountryChange(String defVariant)
-    {
+    private void onCountryChange(String defVariant) {
         String language = getIsoCode(languageCombo.getText());
         String country = getIsoCode(countryCombo.getText());
         Locale[] locales = Locale.getAvailableLocales();
@@ -227,15 +204,14 @@ public class LocaleSelectorControl extends Composite
         }
     }
 
-    private void calculateLocale()
-    {
+    private void calculateLocale() {
         if (localeChanging) {
             return;
         }
         String language = getIsoCode(languageCombo.getText());
         String country = getIsoCode(countryCombo.getText());
         String variant = getIsoCode(variantCombo.getText());
-        currentLocale = new Locale(language, country, variant);
+        currentLocale = Locale.of(language, country, variant);
         localeText.setText(currentLocale.toString());
 
         Event event = new Event();
@@ -243,15 +219,13 @@ public class LocaleSelectorControl extends Composite
 
         super.notifyListeners(SWT.Selection, event);
     }
-    
-    public void setLocale(Locale locale)
-    {
+
+    public void setLocale(Locale locale) {
         currentLocale = locale;
         onLocaleChange();
     }
 
-    public Locale getSelectedLocale()
-    {
+    public Locale getSelectedLocale() {
         return currentLocale;
     }
 

@@ -160,6 +160,7 @@ public class Constants {
     public static final String PRODUCT_TEAM = "com.dbeaver.app.team";
     public static final String PRODUCT_CLOUDBEAVER   = "io.cloudbeaver";
 
-
+    public static final String DISABLE_REMOTE_CLI = "dbeaver.disable.remote.cli.execution";
+    public static final String PROPERTY_ECLIPSE_PRODUCT_ID = "id";
 
 }

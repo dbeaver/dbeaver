@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -56,8 +56,9 @@ public class SQLServerDataSourceProvider extends JDBCDataSourceProvider {
         return FEATURE_CATALOGS | FEATURE_SCHEMAS;
     }
 
+    @NotNull
     @Override
-    public String getConnectionURL(DBPDriver driver, DBPConnectionConfiguration connectionInfo) {
+    public String getConnectionURL(@NotNull DBPDriver driver, @NotNull DBPConnectionConfiguration connectionInfo) {
         if (connectionInfo.getConfigurationType() == DBPDriverConfigurationType.URL) {
             return connectionInfo.getUrl();
         }
@@ -137,8 +138,9 @@ public class SQLServerDataSourceProvider extends JDBCDataSourceProvider {
         return new SQLServerDataSource(monitor, container);
     }
 
+    @NotNull
     @Override
-    public DBPAuthModelDescriptor detectConnectionAuthModel(DBPDriver driver, DBPConnectionConfiguration connectionInfo) {
+    public DBPAuthModelDescriptor detectConnectionAuthModel(@NotNull DBPDriver driver, @NotNull DBPConnectionConfiguration connectionInfo) {
         if (driver.getProviderDescriptor().matchesId(SQLServerConstants.PROVIDER_SQL_SERVER) &&
             (CommonUtils.isEmpty(connectionInfo.getAuthModelId()) ||
             connectionInfo.getAuthModelId().equals(AuthModelDatabaseNative.ID)))

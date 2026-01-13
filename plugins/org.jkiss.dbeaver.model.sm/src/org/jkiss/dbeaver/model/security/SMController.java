@@ -65,6 +65,7 @@ public interface SMController extends DBPObjectController, DBInternalDatabaseInf
      * @return the user parameters
      * @throws DBException the db exception
      */
+    @NotNull
     Map<String, Object> getCurrentUserParameters() throws DBException;
 
     /**
@@ -114,6 +115,7 @@ public interface SMController extends DBPObjectController, DBInternalDatabaseInf
      * @return the string [ ]
      * @throws DBException the db exception
      */
+    @NotNull
     String[] getCurrentUserLinkedProviders() throws DBException;
 
     ///////////////////////////////////////////
@@ -132,7 +134,7 @@ public interface SMController extends DBPObjectController, DBInternalDatabaseInf
     ///////////////////////////////////////////
     // Sessions
 
-    boolean isSessionPersisted(String id) throws DBException;
+    boolean isSessionPersisted(@NotNull String id) throws DBException;
 
 
     /**
@@ -172,6 +174,7 @@ public interface SMController extends DBPObjectController, DBInternalDatabaseInf
     ///////////////////////////////////////////
     // Auth providers
 
+    @NotNull
     SMAuthProviderDescriptor[] getAvailableAuthProviders() throws DBException;
 
     /**
@@ -230,6 +233,29 @@ public interface SMController extends DBPObjectController, DBInternalDatabaseInf
     boolean hasAccessToUsers(@NotNull String teamRole, @NotNull Set<String> userIds) throws DBException;
 
     @NotNull
-    String[] getTeamMembers(String teamId) throws DBException;
+    String[] getTeamMembers(@NotNull String teamId) throws DBException;
+
+    /**
+     * Reads user settings.
+     * IF object type and id are null then returns all project swettings
+     */
+    @NotNull
+    List<SMObjectSettings> getObjectSettings(
+        @NotNull String projectId,
+        @Nullable SMObjectType objectType,
+        @Nullable String objectId,
+        @Nullable String[] settingIds
+    ) throws DBException;
+
+    /**
+     * Sets user settings for a specified object.
+     * If value in map entry is null then setting is deleted.
+     */
+    void setObjectSettings(
+        @NotNull String projectId,
+        @NotNull SMObjectType objectType,
+        @NotNull String objectId,
+        @NotNull Map<String, String> settings
+    ) throws DBException;
 
 }

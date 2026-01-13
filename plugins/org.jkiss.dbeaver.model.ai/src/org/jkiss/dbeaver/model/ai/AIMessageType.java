@@ -26,8 +26,12 @@ public enum AIMessageType {
     USER(false),
     // Response from AI
     ASSISTANT(false),
+    FUNCTION(false),
+    WARNING(true),
     // Error messages
-    ERROR(true);
+    ERROR(true),
+    // Local-only message showing user actions like file attachments
+    ATTACHMENT(true);
 
     private final boolean isLocal;
 

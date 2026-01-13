@@ -74,25 +74,39 @@ public class SQLQueryTableCreateModel extends SQLQueryModelContent {
 
     @Override
     public void resolveObjectAndRowsReferences(@NotNull SQLQueryRowsSourceContext context, @NotNull SQLQueryRecognitionContext statistics) {
-        if (this.tableName != null && this.tableName.isNotClassified()) {
-            List<DBSEntity> realTables = context.getConnectionInfo().findRealTables(statistics.getMonitor(), this.tableName.stringParts);
-            DBSEntity realTable = realTables.size() == 1 ? realTables.getFirst() : null;
+        if (this.tableName != null && this.tableName.isNotClassified() && !this.tableName.parts.isEmpty()) {
 
             SQLQuerySymbolOrigin nameOrigin = new SQLQuerySymbolOrigin.DbObjectRef(context, RelationalObjectType.TYPE_TABLE);
-            if (realTable != null) {
-                SQLQuerySemanticUtils.setNamePartsDefinition(
-                    context, this.tableName, realTable, nameOrigin, SQLQuerySymbolOrigin.DbObjectFilterMode.OBJECT
-                );
-            } else {
+            if (this.tableName.invalidPartsCount > 0) {
                 SQLQuerySemanticUtils.performPartialResolution(
                     context,
                     statistics,
                     this.tableName,
                     nameOrigin,
-                    SQLQuerySymbolOrigin.DbObjectFilterMode.DEFAULT,
-                    SQLQuerySymbolClass.TABLE
+                    SQLQuerySymbolOrigin.DbObjectFilterMode.TABLE,
+                    SQLQuerySymbolClass.ERROR
                 );
+                statistics.appendError(this.getSyntaxNode(), "Invalid table name");
+            } else {
+                List<DBSEntity> realTables = context.getConnectionInfo().findRealTables(statistics.getMonitor(), this.tableName.stringParts);
+                DBSEntity realTable = realTables.size() == 1 ? realTables.getFirst() : null;
+
+                if (realTable != null) {
+                    SQLQuerySemanticUtils.setNamePartsDefinition(
+                        context, this.tableName, realTable, nameOrigin, SQLQuerySymbolOrigin.DbObjectFilterMode.TABLE
+                    );
+                } else {
+                    SQLQuerySemanticUtils.performPartialResolution(
+                        context,
+                        statistics,
+                        this.tableName,
+                        nameOrigin,
+                        SQLQuerySymbolOrigin.DbObjectFilterMode.TABLE,
+                        SQLQuerySymbolClass.TABLE
+                    );
+                }
             }
+
 
             SQLQueryRowsTableValueModel virtualTableRows = new SQLQueryRowsTableValueModel(this.getSyntaxNode(), Collections.emptyList(), false);
 
@@ -124,6 +138,7 @@ public class SQLQueryTableCreateModel extends SQLQueryModelContent {
             for (SQLQueryTableConstraintSpec constraintSpec : this.constraints) {
                 constraintSpec.resolveRelations(context, tableContext, statistics);
             }
+
         }
 
     }

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -99,7 +99,6 @@ public class JDBCDatabasePostgresBackupHandler implements JDBCDatabaseBackupHand
 
         ProcessBuilder processBuilder = new ProcessBuilder(
             "pg_dump",
-            databaseName,
             "--host", uri.getHost(),
             "--port", String.valueOf(uri.getPort()),
             "--blobs",
@@ -117,6 +116,8 @@ public class JDBCDatabasePostgresBackupHandler implements JDBCDatabaseBackupHand
 
         processBuilder.command().add("--username");
         processBuilder.command().add(databaseConfig.getUser());
+
+        processBuilder.command().add(databaseName);
 
         if (CommonUtils.isNotEmpty(databaseConfig.getPassword())) {
             processBuilder.environment().put("PGPASSWORD", databaseConfig.getPassword());

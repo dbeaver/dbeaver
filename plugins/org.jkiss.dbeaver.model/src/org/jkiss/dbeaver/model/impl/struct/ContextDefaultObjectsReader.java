@@ -100,7 +100,7 @@ public class ContextDefaultObjectsReader implements DBRRunnableWithProgress {
             currentDatabaseInstanceName = null;
 
             Class<? extends DBSObject> childType = objectContainer.getPrimaryChildType(monitor);
-            if (childType == null || !DBSObjectContainer.class.isAssignableFrom(childType)) {
+            if (!DBSObjectContainer.class.isAssignableFrom(childType)) {
                 enabled = false;
             } else {
                 enabled = true;
@@ -111,7 +111,7 @@ public class ContextDefaultObjectsReader implements DBRRunnableWithProgress {
                 }
                 if (defObject != null) {
                     Class<? extends DBSObject> catalogChildrenType = defObject.getPrimaryChildType(monitor);
-                    if (catalogChildrenType != null && DBSSchema.class.isAssignableFrom(catalogChildrenType)) {
+                    if (DBSSchema.class.isAssignableFrom(catalogChildrenType)) {
                         currentDatabaseInstanceName = defObject.getName();
                         if (contextDefaults.supportsSchemaChange()) {
                             objectContainer = defObject;
@@ -126,11 +126,13 @@ public class ContextDefaultObjectsReader implements DBRRunnableWithProgress {
                     }
                 }
                 objectList = objectContainer == null ?
-                    (defObject == null ? Collections.emptyList() : Collections.singletonList(defObject)) :
+                    Collections.singletonList(defObject) :
                     objectContainer.getChildren(monitor);
                 defaultObject = defObject;
 
-                DBNModel navigatorModel = DBNUtils.getNavigatorModel(objectContainer);
+                DBSObjectContainer navigatorSource = objectContainer != null ? objectContainer :
+                    DBUtils.getAdapter(DBSObjectContainer.class, dataSource);
+                DBNModel navigatorModel = DBNUtils.getNavigatorModel(navigatorSource);
                 if (readNodes && navigatorModel != null) {
                     // Cache navigator nodes
                     if (objectList != null) {

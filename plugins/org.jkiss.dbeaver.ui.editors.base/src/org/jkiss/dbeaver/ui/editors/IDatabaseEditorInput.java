@@ -38,6 +38,9 @@ public interface IDatabaseEditorInput extends INavigatorEditorInput, DBPContextP
 
     DBSObject getDatabaseObject();
 
+    @Nullable
+    String getNodePath();
+
     /**
      * Default editor page ID
      * @return page ID or null

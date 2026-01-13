@@ -54,6 +54,7 @@ public interface DBPErrorAssistant
         }
     }
 
+    @NotNull
     ErrorType discoverErrorType(@NotNull Throwable error);
 
     @Nullable
