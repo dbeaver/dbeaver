@@ -252,9 +252,9 @@ public class ConnectionViewSettingsContributor extends DataSourceMenuContributor
     private static class ClearCurrentUserSettings extends SettingsAction {
 
         ClearCurrentUserSettings(@NotNull DBPDataSourceContainer container) {
-            super(container, UINavigatorMessages.dialog_connection_current_user_view_settings_label, AS_CHECK_BOX);
-            setToolTipText(UINavigatorMessages.dialog_connection_current_user_view_settings_tip);
-            setChecked(dsContainer.getNavigatorSettings().isUserSettings());
+            super(container, UINavigatorMessages.dialog_connection_set_default_connection_settings, AS_PUSH_BUTTON);
+            setToolTipText(UINavigatorMessages.dialog_connection_set_default_connection_settings_tip);
+            enableCheck();
         }
 
         @Override
@@ -262,6 +262,22 @@ public class ConnectionViewSettingsContributor extends DataSourceMenuContributor
             if (!isChecked()) {
                 clearCurrentUserSettings(dsContainer.getNavigatorSettings());
             }
+        }
+
+        @Override
+        void updateSettings(DBNBrowseSettings settings) {
+            super.updateSettings(settings);
+            enableCheck();
+        }
+
+        @Override
+        void clearCurrentUserSettings(DBNBrowseSettings settings) {
+            super.clearCurrentUserSettings(settings);
+            enableCheck();
+        }
+
+        private void enableCheck() {
+            setEnabled(dsContainer.getNavigatorSettings().isUserSettings());
         }
     }
 
