@@ -1,7 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2013-2016 Denis Forveille (titou10.titou10@gmail.com)
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,12 +36,12 @@ import java.sql.SQLException;
 
 /**
  * Cache for DB2 Indexes at the Schema Level
- * 
+ *
  * @author Denis Forveille
  */
 public final class DB2IndexCache extends JDBCStructLookupCache<DB2Schema, DB2Index, DB2IndexColumn> {
 
-    private static final Log    log          = Log.getLog(DB2IndexCache.class);
+    private static final Log log = Log.getLog(DB2IndexCache.class);
 
     private static final String SQL_IND;
     private static final String SQL_IND_ALL;
@@ -66,16 +65,19 @@ public final class DB2IndexCache extends JDBCStructLookupCache<DB2Schema, DB2Ind
         SQL_IND = sb.toString();
     }
 
-    public DB2IndexCache()
-    {
+    public DB2IndexCache() {
         super("INDNAME");
     }
 
     @NotNull
     @Override
-    public JDBCStatement prepareLookupStatement(@NotNull JDBCSession session, @NotNull DB2Schema db2Schema, @Nullable DB2Index db2Index, @Nullable String db2IndexName)
-        throws SQLException
-    {
+    public JDBCStatement prepareLookupStatement(
+        @NotNull JDBCSession session,
+        @NotNull DB2Schema db2Schema,
+        @Nullable DB2Index db2Index,
+        @Nullable String db2IndexName
+    )
+    throws SQLException {
         if (db2Index != null || db2IndexName != null) {
             final JDBCPreparedStatement dbStat = session.prepareStatement(SQL_IND);
             dbStat.setString(1, db2Schema.getName());
@@ -90,8 +92,7 @@ public final class DB2IndexCache extends JDBCStructLookupCache<DB2Schema, DB2Ind
 
     @Override
     protected DB2Index fetchObject(@NotNull JDBCSession session, @NotNull DB2Schema db2Schema, @NotNull JDBCResultSet dbResult)
-        throws SQLException, DBException
-    {
+    throws SQLException, DBException {
 
         // Look for related table...or nickname...or MQT
         String tableOrNicknameSchemaName = JDBCUtils.safeGetStringTrimmed(dbResult, "TABSCHEMA");
@@ -108,11 +109,13 @@ public final class DB2IndexCache extends JDBCStructLookupCache<DB2Schema, DB2Ind
         DB2TableBase db2Table = objectSchema.getTable(session.getProgressMonitor(), tableOrNicknameName);
         if (db2Table == null) {
             db2Table = DB2Utils.findNicknameBySchemaNameAndName(session.getProgressMonitor(), db2Schema.getDataSource(),
-                tableOrNicknameSchemaName, tableOrNicknameName);
+                tableOrNicknameSchemaName, tableOrNicknameName
+            );
         }
         if (db2Table == null) {
             db2Table = DB2Utils.findMaterializedQueryTableBySchemaNameAndName(session.getProgressMonitor(),
-                db2Schema.getDataSource(), tableOrNicknameSchemaName, tableOrNicknameName);
+                db2Schema.getDataSource(), tableOrNicknameSchemaName, tableOrNicknameName
+            );
         }
         if (db2Table == null) {
             log.error("Object '" + tableOrNicknameName + "' not found in schema '" + tableOrNicknameSchemaName + "'");
@@ -122,9 +125,10 @@ public final class DB2IndexCache extends JDBCStructLookupCache<DB2Schema, DB2Ind
     }
 
     @Override
-    protected JDBCStatement prepareChildrenStatement(@NotNull JDBCSession session, @NotNull DB2Schema db2Schema,
-        @Nullable DB2Index forIndex) throws SQLException
-    {
+    protected JDBCStatement prepareChildrenStatement(
+        @NotNull JDBCSession session, @NotNull DB2Schema db2Schema,
+        @Nullable DB2Index forIndex
+    ) throws SQLException {
         JDBCPreparedStatement dbStat = session.prepareStatement(
             "SELECT * FROM SYSCAT.INDEXCOLUSE WHERE INDSCHEMA=? " + (forIndex == null ? "" : "AND INDNAME=?") +
                 "ORDER BY COLSEQ WITH UR"
@@ -139,9 +143,10 @@ public final class DB2IndexCache extends JDBCStructLookupCache<DB2Schema, DB2Ind
     }
 
     @Override
-    protected DB2IndexColumn fetchChild(@NotNull JDBCSession session, @NotNull DB2Schema db2Schema, @NotNull DB2Index db2Index,
-        @NotNull JDBCResultSet dbResult) throws SQLException, DBException
-    {
+    protected DB2IndexColumn fetchChild(
+        @NotNull JDBCSession session, @NotNull DB2Schema db2Schema, @NotNull DB2Index db2Index,
+        @NotNull JDBCResultSet dbResult
+    ) throws SQLException, DBException {
         return new DB2IndexColumn(session.getProgressMonitor(), db2Index, dbResult);
     }
 

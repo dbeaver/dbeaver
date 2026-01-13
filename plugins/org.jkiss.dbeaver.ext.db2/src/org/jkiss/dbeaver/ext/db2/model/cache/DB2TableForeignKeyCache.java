@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,7 +34,7 @@ import java.util.List;
 
 /**
  * Cache for DB2 Table Foreign Keys
- * 
+ *
  * @author Denis Forveille
  */
 public final class DB2TableForeignKeyCache extends JDBCCompositeCache<DB2Schema, DB2Table, DB2TableForeignKey, DB2TableForeignKeyColumn> {
@@ -76,16 +76,14 @@ public final class DB2TableForeignKeyCache extends JDBCCompositeCache<DB2Schema,
         SQL_FK_ALL = sb.toString();
     }
 
-    public DB2TableForeignKeyCache(DB2TableCache tableCache)
-    {
+    public DB2TableForeignKeyCache(DB2TableCache tableCache) {
         super(tableCache, DB2Table.class, "TABNAME", "CONSTNAME");
     }
 
     @NotNull
     @Override
     protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull DB2Schema db2Schema, @Nullable DB2Table forTable)
-        throws SQLException
-    {
+    throws SQLException {
 
         String sql;
         if (forTable != null) {
@@ -105,8 +103,8 @@ public final class DB2TableForeignKeyCache extends JDBCCompositeCache<DB2Schema,
     @Override
     protected DB2TableForeignKey fetchObject(
         @NotNull JDBCSession session, @NotNull DB2Schema db2Schema, @NotNull DB2Table db2Table,
-        @NotNull String constName, @NotNull JDBCResultSet dbResult) throws SQLException, DBException
-    {
+        @NotNull String constName, @NotNull JDBCResultSet dbResult
+    ) throws SQLException, DBException {
         return new DB2TableForeignKey(session.getProgressMonitor(), db2Table, dbResult);
     }
 
@@ -121,7 +119,8 @@ public final class DB2TableForeignKeyCache extends JDBCCompositeCache<DB2Schema,
         String colName = JDBCUtils.safeGetString(dbResult, "COLNAME");
         DB2TableColumn tableColumn = db2Table.getAttribute(session.getProgressMonitor(), colName);
         if (tableColumn == null) {
-            log.debug("DB2TableForeignKeyCache : Column '" + colName + "' not found in table '" + db2Table.getFullyQualifiedName(DBPEvaluationContext.UI)
+            log.debug("DB2TableForeignKeyCache : Column '" + colName + "' not found in table '" + db2Table.getFullyQualifiedName(
+                DBPEvaluationContext.UI)
                 + "' ??");
             return null;
         } else {
@@ -132,7 +131,11 @@ public final class DB2TableForeignKeyCache extends JDBCCompositeCache<DB2Schema,
     }
 
     @Override
-    protected void cacheChildren(@NotNull DBRProgressMonitor monitor, @NotNull DB2TableForeignKey constraint, @NotNull List<DB2TableForeignKeyColumn> rows) {
+    protected void cacheChildren(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DB2TableForeignKey constraint,
+        @NotNull List<DB2TableForeignKeyColumn> rows
+    ) {
         constraint.setAttributeReferences(rows);
     }
 }

@@ -1,7 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2013-2016 Denis Forveille (titou10.titou10@gmail.com)
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,7 +25,7 @@ import java.util.Map;
 
 /**
  * DB2 Table Type
- * 
+ *
  * @author Denis Forveille
  */
 public enum DB2TableType implements DBPNamedObject {
@@ -51,31 +50,17 @@ public enum DB2TableType implements DBPNamedObject {
 
     W("Typed view", DB2ObjectType.VIEW);
 
-    private String                                  description;
-    private DB2ObjectType                           db2ObjectType;
+    private final String description;
+    private final DB2ObjectType db2ObjectType;
 
     private static final Map<DB2ObjectType, String> IN_CLAUSE_CACHE = new HashMap<>();
 
-    // -----------------
-    // Constructor
-    // -----------------
-    private DB2TableType(String description, DB2ObjectType db2ObjectType)
-    {
+    DB2TableType(String description, DB2ObjectType db2ObjectType) {
         this.description = description;
         this.db2ObjectType = db2ObjectType;
     }
 
-    // -----------------------
-    // Display @Property Value
-    // -----------------------
-    @Override
-    public String toString()
-    {
-        return description;
-    }
-
-    public static String getInClause(DB2ObjectType objectType)
-    {
+    public static String getInClause(DB2ObjectType objectType) {
         String inClause = IN_CLAUSE_CACHE.get(objectType);
         if (inClause == null) {
             StringBuilder sb = new StringBuilder(128);
@@ -88,7 +73,7 @@ public enum DB2TableType implements DBPNamedObject {
             }
             // Remove last "," eventually
             inClause = "()";
-            if (sb.length() > 0) {
+            if (!sb.isEmpty()) {
                 sb.deleteCharAt(sb.length() - 1);
                 sb.append(")");
                 inClause = sb.toString();
@@ -103,13 +88,11 @@ public enum DB2TableType implements DBPNamedObject {
     // ----------------
     @NotNull
     @Override
-    public String getName()
-    {
+    public String getName() {
         return description; // DF: yes strange getter..
     }
 
-    public DB2ObjectType getDb2ObjectType()
-    {
+    public DB2ObjectType getDb2ObjectType() {
         return db2ObjectType;
     }
 }

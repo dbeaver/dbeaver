@@ -1,7 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2013-2015 Denis Forveille (titou10.titou10@gmail.com)
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,17 +30,17 @@ import java.sql.SQLException;
 
 /**
  * Cache for DB2 Tablespaces Containers
- * 
+ *
  * @author Denis Forveille
  */
 public class DB2TablespaceContainerCache extends JDBCObjectCache<DB2Tablespace, DB2TablespaceContainer> {
 
-    private static final String SQL = "SELECT T.* FROM TABLE(SNAP_GET_CONTAINER('',-1)) AS T WHERE T.TBSP_ID= ? order by T.CONTAINER_ID WITH UR";
+    private static final String SQL
+        = "SELECT T.* FROM TABLE(SNAP_GET_CONTAINER('',-1)) AS T WHERE T.TBSP_ID= ? order by T.CONTAINER_ID WITH UR";
 
     @NotNull
     @Override
-    protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull DB2Tablespace ts) throws SQLException
-    {
+    protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull DB2Tablespace ts) throws SQLException {
         final JDBCPreparedStatement dbStat = session.prepareStatement(SQL);
         dbStat.setInt(1, ts.getTbspaceId());
         return dbStat;
@@ -49,8 +48,7 @@ public class DB2TablespaceContainerCache extends JDBCObjectCache<DB2Tablespace, 
 
     @Override
     protected DB2TablespaceContainer fetchObject(@NotNull JDBCSession session, @NotNull DB2Tablespace ts, @NotNull JDBCResultSet resultSet)
-        throws SQLException, DBException
-    {
+    throws SQLException, DBException {
         return new DB2TablespaceContainer(ts, resultSet);
     }
 }

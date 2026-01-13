@@ -1,7 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2013-2015 Denis Forveille (titou10.titou10@gmail.com)
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,17 +32,17 @@ import java.sql.SQLException;
 
 /**
  * Cache for DB2 Triggers for a given Table
- * 
+ *
  * @author Denis Forveille
  */
 public class DB2TableTriggerCache extends JDBCObjectCache<DB2Table, DB2Trigger> {
 
-    private static final String SQL_TRIG_TAB = "SELECT * FROM SYSCAT.TRIGGERS WHERE TABSCHEMA = ? AND TABNAME = ? ORDER BY TRIGNAME WITH UR";
+    private static final String SQL_TRIG_TAB
+        = "SELECT * FROM SYSCAT.TRIGGERS WHERE TABSCHEMA = ? AND TABNAME = ? ORDER BY TRIGNAME WITH UR";
 
     @NotNull
     @Override
-    protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull DB2Table db2Table) throws SQLException
-    {
+    protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull DB2Table db2Table) throws SQLException {
         final JDBCPreparedStatement dbStat = session.prepareStatement(SQL_TRIG_TAB);
         dbStat.setString(1, db2Table.getSchema().getName());
         dbStat.setString(2, db2Table.getName());
@@ -51,15 +50,16 @@ public class DB2TableTriggerCache extends JDBCObjectCache<DB2Table, DB2Trigger> 
     }
 
     @Override
-    protected DB2Trigger fetchObject(@NotNull JDBCSession session, @NotNull DB2Table db2Table, @NotNull JDBCResultSet dbResult) throws SQLException,
-        DBException
-    {
+    protected DB2Trigger fetchObject(@NotNull JDBCSession session, @NotNull DB2Table db2Table, @NotNull JDBCResultSet dbResult)
+    throws SQLException,
+        DBException {
 
         // Lookup for trigger in right cache..
         String triggerSchemaName = JDBCUtils.safeGetStringTrimmed(dbResult, "TRIGSCHEMA");
         String triggerName = JDBCUtils.safeGetStringTrimmed(dbResult, "TRIGNAME");
 
         return DB2Utils.findTriggerBySchemaNameAndName(session.getProgressMonitor(), db2Table.getDataSource(), triggerSchemaName,
-            triggerName);
+            triggerName
+        );
     }
 }

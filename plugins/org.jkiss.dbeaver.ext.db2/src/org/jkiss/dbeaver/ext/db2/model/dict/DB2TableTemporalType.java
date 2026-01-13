@@ -1,7 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2013-2016 Denis Forveille (titou10.titou10@gmail.com)
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,7 +21,7 @@ import org.jkiss.dbeaver.model.DBPNamedObject;
 
 /**
  * DB2 Table Temporal Type
- * 
+ *
  * @author Denis Forveille
  */
 public enum DB2TableTemporalType implements DBPNamedObject {
@@ -34,32 +33,15 @@ public enum DB2TableTemporalType implements DBPNamedObject {
 
     S("System-period temporal table");
 
-    private String name;
+    private final String title;
 
-    // -----------------
-    // Constructor
-    // -----------------
-    private DB2TableTemporalType(String name)
-    {
-        this.name = name;
+    DB2TableTemporalType(String title) {
+        this.title = title;
     }
 
-    // -----------------------
-    // Display @Property Value
-    // -----------------------
-    @Override
-    public String toString()
-    {
-        return name;
-    }
-
-    // ----------------
-    // Standard Getters
-    // ----------------
     @NotNull
     @Override
-    public String getName()
-    {
-        return name;
+    public String getName() {
+        return title;
     }
 }

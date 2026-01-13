@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -36,7 +36,7 @@ import java.util.List;
 
 /**
  * Cache for DB2 Table Check Constraints
- * 
+ *
  * @author Denis Forveille
  */
 public final class DB2TableCheckConstraintCache extends
@@ -77,16 +77,14 @@ public final class DB2TableCheckConstraintCache extends
         SQL_CK_ALL = sb.toString();
     }
 
-    public DB2TableCheckConstraintCache(DB2TableCache tableCache)
-    {
+    public DB2TableCheckConstraintCache(DB2TableCache tableCache) {
         super(tableCache, DB2Table.class, "TABNAME", "CONSTNAME");
     }
 
     @NotNull
     @Override
     protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull DB2Schema db2Schema, @Nullable DB2Table forTable)
-        throws SQLException
-    {
+    throws SQLException {
         String sql;
         if (forTable != null) {
             sql = SQL_CK_TAB;
@@ -105,8 +103,8 @@ public final class DB2TableCheckConstraintCache extends
     @Override
     protected DB2TableCheckConstraint fetchObject(
         @NotNull JDBCSession session, @NotNull DB2Schema db2Schema, @NotNull DB2Table db2Table,
-        @NotNull String indexName, @NotNull JDBCResultSet dbResult) throws SQLException, DBException
-    {
+        @NotNull String indexName, @NotNull JDBCResultSet dbResult
+    ) throws SQLException, DBException {
 
         return new DB2TableCheckConstraint(session.getProgressMonitor(), db2Table, dbResult);
     }
@@ -115,24 +113,29 @@ public final class DB2TableCheckConstraintCache extends
     @Override
     protected DB2TableCheckConstraintColumn[] fetchObjectRow(
         @NotNull JDBCSession session, @NotNull DB2Table db2Table,
-        @NotNull DB2TableCheckConstraint object, @NotNull JDBCResultSet dbResult) throws SQLException, DBException
-    {
+        @NotNull DB2TableCheckConstraint object, @NotNull JDBCResultSet dbResult
+    ) throws SQLException, DBException {
 
         String colName = JDBCUtils.safeGetString(dbResult, "COLNAME");
         DB2TableColumn tableColumn = db2Table.getAttribute(session.getProgressMonitor(), colName);
-        DB2TableCheckConstraintColUsage usage = CommonUtils.valueOf(DB2TableCheckConstraintColUsage.class,
-            JDBCUtils.safeGetString(dbResult, "USAGE"));
+        DB2TableCheckConstraintColUsage usage = CommonUtils.valueOf(
+            DB2TableCheckConstraintColUsage.class,
+            JDBCUtils.safeGetString(dbResult, "USAGE")
+        );
         if (tableColumn == null) {
             log.debug("Column '" + colName + "' not found in table '" + db2Table.getFullyQualifiedName(DBPEvaluationContext.UI) + "' ??");
             return null;
         } else {
-            return new DB2TableCheckConstraintColumn[] { new DB2TableCheckConstraintColumn(object, tableColumn, usage) };
+            return new DB2TableCheckConstraintColumn[] {new DB2TableCheckConstraintColumn(object, tableColumn, usage)};
         }
     }
 
     @Override
-    protected void cacheChildren(@NotNull DBRProgressMonitor monitor, @NotNull DB2TableCheckConstraint constraint, @NotNull List<DB2TableCheckConstraintColumn> rows)
-    {
+    protected void cacheChildren(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DB2TableCheckConstraint constraint,
+        @NotNull List<DB2TableCheckConstraintColumn> rows
+    ) {
         constraint.setAttributeReferences(rows);
     }
 }

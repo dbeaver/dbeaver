@@ -1,7 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2013-2015 Denis Forveille (titou10.titou10@gmail.com)
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,7 +22,7 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSForeignKeyModifyRule;
 
 /**
  * DB2 Foreign Key Delete/Update Rule
- * 
+ *
  * @author Denis Forveille
  */
 public enum DB2DeleteUpdateRule implements DBPNamedObject {
@@ -36,32 +35,15 @@ public enum DB2DeleteUpdateRule implements DBPNamedObject {
 
     R("Restrict", DBSForeignKeyModifyRule.RESTRICT);
 
-    private String name;
-    private DBSForeignKeyModifyRule rule;
+    private final String title;
+    private final DBSForeignKeyModifyRule rule;
 
-    // ------------
-    // Constructors
-    // ------------
-    private DB2DeleteUpdateRule(String name, DBSForeignKeyModifyRule rule)
-    {
-        this.name = name;
+    DB2DeleteUpdateRule(String title, DBSForeignKeyModifyRule rule) {
+        this.title = title;
         this.rule = rule;
     }
 
-    // -----------------------
-    // Display @Property Value
-    // -----------------------
-    @Override
-    public String toString()
-    {
-        return name;
-    }
-
-    // ----------------
-    // Helper
-    // ----------------
-    public static DB2DeleteUpdateRule getDB2RuleFromDBSRule(DBSForeignKeyModifyRule dbsRule)
-    {
+    public static DB2DeleteUpdateRule getDB2RuleFromDBSRule(DBSForeignKeyModifyRule dbsRule) {
         for (DB2DeleteUpdateRule db2Rule : DB2DeleteUpdateRule.values()) {
             if (db2Rule.getRule().equals(dbsRule)) {
                 return db2Rule;
@@ -70,19 +52,13 @@ public enum DB2DeleteUpdateRule implements DBPNamedObject {
         return null;
     }
 
-    // ----------------
-    // Standard Getters
-    // ----------------
-
     @NotNull
     @Override
-    public String getName()
-    {
-        return name;
+    public String getName() {
+        return title;
     }
 
-    public DBSForeignKeyModifyRule getRule()
-    {
+    public DBSForeignKeyModifyRule getRule() {
         return rule;
     }
 }

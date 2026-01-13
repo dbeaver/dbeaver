@@ -1,7 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2013-2015 Denis Forveille (titou10.titou10@gmail.com)
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -36,7 +35,7 @@ import java.sql.SQLException;
 
 /**
  * Cache for DB2 Triggers
- * 
+ *
  * @author Denis Forveille
  */
 public class DB2TriggerCache extends JDBCObjectCache<DB2Schema, DB2Trigger> {
@@ -47,17 +46,16 @@ public class DB2TriggerCache extends JDBCObjectCache<DB2Schema, DB2Trigger> {
 
     @NotNull
     @Override
-    protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull DB2Schema db2Schema) throws SQLException
-    {
+    protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull DB2Schema db2Schema) throws SQLException {
         JDBCPreparedStatement dbStat = session.prepareStatement(SQL_TRIG_ALL);
         dbStat.setString(1, db2Schema.getName());
         return dbStat;
     }
 
     @Override
-    protected DB2Trigger fetchObject(@NotNull JDBCSession session, @NotNull DB2Schema db2Schema, @NotNull JDBCResultSet dbResult) throws SQLException,
-        DBException
-    {
+    protected DB2Trigger fetchObject(@NotNull JDBCSession session, @NotNull DB2Schema db2Schema, @NotNull JDBCResultSet dbResult)
+    throws SQLException,
+        DBException {
         // Look for related table
         String tableSchemaName = JDBCUtils.safeGetStringTrimmed(dbResult, "TABSCHEMA");
         String tableName = JDBCUtils.safeGetStringTrimmed(dbResult, "TABNAME");
@@ -66,7 +64,8 @@ public class DB2TriggerCache extends JDBCObjectCache<DB2Schema, DB2Trigger> {
             return null;
         }
         DB2Table db2Table = DB2Utils.findTableBySchemaNameAndName(session.getProgressMonitor(), db2Schema.getDataSource(),
-            tableSchemaName, tableName);
+            tableSchemaName, tableName
+        );
         if (db2Table == null) {
             log.debug("Can't find trigger's table " + tableName);
             return null;

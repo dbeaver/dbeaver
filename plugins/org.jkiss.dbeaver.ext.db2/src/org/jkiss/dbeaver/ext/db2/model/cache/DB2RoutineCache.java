@@ -1,7 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2013-2015 Denis Forveille (titou10.titou10@gmail.com)
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,19 +31,20 @@ import java.sql.SQLException;
 
 /**
  * Cache for DB2 Routines (UDF + Methods + Procedures)
- * 
+ *
  * @author Denis Forveille
  */
 public class DB2RoutineCache extends JDBCObjectCache<DB2Schema, DB2Routine> {
 
-    private static final String SQL_BASE_V95 = "SELECT * FROM SYSCAT.ROUTINES WHERE ROUTINESCHEMA = ? AND ROUTINETYPE= '%s' ORDER BY ROUTINENAME WITH UR";
-    private static final String SQL_BASE_ALL = "SELECT * FROM SYSCAT.ROUTINES WHERE ROUTINESCHEMA = ? AND ROUTINETYPE= '%s' AND ROUTINEMODULENAME IS NULL ORDER BY ROUTINENAME WITH UR";
+    private static final String SQL_BASE_V95
+        = "SELECT * FROM SYSCAT.ROUTINES WHERE ROUTINESCHEMA = ? AND ROUTINETYPE= '%s' ORDER BY ROUTINENAME WITH UR";
+    private static final String SQL_BASE_ALL
+        = "SELECT * FROM SYSCAT.ROUTINES WHERE ROUTINESCHEMA = ? AND ROUTINETYPE= '%s' AND ROUTINEMODULENAME IS NULL ORDER BY ROUTINENAME WITH UR";
 
     private final String SQL_V95;
     private final String SQL_ALL;
 
-    public DB2RoutineCache(DB2RoutineType routineType)
-    {
+    public DB2RoutineCache(DB2RoutineType routineType) {
         super();
 
         SQL_V95 = String.format(SQL_BASE_V95, routineType.name());
@@ -53,8 +53,7 @@ public class DB2RoutineCache extends JDBCObjectCache<DB2Schema, DB2Routine> {
 
     @NotNull
     @Override
-    protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull DB2Schema db2Schema) throws SQLException
-    {
+    protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull DB2Schema db2Schema) throws SQLException {
         String sql;
         if (db2Schema.getDataSource().isAtLeastV9_7()) {
             sql = SQL_ALL;
@@ -67,8 +66,8 @@ public class DB2RoutineCache extends JDBCObjectCache<DB2Schema, DB2Routine> {
     }
 
     @Override
-    protected DB2Routine fetchObject(@NotNull JDBCSession session, @NotNull DB2Schema db2Schema, @NotNull JDBCResultSet dbResult) throws SQLException, DBException
-    {
+    protected DB2Routine fetchObject(@NotNull JDBCSession session, @NotNull DB2Schema db2Schema, @NotNull JDBCResultSet dbResult)
+    throws SQLException, DBException {
         return new DB2Routine(db2Schema, dbResult);
     }
 }

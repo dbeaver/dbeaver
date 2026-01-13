@@ -1,7 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2013-2016 Denis Forveille (titou10.titou10@gmail.com)
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,7 +22,7 @@ import org.jkiss.dbeaver.model.DBPNamedObject;
 
 /**
  * DB2 Type of XML Schema Dependency
- * 
+ *
  * @author Denis Forveille
  */
 public enum DB2XMLSchemaDepType implements DBPNamedObject {
@@ -75,46 +74,25 @@ public enum DB2XMLSchemaDepType implements DBPNamedObject {
 
     v("Global variable", DB2ObjectType.VARIABLE);
 
-    private String        name;
-    private DB2ObjectType db2ObjectType;
+    private final String title;
+    private final DB2ObjectType db2ObjectType;
 
-    // -----------
-    // Constructor
-    // -----------
-
-    private DB2XMLSchemaDepType(String name, DB2ObjectType db2ObjectType)
-    {
-        this.name = name;
+    DB2XMLSchemaDepType(String title, DB2ObjectType db2ObjectType) {
+        this.title = title;
         this.db2ObjectType = db2ObjectType;
     }
 
-    private DB2XMLSchemaDepType(String name)
-    {
-        this(name, null);
+    DB2XMLSchemaDepType(String title) {
+        this(title, null);
     }
-
-    // -----------------------
-    // Display @Property Value
-    // -----------------------
-    @Override
-    public String toString()
-    {
-        return name;
-    }
-
-    // ----------------
-    // Standard Getters
-    // ----------------
 
     @NotNull
     @Override
-    public String getName()
-    {
-        return name;
+    public String getName() {
+        return title;
     }
 
-    public DB2ObjectType getDb2ObjectType()
-    {
+    public DB2ObjectType getDb2ObjectType() {
         return db2ObjectType;
     }
 

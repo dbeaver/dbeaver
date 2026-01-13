@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,7 +34,7 @@ import java.util.List;
 
 /**
  * Cache for DB2 Table Forign Keys (Reverse)
- * 
+ *
  * @author Denis Forveille
  */
 public final class DB2TableReferenceCache extends JDBCCompositeCache<DB2Schema, DB2Table, DB2TableReference, DB2TableKeyColumn> {
@@ -71,16 +71,14 @@ public final class DB2TableReferenceCache extends JDBCCompositeCache<DB2Schema, 
             " WITH UR";
     }
 
-    public DB2TableReferenceCache(DB2TableCache tableCache)
-    {
+    public DB2TableReferenceCache(DB2TableCache tableCache) {
         super(tableCache, DB2Table.class, "REFTABNAME", "CONSTNAME");
     }
 
     @NotNull
     @Override
     protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull DB2Schema db2Schema, @Nullable DB2Table forTable)
-        throws SQLException
-    {
+    throws SQLException {
         String sql;
         if (forTable != null) {
             sql = SQL_REF_TAB;
@@ -99,8 +97,8 @@ public final class DB2TableReferenceCache extends JDBCCompositeCache<DB2Schema, 
     @Override
     protected DB2TableReference fetchObject(
         @NotNull JDBCSession session, @NotNull DB2Schema db2Schema, @NotNull DB2Table db2Table, @NotNull String constName,
-        @NotNull JDBCResultSet dbResult) throws SQLException, DBException
-    {
+        @NotNull JDBCResultSet dbResult
+    ) throws SQLException, DBException {
         String ownerSchemaName = JDBCUtils.safeGetStringTrimmed(dbResult, "TABSCHEMA");
         String ownerTableName = JDBCUtils.safeGetString(dbResult, "TABNAME");
         DB2Table ownerTable = DB2Utils.findTableBySchemaNameAndName(
@@ -117,8 +115,8 @@ public final class DB2TableReferenceCache extends JDBCCompositeCache<DB2Schema, 
     @Override
     protected DB2TableKeyColumn[] fetchObjectRow(
         @NotNull JDBCSession session, @NotNull DB2Table db2Table,
-        @NotNull DB2TableReference db2TableReference, @NotNull JDBCResultSet dbResult) throws SQLException, DBException
-    {
+        @NotNull DB2TableReference db2TableReference, @NotNull JDBCResultSet dbResult
+    ) throws SQLException, DBException {
 
         String colName = JDBCUtils.safeGetString(dbResult, "COLNAME");
         DB2TableColumn tableColumn = db2Table.getAttribute(session.getProgressMonitor(), colName);
@@ -126,15 +124,18 @@ public final class DB2TableReferenceCache extends JDBCCompositeCache<DB2Schema, 
             log.debug("DB2TableReferenceCache : Column '" + colName + "' not found in table '" + db2Table.getName() + "' ??");
             return null;
         } else {
-            return new DB2TableKeyColumn[]  {
+            return new DB2TableKeyColumn[] {
                 new DB2TableKeyColumn(db2TableReference, tableColumn, JDBCUtils.safeGetInt(dbResult, "COLSEQ"))
             };
         }
     }
 
     @Override
-    protected void cacheChildren(@NotNull DBRProgressMonitor monitor, @NotNull DB2TableReference constraint, @NotNull List<DB2TableKeyColumn> rows)
-    {
+    protected void cacheChildren(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DB2TableReference constraint,
+        @NotNull List<DB2TableKeyColumn> rows
+    ) {
         constraint.setAttributeReferences(rows);
     }
 }

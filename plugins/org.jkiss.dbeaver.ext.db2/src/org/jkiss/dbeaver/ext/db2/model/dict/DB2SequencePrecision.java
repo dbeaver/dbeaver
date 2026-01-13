@@ -1,7 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2013-2015 Denis Forveille (titou10.titou10@gmail.com)
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,7 +23,7 @@ import org.jkiss.dbeaver.model.DBPNamedObject;
  * DB2 "Precision" of the Sequence
  * <p/>
  * DF: Added a "P" in front of "value" because Enum does not accept "number only" as value
- * 
+ *
  * @author Denis Forveille
  */
 public enum DB2SequencePrecision implements DBPNamedObject {
@@ -34,35 +33,17 @@ public enum DB2SequencePrecision implements DBPNamedObject {
 
     P19("Bigint", 19, "BIGINT");
 
-    private String name;
-    private Integer dataType;
-    private String sqlKeyword;
+    private final String title;
+    private final Integer dataType;
+    private final String sqlKeyword;
 
-    // -----------
-    // Constructor
-    // -----------
-    private DB2SequencePrecision(String name, Integer dataType, String sqlKeyword)
-    {
-        this.name = name;
+    DB2SequencePrecision(String title, Integer dataType, String sqlKeyword) {
+        this.title = title;
         this.dataType = dataType;
         this.sqlKeyword = sqlKeyword;
     }
 
-    // -----------------------
-    // Display @Property Value
-    // -----------------------
-
-    @Override
-    public String toString()
-    {
-        return name;
-    }
-
-    // ------------------------
-    // Helpers
-    // ------------------------
-    public static DB2SequencePrecision getFromDataType(Integer dataType)
-    {
+    public static DB2SequencePrecision getFromDataType(Integer dataType) {
         for (DB2SequencePrecision item : DB2SequencePrecision.values()) {
             if (dataType.equals(item.getDataType())) {
                 return item;
@@ -75,21 +56,18 @@ public enum DB2SequencePrecision implements DBPNamedObject {
     // Standard Getters
     // ----------------
 
-    public Integer getDataType()
-    {
+    public Integer getDataType() {
         return dataType;
     }
 
-    public String getSqlKeyword()
-    {
+    public String getSqlKeyword() {
         return sqlKeyword;
     }
 
     @NotNull
     @Override
-    public String getName()
-    {
-        return name;
+    public String getName() {
+        return title;
     }
 
 }

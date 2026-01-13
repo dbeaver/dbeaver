@@ -1,7 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2013-2015 Denis Forveille (titou10.titou10@gmail.com)
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,7 +21,7 @@ import org.jkiss.dbeaver.model.DBPNamedObject;
 
 /**
  * DB2 Status of DB2 XML schema repository object
- * 
+ *
  * @author Denis Forveille
  */
 public enum DB2XSRStatus implements DBPNamedObject {
@@ -34,37 +33,16 @@ public enum DB2XSRStatus implements DBPNamedObject {
 
     T("Temporary");
 
-    private String name;
+    private final String title;
 
-    // -----------------
-    // Constructor
-    // -----------------
-    private DB2XSRStatus(String name)
-    {
-        this.name = name;
+    DB2XSRStatus(String title) {
+        this.title = title;
     }
 
-    // -----------------------
-    // Display @Property Value
-    // -----------------------
-    @Override
-    public String toString()
-    {
-        return name;
-    }
-
-    // ----------------
-    // Standard Getters
-    // ----------------
-
-    // ----------------
-    // Standard Getters
-    // ----------------
     @NotNull
     @Override
-    public String getName()
-    {
-        return name;
+    public String getName() {
+        return title;
     }
 
 }

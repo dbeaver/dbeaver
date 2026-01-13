@@ -1,7 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2013-2016 Denis Forveille (titou10.titou10@gmail.com)
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,7 +34,7 @@ import java.sql.SQLException;
 
 /**
  * Cache for DB2 MQT
- * 
+ *
  * @author Denis Forveille
  */
 public final class DB2MaterializedQueryTableCache
@@ -73,21 +72,23 @@ public final class DB2MaterializedQueryTableCache
         SQL_MQT = sb.toString();
     }
 
-    public DB2MaterializedQueryTableCache()
-    {
+    public DB2MaterializedQueryTableCache() {
         super("TABNAME");
     }
 
     @NotNull
     @Override
-    public JDBCStatement prepareLookupStatement(@NotNull JDBCSession session, @NotNull DB2Schema db2Schema,
-                                                @Nullable DB2MaterializedQueryTable db2MaterializedQueryTable, @Nullable String db2MaterializedQueryTableName) throws SQLException
-    {
+    public JDBCStatement prepareLookupStatement(
+        @NotNull JDBCSession session, @NotNull DB2Schema db2Schema,
+        @Nullable DB2MaterializedQueryTable db2MaterializedQueryTable, @Nullable String db2MaterializedQueryTableName
+    ) throws SQLException {
         if (db2MaterializedQueryTable != null || db2MaterializedQueryTableName != null) {
             final JDBCPreparedStatement dbStat = session.prepareStatement(SQL_MQT);
             dbStat.setString(1, db2Schema.getName());
-            dbStat.setString(2,
-                db2MaterializedQueryTable != null ? db2MaterializedQueryTable.getName() : db2MaterializedQueryTableName);
+            dbStat.setString(
+                2,
+                db2MaterializedQueryTable != null ? db2MaterializedQueryTable.getName() : db2MaterializedQueryTableName
+            );
             return dbStat;
         } else {
             final JDBCPreparedStatement dbStat = session.prepareStatement(SQL_MQT_ALL);
@@ -97,16 +98,18 @@ public final class DB2MaterializedQueryTableCache
     }
 
     @Override
-    protected DB2MaterializedQueryTable fetchObject(@NotNull JDBCSession session, @NotNull DB2Schema db2Schema,
-        @NotNull JDBCResultSet dbResult) throws SQLException, DBException
-    {
+    protected DB2MaterializedQueryTable fetchObject(
+        @NotNull JDBCSession session, @NotNull DB2Schema db2Schema,
+        @NotNull JDBCResultSet dbResult
+    ) throws SQLException, DBException {
         return new DB2MaterializedQueryTable(session.getProgressMonitor(), db2Schema, dbResult);
     }
 
     @Override
-    protected JDBCStatement prepareChildrenStatement(@NotNull JDBCSession session, @NotNull DB2Schema db2Schema,
-        @Nullable DB2MaterializedQueryTable forMqt) throws SQLException
-    {
+    protected JDBCStatement prepareChildrenStatement(
+        @NotNull JDBCSession session, @NotNull DB2Schema db2Schema,
+        @Nullable DB2MaterializedQueryTable forMqt
+    ) throws SQLException {
 
         String sql;
         if (forMqt != null) {
@@ -123,9 +126,10 @@ public final class DB2MaterializedQueryTableCache
     }
 
     @Override
-    protected DB2TableColumn fetchChild(@NotNull JDBCSession session, @NotNull DB2Schema db2Schema,
-        @NotNull DB2MaterializedQueryTable db2MQT, @NotNull JDBCResultSet dbResult) throws SQLException, DBException
-    {
+    protected DB2TableColumn fetchChild(
+        @NotNull JDBCSession session, @NotNull DB2Schema db2Schema,
+        @NotNull DB2MaterializedQueryTable db2MQT, @NotNull JDBCResultSet dbResult
+    ) throws SQLException, DBException {
         return new DB2TableColumn(session.getProgressMonitor(), db2MQT, dbResult);
     }
 

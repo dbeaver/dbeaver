@@ -1,7 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2013-2016 Denis Forveille (titou10.titou10@gmail.com)
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,7 +34,7 @@ import java.sql.SQLException;
 
 /**
  * Cache for DB2 Views
- * 
+ *
  * @author Denis Forveille
  */
 public final class DB2ViewCache extends JDBCStructLookupCache<DB2Schema, DB2View, DB2TableColumn> {
@@ -73,16 +72,16 @@ public final class DB2ViewCache extends JDBCStructLookupCache<DB2Schema, DB2View
         SQL_VIEW = sb.toString();
     }
 
-    public DB2ViewCache()
-    {
+    public DB2ViewCache() {
         super("TABNAME");
     }
 
     @NotNull
     @Override
-    public JDBCStatement prepareLookupStatement(@NotNull JDBCSession session, @NotNull DB2Schema db2Schema,
-        @Nullable DB2View db2View, @Nullable String db2ViewName) throws SQLException
-    {
+    public JDBCStatement prepareLookupStatement(
+        @NotNull JDBCSession session, @NotNull DB2Schema db2Schema,
+        @Nullable DB2View db2View, @Nullable String db2ViewName
+    ) throws SQLException {
         if (db2View != null || db2ViewName != null) {
             final JDBCPreparedStatement dbStat = session.prepareStatement(SQL_VIEW);
             dbStat.setString(1, db2Schema.getName());
@@ -97,15 +96,15 @@ public final class DB2ViewCache extends JDBCStructLookupCache<DB2Schema, DB2View
 
     @Override
     protected DB2View fetchObject(@NotNull JDBCSession session, @NotNull DB2Schema db2Schema, @NotNull JDBCResultSet dbResult)
-        throws SQLException, DBException
-    {
+    throws SQLException, DBException {
         return new DB2View(session.getProgressMonitor(), db2Schema, dbResult);
     }
 
     @Override
-    protected JDBCStatement prepareChildrenStatement(@NotNull JDBCSession session, @NotNull DB2Schema db2Schema,
-        @Nullable DB2View forView) throws SQLException
-    {
+    protected JDBCStatement prepareChildrenStatement(
+        @NotNull JDBCSession session, @NotNull DB2Schema db2Schema,
+        @Nullable DB2View forView
+    ) throws SQLException {
 
         String sql;
         if (forView != null) {
@@ -122,9 +121,10 @@ public final class DB2ViewCache extends JDBCStructLookupCache<DB2Schema, DB2View
     }
 
     @Override
-    protected DB2TableColumn fetchChild(@NotNull JDBCSession session, @NotNull DB2Schema db2Schema, @NotNull DB2View db2View,
-        @NotNull JDBCResultSet dbResult) throws SQLException, DBException
-    {
+    protected DB2TableColumn fetchChild(
+        @NotNull JDBCSession session, @NotNull DB2Schema db2Schema, @NotNull DB2View db2View,
+        @NotNull JDBCResultSet dbResult
+    ) throws SQLException, DBException {
         return new DB2TableColumn(session.getProgressMonitor(), db2View, dbResult);
     }
 

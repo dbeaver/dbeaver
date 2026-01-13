@@ -1,7 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2013-2016 Denis Forveille (titou10.titou10@gmail.com)
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,7 +34,7 @@ import java.sql.SQLException;
 
 /**
  * Cache for DB2 Tables
- * 
+ *
  * @author Denis Forveille
  */
 public final class DB2TableCache extends JDBCStructLookupCache<DB2Schema, DB2Table, DB2TableColumn> {
@@ -66,16 +65,16 @@ public final class DB2TableCache extends JDBCStructLookupCache<DB2Schema, DB2Tab
         SQL_TAB = sb.toString();
     }
 
-    public DB2TableCache()
-    {
+    public DB2TableCache() {
         super("TABNAME");
     }
 
     @NotNull
     @Override
-    public JDBCStatement prepareLookupStatement(@NotNull JDBCSession session, @NotNull DB2Schema db2Schema,
-        @Nullable DB2Table db2Table, @Nullable String db2TableName) throws SQLException
-    {
+    public JDBCStatement prepareLookupStatement(
+        @NotNull JDBCSession session, @NotNull DB2Schema db2Schema,
+        @Nullable DB2Table db2Table, @Nullable String db2TableName
+    ) throws SQLException {
         if (db2Table != null || db2TableName != null) {
             final JDBCPreparedStatement dbStat = session.prepareStatement(SQL_TAB);
             dbStat.setString(1, db2Schema.getName());
@@ -90,15 +89,15 @@ public final class DB2TableCache extends JDBCStructLookupCache<DB2Schema, DB2Tab
 
     @Override
     protected DB2Table fetchObject(@NotNull JDBCSession session, @NotNull DB2Schema db2Schema, @NotNull JDBCResultSet dbResult)
-        throws SQLException, DBException
-    {
+    throws SQLException, DBException {
         return new DB2Table(session.getProgressMonitor(), db2Schema, dbResult);
     }
 
     @Override
-    protected JDBCStatement prepareChildrenStatement(@NotNull JDBCSession session, @NotNull DB2Schema db2Schema,
-        @Nullable DB2Table forTable) throws SQLException
-    {
+    protected JDBCStatement prepareChildrenStatement(
+        @NotNull JDBCSession session, @NotNull DB2Schema db2Schema,
+        @Nullable DB2Table forTable
+    ) throws SQLException {
 
         String sql;
         if (forTable != null) {
@@ -115,9 +114,10 @@ public final class DB2TableCache extends JDBCStructLookupCache<DB2Schema, DB2Tab
     }
 
     @Override
-    protected DB2TableColumn fetchChild(@NotNull JDBCSession session, @NotNull DB2Schema db2Schema, @NotNull DB2Table db2Table,
-        @NotNull JDBCResultSet dbResult) throws SQLException, DBException
-    {
+    protected DB2TableColumn fetchChild(
+        @NotNull JDBCSession session, @NotNull DB2Schema db2Schema, @NotNull DB2Table db2Table,
+        @NotNull JDBCResultSet dbResult
+    ) throws SQLException, DBException {
         return new DB2TableColumn(session.getProgressMonitor(), db2Table, dbResult);
     }
 

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,9 +21,8 @@ import org.jkiss.dbeaver.model.DBPNamedObject;
 
 /**
  * DB2 Federated Wrapper Type
- * 
+ *
  * @author Denis Forveille
- * 
  */
 public enum DB2WrapperType implements DBPNamedObject {
 
@@ -31,34 +30,15 @@ public enum DB2WrapperType implements DBPNamedObject {
 
     R("Relational");
 
-    private String name;
+    private final String name;
 
-    // -----------
-    // Constructor
-    // -----------
-
-    private DB2WrapperType(String name)
-    {
+    DB2WrapperType(String name) {
         this.name = name;
     }
 
-    // -----------------------
-    // Display @Property Value
-    // -----------------------
-    @Override
-    public String toString()
-    {
-        return name;
-    }
-
-    // ----------------
-    // Standard Getters
-    // ----------------
-
     @NotNull
     @Override
-    public String getName()
-    {
+    public String getName() {
         return name;
     }
 

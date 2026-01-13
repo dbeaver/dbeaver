@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -36,7 +36,7 @@ import java.util.List;
 
 /**
  * Cache for DB2 Table Unique Keys
- * 
+ *
  * @author Denis Forveille
  */
 public final class DB2TableUniqueKeyCache extends JDBCCompositeCache<DB2Schema, DB2Table, DB2TableUniqueKey, DB2TableKeyColumn> {
@@ -80,16 +80,14 @@ public final class DB2TableUniqueKeyCache extends JDBCCompositeCache<DB2Schema, 
         SQL_UK_ALL = sb.toString();
     }
 
-    public DB2TableUniqueKeyCache(DB2TableCache tableCache)
-    {
+    public DB2TableUniqueKeyCache(DB2TableCache tableCache) {
         super(tableCache, DB2Table.class, "TABNAME", "CONSTNAME");
     }
 
     @NotNull
     @Override
     protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull DB2Schema db2Schema, @Nullable DB2Table forTable)
-        throws SQLException
-    {
+    throws SQLException {
         String sql;
         if (forTable != null) {
             sql = SQL_UK_TAB;
@@ -108,8 +106,8 @@ public final class DB2TableUniqueKeyCache extends JDBCCompositeCache<DB2Schema, 
     @Override
     protected DB2TableUniqueKey fetchObject(
         @NotNull JDBCSession session, @NotNull DB2Schema db2Schema, @NotNull DB2Table db2Table, @NotNull String indexName,
-        @NotNull JDBCResultSet dbResult) throws SQLException, DBException
-    {
+        @NotNull JDBCResultSet dbResult
+    ) throws SQLException, DBException {
 
         DBSEntityConstraintType type = DB2ConstraintType.getConstraintType(JDBCUtils.safeGetString(dbResult, "TYPE"));
         return new DB2TableUniqueKey(session.getProgressMonitor(), db2Table, dbResult, type);
@@ -119,8 +117,8 @@ public final class DB2TableUniqueKeyCache extends JDBCCompositeCache<DB2Schema, 
     @Override
     protected DB2TableKeyColumn[] fetchObjectRow(
         @NotNull JDBCSession session, @NotNull DB2Table db2Table, @NotNull DB2TableUniqueKey object,
-        @NotNull JDBCResultSet dbResult) throws SQLException, DBException
-    {
+        @NotNull JDBCResultSet dbResult
+    ) throws SQLException, DBException {
 
         String colName = JDBCUtils.safeGetString(dbResult, "COLNAME");
         DB2TableColumn tableColumn = db2Table.getAttribute(session.getProgressMonitor(), colName);
@@ -129,13 +127,17 @@ public final class DB2TableUniqueKeyCache extends JDBCCompositeCache<DB2Schema, 
             return null;
         } else {
             return new DB2TableKeyColumn[] {
-                new DB2TableKeyColumn(object, tableColumn, JDBCUtils.safeGetInt(dbResult, "COLSEQ")) };
+                new DB2TableKeyColumn(object, tableColumn, JDBCUtils.safeGetInt(dbResult, "COLSEQ"))
+            };
         }
     }
 
     @Override
-    protected void cacheChildren(@NotNull DBRProgressMonitor monitor, @NotNull DB2TableUniqueKey constraint, @NotNull List<DB2TableKeyColumn> rows)
-    {
+    protected void cacheChildren(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DB2TableUniqueKey constraint,
+        @NotNull List<DB2TableKeyColumn> rows
+    ) {
         constraint.setAttributeReferences(rows);
     }
 }

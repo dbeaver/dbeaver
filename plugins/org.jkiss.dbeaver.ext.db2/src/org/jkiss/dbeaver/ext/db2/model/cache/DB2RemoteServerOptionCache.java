@@ -1,7 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2013-2015 Denis Forveille (titou10.titou10@gmail.com)
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,7 +30,7 @@ import java.sql.SQLException;
 
 /**
  * Cache for DB2 Federated Remote Server Options
- * 
+ *
  * @author Denis Forveille
  */
 public class DB2RemoteServerOptionCache extends JDBCObjectCache<DB2RemoteServer, DB2RemoteServerOption> {
@@ -55,8 +54,8 @@ public class DB2RemoteServerOptionCache extends JDBCObjectCache<DB2RemoteServer,
 
     @NotNull
     @Override
-    protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull DB2RemoteServer remoteServer) throws SQLException
-    {
+    protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull DB2RemoteServer remoteServer)
+    throws SQLException {
         final JDBCPreparedStatement dbStat = session.prepareStatement(SQL);
         dbStat.setString(1, remoteServer.getName());
         // dbStat.setString(2, remoteServer.getDb2Wrapper().getName());
@@ -66,9 +65,12 @@ public class DB2RemoteServerOptionCache extends JDBCObjectCache<DB2RemoteServer,
     }
 
     @Override
-    protected DB2RemoteServerOption fetchObject(@NotNull JDBCSession session, @NotNull DB2RemoteServer remoteServer, @NotNull JDBCResultSet resultSet)
-        throws SQLException, DBException
-    {
+    protected DB2RemoteServerOption fetchObject(
+        @NotNull JDBCSession session,
+        @NotNull DB2RemoteServer remoteServer,
+        @NotNull JDBCResultSet resultSet
+    )
+    throws SQLException, DBException {
         return new DB2RemoteServerOption(remoteServer, resultSet);
     }
 }

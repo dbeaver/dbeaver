@@ -1,7 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2013-2015 Denis Forveille (titou10.titou10@gmail.com)
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,7 +22,7 @@ import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
 
 /**
  * DB2 Type of Constraints
- * 
+ *
  * @author Denis Forveille
  */
 public enum DB2ConstraintType implements DBPNamedObject {
@@ -37,32 +36,15 @@ public enum DB2ConstraintType implements DBPNamedObject {
 
     U("Unique", DBSEntityConstraintType.UNIQUE_KEY);
 
-    private String name;
-    private DBSEntityConstraintType type;
+    private final String title;
+    private final DBSEntityConstraintType type;
 
-    // -----------
-    // Constructor
-    // -----------
-    private DB2ConstraintType(String name, DBSEntityConstraintType type)
-    {
-        this.name = name;
+    DB2ConstraintType(String title, DBSEntityConstraintType type) {
+        this.title = title;
         this.type = type;
     }
 
-    // -----------------------
-    // Display @Property Value
-    // -----------------------
-    @Override
-    public String toString()
-    {
-        return name;
-    }
-
-    // -----------
-    // Helpers
-    // -----------
-    public static DBSEntityConstraintType getConstraintType(String code)
-    {
+    public static DBSEntityConstraintType getConstraintType(String code) {
         return DB2ConstraintType.valueOf(code).getType();
     }
 
@@ -71,13 +53,11 @@ public enum DB2ConstraintType implements DBPNamedObject {
     // ----------------
     @NotNull
     @Override
-    public String getName()
-    {
-        return name;
+    public String getName() {
+        return title;
     }
 
-    public DBSEntityConstraintType getType()
-    {
+    public DBSEntityConstraintType getType() {
         return type;
     }
 

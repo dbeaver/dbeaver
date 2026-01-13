@@ -1,7 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2013-2015 Denis Forveille (titou10.titou10@gmail.com)
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,7 +32,7 @@ import java.sql.SQLException;
 
 /**
  * Cache for DB2 Aliases
- * 
+ *
  * @author Denis Forveille
  */
 public final class DB2AliasCache extends JDBCObjectCache<DB2Schema, DB2Alias> {
@@ -80,8 +79,7 @@ public final class DB2AliasCache extends JDBCObjectCache<DB2Schema, DB2Alias> {
 
     @NotNull
     @Override
-    protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull DB2Schema db2Schema) throws SQLException
-    {
+    protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull DB2Schema db2Schema) throws SQLException {
         DB2DataSource db2DataSource = db2Schema.getDataSource();
         String sql;
         if (db2DataSource.isAtLeastV9_7()) {
@@ -98,8 +96,8 @@ public final class DB2AliasCache extends JDBCObjectCache<DB2Schema, DB2Alias> {
         return dbStat;
     }
 
-    protected DB2Alias fetchObject(@NotNull JDBCSession session, @NotNull DB2Schema db2Schema, @NotNull JDBCResultSet resultSet) throws SQLException, DBException
-    {
+    protected DB2Alias fetchObject(@NotNull JDBCSession session, @NotNull DB2Schema db2Schema, @NotNull JDBCResultSet resultSet)
+    throws SQLException, DBException {
         return new DB2Alias(session.getProgressMonitor(), db2Schema, resultSet);
     }
 

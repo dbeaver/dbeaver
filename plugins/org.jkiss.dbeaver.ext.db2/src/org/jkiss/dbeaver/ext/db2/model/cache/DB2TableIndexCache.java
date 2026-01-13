@@ -1,7 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2013-2015 Denis Forveille (titou10.titou10@gmail.com)
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,7 +32,7 @@ import java.sql.SQLException;
 
 /**
  * Cache for DB2 Indexes for a given Table
- * 
+ *
  * @author Denis Forveille
  */
 public class DB2TableIndexCache extends JDBCObjectCache<DB2TableBase, DB2Index> {
@@ -43,24 +42,23 @@ public class DB2TableIndexCache extends JDBCObjectCache<DB2TableBase, DB2Index> 
     @NotNull
     @Override
     protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull DB2TableBase db2Table)
-        throws SQLException
-    {
+    throws SQLException {
         final JDBCPreparedStatement dbStat = session.prepareStatement(SQL_INDS_TAB);
         dbStat.setString(1, db2Table.getSchema().getName());
         dbStat.setString(2, db2Table.getName());
         return dbStat;
     }
- 
+
     @Override
     protected DB2Index fetchObject(@NotNull JDBCSession session, @NotNull DB2TableBase db2Table, @NotNull JDBCResultSet dbResult)
-        throws SQLException, DBException
-    {
+    throws SQLException, DBException {
 
         // Lookup for indexes in right cache..
         String indexSchemaName = JDBCUtils.safeGetStringTrimmed(dbResult, "INDSCHEMA");
         String indexName = JDBCUtils.safeGetStringTrimmed(dbResult, "INDNAME");
 
         return DB2Utils.findIndexBySchemaNameAndName(session.getProgressMonitor(), db2Table.getDataSource(), indexSchemaName,
-            indexName);
+            indexName
+        );
     }
 }

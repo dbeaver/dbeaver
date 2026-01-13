@@ -1,7 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2013-2016 Denis Forveille (titou10.titou10@gmail.com)
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,7 +22,7 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSIndexType;
 
 /**
  * DB2 Type of Indexes
- * 
+ *
  * @author Denis Forveille
  */
 public enum DB2IndexType implements DBPNamedObject {
@@ -49,46 +48,27 @@ public enum DB2IndexType implements DBPNamedObject {
 
     XVIP("Index over XML column (physical)", false);
 
-    private String       name;
-    private DBSIndexType dbsIndexType;
-    private Boolean      validForCreation;
+    private final String title;
+    private final DBSIndexType dbsIndexType;
+    private final Boolean validForCreation;
 
-    // -----------------
-    // Constructor
-    // -----------------
-    private DB2IndexType(String name, Boolean validForCreation)
-    {
-        this.name = name;
+    DB2IndexType(String title, Boolean validForCreation) {
+        this.title = title;
         this.validForCreation = validForCreation;
-        this.dbsIndexType = new DBSIndexType(this.name(), name);
+        this.dbsIndexType = new DBSIndexType(this.name(), title);
     }
 
-    // -----------------------
-    // Display @Property Value
-    // -----------------------
-    @Override
-    public String toString()
-    {
-        return name;
-    }
-
-    // ----------------
-    // Standard Getters
-    // ----------------
     @NotNull
     @Override
-    public String getName()
-    {
-        return name;
+    public String getName() {
+        return title;
     }
 
-    public DBSIndexType getDBSIndexType()
-    {
+    public DBSIndexType getDBSIndexType() {
         return dbsIndexType;
     }
 
-    public Boolean isValidForCreation()
-    {
+    public Boolean isValidForCreation() {
         return validForCreation;
     }
 }

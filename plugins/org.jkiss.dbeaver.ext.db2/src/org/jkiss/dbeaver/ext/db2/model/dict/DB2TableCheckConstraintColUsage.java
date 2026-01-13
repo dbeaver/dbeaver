@@ -1,7 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2013-2015 Denis Forveille (titou10.titou10@gmail.com)
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -36,32 +35,17 @@ public enum DB2TableCheckConstraintColUsage implements DBPNamedObject {
 
     T("Target in a MQT system-generated column");
 
-    private String name;
+    private final String title;
 
-    // -----------------
-    // Constructor
-    // -----------------
-    private DB2TableCheckConstraintColUsage(String name)
+    DB2TableCheckConstraintColUsage(String title)
     {
-        this.name = name;
+        this.title = title;
     }
 
-    // -----------------------
-    // Display @Property Value
-    // -----------------------
-    @Override
-    public String toString()
-    {
-        return name;
-    }
-
-    // ----------------
-    // Standard Getters
-    // ----------------
     @NotNull
     @Override
     public String getName()
     {
-        return name;
+        return title;
     }
 }

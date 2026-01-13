@@ -1,7 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2013-2015 Denis Forveille (titou10.titou10@gmail.com)
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,7 +30,7 @@ import java.sql.SQLException;
 
 /**
  * Cache for dependencies on DB2 Triggers
- * 
+ *
  * @author Denis Forveille
  */
 public class DB2TriggerDepCache extends JDBCObjectCache<DB2Trigger, DB2TriggerDep> {
@@ -40,8 +39,7 @@ public class DB2TriggerDepCache extends JDBCObjectCache<DB2Trigger, DB2TriggerDe
 
     @NotNull
     @Override
-    protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull DB2Trigger db2Trigger) throws SQLException
-    {
+    protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull DB2Trigger db2Trigger) throws SQLException {
         final JDBCPreparedStatement dbStat = session.prepareStatement(SQL);
         dbStat.setString(1, db2Trigger.getParentObject().getName());
         dbStat.setString(2, db2Trigger.getName());
@@ -50,8 +48,7 @@ public class DB2TriggerDepCache extends JDBCObjectCache<DB2Trigger, DB2TriggerDe
 
     @Override
     protected DB2TriggerDep fetchObject(@NotNull JDBCSession session, @NotNull DB2Trigger db2Trigger, @NotNull JDBCResultSet resultSet)
-        throws SQLException, DBException
-    {
+    throws SQLException, DBException {
         return new DB2TriggerDep(session.getProgressMonitor(), db2Trigger, resultSet);
     }
 }

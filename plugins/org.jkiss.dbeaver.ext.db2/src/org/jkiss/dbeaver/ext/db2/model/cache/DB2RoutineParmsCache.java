@@ -1,7 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2013-2015 Denis Forveille (titou10.titou10@gmail.com)
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,7 +32,6 @@ import java.sql.SQLException;
  * Cache for Routine parameters
  *
  * @author Denis Forveille
- *
  */
 public class DB2RoutineParmsCache extends JDBCObjectCache<DB2Routine, DB2RoutineParm> {
 
@@ -42,16 +40,17 @@ public class DB2RoutineParmsCache extends JDBCObjectCache<DB2Routine, DB2Routine
     protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull DB2Routine db2Routine) throws SQLException {
         JDBCPreparedStatement dbStat = session.prepareStatement(
             "SELECT * FROM SYSCAT.ROUTINEPARMS" +
-            " WHERE ROUTINESCHEMA = ? AND SPECIFICNAME = ?" +
-            " ORDER BY ORDINAL" +
-            " WITH UR");
+                " WHERE ROUTINESCHEMA = ? AND SPECIFICNAME = ?" +
+                " ORDER BY ORDINAL" +
+                " WITH UR");
         dbStat.setString(1, db2Routine.getSchema().getName());
         dbStat.setString(2, db2Routine.getSpecificName());
         return dbStat;
     }
 
     @Override
-    protected DB2RoutineParm fetchObject(@NotNull JDBCSession session, @NotNull DB2Routine db2Routine, @NotNull JDBCResultSet resultSet) throws SQLException,
+    protected DB2RoutineParm fetchObject(@NotNull JDBCSession session, @NotNull DB2Routine db2Routine, @NotNull JDBCResultSet resultSet)
+    throws SQLException,
         DBException {
         return new DB2RoutineParm(session.getProgressMonitor(), db2Routine, resultSet);
     }
