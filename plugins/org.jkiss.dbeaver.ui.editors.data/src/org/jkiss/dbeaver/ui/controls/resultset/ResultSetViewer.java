@@ -123,8 +123,8 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
-import java.util.*;
 import java.util.List;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 /**
@@ -845,15 +845,12 @@ public class ResultSetViewer extends Viewer
                     }
                     changed = true;
                     if (newPresentation == null) {
-                        newPresentation = this.availablePresentations.get(0);
+                        newPresentation = this.availablePresentations.getFirst();
                     }
                     try {
                         IResultSetPresentation instance = newPresentation.createInstance();
                         activePresentationDescriptor = newPresentation;
                         setActivePresentation(instance);
-                        if(getPreferenceStore().getBoolean(ResultSetPreferences.RESULT_SET_AUTOMATIC_ROW_COUNT)){
-                            updateRowCount();
-                        }
                     } catch (Throwable e) {
                         DBWorkbench.getPlatformUI().showError("Presentation activate", "Can't instantiate data view '" + newPresentation.getLabel() + "'", e);
                     }
@@ -2039,7 +2036,6 @@ public class ResultSetViewer extends Viewer
                                 long rowCount = readRowCount(monitor);
                                 return ROW_COUNT_FORMAT.format(rowCount);
                             } catch (DBException e) {
-                                log.error(e);
                                 throw new InvocationTargetException(e);
                             }
                         }
@@ -2222,7 +2218,7 @@ public class ResultSetViewer extends Viewer
     }
 
     @Override
-    public String getAttributeReadOnlyStatus(DBDAttributeBinding attr, boolean checkEntity, boolean checkKey) {
+    public String getAttributeReadOnlyStatus(@NotNull DBDAttributeBinding attr, boolean checkEntity, boolean checkKey) {
         if (checkEntity) {
             String dataStatus = getReadOnlyStatus();
             if (dataStatus != null) {
@@ -2370,7 +2366,7 @@ public class ResultSetViewer extends Viewer
 
         if (resultSetSize != null) {
             DBSDataContainer dataContainer = getDataContainer();
-            if (dataContainer != null && dataContainer.getDataSource() != null) {
+            if (dataContainer != null) {
                 resultSetSize.setText(String.valueOf(getSegmentMaxRows()));
             }
         }
@@ -2463,9 +2459,7 @@ public class ResultSetViewer extends Viewer
             DBSDataContainer dataContainer = getDataContainer();
             if (dataContainer != null) {
                 DBPDataSource dataSource = dataContainer.getDataSource();
-                if (dataSource != null) {
-                    statusMessage += " [" + dataSource.getContainer().getName() + "]";
-                }
+                statusMessage += " [" + dataSource.getContainer().getName() + "]";
             }
         }
         if (isTooltip) {
@@ -3154,7 +3148,7 @@ public class ResultSetViewer extends Viewer
         // Display format
         {
             if (activePresentation instanceof IResultSetDisplayFormatProvider displayFormatProvider) {
-                DBDDisplayFormat defaultDisplayFormat = ((IResultSetDisplayFormatProvider) activePresentation).getDefaultDisplayFormat();
+                DBDDisplayFormat defaultDisplayFormat = displayFormatProvider.getDefaultDisplayFormat();
                 MenuManager formatsMenu = new MenuManager(DTUIMessages.value_format_selector_value);
                 for (DBDDisplayFormat displayFormat : DBDDisplayFormat.values()) {
                     String formatName = switch (displayFormat) {
@@ -4396,13 +4390,15 @@ public class ResultSetViewer extends Viewer
         }
     }
 
-    public void updateRowCount() {
+    public void updateRowCount(boolean showErrors) {
         if (rowCountLabel != null) {
-            rowCountLabel.executeAction();
+            rowCountLabel.executeAction(showErrors);
+        } else {
+            log.error("Cannot calculate row count with disabled row count UI");
         }
     }
 
-    public void setSelectionStatistics(String stats) {
+    public void setSelectionStatistics(@Nullable String stats) {
         if (selectionStatLabel == null || selectionStatLabel.isDisposed()) {
             return;
         }
@@ -4420,7 +4416,7 @@ public class ResultSetViewer extends Viewer
     /**
      * Reads row count and sets value in status label
      */
-    private long readRowCount(DBRProgressMonitor monitor) throws DBException {
+    private long readRowCount(@NotNull DBRProgressMonitor monitor) throws DBException {
         final DBCExecutionContext executionContext = getExecutionContext();
         DBSDataContainer dataContainer = getDataContainer();
         if (executionContext == null || dataContainer == null) {
