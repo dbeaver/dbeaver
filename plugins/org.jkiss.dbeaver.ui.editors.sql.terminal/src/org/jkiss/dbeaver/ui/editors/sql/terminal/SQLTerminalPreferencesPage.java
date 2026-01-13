@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -58,12 +58,11 @@ public class SQLTerminalPreferencesPage extends TargetPrefPage {
     protected Control createPreferenceContent(@NotNull Composite parent) {
         Composite composite = UIUtils.createPlaceholder(parent, 2, 5);
         
-        Composite commonGroup = UIUtils.createControlGroup(
+        Composite commonGroup = UIUtils.createTitledComposite(
             composite,
             SQLEditorMessages.pref_page_sql_editor_group_common,
             2,
-            GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING,
-            0
+            GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING
         );
         showTerminalViewByDefault = UIUtils.createCheckbox(
             commonGroup,
