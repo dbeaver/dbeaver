@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ui;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.ui.progress.UIJob;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
@@ -36,11 +37,13 @@ public abstract class AbstractUIJob extends UIJob
     }
 
     @Override
-    public IStatus runInUIThread(IProgressMonitor monitor)
+    @NotNull
+    public IStatus runInUIThread(@NotNull IProgressMonitor monitor)
     {
         return this.runInUIThread(RuntimeUtils.makeMonitor(monitor));
     }
 
-    protected abstract IStatus runInUIThread(DBRProgressMonitor monitor);
+    @NotNull
+    protected abstract IStatus runInUIThread(@NotNull DBRProgressMonitor monitor);
 
 }
