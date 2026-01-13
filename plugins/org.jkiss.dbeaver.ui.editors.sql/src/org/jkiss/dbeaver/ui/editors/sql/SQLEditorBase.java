@@ -1420,7 +1420,6 @@ public abstract class SQLEditorBase extends BaseTextEditor implements
 
                 if (operationCode == ITextOperationTarget.COPY) {
                     textWidget.copy();
-                    textWidget.setSelection(caretOffset);
                 } else if (operationCode == ITextOperationTarget.CUT) {
                     textWidget.cut();
                 }
