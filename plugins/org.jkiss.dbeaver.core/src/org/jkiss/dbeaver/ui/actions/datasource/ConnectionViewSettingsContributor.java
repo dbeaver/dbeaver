@@ -49,7 +49,8 @@ public class ConnectionViewSettingsContributor extends DataSourceMenuContributor
 
     @Override
     protected void fillContributionItems(final List<IContributionItem> menuItems) {
-        DBPDataSourceContainer dsContainer = AbstractDataSourceHandler.getDataSourceContainerFromPart(UIUtils.getActiveWorkbenchWindow().getActivePage().getActivePart());
+        DBPDataSourceContainer dsContainer = AbstractDataSourceHandler.getDataSourceContainerFromPart(UIUtils.getActiveWorkbenchWindow()
+            .getActivePage().getActivePart());
         if (dsContainer == null) {
             return;
         }
@@ -103,19 +104,7 @@ public class ConnectionViewSettingsContributor extends DataSourceMenuContributor
             askToReconnectIfNeeded();
         }
 
-        void clearCurrentUserSettings(DBNBrowseSettings settings) {
-            if (DBWorkbench.isDistributed() && settings instanceof DataSourceNavigatorSettings dataSourceNavigatorSettings) {
-                try {
-                    DataSourceNavigatorSettingsUtils.clearCustomNavigatorSettings(dsContainer);
-                    dataSourceNavigatorSettings.setUserSettings(false);
-                } catch (DBException logged) {
-                    log.error("Error clearing custom navigator settings", logged);
-                }
-            }
-            askToReconnectIfNeeded();
-        }
-
-        private void askToReconnectIfNeeded() {
+        void askToReconnectIfNeeded() {
             if (dsContainer.isConnected()) {
                 if (UIUtils.confirmAction(
                     UIUtils.getActiveWorkbenchShell(),
@@ -259,9 +248,8 @@ public class ConnectionViewSettingsContributor extends DataSourceMenuContributor
 
         @Override
         public void run() {
-            if (!isChecked()) {
-                clearCurrentUserSettings(dsContainer.getNavigatorSettings());
-            }
+            clearCurrentUserSettings();
+            refreshNavigator();
         }
 
         @Override
@@ -270,9 +258,18 @@ public class ConnectionViewSettingsContributor extends DataSourceMenuContributor
             enableCheck();
         }
 
-        @Override
-        void clearCurrentUserSettings(DBNBrowseSettings settings) {
-            super.clearCurrentUserSettings(settings);
+        void clearCurrentUserSettings() {
+            if (DBWorkbench.isDistributed()) {
+                try {
+                    DataSourceNavigatorSettingsUtils.clearCustomNavigatorSettings(dsContainer);
+                } catch (DBException logged) {
+                    log.error("Error clearing custom navigator settings", logged);
+                }
+            }
+            if (dsContainer instanceof DataSourceDescriptor descriptor) {
+                descriptor.setNavigatorSettings(DataSourceNavigatorSettings.getDefaultSettings());
+            }
+            askToReconnectIfNeeded();
             enableCheck();
         }
 

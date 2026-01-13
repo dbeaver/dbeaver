@@ -174,7 +174,6 @@ public class ConnectionPageGeneral extends ConnectionWizardPage implements Navig
                 // Get settings from data source descriptor
                 final DBPConnectionConfiguration conConfig = dataSourceDescriptor.getConnectionConfiguration();
                 setConnectionType(connectionTypeCombo, conConfig.getConnectionType());
-                updateNavigatorSettingsPreset(navigatorSettingsCombo, dataSourceDescriptor.getNavigatorSettings());
 
                 folderSelector.setFolder(dataSourceDescriptor.getFolder());
 
@@ -189,11 +188,11 @@ public class ConnectionPageGeneral extends ConnectionWizardPage implements Navig
         } else {
             // Default settings
             setConnectionType(connectionTypeCombo, DBPConnectionType.getDefaultConnectionType());
-            updateNavigatorSettingsPreset(navigatorSettingsCombo, getNavigatorSettings());
             folderSelector.setFolder(curDataSourceFolder);
 
             readOnlyConnection.setSelection(false);
         }
+        updateNavigatorSettingsPreset(navigatorSettingsCombo, getNavigatorSettings());
 
         long features = getWizard().getSelectedDriver().getDataSourceProvider().getFeatures();
         boolean isFeatureCatalogOnlyNeedToApply = (features & DBPDataSourceProvider.FEATURE_CATALOGS_ONLY) != 0;
@@ -678,7 +677,7 @@ public class ConnectionPageGeneral extends ConnectionWizardPage implements Navig
         if (this.navigatorSettings == null) {
             this.navigatorSettings = new DataSourceNavigatorSettings(getWizard().getSelectedNavigatorSettings());
         }
-        dsDescriptor.setNavigatorSettings(this.navigatorSettings);
+        processNavigatorSettings(dsDescriptor);
 
         dsDescriptor.setConnectionReadOnly(this.readOnlyConnection.getSelection());
         dsDescriptor.setModifyPermissions(this.accessRestrictions);
@@ -688,6 +687,16 @@ public class ConnectionPageGeneral extends ConnectionWizardPage implements Navig
                 dataSource.setObjectFilter(filterInfo.type, null, filterInfo.filter);
             }
         }
+    }
+
+    private void processNavigatorSettings(DataSourceDescriptor dsDescriptor) {
+        if (DBWorkbench.isDistributed()) {
+            DataSourceNavigatorSettings.setDefaultSettings(this.navigatorSettings);
+            if (dsDescriptor.getNavigatorSettings().isUserSettings()) {
+                return;
+            }
+        }
+        dsDescriptor.setNavigatorSettings(this.navigatorSettings);
     }
 
     public void setDataSourceFolder(@Nullable DBPDataSourceFolder dataSourceFolder) {
