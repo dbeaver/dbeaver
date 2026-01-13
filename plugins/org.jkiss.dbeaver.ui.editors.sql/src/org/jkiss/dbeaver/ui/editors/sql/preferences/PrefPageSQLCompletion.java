@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,8 +39,7 @@ import org.jkiss.dbeaver.utils.PrefUtils;
 /**
  * PrefPageSQLCompletion
  */
-public class PrefPageSQLCompletion extends TargetPrefPage
-{
+public class PrefPageSQLCompletion extends TargetPrefPage {
     private static final Log log = Log.getLog(PrefPageSQLCompletion.class);
 
     public static final String PAGE_ID = "org.jkiss.dbeaver.preferences.main.sql.completion"; //$NON-NLS-1$
@@ -114,7 +113,12 @@ public class PrefPageSQLCompletion extends TargetPrefPage
 
         // Content assistant
         {
-            Composite assistGroup = UIUtils.createControlGroup(composite, SQLEditorMessages.pref_page_sql_completion_group_sql_assistant, 2, GridData.VERTICAL_ALIGN_BEGINNING, 0);
+            Composite assistGroup = UIUtils.createTitledComposite(
+                composite,
+                SQLEditorMessages.pref_page_sql_completion_group_sql_assistant,
+                2,
+                GridData.VERTICAL_ALIGN_BEGINNING
+            );
 
             csAutoActivationCheck = UIUtils.createCheckbox(
                 assistGroup,
@@ -204,7 +208,12 @@ public class PrefPageSQLCompletion extends TargetPrefPage
         rightPanel.setLayout(new GridLayout(1, false));
 
         {
-            Composite assistGroup = UIUtils.createControlGroup(rightPanel, SQLEditorMessages.pref_page_sql_format_group_search, 1, GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING, 0);
+            Composite assistGroup = UIUtils.createTitledComposite(
+                rightPanel,
+                SQLEditorMessages.pref_page_sql_format_group_search,
+                1,
+                GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING
+            );
 
             csMatchContains = UIUtils.createCheckbox(assistGroup, SQLEditorMessages.pref_page_sql_completion_label_match_contains, SQLEditorMessages.pref_page_sql_completion_label_match_contains_tip, false, 2);
             csUseGlobalSearch = UIUtils.createCheckbox(assistGroup, SQLEditorMessages.pref_page_sql_completion_label_use_global_search, SQLEditorMessages.pref_page_sql_completion_label_use_global_search_tip, false, 2);
@@ -215,7 +224,7 @@ public class PrefPageSQLCompletion extends TargetPrefPage
     }
 
     @Override
-    protected void loadPreferences(DBPPreferenceStore store)
+    protected void loadPreferences(@NotNull DBPPreferenceStore store)
     {
         try {
             csAutoActivationCheck.setSelection(store.getBoolean(SQLPreferenceConstants.ENABLE_AUTO_ACTIVATION));
@@ -247,7 +256,7 @@ public class PrefPageSQLCompletion extends TargetPrefPage
     }
 
     @Override
-    protected void savePreferences(DBPPreferenceStore store)
+    protected void savePreferences(@NotNull DBPPreferenceStore store)
     {
         try {
             store.setValue(SQLPreferenceConstants.ENABLE_AUTO_ACTIVATION, csAutoActivationCheck.getSelection());
@@ -330,6 +339,7 @@ public class PrefPageSQLCompletion extends TargetPrefPage
         super.performDefaults();
     }
 
+    @NotNull
     @Override
     protected String getPropertyPageID()
     {

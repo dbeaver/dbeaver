@@ -33,7 +33,8 @@ Export-Package: org.jkiss.dbeaver.runtime,
  org.jkiss.dbeaver.ui.registry,
  org.jkiss.dbeaver.ui.screenreaders,
  org.jkiss.dbeaver.ui.swt,
- org.jkiss.dbeaver.ui.validator
+ org.jkiss.dbeaver.ui.validator,
+ org.jkiss.dbeaver.ui.workbench
 Require-Bundle: org.eclipse.emf.common,
  org.eclipse.e4.ui.css.core,
  org.eclipse.e4.ui.css.swt,

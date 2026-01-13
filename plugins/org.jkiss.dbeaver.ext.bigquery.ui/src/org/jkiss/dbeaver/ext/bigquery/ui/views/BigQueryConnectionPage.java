@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -74,7 +74,7 @@ public class BigQueryConnectionPage extends ConnectionPageWithAuth implements ID
         ModifyListener textListener = e -> site.updateButtons();
 
         {
-            Composite addrGroup = UIUtils.createControlGroup(settingsGroup, BigQueryMessages.label_connection, 2, 0, 0);
+            Composite addrGroup = UIUtils.createTitledComposite(settingsGroup, BigQueryMessages.label_connection, 2);
             addrGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
             projectText = UIUtils.createLabelText(addrGroup, BigQueryMessages.label_project, ""); //$NON-NLS-2$
@@ -88,7 +88,7 @@ public class BigQueryConnectionPage extends ConnectionPageWithAuth implements ID
         }
         {
             // Def host/port
-            Composite addrGroup = UIUtils.createControlGroup(settingsGroup, BigQueryMessages.label_server_info, 4, 0, 0);
+            Composite addrGroup = UIUtils.createTitledComposite(settingsGroup, BigQueryMessages.label_server_info, 4);
             addrGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
             hostText = UIUtils.createLabelText(addrGroup, BigQueryMessages.label_host, BigQueryConstants.DEFAULT_HOST_NAME);

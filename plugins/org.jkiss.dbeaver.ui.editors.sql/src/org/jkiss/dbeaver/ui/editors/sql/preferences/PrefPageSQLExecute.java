@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -129,12 +129,11 @@ public class PrefPageSQLExecute extends TargetPrefPage {
 
         // General settings
         {
-            Composite commonGroup = UIUtils.createControlGroup(
+            Composite commonGroup = UIUtils.createTitledComposite(
                 leftPane,
                 SQLEditorMessages.pref_page_sql_editor_group_common,
                 2,
-                GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING,
-                0
+                GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING
             );
             {
                 invalidateBeforeExecuteCheck = UIUtils.createCheckbox(
@@ -180,12 +179,11 @@ public class PrefPageSQLExecute extends TargetPrefPage {
 
         // Scripts
         {
-            Composite scriptsGroup = UIUtils.createControlGroup(
+            Composite scriptsGroup = UIUtils.createTitledComposite(
                 rightPane,
                 SQLEditorMessages.pref_page_sql_editor_group_scripts,
                 2,
-                GridData.FILL_HORIZONTAL,
-                0
+                GridData.FILL_HORIZONTAL
             );
             {
                 commitTypeCombo = UIUtils.createLabelCombo(
@@ -275,12 +273,11 @@ public class PrefPageSQLExecute extends TargetPrefPage {
         }
         // Parameters
         {
-            Composite paramsGroup = UIUtils.createControlGroup(
+            Composite paramsGroup = UIUtils.createTitledComposite(
                 leftPane,
                 SQLEditorMessages.pref_page_sql_editor_group_parameters,
                 2,
-                GridData.VERTICAL_ALIGN_FILL,
-                0
+                GridData.VERTICAL_ALIGN_FILL
             );
             enableSQLParameters = UIUtils.createCheckbox(
                 paramsGroup,
@@ -357,12 +354,11 @@ public class PrefPageSQLExecute extends TargetPrefPage {
 
         // Delimiters
         {
-            Composite delimGroup = UIUtils.createControlGroup(
+            Composite delimGroup = UIUtils.createTitledComposite(
                 rightPane,
                 SQLEditorMessages.pref_page_sql_editor_group_delimiters,
                 2,
-                GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING,
-                0
+                GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING
             );
             statementDelimiterText = UIUtils.createLabelText(
                 delimGroup,

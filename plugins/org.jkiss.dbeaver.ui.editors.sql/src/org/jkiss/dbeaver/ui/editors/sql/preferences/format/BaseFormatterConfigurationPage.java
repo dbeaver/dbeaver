@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.ui.editors.sql.preferences.format;
 
 import org.eclipse.jface.dialogs.DialogPage;
 import org.eclipse.swt.widgets.Composite;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.sql.format.SQLFormatterConfiguration;
 import org.jkiss.dbeaver.model.sql.registry.SQLFormatterDescriptor;
@@ -59,24 +60,24 @@ public abstract class BaseFormatterConfigurationPage extends DialogPage implemen
     protected abstract Composite createFormatSettings(Composite parent);
 
     @Override
-    public void configure(SQLFormatterDescriptor formatterDescriptor, Runnable changeListener) {
+    public void configure(@NotNull SQLFormatterDescriptor formatterDescriptor, Runnable changeListener) {
         this.formatterDescriptor = formatterDescriptor;
         this.configuration = configuration;
         this.changeListener = changeListener;
     }
 
     @Override
-    public void loadSettings(DBPPreferenceStore preferenceStore, boolean useDefaults) {
+    public void loadSettings(@NotNull DBPPreferenceStore preferenceStore, boolean useDefaults) {
 
     }
 
     @Override
-    public void saveSettings(DBPPreferenceStore preferenceStore) {
+    public void saveSettings(@NotNull DBPPreferenceStore preferenceStore) {
 
     }
 
     @Override
-    public void resetSettings(DBPPreferenceStore preferenceStore) {
+    public void resetSettings(@NotNull DBPPreferenceStore preferenceStore) {
 
     }
 
