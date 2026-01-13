@@ -380,7 +380,7 @@ public abstract class AbstractCommandContext implements DBECommandContext {
     }
 
     @Override
-    public void addCommand(@NotNull DBECommand<?> command, @Nullable DBECommandReflector reflector, boolean execute, @Nullable DBECommand linkedCommand) {
+    public void addCommand(@NotNull DBECommand<?> command, @Nullable DBECommandReflector reflector, boolean execute, @Nullable DBECommand<?> linkedCommand) {
         synchronized (commands) {
 
             CommandInfo newCommand = new CommandInfo(command, reflector);
