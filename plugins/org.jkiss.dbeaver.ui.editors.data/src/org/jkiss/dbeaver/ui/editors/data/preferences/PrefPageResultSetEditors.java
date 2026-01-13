@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,8 +39,7 @@ import org.jkiss.dbeaver.utils.PrefUtils;
 /**
  * PrefPageResultSetEditors
  */
-public class PrefPageResultSetEditors extends TargetPrefPage
-{
+public class PrefPageResultSetEditors extends TargetPrefPage {
     static final Log log = Log.getLog(PrefPageResultSetEditors.class);
 
     public static final String PAGE_ID = "org.jkiss.dbeaver.preferences.main.resultset.editors"; //$NON-NLS-1$
@@ -62,79 +61,102 @@ public class PrefPageResultSetEditors extends TargetPrefPage
     private Button commitOnContentApplyCheck;
 
 
-    public PrefPageResultSetEditors()
-    {
+    public PrefPageResultSetEditors() {
         super();
-//        setPreferenceStore(DBWorkbench.getPlatform().getPreferenceStore());
+        //        setPreferenceStore(DBWorkbench.getPlatform().getPreferenceStore());
     }
 
     @Override
-    protected boolean hasDataSourceSpecificOptions(DBPDataSourceContainer dataSourceDescriptor)
-    {
+    protected boolean hasDataSourceSpecificOptions(DBPDataSourceContainer dataSourceDescriptor) {
         DBPPreferenceStore store = dataSourceDescriptor.getPreferenceStore();
         return
             store.contains(ResultSetPreferences.RESULT_SET_STRING_USE_CONTENT_EDITOR) ||
 
-            store.contains(ModelPreferences.MEMORY_CONTENT_MAX_SIZE) ||
-            store.contains(ModelPreferences.RESULT_SET_BINARY_PRESENTATION) ||
-            store.contains(ResultSetPreferences.RESULT_SET_BINARY_EDITOR_TYPE) ||
-            store.contains(ModelPreferences.RESULT_SET_BINARY_STRING_MAX_LEN) ||
-            store.contains(ModelPreferences.CONTENT_HEX_ENCODING) ||
-            store.contains(ModelPreferences.CONTENT_CACHE_CLOB) ||
-            store.contains(ModelPreferences.CONTENT_CACHE_BLOB) ||
-            store.contains(ModelPreferences.CONTENT_CACHE_MAX_SIZE) ||
-            store.contains(ResultSetPreferences.RS_EDIT_LONG_AS_LOB) ||
+                store.contains(ModelPreferences.MEMORY_CONTENT_MAX_SIZE) ||
+                store.contains(ModelPreferences.RESULT_SET_BINARY_PRESENTATION) ||
+                store.contains(ResultSetPreferences.RESULT_SET_BINARY_EDITOR_TYPE) ||
+                store.contains(ModelPreferences.RESULT_SET_BINARY_STRING_MAX_LEN) ||
+                store.contains(ModelPreferences.CONTENT_HEX_ENCODING) ||
+                store.contains(ModelPreferences.CONTENT_CACHE_CLOB) ||
+                store.contains(ModelPreferences.CONTENT_CACHE_BLOB) ||
+                store.contains(ModelPreferences.CONTENT_CACHE_MAX_SIZE) ||
+                store.contains(ResultSetPreferences.RS_EDIT_LONG_AS_LOB) ||
 
-            store.contains(ResultSetPreferences.RS_EDIT_MAX_TEXT_SIZE) ||
-            store.contains(ResultSetPreferences.RS_COMMIT_ON_EDIT_APPLY) ||
-            store.contains(ResultSetPreferences.RS_COMMIT_ON_CONTENT_APPLY)
+                store.contains(ResultSetPreferences.RS_EDIT_MAX_TEXT_SIZE) ||
+                store.contains(ResultSetPreferences.RS_COMMIT_ON_EDIT_APPLY) ||
+                store.contains(ResultSetPreferences.RS_COMMIT_ON_CONTENT_APPLY)
             ;
     }
 
     @Override
-    protected boolean supportsDataSourceSpecificOptions()
-    {
+    protected boolean supportsDataSourceSpecificOptions() {
         return true;
     }
 
     @NotNull
     @Override
     protected Control createPreferenceContent(@NotNull Composite parent) {
-        Composite composite = UIUtils.createPlaceholder(parent, 2, 5);
+        Composite composite = UIUtils.createComposite(parent, 1);
 
         {
-            Group stringGroup = UIUtils.createControlGroup(composite, ResultSetMessages.pref_page_database_resultsets_group_string, 2, SWT.NONE, 0);
-            GridData gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
-            gd.horizontalSpan = 2;
-            stringGroup.setLayoutData(gd);
+            Composite stringGroup = UIUtils.createTitledComposite(
+                composite,
+                ResultSetMessages.pref_page_database_resultsets_group_string,
+                2
+            );
 
             stringUseEditorCheck = UIUtils.createLabelCheckbox(stringGroup,
                 ResultSetMessages.pref_page_database_resultsets_checkbox_string_use_editor,
                 ResultSetMessages.pref_page_database_resultsets_checkbox_string_use_editor_tip,
-                true, 2);
+                true, 2
+            );
         }
 
         {
-            Group binaryGroup = UIUtils.createControlGroup(composite, ResultSetMessages.pref_page_database_resultsets_group_binary, 2, SWT.NONE, 0);
+            Composite binaryGroup = UIUtils.createTitledComposite(
+                composite,
+                ResultSetMessages.pref_page_database_resultsets_group_binary,
+                2
+            );
             GridData gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
             gd.horizontalSpan = 2;
             binaryGroup.setLayoutData(gd);
 
-            binaryPresentationCombo = UIUtils.createLabelCombo(binaryGroup, ResultSetMessages.pref_page_database_resultsets_label_binary_presentation, SWT.DROP_DOWN | SWT.READ_ONLY);
+            binaryPresentationCombo = UIUtils.createLabelCombo(
+                binaryGroup,
+                ResultSetMessages.pref_page_database_resultsets_label_binary_presentation,
+                SWT.DROP_DOWN | SWT.READ_ONLY
+            );
             for (DBDBinaryFormatter formatter : DBConstants.BINARY_FORMATS) {
                 binaryPresentationCombo.add(formatter.getTitle());
             }
 
-            binaryEditorType = UIUtils.createLabelCombo(binaryGroup, ResultSetMessages.pref_page_database_resultsets_label_binary_editor_type, SWT.DROP_DOWN | SWT.READ_ONLY);
+            binaryEditorType = UIUtils.createLabelCombo(
+                binaryGroup,
+                ResultSetMessages.pref_page_database_resultsets_label_binary_editor_type,
+                SWT.DROP_DOWN | SWT.READ_ONLY
+            );
             binaryEditorType.add("Editor");
             binaryEditorType.add("Dialog");
 
-            binaryStringMaxLength = UIUtils.createLabelSpinner(binaryGroup, ResultSetMessages.pref_page_database_resultsets_label_binary_strings_max_length, 0, 0, 10000);
+            binaryStringMaxLength = UIUtils.createLabelSpinner(
+                binaryGroup,
+                ResultSetMessages.pref_page_database_resultsets_label_binary_strings_max_length,
+                0,
+                0,
+                10000
+            );
             binaryStringMaxLength.setDigits(0);
             binaryStringMaxLength.setIncrement(1);
             binaryStringMaxLength.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
-            memoryContentSize = UIUtils.createLabelSpinner(binaryGroup, ResultSetMessages.pref_page_database_general_label_max_lob_length, 0, 0, 1024 * 1024 * 1024);
+            memoryContentSize = UIUtils.createLabelSpinner(
+                binaryGroup,
+                ResultSetMessages.pref_page_database_general_label_max_lob_length,
+                0,
+                0,
+                1024 * 1024 * 1024
+            );
             memoryContentSize.setDigits(0);
             memoryContentSize.setIncrement(1);
             memoryContentSize.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
@@ -144,41 +166,55 @@ public class PrefPageResultSetEditors extends TargetPrefPage
             encodingCombo.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
             contentCacheClob = UIUtils.createLabelCheckbox(binaryGroup, ResultSetMessages.pref_page_content_cache_clob, true);
             contentCacheBlob = UIUtils.createLabelCheckbox(binaryGroup, ResultSetMessages.pref_page_content_cache_blob, true);
-            contentCacheMaxSize = UIUtils.createLabelSpinner(binaryGroup, ResultSetMessages.pref_page_database_general_label_cache_max_size, 0, 0, Integer.MAX_VALUE);
+            contentCacheMaxSize = UIUtils.createLabelSpinner(
+                binaryGroup,
+                ResultSetMessages.pref_page_database_general_label_cache_max_size,
+                0,
+                0,
+                Integer.MAX_VALUE
+            );
             contentCacheMaxSize.setDigits(0);
             contentCacheMaxSize.setIncrement(100000);
             contentCacheMaxSize.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-            editLongAsLobCheck = UIUtils.createLabelCheckbox(binaryGroup, ResultSetMessages.pref_page_content_editor_checkbox_edit_long_as_lobs, false);
+            editLongAsLobCheck = UIUtils.createLabelCheckbox(
+                binaryGroup,
+                ResultSetMessages.pref_page_content_editor_checkbox_edit_long_as_lobs,
+                false
+            );
         }
 
         // Content
         {
-            Group contentGroup = UIUtils.createControlGroup(composite,
-                ResultSetMessages.pref_page_content_editor_group_content, 2, GridData.HORIZONTAL_ALIGN_BEGINNING, 0);
+            Composite contentGroup = UIUtils.createTitledComposite(composite,
+                ResultSetMessages.pref_page_content_editor_group_content, 2, GridData.HORIZONTAL_ALIGN_BEGINNING
+            );
             maxTextContentSize = UIUtils.createLabelSpinner(contentGroup, ResultSetMessages.pref_page_content_editor_label_max_text_length,
-                1000, 1, Integer.MAX_VALUE);
+                1000, 1, Integer.MAX_VALUE
+            );
             maxTextContentSize.setDigits(0);
             maxTextContentSize.setIncrement(10);
             maxTextContentSize.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
             commitOnEditApplyCheck = UIUtils.createLabelCheckbox(contentGroup,
-                ResultSetMessages.pref_page_content_editor_checkbox_commit_on_value_apply, false);
+                ResultSetMessages.pref_page_content_editor_checkbox_commit_on_value_apply, false
+            );
             commitOnContentApplyCheck = UIUtils.createLabelCheckbox(contentGroup,
-                ResultSetMessages.pref_page_content_editor_checkbox_commit_on_content_apply, false);
+                ResultSetMessages.pref_page_content_editor_checkbox_commit_on_content_apply, false
+            );
         }
 
         return composite;
     }
 
     @Override
-    protected void loadPreferences(DBPPreferenceStore store)
-    {
+    protected void loadPreferences(@NotNull DBPPreferenceStore store) {
         try {
             stringUseEditorCheck.setSelection(store.getBoolean(ResultSetPreferences.RESULT_SET_STRING_USE_CONTENT_EDITOR));
 
             memoryContentSize.setSelection(store.getInt(ModelPreferences.MEMORY_CONTENT_MAX_SIZE));
             binaryStringMaxLength.setSelection(store.getInt(ModelPreferences.RESULT_SET_BINARY_STRING_MAX_LEN));
 
-            DBDBinaryFormatter formatter = DBValueFormatting.getBinaryPresentation(store.getString(ModelPreferences.RESULT_SET_BINARY_PRESENTATION));
+            DBDBinaryFormatter formatter
+                = DBValueFormatting.getBinaryPresentation(store.getString(ModelPreferences.RESULT_SET_BINARY_PRESENTATION));
             for (int i = 0; i < binaryPresentationCombo.getItemCount(); i++) {
                 if (binaryPresentationCombo.getItem(i).equals(formatter.getTitle())) {
                     binaryPresentationCombo.select(i);
@@ -186,7 +222,8 @@ public class PrefPageResultSetEditors extends TargetPrefPage
                 }
             }
 
-            IValueController.EditType editorType = IValueController.EditType.valueOf(store.getString(ResultSetPreferences.RESULT_SET_BINARY_EDITOR_TYPE));
+            IValueController.EditType editorType
+                = IValueController.EditType.valueOf(store.getString(ResultSetPreferences.RESULT_SET_BINARY_EDITOR_TYPE));
             if (editorType == IValueController.EditType.EDITOR) {
                 binaryEditorType.select(0);
             } else {
@@ -208,8 +245,7 @@ public class PrefPageResultSetEditors extends TargetPrefPage
     }
 
     @Override
-    protected void savePreferences(DBPPreferenceStore store)
-    {
+    protected void savePreferences(@NotNull DBPPreferenceStore store) {
         try {
             store.setValue(ResultSetPreferences.RESULT_SET_STRING_USE_CONTENT_EDITOR, stringUseEditorCheck.getSelection());
 
@@ -223,10 +259,12 @@ public class PrefPageResultSetEditors extends TargetPrefPage
                 }
             }
             store.setValue(ModelPreferences.RESULT_SET_BINARY_STRING_MAX_LEN, binaryStringMaxLength.getSelection());
-            store.setValue(ResultSetPreferences.RESULT_SET_BINARY_EDITOR_TYPE,
+            store.setValue(
+                ResultSetPreferences.RESULT_SET_BINARY_EDITOR_TYPE,
                 binaryEditorType.getSelectionIndex() == 0 ?
                     IValueController.EditType.EDITOR.name() :
-                    IValueController.EditType.PANEL.name());
+                    IValueController.EditType.PANEL.name()
+            );
             store.setValue(ModelPreferences.CONTENT_HEX_ENCODING, UIUtils.getComboSelection(encodingCombo));
             store.setValue(ModelPreferences.CONTENT_CACHE_CLOB, contentCacheClob.getSelection());
             store.setValue(ModelPreferences.CONTENT_CACHE_BLOB, contentCacheBlob.getSelection());
@@ -243,8 +281,7 @@ public class PrefPageResultSetEditors extends TargetPrefPage
     }
 
     @Override
-    protected void clearPreferences(DBPPreferenceStore store)
-    {
+    protected void clearPreferences(DBPPreferenceStore store) {
         store.setToDefault(ResultSetPreferences.RESULT_SET_STRING_USE_CONTENT_EDITOR);
 
         store.setToDefault(ModelPreferences.MEMORY_CONTENT_MAX_SIZE);
@@ -281,9 +318,9 @@ public class PrefPageResultSetEditors extends TargetPrefPage
         super.performDefaults();
     }
 
+    @NotNull
     @Override
-    protected String getPropertyPageID()
-    {
+    protected String getPropertyPageID() {
         return PAGE_ID;
     }
 

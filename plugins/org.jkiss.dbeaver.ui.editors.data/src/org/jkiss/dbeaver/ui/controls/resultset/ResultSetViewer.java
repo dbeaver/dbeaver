@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,6 +24,7 @@ import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.action.*;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.IDialogSettings;
+import org.eclipse.jface.layout.GridLayoutFactory;
 import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.text.IFindReplaceTarget;
 import org.eclipse.jface.util.IPropertyChangeListener;
@@ -268,9 +269,7 @@ public class ResultSetViewer extends Viewer
         this.defaultBackground = isDarkHighContrast ? UIStyles.getDefaultWidgetBackground() : UIStyles.getDefaultTextBackground();
         this.defaultForeground = isDarkHighContrast ? UIStyles.COLOR_WHITE : UIStyles.getDefaultTextForeground();
 
-        long decoratorFeatures = decorator.getDecoratorFeatures();
-
-        boolean supportsPanels = (decoratorFeatures & IResultSetDecorator.FEATURE_PANELS) != 0;
+        boolean supportsPanels = supportsDecoratorFeature(IResultSetDecorator.FEATURE_PANELS);
 
         this.mainPanel = new ConComposite(parent);
         this.mainPanel.setGridLayout(supportsPanels ? 3 : 2);
@@ -297,15 +296,15 @@ public class ResultSetViewer extends Viewer
             return null;
         });
 
-        if ((decoratorFeatures & IResultSetDecorator.FEATURE_FILTERS) != 0) {
-            this.filtersPanel = new ResultSetFilterPanel(this, this.mainPanel,
-                (decoratorFeatures & IResultSetDecorator.FEATURE_COMPACT_FILTERS) != 0);
-            GridData gd = new GridData(GridData.FILL_HORIZONTAL);
+        if (supportsDecoratorFeature(IResultSetDecorator.FEATURE_FILTERS)) {
+            var gd = new GridData(GridData.FILL_HORIZONTAL);
             gd.horizontalSpan = ((GridLayout) mainPanel.getLayout()).numColumns;
-            this.filtersPanel.setLayoutData(gd);
+
+            var composite = createFilterPanel();
+            composite.setLayoutData(gd);
         }
 
-        if ((decoratorFeatures & IResultSetDecorator.FEATURE_PRESENTATIONS) != 0) {
+        if (supportsDecoratorFeature(IResultSetDecorator.FEATURE_PRESENTATIONS)) {
             this.presentationSwitchFolder = new VerticalFolder(mainPanel, SWT.LEFT);
             this.presentationSwitchFolder.setLayoutData(new GridData(GridData.FILL_VERTICAL));
             CSSUtils.markConnectionTypeColor(this.presentationSwitchFolder);
@@ -411,7 +410,11 @@ public class ResultSetViewer extends Viewer
             showEmptyPresentation();
 
             if (supportsStatusBar()) {
-                createStatusBar();
+                GridData gd = new GridData(GridData.FILL_HORIZONTAL);
+                gd.horizontalSpan = ((GridLayout) mainPanel.getLayout()).numColumns;
+
+                Composite composite = createStatusBar();
+                composite.setLayoutData(gd);
             }
 
             this.viewerPanel.addDisposeListener(e -> dispose());
@@ -526,14 +529,18 @@ public class ResultSetViewer extends Viewer
     ////////////////////////////////////////////////////////////
     // Filters
 
+    private boolean supportsDecoratorFeature(long feature) {
+        return CommonUtils.isBitSet(decorator.getDecoratorFeatures(), feature);
+    }
+
     private boolean supportsPanels() {
-        return (decorator.getDecoratorFeatures() & IResultSetDecorator.FEATURE_PANELS) != 0 &&
+        return supportsDecoratorFeature(IResultSetDecorator.FEATURE_PANELS) &&
             activePresentationDescriptor != null &&
             activePresentationDescriptor.supportsPanels();
     }
 
     public boolean supportsStatusBar() {
-        return (decorator.getDecoratorFeatures() & IResultSetDecorator.FEATURE_STATUS_BAR) != 0;
+        return supportsDecoratorFeature(IResultSetDecorator.FEATURE_STATUS_BAR);
     }
 
     public boolean supportsDataFilter() {
@@ -675,9 +682,7 @@ public class ResultSetViewer extends Viewer
                     }
                 }
             }
-            boolean enableFilters = readyToRun
-                && getDataContainer() != null
-                && getDataContainer().isFeatureSupported(DBSDataContainer.FEATURE_DATA_FILTER);
+            boolean enableFilters = readyToRun && supportsDataFilter();
             filtersPanel.enableFilters(enableFilters);
             //presentationSwitchToolbar.setEnabled(enableFilters);
         } finally {
@@ -1192,7 +1197,7 @@ public class ResultSetViewer extends Viewer
     }
 
     private void savePresentationSettings() {
-        if ((decorator.getDecoratorFeatures() & IResultSetDecorator.FEATURE_PANELS) != 0) {
+        if (supportsDecoratorFeature(IResultSetDecorator.FEATURE_PANELS)) {
             IDialogSettings pSections = ResultSetUtils.getViewerSettings(SETTINGS_SECTION_PRESENTATIONS);
             for (Map.Entry<ResultSetPresentationDescriptor, PresentationSettings> pEntry : presentationSettings.entrySet()) {
                 if (pEntry.getKey() == null) {
@@ -1851,17 +1856,64 @@ public class ResultSetViewer extends Viewer
         }
     };
 
-    private void createStatusBar() {
+    @NotNull
+    private Composite createFilterPanel() {
+        var composite = new ConComposite(mainPanel);
+        composite.setLayout(new FillLayout());
+
+        if (supportsDecoratorFeature(IResultSetDecorator.FEATURE_DECORATE_ON_DEMAND)) {
+            mainPanel.addListener(SWT.Activate, new Listener() {
+                @Override
+                public void handleEvent(@NotNull Event event) {
+                    createFilterPanel0(composite);
+                    updateFiltersText(false);
+                    mainPanel.removeListener(SWT.Activate, this);
+                }
+            });
+        } else {
+            createFilterPanel0(composite);
+        }
+
+        return composite;
+    }
+
+    private void createFilterPanel0(@NotNull Composite parent) {
+        filtersPanel = new ResultSetFilterPanel(
+            this,
+            parent,
+            supportsDecoratorFeature(IResultSetDecorator.FEATURE_COMPACT_FILTERS)
+        );
+    }
+
+    @NotNull
+    private Composite createStatusBar() {
+        var composite = new ConComposite(mainPanel);
+        composite.setLayout(GridLayoutFactory.fillDefaults().create());
+
+        if (supportsDecoratorFeature(IResultSetDecorator.FEATURE_DECORATE_ON_DEMAND)) {
+            mainPanel.addListener(SWT.Activate, new Listener() {
+                @Override
+                public void handleEvent(@NotNull Event event) {
+                    createStatusBar0(composite);
+
+                    updateStatusMessage();
+                    updateEditControls();
+                    updateFiltersText(false);
+
+                    mainPanel.removeListener(SWT.Activate, this);
+                }
+            });
+        } else {
+            createStatusBar0(composite);
+        }
+
+        return composite;
+    }
+
+    private void createStatusBar0(@NotNull Composite parent) {
         ActionUtils.addPropertyEvaluationRequestListener(propertyEvaluationRequestListener);
 
-        ConComposite statusComposite = new ConComposite(mainPanel);
-        statusComposite.setGridLayout(3);
-
-        GridData gd = new GridData(GridData.FILL_HORIZONTAL);
-        gd.horizontalSpan = ((GridLayout)mainPanel.getLayout()).numColumns;
-        statusComposite.setLayoutData(gd);
-
-        statusBar = new ConComposite(statusComposite, SWT.NONE);
+        statusBar = new ConComposite(parent, SWT.NONE);
         statusBar.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         RowLayout toolbarsLayout = new RowLayout(SWT.HORIZONTAL);
         //toolbarsLayout.marginTop = 0;
@@ -1892,7 +1944,7 @@ public class ResultSetViewer extends Viewer
         }
         final IMenuService menuService = getSite().getService(IMenuService.class);
 
-        if (CommonUtils.isBitSet(decorator.getDecoratorFeatures(), IResultSetDecorator.FEATURE_EDIT) &&
+        if (supportsDecoratorFeature(IResultSetDecorator.FEATURE_EDIT) &&
             !ApplicationPolicyProvider.getInstance().isPolicyEnabled(ApplicationPolicyProvider.POLICY_DATA_EDIT)
         ) {
             ToolBarManager editToolBarManager = new ToolBarManager(SWT.FLAT | SWT.HORIZONTAL | SWT.RIGHT);
@@ -2011,7 +2063,7 @@ public class ResultSetViewer extends Viewer
 
             //UIUtils.createToolBarSeparator(statusBar, SWT.VERTICAL);
 
-            if (!CommonUtils.isBitSet(decorator.getDecoratorFeatures(), IResultSetDecorator.FEATURE_COMPACT_STATUS)) {
+            if (!supportsDecoratorFeature(IResultSetDecorator.FEATURE_COMPACT_STATUS)) {
                 statusLabel = new StatusLabel(statusBar, SWT.NONE, this);
                 RowData rd = new RowData();
                 rd.width = 50 * fontHeight;
@@ -2698,9 +2750,10 @@ public class ResultSetViewer extends Viewer
         if (ApplicationPolicyProvider.getInstance().isPolicyEnabled(ApplicationPolicyProvider.POLICY_DATA_EDIT)) {
             return true;
         }
-        if (model.isUpdateInProgress() || !(activePresentation instanceof IResultSetEditor) ||
-            (decorator.getDecoratorFeatures() & IResultSetDecorator.FEATURE_EDIT) == 0)
-        {
+        if (model.isUpdateInProgress() ||
+            !(activePresentation instanceof IResultSetEditor) ||
+            !supportsDecoratorFeature(IResultSetDecorator.FEATURE_EDIT)
+        ) {
             return true;
         }
         DBCExecutionContext executionContext = getExecutionContext();
@@ -2711,7 +2764,7 @@ public class ResultSetViewer extends Viewer
 
     @Override
     public String getReadOnlyStatus() {
-        if (!(activePresentation instanceof IResultSetEditor) || (decorator.getDecoratorFeatures() & IResultSetDecorator.FEATURE_EDIT) == 0) {
+        if (!(activePresentation instanceof IResultSetEditor) || !supportsDecoratorFeature(IResultSetDecorator.FEATURE_EDIT)) {
             return "Active presentation doesn't support data edit";
         }
 

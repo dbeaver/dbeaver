@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -70,8 +70,7 @@ import java.util.Locale;
 /**
  * PrefPageSQLFormat
  */
-public class PrefPageSQLFormat extends TargetPrefPage
-{
+public class PrefPageSQLFormat extends TargetPrefPage {
     private static final Log log = Log.getLog(PrefPageSQLFormat.class);
 
     public static final String PAGE_ID = "org.jkiss.dbeaver.preferences.main.sql.format"; //$NON-NLS-1$
@@ -96,12 +95,10 @@ public class PrefPageSQLFormat extends TargetPrefPage
     }
 
     @Override
-    protected boolean hasDataSourceSpecificOptions(DBPDataSourceContainer dataSourceDescriptor)
-    {
+    protected boolean hasDataSourceSpecificOptions(DBPDataSourceContainer dataSourceDescriptor) {
         DBPPreferenceStore store = dataSourceDescriptor.getPreferenceStore();
         return
             store.contains(SQLPreferenceConstants.SQL_FORMAT_BOLD_KEYWORDS) ||
-
             store.contains(SQLModelPreferences.SQL_FORMAT_FORMATTER);
     }
 
@@ -114,7 +111,7 @@ public class PrefPageSQLFormat extends TargetPrefPage
     @NotNull
     @Override
     protected Control createPreferenceContent(@NotNull Composite parent) {
-        Composite composite = UIUtils.createPlaceholder(parent, 3, 5);
+        Composite composite = UIUtils.createComposite(parent, 3);
 
         formatterSelector = UIUtils.createLabelCombo(composite, SQLEditorMessages.pref_page_sql_format_label_formatter, SWT.DROP_DOWN | SWT.READ_ONLY);
         formatterSelector.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
@@ -140,35 +137,14 @@ public class PrefPageSQLFormat extends TargetPrefPage
             1
         );
 
-        Composite formatterGroup = UIUtils.createPlaceholder(composite, 1, 5);
+        Composite formatterGroup = UIUtils.createComposite(composite, 1);
         formatterGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         ((GridData)formatterGroup.getLayoutData()).horizontalSpan = 3;
 
-/*
-        {
-            Composite formatterPanel = UIUtils.createPlaceholder(formatterGroup, 4, 5);
-            formatterPanel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-
-            keywordCaseCombo = UIUtils.createLabelCombo(formatterPanel, CoreMessages.pref_page_sql_format_label_keyword_case, SWT.DROP_DOWN | SWT.READ_ONLY);
-            keywordCaseCombo.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
-            keywordCaseCombo.add("Database");
-            for (DBPIdentifierCase c :DBPIdentifierCase.values()) {
-                keywordCaseCombo.add(DBPIdentifierCase.capitalizeCaseName(c.name()));
-            }
-            keywordCaseCombo.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
-                    performApply();
-                }
-            });
-        }
-*/
-
         // External formatter
         {
-            formatterConfigPlaceholder = UIUtils.createPlaceholder(formatterGroup, 2, 5);
+            formatterConfigPlaceholder = UIUtils.createComposite(formatterGroup, 1);
             formatterConfigPlaceholder.setLayoutData(new GridData(GridData.FILL_HORIZONTAL | GridData.HORIZONTAL_ALIGN_BEGINNING));
-            formatterConfigPlaceholder.setLayout(new FillLayout());
         }
 
         {
@@ -215,8 +191,6 @@ public class PrefPageSQLFormat extends TargetPrefPage
 
             {
                 // Styles
-//            Composite afGroup = UIUtils.createControlGroup(composite, CoreMessages.pref_page_sql_format_group_style, 1, GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING, 0);
-//            ((GridData)afGroup.getLayoutData()).horizontalSpan = 2;
                 styleBoldKeywords = UIUtils.createCheckbox(
                     composite,
                     SQLEditorMessages.pref_page_sql_format_label_bold_keywords,
@@ -306,6 +280,7 @@ public class PrefPageSQLFormat extends TargetPrefPage
         formatSQL();
     }
 
+    @NotNull
     @Override
     protected String getPropertyPageID() {
         return PAGE_ID;

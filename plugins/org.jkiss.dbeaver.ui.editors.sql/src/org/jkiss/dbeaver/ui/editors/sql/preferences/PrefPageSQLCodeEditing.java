@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -66,7 +66,12 @@ public class PrefPageSQLCodeEditing extends TargetPrefPage {
 
         // Miscellaneous
         {
-            Composite miscellaneousGroup = UIUtils.createControlGroup(composite, SQLEditorMessages.pref_page_sql_completion_group_misc, 1, GridData.VERTICAL_ALIGN_BEGINNING | GridData.HORIZONTAL_ALIGN_BEGINNING, 0);
+            Composite miscellaneousGroup = UIUtils.createTitledComposite(
+                composite,
+                SQLEditorMessages.pref_page_sql_completion_group_misc,
+                1,
+                GridData.VERTICAL_ALIGN_BEGINNING | GridData.HORIZONTAL_ALIGN_BEGINNING
+            );
 
             csFoldingEnabled = UIUtils.createCheckbox(miscellaneousGroup, SQLEditorMessages.pref_page_sql_completion_label_folding_enabled, SQLEditorMessages.pref_page_sql_completion_label_folding_enabled_tip, false, 1);
             csSmartWordsIterator = UIUtils.createCheckbox(miscellaneousGroup, SQLEditorMessages.pref_page_sql_completion_label_smart_word_iterator, SQLEditorMessages.pref_page_sql_completion_label_smart_word_iterator_tip, false, 1);
@@ -77,12 +82,11 @@ public class PrefPageSQLCodeEditing extends TargetPrefPage {
         }
         // Query analysis
         {
-            Composite analysisGroup = UIUtils.createControlGroup(
+            Composite analysisGroup = UIUtils.createTitledComposite(
                 composite,
                 SQLEditorMessages.pref_page_code_editor_group_analysis,
                 1,
-                GridData.VERTICAL_ALIGN_BEGINNING | GridData.HORIZONTAL_ALIGN_FILL,
-                0
+                GridData.VERTICAL_ALIGN_BEGINNING | GridData.HORIZONTAL_ALIGN_FILL
             );
 
             advancedHighlightingEnabled = UIUtils.createCheckbox(
@@ -127,7 +131,12 @@ public class PrefPageSQLCodeEditing extends TargetPrefPage {
 
         // Autoclose
         {
-            Composite acGroup = UIUtils.createControlGroup(composite, SQLEditorMessages.pref_page_sql_format_group_auto_close, 1, GridData.HORIZONTAL_ALIGN_BEGINNING | GridData.VERTICAL_ALIGN_BEGINNING, 0);
+            Composite acGroup = UIUtils.createTitledComposite(
+                composite,
+                SQLEditorMessages.pref_page_sql_format_group_auto_close,
+                1,
+                GridData.HORIZONTAL_ALIGN_BEGINNING | GridData.VERTICAL_ALIGN_BEGINNING
+            );
 
             acSingleQuotesCheck = UIUtils.createCheckbox(acGroup, SQLEditorMessages.pref_page_sql_format_label_single_quotes, false);
             acDoubleQuotesCheck = UIUtils.createCheckbox(acGroup, SQLEditorMessages.pref_page_sql_format_label_double_quotes, false);
@@ -136,7 +145,12 @@ public class PrefPageSQLCodeEditing extends TargetPrefPage {
 
         {
             // Formatting
-            Composite afGroup = UIUtils.createControlGroup(composite, SQLEditorMessages.pref_page_sql_format_group_auto_format, 1, GridData.HORIZONTAL_ALIGN_BEGINNING | GridData.VERTICAL_ALIGN_BEGINNING, 0);
+            Composite afGroup = UIUtils.createTitledComposite(
+                composite,
+                SQLEditorMessages.pref_page_sql_format_group_auto_format,
+                1,
+                GridData.HORIZONTAL_ALIGN_BEGINNING | GridData.VERTICAL_ALIGN_BEGINNING
+            );
             afKeywordCase = UIUtils.createCheckbox(
                 afGroup,
                 SQLEditorMessages.pref_page_sql_format_label_convert_keyword_case,
@@ -255,6 +269,7 @@ public class PrefPageSQLCodeEditing extends TargetPrefPage {
         return true;
     }
 
+    @NotNull
     @Override
     protected String getPropertyPageID() {
         return PrefPageSQLCodeEditing.PAGE_ID;
