@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,6 @@
  */
 package org.jkiss.dbeaver.ui.dialogs.driver;
 
-import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.wizard.Wizard;
 import org.eclipse.ui.IExportWizard;
@@ -24,28 +23,33 @@ import org.eclipse.ui.IWorkbench;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.connection.DBPDriverDependencies;
-import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.internal.UIConnectionMessages;
 import org.jkiss.utils.CommonUtils;
 
 public class DriverDownloadWizard extends Wizard implements IExportWizard {
 
-    private static final String DRIVER_DOWNLOAD_DIALOG_SETTINGS = "DriverDownload";//$NON-NLS-1$
 
-    private DBPDriver driver;
-    private DBPDriverDependencies dependencies;
-    private boolean updateVersion;
+    private final DBPDriver driver;
+    private final DBPDriverDependencies dependencies;
+    private final boolean updateVersion;
+    private final boolean isExpanded;
     private boolean forceDownload;
     private DriverDownloadPage downloadPage;
 
-    public DriverDownloadWizard(@NotNull DBPDriver driver, DBPDriverDependencies dependencies, boolean updateVersion, boolean forceDownload) {
+    public DriverDownloadWizard(
+        @NotNull DBPDriver driver,
+        @NotNull DBPDriverDependencies dependencies,
+        boolean updateVersion,
+        boolean forceDownload,
+        boolean isExpanded
+    ) {
         this.driver = driver;
         this.dependencies = dependencies;
         this.updateVersion = updateVersion;
         this.forceDownload = forceDownload;
+        this.isExpanded = isExpanded;
         setWindowTitle(updateVersion ? UIConnectionMessages.dialog_driver_download_wizard_title_upload_files : UIConnectionMessages.dialog_driver_download_wizard_title_setup_files);
         setNeedsProgressMonitor(isAutoDownloadWizard());
-        loadSettings();
     }
 
     DBPDriver getDriver() {
@@ -72,17 +76,11 @@ public class DriverDownloadWizard extends Wizard implements IExportWizard {
         return (DriverDownloadDialog)super.getContainer();
     }
 
-    private void loadSettings()
-    {
-        IDialogSettings section = UIUtils.getDialogSettings(DRIVER_DOWNLOAD_DIALOG_SETTINGS);
-        setDialogSettings(section);
-    }
-
     @Override
     public void addPages() {
         super.addPages();
         if (isAutoDownloadWizard()) {
-            downloadPage = new DriverDownloadAutoPage();
+            downloadPage = new DriverDownloadAutoPage(isExpanded);
         } else {
             downloadPage = new DriverDownloadManualPage();
         }

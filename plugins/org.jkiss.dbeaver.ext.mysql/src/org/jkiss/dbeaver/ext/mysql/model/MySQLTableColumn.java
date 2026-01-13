@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,6 +24,7 @@ import org.jkiss.dbeaver.ext.mysql.MySQLConstants;
 import org.jkiss.dbeaver.ext.mysql.MySQLUtils;
 import org.jkiss.dbeaver.model.DBPNamedObject2;
 import org.jkiss.dbeaver.model.DBPOrderedObject;
+import org.jkiss.dbeaver.model.DBPScriptObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.gis.GisAttribute;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
@@ -35,23 +36,21 @@ import org.jkiss.dbeaver.model.meta.PropertyLength;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLConstants;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
-import org.jkiss.dbeaver.model.struct.DBSDataType;
-import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
-import org.jkiss.dbeaver.model.struct.DBSTypedObject;
-import org.jkiss.dbeaver.model.struct.DBSTypedObjectExt3;
+import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableColumn;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * MySQLTableColumn
  */
 public class MySQLTableColumn
     extends JDBCTableColumn<MySQLTableBase>
-    implements DBSTableColumn, DBSTypedObjectExt3, DBPNamedObject2, DBPOrderedObject, GisAttribute
+    implements DBSTableColumn, DBPScriptObject, DBSTypedObjectExt3, DBPNamedObject2, DBPOrderedObject, GisAttribute
 {
     private static final Log log = Log.getLog(MySQLTableColumn.class);
 
@@ -425,6 +424,7 @@ public class MySQLTableColumn
         {
             return false;
         }
+        @Nullable
         @Override
         public Object[] getPossibleValues(MySQLTableColumn object)
         {
@@ -438,6 +438,7 @@ public class MySQLTableColumn
         {
             return false;
         }
+        @Nullable
         @Override
         public Object[] getPossibleValues(MySQLTableColumn object)
         {
@@ -448,4 +449,10 @@ public class MySQLTableColumn
             }
         }
     }
+
+    @Override
+    public String getObjectDefinitionText(@NotNull DBRProgressMonitor monitor, @NotNull Map<String, Object> options) throws DBException {
+        return DBStructUtils.generateObjectDDL(monitor, this, options, false);
+    }
+
 }

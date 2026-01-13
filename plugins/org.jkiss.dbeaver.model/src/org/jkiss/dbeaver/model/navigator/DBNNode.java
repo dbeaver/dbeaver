@@ -198,7 +198,7 @@ public abstract class DBNNode implements DBPNamedObject, DBPNamedObjectLocalized
         return allowsChildren();
     }
 
-    @NotNull
+    @Nullable
     public abstract DBNNode[] getChildren(@NotNull DBRProgressMonitor monitor) throws DBException;
 
     void clearNode(boolean reflect) {

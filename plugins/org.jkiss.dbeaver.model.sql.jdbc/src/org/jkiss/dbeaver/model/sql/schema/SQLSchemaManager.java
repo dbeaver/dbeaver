@@ -92,20 +92,14 @@ public final class SQLSchemaManager {
     }
 
     /**
-     * Updates or creates the application schema. Returns {@link UpdateSchemaResult} CREATED or UPDATED depending on the result.
-     * Schema creation is only allowed if the previous migration completed with CREATED or if this is the first migration.
-     *
      * @param monitor
-     * @param prevModuleMigrationResult the result of the previous migration
      * @return
      * @throws DBException
      */
-    public UpdateSchemaResult updateSchema(
-        @NotNull DBRProgressMonitor monitor,
-        @Nullable UpdateSchemaResult prevModuleMigrationResult
+    public void updateSchema(
+        @NotNull DBRProgressMonitor monitor
     ) throws DBException {
         try {
-            UpdateSchemaResult result = null;
             Connection dbCon = connectionProvider.getDatabaseConnection(monitor);
             try (JDBCTransaction txn = new JDBCTransaction(dbCon)) {
                 try {
@@ -113,9 +107,7 @@ public final class SQLSchemaManager {
                     // Do rollback in case some error happened during version check (makes sense for PG)
                     txn.rollback();
                     if (currentSchemaVersion < 0) {
-                        if (prevModuleMigrationResult == null || UpdateSchemaResult.CREATED.equals(prevModuleMigrationResult)) {
-                            createNewSchema(monitor, dbCon);
-                        }
+                        createNewSchema(monitor, dbCon);
                         // Update schema version
                         versionManager.updateCurrentSchemaVersion(
                             monitor,
@@ -123,7 +115,6 @@ public final class SQLSchemaManager {
                             databaseConfig.getSchema(),
                             versionManager.getLatestSchemaVersion()
                         );
-                        result = prevModuleMigrationResult != null ? prevModuleMigrationResult : UpdateSchemaResult.CREATED;
                     } else if (schemaVersionObsolete > 0 && currentSchemaVersion < schemaVersionObsolete) {
                         dropSchema(monitor, dbCon);
                         createNewSchema(monitor, dbCon);
@@ -134,11 +125,9 @@ public final class SQLSchemaManager {
                             databaseConfig.getSchema(),
                             versionManager.getLatestSchemaVersion()
                         );
-                        result = prevModuleMigrationResult != null ? prevModuleMigrationResult : UpdateSchemaResult.CREATED;
                     } else if (schemaVersionActual > currentSchemaVersion) {
                         doBackupDatabase(dbCon, currentSchemaVersion);
                         upgradeSchemaVersion(monitor, dbCon, txn, currentSchemaVersion);
-                        result = UpdateSchemaResult.UPDATED;
                     }
 
                     txn.commit();
@@ -148,7 +137,6 @@ public final class SQLSchemaManager {
                     throw e;
                 }
             }
-            return result != null ? result : UpdateSchemaResult.UPDATED;
         } catch (IOException | SQLException e) {
             throw new DBException("Error updating " + schemaId + " schema version", e);
         }

@@ -93,18 +93,21 @@ public class DBNProjectDatabases extends DBNNode implements DBNContainer, DBPEve
         return dataSourceRegistry;
     }
 
+    @Nullable
     @Override
     public Object getValueObject()
     {
         return dataSourceRegistry;
     }
 
+    @NotNull
     @Override
     public String getChildrenType()
     {
         return ModelMessages.model_navigator_Connection;
     }
 
+    @Nullable
     @Override
     public Class<DBPDataSourceContainer> getChildrenClass()
     {
@@ -151,7 +154,7 @@ public class DBNProjectDatabases extends DBNNode implements DBNContainer, DBPEve
         }
     }
 
-    @NotNull
+    @Nullable
     @Override
     public DBNNode[] getChildren(@NotNull DBRProgressMonitor monitor)
     {
@@ -268,8 +271,10 @@ public class DBNProjectDatabases extends DBNNode implements DBNContainer, DBPEve
         }
     }
 
-    public List<DBNDataSource> getDataSources() {
-        return dataSources;
+    public DBNDataSource[] getDataSources() {
+        synchronized (dataSources) {
+            return dataSources.toArray(new DBNDataSource[0]);
+        }
     }
 
     public DBNDataSource getDataSource(String id) {
@@ -379,8 +384,9 @@ public class DBNProjectDatabases extends DBNNode implements DBNContainer, DBPEve
                                 {
                                     setUser(true);
                                 }
+                                @NotNull
                                 @Override
-                                protected IStatus run(DBRProgressMonitor monitor) {
+                                protected IStatus run(@NotNull DBRProgressMonitor monitor) {
                                     try {
                                         nodeToLoad.getChildren(monitor);
                                     } catch (Exception e) {

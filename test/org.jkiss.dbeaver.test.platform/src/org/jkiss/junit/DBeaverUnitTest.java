@@ -16,10 +16,44 @@
  */
 package org.jkiss.junit;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.app.DBPProject;
+import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
+import org.jkiss.dbeaver.model.connection.DBPDriver;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.registry.DataSourceDescriptor;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.junit.osgi.annotation.RunWithProduct;
+import org.junit.Assert;
+import org.mockito.Mock;
 
 
 @RunWithProduct("DBeaverUnitTest.product")
 public abstract class DBeaverUnitTest extends ApplicationUnitTest {
+
+    @Mock
+    protected DBRProgressMonitor monitor;
+
+    protected final String lineBreak = System.lineSeparator();
+
+    @NotNull
+    protected DBPDataSourceContainer configureTestContainer(@NotNull String driverID) {
+        DBPDriver driver = DBWorkbench.getPlatform().getDataSourceProviderRegistry().findDriver(driverID);
+        Assert.assertNotNull(driver);
+        DBPProject mockProject = DBWorkbench.getPlatform().getWorkspace().getActiveProject();
+        Assert.assertNotNull(mockProject);
+
+        DBPConnectionConfiguration connectionConfiguration = new DBPConnectionConfiguration();
+        DBPDataSourceContainer dataSourceContainer = new DataSourceDescriptor(
+            mockProject.getDataSourceRegistry(),
+            "test-datasource",
+            driver,
+            connectionConfiguration);
+        dataSourceContainer.setName("Test DS");
+
+
+        return dataSourceContainer;
+    }
 
 }

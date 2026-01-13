@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ext.exasol.model.security;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.exasol.model.ExasolConsumerGroup;
@@ -235,6 +236,7 @@ public abstract class ExasolGrantee
 			return false;
 		}
 
+		@Nullable
 		@Override
 		public Object[] getPossibleValues(ExasolGrantee object) {
 			ExasolDataSource dataSource = object.getDataSource();

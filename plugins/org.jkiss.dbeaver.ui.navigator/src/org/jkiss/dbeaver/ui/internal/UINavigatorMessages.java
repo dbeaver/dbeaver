@@ -84,6 +84,8 @@ public class UINavigatorMessages extends NLS {
     public static String actions_navigator_search_filter_container_description;
     public static String actions_navigator_search_filter_object_name;
     public static String actions_navigator_search_filter_object_description;
+    public static String actions_navigator_search_filter_file_name;
+    public static String actions_navigator_search_filter_file_description;
     public static String actions_navigator_show_only_selected_objects;
     public static String actions_navigator_show_only_object;
     public static String actions_navigator_folder_name;
@@ -128,6 +130,8 @@ public class UINavigatorMessages extends NLS {
     public static String pref_page_database_general_label_show_contents_in_tooltips_tip;
     public static String pref_page_database_general_label_order_elements_alphabetically;
     public static String pref_page_database_general_label_order_elements_alphabetically_tip;
+    public static String pref_page_database_general_label_sort_case_insensitive;
+    public static String pref_page_database_general_label_sort_case_insensitive_tip;
     public static String pref_page_database_general_label_folders_first;
     public static String pref_page_database_general_label_folders_first_tip;
     public static String pref_page_database_general_label_show_host_name;

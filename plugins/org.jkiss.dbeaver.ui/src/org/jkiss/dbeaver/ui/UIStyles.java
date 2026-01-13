@@ -30,6 +30,7 @@ import org.eclipse.swt.widgets.ToolItem;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.internal.IWorkbenchThemeConstants;
 import org.eclipse.ui.preferences.ScopedPreferenceStore;
+import org.eclipse.ui.themes.ITheme;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
@@ -109,7 +110,7 @@ public class UIStyles {
     }
 
     public static Color getDefaultWidgetBackground() {
-        org.eclipse.ui.themes.ITheme theme = PlatformUI.getWorkbench().getThemeManager().getCurrentTheme();
+        ITheme theme = UIUtils.getCurrentTheme();
         Color color = theme.getColorRegistry().get(IWorkbenchThemeConstants.INACTIVE_TAB_BG_START);
         if (color == null) {
             color = Display.getCurrent().getSystemColor(SWT.COLOR_WIDGET_BACKGROUND);

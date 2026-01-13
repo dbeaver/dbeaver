@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ import org.eclipse.help.IContext;
 import org.eclipse.help.IHelpResource;
 import org.eclipse.ui.help.AbstractHelpUI;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.ShellUtils;
 import org.jkiss.dbeaver.utils.HelpUtils;
 
@@ -29,12 +30,14 @@ import org.jkiss.dbeaver.utils.HelpUtils;
 public class GitHubWikiHelpUI extends AbstractHelpUI {
 
     private static final Log log = Log.getLog(GitHubWikiHelpUI.class);
-    public static final String GITHUB_HELP_ROOT = HelpUtils.GLOBAL_HELP_PREFIX;
 
     @Override
-    public void displayHelp()
-    {
-        showHelpPage(GITHUB_HELP_ROOT);
+    public void displayHelp() {
+        showHelpPage(getHelpRoot());
+    }
+
+    private String getHelpRoot() {
+        return DBWorkbench.isDistributed() ? HelpUtils.TE_HELP_PREFIX : HelpUtils.GLOBAL_HELP_PREFIX;
     }
 
     @Override
@@ -43,8 +46,7 @@ public class GitHubWikiHelpUI extends AbstractHelpUI {
     }
 
     @Override
-    public void displayContext(IContext context, int x, int y)
-    {
+    public void displayContext(IContext context, int x, int y) {
         try {
             IHelpResource[] relatedTopics = context.getRelatedTopics();
             if (relatedTopics == null || relatedTopics.length == 0) {
@@ -60,7 +62,7 @@ public class GitHubWikiHelpUI extends AbstractHelpUI {
             if (divPos != -1) {
                 topicRef = topicRef.substring(divPos + 1);
             }
-            showHelpPage(GITHUB_HELP_ROOT + topicRef);
+            showHelpPage(getHelpRoot() + topicRef);
 
         } catch (Exception e) {
             log.error(e);

@@ -94,7 +94,7 @@ public class PostgreExecutionContext extends JDBCExecutionContext implements DBC
     }
 
     void setDefaultCatalog(@NotNull DBRProgressMonitor monitor, @NotNull PostgreDatabase catalog, @Nullable PostgreSchema schema, boolean force)
-            throws DBCException {
+    throws DBCException {
         try {
             catalog.checkInstanceConnection(monitor);
 
@@ -234,34 +234,30 @@ public class PostgreExecutionContext extends JDBCExecutionContext implements DBC
         return searchPath;
     }
 
-    List<String> getDefaultSearchPath() {
-        return defaultSearchPath;
-    }
-
     private void setSearchPath(DBRProgressMonitor monitor, PostgreSchema schema) throws DBCException {
         // Construct search path from current search path but put default schema first
         setSearchPath(monitor, schema.getName());
     }
 
-    private void setSearchPath(DBRProgressMonitor monitor, String defSchemaName) throws DBCException {
-        List<String> newSearchPath = new ArrayList<>(getDefaultSearchPath());
-        int schemaIndex = newSearchPath.indexOf(defSchemaName);
-        /*if (schemaIndex == 0 || (schemaIndex == 1 && isUserFirstInPath(newSearchPath))) {
-            // Already default schema
+    private void setSearchPath(@NotNull DBRProgressMonitor monitor, @NotNull String defSchemaName) throws DBCException {
+        List<String> newSearchPath = new ArrayList<>(getSearchPath());
+
+        if (!newSearchPath.isEmpty() && defSchemaName.equals(newSearchPath.getFirst())) {
             return;
-        } else*/
-        {
-            if (schemaIndex > 0) {
-                // Remove from previous position
-                newSearchPath.remove(schemaIndex);
-            }
-            // Add it first
-            newSearchPath.add(0, defSchemaName);
+        }
+
+        newSearchPath.remove(defSchemaName);
+        newSearchPath.addFirst(defSchemaName);
+
+        if (activeUser != null && !newSearchPath.contains(activeUser)) {
+            newSearchPath.add(activeUser);
         }
 
         StringBuilder spString = new StringBuilder();
         for (String sp : newSearchPath) {
-            if (spString.length() > 0) spString.append(",");
+            if (!spString.isEmpty()) {
+                spString.append(",");
+            }
             spString.append(DBUtils.getQuotedIdentifier(getDataSource(), sp));
         }
         try (JDBCSession session = openSession(monitor, DBCExecutionPurpose.UTIL, "Change search path")) {
@@ -277,8 +273,21 @@ public class PostgreExecutionContext extends JDBCExecutionContext implements DBC
         }
     }
 
+    private void setSearchPath(@NotNull String path) {
+        if (searchPath.isEmpty()) {
+            searchPath.addFirst(path);
+        } else if (!searchPath.getFirst().equals(path)) {
+            searchPath.remove(path);
+            searchPath.addFirst(path);
+        }
+        if (activeUser != null && !searchPath.contains(activeUser)) {
+            searchPath.add(activeUser);
+            setUserInTheEndOfThePath(searchPath);
+        }
+    }
+
     private static boolean isUserFirstInPath(List<String> newSearchPath) {
-        return !newSearchPath.isEmpty() && newSearchPath.get(0).equals(PostgreConstants.USER_VARIABLE);
+        return !newSearchPath.isEmpty() && newSearchPath.getFirst().equals(PostgreConstants.USER_VARIABLE);
     }
 
     private void setUserInTheEndOfThePath(List<String> searchPath) {
@@ -286,7 +295,7 @@ public class PostgreExecutionContext extends JDBCExecutionContext implements DBC
             return;
         }
         if (isUserFirstInPath(searchPath)) {
-            searchPath.remove(0);
+            searchPath.removeFirst();
             searchPath.add(PostgreConstants.USER_VARIABLE);
         } else {
             int userIndex = -1;
@@ -303,13 +312,6 @@ public class PostgreExecutionContext extends JDBCExecutionContext implements DBC
         }
     }
 
-    private void setSearchPath(String path) {
-        searchPath.clear();
-        searchPath.add(path);
-        if (!path.equals(activeUser)) {
-            searchPath.add(activeUser);
-        }
-    }
 
     private void setSessionRole(@NotNull DBRProgressMonitor monitor) throws DBCException {
         final String roleName = getDataSource().getContainer().getConnectionConfiguration().getProviderProperty(PostgreConstants.PROP_CHOSEN_ROLE);

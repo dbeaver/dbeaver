@@ -154,6 +154,8 @@ public class CoreMessages extends NLS {
     public static String dialog_migrate_wizard_start_description;
     public static String dialog_migrate_wizard_start_title;
     public static String dialog_migrate_wizard_window_title;
+    public static String dialog_migrate_wizard_connection_changed_title;
+    public static String dialog_migrate_wizard_connection_changed_message;
     public static String dialog_new_connection_wizard_monitor_load_data_sources;
     public static String dialog_new_connection_wizard_start_description;
     public static String dialog_new_connection_wizard_start_title;
@@ -561,7 +563,7 @@ public class CoreMessages extends NLS {
 
     public static String transaction_log_dialog_error_open_database;
 
-    // Connection edit
+    //region Connection edit
     public static String dialog_connection_edit_title;
 
     public static String dialog_connection_edit_wizard_general;
@@ -592,7 +594,21 @@ public class CoreMessages extends NLS {
     public static String dialog_connection_edit_wizard_bad_pwd_msg;
     public static String dialog_connection_edit_wizard_error_md5_title;
     public static String dialog_connection_edit_wizard_error_md5_msg;
-    //Connection edit
+    //endregion
+
+    //region Connection - Internal Parameters
+    public static String dialog_connection_internal_parameters_title;
+    public static String dialog_connection_internal_parameters_description;
+    public static String dialog_connection_internal_parameters_tip;
+    public static String dialog_connection_internal_parameters_parameters;
+    public static String dialog_connection_internal_parameters_parameters_project_id;
+    public static String dialog_connection_internal_parameters_parameters_connection_id;
+    public static String dialog_connection_internal_parameters_parameters_driver_id;
+    public static String dialog_connection_internal_parameters_parameters_driver_provider_id;
+    public static String dialog_connection_internal_parameters_custom;
+    public static String dialog_connection_internal_parameters_custom_key;
+    public static String dialog_connection_internal_parameters_custom_value;
+    //endregion
 
     // Driver edit
 
@@ -643,6 +659,9 @@ public class CoreMessages extends NLS {
     public static String pref_page_accessibility_screen_reader_msg;
     public static String pref_page_accessibility_screen_reader_description;
     public static String pref_page_accessibility_screen_reader_group_lbl;
+
+    public static String pref_page_accessibility_force_focus_checkbox;
+    public static String pref_page_accessibility_force_focus_tooltip;
 
     static {
         // initialize resource bundle

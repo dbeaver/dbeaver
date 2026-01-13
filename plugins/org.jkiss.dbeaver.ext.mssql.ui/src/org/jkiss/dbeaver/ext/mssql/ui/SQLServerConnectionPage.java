@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,7 +24,10 @@ import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.*;
+import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.Text;
 import org.jkiss.dbeaver.ext.mssql.SQLServerConstants;
 import org.jkiss.dbeaver.ext.mssql.SQLServerUtils;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
@@ -97,12 +100,11 @@ public class SQLServerConnectionPage extends ConnectionPageWithAuth implements I
         GridData gd = new GridData(GridData.FILL_BOTH);
         settingsGroup.setLayoutData(gd);
 
-        Group addrGroup = UIUtils.createControlGroup(
+        Composite addrGroup = UIUtils.createTitledComposite(
             settingsGroup,
             UIConnectionMessages.dialog_connection_server_label,
             4,
-            GridData.FILL_HORIZONTAL,
-            0
+            GridData.FILL_HORIZONTAL
         );
 
         SelectionAdapter typeSwitcher = new SelectionAdapter() {
@@ -177,10 +179,7 @@ public class SQLServerConnectionPage extends ConnectionPageWithAuth implements I
         }
 
         {
-            Group secureGroup = new Group(settingsGroup, SWT.NONE);
-            secureGroup.setText(SQLServerUIMessages.dialog_setting_connection_settings);
-            secureGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-            secureGroup.setLayout(new GridLayout(1, false));
+            Composite secureGroup = UIUtils.createTitledComposite(settingsGroup, SQLServerUIMessages.dialog_setting_connection_settings, 1, GridData.FILL_HORIZONTAL);
 
             if (!isSqlServer) {
                 encryptPassword = UIUtils.createCheckbox(secureGroup, SQLServerUIMessages.dialog_setting_encrypt_password, SQLServerUIMessages.dialog_setting_encrypt_password_tip, false, 1);

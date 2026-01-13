@@ -16,7 +16,6 @@
  */
 package org.jkiss.dbeaver.model.impl.jdbc;
 
-import org.eclipse.core.runtime.IAdaptable;
 import org.jkiss.api.ObjectWithContextParameters;
 import org.jkiss.api.verification.FileSystemAccessVerifyer;
 import org.jkiss.api.verification.ObjectWithVerification;
@@ -74,8 +73,7 @@ public abstract class JDBCDataSource extends AbstractDataSource
         DBSObject,
         DBSObjectContainer,
         DBSInstanceContainer,
-        DBCQueryTransformProvider,
-        IAdaptable
+        DBCQueryTransformProvider
 {
     private static final Log log = Log.getLog(JDBCDataSource.class);
 
@@ -403,34 +401,37 @@ public abstract class JDBCDataSource extends AbstractDataSource
                 }
                 closingConnections.add(connection);
             }
-            // Close datasource (in async task)
-            return RuntimeUtils.runTask(monitor -> {
-                    if (doRollback) {
-                        try {
-                            // If we in transaction - rollback it.
-                            // Any valuable transaction changes should be committed by UI
-                            // so here we do it just in case to avoid error messages on close with open transaction
-                            connection.rollback();
-                        } catch (Throwable e) {
-                            if (e instanceof SQLException se && JDBCUtils.isRollbackWarning(se)) {
-                                // ignore
-                                log.debug("Warning during active transaction close: " + e.getMessage());
-                            } else {
-                                // Do not write warning because connection maybe broken before the moment of close
-                                log.debug("Error closing active transaction", e);
+            try {
+                // Close datasource (in async task)
+                return RuntimeUtils.runTask(monitor -> {
+                        if (doRollback) {
+                            try {
+                                // If we in transaction - rollback it.
+                                // Any valuable transaction changes should be committed by UI
+                                // so here we do it just in case to avoid error messages on close with open transaction
+                                connection.rollback();
+                            } catch (Throwable e) {
+                                if (e instanceof SQLException se && JDBCUtils.isRollbackWarning(se)) {
+                                    // ignore
+                                    log.debug("Warning during active transaction close: " + e.getMessage());
+                                } else {
+                                    // Do not write warning because connection maybe broken before the moment of close
+                                    log.debug("Error closing active transaction", e);
+                                }
                             }
                         }
-                    }
-                    try {
-                        connection.close();
-                    } catch (Throwable ex) {
-                        log.debug("Error closing connection", ex);
-                    }
-                    synchronized (closingConnections) {
-                        closingConnections.remove(connection);
-                    }
-                }, "Close JDBC connection " + getContainer().getName() + " (" + purpose + ")",
-                getContainer().getPreferenceStore().getInt(ModelPreferences.CONNECTION_CLOSE_TIMEOUT));
+                        try {
+                            connection.close();
+                        } catch (Throwable ex) {
+                            log.debug("Error closing connection", ex);
+                        }
+                    }, "Close JDBC connection " + getContainer().getName() + " (" + purpose + ")",
+                    getContainer().getPreferenceStore().getInt(ModelPreferences.CONNECTION_CLOSE_TIMEOUT));
+            } finally {
+                synchronized (closingConnections) {
+                    closingConnections.remove(connection);
+                }
+            }
         } else {
             log.debug("Null connection parameter");
             return true;
@@ -855,7 +856,7 @@ public abstract class JDBCDataSource extends AbstractDataSource
     }
 
     @Override
-    public <T> T getAdapter(Class<T> adapter) {
+    public <T> T getAdapter(@NotNull Class<T> adapter) {
         if (adapter == DBCTransactionManager.class) {
             return adapter.cast(DBUtils.getDefaultContext(getDefaultInstance(), false));
         } else if (adapter == DBCQueryTransformProvider.class) {

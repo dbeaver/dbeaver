@@ -120,19 +120,12 @@ public class DataSourceProviderRegistry implements DBPDataSourceProviderRegistry
     private void loadExtensions(IExtensionRegistry registry) {
         // Load datasource providers from external plugins
         {
-            IConfigurationElement[] extElements = registry.getConfigurationElementsFor(DataSourceProviderDescriptor.EXTENSION_ID);
             // Sort - parse providers with parent in the end
-            Arrays.sort(extElements, (o1, o2) -> {
-                String p1 = o1.getAttribute(RegistryConstants.ATTR_PARENT);
-                String p2 = o2.getAttribute(RegistryConstants.ATTR_PARENT);
-                if (CommonUtils.equalObjects(p1, p2)) return 0;
-                if (p1 == null) return -1;
-                if (p2 == null) return 1;
-                return 0;
-            });
+            List<IConfigurationElement> configurationElements = sortConfigurationElements(
+                registry.getConfigurationElementsFor(DataSourceProviderDescriptor.EXTENSION_ID));
 
             // Load datasource providers in three steps to link them with parent providers and load the rest of config
-            for (IConfigurationElement ext : extElements) {
+            for (IConfigurationElement ext : configurationElements) {
                 switch (ext.getName()) {
                     case RegistryConstants.TAG_DATASOURCE: {
                         DataSourceProviderDescriptor provider = new DataSourceProviderDescriptor(this, ext);
@@ -148,7 +141,7 @@ public class DataSourceProviderRegistry implements DBPDataSourceProviderRegistry
                 }
             }
 
-            for (IConfigurationElement ext : extElements) {
+            for (IConfigurationElement ext : configurationElements) {
                 switch (ext.getName()) {
                     case RegistryConstants.TAG_DATASOURCE: {
                         DataSourceProviderDescriptor provider = getDataSourceProvider(ext.getAttribute(RegistryConstants.ATTR_ID));
@@ -196,7 +189,7 @@ public class DataSourceProviderRegistry implements DBPDataSourceProviderRegistry
                     }
                 }
             }
-            for (IConfigurationElement ext : extElements) {
+            for (IConfigurationElement ext : configurationElements) {
                 if (RegistryConstants.TAG_DATASOURCE.equals(ext.getName())) {
                     DataSourceProviderDescriptor provider = getDataSourceProvider(ext.getAttribute(RegistryConstants.ATTR_ID));
                     if (provider != null) {
@@ -267,6 +260,53 @@ public class DataSourceProviderRegistry implements DBPDataSourceProviderRegistry
 
         // Load initial drivers config
         readDriversConfig();
+    }
+
+    /**
+     * Sorts extension elements so parents appear before their children.
+     * Scans remaining elements, appends those with no parent or whose parent was processed,
+     * removes appended items and repeats until all are processed.
+     */
+    @NotNull
+    private List<IConfigurationElement> sortConfigurationElements(@NotNull IConfigurationElement[] extElements) {
+
+        List<IConfigurationElement> sortedElements = new ArrayList<>();
+        List<IConfigurationElement> remainingElements = new ArrayList<>(Arrays.asList(extElements));
+        Set<String> processedIds = new HashSet<>();
+
+        // Progress flag: if a full pass over `remaining` doesn't process any element,
+        // then further passes are pointless (cycle or missing parents detected).
+        boolean progress = true;
+        while (!remainingElements.isEmpty() && progress) {
+            progress = false;
+            Iterator<IConfigurationElement> it = remainingElements.iterator();
+            while (it.hasNext()) {
+                IConfigurationElement element = it.next();
+                String parentId = element.getAttribute(RegistryConstants.ATTR_PARENT);
+                String id = element.getAttribute(RegistryConstants.ATTR_ID);
+
+                // If element has no parent (root) or its parent was already processed,
+                // it is safe to append it to the result now.
+                if (CommonUtils.isEmpty(parentId) || processedIds.contains(parentId)) {
+                    sortedElements.add(element);
+                    processedIds.add(id);
+                    it.remove();
+                    progress = true;
+                }
+            }
+        }
+        // If there are still remaining elements, then we have a cycle or broken dependencies
+        if (!remainingElements.isEmpty()) {
+            log.error("Cyclic or broken dependencies detected among datasource providers: " +
+                remainingElements.stream()
+                    .map(e -> e.getAttribute(RegistryConstants.ATTR_ID))
+                    .collect(Collectors.joining(", ")));
+        }
+        if (sortedElements.size() != extElements.length) {
+            log.error("Sorted elements size doesn't match the original one");
+        }
+
+        return sortedElements;
     }
 
     public void readDriversConfig() {

@@ -63,9 +63,12 @@ public class DBNProject extends DBNNode implements DBNNodeWithCache, DBNNodeExte
 
     public DBNProjectDatabases getDatabases() {
         try {
-            for (DBNNode db : getChildren(new VoidProgressMonitor())) {
-                if (db instanceof DBNProjectDatabases databases) {
-                    return databases;
+            DBNNode[] dbNodes = getChildren(new VoidProgressMonitor());
+            if (dbNodes != null) {
+                for (DBNNode db : dbNodes) {
+                    if (db instanceof DBNProjectDatabases databases) {
+                        return databases;
+                    }
                 }
             }
         } catch (DBException e) {
@@ -287,7 +290,7 @@ public class DBNProject extends DBNNode implements DBNNodeWithCache, DBNNodeExte
         return true;
     }
 
-    @NotNull
+    @Nullable
     @Override
     public DBNNode[] getChildren(@NotNull DBRProgressMonitor monitor) throws DBException {
         if (children != null) {

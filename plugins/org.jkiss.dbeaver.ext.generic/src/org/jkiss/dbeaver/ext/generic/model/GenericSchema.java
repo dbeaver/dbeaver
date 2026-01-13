@@ -105,8 +105,9 @@ public class GenericSchema extends GenericObjectContainer implements DBSSchema, 
     }
 
     public static class SchemaNameTermProvider implements IPropertyValueTransformer<DBSObject, String> {
+        @Nullable
         @Override
-        public String transform(DBSObject object, String value) throws IllegalArgumentException {
+        public String transform(@NotNull DBSObject object, @Nullable String value) throws IllegalArgumentException {
             String schemaTerm = object.getDataSource().getInfo().getSchemaTerm();
             if (!CommonUtils.isEmpty(schemaTerm)) {
                 return schemaTerm + " " + ModelMessages.model_navigator_Name;

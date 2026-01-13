@@ -780,49 +780,49 @@ public class PostgreRole implements
 
     public static class PostgreRoleCanBeSuperUserValidator implements IPropertyValueValidator<PostgreRole, Object> {
         @Override
-        public boolean isValidValue(PostgreRole object, Object value) throws IllegalArgumentException {
+        public boolean isValidValue(@NotNull PostgreRole object, @Nullable Object value) throws IllegalArgumentException {
             return object.getDataSource().getServerType().supportsSuperusers();
         }
     }
 
     public static class PostgreRoleInheritValidator implements IPropertyValueValidator<PostgreRole, Object> {
         @Override
-        public boolean isValidValue(PostgreRole object, Object value) throws IllegalArgumentException {
+        public boolean isValidValue(@NotNull PostgreRole object, @Nullable Object value) throws IllegalArgumentException {
             return object.getDataSource().getServerType().supportsInheritance();
         }
     }
 
     public static class PostgreRoleCanCreateDBValidator implements IPropertyValueValidator<PostgreRole, Object> {
         @Override
-        public boolean isValidValue(PostgreRole object, Object value) throws IllegalArgumentException {
+        public boolean isValidValue(@NotNull PostgreRole object, @Nullable Object value) throws IllegalArgumentException {
             return object.getDataSource().getServerType().supportsRolesWithCreateDBAbility();
         }
     }
 
     public static class RoleCanBeReplicationValidator implements IPropertyValueValidator<PostgreRole, Object> {
         @Override
-        public boolean isValidValue(PostgreRole object, Object value) throws IllegalArgumentException {
+        public boolean isValidValue(@NotNull PostgreRole object, @Nullable Object value) throws IllegalArgumentException {
             return object.getDataSource().getServerType().supportsRoleReplication();
         }
     }
 
     public static class RoleCanBypassRLSValidator implements IPropertyValueValidator<PostgreRole, Object> {
         @Override
-        public boolean isValidValue(PostgreRole object, Object value) throws IllegalArgumentException {
+        public boolean isValidValue(@NotNull PostgreRole object, @Nullable Object value) throws IllegalArgumentException {
             return object.getDataSource().getServerType().supportsRoleBypassRLS();
         }
     }
 
     public static class PersistenceUserValidator implements IPropertyValueValidator<PostgreRole, Object> {
         @Override
-        public boolean isValidValue(PostgreRole object, Object value) throws IllegalArgumentException {
+        public boolean isValidValue(@NotNull PostgreRole object, @Nullable Object value) throws IllegalArgumentException {
             return !object.isPersisted();
         }
     }
 
     public static class CommentsOnRolesSupportedValidator implements IPropertyValueValidator<PostgreRole, Object> {
         @Override
-        public boolean isValidValue(PostgreRole object, Object value) throws IllegalArgumentException {
+        public boolean isValidValue(@NotNull PostgreRole object, @Nullable Object value) throws IllegalArgumentException {
             return object.getDataSource().getServerType().supportsCommentsOnRole();
         }
     }

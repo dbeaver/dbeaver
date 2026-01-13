@@ -130,10 +130,13 @@ public class ERDObjectAdapter implements IAdapterFactory {
                         if (itemPropName.contains("table") || itemPropName.contains("collection")) {
                             try {
                                 // Safe to use fake monitor because we read local folders
-                                for (DBNDatabaseNode navFolder : node.getChildren(new VoidProgressMonitor())) {
-                                    if (navFolder.getMeta() == childFolderMeta) {
-                                        node = navFolder;
-                                        break;
+                                DBNDatabaseNode[] nodeChildren = node.getChildren(new VoidProgressMonitor());
+                                if (nodeChildren != null) {
+                                    for (DBNDatabaseNode navFolder : nodeChildren) {
+                                        if (navFolder.getMeta() == childFolderMeta) {
+                                            node = navFolder;
+                                            break;
+                                        }
                                     }
                                 }
                             } catch (DBException ignored) {

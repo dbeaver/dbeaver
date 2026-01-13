@@ -377,6 +377,7 @@
                     <propertyGroup label="Misc">
                         <property id="@dbeaver-sid-service@" label="Service type" type="string" supportedConfigurationTypes="MANUAL" description="Database type" defaultValue="SID" validValues="SID,SERVICE"/>
                         <property id="oracle.logon-as" label="Role" type="string" description="Connect as role" defaultValue="Normal" validValues="Normal,SYSDBA,SYSOPER"/>
+                        <property id="oracle.set-os-user" label="Set Username to OS_USER property" type="boolean" description="Sets Username to OS_USER driver property"/>
                     </propertyGroup>
                     <propertyGroup label="Performance">
                         <property id="@dbeaver-use-meta-optimizer@" label="Use metadata queries optimizer" type="boolean" description="Use metadata queries optimizer"/>

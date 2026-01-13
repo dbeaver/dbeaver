@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,6 +33,7 @@ import java.io.InputStream;
 import java.io.Writer;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.Duration;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -60,7 +61,7 @@ public class TaskImpl implements DBTTask, DBPNamedObject2 {
     private Map<String, Object> properties;
     private volatile List<DBTTaskRun> runs;
     private DBTTaskFolder taskFolder;
-    private int maxExecutionTime;
+    private Duration maxExecutionTime = Duration.ZERO;
 
     protected TaskImpl(
         @NotNull DBPProject project,
@@ -247,11 +248,13 @@ public class TaskImpl implements DBTTask, DBPNamedObject2 {
         return TaskConstants.TEMPORARY_ID.equals(id);
     }
 
-    public int getMaxExecutionTime() {
+    @NotNull
+    @Override
+    public Duration getMaxExecutionTime() {
         return maxExecutionTime;
     }
 
-    public void setMaxExecutionTime(int maxExecutionTime) {
+    public void setMaxExecutionTime(@NotNull Duration maxExecutionTime) {
         this.maxExecutionTime = maxExecutionTime;
     }
 

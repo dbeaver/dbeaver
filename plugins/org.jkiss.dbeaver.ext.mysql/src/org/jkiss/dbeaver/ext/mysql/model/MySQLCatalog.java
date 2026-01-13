@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,7 +35,6 @@ import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectLookupCache;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCStructLookupCache;
 import org.jkiss.dbeaver.model.meta.*;
-import org.jkiss.dbeaver.model.preferences.DBPPropertySource;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
@@ -129,7 +128,7 @@ public class MySQLCatalog implements
 
     public static class AdditionalInfoValidator implements IPropertyCacheValidator<MySQLCatalog> {
         @Override
-        public boolean isPropertyCached(MySQLCatalog object, Object propertyId)
+        public boolean isPropertyCached(@NotNull MySQLCatalog object, @NotNull Object propertyId)
         {
             return object.additionalInfo.loaded;
         }
@@ -206,12 +205,6 @@ public class MySQLCatalog implements
     @Override
     public long getStatObjectSize() {
         return dbSize;
-    }
-
-    @Nullable
-    @Override
-    public DBPPropertySource getStatProperties() {
-        return null;
     }
 
     void setDatabaseSize(long dbSize) {
@@ -1074,6 +1067,7 @@ public class MySQLCatalog implements
         {
             return false;
         }
+        @Nullable
         @Override
         public Object[] getPossibleValues(MySQLCatalog object)
         {
@@ -1087,6 +1081,7 @@ public class MySQLCatalog implements
         {
             return false;
         }
+        @Nullable
         @Override
         public Object[] getPossibleValues(MySQLCatalog object)
         {
@@ -1097,4 +1092,9 @@ public class MySQLCatalog implements
             }
         }
     }
+
+    void resetStatistics() {
+        this.hasStatistics = false;
+    }
+
 }

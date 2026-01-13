@@ -161,7 +161,7 @@ public class DBNResource extends DBNNode implements DBNStreamData, DBNNodeWithCa
         return resource instanceof IContainer;
     }
 
-    @NotNull
+    @Nullable
     @Override
     public DBNNode[] getChildren(@NotNull DBRProgressMonitor monitor) throws DBException {
         if (children == null && !monitor.isForceCacheUsage()) {

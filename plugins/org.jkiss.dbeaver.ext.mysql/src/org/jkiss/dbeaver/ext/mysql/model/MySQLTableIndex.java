@@ -200,6 +200,7 @@ public class MySQLTableIndex extends JDBCTableIndex<MySQLCatalog, MySQLTable> im
             return false;
         }
 
+        @Nullable
         @Override
         public Object[] getPossibleValues(MySQLTableIndex object) {
             return object.getDataSource().supportedIndexTypes().toArray();

@@ -28,7 +28,6 @@ import org.jkiss.dbeaver.model.connection.DBPAuthInfo;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.fs.DBNPathBase;
 import org.jkiss.dbeaver.model.runtime.DBRProcessDescriptor;
-import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithResult;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithReturn;
 import org.jkiss.dbeaver.model.runtime.load.ILoadService;
@@ -158,9 +157,7 @@ public interface DBPPlatformUI {
     void executeProcess(@NotNull DBRProcessDescriptor processDescriptor);
 
     // Execute some action in UI thread
-    void executeWithProgress(@NotNull Runnable runnable);
-
-    void executeWithProgress(@NotNull DBRRunnableWithProgress runnable) throws InvocationTargetException, InterruptedException;
+    void executeInMainThread(@NotNull Runnable runnable);
 
     /**
      * Execute runnable task synchronously while displaying job indicator if needed
@@ -173,14 +170,16 @@ public interface DBPPlatformUI {
      */
     <T> T runWithMonitor(@NotNull DBRRunnableWithReturn<T> runnable) throws DBException;
 
+    <T> T runWithProgress(@NotNull DBRRunnableWithReturn<T> runnable) throws DBException, InvocationTargetException, InterruptedException;
+
     @NotNull
     <RESULT> Job createLoadingService(
-        ILoadService<RESULT> loadingService,
-        ILoadVisualizer<RESULT> visualizer);
+        @NotNull ILoadService<RESULT> loadingService,
+        @NotNull ILoadVisualizer<RESULT> visualizer);
 
-    void copyTextToClipboard(String text, boolean htmlFormat);
+    void copyTextToClipboard(@NotNull String text, boolean htmlFormat);
 
-    void executeShellProgram(String shellCommand);
+    void executeShellProgram(@NotNull String shellCommand);
 
     void showInSystemExplorer(@NotNull String path);
 

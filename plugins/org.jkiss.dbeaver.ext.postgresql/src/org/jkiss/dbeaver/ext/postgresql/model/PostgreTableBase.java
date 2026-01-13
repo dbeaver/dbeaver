@@ -324,6 +324,7 @@ public abstract class PostgreTableBase extends JDBCTable<PostgreDataSource, Post
         {
             return false;
         }
+        @Nullable
         @Override
         public Object[] getPossibleValues(PostgreTableBase object)
         {

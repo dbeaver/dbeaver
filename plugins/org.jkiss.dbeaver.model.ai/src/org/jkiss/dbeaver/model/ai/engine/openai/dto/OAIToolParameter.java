@@ -22,6 +22,7 @@ public class OAIToolParameter {
 
     public String type;
     public String description;
+    public String required;
     @SerializedName("enum")
     public String[] enumItems;
 
