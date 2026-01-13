@@ -112,22 +112,19 @@ public class AIPreferencePageMain extends AbstractPrefPage implements IWorkbench
         }
         this.settings.setAiDisabled(!enableAICheck.getSelection());
         DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
-        this.settings.setActiveEngine(serviceNameMappings.get(serviceCombo.getText()));
-        if (!serviceCombo.getText().isEmpty()) {
-            for (Map.Entry<String, EngineConfiguratorPage> entry : engineConfiguratorMapping.entrySet()) {
-                try {
-                    AIEngineProperties engineConfiguration = this.settings.getEngineConfiguration(entry.getKey());
-                    entry.getValue().saveSettings(engineConfiguration);
-                } catch (DBException e) {
-                    log.error("Error saving engine settings", e);
+        String activeEngineId = serviceNameMappings.get(serviceCombo.getText());
+        this.settings.setActiveEngine(activeEngineId);
+        try {
+            AIEngineProperties engineConfiguration = this.settings.getEngineConfiguration(activeEngineId);
+            activeEngineConfiguratorPage.saveSettings(engineConfiguration);
+        } catch (DBException e) {
+            log.error("Error saving engine settings", e);
 
-                    DBWorkbench.getPlatformUI().showError(
-                        "Error saving AI settings",
-                        "Error saving engine settings for " + entry.getKey(),
-                        e
-                    );
-                }
-            }
+            DBWorkbench.getPlatformUI().showError(
+                "Error saving AI settings",
+                "Error saving engine settings for " + activeEngineId,
+                e
+            );
         }
         AISettingsManager.getInstance().saveSettings(this.settings);
         try {
