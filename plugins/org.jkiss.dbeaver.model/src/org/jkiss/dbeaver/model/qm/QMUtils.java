@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -156,9 +156,9 @@ public class QMUtils {
             if (sessionInfo == null || sessionInfo.isClosed()) {
                 txnMode = false;
             } else if (sessionInfo.isTransactional()) {
+                txnMode = true;
                 QMMTransactionInfo txnInfo = sessionInfo.getTransaction();
                 if (txnInfo != null) {
-                    txnMode = true;
                     QMMTransactionSavepointInfo sp = txnInfo.getCurrentSavepoint();
                     QMMStatementExecuteInfo execInfo = sp.getLastExecute();
                     for (QMMStatementExecuteInfo exec = execInfo; exec != null && exec.getSavepoint() == sp; exec = exec.getPrevious()) {
@@ -172,9 +172,6 @@ public class QMUtils {
                             updateCount++;
                         }
                     }
-                } else {
-                    // No active transaction?
-                    txnMode = false;
                 }
             } else {
                 txnMode = false;
