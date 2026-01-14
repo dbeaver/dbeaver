@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,10 @@
 package org.jkiss.dbeaver.ui.editors.data.preferences;
 
 import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.widgets.*;
+import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Spinner;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
@@ -35,8 +38,7 @@ import org.jkiss.utils.CommonUtils;
 /**
  * PrefPageResultSetPlainText
  */
-public class PrefPageResultSetPresentationPlainText extends TargetPrefPage
-{
+public class PrefPageResultSetPresentationPlainText extends TargetPrefPage {
     private static final Log log = Log.getLog(PrefPageResultSetPresentationPlainText.class);
 
     public static final String PAGE_ID = "org.jkiss.dbeaver.preferences.main.resultset.plain.text"; //$NON-NLS-1$
@@ -52,64 +54,117 @@ public class PrefPageResultSetPresentationPlainText extends TargetPrefPage
     private Button textExtraSpaces;
     private Button textLineNumber;
 
-    public PrefPageResultSetPresentationPlainText()
-    {
+    public PrefPageResultSetPresentationPlainText() {
         super();
     }
 
     @Override
-    protected boolean hasDataSourceSpecificOptions(DBPDataSourceContainer dataSourceDescriptor)
-    {
+    protected boolean hasDataSourceSpecificOptions(DBPDataSourceContainer dataSourceDescriptor) {
         DBPPreferenceStore store = dataSourceDescriptor.getPreferenceStore();
         return
             store.contains(ResultSetPreferences.RESULT_TEXT_TAB_SIZE) ||
-            store.contains(ResultSetPreferences.RESULT_TEXT_MAX_COLUMN_SIZE) ||
-            store.contains(ResultSetPreferences.RESULT_TEXT_VALUE_FORMAT) ||
-            store.contains(ResultSetPreferences.RESULT_TEXT_SHOW_NULLS) ||
-            store.contains(ResultSetPreferences.RESULT_TEXT_DELIMITER_LEADING) ||
-            store.contains(ResultSetPreferences.RESULT_TEXT_DELIMITER_TRAILING) ||
-            store.contains(ResultSetPreferences.RESULT_TEXT_DELIMITER_TOP) ||
-            store.contains(ResultSetPreferences.RESULT_TEXT_DELIMITER_BOTTOM) ||
-            store.contains(ResultSetPreferences.RESULT_TEXT_EXTRA_SPACES) ||
-            store.contains(ResultSetPreferences.RESULT_TEXT_LINE_NUMBER);
+                store.contains(ResultSetPreferences.RESULT_TEXT_MAX_COLUMN_SIZE) ||
+                store.contains(ResultSetPreferences.RESULT_TEXT_VALUE_FORMAT) ||
+                store.contains(ResultSetPreferences.RESULT_TEXT_SHOW_NULLS) ||
+                store.contains(ResultSetPreferences.RESULT_TEXT_DELIMITER_LEADING) ||
+                store.contains(ResultSetPreferences.RESULT_TEXT_DELIMITER_TRAILING) ||
+                store.contains(ResultSetPreferences.RESULT_TEXT_DELIMITER_TOP) ||
+                store.contains(ResultSetPreferences.RESULT_TEXT_DELIMITER_BOTTOM) ||
+                store.contains(ResultSetPreferences.RESULT_TEXT_EXTRA_SPACES) ||
+                store.contains(ResultSetPreferences.RESULT_TEXT_LINE_NUMBER);
     }
 
     @Override
-    protected boolean supportsDataSourceSpecificOptions()
-    {
+    protected boolean supportsDataSourceSpecificOptions() {
         return true;
     }
 
     @NotNull
     @Override
     protected Control createPreferenceContent(@NotNull Composite parent) {
-        Composite composite = UIUtils.createPlaceholder(parent, 2, 5);
-        
+        Composite composite = UIUtils.createComposite(parent, 2);
+
         {
-            Group uiGroup = UIUtils.createControlGroup(composite, DataEditorsMessages.pref_page_database_resultsets_group_plain_text, 2, GridData.VERTICAL_ALIGN_BEGINNING, 0);
+            Composite uiGroup = UIUtils.createTitledComposite(
+                composite,
+                DataEditorsMessages.pref_page_database_resultsets_group_plain_text,
+                2,
+                GridData.VERTICAL_ALIGN_BEGINNING
+            );
 
             textTabSize = UIUtils.createLabelSpinner(uiGroup, DataEditorsMessages.pref_page_database_resultsets_label_tab_width, 0, 1, 100);
-            textMaxColumnSize = UIUtils.createLabelSpinner(uiGroup, DataEditorsMessages.pref_page_database_resultsets_label_maximum_column_length, 0, 10, Integer.MAX_VALUE);
+            textMaxColumnSize = UIUtils.createLabelSpinner(
+                uiGroup,
+                DataEditorsMessages.pref_page_database_resultsets_label_maximum_column_length,
+                0,
+                10,
+                Integer.MAX_VALUE
+            );
             textValueFormat = new ValueFormatSelector(uiGroup);
-            showNulls = UIUtils.createCheckbox(uiGroup, DataEditorsMessages.pref_page_database_resultsets_label_text_show_nulls, null, false, 2);
-            textLineNumber = UIUtils.createCheckbox(uiGroup, DataEditorsMessages.pref_page_database_resultsets_label_text_show_line_numbers, DataEditorsMessages.pref_page_database_resultsets_label_text_show_line_numbers_tip, false, 2);
-            textDelimiterLeading = UIUtils.createCheckbox(uiGroup, DataEditorsMessages.pref_page_database_resultsets_label_text_delimiter_leading, null, false, 2);
-            textDelimiterTrailing = UIUtils.createCheckbox(uiGroup, DataEditorsMessages.pref_page_database_resultsets_label_text_delimiter_trailing, null, false, 2);
-            textDelimiterTop = UIUtils.createCheckbox(uiGroup, DataEditorsMessages.pref_page_database_resultsets_label_text_delimiter_top, null, false, 2);
-            textDelimiterBottom = UIUtils.createCheckbox(uiGroup, DataEditorsMessages.pref_page_database_resultsets_label_text_delimiter_bottom, null, false, 2);
-            textExtraSpaces = UIUtils.createCheckbox(uiGroup, DataEditorsMessages.pref_page_database_resultsets_label_text_extra_spaces, null, false, 2);
+            showNulls = UIUtils.createCheckbox(
+                uiGroup,
+                DataEditorsMessages.pref_page_database_resultsets_label_text_show_nulls,
+                null,
+                false,
+                2
+            );
+            textLineNumber = UIUtils.createCheckbox(
+                uiGroup,
+                DataEditorsMessages.pref_page_database_resultsets_label_text_show_line_numbers,
+                DataEditorsMessages.pref_page_database_resultsets_label_text_show_line_numbers_tip,
+                false,
+                2
+            );
+            textDelimiterLeading = UIUtils.createCheckbox(
+                uiGroup,
+                DataEditorsMessages.pref_page_database_resultsets_label_text_delimiter_leading,
+                null,
+                false,
+                2
+            );
+            textDelimiterTrailing = UIUtils.createCheckbox(
+                uiGroup,
+                DataEditorsMessages.pref_page_database_resultsets_label_text_delimiter_trailing,
+                null,
+                false,
+                2
+            );
+            textDelimiterTop = UIUtils.createCheckbox(
+                uiGroup,
+                DataEditorsMessages.pref_page_database_resultsets_label_text_delimiter_top,
+                null,
+                false,
+                2
+            );
+            textDelimiterBottom = UIUtils.createCheckbox(
+                uiGroup,
+                DataEditorsMessages.pref_page_database_resultsets_label_text_delimiter_bottom,
+                null,
+                false,
+                2
+            );
+            textExtraSpaces = UIUtils.createCheckbox(
+                uiGroup,
+                DataEditorsMessages.pref_page_database_resultsets_label_text_extra_spaces,
+                null,
+                false,
+                2
+            );
         }
 
         return composite;
     }
 
     @Override
-    protected void loadPreferences(DBPPreferenceStore store)
-    {
+    protected void loadPreferences(@NotNull DBPPreferenceStore store) {
         try {
             textTabSize.setSelection(store.getInt(ResultSetPreferences.RESULT_TEXT_TAB_SIZE));
             textMaxColumnSize.setSelection(store.getInt(ResultSetPreferences.RESULT_TEXT_MAX_COLUMN_SIZE));
-            textValueFormat.select(CommonUtils.valueOf(DBDDisplayFormat.class, store.getString(ResultSetPreferences.RESULT_TEXT_VALUE_FORMAT), DBDDisplayFormat.EDIT));
+            textValueFormat.select(CommonUtils.valueOf(
+                DBDDisplayFormat.class,
+                store.getString(ResultSetPreferences.RESULT_TEXT_VALUE_FORMAT),
+                DBDDisplayFormat.EDIT
+            ));
             showNulls.setSelection(store.getBoolean(ResultSetPreferences.RESULT_TEXT_SHOW_NULLS));
             textDelimiterLeading.setSelection(store.getBoolean(ResultSetPreferences.RESULT_TEXT_DELIMITER_LEADING));
             textDelimiterTrailing.setSelection(store.getBoolean(ResultSetPreferences.RESULT_TEXT_DELIMITER_TRAILING));
@@ -123,8 +178,7 @@ public class PrefPageResultSetPresentationPlainText extends TargetPrefPage
     }
 
     @Override
-    protected void savePreferences(DBPPreferenceStore store)
-    {
+    protected void savePreferences(@NotNull DBPPreferenceStore store) {
         try {
             store.setValue(ResultSetPreferences.RESULT_TEXT_TAB_SIZE, textTabSize.getSelection());
             store.setValue(ResultSetPreferences.RESULT_TEXT_MAX_COLUMN_SIZE, textMaxColumnSize.getSelection());
@@ -143,8 +197,7 @@ public class PrefPageResultSetPresentationPlainText extends TargetPrefPage
     }
 
     @Override
-    protected void clearPreferences(DBPPreferenceStore store)
-    {
+    protected void clearPreferences(DBPPreferenceStore store) {
         store.setToDefault(ResultSetPreferences.RESULT_TEXT_TAB_SIZE);
         store.setToDefault(ResultSetPreferences.RESULT_TEXT_MAX_COLUMN_SIZE);
         store.setToDefault(ResultSetPreferences.RESULT_TEXT_VALUE_FORMAT);
@@ -172,9 +225,9 @@ public class PrefPageResultSetPresentationPlainText extends TargetPrefPage
         super.performDefaults();
     }
 
+    @NotNull
     @Override
-    protected String getPropertyPageID()
-    {
+    protected String getPropertyPageID() {
         return PAGE_ID;
     }
 
