@@ -156,9 +156,9 @@ public abstract class PostgreTableManagerBase extends SQLTableManager<PostgreTab
                 if (table instanceof PostgreTable pgTable) {
                     if (pgTable.isHasRowLevelSecurity()) {
                         actions.add(new SQLDatabasePersistAction(
-                                "Enable row level security",
-                                "ALTER TABLE " + table.getFullyQualifiedName(DBPEvaluationContext.DDL)
-                                        + " ENABLE ROW LEVEL SECURITY"
+                            "Enable row level security",
+                            "ALTER TABLE " + table.getFullyQualifiedName(DBPEvaluationContext.DDL)
+                                    + " ENABLE ROW LEVEL SECURITY"
                         ));
                     }
                 }
