@@ -45,4 +45,6 @@ public class CubridConstants
     public static final String[] SHARD_TYPE = {"SHARD ID", "SHARD VAL"};
     public static final String PREF_DBMS_OUTPUT = "pref.dbms.output";
     public static final String PREF_DBMS_OUTPUT_BUFFER_SIZE = "pref.dbms.output.buffer.size";
+    public static final String OID_NAVIGATOR = "oid_navigator";
+    public static final String CLASS = "CLASS";
 }
