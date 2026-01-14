@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,12 @@ package org.jkiss.dbeaver.ui.ai.internal;
 
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.jkiss.dbeaver.model.impl.preferences.BundlePreferenceStore;
+import org.jkiss.dbeaver.model.rm.RMConstants;
 import org.jkiss.dbeaver.model.runtime.features.DBRFeatureRegistry;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.ui.ai.preferences.AIPreferencePageMain;
+import org.jkiss.dbeaver.ui.preferences.PrefPageConstants;
+import org.jkiss.dbeaver.ui.workbench.WorkbenchUtils;
 import org.osgi.framework.BundleContext;
 
 public class AIUIActivator extends AbstractUIPlugin {
@@ -32,6 +37,10 @@ public class AIUIActivator extends AbstractUIPlugin {
         DBRFeatureRegistry.getInstance().registerFeatures(AIFeatures.class);
         // Trigger pref defaults
         new BundlePreferenceStore(getBundle());
+
+        if (!DBWorkbench.getPlatform().getWorkspace().hasRealmPermission(RMConstants.PERMISSION_CONFIGURATION_MANAGER)) {
+            WorkbenchUtils.removePreferencePages(PrefPageConstants.WORKBENCH_PREF_PAGE_ID + "/" + AIPreferencePageMain.PAGE_ID);
+        }
     }
 
     @Override
