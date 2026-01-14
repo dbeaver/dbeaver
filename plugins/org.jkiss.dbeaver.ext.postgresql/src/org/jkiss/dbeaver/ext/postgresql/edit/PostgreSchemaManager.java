@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -46,7 +46,7 @@ import java.util.Map;
 public class PostgreSchemaManager extends SQLObjectEditor<PostgreSchema, PostgreDatabase> implements DBEObjectRenamer<PostgreSchema> {
 
     @Override
-    public long getMakerOptions(DBPDataSource dataSource)
+    public long getMakerOptions(@NotNull DBPDataSource dataSource)
     {
         return FEATURE_SAVE_IMMEDIATELY;
     }
@@ -59,21 +59,33 @@ public class PostgreSchemaManager extends SQLObjectEditor<PostgreSchema, Postgre
     }
 
     @Override
-    protected PostgreSchema createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, final Object container, Object copyFrom, Map<String, Object> options)
+    protected PostgreSchema createDatabaseObject(@NotNull DBRProgressMonitor monitor, @NotNull DBECommandContext context, final Object container, Object copyFrom, @NotNull Map<String, Object> options)
     {
         PostgreDatabase database = (PostgreDatabase) container;
         return database.createSchemaImpl(database, "NewSchema", (PostgreRole) null);
     }
 
     @Override
-    protected void addObjectCreateActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, ObjectCreateCommand command, Map<String, Object> options)
-    {
-        final PostgreSchema schema = command.getObject();
-        final StringBuilder script = new StringBuilder("CREATE SCHEMA " + DBUtils.getQuotedIdentifier(schema));
+    protected void addObjectCreateActions(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBCExecutionContext executionContext,
+        @NotNull List<DBEPersistAction> actions,
+        @NotNull ObjectCreateCommand command,
+        @NotNull Map<String, Object> options
+    ) {
+        PostgreSchema schema = command.getObject();
+        StringBuilder script = new StringBuilder("CREATE SCHEMA " + DBUtils.getQuotedIdentifier(schema));
         try {
-            final PostgreRole owner = schema.getOwner(monitor);
-            if (owner != null) {
-                script.append("\nAUTHORIZATION ").append(DBUtils.getQuotedIdentifier(owner));
+            PostgreRole owner = schema.getOwner(monitor);
+            String currentUser = executionContext
+                .getDataSource()
+                .getContainer()
+                .getConnectionConfiguration()
+                .getUserName();
+
+            if (owner != null && !owner.getName().equals(currentUser)) {
+                script.append("\nAUTHORIZATION ")
+                    .append(DBUtils.getQuotedIdentifier(owner));
             }
         } catch (DBException e) {
             log.error(e);
@@ -85,7 +97,7 @@ public class PostgreSchemaManager extends SQLObjectEditor<PostgreSchema, Postgre
     }
 
     @Override
-    protected void addObjectDeleteActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, ObjectDeleteCommand command, Map<String, Object> options)
+    protected void addObjectDeleteActions(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext executionContext, @NotNull List<DBEPersistAction> actions, @NotNull ObjectDeleteCommand command, @NotNull Map<String, Object> options)
     {
         actions.add(
             new SQLDatabasePersistAction("Drop schema", "DROP SCHEMA " + DBUtils.getQuotedIdentifier(command.getObject()) + " CASCADE") //$NON-NLS-2$
@@ -93,7 +105,7 @@ public class PostgreSchemaManager extends SQLObjectEditor<PostgreSchema, Postgre
     }
 
     @Override
-    protected void addObjectRenameActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, ObjectRenameCommand command, Map<String, Object> options)
+    protected void addObjectRenameActions(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext executionContext, @NotNull List<DBEPersistAction> actions, @NotNull ObjectRenameCommand command, @NotNull Map<String, Object> options)
     {
         actions.add(
             new SQLDatabasePersistAction(
@@ -109,7 +121,7 @@ public class PostgreSchemaManager extends SQLObjectEditor<PostgreSchema, Postgre
         processObjectRename(commandContext, schema, options, newName);
     }
 
-    protected void addObjectExtraActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, NestedObjectCommand<PostgreSchema, PropertyHandler> command, Map<String, Object> options)
+    protected void addObjectExtraActions(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext executionContext, @NotNull List<DBEPersistAction> actions, @NotNull NestedObjectCommand<PostgreSchema, PropertyHandler> command, @NotNull Map<String, Object> options)
     {
         PostgreSchema schema = command.getObject();
         String comment = schema.getDescription();

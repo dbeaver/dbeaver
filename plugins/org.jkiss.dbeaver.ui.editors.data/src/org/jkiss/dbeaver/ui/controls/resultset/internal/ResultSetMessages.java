@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -83,6 +83,7 @@ public class ResultSetMessages extends NLS {
     public static String controls_resultset_viewer_action_column_view;
     public static String controls_resultset_viewer_action_logical_structure;
     public static String controls_resultset_viewer_action_view_format;
+    public static String controls_resultset_viewer_action_view_hints;
     public static String controls_resultset_viewer_action_view_as;
     public static String controls_resultset_viewer_action_view_column_type;
     public static String controls_resultset_viewer_action_view_column_types;
@@ -121,10 +122,18 @@ public class ResultSetMessages extends NLS {
     public static String controls_resultset_viewer_hide_columnss_error_text;
     public static String controls_resultset_viewer_show_hidden_columns;
 
+    public static String controls_resultset_viewer_sorting_order_none;
+    public static String controls_resultset_viewer_sorting_order_ascending;
+    public static String controls_resultset_viewer_sorting_order_descending;
+
     public static String controls_resultset_ref_menu_no_references;
     public static String controls_resultset_ref_menu_references;
     public static String controls_resultset_ref_menu_no_associations;
     public static String controls_resultset_ref_menu_associations;
+
+    public static String controls_resultset_results_read_only;
+    public static String controls_resultset_results_read_only_status;
+    public static String controls_resultset_results_edit_key;
 
     public static String controls_rs_pump_job_context_name;
     public static String controls_rs_pump_job_name;
@@ -136,18 +145,17 @@ public class ResultSetMessages extends NLS {
     public static String controls_resultset_config_panels;
     public static String controls_resultset_config_record;
 
-    public static String sql_editor_resultset_filter_;
     public static String sql_editor_resultset_filter_panel_text_enter_sql_to_filter;
     public static String sql_editor_resultset_filter_panel_text_enter_filter_not_support;
     public static String sql_editor_resultset_filter_panel_btn_apply;
     public static String sql_editor_resultset_filter_panel_label;
     public static String sql_editor_resultset_filter_panel_btn_open_console;
     public static String sql_editor_resultset_filter_panel_control_no_data;
-    public static String sql_editor_resultset_filter_panel_control_execute_to_see_reslut;
+    public static String sql_editor_resultset_filter_panel_control_execute_to_see_result;
+    public static String sql_editor_resultset_filter_panel_show_sql_label;
 
     public static String actions_name_color_by;
     public static String actions_name_color_reset_by;
-    public static String actions_name_colorize_data_types;
     public static String actions_name_row_colors;
     public static String actions_name_structurize_complex_types;
     public static String actions_spreadsheet_copy_special;
@@ -177,6 +185,8 @@ public class ResultSetMessages extends NLS {
     public static String dialog_row_colors_group_settings_background_color_label;
     public static String dialog_row_colors_group_settings_foreground_color_label;
     public static String dialog_row_colors_group_settings_tip;
+    public static String dialog_row_colors_error_message_title;
+    public static String dialog_row_colors_error_message_text;
 
     public static String dialog_value_view_button_cancel;
     public static String dialog_value_view_button_sat_null;
@@ -192,7 +202,6 @@ public class ResultSetMessages extends NLS {
 
 
     public static String dialog_value_view_job_selector_name;
-    public static String dialog_value_view_label_dictionary;
 
     public static String dialog_filter_value_edit_title;
     public static String dialog_filter_value_edit_label_choose_values;
@@ -239,10 +248,13 @@ public class ResultSetMessages extends NLS {
     public static String dialog_paste_as_title;
     public static String dialog_paste_as_insert_multiple_rows_text;
     public static String dialog_paste_as_insert_multiple_rows_tip;
+    public static String dialog_paste_as_ignore_quotes_text;
+    public static String dialog_paste_as_ignore_quotes_tip;
     public static String dialog_paste_as_insert_nulls_text;
     public static String dialog_paste_as_insert_nulls_tip;
     public static String dialog_paste_as_null_value_mark_text;
     public static String dialog_paste_as_null_value_mark_tip;
+
 
     // Pref pages
     public static String pref_page_content_editor_checkbox_commit_on_content_apply;
@@ -290,6 +302,7 @@ public class ResultSetMessages extends NLS {
 
     public static String pref_page_data_viewer_dictionary_panel_group;
     public static String getPref_page_data_viewer_dictionary_panel_results_max_size;
+    public static String getPref_page_data_viewer_dictionary_panel_results_max_size_tip;
 
 
     public static String dialog_data_format_profiles_button_delete_profile;
@@ -309,7 +322,7 @@ public class ResultSetMessages extends NLS {
     public static String dialog_save_script_button_delete_cascade_tip;
     public static String dialog_save_script_button_delete_deep_cascade;
     public static String dialog_save_script_button_delete_deep_cascade_tip;
-    public static String dialog_save_script_button_bar_button_persist;
+    public static String dialog_save_script_button_bar_button_execute;
     public static String dialog_save_script_button_bar_button_copy;
 
     //Preference/Properties
@@ -323,15 +336,16 @@ public class ResultSetMessages extends NLS {
     public static String pref_page_database_resultsets_label_binary_strings_max_length;
     public static String pref_page_database_resultsets_label_auto_fetch_segment;
     public static String pref_page_database_resultsets_label_auto_fetch_segment_tip;
+    public static String pref_page_database_resultsets_label_automatic_row_count;
+    public static String pref_page_database_resultsets_label_automatic_row_count_tip;
     public static String pref_page_database_resultsets_label_reread_on_scrolling;
     public static String pref_page_database_resultsets_label_reread_on_scrolling_tip;
     public static String pref_page_database_resultsets_label_use_sql;
     public static String pref_page_database_resultsets_label_use_sql_tip;
     public static String pref_page_database_resultsets_label_order_mode;
     public static String pref_page_database_resultsets_label_order_mode_tip;
-    public static String pref_page_database_resultsets_label_order_mode_smart;
-    public static String pref_page_database_resultsets_label_order_mode_always_client;
-    public static String pref_page_database_resultsets_label_order_mode_always_server;
+    public static String pref_page_database_resultsets_label_order_policy;
+    public static String pref_page_database_resultsets_label_order_policy_tip;
     public static String pref_page_database_resultsets_label_fetch_size;
     public static String pref_page_database_resultsets_label_read_metadata;
     public static String pref_page_database_resultsets_label_read_references;
@@ -371,6 +385,8 @@ public class ResultSetMessages extends NLS {
     public static String results_decorator_grouping_is_not_supported;
     public static String results_decorator_no_connected_to_db;
     public static String results_decorator_no_groupings;
+    public static String results_goto_column_dialog_title;
+    public static String results_goto_column_dialog_message;
     
     public static String virtual_edit_columns_page_add;
     public static String virtual_edit_columns_page_table_column_name;
@@ -403,8 +419,10 @@ public class ResultSetMessages extends NLS {
     public static String panel_editor_text_loading_placeholder_label;
     public static String panel_editor_text_word_wrap_name;
     public static String panel_editor_text_auto_format_name;
+    public static String panel_editor_text_minify_name;
     public static String panel_editor_text_encoding_name;
     public static String panel_editor_text_encoding_title;
+    public static String panel_editor_text_content_limitation_lbl;
 
     public static String error_part_button_go_to_error;
 
@@ -454,6 +472,7 @@ public class ResultSetMessages extends NLS {
     public static String copy_special_force_quote_cell_values_tip;
     public static String copy_special_copy_as_html_text;
     public static String copy_special_copy_as_html_tip;
+    public static String copy_special_hint_for_hotkey;
 
     public static String filter_panel_filters_history_text;
     public static String filter_panel_expand_panel_text;
@@ -462,6 +481,16 @@ public class ResultSetMessages extends NLS {
     public static String generate_ddl_by_result_set_tip;
     public static String meta_data_panel_action_copy_column_text;
     public static String result_set_viewer_selection_stat_tooltip;
+
+    public static String panel_metadata_filter_label;
+    public static String panel_metadata_filter_hint;
+
+
+    public static String reference_value_editor_value_label;
+    public static String reference_value_editor_current_page_value;
+    public static String reference_value_editor_current_pagination_value;
+    public static String reference_value_editor_define_description_value;
+    public static String reference_value_editor_search_hint_value;
 
     static {
         // initialize resource bundle

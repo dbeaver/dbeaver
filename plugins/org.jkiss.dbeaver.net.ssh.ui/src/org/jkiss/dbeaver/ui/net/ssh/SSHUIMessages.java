@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,55 +19,61 @@ package org.jkiss.dbeaver.ui.net.ssh;
 import org.eclipse.osgi.util.NLS;
 
 public class SSHUIMessages extends NLS {
-	static final String BUNDLE_NAME = "org.jkiss.dbeaver.ui.net.ssh.SSHUIMessages"; //$NON-NLS-1$
+    static final String BUNDLE_NAME = "org.jkiss.dbeaver.ui.net.ssh.SSHUIMessages"; //$NON-NLS-1$
 
-	public static String model_ssh_configurator_group_settings;
-	public static String model_ssh_configurator_group_advanced;
-	public static String model_ssh_configurator_checkbox_save_pass;
-	public static String model_ssh_configurator_combo_auth_method;
-	public static String model_ssh_configurator_combo_password;
-	public static String model_ssh_configurator_combo_pub_key;
-	public static String model_ssh_configurator_dialog_choose_private_key;
-	public static String model_ssh_configurator_label_host_ip;
-	public static String model_ssh_configurator_label_password;
-	public static String model_ssh_configurator_label_passphrase;
-	public static String model_ssh_configurator_label_port;
-	public static String model_ssh_configurator_label_private_key;
-	public static String model_ssh_configurator_label_user_name;
-	public static String model_ssh_configurator_label_implementation;
-	public static String model_ssh_configurator_label_local_host;
-	public static String model_ssh_configurator_label_local_host_description;
-	public static String model_ssh_configurator_label_local_port;
-	public static String model_ssh_configurator_label_local_port_description;
-	public static String model_ssh_configurator_label_remote_host;
-	public static String model_ssh_configurator_label_remote_host_description;
-	public static String model_ssh_configurator_label_remote_port;
-	public static String model_ssh_configurator_label_remote_port_description;
+    public static String model_ssh_configurator_group_settings;
+    public static String model_ssh_configurator_group_advanced;
+    public static String model_ssh_configurator_checkbox_save_pass;
+    public static String model_ssh_configurator_combo_auth_method;
+    public static String model_ssh_configurator_combo_password;
+    public static String model_ssh_configurator_combo_pub_key;
+    public static String model_ssh_configurator_dialog_choose_private_key;
+    public static String model_ssh_configurator_label_host_ip;
+    public static String model_ssh_configurator_label_password;
+    public static String model_ssh_configurator_label_passphrase;
+    public static String model_ssh_configurator_label_port;
+    public static String model_ssh_configurator_label_private_key;
+    public static String model_ssh_configurator_label_user_name;
+    public static String model_ssh_configurator_label_implementation;
+    public static String model_ssh_configurator_label_local_host;
+    public static String model_ssh_configurator_label_local_host_description;
+    public static String model_ssh_configurator_label_local_port;
+    public static String model_ssh_configurator_label_local_port_description;
+    public static String model_ssh_configurator_label_remote_host;
+    public static String model_ssh_configurator_label_remote_host_description;
+    public static String model_ssh_configurator_label_remote_port;
+    public static String model_ssh_configurator_label_remote_port_description;
     public static String model_ssh_configurator_label_keep_alive;
-	public static String model_ssh_configurator_label_tunnel_timeout;
-	public static String model_ssh_configurator_label_bypass_verification;
-	public static String model_ssh_configurator_label_bypass_verification_description;
-	public static String model_ssh_configurator_button_test_tunnel;
-	public static String model_ssh_configurator_combo_agent;
-	public static String model_ssh_configurator_group_jump_server_settings_text;
-	public static String model_ssh_configurator_group_jump_server_checkbox_label;
-	public static String model_ssh_configurator_variables_hint_label;
-	public static String model_ssh_configurator_ssh_documentation_link;
-
+    public static String model_ssh_configurator_label_tunnel_timeout;
+    public static String model_ssh_configurator_label_bypass_verification;
+    public static String model_ssh_configurator_label_bypass_verification_description;
+    public static String model_ssh_configurator_label_share_tunnels;
+    public static String model_ssh_configurator_label_share_tunnels_description;
+    public static String model_ssh_configurator_button_test_tunnel;
+    public static String model_ssh_configurator_combo_agent;
+    public static String model_ssh_configurator_group_general_text;
+    public static String model_ssh_configurator_group_timeouts_text;
+    public static String model_ssh_configurator_group_port_forwarding_text;
+    public static String model_ssh_configurator_group_jump_server_settings_text;
+    public static String model_ssh_configurator_variables_hint_label;
+    public static String model_ssh_configurator_ssh_documentation_link;
 
     public static String model_ssh_dialog_credentials;
     public static String model_ssh_dialog_credentials_username;
     public static String model_ssh_dialog_credentials_password;
     public static String model_ssh_dialog_credentials_passphrase;
 
+    public static String model_ssh_dialog_edit_private_key;
+    public static String model_ssh_dialog_set_private_key;
+
     public static String jsch_remote_host_identifier_changed_warning_title;
 
 
     static {
-		// initialize resource bundle
-		NLS.initializeMessages(BUNDLE_NAME, SSHUIMessages.class);
-	}
+        // initialize resource bundle
+        NLS.initializeMessages(BUNDLE_NAME, SSHUIMessages.class);
+    }
 
-	private SSHUIMessages() {
-	}
+    private SSHUIMessages() {
+    }
 }

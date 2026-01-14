@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,8 +33,7 @@ import java.sql.SQLException;
  * PostgreTableRegular
  */
 public class PostgreTableRegular extends PostgreTable implements DBPReferentialIntegrityController {
-    public PostgreTableRegular(PostgreSchema catalog)
-    {
+    public PostgreTableRegular(PostgreSchema catalog) {
         super(catalog);
     }
 
@@ -80,6 +79,7 @@ public class PostgreTableRegular extends PostgreTable implements DBPReferentialI
         return DISABLE_REFERENTIAL_INTEGRITY_STATEMENT;
     }
 
+    @NotNull
     @Override
     public DBSObjectType getObjectType() {
         return RelationalObjectType.TYPE_TABLE;

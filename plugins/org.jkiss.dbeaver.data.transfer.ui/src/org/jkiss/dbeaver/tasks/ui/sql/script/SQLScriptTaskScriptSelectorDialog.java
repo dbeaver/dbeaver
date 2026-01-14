@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,6 +30,7 @@ import org.eclipse.swt.widgets.Shell;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.navigator.DBNLocalFolder;
+import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.DBNProject;
 import org.jkiss.dbeaver.model.navigator.DBNResource;
 import org.jkiss.dbeaver.tools.transfer.internal.DTMessages;
@@ -48,9 +49,9 @@ import java.util.List;
 
 class SQLScriptTaskScriptSelectorDialog extends BaseDialog {
 
-    private DBNProject projectNode;
+    private final DBNProject projectNode;
     private DatabaseNavigatorTree scriptsTree;
-    private List<DBNResource> selectedScripts = new ArrayList<>();
+    private final List<DBNNode> selectedScripts = new ArrayList<>();
 
     SQLScriptTaskScriptSelectorDialog(Shell parentShell, DBNProject projectNode) {
         super(parentShell, DTMessages.sql_script_task_page_settings_group_files, null);
@@ -105,9 +106,7 @@ class SQLScriptTaskScriptSelectorDialog extends BaseDialog {
                 return false;
             }
         });
-        scriptsTree.getViewer().addSelectionChangedListener(event -> {
-            updateSelectedScripts();
-        });
+        scriptsTree.getViewer().addSelectionChangedListener(event -> updateSelectedScripts());
         scriptsTree.getViewer().expandToLevel(2);
         scriptsTree.getViewer().getTree().setHeaderVisible(true);
         createScriptColumns(scriptsTree.getViewer());
@@ -118,26 +117,26 @@ class SQLScriptTaskScriptSelectorDialog extends BaseDialog {
     private void updateSelectedScripts() {
         selectedScripts.clear();
         for (Object element : scriptsTree.getCheckboxViewer().getCheckedElements()) {
-            if (element instanceof DBNResource && ((DBNResource) element).getResource() instanceof IFile) {
-                selectedScripts.add((DBNResource) element);
+            if (element instanceof DBNResource dbnResource && dbnResource.getResource() instanceof IFile) {
+                selectedScripts.add(dbnResource);
             }
         }
-        getButton(IDialogConstants.OK_ID).setEnabled(!selectedScripts.isEmpty());
+        enableButton(IDialogConstants.OK_ID, !selectedScripts.isEmpty());
     }
 
-    public List<DBNResource> getSelectedScripts() {
+    public List<DBNNode> getSelectedScripts() {
         return selectedScripts;
     }
 
     @Override
     protected void createButtonsForButtonBar(Composite parent) {
         super.createButtonsForButtonBar(parent);
-        getButton(IDialogConstants.OK_ID).setEnabled(false);
+        enableButton(IDialogConstants.OK_ID, false);
     }
 
     static void createScriptColumns(ColumnViewer viewer) {
         final ILabelProvider mainLabelProvider = (ILabelProvider) viewer.getLabelProvider();
-        ViewerColumnController columnController = new ViewerColumnController("sqlTaskScriptViewer", viewer);
+        ViewerColumnController<?,?> columnController = new ViewerColumnController<>("sqlTaskScriptViewer", viewer);
         columnController.setForceAutoSize(true);
         columnController.addColumn(ModelMessages.model_navigator_Name, DTUIMessages.sql_script_task_selector_dialog_column_description_script, SWT.LEFT, true, true, new ColumnLabelProvider() {
             @Override
@@ -165,7 +164,7 @@ class SQLScriptTaskScriptSelectorDialog extends BaseDialog {
                     if (!CommonUtils.isEmpty(containers)) {
                         StringBuilder text = new StringBuilder();
                         for (DBPDataSourceContainer container : containers) {
-                            if (text.length() > 0) {
+                            if (!text.isEmpty()) {
                                 text.append(", ");
                             }
                             text.append(container.getName());
@@ -176,10 +175,6 @@ class SQLScriptTaskScriptSelectorDialog extends BaseDialog {
                 return "";
             }
 
-            @Override
-            public Image getImage(Object element) {
-                return null;
-            }
         });
         columnController.createColumns(true);
     }

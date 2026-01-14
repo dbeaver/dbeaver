@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ext.postgresql.debug.ui.internal;
 
 import org.eclipse.core.runtime.IAdapterFactory;
+import org.eclipse.ui.IEditorPart;
 import org.jkiss.dbeaver.debug.DBGDebugObject;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreProcedure;
 import org.jkiss.dbeaver.ext.postgresql.ui.editors.PostgreSourceViewEditor;
@@ -33,19 +34,16 @@ public class PostgreDebugObjectAdapterFactory implements IAdapterFactory {
     @Override
     public <T> T getAdapter(Object adaptableObject, Class<T> adapterType) {
         if (adapterType == DBGDebugObject.class) {
-            if (adaptableObject instanceof PostgreSourceViewEditor &&
-                ((PostgreSourceViewEditor) adaptableObject).getSourceObject() instanceof PostgreProcedure)
-            {
+            if (adaptableObject instanceof IEditorPart editorPart) {
+                adaptableObject = editorPart.getEditorInput();
+            }
+            if (adaptableObject instanceof PostgreSourceViewEditor viewEditor && viewEditor.getSourceObject() instanceof PostgreProcedure) {
                 return adapterType.cast(DEBUG_OBJECT);
             }
-            if (adaptableObject instanceof IDatabaseEditorInput &&
-                ((IDatabaseEditorInput) adaptableObject).getDatabaseObject() instanceof PostgreProcedure)
-            {
+            if (adaptableObject instanceof IDatabaseEditorInput dei && dei.getDatabaseObject() instanceof PostgreProcedure) {
                 return adapterType.cast(DEBUG_OBJECT);
             }
-            if (adaptableObject instanceof DBNDatabaseNode &&
-                ((DBNDatabaseNode) adaptableObject).getObject() instanceof PostgreProcedure)
-            {
+            if (adaptableObject instanceof DBNDatabaseNode databaseNode && databaseNode.getObject() instanceof PostgreProcedure) {
                 return adapterType.cast(DEBUG_OBJECT);
             }
         }

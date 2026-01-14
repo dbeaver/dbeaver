@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,14 +17,18 @@
 package org.jkiss.dbeaver.model.navigator.fs;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.fs.DBFVirtualFileSystemRoot;
+import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.navigator.DBNLazyNode;
+import org.jkiss.dbeaver.model.navigator.DBNNode;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 
 import java.nio.file.Path;
@@ -37,7 +41,6 @@ public class DBNFileSystemRoot extends DBNPathBase implements DBNLazyNode
     private static final Log log = Log.getLog(DBNFileSystemRoot.class);
 
     private DBFVirtualFileSystemRoot root;
-    private DBNPath[] children;
     private Path path;
 
     public DBNFileSystemRoot(DBNFileSystem parentNode, DBFVirtualFileSystemRoot root) {
@@ -57,48 +60,81 @@ public class DBNFileSystemRoot extends DBNPathBase implements DBNLazyNode
 
     @Override
     protected void dispose(boolean reflect) {
-        children = null;
         this.root = null;
         super.dispose(reflect);
     }
 
     @Override
-    public String getNodeType() {
-        return "FileSystemRoot";
+    public boolean supportsRename() {
+        return false;
     }
 
+    @NotNull
+    @Override
+    public String getNodeType() {
+        return NodePathType.dbvfs.name() + ".folder";
+    }
+
+    @NotNull
+    @Override
+    public String getNodeTypeLabel() {
+        return ModelMessages.fs_folder;
+    }
+
+    @NotNull
     @Override
     @Property(id = DBConstants.PROP_ID_NAME, viewable = true, order = 1)
-    public String getNodeName() {
+    public String getNodeDisplayName() {
         return root.getName();
     }
 
-    @Override
-    public String getNodeDescription() {
-        return null;
-    }
-
+    @Nullable
     @Override
     public DBPImage getNodeIcon() {
-        return DBIcon.TREE_FOLDER_INFO;
+        return DBIcon.TREE_FOLDER_CONSTRAINT;
     }
 
     @Override
-    public boolean allowsChildren() {
+    public boolean isDirectory() {
         return true;
     }
 
+    @Nullable
     @Override
-    public Path getPath() {
+    public DBNNode refreshNode(@NotNull DBRProgressMonitor monitor, @Nullable Object source) throws DBException {
+        this.path = null;
+        return super.refreshNode(monitor, source);
+    }
+
+    @Override
+    public synchronized Path getPath() {
         if (path == null) {
             try {
                 path = root.getRootPath(new VoidProgressMonitor());
             } catch (DBException e) {
-                log.error(e);
-                return Path.of(".nonexistentfolder");
+                log.error("Error resolving file system root", e);
+                path = Path.of(".nonexistentfolder");
             }
         }
         return path;
     }
 
+    @Override
+    protected synchronized void setPath(Path path) {
+        this.path = path;
+    }
+
+    @Override
+    public <T> T getAdapter(@NotNull Class<T> adapter) {
+        if (adapter.isInstance(root)) {
+            return adapter.cast(root);
+        }
+        return super.getAdapter(adapter);
+    }
+
+    @NotNull
+    @Override
+    public String toString() {
+        return root.getRootId() + "@" + root.getFileSystem().getId() + "->" + super.toString();
+    }
 }

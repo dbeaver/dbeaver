@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -46,47 +46,50 @@ public class PropertySourceMap implements DBPPropertySource {
         }
     }
 
+    @NotNull
     @Override
     public Object getEditableValue()
     {
         return this;
     }
 
+    @NotNull
     @Override
     public DBPPropertyDescriptor[] getProperties() {
         return props.toArray(new DBPPropertyDescriptor[props.size()]);
     }
 
+    @Nullable
     @Override
-    public Object getPropertyValue(@Nullable DBRProgressMonitor monitor, String id)
+    public Object getPropertyValue(@Nullable DBRProgressMonitor monitor, @NotNull String id)
     {
         return items.get(id);
     }
 
     @Override
-    public boolean isPropertySet(String id)
+    public boolean isPropertySet(@NotNull String id)
     {
         return false;
     }
 
     @Override
-    public boolean isPropertyResettable(String id) {
+    public boolean isPropertyResettable(@NotNull String id) {
         return false;
     }
 
     @Override
-    public void resetPropertyValue(@Nullable DBRProgressMonitor monitor, String id)
+    public void resetPropertyValue(@Nullable DBRProgressMonitor monitor, @NotNull String id)
     {
 
     }
 
     @Override
-    public void resetPropertyValueToDefault(String id) {
+    public void resetPropertyValueToDefault(@NotNull String id) {
 
     }
 
     @Override
-    public void setPropertyValue(@Nullable DBRProgressMonitor monitor, String id, Object value)
+    public void setPropertyValue(@Nullable DBRProgressMonitor monitor, @NotNull String id, @Nullable Object value)
     {
     }
 
@@ -111,6 +114,11 @@ public class PropertySourceMap implements DBPPropertySource {
 
         @Override
         public String getDescription() {
+            return null;
+        }
+
+        @Override
+        public String getHint() {
             return null;
         }
 
@@ -143,6 +151,12 @@ public class PropertySourceMap implements DBPPropertySource {
         @Nullable
         @Override
         public String[] getFeatures() {
+            return null;
+        }
+
+        @Nullable
+        @Override
+        public String[] getRequiredFeatures() {
             return null;
         }
 

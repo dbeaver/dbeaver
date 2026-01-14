@@ -1,7 +1,7 @@
 /*
  * DBeaver - Universal Database Manager
  * Copyright (C) 2016-2019 Karl Griesser (fullref@gmail.com)
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
  */
 package org.jkiss.dbeaver.ext.exasol.model.cache;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.exasol.model.ExasolTable;
 import org.jkiss.dbeaver.ext.exasol.model.ExasolTableColumn;
@@ -40,8 +41,9 @@ public class ExasolTablePartitionColumnCache extends AbstractObjectCache<ExasolT
     	tablePartitionColumns = new ArrayList<ExasolTablePartitionColumn>();
 	}
     
-	@Override
-	public Collection<ExasolTablePartitionColumn> getAllObjects(DBRProgressMonitor monitor, ExasolTable owner)
+	@NotNull
+    @Override
+	public Collection<ExasolTablePartitionColumn> getAllObjects(@NotNull DBRProgressMonitor monitor, ExasolTable owner)
 			throws DBException {
 		if (tablePartitionColumns.isEmpty() && ! super.fullCache)
 		{
@@ -65,7 +67,7 @@ public class ExasolTablePartitionColumnCache extends AbstractObjectCache<ExasolT
 	}
 
 	@Override
-	public ExasolTablePartitionColumn getObject(DBRProgressMonitor monitor, ExasolTable owner, String name)
+	public ExasolTablePartitionColumn getObject(@NotNull DBRProgressMonitor monitor, @NotNull ExasolTable owner, @NotNull String name)
 			throws DBException {
 		if (!super.isFullyCached())
 		{
@@ -88,17 +90,12 @@ public class ExasolTablePartitionColumnCache extends AbstractObjectCache<ExasolT
     }
 
 	public Collection<ExasolTableColumn> getAvailableTableColumns(ExasolTable owner, DBRProgressMonitor monitor) throws DBException {
-		List<ExasolTableColumn> cols = new ArrayList<ExasolTableColumn>();
-		
-		cols = owner.getAttributes(monitor).stream()
-				.filter(c -> ! tablePartitionColumns.stream()
-						.filter(pc -> pc.getTableColumn() != null && pc.getName().equals(c.getName()))
-						.findFirst().isPresent()
+		return owner.getAttributes(monitor).stream()
+				.filter(c -> tablePartitionColumns.stream()
+						.noneMatch(pc -> pc.getTableColumn() != null && pc.getName().equals(c.getName()))
 				)
 				.filter(c -> c.getDataKind() == DBPDataKind.DATETIME || c.getDataKind() == DBPDataKind.NUMERIC )
 				.collect(Collectors.toList());
-		
-		return cols;
 	}
 
 

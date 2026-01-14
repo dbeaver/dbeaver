@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ext.mysql.model;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
@@ -30,7 +31,7 @@ import org.jkiss.dbeaver.model.struct.DBStructUtils;
 import java.util.Map;
 
 
-public abstract class MySQLTableConstraintBase extends JDBCTableConstraint<MySQLTable> implements MySQLSourceObject {
+public abstract class MySQLTableConstraintBase extends JDBCTableConstraint<MySQLTable, MySQLTableConstraintColumn> implements MySQLSourceObject {
 
     public MySQLTableConstraintBase(MySQLTable table, String name, String description, DBSEntityConstraintType constraintType, boolean persisted) {
         super(table, name, description, constraintType, persisted);
@@ -44,8 +45,9 @@ public abstract class MySQLTableConstraintBase extends JDBCTableConstraint<MySQL
         super(table, constraintSource, persisted);
     }
 
+    @NotNull
     @Override
-    public String getFullyQualifiedName(DBPEvaluationContext context) {
+    public String getFullyQualifiedName(@NotNull DBPEvaluationContext context) {
         return DBUtils.getFullQualifiedName(getDataSource(),
                 getTable().getContainer(),
                 getTable(),
@@ -62,8 +64,9 @@ public abstract class MySQLTableConstraintBase extends JDBCTableConstraint<MySQL
         throw new DBException("Constraints DDL is read-only");
     }
 
+    @NotNull
     @Override
-    public String getObjectDefinitionText(DBRProgressMonitor monitor, Map<String, Object> options) throws DBException {
+    public String getObjectDefinitionText(@NotNull DBRProgressMonitor monitor, @NotNull Map<String, Object> options) throws DBException {
         return DBStructUtils.generateObjectDDL(monitor, this, options, false);
     }
 }

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  * Copyright (C) 2019 Andrew Khitrin (ahitrin@gmail.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -20,8 +20,11 @@ package org.jkiss.dbeaver.ext.postgresql.ui.config;
 
 
 import org.eclipse.jface.dialogs.IDialogConstants;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreTablespace;
 import org.jkiss.dbeaver.ext.postgresql.ui.PostgreCreateTablespaceDialog;
+import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEObjectConfigurator;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.ui.UITask;
@@ -33,7 +36,7 @@ import java.util.Map;
 public class PostgreTablespaceConfigurator implements DBEObjectConfigurator<PostgreTablespace> {
 
     @Override
-    public PostgreTablespace configureObject(DBRProgressMonitor monitor, Object container, PostgreTablespace tablespace, Map<String, Object> options) {
+    public PostgreTablespace configureObject(@NotNull DBRProgressMonitor monitor, @Nullable DBECommandContext commandContext, @Nullable Object container, @NotNull PostgreTablespace tablespace, @NotNull Map<String, Object> options) {
         return new UITask<PostgreTablespace>() {
             @Override
             protected PostgreTablespace runTask() {
@@ -44,6 +47,7 @@ public class PostgreTablespaceConfigurator implements DBEObjectConfigurator<Post
                 tablespace.setName(dialog.getName());
                 tablespace.setLoc(dialog.getLoc());
                 tablespace.setOwnerId(dialog.getOwner().getObjectId());
+                tablespace.setOptions(dialog.getOptions());
                 return tablespace;
             }
         }.execute();

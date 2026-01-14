@@ -1,7 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
- * Copyright (C) 2011-2012 Eugene Fradkin (eugene.fradkin@gmail.com)
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,6 +34,8 @@ public final class MySQLUIMessages extends NLS {
     public static String dialog_connection_server_timezone;
     public static String dialog_connection_auto_detect;
     public static String dialog_connection_local_client;
+    public static String dialog_connection_show_all_databases;
+    public static String dialog_connection_show_all_databases_tip;
     public static String edit_catalog_manager_dialog_schema_name;
     public static String edit_command_change_user_action_create_new_user;
     public static String edit_command_change_user_action_update_user_record;
@@ -55,6 +56,8 @@ public final class MySQLUIMessages extends NLS {
     public static String editors_session_editor_confirm;
     public static String editors_session_hide_sleeping_text;
     public static String editors_session_hide_sleeping_tip;
+    public static String editors_session_show_performance_text;
+    public static String editors_session_show_performance_tip;
     public static String editors_user_editor_abstract_load_grants;
     public static String editors_user_editor_general_control_dba_privileges;
     public static String editors_user_editor_general_group_limits;
@@ -98,10 +101,12 @@ public final class MySQLUIMessages extends NLS {
     public static String tools_db_export_wizard_page_settings_checkbox_remove_definer;
     public static String tools_db_export_wizard_page_settings_checkbox_binary_hex;
     public static String tools_db_export_wizard_page_settings_checkbox_no_data;
+    public static String tools_db_export_wizard_page_settings_checkbox_no_routines;
     public static String tools_db_export_wizard_page_settings_checkbox_disable_keys;
     public static String tools_db_export_wizard_page_settings_checkbox_dump_events;
     public static String tools_db_export_wizard_page_settings_checkbox_ext_inserts;
     public static String tools_db_export_wizard_page_settings_checkbox_no_create;
+    public static String tools_db_export_wizard_page_settings_checkbox_compressed;
     public static String tools_db_export_wizard_page_settings_combo_item_lock_tables;
     public static String tools_db_export_wizard_page_settings_combo_item_normal;
     public static String tools_db_export_wizard_page_settings_combo_item_online_backup;

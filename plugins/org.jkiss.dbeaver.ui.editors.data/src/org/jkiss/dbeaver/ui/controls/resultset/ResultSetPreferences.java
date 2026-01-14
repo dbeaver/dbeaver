@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,9 +39,9 @@ public final class ResultSetPreferences {
     public static final String RS_GROUPING_SHOW_DUPLICATES_ONLY = "resultset.grouping.showDuplicatesOnly"; //$NON-NLS-1$
 
     public static final String RESULT_SET_AUTO_FETCH_NEXT_SEGMENT = "resultset.autofetch.next.segment"; //$NON-NLS-1$
+    public static final String RESULT_SET_AUTOMATIC_ROW_COUNT = "resultset.automatic.row.count"; //$NON-NLS-1$
     public static final String RESULT_SET_CANCEL_TIMEOUT = "resultset.cancel.timeout"; //$NON-NLS-1$
     public static final String RESULT_SET_BINARY_EDITOR_TYPE = "resultset.binary.editor"; //$NON-NLS-1$
-    public static final String RESULT_SET_ORDERING_MODE = "resultset.order.mode"; //$NON-NLS-1$
     public static final String RESULT_SET_SHOW_ODD_ROWS = "resultset.show.oddRows"; //$NON-NLS-1$
     public static final String RESULT_SET_HIGHLIGHT_SELECTED_ROWS = "resultset.highlight.selectedRows"; //$NON-NLS-1$
     public static final String RESULT_SET_SHOW_CELL_ICONS = "resultset.show.cellIcons"; //$NON-NLS-1$
@@ -55,9 +55,9 @@ public final class ResultSetPreferences {
     public static final String RESULT_SET_SHOW_SEL_CELLS = "resultset.show.selected.cells"; //$NON-NLS-1$
 
     public static final String RESULT_SET_USE_SMOOTH_SCROLLING = "resultset.hScroll.smooth"; //$NON-NLS-1$
-    public static final String RESULT_SET_SHOW_COLLECTIONS_INLINE = "resultset.show.collections.inline"; //$NON-NLS-1$
     public static final String RESULT_SET_SHOW_BOOLEAN_AS_CHECKBOX = "resultset.show.boolean.checkbox"; //$NON-NLS-1$
     public static final String RESULT_SET_SHOW_WHITESPACE_CHARACTERS = "resultset.show.whitespace.characters"; //$NON-NLS-1$
+    public static final String RESULT_SET_SHOW_COLUMN_POS = "resultset.show.column.position"; //$NON-NLS-1$
     public static final String RESULT_SET_CLICK_TOGGLE_BOOLEAN = "resultset.show.boolean.toggleOnClick"; //$NON-NLS-1$
     public static final String RESULT_SET_CALC_COLUMN_WIDTH_BY_VALUES = "resultset.calc.columnWidthByValues"; //$NON-NLS-1$
     public static final String RESULT_SET_SHOW_CONNECTION_NAME = "resultset.show.connectionName"; //$NON-NLS-1$
@@ -65,6 +65,7 @@ public final class ResultSetPreferences {
     public static final String RESULT_SET_RIGHT_JUSTIFY_NUMBERS = "resultset.show.rightJustifyNumbers"; //$NON-NLS-1$
     public static final String RESULT_SET_RIGHT_JUSTIFY_DATETIME = "resultset.show.rightJustifyDateTime"; //$NON-NLS-1$
     public static final String RESULT_SET_AUTO_SWITCH_MODE = "resultset.behavior.autoSwitchMode"; //$NON-NLS-1$
+    public static final String RESULT_SET_SHOW_FILTERS_IN_SINGLE_TAB_MODE = "resultset.behavior.showFiltersPanelInSingleTabMode"; //$NON-NLS-1$
     public static final String RESULT_SET_DOUBLE_CLICK = "resultset.behavior.doubleClick"; //$NON-NLS-1$
     public static final String RESULT_SET_INLINE_ENTER = "resultset.behavior.inlineEnter";
     public static final String RESULT_SET_ROW_BATCH_SIZE = "resultset.show.row.batch.size"; //$NON-NLS-1$

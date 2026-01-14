@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -40,8 +40,8 @@ public class KnownHostsVerifier extends OpenSSHKnownHosts {
 
     @Override
     public boolean verify(String hostname, int port, PublicKey key) {
-        if (hostname.equals(DBConstants.HOST_LOCALHOST)) {
-            return super.verify(actualHostConfiguration.getHostname(), actualHostConfiguration.getPort(), key);
+        if (hostname.equals(DBConstants.HOST_LOCALHOST) || hostname.equals(DBConstants.HOST_LOCALHOST_IP)) {
+            return true;
         } else {
             return super.verify(hostname, port, key);
         }
@@ -50,7 +50,7 @@ public class KnownHostsVerifier extends OpenSSHKnownHosts {
     @Override
     public List<String> findExistingAlgorithms(String hostname, int port) {
         if (hostname.equals(DBConstants.HOST_LOCALHOST)) {
-            return super.findExistingAlgorithms(actualHostConfiguration.getHostname(), actualHostConfiguration.getPort());
+            return super.findExistingAlgorithms(actualHostConfiguration.hostname(), actualHostConfiguration.port());
         } else {
             return super.findExistingAlgorithms(hostname, port);
         }

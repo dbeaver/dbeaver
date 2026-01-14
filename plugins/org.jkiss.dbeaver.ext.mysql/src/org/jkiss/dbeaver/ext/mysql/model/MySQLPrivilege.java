@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -58,13 +58,13 @@ public class MySQLPrivilege implements DBAPrivilege
     private final String comment;
     private final Kind kind;
     
-    public MySQLPrivilege(MySQLDataSource dataSource, ResultSet resultSet) {
+    public MySQLPrivilege(@NotNull MySQLDataSource dataSource, @NotNull String context, @NotNull ResultSet resultSet) {
         this.dataSource = dataSource;
         this.name = JDBCUtils.safeGetString(resultSet, "privilege");
-        this.context = JDBCUtils.safeGetString(resultSet, "context");
+        this.context = context;
         this.comment = JDBCUtils.safeGetString(resultSet, "comment");
 
-        if (context.contains("Admin") || context.contains("server")) {
+        if (context.contains("Admin") || context.contains("server") || context.contains("Server")) {
             kind = Kind.ADMIN;
         } else if (context.contains("Databases")) {
             kind = Kind.DDL;

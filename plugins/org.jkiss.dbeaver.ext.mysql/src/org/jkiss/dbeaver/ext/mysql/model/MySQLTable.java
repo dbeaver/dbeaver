@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.ext.mysql.model;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBDatabaseException;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.mysql.MySQLConstants;
@@ -34,12 +35,14 @@ import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.struct.cache.DBSObjectCache;
 import org.jkiss.dbeaver.model.struct.cache.SimpleObjectCache;
 import org.jkiss.dbeaver.model.struct.rdb.DBSForeignKeyModifyRule;
+import org.jkiss.dbeaver.model.struct.rdb.DBSPartitionContainer;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTable;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableIndex;
 import org.jkiss.dbeaver.runtime.properties.PropertyCollector;
 import org.jkiss.utils.ByteNumberFormat;
 import org.jkiss.utils.CommonUtils;
 
+import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.*;
@@ -47,7 +50,9 @@ import java.util.*;
 /**
  * MySQLTable
  */
-public class MySQLTable extends MySQLTableBase implements DBPObjectStatistics, DBPReferentialIntegrityController {
+public class MySQLTable extends MySQLTableBase
+    implements DBPObjectStatistics, DBPReferentialIntegrityController, DBSPartitionContainer, DBSEntityConstrainable
+{
     private static final Log log = Log.getLog(MySQLTable.class);
 
     private static final String INNODB_COMMENT = "InnoDB free";
@@ -169,7 +174,7 @@ public class MySQLTable extends MySQLTableBase implements DBPObjectStatistics, D
 
     public static class AdditionalInfoValidator implements IPropertyCacheValidator<MySQLTable> {
         @Override
-        public boolean isPropertyCached(MySQLTable object, Object propertyId)
+        public boolean isPropertyCached(@NotNull MySQLTable object, @NotNull Object propertyId)
         {
             return object.additionalInfo.loaded;
         }
@@ -295,11 +300,23 @@ public class MySQLTable extends MySQLTableBase implements DBPObjectStatistics, D
 
     @Override
     @Association
-    public Collection<MySQLTableIndex> getIndexes(DBRProgressMonitor monitor)
+    public Collection<MySQLTableIndex> getIndexes(@NotNull DBRProgressMonitor monitor)
         throws DBException
     {
         // Read indexes using cache
         return this.getContainer().indexCache.getObjects(monitor, getContainer(), this);
+    }
+
+    @NotNull
+    @Override
+    public List<DBSEntityConstraintInfo> getSupportedConstraints() {
+        List<DBSEntityConstraintInfo> result = new ArrayList<>();
+        result.add(DBSEntityConstraintInfo.of(DBSEntityConstraintType.PRIMARY_KEY, MySQLTableConstraint.class));
+        result.add(DBSEntityConstraintInfo.of(DBSEntityConstraintType.UNIQUE_KEY, MySQLTableConstraint.class));
+        if (getDataSource().supportsCheckConstraints()) {
+            result.add(DBSEntityConstraintInfo.of(DBSEntityConstraintType.CHECK, MySQLTableConstraint.class));
+        }
+        return result;
     }
 
     @Nullable
@@ -345,7 +362,7 @@ public class MySQLTable extends MySQLTableBase implements DBPObjectStatistics, D
     public Collection<MySQLTableForeignKey> getReferences(@NotNull DBRProgressMonitor monitor)
         throws DBException
     {
-        if (referenceCache == null) {
+        if (referenceCache == null && !monitor.isForceCacheUsage()) {
             referenceCache = loadForeignKeys(monitor, true);
         }
         return referenceCache;
@@ -355,7 +372,7 @@ public class MySQLTable extends MySQLTableBase implements DBPObjectStatistics, D
     public synchronized Collection<MySQLTableForeignKey> getAssociations(@NotNull DBRProgressMonitor monitor)
         throws DBException
     {
-        if (!foreignKeys.isFullyCached() && getDataSource().getInfo().supportsReferentialIntegrity()) {
+        if (!foreignKeys.isFullyCached() && getDataSource().getInfo().supportsReferentialIntegrity() && !monitor.isForceCacheUsage()) {
             List<MySQLTableForeignKey> fkList = loadForeignKeys(monitor, false);
             foreignKeys.setCache(fkList);
         }
@@ -446,160 +463,271 @@ public class MySQLTable extends MySQLTableBase implements DBPObjectStatistics, D
         additionalInfo.dataFree = JDBCUtils.safeGetLong(dbResult, "Data_free");
         additionalInfo.indexLength = JDBCUtils.safeGetLong(dbResult, "Index_length");
         additionalInfo.rowFormat = JDBCUtils.safeGetString(dbResult, "Row_format");
-        additionalInfo.partitioned = PARTITIONED_STATUS.equalsIgnoreCase(JDBCUtils.safeGetString(dbResult, "Create_options"));
-
+        String createOptions = JDBCUtils.safeGetString(dbResult, "Create_options");
+        if (CommonUtils.isNotEmpty(createOptions)) {
+            additionalInfo.partitioned = createOptions.contains(PARTITIONED_STATUS);
+        }
         additionalInfo.loaded = true;
     }
 
-    private List<MySQLTableForeignKey> loadForeignKeys(DBRProgressMonitor monitor, boolean references)
-        throws DBException
-    {
+    @NotNull
+    private List<MySQLTableForeignKey> loadForeignKeys(
+        @Nullable DBRProgressMonitor monitor,
+        boolean references
+    ) throws DBException {
         List<MySQLTableForeignKey> fkList = new ArrayList<>();
-        if (!isPersisted()) {
+        if (!isPersisted() || monitor == null || monitor.isForceCacheUsage()) {
             return fkList;
         }
+
         try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Load table relations")) {
             Map<String, MySQLTableForeignKey> fkMap = new HashMap<>();
             Map<String, MySQLTableConstraint> pkMap = new HashMap<>();
-            JDBCDatabaseMetaData metaData = session.getMetaData();
-            // Load indexes
-            JDBCResultSet dbResult;
+
             if (references) {
-                dbResult = metaData.getExportedKeys(
-                    getContainer().getName(),
-                    null,
-                    getName());
-            } else {
-                dbResult = metaData.getImportedKeys(
-                    getContainer().getName(),
-                    null,
-                    getName());
-            }
-            try {
-                while (dbResult.next()) {
-                    String pkTableCatalog = JDBCUtils.safeGetString(dbResult, JDBCConstants.PKTABLE_CAT);
-                    String pkTableName = JDBCUtils.safeGetString(dbResult, JDBCConstants.PKTABLE_NAME);
-                    String pkColumnName = JDBCUtils.safeGetString(dbResult, JDBCConstants.PKCOLUMN_NAME);
-                    String fkTableCatalog = JDBCUtils.safeGetString(dbResult, JDBCConstants.FKTABLE_CAT);
-                    String fkTableName = JDBCUtils.safeGetString(dbResult, JDBCConstants.FKTABLE_NAME);
-                    String fkColumnName = JDBCUtils.safeGetString(dbResult, JDBCConstants.FKCOLUMN_NAME);
-                    int keySeq = JDBCUtils.safeGetInt(dbResult, JDBCConstants.KEY_SEQ);
-                    int updateRuleNum = JDBCUtils.safeGetInt(dbResult, JDBCConstants.UPDATE_RULE);
-                    int deleteRuleNum = JDBCUtils.safeGetInt(dbResult, JDBCConstants.DELETE_RULE);
-                    String fkName = JDBCUtils.safeGetString(dbResult, JDBCConstants.FK_NAME);
-                    String pkName = JDBCUtils.safeGetString(dbResult, JDBCConstants.PK_NAME);
+                String sql = """
+                    SELECT
+                      kcu.TABLE_SCHEMA             AS fk_table_schema,
+                      kcu.TABLE_NAME               AS fk_table_name,
+                      kcu.COLUMN_NAME              AS fk_column_name,
+                      rc.UNIQUE_CONSTRAINT_SCHEMA  AS pk_table_schema,
+                      rc.REFERENCED_TABLE_NAME     AS pk_table_name,
+                      kcu.REFERENCED_COLUMN_NAME   AS pk_column_name,
+                      kcu.ORDINAL_POSITION         AS key_seq,
+                      kcu.CONSTRAINT_NAME          AS fk_name,
+                      rc.UPDATE_RULE,
+                      rc.DELETE_RULE,
+                      rc.UNIQUE_CONSTRAINT_NAME    AS pk_name
+                    FROM information_schema.REFERENTIAL_CONSTRAINTS rc
+                    JOIN information_schema.KEY_COLUMN_USAGE kcu
+                      ON kcu.CONSTRAINT_SCHEMA = rc.CONSTRAINT_SCHEMA
+                     AND kcu.CONSTRAINT_NAME   = rc.CONSTRAINT_NAME
+                    WHERE rc.UNIQUE_CONSTRAINT_SCHEMA = ? AND rc.REFERENCED_TABLE_NAME = ?
+                    """;
 
-                    DBSForeignKeyModifyRule deleteRule = JDBCUtils.getCascadeFromNum(deleteRuleNum);
-                    DBSForeignKeyModifyRule updateRule = JDBCUtils.getCascadeFromNum(updateRuleNum);
+                try (JDBCPreparedStatement stmt = session.prepareStatement(sql)) {
+                    stmt.setString(1, getContainer().getName());
+                    stmt.setString(2, getName());
 
-                    MySQLTable pkTable = getDataSource().findTable(monitor, pkTableCatalog, pkTableName);
-                    if (pkTable == null) {
-                        log.debug("Can't find PK table " + pkTableName);
-                        if (references) {
-                            continue;
-                        }
-                    }
-                    MySQLTable fkTable = getDataSource().findTable(monitor, fkTableCatalog, fkTableName);
-                    if (fkTable == null) {
-                        log.warn("Can't find FK table " + fkTableName);
-                        if (!references) {
-                            continue;
-                        }
-                    }
-                    MySQLTableColumn pkColumn = pkTable == null ? null : pkTable.getAttribute(monitor, pkColumnName);
-                    if (pkColumn == null) {
-                        log.debug("Can't find PK table " + pkTableName + " column " + pkColumnName);
-                        if (references) {
-                            continue;
-                        }
-                    }
-                    MySQLTableColumn fkColumn = fkTable == null ? null : fkTable.getAttribute(monitor, fkColumnName);
-                    if (fkColumn == null) {
-                        log.debug("Can't find FK table " + fkTableName + " column " + fkColumnName);
-                        if (!references) {
-                            continue;
-                        }
-                    }
+                    try (JDBCResultSet dbResult = stmt.executeQuery()) {
+                        while (dbResult.next()) {
+                            String pkTableCatalog = JDBCUtils.safeGetString(dbResult, "pk_table_schema");
+                            String pkTableName = JDBCUtils.safeGetString(dbResult, "pk_table_name");
+                            String pkColumnName = JDBCUtils.safeGetString(dbResult, "pk_column_name");
+                            String fkTableCatalog = JDBCUtils.safeGetString(dbResult, "fk_table_schema");
+                            String fkTableName = JDBCUtils.safeGetString(dbResult, "fk_table_name");
+                            String fkColumnName = JDBCUtils.safeGetString(dbResult, "fk_column_name");
+                            int keySeq = JDBCUtils.safeGetInt(dbResult, "key_seq");
+                            int updateRule = convertRuleToNum(JDBCUtils.safeGetString(dbResult, "UPDATE_RULE"));
+                            int deleteRule = convertRuleToNum(JDBCUtils.safeGetString(dbResult, "DELETE_RULE"));
+                            String fkName = JDBCUtils.safeGetString(dbResult, "fk_name");
+                            String pkName = JDBCUtils.safeGetString(dbResult, "pk_name");
 
-                    // Find PK
-                    MySQLTableConstraint pk = null;
-                    if (pkTable != null) {
-                    	// Find pk based on referenced columns
-                        Collection<MySQLTableConstraint> constraints = pkTable.getConstraints(monitor);
-                        if (constraints != null) {
-                            for (MySQLTableConstraint pkConstraint : constraints) {
-                                if (pkConstraint.getConstraintType().isUnique() && DBUtils.getConstraintAttribute(monitor, pkConstraint, pkColumn) != null) {
-                                    pk = pkConstraint;
-                                    if (pkConstraint.getName().equals(pkName))
-                                    	break;
-                                    // If pk name does not match, keep searching (actual pk might not be this one)
-                                }
-                            }
-                        }
-                    }
-                    if (pk == null && pkTable != null && pkName != null) {
-                    	// Find pk based on name
-                    	Collection<MySQLTableConstraint> constraints = pkTable.getConstraints(monitor);
-                    	pk = DBUtils.findObject(constraints, pkName);
-                        if (pk == null) {
-                            log.warn("Unique key '" + pkName + "' not found in table " + pkTable.getFullyQualifiedName(DBPEvaluationContext.DDL));
-                        }
-                    }
-                    if (pk == null && pkTable != null) {
-                        log.warn("Can't find primary key for table " + pkTable.getFullyQualifiedName(DBPEvaluationContext.DDL));
-                        // Too bad. But we have to create new fake PK for this FK
-                        String pkFullName = pkTable.getFullyQualifiedName(DBPEvaluationContext.DDL) + "." + pkName;
-                        pk = pkMap.get(pkFullName);
-                        if (pk == null) {
-                            pk = new MySQLTableConstraint(pkTable, pkName, null, DBSEntityConstraintType.PRIMARY_KEY, true);
-                            pk.addColumn(new MySQLTableConstraintColumn(pk, pkColumn, keySeq));
-                            pkMap.put(pkFullName, pk);
-                        }
-                    }
-
-                    // Find (or create) FK
-                    MySQLTableForeignKey fk = null;
-                    if (references && fkTable != null) {
-                        fk = DBUtils.findObject(fkTable.getAssociations(monitor), fkName);
-                        if (fk == null) {
-                            log.warn("Can't find foreign key '" + fkName + "' for table " + fkTable.getFullyQualifiedName(DBPEvaluationContext.DDL));
-                            // No choice, we have to create fake foreign key :(
-                        } else {
-                            if (!fkList.contains(fk)) {
-                                fkList.add(fk);
-                            }
-                        }
-                    }
-
-                    if (fk == null) {
-                        fk = fkMap.get(fkName);
-                        if (fk == null) {
-                            fk = new MySQLTableForeignKey(fkTable, fkName, null, pk, deleteRule, updateRule, true);
-                            fkMap.put(fkName, fk);
-                            fkList.add(fk);
-                        }
-                        MySQLTableForeignKeyColumn fkColumnInfo = new MySQLTableForeignKeyColumn(fk, fkColumn, keySeq, pkColumn);
-                        if (fk.hasColumn(fkColumnInfo)) {
-                            // Known MySQL bug, metaData.getImportedKeys() can return duplicates
-                            // https://bugs.mysql.com/bug.php?id=95280
-                            log.debug("FK "+ fkName +" has already been added, skip");
-                        }
-                        else {
-                            fk.addColumn(fkColumnInfo);
+                            processRow(
+                                monitor,
+                                references,
+                                updateRule,
+                                deleteRule,
+                                pkTableCatalog,
+                                pkTableName,
+                                fkTableCatalog,
+                                fkTableName,
+                                pkColumnName,
+                                fkColumnName,
+                                pkName,
+                                pkMap,
+                                keySeq,
+                                fkName,
+                                fkList,
+                                fkMap
+                            );
                         }
                     }
                 }
-            } finally {
-                dbResult.close();
+            } else {
+                JDBCDatabaseMetaData meta = session.getMetaData();
+                try (JDBCResultSet dbResult = meta.getImportedKeys(
+                    getContainer().getName(), null, getName()
+                )) {
+                    while (dbResult.next()) {
+                        String pkTableCatalog = JDBCUtils.safeGetString(dbResult, JDBCConstants.PKTABLE_CAT);
+                        String pkTableName = JDBCUtils.safeGetString(dbResult, JDBCConstants.PKTABLE_NAME);
+                        String pkColumnName = JDBCUtils.safeGetString(dbResult, JDBCConstants.PKCOLUMN_NAME);
+                        String fkTableCatalog = JDBCUtils.safeGetString(dbResult, JDBCConstants.FKTABLE_CAT);
+                        String fkTableName = JDBCUtils.safeGetString(dbResult, JDBCConstants.FKTABLE_NAME);
+                        String fkColumnName = JDBCUtils.safeGetString(dbResult, JDBCConstants.FKCOLUMN_NAME);
+                        int keySeq = JDBCUtils.safeGetInt(dbResult, JDBCConstants.KEY_SEQ);
+                        int updateRule = JDBCUtils.safeGetInt(dbResult, JDBCConstants.UPDATE_RULE);
+                        int deleteRule = JDBCUtils.safeGetInt(dbResult, JDBCConstants.DELETE_RULE);
+                        String fkName = JDBCUtils.safeGetString(dbResult, JDBCConstants.FK_NAME);
+                        String pkName = JDBCUtils.safeGetString(dbResult, JDBCConstants.PK_NAME);
+
+                        processRow(
+                            monitor,
+                            references,
+                            updateRule,
+                            deleteRule,
+                            pkTableCatalog,
+                            pkTableName,
+                            fkTableCatalog,
+                            fkTableName,
+                            pkColumnName,
+                            fkColumnName,
+                            pkName,
+                            pkMap,
+                            keySeq,
+                            fkName,
+                            fkList,
+                            fkMap
+                        );
+
+                    }
+                }
             }
             return fkList;
         } catch (SQLException ex) {
-            throw new DBException(ex, getDataSource());
+            throw new DBDatabaseException(ex, getDataSource());
         }
     }
 
+    private void processRow(
+        @NotNull DBRProgressMonitor monitor,
+        boolean references,
+        int updateRule,
+        int deleteRule,
+        String pkTableCatalog,
+        String pkTableName,
+        String fkTableCatalog,
+        String fkTableName,
+        String pkColumnName,
+        String fkColumnName,
+        String pkName,
+        Map<String, MySQLTableConstraint> pkMap,
+        int keySeq,
+        String fkName,
+        List<MySQLTableForeignKey> fkList,
+        Map<String, MySQLTableForeignKey> fkMap
+    ) throws DBException {
+        MySQLTable pkTable = getDataSource().findTable(monitor, pkTableCatalog, pkTableName);
+        if (pkTable == null) {
+            log.debug("Can't find PK table " + pkTableName);
+            if (references) {
+                return;
+            }
+        }
+        MySQLTable fkTable = getDataSource().findTable(monitor, fkTableCatalog, fkTableName);
+        if (fkTable == null) {
+            log.warn("Can't find FK table " + fkTableName);
+            if (!references) {
+                return;
+            }
+        }
+        MySQLTableColumn pkColumn = pkTable == null ? null : pkTable.getAttribute(monitor, pkColumnName);
+        if (pkColumn == null) {
+            log.debug("Can't find PK table " + pkTableName + " column " + pkColumnName);
+            if (references) {
+                return;
+            }
+        }
+        MySQLTableColumn fkColumn = fkTable == null ? null : fkTable.getAttribute(monitor, fkColumnName);
+        if (fkColumn == null) {
+            log.debug("Can't find FK table " + fkTableName + " column " + fkColumnName);
+            if (!references) {
+                return;
+            }
+        }
+
+        // Find PK
+        MySQLTableConstraint pk = null;
+        if (pkTable != null) {
+            // Find pk based on referenced columns
+            Collection<MySQLTableConstraint> constraints = pkTable.getConstraints(monitor);
+            if (constraints != null) {
+                for (MySQLTableConstraint pkConstraint : constraints) {
+                    if (pkConstraint.getConstraintType().isUnique()
+                        && DBUtils.getConstraintAttribute(monitor, pkConstraint, pkColumn) != null) {
+                        pk = pkConstraint;
+                        if (pkConstraint.getName().equals(pkName)) {
+                            break;
+                        }
+                        // If pk name does not match, keep searching (actual pk might not be this one)
+                    }
+                }
+            }
+        }
+        if (pk == null && pkTable != null && pkName != null) {
+            // Find pk based on name
+            Collection<MySQLTableConstraint> constraints = pkTable.getConstraints(monitor);
+            pk = DBUtils.findObject(constraints, pkName);
+            if (pk == null) {
+                log.warn("Unique key '" + pkName + "' not found in table " + pkTable.getFullyQualifiedName(
+                    DBPEvaluationContext.DDL));
+            }
+        }
+        if (pk == null && pkTable != null) {
+            log.warn("Can't find primary key for table " + pkTable.getFullyQualifiedName(DBPEvaluationContext.DDL));
+            // Too bad. But we have to create new fake PK for this FK
+            String pkFullName = pkTable.getFullyQualifiedName(DBPEvaluationContext.DDL) + "." + pkName;
+            pk = pkMap.get(pkFullName);
+            if (pk == null) {
+                pk = new MySQLTableConstraint(pkTable, pkName, null, DBSEntityConstraintType.PRIMARY_KEY, true);
+                pk.addColumn(new MySQLTableConstraintColumn(pk, pkColumn, keySeq));
+                pkMap.put(pkFullName, pk);
+            }
+        }
+
+        // Find (or create) FK
+        MySQLTableForeignKey fk = null;
+        if (references && fkTable != null) {
+            fk = DBUtils.findObject(fkTable.getAssociations(monitor), fkName);
+            if (fk == null) {
+                log.warn("Can't find foreign key '" + fkName + "' for table " + fkTable.getFullyQualifiedName(
+                    DBPEvaluationContext.DDL));
+                // No choice, we have to create fake foreign key :(
+            } else {
+                if (!fkList.contains(fk)) {
+                    fkList.add(fk);
+                }
+            }
+        }
+
+        DBSForeignKeyModifyRule deleteRuleEnum = JDBCUtils.getCascadeFromNum(deleteRule);
+        DBSForeignKeyModifyRule updateRuleEnum = JDBCUtils.getCascadeFromNum(updateRule);
+        if (fk == null) {
+            fk = fkMap.get(fkName);
+            if (fk == null) {
+                fk = new MySQLTableForeignKey(fkTable, fkName, null, pk, deleteRuleEnum, updateRuleEnum, true);
+                fkMap.put(fkName, fk);
+                fkList.add(fk);
+            }
+            MySQLTableForeignKeyColumn fkColumnInfo = new MySQLTableForeignKeyColumn(fk, fkColumn, keySeq, pkColumn);
+            if (fk.hasColumn(fkColumnInfo)) {
+                // Known MySQL bug, metaData.getImportedKeys() can return duplicates
+                // https://bugs.mysql.com/bug.php?id=95280
+                log.debug("FK " + fkName + " has already been added, skip");
+            } else {
+                fk.addColumn(fkColumnInfo);
+            }
+        }
+    }
+
+    private int convertRuleToNum(String rule) {
+        if (rule == null) {
+            return DatabaseMetaData.importedKeyNoAction;
+        }
+
+        return switch (rule.toUpperCase()) {
+            case "CASCADE" -> DatabaseMetaData.importedKeyCascade;
+            case "SET NULL" -> DatabaseMetaData.importedKeySetNull;
+            case "SET DEFAULT" -> DatabaseMetaData.importedKeySetDefault;
+            case "RESTRICT" -> DatabaseMetaData.importedKeyRestrict;
+            default -> DatabaseMetaData.importedKeyNoAction;
+        };
+    }
+
+    @NotNull
     @Override
-    public String getObjectDefinitionText(DBRProgressMonitor monitor, Map<String, Object> options) throws DBException {
+    public String getObjectDefinitionText(@NotNull DBRProgressMonitor monitor, @NotNull Map<String, Object> options) throws DBException {
         return getDDL(monitor, options);
     }
 
@@ -677,6 +805,7 @@ public class MySQLTable extends MySQLTableBase implements DBPObjectStatistics, D
         }
         getContainer().indexCache.clearObjectCache(this);
         getContainer().triggerCache.clearChildrenOf(this);
+        getContainer().resetStatistics();
         this.referenceCache = null;
 
         return super.refreshObject(monitor);
@@ -736,6 +865,7 @@ public class MySQLTable extends MySQLTableBase implements DBPObjectStatistics, D
         {
             return false;
         }
+        @Nullable
         @Override
         public Object[] getPossibleValues(MySQLTable object)
         {
@@ -745,8 +875,8 @@ public class MySQLTable extends MySQLTableBase implements DBPObjectStatistics, D
                     engines.add(engine);
                 }
             }
-            Collections.sort(engines, DBUtils.<MySQLEngine>nameComparator());
-            return engines.toArray(new MySQLEngine[engines.size()]);
+            engines.sort(DBUtils.<MySQLEngine>nameComparator());
+            return engines.toArray(new MySQLEngine[0]);
         }
     }
 
@@ -756,6 +886,7 @@ public class MySQLTable extends MySQLTableBase implements DBPObjectStatistics, D
         {
             return false;
         }
+        @Nullable
         @Override
         public Object[] getPossibleValues(MySQLTable object)
         {
@@ -769,6 +900,7 @@ public class MySQLTable extends MySQLTableBase implements DBPObjectStatistics, D
         {
             return false;
         }
+        @Nullable
         @Override
         public Object[] getPossibleValues(MySQLTable object)
         {
@@ -782,7 +914,7 @@ public class MySQLTable extends MySQLTableBase implements DBPObjectStatistics, D
 
     public static class PartitionedTablePropertyValidator implements IPropertyValueValidator<MySQLTable, Object> {
         @Override
-        public boolean isValidValue(MySQLTable object, Object value) throws IllegalArgumentException {
+        public boolean isValidValue(@NotNull MySQLTable object, @Nullable Object value) throws IllegalArgumentException {
             return !object.isPartition();
         }
     }

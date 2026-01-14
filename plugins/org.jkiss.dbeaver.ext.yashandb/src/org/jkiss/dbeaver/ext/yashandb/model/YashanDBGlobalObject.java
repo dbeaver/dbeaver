@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,51 +18,44 @@ package org.jkiss.dbeaver.ext.yashandb.model;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPSaveableObject;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
-/**
- * Abstract oracle schema object
- */
 public abstract class YashanDBGlobalObject implements DBSObject, DBPSaveableObject {
-    private static final Log log = Log.getLog(YashanDBGlobalObject.class);
 
-    private final YashanDBDataSource dataSource;
-    private boolean persisted;
+	private final YashanDBDataSource dataSource;
+	private boolean persisted;
 
-    protected YashanDBGlobalObject(
-            YashanDBDataSource dataSource,
-            boolean persisted) {
-        this.dataSource = dataSource;
-        this.persisted = persisted;
-    }
+	protected YashanDBGlobalObject(YashanDBDataSource dataSource, boolean persisted) {
+		this.dataSource = dataSource;
+		this.persisted = persisted;
+	}
 
-    @Nullable
-    @Override
-    public String getDescription() {
-        return null;
-    }
+	@Nullable
+	@Override
+	public String getDescription() {
+		return null;
+	}
 
-    @Override
-    public DBSObject getParentObject() {
-        return dataSource.getContainer();
-    }
+	@Override
+	public DBSObject getParentObject() {
+		return dataSource.getContainer();
+	}
 
-    @NotNull
-    @Override
-    public YashanDBDataSource getDataSource() {
-        return dataSource;
-    }
+	@NotNull
+	@Override
+	public YashanDBDataSource getDataSource() {
+		return dataSource;
+	}
 
-    @Override
-    public boolean isPersisted() {
-        return persisted;
-    }
+	@Override
+	public boolean isPersisted() {
+		return persisted;
+	}
 
-    @Override
-    public void setPersisted(boolean persisted) {
-        this.persisted = persisted;
-    }
+	@Override
+	public void setPersisted(boolean persisted) {
+		this.persisted = persisted;
+	}
 
 }

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,6 +33,8 @@ public interface DBPDataSourceProvider extends DBPDataSourceURLProvider, DBPObje
     long FEATURE_NONE        = 0;
     long FEATURE_CATALOGS    = 1;
     long FEATURE_SCHEMAS     = 2;
+    long FEATURE_CATALOGS_ONLY = 4;
+
 
     /**
      * Initializes data source provider
@@ -54,10 +56,11 @@ public interface DBPDataSourceProvider extends DBPDataSourceURLProvider, DBPObje
      * @param connectionInfo connection information   @return property group which contains all supported properties
      * @throws DBException on any error
      */
+    @NotNull
     DBPPropertyDescriptor[] getConnectionProperties(
-        DBRProgressMonitor monitor,
-        DBPDriver driver,
-        DBPConnectionConfiguration connectionInfo)
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBPDriver driver,
+        @NotNull DBPConnectionConfiguration connectionInfo)
         throws DBException;
 
     /**
@@ -73,7 +76,8 @@ public interface DBPDataSourceProvider extends DBPDataSourceURLProvider, DBPObje
         @NotNull DBPDataSourceContainer container)
         throws DBException;
 
-    default DBPAuthModelDescriptor detectConnectionAuthModel(DBPDriver driver, DBPConnectionConfiguration connectionInfo) {
+    @NotNull
+    default DBPAuthModelDescriptor detectConnectionAuthModel(@NotNull DBPDriver driver, @NotNull DBPConnectionConfiguration connectionInfo) {
         return connectionInfo.getAuthModelDescriptor();
     }
 

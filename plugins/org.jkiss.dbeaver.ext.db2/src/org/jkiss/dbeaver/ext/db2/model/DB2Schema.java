@@ -1,7 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2013-2015 Denis Forveille (titou10.titou10@gmail.com)
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -268,6 +267,7 @@ public class DB2Schema extends DB2GlobalObject implements DBSSchema, DBPRefresha
         return DB2Table.class;
     }
 
+    @Nullable
     @Override
     public Collection<DBSObject> getChildren(@NotNull DBRProgressMonitor monitor) throws DBException
     {
@@ -350,6 +350,10 @@ public class DB2Schema extends DB2GlobalObject implements DBSSchema, DBPRefresha
     @Association
     public Collection<DB2Index> getIndexes(DBRProgressMonitor monitor) throws DBException
     {
+        if (!indexCache.isFullyCached()) {
+            tableCache.loadChildren(monitor, this, null);
+            indexCache.loadChildren(monitor, this, null);
+        }
         return indexCache.getAllObjects(monitor, this);
     }
 
@@ -665,16 +669,16 @@ public class DB2Schema extends DB2GlobalObject implements DBSSchema, DBPRefresha
     }
 
     @Override
-    public void collectObjectStatistics(DBRProgressMonitor monitor, boolean totalSizeOnly, boolean forceRefresh) throws DBException {
+    public void collectObjectStatistics(@NotNull DBRProgressMonitor monitor, boolean totalSizeOnly, boolean forceRefresh) throws DBException {
         if (hasTableStatistics && !forceRefresh) {
             return;
         }
+        getTables(monitor);
         try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Load schema statistics")) {
             try (JDBCPreparedStatement dbStat = session.prepareStatement("SELECT\n" +
                 "    TABNAME,\n" +
                 "    SUM(DATA_OBJECT_P_SIZE + INDEX_OBJECT_P_SIZE + LONG_OBJECT_P_SIZE + LOB_OBJECT_P_SIZE + XML_OBJECT_P_SIZE) AS TOTAL_SIZE_IN_KB\n" +
-                "FROM SYSIBMADM.ADMINTABINFO\n" +
-                "WHERE TABSCHEMA=?\n" +
+                "FROM TABLE(ADMIN_GET_TAB_INFO(?,''))\n" +
                 "GROUP BY TABNAME")) {
                 dbStat.setString(1, getName());
                 try (JDBCResultSet dbResult = dbStat.executeQuery()) {

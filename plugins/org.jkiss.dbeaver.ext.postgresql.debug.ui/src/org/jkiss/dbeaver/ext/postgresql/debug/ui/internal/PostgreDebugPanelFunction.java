@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  * Copyright (C) 2017-2018 Alexander Fedorov (alexander.fedorov@jkiss.org)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -24,6 +24,7 @@ import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.DBException;
@@ -56,6 +57,9 @@ import java.util.List;
 import java.util.Map;
 
 public class PostgreDebugPanelFunction implements DBGConfigurationPanel {
+    
+    private static final int PARAMETERS_TABLE_MAX_HEIGHT = 150;
+    
     private DBGConfigurationPanelContainer container;
     private Button kindLocal;
     private Button kindGlobal;
@@ -154,10 +158,20 @@ public class PostgreDebugPanelFunction implements DBGConfigurationPanel {
         Group composite = UIUtils.createControlGroup(parent, "Function parameters", 2, GridData.FILL_BOTH, SWT.DEFAULT);
 
         parametersTable = new Table(composite, SWT.SINGLE | SWT.FULL_SELECTION | SWT.BORDER | SWT.H_SCROLL | SWT.V_SCROLL);
-        final GridData gd = new GridData(GridData.FILL_BOTH);
+        final GridData gd = new GridData(SWT.FILL, SWT.FILL, true, true);
+        gd.minimumHeight = PARAMETERS_TABLE_MAX_HEIGHT;
         parametersTable.setLayoutData(gd);
         parametersTable.setHeaderVisible(true);
         parametersTable.setLinesVisible(true);
+        parametersTable.addListener(SWT.Resize, new Listener() {
+            @Override
+            public void handleEvent(Event arg0) {
+                Point size = parametersTable.getSize();
+                if(size.y > PARAMETERS_TABLE_MAX_HEIGHT) {
+                    parametersTable.setSize(size.x, PARAMETERS_TABLE_MAX_HEIGHT);
+                }
+            }
+        });
 
         final TableColumn nameColumn = UIUtils.createTableColumn(parametersTable, SWT.LEFT, "Name");
         nameColumn.setWidth(100);

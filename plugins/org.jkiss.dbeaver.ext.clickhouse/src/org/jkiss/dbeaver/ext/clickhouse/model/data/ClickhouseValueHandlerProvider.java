@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ext.clickhouse.model.data;
 
+import org.jkiss.dbeaver.ext.clickhouse.ClickhouseConstants;
 import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.data.DBDFormatSettings;
@@ -34,6 +35,8 @@ public class ClickhouseValueHandlerProvider implements DBDValueHandlerProvider {
         DBPDataKind dataKind = type.getDataKind();
         if ("enum8".equals(lowerTypeName) || "enum16".equals(lowerTypeName)) {
             return ClickhouseEnumValueHandler.INSTANCE;
+        } else if (ClickhouseGeometryValueHandler.isGeometryType(lowerTypeName)) {
+            return ClickhouseGeometryValueHandler.INSTANCE;
         } else if (dataKind == DBPDataKind.ARRAY) {
             return ClickhouseArrayValueHandler.INSTANCE;
         } else if (dataKind == DBPDataKind.STRUCT) {
@@ -49,8 +52,11 @@ public class ClickhouseValueHandlerProvider implements DBDValueHandlerProvider {
             } else {
                 return new JDBCNumberValueHandler(type, preferences);
             }
-        } else {
-            return null;
+        } else if (ClickhouseConstants.DATA_TYPE_IPV4.equals(lowerTypeName) || ClickhouseConstants.DATA_TYPE_IPV6.equals(lowerTypeName)) {
+            return ClikhouseInetTypeValueHandler.INSTANCE;
+        } else if (dataKind == DBPDataKind.DATETIME) {
+            return new ClickHouseDateTimeValueHandler(preferences);
         }
+        return null;
     }
 }

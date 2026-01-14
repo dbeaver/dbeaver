@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,13 +16,16 @@
  */
 package org.jkiss.dbeaver.ext.db2.ui.config;
 
-import org.jkiss.dbeaver.ext.db2.model.DB2TableColumn;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.db2.model.DB2TableForeignKey;
-import org.jkiss.dbeaver.ext.db2.model.DB2TableKeyColumn;
+import org.jkiss.dbeaver.ext.db2.model.DB2TableForeignKeyColumn;
 import org.jkiss.dbeaver.ext.db2.model.DB2TableUniqueKey;
 import org.jkiss.dbeaver.ext.db2.model.dict.DB2DeleteUpdateRule;
 import org.jkiss.dbeaver.ext.db2.ui.internal.DB2Messages;
+import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEObjectConfigurator;
+import org.jkiss.dbeaver.model.impl.sql.edit.struct.SQLForeignKeyManager;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.rdb.DBSForeignKeyModifyRule;
 import org.jkiss.dbeaver.ui.UITask;
@@ -36,48 +39,54 @@ import java.util.Map;
  * DB2 foreign key configurator
  */
 public class DB2ForeignKeyConfigurator implements DBEObjectConfigurator<DB2TableForeignKey> {
-	private static final DBSForeignKeyModifyRule[] FK_RULES;
-	
-	static {
+    private static final DBSForeignKeyModifyRule[] FK_RULES;
+
+    static {
         List<DBSForeignKeyModifyRule> rules = new ArrayList<>(DB2DeleteUpdateRule.values().length);
         for (DB2DeleteUpdateRule db2DeleteUpdateRule : DB2DeleteUpdateRule.values()) {
             rules.add(db2DeleteUpdateRule.getRule());
         }
-        FK_RULES = rules.toArray(new DBSForeignKeyModifyRule[] {});
+        FK_RULES = rules.toArray(new DBSForeignKeyModifyRule[]{});
     }
 
     @Override
-    public DB2TableForeignKey configureObject(DBRProgressMonitor monitor, Object container, DB2TableForeignKey foreignKey, Map<String, Object> options) {
-        return new UITask<DB2TableForeignKey>() {
-            @Override
-            protected DB2TableForeignKey runTask() {
-            	EditForeignKeyPage editDialog = new EditForeignKeyPage(
-                        DB2Messages.edit_db2_foreign_key_manager_dialog_title, foreignKey, FK_RULES, options);
-                    if (!editDialog.edit()) {
-                        return null;
-                    }
-
-                    DBSForeignKeyModifyRule deleteRule = editDialog.getOnDeleteRule();
-                    DBSForeignKeyModifyRule updateRule = editDialog.getOnUpdateRule();
-                    DB2TableUniqueKey ukConstraint = (DB2TableUniqueKey) editDialog.getUniqueConstraint();
-
-                    foreignKey.setReferencedConstraint(ukConstraint);
-                    foreignKey.setDb2DeleteRule(DB2DeleteUpdateRule.getDB2RuleFromDBSRule(deleteRule));
-                    foreignKey.setDb2UpdateRule(DB2DeleteUpdateRule.getDB2RuleFromDBSRule(updateRule));
-
-                    List<DB2TableKeyColumn> columns = new ArrayList<>(editDialog.getColumns().size());
-                    DB2TableKeyColumn column;
-                    int colIndex = 1;
-                    for (EditForeignKeyPage.FKColumnInfo tableColumn : editDialog.getColumns()) {
-                        column = new DB2TableKeyColumn(foreignKey, (DB2TableColumn) tableColumn.getOwnColumn(), colIndex++);
-                        columns.add(column);
-                    }
-
-                    foreignKey.setColumns(columns);
-
-                    return foreignKey;
+    public DB2TableForeignKey configureObject(
+        @NotNull DBRProgressMonitor monitor,
+        @Nullable DBECommandContext commandContext,
+        @Nullable Object container,
+        @NotNull DB2TableForeignKey foreignKey,
+        @NotNull Map<String, Object> options) {
+        return UITask.run(() -> {
+            EditForeignKeyPage editDialog = new EditForeignKeyPage(
+                DB2Messages.edit_db2_foreign_key_manager_dialog_title, foreignKey, FK_RULES, options);
+            if (!editDialog.edit()) {
+                return null;
             }
-        }.execute();
+
+            DBSForeignKeyModifyRule deleteRule = editDialog.getOnDeleteRule();
+            DBSForeignKeyModifyRule updateRule = editDialog.getOnUpdateRule();
+            DB2TableUniqueKey ukConstraint = (DB2TableUniqueKey) editDialog.getUniqueConstraint();
+
+            foreignKey.setReferencedConstraint(ukConstraint);
+            foreignKey.setDb2DeleteRule(DB2DeleteUpdateRule.getDB2RuleFromDBSRule(deleteRule));
+            foreignKey.setDb2UpdateRule(DB2DeleteUpdateRule.getDB2RuleFromDBSRule(updateRule));
+
+            List<DB2TableForeignKeyColumn> columns = new ArrayList<>(editDialog.getColumns().size());
+            DB2TableForeignKeyColumn column;
+            int colIndex = 1;
+            for (EditForeignKeyPage.FKColumnInfo tableColumn : editDialog.getColumns()) {
+                column = new DB2TableForeignKeyColumn(
+                    foreignKey,
+                    tableColumn.getOrCreateOwnColumn(monitor, commandContext, foreignKey.getTable()),
+                    colIndex++);
+                columns.add(column);
+            }
+
+            foreignKey.setAttributeReferences(columns);
+            SQLForeignKeyManager.updateForeignKeyName(monitor, foreignKey);
+
+            return foreignKey;
+        });
     }
 
 }

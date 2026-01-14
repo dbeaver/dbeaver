@@ -1,7 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
- * Copyright (C) 2012 Eugene Fradkin (eugene.fradkin@gmail.com)
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -177,7 +176,7 @@ public class DataExporterTXT extends StreamExporterAbstract implements IAppendab
     private boolean delimLeading;
     private boolean delimHeader;
     private boolean delimTrailing;
-    private boolean delimBetween;
+    private String delimBetween;
     private Deque<CellValue[]> batchQueue;
 
     // The followings may be a setting some time
@@ -205,7 +204,13 @@ public class DataExporterTXT extends StreamExporterAbstract implements IAppendab
         this.delimLeading = CommonUtils.getBoolean(properties.get(PROP_DELIM_LEADING), true);
         this.delimHeader = CommonUtils.getBoolean(properties.get(PROP_DELIM_HEADER), true);
         this.delimTrailing = CommonUtils.getBoolean(properties.get(PROP_DELIM_TRAILING), true);
-        this.delimBetween = CommonUtils.getBoolean(properties.get(PROP_DELIM_BETWEEN), true);
+        String prop = CommonUtils.toString(properties.get(PROP_DELIM_BETWEEN));
+        if (Boolean.FALSE.toString().equals(prop)) {
+            // Backward compatibility - use space.
+            delimBetween = " ";
+        } else {
+            delimBetween = prop;
+        }
         this.showHeader = CommonUtils.getBoolean(properties.get(PROP_SHOW_HEADER), true);
         this.batchQueue = new ArrayDeque<>(this.batchSize);
         if (this.maxColumnSize > 0) {
@@ -412,7 +417,7 @@ public class DataExporterTXT extends StreamExporterAbstract implements IAppendab
             }
 
             if (index < length - 1) {
-                target.append(delimBetween ? '|' : ' ');
+                target.append(delimBetween);
             }
         }
 

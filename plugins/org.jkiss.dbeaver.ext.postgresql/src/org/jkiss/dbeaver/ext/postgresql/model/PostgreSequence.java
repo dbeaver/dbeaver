@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -134,7 +134,7 @@ public class PostgreSequence extends PostgreTableBase implements DBSSequence, DB
 
     public static class AdditionalInfoValidator implements IPropertyCacheValidator<PostgreSequence> {
         @Override
-        public boolean isPropertyCached(PostgreSequence object, Object propertyId)
+        public boolean isPropertyCached(@NotNull PostgreSequence object, @NotNull Object propertyId)
         {
             return object.additionalInfo.loaded;
         }
@@ -251,7 +251,7 @@ public class PostgreSequence extends PostgreTableBase implements DBSSequence, DB
     }
 
     @Override
-    public Collection<? extends DBSTableIndex> getIndexes(DBRProgressMonitor monitor) throws DBException {
+    public Collection<? extends DBSTableIndex> getIndexes(@NotNull DBRProgressMonitor monitor) throws DBException {
         return null;
     }
 
@@ -266,17 +266,18 @@ public class PostgreSequence extends PostgreTableBase implements DBSSequence, DB
         return null;
     }
 
+    @NotNull
     @Override
-    public String getObjectDefinitionText(DBRProgressMonitor monitor, Map<String, Object> options) throws DBException {
+    public String getObjectDefinitionText(@NotNull DBRProgressMonitor monitor, @NotNull Map<String, Object> options) throws DBException {
         StringBuilder sql = new StringBuilder()
-            .append("-- DROP SEQUENCE ").append(getFullyQualifiedName(DBPEvaluationContext.DDL)).append(";\n\n")
-            .append("CREATE SEQUENCE ").append(getFullyQualifiedName(DBPEvaluationContext.DDL));
+            .append("-- DROP SEQUENCE ").append(DBUtils.getEntityScriptName(this, options)).append(";\n\n")
+            .append("CREATE SEQUENCE ").append(DBUtils.getEntityScriptName(this, options));
 
         getSequenceBody(monitor, sql, true);
         sql.append(';');
 
 		if (!CommonUtils.isEmpty(getDescription())) {
-			sql.append("\nCOMMENT ON SEQUENCE ").append(DBUtils.getQuotedIdentifier(this)).append(" IS ")
+			sql.append("\nCOMMENT ON SEQUENCE ").append(DBUtils.getEntityScriptName(this, options)).append(" IS ")
 					.append(SQLUtils.quoteString(this, getDescription())).append(";");
 		}
         
@@ -339,12 +340,12 @@ public class PostgreSequence extends PostgreTableBase implements DBSSequence, DB
         }
     }
 
-    public String generateChangeOwnerQuery(String owner) {
-        return "ALTER SEQUENCE " + DBUtils.getObjectFullName(this, DBPEvaluationContext.DDL) + " OWNER TO " + owner;
+    public String generateChangeOwnerQuery(@NotNull String owner, @NotNull Map<String, Object> options) {
+        return "ALTER SEQUENCE " + DBUtils.getEntityScriptName(this, options) + " OWNER TO " + owner;
     }
 
     @Override
-    public boolean supportsObjectDefinitionOption(String option) {
+    public boolean supportsObjectDefinitionOption(@NotNull String option) {
         return DBPScriptObject.OPTION_INCLUDE_PERMISSIONS.equals(option) || DBPScriptObject.OPTION_INCLUDE_COMMENTS.equals(option);
     }
 
@@ -354,6 +355,7 @@ public class PostgreSequence extends PostgreTableBase implements DBSSequence, DB
         return super.refreshObject(monitor);
     }
 
+    @NotNull
     @Override
     public DBSObjectType getObjectType() {
         return RelationalObjectType.TYPE_SEQUENCE;
@@ -361,7 +363,7 @@ public class PostgreSequence extends PostgreTableBase implements DBSSequence, DB
 
     public static class CacheAndCycleValidator implements IPropertyValueValidator<PostgreSequence, Object> {
         @Override
-        public boolean isValidValue(PostgreSequence object, Object value) throws IllegalArgumentException {
+        public boolean isValidValue(@NotNull PostgreSequence object, @Nullable Object value) throws IllegalArgumentException {
             return object.supportsCacheAndCycle();
         }
     }

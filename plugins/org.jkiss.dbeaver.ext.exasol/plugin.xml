@@ -92,7 +92,7 @@
                             </items>
                         </folder>
                         <folder type="org.jkiss.dbeaver.ext.exasol.model.ExasolScript" label="%tree.scripts.node.name"
-                                icon="#procedures" description="%tree.scripts.node.description">
+                                icon="#procedures" id="scripts" description="%tree.scripts.node.description">
                             <folder
                                   icon="#procedures"
                                   label="%tree.scripts.adapter.node.name"
@@ -217,13 +217,14 @@
                       </folder>
                       <items
                             icon="#parameter"
+                            path="virtualsparameter"
                             label="%tree.virtualschemaparameters.node.name"
                             navigable="false"
                             property="virtualSchemaParameters">
                       </items>
                    </items>
                 </folder>
-                <folder type="" label="%tree.administer.node.name" icon="#folder_admin" description="Maintenance/Settings">
+                <folder type="" label="%tree.administer.node.name" icon="#folder_admin" id="folderAdmin" description="Maintenance/Settings">
                     <treeContribution category="connectionEditor"/>
                 </folder>
                 <folder
@@ -313,6 +314,7 @@
                       visibleIf="connected &amp;&amp; dataSource.authorizedForRolePrivs">
                    <items
                          icon="icons/role.gif"
+                         path="roles"
                          label="%tree.role.node.name"
                          property="roles">
                       <items
@@ -400,6 +402,7 @@
                 <folder
                       description="%tree.security.node.description"
                       icon="#folder_info"
+                      id="folderInfo"
                       label="%tree.security.node.name"
                       visibleIf="connected &amp;&amp; dataSource.hasPasswordPolicy">
                    <folder
@@ -429,16 +432,23 @@
                         description="%driver.exasol.description"
                         webURL="https://downloads.exasol.com/clients-and-drivers"
                         categories="sql,analytic,columns">
-                    <file path="maven:/com.exasol:exasol-jdbc:RELEASE[7.1.16]" type="jar" bundle="!drivers.exasol"/>
-                    <file type="license" path="https://www.apache.org/licenses/LICENSE-2.0.txt" bundle="!drivers.exasol"/>
+                    <file path="maven:/com.exasol:exasol-jdbc:RELEASE[25.2.3]" type="jar" bundle="!drivers.exasol"/>
+                    <file type="license" path="licenses/external/asl-2.0.txt"/>
                     <file type="jar" path="drivers/exasol" bundle="drivers.exasol"/>
-                    <file type="license" path="drivers/apache_lic/LICENSE.txt" bundle="drivers.exasol"/>
 
                     <replace provider="generic" driver="exasol"/>
                     <property name="querytimeout" value="3600"/>
                     <property name="@dbeaver-default-dataformat.type.timestamp.pattern"
                               value="yyyy-MM-dd-HH.mm.ss.ffffff"/>
                 </driver>
+                <provider-properties drivers="*">
+                    <propertyGroup label="Settings">
+                        <property id="@dbeaver-backupHostList" label="Use backup host list" type="boolean"/>
+                        <property id="@dbeaver-encrypt" label="Encrypt Communication" type="boolean"/>
+                        <property id="exasol.useLegacyEncryption" label="Use Legacy Encryption" type="boolean"
+                                  description="All connections created using Exasol-provided 7.1 drivers will try to establish TLS connections to Exasol first, regardless of the database version."/>
+                    </propertyGroup>
+                </provider-properties>
             </drivers>
         </datasource>
     </extension>
@@ -472,12 +482,6 @@
               class="org.jkiss.dbeaver.ext.exasol.manager.ExasolTablePartitionColumnManager"
               objectType="org.jkiss.dbeaver.ext.exasol.model.ExasolTablePartitionColumn">
         </manager>
-    </extension>
-
-    <extension point="org.jkiss.dbeaver.mavenRepository">
-        <repository id="exasol-maven-repo" name="Exasol Repository" url="https://maven.exasol.com/artifactory/exasol-releases" order="10">
-            <scope group="com.exasol"/>
-        </repository>
     </extension>
 
     <extension point="org.jkiss.dbeaver.sqlCommand">
@@ -518,7 +522,7 @@
        <provider
              class="org.jkiss.dbeaver.ext.exasol.ExasolValueHandlerProvider"
              description="Exasol data types provider"
-             id="org.jkiss.dbeaver.ext.exasol.ExasolValueHandlerProvider"
+             id="ExasolValueHandlerProvider"
              label="Exasol data types provider">
 
             <datasource id="exasol"/>
@@ -537,7 +541,7 @@
     <extension point="org.jkiss.dbeaver.task">
         <category id="exasol" name="Exasol" description="Exasol database task" icon="icons/exasol_icon.png"/>
         <category id="exasolTool" parent="exasol" name="Tools" description="Exasol database tools" icon="icons/exasol_icon.png"/>
-        <task id="exasolToolTruncateTable" name="Truncate table" description="Truncate table(s)" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/admin.png" type="exasolTool" handler="org.jkiss.dbeaver.ext.exasol.tasks.ExasolToolTableTruncate">
+        <task id="exasolToolTruncateTable" name="Truncate table" description="Truncate table(s)" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/admin.svg" type="exasolTool" handler="org.jkiss.dbeaver.ext.exasol.tasks.ExasolToolTableTruncate">
             <datasource id="exasol"/>
             <objectType name="org.jkiss.dbeaver.ext.exasol.model.ExasolTable"/>
         </task>

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -98,12 +98,21 @@ public class EditObjectFilterDialog extends HelpEnabledDialog {
             globalLink.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
         }
         blockControl = UIUtils.createPlaceholder(composite, 1);
-        blockControl.setLayoutData(new GridData(GridData.FILL_BOTH));
+        GridData blockControlGd = new GridData(GridData.FILL_BOTH);
+        blockControlGd.heightHint = 350;
+        blockControl.setLayoutData(blockControlGd);
 
-        includeTable = StringEditorTable.createEditableList(blockControl, UINavigatorMessages.dialog_filter_list_include, filter.getInclude(), null, null);
-        excludeTable = StringEditorTable.createEditableList(blockControl, UINavigatorMessages.dialog_filter_list_exclude, filter.getExclude(), null, null);
+        includeTable = StringEditorTable.createEditableList(
+            blockControl, UINavigatorMessages.dialog_filter_list_include,
+            filter.getInclude(), null, null
+        );
+        excludeTable = StringEditorTable.createEditableList(
+            blockControl, UINavigatorMessages.dialog_filter_list_exclude,
+            filter.getExclude(), null, null
+        );
 
         UIUtils.createInfoLabel(blockControl, UINavigatorMessages.dialog_filter_hint_text);
+        UIUtils.createInfoLabel(blockControl, UINavigatorMessages.dialog_filter_objects_scope_hint_text);
 
         {
             Group sfGroup = UIUtils.createControlGroup(composite, UINavigatorMessages.dialog_filter_save_label, 4, GridData.FILL_HORIZONTAL, 0);
@@ -158,14 +167,14 @@ public class EditObjectFilterDialog extends HelpEnabledDialog {
         }
         if (CommonUtils.isEmpty(filterName)) {
             // Reset filter
-            StringEditorTable.fillFilterValues(includeTable, null, null);
-            StringEditorTable.fillFilterValues(excludeTable, null, null);
+            StringEditorTable.replaceAllStringValues(includeTable, null, null);
+            StringEditorTable.replaceAllStringValues(excludeTable, null, null);
         } else {
             // Find saved filter
             DBSObjectFilter savedFilter = dsRegistry.getSavedFilter(filterName);
             if (savedFilter != null) {
-                StringEditorTable.fillFilterValues(includeTable, savedFilter.getInclude(), null);
-                StringEditorTable.fillFilterValues(excludeTable, savedFilter.getExclude(), null);
+                StringEditorTable.replaceAllStringValues(includeTable, savedFilter.getInclude(), null);
+                StringEditorTable.replaceAllStringValues(excludeTable, savedFilter.getExclude(), null);
             }
         }
         filter.setName(filterName);
@@ -184,8 +193,8 @@ public class EditObjectFilterDialog extends HelpEnabledDialog {
 
     private void saveConfigurations() {
         filter.setEnabled(enableButton.getSelection());
-        filter.setInclude(StringEditorTable.collectValues(includeTable));
-        filter.setExclude(StringEditorTable.collectValues(excludeTable));
+        filter.setInclude(StringEditorTable.collectStringValues(includeTable));
+        filter.setExclude(StringEditorTable.collectStringValues(excludeTable));
         filter.setName(namesCombo.getText());
         if (!CommonUtils.isEmpty(filter.getName())) {
             dsRegistry.updateSavedFilter(filter);

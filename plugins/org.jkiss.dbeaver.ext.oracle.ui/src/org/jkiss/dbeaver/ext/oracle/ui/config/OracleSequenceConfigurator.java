@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,10 @@
  */
 package org.jkiss.dbeaver.ext.oracle.ui.config;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.oracle.model.OracleSequence;
+import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEObjectConfigurator;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntityType;
@@ -29,7 +32,7 @@ import java.util.Map;
 public class OracleSequenceConfigurator implements DBEObjectConfigurator<OracleSequence> {
 
     @Override
-    public OracleSequence configureObject(DBRProgressMonitor monitor, Object container, OracleSequence sequence, Map<String, Object> options) {
+    public OracleSequence configureObject(@NotNull DBRProgressMonitor monitor, @Nullable DBECommandContext commandContext, @Nullable Object container, @NotNull OracleSequence sequence, @NotNull Map<String, Object> options) {
         return UITask.run(() -> {
             EntityEditPage page = new EntityEditPage(sequence.getDataSource(), DBSEntityType.SEQUENCE);
             if (!page.edit()) {

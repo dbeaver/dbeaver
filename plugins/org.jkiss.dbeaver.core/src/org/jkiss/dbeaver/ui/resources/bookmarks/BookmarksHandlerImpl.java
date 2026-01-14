@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,6 +22,7 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
@@ -98,7 +99,8 @@ public class BookmarksHandlerImpl extends AbstractResourceHandler {
             super.openResource(resource);
             return;
         }
-        final DBNProject projectNode = DBWorkbench.getPlatform().getNavigatorModel().getRoot().getProjectNode(resource.getProject());
+        final DBNProject projectNode = NavigatorResources.getProjectNode(
+            DBWorkbench.getPlatform().getNavigatorModel().getRoot(), resource.getProject());
         if (projectNode == null) {
             throw new DBException("Can't find project node for '" + resource.getProject().getName() + "'"); //$NON-NLS-2$
         }
@@ -128,6 +130,7 @@ public class BookmarksHandlerImpl extends AbstractResourceHandler {
         }
     }
 
+    @Nullable
     @Override
     public List<DBPDataSourceContainer> getAssociatedDataSources(DBNResource resource) {
         if (resource instanceof DBNBookmark) {
@@ -231,16 +234,16 @@ public class BookmarksHandlerImpl extends AbstractResourceHandler {
         throws DBException
     {
         if (CommonUtils.isEmpty(title)) {
-            title = node.getNodeName();
+            title = node.getNodeId();
         }
 
         List<String> nodePath = new ArrayList<>();
         for (DBNNode parent = node; !(parent instanceof DBNDataSource); parent = parent.getParentNode()) {
-            nodePath.add(0, parent.getNodeName());
+            nodePath.add(0, parent.getNodeId());
         }
         BookmarkStorage storage = new BookmarkStorage(
             title,
-            node.getNodeType() + " " + node.getNodeName(), //$NON-NLS-1$
+            node.getNodeTypeLabel() + " " + node.getNodeId(), //$NON-NLS-1$
             node.getNodeIconDefault(),
             node.getDataSourceContainer().getId(),
             nodePath);
@@ -275,7 +278,7 @@ public class BookmarksHandlerImpl extends AbstractResourceHandler {
                     final DBNNode[] children = currentNode.getChildren(monitor);
                     if (!ArrayUtils.isEmpty(children)) {
                         for (DBNNode node : children) {
-                            if (path.equals(node.getNodeName())) {
+                            if (path.equals(node.getNodeId()) || path.equals(node.getNodeDisplayName())) {
                                 nextChild = node;
                                 break;
                             }

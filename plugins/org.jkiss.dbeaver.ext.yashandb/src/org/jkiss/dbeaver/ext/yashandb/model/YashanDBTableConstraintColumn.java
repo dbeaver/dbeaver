@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,55 +22,53 @@ import org.jkiss.dbeaver.model.impl.struct.AbstractTableConstraint;
 import org.jkiss.dbeaver.model.impl.struct.AbstractTableConstraintColumn;
 import org.jkiss.dbeaver.model.meta.Property;
 
-/**
- * GenericConstraintColumn
- */
 public class YashanDBTableConstraintColumn extends AbstractTableConstraintColumn {
-    private AbstractTableConstraint<YashanDBTableBase> constraint;
-    private YashanDBTableColumn tableColumn;
-    private int ordinalPosition;
 
-    public YashanDBTableConstraintColumn(AbstractTableConstraint<YashanDBTableBase> constraint, YashanDBTableColumn tableColumn, int ordinalPosition) {
-        this.constraint = constraint;
-        this.tableColumn = tableColumn;
-        this.ordinalPosition = ordinalPosition;
-    }
+	private AbstractTableConstraint<YashanDBTableBase, YashanDBTableConstraintColumn> constraint;
+	private YashanDBTableColumn tableColumn;
+	private int ordinalPosition;
 
-    //@Property(name = "Name", viewable = true, order = 1)
-    @NotNull
-    @Override
-    public String getName() {
-        return tableColumn.getName();
-    }
+	public YashanDBTableConstraintColumn(
+			AbstractTableConstraint<YashanDBTableBase, YashanDBTableConstraintColumn> constraint,
+			YashanDBTableColumn tableColumn, int ordinalPosition) {
+		this.constraint = constraint;
+		this.tableColumn = tableColumn;
+		this.ordinalPosition = ordinalPosition;
+	}
 
-    @NotNull
-    @Override
-    @Property(id = "name", viewable = true, order = 1)
-    public YashanDBTableColumn getAttribute() {
-        return tableColumn;
-    }
+	@NotNull
+	@Override
+	public String getName() {
+		return tableColumn.getName();
+	}
 
-    @Override
-    @Property(viewable = false, order = 2)
-    public int getOrdinalPosition() {
-        return ordinalPosition;
-    }
+	@NotNull
+	@Override
+	@Property(id = "name", viewable = true, order = 1)
+	public YashanDBTableColumn getAttribute() {
+		return tableColumn;
+	}
 
-    @Nullable
-    @Override
-    public String getDescription() {
-        return tableColumn.getDescription();
-    }
+	@Override
+	@Property(viewable = false, order = 2)
+	public int getOrdinalPosition() {
+		return ordinalPosition;
+	}
 
-    @Override
-    public AbstractTableConstraint<YashanDBTableBase> getParentObject() {
-        return constraint;
-    }
+	@Nullable
+	@Override
+	public String getDescription() {
+		return tableColumn.getDescription();
+	}
 
-    @NotNull
-    @Override
-    public YashanDBDataSource getDataSource() {
-        return constraint.getTable().getDataSource();
-    }
+	@Override
+	public AbstractTableConstraint<YashanDBTableBase, YashanDBTableConstraintColumn> getParentObject() {
+		return constraint;
+	}
 
+	@NotNull
+	@Override
+	public YashanDBDataSource getDataSource() {
+		return constraint.getTable().getDataSource();
+	}
 }

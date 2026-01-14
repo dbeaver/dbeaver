@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,6 +31,7 @@ import org.jkiss.dbeaver.model.net.DBWNetworkHandler;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.secret.DBPSecretHolder;
+import org.jkiss.dbeaver.model.secret.DBSSecretValue;
 import org.jkiss.dbeaver.model.sql.SQLDialectMetadata;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectFilter;
@@ -39,6 +40,8 @@ import org.jkiss.dbeaver.runtime.IVariableResolver;
 
 import java.util.Collection;
 import java.util.Date;
+import java.util.List;
+import java.util.Map;
 
 /**
  * DBPDataSourceContainer
@@ -99,9 +102,12 @@ public interface DBPDataSourceContainer extends
      */
     boolean isExternallyProvided();
 
-    boolean isTemplate();
-
+    /**
+     * Temporary datasources are not saved in project. They exist until project refresh or application shutdown
+     */
     boolean isTemporary();
+
+    void setTemporary(boolean temporary);
 
     // We do not implement DBPHiddenObject because it is not really hidden.
     // This flag means that datasource shouldn't be included in the primary connection list.
@@ -110,9 +116,21 @@ public interface DBPDataSourceContainer extends
 
     boolean isSharedCredentials();
 
+    /**
+     * find all available shared credentials for the current user
+     */
+    @NotNull
+    List<DBSSecretValue> listSharedCredentials() throws DBException;
     void setSharedCredentials(boolean sharedCredentials);
+    boolean isSharedCredentialsSelected();
+    void setSelectedSharedCredentials(@NotNull DBSSecretValue secretValue);
 
     boolean isConnectionReadOnly();
+
+    /**
+     * Updates read-only param in data source.
+     */
+    void setConnectionReadOnly(boolean connectionReadOnly);
 
     /**
      * Flag saying that password value was saved in configuration.
@@ -133,15 +151,15 @@ public interface DBPDataSourceContainer extends
 
     void setDefaultAutoCommit(boolean autoCommit);
 
-    boolean isAutoCloseTransactions();
-
     @Nullable
     DBPTransactionIsolation getActiveTransactionsIsolation();
 
     @Nullable
     Integer getDefaultTransactionsIsolation();
 
-    void setDefaultTransactionsIsolation(DBPTransactionIsolation isolationLevel);
+    void setDefaultTransactionsIsolation(@Nullable DBPTransactionIsolation isolationLevel);
+
+    boolean isExtraMetadataReadEnabled();
 
     /**
      * Search for object filter which corresponds specified object type and parent object.
@@ -153,12 +171,20 @@ public interface DBPDataSourceContainer extends
     @Nullable
     DBSObjectFilter getObjectFilter(Class<?> type, @Nullable DBSObject parentObject, boolean firstMatch);
 
-    void setObjectFilter(Class<?> type, DBSObject parentObject, DBSObjectFilter filter);
+    void setObjectFilter(@NotNull Class<?> type, @Nullable DBSObject parentObject, @Nullable DBSObjectFilter filter);
 
+    @Nullable
+    String getClientApplicationName();
+
+    void setClientApplicationName(@NotNull String applicationName);
+
+    @NotNull
     DBVModel getVirtualModel();
 
+    @Nullable
     DBPNativeClientLocation getClientHome();
 
+    @NotNull
     DBWNetworkHandler[] getActiveNetworkHandlers();
 
     /**
@@ -166,6 +192,11 @@ public interface DBPDataSourceContainer extends
      * Do not check whether underlying connection is alive or not.
      */
     boolean isConnected();
+
+    /**
+     * Checks that this data source is in the connecting process
+     */
+    boolean isConnecting();
 
     /**
      * Returns last connection instantiation error if any
@@ -181,7 +212,7 @@ public interface DBPDataSourceContainer extends
      * @param reflect notify UI about connection state change
      * @throws DBException on error
      */
-    boolean connect(DBRProgressMonitor monitor, boolean initialize, boolean reflect) throws DBException;
+    boolean connect(@NotNull DBRProgressMonitor monitor, boolean initialize, boolean reflect) throws DBException;
 
     /**
      * Disconnects from datasource.
@@ -191,7 +222,7 @@ public interface DBPDataSourceContainer extends
      * @throws DBException on error
      * @return true on disconnect, false if disconnect action was canceled
      */
-    boolean disconnect(DBRProgressMonitor monitor) throws DBException;
+    boolean disconnect(@NotNull DBRProgressMonitor monitor) throws DBException;
 
     /**
      * Reconnects datasource.
@@ -199,7 +230,7 @@ public interface DBPDataSourceContainer extends
      * @return true on reconnect, false if reconnect action was canceled
      * @throws org.jkiss.dbeaver.DBException on any DB error
      */
-    boolean reconnect(DBRProgressMonitor monitor) throws DBException;
+    boolean reconnect(@NotNull DBRProgressMonitor monitor) throws DBException;
 
     @Nullable
     DBPDataSource getDataSource();
@@ -211,16 +242,11 @@ public interface DBPDataSourceContainer extends
 
     Collection<DBPDataSourceTask> getTasks();
 
-    void acquire(DBPDataSourceTask user);
+    void acquire(@NotNull DBPDataSourceTask user);
 
-    void release(DBPDataSourceTask user);
+    void release(@NotNull DBPDataSourceTask user);
 
-    void fireEvent(DBPEvent event);
-
-    @Nullable
-    String getProperty(@NotNull String name);
-
-    void setProperty(@NotNull String name, @Nullable String value);
+    void fireEvent(@NotNull DBPEvent event);
 
     /**
      * Preference store associated with this datasource
@@ -240,6 +266,7 @@ public interface DBPDataSourceContainer extends
      */
     boolean persistConfiguration();
 
+    @Nullable
     Date getConnectTime();
 
     @NotNull
@@ -251,14 +278,22 @@ public interface DBPDataSourceContainer extends
     void resetPassword();
 
     /**
+     * Marks all secrets (credentials) as unresolved
+     */
+    void resetAllSecrets();
+
+    /**
      * Make variable resolver for datasource properties.
      *
      * @param actualConfig if true then actual connection config will be used (e.g. with preprocessed host/port values).
      */
+    @NotNull
     IVariableResolver getVariablesResolver(boolean actualConfig);
 
+    @NotNull
     DBPDataSourceContainer createCopy(DBPDataSourceRegistry forRegistry);
 
+    @NotNull
     DBPExclusiveResource getExclusiveLock();
     
     boolean isForceUseSingleConnection();
@@ -276,4 +311,26 @@ public interface DBPDataSourceContainer extends
     DBPDriverSubstitutionDescriptor getDriverSubstitution();
 
     void setDriverSubstitution(@Nullable DBPDriverSubstitutionDescriptor driverSubstitution);
+
+    /**
+     * Datasource tags. Tags can be used in various 3rd party integrations.
+     */
+    @NotNull
+    Map<String, String> getTags();
+
+    @Nullable
+    String getTagValue(@NotNull String tagName);
+
+    void setTagValue(@NotNull String tagName, @Nullable String tagValue);
+
+    /**
+     * Extension settings. Any custom attributes assigned by product plugins for internal configuration purposes
+     */
+    @Nullable
+    <T> T getExtension(@NotNull String name);
+
+    void setExtension(@NotNull String name, @Nullable Object value);
+
+    void dispose();
+
 }

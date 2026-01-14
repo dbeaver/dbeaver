@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <!-- Schema file written by PDE -->
 <schema targetNamespace="org.jkiss.dbeaver.core" xmlns="http://www.w3.org/2001/XMLSchema">
-	<annotation>
+<annotation>
       <appInfo>
          <meta.schema plugin="org.jkiss.dbeaver.core" id="org.jkiss.dbeaver.toolBarConfiguration" name="%extension-point.org.jkiss.dbeaver.toolbarConfiguration.name"/>
       </appInfo>
@@ -17,8 +17,8 @@
          </appInfo>
       </annotation>
       <complexType>
-         <sequence>
-            <element ref="toolBarConfiguration" minOccurs="0" maxOccurs="unbounded"/>
+         <sequence minOccurs="1" maxOccurs="unbounded">
+            <element ref="toolBar"/>
          </sequence>
          <attribute name="point" type="string" use="required">
             <annotation>
@@ -40,15 +40,21 @@
    <element name="toolBar">
       <complexType>
          <sequence>
-            <element name="item" minOccurs="0" maxOccurs="unbounded">
-               <attribute name="key" type="string"/>
-               <attribute name="name" type="string"/>
-               <attribute name="commandId" type="string"/>
-               <attribute name="defaultVisibility" type="boolean"/>
-            </element>
          </sequence>
-         <attribute name="key" type="string"/>
-         <attribute name="name" type="string"/>
+         <attribute name="key" type="string">
+            <annotation>
+               <documentation>
+                  
+               </documentation>
+            </annotation>
+         </attribute>
+         <attribute name="name" type="string">
+            <annotation>
+               <documentation>
+                  
+               </documentation>
+            </annotation>
+         </attribute>
       </complexType>
    </element>
 
@@ -87,5 +93,6 @@
          [Enter information about supplied implementation of this extension point.]
       </documentation>
    </annotation>
+
 
 </schema>

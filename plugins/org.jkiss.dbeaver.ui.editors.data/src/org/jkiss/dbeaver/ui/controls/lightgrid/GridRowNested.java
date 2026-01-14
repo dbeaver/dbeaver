@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,15 +23,21 @@ class GridRowNested implements IGridRow {
 
     private final IGridRow parent;
     private final int position;
+    private final int index;
+    private final int level;
+    private final Object element;
 
-    public GridRowNested(IGridRow parent, int position) {
+    public GridRowNested(IGridRow parent, int position, int index, int level, Object element) {
         this.parent = parent;
         this.position = position;
+        this.index = index;
+        this.level = level;
+        this.element = element;
     }
 
     @Override
     public Object getElement() {
-        return parent.getElement();
+        return element;
     }
 
     @Override
@@ -46,16 +52,20 @@ class GridRowNested implements IGridRow {
 
     @Override
     public int getRelativeIndex() {
-        return position - parent.getVisualPosition() - 1;
+        return index;
     }
 
     @Override
-    public int getRowDepth() {
-        return parent.getRowDepth() + 1;
+    public int getLevel() {
+        return level;
     }
 
     @Override
     public String toString() {
-        return position + ":" + getRelativeIndex();
+        final String[] parts = new String[getLevel() + 1];
+        for (IGridRow r = this; r != null; r = r.getParent()) {
+            parts[r.getLevel()] = String.valueOf(r.getRelativeIndex() + 1);
+        }
+        return String.join(".", parts);
     }
 }

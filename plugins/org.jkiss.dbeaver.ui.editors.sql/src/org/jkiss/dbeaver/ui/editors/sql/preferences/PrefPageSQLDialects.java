@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,12 +26,10 @@ import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 import org.eclipse.ui.IWorkbenchPropertyPage;
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.sql.SQLDialectMetadata;
 import org.jkiss.dbeaver.model.sql.registry.SQLDialectDescriptor;
-import org.jkiss.dbeaver.model.sql.registry.SQLDialectRegistry;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -47,7 +45,6 @@ import java.util.List;
 public class PrefPageSQLDialects extends AbstractPrefPage implements IWorkbenchPreferencePage, IWorkbenchPropertyPage {
     public static final String PAGE_ID = "org.jkiss.dbeaver.preferences.main.sql.dialects"; //$NON-NLS-1$
 
-    private static final Log log = Log.getLog(PrefPageSQLDialects.class);
     private IAdaptable element;
 
     private SQLDialectMetadata curDialect;
@@ -86,9 +83,9 @@ public class PrefPageSQLDialects extends AbstractPrefPage implements IWorkbenchP
             gd.heightHint = 200;
             dialectTable.setLayoutData(gd);
 
-            List<SQLDialectDescriptor> dialects = SQLDialectRegistry.getInstance().getRootDialects();
+            List<SQLDialectMetadata> dialects = DBWorkbench.getPlatform().getSQLDialectRegistry().getRootDialects();
             //dialects.sort(Comparator.comparing(SQLDialectDescriptor::getLabel));
-            for (SQLDialectDescriptor dialect : dialects) {
+            for (SQLDialectMetadata dialect : dialects) {
                 createDialectItem(dialectTable, null, dialect);
             }
             dialectTable.addSelectionListener(new SelectionAdapter() {
@@ -141,7 +138,7 @@ public class PrefPageSQLDialects extends AbstractPrefPage implements IWorkbenchP
         return composite;
     }
 
-    private void createDialectItem(Tree dialectTable, TreeItem parentItem, SQLDialectDescriptor dialect) {
+    private void createDialectItem(Tree dialectTable, TreeItem parentItem, SQLDialectMetadata dialect) {
         TreeItem di;
         if (!dialect.isHidden()) {
             di = parentItem == null ? new TreeItem(dialectTable, SWT.NONE) : new TreeItem(parentItem, SWT.NONE);
@@ -155,7 +152,7 @@ public class PrefPageSQLDialects extends AbstractPrefPage implements IWorkbenchP
         List<SQLDialectMetadata> subDialects = dialect.getSubDialects(true);
         subDialects.sort(Comparator.comparing(SQLDialectMetadata::getLabel));
         for (SQLDialectMetadata dm : subDialects) {
-            createDialectItem(dialectTable, di, (SQLDialectDescriptor) dm);
+            createDialectItem(dialectTable, di, dm);
         }
         if (di != null) {
             di.setExpanded(true);

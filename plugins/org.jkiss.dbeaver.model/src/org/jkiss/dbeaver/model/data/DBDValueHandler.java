@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,6 +21,8 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
+
+import java.util.Comparator;
 
 /**
  * DBD Value Handler.
@@ -116,5 +118,14 @@ public interface DBDValueHandler extends DBDValueRenderer
      */
     @NotNull
     DBCLogicalOperator[] getSupportedOperators(@NotNull DBSTypedObject attribute);
+
+    /**
+     * Get comparator for compare values
+     *
+     * @return comparator
+     */
+    default Comparator<Object> getComparator() {
+        return null;
+    }
 
 }

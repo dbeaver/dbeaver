@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ui.actions;
 
 import org.eclipse.core.expressions.PropertyTester;
+import org.eclipse.core.resources.IResource;
 import org.eclipse.jface.action.IContributionItem;
 import org.eclipse.swt.widgets.Display;
 import org.jkiss.code.NotNull;
@@ -26,16 +27,15 @@ import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPOrderedObject;
 import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.app.DBPPlatform;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.app.DBPResourceHandler;
+import org.jkiss.dbeaver.model.app.DBPWorkspace;
 import org.jkiss.dbeaver.model.edit.*;
 import org.jkiss.dbeaver.model.navigator.*;
 import org.jkiss.dbeaver.model.navigator.fs.DBNPath;
 import org.jkiss.dbeaver.model.rm.RMConstants;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableIndex;
-import org.jkiss.dbeaver.registry.DataSourceRegistry;
 import org.jkiss.dbeaver.registry.ObjectManagerRegistry;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.ActionUtils;
@@ -79,7 +79,6 @@ public class ObjectPropertyTester extends PropertyTester {
     @SuppressWarnings("unchecked")
     @Override
     public boolean test(Object receiver, String property, Object[] args, Object expectedValue) {
-
         DBNNode node = RuntimeUtils.getObjectAdapter(receiver, DBNNode.class);
         if (node == null) {
             return false;
@@ -112,7 +111,7 @@ public class ObjectPropertyTester extends PropertyTester {
                     clipboard.dispose();
                 }
 */
-                if (node instanceof DBNResource) {
+                if (node instanceof DBNResource || node instanceof DBNPath) {
                     return property.equals(PROP_CAN_PASTE);
                 }
                 return canCreateObject(node, null);
@@ -138,9 +137,9 @@ public class ObjectPropertyTester extends PropertyTester {
 */
             }
             case PROP_SUPPORTS_NATIVE_EXECUTION:
-                if (receiver instanceof DBNResource) {
+                if (receiver instanceof DBNResource dbnResource) {
                     List<DBPDataSourceContainer> associatedDataSources
-                        = (List<DBPDataSourceContainer>) ((DBNResource) receiver).getAssociatedDataSources();
+                        = (List<DBPDataSourceContainer>) dbnResource.getAssociatedDataSources();
                     if (CommonUtils.isEmpty(associatedDataSources)) {
                         return false;
                     }
@@ -162,12 +161,12 @@ public class ObjectPropertyTester extends PropertyTester {
                 if (DBNUtils.isReadOnly(node)) {
                     return false;
                 }
-                if (node instanceof DBNNodeWithResource && !nodeProjectHasPermission(node, RMConstants.PERMISSION_PROJECT_RESOURCE_EDIT)) {
+                if (isResourceNode(node) && !nodeProjectHasPermission(node, RMConstants.PERMISSION_PROJECT_RESOURCE_EDIT)) {
                     return false;
                 }
 
-                if (node instanceof DBSWrapper) {
-                    DBSObject object = ((DBSWrapper) node).getObject();
+                if (node instanceof DBSWrapper wrapper) {
+                    DBSObject object = wrapper.getObject();
                     if (object == null || DBUtils.isReadOnly(object) || !(node.getParentNode() instanceof DBNContainer) ||
                         !DBWorkbench.getPlatform().getWorkspace().hasRealmPermission(RMConstants.PERMISSION_METADATA_EDITOR)
                     ) {
@@ -175,24 +174,30 @@ public class ObjectPropertyTester extends PropertyTester {
                     }
                     DBEObjectMaker objectMaker = getObjectManager(object.getClass(), DBEObjectMaker.class);
                     return objectMaker != null && objectMaker.canDeleteObject(object);
-                } else if (node instanceof DBNResource) {
-                    if ((((DBNResource) node).getFeatures() & DBPResourceHandler.FEATURE_DELETE) != 0) {
+                } else if (node instanceof DBNResource dbnResource) {
+                    if ((dbnResource.getFeatures() & DBPResourceHandler.FEATURE_DELETE) != 0) {
                         return true;
                     }
-                } else if (node instanceof DBNPath) {
+                } else if (node instanceof DBNProject projectNode) {
+                    DBPProject project = projectNode.getProject();
+                    return project != project.getWorkspace().getActiveProject();
+                } else if (isResourceNode(node)) {
                     return true;
                 }
                 break;
             }
             case PROP_CAN_RENAME: {
-                if (node instanceof DBNNodeWithResource && !nodeProjectHasPermission(node, RMConstants.PERMISSION_PROJECT_RESOURCE_EDIT)) {
+                if (node instanceof DBNDataSource || node instanceof DBNLocalFolder) {
+                    return nodeProjectHasPermission(node, RMConstants.PERMISSION_PROJECT_DATASOURCES_EDIT);
+                }
+                if (isResourceNode(node) && !nodeProjectHasPermission(node, RMConstants.PERMISSION_PROJECT_RESOURCE_EDIT)) {
                     return false;
                 }
                 if (node.supportsRename()) {
                     return true;
                 }
                 if (node instanceof DBNDatabaseNode) {
-                    if (DBNUtils.isReadOnly(node)) {
+                    if (DBNUtils.isReadOnly(node) || !DBWorkbench.getPlatform().getWorkspace().hasRealmPermission(RMConstants.PERMISSION_METADATA_EDITOR)) {
                         return false;
                     }
                     DBSObject object = ((DBNDatabaseNode) node).getObject();
@@ -208,11 +213,11 @@ public class ObjectPropertyTester extends PropertyTester {
             }
             case PROP_CAN_MOVE_UP:
             case PROP_CAN_MOVE_DOWN: {
-                if (node instanceof DBNDatabaseNode) {
+                if (node instanceof DBNDatabaseNode dbNode) {
                     if (DBNUtils.isReadOnly(node)) {
                         return false;
                     }
-                    DBSObject object = ((DBNDatabaseNode) node).getObject();
+                    DBSObject object = dbNode.getObject();
                     if (object instanceof DBPOrderedObject) {
                         DBEObjectReorderer objectReorderer = getObjectManager(object.getClass(), DBEObjectReorderer.class);
                         if (objectReorderer != null) {
@@ -227,16 +232,19 @@ public class ObjectPropertyTester extends PropertyTester {
                 break;
             }
             case PROP_CAN_FILTER: {
+                if (node instanceof DBNDataSource ds && ds.getDataSource() == null) {
+                    return false;
+                }
                 if (node instanceof DBNDatabaseItem) {
                     node = node.getParentNode();
                 }
-                if (node instanceof DBNDatabaseFolder && ((DBNDatabaseFolder) node).getItemsMeta() != null) {
+                if (node instanceof DBNDatabaseNode dbNode && dbNode.getItemsMeta() != null) {
                     return true;
                 }
                 break;
             }
             case PROP_CAN_FILTER_OBJECT: {
-                if (node.getParentNode() instanceof DBNDatabaseFolder && ((DBNDatabaseFolder) node.getParentNode()).getItemsMeta() != null) {
+                if (node.getParentNode() instanceof DBNDatabaseNode dbNode && dbNode.getItemsMeta() != null) {
                     return true;
                 }
                 break;
@@ -245,8 +253,8 @@ public class ObjectPropertyTester extends PropertyTester {
                 if (node instanceof DBNDatabaseItem) {
                     node = node.getParentNode();
                 }
-                if (node instanceof DBNDatabaseFolder && ((DBNDatabaseFolder) node).getItemsMeta() != null) {
-                    DBSObjectFilter filter = ((DBNDatabaseFolder) node).getNodeFilter(((DBNDatabaseFolder) node).getItemsMeta(), true);
+                if (node instanceof DBNDatabaseNode dbNode && dbNode.getItemsMeta() != null) {
+                    DBSObjectFilter filter = dbNode.getNodeFilter(dbNode.getItemsMeta(), true);
                     if ("defined".equals(expectedValue)) {
                         return filter != null && !filter.isEmpty();
                     } else {
@@ -267,28 +275,33 @@ public class ObjectPropertyTester extends PropertyTester {
         return false;
     }
 
+    private static boolean isResourceNode(DBNNode node) {
+        return node.getAdapter(IResource.class) != null;
+    }
+
     /**
      * Check whether the owner project of the specified node has required permissions
      */
     public static boolean nodeProjectHasPermission(@NotNull DBNNode node, @NotNull String permissionName) {
-        DBPProject project = node.getOwnerProject();
-        return project == null || project.hasRealmPermission(permissionName);        
+        DBPProject ownerProject = node.getOwnerProjectOrNull();
+        return ownerProject != null && ownerProject.hasRealmPermission(permissionName);
     }
 
     public static boolean canCreateObject(DBNNode node, Boolean onlySingle) {
-        if (!DBWorkbench.getPlatform().getWorkspace().hasRealmPermission(RMConstants.PERMISSION_METADATA_EDITOR)) {
+        DBPWorkspace workspace = DBWorkbench.getPlatform().getWorkspace();
+        if (node instanceof DBNProject && DBWorkbench.isDistributed()) {
             return false;
         }
-        if (node instanceof DBNDatabaseNode) {
-            if (((DBNDatabaseNode)node).isVirtual()) {
+        if (node instanceof DBNDatabaseNode dbNode){
+            if (dbNode.isVirtual() || !workspace.hasRealmPermission(RMConstants.PERMISSION_METADATA_EDITOR)) {
                 // Can't create virtual objects
                 return false;
             }
-            DBPDataSource dataSource = ((DBNDatabaseNode) node).getDataSource();
+            DBPDataSource dataSource = dbNode.getDataSource();
             if (dataSource != null && dataSource.getInfo().isReadOnlyMetaData()) {
                 return false;
             }
-            if (!(node instanceof DBNDataSource) && isMetadataChangeDisabled(((DBNDatabaseNode)node))) {
+            if (!(node instanceof DBNDataSource) && isMetadataChangeDisabled(dbNode)) {
                 return false;
             }
         }
@@ -313,7 +326,7 @@ public class ObjectPropertyTester extends PropertyTester {
             } else {
                 return false;
             }
-            if (DBNUtils.isReadOnly(node)) {
+            if (DBNUtils.isReadOnly(node) || !workspace.hasRealmPermission(RMConstants.PERMISSION_METADATA_EDITOR)) {
                 return false;
             }
 
@@ -359,18 +372,21 @@ public class ObjectPropertyTester extends PropertyTester {
     }
 
     private static boolean supportsCreatingColumnObject(@Nullable DBNNode node, @NotNull Class<?> supertype) {
-        if (!(node instanceof DBNDatabaseItem)) {
+        if (!DBWorkbench.getPlatform().getWorkspace().hasRealmPermission(RMConstants.PERMISSION_METADATA_EDITOR)) {
             return false;
         }
-        DBNDatabaseItem databaseItem = (DBNDatabaseItem) node;
+        if (!(node instanceof DBNDatabaseItem databaseItem)) {
+            return false;
+        }
         DBSObject attributeObject = databaseItem.getObject();
-        if (!(attributeObject instanceof DBSEntityAttribute)) {
+        if (!(attributeObject instanceof DBSEntityAttribute entityAttribute)) {
             return false;
         }
-        DBSObject entityObject = attributeObject.getParentObject();
-        if (!(entityObject instanceof DBSEntity)) {
+        DBPDataSource dataSource = entityAttribute.getDataSource();
+        if (dataSource == null || dataSource.getInfo().isReadOnlyMetaData()) {
             return false;
         }
+        DBSEntity entityObject = entityAttribute.getParentObject();
         DBEStructEditor<?> structEditor = DBWorkbench.getPlatform().getEditorsRegistry().getObjectManager(entityObject.getClass(), DBEStructEditor.class);
         if (structEditor == null) {
             return false;

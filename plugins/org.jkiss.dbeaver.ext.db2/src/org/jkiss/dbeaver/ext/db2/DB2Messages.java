@@ -1,7 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
- * Copyright (C) 2011-2012 Eugene Fradkin (eugene.fradkin@gmail.com)
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -42,6 +41,10 @@ public class DB2Messages extends NLS {
     public static String dialog_table_tools_truncate_reuse_storage;
     public static String dialog_table_tools_truncate_ignore_delete_triggers;
     public static String dialog_table_tools_truncate_restrict_when_delete_triggers;
+
+    public static String global_variable_client_ipaddr_description;
+    public static String pseudo_column_datasliceid_description;
+    public static String pseudo_column_rid_bit_description;
 
     static {
         // initialize resource bundle

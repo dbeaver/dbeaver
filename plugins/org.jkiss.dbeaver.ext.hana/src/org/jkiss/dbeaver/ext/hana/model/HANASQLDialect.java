@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -172,7 +172,15 @@ public class HANASQLDialect extends GenericSQLDialect implements TPRuleProvider 
     public String getColumnTypeModifiers(@NotNull DBPDataSource dataSource, @NotNull DBSTypedObject column,
             @NotNull String typeName, @NotNull DBPDataKind dataKind) {
         String ucTypeName = CommonUtils.notEmpty(typeName).toUpperCase(Locale.ENGLISH);
-        if (("ST_POINT".equals(ucTypeName) || "ST_GEOMETRY".equals(ucTypeName))
+        if (HANAConstants.DATA_TYPE_NAME_HALF_VECTOR.equals(ucTypeName) ||
+            HANAConstants.DATA_TYPE_NAME_REAL_VECTOR.equals(ucTypeName)) {
+            long dim = column.getMaxLength();
+            if ((dim > 0) && (dim <= 65000)) {
+                return "(" + Long.toString(dim) + ")";
+            }
+            return "";
+        } else if ((HANAConstants.DATA_TYPE_NAME_ST_POINT.equals(ucTypeName)
+                || HANAConstants.DATA_TYPE_NAME_ST_GEOMETRY.equals(ucTypeName))
                 && (column instanceof HANATableColumn)) {
             HANATableColumn hanaColumn = (HANATableColumn) column;
             try {
@@ -210,5 +218,16 @@ public class HANASQLDialect extends GenericSQLDialect implements TPRuleProvider 
     @Override
     public boolean isStripCommentsBeforeBlocks() {
         return true;
+    }
+
+    @Override
+    public boolean mustBeQuoted(@NotNull String str, boolean forceCaseSensitive) {
+        for (int i = 0; i < str.length(); i++) {
+            int c = str.charAt(i);
+            if (Character.isLetter(c) && !(c >= 'a' && c <= 'z') && !(c >= 'A' && c <= 'Z')) {
+                return true;
+            }
+        }
+        return super.mustBeQuoted(str, forceCaseSensitive);
     }
 }

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -48,6 +48,8 @@ import org.jkiss.dbeaver.utils.RuntimeUtils;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.nio.file.Files;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -204,13 +206,24 @@ public class BinaryEditor extends EditorPart implements ISelectionProvider, IMen
             systemFile = ((IPathEditorInput) editorInput).getPath().toFile();
         }
         if (systemFile != null) {
-            // open file
             try {
-                manager.openFile(systemFile, charset);
-            }
-            catch (IOException e) {
+                final BinaryContent content;
+
+                if (RuntimeUtils.isLinux() || RuntimeUtils.isMacOS()) {
+                    // The implementation of hex editor may have two RandomAccessFile at the same time.
+                    // In such case, reading from one blocks file descriptor and the application hangs.
+                    // To avoid rewriting a big chunk of the editor, let's just pass a buffer instead.
+                    content = new BinaryContent();
+                    content.insert(ByteBuffer.wrap(Files.readAllBytes(systemFile.toPath())), 0);
+                } else {
+                    content = new BinaryContent(systemFile);
+                }
+
+                manager.setContent(content, charset);
+            } catch (IOException e) {
                 log.error("Can't open binary content", e);
             }
+
             setPartName(systemFile.getName());
         }
     }

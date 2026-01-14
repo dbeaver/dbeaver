@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,208 +19,179 @@ package org.jkiss.dbeaver.ui.controls.resultset.view;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.jface.dialogs.IDialogConstants;
+import org.eclipse.jface.layout.GridDataFactory;
+import org.eclipse.jface.layout.GridLayoutFactory;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.graphics.Color;
+import org.eclipse.swt.custom.StyledText;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Image;
-import org.eclipse.swt.layout.FillLayout;
+import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.*;
+import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Label;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.internal.WorkbenchMessages;
 import org.eclipse.ui.internal.WorkbenchPlugin;
 import org.eclipse.ui.statushandlers.StatusManager;
 import org.eclipse.ui.views.IViewDescriptor;
 import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.IActionConstants;
-import org.jkiss.dbeaver.ui.UIIcon;
-import org.jkiss.dbeaver.ui.controls.resultset.IResultSetContainerExt;
-import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
-import org.jkiss.utils.CommonUtils;
+import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.controls.resultset.IResultSetContainer;
+import org.jkiss.dbeaver.ui.controls.resultset.IResultSetErrorAction;
+import org.jkiss.dbeaver.ui.controls.resultset.ResultSetErrorActionDescriptor;
+import org.jkiss.dbeaver.ui.controls.resultset.ResultSetErrorActionRegistry;
+import org.jkiss.dbeaver.ui.dialogs.EditTextDialog;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
-
-import static org.eclipse.swt.events.SelectionListener.widgetSelectedAdapter;
 
 /**
  * @since 3.1
  */
 class ErrorDetailsPart {
+    private static final Log log = Log.getLog(ErrorDetailsPart.class);
 
-	private boolean showingDetails = false;
-	private Button detailsButton;
-	private Composite detailsArea;
-	private Control details = null;
-	private IStatus reason;
-	private IResultSetContainerExt resultSetContainer;
+    private final Composite parent;
+    private final IStatus reason;
 
-	ErrorDetailsPart(final Composite parent, IStatus reason_, @Nullable IResultSetContainerExt resultSetContainer) {
-		this.resultSetContainer = resultSetContainer;
-		Color bgColor = parent.getDisplay().getSystemColor(SWT.COLOR_LIST_BACKGROUND);
-		Color fgColor = parent.getDisplay().getSystemColor(SWT.COLOR_LIST_FOREGROUND);
+    ErrorDetailsPart(final Composite parent, IStatus reason, @NotNull IResultSetContainer resultSetContainer) {
+        this.parent = parent;
+        this.reason = reason;
 
-		parent.setBackground(bgColor);
-		parent.setForeground(fgColor);
+        parent.setLayout(GridLayoutFactory.fillDefaults().extendedMargins(5, 0, 5, 5).numColumns(2).create());
 
-		this.reason = reason_;
-		GridLayout layout = new GridLayout();
+        Label imageLabel = new Label(parent, SWT.NONE);
+        imageLabel.setImage(getImage());
+        imageLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_CENTER | GridData.VERTICAL_ALIGN_BEGINNING));
 
-		layout.numColumns = 3;
+        StyledText text = new StyledText(parent, SWT.MULTI | SWT.READ_ONLY | SWT.WRAP | SWT.V_SCROLL | SWT.BORDER);
 
-		int spacing = 8;
-		int margins = 8;
-		layout.marginBottom = margins;
-		layout.marginTop = margins;
-		layout.marginLeft = margins;
-		layout.marginRight = margins;
-		layout.horizontalSpacing = spacing;
-		layout.verticalSpacing = spacing;
-		parent.setLayout(layout);
+        text.setLayoutData(new GridData(GridData.FILL_BOTH));
+        text.setText(GeneralUtils.normalizeLineSeparators(reason.getMessage()));
+        text.setFont(UIUtils.getMonospaceFont());
 
-		Label imageLabel = new Label(parent, SWT.NONE);
-		imageLabel.setBackground(bgColor);
-		Image image = getImage();
-		if (image != null) {
-			image.setBackground(bgColor);
-			imageLabel.setImage(image);
-			GridData gridData = new GridData(GridData.HORIZONTAL_ALIGN_CENTER | GridData.VERTICAL_ALIGN_BEGINNING);
-			imageLabel.setLayoutData(gridData);
-		}
+        text.addListener(SWT.Resize, e -> {
+            final Point size = text.getSize();
+            if (size.y > 100) {
+                // Can't use the setSize here - will revalidate every time the parent is resized
+                ((GridData) text.getLayoutData()).heightHint = 100;
+                parent.layout(true);
+            }
+        });
 
-		Text text = new Text(parent, SWT.MULTI | SWT.READ_ONLY | SWT.WRAP);
-		text.setBackground(bgColor);
-		text.setForeground(fgColor);
+        Composite buttonParent = new Composite(parent, SWT.NONE);
+        buttonParent.setLayout(GridLayoutFactory.fillDefaults().numColumns(3).create());
+        buttonParent.setLayoutData(GridDataFactory.fillDefaults().grab(true, false).span(2, 1).create());
+        buttonParent.setBackground(parent.getBackground());
 
-		text.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
-		text.setText(reason.getMessage());
+        // Spacer
+        new Label(buttonParent, SWT.NONE).setLayoutData(new GridData(SWT.FILL, SWT.BEGINNING, true, false));
 
-		Composite buttonParent = new Composite(parent, SWT.NONE);
-		buttonParent.setBackground(parent.getBackground());
-		GridLayout buttonsLayout = new GridLayout();
-		buttonsLayout.numColumns = 3;
-		buttonsLayout.marginHeight = 0;
-		buttonsLayout.marginWidth = 0;
-		buttonsLayout.horizontalSpacing = 0;
-		buttonParent.setLayout(buttonsLayout);
+        for (ResultSetErrorActionDescriptor descriptor : ResultSetErrorActionRegistry.getInstance().getActions()) {
+            IResultSetErrorAction action;
+            try {
+                action = descriptor.createInstance();
+            } catch (DBException e) {
+                log.error("Can't create error action '" + descriptor.getLabel() + "'", e);
+                continue;
+            }
+            if (!action.isVisible(resultSetContainer, this.reason)) {
+                continue;
+            }
+            UIUtils.createDialogButton(
+                buttonParent,
+                descriptor.getLabel(),
+                descriptor.getIcon(),
+                descriptor.getDescription(),
+                SelectionListener.widgetSelectedAdapter(e -> action.perform(resultSetContainer, this.reason))
+            );
+            ((GridLayout) buttonParent.getLayout()).numColumns++;
+        }
 
-		detailsButton = new Button(buttonParent, SWT.PUSH);
-		detailsButton.addSelectionListener(widgetSelectedAdapter(e -> showDetails(!showingDetails)));
+        createShowLogButton(buttonParent);
+        createDetailsButton(buttonParent);
+    }
 
-		GridData gd = new GridData(SWT.BEGINNING, SWT.FILL, false, false);
-		detailsButton.setLayoutData(gd);
-		detailsButton.setVisible(reason.getException() != null);
+    /**
+     * Return the image for the upper-left corner of this part
+     *
+     * @return the image
+     */
+    private Image getImage() {
+        return switch (reason.getSeverity()) {
+            case IStatus.ERROR -> DBeaverIcons.getImage(DBIcon.STATUS_ERROR);
+            case IStatus.WARNING -> DBeaverIcons.getImage(DBIcon.STATUS_WARNING);
+            default -> DBeaverIcons.getImage(DBIcon.STATUS_INFO);
+        };
+    }
 
-		createShowLogButton(buttonParent);
-		createGoToErrorButton(buttonParent);
+    private void showDetails() {
+        EditTextDialog dialog = new EditTextDialog(
+            parent.getShell(),
+            "Error details",
+            getDetails(reason),
+            true);
+        dialog.setMonospaceFont(true);
+        dialog.setAutoSize(true);
+        dialog.open();
+    }
 
-		updateDetailsText();
+    private String getDetails(IStatus status) {
+        if (status.getException() != null) {
+            return GeneralUtils.normalizeLineSeparators(getStackTrace(status.getException()));
+        }
 
-		detailsArea = new Composite(parent, SWT.NONE);
-		detailsArea.setBackground(bgColor);
-		detailsArea.setForeground(fgColor);
-		GridData data = new GridData(GridData.FILL_BOTH);
-		data.horizontalSpan = 3;
-		data.verticalSpan = 1;
-		detailsArea.setLayoutData(data);
-		detailsArea.setLayout(new FillLayout());
-		parent.layout(true);
-	}
+        return ""; //$NON-NLS-1$
+    }
 
-	/**
-	 * Return the image for the upper-left corner of this part
-	 *
-	 * @return the image
-	 */
-	private Image getImage() {
-		Display d = Display.getCurrent();
+    private String getStackTrace(Throwable throwable) {
+        StringWriter swriter = new StringWriter();
+        try (PrintWriter pwriter = new PrintWriter(swriter)) {
+            throwable.printStackTrace(pwriter);
+            pwriter.flush();
+        }
+        return swriter.toString();
+    }
 
-		switch (reason.getSeverity()) {
-		case IStatus.ERROR:
-			return DBeaverIcons.getImage(DBIcon.STATUS_ERROR);
-		case IStatus.WARNING:
-			return DBeaverIcons.getImage(DBIcon.STATUS_WARNING);
-		default:
-			return DBeaverIcons.getImage(DBIcon.STATUS_INFO);
-		}
-	}
+    private void createShowLogButton(Composite parent) {
+        IViewDescriptor descriptor = PlatformUI.getWorkbench().getViewRegistry().find(IActionConstants.LOG_VIEW_ID);
+        if (descriptor == null) {
+            return;
+        }
+        Button button = UIUtils.createDialogButton(
+            parent,
+            "Show log",
+            null,
+            WorkbenchMessages.ErrorLogUtil_ShowErrorLogTooltip,
+            SelectionListener.widgetSelectedAdapter(e -> {
+                try {
+                    PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView(IActionConstants.LOG_VIEW_ID);
+                } catch (CoreException ce) {
+                    StatusManager.getManager().handle(ce, WorkbenchPlugin.PI_WORKBENCH);
+                }
+            })
+        );
+        final Image image = descriptor.getImageDescriptor().createImage();
+        button.setImage(image);
+        button.addDisposeListener(e -> image.dispose());
+    }
 
-	private void showDetails(boolean shouldShow) {
-		if (shouldShow == showingDetails) {
-			return;
-		}
-		this.showingDetails = shouldShow;
-		updateDetailsText();
-	}
-
-	private void updateDetailsText() {
-		if (details != null) {
-			details.dispose();
-			details = null;
-		}
-
-		if (showingDetails) {
-			detailsButton.setText("    " + IDialogConstants.HIDE_DETAILS_LABEL + "    ");
-			Text detailsText = new Text(detailsArea,
-					SWT.BORDER | SWT.H_SCROLL | SWT.V_SCROLL | SWT.MULTI | SWT.READ_ONLY | SWT.LEFT_TO_RIGHT);
-			detailsText.setText(getDetails(reason));
-			detailsText.setBackground(detailsText.getDisplay().getSystemColor(SWT.COLOR_LIST_BACKGROUND));
-			details = detailsText;
-			detailsArea.layout(true);
-		} else {
-			detailsButton.setText("    " + IDialogConstants.SHOW_DETAILS_LABEL + "    ");
-		}
-	}
-
-	private String getDetails(IStatus status) {
-		if (status.getException() != null) {
-			return getStackTrace(status.getException());
-		}
-
-		return ""; //$NON-NLS-1$
-	}
-
-	private String getStackTrace(Throwable throwable) {
-		StringWriter swriter = new StringWriter();
-		try (PrintWriter pwriter = new PrintWriter(swriter)) {
-			throwable.printStackTrace(pwriter);
-			pwriter.flush();
-		}
-		return swriter.toString();
-	}
-
-	private void createShowLogButton(Composite parent) {
-		IViewDescriptor descriptor = PlatformUI.getWorkbench().getViewRegistry().find(IActionConstants.LOG_VIEW_ID);
-		if (descriptor == null) {
-			return;
-		}
-		Button button = new Button(parent, SWT.PUSH);
-		button.addSelectionListener(widgetSelectedAdapter(e -> {
-			try {
-				PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView(IActionConstants.LOG_VIEW_ID);
-			} catch (CoreException ce) {
-				StatusManager.getManager().handle(ce, WorkbenchPlugin.PI_WORKBENCH);
-			}
-		}));
-		final Image image = descriptor.getImageDescriptor().createImage();
-		button.setImage(image);
-		button.setToolTipText(WorkbenchMessages.ErrorLogUtil_ShowErrorLogTooltip);
-		button.addDisposeListener(e -> image.dispose());
-	}
-
-	private void createGoToErrorButton(@NotNull Composite parent) {
-		Button button = new Button(parent, SWT.PUSH);
-		button.addSelectionListener(widgetSelectedAdapter(e -> {
-				String message = reason.getMessage();
-				if (CommonUtils.isNotEmpty(message)) {
-					resultSetContainer.showCurrentError();
-				}
-		}));
-		button.setImage(DBeaverIcons.getImage(UIIcon.BUTTON_GO_TO_ERROR));
-		button.setToolTipText(ResultSetMessages.error_part_button_go_to_error);
-		button.setVisible(reason.getException() != null && resultSetContainer != null);
-	}
+    private void createDetailsButton(@NotNull Composite parent) {
+        if (reason.getException() == null) {
+            return;
+        }
+        UIUtils.createDialogButton(
+            parent,
+            IDialogConstants.SHOW_DETAILS_LABEL,
+            SelectionListener.widgetSelectedAdapter(e -> showDetails())
+        );
+    }
 }

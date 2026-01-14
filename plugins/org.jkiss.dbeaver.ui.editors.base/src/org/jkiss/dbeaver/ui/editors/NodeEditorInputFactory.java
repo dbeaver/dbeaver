@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,13 +19,9 @@ package org.jkiss.dbeaver.ui.editors;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.ui.IElementFactory;
 import org.eclipse.ui.IMemento;
-import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.navigator.DBNModel;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.DBNObjectNode;
-import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
-import org.jkiss.dbeaver.runtime.DBWorkbench;
 
 public class NodeEditorInputFactory implements IElementFactory {
     private static final Log log = Log.getLog(NodeEditorInputFactory.class);
@@ -43,28 +39,18 @@ public class NodeEditorInputFactory implements IElementFactory {
         // Get the node path.
         final String nodePath = memento.getString(TAG_NODE);
         if (nodePath == null) {
+            log.debug("No node ID found in memento");
             return null;
         }
-        final DBNModel navigatorModel = DBWorkbench.getPlatform().getNavigatorModel();
-
-        try {
-            final DBNNode node = navigatorModel.getNodeByPath(new VoidProgressMonitor(), nodePath);
-            if (node != null) {
-                return new NodeEditorInput(node);
-            }
-        } catch (DBException e) {
-            log.error("Error opening node '" + nodePath + "'", e);
-            return null;
-        }
-        return null;
+        return new NodeEditorInput(nodePath);
     }
 
     public static void saveState(IMemento memento, NodeEditorInput input) {
         final DBNNode node = input.getNavigatorNode();
-        if (node.isDisposed() || node instanceof DBNObjectNode) {
+        if (node == null || node.isDisposed() || node instanceof DBNObjectNode) {
             return;
         }
-        memento.putString(TAG_NODE, node.getNodeItemPath());
+        memento.putString(TAG_NODE, node.getNodeUri());
     }
 
 }

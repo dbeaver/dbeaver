@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"
+         xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>org.jkiss.dbeaver</groupId>
+        <artifactId>dbeaver</artifactId>
+        <version>1.0.0-SNAPSHOT</version>
+        <relativePath>../</relativePath>
+    </parent>
+    <artifactId>product</artifactId>
+    <packaging>pom</packaging>
+
+    <profiles>
+        <!-- desktop build: includes UI components and products -->
+        <profile>
+            <id>desktop</id>
+            <activation><property><name>!headless-platform</name></property></activation>
+            <modules>
+                <!-- Products -->
+                <module>community</module>
+                <module>repositories</module>
+            </modules>
+        </profile>
+
+        <!-- desktop build: includes UI components and products -->
+        <profile>
+            <id>appstore</id>
+            <activation><activeByDefault>false</activeByDefault></activation>
+            <modules>
+                <!-- Products -->
+                <module>product/appstore</module>
+            </modules>
+        </profile>
+    </profiles>
+
+</project>

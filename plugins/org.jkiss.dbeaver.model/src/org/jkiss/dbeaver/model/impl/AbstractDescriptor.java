@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.model.impl;
 
 import org.apache.commons.jexl3.*;
+import org.apache.commons.jexl3.introspection.JexlUberspect;
 import org.eclipse.core.expressions.*;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IConfigurationElement;
@@ -31,12 +32,12 @@ import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.utils.CommonUtils;
 import org.osgi.framework.Bundle;
 
+import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 /**
- * EntityEditorDescriptor
+ * Abstract registry descriptor
  */
 public abstract class AbstractDescriptor {
 
@@ -47,11 +48,37 @@ public abstract class AbstractDescriptor {
 
     private static JexlEngine jexlEngine;
 
-    public static JexlExpression parseExpression(String exprString) throws DBException
-    {
+    private static final Map<String, Map<String, Boolean>> classInfoCache = new HashMap<>();
+
+    private static final List<JexlUberspect.PropertyResolver> POJO = List.of(
+        JexlUberspect.JexlResolver.PROPERTY,
+        JexlUberspect.JexlResolver.MAP,
+        JexlUberspect.JexlResolver.LIST,
+        JexlUberspect.JexlResolver.DUCK,
+        JexlUberspect.JexlResolver.FIELD,
+        JexlUberspect.JexlResolver.CONTAINER);
+
+    private static final JexlUberspect.ResolverStrategy JEXL_STRATEGY = (op, obj) -> {
+        if (op == JexlOperator.ARRAY_GET) {
+            return JexlUberspect.MAP;
+        }
+        if (op == JexlOperator.ARRAY_SET) {
+            return JexlUberspect.MAP;
+        }
+        if (op == null && obj instanceof Map) {
+            return JexlUberspect.MAP;
+        }
+        return POJO;
+    };
+
+    @NotNull
+    public static JexlExpression parseExpression(@NotNull String exprString) throws DBException {
         synchronized (AbstractDescriptor.class) {
             if (jexlEngine == null) {
-                jexlEngine = new JexlBuilder().cache(100).create();
+                jexlEngine = new JexlBuilder()
+                    .cache(100)
+                    .strategy(JEXL_STRATEGY)
+                    .create();
             }
         }
         try {
@@ -61,33 +88,30 @@ public abstract class AbstractDescriptor {
         }
     }
 
-    public static JexlContext makeContext(final Object object, final Object context)
-    {
+    @NotNull
+    public static JexlContext makeContext(@Nullable Object object, @Nullable Object context) {
         return new JexlContext() {
             @Override
-            public Object get(String name)
-            {
+            public Object get(String name) {
                 return name.equals(VAR_OBJECT) ? object :
-                        (name.equals(VAR_CONTEXT) ? context : null); //$NON-NLS-1$
+                    (name.equals(VAR_CONTEXT) ? context : null); //$NON-NLS-1$
             }
 
             @Override
-            public void set(String name, Object value)
-            {
+            public void set(String name, Object value) {
                 log.warn("Set is not implemented"); //$NON-NLS-1$
             }
 
             @Override
-            public boolean has(String name)
-            {
-                return
-                        name.equals(VAR_OBJECT) && object != null || //$NON-NLS-1$
-                                name.equals(VAR_CONTEXT) && context != null; //$NON-NLS-1$
+            public boolean has(String name) {
+                return name.equals(VAR_OBJECT) && object != null ||
+                    name.equals(VAR_CONTEXT) && context != null;
             }
         };
     }
 
-    public static Object evalExpression(String exprString, Object object, Object context) {
+    @Nullable
+    public static Object evalExpression(@NotNull String exprString, @Nullable Object object, @Nullable Object context) {
         try {
             JexlExpression expression = AbstractDescriptor.parseExpression(exprString);
             return expression.evaluate(AbstractDescriptor.makeContext(object, context));
@@ -102,23 +126,23 @@ public abstract class AbstractDescriptor {
         private static final String ATTR_IF = "if";
         private static final String ATTR_FORCE_CHECK = "forceCheck";
 
+        @Nullable
         private final String implName;
+        @Nullable
         private Class<?> implClass;
+        @Nullable
         private JexlExpression expression;
         private boolean forceCheck;
 
-        public ObjectType(String implName)
-        {
+        public ObjectType(@NotNull String implName) {
             this.implName = implName;
         }
 
-        public ObjectType(IConfigurationElement cfg)
-        {
+        public ObjectType(@NotNull IConfigurationElement cfg) {
             this(cfg, ATTR_NAME);
         }
 
-        public ObjectType(IConfigurationElement cfg, String typeAttr)
-        {
+        public ObjectType(@NotNull IConfigurationElement cfg, @NotNull String typeAttr) {
             this.implName = cfg.getAttribute(typeAttr);
             String condition = cfg.getAttribute(ATTR_IF);
             if (!CommonUtils.isEmpty(condition)) {
@@ -134,18 +158,34 @@ public abstract class AbstractDescriptor {
             }
         }
 
-        public String getImplName()
-        {
+        @Nullable
+        public String getImplName() {
             return implName;
         }
 
-        public Class<?> getObjectClass()
-        {
+        @NotNull
+        public Class<?> getImplClass() {
+            return getImplClass(Object.class);
+        }
+
+        @NotNull
+        public <T> Class<? extends T> getImplClass(Class<T> type) {
+            if (implName == null) {
+                throw new IllegalStateException("Class name not specified");
+            }
+            if (implClass == null) {
+                implClass = AbstractDescriptor.this.getImplClass(implName, type);
+            }
+            return (Class<? extends T>) implClass;
+        }
+
+        @Nullable
+        public Class<?> getObjectClass() {
             return getObjectClass(Object.class);
         }
 
-        public <T> Class<? extends T> getObjectClass(Class<T> type)
-        {
+        @Nullable
+        public <T> Class<? extends T> getObjectClass(@NotNull Class<T> type) {
             if (implName == null) {
                 return null;
             }
@@ -155,10 +195,11 @@ public abstract class AbstractDescriptor {
             return (Class<? extends T>) implClass;
         }
 
-        public <T> void checkObjectClass(Class<T> type)
-            throws DBException
-        {
+        public <T> void checkObjectClass(@NotNull Class<T> type) throws DBException {
             Class<? extends T> objectClass = getObjectClass(type);
+            if (implName == null) {
+                throw new DBException("Implementation class not specified");
+            }
             if (objectClass == null) {
                 throw new DBException("Class '" + implName + "' not found");
             }
@@ -167,8 +208,7 @@ public abstract class AbstractDescriptor {
             }
         }
 
-        public boolean appliesTo(Object object, Object context)
-        {
+        public boolean appliesTo(@NotNull Object object, @Nullable Object context) {
             if (!matchesType(object.getClass())) {
                 return false;
             }
@@ -177,16 +217,15 @@ public abstract class AbstractDescriptor {
                     Object result = expression.evaluate(makeContext(object, context));
                     return Boolean.TRUE.equals(result);
                 } catch (Exception e) {
-                    log.debug("Error evaluating expression '" + expression + "'", e);
+                    log.debug("Error evaluating EL expression '" + expression + "'", e);
                     return false;
                 }
             }
             return true;
         }
 
-        public <T> T createInstance(Class<T> type)
-            throws DBException
-        {
+        @NotNull
+        public <T> T createInstance(@NotNull Class<T> type, @NotNull Object... args) throws DBException {
             if (implName == null) {
                 throw new DBException("No implementation class name set for '" + type.getName() + "'");
             }
@@ -195,14 +234,43 @@ public abstract class AbstractDescriptor {
                 throw new DBException("Can't load class '" + getImplName() + "'");
             }
             try {
-                return objectClass.getDeclaredConstructor().newInstance();
-            } catch (InstantiationException | IllegalAccessException | NoSuchMethodException | InvocationTargetException e) {
+                for (Constructor<?> c : objectClass.getConstructors()) {
+                    Class<?>[] parameterTypes = c.getParameterTypes();
+                    if (parameterTypes.length == args.length) {
+                        boolean matches = true;
+                        for (int i = 0; i < parameterTypes.length; i++) {
+                            if (!parameterTypes[i].isInstance(args[i])) {
+                                matches = false;
+                                break;
+                            }
+                        }
+                        if (matches) {
+                            return (T) c.newInstance(args);
+                        }
+                    }
+                }
+
+                throw new DBException("Cannot find constructor matching args " + Arrays.toString(args));
+            } catch (Exception e) {
                 throw new DBException("Can't instantiate class '" + getImplName() + "'", e);
             }
         }
 
-        public boolean matchesType(Class<?> clazz)
-        {
+        @NotNull
+        public <T> T createInstance(@NotNull Class<T> type) throws DBException {
+            Class<? extends T> objectClass = getObjectClass(type);
+            if (objectClass == null) {
+                throw new DBException("Can't load class '" + getImplName() + "'");
+            }
+            try {
+                return objectClass.getDeclaredConstructor().newInstance();
+            } catch (InstantiationException | IllegalAccessException | NoSuchMethodException |
+                     InvocationTargetException e) {
+                throw new DBException("Can't instantiate class '" + getImplName() + "'", e);
+            }
+        }
+
+        public boolean matchesType(@NotNull Class<?> clazz) {
             // Check class only if bundle was loaded or forceCheck is set. Otherwise we'll load ALL bundles which have some
             // data type mappings (no matter which type they refer)
 
@@ -220,9 +288,8 @@ public abstract class AbstractDescriptor {
         }
     }
 
-    private static Map<String, Map<String, Boolean>> classInfoCache = new HashMap<>();
-
-    private static synchronized Map<String, Boolean> getTypeInfoCache(Class<?> clazz) {
+    @NotNull
+    private static synchronized Map<String, Boolean> getTypeInfoCache(@NotNull Class<?> clazz) {
         Map<String, Boolean> intCache = classInfoCache.get(clazz.getName());
         if (intCache != null) {
             return intCache;
@@ -236,83 +303,35 @@ public abstract class AbstractDescriptor {
         return intCache;
     }
 
-    private static void collectInterface(Class<?> clazz, Map<String, Boolean> intCache) {
+    private static void collectInterface(@NotNull Class<?> clazz, @NotNull Map<String, Boolean> intCache) {
         intCache.put(clazz.getName(), Boolean.TRUE);
         for (Class<?> i : clazz.getInterfaces()) {
             collectInterface(i, intCache);
         }
     }
 
-
-    private String pluginId;
-    private Bundle originBundle;
-
-    protected AbstractDescriptor(IConfigurationElement contributorConfig)
-    {
-        this.pluginId = contributorConfig.getContributor().getName();
-    }
-
-    protected AbstractDescriptor(String pluginId)
-    {
-        this.pluginId = pluginId;
-    }
-
-    public String getPluginId()
-    {
-        return pluginId;
-    }
-
-    public Bundle getContributorBundle()
-    {
-        if (originBundle == null) {
-            originBundle = Platform.getBundle(pluginId);
-        }
-        return originBundle;
-    }
-
-    protected void replaceContributor(IContributor contributor) {
-        this.pluginId = contributor.getName();
-        this.originBundle = null;
-    }
-
-    @NotNull
-    protected DBPImage iconToImage(String icon, @NotNull DBPImage defIcon)
-    {
-        DBPImage result = iconToImage(icon);
-        if (result == null) {
-            return defIcon;
-        } else {
-            return result;
-        }
+    @Nullable
+    protected static Expression getEnablementExpression(@NotNull IConfigurationElement config) {
+        return getEnablementExpression(config, "enabledWhen");
     }
 
     @Nullable
-    public DBPImage iconToImage(String icon)
-    {
-        if (CommonUtils.isEmpty(icon)) {
-            return null;
-        } else if (icon.startsWith("#")) {
-            // Predefined image
-            return DBIcon.getImageById(icon.substring(1));
-        } else {
-            if (!icon.startsWith("platform:")) {
-                icon = "platform:/plugin/" + pluginId + "/" + icon;
+    protected static Expression getEnablementExpression(@NotNull IConfigurationElement config, @NotNull String expressionElementName) {
+        IConfigurationElement[] elements = config.getChildren(expressionElementName);
+        if (elements.length > 0) {
+            try {
+                IConfigurationElement[] enablement = elements[0].getChildren();
+                if (enablement.length > 0) {
+                    return ExpressionConverter.getDefault().perform(enablement[0]);
+                }
+            } catch (Exception e) {
+                log.debug(e);
             }
-            return new DBIcon(icon);
         }
+        return null;
     }
 
-    public Class<?> getObjectClass(@NotNull String className)
-    {
-        return getObjectClass(className, null);
-    }
-
-    public <T> Class<T> getObjectClass(@NotNull String className, Class<T> type)
-    {
-        return getObjectClass(getContributorBundle(), className, type);
-    }
-
-    protected boolean isExpressionTrue(Expression expression, Object exprContext) {
+    protected static boolean isExpressionTrue(@Nullable Expression expression, @Nullable Object exprContext) {
         if (expression != null) {
             try {
                 IEvaluationContext context = new EvaluationContext(null, exprContext);
@@ -328,8 +347,109 @@ public abstract class AbstractDescriptor {
         return true;
     }
 
-    public static <T> Class<T> getObjectClass(@NotNull Bundle fromBundle, @NotNull String className, Class<T> type)
-    {
+    /////////////////////////
+    // Descriptor itself
+
+    @NotNull
+    private String pluginId;
+    @Nullable
+    private Bundle originBundle;
+
+    protected AbstractDescriptor(@NotNull IConfigurationElement contributorConfig) {
+        this.pluginId = contributorConfig.getContributor().getName();
+    }
+
+    protected AbstractDescriptor(@NotNull String pluginId) {
+        this.pluginId = pluginId;
+    }
+
+    @NotNull
+    public String getPluginId() {
+        return pluginId;
+    }
+
+    @NotNull
+    public Bundle getContributorBundle() {
+        if (originBundle == null) {
+            originBundle = Platform.getBundle(pluginId);
+            if (originBundle == null) {
+                throw new IllegalStateException("Bundle '" + pluginId + "' not found in platform");
+            }
+        }
+        return originBundle;
+    }
+
+    protected void replaceContributor(@NotNull IContributor contributor) {
+        this.pluginId = contributor.getName();
+        this.originBundle = null;
+    }
+
+    @NotNull
+    protected DBPImage iconToImage(String icon, @NotNull DBPImage defIcon) {
+        DBPImage result = iconToImage(icon);
+        return Objects.requireNonNullElse(result, defIcon);
+    }
+
+    @Nullable
+    public DBPImage iconToImage(@Nullable String icon) {
+        if (CommonUtils.isEmpty(icon)) {
+            return null;
+        } else if (icon.startsWith("#")) {
+            // Predefined image
+            return DBIcon.getImageById(icon.substring(1));
+        } else {
+            if (!icon.startsWith("platform:")) {
+                icon = "platform:/plugin/" + pluginId + "/" + icon;
+            }
+            return new DBIcon(icon);
+        }
+    }
+
+    @NotNull
+    public Class<?> getImplClass(@NotNull String className) {
+        return getImplClass(getContributorBundle(), className, null);
+    }
+
+    @NotNull
+    public <T> Class<T> getImplClass(@NotNull String className, @NotNull Class<T> type) {
+        return getImplClass(getContributorBundle(), className, type);
+    }
+
+    @NotNull
+    public static <T> Class<T> getImplClass(
+        @NotNull Bundle fromBundle,
+        @NotNull String className,
+        @Nullable Class<T> type
+    ) {
+        Class<?> objectClass;
+        try {
+            objectClass = fromBundle.loadClass(className);
+        } catch (Throwable ex) {
+            throw new IllegalStateException("Can't determine object class '" + className + "'", ex);
+        }
+
+        if (type != null && !type.isAssignableFrom(objectClass)) {
+            throw new IllegalStateException("Object class '" + className + "' doesn't match requested type '" + type.getName() + "'");
+        }
+        return (Class<T>) objectClass;
+    }
+
+    @Nullable
+    public Class<?> getObjectClass(@NotNull String className) {
+        return getObjectClass(getContributorBundle(), className, null);
+    }
+
+    @Nullable
+    public <T> Class<T> getObjectClass(@NotNull String className, @NotNull Class<T> type) {
+        return getObjectClass(getContributorBundle(), className, type);
+    }
+
+    @Nullable
+    public static <T> Class<T> getObjectClass(
+        @NotNull Bundle fromBundle,
+        @NotNull String className,
+        @Nullable Class<T> type
+    ) {
         Class<?> objectClass;
         try {
             objectClass = fromBundle.loadClass(className);
@@ -343,21 +463,6 @@ public abstract class AbstractDescriptor {
             return null;
         }
         return (Class<T>) objectClass;
-    }
-
-    protected static Expression getEnablementExpression(IConfigurationElement config) {
-        IConfigurationElement[] elements = config.getChildren("enabledWhen");
-        if (elements.length > 0) {
-            try {
-                IConfigurationElement[] enablement = elements[0].getChildren();
-                if (enablement.length > 0) {
-                    return ExpressionConverter.getDefault().perform(enablement[0]);
-                }
-            } catch (Exception e) {
-                log.debug(e);
-            }
-        }
-        return null;
     }
 
 }

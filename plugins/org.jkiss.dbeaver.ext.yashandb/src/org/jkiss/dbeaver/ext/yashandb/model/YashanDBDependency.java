@@ -1,7 +1,27 @@
+/*
+ * DBeaver - Universal Database Manager
+ * Copyright (C) 2010-2025 DBeaver Corp and others
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.jkiss.dbeaver.ext.yashandb.model;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ext.yashandb.model.util.YashanDBUtils;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.DBPImageProvider;
 import org.jkiss.dbeaver.model.DBPUniqueObject;
@@ -15,101 +35,90 @@ import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
-import java.util.ArrayList;
-import java.util.List;
-
-/**
- * @Author: donghy
- * @Date: 2022/08
- * @Description:
- */
 public class YashanDBDependency extends YashanDBObject<DBSObject> implements DBPUniqueObject, DBPImageProvider {
-    private final String objectOwnerName;
-    private final String objectName;
-    private final YashanDBObjectType objectType;
-    private final YashanDBDependencyType dependencyType;
 
-    public YashanDBDependency(DBSObject parent, String objectOwnerName, String objectName, String objectType, String dependencyType) {
-        super(parent, null, parent.isPersisted());
-        this.objectOwnerName = objectOwnerName;
-        this.objectName = objectName;
-        this.objectType = YashanDBObjectType.getByType(objectType);
-        this.dependencyType = YashanDBDependencyType.getByType(dependencyType);
-    }
+	private final String objectOwnerName;
+	private final String objectName;
+	private final YashanDBObjectType objectType;
+	private final String dependencyType;
 
-    /**
-     * Read dependencies by ALL/DBA _DEPENDENCIES.
-     */
-    @NotNull
-    public static List<YashanDBDependency> readDependencies(@NotNull DBRProgressMonitor monitor, @NotNull DBSObject object, boolean dependents) throws DBException {
-        List<YashanDBDependency> dependencies = new ArrayList<>();
+	public YashanDBDependency(DBSObject parent, String objectOwnerName, String objectName, String objectType,
+			String dependencyType) {
+		super(parent, null, parent.isPersisted());
+		this.objectOwnerName = objectOwnerName;
+		this.objectName = objectName;
+		this.objectType = YashanDBObjectType.getByType(objectType);
+		this.dependencyType = dependencyType;
+	}
 
-        try (JDBCSession session = DBUtils.openMetaSession(monitor, object, "Load object dependencies")) {
-            YashanDBDataSource dataSource = (YashanDBDataSource) object.getDataSource();
-            try (JDBCPreparedStatement dbStat = session.prepareStatement(
-                    "SELECT  *" +
-                            "\nFROM " + YashanDBUtils.isAdminPriv(dataSource, "DEPENDENCIES") +
-                            "\nWHERE " + (dependents ? "REFERENCED_OWNER=? AND REFERENCED_NAME=?" : "OWNER=? AND NAME=? AND REFERENCED_TYPE <> 'NON-EXISTENT'") +
-                            "\nORDER BY " + (dependents ? "NAME" : "REFERENCED_NAME")
-            )) {
-                dbStat.setString(1, object.getParentObject().getName());
-                dbStat.setString(2, object.getName());
+	@NotNull
+	public static List<YashanDBDependency> readDependencies(@NotNull DBRProgressMonitor monitor,
+			@NotNull DBSObject object, boolean dependents) throws DBException {
 
-                try (JDBCResultSet dbResult = dbStat.executeQuery()) {
-                    while (dbResult.next()) {
-                        String otype = JDBCUtils.safeGetString(dbResult, dependents ? "TYPE" : "REFERENCED_TYPE");
-                        dependencies.add(new YashanDBDependency(
-                                object,
-                                JDBCUtils.safeGetString(dbResult, dependents ? "OWNER" : "REFERENCED_OWNER"),
-                                JDBCUtils.safeGetString(dbResult, dependents ? "NAME" : "REFERENCED_NAME"),
-                                otype!=null && otype.equalsIgnoreCase("UDF")? "FUNCTION":otype,
-                                JDBCUtils.safeGetString(dbResult, "DEPENDENCY_TYPE")
-                        ));
-                    }
-                }
-            }
-        } catch (Exception e) {
-            throw new DBCException("Error reading dependencies", e);
-        }
+		List<YashanDBDependency> dependencies = new ArrayList<>();
+		try (JDBCSession session = DBUtils.openMetaSession(monitor, object, "Load object dependencies")) {
+			YashanDBDataSource dataSource = (YashanDBDataSource) object.getDataSource();
+			try (JDBCPreparedStatement dbStat = session.prepareStatement(
+					"SELECT  *" + "\nFROM " + YashanDBUtils.isAdminPriv(dataSource, "DEPENDENCIES") + "\nWHERE "
+							+ (dependents ? "REFERENCED_OWNER=? AND REFERENCED_NAME=?"
+									: "OWNER=? AND NAME=? AND REFERENCED_TYPE <> 'NON-EXISTENT'")
+							+ "\nORDER BY " + (dependents ? "NAME" : "REFERENCED_NAME"))) {
+				dbStat.setString(1, object.getParentObject().getName());
+				dbStat.setString(2, object.getName());
 
-        return dependencies;
-    }
+				try (JDBCResultSet dbResult = dbStat.executeQuery()) {
+					while (dbResult.next()) {
+						String otype = JDBCUtils.safeGetString(dbResult, dependents ? "TYPE" : "REFERENCED_TYPE");
+						dependencies.add(new YashanDBDependency(object,
+								JDBCUtils.safeGetString(dbResult, dependents ? "OWNER" : "REFERENCED_OWNER"),
+								JDBCUtils.safeGetString(dbResult, dependents ? "NAME" : "REFERENCED_NAME"),
+								otype != null && otype.equalsIgnoreCase("UDF") ? "FUNCTION" : otype,
+								JDBCUtils.safeGetString(dbResult, "DEPENDENCY_TYPE")));
+					}
+				}
+			}
+		} catch (Exception e) {
+			throw new DBCException("Error reading dependencies", e);
+		}
 
-    @NotNull
-    @Override
-    @Property(viewable = true, order = 1)
-    public String getName() {
-        return objectName;
-    }
+		return dependencies;
+	}
 
-    @Property(viewable = true, order = 2)
-    public YashanDBObjectType getObjectType() {
-        return objectType;
-    }
+	@NotNull
+	@Override
+	@Property(viewable = true, order = 1)
+	public String getName() {
+		return objectName;
+	}
 
-    @Property(viewable = true, order = 3)
-    public YashanDBSchema getObjectOwner(DBRProgressMonitor monitor) throws DBException {
-        return getDataSource().getSchema(monitor, objectOwnerName);
-    }
+	@Property(viewable = true, order = 2)
+	public YashanDBObjectType getObjectType() {
+		return objectType;
+	}
 
-    @Property(viewable = true, order = 4)
-    public DBSObject getObject(DBRProgressMonitor monitor) throws DBException {
-        return objectType.findObject(monitor, getObjectOwner(monitor), objectName);
-    }
+	@Property(viewable = true, order = 3)
+	public YashanDBSchema getObjectOwner(DBRProgressMonitor monitor) throws DBException {
+		return getDataSource().getSchema(monitor, objectOwnerName);
+	}
 
-    @Property(viewable = true, order = 5)
-    public YashanDBDependencyType getDependencyType() {
-        return dependencyType;
-    }
+	@Property(viewable = true, order = 4)
+	public DBSObject getObject(DBRProgressMonitor monitor) throws DBException {
+		return objectType.findObject(monitor, getObjectOwner(monitor), objectName);
+	}
 
-    @Override
-    public DBPImage getObjectImage() {
-        return objectType.getImage();
-    }
+	@Property(viewable = true, order = 5)
+	public String getDependencyType() {
+		return dependencyType;
+	}
 
-    @NotNull
-    @Override
-    public String getUniqueName() {
-        return objectOwnerName + '.' + objectName + '(' + dependencyType + ')';
-    }
+	@Override
+	public DBPImage getObjectImage() {
+		return objectType.getImage();
+	}
+
+	@NotNull
+	@Override
+	public String getUniqueName() {
+		return objectOwnerName + '.' + objectName + '(' + dependencyType + ')';
+	}
 }

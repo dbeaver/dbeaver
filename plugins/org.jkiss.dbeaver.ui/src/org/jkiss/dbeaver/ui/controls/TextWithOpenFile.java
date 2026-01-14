@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,9 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.DirectoryDialog;
 import org.eclipse.swt.widgets.FileDialog;
+import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.model.fs.DBFUtils;
+import org.jkiss.dbeaver.model.navigator.fs.DBNPathBase;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.dialogs.DialogUtils;
 import org.jkiss.utils.CommonUtils;
@@ -32,22 +35,25 @@ import java.nio.file.Path;
 import java.util.Base64;
 
 /**
- * TextWithOpen
+ * TextWithOpen.
+ *
+ * Styles: SWT.SAVE, SWT.OPEN, SWT.SINGLE
  */
-public class TextWithOpenFile extends TextWithOpen
-{
+public class TextWithOpenFile extends TextWithOpen {
     private final String title;
-    private final String[] filterExt;
+    private String[] filterExt;
     private final int style;
-    private final boolean binary;
     private boolean openFolder = false;
 
     public TextWithOpenFile(Composite parent, String title, String[] filterExt, int style, boolean binary) {
-        super(parent);
+        this(parent, title, filterExt, style, binary, false, false);
+    }
+    
+    public TextWithOpenFile(Composite parent, String title, String[] filterExt, int style, boolean binary, boolean multiFS, boolean secured) {
+        super(parent, multiFS, secured, binary);
         this.title = title;
         this.filterExt = filterExt;
         this.style = style;
-        this.binary = binary;
     }
 
     public TextWithOpenFile(Composite parent, String title, String[] filterExt) {
@@ -58,50 +64,75 @@ public class TextWithOpenFile extends TextWithOpen
         this(parent, title, filterExt, SWT.SINGLE | SWT.OPEN, binary);
     }
 
+    public TextWithOpenFile(Composite parent, String title, String[] filterExt, boolean binary, boolean secured) {
+        this(parent, title, filterExt, SWT.SINGLE | SWT.OPEN, binary, false, secured);
+    }
+
+    @Override
+    protected int getPanelStyle() {
+        return style;
+    }
+
     public void setOpenFolder(boolean openFolder) {
         this.openFolder = openFolder;
     }
 
-    @Override
-    protected boolean isBinaryContents() {
-        return binary;
+    public void setFilterExtensions(@NotNull String[] filterExtensions) {
+        this.filterExt = filterExtensions;
     }
 
-    protected void openBrowser() {
-        String directory = getDialogDirectory();
-        String selected;
-        if (openFolder) {
-            DirectoryDialog fd = new DirectoryDialog(getShell(), style);
-            if (directory != null) {
-                fd.setFilterPath(directory);
-            }
-            if (title != null) {
-                fd.setText(title);
-            }
-            selected = fd.open();
-        } else {
-            FileDialog fd = new FileDialog(getShell(), style);
-            fd.setText(title);
-            fd.setFilterExtensions(filterExt);
-            if (directory != null) {
-                DialogUtils.setCurDialogFolder(directory);
-            }
-            selected = DialogUtils.openFileDialog(fd);
+    @Override
+    protected boolean isFolderContents() {
+        return openFolder;
+    }
 
-            if (selected != null && isShowFileContentEditor()) {
-                Path filePath = Path.of(selected);
-                try {
-                    if (binary) {
-                        byte[] bytes = Files.readAllBytes(filePath);
-                        selected = Base64.getEncoder().encodeToString(bytes);
-                    } else {
-                        selected = Files.readString(filePath);
-                    }
-                } catch (IOException e) {
-                    DBWorkbench.getPlatformUI().showError("File read error", "Can't read file '" + filePath + "' contents", e);
+    protected void openBrowser(boolean remoteFS) {
+        String selected;
+        if (remoteFS) {
+            DBNPathBase selPath = DBWorkbench.getPlatformUI().openFileSystemSelector(
+                title,
+                openFolder,
+                style,
+                isBinaryContents(),
+                filterExt,
+                getText());
+            selected = selPath != null ? DBFUtils.convertPathToString(selPath.getPath()) : null;
+        } else {
+            String directory = getDialogDirectory();
+            if (openFolder) {
+                DirectoryDialog fd = new DirectoryDialog(getPanel().getShell(), style);
+                if (directory != null) {
+                    fd.setFilterPath(directory);
                 }
+                if (title != null) {
+                    fd.setText(title);
+                }
+                selected = fd.open();
+            } else {
+                FileDialog fd = new FileDialog(getPanel().getShell(), style);
+                fd.setText(title);
+                fd.setFilterExtensions(filterExt);
+                if (directory != null) {
+                    DialogUtils.setCurDialogFolder(directory);
+                }
+                selected = DialogUtils.openFileDialog(fd);
             }
         }
+
+        if (selected != null && isShowFileContentEditor()) {
+            Path filePath = IOUtils.getPathFromString(selected);
+            try {
+                if (isBinaryContents()) {
+                    byte[] bytes = Files.readAllBytes(filePath);
+                    selected = Base64.getEncoder().encodeToString(bytes);
+                } else {
+                    selected = Files.readString(filePath);
+                }
+            } catch (IOException e) {
+                DBWorkbench.getPlatformUI().showError("File read error", "Can't read file '" + filePath + "' contents", e);
+            }
+        }
+
         if (selected != null) {
             setText(selected);
         }

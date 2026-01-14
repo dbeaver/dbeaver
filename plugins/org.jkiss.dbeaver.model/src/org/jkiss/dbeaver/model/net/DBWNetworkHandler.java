@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,9 +16,12 @@
  */
 package org.jkiss.dbeaver.model.net;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
+import org.jkiss.dbeaver.model.exec.DBCInvalidatePhase;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 import java.io.IOException;
@@ -28,10 +31,32 @@ import java.io.IOException;
  */
 public interface DBWNetworkHandler {
 
-    DBPConnectionConfiguration initializeHandler(DBRProgressMonitor monitor, DBWHandlerConfiguration configuration, DBPConnectionConfiguration connectionInfo)
+    @NotNull
+    DBPConnectionConfiguration initializeHandler(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBWHandlerConfiguration configuration,
+        @NotNull DBPConnectionConfiguration connectionInfo)
         throws DBException, IOException;
 
-    void invalidateHandler(DBRProgressMonitor monitor, DBPDataSource dataSource)
-        throws DBException, IOException;
+    /**
+     * Invalidates the network handler in a span of several phases.
+     *
+     * @param monitor progress monitor
+     * @param dataSource data source
+     * @param phase invalidation phase
+     * @throws DBException on any error to signal the invalidation was not successful
+     */
+    void invalidateHandler(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBPDataSource dataSource,
+        @NotNull DBCInvalidatePhase phase
+    ) throws DBException;
 
+    /**
+     * Returns an array of data sources that depend on this handler. The returned array may be empty.
+     */
+    @NotNull
+    default DBPDataSourceContainer[] getDependentDataSources() {
+        return new DBPDataSourceContainer[0];
+    }
 }

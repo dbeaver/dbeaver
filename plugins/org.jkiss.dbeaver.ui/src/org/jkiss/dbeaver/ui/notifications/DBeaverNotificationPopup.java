@@ -14,13 +14,20 @@ import org.eclipse.jface.action.LegacyActionTools;
 import org.eclipse.jface.layout.GridDataFactory;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.accessibility.AccessibleAdapter;
+import org.eclipse.swt.accessibility.AccessibleEvent;
+import org.eclipse.swt.events.ControlAdapter;
+import org.eclipse.swt.events.ControlEvent;
 import org.eclipse.swt.graphics.Color;
+import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.forms.events.HyperlinkAdapter;
 import org.eclipse.ui.forms.events.HyperlinkEvent;
+import org.jkiss.dbeaver.ui.internal.UIMessages;
+import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -37,12 +44,15 @@ public class DBeaverNotificationPopup extends AbstractWorkbenchNotificationPopup
 
     private List<AbstractNotification> notifications;
 
+    private Composite parent;
+
     DBeaverNotificationPopup(Shell parent) {
         super(parent.getDisplay());
     }
 
     @Override
     protected void createContentArea(Composite parent) {
+        this.parent = parent;
         int count = 0;
         for (final AbstractNotification notification : notifications) {
             Composite notificationComposite = new Composite(parent, SWT.NO_FOCUS);
@@ -51,7 +61,7 @@ public class DBeaverNotificationPopup extends AbstractWorkbenchNotificationPopup
             notificationComposite.setBackground(parent.getBackground());
 
             if (count < NUM_NOTIFICATIONS_TO_DISPLAY) {
-                final Label notificationLabelIcon = new Label(notificationComposite, SWT.NO_FOCUS);
+                final Label notificationLabelIcon = new Label(notificationComposite, SWT.NONE);
                 notificationLabelIcon.setBackground(parent.getBackground());
                 if (notification instanceof AbstractUiNotification) {
                     notificationLabelIcon.setImage(((AbstractUiNotification) notification).getNotificationKindImage());
@@ -91,8 +101,8 @@ public class DBeaverNotificationPopup extends AbstractWorkbenchNotificationPopup
                 if (notification.getDescription() != null) {
                     descriptionText = notification.getDescription();
                 }
-                if (descriptionText != null && !descriptionText.trim().equals("")) { //$NON-NLS-1$
-                    Text descriptionLabel = new Text(notificationComposite, SWT.NO_FOCUS | SWT.WRAP | SWT.MULTI);
+                if (!CommonUtils.isEmptyTrimmed(descriptionText)) { //$NON-NLS-1$
+                    Text descriptionLabel = new Text(notificationComposite, SWT.READ_ONLY | SWT.WRAP | SWT.MULTI);
                     descriptionLabel.setText(LegacyActionTools.escapeMnemonics(descriptionText));
                     descriptionLabel.setBackground(parent.getBackground());
                     GridDataFactory.fillDefaults()
@@ -100,6 +110,21 @@ public class DBeaverNotificationPopup extends AbstractWorkbenchNotificationPopup
                         .grab(true, true)
                         .align(SWT.FILL, SWT.FILL)
                         .applyTo(descriptionLabel);
+                    descriptionLabel.addControlListener(new ControlAdapter() {
+                        @Override
+                        public void controlResized(ControlEvent e) {
+                            final Text label = (Text) e.widget;
+                            label.removeControlListener(this);
+                            ((GridData) label.getLayoutData()).widthHint = label.getSize().x;
+                            initializeBounds(); // will force the shell to resize
+                        }
+                    });
+                    descriptionLabel.getAccessible().addAccessibleListener(new AccessibleAdapter() {
+                        @Override
+                        public void getName(final AccessibleEvent event) {
+                            event.result = NLS.bind(UIMessages.notification_popup_context_message, descriptionLabel.getText());
+                        }
+                    });
                 }
             } else {
                 int numNotificationsRemain = notifications.size() - count;
@@ -140,6 +165,15 @@ public class DBeaverNotificationPopup extends AbstractWorkbenchNotificationPopup
 
     public void setContents(List<AbstractNotification> notifications) {
         this.notifications = notifications;
+    }
+
+    /**
+     * Allows to set focus on first child
+     */
+    public void setFocus() {
+        if (parent != null && parent.getChildren() != null && parent.getChildren().length > 0) {
+            parent.getChildren()[0].setFocus();
+        }
     }
 
 }

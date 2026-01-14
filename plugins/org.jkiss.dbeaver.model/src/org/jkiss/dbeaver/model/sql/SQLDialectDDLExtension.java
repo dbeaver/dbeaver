@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -64,6 +64,14 @@ public interface SQLDialectDDLExtension extends SQLDialect {
     String getClobDataType();
 
     /**
+     * Gets blob data type.
+     *
+     * @return the blob data type
+     */
+    @NotNull
+    String getBlobDataType();
+
+    /**
      * Gets uuid data type.
      *
      * @return the uuid data type
@@ -79,5 +87,21 @@ public interface SQLDialectDDLExtension extends SQLDialect {
     @NotNull
     String getBooleanDataType();
 
+    /**
+     * Gets alter column operation.
+     */
+    @NotNull
+    String getAlterColumnOperation();
 
+    boolean supportsNoActionIndex();
+
+    /**
+     * Checks if sql dialect supports SET key word for alter column.
+     */
+    boolean supportsAlterColumnSet();
+
+    /**
+     * Checks if sql dialect supports COLUMN key word for alter column.
+     */
+    boolean supportsAlterHasColumn();
 }

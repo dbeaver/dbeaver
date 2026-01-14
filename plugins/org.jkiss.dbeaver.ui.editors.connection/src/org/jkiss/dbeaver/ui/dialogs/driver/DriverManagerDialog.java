@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,6 +30,9 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
+import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPDataSourceProviderDescriptor;
@@ -39,6 +42,7 @@ import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
 import org.jkiss.dbeaver.registry.DataSourceRegistry;
 import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
 import org.jkiss.dbeaver.registry.driver.DriverUtils;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.IHelpContextIds;
 import org.jkiss.dbeaver.ui.UIIcon;
@@ -46,6 +50,7 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
 import org.jkiss.dbeaver.ui.dialogs.HelpEnabledDialog;
 import org.jkiss.dbeaver.ui.internal.UIConnectionMessages;
+import org.jkiss.dbeaver.ui.preferences.PrefPageDrivers;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
@@ -55,6 +60,7 @@ import java.util.List;
  * EditDriverDialog
  */
 public class DriverManagerDialog extends HelpEnabledDialog implements ISelectionChangedListener, IDoubleClickListener {
+    private static final Log log = Log.getLog(DriverManagerDialog.class);
 
     private static final String DIALOG_ID = "DBeaver.DriverManagerDialog";//$NON-NLS-1$
     private static final String DEFAULT_DS_PROVIDER = "generic";
@@ -62,7 +68,7 @@ public class DriverManagerDialog extends HelpEnabledDialog implements ISelection
     private static final boolean SHOW_EXPORT = false;
 
     private DataSourceProviderDescriptor selectedProvider;
-    private DataSourceProviderDescriptor onlyManagableProvider;
+    private DataSourceProviderDescriptor onlyManageableProvider;
     private String selectedCategory;
     private DriverDescriptor selectedDriver;
 
@@ -71,8 +77,6 @@ public class DriverManagerDialog extends HelpEnabledDialog implements ISelection
     private Button editButton;
     private Button deleteButton;
     private DriverSelectViewer treeControl;
-    //private Label driverDescription;
-    //private ProgressMonitorPart monitorPart;
     private Text descText;
 
     public DriverManagerDialog(Shell shell) {
@@ -85,13 +89,14 @@ public class DriverManagerDialog extends HelpEnabledDialog implements ISelection
         return UIUtils.getDialogSettings(DIALOG_ID);
     }
 
+    @NotNull
     @Override
-    protected Composite createDialogArea(Composite parent) {
+    protected Composite createDialogArea(@NotNull Composite parent) {
         List<DBPDataSourceProviderDescriptor> enabledProviders = DataSourceProviderRegistry.getInstance().getEnabledDataSourceProviders();
         {
             DBPDataSourceProviderDescriptor manProvider = null;
             for (DBPDataSourceProviderDescriptor provider : DataSourceProviderRegistry.getInstance().getEnabledDataSourceProviders()) {
-                if (provider.isDriversManagable()) {
+                if (provider.isDriversManageable()) {
                     if (manProvider != null) {
                         manProvider = null;
                         break;
@@ -100,7 +105,7 @@ public class DriverManagerDialog extends HelpEnabledDialog implements ISelection
                 }
             }
             if (manProvider != null) {
-                onlyManagableProvider = (DataSourceProviderDescriptor) manProvider;
+                onlyManageableProvider = (DataSourceProviderDescriptor) manProvider;
             }
         }
 
@@ -202,15 +207,6 @@ public class DriverManagerDialog extends HelpEnabledDialog implements ISelection
         gd.horizontalSpan = 2;
         gd.grabExcessHorizontalSpace = true;
         descText.setLayoutData(gd);
-/*
-        monitorPart = new ProgressMonitorPart(group, null, true);
-        GridData gd = new GridData(GridData.FILL_HORIZONTAL);
-        gd.verticalIndent = 5;
-        gd.horizontalSpan = 2;
-        gd.grabExcessHorizontalSpace = true;
-        monitorPart.setLayoutData(gd);
-        monitorPart.setVisible(false);
-*/
 
         setDefaultSelection();
         this.updateButtons();
@@ -218,23 +214,20 @@ public class DriverManagerDialog extends HelpEnabledDialog implements ISelection
     }
 
     private void exportDriverList() {
-        if (!(treeControl.getSelectorViewer() instanceof DriverTreeViewer)) {
+        if (!(treeControl.getSelectorViewer() instanceof DriverTreeViewer driverTreeViewer)) {
             return;
         }
         StringBuilder buf = new StringBuilder();
-        DriverTreeViewer driverTreeViewer = (DriverTreeViewer) treeControl.getSelectorViewer();
         List<?> driverList = (List<?>) driverTreeViewer.getInput();
 
         for (Object dObj : driverList) {
-            if (dObj instanceof DriverTreeViewer.DriverCategory) {
-                DriverTreeViewer.DriverCategory category = (DriverTreeViewer.DriverCategory) dObj;
+            if (dObj instanceof DriverTreeViewer.DriverCategory category) {
                 buf.append(category.getName()).append("\n");
                 for (DriverDescriptor driver : category.getDrivers()) {
                     buf.append("\t");
                     printDriverInfo(buf, driver);
                 }
-            } else if (dObj instanceof DriverDescriptor) {
-                DriverDescriptor driver = (DriverDescriptor) dObj;
+            } else if (dObj instanceof DriverDescriptor driver) {
                 printDriverInfo(buf, driver);
             }
         }
@@ -248,7 +241,7 @@ public class DriverManagerDialog extends HelpEnabledDialog implements ISelection
         }
         buf.append(driver.getName());
 
-        if (driver.getIcon() == DBIcon.DATABASE_DEFAULT || driver.getIcon() instanceof DBIcon && driver.getIcon().getLocation().endsWith("database.png")) {
+        if (driver.getIcon() == DBIcon.DATABASE_DEFAULT || driver.getIcon() instanceof DBIcon && driver.getIcon().getLocation().endsWith("database.svg")) {
             buf.append("\tN/A");
         } else {
             buf.append("\t+");
@@ -258,7 +251,21 @@ public class DriverManagerDialog extends HelpEnabledDialog implements ISelection
     }
 
     @Override
-    protected void createButtonsForButtonBar(Composite parent) {
+    protected void createButtonsForLeftButtonBar(@NotNull Composite parent) {
+        ((GridLayout) parent.getLayout()).numColumns++;
+        Composite placeholder = UIUtils.createPlaceholder(parent, 2);
+        UIUtils.createInfoLabel(placeholder, "");
+        UIUtils.createPreferenceLink(
+            placeholder,
+            UIConnectionMessages.dialog_driver_manager_preferences_link,
+            PrefPageDrivers.PAGE_ID,
+            null,
+            null
+        );
+    }
+
+    @Override
+    protected void createButtonsForButtonBar(@NotNull Composite parent) {
         createButton(
             parent,
             IDialogConstants.CLOSE_ID,
@@ -310,10 +317,10 @@ public class DriverManagerDialog extends HelpEnabledDialog implements ISelection
     }
 
     private void updateButtons() {
-        newButton.setEnabled(onlyManagableProvider != null || (selectedProvider != null && selectedProvider.isDriversManagable()));
-        copyButton.setEnabled(selectedDriver != null && selectedDriver.isManagable());
+        newButton.setEnabled(onlyManageableProvider != null || (selectedProvider != null && selectedProvider.isDriversManageable()));
+        copyButton.setEnabled(selectedDriver != null && selectedDriver.isManageable());
         editButton.setEnabled(selectedDriver != null);
-        deleteButton.setEnabled(selectedDriver != null && selectedDriver.getProviderDescriptor().isDriversManagable());
+        deleteButton.setEnabled(selectedDriver != null && selectedDriver.getProviderDescriptor().isDriversManageable());
 
         if (selectedDriver != null) {
             descText.setText(CommonUtils.toString(selectedDriver.getDescription()));
@@ -324,25 +331,13 @@ public class DriverManagerDialog extends HelpEnabledDialog implements ISelection
         } else {
             descText.setText("");
         }
-
-/*
-        if (selectedDriver != null) {
-            monitorPart.setTaskName(CommonUtils.toString(selectedDriver.getDescription()));
-        } else if (selectedCategory != null) {
-            monitorPart.setTaskName(selectedCategory + " drivers");
-        } else if (selectedProvider != null) {
-            monitorPart.setTaskName(selectedProvider.getName() + " provider");
-        } else {
-            monitorPart.setTaskName("");
-        }
-*/
     }
 
     private void createDriver() {
-        if (onlyManagableProvider != null || selectedProvider != null) {
+        if (onlyManageableProvider != null || selectedProvider != null) {
             DataSourceProviderDescriptor provider = selectedProvider;
-            if (provider == null || !provider.isDriversManagable()) {
-                provider = onlyManagableProvider;
+            if (provider == null || !provider.isDriversManageable()) {
+                provider = onlyManageableProvider;
             }
             DriverEditDialog dialog = new DriverEditDialog(getShell(), provider, selectedCategory);
             if (dialog.open() == IDialogConstants.OK_ID) {
@@ -363,14 +358,23 @@ public class DriverManagerDialog extends HelpEnabledDialog implements ISelection
     }
 
     private void editDriver() {
-        DriverDescriptor driver = selectedDriver;
-        if (driver != null) {
-            //driver.validateFilesPresence(this);
-
-            DriverEditDialog dialog = new DriverEditDialog(getShell(), driver);
-            dialog.open();
-            treeControl.refresh(driver);
+        if (selectedDriver == null) {
+            return;
         }
+
+        DriverDescriptor driver = selectedDriver.getProviderDescriptor().getDriver(selectedDriver.getId());
+        if (driver == null) {
+            log.warn("Driver not found for ID '" + selectedDriver.getId()
+                + "' in provider '" + selectedDriver.getProviderDescriptor().getId() + "'");
+            return;
+        }
+
+        DriverEditDialog dialog = new DriverEditDialog(getShell(), driver);
+        dialog.open();
+        if (selectedDriver != driver) {
+            selectedDriver.applyFrom(driver);
+        }
+        treeControl.refresh(selectedDriver);
     }
 
     private void deleteDriver() {
@@ -387,8 +391,15 @@ public class DriverManagerDialog extends HelpEnabledDialog implements ISelection
             getShell(),
             UIConnectionMessages.dialog_driver_manager_message_delete_driver_title,
             UIConnectionMessages.dialog_driver_manager_message_delete_driver_text + selectedDriver.getName() + "'?")) {
-            selectedDriver.getProviderDescriptor().removeDriver(selectedDriver);
-            selectedDriver.getProviderDescriptor().getRegistry().saveDrivers();
+            selectedDriver.getProviderDescriptor().removeDriver(selectedDriver.getId());
+
+            try {
+                selectedDriver.getProviderDescriptor().getRegistry().saveDrivers();
+            } catch (DBException e) {
+                DBWorkbench.getPlatformUI().showError("Save error", "Error saving drivers", e);
+                return;
+            }
+
             treeControl.refresh();
         }
     }
@@ -398,8 +409,9 @@ public class DriverManagerDialog extends HelpEnabledDialog implements ISelection
 
         BaseDialog dialog = new BaseDialog(getShell(), "Restore deleted driver(s)", null) {
 
+            @NotNull
             @Override
-            protected Composite createDialogArea(Composite parent) {
+            protected Composite createDialogArea(@NotNull Composite parent) {
                 final Composite composite = super.createDialogArea(parent);
 
                 Table driverTable = new Table(composite, SWT.CHECK | SWT.FULL_SELECTION | SWT.BORDER);
@@ -427,9 +439,14 @@ public class DriverManagerDialog extends HelpEnabledDialog implements ISelection
             }
         };
         if (dialog.open() == IDialogConstants.OK_ID) {
-            for (DriverDescriptor dd : drivers) {
-                dd.setDisabled(false);
-                dd.getProviderDescriptor().getRegistry().saveDrivers();
+            try {
+                for (DriverDescriptor dd : drivers) {
+                    dd.setDisabled(false);
+                    dd.getProviderDescriptor().getRegistry().saveDrivers();
+                }
+            } catch (DBException e) {
+                DBWorkbench.getPlatformUI().showError("Save error", "Error saving drivers", e);
+                return false;
             }
             return true;
         }

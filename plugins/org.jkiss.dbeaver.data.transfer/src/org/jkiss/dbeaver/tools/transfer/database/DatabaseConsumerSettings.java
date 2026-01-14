@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.data.json.JSONUtils;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
@@ -33,19 +34,17 @@ import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.tools.transfer.*;
 import org.jkiss.dbeaver.tools.transfer.internal.DTMessages;
+import org.jkiss.dbeaver.tools.transfer.registry.DataTransferEventProcessorDescriptor;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
-import java.util.Collection;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * DatabaseConsumerSettings
  */
 @SuppressWarnings("unchecked")
-public class DatabaseConsumerSettings implements IDataTransferSettings {
+public class DatabaseConsumerSettings implements IDataTransferConsumerSettings {
 
     private static final Log log = Log.getLog(DatabaseConsumerSettings.class);
 
@@ -68,6 +67,8 @@ public class DatabaseConsumerSettings implements IDataTransferSettings {
     private boolean useBulkLoad = false;
     private String onDuplicateKeyInsertMethodId;
     private boolean disableReferentialIntegrity;
+    private boolean enableQmLogging;
+    private final Map<String, Map<String, Object>> eventProcessors = new HashMap<>();
 
     private transient Map<String, Object> dialogSettings;
 
@@ -222,6 +223,14 @@ public class DatabaseConsumerSettings implements IDataTransferSettings {
         }
     }
 
+    public boolean isEnableQmLogging() {
+        return enableQmLogging;
+    }
+
+    public void setEnableQmLogging(boolean enableQmLogging) {
+        this.enableQmLogging = enableQmLogging;
+    }
+
     @Override
     public void loadSettings(DBRRunnableContext runnableContext, DataTransferSettings dataTransferSettings, Map<String, Object> settings) {
         this.dialogSettings = settings;
@@ -242,6 +251,7 @@ public class DatabaseConsumerSettings implements IDataTransferSettings {
         useBulkLoad = CommonUtils.getBoolean(settings.get("useBulkLoad"), useBulkLoad);
         truncateBeforeLoad = CommonUtils.getBoolean(settings.get("truncateBeforeLoad"), truncateBeforeLoad);
         openTableOnFinish = CommonUtils.getBoolean(settings.get("openTableOnFinish"), openTableOnFinish);
+        enableQmLogging = CommonUtils.getBoolean(settings.get("enableQmLogging"), enableQmLogging);
 
         List<DataTransferPipe> dataPipes = dataTransferSettings.getDataPipes();
         {
@@ -279,8 +289,7 @@ public class DatabaseConsumerSettings implements IDataTransferSettings {
                     IDataTransferProducer producer = pipe.getProducer();
                     if (producer != null) {
                         DBSObject dbObject = producer.getDatabaseObject();
-                        if (dbObject instanceof DBSDataContainer) {
-                            DBSDataContainer sourceDC = (DBSDataContainer) dbObject;
+                        if (dbObject instanceof DBSDataContainer sourceDC) {
                             Map<String, Object> dmcSettings = (Map<String, Object>) mappings.get(DBUtils.getObjectFullId(dbObject));
                             if (dmcSettings != null) {
                                 DatabaseMappingContainer dmc = new DatabaseMappingContainer(this, sourceDC);
@@ -291,6 +300,11 @@ public class DatabaseConsumerSettings implements IDataTransferSettings {
                     }
                 }
             }
+        }
+
+        final Map<String, Object> processors = JSONUtils.getObject(settings, "eventProcessors");
+        for (String processor : processors.keySet()) {
+            eventProcessors.put(processor, JSONUtils.getObject(processors, processor));
         }
     }
 
@@ -311,6 +325,7 @@ public class DatabaseConsumerSettings implements IDataTransferSettings {
         settings.put("useBulkLoad", useBulkLoad);
         settings.put("truncateBeforeLoad", truncateBeforeLoad);
         settings.put("openTableOnFinish", openTableOnFinish);
+        settings.put("enableQmLogging", enableQmLogging);
 
         // Load all data mappings
         Map<String, Object> mappings = new LinkedHashMap<>();
@@ -323,6 +338,10 @@ public class DatabaseConsumerSettings implements IDataTransferSettings {
                 mappings.put(DBUtils.getObjectFullId(sourceDatacontainer), dmcSettings);
                 dmc.saveSettings(dmcSettings);
             }
+        }
+
+        if (!eventProcessors.isEmpty()) {
+            settings.put("eventProcessors", eventProcessors);
         }
     }
 
@@ -345,8 +364,33 @@ public class DatabaseConsumerSettings implements IDataTransferSettings {
         DTUtils.addSummary(summary, DTMessages.database_consumer_settings_option_disable_referential_integrity, disableReferentialIntegrity);
         DTUtils.addSummary(summary, DTMessages.database_consumer_settings_option_use_bulk_load, useBulkLoad);
         DTUtils.addSummary(summary, DTMessages.database_consumer_settings_option_truncate_before_load, truncateBeforeLoad);
+        DTUtils.addSummary(summary, DTMessages.database_consumer_settings_option_enable_qm_logging, enableQmLogging);
 
         return summary.toString();
+    }
+
+    @Override
+    public void addEventProcessor(@NotNull DataTransferEventProcessorDescriptor descriptor) {
+        eventProcessors.putIfAbsent(descriptor.getId(), new HashMap<>());
+    }
+
+    @Override
+    public void removeEventProcessor(@NotNull DataTransferEventProcessorDescriptor descriptor) {
+        eventProcessors.remove(descriptor.getId());
+    }
+
+    public boolean hasEventProcessor(@NotNull String id) {
+        return eventProcessors.containsKey(id);
+    }
+
+    @NotNull
+    public Map<String, Object> getEventProcessorSettings(@NotNull String id) {
+        return eventProcessors.computeIfAbsent(id, x -> new HashMap<>());
+    }
+
+    @NotNull
+    public Map<String, Map<String, Object>> getEventProcessors() {
+        return eventProcessors;
     }
 
     @Nullable
@@ -392,15 +436,19 @@ public class DatabaseConsumerSettings implements IDataTransferSettings {
             try {
                 runnableContext.run(true, true, monitor -> {
                     try {
+                        DBSObject dbObject = null;
                         if (!CommonUtils.isEmpty(entityId)) {
-                            container = DBUtils.getAdapter(DBSObjectContainer.class,
-                                DBUtils.findObjectById(monitor, settings.getProject(), entityId));
+                            dbObject = DBUtils.findObjectById(monitor, settings.getProject(), entityId);
                         } else if (!CommonUtils.isEmpty(containerNodePath)) {
                             DBNNode node = DBWorkbench.getPlatform().getNavigatorModel().getNodeByPath(monitor, containerNodePath);
                             if (node instanceof DBNDatabaseNode) {
-                                container = DBUtils.getAdapter(DBSObjectContainer.class, ((DBNDatabaseNode) node).getObject());
+                                dbObject = ((DBNDatabaseNode) node).getObject();
                             }
                         }
+                        if (dbObject instanceof DBPDataSourceContainer) {
+                            DBUtils.initDataSource(monitor, (DBPDataSourceContainer) dbObject, null);
+                        }
+                        container = DBUtils.getAdapter(DBSObjectContainer.class, dbObject);
                         if (container == null) {
                             container = producerContainer;
                         }

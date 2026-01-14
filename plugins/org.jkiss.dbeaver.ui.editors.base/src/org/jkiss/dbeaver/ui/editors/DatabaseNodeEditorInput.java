@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -46,8 +46,14 @@ public class DatabaseNodeEditorInput extends DatabaseEditorInput<DBNDatabaseNode
     {
         super(dbnDatabaseNode, commandContext);
 
-        this.nodePath = dbnDatabaseNode.getNodeItemPath();
-        this.nodeName = dbnDatabaseNode.getNodeName();
+        this.nodePath = dbnDatabaseNode.getNodeUri();
+        this.nodeName = dbnDatabaseNode.getNodeDisplayName();
+    }
+
+    @Nullable
+    @Override
+    public String getNodePath() {
+        return nodePath;
     }
     
     @Override
@@ -60,17 +66,20 @@ public class DatabaseNodeEditorInput extends DatabaseEditorInput<DBNDatabaseNode
     }
 
     @Override
-    public String getToolTipText()
-    {
+    public String getToolTipText() {
+        if (getNavigatorNode() == null) {
+            return "";
+        }
+
         StringBuilder toolTip = new StringBuilder();
 
         for (DBNNode node = getNavigatorNode(); node != null; node = node.getParentNode()) {
             if (node instanceof DBSFolder) {
                 continue;
             }
-            toolTip.append(node.getNodeType());
+            toolTip.append(node.getNodeTypeLabel());
             toolTip.append(": ");
-            toolTip.append(node.getNodeName());
+            toolTip.append(node.getNodeDisplayName());
             toolTip.append(" \n");
             if (node instanceof DBNDataSource) {
                 break;
@@ -97,6 +106,7 @@ public class DatabaseNodeEditorInput extends DatabaseEditorInput<DBNDatabaseNode
             nodeName,
             getDefaultPageId(),
             getDefaultFolderId(),
+            getConnectionColor(),
             container.getId(),
             getClass().getName(),
             container.getProject(),

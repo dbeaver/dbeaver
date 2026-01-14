@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ext.firebird.model;
 
+import org.jkiss.dbeaver.DBDatabaseException;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.generic.model.GenericStructContainer;
@@ -107,7 +108,7 @@ public class FireBirdDataTypeCache extends JDBCBasicDataTypeCache<GenericStructC
                     }
                 }
             } catch (SQLException ex) {
-                throw new DBException(ex, dataSource);
+                throw new DBDatabaseException(ex, dataSource);
             }
         } catch (DBException e) {
             if (!handleCacheReadError(e)) {

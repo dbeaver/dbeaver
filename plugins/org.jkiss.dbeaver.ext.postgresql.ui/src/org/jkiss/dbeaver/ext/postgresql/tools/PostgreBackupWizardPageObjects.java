@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ext.postgresql.tools;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.CLabel;
 import org.eclipse.swt.custom.SashForm;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
@@ -28,6 +29,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.postgresql.PostgreMessages;
+import org.jkiss.dbeaver.ext.postgresql.PostgreUIUtils;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDatabase;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreSchema;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreTableBase;
@@ -61,6 +63,7 @@ class PostgreBackupWizardPageObjects extends AbstractNativeToolWizardPage<Postgr
     private PostgreSchema curSchema;
     private PostgreDatabase dataBase;
     private Button exportViewsCheck;
+    private Button fullSchemaBackupCheck;
 
     PostgreBackupWizardPageObjects(PostgreBackupWizard wizard)
     {
@@ -76,6 +79,10 @@ class PostgreBackupWizardPageObjects extends AbstractNativeToolWizardPage<Postgr
 
         Group objectsGroup = UIUtils.createControlGroup(composite, PostgreMessages.wizard_backup_page_object_group_object, 1, GridData.FILL_HORIZONTAL, 0);
         objectsGroup.setLayoutData(new GridData(GridData.FILL_BOTH));
+
+        connInfo = new CLabel(objectsGroup, SWT.WRAP);
+        connInfo.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
+        connInfo.setImage(DBeaverIcons.getImage(DBIcon.DATABASE_DEFAULT));
 
         SashForm sash = new CustomSashForm(objectsGroup, SWT.VERTICAL);
         sash.setLayoutData(new GridData(GridData.FILL_BOTH));
@@ -99,8 +106,17 @@ class PostgreBackupWizardPageObjects extends AbstractNativeToolWizardPage<Postgr
             schemasTable.setLayoutData(gd);
 
             Composite buttonsPanel = UIUtils.createComposite(catPanel, 3);
+            
+                        
+            fullSchemaBackupCheck = UIUtils.createCheckbox(buttonsPanel, PostgreMessages.wizard_backup_page_object_checkbox_complete_backup, false);
+            fullSchemaBackupCheck.addSelectionListener(new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    wizard.getSettings().setFullSchemaBackup(fullSchemaBackupCheck.getSelection());
+                }
+            });
+            fullSchemaBackupCheck.setLayoutData(new GridData(GridData.GRAB_HORIZONTAL));
             buttonsPanel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-            new Label(buttonsPanel, SWT.NONE).setLayoutData(new GridData(GridData.GRAB_HORIZONTAL));
             createCheckButtons(buttonsPanel, schemasTable);
         }
 
@@ -122,6 +138,7 @@ class PostgreBackupWizardPageObjects extends AbstractNativeToolWizardPage<Postgr
             Composite buttonsPanel = UIUtils.createComposite(tablesPanel, 3);
             buttonsPanel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
             exportViewsCheck = UIUtils.createCheckbox(buttonsPanel, PostgreMessages.wizard_backup_page_object_checkbox_show_view, false);
+            exportViewsCheck.setSelection(wizard.getSettings().isFullSchemaBackup());
             exportViewsCheck.addSelectionListener(new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
@@ -131,6 +148,9 @@ class PostgreBackupWizardPageObjects extends AbstractNativeToolWizardPage<Postgr
             });
             exportViewsCheck.setLayoutData(new GridData(GridData.GRAB_HORIZONTAL));
             createCheckButtons(buttonsPanel, tablesTable);
+        }
+        {
+            PostgreUIUtils.addCompatibilityInfoLabelForForks(composite, wizard, dataBase != null ? dataBase.getDataSource() : null);
         }
 
         setControl(composite);
@@ -200,6 +220,8 @@ class PostgreBackupWizardPageObjects extends AbstractNativeToolWizardPage<Postgr
             exportViewsCheck.setSelection(true);
         }
         if (dataBase != null) {
+            setConnectionInfo(dataBase.getDataSource().getContainer(), dataBase.getName());
+
             boolean tablesLoaded = false;
             try {
                 for (PostgreSchema schema : dataBase.getSchemas(new VoidProgressMonitor())) {
@@ -268,8 +290,9 @@ class PostgreBackupWizardPageObjects extends AbstractNativeToolWizardPage<Postgr
             {
                 setUser(true);
             }
+            @NotNull
             @Override
-            protected IStatus run(DBRProgressMonitor monitor) {
+            protected IStatus run(@NotNull DBRProgressMonitor monitor) {
                 monitor.beginTask("Collect tables", 1);
                 try {
                     monitor.subTask("Collect tables to dump");
@@ -308,29 +331,49 @@ class PostgreBackupWizardPageObjects extends AbstractNativeToolWizardPage<Postgr
 
         List<PostgreDatabaseBackupInfo> objects = wizard.getSettings().getExportObjects();
         objects.clear();
-        List<PostgreSchema> schemas = new ArrayList<>();
-        List<PostgreTableBase> tables = new ArrayList<>();
+        List<PostgreSchema> entireSchemas = new ArrayList<>();
         for (TableItem item : schemasTable.getItems()) {
             if (item.getChecked()) {
                 PostgreSchema schema = (PostgreSchema) item.getData();
                 Set<PostgreTableBase> checkedTables = checkedObjects.get(schema);
-                // All tables checked
-                if (!schemas.contains(schema)) {
-                    schemas.add(schema);
+                if (checkedTables == null) {
+                    // All tables checked, we can add this schema in the full dump
+                    entireSchemas.add(schema);
+                    continue;
                 }
-                if (checkedTables != null) {
-                    // Only a few tables checked
-                    tables.addAll(checkedTables);
-                }
+                // Only a few tables checked, we need to use separate file for this case, because -n and -t arguments can be used together
+                PostgreDatabaseBackupInfo info = new PostgreDatabaseBackupInfo(
+                    dataBase,
+                    Collections.singletonList(schema),
+                    new ArrayList<>(checkedTables));
+                objects.add(info);
             }
         }
-        PostgreDatabaseBackupInfo info = new PostgreDatabaseBackupInfo(dataBase, schemas, tables);
-        objects.add(info);
+        if (!entireSchemas.isEmpty()) {
+            PostgreDatabaseBackupInfo info = new PostgreDatabaseBackupInfo(dataBase, entireSchemas, null);
+            objects.add(info);
+        }
     }
 
+    private boolean isAllSchemaSelected() {
+        for (TableItem item : schemasTable.getItems()) {
+            if (!item.getChecked()) {
+                return false;
+            }
+        }
+        return true;
+    }
+    
+    private void updatefullSchemaBackupState() {
+    	boolean allSchemasSelected =isAllSchemaSelected();
+        fullSchemaBackupCheck.setEnabled(allSchemasSelected);
+        fullSchemaBackupCheck.setSelection(allSchemasSelected);
+        wizard.getSettings().setFullSchemaBackup(allSchemasSelected);
+    }
     @Override
     protected void updateState()
     {
+    	updatefullSchemaBackupState();
         updatePageCompletion();
         getContainer().updateButtons();
     }

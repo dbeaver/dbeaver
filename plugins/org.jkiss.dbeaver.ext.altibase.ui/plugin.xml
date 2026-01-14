@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.2"?>
+<plugin>
+    
+
+    <extension point="org.jkiss.dbeaver.databaseEditor">
+        <editor id="source.declaration" class="org.jkiss.dbeaver.ui.editors.sql.SQLSourceViewer"
+                label="%editor.package.declaration.name" description="%editor.package.declaration.description" icon="#sql_text" position="additions_middle"
+                contributor="org.jkiss.dbeaver.ui.editors.sql.SQLEditorContributorNested" type="folder" embeddable="false">
+            <objectType name="org.jkiss.dbeaver.ext.altibase.model.AltibaseSequence"/>
+            <objectType name="org.jkiss.dbeaver.ext.altibase.model.AltibaseSynonym"/>
+            <objectType name="org.jkiss.dbeaver.ext.altibase.model.AltibaseTableIndex"/>
+            <objectType name="org.jkiss.dbeaver.ext.altibase.model.AltibaseReplication"/>
+            <objectType name="org.jkiss.dbeaver.ext.altibase.model.AltibaseJob"/>
+            <objectType name="org.jkiss.dbeaver.ext.altibase.model.AltibaseDbLink"/>
+            <objectType name="org.jkiss.dbeaver.ext.altibase.model.AltibaseLibrary"/>
+            <objectType name="org.jkiss.dbeaver.ext.altibase.model.AltibaseDirectory"/>
+        </editor>
+        <configurator class="org.jkiss.dbeaver.ext.altibase.ui.config.AltibaseProcedureConfigurator">
+            <objectType name="org.jkiss.dbeaver.ext.altibase.model.AltibaseProcedureStandAlone"/>
+        </configurator>
+        <configurator class="org.jkiss.dbeaver.ext.altibase.ui.config.AltibaseTypesetConfigurator">
+            <objectType name="org.jkiss.dbeaver.ext.altibase.model.AltibaseTypeset"/>
+        </configurator>
+        <configurator class="org.jkiss.dbeaver.ext.altibase.ui.config.AltibaseSequenceConfigurator">
+            <objectType name="org.jkiss.dbeaver.ext.altibase.model.AltibaseSequence"/>
+        </configurator>
+    </extension>
+
+    <extension point="org.eclipse.ui.preferencePages">
+        <page category="org.jkiss.dbeaver.preferences.drivers" id="org.jkiss.dbeaver.preferences.altibase.general" 
+        class="org.jkiss.dbeaver.ext.altibase.ui.views.PrefPageAltibase" name="Altibase">
+            <keywordReference id="org.jkiss.dbeaver.core.keyword.dbeaver"/>
+        </page>
+    </extension>
+    
+    <extension point="org.eclipse.ui.propertyPages">
+        <page id="org.jkiss.dbeaver.preferences.altibase.main" class="org.jkiss.dbeaver.ext.altibase.ui.views.PrefPageAltibase" 
+        name="%page.org.jkiss.dbeaver.preferences.altibase.main.name">
+            <enabledWhen>
+                <adapt type="org.jkiss.dbeaver.model.DBPDataSourceContainer">
+                    <test property="org.jkiss.dbeaver.core.datasourceContainer.driverId" value="Altibase"/>
+                </adapt>
+            </enabledWhen>
+        </page>
+    </extension>
+
+    <extension point="org.eclipse.ui.editors">
+        <editor
+                name="%editor.session_manager.name"
+                icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/sessions.svg"
+                class="org.jkiss.dbeaver.ext.altibase.ui.editors.AltibaseSessionEditor"
+                id="org.jkiss.dbeaver.ext.altibase.ui.editors.AltibaseSessionEditor"
+                contributorClass="org.jkiss.dbeaver.ui.editors.EditorSearchActionsContributor">
+        </editor>
+        <editor
+                name="%editor.lock_manager.name"
+                icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/locked.svg"
+                class="org.jkiss.dbeaver.ext.altibase.ui.editors.AltibaseLockEditor"
+                id="org.jkiss.dbeaver.ext.altibase.ui.editors.AltibaseLockEditor">
+        </editor>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.dataSourceProvider">
+        <editorContribution editorId="org.jkiss.dbeaver.ext.altibase.ui.editors.AltibaseSessionEditor" category="connectionEditor" 
+        label="%editor.session_manager.name" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/sessions.svg">
+            <supports dataSource="altibase"/>
+        </editorContribution>
+        <editorContribution editorId="org.jkiss.dbeaver.ext.altibase.ui.editors.AltibaseLockEditor" category="connectionEditor" 
+        label="%editor.lock_manager.name" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/locked.svg">
+            <supports dataSource="altibase"/>
+        </editorContribution>
+    </extension>
+    
+    <extension point="org.jkiss.dbeaver.tools">
+        <tools>
+            <tool
+                  description="%tool.org.jkiss.dbeaver.ext.altibase.ui.tools.maintenance.AltibaseToolMViewRefresh.label"
+                  group="org.jkiss.dbeaver.ext.altibase.ui.tools.maintenance"
+                  icon="#refresh"
+                  id="org.jkiss.dbeaver.ext.altibase.ui.tools.maintenance.AltibaseToolMViewRefresh"
+                  label="%tool.org.jkiss.dbeaver.ext.altibase.ui.tools.maintenance.AltibaseToolMViewRefresh.label"
+                  singleton="false">
+                <task id="altibaseToolMViewRefresh"/>
+            </tool>
+            <tool
+                  description="%tool.org.jkiss.dbeaver.ext.altibase.ui.tools.maintenance.AltibaseToolTruncateTable.label"
+                  group="org.jkiss.dbeaver.ext.altibase.ui.tools.maintenance"
+                  icon="#clean"
+                  id="org.jkiss.dbeaver.ext.altibase.ui.tools.maintenance.AltibaseToolTableTruncate"
+                  label="%tool.org.jkiss.dbeaver.ext.altibase.ui.tools.maintenance.AltibaseToolTruncateTable.label"
+                  singleton="false">
+                <task id="altibaseToolTableTruncate"/>
+            </tool>
+            <tool
+                  description="%tool.org.jkiss.dbeaver.ext.altibase.ui.tools.maintenance.AltibaseViewCompile.label"
+                  group="org.jkiss.dbeaver.ext.altibase.ui.tools.maintenance"
+                  icon="icons/compile.png"
+                  id="org.jkiss.dbeaver.ext.altibase.ui.tools.maintenance.AltibaseToolViewCompile"
+                  label="%tool.org.jkiss.dbeaver.ext.altibase.ui.tools.maintenance.AltibaseViewCompile.label"
+                  singleton="false">
+                <task id="altibaseToolViewCompile"/>
+            </tool>
+            <tool
+                  description="%tool.org.jkiss.dbeaver.ext.altibase.ui.tools.maintenance.AltibaseProcedureCompile.label"
+                  group="org.jkiss.dbeaver.ext.altibase.ui.tools.maintenance"
+                  icon="icons/compile.png"
+                  id="org.jkiss.dbeaver.ext.altibase.ui.tools.maintenance.AltibaseToolProcedureCompile"
+                  label="%tool.org.jkiss.dbeaver.ext.altibase.ui.tools.maintenance.AltibaseProcedureCompile.label"
+                  singleton="false">
+                <task id="altibaseToolProcedureCompile"/>
+            </tool>
+            <tool
+                  description="%tool.org.jkiss.dbeaver.ext.altibase.ui.tools.maintenance.AltibasePackageCompile.label"
+                  group="org.jkiss.dbeaver.ext.altibase.ui.tools.maintenance"
+                  icon="icons/compile.png"
+                  id="org.jkiss.dbeaver.ext.altibase.ui.tools.maintenance.AltibaseToolPackageCompile"
+                  label="%tool.org.jkiss.dbeaver.ext.altibase.ui.tools.maintenance.AltibasePackageCompile.label"
+                  singleton="false">
+                <task id="altibaseToolPackageCompile"/>
+            </tool>
+            <tool
+                  description="%tool.org.jkiss.dbeaver.ext.altibase.ui.tools.maintenance.AltibaseReplicationStart.label"
+                  id="org.jkiss.dbeaver.ext.altibase.ui.tools.maintenance.AltibaseToolReplicationStart"
+                  label="%tool.org.jkiss.dbeaver.ext.altibase.ui.tools.maintenance.AltibaseReplicationStart.label"
+                  group="org.jkiss.dbeaver.ext.altibase.ui.tools.maintenance"
+                  icon="icons/repl_start.png"
+                  singleton="false">
+                <task id="altibaseToolReplicationStart"/>
+            </tool>
+            <tool
+                  description="%tool.org.jkiss.dbeaver.ext.altibase.ui.tools.maintenance.AltibaseReplicationStop.label"
+                  id="org.jkiss.dbeaver.ext.altibase.ui.tools.maintenance.AltibaseToolReplicationStop"
+                  label="%tool.org.jkiss.dbeaver.ext.altibase.ui.tools.maintenance.AltibaseReplicationStop.label"
+                  group="org.jkiss.dbeaver.ext.altibase.ui.tools.maintenance"
+                  icon="icons/repl_stop.png"
+                  singleton="false">
+                <task id="altibaseToolReplicationStop"/>
+            </tool>
+        </tools>
+    </extension>
+        
+</plugin>

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,17 +19,17 @@ package org.jkiss.dbeaver.ext.mysql.tools;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLCatalog;
-import org.jkiss.dbeaver.tasks.ui.wizard.TaskConfigurationWizard;
 import org.jkiss.dbeaver.tasks.ui.nativetool.NativeSQLScriptExecutor;
+import org.jkiss.dbeaver.tasks.ui.wizard.TaskConfigurationWizard;
 
-import java.io.File;
+import java.nio.file.Path;
 
 public class MySQLScriptExecutor extends NativeSQLScriptExecutor<MySQLCatalog> {
 
     @NotNull
     protected TaskConfigurationWizard<?> createTaskConfigurationWizard(
         @NotNull MySQLCatalog mySQLCatalog,
-        @Nullable File file
+        @Nullable Path file
     ) {
         return new MySQLScriptExecuteWizard(mySQLCatalog, false, file);
     }

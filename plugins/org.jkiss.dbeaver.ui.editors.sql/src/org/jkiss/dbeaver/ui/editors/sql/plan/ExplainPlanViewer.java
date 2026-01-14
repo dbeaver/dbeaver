@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,6 +30,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.ui.IWorkbenchPart;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPContextProvider;
@@ -121,8 +122,16 @@ public class ExplainPlanViewer extends Viewer implements IAdaptable
             tabViewFolder = new VerticalFolder(planPresentationContainer, SWT.LEFT);
             ((GridLayout)tabViewFolder.getLayout()).marginTop = 20;
             tabViewFolder.setLayoutData(new GridData(GridData.FILL_VERTICAL));
+            SQLPlanViewRegistry instance = SQLPlanViewRegistry.getInstance();
+            DBPDataSource currentDataSource = null;
+            if (this.contextProvider != null && this.contextProvider.getExecutionContext() != null) {
+                currentDataSource = this.contextProvider.getExecutionContext().getDataSource();
+            }
 
-            for (SQLPlanViewDescriptor viewDesc : SQLPlanViewRegistry.getInstance().getPlanViewDescriptors()) {
+            for (SQLPlanViewDescriptor viewDesc : instance.getPlanViewDescriptors()) {
+                if (viewDesc.isDataSourceSpecific() && !viewDesc.supportedBy(currentDataSource)) {
+                    continue;
+                }
                 VerticalButton treeViewButton = new VerticalButton(tabViewFolder, SWT.LEFT | SWT.RADIO);
                 treeViewButton.setText(viewDesc.getLabel());
                 if (!CommonUtils.isEmpty(viewDesc.getDescription())) {
@@ -203,7 +212,7 @@ public class ExplainPlanViewer extends Viewer implements IAdaptable
                     return true;
 
                 } catch (IOException | InvocationTargetException e) {
-                    DBWorkbench.getPlatformUI().showError("Load plan", "Error loading plan ",GeneralUtils.getRootCause(e));
+                    DBWorkbench.getPlatformUI().showError("Load plan", "Error loading plan ", CommonUtils.getRootCause(e));
                 }
             }
         }
@@ -391,8 +400,7 @@ public class ExplainPlanViewer extends Viewer implements IAdaptable
         }
 
         @Override
-        public DBCPlan evaluate(DBRProgressMonitor monitor)
-            throws InvocationTargetException {
+        public DBCPlan evaluate(@NotNull DBRProgressMonitor monitor) throws InvocationTargetException {
             try {
                 DBCQueryPlannerConfiguration configuration = makeExplainPlanConfiguration(monitor, planner);
                 if (configuration == null) {
@@ -401,14 +409,10 @@ public class ExplainPlanViewer extends Viewer implements IAdaptable
 
                 DBExecUtils.tryExecuteRecover(monitor, executionContext.getDataSource(), param -> {
                     try (DBCSession session = executionContext.openSession(monitor, DBCExecutionPurpose.UTIL, "Explain '" + query + "'")) {
-                        try {
-                            if (savedQueryId != null && planner instanceof DBCSavedQueryPlanner) {
-                                plan = ((DBCSavedQueryPlanner) planner).readSavedQueryExecutionPlan(session, savedQueryId);
-                            } else {
-                                plan = planner.planQueryExecution(session, query, configuration);
-                            }
-                        } catch (DBException e) {
-                            throw new InvocationTargetException(e);
+                        if (savedQueryId != null && planner instanceof DBCSavedQueryPlanner) {
+                            plan = ((DBCSavedQueryPlanner) planner).readSavedQueryExecutionPlan(session, savedQueryId);
+                        } else {
+                            plan = planner.planQueryExecution(session, query, configuration);
                         }
                     }
                 });
@@ -437,7 +441,7 @@ public class ExplainPlanViewer extends Viewer implements IAdaptable
         DBCQueryPlannerConfiguration configuration = new DBCQueryPlannerConfiguration();
         DBEObjectConfigurator<DBCQueryPlannerConfiguration> plannerConfigurator = GeneralUtils.adapt(planner, DBEObjectConfigurator.class);
         if (plannerConfigurator != null) {
-            return plannerConfigurator.configureObject(monitor, planner, configuration, Collections.emptyMap());
+            return plannerConfigurator.configureObject(monitor, null, planner, configuration, Collections.emptyMap());
         }
         return configuration;
     }

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,10 +29,7 @@ import org.eclipse.ui.handlers.HandlerUtil;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.app.DBPProject;
-import org.jkiss.dbeaver.model.navigator.DBNDataSource;
-import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
-import org.jkiss.dbeaver.model.navigator.DBNNode;
-import org.jkiss.dbeaver.model.navigator.DBNResource;
+import org.jkiss.dbeaver.model.navigator.*;
 import org.jkiss.dbeaver.model.rm.RMConstants;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -43,8 +40,6 @@ import org.jkiss.dbeaver.ui.navigator.database.DatabaseNavigatorTree;
 import org.jkiss.dbeaver.ui.resources.bookmarks.BookmarksHandlerImpl;
 
 public class AddBookmarkHandler extends NavigatorHandlerObjectBase {
-
-    private IFolder targetFolder;
 
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException {
@@ -62,13 +57,9 @@ public class AddBookmarkHandler extends NavigatorHandlerObjectBase {
                     "Connection itself cannot be bookmarked. Choose some element under a connection element.");
                 return null;
             }
-            if (node instanceof DBNDatabaseNode) {
+            if (node instanceof DBNDatabaseNode dbNode) {
                 try {
-                    AddBookmarkDialog dialog = new AddBookmarkDialog(activeShell, (DBNDatabaseNode) node);
-                    final String title = dialog.chooseName();
-                    if (title != null) {
-                        BookmarksHandlerImpl.createBookmark((DBNDatabaseNode) node, title, dialog.getTargetFolder());
-                    }
+                    createBookmarkDialog(dbNode, activeShell);
                 } catch (DBException e) {
                     DBWorkbench.getPlatformUI().showError(
                             CoreMessages.actions_navigator_bookmark_error_title,
@@ -79,11 +70,20 @@ public class AddBookmarkHandler extends NavigatorHandlerObjectBase {
         return null;
     }
 
-    private class AddBookmarkDialog extends EnterNameDialog {
+    public static void createBookmarkDialog(DBNDatabaseNode node, Shell activeShell) throws DBException {
+        AddBookmarkDialog dialog = new AddBookmarkDialog(activeShell, node);
+        final String title = dialog.chooseName();
+        if (title != null) {
+            BookmarksHandlerImpl.createBookmark(node, title, dialog.getTargetFolder());
+        }
+    }
+
+    private static class AddBookmarkDialog extends EnterNameDialog {
+        private IFolder targetFolder;
         private DBNDatabaseNode node;
 
         public AddBookmarkDialog(Shell parentShell, DBNDatabaseNode node) {
-            super(parentShell, CoreMessages.actions_navigator_bookmark_title, node.getNodeName());
+            super(parentShell, CoreMessages.actions_navigator_bookmark_title, node.getNodeDisplayName());
             this.node = node;
         }
 
@@ -99,7 +99,7 @@ public class AddBookmarkHandler extends NavigatorHandlerObjectBase {
             if (project != null) {
                 IFolder bookmarksFolder = BookmarksHandlerImpl.getBookmarksFolder(project, false);
                 if (bookmarksFolder != null) {
-                    DBNResource bookmarksFolderNode = node.getModel().getNodeByResource(bookmarksFolder);
+                    DBNResource bookmarksFolderNode = NavigatorResources.getNodeByResource(node.getModel(), bookmarksFolder);
                     if (bookmarksFolderNode != null) {
                         UIUtils.createControlLabel(area, "Bookmark folder");
                         DatabaseNavigatorTree foldersNavigator = new DatabaseNavigatorTree((Composite) area, bookmarksFolderNode, SWT.BORDER | SWT.SINGLE, true);
@@ -110,7 +110,7 @@ public class AddBookmarkHandler extends NavigatorHandlerObjectBase {
                         final TreeViewer treeViewer = foldersNavigator.getViewer();
 
                         if (targetFolder != null && targetFolder.exists()) {
-                            DBNResource targetNode = node.getModel().getNodeByResource(targetFolder);
+                            DBNResource targetNode = NavigatorResources.getNodeByResource(node.getModel(), targetFolder);
                             if (targetNode != null) {
                                 treeViewer.setSelection(new StructuredSelection(targetNode));
                             }

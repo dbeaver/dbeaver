@@ -1,7 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
- * Copyright (C) 2011-2012 Eugene Fradkin (eugene.fradkin@gmail.com)
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +17,7 @@
 
 package org.jkiss.dbeaver.tasks.ui.nativetool;
 
+import org.eclipse.swt.custom.CLabel;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.widgets.Composite;
@@ -25,10 +25,15 @@ import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableItem;
 import org.eclipse.swt.widgets.Text;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.DBPImage;
+import org.jkiss.dbeaver.model.task.DBTaskUtils;
 import org.jkiss.dbeaver.tasks.nativetool.AbstractImportExportSettings;
 import org.jkiss.dbeaver.tasks.nativetool.AbstractNativeToolSettings;
 import org.jkiss.dbeaver.tasks.nativetool.NativeToolUtils;
 import org.jkiss.dbeaver.tasks.ui.nativetool.internal.TaskNativeUIMessages;
+import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.contentassist.ContentAssistUtils;
 import org.jkiss.dbeaver.ui.contentassist.SmartTextContentAdapter;
@@ -39,13 +44,14 @@ import org.jkiss.dbeaver.utils.GeneralUtils;
 
 import java.util.Arrays;
 
-public abstract class AbstractNativeToolWizardPage<WIZARD extends AbstractNativeToolWizard> extends ActiveWizardPage {
+public abstract class AbstractNativeToolWizardPage<WIZARD extends AbstractNativeToolWizard> extends ActiveWizardPage<WIZARD> {
 
     protected final WIZARD wizard;
 
     protected Text outputFolderText;
     protected Text outputFileText;
     protected Text extraCommandArgsText;
+    protected CLabel connInfo;
 
     protected AbstractNativeToolWizardPage(WIZARD wizard, String pageName)
     {
@@ -79,7 +85,10 @@ public abstract class AbstractNativeToolWizardPage<WIZARD extends AbstractNative
         outputFolderText = DialogUtils.createOutputFolderChooser(
             outputGroup,
             TaskNativeUIMessages.tools_wizard_page_dialog_folder_pattern,
+            null,
             settings.getOutputFolderPattern(),
+            wizard.getProject(),
+            true,
             e -> updateState());
         outputFileText = UIUtils.createLabelText(
             outputGroup,
@@ -108,7 +117,6 @@ public abstract class AbstractNativeToolWizardPage<WIZARD extends AbstractNative
             new StringContentProposalProvider(Arrays.stream(NativeToolUtils.LIMITED_VARIABLES)
                 .map(GeneralUtils::variablePattern)
                 .toArray(String[]::new)));
-        fixOutputFileExtension();
     }
 
     protected void createExtraArgsInput(Composite outputGroup) {
@@ -184,5 +192,18 @@ public abstract class AbstractNativeToolWizardPage<WIZARD extends AbstractNative
             updateState();
         }
     }
+
+
+    protected void setConnectionInfo(
+        @NotNull DBPDataSourceContainer container,
+        @Nullable String dbName)
+    {
+        connInfo.setToolTipText(DBTaskUtils.buildConnectionDescription(container, dbName));
+        connInfo.setText(container.getName());
+        DBPImage icon = container.getDriver().getIcon();
+        connInfo.setImage(DBeaverIcons.getImage(icon));
+    }
+
+
 
 }

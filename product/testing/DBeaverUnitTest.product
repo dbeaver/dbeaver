@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?pde version="3.5"?>
+
+<product name="DBeaverUnitTest" uid="org.jkiss.dbeaver.test.product" id="org.jkiss.dbeaver.ui.app.test.product"
+    application="org.jkiss.dbeaver.ui.app.test.test" version="24.3.1.qualifier" useFeatures="true"
+    includeLaunchers="true">
+
+    <configIni use="default">
+    </configIni>
+
+    <launcherArgs>
+        <programArgs></programArgs>
+        <programArgsMac>-vm ../Eclipse/jre/Contents/Home/lib/libjli.dylib</programArgsMac>
+
+        <vmArgs>
+            -XX:+IgnoreUnrecognizedVMOptions
+            -Dosgi.requiredJavaVersion=21
+            -Dfile.encoding=UTF-8
+            --add-modules=ALL-DEFAULT
+            --add-opens=java.base/java.io=ALL-UNNAMED
+            --add-opens=java.base/java.lang=ALL-UNNAMED
+            --add-opens=java.base/java.lang.reflect=ALL-UNNAMED
+            --add-opens=java.base/java.net=ALL-UNNAMED
+            --add-opens=java.base/java.nio=ALL-UNNAMED
+            --add-opens=java.base/java.nio.charset=ALL-UNNAMED
+            --add-opens=java.base/java.text=ALL-UNNAMED
+            --add-opens=java.base/java.time=ALL-UNNAMED
+            --add-opens=java.base/java.util=ALL-UNNAMED
+            --add-opens=java.base/java.util.concurrent=ALL-UNNAMED
+            --add-opens=java.base/java.util.concurrent.atomic=ALL-UNNAMED
+            --add-opens=java.base/jdk.internal.vm=ALL-UNNAMED
+            --add-opens=java.base/jdk.internal.misc=ALL-UNNAMED
+            --add-opens=java.base/sun.nio.ch=ALL-UNNAMED
+            --add-opens=java.base/sun.nio.fs=ALL-UNNAMED
+            --add-opens=java.base/sun.security.ssl=ALL-UNNAMED
+            --add-opens=java.base/sun.security.action=ALL-UNNAMED
+            --add-opens=java.base/sun.security.util=ALL-UNNAMED
+            --add-opens=java.security.jgss/sun.security.jgss=ALL-UNNAMED
+            --add-opens=java.security.jgss/sun.security.krb5=ALL-UNNAMED
+            --add-opens=java.base/java.util.concurrent.atomic=ALL-UNNAMED
+            --add-opens=java.desktop/java.awt=ALL-UNNAMED
+            --add-opens=java.desktop/java.awt.peer=ALL-UNNAMED
+            --add-opens=java.sql/java.sql=ALL-UNNAMED
+            -Xms64m
+            -Xmx1024m</vmArgs>
+        <vmArgsMac>-XstartOnFirstThread -Dorg.eclipse.swt.internal.cocoa.useNativeItemHeight=false</vmArgsMac>
+    </launcherArgs>
+
+    <splash location="org.jkiss.dbeaver.ui.app.standalone"/>
+
+    <launcher name="dbeaver">
+        <linux icon="/icons/dbeaver.xpm"/>
+        <macosx icon="/icons/dbeaver.icns"/>
+        <solaris/>
+        <win useIco="true">
+            <ico path="icons/dbeaver.ico"/>
+        </win>
+    </launcher>
+
+    <vm>
+    </vm>
+
+    <license>
+        <url>https://dbeaver.io/about/</url>
+        <text>
+            DBeaver - Universal Database Manager
+            Copyright (C) 2010-2025 DBeaver Corp and others
+
+            Licensed under the Apache License, Version 2.0 (the "License");
+            you may not use this file except in compliance with the License.
+            You may obtain a copy of the License at
+
+            http://www.apache.org/licenses/LICENSE-2.0
+
+            Unless required by applicable law or agreed to in writing, software
+            distributed under the License is distributed on an "AS IS" BASIS,
+            WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+            See the License for the specific language governing permissions and
+            limitations under the License.
+        </text>
+    </license>
+
+    <plugins>
+    </plugins>
+
+    <features>
+        <feature id="org.jkiss.dbeaver.runtime.feature"/>
+        <feature id="org.jkiss.dbeaver.db.feature"/>
+        <feature id="org.jkiss.dbeaver.test.base.feature"/>
+        <feature id="org.jkiss.dbeaver.test.feature"/>
+    </features>
+
+    <configurations>
+        <plugin id="org.eclipse.osgi" autoStart="true" startLevel="-1"/>
+        <plugin id="org.apache.felix.scr" autoStart="true" startLevel="2"/>
+        <plugin id="org.eclipse.equinox.simpleconfigurator" autoStart="true" startLevel="1"/>
+        <plugin id="org.eclipse.equinox.common" autoStart="true" startLevel="2"/>
+        <plugin id="org.eclipse.equinox.event" autoStart="true" startLevel="2"/>
+        <!-- This is important because simpleconfigurator conflicts with update.configurator -->
+        <plugin id="org.eclipse.update.configurator" autoStart="false" startLevel="10"/>
+    </configurations>
+
+</product>

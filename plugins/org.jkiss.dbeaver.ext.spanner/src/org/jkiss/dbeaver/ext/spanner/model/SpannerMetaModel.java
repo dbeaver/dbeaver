@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,9 @@
  */
 package org.jkiss.dbeaver.ext.spanner.model;
 
+import org.jkiss.dbeaver.ext.generic.model.GenericSchema;
 import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaModel;
+import org.jkiss.utils.CommonUtils;
 
 /**
  * Spanner meta model
@@ -34,4 +36,11 @@ public class SpannerMetaModel extends GenericMetaModel {
         return true;
     }
 
+    @Override
+    public boolean isSystemSchema(GenericSchema schema) {
+        if (schema != null && CommonUtils.isNotEmpty(schema.getName())) {
+            return "INFORMATION_SCHEMA".equals(schema.getName()) || "SPANNER_SYS".equals(schema.getName());
+        }
+        return super.isSystemSchema(schema);
+    }
 }

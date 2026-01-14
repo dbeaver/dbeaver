@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,29 +37,39 @@ import org.eclipse.ui.ide.IDE;
 import org.eclipse.ui.texteditor.ITextEditor;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.DBPContextProvider;
-import org.jkiss.dbeaver.model.DBPDataSourceContainer;
-import org.jkiss.dbeaver.model.DBPExternalFileManager;
-import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.app.DBPPlatformDesktop;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.exec.*;
+import org.jkiss.dbeaver.model.rcp.RCPProject;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
 import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.LocalFileStorage;
+import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.IDataSourceContainerUpdate;
+import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.actions.ConnectionCommands;
+import org.jkiss.dbeaver.ui.editors.file.FileTypeHandlerDescriptor;
+import org.jkiss.dbeaver.ui.editors.file.FileTypeHandlerRegistry;
 import org.jkiss.dbeaver.ui.editors.internal.EditorsMessages;
 import org.jkiss.dbeaver.utils.ResourceUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.IOUtils;
 
 import java.io.File;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.*;
+import java.util.stream.Stream;
 
 /**
  * EditorUtils
@@ -69,7 +79,6 @@ public class EditorUtils {
     public static final String PROP_SQL_DATA_SOURCE_ID = "sql-editor-data-source-id"; //$NON-NLS-1$
     public static final String PROP_SQL_PROJECT_ID = "sql-editor-project-id"; //$NON-NLS-1$
 
-    public static final String PROP_CONTEXT_DEFAULT_DATASOURCE = "default-datasource"; //$NON-NLS-1$
     public static final String PROP_CONTEXT_DEFAULT_CATALOG = "default-catalog"; //$NON-NLS-1$
     private static final String PROP_CONTEXT_DEFAULT_SCHEMA = "default-schema"; //$NON-NLS-1$
 
@@ -78,9 +87,9 @@ public class EditorUtils {
     private static final String PROP_EXECUTION_CONTEXT = "sql-editor-execution-context"; //$NON-NLS-1$
     private static final String PROP_INPUT_FILE = "sql-editor-input-file"; //$NON-NLS-1$
 
-    public static final String PROP_NAMESPACE = "org.jkiss.dbeaver"; //$NON-NLS-1$
-
     public static final String COLORS_AND_FONTS_PAGE_ID = "org.eclipse.ui.preferencePages.ColorsAndFonts"; //$NON-NLS-1$
+
+    private static final String ZWNBSP = "\uFEFF";
 
     private static final Log log = Log.getLog(EditorUtils.class);
 
@@ -90,6 +99,18 @@ public class EditorUtils {
     @Nullable
     public static DBPProject getFileProject(@Nullable IEditorInput editorInput) {
         if (editorInput != null) {
+            if (editorInput instanceof ILazyEditorInput lei) {
+                return lei.getProject();
+            }
+            if (editorInput instanceof IDatabaseEditorInput dei) {
+                DBSObject dbo = dei.getDatabaseObject();
+                if (dbo != null) {
+                    DBPDataSource dataSource = dbo.getDataSource();
+                    if (dataSource != null) {
+                        return dataSource.getContainer().getProject();
+                    }
+                }
+            }
             IFile curFile = EditorUtils.getFileFromInput(editorInput);
             if (curFile != null) {
                 return DBPPlatformDesktop.getInstance().getWorkspace().getProject(curFile.getProject());
@@ -102,13 +123,13 @@ public class EditorUtils {
     public static IFile getFileFromInput(IEditorInput editorInput) {
         if (editorInput == null) {
             return null;
-        } else if (editorInput instanceof IFileEditorInput) {
-            return ((IFileEditorInput) editorInput).getFile();
-        } else if (editorInput instanceof IPathEditorInput) {
-            final IPath path = ((IPathEditorInput) editorInput).getPath();
+        } else if (editorInput instanceof IFileEditorInput fei) {
+            return fei.getFile();
+        } else if (editorInput instanceof IPathEditorInput pei) {
+            final IPath path = pei.getPath();
             return path == null ? null : ResourceUtils.convertPathToWorkspaceFile(path);
-        } else if (editorInput instanceof IInMemoryEditorInput) {
-            IFile file = (IFile) ((IInMemoryEditorInput) editorInput).getProperty(PROP_INPUT_FILE);
+        } else if (editorInput instanceof IInMemoryEditorInput mei) {
+            IFile file = (IFile) mei.getProperty(PROP_INPUT_FILE);
             if (file != null) {
                 return file;
             }
@@ -126,7 +147,7 @@ public class EditorUtils {
         try {
             Method getFileMethod = editorInput.getClass().getMethod("getFile");
             if (IFile.class.isAssignableFrom(getFileMethod.getReturnType())) {
-                return IFile.class.cast(getFileMethod.invoke(editorInput));
+                return (IFile) getFileMethod.invoke(editorInput);
             }
         } catch (Exception e) {
             //log.debug("Error getting file from editor input with reflection: " + e.getMessage());
@@ -136,26 +157,26 @@ public class EditorUtils {
     }
 
     public static IStorage getStorageFromInput(Object element) {
-        if (element instanceof IStorageEditorInput) {
+        if (element instanceof IStorageEditorInput sei) {
             try {
-                return ((IStorageEditorInput) element).getStorage();
+                return sei.getStorage();
             } catch (CoreException e) {
                 log.error(e);
             }
         }
-        if (element instanceof IAdaptable) {
-            IStorage storage = ((IAdaptable) element).getAdapter(IStorage.class);
+        if (element instanceof IAdaptable adaptable) {
+            IStorage storage = adaptable.getAdapter(IStorage.class);
             if (storage != null) {
                 return storage;
             }
         }
-        if (element instanceof IEditorInput) {
-            IFile file = getFileFromInput((IEditorInput) element);
+        if (element instanceof IEditorInput ei) {
+            IFile file = getFileFromInput(ei);
             if (file != null) {
                 return file;
             }
-            if (element instanceof IURIEditorInput) {
-                URI uri = ((IURIEditorInput) element).getURI();
+            if (element instanceof IURIEditorInput uriei) {
+                URI uri = uriei.getURI();
                 File localFile = new File(uri);
                 if (localFile.exists()) {
                     return new LocalFileStorage(localFile, StandardCharsets.UTF_8.name());
@@ -166,15 +187,15 @@ public class EditorUtils {
     }
 
     public static File getLocalFileFromInput(Object element) {
-        if (element instanceof IEditorInput) {
-            IFile file = getFileFromInput((IEditorInput) element);
+        if (element instanceof IEditorInput ei) {
+            IFile file = getFileFromInput(ei);
             if (file != null) {
                 IPath location = file.getLocation();
                 return location == null ? null : location.toFile();
             }
-            if (element instanceof IURIEditorInput) {
+            if (element instanceof IURIEditorInput uriei) {
                 try {
-                    final File localFile = new File(((IURIEditorInput) element).getURI());
+                    final File localFile = new File(uriei.getURI());
                     if (localFile.exists()) {
                         return localFile;
                     }
@@ -187,22 +208,35 @@ public class EditorUtils {
         return null;
     }
 
+    public static Path getPathFromInput(Object element) {
+        if (element instanceof IEditorInput ei) {
+            IFile file = getFileFromInput(ei);
+            if (file != null) {
+                IPath location = file.getLocation();
+                return location == null ? null : location.toPath();
+            }
+        }
+        File localFile = getLocalFileFromInput(element);
+        return localFile == null ? null : localFile.toPath();
+    }
+
     //////////////////////////////////////////////////////////
     // Datasource <-> resource manipulations
 
     @Nullable
-    public static Object getResourceProperty(@NotNull DBPProject project, @NotNull IResource resource, @NotNull String propName) {
+    public static Object getResourceProperty(@NotNull RCPProject project, @NotNull IResource resource, @NotNull String propName) {
         return project.getResourceProperty(project.getResourcePath(resource), propName);
     }
 
-    @Nullable
-    public static void setResourceProperty(@NotNull DBPProject project, @NotNull IResource resource, @NotNull String propName, @Nullable Object value) {
+    public static void setResourceProperty(@NotNull RCPProject project, @NotNull IResource resource, @NotNull String propName, @Nullable Object value) {
         project.setResourceProperty(project.getResourcePath(resource), propName, value);
     }
 
     public static DatabaseEditorContext getEditorContext(IEditorInput editorInput) {
         if (editorInput instanceof IInMemoryEditorInput) {
             return (DatabaseEditorContext) ((IInMemoryEditorInput) editorInput).getProperty(PROP_EDITOR_CONTEXT);
+        } else if (editorInput instanceof IncludedScriptFileEditorInput input) {
+            return input.getDatabaseEditorContext();
         }
         return null;
     }
@@ -215,18 +249,25 @@ public class EditorUtils {
     }
 
     public static DBPDataSourceContainer getInputDataSource(IEditorInput editorInput) {
-        if (editorInput instanceof IDatabaseEditorInput) {
-            final DBSObject object = ((IDatabaseEditorInput) editorInput).getDatabaseObject();
+        return getInputDataSource(editorInput, true);
+    }
+
+    public static DBPDataSourceContainer getInputDataSource(IEditorInput editorInput, boolean forceRegistryLoad) {
+        if (editorInput instanceof IDatabaseEditorInput dei) {
+            final DBSObject object = dei.getDatabaseObject();
             if (object != null && object.getDataSource() != null) {
                 return object.getDataSource().getContainer();
             }
+            if (editorInput instanceof DBPDataSourceContainerProvider containerProvider) {
+                return containerProvider.getDataSourceContainer();
+            }
             return null;
-        } else if (editorInput instanceof IInMemoryEditorInput) {
-            return (DBPDataSourceContainer) ((IInMemoryEditorInput) editorInput).getProperty(PROP_SQL_DATA_SOURCE_CONTAINER);
+        } else if (editorInput instanceof IInMemoryEditorInput mei) {
+            return (DBPDataSourceContainer) mei.getProperty(PROP_SQL_DATA_SOURCE_CONTAINER);
         } else {
             IFile file = getFileFromInput(editorInput);
             if (file != null) {
-                return getFileDataSource(file);
+                return getFileDataSource(file, forceRegistryLoad);
             } else {
                 File localFile = getLocalFileFromInput(editorInput);
                 if (localFile != null) {
@@ -242,7 +283,9 @@ public class EditorUtils {
                         return null;
                     }
                     DBPProject projectMeta = DBPPlatformDesktop.getInstance().getWorkspace().getProject(project);
-                    return projectMeta == null ? null : projectMeta.getDataSourceRegistry().getDataSource(dataSourceId);
+                    return projectMeta == null || (!forceRegistryLoad && !projectMeta.isRegistryLoaded()) ?
+                        null :
+                        projectMeta.getDataSourceRegistry().getDataSource(dataSourceId);
 
                 } else {
                     return null;
@@ -258,24 +301,24 @@ public class EditorUtils {
         String defaultDatasource = null;
         String defaultCatalogName = null;
         String defaultSchema = null;
-        if (editorInput instanceof IInMemoryEditorInput) {
-            defaultDatasource = (String) ((IInMemoryEditorInput) editorInput).getProperty(PROP_CONTEXT_DEFAULT_DATASOURCE);
-            defaultCatalogName = (String) ((IInMemoryEditorInput) editorInput).getProperty(PROP_CONTEXT_DEFAULT_CATALOG);
-            defaultSchema= (String) ((IInMemoryEditorInput) editorInput).getProperty(PROP_CONTEXT_DEFAULT_SCHEMA);
+        if (editorInput instanceof IInMemoryEditorInput mei) {
+            defaultDatasource = (String) mei.getProperty(DBConstants.PROP_RESOURCE_DEFAULT_DATASOURCE);
+            defaultCatalogName = (String) mei.getProperty(PROP_CONTEXT_DEFAULT_CATALOG);
+            defaultSchema= (String) mei.getProperty(PROP_CONTEXT_DEFAULT_SCHEMA);
         } else {
             IFile file = getFileFromInput(editorInput);
             if (file != null) {
-                DBPProject projectMeta = DBPPlatformDesktop.getInstance().getWorkspace().getProject(file.getProject());
+                RCPProject projectMeta = DBPPlatformDesktop.getInstance().getWorkspace().getProject(file.getProject());
                 if (projectMeta != null) {
-                    defaultDatasource = (String) EditorUtils.getResourceProperty(projectMeta, file, PROP_CONTEXT_DEFAULT_DATASOURCE);
-                    defaultCatalogName = (String) EditorUtils.getResourceProperty(projectMeta, file, PROP_CONTEXT_DEFAULT_CATALOG);
-                    defaultSchema = (String) EditorUtils.getResourceProperty(projectMeta, file, PROP_CONTEXT_DEFAULT_SCHEMA);
+                    defaultDatasource = (String) getResourceProperty(projectMeta, file, DBConstants.PROP_RESOURCE_DEFAULT_DATASOURCE);
+                    defaultCatalogName = (String) getResourceProperty(projectMeta, file, PROP_CONTEXT_DEFAULT_CATALOG);
+                    defaultSchema = (String) getResourceProperty(projectMeta, file, PROP_CONTEXT_DEFAULT_SCHEMA);
                 }
             } else {
                 File localFile = getLocalFileFromInput(editorInput);
                 if (localFile != null) {
                     final DBPExternalFileManager efManager = DBPPlatformDesktop.getInstance().getExternalFileManager();
-                    defaultDatasource = (String) efManager.getFileProperty(localFile, PROP_CONTEXT_DEFAULT_DATASOURCE);
+                    defaultDatasource = (String) efManager.getFileProperty(localFile, DBConstants.PROP_RESOURCE_DEFAULT_DATASOURCE);
                     defaultCatalogName = (String) efManager.getFileProperty(localFile, PROP_CONTEXT_DEFAULT_CATALOG);
                     defaultSchema = (String) efManager.getFileProperty(localFile, PROP_CONTEXT_DEFAULT_SCHEMA);
                 }
@@ -290,13 +333,18 @@ public class EditorUtils {
 
     @Nullable
     public static DBPDataSourceContainer getFileDataSource(IFile file) {
+        return getFileDataSource(file, true);
+    }
+
+    @Nullable
+    public static DBPDataSourceContainer getFileDataSource(IFile file, boolean forceRegistryLoad) {
         if (!file.exists()) {
             return null;
         }
-        DBPProject projectMeta = DBPPlatformDesktop.getInstance().getWorkspace().getProject(file.getProject());
+        RCPProject projectMeta = DBPPlatformDesktop.getInstance().getWorkspace().getProject(file.getProject());
         if (projectMeta != null) {
-            Object dataSourceId = EditorUtils.getResourceProperty(projectMeta, file, PROP_CONTEXT_DEFAULT_DATASOURCE);
-            if (dataSourceId != null) {
+            Object dataSourceId = getResourceProperty(projectMeta, file, DBConstants.PROP_RESOURCE_DEFAULT_DATASOURCE);
+            if (dataSourceId != null && (forceRegistryLoad || projectMeta.isRegistryLoaded())) {
                 DBPDataSourceContainer dataSource = projectMeta.getDataSourceRegistry().getDataSource(dataSourceId.toString());
                 if (dataSource == null) {
                     log.debug("Datasource " + dataSourceId + " not found in project " + projectMeta.getName() + " (" + file.getFullPath().toString() + ")");
@@ -326,7 +374,7 @@ public class EditorUtils {
             }
             if (!isDefaultContextSettings(context)) {
                 if (dataSourceContainer != null) {
-                    ((IInMemoryEditorInput) editorInput).setProperty(PROP_CONTEXT_DEFAULT_DATASOURCE, dataSourceContainer.getId());
+                    ((IInMemoryEditorInput) editorInput).setProperty(DBConstants.PROP_RESOURCE_DEFAULT_DATASOURCE, dataSourceContainer.getId());
                 }
                 String catalogName = getDefaultCatalogName(context);
                 if (catalogName != null) ((IInMemoryEditorInput) editorInput).setProperty(PROP_CONTEXT_DEFAULT_CATALOG, getDefaultCatalogName(context));
@@ -336,6 +384,9 @@ public class EditorUtils {
                 }
             }
             return;
+        }
+        if (editorInput instanceof IncludedScriptFileEditorInput input) {
+            input.setDatabaseEditorContext(context);
         }
         IFile file = getFileFromInput(editorInput);
         if (file != null) {
@@ -376,7 +427,7 @@ public class EditorUtils {
             PROP_SQL_DATA_SOURCE_ID,
             dataSourceId);
         if (!isDefaultContextSettings(context)) {
-            efManager.setFileProperty(localFile, PROP_CONTEXT_DEFAULT_DATASOURCE, dataSourceId);
+            efManager.setFileProperty(localFile, DBConstants.PROP_RESOURCE_DEFAULT_DATASOURCE, dataSourceId);
             String catalogName = getDefaultCatalogName(context);
             if (catalogName != null) efManager.setFileProperty(localFile, PROP_CONTEXT_DEFAULT_CATALOG, getDefaultCatalogName(context));
             String schemaName = getDefaultSchemaName(context);
@@ -385,7 +436,7 @@ public class EditorUtils {
     }
 
     public static void setFileDataSource(@NotNull IFile file, @NotNull DatabaseEditorContext context) {
-        DBPProject projectMeta = DBPPlatformDesktop.getInstance().getWorkspace().getProject(file.getProject());
+        RCPProject projectMeta = DBPPlatformDesktop.getInstance().getWorkspace().getProject(file.getProject());
         if (projectMeta == null) {
             return;
         }
@@ -393,7 +444,7 @@ public class EditorUtils {
         String dataSourceId = dataSourceContainer == null ? null : dataSourceContainer.getId();
 
         String resourcePath = projectMeta.getResourcePath(file);
-        projectMeta.setResourceProperty(resourcePath, PROP_CONTEXT_DEFAULT_DATASOURCE, dataSourceId);
+        projectMeta.setResourceProperty(resourcePath, DBConstants.PROP_RESOURCE_DEFAULT_DATASOURCE, dataSourceId);
         if (!isDefaultContextSettings(context)) {
             String defaultCatalogName = getDefaultCatalogName(context);
             if (!CommonUtils.isEmpty(defaultCatalogName)) {
@@ -413,7 +464,7 @@ public class EditorUtils {
     private static String getDefaultCatalogName(DatabaseEditorContext context) {
         DBCExecutionContext executionContext = context.getExecutionContext();
         if (executionContext != null) {
-            DBCExecutionContextDefaults contextDefaults = executionContext.getContextDefaults();
+            DBCExecutionContextDefaults<?,?> contextDefaults = executionContext.getContextDefaults();
             if (contextDefaults != null) {
                 DBSCatalog defaultCatalog = contextDefaults.getDefaultCatalog();
                 if (defaultCatalog != null) {
@@ -435,7 +486,7 @@ public class EditorUtils {
     private static String getDefaultSchemaName(DatabaseEditorContext context) {
         DBCExecutionContext executionContext = context.getExecutionContext();
         if (executionContext != null) {
-            DBCExecutionContextDefaults contextDefaults = executionContext.getContextDefaults();
+            DBCExecutionContextDefaults<?,?> contextDefaults = executionContext.getContextDefaults();
             if (contextDefaults != null) {
                 DBSSchema defaultSchema = contextDefaults.getDefaultSchema();
                 if (defaultSchema != null) {
@@ -538,7 +589,7 @@ public class EditorUtils {
                         RuntimeUtils.runTask(monitor -> {
                             try (DBCSession session = executionContext.openSession(monitor, DBCExecutionPurpose.UTIL, "Rollback editor transaction")) {
                                 txnManager.rollback(session, null);
-                            } catch (DBCException e) {
+                            } catch (DBException e) {
                                 throw new InvocationTargetException(e);
                             }
                         }, "End editor transaction", 5000);
@@ -554,9 +605,164 @@ public class EditorUtils {
         if (project == null || project.getWorkspace().getProjects().size() < 2) {
             return;
         }
-        if (tip.length() > 0 && tip.charAt(tip.length() - 1) != '\n') {
+        if (!tip.isEmpty() && tip.charAt(tip.length() - 1) != '\n') {
             tip.append('\n');
         }
         tip.append(EditorsMessages.database_editor_project).append(": ").append(project.getName());
+    }
+
+    public static List<Path> openExternalFiles(@NotNull String[] fileNames, @Nullable DBPDataSourceContainer currentContainer) {
+        log.debug("Open external file(s) [" + Arrays.toString(fileNames) + "]");
+        List<Path> openedFiles = new ArrayList<>();
+        Stream<String> fileNameStream = Arrays.stream(fileNames);
+        if (RuntimeUtils.isMacOS()) {
+            // On macOS files can be opened via Finder with ZWNBSP characters in the file name
+            fileNameStream = fileNameStream.map(fName -> fName.replaceAll(ZWNBSP, ""));
+        }
+        Path[] filePaths = fileNameStream
+            .map(Path::of).toArray(Path[]::new);
+        openFileEditors(filePaths, currentContainer, openedFiles, false);
+
+        return openedFiles;
+    }
+
+    public static boolean openExternalFiles(
+        @NotNull Path[] filePaths,
+        @Nullable DBPDataSourceContainer currentContainer,
+        boolean databaseOnly
+    ) {
+        log.debug("Open external file(s) [" + Arrays.toString(filePaths) + "]");
+        List<Path> openedFiles = new ArrayList<>();
+        return openFileEditors(filePaths, currentContainer, openedFiles, databaseOnly);
+    }
+
+    @NotNull
+    public static Map<FileTypeHandlerDescriptor, List<Path>> getHandlerFiles(
+        @NotNull Path[] fileNames,
+        @NotNull List<Path> openedFiles,
+        boolean databaseOnly
+    ) {
+        Map<FileTypeHandlerDescriptor, List<Path>> filesByHandler = new LinkedHashMap<>();
+        for (Path path : fileNames) {
+            if (Files.isDirectory(path)) {
+                log.error("Can't open directory '" + path + "'");
+                continue;
+            }
+            if (Files.exists(path)) {
+                String fileExtension = IOUtils.getFileExtension(path);
+                FileTypeHandlerDescriptor handler = CommonUtils.isEmpty(fileExtension) ?
+                    null : FileTypeHandlerRegistry.getInstance().findHandler(fileExtension);
+                if (handler != null && databaseOnly && !handler.isDatabaseHandler()) {
+                    handler = null;
+                }
+                filesByHandler.computeIfAbsent(handler, d -> new ArrayList<>()).add(path);
+                openedFiles.add(path);
+            } else {
+                DBWorkbench.getPlatformUI().showError("Open file", "Can't open '" + path + "': file doesn't exist");
+            }
+        }
+        return filesByHandler;
+    }
+
+    @NotNull
+    public static Map<FileTypeHandlerDescriptor.Extension, List<Path>> getExtensionFiles(
+        @NotNull List<Path> fileNames,
+        boolean databaseOnly
+    ) {
+        Map<FileTypeHandlerDescriptor.Extension, List<Path>> filesByExtension = new LinkedHashMap<>();
+        for (Path path : fileNames) {
+            if (Files.isDirectory(path)) {
+                log.error("Can't open directory '" + path + "'");
+                continue;
+            }
+            if (Files.exists(path)) {
+                String fileExtension = IOUtils.getFileExtension(path);
+                FileTypeHandlerDescriptor.Extension extension = CommonUtils.isEmpty(fileExtension) ?
+                    null : FileTypeHandlerRegistry.getInstance().findExtension(fileExtension);
+                if (extension != null && databaseOnly && !extension.getDescriptor().isDatabaseHandler()) {
+                    extension = null;
+                }
+                if (extension != null) {
+                    filesByExtension.computeIfAbsent(extension, d -> new ArrayList<>()).add(path);
+                }
+            } else {
+                DBWorkbench.getPlatformUI().showError("Open file", "Can't open '" + path + "': file doesn't exist");
+            }
+        }
+        return filesByExtension;
+    }
+
+    public static boolean openFileEditors(
+        @NotNull Path[] fileNames,
+        @Nullable DBPDataSourceContainer currentContainer,
+        @NotNull List<Path> openedFiles,
+        boolean databaseOnly
+    ) {
+        Map<FileTypeHandlerDescriptor, List<Path>> filesByHandler = getHandlerFiles(fileNames, openedFiles, databaseOnly);
+        for (Map.Entry<FileTypeHandlerDescriptor, List<Path>> entry : filesByHandler.entrySet()) {
+            FileTypeHandlerDescriptor handler = entry.getKey();
+            List<Path> pathList = entry.getValue();
+
+            for (Path path : pathList) {
+                if (!IOUtils.isLocalPath(path)) {
+                    if (handler == null || !handler.supportsRemoteFiles()) {
+                        return false;
+                    }
+                }
+            }
+            if (handler == null) {
+                for (Path path : pathList) {
+                    final IWorkbenchWindow window = UIUtils.getActiveWorkbenchWindow();
+                    EditorUtils.openExternalFileEditor(path.toFile(), window);
+                }
+            } else {
+                try {
+                    handler.createHandler().openFiles(pathList, Map.of(), currentContainer);
+                } catch (Exception e) {
+                    DBWorkbench.getPlatformUI().showError("Open file error", "Can't open file '" + pathList + "'", e);
+                }
+            }
+        }
+        return true;
+    }
+
+    public static void activatePartContexts(IWorkbenchPart part) {
+        IContextService contextService = PlatformUI.getWorkbench().getService(IContextService.class);
+        if (contextService == null) {
+            return;
+        }
+        try {
+            contextService.deferUpdates(true);
+//            if (part instanceof INavigatorModelView) {
+            // We check for instanceof (do not use adapter) because otherwise it become active
+            // for all entity editor and clashes with SQL editor and other complex stuff.
+//                if (activationNavigator != null) {
+//                    //log.debug("Double activation of navigator context");
+//                    contextService.deactivateContext(activationNavigator);
+//                }
+//                activationNavigator = contextService.activateContext(INavigatorModelView.NAVIGATOR_CONTEXT_ID);
+//            }
+
+            // What the point of setting SQL editor context here? It is set by editor itself
+//            if (part instanceof SQLEditorBase || part.getAdapter(SQLEditorBase.class) != null) {
+//                if (activationSQL != null) {
+//                    //log.debug("Double activation of SQL context");
+//                    contextService.deactivateContext(activationSQL);
+//                }
+//                activationSQL = contextService.activateContext(SQLEditorContributions.SQL_EDITOR_CONTEXT);
+//            }
+            // Refresh auto-commit element state (#3315)
+            ActionUtils.fireCommandRefresh(ConnectionCommands.CMD_TOGGLE_AUTOCOMMIT);
+        } finally {
+            contextService.deferUpdates(false);
+        }
+    }
+
+    public static void deactivatePartContexts(IWorkbenchPart part) {
+    }
+
+    public static void refreshPartContexts(IWorkbenchPart part) {
+        deactivatePartContexts(part);
+        activatePartContexts(part);
     }
 }

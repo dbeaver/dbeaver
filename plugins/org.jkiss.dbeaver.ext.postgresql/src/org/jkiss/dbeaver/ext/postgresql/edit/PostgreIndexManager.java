@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -58,9 +58,17 @@ public class PostgreIndexManager extends SQLIndexManager<PostgreIndex, PostgreTa
     }
 
     @Override
+    protected void appendIndexTypeAfterOn(PostgreIndex index, StringBuilder decl) {
+        DBSIndexType indexType = index.getIndexType();
+        if(indexType == DBSIndexType.HASHED){
+            decl.append(" USING ").append("HASH");
+        }
+    }
+
+    @Override
     protected PostgreIndex createDatabaseObject(
-        DBRProgressMonitor monitor, DBECommandContext context, final Object container,
-        Object from, Map<String, Object> options)
+        @NotNull DBRProgressMonitor monitor, @NotNull DBECommandContext context, final Object container,
+        Object from, @NotNull Map<String, Object> options)
     {
         PostgreTableBase tableBase = (PostgreTableBase) container;
         return new PostgreIndex(
@@ -85,7 +93,7 @@ public class PostgreIndexManager extends SQLIndexManager<PostgreIndex, PostgreTa
     }
 
     @Override
-    public void deleteObject(DBECommandContext commandContext, PostgreIndex object, Map<String, Object> options) throws DBException {
+    public void deleteObject(@NotNull DBECommandContext commandContext, @NotNull PostgreIndex object, @NotNull Map<String, Object> options) throws DBException {
         if (object.isPrimaryKeyIndex()) {
             throw new DBException("You can not drop constraint-based unique index.\n" +
                 "Try to drop constraint '" + object.getName() + "'.");
@@ -100,7 +108,7 @@ public class PostgreIndexManager extends SQLIndexManager<PostgreIndex, PostgreTa
     }
 
     @Override
-    protected void addObjectCreateActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, ObjectCreateCommand command, Map<String, Object> options) {
+    protected void addObjectCreateActions(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext executionContext, @NotNull List<DBEPersistAction> actions, @NotNull ObjectCreateCommand command, @NotNull Map<String, Object> options) {
         boolean hasDDL = false;
         PostgreIndex index = command.getObject();
         if (index.isPersisted()) {
@@ -137,13 +145,15 @@ public class PostgreIndexManager extends SQLIndexManager<PostgreIndex, PostgreTa
     }
 
     @Override
-    protected void addObjectRenameActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, ObjectRenameCommand command, Map<String, Object> options) {
+    protected void addObjectRenameActions(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext executionContext, @NotNull List<DBEPersistAction> actions, @NotNull ObjectRenameCommand command, @NotNull Map<String, Object> options) {
         PostgreIndex index = command.getObject();
+        PostgreDataSource dataSource = index.getDataSource();
         actions.add(
                 new SQLDatabasePersistAction(
                         "Rename index",
-                        "ALTER INDEX " + index.getFullyQualifiedName(DBPEvaluationContext.DDL) + //$NON-NLS-1$
-                                " RENAME TO " + DBUtils.getQuotedIdentifier(index.getDataSource(), command.getNewName())) //$NON-NLS-1$
+                        "ALTER INDEX " + DBUtils.getQuotedIdentifier(index.getTable().getContainer()) + "." + //$NON-NLS-1$
+                                DBUtils.getQuotedIdentifier(dataSource, command.getOldName()) +
+                                " RENAME TO " + DBUtils.getQuotedIdentifier(dataSource, command.getNewName())) //$NON-NLS-1$
         );
     }
 }

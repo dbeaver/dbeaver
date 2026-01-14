@@ -1,7 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
- * Copyright (C) 2011-2012 Eugene Fradkin (eugene.fradkin@gmail.com)
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +16,7 @@
  */
 package org.jkiss.dbeaver.tasks.nativetool;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
@@ -27,8 +27,10 @@ import org.jkiss.dbeaver.model.connection.DBPNativeClientLocation;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceMap;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
+import org.jkiss.dbeaver.model.secret.DBSValueEncryptor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.task.DBTTaskSettings;
+import org.jkiss.dbeaver.model.task.DBTTaskSettingsInput;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.encode.SecuredPasswordEncrypter;
 import org.jkiss.utils.CommonUtils;
@@ -40,7 +42,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-public abstract class AbstractNativeToolSettings<BASE_OBJECT extends DBSObject> implements DBTTaskSettings<BASE_OBJECT> {
+public abstract class AbstractNativeToolSettings<BASE_OBJECT extends DBSObject>
+    implements DBTTaskSettings, DBTTaskSettingsInput<BASE_OBJECT> {
 
     private static final Log log = Log.getLog(AbstractNativeToolSettings.class);
 
@@ -59,12 +62,30 @@ public abstract class AbstractNativeToolSettings<BASE_OBJECT extends DBSObject> 
     private DBPDataSourceContainer dataSourceContainer;
     private final List<BASE_OBJECT> databaseObjects = new ArrayList<>();
 
+    @Nullable
+    private DBPProject project;
+
+    protected AbstractNativeToolSettings() {
+    }
+
+    protected AbstractNativeToolSettings(@NotNull DBPProject project) {
+        this.project = project;
+    }
+
     public List<BASE_OBJECT> getDatabaseObjects() {
         return databaseObjects;
     }
 
+    @Nullable
     public DBPProject getProject() {
-        return dataSourceContainer == null ? null : dataSourceContainer.getProject();
+        if (project == null) {
+            setProject(dataSourceContainer == null ? null : dataSourceContainer.getProject());
+        }
+        return project;
+    }
+
+    private void setProject(@Nullable DBPProject project) {
+        this.project = project;
     }
 
     public DBPDataSourceContainer getDataSourceContainer() {
@@ -149,18 +170,20 @@ public abstract class AbstractNativeToolSettings<BASE_OBJECT extends DBSObject> 
         if (dataSourceContainer == null) {
             String dsID = preferenceStore.getString("dataSource");
             if (!CommonUtils.isEmpty(dsID)) {
-                String projectName = preferenceStore.getString("project");
-                DBPProject project = CommonUtils.isEmpty(projectName) ? null : DBWorkbench.getPlatform().getWorkspace().getProject(projectName);
-                if (project == null) {
-                    if (!CommonUtils.isEmpty(projectName)) {
-                        log.error("Can't find project '" + projectName + "' for tool configuration");
+                if (getProject() == null) {
+                    String projectName = preferenceStore.getString("project");
+                    DBPProject project = CommonUtils.isEmpty(projectName) ? null : DBWorkbench.getPlatform()
+                        .getWorkspace()
+                        .getProject(projectName);
+                    if (project == null) {
+                        if (!CommonUtils.isEmpty(projectName)) {
+                            log.error("Can't find project '" + projectName + "' for tool configuration");
+                        }
+                        project = DBWorkbench.getPlatform().getWorkspace().getActiveProject();
                     }
-                    project = DBWorkbench.getPlatform().getWorkspace().getActiveProject();
+                    setProject(project);
                 }
-                dataSourceContainer = project.getDataSourceRegistry().getDataSource(dsID);
-                if (dataSourceContainer == null) {
-                    log.error("Can't find datasource '" + dsID+ "' in project '" + project.getName() + "' for tool configuration");
-                }
+                dataSourceContainer = getProject().getDataSourceRegistry().getDataSource(dsID);
             }
         }
 
@@ -207,11 +230,14 @@ public abstract class AbstractNativeToolSettings<BASE_OBJECT extends DBSObject> 
             toolUserPassword = preferenceStore.getString("tool.password");
 
             try {
+                // Backward compatibility
                 final SecuredPasswordEncrypter encrypter = new SecuredPasswordEncrypter();
                 if (!CommonUtils.isEmpty(toolUserName)) toolUserName = encrypter.decrypt(toolUserName);
                 if (!CommonUtils.isEmpty(toolUserPassword)) toolUserPassword = encrypter.decrypt(toolUserPassword);
-            } catch (Exception e) {
-                throw new DBException("Error decrypting user credentials", e);
+            } catch (Exception ignored) {
+                DBSValueEncryptor encryptor = getProject().getValueEncryptor();
+                if (!CommonUtils.isEmpty(toolUserName)) toolUserName = encryptor.decryptString(toolUserName);
+                if (!CommonUtils.isEmpty(toolUserPassword)) toolUserPassword = encryptor.decryptString(toolUserPassword);
             }
         }
     }
@@ -233,15 +259,14 @@ public abstract class AbstractNativeToolSettings<BASE_OBJECT extends DBSObject> 
             propertyMap.put("databaseObjects", objectList);
 
             try {
-                final SecuredPasswordEncrypter encrypter = new SecuredPasswordEncrypter();
-
+                DBSValueEncryptor encryptor = getProject().getValueEncryptor();
                 if (!CommonUtils.isEmpty(toolUserName)) {
-                    propertyMap.put("tool.user", encrypter.encrypt(toolUserName));
+                    propertyMap.put("tool.user", encryptor.encryptString(toolUserName));
                 } else {
                     propertyMap.put("tool.user", "");
                 }
                 if (!CommonUtils.isEmpty(toolUserPassword)) {
-                    propertyMap.put("tool.password", encrypter.encrypt(toolUserPassword));
+                    propertyMap.put("tool.password", encryptor.encryptString(toolUserPassword));
                 } else {
                     propertyMap.put("tool.password", "");
                 }
@@ -255,4 +280,31 @@ public abstract class AbstractNativeToolSettings<BASE_OBJECT extends DBSObject> 
             preferenceStore.setValue("clientHomeName", clientHomeName);
         }
     }
+    
+    @Override
+    public void loadSettingsFromInput(@NotNull List<BASE_OBJECT> inputObjects, @NotNull Map<String, Object> options) {
+        databaseObjects.addAll(inputObjects);
+    }
+
+    public boolean isMutatingTask() {
+        return false;
+    }
+
+    @NotNull
+    protected String makeOutFilePath(String outputFolder, String outputFileName) {
+        // Check URI query
+        String query = null;
+        int queryStartPos = outputFolder.lastIndexOf("?");
+        if (queryStartPos != -1) {
+            query = outputFolder.substring(queryStartPos);
+            outputFolder = outputFolder.substring(0, queryStartPos);
+        }
+        if (!outputFolder.endsWith("/")) outputFolder += "/";
+        String outFile = outputFolder + outputFileName;
+        if (query != null) {
+            outFile += query;
+        }
+        return outFile;
+    }
+
 }

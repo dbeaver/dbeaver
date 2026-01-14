@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,12 +16,13 @@
  */
 package org.jkiss.dbeaver.ext.mysql.edit;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLTableBase;
 
 public class MySQLPartitionTableManager extends MySQLTableManager {
 
     @Override
-    public boolean canCreateObject(Object container) {
+    public boolean canCreateObject(@NotNull Object container) {
         // Creating partitions separately is not supported in MySQL/MariaDB
         return false;
     }
@@ -32,7 +33,7 @@ public class MySQLPartitionTableManager extends MySQLTableManager {
     }
 
     @Override
-    public boolean canDeleteObject(MySQLTableBase object) {
+    public boolean canDeleteObject(@NotNull MySQLTableBase object) {
         return false;
     }
 }

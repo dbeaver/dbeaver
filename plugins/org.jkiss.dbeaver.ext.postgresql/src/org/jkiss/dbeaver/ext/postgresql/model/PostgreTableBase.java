@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.exec.DBCException;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCStructCache;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTable;
@@ -31,7 +32,6 @@ import org.jkiss.dbeaver.model.meta.IPropertyValueListProvider;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.meta.PropertyLength;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntityAssociation;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectWithType;
@@ -42,6 +42,7 @@ import java.sql.ResultSet;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 /**
  * PostgreTableBase
@@ -172,7 +173,7 @@ public abstract class PostgreTableBase extends JDBCTable<PostgreDataSource, Post
 
     @NotNull
     @Override
-    public String getFullyQualifiedName(DBPEvaluationContext context)
+    public String getFullyQualifiedName(@NotNull DBPEvaluationContext context)
     {
         PostgreDatabase database = getDatabase();
         return DBUtils.getFullQualifiedName(getDataSource(),
@@ -257,20 +258,23 @@ public abstract class PostgreTableBase extends JDBCTable<PostgreDataSource, Post
     @Override
     public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException
     {
-        getContainer().getSchema().getConstraintCache().clearObjectCache(this);
-        getContainer().getSchema().getIndexCache().clearObjectCache(this);
-        return getContainer().getSchema().getTableCache().refreshObject(monitor, getContainer().getSchema(), this);
+        PostgreSchema schema = getContainer().getSchema();
+        schema.getConstraintCache().clearObjectCache(this);
+        if (schema.getIndexCache() != null) {
+            schema.getIndexCache().clearObjectCache(this);
+        }
+        return schema.getTableCache().refreshObject(monitor, schema, this);
     }
 
     @Override
-    public Collection<PostgrePrivilege> getPrivileges(DBRProgressMonitor monitor, boolean includeNestedObjects) throws DBException {
+    public Collection<PostgrePrivilege> getPrivileges(@NotNull DBRProgressMonitor monitor, boolean includeNestedObjects) throws DBException {
         if (!isPersisted()) {
             return Collections.emptyList();
         }
         return getDataSource().getServerType().readObjectPermissions(monitor, this, includeNestedObjects);
     }
 
-	public boolean isPartition() {
+    public boolean isPartition() {
 		return isPartition;
 	}
 
@@ -291,17 +295,27 @@ public abstract class PostgreTableBase extends JDBCTable<PostgreDataSource, Post
     }
 
     @Override
-    public String generateChangeOwnerQuery(String owner) {
-        return "ALTER TABLE " + DBUtils.getObjectFullName(this, DBPEvaluationContext.DDL) + " OWNER TO " + owner;
+    public String generateChangeOwnerQuery(@NotNull String owner, @NotNull Map<String, Object> options) {
+        return "ALTER TABLE " + DBUtils.getEntityScriptName(this, options) + " OWNER TO " + owner;
     }
 
     @Override
-    public boolean supportsObjectDefinitionOption(String option) {
+    public boolean supportsObjectDefinitionOption(@NotNull String option) {
         if (DBPScriptObject.OPTION_INCLUDE_COMMENTS.equals(option) && getDataSource().getServerType().supportsShowingOfExtraComments()) {
             return true;
         }
-        return DBPScriptObject.OPTION_DDL_ONLY_FOREIGN_KEYS.equals(option) || DBPScriptObject.OPTION_DDL_SKIP_FOREIGN_KEYS.equals(option)
-               || DBPScriptObject.OPTION_INCLUDE_PERMISSIONS.equals(option);
+        if (DBPScriptObject.OPTION_INCLUDE_PERMISSIONS.equals(option)) {
+            return true;
+        }
+        return !this.isView() &&
+               (DBPScriptObject.OPTION_DDL_ONLY_FOREIGN_KEYS.equals(option) ||
+               DBPScriptObject.OPTION_DDL_SKIP_FOREIGN_KEYS.equals(option));
+    }
+
+    public PostgreTableColumn createTableColumn(DBRProgressMonitor monitor, PostgreSchema schema, JDBCResultSet dbResult)
+        throws DBException
+    {
+        return new PostgreTableColumn(monitor, this, dbResult);
     }
 
     public static class TablespaceListProvider implements IPropertyValueListProvider<PostgreTableBase> {
@@ -310,19 +324,14 @@ public abstract class PostgreTableBase extends JDBCTable<PostgreDataSource, Post
         {
             return false;
         }
+        @Nullable
         @Override
         public Object[] getPossibleValues(PostgreTableBase object)
         {
             if (!object.getDataSource().getServerType().supportsTablespaces()) {
                 return new Object[0];
             }
-            try {
-                Collection<PostgreTablespace> tablespaces = object.getDatabase().getTablespaces(new VoidProgressMonitor());
-                return tablespaces.toArray(new Object[0]);
-            } catch (DBException e) {
-                log.error(e);
-                return new Object[0];
-            }
+            return object.getDatabase().getTablespaceCache().getCachedObjects().toArray(new Object[0]);
         }
     }
 

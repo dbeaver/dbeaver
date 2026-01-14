@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,7 +21,6 @@ import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.ITypedRegion;
 import org.eclipse.jface.text.TextUtilities;
 import org.jkiss.dbeaver.model.DBPKeywordType;
-import org.jkiss.dbeaver.model.sql.SQLBlockCompletionInfo;
 import org.jkiss.dbeaver.model.sql.SQLSyntaxManager;
 import org.jkiss.dbeaver.model.sql.parser.SQLParserPartitions;
 
@@ -185,7 +184,7 @@ public class SQLHeuristicScanner implements SQLIndentSymbols {
         lastPos++;
 
         if (Character.isJavaIdentifierPart(lastChar)) {
-            // assume an ident or keyword
+            // assume an indent or keyword
             int from = pos, to;
             pos = scanForward(pos + 1, bound, _nonIdent);
             if (pos == NOT_FOUND) {
@@ -228,7 +227,7 @@ public class SQLHeuristicScanner implements SQLIndentSymbols {
         lastPos--;
 
         if (Character.isJavaIdentifierPart(lastChar)) {
-            // assume an ident or keyword
+            // assume an indent or keyword
             int from, to = pos + 1;
             pos = scanBackward(pos - 1, bound, _nonIdent);
             if (pos == NOT_FOUND) {
@@ -263,7 +262,7 @@ public class SQLHeuristicScanner implements SQLIndentSymbols {
     private int getToken(String s) {
         assert (s != null);
 
-        Integer tokenKindId = this.syntaxManager.getDialect().getBlockCompletions().findTokenId(s);
+        Integer tokenKindId = SQLAutoIndentStrategy.DEFAULT_SQL_BLOCK_COMPLETIONS.findTokenId(s);
         if (tokenKindId != null) {
             return tokenKindId;
         }

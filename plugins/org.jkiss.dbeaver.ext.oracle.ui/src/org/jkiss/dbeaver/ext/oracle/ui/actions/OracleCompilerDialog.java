@@ -1,7 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
- * Copyright (C) 2011-2012 Eugene Fradkin (eugene.fradkin@gmail.com)
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,10 +28,10 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Table;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.oracle.model.source.OracleSourceObject;
 import org.jkiss.dbeaver.ext.oracle.ui.internal.OracleUIMessages;
-import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -113,7 +112,7 @@ public class OracleCompilerDialog extends BaseDialog
                     DBSObject unit = (DBSObject) cell.getElement();
                     final DBNDatabaseNode node = DBNUtils.getNodeByObject(unit);
                     if (node != null) {
-                        cell.setText(node.getNodeName());
+                        cell.setText(node.getNodeDisplayName());
                         cell.setImage(DBeaverIcons.getImage(node.getNodeIconDefault()));
                     } else {
                         cell.setText(unit.toString());
@@ -127,7 +126,7 @@ public class OracleCompilerDialog extends BaseDialog
                     DBSObject unit = (DBSObject) cell.getElement();
                     final DBNDatabaseNode node = DBNUtils.getNodeByObject(unit);
                     if (node != null) {
-                        cell.setText(node.getNodeType());
+                        cell.setText(node.getNodeTypeLabel());
                     } else {
                         cell.setText("???"); //$NON-NLS-1$
                     }
@@ -219,7 +218,7 @@ public class OracleCompilerDialog extends BaseDialog
             boolean success = false;
             try {
                 success = CompileHandler.compileUnit(monitor, compileLog, unit);
-            } catch (DBCException e) {
+            } catch (DBException e) {
                 log.error("Compile error", e);
             }
 

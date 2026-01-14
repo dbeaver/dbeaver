@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,31 +17,30 @@
 package org.jkiss.dbeaver.ext.oracle.model;
 
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.junit.DBeaverUnitTest;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.mockito.junit.MockitoJUnitRunner;
 
-@RunWith(MockitoJUnitRunner.class)
-public class OracleDialectFunctionsTest {
-
+public class OracleDialectFunctionsTest extends DBeaverUnitTest {
     @Mock
     DBPDataSourceContainer mockDataSourceContainer;
     @Mock
     DBSTypedObject mockTypedObject;
-
+    @Mock
+    private DBPConnectionConfiguration mockConnectionConfiguration;
     private OracleSQLDialect dialect;
     private OracleDataSource dataSource;
 
     @Before
     public void setUp() throws Exception {
         dialect = new OracleSQLDialect();
-
+        Mockito.when(mockDataSourceContainer.getConnectionConfiguration()).thenReturn(mockConnectionConfiguration);
         Mockito.when(mockDataSourceContainer.getDriver()).thenReturn(DBWorkbench.getPlatform().getDataSourceProviderRegistry().findDriver("oracle"));
         dataSource = new OracleDataSource(mockDataSourceContainer);
         dataSource.getDataTypeCache().cacheObject(new OracleDataType(dataSource, "JSON", true));

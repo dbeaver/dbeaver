@@ -1,7 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2016-2016 Karl Griesser (fullref@gmail.com)
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -40,7 +39,6 @@ import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.List;
 
 /**
  * @author Karl Griesser
@@ -99,7 +97,7 @@ public abstract class ExasolTableBase extends JDBCTable<ExasolDataSource, Exasol
 
     @NotNull
     @Override
-    public String getFullyQualifiedName(DBPEvaluationContext context) {
+    public String getFullyQualifiedName(@NotNull DBPEvaluationContext context) {
         return DBUtils.getFullQualifiedName(getDataSource(), getSchema(), this);
     }
 
@@ -108,31 +106,8 @@ public abstract class ExasolTableBase extends JDBCTable<ExasolDataSource, Exasol
         return this;
     }
 
-
-    // -----------------
-    // Columns
-    // -----------------
     @Override
-    public List<ExasolTableColumn> getAttributes(@NotNull DBRProgressMonitor monitor) throws DBException {
-        if (this instanceof ExasolTable)
-            return getContainer().getTableCache().getChildren(monitor, getContainer(), (ExasolTable) this);
-
-        if (this instanceof ExasolView)
-            return getContainer().getViewCache().getChildren(monitor, getContainer(), (ExasolView) this);
-
-        throw new DBException("Unknow object with columns encountered");
-    }
-
-    @Override
-    public ExasolTableColumn getAttribute(@NotNull DBRProgressMonitor monitor, @NotNull String attributeName) throws DBException {
-        if (this instanceof ExasolTable) {
-            return getContainer().getTableCache().getChild(monitor, getContainer(), (ExasolTable) this, attributeName);
-        } else if (this instanceof ExasolView) {
-            return getContainer().getViewCache().getChild(monitor, getSchema(), (ExasolView) this, attributeName); 
-        } 
-        // Other kinds don't have columns..
-        throw new DBException("Unknown object with columns encountered");
-    }
+    public abstract ExasolTableColumn getAttribute(@NotNull DBRProgressMonitor monitor, @NotNull String attributeName) throws DBException;
 
 
     // -----------------
@@ -174,7 +149,7 @@ public abstract class ExasolTableBase extends JDBCTable<ExasolDataSource, Exasol
 
 
     @Override
-    public Collection<? extends DBSTableIndex> getIndexes(DBRProgressMonitor monitor) throws DBException {
+    public Collection<? extends DBSTableIndex> getIndexes(@NotNull DBRProgressMonitor monitor) throws DBException {
         // No Indexes in Exasol
         return Collections.emptyList();
     }

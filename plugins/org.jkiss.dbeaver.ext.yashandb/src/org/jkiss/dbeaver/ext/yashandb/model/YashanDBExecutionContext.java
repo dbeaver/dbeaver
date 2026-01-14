@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,9 +16,12 @@
  */
 package org.jkiss.dbeaver.ext.yashandb.model;
 
+import java.sql.SQLException;
+
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.ext.yashandb.model.util.YashanDBUtils;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.connection.DBPConnectionBootstrap;
 import org.jkiss.dbeaver.model.exec.DBCException;
@@ -34,129 +37,118 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
 import org.jkiss.utils.CommonUtils;
 
-import java.sql.SQLException;
+public class YashanDBExecutionContext extends JDBCExecutionContext
+		implements DBCExecutionContextDefaults<DBSCatalog, YashanDBSchema> {
 
-/**
- * YashanDBExecutionContext
- */
-public class YashanDBExecutionContext extends JDBCExecutionContext implements DBCExecutionContextDefaults<DBSCatalog, YashanDBSchema> {
-    private static final Log log = Log.getLog(YashanDBExecutionContext.class);
+	private static final Log log = Log.getLog(YashanDBExecutionContext.class);
 
-    private String activeSchemaName;
+	private String activeSchemaName;
 
-    private boolean isolatedContext;
+	YashanDBExecutionContext(@NotNull JDBCRemoteInstance instance, String purpose) {
+		super(instance, purpose);
+	}
 
+	@NotNull
+	@Override
+	public YashanDBDataSource getDataSource() {
+		return (YashanDBDataSource) super.getDataSource();
+	}
 
-    YashanDBExecutionContext(@NotNull JDBCRemoteInstance instance, String purpose) {
-        super(instance, purpose);
-    }
+	@NotNull
+	@Override
+	public YashanDBExecutionContext getContextDefaults() {
+		return this;
+	}
 
-    @NotNull
-    @Override
-    public YashanDBDataSource getDataSource() {
-        return (YashanDBDataSource) super.getDataSource();
-    }
+	public String getActiveSchemaName() {
+		return activeSchemaName;
+	}
 
-    @NotNull
-    @Override
-    public YashanDBExecutionContext getContextDefaults() {
-        return this;
-    }
+	@Override
+	public DBSCatalog getDefaultCatalog() {
+		return null;
+	}
 
-    public String getActiveSchemaName() {
-        return activeSchemaName;
-    }
+	@Override
+	public YashanDBSchema getDefaultSchema() {
+		try {
+			return activeSchemaName == null ? null
+					: getDataSource().getSchema(new VoidProgressMonitor(), activeSchemaName);
+		} catch (Exception e) {
+			log.error(e);
+			return null;
+		}
+	}
 
-    @Override
-    public DBSCatalog getDefaultCatalog() {
-        return null;
-    }
+	@Override
+	public boolean supportsCatalogChange() {
+		return false;
+	}
 
-    @Override
-    public YashanDBSchema getDefaultSchema() {
-        try {
-            return activeSchemaName == null ? null : getDataSource().getSchema(new VoidProgressMonitor(), activeSchemaName);
-        } catch (Exception e) {
-            log.error(e);
-            return null;
-        }
-    }
+	@Override
+	public boolean supportsSchemaChange() {
+		return true;
+	}
 
-    @Override
-    public boolean supportsCatalogChange() {
-        return false;
-    }
+	@Override
+	public void setDefaultCatalog(DBRProgressMonitor monitor, DBSCatalog catalog, YashanDBSchema schema)
+			throws DBCException {
+		throw new DBCFeatureNotSupportedException();
+	}
 
-    @Override
-    public boolean supportsSchemaChange() {
-        return true;
-    }
+	@Override
+	public void setDefaultSchema(DBRProgressMonitor monitor, YashanDBSchema schema) throws DBCException {
+		final YashanDBSchema oldSelectedEntity = getDefaultSchema();
+		if (schema == null || oldSelectedEntity == schema) {
+			return;
+		}
+		setCurrentSchema(monitor, schema);
+		activeSchemaName = schema.getName();
 
-    @Override
-    public void setDefaultCatalog(DBRProgressMonitor monitor, DBSCatalog catalog, YashanDBSchema schema) throws DBCException {
-        throw new DBCFeatureNotSupportedException();
-    }
+		DBUtils.fireObjectSelectionChange(oldSelectedEntity, schema, this);
+	}
 
-    @Override
-    public void setDefaultSchema(DBRProgressMonitor monitor, YashanDBSchema schema) throws DBCException {
-        final YashanDBSchema oldSelectedEntity = getDefaultSchema();
-        if (schema == null || oldSelectedEntity == schema) {
-            return;
-        }
-        setCurrentSchema(monitor, schema);
-        activeSchemaName = schema.getName();
+	@Override
+	public boolean refreshDefaults(DBRProgressMonitor monitor, boolean useBootstrapSettings) throws DBException {
+		try (JDBCSession session = openSession(monitor, DBCExecutionPurpose.META, "Query active schema")) {
+			if (useBootstrapSettings) {
+				DBPConnectionBootstrap bootstrap = getBootstrapSettings();
+				String bootstrapSchemaName = bootstrap.getDefaultSchemaName();
+				if (!CommonUtils.isEmpty(bootstrapSchemaName) && !bootstrapSchemaName.equals(activeSchemaName)) {
+					setCurrentSchema(monitor, bootstrap.getDefaultSchemaName());
+				}
+			}
+			this.activeSchemaName = YashanDBUtils.getCurrentSchema(session);
+			if (this.activeSchemaName != null) {
+				if (this.activeSchemaName.isEmpty()) {
+					this.activeSchemaName = null;
+				}
+			}
+		} catch (Exception e) {
+			throw new DBCException(e, this);
+		}
 
-        // Send notifications.
-        DBUtils.fireObjectSelectionChange(oldSelectedEntity, schema);
-    }
+		return true;
+	}
 
-    @Override
-    public boolean refreshDefaults(DBRProgressMonitor monitor, boolean useBootstrapSettings) throws DBException {
-        // Check default active schema.
-        try (JDBCSession session = openSession(monitor, DBCExecutionPurpose.META, "Query active schema")) {
-            if (useBootstrapSettings) {
-                DBPConnectionBootstrap bootstrap = getBootstrapSettings();
-                String bootstrapSchemaName = bootstrap.getDefaultSchemaName();
-                if (!CommonUtils.isEmpty(bootstrapSchemaName) && !bootstrapSchemaName.equals(activeSchemaName)) {
-                    setCurrentSchema(monitor, bootstrap.getDefaultSchemaName());
-                }
-            }
-            // Get active schema.
-            this.activeSchemaName = YashanDBUtils.getCurrentSchema(session);
-            if (this.activeSchemaName != null) {
-                if (this.activeSchemaName.isEmpty()) {
-                    this.activeSchemaName = null;
-                }
-            }
-        } catch (Exception e) {
-            throw new DBCException(e, this);
-        }
+	void setCurrentSchema(DBRProgressMonitor monitor, YashanDBSchema object) throws DBCException {
+		if (object == null) {
+			log.debug("Null current schema");
+			return;
+		}
+		setCurrentSchema(monitor, object.getName());
+	}
 
-        return true;
-    }
-
-    void setCurrentSchema(DBRProgressMonitor monitor, YashanDBSchema object) throws DBCException {
-        if (object == null) {
-            log.debug("Null current schema");
-            return;
-        }
-        setCurrentSchema(monitor, object.getName());
-    }
-
-    private void setCurrentSchema(DBRProgressMonitor monitor, String activeSchemaName) throws DBCException {
-        DBSObject oldDefaultSchema = getDefaultSchema();
-        try (JDBCSession session = openSession(monitor, DBCExecutionPurpose.UTIL, TASK_TITLE_SET_SCHEMA)) {
-            YashanDBUtils.setCurrentSchema(session, activeSchemaName);
-            this.activeSchemaName = activeSchemaName;
-            DBSObject newDefaultSchema = getDefaultSchema();
-            DBUtils.fireObjectSelectionChange(oldDefaultSchema, newDefaultSchema);
-        } catch (SQLException e) {
-            log.fatal(String.format("change current schema to %s failed",activeSchemaName),e);
-        }
-    }
-
-    public void setIsolatedContext(boolean isolatedContext) {
-        this.isolatedContext = isolatedContext;
-    }
+	private void setCurrentSchema(DBRProgressMonitor monitor, String activeSchemaName) throws DBCException {
+		DBSObject oldDefaultSchema = getDefaultSchema();
+		try (JDBCSession session = openSession(monitor, DBCExecutionPurpose.UTIL, TASK_TITLE_SET_SCHEMA)) {
+			YashanDBUtils.setCurrentSchema(session, activeSchemaName);
+			this.activeSchemaName = activeSchemaName;
+			DBSObject newDefaultSchema = getDefaultSchema();
+			DBUtils.fireObjectSelectionChange(oldDefaultSchema, newDefaultSchema, this);
+		} catch (SQLException e) {
+			throw new DBCException(e, this);
+		}
+	}
 
 }

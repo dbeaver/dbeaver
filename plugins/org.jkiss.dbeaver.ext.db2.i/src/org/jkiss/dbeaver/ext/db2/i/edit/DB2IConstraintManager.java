@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ext.db2.i.edit;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ext.db2.i.model.DB2IConstraint;
 import org.jkiss.dbeaver.ext.generic.edit.GenericPrimaryKeyManager;
 import org.jkiss.dbeaver.ext.generic.model.GenericStructContainer;
@@ -24,7 +25,6 @@ import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
-import org.jkiss.dbeaver.model.impl.edit.DBECommandAbstract;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
@@ -35,7 +35,7 @@ import java.util.Map;
 public class DB2IConstraintManager extends GenericPrimaryKeyManager {
 
     @Override
-    protected void addObjectCreateActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, ObjectCreateCommand command, Map<String, Object> options) {
+    protected void addObjectCreateActions(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext executionContext, @NotNull List<DBEPersistAction> actions, @NotNull ObjectCreateCommand command, @NotNull Map<String, Object> options) {
         GenericUniqueKey key = command.getObject();
         GenericStructContainer container = key.getParentObject().getParentObject();
         if (key.getConstraintType() == DBSEntityConstraintType.CHECK && key instanceof DB2IConstraint && container != null) {
@@ -48,15 +48,6 @@ public class DB2IConstraintManager extends GenericPrimaryKeyManager {
                 ));
         } else {
             super.addObjectCreateActions(monitor, executionContext, actions, command, options);
-        }
-    }
-
-    @Override
-    protected void appendConstraintDefinition(StringBuilder decl, DBECommandAbstract<GenericUniqueKey> command) {
-        if (command.getObject().getConstraintType() == DBSEntityConstraintType.CHECK) {
-            decl.append("(").append(((DB2IConstraint) command.getObject()).getCheckConstraintDefinition()).append(")");
-        } else {
-            super.appendConstraintDefinition(decl, command);
         }
     }
 }

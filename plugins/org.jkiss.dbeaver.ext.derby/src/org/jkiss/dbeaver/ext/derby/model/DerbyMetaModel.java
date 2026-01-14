@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.ext.derby.model;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBDatabaseException;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.generic.model.*;
@@ -56,17 +57,17 @@ public class DerbyMetaModel extends GenericMetaModel
         super();
     }
 
-    public String getViewDDL(DBRProgressMonitor monitor, GenericView sourceObject, Map<String, Object> options) throws DBException {
+    public String getViewDDL(@NotNull DBRProgressMonitor monitor, @NotNull GenericView sourceObject, @NotNull Map<String, Object> options) throws DBException {
         try (JDBCSession session = DBUtils.openMetaSession(monitor, sourceObject, "Read view definition")) {
             return JDBCUtils.queryString(session, "SELECT v.VIEWDEFINITION from SYS.SYSVIEWS v,SYS.SYSTABLES t,SYS.SYSSCHEMAS s\n" +
                 "WHERE v.TABLEID=t.TABLEID AND t.SCHEMAID=s.SCHEMAID AND s.SCHEMANAME=? AND t.TABLENAME=?", sourceObject.getContainer().getName(), sourceObject.getName());
         } catch (SQLException e) {
-            throw new DBException(e, sourceObject.getDataSource());
+            throw new DBDatabaseException(e, sourceObject.getDataSource());
         }
     }
 
     @Override
-    public String getProcedureDDL(DBRProgressMonitor monitor, GenericProcedure sourceObject) throws DBException {
+    public String getProcedureDDL(@NotNull DBRProgressMonitor monitor, @NotNull GenericProcedure sourceObject) throws DBException {
         String procMethodName = sourceObject.getDescription();
         int divPos = procMethodName.lastIndexOf('.');
         if (divPos == -1) {
@@ -114,6 +115,7 @@ public class DerbyMetaModel extends GenericMetaModel
             JDBCUtils.safeGetLong(dbResult, 5));
     }
 
+    @Nullable
     @Override
     public DBPErrorAssistant.ErrorPosition getErrorPosition(@NotNull Throwable error) {
         String message = error.getMessage();
@@ -155,7 +157,7 @@ public class DerbyMetaModel extends GenericMetaModel
     }
 
     @Override
-    public DBSEntityConstraintType getUniqueConstraintType(JDBCResultSet dbResult) throws DBException, SQLException {
+    public DBSEntityConstraintType getUniqueConstraintType(@NotNull JDBCResultSet dbResult) throws DBException, SQLException {
         String type = JDBCUtils.safeGetString(dbResult, "TYPE");
         if (type != null) {
             if ("P".equals(type)) {
@@ -166,13 +168,16 @@ public class DerbyMetaModel extends GenericMetaModel
         return super.getUniqueConstraintType(dbResult);
     }
 
+    @NotNull
     @Override
-    public GenericUniqueKey createConstraintImpl(GenericTableBase table, String constraintName, DBSEntityConstraintType constraintType, JDBCResultSet dbResult, boolean persisted) {
+    public GenericUniqueKey createConstraintImpl(@NotNull GenericTableBase table, String constraintName, DBSEntityConstraintType constraintType, JDBCResultSet dbResult, boolean persisted) {
         return new GenericUniqueKey(table, constraintName, null, constraintType, persisted);
     }
 
+    @Nullable
     @Override
-    public GenericTableConstraintColumn[] createConstraintColumnsImpl(JDBCSession session, GenericTableBase parent, GenericUniqueKey object, GenericMetaObject pkObject, JDBCResultSet dbResult) throws DBException {
+    public GenericTableConstraintColumn[] createConstraintColumnsImpl(@NotNull JDBCSession session, @NotNull GenericTableBase parent, @NotNull
+    GenericUniqueKey object, GenericMetaObject pkObject, JDBCResultSet dbResult) throws DBException {
         try {
             List<GenericTableConstraintColumn> derbyConstraintColumns = new ArrayList<>();
             Object descriptor = JDBCUtils.safeGetObject(dbResult, "DESCRIPTOR");
@@ -199,7 +204,13 @@ public class DerbyMetaModel extends GenericMetaModel
     }
 
     @Override
-    public GenericDataSource createDataSourceImpl(DBRProgressMonitor monitor, DBPDataSourceContainer container) throws DBException {
+    public boolean supportsUniqueKeys() {
+        return true;
+    }
+
+    @NotNull
+    @Override
+    public GenericDataSource createDataSourceImpl(@NotNull DBRProgressMonitor monitor, @NotNull DBPDataSourceContainer container) throws DBException {
         return new DerbyDataSource(monitor, container, this);
     }
 }

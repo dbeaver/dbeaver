@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,25 +22,23 @@ import org.jkiss.dbeaver.tools.transfer.stream.IStreamDataImporterSite;
 import org.jkiss.dbeaver.tools.transfer.stream.StreamDataImporterColumnInfo;
 import org.jkiss.dbeaver.tools.transfer.stream.StreamEntityMapping;
 import org.jkiss.dbeaver.tools.transfer.stream.importer.DataImporterCSV;
+import org.jkiss.junit.DBeaverUnitTest;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.mockito.junit.MockitoJUnitRunner;
 
 import java.io.ByteArrayInputStream;
-import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-@RunWith(MockitoJUnitRunner.class)
-public class CSVImporterTest {
-    private static final File DUMMY_FILE = new File("dummy");
+public class CSVImporterTest  extends DBeaverUnitTest {
 
+    private static final Path DUMMY_FILE = Path.of("dummy");
     private final DataImporterCSV importer = new DataImporterCSV();
     private final StreamEntityMapping mapping = new StreamEntityMapping(DUMMY_FILE);
     private final Map<String, Object> properties = new HashMap<>();
@@ -88,12 +86,14 @@ public class CSVImporterTest {
   
     @Test
     public void guessColumnTypesWithLongData() throws DBException, IOException {
-    	List<StreamDataImporterColumnInfo> columnsInfo = readColumnsInfo("2147483648,-9223372036854775808", false);
-    	Assert.assertEquals(2,  columnsInfo.size());
+    	List<StreamDataImporterColumnInfo> columnsInfo = readColumnsInfo("2147483648,-9223372036854775808,1", false);
+    	Assert.assertEquals(3,  columnsInfo.size());
     	Assert.assertEquals(DBPDataKind.NUMERIC, columnsInfo.get(0).getDataKind());
-    	Assert.assertEquals("INTEGER", columnsInfo.get(0).getTypeName());
+    	Assert.assertEquals("BIGINT", columnsInfo.get(0).getTypeName());
     	Assert.assertEquals(DBPDataKind.NUMERIC, columnsInfo.get(1).getDataKind());
-    	Assert.assertEquals("INTEGER", columnsInfo.get(1).getTypeName());
+    	Assert.assertEquals("BIGINT", columnsInfo.get(1).getTypeName());
+        Assert.assertEquals(DBPDataKind.NUMERIC, columnsInfo.get(2).getDataKind());
+        Assert.assertEquals("INTEGER", columnsInfo.get(2).getTypeName());
     }
     
     @Test

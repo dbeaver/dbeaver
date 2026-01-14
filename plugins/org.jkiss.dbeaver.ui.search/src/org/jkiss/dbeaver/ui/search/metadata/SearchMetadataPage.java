@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,6 +38,7 @@ import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.internal.UINavigatorMessages;
 import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 import org.jkiss.dbeaver.ui.navigator.database.DatabaseNavigatorTree;
 import org.jkiss.dbeaver.ui.navigator.database.load.TreeNodeSpecial;
@@ -57,8 +58,11 @@ public class SearchMetadataPage extends AbstractSearchPage {
     private static final String PROP_HISTORY = "search.metadata.history"; //$NON-NLS-1$
     private static final String PROP_OBJECT_TYPE = "search.metadata.object-type"; //$NON-NLS-1$
     private static final String PROP_SOURCES = "search.metadata.object-source"; //$NON-NLS-1$
+    private static final String PROP_SHOW_CONNECTED = "search.metadata.show-connected-only"; //$NON-NLS-1$
     private static final String PROP_SEARCH_IN_COMMENTS = "search.metadata.search-in-comments"; //$NON-NLS-1$
     private static final String PROP_SEARCH_IN_DEFINITIONS = "search.metadata.search-in-definitions"; //$NON-NLS-1$
+
+    private static final boolean CONNECT_ON_CLICK = true;
 
     private Table typesTable;
     private Combo searchText;
@@ -77,6 +81,7 @@ public class SearchMetadataPage extends AbstractSearchPage {
     private Set<String> savedTypeNames = new HashSet<>();
     private List<DBNNode> sourceNodes = new ArrayList<>();
     private DBPProject currentProject;
+    private boolean showConnected;
 
     public SearchMetadataPage() {
         super("Database objects search");
@@ -86,6 +91,8 @@ public class SearchMetadataPage extends AbstractSearchPage {
     @Override
     public void createControl(Composite parent) {
         super.createControl(parent);
+
+        showConnected = DBWorkbench.getPlatform().getPreferenceStore().getBoolean(PROP_SHOW_CONNECTED);
 
         initializeDialogUnits(parent);
 
@@ -128,6 +135,12 @@ public class SearchMetadataPage extends AbstractSearchPage {
                     if (element instanceof TreeNodeSpecial) {
                         return true;
                     }
+                    if (showConnected) {
+                        if (element instanceof DBNDataSource ds && ds.getDataSource() == null ||
+                            element instanceof DBNLocalFolder lf && !lf.hasConnected()) {
+                            return false;
+                        }
+                    }
                     if (element instanceof DBNNode) {
                         if (element instanceof DBNDatabaseFolder) {
                             DBNDatabaseFolder folder = (DBNDatabaseFolder)element;
@@ -153,7 +166,7 @@ public class SearchMetadataPage extends AbstractSearchPage {
                     Object object = structSel.isEmpty() ? null : structSel.getFirstElement();
                     if (object instanceof DBNNode) {
                         for (DBNNode node = (DBNNode)object; node != null; node = node.getParentNode()) {
-                            if (node instanceof DBNDataSource) {
+                            if (node instanceof DBNDataSource && CONNECT_ON_CLICK) {
                                 DBNDataSource dsNode = (DBNDataSource) node;
                                 try {
                                     dsNode.initializeNode(null, status -> {
@@ -182,6 +195,18 @@ public class SearchMetadataPage extends AbstractSearchPage {
                     if (node instanceof TreeNodeSpecial) {
                         ((TreeNodeSpecial) node).handleDefaultAction(dataSourceTree);
                     }
+                }
+            });
+
+            final Button showConnectedCheck = new Button(sourceGroup, SWT.CHECK);
+            showConnectedCheck.setText(UINavigatorMessages.label_show_connected);
+            showConnectedCheck.setSelection(showConnected);
+            showConnectedCheck.addSelectionListener(new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    showConnected = showConnectedCheck.getSelection();
+                    treeViewer.refresh();
+                    DBWorkbench.getPlatform().getPreferenceStore().setValue(PROP_SHOW_CONNECTED, showConnected);
                 }
             });
         }

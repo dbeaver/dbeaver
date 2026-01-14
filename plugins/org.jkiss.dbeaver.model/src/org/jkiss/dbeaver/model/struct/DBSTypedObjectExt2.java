@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,8 @@
  */
 package org.jkiss.dbeaver.model.struct;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPObject;
 
@@ -28,13 +30,13 @@ public interface DBSTypedObjectExt2 extends DBPObject {
      *
      * @throws DBException on any DB error or if the type could not be resolved
      */
-    void setTypeName(String typeName) throws DBException;
+    void setTypeName(@NotNull String typeName) throws DBException;
 
     void setMaxLength(long maxLength);
 
-    void setScale(Integer scale);
+    void setScale(@Nullable Integer scale);
 
-    void setPrecision(Integer precision);
+    void setPrecision(@Nullable Integer precision);
 
     void setRequired(boolean required);
 

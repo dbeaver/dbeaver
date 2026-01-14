@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -128,6 +128,9 @@ public class GISGeometryValueHandler extends JDBCAbstractValueHandler {
                 bytes = ((JDBCContentBytes) object).getRawValue();
             } else {
                 bytes = (byte[]) object;
+            }
+            if (bytes.length == 0) {
+                return new DBGeometry();
             }
             try {
                 geometry = new DBGeometry(convertGeometryFromBinaryFormat(session, bytes));

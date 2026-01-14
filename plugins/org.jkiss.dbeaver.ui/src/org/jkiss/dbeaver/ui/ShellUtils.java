@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,9 +22,12 @@ import org.eclipse.ui.internal.ide.IDEInternalPreferences;
 import org.eclipse.ui.internal.ide.IDEWorkbenchPlugin;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.utils.RuntimeUtils;
+import org.jkiss.utils.IOUtils;
 
-import java.io.File;
-import java.io.IOException;
+import java.awt.*;
+import java.io.*;
+import java.nio.file.Path;
 
 /**
  * Utilities for interacting with the OS shell
@@ -40,9 +43,49 @@ public final class ShellUtils {
         return Program.launch(path);
     }
 
-    public static void showInSystemExplorer(@NotNull String path) {
-        final File file = new File(path);
+    /**
+     * Opens a file under the given {@code path} using preferred for the current platform application.
+     *
+     * @param path path to a file to open
+     * @return {@code true} on success, {@code false} on failure if the file can't be opened
+     */
+    public static boolean openExternalFile(@NotNull Path path) {
+        try {
+            if (RuntimeUtils.isMacOS()) {
+                executeWithReturnCodeCheck("open", "-a", "Finder.app", path.toAbsolutePath().toString());
+                return true;
+            } else if (RuntimeUtils.isLinux()) {
+                executeWithReturnCodeCheck("xdg-open", path.toAbsolutePath().toString());
+                return true;
+            }
+        } catch (IOException | InterruptedException e) {
+            log.debug("Unable to open external program in a platform-specific way: " + e.getMessage());
+        }
 
+        try {
+            Desktop.getDesktop().open(path.toFile());
+            return true;
+        } catch (IOException e) {
+            log.error("Unable to open external file", e);
+            return false;
+        }
+    }
+
+    /**
+     * Opens the default file system explorer and highlights the file denoted by the supplied path.
+     *
+     * @param path of a file to highlight
+     */
+    public static void showInSystemExplorer(@NotNull String path) {
+        showInSystemExplorer(new File(path));
+    }
+
+    /**
+     * Opens the default file system explorer and highlights the supplied file.
+     *
+     * @param file to highlight
+     */
+    public static void showInSystemExplorer(@NotNull File file) {
         try {
             final String cmd = formShowInSystemExplorerCommand(file);
             final Process process;
@@ -66,6 +109,19 @@ public final class ShellUtils {
             } else {
                 launchProgram(file.getParent());
             }
+        }
+    }
+
+    private static void executeWithReturnCodeCheck(@NotNull String... cmd) throws IOException, InterruptedException {
+        final Process process = Runtime.getRuntime().exec(cmd);
+        final int code = process.waitFor();
+
+        if (code != 0) {
+            final Reader reader = new BufferedReader(new InputStreamReader(process.getErrorStream()));
+            final Writer writer = new StringWriter();
+            IOUtils.copyText(reader, writer);
+
+            throw new IOException("Process ended with code " + code + ": " + writer);
         }
     }
 

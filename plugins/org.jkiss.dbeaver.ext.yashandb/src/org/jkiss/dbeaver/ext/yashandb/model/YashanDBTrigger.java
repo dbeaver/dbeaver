@@ -1,13 +1,31 @@
+/*
+ * DBeaver - Universal Database Manager
+ * Copyright (C) 2010-2025 DBeaver Corp and others
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.jkiss.dbeaver.ext.yashandb.model;
+
+import java.sql.ResultSet;
+import java.util.Map;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ext.yashandb.model.util.YashanDBUtils;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
-import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.DBPQualifiedObject;
 import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
@@ -18,175 +36,135 @@ import org.jkiss.dbeaver.model.struct.DBSObjectState;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTrigger;
 import org.jkiss.utils.CommonUtils;
 
-import java.sql.ResultSet;
-import java.util.Map;
+public abstract class YashanDBTrigger<PARENT extends DBSObject> extends YashanDBObject<PARENT>
+		implements DBSTrigger, DBPQualifiedObject, YashanDBSourceObject {
 
-/**
- * @Author: donghy
- * @Date: 2022/08
- * @Description:
- */
-public abstract class YashanDBTrigger<PARENT extends DBSObject>
-        extends YashanDBObject<PARENT> implements DBSTrigger, DBPQualifiedObject, YashanDBSourceObject {
+	public YashanDBTrigger(PARENT parent, String name) {
+		super(parent, name, false);
+	}
 
-    public enum BaseObjectType {
-        TABLE,
-        VIEW,
-        SCHEMA,
-        DATABASE
-    }
+	public YashanDBTrigger(PARENT parent, ResultSet dbResult) {
+		super(parent, JDBCUtils.safeGetString(dbResult, "TRIGGER_NAME"), true);
+		this.objectType = CommonUtils.valueOf(BaseObjectType.class,
+				JDBCUtils.safeGetStringTrimmed(dbResult, "BASE_OBJECT_TYPE"));
+		this.triggerType = JDBCUtils.safeGetString(dbResult, "TRIGGER_TYPE");
+		this.triggeringEvent = JDBCUtils.safeGetString(dbResult, "TRIGGERING_EVENT");
+		this.columnName = JDBCUtils.safeGetString(dbResult, "COLUMN_NAME");
+		this.refNames = JDBCUtils.safeGetString(dbResult, "REFERENCING_NAMES");
+		this.whenClause = JDBCUtils.safeGetString(dbResult, "WHEN_CLAUSE");
+		this.status = CommonUtils.valueOf(YashanDBObjectStatus.class,
+				JDBCUtils.safeGetStringTrimmed(dbResult, "STATUS"));
+		this.description = JDBCUtils.safeGetString(dbResult, "DESCRIPTION");
+		this.actionType = JDBCUtils.safeGetString(dbResult, "ACTION_TYPE");
+	}
 
-    public enum ActionType implements DBPNamedObject {
-        PLSQL("PL/SQL"),
-        CALL("CALL");
+	private BaseObjectType objectType;
+	private String triggerType;
+	private String triggeringEvent;
+	private String columnName;
+	private String refNames;
+	private String whenClause;
+	private YashanDBObjectStatus status;
+	private String description;
+	private String actionType;
+	private String objectDefinitionText;
 
-        private final String title;
+	@NotNull
+	@Override
+	@Property(viewable = true, editable = true, order = 1)
+	public String getName() {
+		return super.getName();
+	}
 
-        ActionType(String title) {
-            this.title = title;
-        }
+	@Property(viewable = true, order = 5)
+	public BaseObjectType getObjectType() {
+		return objectType;
+	}
 
-        @NotNull
-        @Override
-        public String getName() {
-            return title;
-        }
-    }
+	@Property(viewable = true, order = 5)
+	public String getTriggerType() {
+		return triggerType;
+	}
 
-    private BaseObjectType objectType;
-    private String triggerType;
-    private String triggeringEvent;
-    private String columnName;
-    private String refNames;
-    private String whenClause;
-    private YashanDBObjectStatus status;
-    private String description;
-    private ActionType actionType;
-    private String sourceDeclaration;
+	@Property(viewable = true, order = 6)
+	public String getTriggeringEvent() {
+		return triggeringEvent;
+	}
 
-    public YashanDBTrigger(PARENT parent, String name) {
-        super(parent, name, false);
-    }
+	@Property(viewable = true, order = 7)
+	public String getColumnName() {
+		return columnName;
+	}
 
-    public YashanDBTrigger(
-            PARENT parent,
-            ResultSet dbResult) {
-        super(parent, JDBCUtils.safeGetString(dbResult, "TRIGGER_NAME"), true);
-        this.objectType = CommonUtils.valueOf(BaseObjectType.class, JDBCUtils.safeGetStringTrimmed(dbResult, "BASE_OBJECT_TYPE"));
-        this.triggerType = JDBCUtils.safeGetString(dbResult, "TRIGGER_TYPE");
-        this.triggeringEvent = JDBCUtils.safeGetString(dbResult, "TRIGGERING_EVENT");
-        this.columnName = JDBCUtils.safeGetString(dbResult, "COLUMN_NAME");
-        this.refNames = JDBCUtils.safeGetString(dbResult, "REFERENCING_NAMES");
-        this.whenClause = JDBCUtils.safeGetString(dbResult, "WHEN_CLAUSE");
-        this.status = CommonUtils.valueOf(YashanDBObjectStatus.class, JDBCUtils.safeGetStringTrimmed(dbResult, "STATUS"));
-        this.description = JDBCUtils.safeGetString(dbResult, "DESCRIPTION");
-        this.actionType = "CALL".equals(JDBCUtils.safeGetString(dbResult, "ACTION_TYPE")) ? ActionType.CALL : ActionType.PLSQL;
-    }
+	@Property(order = 8)
+	public String getRefNames() {
+		return refNames;
+	}
 
-    @NotNull
-    @Override
-    @Property(viewable = true, editable = true, order = 1)
-    public String getName() {
-        return super.getName();
-    }
+	@Property(order = 9)
+	public String getWhenClause() {
+		return whenClause;
+	}
 
-    @Property(viewable = true, order = 5)
-    public BaseObjectType getObjectType() {
-        return objectType;
-    }
+	@Property(viewable = true, order = 10)
+	public YashanDBObjectStatus getStatus() {
+		return status;
+	}
 
-    @Property(viewable = true, order = 5)
-    public String getTriggerType() {
-        return triggerType;
-    }
+	@Nullable
+	@Override
+	@Property(length = PropertyLength.MULTILINE, order = 11)
+	public String getDescription() {
+		return description;
+	}
 
-    @Property(viewable = true, order = 6)
-    public String getTriggeringEvent() {
-        return triggeringEvent;
-    }
+	@Property(viewable = true, order = 12)
+	public String getActionType() {
+		return actionType;
+	}
 
-    @Property(viewable = true, order = 7)
-    public String getColumnName() {
-        return columnName;
-    }
+	@Override
+	public YashanDBSourceType getSourceType() {
+		return YashanDBSourceType.TRIGGER;
+	}
 
-    @Property(order = 8)
-    public String getRefNames() {
-        return refNames;
-    }
+	@Override
+	@Property(hidden = true, editable = true, updatable = true, order = -1)
+	public String getObjectDefinitionText(DBRProgressMonitor monitor, Map<String, Object> options) throws DBException {
+		if (objectDefinitionText == null && monitor != null) {
+			objectDefinitionText = YashanDBUtils.getSource(monitor, this, false, false);
+		}
+		return objectDefinitionText;
+	}
 
-    @Property(order = 9)
-    public String getWhenClause() {
-        return whenClause;
-    }
+	public void setObjectDefinitionText(String source) {
+		this.objectDefinitionText = source;
+	}
 
-    @Property(viewable = true, order = 10)
-    public YashanDBObjectStatus getStatus() {
-        return status;
-    }
+	@NotNull
+	@Override
+	public DBSObjectState getObjectState() {
+		return status == YashanDBObjectStatus.ENABLED ? DBSObjectState.NORMAL : DBSObjectState.INVALID;
+	}
 
-    @Nullable
-    @Override
-    @Property(length = PropertyLength.MULTILINE, order = 11)
-    public String getDescription() {
-        return description;
-    }
+	@Override
+	public void refreshObjectState(@NotNull DBRProgressMonitor monitor) throws DBCException {
+		this.status = (YashanDBUtils.getObjectStatus(monitor, this, YashanDBObjectType.TRIGGER)
+				? YashanDBObjectStatus.ENABLED
+				: YashanDBObjectStatus.ERROR);
+	}
 
-    @Property(viewable = true, order = 12)
-    public ActionType getActionType() {
-        return actionType;
-    }
+	@Override
+	public String getFullyQualifiedName(DBPEvaluationContext context) {
+		return DBUtils.getFullQualifiedName(getDataSource(), getSchema(), this);
+	}
 
-    @Override
-    public YashanDBSourceType getSourceType() {
-        return YashanDBSourceType.TRIGGER;
-    }
+	@Override
+	public String toString() {
+		return getFullyQualifiedName(DBPEvaluationContext.DDL);
+	}
 
-    @Override
-    @Property(hidden = true, editable = true, updatable = true, order = -1)
-    public String getObjectDefinitionText(DBRProgressMonitor monitor, Map<String, Object> options) throws DBException {
-        if (sourceDeclaration == null && monitor != null) {
-            sourceDeclaration = YashanDBUtils.getSource(monitor, this, false, false);
-        }
-//        return sourceDeclaration;
-        return sourceDeclaration;
-    }
-
-    public void setObjectDefinitionText(String source) {
-        this.sourceDeclaration = source;
-    }
-
-    @NotNull
-    @Override
-    public DBSObjectState getObjectState() {
-        return status == YashanDBObjectStatus.ENABLED ? DBSObjectState.NORMAL : DBSObjectState.INVALID;
-    }
-
-    @Override
-    public void refreshObjectState(@NotNull DBRProgressMonitor monitor) throws DBCException {
-        this.status = (YashanDBUtils.getObjectStatus(monitor, this, YashanDBObjectType.TRIGGER) ? YashanDBObjectStatus.ENABLED : YashanDBObjectStatus.ERROR);
-    }
-
-    @Override
-    public DBEPersistAction[] getCompileActions(DBRProgressMonitor monitor) {
-//        return new DBEPersistAction[] {
-//                new OracleObjectPersistAction(
-//                        OracleObjectType.TRIGGER,
-//                        "Compile trigger",
-//                        "ALTER TRIGGER " + getFullyQualifiedName(DBPEvaluationContext.DDL) + " COMPILE"
-//                )};
-        return null;
-    }
-
-    @Override
-    public String getFullyQualifiedName(DBPEvaluationContext context) {
-        return DBUtils.getFullQualifiedName(getDataSource(),
-                getSchema(),
-                this);
-    }
-
-    @Override
-    public String toString() {
-        return getFullyQualifiedName(DBPEvaluationContext.DDL);
-    }
+	public enum BaseObjectType {
+		TABLE, VIEW, SCHEMA, DATABASE
+	}
 }

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -91,7 +91,7 @@ public class SQLServerView extends SQLServerTableBase implements DBSView {
 
     @Override
     @Association
-    public Collection<SQLServerTableIndex> getIndexes(DBRProgressMonitor monitor)
+    public Collection<SQLServerTableIndex> getIndexes(@NotNull DBRProgressMonitor monitor)
         throws DBException
     {
         return null;
@@ -125,17 +125,20 @@ public class SQLServerView extends SQLServerTableBase implements DBSView {
         return ddl;
     }
 
+    @NotNull
     @Override
     @Property(hidden = true, editable = true, updatable = true, order = -1)
-    public String getObjectDefinitionText(DBRProgressMonitor monitor, Map<String, Object> options) throws DBException {
+    public String getObjectDefinitionText(@NotNull DBRProgressMonitor monitor, @NotNull Map<String, Object> options) throws DBException {
         if (CommonUtils.getOption(options, DBPScriptObject.OPTION_REFRESH)) {
             ddl = null;
         }
         if (ddl == null) {
             if (isPersisted()) {
-                ddl = SQLServerUtils.extractSource(monitor, getSchema(), getName());
+                String ddl1 = SQLServerUtils.extractSource(monitor, this);
+                ddl = SQLServerUtils.changeCreateToAlterDDL(getDataSource(), ddl1);
             } else {
-                ddl = "CREATE VIEW " + this.getFullyQualifiedName(DBPEvaluationContext.DDL) + " AS\n";
+                String createOrAlter = getDataSource().isAtLeastV16() ? "CREATE OR ALTER" : "ALTER";
+                ddl = createOrAlter + "VIEW " + this.getFullyQualifiedName(DBPEvaluationContext.DDL) + " AS\n";
             }
         }
         return ddl;
@@ -154,7 +157,7 @@ public class SQLServerView extends SQLServerTableBase implements DBSView {
     }
 
     @Override
-    public boolean supportsObjectDefinitionOption(String option) {
+    public boolean supportsObjectDefinitionOption(@NotNull String option) {
         return false;
     }
 

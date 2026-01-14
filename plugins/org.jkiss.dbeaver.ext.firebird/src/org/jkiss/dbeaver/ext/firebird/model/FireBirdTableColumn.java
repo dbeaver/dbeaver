@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -61,6 +61,7 @@ public class FireBirdTableColumn extends GenericTableColumn implements DBPNamedO
         return super.getTable();
     }
 
+    @NotNull
     @Override
     public DBPDataKind getDataKind() {
         return dataType == null ? super.getDataKind() : dataType.getDataKind();
@@ -83,6 +84,7 @@ public class FireBirdTableColumn extends GenericTableColumn implements DBPNamedO
         return null;
     }
 
+    @NotNull
     @Property(viewable = true, editable = true, updatable = true, order = 20, listProvider = ColumnTypeNameListProvider.class)
     @Override
     public String getTypeName()
@@ -160,7 +162,7 @@ public class FireBirdTableColumn extends GenericTableColumn implements DBPNamedO
     }
 
     @Override
-    public void setDataType(FireBirdDataType dataType) {
+    public void setDataType(@NotNull FireBirdDataType dataType) {
         this.dataType = dataType;
         this.typeName = dataType.getTypeName();
     }
@@ -168,7 +170,7 @@ public class FireBirdTableColumn extends GenericTableColumn implements DBPNamedO
     public static class FireBirdColumnIncrementValueValidator implements IPropertyValueValidator<FireBirdTableColumn, Object> {
 
         @Override
-        public boolean isValidValue(FireBirdTableColumn column, Object value) throws IllegalArgumentException {
+        public boolean isValidValue(@NotNull FireBirdTableColumn column, @Nullable Object value) throws IllegalArgumentException {
             return column.getDataSource().isServerVersionAtLeast(3, 0);
         }
     }

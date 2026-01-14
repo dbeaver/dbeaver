@@ -1,7 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
- * Copyright (C) 2011-2012 Eugene Fradkin (eugene.fradkin@gmail.com)
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -67,7 +66,7 @@ public class MySQLCommandChangeUser extends DBECommandComposite<MySQLUser, UserP
     }
 
     @Override
-    public void validateCommand(DBRProgressMonitor monitor, Map<String, Object> options) throws DBException
+    public void validateCommand(@NotNull DBRProgressMonitor monitor, @NotNull Map<String, Object> options) throws DBException
     {
         String passValue = CommonUtils.toString(getProperty(UserPropertyHandler.PASSWORD));
         String confirmValue = CommonUtils.toString(getProperty(UserPropertyHandler.PASSWORD_CONFIRM));
@@ -76,8 +75,9 @@ public class MySQLCommandChangeUser extends DBECommandComposite<MySQLUser, UserP
         }
     }
 
+    @NotNull
     @Override
-    public DBEPersistAction[] getPersistActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, Map<String, Object> options)
+    public DBEPersistAction[] getPersistActions(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext executionContext, @NotNull Map<String, Object> options)
     {
         List<DBEPersistAction> actions = new ArrayList<>();
         boolean newUser = !getObject().isPersisted();
@@ -92,6 +92,7 @@ public class MySQLCommandChangeUser extends DBECommandComposite<MySQLUser, UserP
                     {
                         if (error == null) {
                             getObject().setPersisted(true);
+                            getObject().getDataSource().resetUsers();
                         }
                     }
                 });

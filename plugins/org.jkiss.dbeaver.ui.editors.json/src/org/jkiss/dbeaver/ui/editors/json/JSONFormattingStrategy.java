@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,10 +16,7 @@
  */
 package org.jkiss.dbeaver.ui.editors.json;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonParser;
+import com.google.gson.*;
 import org.eclipse.jface.text.formatter.ContextBasedFormattingStrategy;
 import org.eclipse.jface.text.source.ISourceViewer;
 import org.jkiss.utils.CommonUtils;
@@ -27,44 +24,44 @@ import org.jkiss.utils.CommonUtils;
 /**
  * The formatting strategy that transforms SQL keywords to upper case
  */
-public class JSONFormattingStrategy extends ContextBasedFormattingStrategy
-{
+public class JSONFormattingStrategy extends ContextBasedFormattingStrategy {
     private ISourceViewer sourceViewer;
     private JSONSourceViewerConfiguration svConfig;
 
-    JSONFormattingStrategy(ISourceViewer sourceViewer, JSONSourceViewerConfiguration svConfig)
-    {
+    public static Gson GSON_FORMATTED = new GsonBuilder()
+            .serializeNulls()
+            .disableHtmlEscaping()
+            .setPrettyPrinting()
+            .setStrictness(Strictness.LENIENT)
+            .create();
+
+    public static Gson GSON_UNFORMATTED = new GsonBuilder()
+        .serializeNulls()
+        .disableHtmlEscaping()
+        .setStrictness(Strictness.LENIENT)
+        .create();
+
+    JSONFormattingStrategy(ISourceViewer sourceViewer, JSONSourceViewerConfiguration svConfig) {
         this.sourceViewer = sourceViewer;
         this.svConfig = svConfig;
     }
 
     @Override
-    public void formatterStarts(String initialIndentation)
-    {
+    public void formatterStarts(String initialIndentation) {
     }
 
     @Override
-    public String format(String content, boolean isLineStart, String indentation, int[] positions)
-    {
+    public String format(String content, boolean isLineStart, String indentation, int[] positions) {
         if (CommonUtils.isEmpty(content)) {
             return content;
         }
-        JsonParser parser = new JsonParser();
-        JsonElement jsonElement = parser.parse(content);
+        JsonElement jsonElement = JsonParser.parseString(content);
 
-        Gson gson = new GsonBuilder()
-            .serializeNulls()
-            .disableHtmlEscaping()
-            .setPrettyPrinting()
-            .setLenient()
-            .create();
-        String formattedJson = gson.toJson(jsonElement);
-        return formattedJson;
+        return GSON_FORMATTED.toJson(jsonElement);
     }
 
     @Override
-    public void formatterStops()
-    {
+    public void formatterStops() {
     }
 
 }

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,33 +20,25 @@ package org.jkiss.dbeaver.ext.oracle.model;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.oracle.edit.OracleTableColumnManager;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
-import org.jkiss.dbeaver.model.app.DBPPlatform;
 import org.jkiss.dbeaver.model.edit.DBEObjectMaker;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.exec.DBExecUtils;
 import org.jkiss.dbeaver.model.impl.edit.TestCommandContext;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCRemoteInstance;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
-import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.properties.PropertySourceEditable;
-import org.jkiss.utils.StandardConstants;
+import org.jkiss.junit.DBeaverUnitTest;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.mockito.junit.MockitoJUnitRunner;
 
+import java.sql.Types;
 import java.util.Collections;
 import java.util.List;
 
-@RunWith(MockitoJUnitRunner.class)
-public class OracleAlterTableColumnTest {
-
-    @Mock
-    private DBRProgressMonitor monitor;
+public class OracleAlterTableColumnTest extends DBeaverUnitTest {
 
     private OracleDataSource testDataSource;
     private OracleTableBase oracleTableBase;
@@ -57,42 +49,45 @@ public class OracleAlterTableColumnTest {
     private DBEObjectMaker<OracleTableColumn, OracleTableBase> objectMaker;
 
     @Mock
-    private DBPDataSourceContainer mockDataSourceContainer;
-    @Mock
     private JDBCRemoteInstance mockRemoteInstance;
-
-    private final String lineBreak = System.getProperty(StandardConstants.ENV_LINE_SEPARATOR);
 
     @Before
     public void setUp() throws DBException {
-        DBPPlatform dbpPlatform = DBWorkbench.getPlatform();
-        Mockito.when(mockDataSourceContainer.getDriver()).thenReturn(dbpPlatform.getDataSourceProviderRegistry().findDriver("oracle"));
-
-        testDataSource = new OracleDataSource(mockDataSourceContainer);
+        DBPDataSourceContainer dataSourceContainer = configureTestContainer("oracle");
+        testDataSource = new OracleDataSource(dataSourceContainer);
 
         Mockito.when(mockRemoteInstance.getDataSource()).thenReturn(testDataSource);
 
         executionContext = new OracleExecutionContext(mockRemoteInstance, "Test");
         OracleSchema testSchema = new OracleSchema(testDataSource, -1, "TEST_SCHEMA");
 
-        Mockito.when(mockDataSourceContainer.getPreferenceStore()).thenReturn(dbpPlatform.getPreferenceStore());
-
         objectMaker = OracleTestUtils.getManagerForClass(OracleTableColumn.class);
 
         oracleTableBase = new OracleTable(testSchema, "TEST_TABLE");
         testColumnVarchar = OracleTestUtils.addColumn(oracleTableBase, "COLUMN1", "VARCHAR", 1);
         testColumnVarchar.setMaxLength(100);
+        testColumnVarchar.setPersisted(true);
         testColumnNumber = OracleTestUtils.addColumn(oracleTableBase, "COLUMN2", "NUMBER", 2);
         testColumnNumber.setPrecision(38);
         testColumnNumber.setScale(0);
+        testColumnNumber.setPersisted(true);
         testColumnChar = OracleTestUtils.addColumn(oracleTableBase, "COLUMN3", "CHAR", 3);
+        testColumnChar.setPersisted(true);
     }
 
     @Test
     public void generateAlterTableAddColumnStatement() throws Exception {
         TestCommandContext commandContext = new TestCommandContext(executionContext, false);
 
-        objectMaker.createNewObject(monitor, commandContext, oracleTableBase, null, Collections.emptyMap());
+        OracleTableColumn newColumn = objectMaker.createNewObject(
+            monitor,
+            commandContext,
+            oracleTableBase,
+            null,
+            Collections.emptyMap()
+        );
+        newColumn.setTypeName("INTEGER");
+        newColumn.setValueType(Types.INTEGER);
         List<DBEPersistAction> actions = DBExecUtils.getActionsListFromCommandContext(monitor, commandContext, executionContext, Collections.emptyMap(), null);
         String script = SQLUtils.generateScript(testDataSource, actions.toArray(new DBEPersistAction[0]), false);
 
@@ -146,7 +141,7 @@ public class OracleAlterTableColumnTest {
         String script = SQLUtils.generateScript(testDataSource, actions.toArray(new DBEPersistAction[0]), false);
 
         String expectedDDL =
-            "ALTER TABLE TEST_SCHEMA.TEST_TABLE MODIFY COLUMN1 VARCHAR(100) DEFAULT 'Test value' NULL;" + lineBreak;
+            "ALTER TABLE TEST_SCHEMA.TEST_TABLE MODIFY COLUMN1 VARCHAR(100) DEFAULT 'Test value';" + lineBreak;
         Assert.assertEquals(script, expectedDDL);
     }
 
@@ -163,7 +158,7 @@ public class OracleAlterTableColumnTest {
         String script = SQLUtils.generateScript(testDataSource, actions.toArray(new DBEPersistAction[0]), false);
 
         String expectedDDL =
-            "ALTER TABLE TEST_SCHEMA.TEST_TABLE MODIFY COLUMN2 NUMBER(38,0) DEFAULT 42 NULL;" + lineBreak;
+            "ALTER TABLE TEST_SCHEMA.TEST_TABLE MODIFY COLUMN2 NUMBER(38,0) DEFAULT 42;" + lineBreak;
         Assert.assertEquals(script, expectedDDL);
     }
 
@@ -181,7 +176,7 @@ public class OracleAlterTableColumnTest {
         String script = SQLUtils.generateScript(testDataSource, actions.toArray(new DBEPersistAction[0]), false);
 
         String expectedDDL =
-            "ALTER TABLE TEST_SCHEMA.TEST_TABLE MODIFY COLUMN1 VARCHAR(50) DEFAULT 'Test value' NULL;" + lineBreak;
+            "ALTER TABLE TEST_SCHEMA.TEST_TABLE MODIFY COLUMN1 VARCHAR(50) DEFAULT 'Test value';" + lineBreak;
         Assert.assertEquals(script, expectedDDL);
     }
 
@@ -197,7 +192,7 @@ public class OracleAlterTableColumnTest {
 
         String script = SQLUtils.generateScript(testDataSource, actions.toArray(new DBEPersistAction[0]), false);
 
-        String expectedDDL = "ALTER TABLE TEST_SCHEMA.TEST_TABLE MODIFY COLUMN3 CHAR(33) NULL;" + lineBreak;
+        String expectedDDL = "ALTER TABLE TEST_SCHEMA.TEST_TABLE MODIFY COLUMN3 CHAR(33);" + lineBreak;
         Assert.assertEquals(script, expectedDDL);
     }
 
@@ -213,7 +208,7 @@ public class OracleAlterTableColumnTest {
 
         String script = SQLUtils.generateScript(testDataSource, actions.toArray(new DBEPersistAction[0]), false);
 
-        String expectedDDL = "ALTER TABLE TEST_SCHEMA.TEST_TABLE MODIFY COLUMN2 NUMBER(22,0) NULL;" + lineBreak;
+        String expectedDDL = "ALTER TABLE TEST_SCHEMA.TEST_TABLE MODIFY COLUMN2 NUMBER(22,0);" + lineBreak;
         Assert.assertEquals(script, expectedDDL);
     }
 
@@ -231,7 +226,29 @@ public class OracleAlterTableColumnTest {
         String script = SQLUtils.generateScript(testDataSource, actions.toArray(new DBEPersistAction[0]), false);
 
         String expectedDDL =
-            "ALTER TABLE TEST_SCHEMA.TEST_TABLE MODIFY COLUMN2 NUMBER(38,17) DEFAULT 42 NULL;" + lineBreak;
+            "ALTER TABLE TEST_SCHEMA.TEST_TABLE MODIFY COLUMN2 NUMBER(38,17) DEFAULT 42;" + lineBreak;
+        Assert.assertEquals(script, expectedDDL);
+    }
+
+    @Test
+    public void generateAlterTableSetNullConditionStatement() throws Exception {
+        TestCommandContext commandContext = new TestCommandContext(executionContext, false);
+
+        PropertySourceEditable pse = new PropertySourceEditable(commandContext, testColumnVarchar, testColumnVarchar);
+        pse.collectProperties();
+        testColumnVarchar.setRequired(true);
+        pse.setPropertyValue(monitor, "required", false);
+
+        List<DBEPersistAction> actions = DBExecUtils.getActionsListFromCommandContext(
+            monitor,
+            commandContext,
+            executionContext,
+            Collections.emptyMap(),
+            null);
+
+        String script = SQLUtils.generateScript(testDataSource, actions.toArray(new DBEPersistAction[0]), false);
+
+        String expectedDDL = "ALTER TABLE TEST_SCHEMA.TEST_TABLE MODIFY COLUMN1 VARCHAR(100) NULL;" + lineBreak;
         Assert.assertEquals(script, expectedDDL);
     }
 

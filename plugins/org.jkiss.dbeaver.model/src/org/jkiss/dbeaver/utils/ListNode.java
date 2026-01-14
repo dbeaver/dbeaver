@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,9 +35,21 @@ public class ListNode<T> implements Iterable<T> {
         this.next = next;
         this.data = data;
     }
+    
+    public static <T> boolean hasAny(@Nullable ListNode<T> list) {
+        return list != null;
+    }
 
+    public static <T> boolean hasOne(@Nullable ListNode<T> list) {
+        return list != null && list.next == null;
+    }
+
+    public static <T> boolean hasMany(@Nullable ListNode<T> list) {
+        return list != null && list.next != null;
+    }
+    
     @NotNull
-    public static <T> ListNode<T> of(@NotNull T data) {
+    public static <T> ListNode<T> of(@Nullable T data) {
         return new ListNode<T>(null, data);
     }
 
@@ -47,8 +59,22 @@ public class ListNode<T> implements Iterable<T> {
     }
 
     @NotNull
-    public static <T> ListNode<T> push(@Nullable ListNode<T> node, @NotNull T data) {
+    public static <T> ListNode<T> push(@Nullable ListNode<T> node, @Nullable T data) {
         return new ListNode<T>(node, data);
+    }
+
+    /**
+     * Join of two linked lists
+     *
+     * @return - result of join
+     */
+    @NotNull
+    public static <T> ListNode<T> join(@Nullable ListNode<T> nodes, @NotNull ListNode<T> joinList) {
+        Iterator<T> itr = joinList.iterator();
+        while (itr.hasNext()) {
+            nodes = ListNode.push(nodes, itr.next());
+        }
+        return nodes;
     }
 
     @NotNull

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
 
 package org.jkiss.dbeaver.ui.app.standalone.rpc;
 
+
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -29,12 +30,16 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.app.DBPPlatformDesktop;
-import org.jkiss.dbeaver.model.app.DBPWorkspace;
+import org.jkiss.dbeaver.model.app.DBPProject;
+import org.jkiss.dbeaver.model.cli.ApplicationInstanceServer;
+import org.jkiss.dbeaver.model.cli.CLIProcessResult;
 import org.jkiss.dbeaver.registry.DataSourceUtils;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.actions.datasource.DataSourceHandler;
+import org.jkiss.dbeaver.ui.app.standalone.DBeaverApplication;
+import org.jkiss.dbeaver.ui.app.standalone.DBeaverCommandLine;
 import org.jkiss.dbeaver.ui.editors.EditorUtils;
 import org.jkiss.dbeaver.ui.editors.sql.handlers.SQLEditorHandlerOpenEditor;
 import org.jkiss.dbeaver.ui.editors.sql.handlers.SQLNavigatorContext;
@@ -42,51 +47,33 @@ import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.SystemVariablesResolver;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.rest.RestClient;
-import org.jkiss.utils.rest.RestServer;
 
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.Reader;
 import java.net.URI;
-import java.nio.ByteBuffer;
-import java.nio.channels.FileChannel;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.StandardOpenOption;
-import java.util.*;
+import java.security.KeyStore;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManagerFactory;
 
 /**
  * DBeaver instance controller.
  */
-public class DBeaverInstanceServer implements IInstanceController {
+public class DBeaverInstanceServer extends ApplicationInstanceServer<IInstanceController> implements IInstanceController {
 
     private static final Log log = Log.getLog(DBeaverInstanceServer.class);
     private DBPDataSourceContainer dataSourceContainer = null;
 
-    private final RestServer<IInstanceController> server;
-    private final FileChannel configFileChannel;
     private final List<File> filesToConnect = new ArrayList<>();
 
     private DBeaverInstanceServer() throws IOException {
-        server = RestServer
-            .builder(IInstanceController.class, this)
-            .setFilter(address -> address.getAddress().isLoopbackAddress())
-            .create();
-
-        configFileChannel = FileChannel.open(
-            getConfigPath(),
-            StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.WRITE
-        );
-
-        try (ByteArrayOutputStream os = new ByteArrayOutputStream()) {
-            Properties props = new Properties();
-            props.setProperty("port", String.valueOf(server.getAddress().getPort()));
-            props.store(os, "DBeaver instance server properties");
-            configFileChannel.write(ByteBuffer.wrap(os.toByteArray()));
-        }
-
-        log.debug("Starting instance server at http://localhost:" + server.getAddress().getPort());
+        super(IInstanceController.class);
     }
 
     @Nullable
@@ -105,7 +92,7 @@ public class DBeaverInstanceServer implements IInstanceController {
     }
 
     @Nullable
-    public static IInstanceController createClient(@Nullable String workspacePath) {
+    public static IInstanceController createClient(@Nullable Path workspacePath) {
         final Path path = getConfigPath(workspacePath);
 
         if (Files.notExists(path)) {
@@ -122,7 +109,7 @@ public class DBeaverInstanceServer implements IInstanceController {
             return null;
         }
 
-        final String port = properties.getProperty("port");
+        final String port = properties.getProperty(portPropertyName());
 
         if (CommonUtils.isEmptyTrimmed(port)) {
             log.error("No port specified for the instance controller to connect to");
@@ -131,6 +118,7 @@ public class DBeaverInstanceServer implements IInstanceController {
 
         final IInstanceController instance = RestClient
             .builder(URI.create("http://localhost:" + port), IInstanceController.class)
+            .setSslContext(initCustomSslContext())
             .create();
 
         try {
@@ -148,37 +136,48 @@ public class DBeaverInstanceServer implements IInstanceController {
         return instance;
     }
 
+    /**
+     * init custom ssl context to avoid default trust store initialization before an application starts
+     */
+    @Nullable
+    private static SSLContext initCustomSslContext() {
+        try {
+            var factory = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
+            factory.init(KeyStore.getInstance(KeyStore.getDefaultType()));
+            var ssl = SSLContext.getInstance("TLS");
+            ssl.init(null, factory.getTrustManagers(), null);
+            return ssl;
+        } catch (Exception e) {
+            log.error("Error init custom ssl context: " + e.getMessage(), e);
+            return null;
+        }
+    }
+
+    @NotNull
+    @Override
+    public CLIProcessResult handleCommandLine(@NotNull String[] args) {
+        try {
+            return DBeaverCommandLine.getInstance().executeCommandLineCommands(
+                this,
+                !DBeaverApplication.getInstance().isHeadlessMode(),
+                true,
+                args
+            );
+        } catch (Exception e) {
+            return new CLIProcessResult(CLIProcessResult.PostAction.ERROR, "Error executing command: " + e.getMessage());
+        }
+    }
+
     @Override
     public long ping(long payload) {
         return payload;
     }
 
     @Override
-    public String getVersion() {
-        return GeneralUtils.getProductVersion().toString();
-    }
-
-    @Override
     public void openExternalFiles(@NotNull String[] fileNames) {
-        log.debug("Open external file(s) [" + Arrays.toString(fileNames) + "]");
-
-        final IWorkbenchWindow window = UIUtils.getActiveWorkbenchWindow();
-        final Shell shell = window.getShell();
-        UIUtils.syncExec(() -> {
-            for (String filePath : fileNames) {
-                File file = new File(filePath);
-                if (file.exists()) {
-                    filesToConnect.add(file);
-                    if (dataSourceContainer != null) {
-                        EditorUtils.setFileDataSource(file, new SQLNavigatorContext(dataSourceContainer));
-                    }
-                    EditorUtils.openExternalFileEditor(file, window);
-                } else {
-                    DBWorkbench.getPlatformUI().showError("Open file", "Can't open '" + file.getAbsolutePath() + "': file doesn't exist");
-                }
-            }
-            shell.setMinimized(false);
-            shell.forceActive();
+        UIUtils.asyncExec(() -> {
+            List<Path> paths = EditorUtils.openExternalFiles(fileNames, dataSourceContainer);
+            filesToConnect.addAll(paths.stream().map(Path::toFile).toList());
         });
     }
 
@@ -187,46 +186,38 @@ public class DBeaverInstanceServer implements IInstanceController {
         // Do not log it (#3788)
         //log.debug("Open external database connection [" + connectionSpec + "]");
         InstanceConnectionParameters instanceConParameters = new InstanceConnectionParameters();
-        final DBPDataSourceContainer dataSource = DataSourceUtils.getDataSourceBySpec(
-            DBWorkbench.getPlatform().getWorkspace().getActiveProject(),
+        DBPProject activeProject = DBWorkbench.getPlatform().getWorkspace().getActiveProject();
+        if (activeProject == null) {
+            log.error("No active project in workspace");
+            return;
+        }
+        dataSourceContainer = DataSourceUtils.getDataSourceBySpec(
+            activeProject,
             GeneralUtils.replaceVariables(connectionSpec, SystemVariablesResolver.INSTANCE),
             instanceConParameters,
             false,
-            instanceConParameters.createNewConnection);
-        if (dataSource == null) {
+            instanceConParameters.isCreateNewConnection()
+        );
+        if (dataSourceContainer == null) {
             filesToConnect.clear();
             return;
         }
         if (!CommonUtils.isEmpty(filesToConnect)) {
             for (File file : filesToConnect) {
-                EditorUtils.setFileDataSource(file, new SQLNavigatorContext(dataSource));
+                EditorUtils.setFileDataSource(file, new SQLNavigatorContext(dataSourceContainer));
             }
         }
-        if (instanceConParameters.openConsole) {
+        if (instanceConParameters.isOpenConsole()) {
             final IWorkbenchWindow workbenchWindow = UIUtils.getActiveWorkbenchWindow();
             UIUtils.syncExec(() -> {
-                SQLEditorHandlerOpenEditor.openSQLConsole(workbenchWindow, new SQLNavigatorContext(dataSource), dataSource.getName(), "");
+                SQLEditorHandlerOpenEditor.openSQLConsole(workbenchWindow, new SQLNavigatorContext(dataSourceContainer), dataSourceContainer.getName(), "");
                 workbenchWindow.getShell().forceActive();
 
             });
-        } else if (instanceConParameters.makeConnect) {
-            DataSourceHandler.connectToDataSource(null, dataSource, null);
+        } else if (instanceConParameters.isMakeConnect()) {
+            DataSourceHandler.connectToDataSource(null, dataSourceContainer, null);
         }
         filesToConnect.clear();
-    }
-
-    @Override
-    public String getThreadDump() {
-        log.info("Making thread dump");
-
-        StringBuilder td = new StringBuilder();
-        for (Map.Entry<Thread, StackTraceElement[]> tde : Thread.getAllStackTraces().entrySet()) {
-            td.append(tde.getKey().getId()).append(" ").append(tde.getKey().getName()).append(":\n");
-            for (StackTraceElement ste : tde.getValue()) {
-                td.append("\t").append(ste.toString()).append("\n");
-            }
-        }
-        return td.toString();
     }
 
     @Override
@@ -248,11 +239,9 @@ public class DBeaverInstanceServer implements IInstanceController {
 
         UIUtils.syncExec(() -> {
             IWorkbenchWindow window = UIUtils.getActiveWorkbenchWindow();
-            if (window != null) {
-                IWorkbenchPage page = window.getActivePage();
-                if (page != null) {
-                    page.closeAllEditors(false);
-                }
+            IWorkbenchPage page = window.getActivePage();
+            if (page != null) {
+                page.closeAllEditors(false);
             }
         });
     }
@@ -280,57 +269,5 @@ public class DBeaverInstanceServer implements IInstanceController {
                 shell.setActive();
             }
         });
-    }
-
-    public void stopInstanceServer() {
-        try {
-            log.debug("Stop instance server");
-
-            server.stop();
-
-            if (configFileChannel != null) {
-                configFileChannel.close();
-                Files.delete(getConfigPath());
-            }
-
-            log.debug("Instance server has been stopped");
-        } catch (Exception e) {
-            log.error("Can't stop instance server", e);
-        }
-    }
-
-    @NotNull
-    private static Path getConfigPath() {
-        return getConfigPath(null);
-    }
-
-    @NotNull
-    private static Path getConfigPath(@Nullable String workspacePath) {
-        if (workspacePath != null) {
-            return Path.of(workspacePath).resolve(DBPWorkspace.METADATA_FOLDER).resolve(CONFIG_PROP_FILE);
-        } else {
-            return GeneralUtils.getMetadataFolder().resolve(CONFIG_PROP_FILE);
-        }
-    }
-
-    private static class InstanceConnectionParameters implements GeneralUtils.IParameterHandler {
-        boolean makeConnect = true, openConsole = false, createNewConnection = true;
-
-        @Override
-        public boolean setParameter(String name, String value) {
-            switch (name) {
-                case "connect":
-                    makeConnect = CommonUtils.toBoolean(value);
-                    return true;
-                case "openConsole":
-                    openConsole = CommonUtils.toBoolean(value);
-                    return true;
-                case "create":
-                    createNewConnection = CommonUtils.toBoolean(value);
-                    return true;
-                default:
-                    return false;
-            }
-        }
     }
 }

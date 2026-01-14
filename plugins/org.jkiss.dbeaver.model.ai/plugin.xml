@@ -3,9 +3,53 @@
 
 <plugin>
     <extension-point id="com.dbeaver.ai.engine" name="AI integrations" schema="schema/com.dbeaver.ai.engine.exsd"/>
+    <extension-point id="com.dbeaver.ai.assistant" name="AI assistants" schema="schema/com.dbeaver.ai.assistant.exsd"/>
+    <extension-point id="com.dbeaver.ai.prompt" name="AI prompt generators" schema="schema/com.dbeaver.ai.prompt.exsd"/>
+    <extension-point id="com.dbeaver.ai.function" name="AI functions" schema="schema/com.dbeaver.ai.function.exsd"/>
 
     <extension point="com.dbeaver.ai.engine">
-        <completionEngine id="openai" label="OpenAI" class="org.jkiss.dbeaver.model.ai.gpt3.GPTCompletionEngine"/>
+        <completionEngine id="openai"
+            label="OpenAI"
+            class="org.jkiss.dbeaver.model.ai.engine.openai.OpenAIEngine"
+            properties="org.jkiss.dbeaver.model.ai.engine.openai.OpenAIProperties"
+            default="true"
+            supportsFunctions="true"
+            fallbacks="openai-pro"/>
+        <completionEngine id="copilot"
+            label="Github Copilot"
+            class="org.jkiss.dbeaver.model.ai.engine.copilot.CopilotCompletionEngine"
+            properties="org.jkiss.dbeaver.model.ai.engine.copilot.CopilotProperties"
+            supportsFunctions="true"/>
     </extension>
 
+    <extension point="com.dbeaver.ai.assistant">
+        <assistant id="ce-assistant" priority="1"
+            class="org.jkiss.dbeaver.model.ai.impl.AIAssistantImpl"
+            sqlFormatter="org.jkiss.dbeaver.model.ai.impl.SimpleSqlFormatterImpl"
+            schemaGenerator="org.jkiss.dbeaver.model.ai.impl.AISchemaGeneratorImpl"/>
+    </extension>
+
+    <extension point="com.dbeaver.ai.prompt">
+        <prompt id="sql" icon="icons/sql-generate.svg" class="org.jkiss.dbeaver.model.ai.prompt.AIPromptGenerateSql"/>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.sqlCommand">
+        <command id="ai" class="org.jkiss.dbeaver.model.ai.commands.SQLCommandAI" label="Execute prompt" description="Execute quary in human language by using AI translator">
+            <enabledWhen>
+                <reference definitionId="org.jkiss.dbeaver.core.ai.completion.enabled.by.policy"/>
+            </enabledWhen>
+        </command>
+    </extension>
+
+    <extension point="org.eclipse.core.expressions.definitions">
+        <!-- Enabled by the policy, has precedence over the user's preference -->
+        <definition id="org.jkiss.dbeaver.core.ai.completion.enabled.by.policy">
+            <not>
+                <or>
+                    <test property="org.jkiss.dbeaver.core.global.hasPreference" value="ai.disabled"/>
+                    <test property="org.jkiss.dbeaver.core.global.hasEnvVariable" value="DBEAVER_AI_DISABLED"/>
+                </or>
+            </not>
+        </definition>
+    </extension>
 </plugin>

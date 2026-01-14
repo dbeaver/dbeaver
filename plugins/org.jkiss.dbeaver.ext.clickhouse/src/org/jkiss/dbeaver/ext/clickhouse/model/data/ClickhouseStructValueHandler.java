@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,30 +17,42 @@
 package org.jkiss.dbeaver.ext.clickhouse.model.data;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.ext.clickhouse.ClickhouseTypeParser;
 import org.jkiss.dbeaver.model.DBValueFormatting;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
+import org.jkiss.dbeaver.model.data.DBDValue;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCSession;
-import org.jkiss.dbeaver.model.impl.jdbc.JDBCStructImpl;
 import org.jkiss.dbeaver.model.impl.jdbc.data.JDBCComposite;
-import org.jkiss.dbeaver.model.impl.jdbc.data.JDBCCompositeDynamic;
 import org.jkiss.dbeaver.model.impl.jdbc.data.handlers.JDBCStructValueHandler;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.utils.ArrayUtils;
-
-import java.util.Collection;
 
 public class ClickhouseStructValueHandler extends JDBCStructValueHandler {
     
     public static final ClickhouseStructValueHandler INSTANCE = new ClickhouseStructValueHandler();
 
+    private static final Log log = Log.getLog(ClickhouseStructValueHandler.class);
+
     @Override
     public Object getValueFromObject(@NotNull DBCSession session, @NotNull DBSTypedObject type, Object object, boolean copy, boolean validateValue) throws DBCException {
-        if (type.getTypeName().startsWith("Tuple") && object instanceof Collection) {
-            return new JDBCCompositeDynamic(session, new JDBCStructImpl(type.getTypeName(), ((Collection<?>) object).toArray(), ""), null);
-        } else {
-            return super.getValueFromObject(session, type, object, copy, validateValue);
+        if (object instanceof DBDValue) {
+            return object;
         }
+
+        final String typeName = type.getTypeName();
+
+        if (typeName.startsWith("Tuple") || typeName.startsWith("Map")) {
+            try {
+                return ClickhouseTypeParser.makeValue(session, typeName, object);
+            } catch (DBException e) {
+                log.debug("Can't parse data type: " + typeName, e);
+            }
+        }
+
+        return super.getValueFromObject(session, type, object, copy, validateValue);
     }
 
     @NotNull

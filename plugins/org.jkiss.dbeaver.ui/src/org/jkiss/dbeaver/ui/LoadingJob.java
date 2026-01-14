@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.ui;
 
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -26,6 +27,7 @@ import org.jkiss.dbeaver.model.runtime.load.AbstractLoadService;
 import org.jkiss.dbeaver.model.runtime.load.ILoadService;
 import org.jkiss.dbeaver.model.runtime.load.ILoadVisualizer;
 import org.jkiss.dbeaver.model.runtime.load.ILoadVisualizerExt;
+import org.jkiss.dbeaver.runtime.DBInterruptedException;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.internal.UIActivator;
 
@@ -45,8 +47,8 @@ public class LoadingJob<RESULT>  extends AbstractJob {
         return new LoadingJob<>(loadingService, visualizer);
     }
 
-    private ILoadService<RESULT> loadingService;
-    private ILoadVisualizer<RESULT> visualizer;
+    private final ILoadService<RESULT> loadingService;
+    private final ILoadVisualizer<RESULT> visualizer;
 
     public LoadingJob(ILoadService<RESULT> loadingService, ILoadVisualizer<RESULT> visualizer)
     {
@@ -61,29 +63,29 @@ public class LoadingJob<RESULT>  extends AbstractJob {
         return loadingService;
     }
 
+    @Override
+    public boolean isForceCancel() {
+        return loadingService.isForceCancel();
+    }
+
     public ILoadVisualizer<RESULT> getVisualizer()
     {
         return visualizer;
     }
 
+    @NotNull
     @Override
-    protected IStatus run(DBRProgressMonitor monitor)
-    {
-        return run(monitor, true);
-    }
-
-    private IStatus run(DBRProgressMonitor monitor, boolean lazy)
-    {
+    protected IStatus run(@NotNull DBRProgressMonitor monitor) {
         monitor = visualizer.overwriteMonitor(monitor);
-        if (this.loadingService instanceof AbstractLoadService) {
-            ((AbstractLoadService) this.loadingService).initService(monitor, this);
+        if (this.loadingService instanceof AbstractLoadService<?> als) {
+            als.initService(monitor, this);
         }
 
         LoadingUIJob<RESULT> updateUIJob = new LoadingUIJob<>(this);
         updateUIJob.schedule();
         Throwable error = null;
         RESULT result = null;
-        monitor.beginTask("Run service " + getName(), 1);
+        monitor.beginTask(getName(), 1);
         try {
             result = this.loadingService.evaluate(monitor);
         }
@@ -107,9 +109,8 @@ public class LoadingJob<RESULT>  extends AbstractJob {
         return family == loadingService.getFamily();
     }
 
-    public void syncRun()
-    {
-        run(new VoidProgressMonitor(), false);
+    public void syncRun() {
+        run(new VoidProgressMonitor());
     }
 
     private class LoadFinisher implements Runnable {
@@ -131,7 +132,7 @@ public class LoadingJob<RESULT>  extends AbstractJob {
                 log.debug(e);
             }
 
-            if (innerError != null) {
+            if (innerError != null && !(innerError instanceof DBInterruptedException)) {
                 DBWorkbench.getPlatformUI().showError(
                         getName(),
                     null,
@@ -143,13 +144,13 @@ public class LoadingJob<RESULT>  extends AbstractJob {
         }
     }
 
-    class LoadingUIJob<RESULT> extends AbstractUIJob {
+    class LoadingUIJob<JOB_RESULT> extends AbstractUIJob {
 
         private static final long DELAY = 100;
 
-        private ILoadVisualizer<RESULT> visualizer;
+        private final ILoadVisualizer<JOB_RESULT> visualizer;
 
-        LoadingUIJob(LoadingJob<RESULT> loadingJob) {
+        LoadingUIJob(LoadingJob<JOB_RESULT> loadingJob) {
             super(loadingJob.getName());
             this.visualizer = loadingJob.getVisualizer();
             setSystem(true);

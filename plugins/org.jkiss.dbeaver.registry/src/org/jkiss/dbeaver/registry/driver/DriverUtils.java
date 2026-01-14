@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,11 +17,17 @@
 package org.jkiss.dbeaver.registry.driver;
 
 import org.eclipse.core.runtime.IConfigurationElement;
+import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.connection.DBPDataSourceProviderDescriptor;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
+import org.jkiss.dbeaver.model.connection.DBPDriverDependencies;
+import org.jkiss.dbeaver.model.connection.DBPDriverLibrary;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.registry.DataSourceRegistry;
 import org.jkiss.dbeaver.registry.ProductBundleRegistry;
 import org.jkiss.dbeaver.registry.RegistryConstants;
@@ -29,6 +35,7 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.IOUtils;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -38,6 +45,8 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
+import java.util.stream.Collectors;
+import java.util.zip.CRC32;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
@@ -202,6 +211,98 @@ public class DriverUtils {
         allDrivers.sort(Comparator.comparing(DBPNamedObject::getName));
 
         return allDrivers;
+    }
+
+    public static boolean downloadDriverFiles(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DriverDescriptor driverDescriptor,
+        @NotNull DBPDriverDependencies dependencies
+    ) {
+        try {
+            dependencies.resolveDependencies(monitor);
+        } catch (DBException e) {
+            log.error("Error resolving dependencies", e);
+            return false;
+        }
+        List<DBPDriverDependencies.DependencyNode> nodes = dependencies.getLibraryList();
+        for (DBPDriverDependencies.DependencyNode node : nodes) {
+            if (monitor.isCanceled()) {
+                break;
+            }
+            final DBPDriverLibrary lib = node.library;
+            try {
+                lib.downloadLibraryFile(
+                    monitor,
+                    false,
+                    "Download driver '" + driverDescriptor.getFullName() + "' library '" + lib.getDisplayName() + "'");
+            } catch (final IOException e) {
+                log.error(e);
+            } catch (InterruptedException e) {
+                return false;
+            }
+        }
+        driverDescriptor.setModified(true);
+        return true;
+    }
+
+    /**
+     * Returns relative driver library path if application is distributed.
+     */
+    @NotNull
+    public static String getDistributedLibraryPath(@NotNull Path path) {
+        if (DBWorkbench.isDistributed() && path.isAbsolute()) {
+            return DriverDescriptor.getExternalDriversStorageFolder().relativize(path).toString();
+        }
+        return path.toString();
+    }
+
+    @SuppressWarnings("unchecked")
+    @NotNull
+    public static <T> Class<T> getDriverClass(@NotNull DBPDataSource dataSource, @NotNull String className) throws ClassNotFoundException {
+        return (Class<T>) Class.forName(className, true, dataSource.getContainer().getDriver().getDefaultDriverLoader().getClassLoader());
+    }
+
+    public static long calculateFileCRC(Path localDriverFile) {
+        try (InputStream is = Files.newInputStream(localDriverFile)) {
+            return calculateCRC(is);
+        } catch (IOException e) {
+            log.error("Error reading file '" + localDriverFile + "', CRC calculation failed", e);
+            return 0;
+        }
+    }
+
+    public static long calculateBytesCRC(byte[] bytes) {
+        try (InputStream is = new ByteArrayInputStream(bytes)) {
+            return calculateCRC(is);
+        } catch (IOException e) {
+            log.error("CRC calculation failed from bytes", e);
+            return 0;
+        }
+    }
+
+    private static long calculateCRC(InputStream is) throws IOException {
+        CRC32 crc = new CRC32();
+
+        byte[] buffer = new byte[65536];
+        int bytesRead;
+        while ((bytesRead = is.read(buffer)) != -1) {
+            crc.update(buffer, 0, bytesRead);
+        }
+        return crc.getValue();
+    }
+
+    /**
+     * Builds string of drivers with single connection option
+     */
+    @NotNull
+    public static String collectSingleConnectionDrivers() {
+        return DBWorkbench.getPlatform().getDataSourceProviderRegistry().getDataSourceProviders().stream()
+            .flatMap(pr -> pr.getDrivers().stream())
+            .filter(d -> (d.isSingleConnection() || d.isEmbedded()))
+            .sorted(Comparator.comparing(DBPNamedObject::getName))
+            .map(d -> " - " + d.getName())
+            .distinct()
+            .collect(Collectors.joining("\n"));
     }
 
     public static class DriverNameComparator implements Comparator<DBPDriver> {

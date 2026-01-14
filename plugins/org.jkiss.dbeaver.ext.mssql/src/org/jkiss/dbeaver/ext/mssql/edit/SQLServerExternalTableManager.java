@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -40,7 +40,7 @@ public class SQLServerExternalTableManager extends SQLServerBaseTableManager<SQL
         SQLServerTableColumn.class);
 
     @Override
-    protected SQLServerExternalTable createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, Object container, Object copyFrom, Map<String, Object> options) throws DBException {
+    protected SQLServerExternalTable createDatabaseObject(@NotNull DBRProgressMonitor monitor, @NotNull DBECommandContext context, Object container, Object copyFrom, @NotNull Map<String, Object> options) throws DBException {
         final SQLServerSchema schema = (SQLServerSchema) container;
         final SQLServerExternalTable table = new SQLServerExternalTable(schema);
         setNewObjectName(monitor, schema, table);
@@ -48,20 +48,37 @@ public class SQLServerExternalTableManager extends SQLServerBaseTableManager<SQL
     }
 
     @Override
-    public boolean canCreateObject(Object container) {
+    public boolean canCreateObject(@NotNull Object container) {
         return false;
     }
 
     @Override
-    protected void appendTableModifiers(DBRProgressMonitor monitor, SQLServerExternalTable table, SQLObjectEditor.NestedObjectCommand tableProps, StringBuilder ddl, boolean alter) {
+    protected void appendTableModifiers(
+        DBRProgressMonitor monitor,
+        SQLServerExternalTable table,
+        NestedObjectCommand tableProps,
+        StringBuilder ddl,
+        boolean alter,
+        Map<String, Object> options) {
         try {
+            String delimiter = getDelimiter(options);
+            String indent = delimiter.equals(" ") ? "" : "\t";
             final SQLServerExternalTable.AdditionalInfo info = table.getAdditionalInfo(monitor);
-            ddl.append(" WITH (\n\tLOCATION = ").append(SQLUtils.quoteString(table, info.getExternalLocation()));
-            ddl.append(",\n\tDATA_SOURCE = ").append(DBUtils.getQuotedIdentifier(table.getDataSource(), info.getExternalDataSource()));
+            ddl.append(" WITH (")
+                .append(delimiter)
+                .append(indent).append("LOCATION = ")
+                .append(SQLUtils.quoteString(table, info.getExternalLocation()));
+            ddl.append(",")
+                .append(delimiter)
+                .append(indent).append("DATA_SOURCE = ")
+                .append(DBUtils.getQuotedIdentifier(table.getDataSource(), info.getExternalDataSource()));
             if (CommonUtils.isNotEmpty(info.getExternalFileFormat())) {
-                ddl.append(",\n\tFILE_FORMAT = ").append(SQLUtils.quoteString(table, info.getExternalFileFormat()));
+                ddl.append(",")
+                    .append(delimiter)
+                    .append(indent).append("FILE_FORMAT = ")
+                    .append(SQLUtils.quoteString(table, info.getExternalFileFormat()));
             }
-            ddl.append("\n)");
+            ddl.append(delimiter).append(")");
         } catch (DBCException e) {
             log.error("Error retrieving external table info");
         }

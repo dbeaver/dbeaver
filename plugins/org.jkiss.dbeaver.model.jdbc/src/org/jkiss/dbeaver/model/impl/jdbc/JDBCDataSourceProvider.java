@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -47,12 +47,13 @@ public abstract class JDBCDataSourceProvider implements DBPDataSourceProvider {
 
     }
 
+    @NotNull
     @Override
     public DBPPropertyDescriptor[] getConnectionProperties(
-        DBRProgressMonitor monitor,
-        DBPDriver driver,
-        DBPConnectionConfiguration connectionInfo)
-        throws DBException {
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBPDriver driver,
+        @NotNull DBPConnectionConfiguration connectionInfo
+    ) throws DBException {
         Collection<DBPPropertyDescriptor> props = null;
         if (driver.isInternalDriver()) {
             // Do not load properties from internal (ODBC) driver.
@@ -60,9 +61,9 @@ public abstract class JDBCDataSourceProvider implements DBPDataSourceProvider {
             // then all subsequent calls to openConnection will fail until another props reading will succeed.
             props = null;
         } else {
-            Object driverInstance = driver.getDriverInstance(monitor);
-            if (driverInstance instanceof Driver) {
-                props = readDriverProperties(connectionInfo, (Driver) driverInstance);
+            Object driverInstance = driver.getDefaultDriverLoader().getDriverInstance(monitor);
+            if (driverInstance instanceof Driver jdbcDriver) {
+                props = readDriverProperties(connectionInfo, jdbcDriver, driver.isPropagateDriverProperties());
             }
         }
         if (props == null) {
@@ -73,10 +74,13 @@ public abstract class JDBCDataSourceProvider implements DBPDataSourceProvider {
 
     private Collection<DBPPropertyDescriptor> readDriverProperties(
         DBPConnectionConfiguration connectionInfo,
-        Driver driver)
-        throws DBException {
+        Driver driver,
+        boolean propagateDriverProperties
+    ) throws DBException {
         Properties driverProps = new Properties();
-        //driverProps.putAll(connectionInfo.getProperties());
+        if (propagateDriverProperties) {
+            driverProps.putAll(connectionInfo.getProperties());
+        }
         DriverPropertyInfo[] propDescs;
         try {
             propDescs = driver.getPropertyInfo(connectionInfo.getUrl(), driverProps);

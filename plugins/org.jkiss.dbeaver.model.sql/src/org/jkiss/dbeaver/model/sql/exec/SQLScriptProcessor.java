@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,9 +28,11 @@ import org.jkiss.dbeaver.model.qm.QMUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.*;
 import org.jkiss.dbeaver.model.sql.data.SQLQueryDataContainer;
+import org.jkiss.dbeaver.utils.DurationFormat;
+import org.jkiss.dbeaver.utils.DurationFormatter;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 
-import java.lang.reflect.InvocationTargetException;
+import java.time.Duration;
 import java.util.List;
 
 /**
@@ -51,6 +53,8 @@ public class SQLScriptProcessor {
     private final DBCStatistics totalStatistics = new DBCStatistics();
 
     private int fetchSize;
+    private long offset;
+    private long maxRows;
     private long fetchFlags;
     private SQLScriptCommitType commitType = SQLScriptCommitType.AUTOCOMMIT;
     private SQLScriptErrorHandling errorHandling = SQLScriptErrorHandling.STOP_ROLLBACK;
@@ -70,6 +74,14 @@ public class SQLScriptProcessor {
 
     public void setFetchSize(int fetchSize) {
         this.fetchSize = fetchSize;
+    }
+
+    public void setOffset(long offset) {
+        this.offset = offset;
+    }
+
+    public void setMaxRows(long maxRows) {
+        this.maxRows = maxRows;
     }
 
     public void setFetchFlags(long fetchFlags) {
@@ -110,28 +122,7 @@ public class SQLScriptProcessor {
                 }
 
                 monitor.beginTask("Execute queries (" + queries.size() + ")", queries.size());
-
-                for (SQLScriptElement query : queries) {
-                    if (monitor.isCanceled()) {
-                        break;
-                    }
-                    // Execute query
-                    boolean runNext = executeSingleQuery(session, query);
-                    if (!runNext) {
-                        if (lastError == null) {
-                            // Execution cancel
-                            break;
-                        }
-                        if (errorHandling != SQLScriptErrorHandling.IGNORE) {
-                            log.error(lastError);
-                            break;
-                        } else {
-                            log.warn("Query failed: " + lastError.getMessage());
-                        }
-                    }
-
-                    monitor.worked(1);
-                }
+                executeScript(session, queries, true);
                 monitor.done();
 
                 // Commit data
@@ -169,11 +160,45 @@ public class SQLScriptProcessor {
         }
     }
 
+    private void executeScript(
+        @NotNull DBCSession session,
+        @NotNull List<SQLScriptElement> script,
+        boolean trackMonitor
+    ) {
+        for (SQLScriptElement query : script) {
+            if (session.getProgressMonitor().isCanceled()) {
+                break;
+            }
+            // Execute query
+            boolean runNext = executeSingleQuery(session, query);
+            if (!runNext) {
+                if (lastError == null) {
+                    // Execution cancel
+                    break;
+                }
+                if (errorHandling != SQLScriptErrorHandling.IGNORE) {
+                    log.error(lastError);
+                    break;
+                } else {
+                    log.warn("Query failed: " + lastError.getMessage());
+                }
+            }
+            if (trackMonitor) {
+                session.getProgressMonitor().worked(1);
+            }
+        }
+    }
+
     private boolean executeSingleQuery(@NotNull DBCSession session, @NotNull SQLScriptElement element) {
-        if (element instanceof SQLControlCommand) {
+        if (element instanceof SQLControlCommand controlCommand) {
             log.debug(STAT_LOG_PREFIX + "Execute command\n" + element.getText());
             try {
-                return scriptContext.executeControlCommand((SQLControlCommand) element);
+                SQLControlResult controlResult = scriptContext.executeControlCommand(session.getProgressMonitor(), controlCommand);
+                if (controlResult.getTransformed() != null) {
+                    element = controlResult.getTransformed();
+                } else {
+                    return true;
+                }
             } catch (Throwable e) {
                 if (!(e instanceof DBException)) {
                     log.error("Unexpected error while processing SQL command", e);
@@ -182,35 +207,37 @@ public class SQLScriptProcessor {
                 return false;
             }
         }
-        SQLQuery sqlQuery = (SQLQuery) element;
-        scriptContext.fillQueryParameters(sqlQuery, true);
-        lastError = null;
+        if (element instanceof SQLScript script) {
+            this.executeScript(session, script.getScriptElements(), false);
+        } else if (!(element instanceof SQLQuery sqlQuery)) {
+            log.error("Unsupported SQL element type: " + element);
+            return false;
+        } else {
+            scriptContext.fillQueryParameters(sqlQuery, () -> dataReceiver, true);
+            lastError = null;
 
-        try {
-            statistics.reset();
-            statistics.setQueryText(sqlQuery.getText());
+            try {
+                statistics.reset();
+                statistics.setQueryText(sqlQuery.getText());
 
-            DBExecUtils.tryExecuteRecover(session, session.getDataSource(), param -> {
-                try {
+                DBExecUtils.tryExecuteRecover(session, session.getDataSource(), param -> {
                     long execStartTime = System.currentTimeMillis();
                     executeStatement(session, sqlQuery, execStartTime);
-                } catch (Throwable e) {
-                    throw new InvocationTargetException(e);
+                });
+            } catch (Throwable ex) {
+                if (!(ex instanceof DBException)) {
+                    log.error("Unexpected error while processing SQL", ex);
                 }
-            });
-        } catch (Throwable ex) {
-            if (!(ex instanceof DBException)) {
-                log.error("Unexpected error while processing SQL", ex);
+                lastError = ex;
+            } finally {
+                scriptContext.clearStatementContext();
             }
-            lastError = ex;
-        } finally {
-            scriptContext.clearStatementContext();
         }
 
         return lastError == null || errorHandling == SQLScriptErrorHandling.IGNORE;
     }
 
-    private void executeStatement(@NotNull DBCSession session, SQLQuery sqlQuery, long startTime) throws DBCException {
+    private void executeStatement(@NotNull DBCSession session, SQLQuery sqlQuery, long startTime) throws DBException {
         SQLQueryDataContainer dataContainer = new SQLQueryDataContainer(() -> executionContext, sqlQuery, scriptContext, log);
         DBCExecutionSource source = new AbstractExecutionSource(dataContainer, session.getExecutionContext(), this, sqlQuery);
         final DBCStatement statement = DBUtils.makeStatement(
@@ -218,13 +245,13 @@ public class SQLScriptProcessor {
             session,
             DBCStatementType.SCRIPT,
             sqlQuery,
-            0,
-            0);
-        DBExecUtils.setStatementFetchSize(statement, 0, 0, fetchSize);
+            offset,
+            maxRows
+        );
+        DBExecUtils.setStatementFetchSize(statement, 0, maxRows, fetchSize);
 
         // Execute statement
         try {
-            DBRProgressMonitor monitor = session.getProgressMonitor();
             log.debug(STAT_LOG_PREFIX + "Execute query\n" + sqlQuery.getText());
             boolean hasResultSet = statement.executeStatement();
 
@@ -297,7 +324,8 @@ public class SQLScriptProcessor {
             } catch (Throwable e) {
                 log.error("Error closing statement", e);
             }
-            log.debug(STAT_LOG_PREFIX + "Time: " + RuntimeUtils.formatExecutionTime(statistics.getExecuteTime()) +
+            String duration = DurationFormatter.format(Duration.ofMillis(statistics.getExecuteTime()), DurationFormat.MEDIUM);
+            log.debug(STAT_LOG_PREFIX + "Time: " + duration +
                 (statistics.getRowsFetched() >= 0 ? ", fetched " + statistics.getRowsFetched() + " row(s)" : "") +
                 (statistics.getRowsUpdated() >= 0 ? ", updated " + statistics.getRowsUpdated() + " row(s)" : ""));
 
@@ -305,8 +333,7 @@ public class SQLScriptProcessor {
         }
     }
 
-    private boolean fetchQueryData(DBCSession session, DBCResultSet resultSet, DBDDataReceiver dataReceiver)
-        throws DBCException {
+    private boolean fetchQueryData(DBCSession session, DBCResultSet resultSet, DBDDataReceiver dataReceiver) throws DBException {
         if (dataReceiver == null) {
             // No data pump - skip fetching stage
             return false;
@@ -318,9 +345,9 @@ public class SQLScriptProcessor {
         monitor.subTask("Fetch result set");
         DBFetchProgress fetchProgress = new DBFetchProgress(session.getProgressMonitor());
 
-        dataReceiver.fetchStart(session, resultSet, 0, 0);
+        DBDDataReceiver.startFetchWorkflow(dataReceiver, session, resultSet, 0, 0);
 
-        try {
+        try (resultSet) {
             long fetchStartTime = System.currentTimeMillis();
 
             // Fetch all rows
@@ -329,18 +356,6 @@ public class SQLScriptProcessor {
                 fetchProgress.monitorRowFetch();
             }
             statistics.addFetchTime(System.currentTimeMillis() - fetchStartTime);
-        } finally {
-            try {
-                resultSet.close();
-            } catch (Throwable e) {
-                log.error("Error while closing resultset", e);
-            }
-            try {
-                dataReceiver.fetchEnd(session, resultSet);
-            } catch (Throwable e) {
-                log.error("Error while handling end of result set fetch", e);
-            }
-            dataReceiver.close();
         }
 
         statistics.setRowsFetched(fetchProgress.getRowCount());

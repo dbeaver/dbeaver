@@ -1,7 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
- * Copyright (C) 2011-2012 Eugene Fradkin (eugene.fradkin@gmail.com)
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,16 +20,12 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.mysql.MySQLConstants;
-import org.jkiss.dbeaver.ext.mysql.model.MySQLTable;
-import org.jkiss.dbeaver.ext.mysql.model.MySQLTableBase;
-import org.jkiss.dbeaver.ext.mysql.model.MySQLTableColumn;
+import org.jkiss.dbeaver.ext.mysql.model.*;
 import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
+import org.jkiss.dbeaver.model.DBPScriptObject;
 import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.edit.DBECommandContext;
-import org.jkiss.dbeaver.model.edit.DBEObjectRenamer;
-import org.jkiss.dbeaver.model.edit.DBEObjectReorderer;
-import org.jkiss.dbeaver.model.edit.DBEPersistAction;
+import org.jkiss.dbeaver.model.edit.*;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.edit.DBECommandAbstract;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
@@ -41,12 +36,11 @@ import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.cache.DBSObjectCache;
+import org.jkiss.dbeaver.model.struct.rdb.DBSTableConstraint;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.Types;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
+import java.util.*;
 
 /**
  * MySQL table column manager
@@ -119,7 +113,7 @@ public class MySQLTableColumnManager extends SQLTableColumnManager<MySQLTableCol
     }
 
     @Override
-    public StringBuilder getNestedDeclaration(DBRProgressMonitor monitor, MySQLTableBase owner, DBECommandAbstract<MySQLTableColumn> command, Map<String, Object> options)
+    public StringBuilder getNestedDeclaration(@NotNull DBRProgressMonitor monitor, @NotNull MySQLTableBase owner, @NotNull DBECommandAbstract<MySQLTableColumn> command, @NotNull Map<String, Object> options)
     {
         StringBuilder decl = super.getNestedDeclaration(monitor, owner, command, options);
         final MySQLTableColumn column = command.getObject();
@@ -128,6 +122,17 @@ public class MySQLTableColumnManager extends SQLTableColumnManager<MySQLTableCol
         {
             decl.append(" AUTO_INCREMENT"); //$NON-NLS-1$
         }
+        try {
+            Collection<? extends DBSTableConstraint> constraints = command.getObject().getParentObject().getConstraints(monitor);
+            if (options.get(DBPScriptObject.OPTION_COMPOSITE_OBJECT) == null &&
+                constraints != null && constraints.stream().anyMatch(c -> c instanceof  MySQLTableConstraint tc &&
+                MySQLConstraintManager.tryGetColumnOfPrimaryKeyConstraintForAutoincrementColumn(monitor, tc, false) == column)
+            ) {
+                decl.append(" PRIMARY KEY");
+            }
+        } catch (DBException ex) {
+            log.error(ex);
+        }
         if (!CommonUtils.isEmpty(column.getComment())) {
             decl.append(" COMMENT ").append(SQLUtils.quoteString(column, column.getComment())); //$NON-NLS-1$
         }
@@ -135,7 +140,7 @@ public class MySQLTableColumnManager extends SQLTableColumnManager<MySQLTableCol
     }
 
     @Override
-    protected MySQLTableColumn createDatabaseObject(final DBRProgressMonitor monitor, final DBECommandContext context, final Object container, Object copyFrom, Map<String, Object> options) throws DBException {
+    protected MySQLTableColumn createDatabaseObject(@NotNull final DBRProgressMonitor monitor, @NotNull final DBECommandContext context, final Object container, Object copyFrom, @NotNull Map<String, Object> options) throws DBException {
         MySQLTable table = (MySQLTable) container;
 
         MySQLTableColumn column;
@@ -160,7 +165,7 @@ public class MySQLTableColumnManager extends SQLTableColumnManager<MySQLTableCol
     }
 
     @Override
-    protected void addObjectModifyActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actionList, ObjectChangeCommand command, Map<String, Object> options)
+    protected void addObjectModifyActions(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext executionContext, @NotNull List<DBEPersistAction> actionList, @NotNull ObjectChangeCommand command, @NotNull Map<String, Object> options)
     {
         final MySQLTableColumn column = command.getObject();
 
@@ -176,7 +181,7 @@ public class MySQLTableColumnManager extends SQLTableColumnManager<MySQLTableCol
     }
 
     @Override
-    protected void addObjectRenameActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, ObjectRenameCommand command, Map<String, Object> options)
+    protected void addObjectRenameActions(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext executionContext, @NotNull List<DBEPersistAction> actions, @NotNull ObjectRenameCommand command, @NotNull Map<String, Object> options)
     {
         final MySQLTableColumn column = command.getObject();
 
@@ -189,7 +194,7 @@ public class MySQLTableColumnManager extends SQLTableColumnManager<MySQLTableCol
     }
 
     @Override
-    protected void addObjectReorderActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, ObjectReorderCommand command, Map<String, Object> options) {
+    protected void addObjectReorderActions(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext executionContext, @NotNull List<DBEPersistAction> actions, @NotNull ObjectReorderCommand command, @NotNull Map<String, Object> options) {
         final MySQLTableColumn column = command.getObject();
         String order = "FIRST";
         if (column.getOrdinalPosition() > 0) {

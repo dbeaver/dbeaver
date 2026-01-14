@@ -1,7 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
- * Copyright (C) 2011-2012 Eugene Fradkin (eugene.fradkin@gmail.com)
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,6 +31,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.IEditorSite;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSource;
@@ -126,7 +126,7 @@ public class PrefPageSQLFormat extends TargetPrefPage
         formatterSelector.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
-                showFormatterSettings();
+                showFormatterSettings(true);
                 performApply();
             }
         });
@@ -180,6 +180,7 @@ public class PrefPageSQLFormat extends TargetPrefPage
             previewGroup.setLayout(new FillLayout());
 
             sqlViewer = new SQLEditorBase() {
+                @Nullable
                 @Override
                 public DBCExecutionContext getExecutionContext() {
                     final DBPDataSourceContainer container = getDataSourceContainer();
@@ -236,27 +237,47 @@ public class PrefPageSQLFormat extends TargetPrefPage
     }
 
     @Override
-    protected void loadPreferences(DBPPreferenceStore store)
-    {
-        styleBoldKeywords.setSelection(store.getBoolean(SQLPreferenceConstants.SQL_FORMAT_BOLD_KEYWORDS));
-        formatCurrentQueryCheck.setSelection(store.getBoolean(SQLPreferenceConstants.SQL_FORMAT_ACTIVE_QUERY));
+    protected void loadPreferences(DBPPreferenceStore store) {
+        loadPreferences(store, false);
+    }
 
-        String formatterId = store.getString(SQLModelPreferences.SQL_FORMAT_FORMATTER);
+    @Override
+    protected void performDefaults() {
+        loadPreferences(getTargetPreferenceStore(), true);
+        super.performDefaults();
+    }
+
+    private void loadPreferences(DBPPreferenceStore store, boolean useDefaults) {
+        styleBoldKeywords.setSelection(
+            useDefaults
+                ? store.getDefaultBoolean(SQLPreferenceConstants.SQL_FORMAT_BOLD_KEYWORDS)
+                : store.getBoolean(SQLPreferenceConstants.SQL_FORMAT_BOLD_KEYWORDS)
+        );
+        formatCurrentQueryCheck.setSelection(
+            useDefaults
+                ? store.getDefaultBoolean(SQLPreferenceConstants.SQL_FORMAT_ACTIVE_QUERY)
+                : store.getBoolean(SQLPreferenceConstants.SQL_FORMAT_ACTIVE_QUERY)
+        );
+
+        String formatterId = useDefaults
+            ? store.getDefaultString(SQLModelPreferences.SQL_FORMAT_FORMATTER)
+            : store.getString(SQLModelPreferences.SQL_FORMAT_FORMATTER);
         for (int i = 0; i < formatters.size(); i++) {
             if (formatters.get(i).getId().equalsIgnoreCase(formatterId)) {
                 formatterSelector.select(i);
                 break;
             }
         }
-        if (formatterSelector.getSelectionIndex() < 0) formatterSelector.select(0);
+        if (formatterSelector.getSelectionIndex() < 0) {
+            formatterSelector.select(0);
+        }
 
+        showFormatterSettings(useDefaults);
         formatSQL();
-        showFormatterSettings();
     }
 
     @Override
-    protected void savePreferences(DBPPreferenceStore store)
-    {
+    protected void savePreferences(DBPPreferenceStore store) {
         if (curConfigurator != null) {
             curConfigurator.saveSettings(getTargetPreferenceStore());
         }
@@ -270,8 +291,7 @@ public class PrefPageSQLFormat extends TargetPrefPage
     }
 
     @Override
-    protected void clearPreferences(DBPPreferenceStore store)
-    {
+    protected void clearPreferences(DBPPreferenceStore store) {
         store.setToDefault(SQLPreferenceConstants.SQL_FORMAT_BOLD_KEYWORDS);
 
         store.setToDefault(SQLModelPreferences.SQL_FORMAT_FORMATTER);
@@ -287,13 +307,12 @@ public class PrefPageSQLFormat extends TargetPrefPage
     }
 
     @Override
-    protected String getPropertyPageID()
-    {
+    protected String getPropertyPageID() {
         return PAGE_ID;
     }
 
-    private void showFormatterSettings() {
-        if (curConfigurator != null) {
+    private void showFormatterSettings(boolean useDefaults) {
+        if (!useDefaults && curConfigurator != null) {
             curConfigurator.saveSettings(getTargetPreferenceStore());
         }
         UIUtils.disposeChildControls(formatterConfigPlaceholder);
@@ -317,7 +336,7 @@ public class PrefPageSQLFormat extends TargetPrefPage
                     formatSQL();
                 });
                 ((IDialogPage)curConfigurator).createControl(formatterConfigPlaceholder);
-                curConfigurator.loadSettings(getTargetPreferenceStore());
+                curConfigurator.loadSettings(getTargetPreferenceStore(), useDefaults);
             }
         } catch (DBException e) {
             log.error("Error creating formatter configurator", e);

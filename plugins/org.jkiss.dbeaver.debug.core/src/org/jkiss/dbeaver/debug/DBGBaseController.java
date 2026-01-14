@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  * Copyright (C) 2017-2018 Andrew Khitrin (ahitrin@gmail.com)
  * Copyright (C) 2017-2018 Alexander Fedorov (alexander.fedorov@jkiss.org)
  *
@@ -66,7 +66,6 @@ public abstract class DBGBaseController implements DBGController {
         if (!dataSourceContainer.isConnected()) {
             throw new DBGException(ModelMessages.error_not_connected_to_database);
         }
-        log.info(dataSourceContainer.getName()+"已经创建debug的Connect...");
         return createSession(monitor, configuration);
     }
 

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,8 @@
  */
 package org.jkiss.dbeaver.model.navigator;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.navigator.meta.DBXTreeNode;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -24,10 +26,10 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
  * DBNDatabaseItem
  */
 public class DBNDatabaseItem extends DBNDatabaseNode {
-    private DBXTreeNode meta;
+    private final DBXTreeNode meta;
     private DBSObject object;
 
-    DBNDatabaseItem(DBNNode parent, DBXTreeNode meta, DBSObject object, boolean reflect) {
+    DBNDatabaseItem(@NotNull DBNNode parent, @NotNull DBXTreeNode meta, DBSObject object, boolean reflect) {
         super(parent);
         this.meta = meta;
         this.object = object;
@@ -47,6 +49,12 @@ public class DBNDatabaseItem extends DBNDatabaseNode {
     }
 
     @Override
+    public boolean isDynamicStructObject() {
+        return parentNode instanceof DBNDatabaseFolder folder && folder.isDynamicStructObject();
+    }
+
+    @NotNull
+    @Override
     public DBXTreeNode getMeta() {
         return meta;
     }
@@ -63,6 +71,7 @@ public class DBNDatabaseItem extends DBNDatabaseNode {
         return true;
     }
 
+    @Nullable
     @Override
     public DBSObject getObject() {
         // FIXME: we can't throw error here because too many
@@ -83,10 +92,11 @@ public class DBNDatabaseItem extends DBNDatabaseNode {
     }
 
     @Override
-    public final boolean isManagable() {
+    public final boolean isManageable() {
         return true;
     }
 
+    @NotNull
     @Override
     public String toString() {
         return object == null ? super.toString() : object.toString();

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,8 +29,8 @@ public abstract class BasicObjectCache<OWNER extends DBSObject, OBJECT extends D
 
     @Nullable
     @Override
-    public OBJECT getObject(@NotNull DBRProgressMonitor monitor, @Nullable OWNER owner, @NotNull String name) throws DBException {
-        if (!isFullyCached()) {
+    public OBJECT getObject(@NotNull DBRProgressMonitor monitor, @NotNull OWNER owner, @NotNull String name) throws DBException {
+        if (!isFullyCached() && !monitor.isForceCacheUsage()) {
             getAllObjects(monitor, owner);
         }
         return getCachedObject(name);

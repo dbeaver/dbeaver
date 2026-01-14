@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -46,7 +46,7 @@ abstract class ColorAction extends Action {
     }
 
     void updateColors(DBVEntity entity, boolean refresh) {
-        resultSetViewer.getModel().updateColorMapping(true);
+        resultSetViewer.getModel().updateColorMapping(entity, true);
         entity.persistConfiguration();
         if (refresh) {
             resultSetViewer.redrawData(false, false);

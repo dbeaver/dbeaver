@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,8 +27,7 @@ import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 /**
  * GenericDataType
  */
-public class GenericDataType extends JDBCDataType<GenericStructContainer>
-{
+public class GenericDataType extends JDBCDataType<GenericStructContainer> {
     public GenericDataType(GenericStructContainer owner, int valueType, String name, @Nullable String remarks, boolean unsigned, boolean searchable, int precision, int minScale, int maxScale) {
         super(owner, valueType, name, remarks, unsigned, searchable, precision, minScale, maxScale);
     }
@@ -53,11 +52,13 @@ public class GenericDataType extends JDBCDataType<GenericStructContainer>
         return super.getDescription();
     }
 
+    @NotNull
     @Override
     public DBPDataKind getDataKind() {
         return GenericDataSource.getDataKind(getName(), getTypeID());
     }
 
+    @Nullable
     @Override
     @Property(viewable = true, order = 20)
     public Integer getPrecision()

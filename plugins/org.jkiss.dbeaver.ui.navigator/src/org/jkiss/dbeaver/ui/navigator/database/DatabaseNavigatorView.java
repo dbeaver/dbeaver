@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IMemento;
 import org.eclipse.ui.IViewSite;
 import org.eclipse.ui.PartInitException;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.app.DBPPlatformDesktop;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.app.DBPProjectListener;
@@ -58,6 +59,9 @@ public class DatabaseNavigatorView extends NavigatorViewBase implements DBPProje
     }
 
     private void restoreState() {
+        if (memento == null) {
+            return;
+        }
         final DBPPreferenceStore preferences = DBWorkbench.getPlatform().getPreferenceStore();
         final int maxDepth = preferences.getInt(NavigatorPreferences.NAVIGATOR_RESTORE_STATE_DEPTH);
         if (maxDepth > 0) {
@@ -83,7 +87,7 @@ public class DatabaseNavigatorView extends NavigatorViewBase implements DBPProje
     @Override
     public DBNNode getRootNode()
     {
-        DBNProject projectNode = getModel().getRoot().getProjectNode(DBWorkbench.getPlatform().getWorkspace().getActiveProject());
+        DBNProject projectNode = getGlobalNavigatorModel().getRoot().getProjectNode(DBWorkbench.getPlatform().getWorkspace().getActiveProject());
         return projectNode == null ? new DBNEmptyNode() : projectNode.getDatabases();
     }
 
@@ -125,17 +129,17 @@ public class DatabaseNavigatorView extends NavigatorViewBase implements DBPProje
     }
 
     @Override
-    public void handleProjectAdd(DBPProject project) {
+    public void handleProjectAdd(@NotNull DBPProject project) {
         // Ignore
     }
 
     @Override
-    public void handleProjectRemove(DBPProject project) {
+    public void handleProjectRemove(@NotNull DBPProject project) {
         // Ignore
     }
 
     @Override
-    public void handleActiveProjectChange(DBPProject oldValue, DBPProject newValue)
+    public void handleActiveProjectChange(@NotNull DBPProject oldValue, @NotNull DBPProject newValue)
     {
         UIExecutionQueue.queueExec(() -> {
             getNavigatorTree().getViewer().setInput(new DatabaseNavigatorContent(getRootNode()));

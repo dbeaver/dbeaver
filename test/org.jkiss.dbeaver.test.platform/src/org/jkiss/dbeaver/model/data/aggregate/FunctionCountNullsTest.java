@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.model.data.aggregate;
 
 import org.hamcrest.CoreMatchers;
 import org.hamcrest.MatcherAssert;
+import org.jkiss.junit.DBeaverUnitTest;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -31,7 +32,7 @@ import java.util.List;
 
 
 @RunWith(value = Parameterized.class)
-public class FunctionCountNullsTest {
+public class FunctionCountNullsTest extends DBeaverUnitTest {
 
     @Parameter(value = 0)
     public List<Integer> values;

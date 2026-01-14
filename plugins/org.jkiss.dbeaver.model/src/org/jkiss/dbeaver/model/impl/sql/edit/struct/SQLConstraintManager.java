@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,6 +34,7 @@ import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttributeRef;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
+import org.jkiss.dbeaver.model.struct.rdb.DBSTableIndexOrdering;
 
 import java.util.List;
 import java.util.Locale;
@@ -47,13 +48,13 @@ public abstract class SQLConstraintManager<OBJECT_TYPE extends AbstractTableCons
 {
 
     @Override
-    public long getMakerOptions(DBPDataSource dataSource)
+    public long getMakerOptions(@NotNull DBPDataSource dataSource)
     {
         return FEATURE_EDITOR_ON_CREATE;
     }
 
     @Override
-    protected void addObjectCreateActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, ObjectCreateCommand command, Map<String, Object> options)
+    protected void addObjectCreateActions(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext executionContext, @NotNull List<DBEPersistAction> actions, @NotNull ObjectCreateCommand command, @NotNull Map<String, Object> options)
     {
         final TABLE_TYPE table = (TABLE_TYPE) command.getObject().getTable();
 
@@ -64,7 +65,7 @@ public abstract class SQLConstraintManager<OBJECT_TYPE extends AbstractTableCons
     }
 
     @Override
-    protected void addObjectDeleteActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, ObjectDeleteCommand command, Map<String, Object> options)
+    protected void addObjectDeleteActions(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext executionContext, @NotNull List<DBEPersistAction> actions, @NotNull ObjectDeleteCommand command, @NotNull Map<String, Object> options)
     {
         actions.add(
             new SQLDatabasePersistAction(
@@ -117,6 +118,9 @@ public abstract class SQLConstraintManager<OBJECT_TYPE extends AbstractTableCons
                     if (!firstColumn) decl.append(","); //$NON-NLS-1$
                     firstColumn = false;
                     decl.append(DBUtils.getQuotedIdentifier(attribute));
+                    if (isPrimaryKeyOrdered() && constraintColumn instanceof DBSTableIndexOrdering ordering && !ordering.isAscending()) {
+                        decl.append(" DESC");
+                    }
                 }
             }
         } catch (DBException e) {
@@ -143,6 +147,10 @@ public abstract class SQLConstraintManager<OBJECT_TYPE extends AbstractTableCons
     }
 
     protected boolean isShortNotation(TABLE_TYPE owner) {
+        return false;
+    }
+
+    protected boolean isPrimaryKeyOrdered() {
         return false;
     }
 }

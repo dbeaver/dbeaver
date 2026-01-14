@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -121,7 +121,7 @@ public class SessionManagerViewer<SESSION_TYPE extends DBAServerSession>
 
         Composite composite = UIUtils.createPlaceholder(parent, 1);
 
-        sashMain = UIUtils.createPartDivider(workbenchPart, composite, SWT.VERTICAL | SWT.SMOOTH);
+        sashMain = UIUtils.createPartDivider(workbenchPart, composite, UIUtils.checkSashStyle(SWT.VERTICAL | SWT.SMOOTH));
         sashMain.setLayoutData(new GridData(GridData.FILL_BOTH));
 
         refreshControl = new AutoRefreshControl(sashMain, sessionManager.getClass().getSimpleName(), monitor -> UIUtils.syncExec(this::refreshSessions));
@@ -136,12 +136,13 @@ public class SessionManagerViewer<SESSION_TYPE extends DBAServerSession>
         }
 
         {
-            sashDetails = UIUtils.createPartDivider(workbenchPart, sashMain, SWT.HORIZONTAL | SWT.SMOOTH);
+            sashDetails = UIUtils.createPartDivider(workbenchPart, sashMain, UIUtils.checkSashStyle(SWT.HORIZONTAL | SWT.SMOOTH));
             sashDetails.setLayoutData(new GridData(GridData.FILL_BOTH));
 
             {
                 previewFolder = new CTabFolder(sashDetails, SWT.TOP);
                 sqlViewer = new SQLEditorBase() {
+                    @Nullable
                     @Override
                     public DBCExecutionContext getExecutionContext() {
                         return DBUtils.getDefaultContext(sessionManager.getDataSource(), false);
@@ -165,12 +166,12 @@ public class SessionManagerViewer<SESSION_TYPE extends DBAServerSession>
 
                 CTabItem sqlViewItem = new CTabItem(previewFolder, SWT.NONE);
                 sqlViewItem.setText(SessionEditorMessages.viewer_view_item_sql);
-                sqlViewItem.setImage(DBeaverIcons.getImage(UIIcon.SQL_TEXT));
+                sqlViewItem.setImage(DBeaverIcons.getImage(DBIcon.SQL_TEXT));
                 sqlViewItem.setControl(sqlViewer.getEditorControlWrapper());
 
                 previewFolder.setSelection(sqlViewItem);
 
-                if (planner != null&&!(planner.toString().contains("YashanDBQueryPlanner"))){
+                if (planner != null) {
                     createPlannerTab(previewFolder);
                 }
 
@@ -253,7 +254,7 @@ public class SessionManagerViewer<SESSION_TYPE extends DBAServerSession>
         SessionDetailsLoadService loadingService = new SessionDetailsLoadService(data);
         LoadingJob.createService(
             loadingService,
-            new ProgressLoaderVisualizer<Collection<DBPObject>>(loadingService, styledText) {
+            new ProgressLoaderVisualizer<>(loadingService, styledText) {
                 @Override
                 public void completeLoading(Collection<DBPObject> dbpObjects) {
                     StringBuilder text = new StringBuilder();
@@ -636,7 +637,7 @@ public class SessionManagerViewer<SESSION_TYPE extends DBAServerSession>
         }
 
         @Override
-        public Collection<DBPObject> evaluate(DBRProgressMonitor monitor)
+        public Collection<DBPObject> evaluate(@NotNull DBRProgressMonitor monitor)
             throws InvocationTargetException, InterruptedException
         {
             if (curSession == null) {

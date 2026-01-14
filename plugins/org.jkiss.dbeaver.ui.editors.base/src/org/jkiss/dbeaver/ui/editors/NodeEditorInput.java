@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,21 +20,49 @@ package org.jkiss.dbeaver.ui.editors;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.ui.IMemento;
 import org.eclipse.ui.IPersistableElement;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.navigator.DBNModel;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
+import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 
 /**
  * NodeEditorInput
  */
 public class NodeEditorInput implements INavigatorEditorInput, IPersistableElement {
-    private DBNNode node;
+    private static final Log log = Log.getLog(NodeEditorInput.class);
 
-    public NodeEditorInput(DBNNode node) {
+    private volatile DBNNode node;
+    private String nodePath;
+
+    public NodeEditorInput(@NotNull DBNNode node) {
         this.node = node;
     }
 
+    public NodeEditorInput(@NotNull String nodePath) {
+        this.nodePath = nodePath;
+    }
+
+    @Nullable
     @Override
     public DBNNode getNavigatorNode() {
+        if (node == null) {
+            try {
+                final DBNModel navigatorModel = DBWorkbench.getPlatform().getNavigatorModel();
+                node = navigatorModel.getNodeByPath(new VoidProgressMonitor(), nodePath);
+            } catch (DBException e) {
+                log.debug("Cannot find navigator node '" + nodePath + "'", e);
+                return null;
+            }
+            if (node == null) {
+                log.debug("Navigator node '" + nodePath + "' not found");
+                return null;
+            }
+        }
         return node;
     }
 
@@ -49,28 +77,29 @@ public class NodeEditorInput implements INavigatorEditorInput, IPersistableEleme
 
     @Override
     public ImageDescriptor getImageDescriptor() {
-        return DBeaverIcons.getImageDescriptor(node.getNodeIcon());
+        DBNNode node = getNavigatorNode();
+        return node == null ? null : DBeaverIcons.getImageDescriptor(node.getNodeIconDefault());
     }
 
     @Override
     public String getName() {
-        return node.getNodeName();
+        return node == null ? nodePath : node.getNodeDisplayName();
     }
 
     @Override
     public IPersistableElement getPersistable() {
-        return node.isDisposed() || !node.isPersisted() ? null : this;
+        return node == null || node.isDisposed() || !node.isPersisted() ? null : this;
     }
 
     @Override
     public String getToolTipText() {
-        return node.getNodeDescription();
+        return node == null ? null : node.getNodeDescription();
     }
 
     @Override
     public <T> T getAdapter(Class<T> adapter) {
         if (adapter == DBNNode.class) {
-            return adapter.cast(node);
+            return adapter.cast(getNavigatorNode());
         }
         return null;
     }
@@ -82,7 +111,7 @@ public class NodeEditorInput implements INavigatorEditorInput, IPersistableEleme
 
     @Override
     public void saveState(IMemento memento) {
-        if (node.isDisposed() || !node.isPersisted()) {
+        if (node == null || node.isDisposed() || !node.isPersisted()) {
             return;
         }
         NodeEditorInputFactory.saveState(memento, this);

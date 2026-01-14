@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,17 +22,21 @@ import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.postgresql.PostgreMessages;
-import org.jkiss.dbeaver.ext.postgresql.model.PostgreTableColumn;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreTableForeignKey;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreTableForeignKeyColumn;
+import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEObjectConfigurator;
+import org.jkiss.dbeaver.model.impl.sql.edit.struct.SQLForeignKeyManager;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.rdb.DBSForeignKeyModifyRule;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableForeignKey;
 import org.jkiss.dbeaver.ui.UITask;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.object.struct.EditForeignKeyPage;
+import org.jkiss.utils.CommonUtils;
 
 import java.util.Collections;
 import java.util.Map;
@@ -44,34 +48,38 @@ public class PostgreForeignKeyConfigurator implements DBEObjectConfigurator<Post
 
 
     @Override
-    public PostgreTableForeignKey configureObject(DBRProgressMonitor monitor, Object table, PostgreTableForeignKey foreignKey, Map<String, Object> options) {
-        return new UITask<PostgreTableForeignKey>() {
-            @Override
-            protected PostgreTableForeignKey runTask() {
-                EditPGForeignKeyPage editPage = new EditPGForeignKeyPage(
-                    PostgreMessages.postgre_foreign_key_manager_header_edit_foreign_key,
-                    foreignKey);
-                if (!editPage.edit()) {
-                    return null;
-                }
-
-                foreignKey.setReferencedConstraint(editPage.getUniqueConstraint());
-                foreignKey.setDeleteRule(editPage.getOnDeleteRule());
-                foreignKey.setUpdateRule(editPage.getOnUpdateRule());
-                int colIndex = 1;
-                for (EditForeignKeyPage.FKColumnInfo tableColumn : editPage.getColumns()) {
-                    foreignKey.addColumn(
-                        new PostgreTableForeignKeyColumn(
-                            foreignKey,
-                            (PostgreTableColumn) tableColumn.getOwnColumn(),
-                            colIndex++,
-                            (PostgreTableColumn) tableColumn.getRefColumn()));
-                }
-                foreignKey.setDeferrable(editPage.isDeferrable);
-                foreignKey.setDeferred(editPage.isDeferred);
-                return foreignKey;
+    public PostgreTableForeignKey configureObject(@NotNull DBRProgressMonitor monitor, @Nullable DBECommandContext commandContext, @Nullable Object table, @NotNull PostgreTableForeignKey foreignKey, @NotNull Map<String, Object> options) {
+        return UITask.run(() -> {
+            EditPGForeignKeyPage editPage = new EditPGForeignKeyPage(
+                PostgreMessages.postgre_foreign_key_manager_header_edit_foreign_key,
+                foreignKey);
+            editPage.setSupportsCustomName(true);
+            if (!editPage.edit()) {
+                return null;
             }
-        }.execute();
+
+            foreignKey.setReferencedConstraint(editPage.getUniqueConstraint());
+            String customName = editPage.getName();
+            if (CommonUtils.isNotEmpty(customName)) {
+                foreignKey.setName(customName);
+            } else {
+                SQLForeignKeyManager.updateForeignKeyName(monitor, foreignKey);
+            }
+            foreignKey.setDeleteRule(editPage.getOnDeleteRule());
+            foreignKey.setUpdateRule(editPage.getOnUpdateRule());
+            int colIndex = 1;
+            for (EditForeignKeyPage.FKColumnInfo tableColumn : editPage.getColumns()) {
+                foreignKey.addColumn(
+                    new PostgreTableForeignKeyColumn(
+                        foreignKey,
+                        tableColumn.getOrCreateOwnColumn(monitor, commandContext, foreignKey.getTable()),
+                        colIndex++,
+                        tableColumn.getRefColumn()));
+            }
+            foreignKey.setDeferrable(editPage.isDeferrable);
+            foreignKey.setDeferred(editPage.isDeferred);
+            return foreignKey;
+        });
     }
 
 

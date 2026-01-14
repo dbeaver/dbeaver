@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,10 +19,14 @@ package org.jkiss.dbeaver.ext.postgresql.model;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.*;
+import org.jkiss.dbeaver.model.DBPAttributeReferencePurpose;
+import org.jkiss.dbeaver.model.DBPEvaluationContext;
+import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSAttributeEnumerable;
 import org.jkiss.dbeaver.model.struct.DBSContextBoundAttribute;
+import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 
 import java.util.LinkedList;
@@ -30,16 +34,16 @@ import java.util.LinkedList;
 /**
  * Provides information about context for data type attribute
  */
-public class PostgreDataBoundTypeAttribute extends PostgreAttribute<PostgreTableBase>
+public class PostgreDataBoundTypeAttribute<CONTAINER extends DBSEntity & PostgreObject> extends PostgreAttribute<CONTAINER>
     implements DBSEntityAttribute, DBSAttributeEnumerable, DBSContextBoundAttribute {
 
-    private final DBSEntityAttribute context;
+    private final DBDAttributeBinding context;
     private final PostgreDataTypeAttribute member;
     
     public PostgreDataBoundTypeAttribute(
         @NotNull DBRProgressMonitor monitor,
-        @NotNull PostgreTableBase container,
-        @NotNull DBSEntityAttribute context,
+        @NotNull CONTAINER container,
+        @Nullable DBDAttributeBinding context,
         @NotNull PostgreDataTypeAttribute attr
     ) throws DBException {
         super(monitor, container, attr);
@@ -55,22 +59,32 @@ public class PostgreDataBoundTypeAttribute extends PostgreAttribute<PostgreTable
         @NotNull DBPAttributeReferencePurpose purpose
     ) {
         LinkedList<String> parts = new LinkedList<>();
-        parts.addLast(DBUtils.getQuotedIdentifier(member));
-        DBSEntityAttribute context = this.context;
-        while (context instanceof PostgreDataBoundTypeAttribute) {
-            PostgreDataBoundTypeAttribute boundAttr = (PostgreDataBoundTypeAttribute) context;
+        parts.addFirst(DBUtils.getQuotedIdentifier(this.member));
+        DBDAttributeBinding bindingContext = this.context;
+        DBSEntityAttribute entityContext = bindingContext.getEntityAttribute();
+        while (entityContext instanceof PostgreDataBoundTypeAttribute boundAttr) {
             parts.addFirst(DBUtils.getQuotedIdentifier(boundAttr.member));
-            context = boundAttr.context;
-        } 
-        parts.addFirst(DBUtils.getQuotedIdentifier(context));
-        if (isIncludeContainerName) {
-            if (containerAliasOrNull == null) {
-                if (context.getParentObject() != this.getTable()) {
-                    parts.addFirst(DBUtils.getQuotedIdentifier(context.getParentObject()));
+            bindingContext = boundAttr.context;
+            entityContext = bindingContext.getEntityAttribute();
+        }
+        if (entityContext != null) {
+            parts.addFirst(DBUtils.getQuotedIdentifier(entityContext));
+            if (isIncludeContainerName) {
+                if (containerAliasOrNull == null) {
+                    if (entityContext.getParentObject() != this.getTable()) {
+                        parts.addFirst(DBUtils.getQuotedIdentifier(entityContext.getParentObject()));
+                    }
+                    parts.addFirst(DBUtils.getObjectFullName(this.getTable(), DBPEvaluationContext.DML));
+                } else {
+                    parts.addFirst(containerAliasOrNull);
                 }
-                parts.addFirst(DBUtils.getObjectFullName(this.getTable(), DBPEvaluationContext.DML));
-            } else {
-                parts.addFirst(containerAliasOrNull);
+            }
+        } else {
+            if (isIncludeContainerName) {
+                parts.addFirst(DBUtils.getQuotedIdentifier(bindingContext));
+                if (containerAliasOrNull != null) {
+                    parts.addFirst(containerAliasOrNull);
+                }
             }
         }
         if (purpose.equals(DBPAttributeReferencePurpose.DATA_SELECTION)) {

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.ext.wmi.model;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBDatabaseException;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.wmi.Activator;
@@ -49,15 +50,15 @@ public class WMIClass extends WMIContainer
 
     static final String ICON_LOCATION_PREFIX = "platform:/plugin/" + Activator.PLUGIN_ID + "/icons/";
 
-    private static DBPImage IMG_CLASS;
-    private static DBPImage IMG_CLASS_ABSTRACT;
-    private static DBPImage IMG_CLASS_FINAL;
-    private static DBPImage IMG_CLASS_ABSTRACT_FINAL;
-    private static DBPImage IMG_ASSOCIATION;
-    private static DBPImage IMG_ASSOCIATION_ABSTRACT;
+    private static final DBPImage IMG_CLASS;
+    private static final DBPImage IMG_CLASS_ABSTRACT;
+    private static final DBPImage IMG_CLASS_FINAL;
+    private static final DBPImage IMG_CLASS_ABSTRACT_FINAL;
+    private static final DBPImage IMG_ASSOCIATION;
+    private static final DBPImage IMG_ASSOCIATION_ABSTRACT;
 
-    private static DBIcon IMG_ABSTRACT_OVR = new DBIcon(ICON_LOCATION_PREFIX + "ovr_abstract.png");
-    private static DBIcon IMG_FINAL_OVR = new DBIcon(ICON_LOCATION_PREFIX + "ovr_final.png");
+    private static final DBIcon IMG_ABSTRACT_OVR = new DBIcon(ICON_LOCATION_PREFIX + "ovr_abstract.png");
+    private static final DBIcon IMG_FINAL_OVR = new DBIcon(ICON_LOCATION_PREFIX + "ovr_final.png");
 
     static {
         IMG_CLASS = DBIcon.TREE_CLASS;
@@ -68,7 +69,7 @@ public class WMIClass extends WMIContainer
         IMG_ASSOCIATION_ABSTRACT = new DBIconComposite(IMG_ASSOCIATION, false, null, IMG_ABSTRACT_OVR, null, null);
     }
 
-    private WMIClass superClass;
+    private final WMIClass superClass;
     private WMIObject classObject;
     private String name;
     private List<WMIClass> subClasses = null;
@@ -173,7 +174,7 @@ public class WMIClass extends WMIContainer
 
     @NotNull
     @Override
-    public String getFullyQualifiedName(DBPEvaluationContext context)
+    public String getFullyQualifiedName(@NotNull DBPEvaluationContext context)
     {
         //if (classObject == null) {
             return getName();
@@ -304,7 +305,7 @@ public class WMIClass extends WMIContainer
             }
 
         } catch (WMIException e) {
-            throw new DBException(e, getDataSource());
+            throw new DBDatabaseException(e, getDataSource());
         }
     }
 
@@ -340,7 +341,7 @@ public class WMIClass extends WMIContainer
             }
 
         } catch (WMIException e) {
-            throw new DBException(e, getDataSource());
+            throw new DBDatabaseException(e, getDataSource());
         }
     }
 
@@ -418,8 +419,16 @@ public class WMIClass extends WMIContainer
 
     @NotNull
     @Override
-    public DBCStatistics readData(@NotNull DBCExecutionSource source, @NotNull DBCSession session, @NotNull DBDDataReceiver dataReceiver, DBDDataFilter dataFilter, long firstRow, long maxRows, long flags, int fetchSize) throws DBCException
-    {
+    public DBCStatistics readData(
+        @Nullable DBCExecutionSource source,
+        @NotNull DBCSession session,
+        @NotNull DBDDataReceiver dataReceiver,
+        DBDDataFilter dataFilter,
+        long firstRow,
+        long maxRows,
+        long flags,
+        int fetchSize
+    ) throws DBException {
         DBCStatistics statistics = new DBCStatistics();
         try {
             long startTime = System.currentTimeMillis();
@@ -432,27 +441,12 @@ public class WMIClass extends WMIContainer
                 sink,
                 WMIConstants.WBEM_FLAG_SHALLOW);
             statistics.setExecuteTime(System.currentTimeMillis() - startTime);
-            startTime = System.currentTimeMillis();
             sink.waitForFinish();
             WMIResultSet resultSet = new WMIResultSet(session, this, sink.getObjectList());
-            long resultCount = 0;
-            try {
-                dataReceiver.fetchStart(session, resultSet, firstRow, maxRows);
-                while (resultSet.nextRow()) {
-                    resultCount++;
-                    dataReceiver.fetchRow(session, resultSet);
-                }
-            } finally {
-                try {
-                    dataReceiver.fetchEnd(session, resultSet);
-                } catch (DBCException e) {
-                    log.error("Error while finishing result set fetch", e); //$NON-NLS-1$
-                }
-                resultSet.close();
-                dataReceiver.close();
+            try (resultSet) {
+                DBDDataReceiver.startFetchWorkflow(dataReceiver, session, resultSet, firstRow, maxRows);
+                DBDDataReceiver.fetchRowsWithStatistics(dataReceiver, session, resultSet, statistics);
             }
-            statistics.setFetchTime(System.currentTimeMillis() - startTime);
-            statistics.setRowsFetched(resultCount);
             return statistics;
         } catch (WMIException e) {
             throw new DBCException(e, session.getExecutionContext());

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,8 +21,13 @@ import org.jkiss.dbeaver.ext.generic.model.GenericSQLDialect;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
+import org.jkiss.dbeaver.model.sql.SQLConstants;
 
 public class DB2ISQLDialect extends GenericSQLDialect {
+    private static final String[][] BEGIN_END_BLOCK = new String[][]{
+        {SQLConstants.BLOCK_BEGIN, SQLConstants.BLOCK_END},
+        {SQLConstants.KEYWORD_CASE, SQLConstants.BLOCK_END}
+    };
 
     public DB2ISQLDialect() {
         super("IBM DB2 i", "db2_i");
@@ -36,6 +41,11 @@ public class DB2ISQLDialect extends GenericSQLDialect {
     public void initDriverSettings(JDBCSession session, JDBCDataSource dataSource, JDBCDatabaseMetaData metaData) {
         super.initDriverSettings(session, dataSource, metaData);
         turnFunctionIntoKeyword("TRUNCATE");
+    }
+
+    @Override
+    public String[][] getBlockBoundStrings() {
+        return BEGIN_END_BLOCK;
     }
 
     @Override

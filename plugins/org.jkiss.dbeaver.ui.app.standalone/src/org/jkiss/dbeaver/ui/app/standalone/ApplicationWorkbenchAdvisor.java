@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,22 +19,29 @@ package org.jkiss.dbeaver.ui.app.standalone;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.preferences.DefaultScope;
+import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.MessageDialogWithToggle;
 import org.eclipse.jface.dialogs.TrayDialog;
 import org.eclipse.jface.preference.IPreferenceNode;
 import org.eclipse.jface.preference.PreferenceManager;
+import org.eclipse.jface.resource.ImageDescriptor;
+import org.eclipse.jface.resource.ImageRegistry;
+import org.eclipse.jface.resource.JFaceResources;
+import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Event;
+import org.eclipse.swt.widgets.Listener;
 import org.eclipse.ui.*;
 import org.eclipse.ui.application.IWorkbenchConfigurer;
 import org.eclipse.ui.application.IWorkbenchWindowConfigurer;
 import org.eclipse.ui.application.WorkbenchWindowAdvisor;
 import org.eclipse.ui.internal.SaveableHelper;
+import org.eclipse.ui.internal.Workbench;
 import org.eclipse.ui.internal.WorkbenchImages;
 import org.eclipse.ui.internal.WorkbenchPlugin;
 import org.eclipse.ui.internal.dialogs.WorkbenchWizardElement;
 import org.eclipse.ui.internal.ide.IDEInternalWorkbenchImages;
-import org.eclipse.ui.internal.ide.application.DelayedEventsProcessor;
 import org.eclipse.ui.internal.ide.application.IDEWorkbenchAdvisor;
 import org.eclipse.ui.internal.wizards.AbstractExtensionWizardRegistry;
 import org.eclipse.ui.wizards.IWizardCategory;
@@ -44,30 +51,43 @@ import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.core.CoreFeatures;
-import org.jkiss.dbeaver.erd.ui.ERDUIConstants;
+import org.jkiss.dbeaver.core.DesktopPlatform;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.app.DBPApplication;
+import org.jkiss.dbeaver.model.app.DBPApplicationDesktop;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.impl.preferences.BundlePreferenceStore;
+import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.task.DBTTaskManager;
+import org.jkiss.dbeaver.registry.BasePlatformImpl;
 import org.jkiss.dbeaver.registry.DataSourceRegistry;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.runtime.DBeaverNotifications;
+import org.jkiss.dbeaver.runtime.OperationSystemState;
+import org.jkiss.dbeaver.ui.AWTUtils;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
+import org.jkiss.dbeaver.ui.UIExecutionQueue;
 import org.jkiss.dbeaver.ui.UIFonts;
 import org.jkiss.dbeaver.ui.actions.datasource.DataSourceHandler;
 import org.jkiss.dbeaver.ui.app.standalone.internal.CoreApplicationActivator;
 import org.jkiss.dbeaver.ui.app.standalone.internal.CoreApplicationMessages;
-import org.jkiss.dbeaver.ui.app.standalone.update.DBeaverVersionChecker;
-import org.jkiss.dbeaver.ui.controls.resultset.ThemeConstants;
+import org.jkiss.dbeaver.ui.app.standalone.internal.WorkbenchPatcher;
+import org.jkiss.dbeaver.ui.app.standalone.rpc.IInstanceController;
 import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
 import org.jkiss.dbeaver.ui.editors.EditorUtils;
 import org.jkiss.dbeaver.ui.editors.content.ContentEditorInput;
 import org.jkiss.dbeaver.ui.perspective.DBeaverPerspective;
+import org.jkiss.dbeaver.ui.preferences.PrefPageConnectionsGeneral;
 import org.jkiss.dbeaver.ui.preferences.PrefPageDatabaseEditors;
 import org.jkiss.dbeaver.ui.preferences.PrefPageDatabaseUserInterface;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 
+import java.awt.*;
+import java.awt.desktop.SystemEventListener;
+import java.awt.desktop.SystemSleepEvent;
+import java.awt.desktop.SystemSleepListener;
+import java.util.List;
 import java.util.*;
 
 /**
@@ -84,6 +104,11 @@ public class ApplicationWorkbenchAdvisor extends IDEWorkbenchAdvisor {
     protected static final String APPEARANCE_PREF_PAGE_ID = "org.eclipse.ui.preferencePages.Views";
     private static final String EDITORS_PREF_PAGE_ID = "org.eclipse.ui.preferencePages.Editors";
 
+    @Deprecated(since = "25.1.5")
+    private static final String PROP_PERSPECTIVE_VERSION = "dbeaver.perspectiveVersion"; //$NON-NLS-1$
+    @Deprecated(since = "25.1.5")
+    private static final String PROP_WORKBENCH_VERSION = "dbeaver.workbenchVersion"; //$NON-NLS-1$
+
     private static final String[] EXCLUDE_PREF_PAGES = {
         WORKBENCH_PREF_PAGE_ID + "/org.eclipse.ui.preferencePages.Globalization",
         WORKBENCH_PREF_PAGE_ID + "/org.eclipse.ui.preferencePages.Perspectives",
@@ -93,10 +118,17 @@ public class ApplicationWorkbenchAdvisor extends IDEWorkbenchAdvisor {
         WORKBENCH_PREF_PAGE_ID + "/org.eclipse.ui.preferencePages.Workspace/org.eclipse.ui.preferencePages.BuildOrder",
         //WORKBENCH_PREF_PAGE_ID + "/org.eclipse.ui.preferencePages.ContentTypes",
         WORKBENCH_PREF_PAGE_ID + "/org.eclipse.ui.preferencePages.General.LinkHandlers",
-        WORKBENCH_PREF_PAGE_ID + "/org.eclipse.ui.preferencePages.Startup",
+        //WORKBENCH_PREF_PAGE_ID + "/org.eclipse.ui.preferencePages.Startup",
         WORKBENCH_PREF_PAGE_ID + "/org.eclipse.ui.trace.tracingPage",
         WORKBENCH_PREF_PAGE_ID + "/org.eclipse.epp.mpc.projectnatures",
-        "org.eclipse.ui.internal.console.ansi.preferences.AnsiConsolePreferencePage"
+        "org.eclipse.ui.internal.console.ansi.preferences.AnsiConsolePreferencePage",
+        WORKBENCH_PREF_PAGE_ID + "/org.eclipse.ui.browser.preferencePage",
+        "org.eclipse.jsch.ui.SSHPreferences",
+
+        WORKBENCH_PREF_PAGE_ID + "/" + EDITORS_PREF_PAGE_ID,
+        WORKBENCH_PREF_PAGE_ID + "/" + EDITORS_PREF_PAGE_ID + "/org.eclipse.ui.preferencePages.AutoSave",
+
+        "org.eclipse.equinox.internal.p2.ui.sdk.ProvisioningPreferencePage",    // Install-Update
 
         // Team preferences - not needed in CE
         //"org.eclipse.team.ui.TeamPreferences",
@@ -106,11 +138,8 @@ public class ApplicationWorkbenchAdvisor extends IDEWorkbenchAdvisor {
     private static final String[] UI_PREF_PAGES = {
             WORKBENCH_PREF_PAGE_ID + "/org.eclipse.ui.preferencePages.Views",
             WORKBENCH_PREF_PAGE_ID + "/org.eclipse.ui.preferencePages.Keys",
-            WORKBENCH_PREF_PAGE_ID + "/org.eclipse.ui.browser.preferencePage",
             WORKBENCH_PREF_PAGE_ID + "/org.eclipse.search.preferences.SearchPreferencePage",
             WORKBENCH_PREF_PAGE_ID + "/org.eclipse.text.quicksearch.PreferencesPage",
-            WORKBENCH_PREF_PAGE_ID + "/" + EDITORS_PREF_PAGE_ID,
-            WORKBENCH_PREF_PAGE_ID + "/" + EDITORS_PREF_PAGE_ID + "/org.eclipse.ui.preferencePages.AutoSave",
             WORKBENCH_PREF_PAGE_ID + "/" + EDITORS_PREF_PAGE_ID + "/org.eclipse.ui.preferencePages.FileEditors" //"File Associations"
     };
 
@@ -121,55 +150,64 @@ public class ApplicationWorkbenchAdvisor extends IDEWorkbenchAdvisor {
 
     // Move to General
     private static final String[] GENERAL_PREF_PAGES = {
-        "org.eclipse.equinox.internal.p2.ui.sdk.ProvisioningPreferencePage",    // Install-Update
         "org.eclipse.debug.ui.DebugPreferencePage"                              // Debugger
     };
-    
-    
-    /**
-     * Diagram font
-     */
-    public static String DIAGRAM_FONT = ERDUIConstants.PROP_DIAGRAM_FONT;
 
-    public static String RESULTS_GRID_FONT = ThemeConstants.FONT_SQL_RESULT_SET;
-    
+    // Move to Connections
+    private static final String[] NETWORK_PREF_PAGES = {
+        WORKBENCH_PREF_PAGE_ID + "/" + "org.eclipse.ui.net.NetPreferences",    // Network Connections
+    };
+
+
     private static final Set<String> fontPrefIdsToHide = Set.of(
-        ApplicationWorkbenchWindowAdvisor.TEXT_EDITOR_BLOCK_SELECTION_FONT,
-        ApplicationWorkbenchWindowAdvisor.TEXT_FONT,
-        ApplicationWorkbenchWindowAdvisor.CONSOLE_FONT,
-        ApplicationWorkbenchWindowAdvisor.DETAIL_PANE_TEXT_FONT,
-        ApplicationWorkbenchWindowAdvisor.MEMORY_VIEW_TABLE_FONT,
-        ApplicationWorkbenchWindowAdvisor.COMPARE_TEXT_FONT,
-        ApplicationWorkbenchWindowAdvisor.DIALOG_FONT,
-        ApplicationWorkbenchWindowAdvisor.VARIABLE_TEXT_FONT,
-        ApplicationWorkbenchWindowAdvisor.PART_TITLE_FONT,
-        ApplicationWorkbenchWindowAdvisor.TREE_AND_TABLE_FONT_FOR_VIEWS
+        UIFonts.Eclipse.TEXT_EDITOR_BLOCK_SELECTION_FONT,
+        UIFonts.Eclipse.TEXT_FONT,
+        UIFonts.Eclipse.CONSOLE_FONT,
+        UIFonts.Eclipse.DETAIL_PANE_TEXT_FONT,
+        UIFonts.Eclipse.MEMORY_VIEW_TABLE_FONT,
+        UIFonts.Eclipse.COMPARE_TEXT_FONT,
+        UIFonts.Eclipse.DIALOG_FONT,
+        UIFonts.Eclipse.VARIABLE_TEXT_FONT,
+        UIFonts.Eclipse.PART_TITLE_FONT,
+        UIFonts.Eclipse.TREE_AND_TABLE_FONT_FOR_VIEWS
     );
     
     private static final Map<String, List<String>> fontOverrides = Map.of(
-        UIFonts.DBEAVER_FONTS_MONOSPACE, List.of(
-            ApplicationWorkbenchWindowAdvisor.TEXT_EDITOR_BLOCK_SELECTION_FONT,
-            ApplicationWorkbenchWindowAdvisor.TEXT_FONT,
-            ApplicationWorkbenchWindowAdvisor.CONSOLE_FONT,
-            ApplicationWorkbenchWindowAdvisor.DETAIL_PANE_TEXT_FONT,
-            ApplicationWorkbenchWindowAdvisor.MEMORY_VIEW_TABLE_FONT,
-            ApplicationWorkbenchWindowAdvisor.COMPARE_TEXT_FONT
+        UIFonts.DBeaver.MONOSPACE_FONT, List.of(
+            UIFonts.Eclipse.TEXT_EDITOR_BLOCK_SELECTION_FONT,
+            UIFonts.Eclipse.TEXT_FONT,
+            UIFonts.Eclipse.CONSOLE_FONT,
+            UIFonts.Eclipse.DETAIL_PANE_TEXT_FONT,
+            UIFonts.Eclipse.MEMORY_VIEW_TABLE_FONT,
+            UIFonts.Eclipse.COMPARE_TEXT_FONT
         ),
-        UIFonts.DBEAVER_FONTS_MAIN_FONT, List.of(
-            ApplicationWorkbenchWindowAdvisor.DIALOG_FONT,
-            ApplicationWorkbenchWindowAdvisor.VARIABLE_TEXT_FONT,
-            ApplicationWorkbenchWindowAdvisor.PART_TITLE_FONT,
-            ApplicationWorkbenchWindowAdvisor.TREE_AND_TABLE_FONT_FOR_VIEWS
+        UIFonts.DBeaver.MAIN_FONT, List.of(
+            UIFonts.Eclipse.DIALOG_FONT,
+            UIFonts.Eclipse.VARIABLE_TEXT_FONT,
+            UIFonts.Eclipse.PART_TITLE_FONT,
+            UIFonts.Eclipse.TREE_AND_TABLE_FONT_FOR_VIEWS
         )
-    ); 
-    
+    );
+
     //processor must be created before we start event loop
     protected final DBPApplication application;
-    private final DelayedEventsProcessor processor;
+    private final OpenEventProcessor processor;
+
+    private final SystemEventListener systemSleepListener = new SystemSleepListener() {
+        @Override
+        public void systemAboutToSleep(SystemSleepEvent e) {
+            OperationSystemState.toggleSleepMode(true);
+        }
+
+        @Override
+        public void systemAwoke(SystemSleepEvent e) {
+            OperationSystemState.toggleSleepMode(false);
+        }
+    };
 
     protected ApplicationWorkbenchAdvisor(DBPApplication application) {
         this.application = application;
-        this.processor = new DelayedEventsProcessor(Display.getCurrent());
+        this.processor = new OpenEventProcessor(Display.getCurrent());
     }
 
     @Override
@@ -236,9 +274,19 @@ public class ApplicationWorkbenchAdvisor extends IDEWorkbenchAdvisor {
 
         filterPreferencePages();
         filterWizards();
+        patchJFaceIcons();
+        resetPerspectiveIfNeeded();
 
-        if (!application.isDistributed()) {
-            startVersionChecker();
+        if (AWTUtils.isDesktopSupported()) {
+            // System events
+            Desktop desktop = Desktop.getDesktop();
+            if (desktop.isSupported(Desktop.Action.APP_EVENT_SYSTEM_SLEEP)) {
+                desktop.addAppEventListener(systemSleepListener);
+            }
+        }
+
+        if (DBWorkbench.getPlatform() instanceof DesktopPlatform platformDesktop) {
+            platformDesktop.setWorkbenchStarted(true);
         }
     }
 
@@ -261,12 +309,14 @@ public class ApplicationWorkbenchAdvisor extends IDEWorkbenchAdvisor {
         
         FontPreferenceOverrides.hideFontPrefs(pm, fontPrefIdsToHide);
         
-        for (String epp : getExcludedPreferencePageIds()) {
-            pm.remove(epp);
-        }
         patchPreferencePages(pm, EDITORS_PREF_PAGES, PrefPageDatabaseEditors.PAGE_ID);
         patchPreferencePages(pm, UI_PREF_PAGES, PrefPageDatabaseUserInterface.PAGE_ID);
         patchPreferencePages(pm, GENERAL_PREF_PAGES, WORKBENCH_PREF_PAGE_ID);
+        patchPreferencePages(pm, NETWORK_PREF_PAGES, PrefPageConnectionsGeneral.PAGE_ID);
+
+        for (String epp : getExcludedPreferencePageIds()) {
+            pm.remove(epp);
+        }
     }
 
     @NotNull
@@ -307,10 +357,22 @@ public class ApplicationWorkbenchAdvisor extends IDEWorkbenchAdvisor {
         return results.toArray(new IWizardDescriptor[0]);
     }
 
-    private void startVersionChecker() {
-        DBeaverVersionChecker checker = new DBeaverVersionChecker(false);
-        checker.schedule(3000);
+    private void patchJFaceIcons() {
+        final Map<String, ImageDescriptor> icons = Map.of(
+            Dialog.DLG_IMG_MESSAGE_INFO, DBeaverIcons.getImageDescriptor(DBIcon.SMALL_INFO),
+            Dialog.DLG_IMG_MESSAGE_WARNING, DBeaverIcons.getImageDescriptor(DBIcon.SMALL_WARNING),
+            Dialog.DLG_IMG_MESSAGE_ERROR, DBeaverIcons.getImageDescriptor(DBIcon.SMALL_ERROR)
+        );
+
+        final ImageRegistry registry = JFaceResources.getImageRegistry();
+        for (Map.Entry<String, ImageDescriptor> entry : icons.entrySet()) {
+            registry.remove(entry.getKey());
+            registry.put(entry.getKey(), entry.getValue());
+        }
     }
+
+    ///////////////////////
+    // Shutdown
 
     @Override
     public boolean preShutdown() {
@@ -328,81 +390,112 @@ public class ApplicationWorkbenchAdvisor extends IDEWorkbenchAdvisor {
     @Override
     public void postShutdown() {
         super.postShutdown();
+        if (AWTUtils.isDesktopSupported()) {
+            // System events
+            Desktop desktop = Desktop.getDesktop();
+            if (desktop.isSupported(Desktop.Action.APP_EVENT_SYSTEM_SLEEP)) {
+                desktop.removeAppEventListener(systemSleepListener);
+            }
+        }
+
+        if (DBWorkbench.getPlatform() instanceof BasePlatformImpl basePlatform) {
+            // Dispose navigator model earlier because it may lock some UI resources
+            // and we want to free them before application display will be disposed
+            basePlatform.disposeNavigatorModel();
+        }
+        if (DBWorkbench.getPlatform() instanceof DesktopPlatform platformDesktop) {
+            platformDesktop.setWorkbenchStarted(false);
+        }
     }
 
     private boolean saveAndCleanup() {
+        if (getWorkbenchConfigurer().emergencyClosing() ||
+            (DBWorkbench.getPlatform().getApplication() instanceof DBPApplicationDesktop ad && ad.isForcedRestart())
+        ) {
+            return true;
+        }
         try {
             IWorkbenchWindow window = getWorkbenchConfigurer().getWorkbench().getActiveWorkbenchWindow();
             if (window != null) {
-                if (!MessageDialogWithToggle.NEVER.equals(ConfirmationDialog.getSavedPreference(DBeaverPreferences.CONFIRM_EXIT))) {
-                    // Workaround of #703 bug. NEVER doesn't make sense for Exit confirmation. It is the same as ALWAYS.
-                    if (ConfirmationDialog.confirmAction(window.getShell(), DBeaverPreferences.CONFIRM_EXIT, ConfirmationDialog.QUESTION)
-                        != IDialogConstants.YES_ID)
-                    {
-                        return false;
-                    }
-                }
-                // Close al content editors
-                // They are locks resources which are shared between other editors
-                // So we need to close em first
-                IWorkbenchPage workbenchPage = window.getActivePage();
-                IEditorReference[] editors = workbenchPage.getEditorReferences();
-                List<IEditorPart> editorsToRevert = new ArrayList<>();
-                for (IEditorReference editor : editors) {
-                    IEditorPart editorPart = editor.getEditor(false);
-                    if (editorPart != null && editorPart.getEditorInput() instanceof ContentEditorInput) {
-                        workbenchPage.closeEditor(editorPart, false);
-                    }
-                }
-                // We also save all saveable parts here. Because we need to do this before transaction finializer hook.
-                // Standard workbench finalizer works in the very end when it is too late
-                // (all connections are closed at that moment)
-                for (IEditorReference editor : editors) {
-                    IEditorPart editorPart = editor.getEditor(false);
-                    if (editorPart instanceof ISaveablePart2) {
-                        if (!SaveableHelper.savePart(editorPart, editorPart, window, true)) {
-                            return false;
-                        }
-                        editorsToRevert.add(editorPart);
-                    }
-                }
-
-                // Revert all open editors to  avoid double confirmation
-                for (IEditorPart editorPart : editorsToRevert) {
-                    try {
-                        EditorUtils.revertEditorChanges(editorPart);
-                    } catch (Exception e) {
-                        log.debug(e);
-                    }
+                if (!ApplicationWorkbenchAdvisor.closeOpenEditors(window, false, true)) {
+                    return false;
                 }
             }
-
-            return cancelRunningTasks() && closeActiveTransactions();
+            return ApplicationWorkbenchAdvisor.cancelRunningTasks(true) && ApplicationWorkbenchAdvisor.closeActiveTransactions(false);
         } catch (Throwable e) {
-            e.printStackTrace();
+            log.error(e);
             return true;
         }
     }
 
-    private boolean closeActiveTransactions() {
+    public static boolean closeOpenEditors(IWorkbenchWindow window, boolean forceRevert, boolean showConfirmation) {
+        if (showConfirmation && !forceRevert &&
+                !MessageDialogWithToggle.NEVER.equals(ConfirmationDialog.getSavedPreference(DBeaverPreferences.CONFIRM_EXIT))
+        ) {
+            // Workaround of #703 bug. NEVER doesn't make sense for Exit confirmation. It is the same as ALWAYS.
+            if (ConfirmationDialog.confirmAction(window.getShell(), DBeaverPreferences.CONFIRM_EXIT, ConfirmationDialog.QUESTION)
+                    != IDialogConstants.YES_ID) {
+                return false;
+            }
+        }
+        // Close all content editors
+        // They are locking resources which are shared between other editors
+        // So we need to close them first
+        IWorkbenchPage workbenchPage = window.getActivePage();
+        IEditorReference[] editors = workbenchPage.getEditorReferences();
+        List<IEditorPart> editorsToRevert = new ArrayList<>();
+        for (IEditorReference editor : editors) {
+            IEditorPart editorPart = editor.getEditor(false);
+            if (editorPart != null && editorPart.getEditorInput() instanceof ContentEditorInput) {
+                workbenchPage.closeEditor(editorPart, false);
+            }
+        }
+        // We also save all saveable parts here. Because we need to do this before transaction finializer hook.
+        // Standard workbench finalizer works at the very end when it is too late
+        // (all connections are closed at that moment)
+        for (IEditorReference editor : editors) {
+            IEditorPart editorPart = editor.getEditor(false);
+            if (editorPart instanceof ISaveablePart2) {
+                if (!forceRevert && !SaveableHelper.savePart(editorPart, editorPart, window, true)) {
+                    return false;
+                }
+                editorsToRevert.add(editorPart);
+            }
+        }
+
+        // Revert all open editors to avoid double confirmation
+        for (IEditorPart editorPart : editorsToRevert) {
+            try {
+                EditorUtils.revertEditorChanges(editorPart);
+            } catch (Exception e) {
+                log.debug(e);
+            }
+        }
+        return true;
+    }
+
+    public static boolean closeActiveTransactions(boolean forceRollback) {
         for (DBPDataSourceContainer dataSourceDescriptor : DataSourceRegistry.getAllDataSources()) {
-            if (!DataSourceHandler.checkAndCloseActiveTransaction(dataSourceDescriptor, false)) {
+            if (!DataSourceHandler.checkAndCloseActiveTransaction(dataSourceDescriptor, false, forceRollback)) {
                 return false;
             }
         }
         return true;
     }
 
-    private boolean cancelRunningTasks() {
+    public static boolean cancelRunningTasks(boolean confirmCancel) {
         DBPProject activeProject = DBWorkbench.getPlatform().getWorkspace().getActiveProject();
         if (activeProject == null) {
             // Probably some TE user without permissions and projects
             return true;
         }
-        final DBTTaskManager manager = activeProject.getTaskManager();
+        final DBTTaskManager manager = activeProject.getTaskManager(false);
+        if (manager == null) {
+            return true;
+        }
 
         if (manager.hasRunningTasks()) {
-            final boolean cancel = DBWorkbench.getPlatformUI().confirmAction(
+            final boolean cancel = !confirmCancel || DBWorkbench.getPlatformUI().confirmAction(
                 CoreApplicationMessages.confirmation_cancel_database_tasks_title,
                 CoreApplicationMessages.confirmation_cancel_database_tasks_message
             );
@@ -424,8 +517,74 @@ public class ApplicationWorkbenchAdvisor extends IDEWorkbenchAdvisor {
 
     @Override
     public void eventLoopIdle(Display display) {
-        processor.catchUp(display);
+        processor.catchUp();
         super.eventLoopIdle(display);
     }
 
+    private void resetPerspectiveIfNeeded() {
+        IWorkbenchWindow window = Workbench.getInstance().getActiveWorkbenchWindow();
+        if (window == null) {
+            return;
+        }
+
+        IWorkbenchPage page = window.getActivePage();
+        if (page == null) {
+            return;
+        }
+
+        IPerspectiveDescriptor perspective = page.getPerspective();
+        if (perspective != null && !perspective.getId().equals(DBeaverPerspective.PERSPECTIVE_ID)) {
+            return;
+        }
+
+        if (!WorkbenchPatcher.needsPerspectiveReset(Workbench.getInstance())) {
+            return;
+        }
+
+        log.debug("Resetting perspective due to missing view definitions in the workbench file");
+        UIExecutionQueue.queueExec(page::resetPerspective);
+
+        DBeaverNotifications.showNotification(
+            DBeaverNotifications.NT_PERSPECTIVE_RESET,
+            CoreApplicationMessages.notification_perspective_reset_title,
+            CoreApplicationMessages.notification_perspective_reset_message,
+            null,
+            null
+        );
+
+        // Remove legacy properties
+        DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
+        store.setToDefault(PROP_PERSPECTIVE_VERSION);
+        store.setToDefault(PROP_WORKBENCH_VERSION);
+    }
+
+    /**
+     * Designed after {@link org.eclipse.ui.internal.ide.application.DelayedEventsProcessor}
+     */
+    private static class OpenEventProcessor implements Listener {
+        private final List<String> filesToOpen = new ArrayList<>(1);
+
+        OpenEventProcessor(@NotNull Display display) {
+            display.addListener(SWT.OpenDocument, this);
+        }
+
+        @Override
+        public void handleEvent(@NotNull Event event) {
+            final String path = event.text;
+            if (path != null) {
+                filesToOpen.add(path);
+            }
+        }
+
+        void catchUp() {
+            if (filesToOpen.isEmpty()) {
+                return;
+            }
+            IInstanceController controller = DBeaverApplication.getInstance().getInstanceServer();
+            if (controller != null) {
+                controller.openExternalFiles(filesToOpen.toArray(String[]::new));
+                filesToOpen.clear();
+            }
+        }
+    }
 }

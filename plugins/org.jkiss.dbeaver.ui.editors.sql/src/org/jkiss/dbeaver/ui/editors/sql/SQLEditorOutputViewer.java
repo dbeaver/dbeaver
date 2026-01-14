@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -48,10 +48,10 @@ import java.util.*;
  * SQL editor output viewer
  */
 public class SQLEditorOutputViewer extends Composite implements DBCOutputWriter {
-    private static final int MAX_RECORDS = 1000;
+    private static final int INITIAL_OUTPUT_RECORD_CAPACITY = 1000;
 
     private final Set<DBCOutputSeverity> severities = new HashSet<>();
-    private final Deque<OutputRecord> records = new ArrayDeque<>(MAX_RECORDS);
+    private final Deque<OutputRecord> records = new ArrayDeque<>(INITIAL_OUTPUT_RECORD_CAPACITY);
 
     private final Text filterText;
     private final ToolBarManager filterToolbar;
@@ -95,13 +95,14 @@ public class SQLEditorOutputViewer extends Composite implements DBCOutputWriter 
         if (message == null) {
             return;
         }
-        if (severity == null || severities.contains(severity)) {
-            viewer.getOutputWriter().println(message);
+        if (severity == null || severity.isForced() || severities.contains(severity)) {
+            PrintWriter writer = viewer.getOutputWriter();
+            if (severity != null && severity.isForced()) {
+                writer.print("[" + severity.getName() + "] ");
+            }
+            writer.println(message);
         }
         records.offer(new OutputRecord(severity, message));
-        if (records.size() > MAX_RECORDS) {
-            records.pop();
-        }
     }
 
     @Override
@@ -145,8 +146,7 @@ public class SQLEditorOutputViewer extends Composite implements DBCOutputWriter 
         final DBPDataSource dataSource = executionContext != null ? executionContext.getDataSource() : null;
         final DBCServerOutputReader reader = DBUtils.getAdapter(DBCServerOutputReader.class, dataSource);
 
-        if (reader instanceof DBCServerOutputReaderExt) {
-            final DBCServerOutputReaderExt readerExt = (DBCServerOutputReaderExt) reader;
+        if (reader instanceof DBCServerOutputReaderExt readerExt) {
             final DBCOutputSeverity[] supportedSeverities = readerExt.getSupportedSeverities(executionContext);
 
             severities.addAll(List.of(supportedSeverities));
@@ -166,7 +166,7 @@ public class SQLEditorOutputViewer extends Composite implements DBCOutputWriter 
         final String filter = filterText.getText().trim();
 
         for (OutputRecord record : records) {
-            if (record.severity != null && !severities.contains(record.severity)) {
+            if (record.severity != null && !record.severity.isForced() && !severities.contains(record.severity)) {
                 continue;
             }
             if (!filter.isEmpty() && !record.line.contains(filter)) {
@@ -186,10 +186,10 @@ public class SQLEditorOutputViewer extends Composite implements DBCOutputWriter 
             filterMenu.setRemoveAllWhenShown(true);
             filterMenu.addMenuListener(manager -> {
                 final DBCServerOutputReader reader = DBUtils.getAdapter(DBCServerOutputReader.class, executionContext.getDataSource());
-                if (!(reader instanceof DBCServerOutputReaderExt)) {
+                if (!(reader instanceof DBCServerOutputReaderExt readerExt)) {
                     return;
                 }
-                for (DBCOutputSeverity severity : ((DBCServerOutputReaderExt) reader).getSupportedSeverities(executionContext)) {
+                for (DBCOutputSeverity severity : readerExt.getSupportedSeverities(executionContext)) {
                     manager.add(new ToggleSeverityAction(severity));
                 }
             });

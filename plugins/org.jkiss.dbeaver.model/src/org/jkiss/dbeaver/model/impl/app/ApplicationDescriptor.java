@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.model.impl.app;
 
 import org.eclipse.core.runtime.IConfigurationElement;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.app.DBPApplication;
 import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
 import org.jkiss.utils.CommonUtils;
@@ -39,6 +40,7 @@ public class ApplicationDescriptor extends AbstractDescriptor {
     private boolean finalApplication = true;
 
     private final ObjectType implClass;
+    private DBPApplication implementation;
 
     ApplicationDescriptor(IConfigurationElement config) {
         super(config);
@@ -100,8 +102,16 @@ public class ApplicationDescriptor extends AbstractDescriptor {
         return hidden;
     }
 
-    public Class<? extends DBPApplication> getImplClass() {
-        return implClass.getObjectClass(DBPApplication.class);
+    public DBPApplication getInstance() throws Exception {
+        if (implementation == null) {
+            implementation = getImplClass().getConstructor().newInstance();
+        }
+        return implementation;
+    }
+
+    @NotNull
+    private Class<? extends DBPApplication> getImplClass() {
+        return implClass.getImplClass(DBPApplication.class);
     }
 
     boolean isFinalApplication() {

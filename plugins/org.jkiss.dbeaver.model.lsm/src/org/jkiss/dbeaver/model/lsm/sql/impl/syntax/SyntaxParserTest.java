@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,15 +22,20 @@ import org.antlr.v4.runtime.dfa.DFA;
 import org.antlr.v4.runtime.tree.Tree;
 import org.antlr.v4.runtime.tree.Trees;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.lsm.LSMAnalyzerParameters;
 import org.jkiss.dbeaver.model.lsm.sql.impl.syntax.SQLStandardParser.SqlQueriesContext;
+import org.jkiss.dbeaver.model.stm.LSMInspections;
 import org.jkiss.dbeaver.model.stm.STMErrorListener;
+import org.jkiss.dbeaver.model.stm.STMTreeNode;
 
-import java.io.IOException;
-import java.util.BitSet;
 import javax.xml.stream.FactoryConfigurationError;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.transform.TransformerException;
-
+import java.io.IOException;
+import java.util.BitSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 public class SyntaxParserTest {
 
@@ -57,15 +62,22 @@ public class SyntaxParserTest {
             + "USING(ProductCategoryID)\r\n"
             + "GROUP BY ProductName\r\n"
             + "ORDER BY Product.ModifiedDate DESC";
-//        inputText = "\n\rSELECT schedule[1:2][1:1] FROM sal_emp se where s;";
 
-        //inputText = "create table test(ts TIMESTAMP x DEFAULT CURRENT_TIMESTAMP);\r\n";
+
         var input = CharStreams.fromString(inputText);
-        var ll = new SQLStandardLexer(input);
+        var params = new LSMAnalyzerParameters(
+            Map.of("\"", "\""),
+            true,
+            false,
+            '?',
+            List.of(Map.entry(1, Set.of(":"))),
+            true
+        );
+        var ll = new SQLStandardLexer(input, params);
         var tokens = new CommonTokenStream(ll);
         tokens.fill();
         
-        var pp = new SQLStandardParser(tokens);
+        var pp = new SQLStandardParser(tokens, params);
         pp.addErrorListener(new STMErrorListener() {
             @Override
             public void syntaxError(Recognizer<?, ?> recognizer, 
@@ -107,27 +119,53 @@ public class SyntaxParserTest {
         String str = tree.getTextContent();
 
         System.out.println(str);
-        
+
         { // print simple parse tree view
             var sb = new StringBuilder();
             sb.append("\n");
             collect(tree, pp, sb, "");
             System.out.println(sb.toString());
         }
-        
+
+        int pos = 36;
+        System.out.println(LSMInspections.prepareTerms(tree));
+//        System.out.println(LSMInspections.prepareAbstractSyntaxInspection(tree, pos).getReachabilityByName());
+//        System.out.println(inputText.substring(0, pos) + "|" + inputText.substring(pos));
+    }
+
+    public static String collect(STMTreeNode ctx) {
+        var input = CharStreams.fromString("");
+        var params = new LSMAnalyzerParameters(
+            Map.of("\"", "\""),
+            true,
+            false,
+            '?',
+            List.of(Map.entry(1, Set.of(":"))),
+            true
+        );
+        var ll = new SQLStandardLexer(input, params);
+        var tokens = new CommonTokenStream(ll);
+        var pp = new SQLStandardParser(tokens, params);
+
+        { // print simple parse tree view
+            var sb = new StringBuilder();
+            sb.append("\n");
+            collect(ctx, pp, sb, "");
+            return sb.toString();
+        }
     }
     
-    private static void collect(Tree ctx, Parser pp, StringBuilder sb, String indent) {        
+    private static void collect(STMTreeNode ctx, Parser pp, StringBuilder sb, String indent) {
         sb.append(indent).append(Trees.getNodeText(ctx, pp));
         while (ctx.getChildCount() == 1 && !(ctx.getChild(0).getPayload() instanceof Token)) {
-            ctx = ctx.getChild(0);
+            ctx = ctx.getChildNode(0);
             sb.append(".").append(Trees.getNodeText(ctx, pp));
         }
-        sb.append("\n");
-        if (ctx.getChildCount() == 1 && ctx.getChild(0).getPayload() instanceof Token) {
-            sb.append(indent).append("    \"").append(Trees.getNodeText(ctx.getChild(0), pp)).append("\"\n");
+        sb.append(" [").append(ctx.getRealInterval()).append("]\n");
+        if (ctx.getChildCount() == 1 && ctx.getChild(0).getPayload() instanceof Token t) {
+            sb.append(indent).append("    ").append(pp.getVocabulary().getDisplayName(t.getType())).append(" \"").append(Trees.getNodeText(ctx.getChild(0), pp)).append("\" [").append(ctx.getChildNode(0).getRealInterval()).append("]\n");
         } else {
-            for (Tree t : Trees.getChildren(ctx)) {
+            for (STMTreeNode t : ctx.getChildren()) {
                 collect(t, pp, sb, indent + "    ");
             }
         }

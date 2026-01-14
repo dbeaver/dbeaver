@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.ext.postgresql.model;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBDatabaseException;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
@@ -39,7 +40,6 @@ import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.exec.jdbc.*;
 import org.jkiss.dbeaver.model.exec.output.DBCServerOutputReader;
 import org.jkiss.dbeaver.model.exec.plan.DBCQueryPlanner;
-import org.jkiss.dbeaver.model.impl.app.DefaultCertificateStorage;
 import org.jkiss.dbeaver.model.impl.jdbc.*;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectLookupCache;
 import org.jkiss.dbeaver.model.impl.net.SSLHandlerTrustStoreImpl;
@@ -47,23 +47,23 @@ import org.jkiss.dbeaver.model.impl.sql.QueryTransformerLimit;
 import org.jkiss.dbeaver.model.meta.ForTest;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLState;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.struct.cache.SimpleObjectCache;
+import org.jkiss.dbeaver.registry.timezone.TimezoneRegistry;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.net.DefaultCallbackHandler;
-import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.BeanUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.IOException;
-import java.io.Reader;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.time.ZoneId;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -71,7 +71,8 @@ import java.util.regex.Pattern;
 /**
  * PostgreDataSource
  */
-public class PostgreDataSource extends JDBCDataSource implements DBSInstanceContainer, DBPAdaptable, DBPObjectStatisticsCollector {
+public class PostgreDataSource extends JDBCDataSource implements DBSInstanceContainer, DBPAdaptable,
+    DBPObjectStatisticsCollector {
 
     private static final Log log = Log.getLog(PostgreDataSource.class);
     private static final PostgrePrivilegeType[] SUPPORTED_PRIVILEGE_TYPES = new PostgrePrivilegeType[]{
@@ -86,25 +87,37 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
         PostgrePrivilegeType.CONNECT,
         PostgrePrivilegeType.TEMPORARY,
         PostgrePrivilegeType.EXECUTE,
-        PostgrePrivilegeType.USAGE
+        PostgrePrivilegeType.USAGE,
+        PostgrePrivilegeType.MAINTAIN
     };
 
     private DatabaseCache databaseCache;
     private SettingCache settingCache;
     private String activeDatabaseName;
     private PostgreServerExtension serverExtension;
-    private String serverVersion;
-
+    protected String serverVersion;
+    private boolean shouldShowStatistics;
     private volatile boolean hasStatistics;
+    private boolean supportsEnumTable;
+    private boolean supportsReltypeColumn = true;
+    private volatile boolean isConnectionRefreshing = false;
 
     public PostgreDataSource(DBRProgressMonitor monitor, DBPDataSourceContainer container)
         throws DBException
     {
         super(monitor, container, new PostgreDialect());
 
-        // Statistics was disabled then mark it as already read
-        this.hasStatistics = !CommonUtils.getBoolean(container.getConnectionConfiguration().getProviderProperty(
+        this.shouldShowStatistics = CommonUtils.getBoolean(container.getConnectionConfiguration().getProviderProperty(
             PostgreConstants.PROP_SHOW_DATABASE_STATISTICS));
+    }
+
+    public PostgreDataSource(@NotNull DBRProgressMonitor monitor,
+                             @NotNull DBPDataSourceContainer container,
+                             @NotNull SQLDialect dialect) throws DBException {
+        super(monitor, container, dialect);
+
+        this.shouldShowStatistics = CommonUtils.getBoolean(container.getConnectionConfiguration()
+                    .getProviderProperty(PostgreConstants.PROP_SHOW_DATABASE_STATISTICS));
     }
 
     // Constructor for tests
@@ -125,40 +138,27 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
 
     @Override
     public Object getDataSourceFeature(String featureId) {
-        switch (featureId) {
-            case DBPDataSource.FEATURE_MAX_STRING_LENGTH:
-                return 10485760;
-            case DBPDataSource.FEATURE_LOB_REQUIRE_TRANSACTIONS:
-                return true;
-        }
-        return super.getDataSourceFeature(featureId);
+        return switch (featureId) {
+            case DBPDataSource.FEATURE_MAX_STRING_LENGTH -> 10485760;
+            case DBPDataSource.FEATURE_LOB_REQUIRE_TRANSACTIONS -> true;
+            default -> super.getDataSourceFeature(featureId);
+        };
+    }
+
+    public void readDatabaseServerVersion(JDBCSession session) throws SQLException {
+        super.readDatabaseServerVersion(session, session.getMetaData());
     }
 
     @Override
     protected void initializeRemoteInstance(@NotNull DBRProgressMonitor monitor) throws DBException {
         DBPConnectionConfiguration configuration = getContainer().getActualConnectionConfiguration();
-        if (configuration.getConfigurationType() == DBPDriverConfigurationType.MANUAL) {
-            activeDatabaseName = configuration.getBootstrap().getDefaultCatalogName();
-            if (CommonUtils.isEmpty(activeDatabaseName)) {
-                activeDatabaseName = configuration.getDatabaseName();
-            }
-        } else {
-            String url = configuration.getUrl();
-            int divPos = url.lastIndexOf('/');
-            if (divPos > 0) {
-                int lastPos = -1;
-                for (int i = divPos + 1; i < url.length(); i++) {
-                    char c = url.charAt(i);
-                    if (!Character.isLetterOrDigit(c) && c != '_' && c != '$' && c != '.') {
-                        lastPos = i;
-                    }
-                }
-                if (lastPos < 0) lastPos = url.length();
-                activeDatabaseName = url.substring(divPos + 1, lastPos);
-            }
-        }
+        String activeDatabaseName = PostgreUtils.getDatabaseNameFromConfiguration(configuration);
         if (CommonUtils.isEmpty(activeDatabaseName)) {
-            activeDatabaseName = PostgreConstants.DEFAULT_DATABASE;
+            if (!CommonUtils.isEmpty(configuration.getUserName())) {
+                activeDatabaseName = configuration.getUserName();
+            } else {
+                activeDatabaseName = PostgreConstants.DEFAULT_DATABASE;
+            }
         }
 
         databaseCache = new DatabaseCache();
@@ -174,10 +174,12 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
         }
         databaseCache.setCache(dbList);
         // Initiate default context
-        getDefaultInstance().checkInstanceConnection(monitor, false);
+        if (!this.isConnectionRefreshing()) {
+            getDefaultInstance().checkInstanceConnection(monitor, false);
+        }
         try {
             // Preload some settings, if available
-            settingCache.getAllObjects(monitor, this);
+            settingCache.getObject(monitor, this, PostgreConstants.OPTION_STANDARD_CONFORMING_STRINGS);
         } catch (DBException e) {
             // ignore
         }
@@ -187,7 +189,7 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
         DBExecUtils.startContextInitiation(getContainer());
         try (Connection bootstrapConnection = openConnection(monitor, null, "Read PostgreSQL database list")) {
             // Read server version info here - it is needed during database metadata fetch (#8061)
-            readDatabaseServerVersion(bootstrapConnection.getMetaData());
+            readDatabaseServerVersion(bootstrapConnection, bootstrapConnection.getMetaData());
 
             // Get all databases
             try (PreparedStatement dbStat = prepareReadDatabaseListStatement(monitor, bootstrapConnection, configuration)) {
@@ -208,7 +210,7 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
                 }
             }
         } catch (SQLException e) {
-            throw new DBException("Can't connect ot remote PostgreSQL server", e);
+            throw new DBException("Can't connect to remote PostgreSQL server", e);
         } finally {
             DBExecUtils.finishContextInitiation(getContainer());
         }
@@ -217,8 +219,7 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
     // True if we need multiple databases
     protected boolean isReadDatabaseList(DBPConnectionConfiguration configuration) {
         // It is configurable by default
-        return configuration.getConfigurationType() != DBPDriverConfigurationType.URL &&
-            CommonUtils.getBoolean(configuration.getProviderProperty(PostgreConstants.PROP_SHOW_NON_DEFAULT_DB), false);
+        return CommonUtils.getBoolean(configuration.getProviderProperty(PostgreConstants.PROP_SHOW_NON_DEFAULT_DB), false);
     }
 
     protected PreparedStatement prepareReadDatabaseListStatement(
@@ -230,7 +231,7 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
         DBSObjectFilter catalogFilters = getContainer().getObjectFilter(PostgreDatabase.class, null, false);
         StringBuilder catalogQuery = new StringBuilder("SELECT db.oid,db.* FROM pg_catalog.pg_database db WHERE 1 = 1");
         boolean addExclusionName = false;
-        String connectionDBName = getContainer().getConnectionConfiguration().getDatabaseName();
+        String connectionDBName = PostgreUtils.getDatabaseNameFromConfiguration(getContainer().getConnectionConfiguration());
         {
             final boolean showTemplates = CommonUtils.toBoolean(configuration.getProviderProperty(PostgreConstants.PROP_SHOW_TEMPLATES_DB));
             final boolean showUnavailable = CommonUtils.toBoolean(configuration.getProviderProperty(PostgreConstants.PROP_SHOW_UNAVAILABLE_DB));
@@ -282,11 +283,11 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
 
     @Override
     protected Map<String, String> getInternalConnectionProperties(
-        DBRProgressMonitor monitor,
-        DBPDriver driver,
-        JDBCExecutionContext context,
-        String purpose,
-        DBPConnectionConfiguration connectionInfo
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBPDriver driver,
+        @NotNull JDBCExecutionContext context,
+        @NotNull String purpose,
+        @NotNull DBPConnectionConfiguration connectionInfo
     ) throws DBCException {
         Map<String, String> props = new LinkedHashMap<>(PostgreDataSourceProvider.getConnectionsProps());
         final DBWHandlerConfiguration sslConfig = getContainer().getActualConnectionConfiguration().getHandler(PostgreConstants.HANDLER_SSL);
@@ -304,7 +305,7 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
         } else {
             getServerType().initDefaultSSLConfig(connectionInfo, props);
         }
-        PostgreServerType serverType = PostgreUtils.getServerType(getContainer().getDriver());
+        PostgreServerType serverType = getType();
         if (serverType.turnOffPreparedStatements()
             && !CommonUtils.toBoolean(getContainer().getActualConnectionConfiguration().getProviderProperty(PostgreConstants.PROP_USE_PREPARED_STATEMENTS))) {
             // Turn off prepared statements using, to avoid error: "ERROR: prepared statement "S_1" already exists" from PGBouncer #10742
@@ -322,7 +323,7 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
     private void initServerSSL(Map<String, String> props, DBWHandlerConfiguration sslConfig) throws DBException {
         props.put(PostgreConstants.PROP_SSL, "true");
 
-        if (!DBWorkbench.isDistributed() && !DBWorkbench.getPlatform().getApplication().isMultiuser()) {
+        if (!isMultiUserOrDistributed()) {
             // Local FS mode
             final String rootCertProp;
             final String clientCertProp;
@@ -358,8 +359,11 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
                 if (!CommonUtils.isEmpty(clientCertProp)) {
                     props.put("sslcert", saveCertificateToFile(clientCertProp));
                 }
+                String keyCertDer = sslConfig.getSecureProperty(SSLHandlerTrustStoreImpl.PROP_SSL_CLIENT_KEY);
                 String keyCertProp = sslConfig.getSecureProperty(SSLHandlerTrustStoreImpl.PROP_SSL_CLIENT_KEY_VALUE);
-                if (!CommonUtils.isEmpty(keyCertProp)) {
+                if (CommonUtils.isNotEmpty(keyCertDer)) { // may be after exception
+                    props.put("sslkey", keyCertDer);
+                } else if (CommonUtils.isNotEmpty(keyCertProp)) {
                     props.put("sslkey", saveCertificateToFile(keyCertProp));
                 }
             } catch (IOException e) {
@@ -377,6 +381,10 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
             props.put("sslfactory", factoryProp);
         }
         props.put("sslpasswordcallback", DefaultCallbackHandler.class.getName());
+    }
+
+    private boolean isMultiUserOrDistributed() {
+        return DBWorkbench.isDistributed() || DBWorkbench.getPlatform().getApplication().isMultiuser();
     }
 
     private void initProxySSL(Map<String, String> props, DBWHandlerConfiguration sslConfig) {
@@ -402,7 +410,7 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
         }
     }
 
-    public DatabaseCache getDatabaseCache()
+    public SimpleObjectCache<PostgreDataSource, PostgreDatabase> getDatabaseCache()
     {
         return databaseCache;
     }
@@ -417,7 +425,7 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
         return databaseCache.getCachedObject(name);
     }
 
-    public SettingCache getSettingCache() {
+    SettingCache getSettingCache() {
         return settingCache;
     }
 
@@ -431,15 +439,33 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
 
     @Override
     public void initialize(@NotNull DBRProgressMonitor monitor)
-        throws DBException
-    {
+        throws DBException {
         super.initialize(monitor);
 
-        try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Read server version")) {
-            serverVersion = JDBCUtils.queryString(session, "SELECT version()");
-        } catch (Exception e) {
-            log.debug("Error reading PostgreSQL version: " + e.getMessage());
-            serverVersion = "";
+        try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Read server information")) {
+            session.enableLogging(false);
+            try {
+                serverVersion = JDBCUtils.queryString(session, "SELECT version()");
+            } catch (Exception e) {
+                log.debug("Error reading PostgreSQL version: " + e.getMessage());
+                serverVersion = "";
+            }
+
+
+            if (isServerVersionAtLeast(12, 0)) {
+                try {
+                    supportsEnumTable = PostgreUtils.isMetaObjectExists(session, "pg_enum", "*");
+                } catch (Exception e) {
+                    log.debug("Error reading pg_enum " + e.getMessage());
+                    supportsEnumTable = false;
+                }
+            }
+            try {
+                supportsReltypeColumn = PostgreUtils.isMetaObjectExists(session, "pg_class", "reltype");
+            } catch (Exception e) {
+                log.debug("Error reading pg_class.reltype " + e.getMessage());
+                supportsReltypeColumn = false;
+            }
         }
 
         // Read databases
@@ -448,15 +474,21 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
 
     @Override
     public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor)
-        throws DBException
-    {
+        throws DBException {
         super.refreshObject(monitor);
         shutdown(monitor);
 
-        this.databaseCache.clearCache();
-        this.activeDatabaseName = null;
+        try {
+            this.isConnectionRefreshing = true;
+            this.databaseCache.clearCache();
+            this.activeDatabaseName = null;
+            this.hasStatistics = false;
+            this.initializeRemoteInstance(monitor);
+        } finally {
+            this.isConnectionRefreshing = false;
+        }
+        getDefaultInstance().checkInstanceConnection(monitor, false);
 
-        this.initializeRemoteInstance(monitor);
         this.initialize(monitor);
 
         return this;
@@ -479,9 +511,7 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
     }
 
     @Override
-    public void cacheStructure(@NotNull DBRProgressMonitor monitor, int scope)
-        throws DBException
-    {
+    public void cacheStructure(@NotNull DBRProgressMonitor monitor, int scope) {
         databaseCache.getAllObjects(monitor, this);
     }
 
@@ -497,66 +527,69 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
         if (instance != null) {
             log.debug("Initiate connection to " + getServerType().getServerTypeName() + " database [" + instance.getName() + "@" + conConfig.getHostName() + "] for " + purpose);
         }
-        try {
-            if (conConfig.getConfigurationType() != DBPDriverConfigurationType.URL &&
-                instance instanceof PostgreDatabase &&
-                !CommonUtils.equalObjects(instance.getName(), conConfig.getDatabaseName())
-            ) {
-                // If database was changed then use new name for connection
-                final DBPConnectionConfiguration originalConfig = new DBPConnectionConfiguration(conConfig);
-                try {
-                    // Patch URL with new database name
-                    if (CommonUtils.isEmpty(conConfig.getUrl()) || !CommonUtils.isEmpty(conConfig.getHostName())) {
-                        conConfig.setDatabaseName(instance.getName());
-                        final DBPDriver driver = getContainer().getDriver();
-                        String newURL = DatabaseURL.generateUrlByTemplate(driver, conConfig);
-                        if (CommonUtils.isEmpty(newURL)) {
-                            newURL = driver.getDataSourceProvider().getConnectionURL(driver, conConfig);
-                        }
-                        conConfig.setUrl(newURL);
-                    }
+        String currentTimezoneId = ZoneId.systemDefault().getId();
+        String legacyTimezoneOverridden = PostgreConstants.REPLACING_TIMEZONE.get(currentTimezoneId);
 
-                    pgConnection = super.openConnection(monitor, context, purpose);
+        try {
+            // Old versions of postgres and some linux distributions, on which docker images are made, may not contain
+            // new timezone, which will lead to the error while connecting, there is no way to know before connecting
+            // so to be sure we will use the old name
+            if (isNeedToReplaceLegacyTimezone() && legacyTimezoneOverridden != null) {
+                TimezoneRegistry.setDefaultZone(ZoneId.of(legacyTimezoneOverridden), false);
+            }
+
+            if (isReadDatabaseList(conConfig) || !CommonUtils.isEmpty(conConfig.getBootstrap().getDefaultCatalogName())) {
+                // If database was changed then use new name for connection
+                String databaseName;
+                if (instance != null) {
+                    databaseName = instance.getName();
+                } else {
+                    databaseName = PostgreUtils.getDatabaseNameFromConfiguration(conConfig);
                 }
-                finally {
-                    conConfig.setDatabaseName(originalConfig.getDatabaseName());
-                    conConfig.setUrl(originalConfig.getUrl());
+                DBPConnectionConfiguration newConfig = new DBPConnectionConfiguration(conConfig);
+                newConfig.setDatabaseName(databaseName);
+                String newURL = newConfig.getUrl();
+                if (newConfig.getConfigurationType() == DBPDriverConfigurationType.MANUAL) {
+                    // Generate URL with new database name
+                    if (CommonUtils.isEmpty(newConfig.getUrl()) || !CommonUtils.isEmpty(newConfig.getHostName())) {
+                        final DBPDriver driver = getContainer().getDriver();
+                        newURL = driver.getDataSourceProvider().getConnectionURL(driver, newConfig);
+                    }
+                } else {
+                    // Patch connection URL with new database name
+                    newURL = PostgreUtils.updateDatabaseNameInURL(newConfig.getUrl(), databaseName);
                 }
+                newConfig.setUrl(newURL);
+                pgConnection = super.openConnection(monitor, context, newConfig, purpose);
             } else {
                 pgConnection = super.openConnection(monitor, context, purpose);
             }
         } catch (DBCException e) {
-            final Throwable cause = GeneralUtils.getRootCause(e);
+            final Throwable cause = CommonUtils.getRootCause(e);
             final StackTraceElement element = cause.getStackTrace()[0];
 
-            if ("sun.security.util.DerValue".equals(element.getClassName())) { //$NON-NLS-1$
-                final DBWHandlerConfiguration handler = Objects.requireNonNull(conConfig.getHandler(PostgreConstants.HANDLER_SSL));
-                final String key = handler.getStringProperty(SSLHandlerTrustStoreImpl.PROP_SSL_CLIENT_KEY);
-                final Path dst;
-
+            final DBWHandlerConfiguration handler = conConfig.getHandler(PostgreConstants.HANDLER_SSL);
+            if ("sun.security.util.DerValue".equals(element.getClassName()) && handler != null) { //$NON-NLS-1$
                 try {
-                    dst = DBWorkbench.getPlatform().getTempFolder(monitor, "ssl").resolve(container.getId() + ".pk8");
-                } catch (IOException ex) {
-                    log.error("Error creating temporary SSL key", ex);
-                    throw e;
-                }
+                    final Path dst = DBWorkbench.getPlatform().getTempFolder(monitor, "ssl").resolve(container.getId() + ".pk8");
+                    if (SSLHandlerTrustStoreImpl.loadDerFromPem(handler, dst)) {
+                        // Unfortunately, we can't delete the temp file here.
+                        // The chain is built asynchronously by the driver, and we don't know at which moment in time it will happen.
+                        // It will still be deleted during shutdown.
 
-                try (Reader reader = Files.newBufferedReader(Path.of(key))) {
-                    Files.write(dst, DefaultCertificateStorage.loadDerFromPem(reader));
-                    handler.setProperty(SSLHandlerTrustStoreImpl.PROP_SSL_CLIENT_KEY, dst.toAbsolutePath().toString());
+                        return this.openConnection(monitor, context, purpose);
+                    }
                 } catch (IOException ex) {
                     log.error("Error converting SSL key", ex);
                     throw e;
                 }
-
-                // Unfortunately, we can't delete the temp file here.
-                // The chain is built asynchronously by the driver, and we don't know at which moment in time it will happen.
-                // It will still be deleted during shutdown.
-
-                return openConnection(monitor, context, purpose);
             }
 
             throw e;
+        } finally {
+            if (isNeedToReplaceLegacyTimezone() && legacyTimezoneOverridden != null) {
+                TimezoneRegistry.setDefaultZone(ZoneId.of(currentTimezoneId), false);
+            }
         }
 
         if (getServerType().supportsClientInfo() && !getContainer().getPreferenceStore().getBoolean(ModelPreferences.META_CLIENT_NAME_DISABLE)) {
@@ -573,7 +606,7 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
     }
 
     @Override
-    public <T> T getAdapter(Class<T> adapter)
+    public <T> T getAdapter(@NotNull Class<T> adapter)
     {
         if (adapter == DBSStructureAssistant.class) {
             return adapter.cast(new PostgreStructureAssistant(this));
@@ -595,6 +628,17 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
         return super.getAdapter(adapter);
     }
 
+    @Override
+    public boolean cancelCurrentExecution(@NotNull Connection connection, @Nullable Thread connectionThread) throws DBException {
+        try {
+            BeanUtils.invokeObjectMethod(connection, "cancelQuery");
+            return true;
+        } catch (Throwable e) {
+            throw new DBDatabaseException("Can't cancel connection query", e, this);
+        }
+
+    }
+
     @Nullable
     @Override
     public DBSDataType resolveDataType(@NotNull DBRProgressMonitor monitor, @NotNull String typeFullName) throws DBException {
@@ -604,24 +648,28 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
         }
         return PostgreUtils.resolveTypeFullName(monitor, this, typeFullName);
     }
-    
+
+    @NotNull
     @Override
     public Collection<PostgreDataType> getLocalDataTypes()
     {
         return getDefaultInstance().getLocalDataTypes();
     }
 
+    @Nullable
     @Override
     public PostgreDataType getLocalDataType(String typeName)
     {
         return getDefaultInstance().getLocalDataType(typeName);
     }
 
+    @Nullable
     @Override
     public DBSDataType getLocalDataType(int typeID) {
         return getDefaultInstance().getLocalDataType(typeID);
     }
 
+    @NotNull
     @Override
     public String getDefaultDataTypeName(@NotNull DBPDataKind dataKind) {
         return getDefaultInstance().getDefaultDataTypeName(dataKind);
@@ -651,7 +699,7 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
         return databaseCache.getCachedObjects();
     }
 
-    void setActiveDatabase(PostgreDatabase newDatabase) {
+    void setActiveDatabase(PostgreDatabase newDatabase, DBCExecutionContext context) {
         final PostgreDatabase oldDatabase = getDefaultInstance();
         if (oldDatabase == newDatabase) {
             return;
@@ -660,44 +708,8 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
         activeDatabaseName = newDatabase.getName();
 
         // Notify UI
-        DBUtils.fireObjectSelect(oldDatabase, false);
-        DBUtils.fireObjectSelect(newDatabase, true);
-    }
-
-    /**
-     * Deprecated. Database change is not supported (as it is ambiguous)
-     */
-    @Deprecated
-    public void setDefaultInstance(@NotNull DBRProgressMonitor monitor, @NotNull PostgreDatabase newDatabase, PostgreSchema schema)
-        throws DBException
-    {
-        final PostgreDatabase oldDatabase = getDefaultInstance();
-        if (oldDatabase != newDatabase) {
-            newDatabase.initializeMetaContext(monitor);
-            newDatabase.cacheDataTypes(monitor, false);
-        }
-
-        PostgreSchema oldDefaultSchema = null;
-        if (schema != null) {
-            oldDefaultSchema = newDatabase.getMetaContext().getDefaultSchema();
-            newDatabase.getMetaContext().changeDefaultSchema(monitor, schema, false, false);
-        }
-
-        activeDatabaseName = newDatabase.getName();
-
-        // Notify UI
-        DBUtils.fireObjectSelect(oldDatabase, false);
-        DBUtils.fireObjectSelect(newDatabase, true);
-
-        if (schema != null && schema != oldDefaultSchema) {
-            if (oldDefaultSchema != null) {
-                DBUtils.fireObjectSelect(oldDefaultSchema, false);
-            }
-            DBUtils.fireObjectSelect(schema, true);
-        }
-
-        // Close all database connections but meta (we need it to browse metadata like navigator tree)
-        oldDatabase.shutdown(monitor, true);
+        DBUtils.fireObjectSelect(oldDatabase, false, context);
+        DBUtils.fireObjectSelect(newDatabase, true, context);
     }
 
     public List<String> getTemplateDatabases(DBRProgressMonitor monitor) throws DBException {
@@ -718,7 +730,7 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
 
     public PostgreServerExtension getServerType() {
         if (serverExtension == null) {
-            PostgreServerType serverType = PostgreUtils.getServerType(getContainer().getDriver());
+            PostgreServerType serverType = getType();
 
             try {
                 serverExtension = serverType.createServerExtension(this);
@@ -728,6 +740,10 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
             }
         }
         return serverExtension;
+    }
+
+    public PostgreServerType getType() {
+        return PostgreUtils.getServerType(getContainer().getDriver());
     }
 
     public String getServerVersion() {
@@ -745,11 +761,15 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
 
     @Override
     public boolean isStatisticsCollected() {
-        return hasStatistics;
+        return !shouldShowStatistics || hasStatistics;
     }
 
     @Override
-    public void collectObjectStatistics(DBRProgressMonitor monitor, boolean totalSizeOnly, boolean forceRefresh) throws DBException {
+    public void collectObjectStatistics(@NotNull DBRProgressMonitor monitor, boolean totalSizeOnly, boolean forceRefresh) throws DBException {
+        if (!shouldShowStatistics) {
+            return;
+        }
+        
         if (hasStatistics && !forceRefresh) {
             return;
         }
@@ -784,6 +804,11 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
         }
     }
 
+    @Override
+    public boolean isConnectionRefreshing() {
+        return isConnectionRefreshing;
+    }
+
     private static class DatabaseCache extends SimpleObjectCache<PostgreDataSource, PostgreDatabase> {
     }
 
@@ -813,7 +838,7 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
     @Nullable
     @Override
     public ErrorPosition[] getErrorPosition(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext context, @NotNull String query, @NotNull Throwable error) {
-        Throwable rootCause = GeneralUtils.getRootCause(error);
+        Throwable rootCause = CommonUtils.getRootCause(error);
         if (PostgreConstants.PSQL_EXCEPTION_CLASS_NAME.equals(rootCause.getClass().getName())) {
             try {
                 Object serverErrorMessage = BeanUtils.readObjectProperty(rootCause, "serverErrorMessage");
@@ -847,6 +872,7 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
         return new PostgreJdbcFactory();
     }
 
+    @NotNull
     @Override
     public ErrorType discoverErrorType(@NotNull Throwable error) {
         String sqlState = SQLState.getStateFromException(error);
@@ -891,5 +917,21 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
     public boolean supportsReadingKeysWithColumns() {
         return CommonUtils.toBoolean(
             getContainer().getActualConnectionConfiguration().getProviderProperty(PostgreConstants.PROP_READ_KEYS_WITH_COLUMNS));
+    }
+
+    public boolean isNeedToReplaceLegacyTimezone() {
+        return CommonUtils.toBoolean(
+            getContainer().getActualConnectionConfiguration().getProviderProperty(PostgreConstants.PROP_REPLACE_LEGACY_TIMEZONE));
+    }
+
+    public boolean isSupportsEnumTable() {
+        return supportsEnumTable;
+    }
+
+    /**
+     * Returns true if a database support pg_ctalog.reltype column. True by default.
+     */
+    public boolean isSupportsReltypeColumn() {
+        return supportsReltypeColumn;
     }
 }

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,7 +21,7 @@ import org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase;
 
 public class SQLCharacterPairMatcher extends DefaultCharacterPairMatcher {
 
-    private SQLEditorBase editor;
+    private final SQLEditorBase editor;
 
     public SQLCharacterPairMatcher(SQLEditorBase editor, char[] chars, String partitioning) {
         super(chars, partitioning);
@@ -30,11 +30,6 @@ public class SQLCharacterPairMatcher extends DefaultCharacterPairMatcher {
 
     public SQLCharacterPairMatcher(SQLEditorBase editor, char[] chars, String partitioning, boolean caretEitherSideOfBracket) {
         super(chars, partitioning, caretEitherSideOfBracket);
-        this.editor = editor;
-    }
-
-    public SQLCharacterPairMatcher(SQLEditorBase editor, char[] chars) {
-        super(chars);
         this.editor = editor;
     }
 

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,6 +15,8 @@
  * limitations under the License.
  */
 package org.jkiss.dbeaver.ext.yashandb.model;
+
+import java.sql.ResultSet;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
@@ -32,153 +34,120 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSForeignKeyModifyRule;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableForeignKey;
 import org.jkiss.utils.CommonUtils;
 
-import java.sql.ResultSet;
+public class YashanDBTableForeignKey extends YashanDBTableConstraintBase implements DBSTableForeignKey {
 
-/**
- * YashanDBTableForeignKey
- */
-public class YashanDBTableForeignKey extends YashanDBTableConstraintBase implements DBSTableForeignKey
-{
-    private static final Log log = Log.getLog(YashanDBTableForeignKey.class);
+	private static final Log log = Log.getLog(YashanDBTableForeignKey.class);
 
-    private YashanDBTableConstraint referencedKey;
-    private DBSForeignKeyModifyRule deleteRule;
+	private YashanDBTableConstraint referencedKey;
+	private DBSForeignKeyModifyRule deleteRule;
 
-    public YashanDBTableForeignKey(
-            @NotNull YashanDBTableBase oracleTable,
-            @Nullable String name,
-            @Nullable YashanDBObjectStatus status,
-            @Nullable YashanDBTableConstraint referencedKey,
-            @NotNull DBSForeignKeyModifyRule deleteRule)
-    {
-        super(oracleTable, name, DBSEntityConstraintType.FOREIGN_KEY, status, false);
-        this.referencedKey = referencedKey;
-        this.deleteRule = deleteRule;
-    }
+	public YashanDBTableForeignKey(@NotNull YashanDBTableBase table, @Nullable String name,
+			@Nullable YashanDBObjectStatus status, @Nullable YashanDBTableConstraint referencedKey,
+			@NotNull DBSForeignKeyModifyRule deleteRule) {
+		super(table, name, DBSEntityConstraintType.FOREIGN_KEY, status, false);
+		this.referencedKey = referencedKey;
+		this.deleteRule = deleteRule;
+	}
 
-    public YashanDBTableForeignKey(
-            DBRProgressMonitor monitor,
-            YashanDBTable table,
-            ResultSet dbResult)
-            throws DBException
-    {
-        super(
-                table,
-                JDBCUtils.safeGetString(dbResult, "CONSTRAINT_NAME"),
-                DBSEntityConstraintType.FOREIGN_KEY,
-                CommonUtils.notNull(
-                        CommonUtils.valueOf(YashanDBObjectStatus.class, JDBCUtils.safeGetStringTrimmed(dbResult, "STATUS")),
-                        YashanDBObjectStatus.ENABLED),
-                true);
+	public YashanDBTableForeignKey(DBRProgressMonitor monitor, YashanDBTable table, ResultSet dbResult)
+			throws DBException {
+		super(table, JDBCUtils.safeGetString(dbResult, "CONSTRAINT_NAME"), DBSEntityConstraintType.FOREIGN_KEY,
+				CommonUtils.notNull(CommonUtils.valueOf(YashanDBObjectStatus.class,
+						JDBCUtils.safeGetStringTrimmed(dbResult, "STATUS")), YashanDBObjectStatus.ENABLED),
+				true);
 
-        String refName = JDBCUtils.safeGetString(dbResult, "R_CONSTRAINT_NAME");
-        String refOwnerName = JDBCUtils.safeGetString(dbResult, "R_OWNER");
-        String refTableName = JDBCUtils.safeGetString(dbResult, "R_TABLE_NAME");
-        YashanDBTableBase refTable = YashanDBTableBase.findTable(
-                monitor,
-                table.getDataSource(),
-                refOwnerName,
-                refTableName);
-        if (refTable == null) {
-            log.warn("Referenced table '" + DBUtils.getSimpleQualifiedName(refOwnerName, refTableName) + "' not found");
-        } else {
-            referencedKey = refTable.getConstraint(monitor, refName);
-            if (referencedKey == null) {
-                log.warn("Referenced constraint '" + refName + "' not found in table '" + refTable.getFullyQualifiedName(DBPEvaluationContext.DDL) + "'");
-                referencedKey = new YashanDBTableConstraint(refTable, "refName", DBSEntityConstraintType.UNIQUE_KEY, null, YashanDBObjectStatus.ERROR);
-            }
-        }
+		String refName = JDBCUtils.safeGetString(dbResult, "R_CONSTRAINT_NAME");
+		String refOwnerName = JDBCUtils.safeGetString(dbResult, "R_OWNER");
+		String refTableName = JDBCUtils.safeGetString(dbResult, "R_TABLE_NAME");
+		YashanDBTableBase refTable = YashanDBTableBase.findTable(monitor, table.getDataSource(), refOwnerName,
+				refTableName);
+		if (refTable == null) {
+			log.warn("Referenced table '" + DBUtils.getSimpleQualifiedName(refOwnerName, refTableName) + "' not found");
+		} else {
+			referencedKey = refTable.getConstraint(monitor, refName);
+			if (referencedKey == null) {
+				log.warn("Referenced constraint '" + refName + "' not found in table '"
+						+ refTable.getFullyQualifiedName(DBPEvaluationContext.DDL) + "'");
+				referencedKey = new YashanDBTableConstraint(refTable, "refName", DBSEntityConstraintType.UNIQUE_KEY,
+						null, YashanDBObjectStatus.ERROR);
+			}
+		}
 
-        String deleteRuleName = JDBCUtils.safeGetString(dbResult, "DELETE_RULE");
-        if (CommonUtils.isEmpty(deleteRuleName)) {
-            this.deleteRule = DBSForeignKeyModifyRule.NO_ACTION;
-        } else {
-            switch (deleteRuleName) {
-                case "CASCADE":
-                    this.deleteRule = DBSForeignKeyModifyRule.CASCADE;
-                    break;
-                case "SET NULL":
-                    this.deleteRule = DBSForeignKeyModifyRule.SET_NULL;
-                    break;
-                case "NO ACTION":
-                default:
-                    this.deleteRule = DBSForeignKeyModifyRule.NO_ACTION;
-                    break;
-            }
-        }
-    }
+		String deleteRuleName = JDBCUtils.safeGetString(dbResult, "DELETE_RULE");
+		if (CommonUtils.isEmpty(deleteRuleName)) {
+			this.deleteRule = DBSForeignKeyModifyRule.NO_ACTION;
+		} else {
+			switch (deleteRuleName) {
+			case "CASCADE":
+				this.deleteRule = DBSForeignKeyModifyRule.CASCADE;
+				break;
+			case "SET NULL":
+				this.deleteRule = DBSForeignKeyModifyRule.SET_NULL;
+				break;
+			case "NO ACTION":
+			default:
+				this.deleteRule = DBSForeignKeyModifyRule.NO_ACTION;
+				break;
+			}
+		}
+	}
 
-    @Property(viewable = true, order = 3)
-    public YashanDBTableBase getReferencedTable()
-    {
-        return referencedKey == null ? null : referencedKey.getTable();
-    }
+	@Property(viewable = true, order = 3)
+	public YashanDBTableBase getReferencedTable() {
+		return referencedKey == null ? null : referencedKey.getTable();
+	}
 
-    @Nullable
-    @Override
-    @Property(id = "reference", viewable = true, order = 4)
-    public YashanDBTableConstraint getReferencedConstraint()
-    {
-        return referencedKey;
-    }
+	@Nullable
+	@Override
+	@Property(id = "reference", viewable = true, order = 4)
+	public YashanDBTableConstraint getReferencedConstraint() {
+		return referencedKey;
+	}
 
-    public void setReferencedConstraint(YashanDBTableConstraint referencedKey) {
-        this.referencedKey = referencedKey;
-    }
+	public void setReferencedConstraint(YashanDBTableConstraint referencedKey) {
+		this.referencedKey = referencedKey;
+	}
 
-    @NotNull
-    @Override
-    @Property(viewable = true, editable = true, listProvider = ConstraintModifyRuleListProvider.class, order = 5)
-    public DBSForeignKeyModifyRule getDeleteRule()
-    {
-        return deleteRule;
-    }
+	@NotNull
+	@Override
+	@Property(viewable = true, editable = true, listProvider = ConstraintModifyRuleListProvider.class, order = 5)
+	public DBSForeignKeyModifyRule getDeleteRule() {
+		return deleteRule;
+	}
 
-    public void setDeleteRule(DBSForeignKeyModifyRule deleteRule) {
-        this.deleteRule = deleteRule;
-    }
+	public void setDeleteRule(DBSForeignKeyModifyRule deleteRule) {
+		this.deleteRule = deleteRule;
+	}
 
-    // Update rule is not supported by Oracle
-    @NotNull
-    @Override
-    public DBSForeignKeyModifyRule getUpdateRule()
-    {
-        return DBSForeignKeyModifyRule.NO_ACTION;
-    }
+	@NotNull
+	@Override
+	public DBSForeignKeyModifyRule getUpdateRule() {
+		return DBSForeignKeyModifyRule.NO_ACTION;
+	}
 
-    @Override
-    public YashanDBTableBase getAssociatedEntity()
-    {
-        return getReferencedTable();
-    }
+	@Override
+	public YashanDBTableBase getAssociatedEntity() {
+		return getReferencedTable();
+	}
 
-    @NotNull
-    @Override
-    public String getFullyQualifiedName(DBPEvaluationContext context)
-    {
-        return DBUtils.getFullQualifiedName(getDataSource(),
-                getTable().getContainer(),
-                getTable(),
-                this);
-    }
+	@NotNull
+	@Override
+	public String getFullyQualifiedName(DBPEvaluationContext context) {
+		return DBUtils.getFullQualifiedName(getDataSource(), getTable().getContainer(), getTable(), this);
+	}
 
-    public static class ConstraintModifyRuleListProvider implements IPropertyValueListProvider<JDBCTableForeignKey> {
+	public static class ConstraintModifyRuleListProvider implements IPropertyValueListProvider<JDBCTableForeignKey> {
 
-        @Override
-        public boolean allowCustomValue()
-        {
-            return false;
-        }
+		@Override
+		public boolean allowCustomValue() {
+			return false;
+		}
 
-        @Override
-        public Object[] getPossibleValues(JDBCTableForeignKey foreignKey)
-        {
-            return new DBSForeignKeyModifyRule[] {
-                    DBSForeignKeyModifyRule.NO_ACTION,
-                    DBSForeignKeyModifyRule.CASCADE,
-                    DBSForeignKeyModifyRule.RESTRICT,
-                    DBSForeignKeyModifyRule.SET_NULL,
-                    DBSForeignKeyModifyRule.SET_DEFAULT };
-        }
-    }
+		@Override
+		public Object[] getPossibleValues(JDBCTableForeignKey foreignKey) {
+			return new DBSForeignKeyModifyRule[] { DBSForeignKeyModifyRule.NO_ACTION, DBSForeignKeyModifyRule.CASCADE,
+					DBSForeignKeyModifyRule.RESTRICT, DBSForeignKeyModifyRule.SET_NULL,
+					DBSForeignKeyModifyRule.SET_DEFAULT };
+		}
+	}
 }

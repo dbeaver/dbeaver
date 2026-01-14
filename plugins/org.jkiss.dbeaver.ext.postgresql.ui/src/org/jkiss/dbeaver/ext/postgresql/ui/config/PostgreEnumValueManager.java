@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,15 +16,18 @@
  */
 package org.jkiss.dbeaver.ext.postgresql.ui.config;
 
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataType;
 import org.jkiss.dbeaver.model.DBValueFormatting;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.model.struct.DBSTypedObjectEx;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.data.IValueController;
 import org.jkiss.dbeaver.ui.data.managers.EnumValueManager;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -32,6 +35,9 @@ import java.util.List;
  * PostgreSQL ENUM value manager
  */
 public class PostgreEnumValueManager extends EnumValueManager {
+
+    private static final Log log = Log.getLog(PostgreEnumValueManager.class);
+
     @Override
     protected boolean isMultiValue(IValueController valueController) {
         return false;
@@ -49,12 +55,18 @@ public class PostgreEnumValueManager extends EnumValueManager {
         if (dataType == null) {
             return null;
         }
-        final Object[] values = dataType.getEnumValues();
-        if (values == null) {
+        PostgreDataType finalDataType = dataType;
+        final Object[][] values = new Object[1][1];
+        try {
+            UIUtils.runInProgressService(monitor -> values[0] = finalDataType.getEnumValues(monitor));
+        } catch (InvocationTargetException | InterruptedException e) {
+            log.debug("Can't read enum values from " + dataType.getFullTypeName());
+        }
+        if (values[0] == null) {
             return null;
         }
-        List<String> strValues = new ArrayList<>(values.length);
-        for (Object value : values) {
+        List<String> strValues = new ArrayList<>(values[0].length);
+        for (Object value : values[0]) {
             strValues.add(DBValueFormatting.getDefaultValueDisplayString(value, DBDDisplayFormat.UI));
         }
         return strValues;

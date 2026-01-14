@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -81,6 +81,11 @@ public class AttributeMetaDataProxy implements DBCAttributeMetaData, DBPImagePro
     @NotNull
     public String getLabel()
     {
+        DBSAttributeBase proxyAttribute = getProxyAttribute();
+        if (proxyAttribute instanceof DBCAttributeMetaData attributeMetaData) {
+            return attributeMetaData.getLabel();
+        }
+
         return attribute.getName();
     }
 
@@ -103,8 +108,8 @@ public class AttributeMetaDataProxy implements DBCAttributeMetaData, DBPImagePro
     @Override
     public DBCEntityMetaData getEntityMetaData() {
         DBSAttributeBase proxyAttribute = getProxyAttribute();
-        if (proxyAttribute instanceof DBCAttributeMetaData) {
-            return ((DBCAttributeMetaData) proxyAttribute).getEntityMetaData();
+        if (proxyAttribute instanceof DBCAttributeMetaData attributeMetaData) {
+            return attributeMetaData.getEntityMetaData();
         }
         return null;
     }
@@ -124,11 +129,13 @@ public class AttributeMetaDataProxy implements DBCAttributeMetaData, DBPImagePro
         return DBValueFormatting.getObjectImage(attribute);
     }
 
+    @NotNull
     @Override
     public String getTypeName() {
         return attribute.getTypeName();
     }
 
+    @NotNull
     @Override
     public String getFullTypeName() {
         return attribute.getFullTypeName();
@@ -139,16 +146,19 @@ public class AttributeMetaDataProxy implements DBCAttributeMetaData, DBPImagePro
         return attribute.getTypeID();
     }
 
+    @NotNull
     @Override
     public DBPDataKind getDataKind() {
         return attribute.getDataKind();
     }
 
+    @Nullable
     @Override
     public Integer getScale() {
         return attribute.getScale();
     }
 
+    @Nullable
     @Override
     public Integer getPrecision() {
         return attribute.getPrecision();

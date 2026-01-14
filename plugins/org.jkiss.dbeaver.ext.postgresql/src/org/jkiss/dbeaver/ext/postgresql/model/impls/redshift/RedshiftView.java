@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ext.postgresql.model.impls.redshift;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
@@ -62,7 +63,7 @@ public class RedshiftView extends PostgreView
         }
 
         List<? extends PostgreTableColumn> attrs = super.getAttributes(monitor);
-        if (isPersisted() && CommonUtils.isEmpty(attrs) && isViewVwithNoSchemaBinding(monitor)) {
+        if (isPersisted() && CommonUtils.isEmpty(attrs) && monitor != null && isViewVwithNoSchemaBinding(monitor)) {
             lateBindingColumns = readLateBindingColumns(monitor);
             if (!CommonUtils.isEmpty(lateBindingColumns)) {
                 return lateBindingColumns;

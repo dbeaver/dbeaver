@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -45,8 +45,8 @@ import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
-import java.util.List;
 import java.util.*;
+import java.util.List;
 
 /**
  * Create task wizard page
@@ -204,13 +204,14 @@ class TaskConfigurationWizardPageTask extends ActiveWizardPage<TaskConfiguration
                 if (task != null) {
                     UIUtils.createControlLabel(infoPanel, TaskUIMessages.task_config_wizard_page_task_control_label_category);
                     Composite catPanel = UIUtils.createComposite(infoPanel, 2);
-                    UIUtils.createLabel(catPanel, task.getType().getCategory().getIcon());
-                    UIUtils.createLabel(catPanel, task.getType().getCategory().getName());
+                    DBTTaskType taskType = task.getType();
+                    UIUtils.createLabel(catPanel, taskType.getCategory().getIcon());
+                    UIUtils.createLabel(catPanel, taskType.getCategory().getName());
 
                     UIUtils.createControlLabel(infoPanel, TaskUIMessages.task_config_wizard_page_task_control_label_type);
                     Composite typePanel = UIUtils.createComposite(infoPanel, 2);
-                    UIUtils.createLabel(typePanel, task.getType().getIcon());
-                    UIUtils.createLabel(typePanel, task.getType().getName());
+                    UIUtils.createLabel(typePanel, taskType.getIcon());
+                    UIUtils.createLabel(typePanel, taskType.getName());
                 }
             }
 
@@ -262,7 +263,7 @@ class TaskConfigurationWizardPageTask extends ActiveWizardPage<TaskConfiguration
                     @Override
                     public void controlResized(ControlEvent e) {
                         taskCategoryTree.removeControlListener(this);
-                        UIUtils.packColumns(taskCategoryTree, true, new float[] { 0.3f, 0.7f});
+                        UIUtils.packColumns(taskCategoryTree, true, new float[] { 0.3f, 0.7f });
                     }
                 });
                 taskCategoryTree.addPaintListener(e -> {

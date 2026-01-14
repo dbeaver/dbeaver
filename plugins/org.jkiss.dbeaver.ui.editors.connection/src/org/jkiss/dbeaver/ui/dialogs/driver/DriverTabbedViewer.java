@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -43,7 +43,6 @@ import org.jkiss.utils.CommonUtils;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * DriverTabbedViewer
@@ -78,7 +77,7 @@ public class DriverTabbedViewer extends StructuredViewer {
         List<DBPDriver> ratedDrivers = new ArrayList<>(allDrivers);
         //DriverUtils.sortDriversByRating(dataSources, ratedDrivers);
 
-        List<DBPDriver> recentDrivers = DriverUtils.getRecentDrivers(allDrivers, 13);
+        List<DBPDriver> recentDrivers = DriverUtils.getRecentDrivers(allDrivers, 12);
 
         folderComposite = new TabbedFolderComposite(parent, style) {
             @Override
@@ -106,10 +105,17 @@ public class DriverTabbedViewer extends StructuredViewer {
         List<TabbedFolderInfo> extFolders = new ArrayList<>();
         for (DriverCategoryDescriptor category : DriverManagerRegistry.getInstance().getCategories()) {
             if (category.isPromoted()) {
-                extFolders.add(
-                    new TabbedFolderInfo(
-                        category.getId(), category.getName(), category.getIcon(), category.getDescription(), false,
-                        new DriverListFolder(category, getCategoryDrivers(category, allDrivers))));
+                List<DBPDriver> drivers = getCategoryDrivers(category, allDrivers);
+                if (!drivers.isEmpty()) {
+                    extFolders.add(new TabbedFolderInfo(
+                        category.getId(),
+                        category.getName(),
+                        category.getIcon(),
+                        category.getDescription(),
+                        false,
+                        new DriverListFolder(category, drivers)
+                    ));
+                }
             }
         }
         extFolders.sort((o1, o2) -> {
@@ -316,7 +322,10 @@ public class DriverTabbedViewer extends StructuredViewer {
 
         @Override
         public void setFocus() {
-            viewer.getControl().setFocus();
+            Control control = viewer.getControl();
+            if (!control.isDisposed()) {
+                control.setFocus();
+            }
         }
 
         @Override
@@ -326,12 +335,6 @@ public class DriverTabbedViewer extends StructuredViewer {
         void refreshDrivers() {
             if (listComparator != null) {
                 drivers.sort(listComparator);
-                List<DBPDriver> matchedDriver = drivers.stream().filter(p -> p.getFullName().equals("YashanDB")).collect(Collectors.toList());
-                if(!matchedDriver.isEmpty()){
-                    DBPDriver driverYashanDB = matchedDriver.get(0);
-                    drivers.remove(driverYashanDB);
-                    drivers.add(0, driverYashanDB);
-                }
             }
             if (viewer != null) {
                 viewer.setInput(drivers);
@@ -341,12 +344,12 @@ public class DriverTabbedViewer extends StructuredViewer {
         private class DriverLabelProvider extends LabelProvider implements IToolTipProvider {
             @Override
             public Image getImage(Object element) {
-                return DBeaverIcons.getImage(((DBPDriver)element).getIconBig());
+                return DBeaverIcons.getImage(((DBPDriver) element).getIconBig());
             }
 
             @Override
             public String getText(Object element) {
-                return ((DBPDriver)element).getName();
+                return ((DBPDriver) element).getName();
             }
 
             @Override

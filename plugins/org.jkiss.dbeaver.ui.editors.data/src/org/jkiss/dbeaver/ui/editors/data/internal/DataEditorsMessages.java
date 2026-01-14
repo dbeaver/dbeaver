@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,7 +29,10 @@ public class DataEditorsMessages extends NLS {
     // ResultSetPresentation
     public static String pref_page_database_resultsets_group_common;
     public static String pref_page_database_resultsets_label_switch_mode_on_rows;
+    public static String pref_page_database_resultsets_label_filters_panel_in_singletab_mode;
     public static String pref_page_database_resultsets_label_show_column_description;
+    public static String pref_page_database_resultsets_label_show_column_position;
+    public static String pref_page_database_resultsets_label_show_column_position_tip;
     public static String pref_page_database_resultsets_label_show_connection_name;
     public static String pref_page_database_resultsets_label_calc_column_width_by_values;
     public static String pref_page_database_resultsets_label_calc_column_width_by_values_tip;
@@ -57,8 +60,6 @@ public class DataEditorsMessages extends NLS {
     public static String pref_page_database_resultsets_label_show_attr_ordering_tip;
     public static String pref_page_database_resultsets_label_use_smooth_scrolling;
     public static String pref_page_database_resultsets_label_use_smooth_scrolling_tip;
-    public static String pref_page_database_resultsets_label_show_collections_inline;
-    public static String pref_page_database_resultsets_label_show_collections_inline_tip;
     public static String pref_page_database_resultsets_label_show_boolean_as_checkbox;
     public static String pref_page_database_resultsets_label_show_boolean_as_checkbox_tip;
     public static String pref_page_database_resultsets_label_show_whitespace_characters;
@@ -96,6 +97,7 @@ public class DataEditorsMessages extends NLS {
     public static String pref_page_database_resultsets_label_text_extra_spaces;
     public static String pref_page_database_resultsets_label_text_show_line_numbers;
     public static String pref_page_database_resultsets_label_text_show_line_numbers_tip;
+    public static String pref_page_editor_representation_content;
 
 	public static String virtual_structure_editor_abstract_job_load_entity;
 	public static String virtual_structure_editor_info_label_entity_structure;

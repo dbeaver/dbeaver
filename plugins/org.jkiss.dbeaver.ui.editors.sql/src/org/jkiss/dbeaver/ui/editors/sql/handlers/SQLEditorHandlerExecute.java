@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,38 +20,29 @@ import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.runtime.NullProgressMonitor;
-import org.eclipse.jface.dialogs.IDialogConstants;
-import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBIcon;
-import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContextDefaults;
-import org.jkiss.dbeaver.model.impl.sql.SQLQueryTransformerAllRows;
-import org.jkiss.dbeaver.model.impl.sql.SQLQueryTransformerCount;
-import org.jkiss.dbeaver.model.impl.sql.SQLQueryTransformerExpression;
+import org.jkiss.dbeaver.model.sql.transformers.SQLQueryTransformerAllRows;
+import org.jkiss.dbeaver.model.sql.transformers.SQLQueryTransformerCount;
+import org.jkiss.dbeaver.model.sql.transformers.SQLQueryTransformerExpression;
 import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.actions.exec.SQLNativeExecutorDescriptor;
 import org.jkiss.dbeaver.ui.actions.exec.SQLNativeExecutorRegistry;
-import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
+import org.jkiss.dbeaver.ui.actions.exec.SQLScriptExecutor;
 import org.jkiss.dbeaver.ui.dialogs.MessageBoxBuilder;
 import org.jkiss.dbeaver.ui.dialogs.Reply;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditor;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorCommands;
-import org.jkiss.dbeaver.ui.actions.exec.SQLScriptExecutor;
 import org.jkiss.dbeaver.ui.editors.sql.SQLPreferenceConstants;
 import org.jkiss.dbeaver.ui.editors.sql.internal.SQLEditorMessages;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 
-import java.util.ArrayList;
-import java.util.List;
 
-
-public class SQLEditorHandlerExecute extends AbstractHandler
-{
+public class SQLEditorHandlerExecute extends AbstractHandler {
     private static final Log log = Log.getLog(SQLEditorHandlerExecute.class);
 
     @Override
@@ -144,16 +135,13 @@ public class SQLEditorHandlerExecute extends AbstractHandler
                 editor.processSQL(false, false, new SQLQueryTransformerAllRows(), null);
                 break;
             case SQLEditorCommands.CMD_EXPLAIN_PLAN:
-                // todo:yashandb执行计划相关的支持目前不完善，暂时当做普通查询拼接explain查询展示结果
-                if(editor.getDataSource().toString().contains("YashanDB")){
-                    editor.getDataSourceContainer().setDescription("YashanDB explain plan");
-                    editor.processSQL(false, false);
-                }else {
-                    editor.explainQueryPlan();
-                }
+                editor.explainQueryPlan();
                 break;
             case SQLEditorCommands.CMD_LOAD_PLAN:
                 editor.loadQueryPlan();
+                break;
+            case SQLEditorCommands.CMD_MULTIPLE_RESULTS_PER_TAB:
+                editor.toggleMultipleResultsPerTab();
                 break;
             default:
                 log.error("Unsupported SQL editor command: " + actionId);
@@ -163,5 +151,4 @@ public class SQLEditorHandlerExecute extends AbstractHandler
 
         return null;
     }
-
 }

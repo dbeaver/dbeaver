@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -54,7 +54,7 @@ public class ScriptParameterRule implements TPRule {
         scanner.unread();
         int prevChar = scanner.read();
         char namedPrefix = namedParameterPrefix.charAt(0);
-        if (Character.isJavaIdentifierPart(prevChar) ||
+        if (isValidParameterChar((char) prevChar) ||
             prevChar == namedPrefix || prevChar == anonymousParameterMark || prevChar == '\\' || prevChar == '/' || (prevChar == '[' && namedPrefix == ':'))
         {
             return TPTokenAbstract.UNDEFINED;
@@ -76,7 +76,7 @@ public class ScriptParameterRule implements TPRule {
                     }
                 } while (c != TPCharacterScanner.EOF);
             } else {
-                while (c != TPCharacterScanner.EOF && Character.isJavaIdentifierPart(c)) {
+                while (c != TPCharacterScanner.EOF && isValidParameterChar((char) c)) {
                     buffer.append((char) c);
                     c = scanner.read();
                 }
@@ -99,7 +99,7 @@ public class ScriptParameterRule implements TPRule {
                     }
                     boolean validChars = true;
                     for (int i = 1; i < buffer.length(); i++) {
-                        if (!Character.isJavaIdentifierPart(buffer.charAt(i))) {
+                        if (!isValidParameterChar(buffer.charAt(i))) {
                             validChars = false;
                             break;
                         }
@@ -118,7 +118,11 @@ public class ScriptParameterRule implements TPRule {
         }
         return TPTokenAbstract.UNDEFINED;
     }
-    
+
+    private static boolean isValidParameterChar(char c) {
+        return Character.isJavaIdentifierPart(c); // if we allow '.', it broke some use cases, see #22335
+    }
+
     /**
      * Parse variable name from buffer
      * Return the position of the last variable name character or -1 if the name is not valid
@@ -145,7 +149,7 @@ public class ScriptParameterRule implements TPRule {
                 }
             } while (c != TPCharacterScanner.EOF);
         } else {
-            while (c != TPCharacterScanner.EOF && Character.isJavaIdentifierPart(c)) {
+            while (c != TPCharacterScanner.EOF && isValidParameterChar((char) c)) {
                 c = position < buffer.length() ? buffer.charAt(position) : TPCharacterScanner.EOF;
                 position++;
             }

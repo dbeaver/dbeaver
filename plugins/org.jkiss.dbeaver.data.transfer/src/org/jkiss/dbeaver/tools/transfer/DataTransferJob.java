@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,41 +16,50 @@
  */
 package org.jkiss.dbeaver.tools.transfer;
 
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.osgi.util.NLS;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.exec.DBCStatistics;
+import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.task.DBTTask;
-import org.jkiss.dbeaver.model.task.DBTTaskExecutionListener;
 import org.jkiss.dbeaver.tools.transfer.internal.DTMessages;
 import org.jkiss.utils.CommonUtils;
 
-import java.lang.reflect.InvocationTargetException;
-import java.util.Locale;
+import java.io.PrintStream;
 
 /**
  * Data transfer job
  */
-public class DataTransferJob implements DBRRunnableWithProgress {
+public class DataTransferJob extends AbstractJob {
 
     private final DBCStatistics totalStatistics = new DBCStatistics();
     private final DataTransferSettings settings;
     private final DBTTask task;
+    private final DBRProgressMonitor parentMonitor;
     private long elapsedTime;
     private boolean hasErrors;
 
-    private final Locale locale;
     private final Log log;
-    private final DBTTaskExecutionListener listener;
+    private final PrintStream logStream;
 
-    public DataTransferJob(DataTransferSettings settings, DBTTask task, Locale locale, Log log, DBTTaskExecutionListener listener)
-    {
+    public DataTransferJob(
+        @NotNull DataTransferSettings settings,
+        @NotNull DBTTask task,
+        @NotNull Log log,
+        @Nullable PrintStream logStream,
+        @Nullable DBRProgressMonitor parentMonitor,
+        int index
+    ) {
+        super("Data transfer job [" + index + "]: " + settings.getConsumer().getName());
         this.settings = settings;
         this.task = task;
-        this.locale = locale;
         this.log = log;
-        this.listener = listener;
+        this.logStream = logStream;
+        this.parentMonitor = parentMonitor;
     }
 
     public DataTransferSettings getSettings() {
@@ -69,41 +78,55 @@ public class DataTransferJob implements DBRRunnableWithProgress {
         return totalStatistics;
     }
 
+    @NotNull
     @Override
-    public void run(DBRProgressMonitor monitor) throws InvocationTargetException {
-        monitor.beginTask("Perform data transfer", 1);
+    protected IStatus run(@NotNull DBRProgressMonitor jobMonitor) {
+        final int pipeCount = settings.getDataPipes().size();
+        final DBRProgressMonitor monitor = parentMonitor != null ? parentMonitor : jobMonitor;
+        monitor.beginTask("Perform data transfer", pipeCount);
         hasErrors = false;
         long startTime = System.currentTimeMillis();
         for (; ;) {
             if (monitor.isCanceled()) {
                 break;
             }
-            DataTransferPipe transferPipe = settings.acquireDataPipe(monitor);
+            DataTransferPipe transferPipe = settings.acquireDataPipe(monitor, task);
             if (transferPipe == null) {
                 break;
             }
             try {
-                if (!transferData(monitor, transferPipe)) {
-                    hasErrors = true;
+                if (logStream != null) {
+                    Log.setLogWriter(logStream);
                 }
+                boolean transferResult = transferData(monitor, transferPipe);
+                Log.setLogWriter(null);
+
+                hasErrors |= !transferResult;
+                if (parentMonitor != null) {
+                    parentMonitor.worked(1);
+                }
+                jobMonitor.worked(1);
             } catch (Exception e) {
-                throw new InvocationTargetException(e);
+                // Report as an OK status to avoid showing the error in the UI (it's handled by the caller)
+                IDataTransferConsumer<?, ?> consumer = transferPipe.getConsumer();
+                return new Status(IStatus.OK, getClass(), "Data transfer failed", e);
             }
         }
         monitor.done();
-//        listener.subTaskFinished(task, null);
         elapsedTime = System.currentTimeMillis() - startTime;
+        return Status.OK_STATUS;
     }
 
-    private boolean transferData(DBRProgressMonitor monitor, DataTransferPipe transferPipe) throws Exception
-    {
+    private boolean transferData(DBRProgressMonitor monitor, DataTransferPipe transferPipe) throws Exception {
         IDataTransferProducer producer = transferPipe.getProducer();
         IDataTransferConsumer consumer = transferPipe.getConsumer();
 
+        String inputName = producer.getObjectFullName(monitor);
+        String outputName = consumer.getObjectFullName(monitor);
         monitor.beginTask(
             NLS.bind(DTMessages.data_transfer_wizard_job_container_name,
-                CommonUtils.truncateString(producer.getObjectName(), 200),
-                CommonUtils.truncateString(consumer.getObjectName(), 200)), 1);
+                CommonUtils.truncateString(inputName, 200),
+                CommonUtils.truncateString(outputName, 200)), 1);
 
         IDataTransferSettings nodeSettings = settings.getNodeSettings(settings.getProducer());
         try {
@@ -118,8 +141,8 @@ public class DataTransferJob implements DBRRunnableWithProgress {
             consumer.finishTransfer(monitor, false);
             return true;
         } catch (Exception e) {
-            consumer.finishTransfer(monitor, e, false);
-            log.error("Error transfering data from " + producer.getObjectName() + " to " + consumer.getObjectName(), e);
+            consumer.finishTransfer(monitor, e, task, false);
+            log.error("Error transferring data from " + inputName + " to " + outputName, e);
             throw e;
         } finally {
             monitor.done();

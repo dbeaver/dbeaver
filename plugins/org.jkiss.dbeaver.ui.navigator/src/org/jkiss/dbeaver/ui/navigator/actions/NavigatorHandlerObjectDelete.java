@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ui.navigator.actions;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.jface.viewers.ISelection;
+import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.ui.IWorkbenchWindow;
@@ -43,6 +44,7 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.Reply;
 import org.jkiss.dbeaver.ui.internal.UINavigatorMessages;
+import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 import org.jkiss.dbeaver.ui.navigator.dialogs.NavigatorNodesDeletionConfirmations;
 import org.jkiss.utils.CommonUtils;
 
@@ -54,6 +56,9 @@ import java.util.stream.Collectors;
 
 public class NavigatorHandlerObjectDelete extends NavigatorHandlerObjectBase implements IElementUpdater {
     private static final Log log = Log.getLog(NavigatorHandlerObjectDelete.class);
+
+    public NavigatorHandlerObjectDelete() {
+    }
 
     @Override
     public Object execute(final ExecutionEvent event) throws ExecutionException {
@@ -141,9 +146,13 @@ public class NavigatorHandlerObjectDelete extends NavigatorHandlerObjectBase imp
                                     changeDependentObjectsList(monitor, dependentObjectsList);
                                     if (!CommonUtils.isEmpty(dependentObjectsList)) {
                                         for (Object object : dependentObjectsList) {
-                                            if (object instanceof DBSObject) {
-                                                DBNDatabaseNode node = DBNUtils.getNodeByObject(monitor, (DBSObject) object, false);
-                                                dependentObjectsListNodes.add(node);
+                                            if (object instanceof DBSObject objToDelete) {
+                                                DBNDatabaseNode node = DBNUtils.getNodeByObject(monitor, objToDelete, false);
+                                                if (node != null) {
+                                                    dependentObjectsListNodes.add(node);
+                                                } else {
+                                                    log.warn("Node not found for object " + object);
+                                                }
                                             }
                                         }
                                     }
@@ -165,7 +174,9 @@ public class NavigatorHandlerObjectDelete extends NavigatorHandlerObjectBase imp
             String confirmMessage;
             if (dependentObjectsListNodes.size() == 1) {
                 DBNDatabaseNode node = (DBNDatabaseNode) dependentObjectsListNodes.get(0);
-                confirmMessage = NLS.bind(UINavigatorMessages.confirm_deleting_dependent_one_object, node.getNodeType(), node.getNodeName());
+                confirmMessage = NLS.bind(UINavigatorMessages.confirm_deleting_dependent_one_object,
+                    node.getNodeTypeLabel(),
+                    node.getNodeDisplayName());
             } else {
                 confirmMessage = NLS.bind(UINavigatorMessages.confirm_deleting_dependent_objects, dependentObjectsListNodes.size());
             }
@@ -206,22 +217,31 @@ public class NavigatorHandlerObjectDelete extends NavigatorHandlerObjectBase imp
     }
 
     @Override
+    public boolean isEnabled() {
+        return super.isEnabled();
+    }
+
+    @Override
     public void updateElement(UIElement element, Map parameters) {
-//        if (!updateUI) {
-//            return;
-//        }
-//        final ISelectionProvider selectionProvider = UIUtils.getSelectionProvider(element.getServiceLocator());
-//        if (selectionProvider != null) {
-//            ISelection selection = selectionProvider.getSelection();
-//
-//            if (selection instanceof IStructuredSelection && ((IStructuredSelection) selection).size() > 1) {
-//                element.setText(UINavigatorMessages.actions_navigator_delete_objects);
-//            } else {
-//                DBNNode node = NavigatorUtils.getSelectedNode(selection);
-//                if (node != null) {
-//                    element.setText(UINavigatorMessages.actions_navigator_delete_ + " " + node.getNodeTypeLabel()  + " '" + node.getNodeName() + "'");
-//                }
-//            }
-//        }
+        if (!updateUI) {
+            return;
+        }
+        if (!UPDATE_GLOBAL_ACTION_LABELS) {
+            // We cannot update labels/icons for context-dependent global actions
+            // Because main menu is not updated on every menu show. And only the first text is saved
+            return;
+        }
+
+        final ISelectionProvider selectionProvider = UIUtils.getSelectionProvider(element.getServiceLocator());
+        if (selectionProvider != null) {
+            ISelection selection = selectionProvider.getSelection();
+
+            if (selection instanceof IStructuredSelection structuredSelection && structuredSelection.size() == 1) {
+                DBNNode node = NavigatorUtils.getSelectedNode(structuredSelection);
+                if (node != null) {
+                    element.setText(NLS.bind(UINavigatorMessages.actions_navigator_delete, node.getNodeTypeLabel()));
+                }
+            }
+        }
     }
 }

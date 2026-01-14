@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,30 +16,37 @@
  */
 package org.jkiss.dbeaver.ui;
 
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.runtime.RunnableWithResult;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 
 public abstract class UITask<RESULT> extends RunnableWithResult<RESULT> {
 
     @Override
-    public final RESULT runWithResult() {
+    public final RESULT runWithResult() throws DBException {
         return runTask();
     }
 
-    protected abstract RESULT runTask();
+    protected abstract RESULT runTask() throws DBException;
 
     public RESULT execute() {
         return UIUtils.syncExec(this);
     }
 
     public interface TaskExecutor <T> {
-        T run();
+        T run() throws DBException;
     }
 
     public static <T> T run(TaskExecutor <T> runnable) {
         return new UITask<T>() {
             @Override
             protected T runTask() {
-                return runnable.run();
+                try {
+                    return runnable.run();
+                } catch (Exception e) {
+                    DBWorkbench.getPlatformUI().showError("Task error", "Internal error: task " + runnable + "' failed", e);
+                    return null;
+                }
             }
         }.execute();
     }

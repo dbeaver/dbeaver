@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,9 @@ package org.jkiss.dbeaver.model.secret;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 
+import java.nio.charset.StandardCharsets;
+import java.util.Base64;
+
 /**
  * Value encryptor
  */
@@ -31,4 +34,13 @@ public interface DBSValueEncryptor {
     @NotNull
     byte[] decryptValue(@NotNull byte[] value) throws DBException;
 
+    @NotNull
+    default String encryptString(@NotNull String value) throws DBException {
+        return Base64.getEncoder().encodeToString(encryptValue(value.getBytes(StandardCharsets.UTF_8)));
+    }
+
+    @NotNull
+    default String decryptString(@NotNull String value) throws DBException {
+        return new String(decryptValue(Base64.getDecoder().decode(value)), StandardCharsets.UTF_8);
+    }
 }

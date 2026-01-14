@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -52,6 +52,7 @@ public interface DBPDriverLibrary {
      * Library native id.
      * Id doesn't include version information so the same libraries with different versions have the same id.
      */
+    @NotNull
     String getId();
 
     /**
@@ -78,6 +79,11 @@ public interface DBPDriverLibrary {
 
     boolean isOptional();
 
+    /**
+     * Flag that show if library is provided with an application.
+     */
+    boolean isEmbedded();
+
     boolean isCustom();
 
     boolean isDisabled();
@@ -92,6 +98,11 @@ public interface DBPDriverLibrary {
     @Nullable
     Path getLocalFile();
 
+    /**
+     * Returns CRC of library file.
+     */
+    long getFileCRC();
+
     boolean matchesCurrentPlatform();
 
     @Nullable
@@ -101,14 +112,11 @@ public interface DBPDriverLibrary {
         throws IOException, InterruptedException;
 
     @NotNull
-    Collection<String> getAvailableVersions(DBRProgressMonitor monitor) throws IOException;
+    Collection<String> getAvailableVersions(@NotNull DBRProgressMonitor monitor) throws IOException;
 
     String getPreferredVersion();
 
-    void setPreferredVersion(String version);
+    boolean isSecureDownload(@NotNull DBRProgressMonitor monitor);
 
-    void resetVersion();
-
-    boolean isSecureDownload(DBRProgressMonitor monitor);
-
+    boolean isInvalidLibrary();
 }

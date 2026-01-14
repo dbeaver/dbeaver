@@ -1,17 +1,6 @@
-/*******************************************************************************
- * Copyright (c) 2001, 2005 IBM Corporation and others.
- * All rights reserved. This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License v1.0
- * which accompanies this distribution, and is available at
- * http://www.eclipse.org/legal/epl-v10.html
- *
- * Contributors:
- *     IBM Corporation - initial API and implementation
- *     Sybase, Inc. - extended for DTP
- *******************************************************************************/
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,6 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.jkiss.dbeaver.ui.controls;
 /*
  *  CustomSashForm
@@ -75,7 +65,7 @@ public class CustomSashForm extends SashForm {
     
     protected Color arrowColor;
 
-    private static class SashInfo {
+    protected static class SashInfo {
         public Sash sash;
         public boolean enabled;    // Whether this sashinfo is enabled (i.e. if there is more than one, this will be disabled).
         public int restoreWeight = NO_WEIGHT;    // If slammed to an edge this is the restore weight. -1 means not slammed. This is the restoreWeight in the 2nd section form, i.e. weights[1].
@@ -99,7 +89,6 @@ public class CustomSashForm extends SashForm {
     }
 
     protected SashInfo currentSashInfo = null;    // When the sash goes away, its entry is made null.
-    protected boolean inMouseClick = false;    // Because we can't stop drag even when we are in the arrow area, we need
     // to know that mouse down is in process so that when drag is completed, we
     // know not to recompute our position because a mouse up is about to happen
     // and we want the correct arrow handled correctly.
@@ -146,7 +135,6 @@ public class CustomSashForm extends SashForm {
         SASH_WIDTH = ARROW_HEIGHT + ARROW_MARGIN;
 
         arrowColor = DEFAULT_BORDER_COLOR;
-        //JFaceResources.getColorRegistry().get(IWorkbenchThemeConstants.ACTIVE_TAB_BG_END);
     }
 
     public boolean isShowBorders() {
@@ -226,11 +214,26 @@ public class CustomSashForm extends SashForm {
         return weights.length == 2 && weights[1] == 0;
     }
 
+    public boolean isUpHidden() {
+        if (currentSashInfo == null || currentSashInfo.restoreWeight <= 0) {
+            return false;
+        }
+        int[] weights = getWeights();
+        return weights.length == 2 && weights[0] == 0;
+    }
+
     public void showDown() {
         if (currentSashInfo == null || currentSashInfo.restoreWeight <= 0) {
             hideDown();
         }
         downRestoreClicked(currentSashInfo);
+    }
+
+    public void showUp() {
+        if (currentSashInfo == null || currentSashInfo.restoreWeight <= 0) {
+            hideUp();
+        }
+        upRestoreClicked(currentSashInfo);
     }
 
     /**
@@ -297,9 +300,9 @@ public class CustomSashForm extends SashForm {
                 final Color oldBg = gc.getBackground();
 
                 boolean isTwoArrows = currentSashInfo.sashLocs.length > 1;
-                drawArrow(gc, currentSashInfo.sashLocs[0], currentSashInfo.cursorOver == 0, isTwoArrows);    // Draw first arrow
+                drawArrow(gc, currentSashInfo.sashLocs[0]);    // Draw first arrow
                 if (isTwoArrows) {
-                    drawArrow(gc, currentSashInfo.sashLocs[1], currentSashInfo.cursorOver == 1, isTwoArrows);    // Draw second arrow
+                    drawArrow(gc, currentSashInfo.sashLocs[1]);    // Draw second arrow
                 }
 
                 {
@@ -397,7 +400,6 @@ public class CustomSashForm extends SashForm {
             // Want to handle mouse down as a selection.
             newSash.addMouseListener(new MouseAdapter() {
                 public void mouseDown(MouseEvent e) {
-                    inMouseClick = true;
                     // If we're within a button, then redraw to wipe out stipple and get button push effect.
                     int x = e.x;
                     int y = e.y;
@@ -416,7 +418,6 @@ public class CustomSashForm extends SashForm {
 
                 public void mouseUp(MouseEvent e) {
                     // See if within one of the arrows.
-                    inMouseClick = false;    // No longer in down click
                     int x = e.x;
                     int y = e.y;
                     for (int i = 0; i < currentSashInfo.sashLocs.length; i++) {
@@ -463,10 +464,6 @@ public class CustomSashForm extends SashForm {
     private final static int SLAMMED_TO_TOP = 3;
 
     protected void recomputeSashInfo() {
-        if (inMouseClick && currentSashInfo.cursorOver != NO_ARROW) {
-            return;    // Don't process because we are in the down mouse button on an arrow.
-        }
-
         // addArrows are the types of the arrows - hide/restore/up/down and
         // drawArrows are the types of the arrows actually drawn. Here
         // drawArrows are always RESTORE arrow types, so that the UI only
@@ -744,6 +741,8 @@ public class CustomSashForm extends SashForm {
 
     protected void drawSashBorder(GC gc, SashInfo sashInfo) {
         gc.setForeground(arrowColor);
+//        gc.setLineStyle(SWT.LINE_CUSTOM);
+//        gc.setLineDash(new int[] { 2, 5 });
         gc.setLineStyle(SWT.LINE_SOLID);
         Point s = sashInfo.sash.getSize();
         int[][] sashLocs = sashInfo.sashLocs;
@@ -767,41 +766,11 @@ public class CustomSashForm extends SashForm {
         }
     }
 
-    protected void drawArrow(GC gc, int[] sashLoc, boolean selected, boolean isSlammed) {
+    protected void drawArrow(GC gc, int[] sashLoc) {
         int oldAntialias = gc.getAntialias();
         gc.setAntialias(SWT.ON);
 
         int indent = 0;
-        if (selected) {
-            if (!inMouseClick) {
-                // Draw the selection box.
-                Color highlightShadow = getDisplay().getSystemColor(SWT.COLOR_WIDGET_HIGHLIGHT_SHADOW);
-                Color normalShadow = getDisplay().getSystemColor(SWT.COLOR_WIDGET_NORMAL_SHADOW);
-                gc.setForeground(highlightShadow);
-                gc.drawLine(sashLoc[X_INDEX], sashLoc[Y_INDEX] + sashLoc[HEIGHT_INDEX], sashLoc[X_INDEX], sashLoc[Y_INDEX]);
-                gc.drawLine(sashLoc[X_INDEX], sashLoc[Y_INDEX], sashLoc[X_INDEX] + sashLoc[WIDTH_INDEX], sashLoc[Y_INDEX]);
-
-                //gc.setForeground(normalShadow);
-                //gc.drawLine(sashLoc[X_INDEX], sashLoc[Y_INDEX] + sashLoc[HEIGHT_INDEX],
-                //  sashLoc[X_INDEX] + sashLoc[WIDTH_INDEX], sashLoc[Y_INDEX] + sashLoc[HEIGHT_INDEX]);
-                //gc.drawLine(sashLoc[X_INDEX] + sashLoc[WIDTH_INDEX], sashLoc[Y_INDEX] + sashLoc[HEIGHT_INDEX],
-                //  sashLoc[X_INDEX] + sashLoc[WIDTH_INDEX], sashLoc[Y_INDEX]);
-            } else {
-                // Draw pushed selection box.
-                indent = 1;
-                Color highlightShadow = getDisplay().getSystemColor(SWT.COLOR_WIDGET_HIGHLIGHT_SHADOW);
-                Color normalShadow = getDisplay().getSystemColor(SWT.COLOR_WIDGET_NORMAL_SHADOW);
-                gc.setForeground(normalShadow);
-                gc.drawLine(sashLoc[X_INDEX], sashLoc[Y_INDEX] + sashLoc[HEIGHT_INDEX], sashLoc[X_INDEX], sashLoc[Y_INDEX]);
-                gc.drawLine(sashLoc[X_INDEX], sashLoc[Y_INDEX], sashLoc[X_INDEX] + sashLoc[WIDTH_INDEX], sashLoc[Y_INDEX]);
-
-                //gc.setForeground(highlightShadow);
-                //gc.drawLine(sashLoc[X_INDEX], sashLoc[Y_INDEX] + sashLoc[HEIGHT_INDEX],
-                //  sashLoc[X_INDEX] + sashLoc[WIDTH_INDEX], sashLoc[Y_INDEX] + sashLoc[HEIGHT_INDEX]);
-                //gc.drawLine(sashLoc[X_INDEX] + sashLoc[WIDTH_INDEX],
-                //  sashLoc[Y_INDEX] + sashLoc[HEIGHT_INDEX], sashLoc[X_INDEX] + sashLoc[WIDTH_INDEX], sashLoc[Y_INDEX]);
-            }
-        }
 
         if (getOrientation() == SWT.VERTICAL) {
             switch (sashLoc[ARROW_DRAWN_INDEX]) {

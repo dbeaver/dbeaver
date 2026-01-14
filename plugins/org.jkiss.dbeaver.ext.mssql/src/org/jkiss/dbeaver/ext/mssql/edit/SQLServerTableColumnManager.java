@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -46,12 +46,14 @@ import java.util.Map;
 public class SQLServerTableColumnManager extends SQLTableColumnManager<SQLServerTableColumn, SQLServerTableBase> implements DBEStructEditor<SQLServerTableColumn>, DBEObjectRenamer<SQLServerTableColumn> {
 
     protected final ColumnModifier<SQLServerTableColumn> IdentityModifier = (monitor, column, sql, command) -> {
-        if (column.isIdentity()) {
+        if (column.isIdentity() && !column.isTimestamp()) {
             try {
                 SQLServerTableColumn.IdentityInfo identityInfo = column.getIdentityInfo(monitor);
                 long incrementValue = identityInfo.getIncrementValue();
                 if (incrementValue <= 0) incrementValue = 1;
-                sql.append(" IDENTITY(").append(identityInfo.getSeedValue()).append(",").append(incrementValue).append(")");
+                long seedValue = identityInfo.getSeedValue();
+                if (seedValue <= 0) seedValue = 1;
+                sql.append(" IDENTITY(").append(seedValue).append(",").append(incrementValue).append(")");
             } catch (DBCException e) {
                 log.error("Error reading identity information", e); //$NON-NLS-1$
             }
@@ -119,12 +121,12 @@ public class SQLServerTableColumnManager extends SQLTableColumnManager<SQLServer
     }
 
     @Override
-    public boolean canEditObject(SQLServerTableColumn object) {
+    public boolean canEditObject(@NotNull SQLServerTableColumn object) {
         return !isTableType(object) && super.canEditObject(object);
     }
 
     @Override
-    public boolean canDeleteObject(SQLServerTableColumn object) {
+    public boolean canDeleteObject(@NotNull SQLServerTableColumn object) {
         return !isTableType(object) && super.canDeleteObject(object);
     }
 
@@ -133,14 +135,16 @@ public class SQLServerTableColumnManager extends SQLTableColumnManager<SQLServer
     }
 
     @Override
-    protected SQLServerTableColumn createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, Object container, Object copyFrom, Map<String, Object> options) throws DBException
+    protected SQLServerTableColumn createDatabaseObject(@NotNull DBRProgressMonitor monitor, @NotNull DBECommandContext context, Object container, Object copyFrom, @NotNull Map<String, Object> options) throws DBException
     {
         final SQLServerTableBase table = (SQLServerTableBase) container;
         final DBSDataType columnType = findBestDataType(table, "varchar"); //$NON-NLS-1$
 
         final SQLServerTableColumn column = new SQLServerTableColumn(table);
         column.setName(getNewColumnName(monitor, context, table));
-        column.setDataType((SQLServerDataType) columnType);
+        if (columnType instanceof SQLServerDataType dt) {
+            column.setDataType(dt);
+        }
         column.setTypeName(columnType == null ? "varchar" : columnType.getName()); //$NON-NLS-1$
         column.setMaxLength(columnType != null && columnType.getDataKind() == DBPDataKind.STRING ? 100 : 0);
         column.setValueType(columnType == null ? Types.VARCHAR : columnType.getTypeID());
@@ -150,12 +154,12 @@ public class SQLServerTableColumnManager extends SQLTableColumnManager<SQLServer
 
     @Override
     protected void addObjectCreateActions(
-        DBRProgressMonitor monitor,
-        DBCExecutionContext executionContext,
-        List<DBEPersistAction> actions,
-        ObjectCreateCommand command,
-        Map<String, Object> options
-    ) {
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBCExecutionContext executionContext,
+        @NotNull List<DBEPersistAction> actions,
+        @NotNull ObjectCreateCommand command,
+        @NotNull Map<String, Object> options
+    ) throws DBException {
         super.addObjectCreateActions(monitor, executionContext, actions, command, options);
         if (CommonUtils.isNotEmpty(command.getObject().getDescription())) {
             addColumnCommentAction(actions, command.getObject(), false);
@@ -163,7 +167,12 @@ public class SQLServerTableColumnManager extends SQLTableColumnManager<SQLServer
     }
 
     @Override
-    protected void addObjectModifyActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actionList, ObjectChangeCommand command, Map<String, Object> options)
+    protected void addObjectModifyActions(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBCExecutionContext executionContext,
+        @NotNull List<DBEPersistAction> actionList,
+        @NotNull ObjectChangeCommand command,
+        @NotNull Map<String, Object> options)
     {
         final SQLServerTableColumn column = command.getObject();
         int totalProps = command.getProperties().size();
@@ -215,18 +224,34 @@ public class SQLServerTableColumnManager extends SQLTableColumnManager<SQLServer
     }
 
     @Override
-    protected void addObjectDeleteActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, SQLObjectEditor<SQLServerTableColumn, SQLServerTableBase>.ObjectDeleteCommand command, Map<String, Object> options) throws DBException {
+    protected void addObjectDeleteActions(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBCExecutionContext executionContext,
+        @NotNull List<DBEPersistAction> actions,
+        @NotNull SQLObjectEditor<SQLServerTableColumn, SQLServerTableBase>.ObjectDeleteCommand command,
+        @NotNull Map<String, Object> options
+    ) throws DBException {
         addDropConstraintAction(actions, command.getObject());
         super.addObjectDeleteActions(monitor, executionContext, actions, command, options);
     }
 
     @Override
-    public void renameObject(@NotNull DBECommandContext commandContext, @NotNull SQLServerTableColumn object, @NotNull Map<String, Object> options, @NotNull String newName) throws DBException {
+    public void renameObject(
+        @NotNull DBECommandContext commandContext,
+        @NotNull SQLServerTableColumn object,
+        @NotNull Map<String, Object> options,
+        @NotNull String newName
+    ) throws DBException {
         processObjectRename(commandContext, object, options, newName);
     }
 
     @Override
-    protected void addObjectRenameActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, ObjectRenameCommand command, Map<String, Object> options)
+    protected void addObjectRenameActions(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBCExecutionContext executionContext,
+        @NotNull List<DBEPersistAction> actions,
+        @NotNull ObjectRenameCommand command,
+        @NotNull Map<String, Object> options)
     {
         final SQLServerTableColumn column = command.getObject();
 

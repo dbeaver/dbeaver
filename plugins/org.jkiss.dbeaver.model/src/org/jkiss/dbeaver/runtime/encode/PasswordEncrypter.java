@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,12 +17,19 @@
 
 package org.jkiss.dbeaver.runtime.encode;
 
+import org.jkiss.dbeaver.model.app.DBPProject;
+import org.jkiss.dbeaver.model.secret.DBSSecretController;
+
 /**
  * Password encoder
+ *
+ * @see DBPProject#getValueEncryptor()
+ * @see DBSSecretController#getGlobalSecretController()
+ * @see DBSSecretController#getProjectSecretController(DBPProject)
+ * @deprecated this interface does not provide a strong encryption
+ * mechanism and its usage is discouraged. It is kept for backward compatibility only.
  */
 public interface PasswordEncrypter {
-
-    String encrypt(String password) throws EncryptionException;
 
     String decrypt(String password) throws EncryptionException;
 

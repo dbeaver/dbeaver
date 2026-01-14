@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,6 +33,7 @@ import org.eclipse.swt.layout.RowLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.IWorkbenchSite;
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
@@ -47,6 +48,7 @@ import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.rdb.*;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.ui.BaseThemeSettings;
 import org.jkiss.dbeaver.ui.LoadingJob;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.ListContentProvider;
@@ -111,11 +113,11 @@ public abstract class ObjectACLEditor<PRIVILEGE extends DBAPrivilege, PRIVILEGE_
                         String schemaPrefix = DBUtils.getQuotedIdentifier(object) + ".";
                         for (String tableName : privilegeMap.keySet()) {
                             if (tableName.startsWith(schemaPrefix)) {
-                                return boldFont;
+                                return BaseThemeSettings.instance.treeAndTableFontBold;
                             }
                         }
                     } else if (getObjectPermissions(object) != null) {
-                        return boldFont;
+                        return BaseThemeSettings.instance.treeAndTableFont;
                     }
                 }
                 return null;
@@ -148,7 +150,8 @@ public abstract class ObjectACLEditor<PRIVILEGE extends DBAPrivilege, PRIVILEGE_
             permEditPanel = new Composite(composite, SWT.NONE);
             permEditPanel.setLayout(new GridLayout(1, true));
 
-            permissionTable = new ObjectListControl<DBAPrivilege>(permEditPanel, SWT.FULL_SELECTION | SWT.CHECK, new ListContentProvider()) {
+            permissionTable = new ObjectListControl<>(permEditPanel, SWT.FULL_SELECTION | SWT.CHECK, new ListContentProvider()) {
+                @NotNull
                 @Override
                 protected String getListConfigId(List<Class<?>> classList) {
                     return ObjectACLEditor.this.getClass().getName();
@@ -285,11 +288,11 @@ public abstract class ObjectACLEditor<PRIVILEGE extends DBAPrivilege, PRIVILEGE_
                     privilegeType == null ? null : new DBAPrivilegeType[] { privilegeType }),
                 new DBECommandReflector<DBAPrivilegeOwner, ACLCommandChangePrivilege>() {
                     @Override
-                    public void redoCommand(ACLCommandChangePrivilege cmd)
+                    public void redoCommand(@NotNull ACLCommandChangePrivilege cmd)
                     {
                     }
                     @Override
-                    public void undoCommand(ACLCommandChangePrivilege cmd)
+                    public void undoCommand(@NotNull ACLCommandChangePrivilege cmd)
                     {
                     }
                 });
@@ -329,7 +332,7 @@ public abstract class ObjectACLEditor<PRIVILEGE extends DBAPrivilege, PRIVILEGE_
                     hasBadObjects = true;
                     break;
                 }
-                if (objectNames.length() > 0) objectNames.append(", ");
+                if (!objectNames.isEmpty()) objectNames.append(", ");
                 objectNames.append(DBUtils.getObjectFullName(object.getDataSource(), object, DBPEvaluationContext.DML));
             }
         }
@@ -407,9 +410,9 @@ public abstract class ObjectACLEditor<PRIVILEGE extends DBAPrivilege, PRIVILEGE_
 */
 
         LoadingJob.createService(
-            new DatabaseLoadService<Collection<? extends DBAPrivilege>>("Load permissions", getExecutionContext()) {
+            new DatabaseLoadService<>("Load permissions", getExecutionContext()) {
                 @Override
-                public Collection<? extends DBAPrivilege> evaluate(DBRProgressMonitor monitor) throws InvocationTargetException {
+                public Collection<? extends DBAPrivilege> evaluate(@NotNull DBRProgressMonitor monitor) throws InvocationTargetException {
                     monitor.beginTask("Load privileges from database..", 1);
                     try {
                         monitor.subTask("Load " + getDatabaseObject().getName() + " privileges");
@@ -475,7 +478,7 @@ public abstract class ObjectACLEditor<PRIVILEGE extends DBAPrivilege, PRIVILEGE_
         }
 
         ProgressVisualizer<Collection<? extends DBAPrivilege>> createLoadVisualizer() {
-            return new ProgressVisualizer<Collection<? extends DBAPrivilege>>() {
+            return new ProgressVisualizer<>() {
                 @Override
                 public void completeLoading(Collection<? extends DBAPrivilege> privs) {
                     super.completeLoading(privs);

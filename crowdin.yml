@@ -1,7 +1,0 @@
-files:
-  - source: /**/OSGI-INF/l10n/bundle.properties
-    translation: /**/OSGI-INF/l10n/bundle_%two_letters_code%.properties
-  - source: /**/*Resources.properties
-    translation: /**/%file_name%_%two_letters_code%.properties
-  - source: /**/*Messages.properties
-    translation: /**/%file_name%_%two_letters_code%.properties

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ext.generic.edit;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.generic.GenericConstants;
@@ -48,7 +49,7 @@ import java.util.Map;
 public class GenericViewManager extends SQLObjectEditor<GenericTableBase, GenericStructContainer> {
 
     @Override
-    public long getMakerOptions(DBPDataSource dataSource)
+    public long getMakerOptions(@NotNull DBPDataSource dataSource)
     {
         return FEATURE_EDITOR_ON_CREATE;
     }
@@ -73,7 +74,7 @@ public class GenericViewManager extends SQLObjectEditor<GenericTableBase, Generi
     }
 
     @Override
-    public boolean canCreateObject(Object container) {
+    public boolean canCreateObject(@NotNull Object container) {
         if (container instanceof DBSObject) {
             DBPDataSource dataSource = ((DBSObject) container).getDataSource();
             if (dataSource instanceof GenericDataSource) {
@@ -84,11 +85,11 @@ public class GenericViewManager extends SQLObjectEditor<GenericTableBase, Generi
     }
 
     @Override
-    protected GenericTableBase createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, Object container, Object copyFrom, Map<String, Object> options)
+    protected GenericTableBase createDatabaseObject(@NotNull DBRProgressMonitor monitor, @NotNull DBECommandContext context, Object container, Object copyFrom, @NotNull Map<String, Object> options)
     {
         GenericStructContainer structContainer = (GenericStructContainer) container;
         String tableName = getNewChildName(monitor, structContainer, SQLTableManager.BASE_VIEW_NAME);
-        GenericTableBase viewImpl = structContainer.getDataSource().getMetaModel().createTableImpl(structContainer, tableName,
+        GenericTableBase viewImpl = structContainer.getDataSource().getMetaModel().createTableOrViewImpl(structContainer, tableName,
                 GenericConstants.TABLE_TYPE_VIEW,
                 null);
         if (viewImpl instanceof GenericView) {
@@ -98,23 +99,23 @@ public class GenericViewManager extends SQLObjectEditor<GenericTableBase, Generi
     }
 
     @Override
-    protected void addObjectCreateActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, ObjectCreateCommand command, Map<String, Object> options)
+    protected void addObjectCreateActions(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext executionContext, @NotNull List<DBEPersistAction> actions, @NotNull ObjectCreateCommand command, @NotNull Map<String, Object> options)
     {
         createOrReplaceViewQuery(actions, command);
     }
 
     @Override
-    protected void addObjectDeleteActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, ObjectDeleteCommand command, Map<String, Object> options)
+    protected void addObjectDeleteActions(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext executionContext, @NotNull List<DBEPersistAction> actions, @NotNull ObjectDeleteCommand command, @NotNull Map<String, Object> options)
     {
         actions.add(
             new SQLDatabasePersistAction(
                 "Drop view",
-                "DROP " + getDropViewType(command.getObject()) + " " +
+                "DROP " + getViewType(command.getObject()) + " " +
                 command.getObject().getFullyQualifiedName(DBPEvaluationContext.DDL)) //$NON-NLS-2$
         );
     }
 
-    protected String getDropViewType(GenericTableBase object) {
+    protected String getViewType(GenericTableBase object) {
         return "VIEW";
     }
 
@@ -125,19 +126,29 @@ public class GenericViewManager extends SQLObjectEditor<GenericTableBase, Generi
     }
 
     @Override
-    protected void addObjectModifyActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actionList, ObjectChangeCommand command, Map<String, Object> options)
+    protected void addObjectModifyActions(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext executionContext, @NotNull List<DBEPersistAction> actionList, @NotNull ObjectChangeCommand command, @NotNull Map<String, Object> options)
     {
         final GenericView view = (GenericView)command.getObject();
         boolean hasComment = command.hasProperty(DBConstants.PROP_ID_DESCRIPTION);
         if (!hasComment || command.getProperties().size() > 1) {
             actionList.add(new SQLDatabasePersistAction("Create view", view.getDDL()));
         }
-        if (hasComment) {
-            actionList.add(new SQLDatabasePersistAction(
-                    "Comment view",
-                    "COMMENT ON VIEW " + command.getObject().getFullyQualifiedName(DBPEvaluationContext.DDL) +
-                            " IS " + SQLUtils.quoteString(command.getObject(), CommonUtils.notEmpty(command.getObject().getDescription()))));
-        }
     }
 
+    @Override
+    protected void addObjectExtraActions(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBCExecutionContext executionContext,
+        @NotNull List<DBEPersistAction> actions,
+        @NotNull NestedObjectCommand<GenericTableBase, PropertyHandler> command,
+        @NotNull Map<String, Object> options
+    ) {
+        if (command.hasProperty(DBConstants.PROP_ID_DESCRIPTION)) {
+            GenericTableBase object = command.getObject();
+            actions.add(new SQLDatabasePersistAction(
+                "Comment view",
+                "COMMENT ON " + getViewType(object) + " " + object.getFullyQualifiedName(DBPEvaluationContext.DDL) +
+                    " IS " + SQLUtils.quoteString(object, CommonUtils.notEmpty(object.getDescription()))));
+        }
+    }
 }

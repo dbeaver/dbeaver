@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPRefreshableObject;
 import org.jkiss.dbeaver.model.DBPSaveableObject;
 import org.jkiss.dbeaver.model.DBPStatefulObject;
+import org.jkiss.dbeaver.model.DBPSystemInfoObject;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
@@ -33,7 +34,6 @@ import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.meta.IPropertyValueListProvider;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectState;
 
@@ -41,7 +41,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
 
-public class PostgreJob implements PostgreObject, DBPStatefulObject, DBPRefreshableObject, DBPSaveableObject {
+public class PostgreJob implements PostgreObject, DBPStatefulObject, DBPRefreshableObject, DBPSaveableObject, DBPSystemInfoObject {
     private static final Log log = Log.getLog(PostgreJob.class);
 
     private final PostgreDatabase database;
@@ -272,15 +272,11 @@ public class PostgreJob implements PostgreObject, DBPStatefulObject, DBPRefresha
             return false;
         }
 
+        @Nullable
         @Override
         public Object[] getPossibleValues(@NotNull PostgreJob object) {
-            try {
-                // Classes are already loaded at this moment, so we are free to use void monitor here
-                return object.getDatabase().getJobClasses(new VoidProgressMonitor()).toArray();
-            } catch (DBException e) {
-                log.error("Error loading job classes", e);
-                return null;
-            }
+            // Classes are already loaded at this moment, so we are free to use void monitor here
+            return object.getDatabase().getJobClassCache().getCachedObjects().toArray();
         }
     }
 }

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,11 +23,12 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.edit.DBEObjectRenamer;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
+import org.jkiss.dbeaver.model.navigator.DBNModel;
+import org.jkiss.dbeaver.model.navigator.DBNUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
-import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.xml.SAXListener;
 import org.jkiss.utils.xml.XMLBuilder;
 
@@ -45,6 +46,7 @@ public class DBVModel extends DBVContainer {
     private DBPDataSourceContainer dataSourceContainer;
     @NotNull
     private String id;
+    //private Map<String, Object> extensions = new LinkedHashMap<>();
 
     public DBVModel(@NotNull String id, @NotNull Map<String, Object> map) {
         super(null, id, map);
@@ -199,7 +201,7 @@ public class DBVModel extends DBVContainer {
     @Nullable
     public static List<DBVEntityForeignKey> getGlobalReferences(DBNDatabaseNode databaseNode) {
         synchronized (globalReferenceCache) {
-            return globalReferenceCache.get(databaseNode.getNodeItemPath());
+            return globalReferenceCache.get(databaseNode.getNodeUri());
         }
     }
 
@@ -254,7 +256,7 @@ public class DBVModel extends DBVContainer {
 
     public static class ModelChangeListener implements DBPEventListener {
         @Override
-        public void handleDataSourceEvent(DBPEvent event) {
+        public void handleDataSourceEvent(@NotNull DBPEvent event) {
             DBSObject object = event.getObject();
             if (event.getAction() == DBPEvent.Action.OBJECT_UPDATE && object instanceof DBSEntity) {
                 // Handle table renames
@@ -270,9 +272,13 @@ public class DBVModel extends DBVContainer {
     }
 
     private static void handleEntityRename(DBSEntity object, String oldName, String newName) {
-        DBNDatabaseNode objectNode = DBWorkbench.getPlatform().getNavigatorModel().getNodeByObject(object);
+        DBNModel navigatorModel = DBNUtils.getNavigatorModel(object);
+        if (navigatorModel == null) {
+            return;
+        }
+        DBNDatabaseNode objectNode = navigatorModel.getNodeByObject(object);
         if (objectNode != null) {
-            String objectNodePath = objectNode.getNodeItemPath();
+            String objectNodePath = objectNode.getNodeUri();
             renameEntityInGlobalCache(objectNodePath, oldName, newName);
         }
         if (object.getDataSource() != null) {

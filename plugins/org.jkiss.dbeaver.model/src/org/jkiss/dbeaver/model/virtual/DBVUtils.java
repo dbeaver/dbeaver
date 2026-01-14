@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,6 @@
 package org.jkiss.dbeaver.model.virtual;
 
 import org.apache.commons.jexl3.JexlBuilder;
-import org.apache.commons.jexl3.JexlContext;
 import org.apache.commons.jexl3.JexlEngine;
 import org.apache.commons.jexl3.JexlExpression;
 import org.eclipse.core.runtime.IAdaptable;
@@ -210,14 +209,14 @@ public abstract class DBVUtils {
     @NotNull
     public static List<DBDLabelValuePair> readDictionaryRows(
         @NotNull DBCSession session,
-        @NotNull DBSEntityAttribute valueAttribute,
-        @NotNull DBDValueHandler valueHandler,
+        @NotNull List<DBSEntityAttribute> valueAttributes,
+        @NotNull List<DBDValueHandler> valueHandlers,
         @NotNull DBCResultSet dbResult,
         boolean formatValues,
         boolean containsCount) throws DBCException
     {
         List<DBDLabelValuePair> values = new ArrayList<>();
-        List<DBCAttributeMetaData> metaColumns = dbResult.getMeta().getAttributes();
+        List<? extends DBCAttributeMetaData> metaColumns = dbResult.getMeta().getAttributes();
         List<DBDValueHandler> colHandlers = new ArrayList<>(metaColumns.size());
         for (DBCAttributeMetaData col : metaColumns) {
             colHandlers.add(DBUtils.findValueHandler(session, col));
@@ -233,41 +232,48 @@ public abstract class DBVUtils {
                 break;
             }
             // Get value and description
-            Object keyValue = valueHandler.fetchValueObject(session, dbResult, valueAttribute, 0);
-            if (DBUtils.isNullValue(keyValue)) {
-                if (hasNulls) {
-                    continue;
+            Object[] keyValues = new Object[valueAttributes.size()];
+            for (int i = 0; i < valueAttributes.size(); i++) {
+                Object keyValue = valueHandlers.get(i).fetchValueObject(session, dbResult, valueAttributes.get(i), i);
+                if (DBUtils.isNullValue(keyValue)) {
+                    if (hasNulls) {
+                        continue;
+                    }
+                    hasNulls = true;
                 }
-                hasNulls = true;
-            }
-            if (formatValues && keyValue instanceof Date) {
-                // Convert dates into string to avoid collisions
-                keyValue = valueHandler.getValueDisplayString(valueAttribute, keyValue, DBDDisplayFormat.UI);
+                if (formatValues && keyValue instanceof Date) {
+                    // Convert dates into string to avoid collisions
+                    keyValue = valueHandlers.get(i).getValueDisplayString(valueAttributes.get(i), keyValue, DBDDisplayFormat.UI);
+                }
+                keyValues[i] = keyValue;
             }
             String keyLabel;
             long keyCount = 0;
-            if (metaColumns.size() > 1) {
+            {
                 StringBuilder keyLabel2 = new StringBuilder();
-                for (int i = 1; i < colHandlers.size(); i++) {
+                for (int i = valueAttributes.size(); i < colHandlers.size(); i++) {
                     Object descValue = colHandlers.get(i).fetchValueObject(session, dbResult, metaColumns.get(i), i);
                     if (containsCount && i == colHandlers.size() - 1) {
                         // The last one column is the `count(*)`
                         keyCount = CommonUtils.toLong(descValue);
                         break;
                     }
-                    if (keyLabel2.length() > 0) {
+                    if (!keyLabel2.isEmpty()) {
                         keyLabel2.append(columnDivider);
                     }
-                    keyLabel2.append(colHandlers.get(i).getValueDisplayString(metaColumns.get(i), descValue, DBDDisplayFormat.NATIVE));
+                    keyLabel2.append(colHandlers.get(i).getValueDisplayString(
+                        metaColumns.get(i),
+                        descValue,
+                        formatValues ? DBDDisplayFormat.UI : DBDDisplayFormat.NATIVE));
                 }
                 keyLabel = keyLabel2.toString();
-            } else {
-                keyLabel = valueHandler.getValueDisplayString(valueAttribute, keyValue, DBDDisplayFormat.NATIVE);
             }
+            // Little trick - return first key value inline
+            Object finalKeyValue = keyValues.length == 1 ? keyValues[0] : keyValues;
             if (containsCount && keyCount > 0) {
-                values.add(new DBDLabelValuePairExt(keyLabel, keyValue, keyCount));
+                values.add(new DBDLabelValuePairExt(keyLabel, finalKeyValue, keyCount));
             } else {
-                values.add(new DBDLabelValuePair(keyLabel, keyValue));
+                values.add(new DBDLabelValuePair(keyLabel, finalKeyValue));
             }
         }
         return values;
@@ -323,15 +329,12 @@ public abstract class DBVUtils {
     }
 
     @NotNull
-    public static List<DBSEntityAssociation> getAllAssociations(@NotNull DBRProgressMonitor monitor, @NotNull DBSEntity entity) {
+    public static List<DBSEntityAssociation> getAllAssociations(@NotNull DBRProgressMonitor monitor, @NotNull DBSEntity entity)
+            throws DBException {
         List<DBSEntityAssociation> result = new ArrayList<>();
-        try {
-            final Collection<? extends DBSEntityAssociation> realConstraints = entity.getAssociations(monitor);
-            if (!CommonUtils.isEmpty(realConstraints)) {
-                result.addAll(realConstraints);
-            }
-        } catch (DBException e) {
-            log.debug("Error reading entity associations", e);
+        final Collection<? extends DBSEntityAssociation> realConstraints = entity.getAssociations(monitor);
+        if (!CommonUtils.isEmpty(realConstraints)) {
+            result.addAll(realConstraints);
         }
         if (!(entity instanceof DBVEntity)) {
             DBVEntity vEntity = getVirtualEntity(entity, false);
@@ -342,7 +345,6 @@ public abstract class DBVUtils {
                 }
             }
         }
-
         return result;
     }
 
@@ -389,11 +391,14 @@ public abstract class DBVUtils {
 
     @NotNull
     public static DBSEntity tryGetRealEntity(@NotNull DBSEntity entity) {
-        if (entity instanceof DBVEntity) {
+        if (entity instanceof DBVEntity vEntity) {
             try {
-                return ((DBVEntity) entity).getRealEntity(new VoidProgressMonitor());
+                DBSEntity realEntity = vEntity.getRealEntity(new VoidProgressMonitor());
+                if (realEntity != null) {
+                    return realEntity;
+                }
             } catch (DBException e) {
-                log.error("Can't get real entity fro mvirtual entity", e);
+                log.error("Can't get real entity from virtual entity", e);
             }
         }
         return entity;
@@ -403,10 +408,11 @@ public abstract class DBVUtils {
         if (source == null) {
             return null;
         }
-        if (source instanceof DBVObject) {
-            return (DBVObject) source;
+        if (source instanceof DBVObject vObject) {
+            return vObject;
         }
-        return source.getDataSource().getContainer().getVirtualModel().findObject(source, create);
+        DBPDataSource dataSource = source.getDataSource();
+        return dataSource == null ? null : dataSource.getContainer().getVirtualModel().findObject(source, create);
     }
 
     public static Object executeExpression(DBVEntityAttribute attribute, DBDAttributeBinding[] allAttributes, Object[] row) {
@@ -419,49 +425,36 @@ public abstract class DBVUtils {
             return null;
         }
 
-        return evaluateDataExpression(allAttributes, row, expression, attribute.getName());
+        DBVEntity entity = attribute.getEntity();
+        DBSObject dataContainer = null;
+        try {
+            dataContainer = entity.getRealEntity(new VoidProgressMonitor());
+        } catch (DBException e) {
+            log.debug(e);
+        }
+        if (dataContainer == null) {
+            dataContainer = entity;
+        }
+
+        return evaluateDataExpression(dataContainer, allAttributes, row, expression, attribute.getName());
     }
 
-    public static Object evaluateDataExpression(DBDAttributeBinding[] allAttributes, Object[] row, JexlExpression expression, String attributeName) {
-        Map<String, Object> nsList = getExpressionNamespaces();
-
-        JexlContext context = new JexlContext() {
-            @Override
-            public Object get(String s) {
-                Object ns = nsList.get(s);
-                if (ns != null) {
-                    return ns;
-                }
-                if (s.equals(attributeName)) {
-                    return null;
-                }
-                for (DBDAttributeBinding attr : allAttributes) {
-                    if (s.equals(attr.getLabel())) {
-                        return DBUtils.getAttributeValue(attr, allAttributes, row);
-                    }
-                }
-                return null;
-            }
-
-            @Override
-            public void set(String s, Object o) {
-
-            }
-
-            @Override
-            public boolean has(String s) {
-                return get(s) != null;
-            }
-        };
+    public static Object evaluateDataExpression(
+        @NotNull DBSObject dataContainer,
+        @NotNull DBDAttributeBinding[] allAttributes,
+        @NotNull Object[] row,
+        @NotNull JexlExpression expression,
+        @Nullable String attributeName
+    ) {
         try {
-            return expression.evaluate(context);
+            return expression.evaluate(new DBVDataContext(dataContainer, allAttributes, row, attributeName));
         } catch (Exception e) {
             return GeneralUtils.getExpressionParseMessage(e);
         }
     }
 
     @NotNull
-    private static Map<String, Object> getExpressionNamespaces() {
+    static Map<String, Object> getExpressionNamespaces() {
         Map<String, Object> nsList = new HashMap<>();
 
         for (ExpressionNamespaceDescriptor ns : ExpressionRegistry.getInstance().getExpressionNamespaces()) {
@@ -488,31 +481,29 @@ public abstract class DBVUtils {
         if (attributes.isEmpty()) {
             return false;
         }
-        DBSEntity table = attributes.get(0).getParentObject();
+        DBSEntity table = attributes.getFirst().getParentObject();
 
         {
             // Check constraints
             Collection<? extends DBSEntityConstraint> constraints = getAllConstraints(monitor, table);
-            if (constraints != null) {
-                for (DBSEntityConstraint constraint : constraints) {
-                    if (DBUtils.isIdentifierConstraint(monitor, constraint)) {
-                        List<? extends DBSEntityAttributeRef> attrRefs = ((DBSEntityReferrer) constraint).getAttributeReferences(monitor);
-                        if (attrRefs == null) {
-                            continue;
+            for (DBSEntityConstraint constraint : constraints) {
+                if (DBUtils.isIdentifierConstraint(monitor, constraint)) {
+                    List<? extends DBSEntityAttributeRef> attrRefs = ((DBSEntityReferrer) constraint).getAttributeReferences(monitor);
+                    if (attrRefs == null) {
+                        continue;
+                    }
+                    if (attributes.size() != attrRefs.size()) {
+                        continue;
+                    }
+                    boolean matches = true;
+                    for (int i = 0; i < attributes.size(); i++) {
+                        if (attributes.get(i) != attrRefs.get(i).getAttribute()) {
+                            matches = false;
+                            break;
                         }
-                        if (attributes.size() != attrRefs.size()) {
-                            continue;
-                        }
-                        boolean matches = true;
-                        for (int i = 0; i < attributes.size(); i++) {
-                            if (attributes.get(i) != attrRefs.get(i).getAttribute()) {
-                                matches = false;
-                                break;
-                            }
-                        }
-                        if (matches) {
-                            return true;
-                        }
+                    }
+                    if (matches) {
+                        return true;
                     }
                 }
             }

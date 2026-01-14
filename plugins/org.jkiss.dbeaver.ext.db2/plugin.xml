@@ -1,23 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?eclipse version="3.2"?>
-<!--
- * DBeaver - Universal Database Manager
- * Copyright (C) 2013-2014 Denis Forveille (titou10.titou10@gmail.com)
- * Copyright (C) 2010-2023 DBeaver Corp and others
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
-  -->
-
 <plugin>
 
     <extension
@@ -147,7 +129,8 @@
                               </folder>
                            </items>
                        </folder>
-                       <folder label="%tree.appobjects.node.name" icon="#appobjects" description="Application Objects">
+                        <folder label="%tree.appobjects.node.name" icon="#appobjects" id="applicationObjects"
+                                description="Application Objects">
                           <folder id="functions" type="org.jkiss.dbeaver.ext.db2.model.DB2Routine" label="%tree.functions.node.name" icon="icons/udf.gif" description="Functions">
                              <items label="%tree.function.node.name" path="UDF" property="UDFs" icon="#procedure">
                                 <items label="%tree.arguments.node.name" itemLabel="%tree.argument.node.name" path="parameter" property="parameters" icon="#argument" navigable="true" inline="false"/>
@@ -195,7 +178,7 @@
                        </folder>
                     </items>
                 </folder>
-                <folder label="%tree.federation.node.name" icon="#federation" description="Federation">
+                <folder label="%tree.federation.node.name" icon="#federation" id="federation" description="Federation">
                     <folder type="org.jkiss.dbeaver.ext.db2.model.fed.DB2Wrapper" label="%tree.wrappers.node.name" icon="#folder_wrapper" description="Wrappers">
                         <items label="%tree.wrapper.node.name" path="wrapper" property="wrappers" icon="icons/wrapper.gif" >
                            <folder type="org.jkiss.dbeaver.ext.db2.model.fed.DB2WrapperOption" label="%tree.options.node.name" icon="#options" description="Wrapper Options">
@@ -219,7 +202,8 @@
                     </folder>
 -->                    
                 </folder>
-                <folder label="%tree.global_metadata.node.name" icon="#logical" description="Global metadata objects">
+                <folder label="%tree.global_metadata.node.name" icon="#logical" id="globalMetadataObjects"
+                        description="Global metadata objects">
                     <folder type="org.jkiss.dbeaver.ext.db2.model.DB2DataType" label="%tree.types.node.name" icon="#data_types" description="Types">
                         <items label="%tree.data_type.node.name" path="type" property="dataTypes" icon="#data_type"/>
                     </folder>
@@ -238,7 +222,7 @@
                         <items label="%tree.xmlstring.node.name" path="xmlstring" property="xmlStrings" icon="#parameter" navigable="false" />
                     </folder>
                 </folder>
-                <folder label="%tree.storage.node.name" icon="#storage" description="Storage management">
+                <folder label="%tree.storage.node.name" icon="#storage" id="storageManagement" description="Storage management">
                     <folder type="org.jkiss.dbeaver.ext.db2.model.DB2Bufferpool" label="%tree.bufferpools.node.name" icon="#bufferpools" description="Bufferpools">
                         <items label="%tree.bufferpool.node.name" path="bufferpool" property="bufferpools" icon="icons/bufferpool.gif">
                         </items>
@@ -262,7 +246,8 @@
                         <items label="%tree.storagegroup.node.name" path="storageGroup" property="storageGroups" icon="icons/storage_group.gif"/>
                     </folder>
                 </folder>
-                <folder type="" label="%tree.administer.node.name" icon="#folder_admin" description="Maintenance/Settings">
+                <folder type="" label="%tree.administer.node.name" icon="#folder_admin" id="maintenanceSettings"
+                        description="Maintenance/Settings">
                     <treeContribution category="connectionEditor"/>
                 </folder>
                     <folder type="org.jkiss.dbeaver.ext.db2.info.DB2Parameter" 
@@ -287,6 +272,7 @@
                 -->
                 <folder label="%tree.security.node.name"
                         icon="#security"
+                        id="securityManagement"
                         description="Security management" 
                         visibleIf="connected &amp;&amp; dataSource.atLeastV9_5">
                     <folder type="org.jkiss.dbeaver.ext.db2.model.security.DB2Role" label="%tree.roles.node.name" icon="#folder_role" description="Roles">
@@ -446,12 +432,14 @@
                     category="Db2"
                     class="com.ibm.db2.jcc.DB2Driver"
                     sampleURL="jdbc:db2://{host}[:{port}]/{database}"
+                    supportedConfigurationTypes="MANUAL,URL"
                     useURL="false"
                     icon="icons/db2_icon.png"
                     iconBig="icons/db2_icon_big.png"
                     defaultPort="50000"
                     webURL="https://www-01.ibm.com/support/docview.wss?uid=swg21363866"
                     propertiesURL="https://www.ibm.com/docs/en/db2/latest?topic=pdsdjs-common-data-server-driver-jdbc-sqlj-properties-all-database-products"
+                    databaseDocumentationSuffixURL="Database-driver-IBM-Db2"
                     description="IBM Db2 for Linux/Unix/Windows driver"
                     promoted="1"
                     categories="sql">
@@ -464,7 +452,7 @@
                     
                     <property name="@dbeaver-default-dataformat.type.timestamp.pattern" value="yyyy-MM-dd-HH.mm.ss.ffffff"/>
 
-                    <file type="jar" path="maven:/com.ibm.db2:jcc:RELEASE[11.5.7.0]" bundle="!drivers.db2"/>
+                    <file type="jar" path="maven:/com.ibm.db2:jcc:RELEASE[11.5.9.0]" bundle="!drivers.db2"/>
 
                     <file type="license" path="drivers/db2/LICENSE.txt" bundle="drivers.db2"/>
                     <file type="jar" path="drivers/db2" bundle="drivers.db2"/>
@@ -505,7 +493,7 @@
        <provider
             class="org.jkiss.dbeaver.ext.db2.data.DB2ValueHandlerProvider"
             description="DB2 data types provider"
-            id="org.jkiss.dbeaver.ext.db2.data.DB2ValueHandlerProvider"
+            id="DB2ValueHandlerProvider"
             label="Db2 data types provider">
 
             <datasource id="db2"/>
@@ -530,19 +518,19 @@
         <category id="db2Tool" parent="db2" name="Tools" description="DB2 database tools" icon="icons/db2_icon.png"/>
 
         <!-- SQL tools -->
-        <task id="db2ToolTableTruncate" name="%tasks.truncate.node.name" description="%tasks.truncate.node.description" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/admin.png" type="db2Tool" handler="org.jkiss.dbeaver.ext.db2.tasks.DB2ToolTableTruncate">
+        <task id="db2ToolTableTruncate" name="%tasks.truncate.node.name" description="%tasks.truncate.node.description" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/admin.svg" type="db2Tool" handler="org.jkiss.dbeaver.ext.db2.tasks.DB2ToolTableTruncate">
             <datasource id="db2"/>
             <objectType name="org.jkiss.dbeaver.ext.db2.model.DB2TableBase"/>
         </task>
-        <task id="db2ToolTableReorgCheck" name="%tasks.reorgcheck.node.name" description="%tasks.reorgcheck.node.description" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/admin.png" type="db2Tool" handler="org.jkiss.dbeaver.ext.db2.tasks.DB2ReorgCheckTableTool">
+        <task id="db2ToolTableReorgCheck" name="%tasks.reorgcheck.node.name" description="%tasks.reorgcheck.node.description" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/admin.svg" type="db2Tool" handler="org.jkiss.dbeaver.ext.db2.tasks.DB2ReorgCheckTableTool">
             <datasource id="db2"/>
             <objectType name="org.jkiss.dbeaver.ext.db2.model.DB2TableBase"/>
         </task>
-        <task id="db2ToolTableReorgIndex" name="%tasks.reorgindex.node.name" description="%tasks.reorgindex.node.description" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/admin.png" type="db2Tool" handler="org.jkiss.dbeaver.ext.db2.tasks.DB2ReorgIndexTool">
+        <task id="db2ToolTableReorgIndex" name="%tasks.reorgindex.node.name" description="%tasks.reorgindex.node.description" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/admin.svg" type="db2Tool" handler="org.jkiss.dbeaver.ext.db2.tasks.DB2ReorgIndexTool">
             <datasource id="db2"/>
             <objectType name="org.jkiss.dbeaver.ext.db2.model.DB2TableBase"/>
         </task>
-        <task id="db2ToolTableRunstats" name="%tasks.runstats.node.name" description="%tasks.runstats.node.description" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/admin.png" type="db2Tool" handler="org.jkiss.dbeaver.ext.db2.tasks.DB2RunstatsTool">
+        <task id="db2ToolTableRunstats" name="%tasks.runstats.node.name" description="%tasks.runstats.node.description" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/admin.svg" type="db2Tool" handler="org.jkiss.dbeaver.ext.db2.tasks.DB2RunstatsTool">
             <datasource id="db2"/>
             <objectType name="org.jkiss.dbeaver.ext.db2.model.DB2TableBase"/>
         </task>

@@ -1,7 +1,7 @@
 /*
  * DBeaver - Universal Database Manager
  * Copyright (C) 2013-2015 Denis Forveille (titou10.titou10@gmail.com)
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -88,8 +88,8 @@ public class DB2TableManager extends SQLTableManager<DB2Table, DB2Schema> implem
     // ------
 
     @Override
-    public DB2Table createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, Object db2Schema,
-                                         Object copyFrom, Map<String, Object> options) {
+    public DB2Table createDatabaseObject(@NotNull DBRProgressMonitor monitor, @NotNull DBECommandContext context, Object db2Schema,
+                                         Object copyFrom, @NotNull Map<String, Object> options) {
         DB2Table table = new DB2Table((DB2Schema) db2Schema, NEW_TABLE_NAME);
         setNewObjectName(monitor, (DB2Schema) db2Schema, table);
         return table;
@@ -97,22 +97,29 @@ public class DB2TableManager extends SQLTableManager<DB2Table, DB2Schema> implem
 
     @Override
     @SuppressWarnings("rawtypes")
-    public void appendTableModifiers(DBRProgressMonitor monitor, DB2Table db2Table, NestedObjectCommand tableProps, StringBuilder ddl, boolean alter) {
+    public void appendTableModifiers(
+        DBRProgressMonitor monitor,
+        DB2Table db2Table,
+        NestedObjectCommand tableProps,
+        StringBuilder ddl,
+        boolean alter,
+        Map<String, Object> options) {
 
         try {
+            String delimiter = isCompact(options) ? " " : LINE_SEPARATOR;
             // Add Tablespaces infos
             if (db2Table.getTablespace(monitor) != null) {
-                ddl.append(LINE_SEPARATOR);
+                ddl.append(delimiter);
                 ddl.append(CLAUSE_IN_TS);
                 ddl.append(getTablespaceName(db2Table.getTablespace(monitor)));
             }
             if (db2Table.getIndexTablespace(monitor) != null) {
-                ddl.append(LINE_SEPARATOR);
+                ddl.append(delimiter);
                 ddl.append(CLAUSE_IN_TS_IX);
                 ddl.append(getTablespaceName(db2Table.getIndexTablespace(monitor)));
             }
             if (db2Table.getLongTablespace(monitor) != null) {
-                ddl.append(LINE_SEPARATOR);
+                ddl.append(delimiter);
                 ddl.append(CLAUSE_IN_TS_LONG);
                 ddl.append(getTablespaceName(db2Table.getLongTablespace(monitor)));
             }
@@ -147,7 +154,7 @@ public class DB2TableManager extends SQLTableManager<DB2Table, DB2Schema> implem
     // ------
 
     @Override
-    public void addObjectModifyActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actionList, ObjectChangeCommand command, Map<String, Object> options) {
+    public void addObjectModifyActions(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext executionContext, @NotNull List<DBEPersistAction> actionList, @NotNull ObjectChangeCommand command, @NotNull Map<String, Object> options) {
         DB2Table db2Table = command.getObject();
 
         if (command.getProperties().size() > 1) {
@@ -156,7 +163,7 @@ public class DB2TableManager extends SQLTableManager<DB2Table, DB2Schema> implem
             sb.append(db2Table.getFullyQualifiedName(DBPEvaluationContext.DDL));
             sb.append(" ");
 
-            appendTableModifiers(monitor, command.getObject(), command, sb, true);
+            appendTableModifiers(monitor, command.getObject(), command, sb, true, options);
 
             actionList.add(new SQLDatabasePersistAction(CMD_ALTER, sb.toString()));
         }
@@ -171,7 +178,7 @@ public class DB2TableManager extends SQLTableManager<DB2Table, DB2Schema> implem
     // Rename
     // ------
     @Override
-    public void addObjectRenameActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, ObjectRenameCommand command, Map<String, Object> options) {
+    public void addObjectRenameActions(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext executionContext, @NotNull List<DBEPersistAction> actions, @NotNull ObjectRenameCommand command, @NotNull Map<String, Object> options) {
         String sql = String.format(SQL_RENAME_TABLE,
             DBUtils.getQuotedIdentifier(command.getObject().getSchema()) + "." + DBUtils.getQuotedIdentifier(command.getObject().getDataSource(), command.getOldName()),
             DBUtils.getQuotedIdentifier(command.getObject().getDataSource(), command.getNewName()));

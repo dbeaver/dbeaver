@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,9 +22,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
 import org.jkiss.dbeaver.ext.postgresql.model.data.type.PostgreGeometryTypeHandler;
-import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
-import org.jkiss.dbeaver.model.gis.DBGeometryDimension;
 import org.jkiss.dbeaver.model.gis.GisAttribute;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCColumnKeyType;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -39,7 +37,8 @@ import java.util.Map;
 /**
  * PostgreTableColumn
  */
-public class PostgreTableColumn extends PostgreAttribute<PostgreTableBase> implements PostgrePrivilegeOwner, PostgreScriptObject, GisAttribute, JDBCColumnKeyType {
+public class PostgreTableColumn extends PostgreAttribute<PostgreTableBase>
+    implements PostgrePrivilegeOwner, PostgreScriptObject, GisAttribute, JDBCColumnKeyType {
     private static final Log log = Log.getLog(PostgreTableColumn.class);
 
     public PostgreTableColumn(DBRProgressMonitor monitor, PostgreTableBase table, PostgreTableColumn source) throws DBException {
@@ -54,6 +53,11 @@ public class PostgreTableColumn extends PostgreAttribute<PostgreTableBase> imple
         super(monitor, table, dbResult);
     }
 
+    @Override
+    protected boolean supportsDependencies() {
+        return true;
+    }
+
     @NotNull
     @Override
     public PostgreSchema getSchema() {
@@ -66,34 +70,29 @@ public class PostgreTableColumn extends PostgreAttribute<PostgreTableBase> imple
     }
 
     @Override
-    public Collection<PostgrePrivilege> getPrivileges(DBRProgressMonitor monitor, boolean includeNestedObjects) throws DBException {
-        return PostgreUtils.extractPermissionsFromACL(monitor, this, getAcl());
+    public Collection<PostgrePrivilege> getPrivileges(@NotNull DBRProgressMonitor monitor, boolean includeNestedObjects) throws DBException {
+        return PostgreUtils.extractPermissionsFromACL(monitor, this, getAcl(), false);
     }
 
     @Override
-    public String generateChangeOwnerQuery(String owner) {
+    public String generateChangeOwnerQuery(@NotNull String owner, @NotNull Map<String, Object> options) {
         return null;
     }
 
     @Override
-    public int getAttributeGeometrySRID(DBRProgressMonitor monitor) throws DBCException {
+    public int getAttributeGeometrySRID(DBRProgressMonitor monitor) {
         return PostgreGeometryTypeHandler.getGeometrySRID(getTypeMod());
-    }
-
-    @NotNull
-    @Override
-    public DBGeometryDimension getAttributeGeometryDimension(DBRProgressMonitor monitor) throws DBCException {
-        return PostgreGeometryTypeHandler.getGeometryDimension(getTypeMod());
     }
 
     @Nullable
     @Override
-    public String getAttributeGeometryType(DBRProgressMonitor monitor) throws DBCException {
+    public String getAttributeGeometryType(DBRProgressMonitor monitor) {
         return PostgreGeometryTypeHandler.getGeometryType(getTypeMod());
     }
 
+    @NotNull
     @Override
-    public String getObjectDefinitionText(DBRProgressMonitor monitor, Map<String, Object> options) throws DBException {
+    public String getObjectDefinitionText(@NotNull DBRProgressMonitor monitor, @NotNull Map<String, Object> options) throws DBException {
         return DBStructUtils.generateObjectDDL(monitor, this, options, false);
     }
 
@@ -110,9 +109,9 @@ public class PostgreTableColumn extends PostgreAttribute<PostgreTableBase> imple
 
     @Override
     public boolean isInUniqueKey() {
-        final List<PostgreTableConstraintBase> cCache = getTable().getSchema().getConstraintCache().getCachedObjects(getTable());
+        final List<PostgreTableConstraintBase<?>> cCache = getTable().getSchema().getConstraintCache().getCachedObjects(getTable());
         if (!CommonUtils.isEmpty(cCache)) {
-            for (PostgreTableConstraintBase key : cCache) {
+            for (PostgreTableConstraintBase<?> key : cCache) {
                 if (key instanceof PostgreTableConstraint && key.getConstraintType() == DBSEntityConstraintType.PRIMARY_KEY) {
                     List<PostgreTableConstraintColumn> cColumns = ((PostgreTableConstraint) key).getColumns();
                     if (!CommonUtils.isEmpty(cColumns)) {

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,21 +24,20 @@ import org.jkiss.dbeaver.model.text.parser.rules.EndOfLineRule;
 public class SQLCommandRule extends EndOfLineRule {
     public SQLCommandRule(String commandPrefix, SQLCommandHandlerDescriptor controlCommand, SQLControlToken controlToken) {
         super(commandPrefix + controlCommand.getId() + ' ', controlToken);
-        super.fExcludeLineDelimiter = true;
     }
 
     protected boolean sequenceDetected(TPCharacterScanner scanner, char[] sequence, boolean eofAllowed) {
-        for (int i= 1; i < sequence.length; i++) {
-            int c= scanner.read();
+        for (int i = 1; i < sequence.length; i++) {
+            int c = scanner.read();
             char seqChar = sequence[i];
-            boolean validChar = (seqChar == ' ' && Character.isWhitespace(c)) ||
-                    Character.toUpperCase(c) == Character.toUpperCase(seqChar);
+            boolean validChar = (seqChar == ' ' && Character.isWhitespace(c)) || Character.toUpperCase(c) == Character.toUpperCase(seqChar);
             if (!validChar) {
                 // Non-matching character detected, rewind the scanner back to the start.
                 // Do not unread the first character.
                 scanner.unread();
-                for (int j= i-1; j > 0; j--)
+                for (int j = i - 1; j > 0; j--) {
                     scanner.unread();
+                }
                 return false;
             }
         }

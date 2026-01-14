@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -36,6 +36,7 @@ import org.jkiss.dbeaver.model.meta.PropertyLength;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureParameterKind;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureType;
 import org.jkiss.dbeaver.utils.GeneralUtils;
@@ -52,12 +53,11 @@ import java.util.stream.Collectors;
  * PostgreProcedure
  */
 public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, PostgreSchema>
-        implements PostgreObject, PostgreScriptObject, PostgrePrivilegeOwner, DBPUniqueObject, DBPOverloadedObject, DBPNamedObject2, DBPRefreshableObject, DBPScriptObjectExt2
-{
+        implements PostgreObject, PostgreScriptObject, PostgrePrivilegeOwner, DBPUniqueObject, DBPOverloadedObject, DBPNamedObject2, DBPRefreshableObject, DBPScriptObjectExt2 {
     private static final Log log = Log.getLog(PostgreProcedure.class);
 
-    private static final String CAT_FLAGS = "Flags";
-    private static final String CAT_PROPS = "Properties";
+    protected static final String CAT_FLAGS = "Flags";
+    protected static final String CAT_PROPS = "Properties";
 
     public static final float DEFAULT_EST_ROWS = 1000.0f;
     public static final float DEFAULT_COST = 100.0f;
@@ -117,30 +117,29 @@ public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, Postg
         }
     }
 
-    private long oid;
-    private PostgreProcedureKind kind;
-    private String procSrc;
-    private String body;
-    private long ownerId;
-    private long languageId;
-    private float execCost;
-    private float estRows;
-    private PostgreDataType varArrayType;
-    private String procTransform;
-    private boolean isAggregate;
-    private boolean isWindow;
-    private boolean isSecurityDefiner;
-    private boolean leakproof;
-    private boolean isStrict;
-    private boolean returnsSet;
-    private ProcedureVolatile procVolatile;
-    private PostgreDataType returnType;
-    private int[] transformTypes;
-    private String[] config;
-    private Object acl;
-
-    private String overloadedName;
-    private List<PostgreProcedureParameter> params = new ArrayList<>();
+    protected long oid;
+    protected PostgreProcedureKind kind;
+    protected String procSrc;
+    protected String body;
+    protected long ownerId;
+    protected long languageId;
+    protected float execCost;
+    protected float estRows;
+    protected PostgreDataType varArrayType;
+    protected String procTransform;
+    protected boolean isAggregate;
+    protected boolean isWindow;
+    protected boolean isSecurityDefiner;
+    protected boolean leakproof;
+    protected boolean isStrict;
+    protected boolean returnsSet;
+    protected ProcedureVolatile procVolatile;
+    protected PostgreDataType returnType;
+    protected int[] transformTypes;
+    protected String[] config;
+    protected Object acl;
+    protected String overloadedName;
+    protected List<PostgreProcedureParameter> params = new ArrayList<>();
 
     public PostgreProcedure(PostgreSchema schema) {
         super(schema, false);
@@ -199,7 +198,7 @@ public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, Postg
             }
 
         } else {
-            long[] inArgTypes = PostgreUtils.getIdVector(JDBCUtils.safeGetObject(dbResult, "proargtypes"));
+            long[] inArgTypes = PostgreUtils.getIdVector(JDBCUtils.safeGetObject(dbResult, "proargtypes"), dataSource);
 
             if (!ArrayUtils.isEmpty(inArgTypes)) {
                 for (int i = 0; i < inArgTypes.length; i++) {
@@ -306,7 +305,17 @@ public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, Postg
             } else if (isWindow) {
                 kind = PostgreProcedureKind.w;
             } else {
-                kind = PostgreProcedureKind.f;
+                boolean isProcedure = false;
+                try {
+                    isProcedure = dbResult.getBoolean("prosp");
+                } catch (SQLException e) {
+                    // Slip then. This column only persist in special cases
+                }
+                if (isProcedure) {
+                    kind = PostgreProcedureKind.p;
+                } else {
+                    kind = PostgreProcedureKind.f;
+                }
             }
         }
     }
@@ -351,8 +360,9 @@ public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, Postg
         return body;
     }
 
+    @Nullable
     @Override
-    public List<PostgreProcedureParameter> getParameters(@Nullable DBRProgressMonitor monitor) {
+    public List<PostgreProcedureParameter> getParameters(@NotNull DBRProgressMonitor monitor) {
         return params;
     }
 
@@ -378,7 +388,7 @@ public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, Postg
 
     @NotNull
     @Override
-    public String getFullyQualifiedName(DBPEvaluationContext context)
+    public String getFullyQualifiedName(@NotNull DBPEvaluationContext context)
     {
         return DBUtils.getFullQualifiedName(getDataSource(),
             getContainer(),
@@ -402,17 +412,19 @@ public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, Postg
     }
 
     @Override
-    public void setName(String name) {
+    public void setName(@NotNull String name) {
         super.setName(name);
         this.overloadedName = makeOverloadedName(getSchema(), getName(), params, false, false, false);
     }
 
+    @NotNull
     @Override
     @Property(hidden = true, editable = true, updatable = true, order = -1)
-    public String getObjectDefinitionText(DBRProgressMonitor monitor, Map<String, Object> options) throws DBException
-    {
-        String procDDL;
+    public String getObjectDefinitionText(@NotNull DBRProgressMonitor monitor, @NotNull Map<String, Object> options) throws DBException {
         boolean omitHeader = CommonUtils.getOption(options, OPTION_DEBUGGER_SOURCE);
+        String procDDL = omitHeader || CommonUtils.getOption(options, OPTION_SKIP_DROPS) ?
+            "" :
+            "-- DROP " + getProcedureTypeName() + " " + getFullQualifiedSignature() + ";\n\n";
         if (isPersisted() && (!getDataSource().getServerType().supportsFunctionDefRead() || omitHeader) && !isAggregate) {
             if (procSrc == null) {
                 try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Read procedure body")) {
@@ -423,7 +435,7 @@ public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, Postg
             }
             PostgreDataType returnType = getReturnType();
             String returnTypeName = returnType == null ? null : returnType.getFullTypeName();
-            procDDL = omitHeader ? procSrc : generateFunctionDeclaration(getLanguage(monitor), returnTypeName, procSrc);
+            procDDL += omitHeader ? procSrc : generateFunctionDeclaration(getLanguage(monitor), returnTypeName, procSrc);
         } else {
             if (body == null) {
                 if (!isPersisted()) {
@@ -445,13 +457,15 @@ public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, Postg
                     }
                 }
             }
-            procDDL = body;
+            procDDL += body;
         }
         if (this.isPersisted() && !omitHeader) {
             procDDL += ";\n";
 
             if (CommonUtils.getOption(options, DBPScriptObject.OPTION_INCLUDE_COMMENTS) && !CommonUtils.isEmpty(getDescription())) {
-                procDDL += "\nCOMMENT ON " + getProcedureTypeName() + " " + getFullQualifiedSignature() + " IS " + SQLUtils.quoteString(this, getDescription()) + ";\n";
+                procDDL += "\nCOMMENT ON " + getProcedureTypeName() + " " + getFullQualifiedSignature() + " IS " +
+                           SQLUtils.quoteString(this, getDescription()) + ";\n";
+
             }
 
             if (CommonUtils.getOption(options, DBPScriptObject.OPTION_INCLUDE_PERMISSIONS)) {
@@ -622,6 +636,9 @@ public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, Postg
         if (getProcedureType() == DBSProcedureType.FUNCTION && procVolatile != null) {
             decl.append("\t").append(procVolatile.getCreateClause()).append(lineSeparator);
         }
+        if (isStrict) {
+            decl.append("\tSTRICT").append(lineSeparator);
+        }
         if (execCost > 0 && execCost != DEFAULT_COST) {
             decl.append("\tCOST ").append(CommonUtils.niceFormatFloat(execCost)).append(lineSeparator);
         }
@@ -681,6 +698,12 @@ public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, Postg
 
     public void setLanguage(PostgreLanguage language) {
         this.languageId = language.getObjectId();
+    }
+
+    @Nullable
+    @Override
+    public DBSTypedObject getReturnType(@NotNull DBRProgressMonitor monitor) throws DBException {
+        return this.returnType;
     }
 
     @Property(category = CAT_PROPS, viewable = true, order = 12)
@@ -778,7 +801,12 @@ public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, Postg
                 parameter.add(param.getArgumentMode().getKeyword());
             }
             if (showParamNames) {
-                parameter.add(param.getName());
+                String paramName = param.getName();
+                if (forDDL && paramName.startsWith("$")) {
+                    // Old PG versions. Skip this specific case, because it is not name, but param order number
+                } else {
+                    parameter.add(paramName);
+                }
             }
             final PostgreDataType dataType = param.getParameterType();
             final PostgreSchema typeContainer = dataType.getParentObject();
@@ -820,8 +848,8 @@ public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, Postg
     }
 
     @Override
-    public Collection<PostgrePrivilege> getPrivileges(DBRProgressMonitor monitor, boolean includeNestedObjects) throws DBException {
-        return PostgreUtils.extractPermissionsFromACL(monitor,this, acl);
+    public Collection<PostgrePrivilege> getPrivileges(@NotNull DBRProgressMonitor monitor, boolean includeNestedObjects) throws DBException {
+        return PostgreUtils.extractPermissionsFromACL(monitor, this, acl, false);
     }
 
     @Override
@@ -830,7 +858,7 @@ public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, Postg
     }
 
     @Override
-    public String generateChangeOwnerQuery(String owner) {
+    public String generateChangeOwnerQuery(@NotNull String owner, @NotNull Map<String, Object> options) {
         return "ALTER " + this.getProcedureTypeName() + " " + this.getFullQualifiedSignature() + " OWNER TO " + owner;
     }
 
@@ -840,7 +868,7 @@ public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, Postg
     }
 
     @Override
-    public boolean supportsObjectDefinitionOption(String option) {
+    public boolean supportsObjectDefinitionOption(@NotNull String option) {
         return DBPScriptObject.OPTION_INCLUDE_COMMENTS.equals(option) 
             || DBPScriptObject.OPTION_INCLUDE_PERMISSIONS.equals(option) 
             || DBPScriptObject.OPTION_CAST_PARAMS.equals(option);

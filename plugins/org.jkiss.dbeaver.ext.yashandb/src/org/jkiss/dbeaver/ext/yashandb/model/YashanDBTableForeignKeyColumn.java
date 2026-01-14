@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,38 +16,32 @@
  */
 package org.jkiss.dbeaver.ext.yashandb.model;
 
+import java.util.List;
+
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableForeignKeyColumn;
 
-import java.util.List;
+public class YashanDBTableForeignKeyColumn extends YashanDBTableConstraintColumn implements DBSTableForeignKeyColumn {
 
-/**
- * GenericConstraintColumn
- */
-public class YashanDBTableForeignKeyColumn extends YashanDBTableConstraintColumn implements DBSTableForeignKeyColumn
-{
+	public YashanDBTableForeignKeyColumn(YashanDBTableForeignKey constraint, YashanDBTableColumn tableColumn,
+			int ordinalPosition) {
+		super(constraint, tableColumn, ordinalPosition);
+	}
 
-    public YashanDBTableForeignKeyColumn(
-            YashanDBTableForeignKey constraint,
-            YashanDBTableColumn tableColumn,
-            int ordinalPosition)
-    {
-        super(constraint, tableColumn, ordinalPosition);
-    }
-
-    @Override
-    @Property(id = "reference", viewable = true, order = 4)
-    public YashanDBTableColumn getReferencedColumn()
-    {
-        YashanDBTableConstraint referencedConstraint = ((YashanDBTableForeignKey) getParentObject()).getReferencedConstraint();
-        if (referencedConstraint != null) {
-            List<YashanDBTableConstraintColumn> ar = referencedConstraint.getAttributeReferences(new VoidProgressMonitor());
-            if (ar != null) {
-            	return ar.get(getOrdinalPosition() - 1).getAttribute();
-            }
-        }
-        return null;
-    }
+	@Override
+	@Property(id = "reference", viewable = true, order = 4)
+	public YashanDBTableColumn getReferencedColumn() {
+		YashanDBTableConstraint referencedConstraint = ((YashanDBTableForeignKey) getParentObject())
+				.getReferencedConstraint();
+		if (referencedConstraint != null) {
+			List<YashanDBTableConstraintColumn> ar = referencedConstraint
+					.getAttributeReferences(new VoidProgressMonitor());
+			if (ar != null) {
+				return ar.get(getOrdinalPosition() - 1).getAttribute();
+			}
+		}
+		return null;
+	}
 
 }

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,8 +18,10 @@ package org.jkiss.dbeaver.ext.oracle.model;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBDatabaseException;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
+import org.jkiss.dbeaver.model.DBPNamedObject2;
 import org.jkiss.dbeaver.model.DBPScriptObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
@@ -41,8 +43,8 @@ import java.util.Map;
 /**
  * OracleTableIndex
  */
-public class OracleTableIndex extends JDBCTableIndex<OracleSchema, OracleTablePhysical> implements DBSObjectLazy, DBPScriptObject
-{
+public class OracleTableIndex extends JDBCTableIndex<OracleSchema, OracleTableBase>
+    implements DBSObjectLazy, DBPScriptObject, DBPNamedObject2 {
 
     private Object tablespace;
     private boolean nonUnique;
@@ -51,10 +53,10 @@ public class OracleTableIndex extends JDBCTableIndex<OracleSchema, OracleTablePh
 
     public OracleTableIndex(
         OracleSchema schema,
-        OracleTablePhysical table,
+        OracleTableBase table,
         String indexName,
-        ResultSet dbResult)
-    {
+        ResultSet dbResult
+    ) {
         super(schema, table, indexName, null, true);
         String indexTypeName = JDBCUtils.safeGetString(dbResult, "INDEX_TYPE");
         this.nonUnique = !"UNIQUE".equals(JDBCUtils.safeGetString(dbResult, "UNIQUENESS"));
@@ -74,8 +76,7 @@ public class OracleTableIndex extends JDBCTableIndex<OracleSchema, OracleTablePh
         this.tablespace = JDBCUtils.safeGetString(dbResult, "TABLESPACE_NAME");
     }
 
-    public OracleTableIndex(OracleSchema schema, OracleTablePhysical parent, String name, boolean unique, DBSIndexType indexType)
-    {
+    public OracleTableIndex(OracleSchema schema, OracleTableBase parent, String name, boolean unique, DBSIndexType indexType) {
         super(schema, parent, name, indexType, false);
         this.nonUnique = !unique;
 
@@ -83,15 +84,13 @@ public class OracleTableIndex extends JDBCTableIndex<OracleSchema, OracleTablePh
 
     @NotNull
     @Override
-    public OracleDataSource getDataSource()
-    {
+    public OracleDataSource getDataSource() {
         return getTable().getDataSource();
     }
 
     @Override
     @Property(viewable = true, order = 5)
-    public boolean isUnique()
-    {
+    public boolean isUnique() {
         return !nonUnique;
     }
 
@@ -99,46 +98,40 @@ public class OracleTableIndex extends JDBCTableIndex<OracleSchema, OracleTablePh
         this.nonUnique = !unique;
     }
 
+    @Nullable
     @Override
-    public Object getLazyReference(Object propertyId)
-    {
+    public Object getLazyReference(Object propertyId) {
         return tablespace;
     }
 
     @Property(viewable = true, order = 10)
     @LazyProperty(cacheValidator = OracleTablespace.TablespaceReferenceValidator.class)
-    public Object getTablespace(DBRProgressMonitor monitor) throws DBException
-    {
+    public Object getTablespace(DBRProgressMonitor monitor) throws DBException {
         return OracleTablespace.resolveTablespaceReference(monitor, this, null);
     }
 
     @Nullable
     @Override
-    public String getDescription()
-    {
+    public String getDescription() {
         return null;
     }
 
     @Override
-    public List<OracleTableIndexColumn> getAttributeReferences(DBRProgressMonitor monitor)
-    {
+    public List<OracleTableIndexColumn> getAttributeReferences(@Nullable DBRProgressMonitor monitor) {
         return columns;
     }
 
     @Nullable
     @Association
-    public OracleTableIndexColumn getColumn(String columnName)
-    {
+    public OracleTableIndexColumn getColumn(String columnName) {
         return DBUtils.findObject(columns, columnName);
     }
 
-    void setColumns(List<OracleTableIndexColumn> columns)
-    {
+    void setColumns(List<OracleTableIndexColumn> columns) {
         this.columns = columns;
     }
 
-    public void addColumn(OracleTableIndexColumn column)
-    {
+    public void addColumn(OracleTableIndexColumn column) {
         if (columns == null) {
             columns = new ArrayList<>();
         }
@@ -147,29 +140,31 @@ public class OracleTableIndex extends JDBCTableIndex<OracleSchema, OracleTablePh
 
     @NotNull
     @Override
-    public String getFullyQualifiedName(DBPEvaluationContext context)
-    {
-        return DBUtils.getFullQualifiedName(getDataSource(),
+    public String getFullyQualifiedName(@NotNull DBPEvaluationContext context) {
+        return DBUtils.getFullQualifiedName(
+            getDataSource(),
             getTable().getContainer(),
-            this);
+            this
+        );
     }
 
     @Override
-    public String toString()
-    {
+    public String toString() {
         return getFullyQualifiedName(DBPEvaluationContext.UI);
     }
 
+    @NotNull
     @Override
     @Property(hidden = true, editable = true, updatable = true, order = -1)
-    public String getObjectDefinitionText(DBRProgressMonitor monitor, Map<String, Object> options) throws DBException {
+    public String getObjectDefinitionText(@NotNull DBRProgressMonitor monitor, @NotNull Map<String, Object> options) throws DBException {
         if (indexDDL == null && isPersisted()) {
             try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Read index definition")) {
-                indexDDL = JDBCUtils.queryString(session,"SELECT DBMS_METADATA.GET_DDL('INDEX', ?, ?) TXT FROM DUAL",
-                        getName(),
-                        getTable().getSchema().getName());
+                indexDDL = JDBCUtils.queryString(session, "SELECT DBMS_METADATA.GET_DDL('INDEX', ?, ?) TXT FROM DUAL",
+                    getName(),
+                    getTable().getSchema().getName()
+                );
             } catch (SQLException e) {
-                throw new DBException(e, getDataSource());
+                throw new DBDatabaseException(e, getDataSource());
             }
         }
         return indexDDL;

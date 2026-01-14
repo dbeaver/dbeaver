@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,9 @@
  */
 package org.jkiss.dbeaver.ext.oracle.model;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBDatabaseException;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.oracle.edit.OracleTableColumnManager;
@@ -42,7 +45,6 @@ import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.IOUtils;
 
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.io.Reader;
 import java.io.StringWriter;
 import java.sql.Clob;
@@ -68,16 +70,13 @@ public class OracleUtils {
         OracleDDLFormat ddlFormat,
         Map<String, Object> options) throws DBException
     {
+        if (monitor.isCanceled()) {
+            return "";
+        }
         String objectFullName = DBUtils.getObjectFullName(object, DBPEvaluationContext.DDL);
 
         OracleSchema schema = object.getContainer();
-/*
-        if (object instanceof OracleSchemaObject) {
-            schema = ((OracleSchemaObject)object).getSchema();
-        } else if (object instanceof OracleTableBase) {
-            schema = ((OracleTableBase)object).getContainer();
-        }
-*/
+
         final OracleDataSource dataSource = object.getDataSource();
 
         monitor.subTask("Load sources for " + objectType + " '" + objectFullName + "'...");
@@ -94,9 +93,6 @@ public class OracleUtils {
             if (dataSource.isAtLeastV9()) {
                 try {
                     // Do not add semicolon in the end
-//                    JDBCUtils.executeProcedure(
-//                        session,
-//                        "begin DBMS_METADATA.SET_TRANSFORM_PARAM(DBMS_METADATA.SESSION_TRANSFORM,'SQLTERMINATOR',true); end;");
                     JDBCUtils.executeProcedure(
                         session,
                         "begin\n" +
@@ -105,66 +101,50 @@ public class OracleUtils {
                                 "DBMS_METADATA.SET_TRANSFORM_PARAM(DBMS_METADATA.SESSION_TRANSFORM,'TABLESPACE'," + ddlFormat.isShowTablespace() + ");\n" +
                                 "DBMS_METADATA.SET_TRANSFORM_PARAM(DBMS_METADATA.SESSION_TRANSFORM,'SEGMENT_ATTRIBUTES'," + ddlFormat.isShowSegments() + ");\n" +
                                 "DBMS_METADATA.SET_TRANSFORM_PARAM(DBMS_METADATA.SESSION_TRANSFORM,'EMIT_SCHEMA'," + CommonUtils.getOption(options, DBPScriptObject.OPTION_FULLY_QUALIFIED_NAMES, true) + ");\n" +
-                                "DBMS_METADATA.SET_TRANSFORM_PARAM(DBMS_METADATA.SESSION_TRANSFORM, 'CONSTRAINTS',true);\n" +
-                                "DBMS_METADATA.SET_TRANSFORM_PARAM(DBMS_METADATA.SESSION_TRANSFORM, 'REF_CONSTRAINTS'," + !CommonUtils.getOption(options, DBPScriptObject.OPTION_DDL_SEPARATE_FOREIGN_KEYS_STATEMENTS, true) + ");\n" +
+                                "DBMS_METADATA.SET_TRANSFORM_PARAM(DBMS_METADATA.SESSION_TRANSFORM,'CONSTRAINTS',true);\n" +
+                                "DBMS_METADATA.SET_TRANSFORM_PARAM(DBMS_METADATA.SESSION_TRANSFORM,'REF_CONSTRAINTS'," + !CommonUtils.getOption(options, DBPScriptObject.OPTION_DDL_SEPARATE_FOREIGN_KEYS_STATEMENTS, true) + ");\n" +
                             "end;");
                 } catch (SQLException e) {
                     log.error("Can't apply DDL transform parameters", e);
                 }
             }
 
-            String ddl;
-            // Read main object DDL
-            try (JDBCPreparedStatement dbStat = session.prepareStatement(
-                "SELECT DBMS_METADATA.GET_DDL(?,?" + (schema == null ? "" : ",?") + ") TXT FROM DUAL")) {
-                dbStat.setString(1, objectType);
-                dbStat.setString(2, object.getName());
-                if (schema != null) {
-                    dbStat.setString(3, schema.getName());
-                }
-                try (JDBCResultSet dbResult = dbStat.executeQuery()) {
-                    if (dbResult.next()) {
-                        Object ddlValue = dbResult.getObject(1);
-                        if (ddlValue instanceof Clob) {
-                            StringWriter buf = new StringWriter();
-                            try (Reader clobReader = ((Clob) ddlValue).getCharacterStream()) {
-                                IOUtils.copyText(clobReader, buf);
-                            } catch (IOException e) {
-                                e.printStackTrace(new PrintWriter(buf, true));
-                            }
-                            ddl = buf.toString();
-
-                        } else {
-                            ddl = CommonUtils.toString(ddlValue);
-                        }
-                    } else {
-                        log.warn("No DDL for " + objectType + " '" + objectFullName + "'");
-                        return "-- EMPTY DDL";
-                    }
-                }
+            if (monitor.isCanceled()) {
+                return "";
             }
-            ddl = ddl.trim();
 
+            String ddl = fetchDDL(session, objectType, object.getName(), schema);
+            if (ddl == null) return "-- EMPTY DDL";
 
-            if (!CommonUtils.isEmpty(object.getConstraints(monitor)) && 
+            if (monitor.isCanceled()) return ddl;
+
+            if (!CommonUtils.isEmpty(object.getConstraints(monitor)) &&
                 !CommonUtils.getOption(options, DBPScriptObject.OPTION_DDL_SKIP_FOREIGN_KEYS) &&
                 CommonUtils.getOption(options, DBPScriptObject.OPTION_DDL_SEPARATE_FOREIGN_KEYS_STATEMENTS)) {
                 ddl += invokeDBMSMetadataGetDependentDDL(session, schema, object, DBMSMetaDependentObjectType.REF_CONSTRAINT);
             }
 
+            if (monitor.isCanceled()) return ddl;
+
             if (!CommonUtils.isEmpty(object.getTriggers(monitor))) {
                 ddl += invokeDBMSMetadataGetDependentDDL(session, schema, object, DBMSMetaDependentObjectType.TRIGGER);
             }
 
+            if (monitor.isCanceled()) return ddl;
+
             if (!CommonUtils.isEmpty(object.getIndexes(monitor))) {
                 // Add index info to main DDL. For some reasons, GET_DDL returns columns, constraints, but not indexes
-                ddl += invokeDBMSMetadataGetDependentDDL(session, schema, object, DBMSMetaDependentObjectType.INDEX);
+                ddl += invokeDBMSMetadataGetDependentIndexDDL(session, schema, object);
             }
+
+            if (monitor.isCanceled()) return ddl;
 
             if (ddlFormat == OracleDDLFormat.FULL) {
                 // Add grants info to main DDL
                 ddl += invokeDBMSMetadataGetDependentDDL(session, schema, object, DBMSMetaDependentObjectType.OBJECT_GRANT);
             }
+
+            if (monitor.isCanceled()) return ddl;
 
             if (ddlFormat != OracleDDLFormat.COMPACT) {
                 // Add object and objects columns info to main DDL
@@ -176,9 +156,59 @@ public class OracleUtils {
                 log.error("Error generating Oracle DDL. Generate default.", e);
                 return DBStructUtils.generateTableDDL(monitor, object, options, true);
             } else {
-                throw new DBException(e, dataSource);
+                throw new DBDatabaseException(e, dataSource);
             }
         }
+    }
+
+    @Nullable
+    public static String fetchDDL(
+        JDBCSession session,
+        String objectType,
+        String objectName
+    ) throws SQLException {
+        return fetchDDL(session, objectType, objectName, null);
+    }
+
+    @Nullable
+    public static String fetchDDL(
+        JDBCSession session,
+        String objectType,
+        String objectName,
+        @Nullable OracleSchema schema
+    ) throws SQLException {
+        String ddl;
+        // Read main object DDL
+        try (JDBCPreparedStatement dbStat = session.prepareStatement(
+            "SELECT DBMS_METADATA.GET_DDL(?,?" + (schema == null ? "" : ",?") + ") TXT FROM DUAL")) {
+            dbStat.setString(1, objectType);
+            dbStat.setString(2, objectName);
+            if (schema != null) {
+                dbStat.setString(3, schema.getName());
+            }
+            try (JDBCResultSet dbResult = dbStat.executeQuery()) {
+                if (dbResult.next()) {
+                    Object ddlValue = dbResult.getObject(1);
+                    if (ddlValue instanceof Clob) {
+                        StringWriter buf = new StringWriter();
+                        try (Reader clobReader = ((Clob) ddlValue).getCharacterStream()) {
+                            IOUtils.copyText(clobReader, buf);
+                        } catch (IOException e) {
+                            log.warn("Can't write ddl query response to string", e);
+                        }
+                        ddl = buf.toString();
+
+                    } else {
+                        ddl = CommonUtils.toString(ddlValue);
+                    }
+                } else {
+                    log.warn("No DDL for " + objectType + " '" + objectName + "'");
+                    return null;
+                }
+            }
+        }
+        ddl = ddl.trim();
+        return ddl;
     }
 
     private enum DBMSMetaDependentObjectType {
@@ -208,6 +238,114 @@ public class OracleUtils {
                 "' for '" + object.getFullyQualifiedName(DBPEvaluationContext.DDL) + "': " + e.getMessage());
         }
         return ddl;
+    }
+
+    private static String invokeDBMSMetadataGetDependentIndexDDL(JDBCSession session, OracleSchema schema, OracleTableBase object) {
+        String ddl = "";
+        final String query = """
+            SELECT DBMS_METADATA.GET_DDL('INDEX', i.index_name, i.owner) AS ddl
+            FROM ALL_INDEXES i
+            WHERE i.table_owner = NVL(?, SYS_CONTEXT('USERENV','CURRENT_SCHEMA'))
+              AND i.table_name = ?
+              AND i.generated = 'N'
+              AND i.index_name NOT IN (
+                  SELECT c.index_name
+                  FROM ALL_CONSTRAINTS c
+                  WHERE c.owner = NVL(?, SYS_CONTEXT('USERENV','CURRENT_SCHEMA'))
+                    AND c.table_name = ?
+                    AND c.constraint_type IN ('P', 'U')
+                    AND c.index_name IS NOT NULL
+              )
+            """;
+        try (JDBCPreparedStatement dbStat = session.prepareStatement(query)) {
+            String schemaName = schema == null ? null : schema.getName();
+            dbStat.setString(1, schemaName);
+            dbStat.setString(2, object.getName());
+            dbStat.setString(3, schemaName);
+            dbStat.setString(4, object.getName());
+            try (JDBCResultSet dbResult = dbStat.executeQuery()) {
+                StringBuilder ddlBuilder = new StringBuilder();
+                while (dbResult.next()) {
+                    String indexDDL = dbResult.getString(1);
+                    if (indexDDL != null) {
+                        ddlBuilder.append("\n\n").append(indexDDL.trim());
+                    }
+                }
+                ddl = ddlBuilder.toString();
+            }
+        } catch (Exception e) {
+            log.debug("Error reading dependent DDL 'INDEX' for '"
+                + object.getFullyQualifiedName(DBPEvaluationContext.DDL) + "': " + e.getMessage());
+        }
+        return ddl;
+    }
+
+    /**
+     * Enumeration of granted object types supported by Oracle's DBMS_METADATA.GET_GRANTED_DDL function.
+     * These represent different categories of privileges that can be extracted as DDL statements.
+     *
+     * <ul>
+     *     <li><b>SYSTEM_GRANT</b> - System-level privileges granted to a user or role (e.g., CREATE SESSION).</li>
+     *     <li><b>ROLE_GRANT</b> - Roles granted to a user or another role.</li>
+     *     <li><b>OBJECT_GRANT</b> - Object-level privileges (e.g., SELECT, INSERT on specific tables or views).</li>
+     *     <li><b>TABLESPACE_QUOTA</b> - Tablespace quotas granted to a user or role (e.g., QUOTA 100M / UNLIMITED ON a tablespace).</li>
+     * </ul>
+     */
+    public enum DBMSMetaGrantedObjectType {
+        SYSTEM_GRANT,
+        ROLE_GRANT,
+        OBJECT_GRANT,
+        TABLESPACE_QUOTA
+    }
+
+    /**
+     * Retrieves the granted DDL for a specific grantee and object type
+     * using Oracle's DBMS_METADATA.GET_GRANTED_DDL function.
+     *
+     * @param session              the active JDBC session connected to the Oracle database
+     * @param grantee              the grantee (user or role) whose granted privileges are to be fetched
+     * @param dependentObjectType  the type of granted object (e.g., SYSTEM_GRANT, ROLE_GRANT, OBJECT_GRANT)
+     * @return the DDL string representing the granted privileges, or an empty string if none found or an error occurs
+     */
+    @NotNull
+    public static String invokeDBMSMetadataGetGrantedDDL(
+        @NotNull JDBCSession session,
+        @NotNull OracleGrantee grantee,
+        @NotNull DBMSMetaGrantedObjectType dependentObjectType
+    ) {
+        String ddl = "";
+        try (JDBCPreparedStatement dbStat = session.prepareStatement(
+            "SELECT DBMS_METADATA.GET_GRANTED_DDL(?,?) TXT FROM DUAL")) {
+            dbStat.setString(1, dependentObjectType.name());
+            dbStat.setString(2, grantee.getName());
+            try (JDBCResultSet dbResult = dbStat.executeQuery()) {
+                if (dbResult.next()) {
+                    ddl = dbResult.getString(1).trim();
+                }
+            }
+        } catch (Exception e) {
+            // No dependent index DDL or something went wrong
+            log.debug("Error reading dependent DDL '" + dependentObjectType +
+                "' for '" + grantee.getName() + "': " + e.getMessage());
+        }
+        return ddl;
+    }
+
+    /**
+     * Appends the provided DDL statement to the given SQL buffer with proper formatting.
+     * Adds a semicolon at the end if it's not already present.
+     *
+     * @param sql the StringBuilder to append the DDL to
+     * @param ddl the DDL string to append; if null or empty, nothing is added
+     */
+    public static void addDDLLine(@NotNull StringBuilder sql, @Nullable String ddl) {
+        if (CommonUtils.isNotEmpty(ddl)) {
+            sql.append("\n").append(ddl);
+            if (!ddl.endsWith(";")) {
+                sql.append(";");
+            }
+            sql.append("\n");
+        }
     }
 
     private static String addCommentsToDDL(DBRProgressMonitor monitor, OracleTableBase object, String ddl) {
@@ -261,12 +399,11 @@ public class OracleUtils {
             "SELECT SYS_CONTEXT( 'USERENV', 'CURRENT_SCHEMA' ) FROM DUAL");
     }
 
-    public static String normalizeSourceName(OracleSourceObject object, boolean body)
-    {
+    public static String normalizeSourceName(@NotNull DBRProgressMonitor monitor, @NotNull OracleSourceObject object, boolean body) {
         try {
             String source = body ?
-                ((DBPScriptObjectExt)object).getExtendedDefinitionText(null) :
-                object.getObjectDefinitionText(null, DBPScriptObject.EMPTY_OPTIONS);
+                ((DBPScriptObjectExt)object).getExtendedDefinitionText(monitor) :
+                object.getObjectDefinitionText(monitor, DBPScriptObject.EMPTY_OPTIONS);
             if (source == null) {
                 return null;
             }
@@ -478,13 +615,16 @@ public class OracleUtils {
         if (body) {
             sourceType += " BODY";
         }
-        Pattern srcPattern = Pattern.compile("^(" + sourceType + ")\\s+(\"{0,1}\\w+\"{0,1})", Pattern.CASE_INSENSITIVE);
+        Pattern srcPattern = Pattern.compile("^(" + sourceType + ")\\s+(\"?\\w+\"?)(?:\\.(\"?\\w+\"?))?", Pattern.CASE_INSENSITIVE);
         Matcher matcher = srcPattern.matcher(source);
         if (matcher.find()) {
-            return
-                "CREATE OR REPLACE " + matcher.group(1) + " " +
-                DBUtils.getQuotedIdentifier(object.getSchema()) + "." + matcher.group(2) +
-                source.substring(matcher.end());
+            if (matcher.group(3) == null) {
+                return "CREATE OR REPLACE " + matcher.group(1) + " " +
+                    DBUtils.getQuotedIdentifier(object.getSchema()) + "." + matcher.group(2) +
+                    source.substring(matcher.end());
+            } else {
+                return "CREATE OR REPLACE " + source;
+            }
         }
         return source;
     }

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.model.impl;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPExclusiveResource;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
@@ -40,6 +41,8 @@ public abstract class AbstractSimpleDataSource<EXEC_CONTEXT extends DBCExecution
     extends AbstractDataSource
     implements DBSInstance, DBSObjectContainer, DBSObject {
 
+    private static final Log log = Log.getLog(AbstractSimpleDataSource.class);
+
     protected EXEC_CONTEXT executionContext;
     @NotNull
     protected List<EXEC_CONTEXT> allContexts = new ArrayList<>();
@@ -51,7 +54,7 @@ public abstract class AbstractSimpleDataSource<EXEC_CONTEXT extends DBCExecution
 
     @NotNull
     @Override
-    public EXEC_CONTEXT getDefaultContext(DBRProgressMonitor monitor, boolean meta) {
+    public EXEC_CONTEXT getDefaultContext(@NotNull DBRProgressMonitor monitor, boolean meta) {
         return executionContext;
     }
 
@@ -96,10 +99,12 @@ public abstract class AbstractSimpleDataSource<EXEC_CONTEXT extends DBCExecution
     }
 
     @Override
-    public void shutdown(DBRProgressMonitor monitor) {
+    public void shutdown(@NotNull DBRProgressMonitor monitor) {
         Object lock = this.exclusiveLock.acquireExclusiveLock();
         try {
             executionContext.close();
+        } catch (DBException e) {
+            log.error("Rrror shutting down datasource", e);
         } finally {
             this.exclusiveLock.releaseExclusiveLock(lock);
         }

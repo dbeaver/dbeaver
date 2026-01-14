@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,6 @@
 package org.jkiss.dbeaver.ui.navigator.itemlist;
 
 import org.eclipse.jface.action.*;
-import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Color;
@@ -26,16 +25,17 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IWorkbenchCommandConstants;
 import org.eclipse.ui.IWorkbenchPartSite;
 import org.eclipse.ui.IWorkbenchSite;
-import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.menus.CommandContributionItem;
 import org.eclipse.ui.part.MultiPageEditorPart;
 import org.eclipse.ui.part.MultiPageEditorSite;
-import org.eclipse.ui.themes.ITheme;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPObjectStatisticsCollector;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.DBEObjectReorderer;
+import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseFolder;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
@@ -70,41 +70,29 @@ public class ItemListControl extends NodeListControl
 {
     private static final Log log = Log.getLog(ItemListControl.class);
 
-    // FIXME: copied from editors.data constants. Need to move it in general colors configuration
-    private static final String COLOR_NEW = "org.jkiss.dbeaver.sql.resultset.color.cell.new.background";
-    private static final String COLOR_MODIFIED = "org.jkiss.dbeaver.sql.resultset.color.cell.modified.background";
+    private static final String COLOR_NEW = "org.jkiss.dbeaver.ui.navigator.node.new.background";
+    private static final String COLOR_MODIFIED = "org.jkiss.dbeaver.ui.navigator.node.modified.background";
 
-    private final IPropertyChangeListener themeChangeListener;
     private final ISearchExecutor searcher;
     private final Color searchHighlightColor;
-    //private Color disabledCellColor;
-    private Font normalFont;
-    private Font boldFont;
 
     private final Map<DBNNode, Map<String, Object>> changedProperties = new HashMap<>();
     private CommandContributionItem createObjectCommand;
 
     public ItemListControl(
-        Composite parent,
+        @NotNull Composite parent,
         int style,
-        final IWorkbenchSite workbenchSite,
-        DBNNode node,
-        DBXTreeNode metaNode)
+        @NotNull IWorkbenchSite workbenchSite,
+        @NotNull DBNNode node,
+        @Nullable DBXTreeNode metaNode)
     {
         super(parent, style, workbenchSite, node, metaNode);
-        this.themeChangeListener = e -> {
-            final ITheme theme = PlatformUI.getWorkbench().getThemeManager().getCurrentTheme();
-            normalFont = theme.getFontRegistry().get(UIFonts.DBEAVER_FONTS_MAIN_FONT);
-            boldFont = theme.getFontRegistry().getBold(UIFonts.DBEAVER_FONTS_MAIN_FONT);
-            super.getItemsViewer().refresh();
-            Viewer navigatorViewer = super.getNavigatorViewer();
-            if (navigatorViewer != null) {
-                navigatorViewer.refresh();
-            }
-        };
-        this.themeChangeListener.propertyChange(null);
 
-        PlatformUI.getWorkbench().getThemeManager().addPropertyChangeListener(themeChangeListener);
+        BaseThemeSettings.instance.addPropertyListener(
+            UIFonts.Eclipse.TREE_AND_TABLE_FONT_FOR_VIEWS,
+            s -> super.getItemsViewer().refresh(),
+            this);
+
         this.searcher = new SearcherFilter();
         this.searchHighlightColor = new Color(parent.getDisplay(), 170, 255, 170);
         //this.disabledCellColor = UIStyles.getDefaultTextBackground();//parent.getDisplay().getSystemColor(SWT.COLOR_WIDGET_LIGHT_SHADOW);
@@ -132,24 +120,17 @@ public class ItemListControl extends NodeListControl
     }
 
     @Override
-    public void fillCustomActions(IContributionManager contributionManager)
-    {
+    public void fillCustomActions(IContributionManager contributionManager) {
+        IWorkbenchSite workbenchSite = getWorkbenchSite();
+        // Save/revert
+        if (workbenchSite instanceof MultiPageEditorSite mes) {
+            final MultiPageEditorPart editor = mes.getMultiPageEditor();
+            if (editor instanceof EntityEditor) {
+                DatabaseEditorUtils.contributeStandardEditorActions(workbenchSite, contributionManager);
+            }
+        }
         super.fillCustomActions(contributionManager);
         final DBNNode rootNode = getRootNode();
-        if (rootNode instanceof DBNDatabaseFolder && ((DBNDatabaseFolder) rootNode).getItemsMeta() != null) {
-            contributionManager.add(new Action(
-                UINavigatorMessages.obj_editor_properties_control_action_filter_setting,
-                DBeaverIcons.getImageDescriptor(UIIcon.FILTER))
-            {
-                @Override
-                public void run()
-                {
-                    NavigatorHandlerFilterConfig.configureFilters(getShell(), rootNode);
-                }
-            });
-        }
-        addColumnConfigAction(contributionManager);
-        IWorkbenchSite workbenchSite = getWorkbenchSite();
 //        if (workbenchSite != null) {
 //            contributionManager.add(ActionUtils.makeCommandContribution(workbenchSite, IWorkbenchCommandConstants.FILE_REFRESH));
 //        }
@@ -157,7 +138,6 @@ public class ItemListControl extends NodeListControl
         // Object operations
 
         if (rootNode instanceof DBNDatabaseFolder) {
-            contributionManager.add(new Separator());
             contributionManager.add(ActionUtils.makeCommandContribution(
                 workbenchSite,
                 NavigatorCommands.CMD_OBJECT_OPEN));
@@ -196,13 +176,14 @@ public class ItemListControl extends NodeListControl
                 NavigatorCommands.CMD_OBJECT_DELETE));
         }
 
+
         // Reorder
 
         if (rootNode instanceof DBNDatabaseNode && rootNode.isPersisted()) {
             boolean hasReorder = false;
             List<Class<?>> childrenTypes = ((DBNDatabaseNode) rootNode).getChildrenTypes(null);
-            for (Class<?> chilType : childrenTypes) {
-                if (DBWorkbench.getPlatform().getEditorsRegistry().getObjectManager(chilType, DBEObjectReorderer.class) != null) {
+            for (Class<?> childType : childrenTypes) {
+                if (DBWorkbench.getPlatform().getEditorsRegistry().getObjectManager(childType, DBEObjectReorderer.class) != null) {
                     hasReorder = true;
                     break;
                 }
@@ -227,30 +208,26 @@ public class ItemListControl extends NodeListControl
                     ActionUtils.makeCommandContribution(workbenchSite, IWorkbenchCommandConstants.NAVIGATE_EXPAND_ALL, null, UIIcon.TREE_EXPAND_ALL));
             }
         }
-
-        // Save/revert
-        if (workbenchSite instanceof MultiPageEditorSite) {
-            final MultiPageEditorPart editor = ((MultiPageEditorSite) workbenchSite).getMultiPageEditor();
-            if (editor instanceof EntityEditor) {
-                contributionManager.add(new Separator());
-                DatabaseEditorUtils.contributeStandardEditorActions(workbenchSite, contributionManager);
-            }
+        contributionManager.add(new Separator());
+        if (rootNode instanceof DBNDatabaseNode dbNode && dbNode.getItemsMeta() != null) {
+            contributionManager.add(new Action(
+                UINavigatorMessages.obj_editor_properties_control_action_filter_setting,
+                DBeaverIcons.getImageDescriptor(UIIcon.FILTER))
+            {
+                @Override
+                public void run()
+                {
+                    NavigatorHandlerFilterConfig.configureFilters(getShell(), dbNode);
+                }
+            });
         }
+        addColumnConfigAction(contributionManager);
     }
 
     @Override
-    public void disposeControl()
-    {
-//        if (objectEditorHandler != null) {
-//            objectEditorHandler.dispose();
-//            objectEditorHandler = null;
-//        }
+    public void disposeControl() {
         UIUtils.dispose(searchHighlightColor);
-        //UIUtils.dispose(disabledCellColor);
-        //UIUtils.dispose(boldFont);
 
-        PlatformUI.getWorkbench().getThemeManager().removePropertyChangeListener(themeChangeListener);
-        
         super.disposeControl();
     }
 
@@ -273,7 +250,8 @@ public class ItemListControl extends NodeListControl
     {
         return LoadingJob.createService(
             new ItemLoadService(getNodeMeta()),
-            new ObjectsLoadVisualizer(forUpdate));
+            new ObjectsLoadVisualizer(forUpdate)
+        );
     }
 
     @Override
@@ -290,18 +268,17 @@ public class ItemListControl extends NodeListControl
 
     private class ItemLoadService extends DatabaseLoadService<Collection<DBNNode>> {
 
-        private DBXTreeNode metaNode;
+        private final DBXTreeNode metaNode;
 
-        ItemLoadService(DBXTreeNode metaNode)
-        {
-            super("Loading items", getRootNode() instanceof DBSWrapper ? (DBSWrapper)getRootNode() : null);
+        ItemLoadService(@Nullable DBXTreeNode metaNode) {
+            super(ModelMessages.model_navigator_load_.trim() +
+                ": " + getRootNode().getNodeDisplayName(),
+                getRootNode() instanceof DBSWrapper ? (DBSWrapper)getRootNode() : null);
             this.metaNode = metaNode;
         }
 
         @Override
-        public Collection<DBNNode> evaluate(DBRProgressMonitor monitor)
-            throws InvocationTargetException, InterruptedException
-        {
+        public Collection<DBNNode> evaluate(@NotNull DBRProgressMonitor monitor) throws InvocationTargetException {
             try {
                 List<DBNNode> items = new ArrayList<>();
                 DBNNode parentNode = getRootNode();
@@ -337,7 +314,7 @@ public class ItemListControl extends NodeListControl
                                 ((DBPObjectStatisticsCollector) parentObject).collectObjectStatistics(monitor, false, false);
                             }
                         } catch (Exception e) {
-                            log.error("Error reading statistics of '" + parentObject.getName() + "'", e);
+                            log.debug("Error reading statistics of '" + parentObject.getName() + "'", e);
                         }
                     }
                 }
@@ -347,10 +324,9 @@ public class ItemListControl extends NodeListControl
                         break;
                     }
                     if (metaNode != null) {
-                        if (!(item instanceof DBNDatabaseNode)) {
+                        if (!(item instanceof DBNDatabaseNode dbNode)) {
                             continue;
                         }
-                        DBNDatabaseNode dbNode = (DBNDatabaseNode) item;
                         if (dbNode.getMeta() != metaNode && !dbNode.getDataSourceContainer().getNavigatorSettings().isHideFolders()) {
                             // Wrong meta. It is ok if folders are hidden
                             continue;
@@ -367,10 +343,9 @@ public class ItemListControl extends NodeListControl
 
     private class CellEditingSupport extends EditingSupport {
 
-        private ObjectColumn objectColumn;
+        private final ObjectColumn objectColumn;
 
-        public CellEditingSupport(ObjectColumn objectColumn)
-        {
+        public CellEditingSupport(ObjectColumn objectColumn) {
             super(getItemsViewer());
             this.objectColumn = objectColumn;
         }
@@ -457,11 +432,12 @@ public class ItemListControl extends NodeListControl
         @Override
         public Font getFont(Object element)
         {
-            if (!(element instanceof DBNNode)) {
-                return normalFont;
+            if (!(element instanceof DBNNode node)) {
+                return BaseThemeSettings.instance.treeAndTableFont;
             }
-            final Object object = getObjectValue((DBNNode) element);
-            return objectColumn.isNameColumn(object) && DBNUtils.isDefaultElement(element) ? boldFont : normalFont;
+            final Object object = getObjectValue(node);
+            return objectColumn.isNameColumn(object) && DBNUtils.isDefaultElement(element) ?
+                BaseThemeSettings.instance.treeAndTableFontBold : BaseThemeSettings.instance.treeAndTableFont;
         }
 
         @Override
@@ -471,19 +447,17 @@ public class ItemListControl extends NodeListControl
         }
 
         @Override
-        public Color getBackground(Object element)
-        {
-            if (!(element instanceof DBNNode)) {
+        public Color getBackground(Object element) {
+            if (!(element instanceof DBNNode node)) {
                 return null;
             }
-            DBNNode node = (DBNNode) element;
             if (node.isDisposed()) {
                 return null;
             }
 
             if (isNewObject(node)) {
                 if (!isNewObject(getRootNode())) {
-                    return PlatformUI.getWorkbench().getThemeManager().getCurrentTheme().getColorRegistry().get(COLOR_NEW);
+                    return UIUtils.getCurrentTheme().getColorRegistry().get(COLOR_NEW);
                 }
             } else {
                 Map<String, Object> propMap = changedProperties.get(node);
@@ -491,40 +465,12 @@ public class ItemListControl extends NodeListControl
                     final Object objectValue = getObjectValue(node);
                     final ObjectPropertyDescriptor prop = objectColumn.getProperty(objectValue);
                     if (prop != null && propMap.containsKey(prop.getId())) {
-                        return PlatformUI.getWorkbench().getThemeManager().getCurrentTheme().getColorRegistry().get(COLOR_MODIFIED);
+                        return UIUtils.getCurrentTheme().getColorRegistry().get(COLOR_MODIFIED);
                     }
                 }
             }
-//            if (searcher instanceof SearcherHighligther && ((SearcherHighligther) searcher).hasObject(node)) {
-//                return searchHighlightColor;
-//            }
-/*
-            if (isNewObject(node)) {
-                final Object objectValue = getObjectValue(node);
-                final ObjectPropertyDescriptor prop = objectColumn.getProperty(objectValue);
-                if (prop != null && !prop.isEditable(objectValue)) {
-                    return null;//disabledCellColor;
-                }
-            }
-*/
             return null;
         }
     }
 
-    private class PackColumnsAction extends Action {
-        public PackColumnsAction() {
-            super("Pack columns", DBeaverIcons.getImageDescriptor(UIIcon.TREE_EXPAND));
-        }
-
-        @Override
-        public void run()
-        {
-            ColumnViewer itemsViewer = getItemsViewer();
-            if (itemsViewer instanceof TreeViewer) {
-                UIUtils.packColumns(((TreeViewer) itemsViewer).getTree());
-            } else {
-                UIUtils.packColumns(((TableViewer) itemsViewer).getTable());
-            }
-        }
-    }
 }

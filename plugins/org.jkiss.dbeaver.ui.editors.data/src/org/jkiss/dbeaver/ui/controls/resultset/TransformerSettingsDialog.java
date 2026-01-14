@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -52,7 +52,7 @@ import java.lang.reflect.Type;
 import java.util.List;
 import java.util.*;
 
-class TransformerSettingsDialog extends BaseDialog {
+public class TransformerSettingsDialog extends BaseDialog {
     private static final Log log = Log.getLog(TransformerSettingsDialog.class);
 
     private static final String PROP_FOR_TRANSFORMER = "propertiesForTransformerWithId=";
@@ -75,7 +75,7 @@ class TransformerSettingsDialog extends BaseDialog {
     private Combo transformerCombo;
     private Table attributeTable;
 
-    TransformerSettingsDialog(ResultSetViewer viewer, DBDAttributeBinding currentAttribute, boolean selector) {
+    public TransformerSettingsDialog(ResultSetViewer viewer, DBDAttributeBinding currentAttribute, boolean selector) {
         super(viewer.getControl().getShell(), DBUtils.getObjectFullName(viewer.getDataContainer(), DBPEvaluationContext.UI) + " transforms", null);
         this.viewer = viewer;
         this.currentAttribute = currentAttribute;
@@ -233,7 +233,7 @@ class TransformerSettingsDialog extends BaseDialog {
     private void saveTransformerSettings() {
         propertiesEditor.saveEditorValues();
         if (currentAttribute == null) {
-            // Nothign to save - just ignore
+            // Nothing to save - just ignore
             return;
         }
         DBVEntityAttribute vAttr = vEntity.getVirtualAttribute(currentAttribute, true);

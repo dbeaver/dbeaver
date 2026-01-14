@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,76 +21,72 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPSystemObject;
 import org.jkiss.dbeaver.model.DBPVirtualObject;
+import org.jkiss.dbeaver.model.messages.ModelMessages;
+import org.jkiss.dbeaver.model.meta.IPropertyValueTransformer;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
+import org.jkiss.utils.CommonUtils;
 
 /**
  * GenericSchema
  */
-public class GenericSchema extends GenericObjectContainer implements DBSSchema, DBPSystemObject, DBPVirtualObject
-{
+public class GenericSchema extends GenericObjectContainer implements DBSSchema, DBPSystemObject, DBPVirtualObject {
     @Nullable
     private final GenericCatalog catalog;
     @NotNull
     private final String schemaName;
     private boolean virtualSchema;
 
-    public GenericSchema(@NotNull GenericDataSource dataSource, @Nullable GenericCatalog catalog, @NotNull String schemaName)
-    {
+    public GenericSchema(@NotNull GenericDataSource dataSource, @Nullable GenericCatalog catalog, @NotNull String schemaName) {
         super(dataSource);
         this.catalog = catalog;
         this.schemaName = schemaName;
     }
 
+    @Nullable
     @Override
-    @Property(optional = true, order = 2)
-    public GenericCatalog getCatalog()
-    {
+    @Property(optional = true, order = 2, labelProvider = GenericCatalog.CatalogNameTermProvider.class)
+    public GenericCatalog getCatalog() {
         return catalog;
     }
 
     @Override
-    public GenericSchema getSchema()
-    {
-        return this;
-    }
-
-    @Override
-    public GenericSchema getObject()
-    {
+    public GenericSchema getSchema() {
         return this;
     }
 
     @NotNull
     @Override
-    @Property(viewable = true, order = 1)
-    public String getName()
-    {
+    public GenericSchema getObject() {
+        return this;
+    }
+
+    @NotNull
+    @Override
+    @Property(viewable = true, order = 1, labelProvider = SchemaNameTermProvider.class)
+    public String getName() {
         return schemaName;
     }
 
     @Nullable
     @Override
     //@Property(viewable = true, multiline = true, order = 100)
-    public String getDescription()
-    {
+    public String getDescription() {
         return null;
     }
 
     @Override
-    public DBSObject getParentObject()
-    {
+    public DBSObject getParentObject() {
         return catalog != null ? catalog : getDataSource().getContainer();
     }
 
     @NotNull
     @Override
     public Class<? extends DBSEntity> getPrimaryChildType(@Nullable DBRProgressMonitor monitor)
-        throws DBException
-    {
+    throws DBException {
         return GenericTable.class;
     }
 
@@ -106,6 +102,18 @@ public class GenericSchema extends GenericObjectContainer implements DBSSchema, 
 
     public void setVirtual(boolean nullSchema) {
         this.virtualSchema = nullSchema;
+    }
+
+    public static class SchemaNameTermProvider implements IPropertyValueTransformer<DBSObject, String> {
+        @Nullable
+        @Override
+        public String transform(@NotNull DBSObject object, @Nullable String value) throws IllegalArgumentException {
+            String schemaTerm = object.getDataSource().getInfo().getSchemaTerm();
+            if (!CommonUtils.isEmpty(schemaTerm)) {
+                return schemaTerm + " " + ModelMessages.model_navigator_Name;
+            }
+            return ModelMessages.model_navigator_Name;
+        }
     }
 
 }

@@ -1,7 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
- * Copyright (C) 2011-2012 Eugene Fradkin (eugene.fradkin@gmail.com)
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ext.oracle.edit;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.oracle.model.OracleObjectStatus;
 import org.jkiss.dbeaver.ext.oracle.model.OracleTableBase;
@@ -51,8 +51,8 @@ public class OracleConstraintManager extends SQLConstraintManager<OracleTableCon
 
     @Override
     protected OracleTableConstraint createDatabaseObject(
-        DBRProgressMonitor monitor, DBECommandContext context, final Object container,
-        Object from, Map<String, Object> options)
+        @NotNull DBRProgressMonitor monitor, @NotNull DBECommandContext context, final Object container,
+        Object from, @NotNull Map<String, Object> options)
     {
         OracleTableBase table = (OracleTableBase) container;
 
@@ -75,8 +75,8 @@ public class OracleConstraintManager extends SQLConstraintManager<OracleTableCon
     }
 
     @Override
-    protected void addObjectCreateActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions,
-                                          ObjectCreateCommand command, Map<String, Object> options)
+    protected void addObjectCreateActions(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext executionContext, @NotNull List<DBEPersistAction> actions,
+                                          @NotNull ObjectCreateCommand command, @NotNull Map<String, Object> options)
     {
     	OracleTableConstraint constraint = command.getObject();
         boolean isView = constraint.getTable().isView();
@@ -87,7 +87,7 @@ public class OracleConstraintManager extends SQLConstraintManager<OracleTableCon
                     ModelMessages.model_jdbc_create_new_constraint,
                     "ALTER " + tableType + " " + table.getFullyQualifiedName(DBPEvaluationContext.DDL) +
                         "\nADD " + getNestedDeclaration(monitor, table, command, options) +
-                    "\n"  + (!isView && constraint.getStatus() == OracleObjectStatus.ENABLED ? "ENABLE" : "DISABLE" ) +
+                    " "  + (!isView && constraint.getStatus() == OracleObjectStatus.ENABLED ? "ENABLE" : "DISABLE" ) +
                     (isView ? " NOVALIDATE" : "")
                 	));
     }

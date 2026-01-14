@@ -1,7 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2013-2016 Denis Forveille (titou10.titou10@gmail.com)
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -44,6 +43,7 @@ import org.jkiss.utils.CommonUtils;
 
 import java.sql.ResultSet;
 import java.sql.Timestamp;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -129,6 +129,16 @@ public class DB2Nickname extends DB2TableBase implements DBPNamedObject2, DBPRef
         return getContainer().getNicknameCache().refreshObject(monitor, getContainer(), this);
     }
 
+    @Override
+    public DB2TableColumn getAttribute(@NotNull DBRProgressMonitor monitor, @NotNull String attributeName) throws DBException {
+        return getContainer().getNicknameCache().getChild(monitor, getContainer(), this, attributeName);
+    }
+
+    @Override
+    public List<DB2TableColumn> getAttributes(@NotNull DBRProgressMonitor monitor) throws DBException {
+        return getContainer().getNicknameCache().getChildren(monitor, getContainer(), this);
+    }
+
     @NotNull
     @Override
     public DBSObjectState getObjectState()
@@ -141,8 +151,9 @@ public class DB2Nickname extends DB2TableBase implements DBPNamedObject2, DBPRef
     {
     }
 
+    @NotNull
     @Override
-    public String getObjectDefinitionText(DBRProgressMonitor monitor, Map<String, Object> options) throws DBException
+    public String getObjectDefinitionText(@NotNull DBRProgressMonitor monitor, @NotNull Map<String, Object> options) throws DBException
     {
         return DB2Messages.no_ddl_for_nicknames;
     }

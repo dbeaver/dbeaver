@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -55,7 +55,7 @@ public class SQLServerTableManager extends SQLServerBaseTableManager<SQLServerTa
         );
 
     @Override
-    protected SQLServerTable createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, Object container, Object copyFrom, Map<String, Object> options)
+    protected SQLServerTable createDatabaseObject(@NotNull DBRProgressMonitor monitor, @NotNull DBECommandContext context, Object container, Object copyFrom, @NotNull Map<String, Object> options)
     {
         SQLServerSchema schema = (SQLServerSchema) container;
         SQLServerTable table = new SQLServerTable(schema);
@@ -64,19 +64,28 @@ public class SQLServerTableManager extends SQLServerBaseTableManager<SQLServerTa
     }
 
     @Override
-    protected void addObjectModifyActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actionList, ObjectChangeCommand command, Map<String, Object> options)
-    {
+    protected void addObjectModifyActions(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBCExecutionContext executionContext,
+        @NotNull List<DBEPersistAction> actionList,
+        @NotNull ObjectChangeCommand command,
+        @NotNull Map<String, Object> options) {
         if (command.getProperties().size() > 1 || command.getProperty(DBConstants.PROP_ID_DESCRIPTION) == null) {
             StringBuilder query = new StringBuilder("ALTER TABLE "); //$NON-NLS-1$
             query.append(command.getObject().getFullyQualifiedName(DBPEvaluationContext.DDL)).append(" "); //$NON-NLS-1$
-            appendTableModifiers(monitor, command.getObject(), command, query, true);
+            appendTableModifiers(monitor, command.getObject(), command, query, true, options);
             actionList.add(new SQLDatabasePersistAction(query.toString()));
         }
     }
 
     @Override
-    protected void appendTableModifiers(DBRProgressMonitor monitor, SQLServerTableBase table, NestedObjectCommand tableProps, StringBuilder ddl, boolean alter)
-    {
+    protected void appendTableModifiers(
+        DBRProgressMonitor monitor,
+        SQLServerTableBase table,
+        NestedObjectCommand tableProps,
+        StringBuilder ddl,
+        boolean alter,
+        Map<String, Object> options) {
         // ALTER
 /*
         if (tableProps.getProperty("tablespace") != null) { //$NON-NLS-1$
@@ -93,7 +102,7 @@ public class SQLServerTableManager extends SQLServerBaseTableManager<SQLServerTa
     }
 
     @Override
-    protected void addObjectDeleteActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, ObjectDeleteCommand command, Map<String, Object> options)
+    protected void addObjectDeleteActions(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext executionContext, @NotNull List<DBEPersistAction> actions, @NotNull ObjectDeleteCommand command, @NotNull Map<String, Object> options)
     {
         SQLServerTableBase object = command.getObject();
         actions.add(
@@ -159,11 +168,11 @@ public class SQLServerTableManager extends SQLServerBaseTableManager<SQLServerTa
 
     @Override
     protected void addObjectExtraActions(
-        DBRProgressMonitor monitor,
-        DBCExecutionContext executionContext,
-        List<DBEPersistAction> actionList,
-        NestedObjectCommand<SQLServerTableBase, PropertyHandler> command,
-        Map<String, Object> options
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBCExecutionContext executionContext,
+        @NotNull List<DBEPersistAction> actionList,
+        @NotNull NestedObjectCommand<SQLServerTableBase, PropertyHandler> command,
+        @NotNull Map<String, Object> options
     ) throws DBException {
         super.addObjectExtraActions(monitor, executionContext, actionList, command, options);
         SQLServerTableBase tableBase = command.getObject();

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -36,6 +36,7 @@ import org.jkiss.utils.CommonUtils;
 import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * An object describing row-level security policy.
@@ -63,7 +64,9 @@ public class PostgreTablePolicy implements DBSObject, DBPNamedObject2, DBPSaveab
 
         this.table = table;
         this.name = JDBCUtils.safeGetString(results, "policyname");
-        this.role = database.getRoleByName(monitor, database, JDBCUtils.<String[]>safeGetArray(results, "roles")[0]);
+        this.role = database.getRoleByReference(monitor, new PostgreRoleReference(
+            database, Objects.requireNonNull(JDBCUtils.<String[]>safeGetArray(results, "roles"))[0],null
+        ));
         this.type = CommonUtils.valueOf(PolicyType.class, JDBCUtils.safeGetString(results, "permissive"));
         this.event = CommonUtils.valueOf(PolicyEvent.class, JDBCUtils.safeGetString(results, "cmd"));
         this.using = JDBCUtils.safeGetString(results, "qual");
@@ -217,6 +220,7 @@ public class PostgreTablePolicy implements DBSObject, DBPNamedObject2, DBPSaveab
             return false;
         }
 
+        @Nullable
         @Override
         public Object[] getPossibleValues(PostgreTablePolicy object) {
             try {

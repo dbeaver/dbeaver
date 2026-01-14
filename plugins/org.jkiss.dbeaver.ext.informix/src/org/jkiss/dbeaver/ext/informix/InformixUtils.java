@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -66,7 +66,7 @@ public class InformixUtils {
     public static String listToString(List<String> value, String delimiter) {
         StringBuilder sbResult = new StringBuilder();
         for (String o : value) {
-            //NOT APPLY .TRIM IN 'O' VARIABLE, PROBLEM TO RENDERIZE PROCEDURE BECAUSE LINE DELIMITED CRLF and LF generate  'Sintax error'
+            //NOT APPLY .TRIM IN 'O' VARIABLE, PROBLEM TO RENDERIZE PROCEDURE BECAUSE LINE DELIMITED CRLF and LF generate  'Syntax error'
             sbResult.append(o);
             if (delimiter != null && !delimiter.isEmpty())
                 sbResult.append(delimiter);

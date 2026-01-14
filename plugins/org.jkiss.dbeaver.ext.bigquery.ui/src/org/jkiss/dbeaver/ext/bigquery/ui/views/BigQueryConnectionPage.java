@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,7 +25,6 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Text;
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.bigquery.auth.BigQueryAuthModel;
 import org.jkiss.dbeaver.ext.bigquery.model.BigQueryConstants;
 import org.jkiss.dbeaver.ext.bigquery.ui.BigQueryActivator;
@@ -45,16 +44,14 @@ import java.util.Locale;
  */
 public class BigQueryConnectionPage extends ConnectionPageWithAuth implements IDialogPageProvider {
 
-    private static final Log log = Log.getLog(BigQueryConnectionPage.class);
-
     private Text projectText;
     private Text extraProjectsText;
 
     private Text hostText;
     private Text portText;
 
-    private static ImageDescriptor logoImage = BigQueryActivator.getImageDescriptor("icons/bigquery_logo.png"); //$NON-NLS-1$
-    private DriverPropertiesDialogPage driverPropsPage;
+    private static final ImageDescriptor logoImage = BigQueryActivator.getImageDescriptor("icons/bigquery_logo.png"); //$NON-NLS-1$
+    private final DriverPropertiesDialogPage driverPropsPage;
 
     public BigQueryConnectionPage() {
         driverPropsPage = new DriverPropertiesDialogPage(this);
@@ -82,29 +79,40 @@ public class BigQueryConnectionPage extends ConnectionPageWithAuth implements ID
 
             projectText = UIUtils.createLabelText(addrGroup, BigQueryMessages.label_project, ""); //$NON-NLS-2$
             projectText.addModifyListener(textListener);
+            UIUtils.setDefaultTextControlWidthHint(projectText);
 
             extraProjectsText = UIUtils.createLabelText(addrGroup, BigQueryMessages.label_additional_project, ""); //$NON-NLS-2$
             extraProjectsText.setToolTipText(BigQueryMessages.label_additional_project_tip);
             extraProjectsText.addModifyListener(textListener);
+            UIUtils.setDefaultTextControlWidthHint(extraProjectsText);
+        }
+        {
+            // Def host/port
+            Composite addrGroup = UIUtils.createControlGroup(settingsGroup, BigQueryMessages.label_server_info, 4, 0, 0);
+            addrGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+
+            hostText = UIUtils.createLabelText(addrGroup, BigQueryMessages.label_host, BigQueryConstants.DEFAULT_HOST_NAME);
+            hostText.addModifyListener(textListener);
+            UIUtils.setDefaultTextControlWidthHint(hostText);
+
+            portText = UIUtils.createLabelText(addrGroup, BigQueryMessages.label_port, String.valueOf(BigQueryConstants.DEFAULT_PORT));
+            GridData gd = (GridData) portText.getLayoutData();
+            gd.widthHint = UIUtils.getFontHeight(portText) * 7;
+            portText.addVerifyListener(UIUtils.getIntegerVerifyListener(Locale.getDefault()));
+            portText.addModifyListener(textListener);
+
         }
 
-        // Def host/port
-        Composite addrGroup = UIUtils.createControlGroup(settingsGroup, BigQueryMessages.label_server_info, 4, 0, 0);
-        addrGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-
-        hostText = UIUtils.createLabelText(addrGroup, BigQueryMessages.label_host, BigQueryConstants.DEFAULT_HOST_NAME);
-        hostText.addModifyListener(textListener);
-
-        portText = UIUtils.createLabelText(addrGroup, BigQueryMessages.label_port, String.valueOf(BigQueryConstants.DEFAULT_PORT));
-        GridData gd = (GridData) portText.getLayoutData();
-        gd.widthHint = UIUtils.getFontHeight(portText) * 7;
-        portText.addVerifyListener(UIUtils.getIntegerVerifyListener(Locale.getDefault()));
-        portText.addModifyListener(textListener);
+        createAdditionalControls(settingsGroup);
 
         createAuthPanel(settingsGroup, 1);
 
         createDriverPanel(settingsGroup);
         setControl(settingsGroup);
+    }
+
+    protected void createAdditionalControls(Composite settingsGroup) {
+
     }
 
     @Override
@@ -126,7 +134,10 @@ public class BigQueryConnectionPage extends ConnectionPageWithAuth implements ID
             }
             projectText.setText(databaseName);
         }
-        String additionalProjects = connectionInfo.getProperty(BigQueryConstants.DRIVER_PROP_ADDITIONAL_PROJECTS);
+        String additionalProjects = CommonUtils.toString(
+            connectionInfo.getProviderProperty(BigQueryConstants.DRIVER_PROP_ADDITIONAL_PROJECTS),
+            connectionInfo.getProperty(BigQueryConstants.DRIVER_PROP_ADDITIONAL_PROJECTS) // backward compatibility
+        );
         if (additionalProjects != null) {
             extraProjectsText.setText(additionalProjects);
         }
@@ -157,7 +168,7 @@ public class BigQueryConnectionPage extends ConnectionPageWithAuth implements ID
             connectionInfo.setDatabaseName(projectText.getText().trim());
         }
         if (extraProjectsText != null) {
-            connectionInfo.setProperty(BigQueryConstants.DRIVER_PROP_ADDITIONAL_PROJECTS, extraProjectsText.getText().trim());
+            connectionInfo.setProviderProperty(BigQueryConstants.DRIVER_PROP_ADDITIONAL_PROJECTS, extraProjectsText.getText().trim());
         }
         if (hostText != null) {
             connectionInfo.setHostName(hostText.getText().trim());

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,9 @@
  */
 package org.jkiss.dbeaver.model.qm.meta;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.utils.CommonUtils;
@@ -23,7 +26,7 @@ import org.jkiss.utils.CommonUtils;
 /**
  * Data source information
  */
-public class QMMConnectionInfo extends QMMObject {
+public class QMMConnectionInfo extends QMMObject implements QMMDataSourceInfo {
 
     @Include
     private final QMMProjectInfo projectInfo;
@@ -40,9 +43,9 @@ public class QMMConnectionInfo extends QMMObject {
     private String contextName;
     private boolean transactional;
 
-    private transient QMMStatementInfo statementStack;
-    private transient QMMStatementExecuteInfo executionStack;
-    private transient QMMTransactionInfo transaction;
+    private transient volatile QMMStatementInfo statementStack;
+    private transient volatile QMMStatementExecuteInfo executionStack;
+    private transient volatile QMMTransactionInfo transaction;
     //private Throwable stack;
 
     public QMMConnectionInfo(DBCExecutionContext context, boolean transactional) {
@@ -112,20 +115,29 @@ public class QMMConnectionInfo extends QMMObject {
     {
         if (transaction != null) {
             transaction.rollback(null);
+            transaction = null;
         }
         for (QMMStatementInfo stat = statementStack; stat != null; stat = stat.getPrevious()) {
             if (!stat.isClosed()) {
-                DBCStatement statRef = stat.getReference();
-                String query = statRef == null ? "?" : statRef.getQueryString();
-                log.warn("Statement " + stat.getObjectId() + " (" + query + ") is not closed");
+                log.warn("Statement " + stat.getObjectId() + " (" + stat + ") is not closed (" + stat.getConnection().connectionUrl + ")");
                 stat.close();
             }
         }
+        statementStack = null;
         super.close();
     }
 
     public void reopen(DBCExecutionContext context) {
-        initFromContext(context, transactional);
+        DBCTransactionManager txnManager = DBUtils.getTransactionManager(context);
+        boolean autoCommit = true;
+        if (txnManager != null) {
+            try {
+                autoCommit = txnManager.isAutoCommit();
+            } catch (DBCException e) {
+                log.warn(e);
+            }
+        }
+        initFromContext(context, !autoCommit);
         super.reopen();
     }
 
@@ -188,8 +200,7 @@ public class QMMConnectionInfo extends QMMObject {
         return this.statementStack = new QMMStatementInfo(this, statement, this.statementStack);
     }
 
-    public QMMStatementInfo closeStatement(DBCStatement statement, long rows)
-    {
+    public QMMStatementInfo closeStatement(DBCStatement statement, long rows) {
         QMMStatementExecuteInfo execution = getExecution(statement);
         if (execution != null && execution.getUpdateRowCount() < 0) {
             execution.close(rows, null);
@@ -200,7 +211,9 @@ public class QMMConnectionInfo extends QMMObject {
                 return stat;
             }
         }
-        log.warn("Statement " + statement + " meta info not found");
+        if (statementStack != null) {
+            log.warn("Closed statement " + statement + " meta info not found");
+        }
         return null;
     }
 
@@ -215,8 +228,7 @@ public class QMMConnectionInfo extends QMMObject {
         return null;
     }
 
-    public QMMStatementExecuteInfo getExecution(DBCStatement statement)
-    {
+    public QMMStatementExecuteInfo getExecution(DBCStatement statement) {
         for (QMMStatementExecuteInfo exec = this.executionStack; exec != null; exec = exec.getPrevious()) {
             if (exec.getStatement().getReference() == statement) {
                 return exec;
@@ -235,12 +247,23 @@ public class QMMConnectionInfo extends QMMObject {
                 isTransactional() && getTransaction() != null ?
                     getTransaction().getCurrentSavepoint() : null;
             var sqlDialect = statement.getSession().getDataSource().getSQLDialect();
+            String schema = null;
+            String catalog = null;
+            DBCExecutionContextDefaults contextDefaults = statement.getSession().getExecutionContext().getContextDefaults();
+            if (contextDefaults != null) {
+                DBCCachedContextDefaults cachedDefault = contextDefaults.getCachedDefault();
+                schema = cachedDefault.schemaName();
+                catalog = cachedDefault.catalogName();
+            }
             return this.executionStack = new QMMStatementExecuteInfo(
                 stat,
                 savepoint,
                 queryString,
                 this.executionStack,
-                sqlDialect);
+                sqlDialect,
+                schema,
+                catalog
+            );
         } else {
             return null;
         }
@@ -280,14 +303,26 @@ public class QMMConnectionInfo extends QMMObject {
         return projectInfo;
     }
 
+    @NotNull
+    @Override
+    public String getProjectId() {
+        return projectInfo.getId();
+    }
+
+    @NotNull
+    @Override
     public String getContainerId() {
         return containerId;
     }
 
+    @Nullable
+    @Override
     public String getContainerName() {
         return containerName;
     }
 
+    @NotNull
+    @Override
     public String getDriverId() {
         return driverId;
     }
@@ -300,25 +335,31 @@ public class QMMConnectionInfo extends QMMObject {
         return contextName;
     }
 
-    public QMMStatementInfo getStatementStack()
-    {
+    public QMMStatementInfo getStatementStack() {
         return statementStack;
     }
 
-    public QMMTransactionInfo getTransaction()
-    {
+    public QMMStatementExecuteInfo getExecutionStack() {
+        return executionStack;
+    }
+
+    public QMMTransactionInfo getTransaction() {
         return transaction;
     }
 
-    public boolean isTransactional()
-    {
+    public boolean isTransactional() {
         return transactional;
+    }
+
+    public void setTransactional(boolean transactional) {
+        this.transactional = transactional;
     }
 
     public String getConnectionUserName() {
         return connectionUserName;
     }
 
+    @Override
     public String getConnectionUrl() {
         return connectionUrl;
     }

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,8 @@
  */
 package org.jkiss.dbeaver.model.impl.preferences;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceListener;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.utils.CommonUtils;
@@ -84,142 +86,88 @@ public abstract class SimplePreferenceStore extends AbstractPreferenceStore {
     }
 
     @Override
-    public void addPropertyChangeListener(DBPPreferenceListener listener)
+    public void addPropertyChangeListener(@NotNull DBPPreferenceListener listener)
     {
         addListenerObject(listener);
     }
 
     @Override
-    public void removePropertyChangeListener(DBPPreferenceListener listener)
+    public void removePropertyChangeListener(@NotNull DBPPreferenceListener listener)
     {
         removeListenerObject(listener);
     }
 
     @Override
-    public boolean contains(String name)
+    public boolean contains(@NotNull String name)
     {
         return properties.containsKey(name);
     }
 
     @Override
-    public boolean getBoolean(String name)
+    public boolean getBoolean(@NotNull String name)
     {
         return toBoolean(getString(name));
     }
 
     @Override
-    public boolean getDefaultBoolean(String name)
+    public boolean getDefaultBoolean(@NotNull String name)
     {
         return toBoolean(getDefaultString(name));
     }
 
-    private boolean toBoolean(String value)
-    {
-        return value != null && value.equals(AbstractPreferenceStore.TRUE);
-    }
 
     @Override
-    public double getDouble(String name)
+    public double getDouble(@NotNull String name)
     {
         return toDouble(getString(name));
     }
 
     @Override
-    public double getDefaultDouble(String name)
+    public double getDefaultDouble(@NotNull String name)
     {
         return toDouble(getDefaultString(name));
     }
 
-    private double toDouble(String value)
-    {
-        double ival = DOUBLE_DEFAULT_DEFAULT;
-        if (!CommonUtils.isEmpty(value)) {
-            try {
-                ival = Double.parseDouble(value);
-            } catch (NumberFormatException e) {
-                // do nothing
-            }
-        }
-        return ival;
-    }
-
     @Override
-    public float getFloat(String name)
+    public float getFloat(@NotNull String name)
     {
         return toFloat(getString(name));
     }
 
     @Override
-    public float getDefaultFloat(String name)
+    public float getDefaultFloat(@NotNull String name)
     {
         return toFloat(getDefaultString(name));
     }
 
-    private float toFloat(String value)
-    {
-        float ival = FLOAT_DEFAULT_DEFAULT;
-        if (!CommonUtils.isEmpty(value)) {
-            try {
-                ival = Float.parseFloat(value);
-            } catch (NumberFormatException e) {
-                // do nothing
-            }
-        }
-        return ival;
-    }
 
     @Override
-    public int getInt(String name)
+    public int getInt(@NotNull String name)
     {
         return toInt(getString(name));
     }
 
     @Override
-    public int getDefaultInt(String name)
+    public int getDefaultInt(@NotNull String name)
     {
         return toInt(getDefaultString(name));
     }
 
-    private int toInt(String value)
-    {
-        int ival = INT_DEFAULT_DEFAULT;
-        if (!CommonUtils.isEmpty(value)) {
-            try {
-                ival = Integer.parseInt(value);
-            } catch (NumberFormatException e) {
-                // do nothing
-            }
-        }
-        return ival;
-    }
 
     @Override
-    public long getLong(String name)
+    public long getLong(@NotNull String name)
     {
         return toLong(getString(name));
     }
 
     @Override
-    public long getDefaultLong(String name)
+    public long getDefaultLong(@NotNull String name)
     {
         return toLong(getDefaultString(name));
     }
 
-    private long toLong(String value)
-    {
-        long ival = LONG_DEFAULT_DEFAULT;
-        if (!CommonUtils.isEmpty(value)) {
-            try {
-                ival = Long.parseLong(value);
-            } catch (NumberFormatException e) {
-                // do nothing
-            }
-        }
-        return ival;
-    }
-
     @Override
-    public String getString(String name)
+    public String getString(@NotNull String name)
     {
         String value = properties.get(name);
         if (value == null && parentStore != null) {
@@ -234,7 +182,7 @@ public abstract class SimplePreferenceStore extends AbstractPreferenceStore {
     }
 
     @Override
-    public String getDefaultString(String name)
+    public String getDefaultString(@NotNull String name)
     {
         String value = defaultProperties.get(name);
         if (value == null && parentStore != null) {
@@ -248,7 +196,7 @@ public abstract class SimplePreferenceStore extends AbstractPreferenceStore {
     }
 
     @Override
-    public boolean isDefault(String name)
+    public boolean isDefault(@NotNull String name)
     {
         return (!properties.containsKey(name) && (defaultProperties.containsKey(name) || (parentStore != null && parentStore.isDefault(name))));
     }
@@ -270,43 +218,43 @@ public abstract class SimplePreferenceStore extends AbstractPreferenceStore {
     }
 
     @Override
-    public void setDefault(String name, double value)
+    public void setDefault(@NotNull String name, double value)
     {
         defaultProperties.put(name, String.valueOf(value));
     }
 
     @Override
-    public void setDefault(String name, float value)
+    public void setDefault(@NotNull String name, float value)
     {
         defaultProperties.put(name, String.valueOf(value));
     }
 
     @Override
-    public void setDefault(String name, int value)
+    public void setDefault(@NotNull String name, int value)
     {
         defaultProperties.put(name, String.valueOf(value));
     }
 
     @Override
-    public void setDefault(String name, long value)
+    public void setDefault(@NotNull String name, long value)
     {
         defaultProperties.put(name, String.valueOf(value));
     }
 
     @Override
-    public void setDefault(String name, String value)
+    public void setDefault(@NotNull String name, @Nullable String value)
     {
         defaultProperties.put(name, String.valueOf(value));
     }
 
     @Override
-    public void setDefault(String name, boolean value)
+    public void setDefault(@NotNull String name, boolean value)
     {
         defaultProperties.put(name, String.valueOf(value));
     }
 
     @Override
-    public void setToDefault(String name)
+    public void setToDefault(@NotNull String name)
     {
         Object oldValue = properties.get(name);
         properties.remove(name);
@@ -319,7 +267,7 @@ public abstract class SimplePreferenceStore extends AbstractPreferenceStore {
     }
 
     @Override
-    public void setValue(String name, double value)
+    public void setValue(@NotNull String name, double value)
     {
         double oldValue = getDouble(name);
         if (oldValue != value || !isSet(name)) {
@@ -330,7 +278,7 @@ public abstract class SimplePreferenceStore extends AbstractPreferenceStore {
     }
 
     @Override
-    public void setValue(String name, float value)
+    public void setValue(@NotNull String name, float value)
     {
         float oldValue = getFloat(name);
         if (oldValue != value || !isSet(name)) {
@@ -341,7 +289,7 @@ public abstract class SimplePreferenceStore extends AbstractPreferenceStore {
     }
 
     @Override
-    public void setValue(String name, int value)
+    public void setValue(@NotNull String name, int value)
     {
         int oldValue = getInt(name);
         if (oldValue != value || !isSet(name)) {
@@ -352,7 +300,7 @@ public abstract class SimplePreferenceStore extends AbstractPreferenceStore {
     }
 
     @Override
-    public void setValue(String name, long value)
+    public void setValue(@NotNull String name, long value)
     {
         long oldValue = getLong(name);
         if (oldValue != value || !isSet(name)) {
@@ -363,7 +311,7 @@ public abstract class SimplePreferenceStore extends AbstractPreferenceStore {
     }
 
     @Override
-    public void setValue(String name, String value)
+    public void setValue(@NotNull String name, @Nullable String value)
     {
         String oldValue = getString(name);
         if (oldValue == null || !oldValue.equals(value) || !isSet(name)) {
@@ -374,7 +322,7 @@ public abstract class SimplePreferenceStore extends AbstractPreferenceStore {
     }
 
     @Override
-    public void setValue(String name, boolean value)
+    public void setValue(@NotNull String name, boolean value)
     {
         boolean oldValue = getBoolean(name);
         if (oldValue != value || !isSet(name)) {

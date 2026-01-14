@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,16 +17,29 @@
 package org.jkiss.dbeaver.registry.datatype;
 
 import org.eclipse.core.runtime.IConfigurationElement;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.data.DBDValueHandlerProvider;
+import org.jkiss.dbeaver.registry.RegistryConstants;
 
 /**
  * ValueHandlerDescriptor
  */
-public class ValueHandlerDescriptor extends DataTypeAbstractDescriptor<DBDValueHandlerProvider>
-{
-    public ValueHandlerDescriptor(IConfigurationElement config)
-    {
+public class ValueHandlerDescriptor extends DataTypeAbstractDescriptor<DBDValueHandlerProvider> {
+    @Nullable
+    private final String parentProvider;
+
+    public ValueHandlerDescriptor(@NotNull IConfigurationElement config) {
         super(config, DBDValueHandlerProvider.class);
+        this.parentProvider = config.getAttribute(RegistryConstants.ATTR_PARENT);
     }
 
+    @Nullable
+    public String getParentProvider() {
+        return parentProvider;
+    }
+
+    public boolean isChildOf(@NotNull ValueHandlerDescriptor descriptor) {
+        return parentProvider != null && parentProvider.equals(descriptor.getId());
+    }
 }

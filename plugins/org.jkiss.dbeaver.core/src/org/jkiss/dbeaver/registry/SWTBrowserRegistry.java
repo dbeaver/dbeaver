@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.registry;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
@@ -111,7 +112,7 @@ public class SWTBrowserRegistry {
      * @param browser selected browser
      */
     public static void setActiveBrowser(@NotNull BrowserSelection browser) {
-        DBPPreferenceStore preferences = ModelPreferences.getPreferences();
+        DBPPreferenceStore preferences = DBWorkbench.getPlatform().getPreferenceStore();
         preferences.setValue(ModelPreferences.CLIENT_BROWSER, browser.name());
         System.setProperty(INTERNAL_BROWSER_PROPERTY, preferences.getString(ModelPreferences.CLIENT_BROWSER));
     }

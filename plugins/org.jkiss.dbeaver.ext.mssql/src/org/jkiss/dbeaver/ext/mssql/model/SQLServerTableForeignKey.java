@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ext.mssql.model;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -33,8 +34,7 @@ import java.util.List;
 /**
  * GenericForeignKey
  */
-public class SQLServerTableForeignKey extends JDBCTableForeignKey<SQLServerTableBase, DBSEntityConstraint>
-{
+public class SQLServerTableForeignKey extends JDBCTableForeignKey<SQLServerTableBase, SQLServerTableForeignKeyColumn, DBSEntityConstraint> {
     private List<SQLServerTableForeignKeyColumn> columns;
 
     public SQLServerTableForeignKey(
@@ -44,8 +44,8 @@ public class SQLServerTableForeignKey extends JDBCTableForeignKey<SQLServerTable
         DBSEntityConstraint referencedKey,
         DBSForeignKeyModifyRule deleteRule,
         DBSForeignKeyModifyRule updateRule,
-        boolean persisted)
-    {
+        boolean persisted
+    ) {
         super(table, name, remarks, referencedKey, deleteRule, updateRule, persisted);
     }
 
@@ -73,27 +73,24 @@ public class SQLServerTableForeignKey extends JDBCTableForeignKey<SQLServerTable
     }
 
     @Override
-    public List<SQLServerTableForeignKeyColumn> getAttributeReferences(DBRProgressMonitor monitor)
-    {
+    public List<SQLServerTableForeignKeyColumn> getAttributeReferences(@Nullable DBRProgressMonitor monitor) {
         return columns;
     }
 
-    public void addColumn(SQLServerTableForeignKeyColumn column)
-    {
+    public void addColumn(SQLServerTableForeignKeyColumn column) {
         if (columns == null) {
             columns = new ArrayList<>();
         }
         columns.add(column);
     }
 
-    public void setColumns(List<SQLServerTableForeignKeyColumn> columns) {
+    public void setAttributeReferences(List<SQLServerTableForeignKeyColumn> columns) {
         this.columns = columns;
     }
 
     @NotNull
     @Override
-    public String getFullyQualifiedName(DBPEvaluationContext context)
-    {
+    public String getFullyQualifiedName(@NotNull DBPEvaluationContext context) {
         return DBUtils.getFullQualifiedName(getDataSource(),
             getTable().getContainer(),
             getTable(),
@@ -102,8 +99,7 @@ public class SQLServerTableForeignKey extends JDBCTableForeignKey<SQLServerTable
 
     @NotNull
     @Override
-    public SQLServerDataSource getDataSource()
-    {
+    public SQLServerDataSource getDataSource() {
         return getTable().getDataSource();
     }
 }

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,11 +22,13 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.exec.DBCException;
+import org.jkiss.dbeaver.model.exec.DBExecUtils;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
+import org.jkiss.dbeaver.model.sql.SQLState;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectFilter;
@@ -46,6 +48,8 @@ import java.util.Map;
  * JDBCUtils
  */
 public class JDBCUtils {
+    public static boolean LOG_JDBC_WARNINGS = CommonUtils.toBoolean(System.getProperty("dbeaver.jdbc.log.warnings"));
+
     private static final Log log = Log.getLog(JDBCUtils.class);
 
     private static final Map<String, Integer> badColumnNames = new HashMap<>();
@@ -100,7 +104,6 @@ public class JDBCUtils {
         }
     }
 
-    @Nullable
     public static void setStringOrNull(PreparedStatement dbStat, int columnIndex, String value) throws SQLException {
         if (value != null) {
             dbStat.setString(columnIndex, value);
@@ -526,37 +529,25 @@ public class JDBCUtils {
     }
 
     public static DBSForeignKeyModifyRule getCascadeFromNum(int num) {
-        switch (num) {
-            case DatabaseMetaData.importedKeyNoAction:
-                return DBSForeignKeyModifyRule.NO_ACTION;
-            case DatabaseMetaData.importedKeyCascade:
-                return DBSForeignKeyModifyRule.CASCADE;
-            case DatabaseMetaData.importedKeySetNull:
-                return DBSForeignKeyModifyRule.SET_NULL;
-            case DatabaseMetaData.importedKeySetDefault:
-                return DBSForeignKeyModifyRule.SET_DEFAULT;
-            case DatabaseMetaData.importedKeyRestrict:
-                return DBSForeignKeyModifyRule.RESTRICT;
-            default:
-                return DBSForeignKeyModifyRule.UNKNOWN;
-        }
+        return switch (num) {
+            case DatabaseMetaData.importedKeyNoAction -> DBSForeignKeyModifyRule.NO_ACTION;
+            case DatabaseMetaData.importedKeyCascade -> DBSForeignKeyModifyRule.CASCADE;
+            case DatabaseMetaData.importedKeySetNull -> DBSForeignKeyModifyRule.SET_NULL;
+            case DatabaseMetaData.importedKeySetDefault -> DBSForeignKeyModifyRule.SET_DEFAULT;
+            case DatabaseMetaData.importedKeyRestrict -> DBSForeignKeyModifyRule.RESTRICT;
+            default -> DBSForeignKeyModifyRule.UNKNOWN;
+        };
     }
 
     public static DBSForeignKeyModifyRule getCascadeFromName(String name) {
-        switch (name) {
-            case "NO ACTION":
-                return DBSForeignKeyModifyRule.NO_ACTION;
-            case "CASCADE":
-                return DBSForeignKeyModifyRule.CASCADE;
-            case "SET NULL":
-                return DBSForeignKeyModifyRule.SET_NULL;
-            case "SET DEFAULT":
-                return DBSForeignKeyModifyRule.SET_DEFAULT;
-            case "RESTRICT":
-                return DBSForeignKeyModifyRule.RESTRICT;
-            default:
-                return DBSForeignKeyModifyRule.UNKNOWN;
-        }
+        return switch (name) {
+            case "NO ACTION" -> DBSForeignKeyModifyRule.NO_ACTION;
+            case "CASCADE" -> DBSForeignKeyModifyRule.CASCADE;
+            case "SET NULL" -> DBSForeignKeyModifyRule.SET_NULL;
+            case "SET DEFAULT" -> DBSForeignKeyModifyRule.SET_DEFAULT;
+            case "RESTRICT" -> DBSForeignKeyModifyRule.RESTRICT;
+            default -> DBSForeignKeyModifyRule.UNKNOWN;
+        };
     }
 
     public static void executeSQL(Connection session, String sql, Object... params) throws SQLException {
@@ -824,8 +815,8 @@ public class JDBCUtils {
         return null;
     }
 
-    public static long executeInsertAutoIncrement(Connection session, String sql, Object... params) throws SQLException {
-        try (PreparedStatement dbStat = session.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+    public static long executeInsertAutoIncrement(Connection session, String sql, String columnName, Object... params) throws SQLException {
+        try (PreparedStatement dbStat = session.prepareStatement(sql, getColumnList(columnName))) {
             if (params != null) {
                 for (int i = 0; i < params.length; i++) {
                     dbStat.setObject(i + 1, params[i]);
@@ -851,4 +842,34 @@ public class JDBCUtils {
             }
         }
     }
+
+    /**
+     * Needed for {@link Connection#prepareStatement(String, String[])}
+     * Postgres can't find column if column id is in upper case.
+     * Oracle doesn't return id of inserted row for {@link Connection#prepareStatement(String, int)}.
+     * @param columnName name of column.
+     * @return array of column name.
+     */
+    public static String[] getColumnList(@NotNull String columnName) {
+        return new String[] {columnName.toLowerCase()};
+    }
+
+    public static boolean isRollbackWarning(SQLException sqlError) {
+        return
+            SQLState.SQL_25P01.getCode().equals(sqlError.getSQLState());
+    }
+
+    /**
+     * Checks whether the given exception indicates an unsupported feature error.
+     *
+     * @param dataSource the data source involved in the operation.
+     * @param ex the exception to analyze.
+     * @return {@code true} if the exception represents an unsupported feature error;
+     *         {@code false} otherwise.
+     */
+    public static boolean isFeatureNotSupportedError(@Nullable DBPDataSource dataSource, @NotNull Throwable ex) {
+        return ex instanceof SQLFeatureNotSupportedException || (dataSource != null && DBExecUtils.discoverErrorType(dataSource, ex)
+            == DBPErrorAssistant.ErrorType.FEATURE_UNSUPPORTED);
+    }
+
 }

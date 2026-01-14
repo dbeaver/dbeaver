@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,10 +18,7 @@ package org.jkiss.dbeaver.ext.generic.model;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.model.DBPEvaluationContext;
-import org.jkiss.dbeaver.model.DBPNamedObject2;
-import org.jkiss.dbeaver.model.DBPQualifiedObject;
-import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.meta.PropertyLength;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -30,17 +27,25 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSSequence;
 /**
  * GenericSequence
  */
-public class GenericSequence implements DBSSequence, DBPQualifiedObject, DBPNamedObject2
-{
-    private GenericStructContainer container;
+public class GenericSequence implements DBSSequence, DBPQualifiedObject, DBPNamedObject2, DBPSaveableObject {
+    private final GenericStructContainer container;
     private String name;
     private String description;
     private Number lastValue;
     private Number minValue;
     private Number maxValue;
     private Number incrementBy;
+    private boolean persisted;
 
-    public GenericSequence(GenericStructContainer container, String name, String description, Number lastValue, Number minValue, Number maxValue, Number incrementBy) {
+    public GenericSequence(
+        GenericStructContainer container,
+        String name,
+        String description,
+        Number lastValue,
+        Number minValue,
+        Number maxValue,
+        Number incrementBy
+    ) {
         this.container = container;
         this.name = name;
         this.description = description;
@@ -48,6 +53,18 @@ public class GenericSequence implements DBSSequence, DBPQualifiedObject, DBPName
         this.minValue = minValue;
         this.maxValue = maxValue;
         this.incrementBy = incrementBy;
+        this.persisted = true;
+    }
+
+    // Constructor for newly created object
+    public GenericSequence(@NotNull GenericStructContainer container, @NotNull String name) {
+        this.container = container;
+        this.name = name;
+        this.lastValue = 0;
+        this.minValue = 1;
+        this.maxValue = Long.MAX_VALUE;
+        this.incrementBy = 1;
+        this.persisted = false;
     }
 
     @NotNull
@@ -58,13 +75,18 @@ public class GenericSequence implements DBSSequence, DBPQualifiedObject, DBPName
     }
 
     @Override
-    public void setName(String name) {
+    public void setName(@NotNull String name) {
         this.name = name;
     }
 
     @Override
     public boolean isPersisted() {
-        return true;
+        return persisted;
+    }
+
+    @Override
+    public void setPersisted(boolean persisted) {
+        this.persisted = persisted;
     }
 
     @Nullable
@@ -88,11 +110,13 @@ public class GenericSequence implements DBSSequence, DBPQualifiedObject, DBPName
 
     @NotNull
     @Override
-    public String getFullyQualifiedName(DBPEvaluationContext context) {
-        return DBUtils.getFullQualifiedName(getDataSource(),
+    public String getFullyQualifiedName(@NotNull DBPEvaluationContext context) {
+        return DBUtils.getFullQualifiedName(
+            getDataSource(),
             container.getCatalog(),
             container.getSchema(),
-            this);
+            this
+        );
     }
 
     @Override

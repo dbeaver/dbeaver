@@ -1,0 +1,14 @@
+blank_issues_enabled: false
+contact_links:
+  - name: How to extract log files from DBeaver
+    url: https://github.com/dbeaver/dbeaver/wiki/Log-files
+    about: Common things you should know before creating a bug report.
+  - name: Try advanced database management features in DBeaver PRO
+    url: https://dbeaver.com/download/?utm_source=github&utm_medium=social&utm_campaign=issue
+    about: Download a 14-day free trial on dbeaver.com. No credit card is needed.
+  - name: Learn how to use DBeaver effectively with our tutorial videos
+    url: https://www.youtube.com/channel/UC-yOjsQLSaJVEghg6UB3N7A
+    about: Subscribe to our youtube channel and watch new tutorials every week
+  - name: Follow us on X (ex. Twitter)
+    url: https://x.com/dbeaver_news
+    about: Get everyday tips, fresh news, and DBeaver feature overviews.

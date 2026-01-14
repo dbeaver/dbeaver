@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLSyntaxManager;
 import org.jkiss.dbeaver.ui.editors.sql.convert.ISQLTextConverter;
 import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLRuleScanner;
+import org.jkiss.utils.CommonUtils;
 
 import java.util.Map;
 
@@ -37,6 +38,7 @@ import java.util.Map;
  */
 public class HTMLSQLConverter implements ISQLTextConverter {
     private static final Log log = Log.getLog(HTMLSQLConverter.class);
+    public static final String OPTION_ADD_CODE_BLOCK = "addCodeBlock";
 
     @NotNull
     @Override
@@ -53,11 +55,11 @@ public class HTMLSQLConverter implements ISQLTextConverter {
         ruleManager.setRange(document, startPos, length);
         try {
             result.append("<pre>");
-            for (;;) {
-                IToken token = ruleManager.nextToken();
-                if (token.isEOF()) {
-                    break;
-                }
+            if (options.get(OPTION_ADD_CODE_BLOCK) != null && (Boolean) options.get(OPTION_ADD_CODE_BLOCK)) {
+                result.append("<code class=\"language-sql\">");
+            }
+            IToken token = ruleManager.nextToken();
+            while (!token.isEOF()) {
                 int tokenOffset = ruleManager.getTokenOffset();
                 final int tokenLength = ruleManager.getTokenLength();
                 boolean hasSpan = false;
@@ -78,14 +80,17 @@ public class HTMLSQLConverter implements ISQLTextConverter {
                         result.append("font-style: italic;");
                     }
 
-                    //ta.getStyle()
                     result.append("'>");
                     hasSpan = true;
                 }
-                result.append(document.get(tokenOffset, tokenLength));
+                result.append(CommonUtils.escapeHtml(document.get(tokenOffset, tokenLength)));
                 if (hasSpan) {
                     result.append("</span>");
                 }
+                token = ruleManager.nextToken();
+            }
+            if (options.get(OPTION_ADD_CODE_BLOCK) != null && (Boolean) options.get(OPTION_ADD_CODE_BLOCK)) {
+                result.append("</code>");
             }
             result.append("</pre>");
         } catch (BadLocationException e) {

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -44,6 +44,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.UIWidgets;
 import org.jkiss.dbeaver.ui.controls.ListContentProvider;
 import org.jkiss.dbeaver.ui.controls.ViewerColumnController;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetRow;
@@ -52,7 +53,6 @@ import org.jkiss.dbeaver.ui.controls.resultset.ResultSetViewer;
 import org.jkiss.dbeaver.ui.data.IValueEditor;
 import org.jkiss.utils.CommonUtils;
 
-import java.lang.reflect.InvocationTargetException;
 import java.sql.Timestamp;
 import java.util.List;
 import java.util.*;
@@ -214,7 +214,7 @@ class GenericFilterValueEdit {
     }
 
     void addContextMenu(Action[] actions) {
-        UIUtils.createTableContextMenu(tableViewer.getTable(), menu -> {
+        UIWidgets.createTableContextMenu(tableViewer.getTable(), menu -> {
             for (Action act : actions) {
                 menu.add(act);
             }
@@ -230,8 +230,9 @@ class GenericFilterValueEdit {
     Text addFilterText(Composite composite) {
         // Create job which will load values after specified delay
         final AbstractJob loadValuesJob = new AbstractJob("Load values timeout") {
+            @NotNull
             @Override
-            protected IStatus run(DBRProgressMonitor monitor) {
+            protected IStatus run(@NotNull DBRProgressMonitor monitor) {
                 UIUtils.asyncExec(() -> loadValues(null));
                 return Status.OK_STATUS;
             }
@@ -316,11 +317,12 @@ class GenericFilterValueEdit {
                 }
                 final DBSEntityAttribute fkAttribute = fkColumn.getAttribute();
                 final DBSEntityConstraint refConstraint = association.getReferencedConstraint();
-                final DBSDictionary enumConstraint = (DBSDictionary) refConstraint.getParentObject();
+                final DBSDictionary enumConstraint = refConstraint == null ? null : (DBSDictionary) refConstraint.getParentObject();
                 if (fkAttribute != null && enumConstraint != null) {
                     return enumConstraint.getDictionaryEnumeration(
                         monitor,
                         refColumn,
+                        null,
                         filterPattern,
                         null,
                         true,
@@ -352,8 +354,6 @@ class GenericFilterValueEdit {
                             showRowCount,
                             true,
                             caseInsensitiveSearch);
-                    } catch (DBException e) {
-                        throw new InvocationTargetException(e);
                     }
                 });
                 return result;
@@ -367,8 +367,6 @@ class GenericFilterValueEdit {
                 DBExecUtils.tryExecuteRecover(monitor, attributeEnumerable.getDataSource(), param -> {
                     try (DBCSession session = DBUtils.openUtilSession(monitor, attributeEnumerable, "Read count of distinct values")) {
                         result[0] = attributeEnumerable.getDistinctValuesCount(session);
-                    } catch (DBException e) {
-                        throw new InvocationTargetException(e);
                     }
                 });
 
@@ -394,8 +392,6 @@ class GenericFilterValueEdit {
                             caseInsensitiveSearch,
                             MAX_MULTI_VALUES
                         ));
-                    } catch (DBException e) {
-                        throw new InvocationTargetException(e);
                     }
                 });
                 return result;
@@ -674,10 +670,12 @@ class GenericFilterValueEdit {
         KeyLoadJob(String name, @Nullable Consumer<Result> onFinish) {
             super(name);
             this.onFinish = onFinish;
+            setSkipErrorOnCanceling(true);
         }
 
+        @NotNull
         @Override
-        protected IStatus run(DBRProgressMonitor monitor) {
+        protected IStatus run(@NotNull DBRProgressMonitor monitor) {
             monitor.beginTask("Read filter values", 1);
             final DBCExecutionContext executionContext = viewer.getExecutionContext();
             if (executionContext == null) {
@@ -700,7 +698,7 @@ class GenericFilterValueEdit {
             }
             try {
                 monitor.subTask("Read enumeration");
-                final List<DBDLabelValuePair> valueEnumeration = readEnumeration(monitor);
+                List<DBDLabelValuePair> valueEnumeration = readEnumeration(monitor);
                 if (valueEnumeration == null) {
                     populateValues(Collections.emptyList());
                     return Status.OK_STATUS;

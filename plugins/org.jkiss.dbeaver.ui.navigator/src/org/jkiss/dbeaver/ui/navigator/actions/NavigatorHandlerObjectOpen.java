@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -42,7 +42,6 @@ import org.jkiss.dbeaver.model.rm.RMConstants;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.ui.UIServiceConnections;
-import org.jkiss.dbeaver.runtime.ui.UIServiceSQL;
 import org.jkiss.dbeaver.ui.IRefreshablePart;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.folders.ITabbedFolderContainer;
@@ -50,12 +49,12 @@ import org.jkiss.dbeaver.ui.editors.*;
 import org.jkiss.dbeaver.ui.editors.entity.EntityEditor;
 import org.jkiss.dbeaver.ui.editors.entity.EntityEditorDescriptor;
 import org.jkiss.dbeaver.ui.editors.entity.FolderEditor;
-import org.jkiss.dbeaver.ui.editors.object.ObjectEditorInput;
 import org.jkiss.dbeaver.ui.internal.UINavigatorMessages;
 import org.jkiss.dbeaver.ui.navigator.NavigatorPreferences;
 import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.StringUtils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.Map;
@@ -74,8 +73,7 @@ public class NavigatorHandlerObjectOpen extends NavigatorHandlerObjectBase imple
         }
         final ISelection selection = HandlerUtil.getCurrentSelection(event);
 
-        if (selection instanceof IStructuredSelection) {
-            final IStructuredSelection structSelection = (IStructuredSelection)selection;
+        if (selection instanceof IStructuredSelection structSelection) {
             if (structSelection.size() > MAX_OBJECT_SIZE_NO_CONFIRM) {
                 if (!UIUtils.confirmAction(HandlerUtil.getActiveShell(event),
                     NLS.bind(UINavigatorMessages.actions_navigator_open_editors_title, structSelection.size()),
@@ -86,14 +84,8 @@ public class NavigatorHandlerObjectOpen extends NavigatorHandlerObjectBase imple
             }
             for (Object element : structSelection) {
                 DBNNode node = null;
-                if (element instanceof IResource) {
-                    UIServiceSQL serviceSQL = DBWorkbench.getService(UIServiceSQL.class);
-                    if (serviceSQL != null) {
-                        serviceSQL.openResource((IResource) element);
-                    }
-                    continue;
-                } else if (element instanceof DBNNode) {
-                    node = (DBNNode) element;
+                if (element instanceof DBNNode n) {
+                    node = n;
                 } else {
                     DBSObject object = RuntimeUtils.getObjectAdapter(element, DBSObject.class);
                     if (object != null) {
@@ -102,6 +94,8 @@ public class NavigatorHandlerObjectOpen extends NavigatorHandlerObjectBase imple
                 }
                 if (node != null) {
                     NavigatorUtils.openNavigatorNode(node, HandlerUtil.getActiveWorkbenchWindow(event), event.getParameters());
+                } else {
+                    log.debug("Unsupported object type: " + element);
                 }
             }
         }
@@ -156,7 +150,7 @@ public class NavigatorHandlerObjectOpen extends NavigatorHandlerObjectBase imple
         try {
             if (selectedNode instanceof DBNDatabaseFolder && !(selectedNode.getParentNode() instanceof DBNDatabaseFolder) && selectedNode.getParentNode() instanceof DBNDatabaseNode) {
                 if (defaultFolderId == null) {
-                    defaultFolderId = selectedNode.getNodeType();
+                    defaultFolderId = selectedNode.getNodeTypeLabel();
                 }
                 selectedNode = selectedNode.getParentNode();
             }
@@ -192,8 +186,7 @@ public class NavigatorHandlerObjectOpen extends NavigatorHandlerObjectBase imple
                 return editor;
             }
 
-            if (selectedNode instanceof DBNDatabaseNode) {
-                DBNDatabaseNode dnNode = (DBNDatabaseNode) selectedNode;
+            if (selectedNode instanceof DBNDatabaseNode dnNode) {
                 DBSObject databaseObject = dnNode.getObject();
                 if (databaseObject != null) {
                     if (!databaseObject.isPersisted()) {
@@ -205,8 +198,7 @@ public class NavigatorHandlerObjectOpen extends NavigatorHandlerObjectBase imple
                         return null;
                     }
 
-                    if (selectedNode instanceof DBNDatabaseObject) {
-                        DBNDatabaseObject objectNode = (DBNDatabaseObject) selectedNode;
+                    if (selectedNode instanceof DBNDatabaseObject objectNode) {
                         if (!objectNode.isPersisted()) {
                             return null;
                         }
@@ -236,7 +228,10 @@ public class NavigatorHandlerObjectOpen extends NavigatorHandlerObjectBase imple
                     FolderEditor.class.getName());
             }
         } catch (Exception ex) {
-            DBWorkbench.getPlatformUI().showError(UINavigatorMessages.actions_navigator_error_dialog_open_entity_title, "Can't open entity '" + selectedNode.getNodeName() + "'", ex);
+            DBWorkbench.getPlatformUI()
+                .showError(UINavigatorMessages.actions_navigator_error_dialog_open_entity_title,
+                    "Can't open entity '" + selectedNode.getNodeDisplayName() + "'",
+                    ex);
             return null;
         }
     }
@@ -257,7 +252,7 @@ public class NavigatorHandlerObjectOpen extends NavigatorHandlerObjectBase imple
                 if (editorInput instanceof INavigatorEditorInput) {
                     boolean matches;
                     if (editorInput instanceof DatabaseLazyEditorInput) {
-                        matches = node.getNodeItemPath().equals(((DatabaseLazyEditorInput) editorInput).getNodePath());
+                        matches = node.getNodeUri().equals(((DatabaseLazyEditorInput) editorInput).getNodePath());
                     } else {
                         matches = ((INavigatorEditorInput) editorInput).getNavigatorNode() == node;
                     }
@@ -340,12 +335,18 @@ public class NavigatorHandlerObjectOpen extends NavigatorHandlerObjectBase imple
                         //actionName = objectManager == null || !objectManager.canEditObject(object) ? UINavigatorMessages.actions_navigator_view : UINavigatorMessages.actions_navigator_edit;
                         actionName = UINavigatorMessages.actions_navigator_view;
                     }
+                } else if (node.getAdapter(IResource.class) != null) {
+                    actionName = UINavigatorMessages.actions_navigator_error_dialog_open_resource_title;
                 }
                 String label;
                 if (selection instanceof IStructuredSelection && ((IStructuredSelection) selection).size() > 1) {
                     label = NLS.bind(actionName, UINavigatorMessages.actions_navigator__objects);
                 } else {
-                    label = NLS.bind(actionName, node.getNodeType()); //$NON-NLS-1$
+                    if (node.getAdapter(IResource.class) != null) {
+                        label = actionName + " '" + StringUtils.truncateText(node.getNodeDisplayName(), 32) + "'"; //$NON-NLS-1$
+                    } else {
+                        label = NLS.bind(actionName, node.getNodeTypeLabel()); //$NON-NLS-1$
+                    }
                 }
                 element.setText(label);
             }

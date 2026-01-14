@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,11 +17,13 @@
 
 package org.jkiss.dbeaver.model.impl.local;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCResultSet;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.impl.AbstractStatement;
+import org.jkiss.dbeaver.model.qm.QMUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 /**
@@ -34,6 +36,10 @@ public class LocalStatement extends AbstractStatement<DBCSession>
     public LocalStatement(DBCSession session, String text) {
         super(session);
         this.text = text;
+
+        if (isQMLoggingEnabled()) {
+            QMUtils.getDefaultHandler().handleStatementOpen(this);
+        }
     }
 
     @Override
@@ -52,18 +58,13 @@ public class LocalStatement extends AbstractStatement<DBCSession>
     }
 
     @Override
-    public int[] executeStatementBatch() throws DBCException {
-        return new int[0];
+    public long[] executeStatementBatch() throws DBCException {
+        return new long[0];
     }
 
     @Override
     public DBCResultSet openResultSet() throws DBCException {
         return new LocalResultSet<>(connection, this);
-    }
-
-    @Override
-    public DBCResultSet openGeneratedKeysResultSet() throws DBCException {
-        return null;
     }
 
     @Override
@@ -97,12 +98,7 @@ public class LocalStatement extends AbstractStatement<DBCSession>
     }
 
     @Override
-    public void close() {
-
-    }
-
-    @Override
-    public void cancelBlock(DBRProgressMonitor monitor, Thread blockThread) throws DBException {
+    public void cancelBlock(@NotNull DBRProgressMonitor monitor, Thread blockThread) throws DBException {
 
     }
 }

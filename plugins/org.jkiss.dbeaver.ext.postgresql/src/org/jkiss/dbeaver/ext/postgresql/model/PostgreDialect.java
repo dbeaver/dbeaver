@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,7 @@ package org.jkiss.dbeaver.ext.postgresql.model;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
-import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
+import org.jkiss.dbeaver.ext.postgresql.internal.PostgreSQLMessages;
 import org.jkiss.dbeaver.ext.postgresql.model.data.PostgreBinaryFormatter;
 import org.jkiss.dbeaver.ext.postgresql.sql.PostgreEscapeStringRule;
 import org.jkiss.dbeaver.model.*;
@@ -42,6 +42,7 @@ import org.jkiss.utils.CommonUtils;
 import java.sql.Types;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.EnumSet;
 import java.util.Locale;
 
 /**
@@ -71,13 +72,21 @@ public class PostgreDialect extends JDBCSQLDialect implements TPRuleProvider, SQ
     };
 
     //Function without arguments/parameters #8710
-    private static final String[] OTHER_TYPES_FUNCTION = {
-        "current_date",
-        "current_time",
-        "current_timestamp",
-        "current_role",
-        "current_user",
+    private static final GlobalVariableInfo[] GLOBAL_VARIABLES = {
+        new GlobalVariableInfo("current_date", PostgreSQLMessages.global_variable_current_date_description, DBPDataKind.DATETIME),
+        new GlobalVariableInfo("current_time", PostgreSQLMessages.global_variable_current_time_description, DBPDataKind.DATETIME),
+        new GlobalVariableInfo("current_timestamp", PostgreSQLMessages.global_variable_current_timestamp_description, DBPDataKind.DATETIME),
+        new GlobalVariableInfo("localtime", PostgreSQLMessages.global_variable_localtime_description, DBPDataKind.DATETIME),
+        new GlobalVariableInfo("localtimestamp", PostgreSQLMessages.global_variable_localtimestamp_description, DBPDataKind.DATETIME),
+        new GlobalVariableInfo("current_role", PostgreSQLMessages.global_variable_user_description, DBPDataKind.STRING),
+        new GlobalVariableInfo("current_user", PostgreSQLMessages.global_variable_user_description, DBPDataKind.STRING),
+        new GlobalVariableInfo("current_catalog ", PostgreSQLMessages.global_variable_current_catalog_description, DBPDataKind.STRING),
+        new GlobalVariableInfo("current_schema", PostgreSQLMessages.global_variable_current_schema_description, DBPDataKind.STRING),
+        new GlobalVariableInfo("session_user", PostgreSQLMessages.global_variable_session_user_description, DBPDataKind.STRING),
+        new GlobalVariableInfo("system_user", PostgreSQLMessages.global_variable_system_user_description, DBPDataKind.STRING),
+        new GlobalVariableInfo("user", PostgreSQLMessages.global_variable_user_description, DBPDataKind.STRING)
     };
+
     public static final String AUTO_INCREMENT_KEYWORD = "AUTO_INCREMENT";
 
     //region KeyWords
@@ -240,7 +249,7 @@ public class PostgreDialect extends JDBCSQLDialect implements TPRuleProvider, SQ
         //"USER_DEFINED_TYPE_CATALOG",
         //"USER_DEFINED_TYPE_CODE",
         //"USER_DEFINED_TYPE_NAME",
-        //"USER_DEFINED_TYPE_SCHEMA",
+        //"USER_DEFINED_TYPE_SCHEMA",        
         //"VALUE",
         //"VALUE_OF",
         "VERSIONING",
@@ -257,6 +266,10 @@ public class PostgreDialect extends JDBCSQLDialect implements TPRuleProvider, SQ
         "XMLVALIDATE",
         "SQLERRM",
         "WHILE"
+    };
+    
+    public static String[] POSTGRE_EXTRA_TYPES = new String[]{
+        "UUID",
     };
 
     public static String[] POSTGRE_ONE_CHAR_KEYWORDS = new String[]{
@@ -300,6 +313,7 @@ public class PostgreDialect extends JDBCSQLDialect implements TPRuleProvider, SQ
         "row_number",
         "rank",
         "dense_rank",
+        "percent_rank",
         "cume_dist",
         "ntile",
         "lag",
@@ -311,23 +325,43 @@ public class PostgreDialect extends JDBCSQLDialect implements TPRuleProvider, SQ
 
 
     public static String[] POSTGRE_FUNCTIONS_MATH = new String[]{
+        "abs",
+        "acos",
         "acosd",
+        "asin",
         "asind",
+        "atan",
+        "atan2",
         "atan2d",
         "atand",
         "cbrt",
         "ceil",
         "ceiling",
+        "cos",
         "cosd",
+        "cosh",
+        "cot",
         "cotd",
         "div",
         "exp",
+        "floor",
+        "gcd",
+        "lcm",
         "ln",
+        "log",
+        "log10",
         "mod",
+        "pi",
+        "power",
         "random",
+        "round",
         "scale",
         "setseed",
+        "sin",
         "sind",
+        "sinh",
+        "sqrt",
+        "tan",
         "tand",
         "trunc",
         "width_bucket"
@@ -350,14 +384,22 @@ public class PostgreDialect extends JDBCSQLDialect implements TPRuleProvider, SQ
         "overlay",
         "parse_ident",
         "pg_client_encoding",
+        "pg_backend_pid",
+        "pg_database_size",
+        "pg_sleep",
+        "pg_terminate_backend",
         "position",
         "quote_ident",
         "quote_literal",
         "quote_nullable",
+        "regexp_count",
+        "regexp_instr",
+        "regexp_like",
         "regexp_match",
         "regexp_matches",
         "regexp_replace",
         "regexp_split_to_array",
+        "regexp_substr",
         "regexp_split_to_table",
         "replace",
         "reverse",
@@ -382,6 +424,8 @@ public class PostgreDialect extends JDBCSQLDialect implements TPRuleProvider, SQ
         "justify_days",
         "justify_hours",
         "justify_interval",
+        "localtime",
+        "localtimestamp",
         "make_date",
         "make_interval",
         "make_time",
@@ -389,12 +433,14 @@ public class PostgreDialect extends JDBCSQLDialect implements TPRuleProvider, SQ
         "make_timestamptz",
         "statement_timestamp",
         "timeofday",
+        "to_timestamp",
         "transaction_timestamp"
     };
 
     public static String[] POSTGRE_FUNCTIONS_GEOMETRY = new String[]{
         "area",
         "center",
+        "diagonal",
         "diameter",
         "height",
         "isclosed",
@@ -403,6 +449,7 @@ public class PostgreDialect extends JDBCSQLDialect implements TPRuleProvider, SQ
         "pclose",
         "popen",
         "radius",
+        "slope",
         "width",
         "box",
         "bound_box",
@@ -410,12 +457,14 @@ public class PostgreDialect extends JDBCSQLDialect implements TPRuleProvider, SQ
         "line",
         "lseg",
         "path",
+        "point",
         "polygon"
     };
 
     public static String[] POSTGRE_FUNCTIONS_NETWROK = new String[]{
         "abbrev",
         "broadcast",
+        "family",
         "host",
         "hostmask",
         "masklen",
@@ -449,7 +498,96 @@ public class PostgreDialect extends JDBCSQLDialect implements TPRuleProvider, SQ
         "brin_summarize_new_values",
         "brin_summarize_range",
         "brin_desummarize_range",
-        "gin_clean_pending_list"
+        "gin_clean_pending_list",
+        "pg_cancel_backend",
+        "pg_log_backend_memory_contexts",
+        "pg_reload_conf",
+        "pg_rotate_logfile",
+        "pg_create_restore_point",
+        "pg_current_wal_flush_lsn",
+        "pg_current_wal_insert_lsn",
+        "pg_current_wal_lsn",
+        "pg_backup_start",
+        "pg_backup_stop",
+        "pg_switch_wal",
+        "pg_walfile_name",
+        "pg_walfile_name_offset",
+        "pg_split_walfile_name",
+        "pg_wal_lsn_diff",
+        "pg_is_in_recovery",
+        "pg_last_wal_receive_lsn",
+        "pg_last_wal_replay_lsn",
+        "pg_last_xact_replay_timestamp",
+        "pg_get_wal_resource_managers",
+        "pg_is_wal_replay_paused",
+        "pg_get_wal_replay_pause_state",
+        "pg_promote",
+        "pg_wal_replay_pause",
+        "pg_wal_replay_resume",
+        "pg_export_snapshot",
+        "pg_log_standby_snapshot",
+        "pg_create_physical_replication_slot",
+        "pg_drop_replication_slot",
+        "pg_create_logical_replication_slot",
+        "pg_copy_physical_replication_slot",
+        "pg_copy_logical_replication_slot",
+        "pg_logical_slot_get_changes",
+        "pg_logical_slot_peek_changes",
+        "pg_logical_slot_get_binary_changes",
+        "pg_logical_slot_peek_binary_changes",
+        "pg_replication_slot_advance",
+        "pg_replication_origin_create",
+        "pg_replication_origin_drop",
+        "pg_replication_origin_oid",
+        "pg_replication_origin_session_setup",
+        "pg_replication_origin_session_reset",
+        "pg_replication_origin_session_is_setup",
+        "pg_replication_origin_session_progress",
+        "pg_replication_origin_xact_setup",
+        "pg_replication_origin_xact_reset",
+        "pg_replication_origin_advance",
+        "pg_replication_origin_progress",
+        "pg_logical_emit_message",
+        "pg_column_size",
+        "pg_column_compression",
+        "pg_indexes_size",
+        "pg_relation_size",
+        "pg_size_bytes",
+        "pg_size_pretty",
+        "pg_table_size",
+        "pg_tablespace_size",
+        "pg_total_relation_size",
+        "pg_relation_filenode",
+        "pg_relation_filepath",
+        "pg_filenode_relation",
+        "pg_collation_actual_version",
+        "pg_database_collation_actual_version",
+        "pg_import_system_collations",
+        "pg_partition_tree",
+        "pg_partition_ancestors",
+        "pg_partition_root",
+        "pg_ls_dir",
+        "pg_ls_logdir",
+        "pg_ls_waldir",
+        "pg_ls_logicalmapdir",
+        "pg_ls_logicalsnapdir",
+        "pg_ls_replslotdir",
+        "pg_ls_archive_statusdir",
+        "pg_ls_tmpdir",
+        "pg_read_file",
+        "pg_read_binary_file",
+        "pg_stat_file",
+        "pg_advisory_lock",
+        "pg_advisory_lock_shared",
+        "pg_advisory_unlock",
+        "pg_advisory_unlock_all",
+        "pg_advisory_unlock_shared",
+        "pg_advisory_xact_lock",
+        "pg_advisory_xact_lock_shared",
+        "pg_try_advisory_lock",
+        "pg_try_advisory_lock_shared",
+        "pg_try_advisory_xact_lock",
+        "pg_try_advisory_xact_lock_shared"
     };
 
     public static String[] POSTGRE_FUNCTIONS_RANGE = new String[]{
@@ -486,6 +624,11 @@ public class PostgreDialect extends JDBCSQLDialect implements TPRuleProvider, SQ
         "tsvector_update_trigger",
         "tsvector_update_trigger_column"
     };
+
+    public static String[] POSTGRE_FUNCTIONS_BUILTIN = new String[] {
+        "count"
+    };
+
 
     public static String[] POSTGRE_FUNCTIONS_XML = new String[]{
         "xmlcomment",
@@ -619,6 +762,7 @@ public class PostgreDialect extends JDBCSQLDialect implements TPRuleProvider, SQ
     };
 
     public static String[] POSTGRE_FUNCTIONS_FORMATTING = new String[]{
+        "format",
         "to_char",
         "to_date",
         "to_number",
@@ -639,10 +783,12 @@ public class PostgreDialect extends JDBCSQLDialect implements TPRuleProvider, SQ
     };
 
     public static String[] POSTGRE_FUNCTIONS_BINARY_STRING = new String[]{
+        "bit_count",
         "get_bit",
         "get_byte",
         "set_bit",
-        "set_byte"
+        "set_byte",
+        "substr"
     };
 
     public static String[] POSTGRE_FUNCTIONS_CONDITIONAL = new String[]{
@@ -653,7 +799,9 @@ public class PostgreDialect extends JDBCSQLDialect implements TPRuleProvider, SQ
     };
 
     public static String[] POSTGRE_FUNCTIONS_TRIGGER = new String[]{
-        "suppress_redundant_updates_trigger"
+        "suppress_redundant_updates_trigger",
+        "tsvector_update_trigger",
+        "tsvector_update_trigger_column"
     };
 
     public static String[] POSTGRE_FUNCTIONS_SRF = new String[]{
@@ -676,7 +824,7 @@ public class PostgreDialect extends JDBCSQLDialect implements TPRuleProvider, SQ
     public void addExtraFunctions(String... functions) {
         super.addFunctions(Arrays.asList(functions));
     }
-
+    
     public void initDriverSettings(JDBCSession session, JDBCDataSource dataSource, JDBCDatabaseMetaData metaData) {
         super.initDriverSettings(session, dataSource, metaData);
 
@@ -685,6 +833,7 @@ public class PostgreDialect extends JDBCSQLDialect implements TPRuleProvider, SQ
             "TYPE",
             "USER",
             "COMMENT",
+            "LATERAL",
             "MATERIALIZED",
             "ILIKE",
             "ELSIF",
@@ -720,8 +869,6 @@ public class PostgreDialect extends JDBCSQLDialect implements TPRuleProvider, SQ
         // Not sure about one char keywords. May confuse users
         //addExtraKeywords(POSTGRE_ONE_CHAR_KEYWORDS);
 
-        addKeywords(Arrays.asList(OTHER_TYPES_FUNCTION), DBPKeywordType.OTHER);
-
         addExtraFunctions(PostgreConstants.POSTGIS_FUNCTIONS);
 
         addExtraFunctions(POSTGRE_FUNCTIONS_ADMIN);
@@ -747,8 +894,13 @@ public class PostgreDialect extends JDBCSQLDialect implements TPRuleProvider, SQ
         addExtraFunctions(POSTGRE_FUNCTIONS_TRIGGER);
         addExtraFunctions(POSTGRE_FUNCTIONS_WINDOW);
         addExtraFunctions(POSTGRE_FUNCTIONS_XML);
+        addExtraFunctions(POSTGRE_FUNCTIONS_BUILTIN);
 
         removeSQLKeyword("LENGTH");
+        removeSQLKeyword("JSON");
+        removeSQLKeyword("TEXT");
+        removeSQLKeyword("FORMAT");
+        removeSQLKeyword("WORK");
 
         if (dataSource instanceof PostgreDataSource) {
             serverExtension = ((PostgreDataSource) dataSource).getServerType();
@@ -774,6 +926,12 @@ public class PostgreDialect extends JDBCSQLDialect implements TPRuleProvider, SQ
     @Override
     public String[] getExecuteKeywords() {
         return EXEC_KEYWORDS;
+    }
+
+    @NotNull
+    @Override
+    public GlobalVariableInfo[] getGlobalVariables() {
+        return GLOBAL_VARIABLES;
     }
 
     @Override
@@ -812,14 +970,20 @@ public class PostgreDialect extends JDBCSQLDialect implements TPRuleProvider, SQ
     }
 
     @Override
+    public boolean validIdentifierStart(char c) {
+        return super.validIdentifierStart(c) || c == '_';
+    }
+
+    @Override
     public String getCastedAttributeName(@NotNull DBSAttributeBase attribute, String attributeName) {
-        // This method actually works for special data types like JSON and XML. Because column names in the condition in a table without key must be also cast, as data in getTypeCast method.
-        if (attribute instanceof DBSObject && !DBUtils.isPseudoAttribute(attribute)) {
+        // This method actually works for special data types like JSON and XML.
+        // Because column names in the condition in a table without key must be also cast, as data in getTypeCast method.
+        if (attribute instanceof DBSObject sAttr && !DBUtils.isPseudoAttribute(attribute)) {
             if (!CommonUtils.equalObjects(attributeName, attribute.getName())) {
                 // Must use explicit attribute name
-                attributeName = DBUtils.getQuotedIdentifier(((DBSObject) attribute).getDataSource(), attributeName);
+                attributeName = DBUtils.getQuotedIdentifier(sAttr.getDataSource(), attributeName);
             } else {
-                attributeName = DBUtils.getObjectFullName(((DBSObject) attribute).getDataSource(), attribute, DBPEvaluationContext.DML);
+                attributeName = DBUtils.getObjectFullName(sAttr.getDataSource(), attribute, DBPEvaluationContext.DML);
             }
         }
         return getCastedString(attribute, attributeName, true, true);
@@ -834,10 +998,10 @@ public class PostgreDialect extends JDBCSQLDialect implements TPRuleProvider, SQ
     }
 
     private String getCastedString(@NotNull DBSTypedObject attribute, String string, boolean isInCondition, boolean castColumnName) {
-        if (attribute instanceof DBSTypedObjectEx) {
-            DBSDataType dataType = ((DBSTypedObjectEx) attribute).getDataType();
-            if (dataType instanceof PostgreDataType) {
-                String typeCasting = ((PostgreDataType) dataType).getConditionTypeCasting(isInCondition, castColumnName);
+        if (attribute instanceof DBSTypedObjectEx toEx) {
+            DBSDataType dataType = toEx.getDataType();
+            if (dataType instanceof PostgreDataType pdt) {
+                String typeCasting = pdt.getConditionTypeCasting(isInCondition, castColumnName);
                 if (CommonUtils.isNotEmpty(typeCasting)) {
                     return string + typeCasting;
                 }
@@ -849,13 +1013,13 @@ public class PostgreDialect extends JDBCSQLDialect implements TPRuleProvider, SQ
     @NotNull
     @Override
     public String escapeScriptValue(DBSTypedObject attribute, @NotNull Object value, @NotNull String strValue) {
-        if (PostgreUtils.isPGObject(value)
+        boolean isPgObject = serverExtension != null && serverExtension.isPGObject(value);
+        if (isPgObject
             || PostgreConstants.TYPE_BIT.equals(attribute.getTypeName())
             || PostgreConstants.TYPE_INTERVAL.equals(attribute.getTypeName())
             || attribute.getTypeID() == Types.OTHER
             || attribute.getTypeID() == Types.ARRAY
-            || attribute.getTypeID() == Types.STRUCT)
-        {
+            || attribute.getTypeID() == Types.STRUCT) {
             // TODO: we need to add value handlers for all PG data types.
             // For now we use workaround: represent objects as strings
             return '\'' + escapeString(strValue) + '\'';
@@ -923,6 +1087,7 @@ public class PostgreDialect extends JDBCSQLDialect implements TPRuleProvider, SQ
     protected void loadDataTypesFromDatabase(JDBCDataSource dataSource) {
         super.loadDataTypesFromDatabase(dataSource);
         addDataTypes(PostgreConstants.DATA_TYPE_ALIASES.keySet());
+        addDataTypes(Arrays.asList(POSTGRE_EXTRA_TYPES));
     }
 
     @NotNull
@@ -965,7 +1130,11 @@ public class PostgreDialect extends JDBCSQLDialect implements TPRuleProvider, SQ
 
     @Override
     public String convertExternalDataType(@NotNull SQLDialect sourceDialect, @NotNull DBSTypedObject sourceTypedObject, @Nullable DBPDataTypeProvider targetTypeProvider) {
-        String externalTypeName = sourceTypedObject.getTypeName().toLowerCase(Locale.ENGLISH);
+        String typeName = sourceTypedObject.getTypeName();
+        if (typeName == null) {
+            return null;
+        }
+        String externalTypeName = typeName.toLowerCase(Locale.ENGLISH);
         String localDataType = null, dataTypeModifies = null;
 
         switch (externalTypeName) {
@@ -1053,6 +1222,12 @@ public class PostgreDialect extends JDBCSQLDialect implements TPRuleProvider, SQ
 
     @NotNull
     @Override
+    public String getBlobDataType() {
+        return PostgreConstants.TYPE_BYTEA;
+    }
+
+    @NotNull
+    @Override
     public String getUuidDataType() {
         return PostgreConstants.TYPE_UUID;
     }
@@ -1065,6 +1240,27 @@ public class PostgreDialect extends JDBCSQLDialect implements TPRuleProvider, SQ
 
     @NotNull
     @Override
+    public String getAlterColumnOperation() {
+        return PostgreConstants.OPERATION_ALTER;
+    }
+
+    @Override
+    public boolean supportsNoActionIndex() {
+        return true;
+    }
+
+    @Override
+    public boolean supportsAlterColumnSet() {
+        return true;
+    }
+
+    @Override
+    public boolean supportsAlterHasColumn() {
+        return true;
+    }
+
+    @NotNull
+    @Override
     public String getSchemaExistQuery(@NotNull String schemaName) {
         return "SELECT 1 FROM INFORMATION_SCHEMA.SCHEMATA WHERE SCHEMA_NAME = " + getQuotedString(schemaName);
     }
@@ -1073,5 +1269,18 @@ public class PostgreDialect extends JDBCSQLDialect implements TPRuleProvider, SQ
     @Override
     public String getCreateSchemaQuery(@NotNull String schemaName) {
         return "CREATE SCHEMA " + schemaName;
+    }
+
+    @Override
+    public EnumSet<ProjectionAliasVisibilityScope> getProjectionAliasVisibilityScope() {
+        return EnumSet.of(
+            ProjectionAliasVisibilityScope.GROUP_BY,
+            ProjectionAliasVisibilityScope.ORDER_BY
+        );
+    }
+
+    @Override
+    public boolean isEscapeBackslash() {
+        return serverExtension != null && serverExtension.supportsBackslashStringEscape();
     }
 }

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,8 +23,8 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.mssql.SQLServerConstants;
 import org.jkiss.dbeaver.ext.mssql.SQLServerUtils;
 import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.DPIContainer;
 import org.jkiss.dbeaver.model.connection.DBPConnectionBootstrap;
+import org.jkiss.dbeaver.model.exec.DBCCachedContextDefaults;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContextDefaults;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
@@ -54,7 +54,6 @@ public class SQLServerExecutionContext extends JDBCExecutionContext implements D
         super(instance, purpose);
     }
 
-    @DPIContainer
     @NotNull
     @Override
     public SQLServerDataSource getDataSource() {
@@ -101,7 +100,8 @@ public class SQLServerExecutionContext extends JDBCExecutionContext implements D
 
     @Override
     public boolean supportsCatalogChange() {
-        return true;
+        // Azure SQL Database doesn't support changing database
+        return !SQLServerUtils.isDriverAzure(getDataSource().getContainer().getDriver());
     }
 
     @Override
@@ -127,7 +127,7 @@ public class SQLServerExecutionContext extends JDBCExecutionContext implements D
         activeDatabaseName = catalog.getName();
 
         // Send notifications
-        DBUtils.fireObjectSelectionChange(oldActiveDatabase, catalog);
+        DBUtils.fireObjectSelectionChange(oldActiveDatabase, catalog, this);
 
         if (schema != null) {
             setDefaultSchema(monitor, schema);
@@ -147,7 +147,7 @@ public class SQLServerExecutionContext extends JDBCExecutionContext implements D
         activeSchemaName = schema.getName();
 
         // Send notifications
-        DBUtils.fireObjectSelectionChange(oldActiveSchema, schema);
+        DBUtils.fireObjectSelectionChange(oldActiveSchema, schema, this);
     }
 
     @Override
@@ -235,4 +235,9 @@ public class SQLServerExecutionContext extends JDBCExecutionContext implements D
     }
 */
 
+    @NotNull
+    @Override
+    public DBCCachedContextDefaults getCachedDefault() {
+        return new DBCCachedContextDefaults(activeDatabaseName, activeSchemaName);
+    }
 }

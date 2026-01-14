@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ext.exasol.manager;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.exasol.model.ExasolSchema;
@@ -39,7 +40,7 @@ import java.util.Map;
 public class ExasolTableIndexManager extends SQLIndexManager<ExasolTableIndex, ExasolTable>  {
 
 	@Override
-	public long getMakerOptions(DBPDataSource dataSource) {
+	public long getMakerOptions(@NotNull DBPDataSource dataSource) {
 		return FEATURE_EDITOR_ON_CREATE;
 	}
 	
@@ -50,13 +51,13 @@ public class ExasolTableIndexManager extends SQLIndexManager<ExasolTableIndex, E
 	}
 	
 	@Override
-	public boolean canEditObject(ExasolTableIndex object) {
+	public boolean canEditObject(@NotNull ExasolTableIndex object) {
 		return false;
 	}
 	
 	@Override
-	protected ExasolTableIndex createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context,
-			Object container, Object from, Map<String, Object> options) throws DBException {
+	protected ExasolTableIndex createDatabaseObject(@NotNull DBRProgressMonitor monitor, @NotNull DBECommandContext context,
+													Object container, Object from, @NotNull Map<String, Object> options) throws DBException {
 		return new ExasolTableIndex((ExasolTable) container, null,  DBSIndexType.OTHER, false );
 	}
 	
@@ -68,9 +69,9 @@ public class ExasolTableIndexManager extends SQLIndexManager<ExasolTableIndex, E
 	}
 	
 	@Override
-	protected void addObjectCreateActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext,
-			List<DBEPersistAction> actions, SQLObjectEditor<ExasolTableIndex, ExasolTable>.ObjectCreateCommand command,
-			Map<String, Object> options) {
+	protected void addObjectCreateActions(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext executionContext,
+										  @NotNull List<DBEPersistAction> actions, @NotNull SQLObjectEditor<ExasolTableIndex, ExasolTable>.ObjectCreateCommand command,
+										  @NotNull Map<String, Object> options) {
 		ExasolTableIndex index = command.getObject();
 		String SQL = String.format(
 				"ENFORCE %s INDEX ON %s %s",

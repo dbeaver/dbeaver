@@ -1,7 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
- * Copyright (C) 2011-2012 Eugene Fradkin (eugene.fradkin@gmail.com)
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +19,7 @@ package org.jkiss.dbeaver.tasks.nativetool;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -33,6 +33,8 @@ import org.jkiss.utils.CommonUtils;
 
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 
 
 public abstract class AbstractImportExportSettings<BASE_OBJECT extends DBSObject> extends AbstractNativeToolSettings<BASE_OBJECT> {
@@ -40,6 +42,14 @@ public abstract class AbstractImportExportSettings<BASE_OBJECT extends DBSObject
 
     private String outputFolderPattern;
     private String outputFilePattern;
+
+    public AbstractImportExportSettings() {
+        super();
+    }
+
+    public AbstractImportExportSettings(@NotNull DBPProject project) {
+        super(project);
+    }
 
     public String getOutputFolderPattern() {
         return outputFolderPattern;
@@ -56,6 +66,12 @@ public abstract class AbstractImportExportSettings<BASE_OBJECT extends DBSObject
     public void setOutputFilePattern(String outputFilePattern) {
         this.outputFilePattern = outputFilePattern;
     }
+    
+    @Override
+    public void loadSettingsFromInput(@NotNull List<BASE_OBJECT> inputObjects, @NotNull Map<String, Object> options) {
+        super.loadSettingsFromInput(inputObjects, options);
+        this.fillExportObjectsFromInput();
+    }
 
     public void fillExportObjectsFromInput() {
 
@@ -63,7 +79,6 @@ public abstract class AbstractImportExportSettings<BASE_OBJECT extends DBSObject
 
     @Override
     public void loadSettings(DBRRunnableContext runnableContext, DBPPreferenceStore store) throws DBException {
-        super.loadSettings(runnableContext, store);
         this.outputFilePattern = store.getString("export.outputFilePattern");
         if (CommonUtils.isEmpty(this.outputFilePattern)) {
             this.outputFilePattern = "dump-${database}-${timestamp}.sql";
@@ -72,6 +87,7 @@ public abstract class AbstractImportExportSettings<BASE_OBJECT extends DBSObject
         if (CommonUtils.isEmpty(this.outputFolderPattern)) {
             this.outputFolderPattern = RuntimeUtils.getUserHomeDir().getAbsolutePath();
         }
+        super.loadSettings(runnableContext, store);
     }
 
     @Override

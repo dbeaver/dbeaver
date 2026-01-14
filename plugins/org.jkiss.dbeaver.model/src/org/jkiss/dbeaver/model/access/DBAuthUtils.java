@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,12 +17,14 @@
 package org.jkiss.dbeaver.model.access;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
 public class DBAuthUtils {
@@ -73,7 +75,9 @@ public class DBAuthUtils {
                 ) {
                     actualConnectionConfiguration.setUserPassword(newPassword);
                     connectionInfo.setUserPassword(newPassword);
-                    dataSourceContainer.persistConfiguration();
+                    if (!dataSourceContainer.isTemporary()) {
+                        dataSourceContainer.persistConfiguration();
+                    }
                     return true;
                 }
             } catch (DBException e) {
@@ -83,5 +87,13 @@ public class DBAuthUtils {
             }
         }
         return false;
+    }
+
+    @NotNull
+    public static String getExternalBrowserSuccessResponse(@Nullable String providerName) {
+        return "<h2>Authentication complete</h2>"
+            + "<div>It was requested by <b>" + GeneralUtils.getProductTitle() + "</b></div>"
+            + "<div>You successfully authorized %s</div>".formatted(providerName == null ? "for using database" : "in " + providerName)
+            + "<div>You can <a href=\"#\" onclick=\"javascript:window.close()\">close this page</a> and return to the application.</div>";
     }
 }

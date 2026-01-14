@@ -1,7 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
- * Copyright (C) 2011-2012 Eugene Fradkin (eugene.fradkin@gmail.com)
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,8 +16,9 @@
  */
 package org.jkiss.dbeaver.ext.mysql.tasks;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
-import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCResultSet;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.DBCStatement;
@@ -41,13 +41,15 @@ import java.util.List;
 public abstract class MySQLToolWithStatus<OBJECT_TYPE extends DBSObject, SETTINGS extends SQLToolExecuteSettings<OBJECT_TYPE>>
     extends SQLToolExecuteHandler<OBJECT_TYPE, SETTINGS> implements SQLToolRunStatisticsGenerator<OBJECT_TYPE, SETTINGS, DBEPersistAction>
 {
+    @NotNull
     @Override
-    public List<ToolStatus> getExecuteStatistics(OBJECT_TYPE object, SETTINGS settings, DBEPersistAction action, DBCSession session, DBCStatement dbStat) throws DBCException {
+    public List<ToolStatus> getExecuteStatistics(@NotNull OBJECT_TYPE object, @NotNull SETTINGS settings, @NotNull DBEPersistAction action, @NotNull
+    DBCSession session, @NotNull DBCStatement dbStat) throws DBException {
         DBCResultSet dbResult = dbStat.openResultSet();
         if (!(dbResult instanceof JDBCResultSet)) {
             return Collections.emptyList();
         }
-        try {
+        try (dbResult) {
             List<ToolStatus> statusList = new ArrayList<>();
             while (dbResult.nextRow()) {
                 statusList.add(
@@ -57,8 +59,6 @@ public abstract class MySQLToolWithStatus<OBJECT_TYPE extends DBSObject, SETTING
                         JDBCUtils.safeGetString((JDBCResultSet) dbResult, "Msg_text")));
             }
             return statusList;
-        } finally {
-            dbResult.close();
         }
     }
 

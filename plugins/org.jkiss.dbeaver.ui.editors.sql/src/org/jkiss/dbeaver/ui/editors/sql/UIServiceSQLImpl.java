@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,11 +17,13 @@
 
 package org.jkiss.dbeaver.ui.editors.sql;
 
-import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.TextViewer;
+import org.eclipse.swt.events.SelectionListener;
+import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IWorkbenchPartSite;
 import org.eclipse.ui.PartInitException;
@@ -31,6 +33,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences.SeparateConnectionBehavior;
+import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPContextProvider;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPImage;
@@ -41,6 +44,8 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.ui.UIServiceSQL;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.dialogs.MessageBoxBuilder;
+import org.jkiss.dbeaver.ui.dialogs.Reply;
 import org.jkiss.dbeaver.ui.editors.StringEditorInput;
 import org.jkiss.dbeaver.ui.editors.SubEditorSite;
 import org.jkiss.dbeaver.ui.editors.TextEditorUtils;
@@ -48,6 +53,7 @@ import org.jkiss.dbeaver.ui.editors.sql.dialogs.GenerateSQLParametrizedDialog;
 import org.jkiss.dbeaver.ui.editors.sql.dialogs.ViewSQLDialog;
 import org.jkiss.dbeaver.ui.editors.sql.handlers.SQLEditorHandlerOpenEditor;
 import org.jkiss.dbeaver.ui.editors.sql.handlers.SQLNavigatorContext;
+import org.jkiss.dbeaver.ui.internal.UIMessages;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -189,6 +195,8 @@ public class UIServiceSQLImpl implements UIServiceSQL {
         textViewer.setData("editor", editor);
         TextEditorUtils.enableHostEditorKeyBindingsSupport(partSite, textViewer.getTextWidget());
 
+        editorPH.addDisposeListener(e -> editor.dispose());
+
         return textViewer;
     }
 
@@ -221,16 +229,6 @@ public class UIServiceSQLImpl implements UIServiceSQL {
     }
 
     @Override
-    public void disposeSQLPanel(Object panelObject) {
-        if (panelObject instanceof TextViewer) {
-            Object editor = ((TextViewer) panelObject).getData("editor");
-            if (editor instanceof SQLEditorBase) {
-                ((SQLEditorBase) editor).dispose();
-            }
-        }
-    }
-
-    @Override
     public Object openNewScript(DBSObject forObject) {
         try {
             SQLEditorHandlerOpenEditor.openNewEditor(new SQLNavigatorContext(forObject), null);
@@ -256,11 +254,6 @@ public class UIServiceSQLImpl implements UIServiceSQL {
     }
 
     @Override
-    public void openResource(IResource element) {
-        SQLEditorHandlerOpenEditor.openResource(element, new SQLNavigatorContext());
-    }
-
-    @Override
     public boolean useIsolatedConnections(DBPContextProvider contextProvider) {
         DBPDataSourceContainer container = contextProvider.getExecutionContext().getDataSource().getContainer();
         SeparateConnectionBehavior behavior = SeparateConnectionBehavior.parse(
@@ -272,8 +265,48 @@ public class UIServiceSQLImpl implements UIServiceSQL {
             case NEVER:
                 return false;
             case DEFAULT:
-            default: 
-                return !container.isForceUseSingleConnection();
+            default:
+                return !container.isForceUseSingleConnection() && !container.getDriver().isEmbedded();
         }
+    }
+
+    @Override
+    public boolean confirmQueryExecution(
+        @NotNull String title,
+        @NotNull String message,
+        @NotNull String queryText,
+        @NotNull DBPContextProvider contextProvider,
+        boolean isWarning
+    ) {
+        final Reply[] reply = {null};
+
+        UIUtils.syncExec(() -> reply[0] = MessageBoxBuilder.builder(UIUtils.getActiveWorkbenchShell())
+            .setTitle(title)
+            .setMessage(message)
+            .setReplies(Reply.YES, Reply.NO)
+            .setDefaultReply(Reply.NO)
+            .setPrimaryImage(isWarning ? DBIcon.STATUS_WARNING : DBIcon.STATUS_QUESTION)
+            .setCustomButton(buttonBar -> {
+                buttonBar.setLayout(new GridLayout(3, false));
+                Button showQueryButton = UIUtils.createPushButton(
+                    buttonBar,
+                    UIMessages.dialog_confirm_action_show_query,
+                    null
+                );
+                showQueryButton.addSelectionListener(SelectionListener.widgetSelectedAdapter(e ->
+                    openSQLViewer(
+                        contextProvider.getExecutionContext(),
+                        UIMessages.dialog_confirm_action_query,
+                        null,
+                        queryText,
+                        false,
+                        false
+                    )
+                ));
+            })
+            .showMessageBox()
+        );
+
+        return reply[0] == Reply.YES;
     }
 }

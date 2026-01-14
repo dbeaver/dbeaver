@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,16 +16,16 @@
  */
 package org.jkiss.dbeaver.tools.sql;
 
-import org.eclipse.core.resources.IFile;
-import org.eclipse.core.resources.IResource;
-import org.eclipse.core.runtime.Path;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPTransactionIsolation;
-import org.jkiss.dbeaver.model.app.DBPPlatformDesktop;
+import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.data.json.JSONUtils;
-import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
+import org.jkiss.dbeaver.model.task.DBTTask;
 import org.jkiss.dbeaver.model.task.DBTTaskSettings;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.CommonUtils;
@@ -38,7 +38,7 @@ import java.util.Map;
 /**
  * SQLScriptExecuteSettings
  */
-public class SQLScriptExecuteSettings implements DBTTaskSettings<IResource> {
+public class SQLScriptExecuteSettings implements DBTTaskSettings {
 
     private static final Log log = Log.getLog(SQLScriptExecuteSettings.class);
 
@@ -99,14 +99,15 @@ public class SQLScriptExecuteSettings implements DBTTaskSettings<IResource> {
         this.transactionIsolation = transactionIsolation;
     }
 
-    public void loadConfiguration(DBRRunnableContext runnableContext, Map<String, Object> config) {
+    public void loadConfiguration(@NotNull DBTTask task) throws DBException {
+        Map<String, Object> config = task.getProperties();
         // Legacy config support (single datasource
         String projectName = JSONUtils.getString(config, "project");
         DBPProject project = CommonUtils.isEmpty(projectName) ? null : DBWorkbench.getPlatform().getWorkspace().getProject(projectName);
         if (project != null) {
             String dataSourceContainerId = JSONUtils.getString(config, "dataSourceContainer");
             if (!CommonUtils.isEmpty(dataSourceContainerId)) {
-                DBPDataSourceContainer dataSource = project.getDataSourceRegistry().getDataSource(dataSourceContainerId);
+                DBPDataSourceContainer dataSource = loadDataSourceOrThrow(project, dataSourceContainerId);
                 if (dataSource != null) {
                     dataSources.add(dataSource);
                 }
@@ -117,10 +118,13 @@ public class SQLScriptExecuteSettings implements DBTTaskSettings<IResource> {
             for (Map<String, Object> dsInfo : dsConfig) {
                 projectName = JSONUtils.getString(dsInfo, "project");
                 project = CommonUtils.isEmpty(projectName) ? null : DBWorkbench.getPlatform().getWorkspace().getProject(projectName);
+                if (project == null) {
+                    project = task.getProject();
+                }
                 if (project != null) {
                     String dataSourceContainerId = JSONUtils.getString(dsInfo, "dataSource");
                     if (!CommonUtils.isEmpty(dataSourceContainerId)) {
-                        DBPDataSourceContainer dataSource = project.getDataSourceRegistry().getDataSource(dataSourceContainerId);
+                        DBPDataSourceContainer dataSource = loadDataSourceOrThrow(project, dataSourceContainerId);
                         if (dataSource != null) {
                             dataSources.add(dataSource);
                         }
@@ -134,6 +138,20 @@ public class SQLScriptExecuteSettings implements DBTTaskSettings<IResource> {
         dumpQueryResultsToLog = JSONUtils.getBoolean(config, "dumpQueryResultsToLog");
 
         autoCommit = JSONUtils.getBoolean(config, "autoCommit");
+    }
+
+    @Nullable
+    private DBPDataSourceContainer loadDataSourceOrThrow(@NotNull DBPProject project, @NotNull String id) throws DBException {
+        DBPDataSourceRegistry dataSourceRegistry = project.getDataSourceRegistry();
+        DBPDataSourceContainer dataSource = dataSourceRegistry.getDataSource(id);
+        if (dataSource != null) {
+            return dataSource;
+        }
+        Throwable lastError = dataSourceRegistry.getLastError();
+        if (lastError != null) {
+            throw new DBException("Unable to load data source '" + id + "' from project '" + project.getId() + "'", lastError);
+        }
+        return null;
     }
 
     public void saveConfiguration(Map<String, Object> config) {
@@ -152,9 +170,4 @@ public class SQLScriptExecuteSettings implements DBTTaskSettings<IResource> {
 
         config.put("autoCommit", autoCommit);
     }
-
-    public static IFile getWorkspaceFile(String filePath) {
-        return DBPPlatformDesktop.getInstance().getWorkspace().getEclipseWorkspace().getRoot().getFile(new Path(filePath));
-    }
-
 }

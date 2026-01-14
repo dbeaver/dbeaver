@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.ext.mssql.model.generic;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBDatabaseException;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.generic.model.GenericStructContainer;
@@ -100,7 +101,7 @@ public class SQLServerGenericTable extends GenericTable implements DBPObjectWith
 
     @Override
     @Property(viewable = true, length = PropertyLength.MULTILINE, order = 100)
-    public String getDescription(DBRProgressMonitor monitor) throws DBException {
+    public String getDescription(@NotNull DBRProgressMonitor monitor) throws DBException {
         String description = getDescription();
         if (description != null || !isSqlServer()) {
             return description;
@@ -126,7 +127,7 @@ public class SQLServerGenericTable extends GenericTable implements DBPObjectWith
                 }
 
             } catch (SQLException e) {
-                throw new DBException(e, getDataSource());
+                throw new DBDatabaseException(e, getDataSource());
             }
         }
 
@@ -198,7 +199,7 @@ public class SQLServerGenericTable extends GenericTable implements DBPObjectWith
                 }
             }
         } catch (SQLException | DBCException e) {
-            log.error("Error reading table statistics", e);
+            log.debug("Error reading table statistics", e);
         }
     }
 }

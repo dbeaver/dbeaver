@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,18 +31,23 @@ import org.jkiss.dbeaver.model.sql.completion.SQLCompletionRequest;
 import org.jkiss.dbeaver.model.sql.parser.SQLRuleManager;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase;
 import org.jkiss.dbeaver.ui.editors.sql.SQLPreferenceConstants;
+import org.jkiss.dbeaver.ui.editors.sql.SQLPreferenceConstants.*;
 
 import java.util.Map;
 
-/**
- * SQLContextInformer
- */
-public class SQLEditorCompletionContext implements SQLCompletionContext
-{
+
+public class SQLEditorCompletionContext implements SQLCompletionContext {
     private final SQLEditorBase editor;
+    private final SQLCompletionObjectNameFormKind objectNameFormKind;
 
     public SQLEditorCompletionContext(SQLEditorBase editor) {
         this.editor = editor;
+        this.objectNameFormKind = SQLCompletionObjectNameFormKind.getFromPreferences(editor.getActivePreferenceStore());
+    }
+
+    @NotNull
+    public SQLCompletionObjectNameFormKind getObjectNameForm() {
+        return this.objectNameFormKind;
     }
 
     @Override
@@ -68,7 +73,7 @@ public class SQLEditorCompletionContext implements SQLCompletionContext
 
     @Override
     public boolean isUseFQNames() {
-        return getActivePreferenceStore().getBoolean(SQLPreferenceConstants.PROPOSAL_ALWAYS_FQ);
+        return objectNameFormKind.qualified;
     }
 
     @Override
@@ -83,7 +88,7 @@ public class SQLEditorCompletionContext implements SQLCompletionContext
 
     @Override
     public boolean isUseShortNames() {
-        return getActivePreferenceStore().getBoolean(SQLPreferenceConstants.PROPOSAL_SHORT_NAME);
+        return objectNameFormKind.unqualified;
     }
 
     @Override
@@ -119,6 +124,11 @@ public class SQLEditorCompletionContext implements SQLCompletionContext
     @Override
     public boolean isShowValues() {
         return getActivePreferenceStore().getBoolean(SQLPreferenceConstants.SHOW_VALUES);
+    }
+
+    @Override
+    public boolean isForceQualifiedColumnNames() {
+        return getActivePreferenceStore().getBoolean(SQLPreferenceConstants.QUALIFIED_COLUMN_NAMES);
     }
 
     @Override

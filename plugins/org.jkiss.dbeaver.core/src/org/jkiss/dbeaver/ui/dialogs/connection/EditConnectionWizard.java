@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,8 +34,10 @@ import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
+import org.jkiss.dbeaver.model.connection.DBPDriverLibrary;
 import org.jkiss.dbeaver.model.connection.DBPDriverSubstitutionDescriptor;
 import org.jkiss.dbeaver.model.navigator.DBNBrowseSettings;
+import org.jkiss.dbeaver.model.secret.DBSSecretValue;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.registry.DataSourcePageDescriptor;
 import org.jkiss.dbeaver.registry.DataSourceViewDescriptor;
@@ -51,7 +53,9 @@ import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.security.MessageDigest;
+import java.util.HashMap;
 import java.util.Locale;
+import java.util.Map;
 
 /**
  * Edit connection dialog
@@ -64,9 +68,12 @@ public class EditConnectionWizard extends ConnectionWizard {
     private final DataSourceDescriptor originalDataSource;
     @NotNull
     private final DataSourceDescriptor dataSource;
+    @NotNull
+    private final Map<String, String> originalDriverLibsIdVersion;
     @Nullable
     private ConnectionPageSettings pageSettings;
     private ConnectionPageGeneral pageGeneral;
+    private ConnectionPageInternalParameters pageInternalParameters;
     //private ConnectionPageNetwork pageNetwork;
     private ConnectionPageInitialization pageInit;
     private ConnectionPageShellCommands pageEvents;
@@ -76,7 +83,9 @@ public class EditConnectionWizard extends ConnectionWizard {
      */
     public EditConnectionWizard(@NotNull DataSourceDescriptor dataSource) {
         this.originalDataSource = dataSource;
-        this.dataSource = new DataSourceDescriptor(dataSource, dataSource.getRegistry());
+        this.originalDriverLibsIdVersion = getLibsIdVersion(dataSource);
+        this.dataSource = dataSource.getRegistry().createDataSource(dataSource);
+        this.dataSource.setId(dataSource.getId());
         if (!this.dataSource.isSavePassword()) {
             this.dataSource.resetPassword();
         }
@@ -96,6 +105,17 @@ public class EditConnectionWizard extends ConnectionWizard {
                 ));
             }
         });
+    }
+
+    @NotNull
+    private static Map<String, String> getLibsIdVersion(@NotNull DataSourceDescriptor dataSource) {
+        Map<String, String> libs = new HashMap<>();
+        for (DBPDriverLibrary lib : dataSource.getDriver().getDriverLibraries()) {
+            if (!lib.isDisabled()) {
+                libs.put(lib.getId(), lib.getVersion());
+            }
+        }
+        return libs;
     }
 
     @NotNull
@@ -141,7 +161,7 @@ public class EditConnectionWizard extends ConnectionWizard {
      */
     @Override
     public void addPages() {
-        if (dataSource.getDriver().isDeprecated()) {
+        if (dataSource.getDriver().isNotAvailable()) {
             addPage(new ConnectionPageDeprecation(dataSource.getDriver()));
             return;
         }
@@ -150,12 +170,13 @@ public class EditConnectionWizard extends ConnectionWizard {
             dataSource.getDriver().getProviderDescriptor(),
             IActionConstants.EDIT_CONNECTION_POINT);
         if (view != null) {
-            pageSettings = new ConnectionPageSettings(this, view, dataSource, getDriverSubstitution());
+            pageSettings = new ConnectionPageSettings(this, view, getDriverSubstitution());
             addPage(pageSettings);
         }
 
         boolean embedded = dataSource.getDriver().isEmbedded();
         pageGeneral = new ConnectionPageGeneral(this, dataSource);
+        pageInternalParameters = new ConnectionPageInternalParameters(dataSource);
 
 //        if (!embedded) {
 //            pageNetwork = new ConnectionPageNetwork(this);
@@ -167,17 +188,22 @@ public class EditConnectionWizard extends ConnectionWizard {
         if (pageSettings != null) {
             pageSettings.addSubPage(pageInit);
             pageSettings.addSubPage(pageEvents);
-        }
 
-        if (!embedded && pageSettings != null) {
-            PrefPageConnectionClient pageClientSettings = new PrefPageConnectionClient();
-            pageSettings.addSubPage(
-                createPreferencePage(pageClientSettings, CoreMessages.dialog_connection_edit_wizard_connections, CoreMessages.dialog_connection_edit_wizard_connections_description));
-        }
-        if (pageSettings != null) {
-            PrefPageTransactions pageClientTransactions = new PrefPageTransactions();
-            pageSettings.addSubPage(
-                createPreferencePage(pageClientTransactions, CoreMessages.dialog_connection_edit_wizard_transactions, CoreMessages.dialog_connection_edit_wizard_transactions_description));
+            if (!embedded) {
+                pageSettings.addSubPage(createPreferencePage(
+                    new PrefPageConnectionClient(),
+                    CoreMessages.dialog_connection_edit_wizard_connections,
+                    CoreMessages.dialog_connection_edit_wizard_connections_description
+                ));
+            }
+
+            pageSettings.addSubPage(createPreferencePage(
+                new PrefPageTransactions(),
+                CoreMessages.dialog_connection_edit_wizard_transactions,
+                CoreMessages.dialog_connection_edit_wizard_transactions_description
+            ));
+
+            pageSettings.addSubPage(pageInternalParameters);
         }
 
         addPreferencePage(new PrefPageMetaData(), CoreMessages.dialog_connection_edit_wizard_metadata,  CoreMessages.dialog_connection_edit_wizard_metadata_description);
@@ -242,6 +268,61 @@ public class EditConnectionWizard extends ConnectionWizard {
         return null;
     }
 
+    @NotNull
+    @Override
+    protected PersistResult persistDataSource() {
+        if (dataSource.getDriver().isNotAvailable()) {
+            return PersistResult.UNCHANGED;
+        }
+
+        DBPDataSourceRegistry registry = originalDataSource.getRegistry();
+        DataSourceDescriptor dsCopy = registry.createDataSource(originalDataSource);
+        dsCopy.setId(originalDataSource.getId());
+        DataSourceDescriptor dsChanged = dataSource.getRegistry().createDataSource(dataSource);
+        dsChanged.setId(dataSource.getId());
+        try {
+            saveSettings(dsChanged);
+
+            if (dsCopy.equalSettings(dsChanged) && isDriverLibsVersionsSame(dsChanged)) {
+                // No changes
+                return PersistResult.UNCHANGED;
+            }
+
+            // Check locked datasources
+            if (!CommonUtils.isEmpty(dataSource.getLockPasswordHash())) {
+                if (!isOnlyUserCredentialChanged(dsCopy, dsChanged)) {
+                    if (!checkLockPassword()) {
+                        return PersistResult.ERROR;
+                    }
+                }
+            }
+        } finally {
+            dsCopy.dispose();
+            dsChanged.dispose();
+        }
+
+        // Save
+        saveSettings(originalDataSource);
+
+        // Set selected shared creds (creds may be resolved during auth model interactions)
+        DBSSecretValue selectedSharedCredentials = dataSource.getSelectedSharedCredentials();
+        if (selectedSharedCredentials != null) {
+            selectedSharedCredentials.setValue(originalDataSource.saveToSecret());
+            originalDataSource.setSelectedSharedCredentials(selectedSharedCredentials);
+        }
+
+        if (originalDataSource.persistConfiguration()) {
+            return PersistResult.CHANGED;
+        } else {
+            return PersistResult.ERROR;
+        }
+    }
+
+    private boolean isDriverLibsVersionsSame(@NotNull DataSourceDescriptor dsChangedSource) {
+        Map<String, String> currentLibs = getLibsIdVersion(dsChangedSource);
+        return originalDriverLibsIdVersion.equals(currentLibs);
+    }
+
     /**
      * This method is called when 'Finish' button is pressed in
      * the wizard. We will create an operation and run it
@@ -249,47 +330,16 @@ public class EditConnectionWizard extends ConnectionWizard {
      */
     @Override
     public boolean performFinish() {
-        if (dataSource.getDriver().isDeprecated()) {
-            return true;
-        }
-
-        DBPDataSourceRegistry registry = originalDataSource.getRegistry();
-        DataSourceDescriptor dsCopy = new DataSourceDescriptor(originalDataSource, registry);
-        DataSourceDescriptor dsChanged = new DataSourceDescriptor(dataSource, dataSource.getRegistry());
-        saveSettings(dsChanged);
-
-        if (dsCopy.equalSettings(dsChanged)) {
-            // No changes
-            return true;
-        }
-
-        // Check locked datasources
-        if (!CommonUtils.isEmpty(dataSource.getLockPasswordHash())) {
-            if (!isOnlyUserCredentialChanged(dsCopy, dsChanged)) {
-                if (!checkLockPassword()) {
-                    return false;
-                }
-            }
-        }
-
-
-        boolean saveConnectionSettings = true;
-        if (originalDataSource.isConnected()) {
+        PersistResult result = persistDataSource();
+        if (result == PersistResult.CHANGED && originalDataSource.isConnected()) {
             if (UIUtils.confirmAction(getShell(), CoreMessages.dialog_connection_edit_wizard_conn_change_title,
                 NLS.bind(CoreMessages.dialog_connection_edit_wizard_conn_change_question,
                 originalDataSource.getName()) )
             ) {
                 DataSourceHandler.reconnectDataSource(null, originalDataSource);
-            } else {
-                // Guess we shouldn't apply connection settings changes if reconnect was rejected,
-                // because in this case they are in inconsistent state
-                saveConnectionSettings = false;
             }
         }
-
-        // Save
-        saveSettings(originalDataSource);
-        return originalDataSource.persistConfiguration();
+        return result != PersistResult.ERROR;
     }
 
     private boolean isOnlyUserCredentialChanged(DataSourceDescriptor dsCopy, DataSourceDescriptor dsChanged) {
@@ -335,7 +385,7 @@ public class EditConnectionWizard extends ConnectionWizard {
 
     @Override
     protected void saveSettings(DataSourceDescriptor dataSource) {
-        if (dataSource.getDriver().isDeprecated()) {
+        if (dataSource.getDriver().isNotAvailable()) {
             return;
         }
 
@@ -343,6 +393,7 @@ public class EditConnectionWizard extends ConnectionWizard {
             pageSettings.saveSettings(dataSource);
         }
         pageGeneral.saveSettings(dataSource);
+        pageInternalParameters.saveSettings(dataSource);
         pageInit.saveSettings(dataSource);
         pageEvents.saveSettings(dataSource);
         for (IDialogPage page : getPages()) {
@@ -399,4 +450,10 @@ public class EditConnectionWizard extends ConnectionWizard {
 */
     }
 
+    @Override
+    public void dispose() {
+        super.dispose();
+        // Dispose temp datasource
+        this.dataSource.dispose();
+    }
 }

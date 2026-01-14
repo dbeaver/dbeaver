@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.ext.postgresql.model;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
 import org.jkiss.dbeaver.ext.postgresql.edit.PostgreTableColumnManager;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
@@ -44,11 +45,12 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
+
 /**
  * PostgreViewBase
  */
-public abstract class PostgreViewBase extends PostgreTableReal implements DBSView
-{
+public abstract class PostgreViewBase extends PostgreTableReal implements DBSView {
+
     private String source;
 
     public PostgreViewBase(PostgreSchema catalog)
@@ -78,8 +80,7 @@ public abstract class PostgreViewBase extends PostgreTableReal implements DBSVie
     }
 
     @Override
-    public Collection<? extends DBSTableIndex> getIndexes(DBRProgressMonitor monitor) throws DBException
-    {
+    public Collection<? extends DBSTableIndex> getIndexes(@NotNull DBRProgressMonitor monitor) throws DBException {
         return null;
     }
 
@@ -87,25 +88,31 @@ public abstract class PostgreViewBase extends PostgreTableReal implements DBSVie
         return source;
     }
 
+    @NotNull
     @Override
     @Property(hidden = true, editable = true, updatable = true, order = -1)
-    public String getObjectDefinitionText(DBRProgressMonitor monitor, Map<String, Object> options) throws DBException
+    public String getObjectDefinitionText(@NotNull DBRProgressMonitor monitor, @NotNull Map<String, Object> options) throws DBException
     {
-        if (source == null) {
+        boolean needRefresh = false;
+        if (options != null) {
+            needRefresh = CommonUtils.toBoolean(options.get(DBPScriptObject.OPTION_REFRESH));
+        }
+
+        if (source == null || needRefresh) {
             if (isPersisted()) {
-                try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Read view definition")) {
-                    // Do not use view id as a parameter. For some reason it doesn't work for Redshift
-                    String definition = JDBCUtils.queryString(session, "SELECT pg_get_viewdef(" + getObjectId() + ", true)");
-                    if (definition == null) {
-                        throw new DBException ("View '"  + getName() + "' doesn't exist");
+                source = getDataSource().getServerType().readViewDDL(monitor, this);
+                if (source == null) {
+                    try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Read view definition")) {
+
+                        String definition = fetchViewQueryResultIfItNull(session);
+                        source = PostgreUtils.getViewDDL(monitor, this, definition, options);
+                        String extDefinition = readExtraDefinition(session, options);
+                        if (extDefinition != null) {
+                            this.source += "\n" + extDefinition;
+                        }
+                    } catch (SQLException e) {
+                        throw new DBException("Error reading view definition: " + e.getMessage(), e);
                     }
-                    this.source = PostgreUtils.getViewDDL(monitor, this, definition);
-                    String extDefinition = readExtraDefinition(session, options);
-                    if (extDefinition != null) {
-                        this.source += "\n" + extDefinition;
-                    }
-                } catch (SQLException e) {
-                    throw new DBException("Error reading view definition: " + e.getMessage(), e);
                 }
             } else {
                 source = "";
@@ -130,7 +137,9 @@ public abstract class PostgreViewBase extends PostgreTableReal implements DBSVie
         if (isPersisted()) {
             Collection<PostgreTrigger> triggers = getTriggers(monitor);
             if (!CommonUtils.isEmpty(triggers)) {
-                actions.add(new SQLDatabasePersistActionComment(getDataSource(), "View Triggers"));
+                if (getDataSource().getContainer().getPreferenceStore().getBoolean(ModelPreferences.META_EXTRA_DDL_INFO)) {
+                    actions.add(new SQLDatabasePersistActionComment(getDataSource(), "View Triggers"));
+                }
                 for (PostgreTrigger trigger : triggers) {
                     actions.add(new SQLDatabasePersistAction("Create trigger", trigger.getObjectDefinitionText(monitor, options)));
                 }
@@ -147,6 +156,15 @@ public abstract class PostgreViewBase extends PostgreTableReal implements DBSVie
         }
 
         return ddl.toString();
+    }
+
+    private String fetchViewQueryResultIfItNull(JDBCSession session) throws SQLException, DBException {
+        // Do not use view id as a parameter. For some reason it doesn't work for Redshift
+        String definition = JDBCUtils.queryString(session, "SELECT pg_get_viewdef(" + getObjectId() + ", true)");
+        if (definition == null) {
+            throw new DBException("View '" + getName() + "' doesn't exist");
+        }
+        return definition;
     }
 
     protected String readExtraDefinition(JDBCSession session, Map<String, Object> options) throws DBException {

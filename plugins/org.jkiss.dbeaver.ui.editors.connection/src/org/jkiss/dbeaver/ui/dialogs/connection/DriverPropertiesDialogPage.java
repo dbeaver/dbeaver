@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -72,11 +72,12 @@ public class DriverPropertiesDialogPage extends ConnectionPageAbstract
             }
 
             final DBPConnectionConfiguration tmpConnectionInfo = new DBPConnectionConfiguration();
-            final DataSourceDescriptor tempDataSource = new DataSourceDescriptor(
-                site.getDataSourceRegistry(),
-                activeDataSource.getId(),
-                activeDataSource.getDriver(),
-                tmpConnectionInfo);
+            final DataSourceDescriptor tempDataSource = site.getDataSourceRegistry()
+                .createDataSource(
+                    activeDataSource.getId(),
+                    activeDataSource.getDriver(),
+                    tmpConnectionInfo
+                );
 
             hostPage.saveSettings(tempDataSource);
             tmpConnectionInfo.getProperties().putAll(activeDataSource.getConnectionConfiguration().getProperties());

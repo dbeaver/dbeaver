@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,6 +37,8 @@ import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.tools.transfer.DataTransferPipe;
 import org.jkiss.dbeaver.tools.transfer.DataTransferSettings;
+import org.jkiss.dbeaver.tools.transfer.IDataTransferSettings;
+import org.jkiss.dbeaver.tools.transfer.database.DatabaseConsumerSettings;
 import org.jkiss.dbeaver.tools.transfer.database.DatabaseTransferConsumer;
 import org.jkiss.dbeaver.tools.transfer.database.DatabaseTransferProducer;
 import org.jkiss.dbeaver.tools.transfer.internal.DTMessages;
@@ -69,8 +71,6 @@ public class DatabaseProducerPageInputObjects extends DataTransferPageNodeSettin
         initializeDialogUnits(parent);
 
         Composite composite = UIUtils.createComposite(parent, 1);
-
-        DataTransferSettings settings = getWizard().getSettings();
 
         {
             Composite tablesGroup = UIUtils.createComposite(composite, 1);
@@ -175,6 +175,7 @@ public class DatabaseProducerPageInputObjects extends DataTransferPageNodeSettin
                     if (chooseConsumer) {
                         if (object instanceof DBSDataManipulator) {
                             pipe.setConsumer(new DatabaseTransferConsumer((DBSDataManipulator) object));
+                            updateConsumerContainer(pipe);
                         }
                     } else {
                         if (object instanceof DBSDataContainer) {
@@ -195,7 +196,6 @@ public class DatabaseProducerPageInputObjects extends DataTransferPageNodeSettin
     private void updateItemData(TableItem item, DataTransferPipe pipe) {
         setErrorMessage(null);
         DataTransferSettings settings = getWizard().getSettings();
-
         if (pipe.getProducer() == null || pipe.getProducer().getDatabaseObject() == null) {
             item.setImage(0, null);
             item.setText(0, DTUIMessages.database_producer_page_input_objects_item_text_none);
@@ -207,6 +207,7 @@ public class DatabaseProducerPageInputObjects extends DataTransferPageNodeSettin
             item.setImage(1, null);
             item.setText(1, DTUIMessages.database_producer_page_input_objects_item_text_none);
         } else {
+            updateConsumerContainer(pipe);
             item.setImage(1, DBeaverIcons.getImage(settings.getConsumer().getIcon()));
             item.setText(1, pipe.getConsumer().getObjectName());
         }
@@ -290,6 +291,7 @@ public class DatabaseProducerPageInputObjects extends DataTransferPageNodeSettin
             if (chooseConsumer) {
                 if (object instanceof DBSDataManipulator) {
                     pipe.setConsumer(new DatabaseTransferConsumer((DBSDataManipulator) object));
+                    updateConsumerContainer(pipe);
                 }
             } else {
                 if (object instanceof DBSDataContainer) {
@@ -299,6 +301,18 @@ public class DatabaseProducerPageInputObjects extends DataTransferPageNodeSettin
             return true;
         }
         return false;
+    }
+
+    private void updateConsumerContainer(DataTransferPipe pipe) {
+        IDataTransferSettings consumerSettings = getWizard().getSettings().getNodeSettings(getWizard().getSettings().getConsumer());
+        if (consumerSettings instanceof DatabaseConsumerSettings databaseConsumerSettings) {
+            if (pipe.getConsumer() != null && pipe.getConsumer().getDatabaseObject() instanceof DBSDataManipulator databaseObject) {
+                DBSObject container = databaseObject.getParentObject();
+                if (container instanceof DBSObjectContainer) {
+                    databaseConsumerSettings.setContainer((DBSObjectContainer) container);
+                }
+            }
+        }
     }
 
     @Override

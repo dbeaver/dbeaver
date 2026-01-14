@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,20 +17,10 @@
 
 package org.jkiss.dbeaver.ui.actions;
 
-import org.eclipse.jface.action.Action;
 import org.jkiss.dbeaver.ui.internal.UINavigatorMessages;
 
-public class EmptyListAction extends Action
-{
-    @Override
-    public String getText()
-    {
-        return UINavigatorMessages.datasource_list_action_empty;
-    }
-
-    @Override
-    public boolean isEnabled()
-    {
-        return false;
+public class EmptyListAction extends DisabledLabelAction {
+    public EmptyListAction() {
+        super(UINavigatorMessages.datasource_list_action_empty);
     }
 }

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,6 @@ package org.jkiss.dbeaver.model.rm;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 
-import java.util.List;
 import java.util.Map;
 
 public class RMEvent {
@@ -28,7 +27,8 @@ public class RMEvent {
         RESOURCE_DELETE,
         RESOURCE_ADD,
         PROJECT_DELETE,
-        PROJECT_ADD
+        PROJECT_ADD,
+        PROJECT_UPDATE
     }
 
     @NotNull
@@ -70,6 +70,7 @@ public class RMEvent {
         return resourcePath;
     }
 
+    @NotNull
     public Map<String, Object> getParameters() {
         return Map.copyOf(parameters);
     }

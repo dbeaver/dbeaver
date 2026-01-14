@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  * Copyright (C) 2017-2018 Andrew Khitrin (ahitrin@gmail.com)
  * Copyright (C) 2017-2018 Alexander Fedorov (alexander.fedorov@jkiss.org)
  *
@@ -19,11 +19,11 @@
 
 package org.jkiss.dbeaver.debug;
 
-import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.DBDatabaseException;
 import org.jkiss.dbeaver.model.DBPDataSource;
 
 @SuppressWarnings("serial")
-public class DBGException extends DBException {
+public class DBGException extends DBDatabaseException {
 
     public DBGException(String message, Throwable e) {
         super(message, e);

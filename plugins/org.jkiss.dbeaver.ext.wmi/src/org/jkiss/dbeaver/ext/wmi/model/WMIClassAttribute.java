@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ext.wmi.model;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
@@ -39,6 +40,7 @@ public class WMIClassAttribute extends WMIClassElement<WMIObjectAttribute> imple
         super(wmiClass, attribute);
     }
 
+    @NotNull
     @Override
     @Property(viewable = true, order = 10)
     public String getTypeName()
@@ -46,6 +48,7 @@ public class WMIClassAttribute extends WMIClassElement<WMIObjectAttribute> imple
         return element.getTypeName();
     }
 
+    @NotNull
     @Override
     public String getFullTypeName() {
         return DBUtils.getFullTypeName(this);
@@ -57,18 +60,21 @@ public class WMIClassAttribute extends WMIClassElement<WMIObjectAttribute> imple
         return element.getType();
     }
 
+    @NotNull
     @Override
     public DBPDataKind getDataKind()
     {
         return getDataKindById(element.getType());
     }
 
+    @Nullable
     @Override
     public Integer getScale()
     {
         return 0;
     }
 
+    @Nullable
     @Override
     public Integer getPrecision()
     {

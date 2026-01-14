@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,11 +30,13 @@ import org.eclipse.swt.widgets.Control;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
+import org.jkiss.dbeaver.ui.BaseThemeSettings;
 import org.jkiss.dbeaver.ui.UIStyles;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.resultset.AbstractPresentation;
 import org.jkiss.dbeaver.ui.controls.resultset.IResultSetController;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetCopySettings;
+import org.jkiss.dbeaver.ui.css.CSSUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.Collections;
@@ -52,15 +54,16 @@ public class EmptyPresentation extends AbstractPresentation {
     public void createPresentation(@NotNull final IResultSetController controller, @NotNull Composite parent) {
         super.createPresentation(controller, parent);
 
-        UIUtils.createHorizontalLine(parent);
+        //UIUtils.createHorizontalLine(parent);
         placeholder = new Canvas(parent, SWT.NONE);
         placeholder.setLayoutData(new GridData(GridData.FILL_BOTH));
         placeholder.setBackground(controller.getDefaultBackground());
+        CSSUtils.setExcludeFromStyling(placeholder);
 
-        final Font normalFont = parent.getFont();
+        final Font normalFont = BaseThemeSettings.instance.baseFont;
         FontData[] fontData = normalFont.getFontData();
         fontData[0].setStyle(fontData[0].getStyle() | SWT.BOLD);
-        fontData[0].setHeight(18);
+        fontData[0].setHeight((int) (fontData[0].height * 1.5));
         final Font largeFont = new Font(normalFont.getDevice(), fontData[0]);
         placeholder.addDisposeListener(e -> UIUtils.dispose(largeFont));
 
@@ -68,18 +71,20 @@ public class EmptyPresentation extends AbstractPresentation {
             if (controller.isRefreshInProgress()) {
                 return;
             }
-            e.gc.setFont(largeFont);
-            e.gc.setForeground(UIStyles.getDefaultTextForeground());
-            //int fontSize = largeFont.getFontData()[0].getHeight();
-            String emptyDataMessage = controller.getDecorator().getEmptyDataMessage();
-            if (!CommonUtils.isEmpty(emptyDataMessage)) {
-                Point emSize = e.gc.textExtent(emptyDataMessage);
-                UIUtils.drawMessageOverControl(placeholder, e, emptyDataMessage, -emSize.y);
-            }
-            e.gc.setFont(normalFont);
+            Point descriptionSize = null;
             String emptyDataDescription = controller.getDecorator().getEmptyDataDescription();
             if (!CommonUtils.isEmpty(emptyDataDescription)) {
-                UIUtils.drawMessageOverControl(placeholder, e, emptyDataDescription, 10);
+                e.gc.setFont(normalFont);
+                descriptionSize = UIUtils.drawMessageOverControl(placeholder, e, emptyDataDescription, 10);
+            }
+
+            String emptyDataMessage = controller.getDecorator().getEmptyDataMessage();
+            if (!CommonUtils.isEmpty(emptyDataMessage)) {
+                e.gc.setFont(largeFont);
+                e.gc.setForeground(UIStyles.getDefaultTextForeground());
+                Point emSize = descriptionSize == null ? new Point(0, 0) : descriptionSize;
+                UIUtils.drawMessageOverControl(placeholder, e, emptyDataMessage, -emSize.y);
+                //e.gc.setFont(normalFont);
             }
         });
 

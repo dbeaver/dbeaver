@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,10 +24,21 @@ import org.jkiss.code.NotNull;
 
 public class STMTreeTermNode extends TerminalNodeImpl implements STMTreeNode {
     
-    private String nodeName = null; 
+    private String nodeName = null;
+    private final int atnState;
     
     public STMTreeTermNode(@NotNull Token symbol) {
         super(symbol);
+        this.atnState = -1;
+    }
+    
+    public STMTreeTermNode(@NotNull Token symbol, int atnState) {
+        super(symbol);
+        this.atnState = atnState;
+    }
+
+    public int getAtnState() {
+        return this.atnState;
     }
 
     @Override
@@ -46,4 +57,15 @@ public class STMTreeTermNode extends TerminalNodeImpl implements STMTreeNode {
         return new Interval(this.getSymbol().getStartIndex(), this.getSymbol().getStopIndex());
     }
 
+    @NotNull
+    @Override
+    public String getTextContent() {
+        Interval textRange = this.getRealInterval();
+        return this.getSymbol().getInputStream().getText(textRange);
+    }
+
+    @Override
+    public boolean hasErrorChildren() {
+        return false;
+    }
 }

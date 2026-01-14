@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,6 +34,8 @@ import java.util.stream.Collectors;
  * JDBCUtils
  */
 public class DatabaseURL {
+
+    public static final String GENERIC_URL_TEMPLATE = "[jdbc:]{driver}://[{user}:{password}@]{host}[:{port}][/{database}]";
 
     private static final Log log = Log.getLog(DatabaseURL.class);
 
@@ -80,7 +82,8 @@ public class DatabaseURL {
                     newComponent = newComponent.replace(makePropPattern(DBConstants.PROP_FILE), connectionInfo.getDatabaseName());
                 }
                 newComponent = newComponent.replace(makePropPattern(DBConstants.PROP_USER), CommonUtils.notEmpty(connectionInfo.getUserName()));
-                newComponent = newComponent.replace(makePropPattern(DBConstants.PROP_PASSWORD), CommonUtils.notEmpty(connectionInfo.getUserPassword()));
+                // support of {password} pattern was removed for security reasons (see dbeaver/pro#1888)
+                //newComponent = newComponent.replace(makePropPattern(DBConstants.PROP_PASSWORD), CommonUtils.notEmpty(connectionInfo.getUserPassword()));
 
                 if (newComponent.startsWith("[")) { //$NON-NLS-1$
                     if (!newComponent.equals(component)) {
@@ -177,12 +180,14 @@ public class DatabaseURL {
         return metaURL;
     }
 
+
     @NotNull
     public static Pattern getPattern(@NotNull String sampleUrl) {
         String pattern = sampleUrl;
         pattern = CommonUtils.replaceAll(pattern, "\\[(.*?)]", m -> "\\\\E(?:\\\\Q" + m.group(1) + "\\\\E)?\\\\Q");
         pattern = CommonUtils.replaceAll(pattern, "\\{(.*?)}", m -> "\\\\E(\\?<\\\\Q" + m.group(1) + "\\\\E>" + getPropertyRegex(m.group(1)) + ")\\\\Q");
-        pattern = "^\\Q" + pattern + "\\E$";
+        pattern = "^\\Q" + pattern + "\\E";
+
         return Pattern.compile(pattern);
     }
 

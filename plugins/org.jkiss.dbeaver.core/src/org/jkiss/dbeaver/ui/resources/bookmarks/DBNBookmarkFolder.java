@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,12 +20,15 @@ import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.app.DBPResourceHandler;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.DBNResource;
+import org.jkiss.dbeaver.model.navigator.NavigatorResources;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.ui.UIIcon;
 
 import java.util.Collection;
@@ -43,14 +46,14 @@ public class DBNBookmarkFolder extends DBNResource {
     @Override
     public DBPImage getResourceNodeIcon() {
         IResource resource = getResource();
-        if (resource != null && isRootResource(resource)) {
+        if (NavigatorResources.isRootResource(getOwnerProject(), resource)) {
             return UIIcon.BOOKMARK_FOLDER;
         }
         return super.getResourceNodeIcon();
     }
 
     @Override
-    public boolean supportsDrop(DBNNode otherNode) {
+    public boolean supportsDrop(@Nullable DBNNode otherNode) {
         if (otherNode instanceof DBNDatabaseNode || otherNode instanceof DBNBookmark) {
             return true;
         } else {
@@ -59,12 +62,14 @@ public class DBNBookmarkFolder extends DBNResource {
     }
 
     @Override
-    public void dropNodes(Collection<DBNNode> nodes) throws DBException {
+    public void dropNodes(@NotNull DBRProgressMonitor monitor, @NotNull Collection<DBNNode> nodes) throws DBException {
         for (DBNNode node : nodes) {
             if (node instanceof DBNDatabaseNode) {
-                BookmarksHandlerImpl.createBookmark((DBNDatabaseNode) node, node.getNodeName(), (IFolder) getResource());
+                BookmarksHandlerImpl.createBookmark((DBNDatabaseNode) node,
+                    node.getNodeDisplayName(),
+                    (IFolder) getResource());
             } else if (node instanceof DBNBookmark) {
-                super.dropNodes(Collections.singleton(node));
+                super.dropNodes(monitor, Collections.singleton(node));
             }
         }
     }
@@ -78,7 +83,9 @@ public class DBNBookmarkFolder extends DBNResource {
     public void pasteNodes(@NotNull Collection<DBNNode> nodes) throws DBException {
         for (DBNNode node : nodes) {
             if (node instanceof DBNDatabaseNode) {
-                BookmarksHandlerImpl.createBookmark((DBNDatabaseNode) node, node.getNodeName(), (IFolder) getResource());
+                BookmarksHandlerImpl.createBookmark((DBNDatabaseNode) node,
+                    node.getNodeDisplayName(),
+                    (IFolder) getResource());
             }
         }
     }

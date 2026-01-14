@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  * Copyright (C) 2019 Dmitriy Dubson (ddubson@pivotal.io)
  * Copyright (C) 2019 Gavin Shaw (gshaw@pivotal.io)
  * Copyright (C) 2019 Zach Marcin (zmarcin@pivotal.io)
@@ -20,11 +20,14 @@
  */
 package org.jkiss.dbeaver.ext.greenplum.model;
 
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataSource;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreSchema;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreTableColumn;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreTableRegular;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.utils.CommonUtils;
 
@@ -42,6 +45,7 @@ public class GreenplumTable extends PostgreTableRegular {
     private int[] distributionColumns;
 
     private boolean supportsReplicatedDistribution = false;
+    private String accessMethod;
 
     public GreenplumTable(PostgreSchema catalog) {
         super(catalog);
@@ -53,6 +57,18 @@ public class GreenplumTable extends PostgreTableRegular {
         if (catalog.getDataSource().isServerVersionAtLeast(9, 1)) {
             supportsReplicatedDistribution = true;
         }
+
+        PostgreDataSource dataSource = getDataSource();
+        if (dataSource instanceof GreenplumDataSource) {
+            if (((GreenplumDataSource) dataSource).isGreenplumVersionAtLeast(7, 0)) {
+                accessMethod = JDBCUtils.safeGetString(dbResult, "amname");
+            }
+        }
+    }
+
+    @Nullable
+    public String getAccessMethod() {
+        return accessMethod;
     }
 
     private List<PostgreTableColumn> getDistributionPolicy(DBRProgressMonitor monitor) throws DBException {
@@ -90,7 +106,19 @@ public class GreenplumTable extends PostgreTableRegular {
                 distributionColumns = GreenplumUtils.getDistributionTableColumns(monitor, distributionColumns, this);
             }
 
-            GreenplumUtils.addObjectModifiersToDDL(monitor, ddl, this, distributionColumns, supportsReplicatedDistribution);
+            boolean readPartitionInfo = true;
+            PostgreDataSource dataSource = getDataSource();
+            if (dataSource instanceof GreenplumDataSource) {
+                // Read partitions DDLs separately starting Greenplum 7
+                readPartitionInfo = !((GreenplumDataSource) dataSource).isGreenplumVersionAtLeast(7, 0);
+            }
+            GreenplumUtils.addObjectModifiersToDDL(
+                monitor,
+                ddl,
+                this,
+                distributionColumns,
+                supportsReplicatedDistribution,
+                readPartitionInfo);
         } catch (DBException e) {
             log.error("Error reading Greenplum table properties", e);
         }

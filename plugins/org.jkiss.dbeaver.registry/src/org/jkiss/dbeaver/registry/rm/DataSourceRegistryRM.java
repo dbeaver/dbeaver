@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,36 +17,38 @@
 package org.jkiss.dbeaver.registry.rm;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.DBRuntimeException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPDataSourceFolder;
 import org.jkiss.dbeaver.model.app.DBPProject;
+import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.rm.RMController;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.registry.DataSourceConfigurationManagerBuffer;
+import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.registry.DataSourceFolder;
 import org.jkiss.dbeaver.registry.DataSourceRegistry;
 
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 
-public class DataSourceRegistryRM extends DataSourceRegistry {
+public class DataSourceRegistryRM<T extends DataSourceDescriptor> extends DataSourceRegistry<T> {
     private static final Log log = Log.getLog(DataSourceRegistryRM.class);
 
+    @NotNull
     private final RMController rmController;
 
-    public DataSourceRegistryRM(DBPProject project, @NotNull RMController rmController) {
-        super(project, new DataSourceConfigurationManagerRM(project, rmController));
+    public DataSourceRegistryRM(
+        @NotNull DBPProject project,
+        @NotNull RMController rmController,
+        @NotNull DBPPreferenceStore preferenceStore
+    ) {
+        super(project, new DataSourceConfigurationManagerRM(project, rmController), preferenceStore);
         this.rmController = rmController;
-
-        // We shouldn't refresh config on update events
-//        addDataSourceListener(event -> {
-//            if (event.getAction() == DBPEvent.Action.OBJECT_UPDATE && event.getObject() instanceof DBPDataSourceContainer) {
-//                refreshConfig();
-//            }
-//        });
     }
 
     @Override
@@ -113,8 +115,9 @@ public class DataSourceRegistryRM extends DataSourceRegistry {
         }
     }
 
+    @NotNull
     @Override
-    public DataSourceFolder addFolder(DBPDataSourceFolder parent, String name) {
+    public DataSourceFolder addFolder(@Nullable DBPDataSourceFolder parent, @NotNull String name) {
         if (getProject().isInMemory()) {
             return createFolder(parent, name);
         }
@@ -123,15 +126,14 @@ public class DataSourceRegistryRM extends DataSourceRegistry {
             lastError = null;
         } catch (DBException e) {
             lastError = e;
-            log.error("Error persisting rm data folder create", e);
-            return null;
+            throw new DBRuntimeException("Error persisting rm data folder create", e);
         }
         return createFolder(parent, name);
     }
 
 
     @Override
-    public void moveFolder(@NotNull String oldPath, @NotNull String newPath) {
+    public void moveFolder(@NotNull String oldPath, @NotNull String newPath) throws DBException {
         if (getProject().isInMemory()) {
             super.moveFolder(oldPath, newPath);
             return;
@@ -168,10 +170,7 @@ public class DataSourceRegistryRM extends DataSourceRegistry {
 
     @NotNull
     private String getRemoteProjectId() {
-        if (getProject().getEclipseProject() == null) {
-            return getProject().getId();
-        } else {
-            return getProject().getEclipseProject().getLocation().lastSegment();
-        }
+        return getProject().getId();
     }
+
 }

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,13 +21,8 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
 import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.DPIContainer;
-import org.jkiss.dbeaver.model.DPIElement;
 import org.jkiss.dbeaver.model.connection.DBPConnectionBootstrap;
-import org.jkiss.dbeaver.model.exec.DBCException;
-import org.jkiss.dbeaver.model.exec.DBCExecutionContextDefaults;
-import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
-import org.jkiss.dbeaver.model.exec.DBExecUtils;
+import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
@@ -58,14 +53,12 @@ public class PostgreExecutionContext extends JDBCExecutionContext implements DBC
         super(database, purpose);
     }
 
-    @DPIContainer
     @NotNull
     @Override
     public PostgreDataSource getDataSource() {
         return (PostgreDataSource) super.getDataSource();
     }
 
-    @DPIElement
     @Nullable
     @Override
     public PostgreExecutionContext getContextDefaults() {
@@ -74,10 +67,12 @@ public class PostgreExecutionContext extends JDBCExecutionContext implements DBC
 
     @NotNull
     @Override
+    //Get value from cached, used in getCachedDefault()
     public PostgreDatabase getDefaultCatalog() {
         return (PostgreDatabase) getOwnerInstance();
     }
 
+    //Get value from cached, used in getCachedDefault()
     @Override
     public PostgreSchema getDefaultSchema() {
         return getDefaultCatalog().getSchema(activeSchemaId);
@@ -99,7 +94,7 @@ public class PostgreExecutionContext extends JDBCExecutionContext implements DBC
     }
 
     void setDefaultCatalog(@NotNull DBRProgressMonitor monitor, @NotNull PostgreDatabase catalog, @Nullable PostgreSchema schema, boolean force)
-            throws DBCException {
+    throws DBCException {
         try {
             catalog.checkInstanceConnection(monitor);
 
@@ -113,7 +108,7 @@ public class PostgreExecutionContext extends JDBCExecutionContext implements DBC
                     setOwnerInstance(catalog);
                     connect(monitor, null, null, null, false);
                 } else {
-                    getDataSource().setActiveDatabase(catalog);
+                    getDataSource().setActiveDatabase(catalog, this);
                 }
                 catalogChanged = true;
             }
@@ -128,7 +123,7 @@ public class PostgreExecutionContext extends JDBCExecutionContext implements DBC
                 }
             }
             if (catalogChanged || schemaChanged) {
-                DBUtils.fireObjectSelectionChange(oldInstance, catalog);
+                DBUtils.fireObjectSelectionChange(oldInstance, catalog, this);
             }
         } catch (DBException e) {
             throw new DBCException("Error changing default database", e);
@@ -156,7 +151,7 @@ public class PostgreExecutionContext extends JDBCExecutionContext implements DBC
         this.activeSchemaId = schema.getObjectId();
 
         if (reflect) {
-            DBUtils.fireObjectSelectionChange(oldActiveSchema, schema);
+            DBUtils.fireObjectSelectionChange(oldActiveSchema, schema, this);
         }
 
         return true;
@@ -239,34 +234,30 @@ public class PostgreExecutionContext extends JDBCExecutionContext implements DBC
         return searchPath;
     }
 
-    List<String> getDefaultSearchPath() {
-        return defaultSearchPath;
-    }
-
     private void setSearchPath(DBRProgressMonitor monitor, PostgreSchema schema) throws DBCException {
         // Construct search path from current search path but put default schema first
         setSearchPath(monitor, schema.getName());
     }
 
-    private void setSearchPath(DBRProgressMonitor monitor, String defSchemaName) throws DBCException {
-        List<String> newSearchPath = new ArrayList<>(getDefaultSearchPath());
-        int schemaIndex = newSearchPath.indexOf(defSchemaName);
-        /*if (schemaIndex == 0 || (schemaIndex == 1 && isUserFirstInPath(newSearchPath))) {
-            // Already default schema
+    private void setSearchPath(@NotNull DBRProgressMonitor monitor, @NotNull String defSchemaName) throws DBCException {
+        List<String> newSearchPath = new ArrayList<>(getSearchPath());
+
+        if (!newSearchPath.isEmpty() && defSchemaName.equals(newSearchPath.getFirst())) {
             return;
-        } else*/
-        {
-            if (schemaIndex > 0) {
-                // Remove from previous position
-                newSearchPath.remove(schemaIndex);
-            }
-            // Add it first
-            newSearchPath.add(0, defSchemaName);
+        }
+
+        newSearchPath.remove(defSchemaName);
+        newSearchPath.addFirst(defSchemaName);
+
+        if (activeUser != null && !newSearchPath.contains(activeUser)) {
+            newSearchPath.add(activeUser);
         }
 
         StringBuilder spString = new StringBuilder();
         for (String sp : newSearchPath) {
-            if (spString.length() > 0) spString.append(",");
+            if (!spString.isEmpty()) {
+                spString.append(",");
+            }
             spString.append(DBUtils.getQuotedIdentifier(getDataSource(), sp));
         }
         try (JDBCSession session = openSession(monitor, DBCExecutionPurpose.UTIL, "Change search path")) {
@@ -282,8 +273,21 @@ public class PostgreExecutionContext extends JDBCExecutionContext implements DBC
         }
     }
 
+    private void setSearchPath(@NotNull String path) {
+        if (searchPath.isEmpty()) {
+            searchPath.addFirst(path);
+        } else if (!searchPath.getFirst().equals(path)) {
+            searchPath.remove(path);
+            searchPath.addFirst(path);
+        }
+        if (activeUser != null && !searchPath.contains(activeUser)) {
+            searchPath.add(activeUser);
+            setUserInTheEndOfThePath(searchPath);
+        }
+    }
+
     private static boolean isUserFirstInPath(List<String> newSearchPath) {
-        return !newSearchPath.isEmpty() && newSearchPath.get(0).equals(PostgreConstants.USER_VARIABLE);
+        return !newSearchPath.isEmpty() && newSearchPath.getFirst().equals(PostgreConstants.USER_VARIABLE);
     }
 
     private void setUserInTheEndOfThePath(List<String> searchPath) {
@@ -291,7 +295,7 @@ public class PostgreExecutionContext extends JDBCExecutionContext implements DBC
             return;
         }
         if (isUserFirstInPath(searchPath)) {
-            searchPath.remove(0);
+            searchPath.removeFirst();
             searchPath.add(PostgreConstants.USER_VARIABLE);
         } else {
             int userIndex = -1;
@@ -308,13 +312,6 @@ public class PostgreExecutionContext extends JDBCExecutionContext implements DBC
         }
     }
 
-    private void setSearchPath(String path) {
-        searchPath.clear();
-        searchPath.add(path);
-        if (!path.equals(activeUser)) {
-            searchPath.add(activeUser);
-        }
-    }
 
     private void setSessionRole(@NotNull DBRProgressMonitor monitor) throws DBCException {
         final String roleName = getDataSource().getContainer().getConnectionConfiguration().getProviderProperty(PostgreConstants.PROP_CHOSEN_ROLE);
@@ -333,5 +330,13 @@ public class PostgreExecutionContext extends JDBCExecutionContext implements DBC
 
     public void setIsolatedContext(boolean isolatedContext) {
         this.isolatedContext = isolatedContext;
+    }
+
+    @NotNull
+    @Override
+    public DBCCachedContextDefaults getCachedDefault() {
+        //Method get cashed value
+        String schemaName = (getDefaultSchema() != null) ? getDefaultSchema().getName() : null;
+        return new DBCCachedContextDefaults(getOwnerInstance().getName(), schemaName);
     }
 }

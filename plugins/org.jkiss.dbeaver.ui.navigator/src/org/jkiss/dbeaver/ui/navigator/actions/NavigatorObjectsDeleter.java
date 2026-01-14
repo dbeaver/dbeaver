@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,9 +19,8 @@ package org.jkiss.dbeaver.ui.navigator.actions;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.ui.IEditorInput;
@@ -38,8 +37,7 @@ import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.app.DBPWorkspaceDesktop;
 import org.jkiss.dbeaver.model.edit.*;
 import org.jkiss.dbeaver.model.navigator.*;
-import org.jkiss.dbeaver.model.navigator.fs.DBNPath;
-import org.jkiss.dbeaver.model.runtime.AbstractJob;
+import org.jkiss.dbeaver.model.rcp.RCPProject;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
@@ -54,7 +52,6 @@ import org.jkiss.dbeaver.ui.editors.IDatabaseEditor;
 import org.jkiss.dbeaver.ui.editors.IDatabaseEditorInput;
 import org.jkiss.dbeaver.ui.internal.UINavigatorMessages;
 import org.jkiss.dbeaver.ui.navigator.database.NavigatorViewBase;
-import org.jkiss.dbeaver.utils.GeneralUtils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
@@ -160,27 +157,50 @@ public class NavigatorObjectsDeleter {
 
     public IProject getProjectToDelete() {
         for (Object obj: selection) {
-            if (obj instanceof DBNProject) {
-                return ((DBNProject) obj).getProject().getEclipseProject();
+            if (obj instanceof DBNProject project && project.getProject() instanceof RCPProject rcpProject) {
+                return rcpProject.getEclipseProject();
             }
         }
         return null;
     }
 
     void delete() {
-        for (Object obj: selection) {
-            if (obj instanceof DBNDatabaseNode) {
-                deleteDatabaseNode((DBNDatabaseNode)obj);
-            } else if (obj instanceof DBNResource) {
-                deleteResource(((DBNResource) obj).getResource());
-            } else if (obj instanceof DBNPath) {
-                deleteResource(((DBNPath) obj).getResource());
-            } else if (obj instanceof DBNLocalFolder) {
-                deleteLocalFolder((DBNLocalFolder) obj);
-            } else {
-                log.warn("Don't know how to delete element '" + obj + "'"); //$NON-NLS-1$ //$NON-NLS-2$
-            }
+        try {
+            UIUtils.runInProgressService(dbrMonitor -> {
+                dbrMonitor.beginTask("Delete objects", selection.size());
+                try {
+                    for (Object obj: selection) {
+                        if (dbrMonitor.isCanceled()) {
+                            break;
+                        }
+                        if (obj instanceof DBNDatabaseNode) {
+                            dbrMonitor.subTask("Delete database object '" + ((DBNDatabaseNode) obj).getNodeDisplayName() + "'");
+                            UIUtils.asyncExec(() -> deleteDatabaseNode((DBNDatabaseNode)obj));
+                        } else if (obj instanceof DBNLocalFolder) {
+                            dbrMonitor.subTask("Delete folder '" + ((DBNLocalFolder) obj).getNodeDisplayName() + "'");
+                            deleteLocalFolder((DBNLocalFolder) obj);
+                        } else if (obj instanceof DBNNode node) {
+                            IResource resource = node.getAdapter(IResource.class);
+                            if (resource != null) {
+                                dbrMonitor.subTask("Delete resource '" + resource.getName() + "'");
+                                deleteResource(dbrMonitor, resource);
+                            }
+                        } else {
+                            log.warn("Don't know how to delete element '" + obj + "'"); //$NON-NLS-1$ //$NON-NLS-2$
+                        }
+                        dbrMonitor.worked(1);
+                    }
+                } catch (Exception e) {
+                    throw new InvocationTargetException(e);
+                }
+                dbrMonitor.done();
+            });
+        } catch (InvocationTargetException e) {
+            DBWorkbench.getPlatformUI().showError("Delete error", e.getTargetException().getMessage(), e.getTargetException());
+        } catch (InterruptedException e) {
+            // ignore
         }
+
         if (!tasksToExecute.isEmpty()) {
             TasksJob.runTasks(tasksToExecute.size() > 1 ? "Delete " + tasksToExecute.size() + " objects" : "Delete object", tasksToExecute);
         }
@@ -191,39 +211,28 @@ public class NavigatorObjectsDeleter {
         DBNModel.updateConfigAndRefreshDatabases(folder);
     }
 
-    private void deleteResource(final IResource resource) {
-        new AbstractJob("Delete resources") {
-            {
-                setUser(true);
+    private void deleteResource(DBRProgressMonitor dbrMonitor, final IResource resource) throws CoreException, DBException {
+        IProgressMonitor monitor = dbrMonitor.getNestedMonitor();
+        if (resource instanceof IFolder) {
+            dbrMonitor.subTask("Delete folder");
+            ((IFolder)resource).delete(true, true, monitor);
+        } else if (resource instanceof IProject) {
+            dbrMonitor.subTask("Delete project");
+            // Delete project
+            DBPPlatformDesktop.getInstance().getGlobalEventManager().fireGlobalEvent(
+                DBTTaskRegistry.EVENT_BEFORE_PROJECT_DELETE,
+                Map.of(DBTTaskRegistry.EVENT_PARAM_PROJECT, resource.getName())
+            );
+            DBPWorkspaceDesktop workspace = DBPPlatformDesktop.getInstance().getWorkspace();
+            DBPProject project = workspace.getProject((IProject) resource);
+            if (project == null) {
+                throw new DBException("Project '" + resource.getName() + "' is not recognized as database project");
             }
-            @Override
-            protected IStatus run(DBRProgressMonitor dbrMonitor) {
-                try {
-                    IProgressMonitor monitor = dbrMonitor.getNestedMonitor();
-                    if (resource instanceof IFolder) {
-                        ((IFolder)resource).delete(true, true, monitor);
-                    } else if (resource instanceof IProject) {
-                        // Delete project
-                        DBPPlatformDesktop.getInstance().getGlobalEventManager().fireGlobalEvent(
-                            DBTTaskRegistry.EVENT_BEFORE_PROJECT_DELETE,
-                            Map.of(DBTTaskRegistry.EVENT_PARAM_PROJECT, resource.getName())
-                        );
-                        DBPWorkspaceDesktop workspace = DBPPlatformDesktop.getInstance().getWorkspace();
-                        DBPProject project = workspace.getProject((IProject) resource);
-                        if (project == null) {
-                            throw new DBException("Project '" + resource.getName() + "' is not recognized as databae project");
-                        }
-                        workspace.deleteProject(project, deleteContent);
-                    } else if (resource != null) {
-                        resource.delete(IResource.FORCE | IResource.KEEP_HISTORY, monitor);
-                    }
-                } catch (Exception e) {
-                    return GeneralUtils.makeExceptionStatus(
-                        NLS.bind(UINavigatorMessages.error_deleting_resource_message, resource.getFullPath().toString()), e);
-                }
-                return Status.OK_STATUS;
-            }
-        }.schedule();
+            workspace.deleteProject(project, deleteContent);
+        } else {
+            dbrMonitor.subTask("Delete file");
+            resource.delete(IResource.FORCE | IResource.KEEP_HISTORY, monitor);
+        }
     }
 
     private void deleteDatabaseNode(@NotNull final DBNDatabaseNode node) {
@@ -233,7 +242,8 @@ public class NavigatorObjectsDeleter {
             }
             final DBSObject object = node.getObject();
             if (object == null) {
-                throw new DBException("Can't delete node with null object (" + node.getClass().getSimpleName() + ":" + node.getNodeName() + ")");
+                throw new DBException("Can't delete node with null object (" + node.getClass()
+                    .getSimpleName() + ":" + node.getNodeDisplayName() + ")");
             }
             final DBEObjectMaker objectMaker = DBWorkbench.getPlatform().getEditorsRegistry().getObjectManager(object.getClass(), DBEObjectMaker.class);
             if (objectMaker == null) {
@@ -241,10 +251,11 @@ public class NavigatorObjectsDeleter {
             }
             final NavigatorHandlerObjectBase.CommandTarget commandTarget =
                     NavigatorHandlerObjectBase.getCommandTarget(
-                    window,
-                    node.getParentNode(),
-                        null, object.getClass(),
-                    false
+                        window,
+                        node.getParentNode(),
+                        null,
+                        object.getClass(),
+                        false
             );
             if (!object.isPersisted() || commandTarget.getEditor() != null) {
                 // Not a real object delete because it's not persisted
@@ -275,7 +286,8 @@ public class NavigatorObjectsDeleter {
         } catch (Throwable e) {
             DBWorkbench.getPlatformUI().showError(
                     UINavigatorMessages.actions_navigator_error_dialog_delete_object_title,
-                    NLS.bind(UINavigatorMessages.actions_navigator_error_dialog_delete_object_message, node.getNodeName()),
+                NLS.bind(UINavigatorMessages.actions_navigator_error_dialog_delete_object_message,
+                    node.getNodeDisplayName()),
                     e
             );
         }

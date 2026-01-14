@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -66,7 +66,7 @@ public class GlobalProxySelector extends ProxySelector {
         if (SocksConstants.SOCKET_SCHEME.equals(uri.getScheme())) {
             // 2. Check for connections' proxy config
             List<Proxy> proxies = null;
-            for (DBWHandlerConfiguration networkHandler : dataSourceContainer.getConnectionConfiguration().getHandlers()) {
+            for (DBWHandlerConfiguration networkHandler : dataSourceContainer.getActualConnectionConfiguration().getHandlers()) {
                 if (networkHandler.isEnabled() && networkHandler.getType() == DBWHandlerType.PROXY) {
                     String proxyHost = networkHandler.getStringProperty(SocksConstants.PROP_HOST);
                     int proxyPort = networkHandler.getIntProperty(SocksConstants.PROP_PORT);
@@ -81,9 +81,7 @@ public class GlobalProxySelector extends ProxySelector {
                     }
                 }
             }
-            if (proxies != null) {
-                return proxies;
-            }
+            return proxies;
         }
         return null;
     }
@@ -105,7 +103,7 @@ public class GlobalProxySelector extends ProxySelector {
             return null;
         }
 
-        // Skip localhosts. In fact it is a bad idea (see #3592)
+        // Skip localhosts. In fact, it is a bad idea (see #3592)
 //        if (ArrayUtils.contains(LOCAL_HOSTS, host)) {
 //            return parent.select(uri);
 //        }

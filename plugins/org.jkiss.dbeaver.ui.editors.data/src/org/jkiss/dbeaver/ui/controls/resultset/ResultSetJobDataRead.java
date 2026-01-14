@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.data.DBDDataFilter;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.LocalCacheProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.load.ILoadService;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -83,11 +84,12 @@ abstract class ResultSetJobDataRead extends ResultSetJobAbstract implements ILoa
         return statistics;
     }
 
+    @NotNull
     @Override
-    protected IStatus run(DBRProgressMonitor monitor) {
+    protected IStatus run(@NotNull DBRProgressMonitor monitor) {
         error = null;
         final ProgressLoaderVisualizer<Object> visualizer = new ProgressLoaderVisualizer<>(this, progressControl);
-        DBRProgressMonitor progressMonitor = visualizer.overwriteMonitor(monitor);
+        monitor = visualizer.overwriteMonitor(monitor);
 
         new PumpVisualizer(visualizer).schedule(PROGRESS_VISUALIZE_PERIOD * 2);
 
@@ -111,13 +113,17 @@ abstract class ResultSetJobDataRead extends ResultSetJobAbstract implements ILoa
         final DBSDataContainer dataContainer = executionSource.getDataContainer();
         final DBDDataFilter dataFilter = executionSource.getUseDataFilter();
 
-        progressMonitor.beginTask("Read data", 1);
+        monitor.beginTask("Read data", 1);
+        if (!getDataSourceContainer().isExtraMetadataReadEnabled()) {
+            monitor = new LocalCacheProgressMonitor(monitor);
+        }
+
         try (DBCSession session = getExecutionContext().openSession(
-            progressMonitor,
+            monitor,
             dataFilter != null && dataFilter.hasFilters() ? DBCExecutionPurpose.USER_FILTERED : DBCExecutionPurpose.USER,
             NLS.bind(ResultSetMessages.controls_rs_pump_job_context_name, dataContainer.toString())))
         {
-            progressMonitor.subTask("Read data from container");
+            monitor.subTask("Read data from container");
             DBExecUtils.tryExecuteRecover(monitor, session.getDataSource(), monitor1 -> {
                 try {
                     statistics = dataContainer.readData(
@@ -137,7 +143,7 @@ abstract class ResultSetJobDataRead extends ResultSetJobAbstract implements ILoa
             error = e;
         } finally {
             visualizer.completeLoading(null);
-            progressMonitor.done();
+            monitor.done();
         }
 
         return Status.OK_STATUS;
@@ -149,7 +155,7 @@ abstract class ResultSetJobDataRead extends ResultSetJobAbstract implements ILoa
     }
 
     @Override
-    public Object evaluate(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
+    public Object evaluate(@NotNull DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
         // It is not a real service so just return nothing
         return null;
     }

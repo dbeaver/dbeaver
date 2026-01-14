@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,10 +20,10 @@ package org.jkiss.dbeaver.tools.transfer.stream.model;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
-import org.jkiss.dbeaver.model.app.DBPPlatformDesktop;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
@@ -40,44 +40,52 @@ import org.jkiss.dbeaver.model.net.DBWNetworkHandler;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.secret.DBSSecretController;
+import org.jkiss.dbeaver.model.secret.DBSSecretValue;
 import org.jkiss.dbeaver.model.sql.SQLDialectMetadata;
-import org.jkiss.dbeaver.model.sql.registry.SQLDialectRegistry;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectFilter;
 import org.jkiss.dbeaver.model.virtual.DBVModel;
+import org.jkiss.dbeaver.registry.DataSourceOriginLocal;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.IVariableResolver;
 
-import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Data container transfer producer
  */
-class StreamDataSourceContainer implements DBPDataSourceContainer {
+public class StreamDataSourceContainer implements DBPDataSourceContainer {
 
-    private File inputFile;
-    private String name;
+    private static final Log log = Log.getLog(StreamDataSourceContainer.class);
+
+    private Path inputFile;
+    private final String name;
+    private final DBPProject project;
     private final DBPExclusiveResource exclusiveLock = new SimpleExclusiveLock();
     private final DBVModel virtualModel;
 
-    StreamDataSourceContainer(String name) {
+    StreamDataSourceContainer(@NotNull String name, @NotNull DBPProject project) {
         this.name = name;
+        this.project = project;
         this.virtualModel = new DBVModel(this);
     }
 
     @NotNull
     @Override
     public String getId() {
-        return inputFile == null ? name : inputFile.getName();
+        return inputFile == null ? name : inputFile.getFileName().toString();
     }
 
     @NotNull
     @Override
     public DBPDriver getDriver() {
-        throw new IllegalStateException("Not supported");
+        return StreamDataSourceDriver.INSTANCE;
     }
 
     @NotNull
@@ -89,7 +97,7 @@ class StreamDataSourceContainer implements DBPDataSourceContainer {
     @NotNull
     @Override
     public DBPDataSourceOrigin getOrigin() {
-        throw new IllegalStateException("Stream datasource doesn't have origin");
+        return DataSourceOriginLocal.INSTANCE;
     }
 
     @NotNull
@@ -131,18 +139,23 @@ class StreamDataSourceContainer implements DBPDataSourceContainer {
     }
 
     @Override
-    public boolean isTemplate() {
-        return false;
-    }
-
-    @Override
     public boolean isTemporary() {
         return true;
     }
 
     @Override
+    public void setTemporary(boolean temporary) {
+
+    }
+
+    @Override
     public boolean isConnectionReadOnly() {
         return true;
+    }
+
+    @Override
+    public void setConnectionReadOnly(boolean connectionReadOnly) {
+        
     }
 
     @Override
@@ -175,11 +188,6 @@ class StreamDataSourceContainer implements DBPDataSourceContainer {
 
     }
 
-    @Override
-    public boolean isAutoCloseTransactions() {
-        return false;
-    }
-
     @Nullable
     @Override
     public DBPTransactionIsolation getActiveTransactionsIsolation() {
@@ -193,8 +201,13 @@ class StreamDataSourceContainer implements DBPDataSourceContainer {
     }
 
     @Override
-    public void setDefaultTransactionsIsolation(DBPTransactionIsolation isolationLevel) {
+    public void setDefaultTransactionsIsolation(@Nullable DBPTransactionIsolation isolationLevel) {
 
+    }
+
+    @Override
+    public boolean isExtraMetadataReadEnabled() {
+        return false;
     }
 
     @Nullable
@@ -204,20 +217,34 @@ class StreamDataSourceContainer implements DBPDataSourceContainer {
     }
 
     @Override
-    public void setObjectFilter(Class<?> type, DBSObject parentObject, DBSObjectFilter filter) {
+    public void setObjectFilter(@NotNull Class<?> type, @Nullable DBSObject parentObject, @Nullable DBSObjectFilter filter) {
 
     }
 
+    @Nullable
+    @Override
+    public String getClientApplicationName() {
+        return null;
+    }
+
+    @Override
+    public void setClientApplicationName(@NotNull String applicationName) {
+        // noop
+    }
+
+    @NotNull
     @Override
     public DBVModel getVirtualModel() {
         return virtualModel;
     }
 
+    @Nullable
     @Override
     public DBPNativeClientLocation getClientHome() {
         return null;
     }
 
+    @NotNull
     @Override
     public DBWNetworkHandler[] getActiveNetworkHandlers() {
         return new DBWNetworkHandler[0];
@@ -228,6 +255,11 @@ class StreamDataSourceContainer implements DBPDataSourceContainer {
         return false;
     }
 
+    @Override
+    public boolean isConnecting() {
+        return false;
+    }
+
     @Nullable
     @Override
     public String getConnectionError() {
@@ -235,17 +267,17 @@ class StreamDataSourceContainer implements DBPDataSourceContainer {
     }
 
     @Override
-    public boolean connect(DBRProgressMonitor monitor, boolean initialize, boolean reflect) throws DBException {
+    public boolean connect(@NotNull DBRProgressMonitor monitor, boolean initialize, boolean reflect) throws DBException {
         throw new DBCFeatureNotSupportedException();
     }
 
     @Override
-    public boolean disconnect(DBRProgressMonitor monitor) throws DBException {
+    public boolean disconnect(@NotNull DBRProgressMonitor monitor) throws DBException {
         throw new DBCFeatureNotSupportedException();
     }
 
     @Override
-    public boolean reconnect(DBRProgressMonitor monitor) throws DBException {
+    public boolean reconnect(@NotNull DBRProgressMonitor monitor) throws DBException {
         throw new DBCFeatureNotSupportedException();
     }
 
@@ -278,28 +310,28 @@ class StreamDataSourceContainer implements DBPDataSourceContainer {
     }
 
     @Override
-    public void acquire(DBPDataSourceTask user) {
+    public void acquire(@NotNull DBPDataSourceTask user) {
 
     }
 
     @Override
-    public void release(DBPDataSourceTask user) {
+    public void release(@NotNull DBPDataSourceTask user) {
 
     }
 
     @Override
-    public void fireEvent(DBPEvent event) {
+    public void fireEvent(@NotNull DBPEvent event) {
 
     }
 
     @Nullable
     @Override
-    public String getProperty(@NotNull String name) {
+    public <T> T getExtension(@NotNull String name) {
         return null;
     }
 
     @Override
-    public void setProperty(@NotNull String name, @Nullable String value) {
+    public void setExtension(@NotNull String name, @Nullable Object value) {
 
     }
 
@@ -312,13 +344,13 @@ class StreamDataSourceContainer implements DBPDataSourceContainer {
     @NotNull
     @Override
     public DBPDataSourceRegistry getRegistry() {
-        return null;
+        return project.getDataSourceRegistry();
     }
 
     @NotNull
     @Override
     public DBPProject getProject() {
-        return null;
+        return project;
     }
 
     @Override
@@ -326,15 +358,23 @@ class StreamDataSourceContainer implements DBPDataSourceContainer {
         return true;
     }
 
+    @Nullable
     @Override
     public Date getConnectTime() {
-        return inputFile == null ? new Date() : new Date(inputFile.lastModified());
+        if (inputFile != null) {
+            try {
+                return new Date(Files.getLastModifiedTime(inputFile).toMillis());
+            } catch (IOException e) {
+                log.debug(e);
+            }
+        }
+        return new Date();
     }
 
     @NotNull
     @Override
     public SQLDialectMetadata getScriptDialect() {
-        return SQLDialectRegistry.getInstance().getDialect(BasicSQLDialect.ID);
+        return DBWorkbench.getPlatform().getSQLDialectRegistry().getDialect(BasicSQLDialect.ID);
     }
 
     @Override
@@ -343,25 +383,34 @@ class StreamDataSourceContainer implements DBPDataSourceContainer {
     }
 
     @Override
+    public void resetAllSecrets() {
+
+    }
+
+    @NotNull
+    @Override
     public IVariableResolver getVariablesResolver(boolean actualConfig) {
         return null;
     }
 
+    @NotNull
     @Override
     public DBPDataSourceContainer createCopy(DBPDataSourceRegistry forRegistry) {
         return null;
     }
 
+    @NotNull
     @Override
     public DBPExclusiveResource getExclusiveLock() {
         return exclusiveLock;
     }
 
     @Override
-    public boolean hasModifyPermission(DBPDataSourcePermission permission) {
+    public boolean hasModifyPermission(@NotNull DBPDataSourcePermission permission) {
         return false;
     }
 
+    @NotNull
     @Override
     public List<DBPDataSourcePermission> getModifyPermission() {
         return null;
@@ -373,14 +422,14 @@ class StreamDataSourceContainer implements DBPDataSourceContainer {
     }
 
     @Override
-    public void setName(String newName) {
+    public void setName(@NotNull String newName) {
 
     }
 
     @NotNull
     @Override
     public String getName() {
-        return inputFile == null ? name : inputFile.getName();
+        return inputFile == null ? name : inputFile.getFileName().toString();
     }
 
     @Nullable
@@ -396,22 +445,22 @@ class StreamDataSourceContainer implements DBPDataSourceContainer {
 
     @Override
     public DBDDataFormatterProfile getDataFormatterProfile() {
-        return DBPPlatformDesktop.getInstance().getDataFormatterRegistry().getGlobalProfile();
+        return DBWorkbench.getPlatform().getDataFormatterRegistry().getGlobalProfile();
     }
 
     @Override
     public boolean isUseNativeDateTimeFormat() {
-        return ModelPreferences.getPreferences().getBoolean(ModelPreferences.RESULT_NATIVE_DATETIME_FORMAT);
+        return DBWorkbench.getPlatform().getPreferenceStore().getBoolean(ModelPreferences.RESULT_NATIVE_DATETIME_FORMAT);
     }
 
     @Override
     public boolean isUseNativeNumericFormat() {
-        return ModelPreferences.getPreferences().getBoolean(ModelPreferences.RESULT_NATIVE_NUMERIC_FORMAT);
+        return DBWorkbench.getPlatform().getPreferenceStore().getBoolean(ModelPreferences.RESULT_NATIVE_NUMERIC_FORMAT);
     }
 
     @Override
     public boolean isUseScientificNumericFormat() {
-        return ModelPreferences.getPreferences().getBoolean(ModelPreferences.RESULT_SCIENTIFIC_NUMERIC_FORMAT);
+        return DBWorkbench.getPlatform().getPreferenceStore().getBoolean(ModelPreferences.RESULT_SCIENTIFIC_NUMERIC_FORMAT);
     }
 
     @NotNull
@@ -430,8 +479,24 @@ class StreamDataSourceContainer implements DBPDataSourceContainer {
         return false;
     }
 
+    @NotNull
+    @Override
+    public List<DBSSecretValue> listSharedCredentials() throws DBException {
+        return List.of();
+    }
+
     @Override
     public void setSharedCredentials(boolean sharedCredentials) {
+
+    }
+
+    @Override
+    public boolean isSharedCredentialsSelected() {
+        return false;
+    }
+
+    @Override
+    public void setSelectedSharedCredentials(@NotNull DBSSecretValue secretValue) {
 
     }
 
@@ -470,5 +535,27 @@ class StreamDataSourceContainer implements DBPDataSourceContainer {
     @Override
     public void setDriverSubstitution(@Nullable DBPDriverSubstitutionDescriptor driverSubstitution) {
         // do nothing
+    }
+
+    @NotNull
+    @Override
+    public Map<String, String> getTags() {
+        return null;
+    }
+
+    @Nullable
+    @Override
+    public String getTagValue(@NotNull String tagName) {
+        return null;
+    }
+
+    @Override
+    public void setTagValue(@NotNull String tagName, @Nullable String tagValue) {
+
+    }
+
+    @Override
+    public void dispose() {
+        virtualModel.dispose();
     }
 }

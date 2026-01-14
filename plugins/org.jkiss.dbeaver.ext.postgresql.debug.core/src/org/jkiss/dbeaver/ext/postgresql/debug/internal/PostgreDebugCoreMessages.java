@@ -1,7 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
- * Copyright (C) 2017-2018 Alexander Fedorov (alexander.fedorov@jkiss.org)
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,6 +26,10 @@ public class PostgreDebugCoreMessages extends NLS {
 
     public static String PostgreSqlDebugCore_e_procedure_required;
     public static String PostgreSqlDebugCore_launch_configuration_name;
+
+    public static String PostgreSqlDebugCore_parameter_type_not_fit_message;
+    public static String PostgreSqlDebugCore_parameters_not_set_message;
+    
     static {
         // initialize resource bundle
         NLS.initializeMessages(BUNDLE_NAME, PostgreDebugCoreMessages.class);

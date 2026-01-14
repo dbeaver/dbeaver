@@ -1,7 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
- * Copyright (C) 2011-2012 Eugene Fradkin (eugene.fradkin@gmail.com)
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,10 +22,7 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.KeyAdapter;
-import org.eclipse.swt.events.KeyEvent;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.*;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
@@ -60,9 +56,6 @@ import java.util.List;
 public class DriverSelectViewer extends Viewer {
 
     private static final int REFRESH_DELAY = 200;
-
-    private static final String CLEAR_ICON = "org.jkiss.dbeaver.ui.dialogs.driver.DriverSelectViewer.CLEAR_ICON"; //$NON-NLS-1$
-    private static final String DISABLED_CLEAR_ICON = "org.jkiss.dbeaver.ui.dialogs.driver.DriverSelectViewer.DCLEAR_ICON"; //$NON-NLS-1$
 
     private static final String PROP_SELECTOR_VIEW_TYPE = "driver.selector.view.mode"; //$NON-NLS-1$
     private static final String PROP_SELECTOR_ORDER_BY = "driver.selector.orderBy"; //$NON-NLS-1$
@@ -164,7 +157,23 @@ public class DriverSelectViewer extends Viewer {
 
         createSelectorControl();
 
+        filterText.addTraverseListener(new TraverseListener() {
+            boolean inTraverse;
+            @Override
+            public void keyTraversed(TraverseEvent e) {
+                if (!inTraverse) {
+                    inTraverse = true;
+                    try {
+                        selectorViewer.getControl().traverse(e.detail, e);
+                    } finally {
+                        inTraverse = false;
+                    }
+                }
+            }
+        });
+
         refreshJob = createRefreshJob();
+        refreshJob.schedule();
     }
 
     public static OrderBy getDefaultOrderBy() {
@@ -228,6 +237,8 @@ public class DriverSelectViewer extends Viewer {
         createFilterToolbar(filterComposite);
 
         createExtraFilterControlsAfter(filterGroup);
+
+        UIUtils.asyncExec(() -> filterComposite.layout(true, true));
     }
 
     protected void createExtraFilterControlsBefore(Composite filterGroup) {
@@ -326,12 +337,12 @@ public class DriverSelectViewer extends Viewer {
 
             selectorViewer.addSelectionChangedListener(event -> {
                 if (site instanceof ISelectionChangedListener) {
-                    ((ISelectionChangedListener)site).selectionChanged(event);
+                    ((ISelectionChangedListener) site).selectionChanged(event);
                 }
             });
             selectorViewer.addDoubleClickListener(event -> {
                 if (site instanceof IDoubleClickListener) {
-                    ((IDoubleClickListener)site).doubleClick(event);
+                    ((IDoubleClickListener) site).doubleClick(event);
                 }
             });
         } finally {
@@ -346,7 +357,9 @@ public class DriverSelectViewer extends Viewer {
                 drivers.addAll(provider.getEnabledDrivers());
             }
         }
-        drivers.sort((o1, o2) -> { return o1.getName().compareToIgnoreCase(o2.getName()); });
+        drivers.sort((o1, o2) -> {
+            return o1.getName().compareToIgnoreCase(o2.getName());
+        });
         return drivers.toArray(new Object[0]);
     }
 
@@ -389,16 +402,17 @@ public class DriverSelectViewer extends Viewer {
 
                 selectorViewer.getControl().setRedraw(false);
                 try {
+                    List<ViewerFilter> filters = new ArrayList<>();
                     String text = getFilterString();
-                    if (CommonUtils.isEmpty(text)) {
-                        selectorViewer.setFilters();
-                        return Status.OK_STATUS;
+                    if (CommonUtils.isNotEmpty(text)) {
+                        DriverFilter driverFilter = new DriverFilter();
+                        driverFilter.setPattern(text);
+                        filters.add(driverFilter);
                     }
-
-                    DriverFilter driverFilter = new DriverFilter();
-                    driverFilter.setPattern(text);
-
-                    selectorViewer.setFilters(driverFilter);
+                    if (DBWorkbench.isDistributed()) {
+                        filters.add(new DriverInstalledFilter());
+                    }
+                    selectorViewer.setFilters(filters.toArray(new ViewerFilter[0]));
                     if (selectorViewer instanceof AbstractTreeViewer) {
                         ((AbstractTreeViewer) selectorViewer).expandAll();
                     }
@@ -471,14 +485,25 @@ public class DriverSelectViewer extends Viewer {
         }
 
         protected boolean isLeafMatch(Viewer viewer, Object element) {
-            if (element instanceof DriverDescriptor) {
-                return wordMatches(((DriverDescriptor) element).getName()) ||
-                    wordMatches(((DriverDescriptor) element).getDescription()) ||
-                    wordMatches(((DriverDescriptor) element).getCategory());
+            if (element instanceof DriverDescriptor driver) {
+                return wordMatches(driver.getName()) ||
+                       wordMatches(driver.getDescription()) ||
+                       wordMatches(driver.getCategory()) ||
+                       wordMatches(driver.getId());
             }
             return super.isLeafMatch(viewer, element);
         }
 
+    }
+
+    private static class DriverInstalledFilter extends ViewerFilter {
+        @Override
+        public boolean select(Viewer viewer, Object parentElement, Object element) {
+            if (element instanceof DBPDriver driver) {
+                return driver.getDefaultDriverLoader().isDriverInstalled();
+            }
+            return true;
+        }
     }
 
 }

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,12 +24,11 @@ import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
-import org.eclipse.core.runtime.jobs.IJobChangeEvent;
-import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.eclipse.ui.part.FileEditorInput;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -47,7 +46,6 @@ import org.jkiss.dbeaver.ui.editors.sql.SQLEditor;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorUtils;
 import org.jkiss.dbeaver.ui.editors.sql.generator.SQLGeneratorContributor;
 import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
-import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
@@ -57,7 +55,7 @@ public class SQLEditorHandlerOpenObjectConsole extends AbstractHandler {
 
     private static final Log log = Log.getLog(SQLEditorHandlerOpenObjectConsole.class);
 
-    private static final boolean OPEN_FILE_EDITOR = true;
+    private static final boolean OPEN_FILE_EDITOR = false;
 
     public SQLEditorHandlerOpenObjectConsole()
     {
@@ -160,30 +158,24 @@ public class SQLEditorHandlerOpenObjectConsole extends AbstractHandler {
         if (editor != null && editor.getDocument() != null) {
             editor.getDocument().set(sql);
             AbstractJob execJob = new AbstractJob("Execute SQL in console") {
+                @NotNull
                 @Override
-                protected IStatus run(DBRProgressMonitor monitor) {
+                protected IStatus run(@NotNull DBRProgressMonitor monitor) {
                     // If we open new connection for each editor it may take some time
                     // So let's give it a chance and wait for 10 seconds
-                    for (int i = 0; i < 100; i++) {
-                        if (editor.getExecutionContext() != null) {
-                            break;
+                    if (editor.getExecutionContext() != null) {
+                        if (doRun) {
+                            UIUtils.syncExec(() -> editor.processSQL(
+                                false,
+                                forceProcessAsScript || NavigatorUtils.getSelectedObjects(currentSelection).size() > 1
+                            ));
                         }
-                        RuntimeUtils.pause(100);
+                        return Status.OK_STATUS;
                     }
+                    schedule(100);
                     return Status.OK_STATUS;
                 }
             };
-            if (doRun) {
-                execJob.addJobChangeListener(new JobChangeAdapter() {
-                    @Override
-                    public void done(IJobChangeEvent event) {
-                        UIUtils.syncExec(() -> editor.processSQL(
-                            false,
-                            forceProcessAsScript || NavigatorUtils.getSelectedObjects(currentSelection).size() > 1
-                        ));
-                    }
-                });
-            }
             execJob.schedule();
         }
     }

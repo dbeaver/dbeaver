@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -56,6 +56,12 @@ public interface DBPPropertyDescriptor {
     String getDescription();
 
     /**
+     * Returns a hint of this property.
+     */
+    @Nullable
+    String getHint();
+
+    /**
      * Returns the type of this property. Types is a java class.
      */
     @Nullable
@@ -74,6 +80,9 @@ public interface DBPPropertyDescriptor {
 
     @Nullable
     String[] getFeatures();
+
+    @Nullable
+    String[] getRequiredFeatures();
 
     boolean hasFeature(@NotNull String feature);
 

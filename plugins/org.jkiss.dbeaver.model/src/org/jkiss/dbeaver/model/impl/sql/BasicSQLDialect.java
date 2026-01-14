@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPIdentifierCase;
 import org.jkiss.dbeaver.model.DBPKeywordType;
 import org.jkiss.dbeaver.model.sql.SQLConstants;
+import org.jkiss.dbeaver.model.sql.SQLDialectRelational;
 import org.jkiss.dbeaver.model.sql.SQLStateType;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.utils.ArrayUtils;
@@ -31,7 +32,7 @@ import java.util.*;
 /**
  * Basic SQL Dialect
  */
-public class BasicSQLDialect extends AbstractSQLDialect implements RelationalSQLDialect {
+public class BasicSQLDialect extends AbstractSQLDialect implements SQLDialectRelational {
 
     public static final String ID = "basic";
 
@@ -62,15 +63,16 @@ public class BasicSQLDialect extends AbstractSQLDialect implements RelationalSQL
     };
 
     private static final String[] CORE_NON_TRANSACTIONAL_KEYWORDS = new String[]{
-        SQLConstants.KEYWORD_SELECT,
+        SQLConstants.KEYWORD_SELECT
     };
     protected static final String[] DML_KEYWORDS = new String[]{
-            SQLConstants.KEYWORD_INSERT,
-            SQLConstants.KEYWORD_DELETE,
-            SQLConstants.KEYWORD_UPDATE,
-            SQLConstants.KEYWORD_MERGE,
-            SQLConstants.KEYWORD_UPSERT,
-            SQLConstants.KEYWORD_TRUNCATE};
+        SQLConstants.KEYWORD_INSERT,
+        SQLConstants.KEYWORD_DELETE,
+        SQLConstants.KEYWORD_UPDATE,
+        SQLConstants.KEYWORD_MERGE,
+        SQLConstants.KEYWORD_UPSERT,
+        SQLConstants.KEYWORD_TRUNCATE
+    };
     public static final String[][] DEFAULT_IDENTIFIER_QUOTES = {{"\"", "\""}};
     public static final String[][] DEFAULT_STRING_QUOTES = {{"'", "'"}};
 
@@ -115,6 +117,11 @@ public class BasicSQLDialect extends AbstractSQLDialect implements RelationalSQL
     @Override
     public String[] getDDLKeywords() {
         return DDL_KEYWORDS;
+    }
+
+    @NotNull
+    public GlobalVariableInfo[] getGlobalVariables() {
+        return GlobalVariableInfo.EMPTY_ARRAY;
     }
 
     @NotNull
@@ -207,6 +214,9 @@ public class BasicSQLDialect extends AbstractSQLDialect implements RelationalSQL
     @NotNull
     @Override
     public String escapeString(String string) {
+        if (isEscapeBackslash()) {
+            string = string.replace("\\", "\\\\");
+        }
         return string.replace("'", "''");
     }
 

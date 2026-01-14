@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,23 +22,30 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPContextProvider;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
+import org.jkiss.dbeaver.model.connection.DataSourceVariableResolver;
+import org.jkiss.dbeaver.model.data.DBDDataReceiver;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCScriptContext;
 import org.jkiss.dbeaver.model.exec.DBCScriptContextListener;
 import org.jkiss.dbeaver.model.exec.output.DBCOutputWriter;
 import org.jkiss.dbeaver.model.impl.OutputWriterAdapter;
+import org.jkiss.dbeaver.model.impl.sql.AbstractSQLDialect;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.registry.SQLCommandHandlerDescriptor;
 import org.jkiss.dbeaver.model.sql.registry.SQLCommandsRegistry;
 import org.jkiss.dbeaver.model.sql.registry.SQLQueryParameterRegistry;
 import org.jkiss.dbeaver.model.sql.registry.SQLVariablesRegistry;
+import org.jkiss.dbeaver.runtime.IVariableResolver;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
-import java.io.File;
 import java.io.PrintWriter;
 import java.io.Writer;
+import java.nio.file.Path;
 import java.util.*;
+import java.util.function.Supplier;
 
 /**
  * SQL script execution context
@@ -58,17 +65,18 @@ public class SQLScriptContext implements DBCScriptContext {
     @NotNull
     private final DBPContextProvider contextProvider;
     @Nullable
-    private final File sourceFile;
+    private final Path sourceFile;
     @NotNull
     private final DBCOutputWriter outputWriter;
 
-    private SQLParametersProvider parametersProvider;
+    private final SQLParametersProvider parametersProvider;
     private boolean ignoreParameters;
+    private final IVariableResolver contextVarResolver;
 
     public SQLScriptContext(
         @Nullable SQLScriptContext parentContext,
         @NotNull DBPContextProvider contextProvider,
-        @Nullable File sourceFile,
+        @Nullable Path sourceFile,
         @NotNull Writer outputWriter,
         @Nullable SQLParametersProvider parametersProvider)
     {
@@ -78,7 +86,7 @@ public class SQLScriptContext implements DBCScriptContext {
     public SQLScriptContext(
         @Nullable SQLScriptContext parentContext,
         @NotNull DBPContextProvider contextProvider,
-        @Nullable File sourceFile,
+        @Nullable Path sourceFile,
         @NotNull DBCOutputWriter outputWriter,
         @Nullable SQLParametersProvider parametersProvider
     ) {
@@ -87,6 +95,12 @@ public class SQLScriptContext implements DBCScriptContext {
         this.sourceFile = sourceFile;
         this.outputWriter = outputWriter;
         this.parametersProvider = parametersProvider;
+
+        DBCExecutionContext executionContext = contextProvider.getExecutionContext();
+        DBPDataSourceContainer dataSourceContainer = executionContext == null ? null : executionContext.getDataSource().getContainer();
+        this.contextVarResolver = new DataSourceVariableResolver(
+            dataSourceContainer,
+            dataSourceContainer == null ? null : dataSourceContainer.getConnectionConfiguration());
     }
 
     @Nullable
@@ -94,27 +108,34 @@ public class SQLScriptContext implements DBCScriptContext {
         return parentContext;
     }
 
-    @NotNull
+    @Nullable
     public DBCExecutionContext getExecutionContext() {
-        return contextProvider.getExecutionContext();
+        DBCExecutionContext executionContext = contextProvider.getExecutionContext();
+        return executionContext == null ?
+            (parentContext == null ? null : parentContext.getExecutionContext()) : executionContext;
     }
 
     @Nullable
-    public File getSourceFile() {
+    public Path getSourceFile() {
         return sourceFile;
     }
 
     @Override
     public boolean hasVariable(String name) {
-        if (variables.containsKey(name)) {
+        if (variables.containsKey(getNormalizedVarName(name))) {
             return true;
         }
-        return parentContext != null && parentContext.hasVariable(name);
+        if (parentContext != null) {
+            if (parentContext.hasVariable(name)) {
+                return true;
+            }
+        }
+        return contextVarResolver.get(name) != null;
     }
 
     @Override
     public boolean hasDefaultParameterValue(String name) {
-        if (defaultParameters.containsKey(name)){
+        if (defaultParameters.containsKey(getNormalizedVarName(name))){
             return true;
         }
         return parentContext != null && parentContext.hasDefaultParameterValue(name);
@@ -122,17 +143,23 @@ public class SQLScriptContext implements DBCScriptContext {
 
     @Override
     public Object getVariable(String name) {
-        VariableInfo variableInfo = variables.get(name);
-        if (variableInfo == null && parentContext != null) {
-            return parentContext.getVariable(name);
+        VariableInfo variableInfo = variables.get(getNormalizedVarName(name));
+        if (variableInfo != null) {
+            return variableInfo.value;
         }
-        return variableInfo == null ? null : variableInfo.value;
+        if (parentContext != null) {
+            Object value = parentContext.getVariable(name);
+            if (value != null) {
+                return value;
+            }
+        }
+        return contextVarResolver.get(name);
     }
 
     @Override
     public void setVariable(String name, Object value) {
         VariableInfo v = new VariableInfo(name, value, VariableType.VARIABLE);
-        VariableInfo ov = variables.put(name, v);
+        VariableInfo ov = variables.put(getNormalizedVarName(name), v);
 
         notifyListeners(ov == null ? DBCScriptContextListener.ContextAction.ADD : DBCScriptContextListener.ContextAction.UPDATE, v);
 
@@ -143,7 +170,7 @@ public class SQLScriptContext implements DBCScriptContext {
 
     @Override
     public void removeVariable(String name) {
-        VariableInfo v = variables.remove(name);
+        VariableInfo v = variables.remove(getNormalizedVarName(name));
         if (v != null) {
             notifyListeners(DBCScriptContextListener.ContextAction.DELETE, v);
         }
@@ -156,7 +183,7 @@ public class SQLScriptContext implements DBCScriptContext {
     @Override
     public void removeDefaultParameterValue(String name) {
         final SQLQueryParameterRegistry instance = SQLQueryParameterRegistry.getInstance();
-        Object p = defaultParameters.remove(name);
+        Object p = defaultParameters.remove(getNormalizedVarName(name));
         instance.deleteParameter(name);
         instance.save();
         notifyListeners(DBCScriptContextListener.ContextAction.DELETE, name, p);
@@ -173,7 +200,7 @@ public class SQLScriptContext implements DBCScriptContext {
         for (Map.Entry<String, Object> ve : variables.entrySet()) {
             VariableInfo v = new VariableInfo(ve.getKey(), ve.getValue(), VariableType.VARIABLE);
             VariableInfo ov = this.variables.put(
-                ve.getKey(),
+                getNormalizedVarName(ve.getKey()),
                 v);
 
             notifyListeners(ov == null ? DBCScriptContextListener.ContextAction.ADD : DBCScriptContextListener.ContextAction.UPDATE, v);
@@ -185,11 +212,11 @@ public class SQLScriptContext implements DBCScriptContext {
     }
 
     public Object getParameterDefaultValue(String name) {
-        return defaultParameters.get(name);
+        return defaultParameters.get(getNormalizedVarName(name));
     }
 
     public void setParameterDefaultValue(String name, Object value) {
-        Object op = defaultParameters.put(name, value);
+        Object op = defaultParameters.put(getNormalizedVarName(name), value);
 
         notifyListeners(op == null ? DBCScriptContextListener.ContextAction.ADD : DBCScriptContextListener.ContextAction.UPDATE, name, value);
 
@@ -243,15 +270,19 @@ public class SQLScriptContext implements DBCScriptContext {
         this.ignoreParameters = ignoreParameters;
     }
 
-    public boolean executeControlCommand(SQLControlCommand command) throws DBException {
+    @NotNull
+    public SQLControlResult executeControlCommand(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull SQLControlCommand command
+    ) throws DBException {
         if (command.isEmptyCommand()) {
-            return true;
+            return SQLControlResult.success();
         }
         SQLCommandHandlerDescriptor commandHandler = SQLCommandsRegistry.getInstance().getCommandHandler(command.getCommandId());
         if (commandHandler == null) {
             throw new DBException("Command '" + command.getCommand() + "' not supported");
         }
-        return commandHandler.createHandler().handleCommand(command, this);
+        return commandHandler.createHandler().handleCommand(monitor, command, this);
     }
 
     public void copyFrom(SQLScriptContext context) {
@@ -265,7 +296,11 @@ public class SQLScriptContext implements DBCScriptContext {
         this.pragmas.putAll(context.pragmas);
     }
 
-    public boolean fillQueryParameters(SQLQuery query, boolean useDefaults) {
+    public boolean fillQueryParameters(
+        @NotNull SQLQuery query,
+        @NotNull Supplier<DBDDataReceiver> dataReceiverSupplier,
+        boolean useDefaults
+    ) {
         if (ignoreParameters) {
             return true;
         }
@@ -278,7 +313,13 @@ public class SQLScriptContext implements DBCScriptContext {
 
         if (parametersProvider != null) {
             // Resolve parameters (only if it is the first fetch)
-            Boolean paramsResult = parametersProvider.prepareStatementParameters(this, query, parameters, useDefaults);
+            Boolean paramsResult = parametersProvider.prepareStatementParameters(
+                this,
+                query,
+                parameters,
+                dataReceiverSupplier,
+                useDefaults
+            );
             if (paramsResult == null) {
                 ignoreParameters = true;
                 return true;
@@ -287,12 +328,14 @@ public class SQLScriptContext implements DBCScriptContext {
             }
         } else {
             for (SQLQueryParameter parameter : parameters) {
-                Object varValue = variables.get(parameter.getVarName());
+                String normalizedVarName = getNormalizedVarName(parameter.getVarName());
+                String normalizedParamName = getNormalizedVarName(parameter.getName());
+                Object varValue = variables.get(normalizedVarName);
                 if (varValue == null) {
-                    varValue = variables.get(parameter.getName());
+                    varValue = variables.get(normalizedParamName);
                 }
                 if (varValue == null) {
-                    varValue = defaultParameters.get(parameter.getName());
+                    varValue = defaultParameters.get(normalizedParamName);
                 } else {
                     varValue = ((VariableInfo)varValue).value;
                 }
@@ -310,8 +353,8 @@ public class SQLScriptContext implements DBCScriptContext {
     public Map<String, Object> getAllParameters() {
         Map<String, Object> params = new LinkedHashMap<>(defaultParameters.size() + variables.size());
         params.putAll(defaultParameters);
-        for (Map.Entry<String, VariableInfo> v : variables.entrySet()) {
-            params.put(v.getKey(), v.getValue().value);
+        for (VariableInfo v : variables.values()) {
+            params.put(v.name, v.value);
         }
         return params;
     }
@@ -331,7 +374,7 @@ public class SQLScriptContext implements DBCScriptContext {
                 varList = new ArrayList<>();
             }
             for (VariableInfo v : varList) {
-                variables.put(v.name, v);
+                variables.put(getNormalizedVarName(v.name), v);
             }
         }
 
@@ -391,6 +434,21 @@ public class SQLScriptContext implements DBCScriptContext {
         DBCScriptContextListener[] lc = getListenersCopy();
         if (lc != null) {
             for (DBCScriptContextListener l : lc) l.parameterChanged(contextAction, paramName, paramValue);
+        }
+    }
+
+    private String getNormalizedVarName(String name) {
+        String unquoted;
+        if (contextProvider.getExecutionContext() != null) {
+            unquoted = DBUtils.getUnQuotedIdentifier(contextProvider.getExecutionContext().getDataSource(), name);
+        } else {
+            unquoted = DBUtils.getUnQuotedIdentifier(name, AbstractSQLDialect.DEFAULT_IDENTIFIER_QUOTES);
+        }
+        if (!unquoted.equals(name)) {
+            return unquoted;
+        } else {
+            // Convert unquoted identifiers to uppercase
+            return name.toUpperCase();
         }
     }
 

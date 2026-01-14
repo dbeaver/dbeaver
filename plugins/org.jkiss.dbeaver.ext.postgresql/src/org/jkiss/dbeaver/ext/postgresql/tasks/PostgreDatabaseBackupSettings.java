@@ -1,7 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
- * Copyright (C) 2011-2012 Eugene Fradkin (eugene.fradkin@gmail.com)
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,6 +23,7 @@ import org.jkiss.dbeaver.ext.postgresql.model.PostgreDatabase;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreSchema;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreTableBase;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceMap;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
@@ -31,7 +31,6 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.tasks.nativetool.ExportSettingsExtension;
 import org.jkiss.utils.CommonUtils;
 
-import java.io.File;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -47,13 +46,19 @@ public class PostgreDatabaseBackupSettings extends PostgreBackupRestoreSettings 
     private String compression;
     private String encoding;
     private boolean showViews;
+    private boolean fullSchemaBackup;
     private boolean useInserts;
     private boolean noPrivileges;
     private boolean noOwner;
     private boolean dropObjects;
-    private boolean outputFolderNeedsToBeRecreated;
     private boolean createDatabase;
-    private File outputFolder;
+
+    public PostgreDatabaseBackupSettings() {
+    }
+
+    public PostgreDatabaseBackupSettings(@NotNull DBPProject project) {
+        super(project);
+    }
 
     @NotNull
     public List<PostgreDatabaseBackupInfo> getExportObjects() {
@@ -86,6 +91,16 @@ public class PostgreDatabaseBackupSettings extends PostgreBackupRestoreSettings 
 
     public void setShowViews(boolean showViews) {
         this.showViews = showViews;
+    }
+
+
+
+    public boolean isFullSchemaBackup() {
+        return fullSchemaBackup;
+    }
+
+    public void setFullSchemaBackup(boolean fullSchemaBackup) {
+        this.fullSchemaBackup = fullSchemaBackup;
     }
 
     public boolean isUseInserts() {
@@ -172,16 +187,17 @@ public class PostgreDatabaseBackupSettings extends PostgreBackupRestoreSettings 
 
     @Override
     public void loadSettings(DBRRunnableContext runnableContext, DBPPreferenceStore store) throws DBException {
-        super.loadSettings(runnableContext, store);
         compression = store.getString("pg.export.compression");
         encoding = store.getString("pg.export.encoding");
         showViews = store.getBoolean("pg.export.showViews");
+        fullSchemaBackup = store.getBoolean("pg.export.fullSchemaBackup");
         useInserts = store.getBoolean("pg.export.useInserts");
         noPrivileges = store.getBoolean("pg.export.noPrivileges");
         noOwner = store.getBoolean("pg.export.noOwner");
         dropObjects = store.getBoolean("pg.export.dropObjects");
         createDatabase = store.getBoolean("pg.export.createDatabase");
 
+        super.loadSettings(runnableContext, store);
         if (store instanceof DBPPreferenceMap) {
             // Save input objects to task properties
             List<Map<String, Object>> objectList = ((DBPPreferenceMap) store).getObject("exportObjects");
@@ -200,7 +216,6 @@ public class PostgreDatabaseBackupSettings extends PostgreBackupRestoreSettings 
             }
         }
     }
-
 
     private PostgreDatabaseBackupInfo loadDatabaseExportInfo(DBRRunnableContext runnableContext, String catalogId, List<String> schemaNames, List<String> tableNames) {
         PostgreDatabaseBackupInfo[] exportInfo = new PostgreDatabaseBackupInfo[1];
@@ -248,12 +263,14 @@ public class PostgreDatabaseBackupSettings extends PostgreBackupRestoreSettings 
         }
         return exportInfo[0];
     }
+
     @Override
     public void saveSettings(DBRRunnableContext runnableContext, DBPPreferenceStore store) {
         super.saveSettings(runnableContext, store);
         store.setValue("pg.export.compression", compression);
         store.setValue("pg.export.encoding", encoding);
         store.setValue("pg.export.showViews", showViews);
+        store.setValue("pg.export.fullSchemaBackup", fullSchemaBackup);
         store.setValue("pg.export.useInserts", useInserts);
         store.setValue("pg.export.noPrivileges", noPrivileges);
         store.setValue("pg.export.noOwner", noOwner);
@@ -288,17 +305,15 @@ public class PostgreDatabaseBackupSettings extends PostgreBackupRestoreSettings 
     }
 
     @NotNull
-    public File getOutputFile(@NotNull PostgreDatabaseBackupInfo info) {
+    public String getOutputFile(@NotNull PostgreDatabaseBackupInfo info) {
         String outputFileName = resolveVars(info.getDatabase(), info.getSchemas(), info.getTables(), getOutputFilePattern());
-        return new File(getOutputFolder(info), outputFileName);
+        String outputFolder = getOutputFolder(info);
+        return makeOutFilePath(outputFolder, outputFileName);
     }
 
     @NotNull
     @Override
-    public File getOutputFolder(@NotNull PostgreDatabaseBackupInfo info) {
-        if (outputFolder == null || outputFolderNeedsToBeRecreated ) {
-            outputFolder = new File(resolveVars(info.getDatabase(), info.getSchemas(), info.getTables(), getOutputFolderPattern()));
-        }
-        return outputFolder;
+    public String getOutputFolder(@NotNull PostgreDatabaseBackupInfo info) {
+        return resolveVars(info.getDatabase(), info.getSchemas(), info.getTables(), getOutputFolderPattern());
     }
 }

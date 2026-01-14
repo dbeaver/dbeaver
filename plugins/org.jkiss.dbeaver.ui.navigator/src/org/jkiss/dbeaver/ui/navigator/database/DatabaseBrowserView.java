@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,9 +17,6 @@
 package org.jkiss.dbeaver.ui.navigator.database;
 
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.ui.IMemento;
-import org.eclipse.ui.IViewSite;
-import org.eclipse.ui.PartInitException;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
@@ -28,19 +25,19 @@ import org.jkiss.dbeaver.model.navigator.DBNEmptyNode;
 import org.jkiss.dbeaver.model.navigator.DBNModel;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.DBNProject;
-import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
-import org.jkiss.dbeaver.ui.IHelpContextIds;
 import org.jkiss.dbeaver.ui.UIExecutionQueue;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.navigator.INavigatorFilter;
+import org.jkiss.dbeaver.ui.navigator.SmartNavigatorTreeFilter;
 import org.jkiss.utils.CommonUtils;
 
 public class DatabaseBrowserView extends NavigatorViewBase {
     public static final String VIEW_ID = "org.jkiss.dbeaver.core.databaseBrowser";
 
     private static final Log log = Log.getLog(DatabaseBrowserView.class);
+    private DBNNode rootNode;
 
     public DatabaseBrowserView()
     {
@@ -49,25 +46,29 @@ public class DatabaseBrowserView extends NavigatorViewBase {
 
     @Override
     protected INavigatorFilter getNavigatorFilter() {
-        return new DatabaseNavigatorTreeFilter();
+        return new SmartNavigatorTreeFilter();
     }
 
     @Override
-    public DBNNode getRootNode()
-    {
-        String secondaryId = getViewSite().getSecondaryId();
-        if (!CommonUtils.isEmpty(secondaryId)) {
-            try {
-                return getNodeFromSecondaryId(secondaryId);
-            } catch (DBException e) {
-                DBWorkbench.getPlatformUI().showError("Open database browser", "Can't find database navigator node", e);
+    public DBNNode getRootNode() {
+        if (rootNode == null) {
+            String secondaryId = getViewSite().getSecondaryId();
+            if (!CommonUtils.isEmpty(secondaryId)) {
+                try {
+                    rootNode = getNodeFromSecondaryId(secondaryId);
+                } catch (DBException e) {
+                    DBWorkbench.getPlatformUI().showError("Open database browser", "Can't find database navigator node", e);
+                }
             }
+        }
+        if (rootNode != null) {
+            return rootNode;
         }
         return getDefaultRootNode();
     }
 
     protected DBNNode getDefaultRootNode() {
-        DBNProject projectNode = getModel().getRoot().getProjectNode(DBWorkbench.getPlatform().getWorkspace().getActiveProject());
+        DBNProject projectNode = getGlobalNavigatorModel().getRoot().getProjectNode(DBWorkbench.getPlatform().getWorkspace().getActiveProject());
         return projectNode == null ? new DBNEmptyNode() : projectNode.getDatabases();
     }
 
@@ -75,36 +76,25 @@ public class DatabaseBrowserView extends NavigatorViewBase {
     public void createPartControl(Composite parent)
     {
         super.createPartControl(parent);
-        UIUtils.setHelp(parent, getHelpContextId());
+        getNavigatorTree().setFilterObjectType(getDefaultFilterType());
 
         String secondaryId = getViewSite().getSecondaryId();
         if (!CommonUtils.isEmpty(secondaryId)) {
             UIExecutionQueue.queueExec(() -> {
                 try {
                     DBNNode node = getNodeFromSecondaryId(secondaryId);
-                    setPartName(node.getNodeName());
+                    setPartName(node.getNodeDisplayName());
                     setTitleImage(DBeaverIcons.getImage(node.getNodeIconDefault()));
                 } catch (DBException e) {
-                    // ignore
+                    log.error("Error creating DB browser view", e);
                 }
             });
         }
     }
 
     @NotNull
-    protected String getHelpContextId() {
-        return IHelpContextIds.CTX_DATABASE_NAVIGATOR;
-    }
-
-    @Override
-    public void init(IViewSite site) throws PartInitException {
-        super.init(site);
-
-    }
-
-    @Override
-    public void saveState(IMemento memento) {
-        super.saveState(memento);
+    protected DatabaseNavigatorTreeFilterObjectType getDefaultFilterType() {
+        return DatabaseNavigatorTreeFilterObjectType.table;
     }
 
     public static String getSecondaryIdFromNode(DBNNode node) {
@@ -116,10 +106,10 @@ public class DatabaseBrowserView extends NavigatorViewBase {
             }
         }
         if (project == null) {
-            throw new IllegalStateException("Navigator node " + node.getNodeItemPath() + " doesn't belong to a project");
+            throw new IllegalStateException("Navigator node " + node.getNodeUri() + " doesn't belong to a project");
         }
         // We can't use colon in secondary ID
-        return project.getName() + "|" + node.getNodeItemPath().replace(":", "~");
+        return project.getName() + "|" + node.getNodeUri().replace(":", "~");
     }
 
     public static DBNNode getNodeFromSecondaryId(String id) throws DBException {
@@ -134,7 +124,15 @@ public class DatabaseBrowserView extends NavigatorViewBase {
         DBPProject projectMeta = DBWorkbench.getPlatform().getWorkspace().getProject(projectName);
         if (projectMeta != null) {
             navigatorModel.ensureProjectLoaded(projectMeta);
-            node = navigatorModel.getNodeByPath(new VoidProgressMonitor(), projectMeta, nodePath);
+            node = UIUtils.runWithMonitor(monitor -> {
+                monitor.beginTask("Find navigator node", 1);
+                try {
+                    monitor.subTask("Find node " + nodePath);
+                    return navigatorModel.getNodeByPath(monitor, projectMeta, nodePath);
+                } finally {
+                    monitor.done();
+                }
+            });
         }
         if (node == null) {
             log.error("Node " + nodePath + " not found for browse view");

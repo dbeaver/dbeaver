@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  * Copyright (C) 2019-2019 Karl Griesser (fullref@gmail.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -69,7 +69,7 @@ public final class ExasolDataTypeCache
 	}
 	
 	@Override
-	public void setCache(List<ExasolDataType> objects) {
+	public void setCache(@NotNull List<ExasolDataType> objects) {
 		super.setCache(objects);
 		for (ExasolDataType dt: objects)
 		{

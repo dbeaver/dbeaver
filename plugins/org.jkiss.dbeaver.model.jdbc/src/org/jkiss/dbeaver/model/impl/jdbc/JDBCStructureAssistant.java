@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -40,23 +40,27 @@ public abstract class JDBCStructureAssistant<CONTEXT extends JDBCExecutionContex
 
     protected abstract JDBCDataSource getDataSource();
 
+    @NotNull
     @Override
     public DBSObjectType[] getSupportedObjectTypes()
     {
         return new DBSObjectType[] { RelationalObjectType.TYPE_TABLE };
     }
 
+    @NotNull
     @Override
     public DBSObjectType[] getSearchObjectTypes() {
         return getSupportedObjectTypes();
     }
 
+    @NotNull
     @Override
     public DBSObjectType[] getHyperlinkObjectTypes()
     {
         return new DBSObjectType[] { RelationalObjectType.TYPE_TABLE };
     }
 
+    @NotNull
     @Override
     public DBSObjectType[] getAutoCompleteObjectTypes()
     {
@@ -70,13 +74,15 @@ public abstract class JDBCStructureAssistant<CONTEXT extends JDBCExecutionContex
         List<DBSObjectReference> references = new ArrayList<>();
         try (JDBCSession session = executionContext.openSession(monitor, DBCExecutionPurpose.META, ModelMessages.model_jdbc_find_objects_by_name)) {
             for (DBSObjectType type : params.getObjectTypes()) {
-                findObjectsByMask(executionContext, session, type, params, references);
+                try {
+                    findObjectsByMask(executionContext, session, type, params, references);
+                } catch (Exception e) {
+                    log.debug("Error searching objects (" + type.getTypeName() + ")", e);
+                }
                 if (references.size() >= params.getMaxResults()) {
                     break;
                 }
             }
-        } catch (SQLException ex) {
-            throw new DBException(ex, getDataSource());
         }
         return references;
     }

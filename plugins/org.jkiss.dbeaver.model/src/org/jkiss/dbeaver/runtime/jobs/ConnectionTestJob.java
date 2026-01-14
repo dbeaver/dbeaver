@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.runtime.jobs;
 
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSource;
@@ -38,7 +39,7 @@ import java.sql.Driver;
 public class ConnectionTestJob extends ConnectJob {
     private static final Log log = Log.getLog(ConnectionTestJob.class);
 
-    private DBRRunnableParametrized<DBCSession> onTest;
+    private final DBRRunnableParametrized<DBCSession> onTest;
     private String productName;
     private String productVersion;
     private String driverName;
@@ -90,15 +91,15 @@ public class ConnectionTestJob extends ConnectJob {
         this.ownerMonitor = ownerMonitor;
     }
 
+    @NotNull
     @Override
-    public IStatus run(DBRProgressMonitor monitor) {
+    public IStatus run(@NotNull DBRProgressMonitor monitor) {
         if (ownerMonitor != null) {
             monitor = ownerMonitor;
         }
         Thread.currentThread().setName(ModelMessages.dialog_connection_wizard_start_connection_monitor_thread);
 
         try {
-            container.setName(container.getConnectionConfiguration().getUrl());
             long startTime = System.currentTimeMillis();
             super.run(monitor);
             connectTime = (System.currentTimeMillis() - startTime);
@@ -109,7 +110,7 @@ public class ConnectionTestJob extends ConnectJob {
                 return Status.CANCEL_STATUS;
             }
 
-            // Start monitor task here becaue actual connection makes its own begin/end sequence
+            // Start monitor task here because actual connection makes its own begin/end sequence
             monitor.beginTask(ModelMessages.dialog_connection_wizard_start_connection_monitor_start, 3);
 
             DBPDataSource dataSource = container.getDataSource();
@@ -151,7 +152,7 @@ public class ConnectionTestJob extends ConnectJob {
                     }
                     if (driverVersion == null) {
                         // Try to get driver version from driver instance
-                        Object driverInstance = container.getDriver().getDriverInstance(monitor);
+                        Object driverInstance = container.getDriver().getDriverLoader(container).getDriverInstance(monitor);
                         if (driverInstance instanceof Driver) {
                             driverVersion = ((Driver) driverInstance).getMajorVersion() + "." + ((Driver) driverInstance).getMinorVersion();
                         }

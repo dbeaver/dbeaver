@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -43,10 +43,7 @@ import org.jkiss.utils.Pair;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 /**
  * MySQLTable base
@@ -58,6 +55,9 @@ public abstract class SQLServerTableBase extends JDBCTable<SQLServerDataSource, 
 
     private long objectId;
     private String type;
+    private String typeDescription;
+    private Date createDate;
+    private Date lastUpdate;
     private String description;
     protected Long rowCount;
 
@@ -83,6 +83,9 @@ public abstract class SQLServerTableBase extends JDBCTable<SQLServerDataSource, 
         this.objectId = JDBCUtils.safeGetLong(dbResult, "object_id");
         this.description = JDBCUtils.safeGetString(dbResult, "description");
         this.type = JDBCUtils.safeGetStringTrimmed(dbResult, "type");
+        this.typeDescription = JDBCUtils.safeGetString(dbResult, "type_desc");
+        this.createDate = JDBCUtils.safeGetTimestamp(dbResult, "create_date");
+        this.lastUpdate = JDBCUtils.safeGetTimestamp(dbResult, "modify_date");
     }
 
     @Override
@@ -107,9 +110,23 @@ public abstract class SQLServerTableBase extends JDBCTable<SQLServerDataSource, 
         return objectId;
     }
 
-    @Property(order = 6)
     public String getType() {
         return type;
+    }
+
+    @Property(viewable = true, order = 6)
+    public String getTypeDescription() {
+        return typeDescription;
+    }
+
+    @Property(viewable = true, order = 7)
+    public Date getCreateDate() {
+        return createDate;
+    }
+
+    @Property(viewable = true, order = 8)
+    public Date getLastUpdate() {
+        return lastUpdate;
     }
 
     @Override
@@ -161,7 +178,7 @@ public abstract class SQLServerTableBase extends JDBCTable<SQLServerDataSource, 
 
     @Override
     @Association
-    public Collection<SQLServerTableIndex> getIndexes(DBRProgressMonitor monitor)
+    public Collection<SQLServerTableIndex> getIndexes(@NotNull DBRProgressMonitor monitor)
         throws DBException
     {
         return this.getContainer().getIndexCache().getObjects(monitor, getSchema(), this);
@@ -207,7 +224,7 @@ public abstract class SQLServerTableBase extends JDBCTable<SQLServerDataSource, 
 
     @NotNull
     @Override
-    public String getFullyQualifiedName(DBPEvaluationContext context)
+    public String getFullyQualifiedName(@NotNull DBPEvaluationContext context)
     {
         if (!SQLServerUtils.supportsCrossDatabaseQueries(getDataSource())) {
             // Older Azure doesn't support database name in queries

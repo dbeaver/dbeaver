@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,6 +26,9 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class NavigatorActiveProjectContributor extends ContributionItem
 {
     private static final Log log = Log.getLog(NavigatorActiveProjectContributor.class);
@@ -39,7 +42,9 @@ public class NavigatorActiveProjectContributor extends ContributionItem
     private void createMenu(final Menu menu)
     {
         final DBPProject activeProject = DBWorkbench.getPlatform().getWorkspace().getActiveProject();
-        for (final DBPProject project : DBWorkbench.getPlatform().getWorkspace().getProjects()) {
+        List<? extends DBPProject> allProjects = new ArrayList<>(DBWorkbench.getPlatform().getWorkspace().getProjects());
+        allProjects.sort((o1, o2) -> o1.getDisplayName().compareToIgnoreCase(o2.getDisplayName()));
+        for (final DBPProject project : allProjects) {
             MenuItem txnItem = new MenuItem(menu, SWT.RADIO);
             txnItem.setText(project.getName());
             txnItem.setSelection(project == activeProject);

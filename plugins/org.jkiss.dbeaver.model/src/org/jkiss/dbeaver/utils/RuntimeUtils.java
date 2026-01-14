@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,27 +16,37 @@
  */
 package org.jkiss.dbeaver.utils;
 
+import org.eclipse.core.internal.runtime.Activator;
+import org.eclipse.core.internal.runtime.CommonMessages;
+import org.eclipse.core.internal.runtime.InternalPlatform;
 import org.eclipse.core.runtime.*;
 import org.eclipse.core.runtime.jobs.Job;
+import org.eclipse.core.runtime.jobs.JobGroup;
+import org.eclipse.osgi.service.localization.BundleLocalization;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.connection.DBPNativeClientLocation;
-import org.jkiss.dbeaver.model.runtime.AbstractJob;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
-import org.jkiss.dbeaver.model.runtime.DefaultProgressMonitor;
+import org.jkiss.dbeaver.model.meta.ComponentReference;
+import org.jkiss.dbeaver.model.runtime.*;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.ArrayUtils;
+import org.jkiss.utils.BeanUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.StandardConstants;
+import org.osgi.framework.*;
 
 import java.io.*;
+import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.net.*;
+import java.nio.file.Path;
 import java.text.SimpleDateFormat;
+import java.time.Duration;
 import java.util.*;
 
 /**
@@ -45,23 +55,36 @@ import java.util.*;
 public final class RuntimeUtils {
     private static final Log log = Log.getLog(RuntimeUtils.class);
 
-    private static final boolean IS_WINDOWS = Platform.getOS().equals(Platform.OS_WIN32);
-    private static final boolean IS_MACOS = Platform.getOS().equals(Platform.OS_MACOSX);
-    private static final boolean IS_LINUX = Platform.getOS().equals(Platform.OS_LINUX);
-
-    private static final boolean IS_GTK = Platform.getWS().equals(Platform.WS_GTK);
+    private static final boolean IS_OS_ARCH_AARCH64;
+    private static final boolean IS_OS_ARCH_AMD64;
+    private static final boolean IS_LINUX;
+    private static final boolean IS_MACOS;
+    private static final boolean IS_WINDOWS;
 
     private static final byte[] NULL_MAC_ADDRESS = new byte[] {0, 0, 0, 0, 0, 0};
+
+    static {
+        String arch = Platform.getOSArch();
+        IS_OS_ARCH_AARCH64 = Platform.ARCH_AARCH64.equals(arch);
+        IS_OS_ARCH_AMD64 = Platform.ARCH_X86_64.equals(arch);
+
+        String os = Platform.getOS();
+        IS_LINUX = Platform.OS_LINUX.equals(os);
+        IS_MACOS = Platform.OS_MACOSX.equals(os);
+        IS_WINDOWS = Platform.OS_WIN32.equals(os);
+    }
 
     private RuntimeUtils() {
         //intentionally left blank
     }
 
-    public static <T> T getObjectAdapter(Object adapter, Class<T> objectType) {
+    @Nullable
+    public static <T> T getObjectAdapter(@NotNull Object adapter, @NotNull Class<T> objectType) {
         return Platform.getAdapterManager().getAdapter(adapter, objectType);
     }
 
-    public static <T> T getObjectAdapter(Object adapter, Class<T> objectType, boolean force) {
+    @Nullable
+    public static <T> T getObjectAdapter(@NotNull Object adapter, @NotNull Class<T> objectType, boolean force) {
         IAdapterManager adapterManager = Platform.getAdapterManager();
         if (force) {
             adapterManager.loadAdapter(adapter, objectType.getName());
@@ -69,20 +92,23 @@ public final class RuntimeUtils {
         return adapterManager.getAdapter(adapter, objectType);
     }
 
-    public static DBRProgressMonitor makeMonitor(IProgressMonitor monitor) {
-        if (monitor instanceof DBRProgressMonitor) {
-            return (DBRProgressMonitor) monitor;
+    @NotNull
+    public static DBRProgressMonitor makeMonitor(@NotNull IProgressMonitor monitor) {
+        if (monitor instanceof DBRProgressMonitor monitor1) {
+            return monitor1;
         }
         return new DefaultProgressMonitor(monitor);
     }
 
-    public static IProgressMonitor getNestedMonitor(DBRProgressMonitor monitor) {
-        if (monitor instanceof IProgressMonitor) {
-            return (IProgressMonitor) monitor;
+    @NotNull
+    public static IProgressMonitor getNestedMonitor(@NotNull DBRProgressMonitor monitor) {
+        if (monitor instanceof IProgressMonitor monitor1) {
+            return monitor1;
         }
         return monitor.getNestedMonitor();
     }
 
+    @NotNull
     public static File getUserHomeDir() {
         String userHome = System.getProperty(StandardConstants.ENV_USER_HOME); //$NON-NLS-1$
         if (userHome == null) {
@@ -91,25 +117,19 @@ public final class RuntimeUtils {
         return new File(userHome);
     }
 
+    @NotNull
     public static String getCurrentDate() {
         return new SimpleDateFormat(GeneralUtils.DEFAULT_DATE_PATTERN, Locale.ENGLISH).format(new Date()); //$NON-NLS-1$
-/*
-        Calendar c = Calendar.getInstance();
-        c.setTime(new Date());
-        final int month = c.get(Calendar.MONTH) + 1;
-        final int day = c.get(Calendar.DAY_OF_MONTH);
-        return "" + c.get(Calendar.YEAR) + (month < 10 ? "0" + month : month) + (day < 10 ? "0" + day : day);
-*/
     }
 
+    @NotNull
+    public static String getCurrentTime() {
+        return new SimpleDateFormat(GeneralUtils.DEFAULT_TIME_PATTERN, Locale.ENGLISH).format(new Date()); //$NON-NLS-1$
+    }
+
+    @NotNull
     public static String getCurrentTimeStamp() {
         return new SimpleDateFormat(GeneralUtils.DEFAULT_TIMESTAMP_PATTERN, Locale.ENGLISH).format(new Date()); //$NON-NLS-1$
-/*
-        Calendar c = Calendar.getInstance();
-        c.setTime(new Date());
-        final int month = c.get(Calendar.MONTH) + 1;
-        return "" + c.get(Calendar.YEAR) + (month < 10 ? "0" + month : month) + c.get(Calendar.DAY_OF_MONTH) + c.get(Calendar.HOUR_OF_DAY) + c.get(Calendar.MINUTE);
-*/
     }
 
     public static boolean isTypeSupported(Class<?> type, Class<?>[] supportedTypes) {
@@ -124,10 +144,12 @@ public final class RuntimeUtils {
         return false;
     }
 
+    @NotNull
     public static String getNativeBinaryName(String binName) {
         return isWindows() ? binName + ".exe" : binName;
     }
 
+    @NotNull
     public static File getNativeClientBinary(@NotNull DBPNativeClientLocation home, @Nullable String binFolder, @NotNull String binName) throws IOException {
         binName = getNativeBinaryName(binName);
         File dumpBinary = new File(home.getPath(),
@@ -145,14 +167,12 @@ public final class RuntimeUtils {
     public static IStatus stripStack(@NotNull IStatus status) {
         if (status instanceof MultiStatus) {
             IStatus[] children = status.getChildren();
-            if (children != null) {
-                for (int i = 0; i < children.length; i++) {
-                    children[i] = stripStack(children[i]);
-                }
+            for (int i = 0; i < children.length; i++) {
+                children[i] = stripStack(children[i]);
             }
             return new MultiStatus(status.getPlugin(), status.getCode(), children, status.getMessage(), null);
         } else if (status instanceof Status) {
-            String messagePrefix = "";
+            String messagePrefix;
             if (status.getException() != null && (CommonUtils.isEmpty(status.getException().getMessage()))) {
                 messagePrefix = status.getException().getClass().getName() + ": ";
                 return new Status(status.getSeverity(), status.getPlugin(), status.getCode(), messagePrefix + status.getMessage(), null);
@@ -171,29 +191,24 @@ public final class RuntimeUtils {
         }
     }
 
+    /**
+     * @deprecated consider using {@link DurationFormatter#format(Duration, DurationFormat)} instead
+     */
+    @NotNull
+    @Deprecated(since = "25.3.0")
     public static String formatExecutionTime(long ms) {
-        if (ms < 1000) {
-            // Less than a second, show just ms
-            return String.valueOf(ms) + "ms";
-        }
-        if (ms < 60000) {
-            // Less than a minute, show sec and ms
-            return String.valueOf(ms / 1000) + "." + String.valueOf(ms % 1000) + "s";
-        }
-        long sec = ms / 1000;
-        long min = sec / 60;
-        sec -= min * 60;
-        return String.valueOf(min) + "m " + String.valueOf(sec) + "s";
+        return DurationFormatter.format(Duration.ofMillis(ms), DurationFormat.MEDIUM);
     }
 
-    public static File getPlatformFile(String platformURL) throws IOException {
+    @NotNull
+    public static Path getPlatformFile(@NotNull String platformURL) throws IOException {
         URL url = new URL(platformURL);
         URL fileURL = FileLocator.toFileURL(url);
         return getLocalFileFromURL(fileURL);
-
     }
 
-    public static File getLocalFileFromURL(URL fileURL) throws IOException {
+    @NotNull
+    public static Path getLocalFileFromURL(@NotNull URL fileURL) throws IOException {
         // Escape spaces to avoid URI syntax error
         try {
             URI filePath = GeneralUtils.makeURIFromFilePath(fileURL.toString());
@@ -202,15 +217,16 @@ public final class RuntimeUtils {
                 see dbeaver#15117
              */
             if (filePath.getAuthority() != null) {
-                return new File(filePath.getSchemeSpecificPart());
+                return Path.of(filePath.getSchemeSpecificPart());
             }
-            return new File(filePath);
+            return Path.of(filePath);
         } catch (URISyntaxException e) {
             throw new IOException("Bad local file path: " + fileURL, e);
         }
     }
 
-    public static java.nio.file.Path getLocalPathFromURL(URL fileURL) throws IOException {
+    @NotNull
+    public static Path getLocalPathFromURL(@NotNull URL fileURL) throws IOException {
         // Escape spaces to avoid URI syntax error
         try {
             URI filePath = GeneralUtils.makeURIFromFilePath(fileURL.toString());
@@ -219,19 +235,24 @@ public final class RuntimeUtils {
                 see dbeaver#15117
              */
             if (filePath.getAuthority() != null) {
-                return java.nio.file.Path.of(filePath.getSchemeSpecificPart());
+                return Path.of(filePath.getSchemeSpecificPart());
             }
-            return java.nio.file.Path.of(filePath);
+            return Path.of(filePath);
         } catch (URISyntaxException e) {
             throw new IOException("Bad local file path: " + fileURL, e);
         }
     }
 
-    public static boolean runTask(final DBRRunnableWithProgress task, String taskName, final long waitTime) {
+    public static boolean runTask(@NotNull DBRRunnableWithProgress task, @NotNull String taskName, final long waitTime) {
         return runTask(task, taskName, waitTime, false);
     }
 
-    public static boolean runTask(final DBRRunnableWithProgress task, String taskName, final long waitTime, boolean hidden) {
+    public static boolean runTask(
+        @NotNull DBRRunnableWithProgress task,
+        @NotNull String taskName,
+        final long waitTime,
+        boolean hidden
+    ) {
         final MonitoringTask monitoringTask = new MonitoringTask(task);
         Job monitorJob = new AbstractJob(taskName) {
             {
@@ -239,8 +260,9 @@ public final class RuntimeUtils {
                 setUser(!hidden);
             }
 
+            @NotNull
             @Override
-            protected IStatus run(DBRProgressMonitor monitor) {
+            protected IStatus run(@NotNull DBRProgressMonitor monitor) {
                 monitor.beginTask(getName(), 1);
                 try {
                     monitor.subTask("Execute task");
@@ -259,6 +281,8 @@ public final class RuntimeUtils {
 
         monitorJob.schedule();
 
+        // Short pause. Eclipse 2023-12 seems to have an issue which locks readAndDispatchEvents
+        pause(10);
         // Wait for job to finish
         boolean headlessMode = DBWorkbench.getPlatform().getApplication().isHeadlessMode();
         long startTime = System.currentTimeMillis();
@@ -266,20 +290,16 @@ public final class RuntimeUtils {
             if (waitTime > 0 && System.currentTimeMillis() - startTime > waitTime) {
                 break;
             }
-            try {
-                if (headlessMode || !DBWorkbench.getPlatformUI().readAndDispatchEvents()) {
-                    Thread.sleep(50);
-                }
-            } catch (InterruptedException e) {
-                log.debug("Task '" + taskName + "' was interrupted");
-                break;
+            if (headlessMode || !DBWorkbench.getPlatformUI().readAndDispatchEvents()) {
+                pause(50);
             }
         }
 
         return monitoringTask.finished;
     }
 
-    public static String executeProcess(String binPath, String ... args) throws DBException {
+    @NotNull
+    public static String executeProcess(@NotNull String binPath, @Nullable String... args) throws DBException {
         try {
             String[] cmdBin = {binPath};
             String[] cmd = args == null ? cmdBin : ArrayUtils.concatArrays(cmdBin, args);
@@ -288,30 +308,67 @@ public final class RuntimeUtils {
                 StringBuilder out = new StringBuilder();
                 readStringToBuffer(p.getInputStream(), out);
 
-                if (out.length() == 0) {
+                if (out.isEmpty()) {
                     StringBuilder err = new StringBuilder();
                     readStringToBuffer(p.getErrorStream(), err);
                     return err.toString();
                 }
 
-                return out.length() == 0 ? null: out.toString();
+                return out.toString();
             } finally {
                 p.destroy();
             }
-        }
-        catch (Exception ex) {
+        } catch (Exception ex) {
             throw new DBException("Error executing process " + binPath, ex);
         }
     }
 
-    private static void readStringToBuffer(InputStream is, StringBuilder out) throws IOException {
+    @NotNull
+    public static String executeProcessAndCheckResult(
+        @NotNull String binPath,
+        @Nullable String... args
+    ) throws DBException {
+        try {
+            String[] cmdBin = {binPath};
+            String[] cmd = args == null ? cmdBin : ArrayUtils.concatArrays(cmdBin, args);
+            Process p = Runtime.getRuntime().exec(cmd);
+            return getProcessResults(p);
+        } catch (Exception ex) {
+            if (ex instanceof DBException dbe) {
+                throw dbe;
+            }
+            throw new DBException("Error executing process " + binPath, ex);
+        }
+    }
+
+    @NotNull
+    public static String getProcessResults(@NotNull Process p) throws IOException, InterruptedException, DBException {
+        try {
+            StringBuilder out = new StringBuilder();
+            readStringToBuffer(p.getInputStream(), out);
+
+            StringBuilder err = new StringBuilder();
+            readStringToBuffer(p.getErrorStream(), err);
+
+            p.waitFor();
+            if (p.exitValue() != 0) {
+                throw new DBException(err.toString());
+            }
+
+            return out.toString();
+        } finally {
+            p.destroy();
+        }
+    }
+
+    private static void readStringToBuffer(@NotNull InputStream is, @NotNull StringBuilder out) throws IOException {
         try (BufferedReader input = new BufferedReader(new InputStreamReader(is))) {
-            for (;;) {
+            for (; ; ) {
                 String line = input.readLine();
                 if (line == null) {
                     break;
                 }
-                if (out.length() > 0) {
+                if (!out.isEmpty()) {
                     out.append("\n");
                 }
                 out.append(line);
@@ -326,6 +383,7 @@ public final class RuntimeUtils {
 
     /**
      * Checks if current application is shipped from Windows store
+     *
      * @return true if shipped from Windows store, false if not.
      */
     public static boolean isWindowsStoreApplication() {
@@ -343,17 +401,70 @@ public final class RuntimeUtils {
     public static boolean isLinux() {
         return IS_LINUX;
     }
-    
-    public static boolean isGtk() {
-        return IS_GTK;
+
+    /**
+     * Checks if the system is running Linux with the Wayland server.
+     *
+     * @return true if running on Wayland, false otherwise
+     */
+    public static boolean isWayland() {
+        return isLinux() && CommonUtils.isNotEmpty(System.getenv("WAYLAND_DISPLAY"));
     }
 
-    public static void setThreadName(String name) {
+    /**
+     * Determines whether the <i>OS</i> ISA is AArch64.
+     *
+     * <p>Note that this method is designed to tell the <i>OS</i> ISA, not <i>JVM</i> ISA.
+     *
+     * @return {@code true} if the OS ISA is AArch64
+     */
+    public static boolean isOSArchAArch64() {
+        return IS_OS_ARCH_AARCH64;
+    }
+
+    /**
+     * Determines whether the <i>OS</i> ISA is AMD64.
+     *
+     * <p>Note that this method is designed to tell the <i>OS</i> ISA, not <i>JVM</i> ISA.
+     *
+     * @return {@code true} if the OS ISA is AMD64
+     */
+    public static boolean isOSArchAMD64() {
+        return IS_OS_ARCH_AMD64;
+    }
+
+    /**
+     * Retrieves version of the operating system.
+     *
+     * @return version of the operating system, or {@link Version#emptyVersion} if the version is unknown
+     * @see #isOSVersionAtLeast(int, int, int)
+     */
+    @NotNull
+    public static Version getOSVersion() {
+        String version = System.getProperty("os.version");
+        if (version != null) {
+            try {
+                return new Version(version);
+            } catch (IllegalArgumentException e) {
+                log.debug("Error parsing OS version: " + version, e);
+            }
+        }
+        return Version.emptyVersion;
+    }
+
+    public static boolean isOSVersionAtLeast(int major, int minor, int micro) {
+        Version expected = new Version(major, minor, micro);
+        Version actual = getOSVersion();
+        return actual.compareTo(expected) >= 0;
+    }
+
+    public static void setThreadName(@NotNull String name) {
         Thread.currentThread().setName("DBeaver: " + name);
     }
 
+    @NotNull
     public static byte[] getLocalMacAddress() throws IOException {
-        InetAddress localHost = InetAddress.getLocalHost();
+        InetAddress localHost = getLocalHostOrLoopback();
         NetworkInterface ni = NetworkInterface.getByInetAddress(localHost);
         if (ni == null) {
             Enumeration<NetworkInterface> niEnum = NetworkInterface.getNetworkInterfaces();
@@ -361,7 +472,18 @@ public final class RuntimeUtils {
                 ni = niEnum.nextElement();
             }
         }
-        return ni == null ? NULL_MAC_ADDRESS : ni.getHardwareAddress();
+        return ni == null || ni.getHardwareAddress() == null ? NULL_MAC_ADDRESS : ni.getHardwareAddress();
+    }
+
+    @NotNull
+    public static InetAddress getLocalHostOrLoopback() {
+        try {
+            return InetAddress.getLocalHost();
+        } catch (UnknownHostException e) {
+            // dbeaver/pro#2157
+            log.debug("Error resolving localhost address: " + e.getMessage());
+            return InetAddress.getLoopbackAddress();
+        }
     }
 
     /**
@@ -442,25 +564,24 @@ public final class RuntimeUtils {
     }
 
     @NotNull
-    public static String getWorkingDirectory(String defaultWorkspaceLocation) {
-        String osName = (System.getProperty("os.name")).toUpperCase();
+    public static String getWorkingDirectory(@NotNull String subPath) {
         String workingDirectory;
-        if (osName.contains("WIN")) {
+        if (isWindows()) {
             String appData = System.getenv("AppData");
             if (appData == null) {
-                appData = System.getProperty("user.home");
+                appData = System.getProperty(StandardConstants.ENV_USER_HOME);
             }
-            workingDirectory = appData + "\\" + defaultWorkspaceLocation;
-        } else if (osName.contains("MAC")) {
-            workingDirectory = System.getProperty("user.home") + "/Library/" + defaultWorkspaceLocation;
+            workingDirectory = appData + "\\" + subPath;
+        } else if (isMacOS()) {
+            workingDirectory = System.getProperty(StandardConstants.ENV_USER_HOME) + "/Library/" + subPath;
         } else {
             // Linux
             String dataHome = System.getProperty("XDG_DATA_HOME");
             if (dataHome == null) {
-                dataHome = System.getProperty("user.home") + "/.local/share";
+                dataHome = System.getProperty(StandardConstants.ENV_USER_HOME) + "/.local/share";
             }
-            String badWorkingDir = dataHome + "/." + defaultWorkspaceLocation;
-            String goodWorkingDir = dataHome + "/" + defaultWorkspaceLocation;
+            String badWorkingDir = dataHome + "/." + subPath;
+            String goodWorkingDir = dataHome + "/" + subPath;
             if (!new File(goodWorkingDir).exists() && new File(badWorkingDir).exists()) {
                 // Let's use bad working dir if it exists (#6316)
                 workingDirectory = badWorkingDir;
@@ -469,6 +590,161 @@ public final class RuntimeUtils {
             }
         }
         return workingDirectory;
+    }
+
+    // Extraction from Eclipse source to support old and new API versions
+    // Activator.getLocalization became static after 2023-09
+    @NotNull
+    public static ResourceBundle getBundleLocalization(@NotNull Bundle bundle, @NotNull String locale) throws MissingResourceException {
+        Activator activator = Activator.getDefault();
+        if (activator == null) {
+            throw new MissingResourceException(CommonMessages.activator_resourceBundleNotStarted,
+                bundle.getSymbolicName(), ""); //$NON-NLS-1$
+        }
+        ServiceCaller<BundleLocalization> localizationTracker;
+        try {
+            localizationTracker = BeanUtils.getFieldValue(activator, "localizationTracker");
+        } catch (Throwable e) {
+            throw new MissingResourceException(
+                "Resource bundle '" + bundle.getSymbolicName() + "' not found for locale " + locale,
+                bundle.getSymbolicName(),
+                e.getMessage());
+        }
+        BundleLocalization location = localizationTracker.current().orElse(null);
+        ResourceBundle result = null;
+        if (location != null)
+            result = location.getLocalization(bundle, locale);
+        if (result == null)
+            throw new MissingResourceException(
+                "Resource bundle '" + bundle.getSymbolicName() + "' not found for locale " + locale,
+                bundle.getSymbolicName(),
+                ""); //$NON-NLS-1$
+        return result;
+    }
+
+    public static <T> void executeJobsForEach(
+        @NotNull Collection<? extends T> objects,
+        @NotNull DBRRunnableParametrizedWithProgress<? super T> task
+    ) {
+        JobGroup jobGroup = new JobGroup("executeJobsForEach:" + objects, 10, 1);
+        for (T object : objects) {
+            AbstractJob job = new AbstractJob("Execute for " + object) {
+                {
+                    setSystem(true);
+                    setUser(false);
+                }
+
+                @NotNull
+                @Override
+                protected IStatus run(@NotNull DBRProgressMonitor monitor) {
+                    if (!monitor.isCanceled()) {
+                        try {
+                            task.run(monitor, object);
+                        } catch (InvocationTargetException e) {
+                            log.debug(e.getTargetException());
+                        } catch (InterruptedException e) {
+                            return Status.CANCEL_STATUS;
+                        }
+                    }
+                    return Status.OK_STATUS;
+                }
+            };
+            job.setJobGroup(jobGroup);
+            job.schedule();
+        }
+        try {
+            while (!jobGroup.join(50, new NullProgressMonitor())) {
+                DBWorkbench.getPlatformUI().readAndDispatchEvents();
+            }
+        } catch (InterruptedException e) {
+            // ignore
+        }
+    }
+
+    @Nullable
+    public static String getSystemPropertyIgnoreCase(@NotNull String key) {
+        final Properties props = System.getProperties();
+
+        for (String name : props.stringPropertyNames()) {
+            if (name.equalsIgnoreCase(key)) {
+                return props.getProperty(key);
+            }
+        }
+
+        return null;
+    }
+
+    @Nullable
+    public static String getSystemEnvIgnoreCase(@NotNull String key) {
+        final Map<String, String> env = System.getenv();
+
+        for (Map.Entry<String, String> entry : env.entrySet()) {
+            if (entry.getKey().equalsIgnoreCase(key)) {
+                return entry.getValue();
+            }
+        }
+
+        return null;
+    }
+
+    @Nullable
+    public static <T> T getBundleService(@NotNull Class<T> theClass, boolean required) throws IllegalStateException {
+        Bundle bundle = FrameworkUtil.getBundle(theClass);
+        BundleContext bundleContext = bundle.getBundleContext();
+        ServiceReference<T> serviceReference = bundleContext.getServiceReference(theClass);
+        if (serviceReference == null) {
+            if (required) {
+                throw new IllegalStateException("Service '" + theClass.getName() + "' is not registered");
+            }
+            return null;
+        }
+        T service = bundleContext.getService(serviceReference);
+        if (service == null) {
+            if (required) {
+                throw new IllegalStateException("Service '" + theClass.getName() + "' implementation not found");
+            }
+        } else {
+            RuntimeUtils.injectComponentReferences(service);
+        }
+
+        return service;
+    }
+
+    public static void injectComponentReferences(@NotNull Object object) {
+        Class<?> aClass = object.getClass();
+        for (Field field : aClass.getDeclaredFields()) {
+            if (Modifier.isStatic(field.getModifiers())) {
+                continue;
+            }
+            ComponentReference refAnno = field.getAnnotation(ComponentReference.class);
+            if (refAnno != null) {
+                Class<?> serviceClass = refAnno.service();
+                if (serviceClass == Object.class) {
+                    serviceClass = field.getType();
+                }
+                try {
+                    Object fieldValue = field.get(object);
+                    if (fieldValue == null) {
+                        Object bundleService = getBundleService(serviceClass, refAnno.required());
+                        field.setAccessible(true);
+                        field.set(object, bundleService);
+
+                        if (bundleService != null && !CommonUtils.isEmpty(refAnno.postProcessMethod())) {
+                            Method postProcessMethod = bundleService.getClass().getDeclaredMethod(refAnno.postProcessMethod());
+                            postProcessMethod.setAccessible(true);
+                            postProcessMethod.invoke(bundleService);
+                        }
+                    }
+                } catch (Exception e) {
+                    log.debug("Error injecting field '" + field.getName() + "' in '" + object + "'", e);
+                }
+            }
+        }
+    }
+
+    // Returns plugin state folder and do not create it (as default Eclipse function does)
+    public static Path getPluginStateLocation(Plugin plugin) {
+        return InternalPlatform.getDefault().getStateLocation(plugin.getBundle(), false).toPath();
     }
 
     private enum CommandLineState {
@@ -480,20 +756,14 @@ public final class RuntimeUtils {
 
     private static class MonitoringTask implements DBRRunnableWithProgress {
         private final DBRRunnableWithProgress task;
-        private DBRProgressMonitor monitor;
         volatile boolean finished;
 
         private MonitoringTask(DBRRunnableWithProgress task) {
             this.task = task;
         }
 
-        public boolean isFinished() {
-            return finished;
-        }
-
         @Override
         public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
-            this.monitor = monitor;
             try {
                 task.run(monitor);
             } finally {

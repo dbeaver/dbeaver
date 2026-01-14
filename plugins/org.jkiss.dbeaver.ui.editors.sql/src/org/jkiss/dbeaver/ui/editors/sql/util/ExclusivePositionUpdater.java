@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -83,7 +83,7 @@ public class ExclusivePositionUpdater implements IPositionUpdater
                 {
                     // event extends from before position into it - adjust offset
                     // and length
-                    // offset becomes end of event, length ajusted acordingly
+                    // offset becomes end of event, length adjusted accordingly
                     int newOffset = eventOffset + eventNewLength;
                     position.setOffset(newOffset);
                     position.setLength(end - newOffset);

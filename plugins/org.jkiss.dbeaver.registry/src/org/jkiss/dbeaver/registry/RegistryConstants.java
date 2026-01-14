@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,6 +29,8 @@ public class RegistryConstants {
     public static final String TAG_PARAMETER = "parameter"; //$NON-NLS-1$
     public static final String TAG_PROPERTY = "property"; //$NON-NLS-1$
     public static final String TAG_PROPERTIES = "properties"; //$NON-NLS-1$
+    public static final String TAG_EXTENSIONS = "extensions"; //$NON-NLS-1$
+    public static final String TAG_TAGS = "tags"; //$NON-NLS-1$
     public static final String TAG_FILE = "file"; //$NON-NLS-1$
     public static final String TAG_FILE_SOURCE = "fileSource"; //$NON-NLS-1$
     public static final String TAG_LIBRARY = "library"; // [LEGACY: from DBeaver 1.1.0]  //$NON-NLS-1$
@@ -84,11 +86,13 @@ public class RegistryConstants {
     public static final String ATTR_SAMPLE_URL = "sampleURL"; //$NON-NLS-1$
     public static final String ATTR_WEB_URL = "webURL"; //$NON-NLS-1$
     public static final String ATTR_PROPERTIES_WEB_URL = "propertiesURL"; //$NON-NLS-1$
+    public static final String ATTR_DATABASE_DOCUMENTATION_SUFFIX_URL = "databaseDocumentationSuffixURL"; //$NON-NLS-1$
     public static final String ATTR_SUPPORTS_DRIVER_PROPERTIES = "supportsDriverProperties"; //$NON-NLS-1$
     public static final String ATTR_CLIENT_REQUIRED = "clientRequired"; //$NON-NLS-1$
     public static final String ATTR_ANONYMOUS = "anonymous"; //$NON-NLS-1$
     public static final String ATTR_LICENSE_REQUIRED = "licenseRequired"; //$NON-NLS-1$
     public static final String ATTR_EMBEDDED = "embedded"; //$NON-NLS-1$
+    public static final String ATTR_PROPAGATE_DRIVER_PROPERTIES = "propagateDriverProperties"; //$NON-NLS-1$
     public static final String ATTR_SINGLE_CONNECTION = "singleConnection"; //$NON-NLS-1$
     public static final String ATTR_CUSTOM_DRIVER_LOADER = "customDriverLoader"; //$NON-NLS-1$
     public static final String ATTR_USE_URL_TEMPLATE = "useURL"; //$NON-NLS-1$
@@ -101,6 +105,7 @@ public class RegistryConstants {
     public static final String ATTR_STANDARD = "standard"; //$NON-NLS-1$
     public static final String ATTR_COLOR = "color"; //$NON-NLS-1$
     public static final String ATTR_KEEP_ALIVE = "keepAlive"; //$NON-NLS-1$
+    public static final String ATTR_CLOSE_IDLE_ENABLED = "closeIdleConnection";
     public static final String ATTR_CLOSE_IDLE = "closeIdle";
     public static final String ATTR_AUTOCOMMIT = "autocommit"; //$NON-NLS-1$
     public static final String ATTR_TXN_ISOLATION = "txnIsolation"; //$NON-NLS-1$
@@ -113,13 +118,15 @@ public class RegistryConstants {
     public static final String ATTR_SMART_COMMIT_RECOVER = "smartCommitRecover"; //$NON-NLS-1$
     public static final String ATTR_AUTO_CLOSE_TRANSACTIONS = "autoCloseTransactions"; //$NON-NLS-1$
     public static final String ATTR_CLOSE_TRANSACTIONS_PERIOD = "closeTransactionsPeriod"; //$NON-NLS-1$
+    public static final String ATTR_AUTO_CLOSE_CONNECTIONS = "autoCloseConnections"; //$NON-NLS-1$
+    public static final String ATTR_CLOSE_CONNECTIONS_PERIOD = "closeConnectionsPeriod"; //$NON-NLS-1$
     public static final String ATTR_PARENT = "parent"; //$NON-NLS-1$
     public static final String ATTR_GROUP = "group"; //$NON-NLS-1$
     public static final String ATTR_SINGLETON = "singleton"; //$NON-NLS-1$
     public static final String ATTR_IGNORE_ERRORS = "ignoreErrors"; //$NON-NLS-1$
     public static final String ATTR_DIALECT = "dialect"; //$NON-NLS-1$
-
-    public static final long DEFAULT_IDLE_TRANSACTION_PERIOD = 1800;
+    public static final String ATTR_REQUIRES_MUTABILITY = "requiresMutability"; //$NON-NLS-1$
+    public static final String ATTR_REQUIRES_EXPORT_PRIVILEGES = "requiresExportPrivileges"; //$NON-NLS-1$
 
     public static final String ATTR_TARGET_ID = "targetID"; //$NON-NLS-1$
     public static final String ATTR_TYPE = "type"; //$NON-NLS-1$
@@ -159,18 +166,19 @@ public class RegistryConstants {
     public static final String ATTR_EDITOR = "editor"; //$NON-NLS-1$
     public static final String ATTR_IF = "if"; //$NON-NLS-1$
     public static final String ATTR_DEFAULT = "default"; //$NON-NLS-1$
-    public static final String ATTR_MANAGABLE = "managable"; //$NON-NLS-1$
+    public static final String ATTR_MANAGEABLE = "managable"; //$NON-NLS-1$ FIXME: Historical type
     public static final String ATTR_CONTRIBUTOR = "contributor"; //$NON-NLS-1$
     public static final String ATTR_INPUT_FACTORY = "inputFactory"; //$NON-NLS-1$
 
     public static final String ATTR_CONFIRMATION_MESSAGE = "confirmationMessage"; //$NON-NLS-1$
     public static final String ATTR_HANDLER_CLASS = "handlerClass"; //$NON-NLS-1$
-    public static final String ATTR_UI_CLASS = "uiClass"; //$NON-NLS-1$
     public static final String ATTR_SECURED = "secured"; //$NON-NLS-1$
 
     public static final String TAG_DATA_SOURCE = "data-source"; //$NON-NLS-1$
     public static final String TAG_EVENT = "event"; //$NON-NLS-1$
     public static final String TAG_EVENTS = "events"; //$NON-NLS-1$
+    public static final String TAG_AUTH_PROPERTIES = "auth-properties"; //$NON-NLS-1$
+    public static final String TAG_MAIN_PROPERTIES = "main-properties"; //$NON-NLS-1$
     public static final String TAG_PROVIDER_PROPERTIES = "provider-properties"; //$NON-NLS-1$
     public static final String TAG_PROVIDER_PROPERTY = "provider-property"; //$NON-NLS-1$
     public static final String TAG_CUSTOM_PROPERTY = "custom-property"; //$NON-NLS-1$
@@ -187,7 +195,6 @@ public class RegistryConstants {
     public static final String ATTR_LOGIN_DATE = "login-date"; //$NON-NLS-1$
     public static final String ATTR_SAVE_PASSWORD = "save-password"; //$NON-NLS-1$
     public static final String ATTR_SHARED_CREDENTIALS = "shared-credentials"; //$NON-NLS-1$
-    public static final String ATTR_TEMPLATE = "template"; //$NON-NLS-1$
 
     public static final String ATTR_READ_ONLY = "read-only"; //$NON-NLS-1$
     public static final String ATTR_FILTER_CATALOG = "filter-catalog"; //$NON-NLS-1$
@@ -225,8 +232,10 @@ public class RegistryConstants {
     public static final String ATTR_WORKING_DIRECTORY = "workingDirectory";
     public static final String ATTR_COMMAND = "command";
     public static final String ATTR_SUPPORTED_CONFIGURATION_TYPES = "supportedConfigurationTypes";
+    public static final String ATTR_SUPPORTED_PAGE_FIELDS = "supportedPageFields";
     public static final String ATTR_CONFIGURATION_TYPE = "configurationType";
     public static final String ATTR_SUPPORTS_DISTRIBUTED_MODE = "supportsDistributedMode";
-    public static final String ATTR_DEPRECATED = "deprecated";
-
+    public static final String ATTR_NOT_AVAILABLE_DRIVER = "notAvailableDriver";
+    public static final String ATTR_MESSAGE = "message";
+    public static final String ATTR_TITLE = "title";
 }

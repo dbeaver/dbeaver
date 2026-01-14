@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,13 +17,15 @@
 
 package org.jkiss.dbeaver.ext.generic.views;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableColumn;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableConstraintColumn;
 import org.jkiss.dbeaver.ext.generic.model.GenericUniqueKey;
+import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEObjectConfigurator;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
-import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableCheckConstraint;
 import org.jkiss.dbeaver.ui.UITask;
 import org.jkiss.dbeaver.ui.editors.object.struct.EditConstraintPage;
@@ -37,17 +39,13 @@ public class GenericTablePrimaryKeyConfigurator implements DBEObjectConfigurator
 
 
     @Override
-    public GenericUniqueKey configureObject(DBRProgressMonitor monitor, Object table, GenericUniqueKey primaryKey, Map<String, Object> options) {
-        boolean isSupportCheckConstraint = primaryKey.getDataSource().getMetaModel().supportsCheckConstraints();
+    public GenericUniqueKey configureObject(@NotNull DBRProgressMonitor monitor, @Nullable DBECommandContext commandContext, @Nullable Object table, @NotNull GenericUniqueKey primaryKey, @NotNull Map<String, Object> options) {
         return new UITask<GenericUniqueKey>() {
             @Override
             protected GenericUniqueKey runTask() {
                 EditConstraintPage editPage = new EditConstraintPage(
                     "Create unique constraint",
-                    primaryKey,
-                    isSupportCheckConstraint ?
-                            new DBSEntityConstraintType[] {DBSEntityConstraintType.PRIMARY_KEY, DBSEntityConstraintType.UNIQUE_KEY, DBSEntityConstraintType.CHECK} :
-                            new DBSEntityConstraintType[] {DBSEntityConstraintType.PRIMARY_KEY, DBSEntityConstraintType.UNIQUE_KEY} );
+                    primaryKey);
                 if (!editPage.edit()) {
                     return null;
                 }

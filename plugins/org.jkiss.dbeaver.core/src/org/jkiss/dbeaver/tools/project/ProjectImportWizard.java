@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,6 +30,7 @@ import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.app.DBPPlatformDesktop;
 import org.jkiss.dbeaver.model.app.DBPWorkspace;
 import org.jkiss.dbeaver.model.connection.DBPDriverLibrary;
+import org.jkiss.dbeaver.model.rcp.DBeaverNature;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.registry.DataSourceProviderDescriptor;
@@ -38,7 +39,6 @@ import org.jkiss.dbeaver.registry.DataSourceRegistry;
 import org.jkiss.dbeaver.registry.RegistryConstants;
 import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
-import org.jkiss.dbeaver.runtime.resource.DBeaverNature;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
@@ -82,6 +82,11 @@ public class ProjectImportWizard extends Wizard implements IImportWizard {
 
 	@Override
 	public boolean performFinish() {
+        if (!DBWorkbench.getPlatform().getWorkspace().canManageProjects()) {
+            DBWorkbench.getPlatformUI().showError("Import error", "You can't import projects");
+            return false;
+        }
+
         try {
             UIUtils.run(getContainer(), true, true, new DBRRunnableWithProgress() {
                 @Override
@@ -463,7 +468,7 @@ public class ProjectImportWizard extends Wizard implements IImportWizard {
     {
         IFile configFile = project.getFile(DataSourceRegistry.LEGACY_CONFIG_FILE_NAME);
         if (configFile == null || !configFile.exists()) {
-            configFile = project.getFile(DataSourceRegistry.OLD_CONFIG_FILE_NAME);
+            configFile = project.getFile(DataSourceRegistry.LEGACY2_CONFIG_FILE_NAME);
         }
         if (configFile == null || !configFile.exists()) {
             return;

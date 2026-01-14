@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,8 +19,8 @@ package org.jkiss.dbeaver.ui.editors.sql.handlers;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
-import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.rcp.RCPProject;
 import org.jkiss.dbeaver.model.sql.SQLScriptContext;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.ui.actions.AbstractDataSourceHandler;
@@ -28,6 +28,8 @@ import org.jkiss.dbeaver.ui.editors.DatabaseEditorContext;
 import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 
 public class SQLNavigatorContext implements DatabaseEditorContext {
+
+    private boolean reuseExecutionContext = false;
 
     private DBPDataSourceContainer dataSourceContainer;
     private DBSObject selectedObject;
@@ -80,9 +82,14 @@ public class SQLNavigatorContext implements DatabaseEditorContext {
         this.executionContext = executionContext;
     }
 
-    public SQLNavigatorContext(SQLScriptContext scriptContext) {
+    public SQLNavigatorContext(SQLScriptContext scriptContext, boolean reuseExecutionContext) {
         this.selectedObject = null;
         this.scriptContext = scriptContext;
+        this.reuseExecutionContext = reuseExecutionContext;
+    }
+
+    public boolean isReuseExecutionContext() {
+        return this.reuseExecutionContext;
     }
 
     @Nullable
@@ -113,6 +120,7 @@ public class SQLNavigatorContext implements DatabaseEditorContext {
         this.selectedObject = selectedObject;
     }
 
+    @Nullable
     @Override
     public DBCExecutionContext getExecutionContext() {
         if (executionContext != null) {
@@ -123,9 +131,9 @@ public class SQLNavigatorContext implements DatabaseEditorContext {
         return null;
     }
 
-    public DBPProject getProject() {
+    public RCPProject getProject() {
         DBPDataSourceContainer ds = getDataSourceContainer();
-        return ds != null ? ds.getProject() : NavigatorUtils.getSelectedProject();
+        return (RCPProject) (ds != null ? ds.getProject() : NavigatorUtils.getSelectedProject());
     }
 
 }

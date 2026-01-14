@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,9 +32,9 @@ public interface DBSAttributeEnumerable extends DBSEntityAttribute
     /**
      * Gets enumeration values
      * @param session               session
-     * @param valuePattern          pattern for enumeration values. If null or empty then returns full enumration set
+     * @param valuePattern          pattern for enumeration values. If null or empty then returns full enumeration set
      * @param maxResults            maximum enumeration values in result set
-     * @param calcCount             Calculate value count and order by it (desc). Otherwise just read distinct values in natural order
+     * @param calcCount             Calculate value count and order by it (desc). Otherwise, just read distinct values in natural order
      * @param formatValues          Use value formatting or return raw values
      * @param caseInsensitiveSearch Use case-insensitive search for {@code valuePattern}
      * @return statement with result set which contains valid enumeration values.

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,12 +18,10 @@ package org.jkiss.dbeaver.model.impl.data;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
-import org.jkiss.dbeaver.model.data.DBDDataReceiver;
-import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
-import org.jkiss.dbeaver.model.data.DBDValueHandler;
+import org.jkiss.dbeaver.model.data.*;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
@@ -76,14 +74,13 @@ public abstract class ExecuteBatchImpl implements DBSDataManipulator.ExecuteBatc
 
     @NotNull
     @Override
-    public DBCStatistics execute(@NotNull DBCSession session, Map<String, Object> options) throws DBCException
-    {
+    public DBCStatistics execute(@NotNull DBCSession session, @NotNull Map<String, Object> options) throws DBException {
         return processBatch(session, null, options);
     }
 
     @NotNull
     @Override
-    public void generatePersistActions(@NotNull DBCSession session, @NotNull List<DBEPersistAction> actions, Map<String, Object> options) throws DBCException {
+    public void generatePersistActions(@NotNull DBCSession session, @NotNull List<DBEPersistAction> actions, @NotNull Map<String, Object> options) throws DBException {
         processBatch(session, actions, options);
     }
 
@@ -96,7 +93,7 @@ public abstract class ExecuteBatchImpl implements DBSDataManipulator.ExecuteBatc
      * @throws DBCException
      */
     @NotNull
-    DBCStatistics processBatch(@NotNull DBCSession session, @Nullable List<DBEPersistAction> actions, Map<String, Object> options) throws DBCException
+    DBCStatistics processBatch(@NotNull DBCSession session, @Nullable List<DBEPersistAction> actions, Map<String, Object> options) throws DBException
     {
         //session.getProgressMonitor().subTask("Save batch (" + values.size() + ")");
         DBDValueHandler[] handlers = new DBDValueHandler[attributes.length];
@@ -153,7 +150,7 @@ public abstract class ExecuteBatchImpl implements DBSDataManipulator.ExecuteBatc
                         if (actions == null) {
                             flushBatch(statistics, statement);
                         }
-                        statement.close();
+                        DBUtils.closeSafely(statement);
                         statement = null;
                         statementsInBatch = 0;
                         reuse = true;
@@ -201,22 +198,22 @@ public abstract class ExecuteBatchImpl implements DBSDataManipulator.ExecuteBatc
                     }
                 } finally {
                     if (!reuse && !useBatch) {
-                        statement.close();
+                        DBUtils.closeSafely(statement);
                     }
                 }
             }
-            values.clear();
 
             if (statementsInBatch > 0) {
                 if (actions == null) {
                     flushBatch(statistics, statement);
                 }
-                statement.close();
+                DBUtils.closeSafely(statement);
                 statement = null;
             }
+            values.clear();
         } finally {
             if (reuseStatement && statement != null) {
-                statement.close();
+                DBUtils.closeSafely(statement);
             }
             if (!useBatch && !values.isEmpty()) {
                 values.clear();
@@ -227,7 +224,12 @@ public abstract class ExecuteBatchImpl implements DBSDataManipulator.ExecuteBatc
     }
 
     protected int getNextUsedParamIndex(Object[] attributeValues, int paramIndex) {
-        return paramIndex + 1;
+        paramIndex++;
+        // we need to skip all nullable values because they are already set in the statement
+        while (paramIndex < attributeValues.length && attributeValues[paramIndex] instanceof DBDNull) {
+            paramIndex++;
+        }
+        return paramIndex;
     }
 
     String formatQueryParameters(DBCSession session, String queryString, DBDValueHandler[] handlers, Object[] rowValues) {
@@ -255,7 +257,8 @@ public abstract class ExecuteBatchImpl implements DBSDataManipulator.ExecuteBatc
                         attributes[paramIndex],
                         handlers[paramIndex],
                         rowValues[paramIndex],
-                        DBDDisplayFormat.NATIVE);
+                        DBDDisplayFormat.NATIVE,
+                        false);
                     formatted.append(paramValue);
                     continue;
                 }
@@ -287,10 +290,10 @@ public abstract class ExecuteBatchImpl implements DBSDataManipulator.ExecuteBatc
 
     void flushBatch(DBCStatistics statistics, DBCStatement statement) throws DBCException {
         long startTime = System.currentTimeMillis();
-        int[] updatedRows = statement.executeStatementBatch();
+        long[] updatedRows = statement.executeStatementBatch();
         statistics.addExecuteTime(System.currentTimeMillis() - startTime);
         if (!ArrayUtils.isEmpty(updatedRows)) {
-            for (int rows : updatedRows) {
+            for (long rows : updatedRows) {
                 if (rows < 0) {
                     // In some cases (e.g. JDBC API) negative means "unknown".
                     // "Statement.SUCCESS_NO_INFO — the command was processed successfully, but the number of rows affected is unknown"
@@ -326,7 +329,7 @@ public abstract class ExecuteBatchImpl implements DBSDataManipulator.ExecuteBatc
     }
 
     private void readKeys(@NotNull DBCSession session, @NotNull DBCStatement dbStat, @NotNull DBDDataReceiver keysReceiver)
-        throws DBCException
+        throws DBException
     {
         DBCResultSet dbResult;
         try {
@@ -339,20 +342,11 @@ public abstract class ExecuteBatchImpl implements DBSDataManipulator.ExecuteBatc
         if (dbResult == null) {
             return;
         }
-        try {
-            keysReceiver.fetchStart(session, dbResult, -1, -1);
-            try {
-                while (dbResult.nextRow()) {
-                    keysReceiver.fetchRow(session, dbResult);
-                }
+        try (dbResult) {
+            DBDDataReceiver.startFetchWorkflow(keysReceiver, session, dbResult, -1, -1);
+            while (dbResult.nextRow()) {
+                keysReceiver.fetchRow(session, dbResult);
             }
-            finally {
-                keysReceiver.fetchEnd(session, dbResult);
-            }
-        }
-        finally {
-            dbResult.close();
-            keysReceiver.close();
         }
     }
 

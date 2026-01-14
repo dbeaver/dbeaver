@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,7 +26,7 @@ public interface DBRRunnableContext
 {
     /**
      * Runs blocking process.
-     * If any exception will occure when running this process then it'll written in log
+     * If any exception occur when running this process then it'll be written in log
      * @param runnable runnable implementation
      */
     void run(

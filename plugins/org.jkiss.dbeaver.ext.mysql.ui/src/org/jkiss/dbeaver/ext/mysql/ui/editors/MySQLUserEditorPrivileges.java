@@ -1,7 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
- * Copyright (C) 2011-2012 Eugene Fradkin (eugene.fradkin@gmail.com)
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,8 +24,8 @@ import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.mysql.model.*;
@@ -193,7 +192,7 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract
                         privilege),
                     new DBECommandReflector<MySQLUser, MySQLCommandGrantPrivilege>() {
                         @Override
-                        public void redoCommand(MySQLCommandGrantPrivilege mySQLCommandGrantPrivilege)
+                        public void redoCommand(@NotNull MySQLCommandGrantPrivilege mySQLCommandGrantPrivilege)
                         {
                             if (!privTable.isDisposed() && curCatalog == selectedCatalog && curTable == selectedTable) {
                                 privTable.checkPrivilege(privilege, isGrant);
@@ -201,7 +200,7 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract
                             updateLocalData(privilege, isGrant, withGrantOption, curCatalog, curTable);
                         }
                         @Override
-                        public void undoCommand(MySQLCommandGrantPrivilege mySQLCommandGrantPrivilege)
+                        public void undoCommand(@NotNull MySQLCommandGrantPrivilege mySQLCommandGrantPrivilege)
                         {
                             if (!privTable.isDisposed() && curCatalog == selectedCatalog && curTable == selectedTable) {
                                 privTable.checkPrivilege(privilege, !isGrant);
@@ -257,7 +256,7 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract
         LoadingJob.createService(
             new DatabaseLoadService<Collection<MySQLTableBase>>(MySQLUIMessages.editors_user_editor_privileges_service_load_tables, getExecutionContext()) {
                 @Override
-                public Collection<MySQLTableBase> evaluate(DBRProgressMonitor monitor)
+                public Collection<MySQLTableBase> evaluate(@NotNull DBRProgressMonitor monitor)
                     throws InvocationTargetException, InterruptedException {
                     if (selectedCatalog == null) {
                         return Collections.emptyList();
@@ -304,7 +303,7 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract
         LoadingJob.createService(
             new DatabaseLoadService<java.util.List<MySQLPrivilege>>(MySQLUIMessages.editors_user_editor_privileges_service_load_privileges, getExecutionContext()) {
                 @Override
-                public java.util.List<MySQLPrivilege> evaluate(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
+                public java.util.List<MySQLPrivilege> evaluate(@NotNull DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
                     try {
                         return getDatabaseObject().getDataSource().getPrivileges(monitor);
                     } catch (DBException e) {
@@ -328,7 +327,7 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract
         this.grants = new ArrayList<>(grantsTmp);
         for (Iterator<MySQLGrant> i = grants.iterator(); i.hasNext();) {
             MySQLGrant grant = i.next();
-            if (!grant.isAllPrivileges() && !grant.hasNonAdminPrivileges()) {
+            if (!grant.isAllPrivileges() && !grant.hasNonAdminPrivileges() && !grant.isGrantOption()) {
                 i.remove();
             }
         }

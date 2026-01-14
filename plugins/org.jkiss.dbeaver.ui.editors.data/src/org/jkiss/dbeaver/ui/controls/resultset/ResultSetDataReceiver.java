@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -43,7 +43,7 @@ class ResultSetDataReceiver implements DBDDataReceiver, DBDDataReceiverInteracti
 
     private static final Log log = Log.getLog(ResultSetDataReceiver.class);
 
-    private ResultSetViewer resultSetViewer;
+    private final ResultSetViewer resultSetViewer;
     private int columnsCount;
     private DBDAttributeBinding[] metaColumns;
     private List<Object[]> rows = new ArrayList<>();
@@ -55,9 +55,9 @@ class ResultSetDataReceiver implements DBDDataReceiver, DBDDataReceiverInteracti
     private boolean paused;
 
     // Attribute fetching errors. Collect them to avoid tons of similar error in log
-    private Map<DBCAttributeMetaData, List<String>> attrErrors = new HashMap<>();
+    private final Map<DBCAttributeMetaData, List<String>> attrErrors = new HashMap<>();
     // All (unique) errors happened during fetch
-    private List<Throwable> errorList = new ArrayList<>();
+    private final List<Throwable> errorList = new ArrayList<>();
     private int focusRow;
     private DBSDataContainer targetDataContainer;
     
@@ -90,7 +90,7 @@ class ResultSetDataReceiver implements DBDDataReceiver, DBDDataReceiverInteracti
     }
 
     @Override
-    public void fetchStart(DBCSession session, final DBCResultSet resultSet, long offset, long maxRows)
+    public void fetchStart(@NotNull DBCSession session, @NotNull final DBCResultSet resultSet, long offset, long maxRows)
         throws DBCException {
         this.errorList.clear();
         this.rows.clear();
@@ -104,7 +104,7 @@ class ResultSetDataReceiver implements DBDDataReceiver, DBDDataReceiverInteracti
                 throw new DBCException("Null resultset metadata");
             }
 
-            List<DBCAttributeMetaData> rsAttributes = metaData.getAttributes();
+            List<? extends DBCAttributeMetaData> rsAttributes = metaData.getAttributes();
             columnsCount = rsAttributes.size();
 
             // Extract column info
@@ -115,7 +115,7 @@ class ResultSetDataReceiver implements DBDDataReceiver, DBDDataReceiverInteracti
     }
 
     @Override
-    public void fetchRow(DBCSession session, DBCResultSet resultSet) {
+    public void fetchRow(@NotNull DBCSession session, @NotNull DBCResultSet resultSet) {
         Object[] row = new Object[columnsCount];
         for (int i = 0; i < columnsCount; i++) {
             try {
@@ -153,18 +153,17 @@ class ResultSetDataReceiver implements DBDDataReceiver, DBDDataReceiverInteracti
     }
 
     @Override
-    public void fetchEnd(DBCSession session, final DBCResultSet resultSet) {
+    public void fetchEnd(@NotNull DBCSession session, @NotNull final DBCResultSet resultSet) {
         if (!nextSegmentRead) {
-            try {
-                // Read locators' metadata
-                DBSEntity entity = null;
-                DBSDataContainer dataContainer = getDataContainer();
-                if (dataContainer instanceof DBSEntity) {
-                    entity = (DBSEntity) dataContainer;
+            if (metaColumns != null) {
+                try {
+                    DBSDataContainer dataContainer = getDataContainer();
+                    // Read locators' metadata
+                    DBSEntity entity = dataContainer instanceof DBSEntity e ? e : null;
+                    DBExecUtils.bindAttributes(session, entity, resultSet, metaColumns, rows);
+                } catch (Throwable e) {
+                    errorList.add(e);
                 }
-                DBExecUtils.bindAttributes(session, entity, resultSet, metaColumns, rows);
-            } catch (Throwable e) {
-                errorList.add(e);
             }
         }
 
@@ -177,18 +176,22 @@ class ResultSetDataReceiver implements DBDDataReceiver, DBDDataReceiverInteracti
         monitor.beginTask("Populate data", 1);
         if (!nextSegmentRead) {
             monitor.subTask("Set data");
-            resultSetViewer.setData(tmpRows, focusRow);
+            resultSetViewer.setData(monitor, tmpRows, focusRow);
         } else {
             monitor.subTask("Append data");
             boolean resetOldRows = getDataContainer().getDataSource().getContainer().getPreferenceStore().getBoolean(ModelPreferences.RESULT_SET_REREAD_ON_SCROLLING);
-            resultSetViewer.appendData(tmpRows, resetOldRows);
+            resultSetViewer.appendData(monitor, tmpRows, resetOldRows);
         }
         // Check for more data
         hasMoreData = maxRows > 0 && tmpRows.size() >= maxRows;
         monitor.done();
 
+        monitor.subTask("Update presentation");
         UIUtils.syncExec(() -> {
             // Push data into viewer
+            if (resultSetViewer.getControl().isDisposed()) {
+                return;
+            }
             if (!nextSegmentRead) {
                 boolean metadataChanged = resultSetViewer.getModel().isMetadataChanged();
                 resultSetViewer.updatePresentation(resultSet, metadataChanged);

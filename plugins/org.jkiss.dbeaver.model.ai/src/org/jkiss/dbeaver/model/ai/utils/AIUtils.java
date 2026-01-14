@@ -1,0 +1,261 @@
+/*
+ * DBeaver - Universal Database Manager
+ * Copyright (C) 2010-2025 DBeaver Corp and others
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.jkiss.dbeaver.model.ai.utils;
+
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.*;
+import org.jkiss.dbeaver.model.ai.*;
+import org.jkiss.dbeaver.model.ai.engine.AIEngineProperties;
+import org.jkiss.dbeaver.model.ai.internal.AIMessages;
+import org.jkiss.dbeaver.model.ai.registry.AIEngineDescriptor;
+import org.jkiss.dbeaver.model.ai.registry.AIEngineRegistry;
+import org.jkiss.dbeaver.model.ai.registry.AISettingsManager;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContextDefaults;
+import org.jkiss.dbeaver.model.exec.DBCTransactionManager;
+import org.jkiss.dbeaver.model.impl.DataSourceContextProvider;
+import org.jkiss.dbeaver.model.navigator.DBNUtils;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.secret.DBSSecretController;
+import org.jkiss.dbeaver.model.sql.SQLQueryCategory;
+import org.jkiss.dbeaver.model.sql.SQLScriptElement;
+import org.jkiss.dbeaver.model.sql.SQLUtils;
+import org.jkiss.dbeaver.model.struct.DBSEntity;
+import org.jkiss.dbeaver.model.struct.DBSEntityConstraint;
+import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.struct.rdb.*;
+import org.jkiss.dbeaver.registry.DataSourceDescriptor;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.runtime.ui.UIServiceSQL;
+import org.jkiss.utils.CommonUtils;
+
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+public final class AIUtils {
+    private static final Log log = Log.getLog(AIUtils.class);
+
+    @Nullable
+    public static AIEngineDescriptor getActiveEngineDescriptor() {
+        return AIEngineRegistry.getInstance().getEngineDescriptor(
+            AISettingsManager.getInstance().getSettings().activeEngine()
+        );
+    }
+
+    public static boolean hasValidConfiguration() throws DBException {
+        AISettings aiSettings = AISettingsManager.getInstance().getSettings();
+        AIEngineProperties configuration = aiSettings.getEngineConfiguration(aiSettings.activeEngine());
+        return configuration.isValidConfiguration();
+    }
+    /**
+     * Retrieves a secret value from the global secret controller.
+     * If the secret value is empty, it returns the provided default value.
+     */
+    public static String getSecretValueOrDefault(
+        @NotNull String secretId,
+        @Nullable String defaultValue
+    ) throws DBException {
+        String secretValue = DBSSecretController.getGlobalSecretController().getPrivateSecretValue(secretId);
+        if (CommonUtils.isEmpty(secretValue)) {
+            return defaultValue;
+        }
+
+        return secretValue;
+    }
+
+    /**
+     * Checks if the given DBPObject is eligible for AI description.
+     *
+     * @param dbpObject the object to check
+     * @return true if the object can be described by AI, false otherwise
+     */
+    public static boolean isEligible(@Nullable DBPObject dbpObject) {
+        if (dbpObject instanceof DataSourceDescriptor descriptor) {
+            return descriptor.getDriver().isEmbedded();
+        }
+        return dbpObject instanceof DBSEntity
+            || dbpObject instanceof DBSSchema
+            || dbpObject instanceof DBSTableColumn
+            || dbpObject instanceof DBSProcedure
+            || dbpObject instanceof DBSTrigger
+            || dbpObject instanceof DBSEntityConstraint;
+    }
+
+    /**
+     * Retrieves the DDL for the given DBSObject if applicable.
+     *
+     * @param object  the DBSObject from which to retrieve the DDL
+     * @param monitor the progress monitor
+     */
+    public static String getObjectDDL(@Nullable DBSObject object, @NotNull DBRProgressMonitor monitor) {
+        if (object instanceof DBSProcedure
+            || object instanceof DBSTrigger
+            || object instanceof DBSEntityConstraint
+            || object instanceof DBSView
+        ) {
+            if (object instanceof DBPScriptObject scriptObject) {
+                try {
+                    return scriptObject.getObjectDefinitionText(
+                        monitor, Map.of(
+                            DBPScriptObject.OPTION_INCLUDE_COMMENTS, false,
+                            DBPScriptObject.OPTION_INCLUDE_NESTED_OBJECTS, false,
+                            DBPScriptObject.OPTION_SKIP_INDEXES, true, // Exclude indexes
+                            DBPScriptObject.OPTION_SKIP_DROPS, true // Exclude --DROP
+                        )
+                    );
+                } catch (DBException e) {
+                    log.debug(e);
+                }
+            }
+        }
+        return null;
+    }
+
+    public static boolean confirmExecutionIfNeeded(
+        @NotNull DBPDataSource dataSource,
+        @NotNull List<SQLScriptElement> scriptElements,
+        boolean isCommand
+    ) {
+        if (DBWorkbench.getPlatform().getApplication().isMultiuser()) {
+            // TODO: change behavior in multiuser mode
+            return true;
+        }
+        Set<SQLQueryCategory> queryCategories = SQLQueryCategory.categorizeScript(scriptElements);
+        if (queryCategories.contains(SQLQueryCategory.UNKNOWN) && isConfirmationNeeded(AIConstants.AI_CONFIRM_OTHER)) {
+            String message = isCommand ? AIMessages.ai_execute_command_confirm_other_message :
+                AIMessages.ai_execute_query_confirm_other_message;
+            return confirmExecute(AIMessages.ai_execute_query_title, message, dataSource, scriptElements);
+        }
+
+        if (queryCategories.contains(SQLQueryCategory.DDL) && isConfirmationNeeded(AIConstants.AI_CONFIRM_DDL)) {
+            String message = isCommand ? AIMessages.ai_execute_command_confirm_ddl_message :
+                AIMessages.ai_execute_query_confirm_ddl_message;
+            return confirmExecute(AIMessages.ai_execute_query_title, message, dataSource, scriptElements);
+        }
+        if (queryCategories.contains(SQLQueryCategory.DML) && isConfirmationNeeded(AIConstants.AI_CONFIRM_DML)) {
+            String message = isCommand ? AIMessages.ai_execute_command_confirm_dml_message :
+                AIMessages.ai_execute_query_confirm_dml_message;
+            return confirmExecute(AIMessages.ai_execute_query_title, message, dataSource, scriptElements);
+        }
+        if (queryCategories.contains(SQLQueryCategory.SQL) && isConfirmationNeeded(AIConstants.AI_CONFIRM_SQL)) {
+            String message = isCommand ? AIMessages.ai_execute_command_confirm_sql_message :
+                AIMessages.ai_execute_query_confirm_sql_message;
+            return confirmExecute(AIMessages.ai_execute_query_title, message, dataSource, scriptElements);
+        }
+        return true;
+    }
+
+    public static void disableAutoCommitIfNeeded(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull List<SQLScriptElement> scriptElements,
+        @Nullable DBCExecutionContext context
+    ) throws DBException {
+        if (!SQLQueryCategory.categorizeScript(scriptElements).contains(SQLQueryCategory.DML)) {
+            return;
+        }
+
+        AIQueryConfirmationRule dmlRule = CommonUtils.valueOf(
+            AIQueryConfirmationRule.class,
+            DBWorkbench.getPlatform().getPreferenceStore().getString(AIConstants.AI_CONFIRM_DML),
+            AIQueryConfirmationRule.CONFIRM
+        );
+        if (dmlRule == AIQueryConfirmationRule.DISABLE_AUTOCOMMIT) {
+            DBCTransactionManager txnManager = DBUtils.getTransactionManager(context);
+            if (txnManager != null && txnManager.isAutoCommit()) {
+                txnManager.setAutoCommit(monitor, false);
+                showAutoCommitDisabledNotification();
+            }
+        }
+    }
+
+    private static void showAutoCommitDisabledNotification() {
+        DBWorkbench.getPlatformUI().showWarningNotification(
+            AIMessages.ai_execute_query_auto_commit_disabled_title,
+            AIMessages.ai_execute_query_auto_commit_disabled_message
+        );
+    }
+
+    private static boolean isConfirmationNeeded(@NotNull String actionName) {
+        return CommonUtils.valueOf(
+            AIQueryConfirmationRule.class,
+            DBWorkbench.getPlatform().getPreferenceStore().getString(actionName),
+            AIQueryConfirmationRule.CONFIRM
+        ) == AIQueryConfirmationRule.CONFIRM;
+    }
+
+    private static boolean confirmExecute(
+        @NotNull String title,
+        @NotNull String message,
+        @NotNull DBPDataSource dataSource,
+        @NotNull List<SQLScriptElement> scriptElements
+    ) {
+        String delimiter = SQLUtils.getDefaultScriptDelimiter(dataSource.getSQLDialect());
+        String scriptText = scriptElements.stream()
+            .map(Object::toString)
+            .collect(Collectors.joining(delimiter + "\n"));
+        UIServiceSQL serviceSQL = DBWorkbench.getService(UIServiceSQL.class);
+        return serviceSQL != null ?
+            serviceSQL.confirmQueryExecution(title, message, scriptText, getContextProvider(scriptElements), true) :
+            DBWorkbench.getPlatformUI().confirmAction(title, message, true);
+    }
+
+    @NotNull
+    private static DBPContextProvider getContextProvider(@NotNull List<SQLScriptElement> script) {
+        DBPDataSource dataSource = script.stream().findFirst()
+            .map(SQLScriptElement::getDataSource)
+            .orElse(null);
+        return new DataSourceContextProvider(dataSource);
+    }
+
+    public static void updateScopeSettingsIfNeeded(
+        @NotNull AIContextSettings settings,
+        @NotNull DBPDataSourceContainer container,
+        @Nullable DBCExecutionContext executionContext
+    ) {
+        if (settings.getScope() != null || !container.isConnected()) {
+            return;
+        }
+        if (executionContext == null || executionContext.getContextDefaults() == null) {
+            // default scope
+            settings.setScope(AIDatabaseScope.CURRENT_DATABASE);
+            return;
+        }
+        DBCExecutionContextDefaults<?, ?> contextDefaults = executionContext.getContextDefaults();
+        if (contextDefaults.getDefaultSchema() != null || contextDefaults.supportsSchemaChange()) {
+            settings.setScope(AIDatabaseScope.CURRENT_SCHEMA);
+        } else if (contextDefaults.getDefaultCatalog() != null || contextDefaults.supportsCatalogChange()) {
+            settings.setScope(AIDatabaseScope.CURRENT_DATABASE);
+        } else {
+            settings.setScope(AIDatabaseScope.CURRENT_DATASOURCE);
+        }
+    }
+
+    public static boolean isExcludableObject(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBSObject obj
+    ) {
+        return DBUtils.isSystemObject(obj)
+            || DBUtils.isHiddenObject(obj)
+            || obj instanceof DBSTablePartition
+            || DBNUtils.getNodeByObject(monitor, obj, false) == null;
+    }
+}

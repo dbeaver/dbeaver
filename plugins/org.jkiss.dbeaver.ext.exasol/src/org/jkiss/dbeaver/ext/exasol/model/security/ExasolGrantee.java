@@ -1,7 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2016-2016 Karl Griesser (fullref@gmail.com)
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,9 +17,13 @@
 package org.jkiss.dbeaver.ext.exasol.model.security;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.ext.exasol.model.*;
+import org.jkiss.dbeaver.ext.exasol.model.ExasolConsumerGroup;
+import org.jkiss.dbeaver.ext.exasol.model.ExasolDataSource;
+import org.jkiss.dbeaver.ext.exasol.model.ExasolPriority;
+import org.jkiss.dbeaver.ext.exasol.model.ExasolPriorityGroup;
 import org.jkiss.dbeaver.model.DBPRefreshableObject;
 import org.jkiss.dbeaver.model.DBPSaveableObject;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
@@ -67,7 +70,8 @@ public abstract class ExasolGrantee
 		this.persisted = persisted;
 	}
 	
-	public abstract String getName(); 
+	@NotNull
+    public abstract String getName();
 
 	@Override
 	public boolean isPersisted()
@@ -102,7 +106,7 @@ public abstract class ExasolGrantee
 				return grantee;
 			}
 		}
-		throw new DBException("Object disappeard after refresh");
+		throw new DBException("Object disappeared after refresh");
 	}
 
 	@Override
@@ -232,6 +236,7 @@ public abstract class ExasolGrantee
 			return false;
 		}
 
+		@Nullable
 		@Override
 		public Object[] getPossibleValues(ExasolGrantee object) {
 			ExasolDataSource dataSource = object.getDataSource();
@@ -239,10 +244,10 @@ public abstract class ExasolGrantee
 				if (dataSource.getUserPriviliges().hasConsumerGroups())
 				{
 					Collection<ExasolConsumerGroup> consumerGroups = dataSource.getConsumerGroups(new VoidProgressMonitor());
-					return consumerGroups.toArray(new Object[consumerGroups.size()]);
+					return consumerGroups.toArray(new Object[0]);
 				} else {
 					Collection<ExasolPriorityGroup> priorityGroups = dataSource.getPriorityGroups(new VoidProgressMonitor());
-					return priorityGroups.toArray(new Object[priorityGroups.size()]);
+					return priorityGroups.toArray(new Object[0]);
 				}
 			} catch (DBException e) {
 				log.error(e);

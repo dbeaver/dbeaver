@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,28 +16,47 @@
  */
 package org.jkiss.dbeaver.model.lsm.sql.dialect;
 
-
 import org.antlr.v4.runtime.CommonTokenStream;
+import org.antlr.v4.runtime.Token;
+import org.antlr.v4.runtime.TokenSource;
+import org.antlr.v4.runtime.TokenStream;
+import org.antlr.v4.runtime.tree.TerminalNode;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.lsm.LSMAnalyzerImpl;
+import org.jkiss.dbeaver.model.lsm.LSMAnalyzerParameters;
 import org.jkiss.dbeaver.model.lsm.sql.impl.syntax.SQLStandardLexer;
 import org.jkiss.dbeaver.model.lsm.sql.impl.syntax.SQLStandardParser;
-import org.jkiss.dbeaver.model.stm.STMSource;
-import org.jkiss.dbeaver.model.stm.STMTreeRuleNode;
+import org.jkiss.dbeaver.model.stm.*;
 import org.jkiss.utils.Pair;
 
+
 public class SQLStandardAnalyzer extends LSMAnalyzerImpl<SQLStandardLexer, SQLStandardParser> {
+
+    public SQLStandardAnalyzer(LSMAnalyzerParameters parameters) {
+        super(parameters);
+    }
+
     @NotNull
     @Override
-    protected Pair<SQLStandardLexer, SQLStandardParser> createParser(@NotNull STMSource source) {
-        SQLStandardLexer lexer = new SQLStandardLexer(source.getStream());
-        SQLStandardParser parser =  new SQLStandardParser(new CommonTokenStream(lexer));
+    protected Pair<SQLStandardLexer, SQLStandardParser> createParser(@NotNull STMSource source, @NotNull LSMAnalyzerParameters parameters) {
+        SQLStandardLexer lexer = createLexer(source, parameters);
+        SQLStandardParser parser =  new SQLStandardParser(new CommonTokenStream(lexer), parameters);
         return new Pair<>(lexer, parser);
+    }
+    
+    public static SQLStandardLexer createLexer(@NotNull STMSource source, @NotNull LSMAnalyzerParameters parameters) {
+        SQLStandardLexer lexer = new SQLStandardLexer(source.getStream(), parameters);
+        return lexer;
     }
 
     @NotNull
     @Override
     protected STMTreeRuleNode parseSqlQueryImpl(@NotNull SQLStandardParser parser) {
-        return parser.sqlQuery();
+        STMTreeRuleNode root = parser.sqlQuery();
+        TokenStream tokens = parser.getInputStream();
+        for (int i = tokens.index(); i < tokens.size() && tokens.get(i).getType() != SQLStandardLexer.EOF; i++) {
+            root.addErrorNode(new STMTreeTermErrorNode(tokens.get(i)));
+        }
+        return root;
     }
 }

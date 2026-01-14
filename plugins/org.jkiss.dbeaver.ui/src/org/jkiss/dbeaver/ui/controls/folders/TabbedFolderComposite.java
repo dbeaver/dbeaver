@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,11 +18,6 @@
 package org.jkiss.dbeaver.ui.controls.folders;
 
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.accessibility.ACC;
-import org.eclipse.swt.accessibility.AccessibleAdapter;
-import org.eclipse.swt.accessibility.AccessibleControlAdapter;
-import org.eclipse.swt.accessibility.AccessibleControlEvent;
-import org.eclipse.swt.accessibility.AccessibleEvent;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Color;
@@ -35,9 +30,9 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Sash;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.ui.ConComposite;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.css.CSSUtils;
-import org.jkiss.dbeaver.ui.css.DBStyles;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -49,10 +44,9 @@ import java.util.Map;
 
 /**
  * Folders composite.
- * DBStyles:
  * SWT.LEFT, SWT.RIGHT - tabs orientation
  */
-public class TabbedFolderComposite extends Composite implements ITabbedFolderContainer {
+public class TabbedFolderComposite extends ConComposite implements ITabbedFolderContainer {
 
     @NotNull
     private final Composite compositePane;
@@ -60,7 +54,7 @@ public class TabbedFolderComposite extends Composite implements ITabbedFolderCon
     private TabbedFolderInfo[] folders;
 
     private final Map<TabbedFolderInfo, Composite> contentsMap = new HashMap<>();
-    private List<ITabbedFolderListener> listeners = new ArrayList<>();
+    private final List<ITabbedFolderListener> listeners = new ArrayList<>();
     private FolderPane[] folderPanes;
     private FolderPane lastActiveFolder = null;
 
@@ -80,7 +74,7 @@ public class TabbedFolderComposite extends Composite implements ITabbedFolderCon
 
         public FolderPane(Composite parent, boolean last) {
             this.folderList = new TabbedFolderList(parent, !last);
-            CSSUtils.setCSSClass(this.folderList, DBStyles.COLORED_BY_CONNECTION_TYPE);
+            CSSUtils.markConnectionTypeColor(this.folderList);
 
             GridData gd = new GridData(GridData.FILL_VERTICAL);
             if (!last) {
@@ -155,18 +149,20 @@ public class TabbedFolderComposite extends Composite implements ITabbedFolderCon
                 newContent = new Composite(editorPane, SWT.NONE);
                 newContent.setLayoutData(new GridData(GridData.FILL_BOTH));
                 newContent.setLayout(new FillLayout());
+/*
                 newContent.getAccessible().addAccessibleControlListener(new AccessibleControlAdapter() {
                     @Override
                     public void getRole(AccessibleControlEvent e) {
                         e.detail = ACC.ROLE_TABITEM;
                     }
                 });
-                newContent.getAccessible().addAccessibleListener(new AccessibleAdapter() {
-                    @Override
-                    public void getName(AccessibleEvent e) {
-                        e.result = folder.getTooltip();
-                    }
-                });
+*/
+//                newContent.getAccessible().addAccessibleListener(new AccessibleAdapter() {
+//                    @Override
+//                    public void getName(AccessibleEvent e) {
+//                        e.result = folder.getTooltip();
+//                    }
+//                });
                 newFolder.createControl(newContent);
                 contentsMap.put(folder, newContent);
             }
@@ -250,7 +246,7 @@ public class TabbedFolderComposite extends Composite implements ITabbedFolderCon
         gl.marginWidth = 0;
         setLayout(gl);
 
-        compositePane = new Composite(this, SWT.NONE);
+        compositePane = new ConComposite(this, SWT.NONE);
         gl = new GridLayout(2, false);
         gl.horizontalSpacing = 0;
         gl.verticalSpacing = 0;

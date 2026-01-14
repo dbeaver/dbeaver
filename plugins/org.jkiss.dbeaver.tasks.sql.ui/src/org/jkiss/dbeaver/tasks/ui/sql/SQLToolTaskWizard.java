@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -67,7 +67,7 @@ class SQLToolTaskWizard extends TaskConfigurationWizard<SQLToolExecuteSettings> 
             throw new IllegalArgumentException("Error instantiating task type handler", e);
         }
         settings = taskHandler.createToolSettings();
-        settings.loadConfiguration(UIUtils.getDialogRunnableContext(), task.getProperties());
+        settings.loadConfiguration(UIUtils.getDialogRunnableContext(), task.getProperties(), task.getProject());
         objectList = settings.getObjectList();
     }
 

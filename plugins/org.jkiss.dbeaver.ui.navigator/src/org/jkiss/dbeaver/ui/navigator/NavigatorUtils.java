@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,25 +17,22 @@
 package org.jkiss.dbeaver.ui.navigator;
 
 import org.eclipse.core.commands.ExecutionEvent;
-import org.eclipse.core.filesystem.EFS;
-import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.IAdaptable;
-import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.action.*;
 import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.dnd.*;
 import org.eclipse.swt.events.MenuEvent;
 import org.eclipse.swt.events.MenuListener;
-import org.eclipse.swt.widgets.*;
+import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Menu;
+import org.eclipse.swt.widgets.MenuItem;
 import org.eclipse.ui.*;
 import org.eclipse.ui.dialogs.PreferencesUtil;
 import org.eclipse.ui.handlers.HandlerUtil;
-import org.eclipse.ui.ide.FileStoreEditorInput;
 import org.eclipse.ui.menus.UIElement;
 import org.eclipse.ui.part.EditorInputTransfer;
 import org.eclipse.ui.part.IPageSite;
@@ -46,23 +43,24 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.*;
+import org.jkiss.dbeaver.model.app.DBPPlatformDesktop;
 import org.jkiss.dbeaver.model.app.DBPProject;
+import org.jkiss.dbeaver.model.app.DBPResourceHandler;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContextDefaults;
+import org.jkiss.dbeaver.model.fs.nio.EFSNIOResource;
 import org.jkiss.dbeaver.model.navigator.*;
+import org.jkiss.dbeaver.model.navigator.fs.DBNPathBase;
+import org.jkiss.dbeaver.model.navigator.meta.DBXTreeItem;
 import org.jkiss.dbeaver.model.navigator.meta.DBXTreeNodeHandler;
 import org.jkiss.dbeaver.model.rm.RMConstants;
-import org.jkiss.dbeaver.model.runtime.AbstractJob;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectFilter;
 import org.jkiss.dbeaver.model.struct.DBSStructContainer;
 import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
 import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
-import org.jkiss.dbeaver.runtime.ui.UIServiceSQL;
 import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.IActionConstants;
 import org.jkiss.dbeaver.ui.IDataSourceContainerUpdate;
@@ -70,31 +68,29 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.ViewerColumnController;
 import org.jkiss.dbeaver.ui.dnd.DatabaseObjectTransfer;
 import org.jkiss.dbeaver.ui.dnd.TreeNodeTransfer;
-import org.jkiss.dbeaver.ui.editors.*;
+import org.jkiss.dbeaver.ui.editors.DatabaseEditorContext;
+import org.jkiss.dbeaver.ui.editors.DatabaseEditorContextBase;
+import org.jkiss.dbeaver.ui.editors.EditorUtils;
+import org.jkiss.dbeaver.ui.editors.MultiPageDatabaseEditor;
 import org.jkiss.dbeaver.ui.editors.entity.EntityEditor;
+import org.jkiss.dbeaver.ui.editors.entity.properties.ObjectPropertiesEditor;
 import org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerObjectOpen;
 import org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerRefresh;
-import org.jkiss.dbeaver.ui.navigator.database.DatabaseNavigatorContent;
+import org.jkiss.dbeaver.ui.navigator.database.DatabaseNavigatorTree;
 import org.jkiss.dbeaver.ui.navigator.database.DatabaseNavigatorView;
 import org.jkiss.dbeaver.ui.navigator.database.NavigatorViewBase;
+import org.jkiss.dbeaver.ui.navigator.database.load.ContextMenuTreeNodeSpecial;
+import org.jkiss.dbeaver.ui.navigator.dnd.NavigatorDragSourceListener;
+import org.jkiss.dbeaver.ui.navigator.dnd.NavigatorDropTargetListener;
 import org.jkiss.dbeaver.ui.navigator.project.ProjectNavigatorView;
-import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.lang.reflect.InvocationTargetException;
-import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.List;
 import java.util.*;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * Navigator utils
@@ -102,46 +98,6 @@ import java.util.stream.Stream;
 public class NavigatorUtils {
 
     private static final Log log = Log.getLog(NavigatorUtils.class);
-    private static final String DRIVER = "YashanDB";
-    private static final String GLOBAL_META = "Global metadata";
-
-    private static final String CH_GLOBAL_META = "全局元数据";
-
-    private static final String TYPE = "Types";
-
-    private static final String CH_TYPE = "类型";
-
-    private static final String JOB_DIRECTORY = "Jobs";
-
-    private static final String CH_SCHEMA_DIRECTORY = "模式";
-
-    private static final String CREATE_NEW_JOB = "Create New Job";
-
-    private static final String CH_CREATE_NEW_JOB = "新建 Job";
-
-    private static final String CREATE_NEW_LINK = "Create New Database Link";
-
-    private static final String CH_CREATE_NEW_LINK = "新建 数据库连接";
-
-    private static final String DELETE = "Delete\tDelete";
-
-    private static final String CH_DELETE = "删除\tDelete";
-
-    private static final String DATABASE_LINK = "Database Links";
-
-    private static final String CH_DATABASE_LINK = "数据库连接";
-
-    private static final String CH_TABLE = "表";
-
-    private static final String CH_VIEW = "视图";
-
-    private static final String CH_PHYSICAL_VIEW = "物化视图";
-
-    private static final String CH_IMPORT = "导入数据";
-
-    private static final String CH_EXPORT = "导出数据";
-
-
     public static DBNNode getSelectedNode(ISelectionProvider selectionProvider)
     {
         if (selectionProvider == null) {
@@ -161,6 +117,20 @@ public class NavigatorUtils {
                 return (DBNNode) selectedObject;
             } else if (selectedObject != null) {
                 return RuntimeUtils.getObjectAdapter(selectedObject, DBNNode.class);
+            }
+        }
+        return null;
+    }
+
+    @Nullable
+    public static ContextMenuTreeNodeSpecial getSelectedSpecialNode(@Nullable ISelection selection) {
+        if (selection == null || selection.isEmpty()) {
+            return null;
+        }
+        if (selection instanceof IStructuredSelection structuredSelection) {
+            Object selectedObject = structuredSelection.getFirstElement();
+            if (selectedObject instanceof ContextMenuTreeNodeSpecial node) {
+                return node;
             }
         }
         return null;
@@ -190,7 +160,7 @@ public class NavigatorUtils {
     /**
      * Find selected node for specified UI element
      * @param element ui element
-     * @return ndoe or null
+     * @return node or null
      */
     public static DBNNode getSelectedNode(UIElement element)
     {
@@ -232,9 +202,9 @@ public class NavigatorUtils {
     }
 
     public static void addContextMenu(
-            @Nullable final IWorkbenchSite workbenchSite,
-            @NotNull final Viewer viewer,
-            @NotNull ISelectionProvider selectionProvider)
+        @Nullable final IWorkbenchSite workbenchSite,
+        @NotNull final Viewer viewer,
+        @NotNull ISelectionProvider selectionProvider)
     {
         MenuManager menuMgr = createContextMenu(workbenchSite, viewer, selectionProvider, null);
         if (workbenchSite instanceof IWorkbenchPartSite) {
@@ -245,112 +215,67 @@ public class NavigatorUtils {
     }
 
     public static MenuManager createContextMenu(
-            @Nullable final IWorkbenchSite workbenchSite,
-            @NotNull final Viewer viewer,
-            @NotNull final IMenuListener menuListener)
+        @Nullable final IWorkbenchSite workbenchSite,
+        @NotNull final Viewer viewer,
+        @NotNull final IMenuListener menuListener)
     {
         return createContextMenu(workbenchSite, viewer, viewer, menuListener);
     }
 
     public static MenuManager createContextMenu(
-            @Nullable final IWorkbenchSite workbenchSite,
-            @NotNull final Viewer viewer,
-            @NotNull final ISelectionProvider selectionProvider,
-            @Nullable final IMenuListener menuListener)
-    {
+        @Nullable final IWorkbenchSite workbenchSite,
+        @NotNull final Viewer viewer,
+        @NotNull final ISelectionProvider selectionProvider,
+        @Nullable final IMenuListener menuListener
+    ) {
         final Control control = viewer.getControl();
         final MenuManager menuMgr = new MenuManager();
         Menu menu = menuMgr.createContextMenu(control);
-        menu.addMenuListener(new MenuListener()
-        {
+
+        menu.addMenuListener(new MenuListener() {
             @Override
-            public void menuHidden(MenuEvent e)
-            {
+            public void menuHidden(MenuEvent e) {
             }
 
             @Override
-            public void menuShown(MenuEvent e)
-            {
-
-                try {
-                    Menu m = (Menu)e.widget;
-                    DBNNode node = getSelectedNode(viewer.getSelection());
-                    if (node != null && node.getNodeItemPath() != null && node.getNodeItemPath().contains(DRIVER)){
-                        if (node.getParentNode() != null && node.getParentNode().getName() != null && node.getName() != null){
-                            // 当前节点为类型，父节点为全局元数据时，隐藏删除按钮
-                            if ((node.getParentNode().getName().equals(TYPE) ||
-                                    node.getParentNode().getName().equals(CH_TYPE)) &&
-                                    (node.getParentNode().getParentNode().getName().equals(GLOBAL_META) ||
-                                            node.getParentNode().getParentNode().getName().equals(CH_GLOBAL_META))){
-                                for (MenuItem item: m.getItems()){
-                                    if ( item.getText().equals(DELETE) || item.getText().equals(CH_DELETE)){
-                                        item.setEnabled(false);
-                                    }
-                                }
-                            }
-                            // 当前节点或父节点为任务时，隐藏创建任务
-                            if (node.getName().contains(JOB_DIRECTORY) || node.getParentNode().getName().contains(JOB_DIRECTORY)){
-                                for (MenuItem item: m.getItems()){
-                                    if ( item.getText().contains(CREATE_NEW_JOB) || item.getText().contains(CH_CREATE_NEW_JOB)){
-                                        item.setEnabled(false);
-                                    }
-                                }
-                            }
-                            // 当前节点或父节点为数据库连接时，隐藏创建删除
-                            if (node.getName().equals(DATABASE_LINK)
-                                    || node.getName().equals(CH_DATABASE_LINK)
-                                    || node.getParentNode().getName().equals(DATABASE_LINK)
-                                    || node.getParentNode().getName().equals(CH_DATABASE_LINK))   {
-                                for (MenuItem item: m.getItems()){
-                                    if (item.getText().contains(CREATE_NEW_LINK) ||
-                                            item.getText().contains(DELETE) ||
-                                            item.getText().contains(CH_DELETE) ||
-                                            item.getText().contains(CH_CREATE_NEW_LINK)){
-                                        item.setEnabled(false);
-                                    }
-                                }
-                            }
-                            // 当前节点为表，视图，物化视图或父节点为模式时隐藏导入导出
-                            if (node.getName().equals(CH_TABLE)
-                                    || node.getParentNode().getName().equals(CH_TABLE)
-                                    || node.getName().equals(CH_VIEW)
-                                    || node.getParentNode().getName().equals(CH_VIEW)
-                                    || node.getName().equals(CH_PHYSICAL_VIEW)
-                                    || node.getParentNode().getName().equals(CH_PHYSICAL_VIEW)
-                                    || node.getParentNode().getName().equals(CH_SCHEMA_DIRECTORY)){
-                                for (MenuItem item : m.getItems()) {
-                                    if (item.getText().equalsIgnoreCase(CH_IMPORT) || item.getText().equalsIgnoreCase(CH_EXPORT)) {
-                                        item.setEnabled(false);
-                                    }
+            public void menuShown(MenuEvent e) {
+                Menu menu = (Menu) e.widget;
+                DBNNode node = getSelectedNode(viewer.getSelection());
+                removeUnrelatedMenuItems(menu, node);
+                if (node != null && !node.isLocked() && node.allowsOpen()) {
+                    String commandID = NavigatorUtils.getNodeActionCommand(
+                        DBXTreeNodeHandler.Action.open,
+                        node,
+                        NavigatorCommands.CMD_OBJECT_OPEN
+                    );
+                    // Dirty hack
+                    // Get contribution item from menu item and check it's ID
+                    try {
+                        for (MenuItem item : menu.getItems()) {
+                            Object itemData = item.getData();
+                            if (itemData instanceof IContributionItem contributionItem) {
+                                String contribId = contributionItem.getId();
+                                if (contribId != null && contribId.equals(commandID)) {
+                                    menu.setDefaultItem(item);
                                 }
                             }
                         }
+                    } catch (Exception ex) {
+                        log.debug(ex);
                     }
-
-                    if (node != null && !node.isLocked() && node.allowsOpen()) {
-                        String commandID = NavigatorUtils.getNodeActionCommand(DBXTreeNodeHandler.Action.open, node, NavigatorCommands.CMD_OBJECT_OPEN);
-                        // Dirty hack
-                        // Get contribution item from menu item and check it's ID
-                        try {
-                            for (MenuItem item : m.getItems()) {
-                                Object itemData = item.getData();
-                                if (itemData instanceof IContributionItem) {
-                                    String contribId = ((IContributionItem)itemData).getId();
-                                    if (contribId != null && contribId.equals(commandID)) {
-                                        m.setDefaultItem(item);
-                                    }
-                                }
-                            }
-                        } catch (Exception ex) {
-                            log.debug(ex);
-                        }
-                    }
-                } catch (Exception ex) {
-                    log.error(ex);
                 }
             }
         });
         menuMgr.addMenuListener(manager -> {
+            ContextMenuTreeNodeSpecial specialNode = getSelectedSpecialNode(viewer.getSelection());
+            if (specialNode != null) {
+                DatabaseNavigatorTree navigatorTree = getNavigatorTree(workbenchSite);
+                if (navigatorTree != null) {
+                    specialNode.fillContextMenu(menuMgr, navigatorTree);
+                }
+                return;
+            }
+
             ViewerColumnController<?, ?> columnController = ViewerColumnController.getFromControl(control);
             if (columnController != null && columnController.isClickOnHeader()) {
                 columnController.fillConfigMenu(manager);
@@ -379,7 +304,9 @@ public class NavigatorUtils {
         if (selectedNode != null && !selectedNode.isLocked() && workbenchSite != null) {
             addSetDefaultObjectAction(workbenchSite, manager, selectedNode);
         }
+
         manager.add(new GroupMarker(NavigatorCommands.GROUP_NAVIGATOR_ADDITIONS));
+
         manager.add(new GroupMarker(NavigatorCommands.GROUP_TOOLS));
         manager.add(new GroupMarker(NavigatorCommands.GROUP_TOOLS_END));
 
@@ -411,11 +338,11 @@ public class NavigatorUtils {
             DBSObject selectedObject = ((DBNDatabaseNode) selectedNode).getObject();
             DBPDataSource dataSource = ((DBNDatabaseNode) selectedNode).getDataSource();
             if (dataSource != null) {
-                DBCExecutionContext defaultContext = dataSource.getDefaultInstance().getDefaultContext(new VoidProgressMonitor(), false);
-                DBCExecutionContextDefaults contextDefaults = defaultContext.getContextDefaults();
+                DBCExecutionContext defaultContext = DBUtils.getDefaultContext(dataSource, false);
+                DBCExecutionContextDefaults<?,?> contextDefaults = defaultContext.getContextDefaults();
                 if (contextDefaults != null) {
                     if ((selectedObject instanceof DBSCatalog && contextDefaults.supportsCatalogChange() && contextDefaults.getDefaultCatalog() != selectedObject) ||
-                            (selectedObject instanceof DBSSchema && contextDefaults.supportsSchemaChange() && contextDefaults.getDefaultSchema() != selectedObject))
+                        (selectedObject instanceof DBSSchema && contextDefaults.supportsSchemaChange() && contextDefaults.getDefaultSchema() != selectedObject))
                     {
                         addSetActive = true;
                     }
@@ -466,15 +393,15 @@ public class NavigatorUtils {
     public static void addDragAndDropSupport(final Viewer viewer, boolean enableDrag, boolean enableDrop) {
         if (enableDrag) {
             Transfer[] dragTransferTypes = new Transfer[] {
-                    TextTransfer.getInstance(),
-                    TreeNodeTransfer.getInstance(),
-                    DatabaseObjectTransfer.getInstance(),
-                    EditorInputTransfer.getInstance(),
-                    FileTransfer.getInstance()
+                TextTransfer.getInstance(),
+                TreeNodeTransfer.getInstance(),
+                DatabaseObjectTransfer.getInstance(),
+                EditorInputTransfer.getInstance(),
+                FileTransfer.getInstance()
             };
 
-            if (RuntimeUtils.isGtk()) {
-                // TextTransfer should be the last on GTK due to platform' DND implementation inconsistency
+            if (RuntimeUtils.isWayland()) {
+                // TextTransfer should be the last when using Wayland
                 ArrayUtils.reverse(dragTransferTypes);
             }
 
@@ -482,349 +409,13 @@ public class NavigatorUtils {
 
             final DragSource source = new DragSource(viewer.getControl(), operations);
             source.setTransfer(dragTransferTypes);
-            source.addDragListener(new DragSourceListener() {
-                private IStructuredSelection selection;
-
-                @Override
-                public void dragStart(DragSourceEvent event) {
-                    selection = (IStructuredSelection) viewer.getSelection();
-                }
-
-                @Override
-                public void dragSetData(DragSourceEvent event) {
-                    if (!selection.isEmpty()) {
-                        final Map<DBNNode, TransferInfo> info = new LinkedHashMap<>();
-
-                        for (Object nextSelected : selection) {
-                            if (!(nextSelected instanceof DBNNode)) {
-                                continue;
-                            }
-                            DBNNode node = (DBNNode) nextSelected;
-
-                            String nodeName;
-                            DBPNamedObject nodeObject = null;
-
-                            if (nextSelected instanceof DBNDatabaseNode && !(nextSelected instanceof DBNDataSource)) {
-                                DBSObject object = ((DBNDatabaseNode) nextSelected).getObject();
-                                if (object == null) {
-                                    continue;
-                                }
-                                nodeName = DBUtils.getObjectFullName(object, DBPEvaluationContext.UI);
-                                nodeObject = object;
-                            } else if (nextSelected instanceof DBNDataSource) {
-                                DBPDataSourceContainer object = ((DBNDataSource) nextSelected).getDataSourceContainer();
-                                nodeName = object.getName();
-                                nodeObject = object;
-                            } else if (nextSelected instanceof DBNStreamData
-                                    && ((DBNStreamData) nextSelected).supportsStreamData()
-                                    && (EditorInputTransfer.getInstance().isSupportedType(event.dataType)
-                                    || FileTransfer.getInstance().isSupportedType(event.dataType)))
-                            {
-                                String fileName = node.getNodeName();
-                                try {
-                                    Path tmpFile = DBWorkbench.getPlatform().getTempFolder(new VoidProgressMonitor(), "dnd-files").resolve(fileName);
-                                    if (!Files.exists(tmpFile)) {
-                                        try {
-                                            Files.createFile(tmpFile);
-                                        } catch (IOException e) {
-                                            log.error("Can't create new file" + tmpFile.toAbsolutePath(), e);
-                                            continue;
-                                        }
-                                        UIUtils.runInProgressService(monitor -> {
-                                            try {
-                                                long streamSize = ((DBNStreamData) nextSelected).getStreamSize();
-                                                try (InputStream is = ((DBNStreamData) nextSelected).openInputStream()) {
-                                                    try (OutputStream out = Files.newOutputStream(tmpFile)) {
-                                                        ContentUtils.copyStreams(is, streamSize, out, monitor);
-                                                    }
-                                                }
-                                            } catch (Exception e) {
-                                                try {
-                                                    Files.delete(tmpFile);
-                                                } catch (IOException ex) {
-                                                    log.error("Error deleting temp file " + tmpFile.toAbsolutePath(), e);
-                                                }
-                                                throw new InvocationTargetException(e);
-                                            }
-                                        });
-                                    }
-                                    nodeName = tmpFile.toAbsolutePath().toString();
-                                } catch (Exception e) {
-                                    log.error(e);
-                                    continue;
-                                }
-                            } else {
-                                nodeName = node.getNodeTargetName();
-                            }
-
-                            info.put(node, new TransferInfo(nodeName, node, nodeObject));
-                        }
-                        if (TreeNodeTransfer.getInstance().isSupportedType(event.dataType)) {
-                            event.data = info.keySet();
-                        } else if (DatabaseObjectTransfer.getInstance().isSupportedType(event.dataType)) {
-                            event.data = info.values().stream()
-                                    .map(TransferInfo::getObject)
-                                    .filter(Objects::nonNull)
-                                    .collect(Collectors.toList());
-                        } else if (TextTransfer.getInstance().isSupportedType(event.dataType)) {
-                            event.data = info.values().stream()
-                                    .map(TransferInfo::getName)
-                                    .collect(Collectors.joining(CommonUtils.getLineSeparator()));
-                        } else if (EditorInputTransfer.getInstance().isSupportedType(event.dataType)) {
-                            event.data = info.values().stream()
-                                    .map(TransferInfo::createEditorInputData)
-                                    .filter(Objects::nonNull)
-                                    .toArray(EditorInputTransfer.EditorInputData[]::new);
-                        } else if (FileTransfer.getInstance().isSupportedType(event.dataType)) {
-                            event.data = info.values().stream()
-                                    .map(TransferInfo::getName)
-                                    .filter(name -> Files.exists(Path.of(name)))
-                                    .toArray(String[]::new);
-                        }
-                    } else {
-                        if (TreeNodeTransfer.getInstance().isSupportedType(event.dataType)) {
-                            event.data = Collections.emptyList();
-                        } else if (DatabaseObjectTransfer.getInstance().isSupportedType(event.dataType)) {
-                            event.data = Collections.emptyList();
-                        } else if (TextTransfer.getInstance().isSupportedType(event.dataType)) {
-                            event.data = "";
-                        } else if (EditorInputTransfer.getInstance().isSupportedType(event.dataType)) {
-                            event.data = new EditorInputTransfer.EditorInputData[0];
-                        } else if (FileTransfer.getInstance().isSupportedType(event.dataType)) {
-                            event.data = new String[0];
-                        }
-                    }
-                }
-
-                @Override
-                public void dragFinished(DragSourceEvent event) {
-                    // We don't want to delete any temporary file right after the drag is finished
-                    // because we delete the file faster than the OS can copy/move it. In the case
-                    // of a partially succeeded move, it produces a corrupted file.
-                    //
-                    // Any temporary file will be automatically deleted upon application exit.
-                }
-            });
+            source.addDragListener(new NavigatorDragSourceListener(viewer));
         }
 
         if (enableDrop) {
             DropTarget dropTarget = new DropTarget(viewer.getControl(), DND.DROP_MOVE);
             dropTarget.setTransfer(TreeNodeTransfer.getInstance(), FileTransfer.getInstance());
-            dropTarget.addDropListener(new DropTargetListener() {
-                @Override
-                public void dragEnter(DropTargetEvent event) {
-                    handleDragEvent(event);
-                }
-
-                @Override
-                public void dragLeave(DropTargetEvent event) {
-                    handleDragEvent(event);
-                }
-
-                @Override
-                public void dragOperationChanged(DropTargetEvent event) {
-                    handleDragEvent(event);
-                }
-
-                @Override
-                public void dragOver(DropTargetEvent event) {
-                    handleDragEvent(event);
-                }
-
-                @Override
-                public void drop(DropTargetEvent event) {
-                    handleDragEvent(event);
-                    if (event.detail == DND.DROP_MOVE) {
-                        moveNodes(event);
-                    }
-                }
-
-                @Override
-                public void dropAccept(DropTargetEvent event) {
-                    handleDragEvent(event);
-                }
-
-                private void handleDragEvent(DropTargetEvent event) {
-                    event.detail = isDropSupported(event) ? DND.DROP_MOVE : DND.DROP_NONE;
-                    event.feedback = DND.FEEDBACK_SELECT;
-                }
-
-                private boolean isDropSupported(DropTargetEvent event) {
-                    final Object curObject = getDropTarget(event, viewer);
-                    if (TreeNodeTransfer.getInstance().isSupportedType(event.currentDataType)) {
-                        @SuppressWarnings("unchecked")
-                        Collection<DBNNode> nodesToDrop = (Collection<DBNNode>) event.data;
-                        if (curObject instanceof DBNNode) {
-                            if (!CommonUtils.isEmpty(nodesToDrop)) {
-                                for (DBNNode node : nodesToDrop) {
-                                    if (!((DBNNode) curObject).supportsDrop(node)) {
-                                        return false;
-                                    }
-                                }
-                                return true;
-                            } else {
-                                return ((DBNNode) curObject).supportsDrop(null);
-                            }
-                        } else if (curObject == null) {
-                            // Drop to empty area
-                            if (!CommonUtils.isEmpty(nodesToDrop)) {
-                                for (DBNNode node : nodesToDrop) {
-                                    if (!(node instanceof DBNDataSource)) {
-                                        return false;
-                                    }
-                                }
-                                return true;
-                            } else {
-                                Widget widget = event.widget;
-                                if (widget instanceof DropTarget) {
-                                    widget = ((DropTarget) widget).getControl();
-                                }
-                                return widget == viewer.getControl();
-                            }
-                        }
-                    }
-                    // Drop file - over resources
-                    if (FileTransfer.getInstance().isSupportedType(event.currentDataType)) {
-                        if (curObject instanceof IAdaptable) {
-                            IResource curResource = ((IAdaptable) curObject).getAdapter(IResource.class);
-                            return curResource != null;
-                        }
-                    }
-
-                    return false;
-                }
-
-                private void moveNodes(DropTargetEvent event) {
-                    final Object curObject = getDropTarget(event, viewer);
-                    if (TreeNodeTransfer.getInstance().isSupportedType(event.currentDataType)) {
-                        if (curObject instanceof DBNNode) {
-                            Collection<DBNNode> nodesToDrop = TreeNodeTransfer.getInstance().getObject();
-                            try {
-                                ((DBNNode) curObject).dropNodes(nodesToDrop);
-                            } catch (DBException e) {
-                                DBWorkbench.getPlatformUI().showError("Drop error", "Can't drop node", e);
-                                return;
-                            }
-                        } else if (curObject == null) {
-                            for (DBNNode node : TreeNodeTransfer.getInstance().getObject()) {
-                                if (node instanceof DBNDataSource) {
-                                    // Drop datasource on a view
-                                    // We need target project
-                                    if (viewer.getInput() instanceof DatabaseNavigatorContent) {
-                                        DBNNode rootNode = ((DatabaseNavigatorContent) viewer.getInput()).getRootNode();
-                                        if (rootNode != null && rootNode.getOwnerProject() != null) {
-                                            ((DBNDataSource) node).moveToFolder(rootNode.getOwnerProject(), null);
-                                        }
-                                    }
-                                } else if (node instanceof DBNLocalFolder) {
-                                    ((DBNLocalFolder) node).getFolder().setParent(null);
-                                } else {
-                                    continue;
-                                }
-                                DBNModel.updateConfigAndRefreshDatabases(node);
-                            }
-                        }
-                    }
-                    if (FileTransfer.getInstance().isSupportedType(event.currentDataType)) {
-                        if (curObject instanceof IAdaptable) {
-                            IResource curResource = ((IAdaptable) curObject).getAdapter(IResource.class);
-                            if (curResource != null) {
-                                if (curResource instanceof IFile) {
-                                    curResource = curResource.getParent();
-                                }
-                                if (curResource instanceof IContainer) {
-                                    IContainer toFolder = (IContainer) curResource;
-                                    new AbstractJob("Copy files to workspace") {
-                                        {
-                                            setUser(true);
-                                        }
-                                        @Override
-                                        protected IStatus run(DBRProgressMonitor monitor) {
-                                            String[] fileNames = (String[]) event.data;
-                                            monitor.beginTask("Copy files", fileNames.length);
-                                            try {
-                                                dropFilesIntoFolder(monitor, toFolder, fileNames);
-                                            } catch (Exception e) {
-                                                return GeneralUtils.makeExceptionStatus(e);
-                                            } finally {
-                                                monitor.done();
-                                            }
-                                            return Status.OK_STATUS;
-                                        }
-                                    }.schedule();
-                                } else {
-                                    DBWorkbench.getPlatformUI().showError("Drop error", "Can't drop file into '" + curResource.getName() + "'. Files can be dropped only into folders.");
-                                }
-                            }
-                        }
-                    }
-                }
-            });
-        }
-    }
-
-    @Nullable
-    private static Object getDropTarget(@NotNull DropTargetEvent event, @NotNull Viewer viewer) {
-        if (event.item instanceof Item) {
-            return event.item.getData();
-        } else {
-            Object input = viewer.getInput();
-            if (input instanceof DatabaseNavigatorContent) {
-                return ((DatabaseNavigatorContent) input).getRootNode();
-            } else if (input instanceof List) {
-                if (!((List<?>) input).isEmpty())
-                    return ((List<?>) input).get(0);
-            }
-        }
-        return null;
-    }
-
-    private static void dropFilesIntoFolder(DBRProgressMonitor monitor, IContainer toFolder, String[] data) throws Exception {
-        for (String extFileName : data) {
-            Path extFile = Path.of(extFileName);
-            dropFileIntoContainer(monitor, toFolder, extFile);
-        }
-    }
-
-    private static void dropFileIntoContainer(DBRProgressMonitor monitor, IContainer toFolder, Path extFile) throws CoreException, IOException {
-        if (Files.exists(extFile)) {
-            org.eclipse.core.runtime.Path ePath = new org.eclipse.core.runtime.Path(extFile.getFileName().toString());
-
-            if (Files.isDirectory(extFile)) {
-                IFolder subFolder = toFolder.getFolder(ePath);
-                if (!subFolder.exists()) {
-                    subFolder.create(true, true, monitor.getNestedMonitor());
-                }
-                List<Path> sourceFolderContents;
-                try (Stream<Path> list = Files.list(extFile)) {
-                    sourceFolderContents = list.collect(Collectors.toList());
-                }
-                for (Path folderFile : sourceFolderContents) {
-                    dropFileIntoContainer(monitor, subFolder, folderFile);
-                }
-            } else {
-                monitor.subTask("Copy file " + extFile);
-                try {
-                    if (toFolder instanceof IFolder && !toFolder.exists()) {
-                        ((IFolder) toFolder).create(true, true, monitor.getNestedMonitor());
-                    }
-                    IFile targetFile = toFolder.getFile(ePath);
-                    if (targetFile.exists()) {
-                        if (!UIUtils.confirmAction("File exists", "File '" + targetFile.getName() + "' exists. Do you want to overwrite it?")) {
-                            return;
-                        }
-                    }
-                    try (InputStream is = Files.newInputStream(extFile)) {
-                        if (targetFile.exists()) {
-                            targetFile.setContents(is, true, false, monitor.getNestedMonitor());
-                        } else {
-                            targetFile.create(is, true, monitor.getNestedMonitor());
-                        }
-                    }
-                } finally {
-                    monitor.worked(1);
-                }
-            }
+            dropTarget.addDropListener(new NavigatorDropTargetListener(viewer));
         }
     }
 
@@ -845,56 +436,83 @@ public class NavigatorUtils {
         return null;
     }
 
-    public static void filterSelection(final ISelection selection, boolean exclude)
-    {
-        if (selection instanceof IStructuredSelection) {
-            Map<DBNDatabaseFolder, DBSObjectFilter> folders = new HashMap<>();
-            for (Object item : ((IStructuredSelection)selection).toArray()) {
-                if (item instanceof DBNNode) {
-                    final DBNNode node = (DBNNode) item;
-                    DBNDatabaseFolder folder = (DBNDatabaseFolder) node.getParentNode();
-                    DBSObjectFilter nodeFilter = folders.get(folder);
+    public static void filterSelection(final ISelection selection, boolean exclude) {
+        if (!(selection instanceof IStructuredSelection structuredSelection)) {
+            log.error("Invalid selection type: " + selection);
+            return;
+        }
+        try {
+            Map<DBNDatabaseNode, DBSObjectFilter> folders = new HashMap<>();
+            for (Object item : structuredSelection.toArray()) {
+                if (!(item instanceof DBNDatabaseNode node)) {
+                    continue;
+                }
+                DBNDatabaseNode parentNode = node.getParentNode() instanceof DBNDatabaseNode parent ? parent : node;
+                {
+                    DBXTreeItem nodeMeta = UIUtils.runWithMonitor(monitor -> {
+                        DBXTreeItem meta = DBNUtils.getValidItemsMeta(monitor, node);
+                        if (meta == null && node != parentNode) {
+                            meta = DBNUtils.getValidItemsMeta(monitor, parentNode);
+                        }
+                        return meta;
+                    });
+                    if (nodeMeta == null) {
+                        continue;
+                    }
+
+                    DBSObjectFilter nodeFilter = folders.get(parentNode);
                     if (nodeFilter == null) {
-                        nodeFilter = folder.getNodeFilter(folder.getItemsMeta(), true);
+                        nodeFilter = parentNode.getNodeFilter(nodeMeta, true);
                         if (nodeFilter == null) {
                             nodeFilter = new DBSObjectFilter();
                         }
-                        folders.put(folder, nodeFilter);
+                        folders.put(parentNode, nodeFilter);
                     }
                     if (exclude) {
-                        nodeFilter.addExclude(node.getNodeName());
+                        nodeFilter.addExclude(node.getNodeDisplayName());
                     } else {
-                        nodeFilter.addInclude(node.getNodeName());
+                        nodeFilter.addInclude(node.getNodeDisplayName());
                     }
                     nodeFilter.setEnabled(true);
                 }
             }
             // Save folders
-            for (Map.Entry<DBNDatabaseFolder, DBSObjectFilter> entry : folders.entrySet()) {
-                entry.getKey().setNodeFilter(entry.getKey().getItemsMeta(), entry.getValue());
+            Set<DBPDataSourceContainer> changedContainers = new HashSet<>();
+            for (Map.Entry<DBNDatabaseNode, DBSObjectFilter> entry : folders.entrySet()) {
+                DBNDatabaseNode targetNode = entry.getKey();
+                DBXTreeItem nodeMeta = UIUtils.runWithMonitor(monitor -> DBNUtils.getValidItemsMeta(monitor, targetNode));
+                targetNode.setNodeFilter(
+                    nodeMeta,
+                    entry.getValue(),
+                    false);
+                changedContainers.add(targetNode.getDataSourceContainer());
+            }
+            // Save configs
+            for (DBPDataSourceContainer ds : changedContainers) {
+                ds.persistConfiguration();
             }
             // Refresh all folders
             NavigatorHandlerRefresh.refreshNavigator(folders.keySet());
+        } catch (DBException e) {
+            log.error(e);
         }
     }
 
     public static boolean syncEditorWithNavigator(INavigatorModelView navigatorView, IEditorPart activeEditor) {
-        if (!(activeEditor instanceof IDataSourceContainerUpdate)) {
+        if (!(activeEditor instanceof IDataSourceContainerUpdate dsProvider)) {
             return false;
         }
-        IDataSourceContainerUpdate dsProvider = (IDataSourceContainerUpdate) activeEditor;
         Viewer navigatorViewer = navigatorView.getNavigatorViewer();
         if (navigatorViewer == null) {
             return false;
         }
         DBNNode selectedNode = getSelectedNode(navigatorViewer.getSelection());
         DBPProject nodeProject = selectedNode.getOwnerProject();
-        if (!(selectedNode instanceof DBNDatabaseNode)
-                || (nodeProject != null && !nodeProject.hasRealmPermission(RMConstants.PERMISSION_PROJECT_RESOURCE_EDIT))
+        if (!(selectedNode instanceof DBNDatabaseNode databaseNode)
+            || (nodeProject != null && !nodeProject.hasRealmPermission(RMConstants.PERMISSION_PROJECT_RESOURCE_EDIT))
         ) {
             return false;
         }
-        DBNDatabaseNode databaseNode = (DBNDatabaseNode) selectedNode;
         DBSObject dbsObject = databaseNode.getObject();
         if (!(dbsObject instanceof DBSStructContainer)) {
             dbsObject = DBUtils.getParentOfType(DBSStructContainer.class, dbsObject);
@@ -918,22 +536,22 @@ public class NavigatorUtils {
                 if (editorContextDefaults != null) {
                     final DBSObject dbObject = dbsObject;
                     RuntimeUtils.runTask(monitor -> {
-                                try {
-                                    monitor.beginTask("Change default object", 1);
-                                    if (dbObject instanceof DBSCatalog && dbObject != editorContextDefaults.getDefaultCatalog()) {
-                                        monitor.subTask("Change default catalog");
-                                        editorContextDefaults.setDefaultCatalog(monitor, (DBSCatalog) dbObject, null);
-                                    } else if (dbObject instanceof DBSSchema && dbObject != editorContextDefaults.getDefaultSchema()) {
-                                        monitor.subTask("Change default schema");
-                                        editorContextDefaults.setDefaultSchema(monitor, (DBSSchema) dbObject);
-                                    }
-                                    monitor.worked(1);
-                                    monitor.done();
-                                } catch (DBCException e) {
-                                    throw new InvocationTargetException(e);
+                            try {
+                                monitor.beginTask("Change default object", 1);
+                                if (dbObject instanceof DBSCatalog && dbObject != editorContextDefaults.getDefaultCatalog()) {
+                                    monitor.subTask("Change default catalog");
+                                    editorContextDefaults.setDefaultCatalog(monitor, (DBSCatalog) dbObject, null);
+                                } else if (dbObject instanceof DBSSchema && dbObject != editorContextDefaults.getDefaultSchema()) {
+                                    monitor.subTask("Change default schema");
+                                    editorContextDefaults.setDefaultSchema(monitor, (DBSSchema) dbObject);
                                 }
-                            }, "Set active object",
-                            dbObject.getDataSource().getContainer().getPreferenceStore().getInt(ModelPreferences.CONNECTION_OPEN_TIMEOUT));
+                                monitor.worked(1);
+                                monitor.done();
+                            } catch (DBCException e) {
+                                throw new InvocationTargetException(e);
+                            }
+                        }, "Set active object",
+                        dbObject.getDataSource().getContainer().getPreferenceStore().getInt(ModelPreferences.CONNECTION_OPEN_TIMEOUT));
                 }
             }
         }
@@ -946,35 +564,57 @@ public class NavigatorUtils {
     }
 
     public static void openNavigatorNode(Object node, IWorkbenchWindow window, Map<?, ?> parameters) {
-        IResource resource = node instanceof IAdaptable ? ((IAdaptable) node).getAdapter(IResource.class) : null;
-        if (resource instanceof IFile) {
-            UIServiceSQL serviceSQL = DBWorkbench.getService(UIServiceSQL.class);
-            if (serviceSQL != null) {
-                serviceSQL.openResource(resource);
-            }
-        } else if (node instanceof DBNNode && ((DBNNode) node).allowsOpen()) {
-            if (node instanceof DBNObjectNode) {
-                INavigatorObjectManager objectManager = GeneralUtils.adapt(((DBNObjectNode) node).getNodeObject(), INavigatorObjectManager.class);
-                if (objectManager != null) {
-                    if (((objectManager.getSupportedFeatures() & INavigatorObjectManager.FEATURE_OPEN)) != 0) {
-                        try {
-                            objectManager.openObjectEditor(window, (DBNObjectNode) node);
-                        } catch (Exception e) {
-                            DBWorkbench.getPlatformUI().showError(
-                                    "Error opening object",
-                                    "Error while opening object '" + ((DBNObjectNode) node).getNodeObject() + "'",
-                                    e);
-                        }
+        try {
+            if (node instanceof DBNResource resource) {
+                DBPResourceHandler resourceHandler = resource.getHandler();
+                resourceHandler.openResource(resource.getResource());
+            } else if (node instanceof DBNPathBase dbnPath) {
+                if (!EditorUtils.openExternalFiles(new Path[]{ dbnPath.getPath() }, null, false)) {
+                    // Try resource handler
+                    IResource resource = dbnPath.getAdapter(IResource.class);
+                    if (resource instanceof IFile file) {
+                        openResourceWithHandler(file);
+                    } else {
+                        openEntityEditor(node, window, parameters);
                     }
-                    return;
                 }
+            } else if (node instanceof DBNNode baseNode && baseNode.allowsOpen()) {
+                openEntityEditor(node, window, parameters);
+            } else {
+                throw new DBException("Do not know how to open node '" + node + "'");
             }
-            Object activePage = parameters == null ? null : parameters.get(MultiPageDatabaseEditor.PARAMETER_ACTIVE_PAGE);
-            NavigatorHandlerObjectOpen.openEntityEditor(
-                    (DBNNode) node,
-                    CommonUtils.toString(activePage, null),
-                    window);
+        } catch (Exception e) {
+            DBWorkbench.getPlatformUI().showError(
+                "Error opening object",
+                "Error while opening object '" + node + "'",
+                e);
         }
+    }
+
+    private static void openResourceWithHandler(IFile file) throws CoreException, DBException {
+        DBPResourceHandler handler = DBPPlatformDesktop.getInstance().getWorkspace().getResourceHandler(file);
+        if (handler != null) {
+            handler.openResource(file);
+        } else {
+            throw new DBException("Cannot find resource handler for " + file);
+        }
+    }
+
+    private static void openEntityEditor(Object node, IWorkbenchWindow window, Map<?, ?> parameters) throws DBException {
+        if (node instanceof DBNObjectNode objectNode) {
+            INavigatorObjectManager objectManager = GeneralUtils.adapt(objectNode.getNodeObject(), INavigatorObjectManager.class);
+            if (objectManager != null) {
+                if (((objectManager.getSupportedFeatures() & INavigatorObjectManager.FEATURE_OPEN)) != 0) {
+                    objectManager.openObjectEditor(window, objectNode);
+                }
+                return;
+            }
+        }
+        Object activePage = parameters == null ? null : parameters.get(MultiPageDatabaseEditor.PARAMETER_ACTIVE_PAGE);
+        NavigatorHandlerObjectOpen.openEntityEditor(
+            (DBNNode) node,
+            CommonUtils.toString(activePage, null),
+            window);
     }
 
     @Nullable
@@ -1012,12 +652,12 @@ public class NavigatorUtils {
         if (currentSelection instanceof IStructuredSelection && !currentSelection.isEmpty()) {
             Object selItem = ((IStructuredSelection) currentSelection).getFirstElement();
             if (selItem instanceof DBNNode) {
-                activeProject = ((DBNNode) selItem).getOwnerProject();
+                activeProject = ((DBNNode) selItem).getOwnerProjectOrNull();
             }
         }
         if (activeProject == null) {
-            if (activePart instanceof DBPContextProvider) {
-                DBCExecutionContext executionContext = ((DBPContextProvider) activePart).getExecutionContext();
+            if (activePart instanceof DBPContextProvider contextProvider) {
+                DBCExecutionContext executionContext = contextProvider.getExecutionContext();
                 if (executionContext != null) {
                     activeProject = executionContext.getDataSource().getContainer().getRegistry().getProject();
                 } else if (activePart instanceof DBPDataSourceContainerProvider) {
@@ -1061,48 +701,65 @@ public class NavigatorUtils {
         }
     }
 
-    private static class TransferInfo {
-        private final String name;
-        private final DBNNode node;
-        private final DBPNamedObject object;
-
-        public TransferInfo(@NotNull String name, @NotNull DBNNode node, @Nullable DBPNamedObject object) {
-            this.node = node;
-            this.object = object;
-            this.name = name;
-        }
-
-        @NotNull
-        public String getName() {
-            return name;
-        }
-
-        @Nullable
-        public DBPNamedObject getObject() {
-            return object;
-        }
-
-        @Nullable
-        public EditorInputTransfer.EditorInputData createEditorInputData() {
-            if (node instanceof DBNDatabaseNode) {
-                final DatabaseNodeEditorInput input = new DatabaseNodeEditorInput((DBNDatabaseNode) node);
-                return EditorInputTransfer.createEditorInputData(EntityEditor.ID, input);
-            }
-
-            final File file = new File(name);
-
-            if (file.exists()) {
-                try {
-                    final IWorkbenchWindow window = UIUtils.getActiveWorkbenchWindow();
-                    final IEditorDescriptor editor = EditorUtils.getFileEditorDescriptor(file, window);
-                    final IEditorInput input = new FileStoreEditorInput(EFS.getStore(file.toURI()));
-                    return EditorInputTransfer.createEditorInputData(editor.getId(), input);
-                } catch (Exception e) {
-                    log.warn("Error creating editor input for file '" + file + "'", e);
+    private static void removeUnrelatedMenuItems(Menu menu, DBNNode node) {
+        for (MenuItem item : menu.getItems()) {
+            Object itemData = item.getData();
+            if (itemData instanceof IContributionItem contribution) {
+                String id = contribution.getId();
+                if (id == null) {
+                    continue;
+                }
+                if (id.startsWith("org.eclipse.debug") || // $NON-NLS-0$
+                    id.startsWith("addFromHistoryAction")) { // $NON-NLS-0$
+                    item.dispose();
+                }
+                if (node != null) {
+                    IResource resource = node.getAdapter(IResource.class);
+                    if ((resource instanceof IFolder || resource instanceof EFSNIOResource) &&
+                        (id.startsWith("compareWithMenu") || // $NON-NLS-0$
+                            id.startsWith("replaceWithMenu") ||
+                            id.startsWith("team.main"))  // $NON-NLS-0$
+                    ) {
+                        item.dispose();
+                    }
                 }
             }
-
-            return null;
         }
+    }
+
+    @Nullable
+    public static DatabaseNavigatorTree getNavigatorTree(@NotNull ExecutionEvent event) {
+        return getNavigatorTree(HandlerUtil.getActiveWorkbenchWindow(event));
+    }
+
+    @Nullable
+    public static DatabaseNavigatorTree getNavigatorTree(@Nullable IServiceLocator locator) {
+        DatabaseNavigatorTree tree = DatabaseNavigatorTree.getFromShell(Display.getCurrent());
+        if (tree != null) {
+            return tree;
+        }
+        if (locator != null) {
+            IWorkbenchPartSite partSite = UIUtils.getWorkbenchPartSite(locator);
+            if (partSite != null && partSite.getPart() instanceof DatabaseNavigatorView view) {
+                return view.getNavigatorTree();
+            }
+        }
+        return null;
+    }
+
+    @Nullable
+    public static DBSObject getCurrentDatabaseObject() {
+        IWorkbenchPage activePage = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
+        IEditorPart activeEditor = activePage.getActiveEditor();
+        if (activeEditor instanceof ObjectPropertiesEditor editor) {
+            return editor.getDatabaseObject();
+        } else if (activeEditor instanceof EntityEditor editor) {
+            IEditorPart mainEditor = editor.getActiveEditor();
+            if (mainEditor instanceof ObjectPropertiesEditor objectPropertiesEditor) {
+                return objectPropertiesEditor.getDatabaseObject();
+            }
+        }
+
+        return null;
     }
 }

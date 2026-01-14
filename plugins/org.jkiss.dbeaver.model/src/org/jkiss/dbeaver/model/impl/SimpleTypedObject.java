@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,8 @@
  */
 package org.jkiss.dbeaver.model.impl;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 
@@ -32,11 +34,13 @@ public class SimpleTypedObject implements DBSTypedObject {
         this.typeName = typeName;
     }
 
+    @NotNull
     @Override
     public String getTypeName() {
         return typeName;
     }
 
+    @NotNull
     @Override
     public String getFullTypeName() {
         return getTypeName();
@@ -47,16 +51,19 @@ public class SimpleTypedObject implements DBSTypedObject {
         return 0;
     }
 
+    @NotNull
     @Override
     public DBPDataKind getDataKind() {
         return DBPDataKind.OBJECT;
     }
 
+    @Nullable
     @Override
     public Integer getScale() {
         return null;
     }
 
+    @Nullable
     @Override
     public Integer getPrecision() {
         return null;

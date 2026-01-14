@@ -1,7 +1,7 @@
 /*
  * DBeaver - Universal Database Manager
  * Copyright (C) 2013-2016 Denis Forveille (titou10.titou10@gmail.com)
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -44,7 +44,6 @@ public final class DB2IndexCache extends JDBCStructLookupCache<DB2Schema, DB2Ind
 
     private static final Log    log          = Log.getLog(DB2IndexCache.class);
 
-    private static final String SQL_COLS_IND = "SELECT * FROM SYSCAT.INDEXCOLUSE WHERE INDSCHEMA = ? AND INDNAME = ? ORDER BY COLSEQ WITH UR";
     private static final String SQL_IND;
     private static final String SQL_IND_ALL;
 
@@ -74,7 +73,7 @@ public final class DB2IndexCache extends JDBCStructLookupCache<DB2Schema, DB2Ind
 
     @NotNull
     @Override
-    public JDBCStatement prepareLookupStatement(@NotNull JDBCSession session, @NotNull DB2Schema db2Schema, DB2Index db2Index, String db2IndexName)
+    public JDBCStatement prepareLookupStatement(@NotNull JDBCSession session, @NotNull DB2Schema db2Schema, @Nullable DB2Index db2Index, @Nullable String db2IndexName)
         throws SQLException
     {
         if (db2Index != null || db2IndexName != null) {
@@ -126,9 +125,16 @@ public final class DB2IndexCache extends JDBCStructLookupCache<DB2Schema, DB2Ind
     protected JDBCStatement prepareChildrenStatement(@NotNull JDBCSession session, @NotNull DB2Schema db2Schema,
         @Nullable DB2Index forIndex) throws SQLException
     {
-        JDBCPreparedStatement dbStat = session.prepareStatement(SQL_COLS_IND);
-        dbStat.setString(1, forIndex.getContainer().getName());
-        dbStat.setString(2, forIndex.getName());
+        JDBCPreparedStatement dbStat = session.prepareStatement(
+            "SELECT * FROM SYSCAT.INDEXCOLUSE WHERE INDSCHEMA=? " + (forIndex == null ? "" : "AND INDNAME=?") +
+                "ORDER BY COLSEQ WITH UR"
+        );
+        if (forIndex == null) {
+            dbStat.setString(1, db2Schema.getName());
+        } else {
+            dbStat.setString(1, forIndex.getContainer().getName());
+            dbStat.setString(2, forIndex.getName());
+        }
         return dbStat;
     }
 

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,6 +39,9 @@ public interface PostgreServerExtension {
 
     boolean supportsIndexes();
 
+    /** True if supports foreign/imported keys */
+    boolean supportsForeignKeys();
+
     boolean supportsMaterializedViews();
 
     boolean supportsPartitions();
@@ -48,6 +51,9 @@ public interface PostgreServerExtension {
     boolean supportsTriggers();
 
     boolean supportsEventTriggers();
+
+    /** True if supports objects dependencies metadata reading */
+    boolean supportsDependencies();
 
     boolean supportsFunctionDefRead();
 
@@ -62,6 +68,11 @@ public interface PostgreServerExtension {
     boolean supportsEncodings();
 
     boolean supportsCollations();
+
+    /**
+     * True if database can read data from the pg_catalog.pg_language system view.
+     */
+    boolean supportsLanguages();
 
     boolean supportsTablespaces();
 
@@ -95,7 +106,7 @@ public interface PostgreServerExtension {
 
     boolean supportsTemporalAccessor();
 
-    boolean supportsTeblespaceLocation();
+    boolean supportsTablespaceLocation();
 
     boolean supportsTemplates();
 
@@ -107,6 +118,9 @@ public interface PostgreServerExtension {
     // Table DDL extraction
     String readTableDDL(DBRProgressMonitor monitor, PostgreTableBase table) throws DBException;
 
+    /** View/Materialized view DDL extraction */
+    String readViewDDL(DBRProgressMonitor monitor, PostgreViewBase view) throws DBException;
+
     // Custom schema cache.
     JDBCObjectLookupCache<PostgreDatabase, PostgreSchema> createSchemaCache(PostgreDatabase database);
 
@@ -116,9 +130,7 @@ public interface PostgreServerExtension {
 
     void configureDialect(PostgreDialect dialect);
 
-    String getTableModifiers(DBRProgressMonitor monitor, PostgreTableBase tableBase, boolean alter);
-
-    PostgreTableColumn createTableColumn(DBRProgressMonitor monitor, PostgreSchema schema, PostgreTableBase table, JDBCResultSet dbResult) throws DBException;
+    String getTableModifiers(DBRProgressMonitor monitor, PostgreTableBase tableBase, boolean alter, String delimiter);
 
     // Initializes SSL config if SSL wasn't enabled explicitly. By default disables SSL explicitly.
     void initDefaultSSLConfig(DBPConnectionConfiguration connectionInfo, Map<String, String> props);
@@ -138,6 +150,9 @@ public interface PostgreServerExtension {
 
     /** True if supports special "Has OIDs" metadata column*/
     boolean supportsHasOidsColumn();
+
+    /** True if supports NULL/NOT NULL column data types modifiers */
+    boolean supportsColumnsRequiring();
 
     boolean supportsDatabaseSize();
 
@@ -165,6 +180,11 @@ public interface PostgreServerExtension {
      */
     boolean supportsCommentsOnRole();
 
+    /**
+     * Determines whether the database supports syntax like {@code ALTER DEFAULT PRIVILEGES FOR roleName...} or not
+     */
+    boolean supportsDefaultPrivileges();
+
     // Data types
 
     /** True if supports serials - serial types are auto-incrementing integer data types */
@@ -189,6 +209,10 @@ public interface PostgreServerExtension {
 
     boolean supportsKeyAndIndexRename();
 
+    /** True if supports altered storage strategies (TOAST) */
+    boolean supportsAlterStorageStrategy();
+    boolean supportsStorageModifier();
+
     /** Makes it possible to change the name of the user of the current user via UI */
     boolean supportsAlterUserChangePassword();
 
@@ -199,6 +223,10 @@ public interface PostgreServerExtension {
 
     /** Necessary for the "Truncate table" tool */
     int getTruncateToolModes();
+
+    boolean supportsAcl();
+
+    boolean supportsCustomDataTypes();
 
     boolean supportsDistinctForStatementsWithAcl();
 
@@ -217,4 +245,16 @@ public interface PostgreServerExtension {
      * or use standard {@code ALTER VIEW schema.view RENAME TO schema.view_new}.
      */
     boolean supportsAlterTableForViewRename();
+
+    /**
+     * True if database can use pg_dump and pg_restore clients without errors.
+     */
+    boolean supportsNativeClient();
+
+    boolean supportsJobs();
+
+    /**
+     * Determines if the provided object is a PostgreSQL-specific object (PGObject) like {@code com.amazon.redshift.util.RedshiftObject}.
+     */
+    boolean isPGObject(@NotNull Object object);
 }

@@ -1,8 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2017 Andrew Khitrin (ahitrin@gmail.com)
- * Copyright (C) 2017 Adolfo Suarez  (agustavo@gmail.com)
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +16,7 @@
  */
 package org.jkiss.dbeaver.data.office.export;
 
+import org.apache.poi.hssf.usermodel.HSSFFormulaEvaluator;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.streaming.SXSSFSheet;
 import org.apache.poi.xssf.streaming.SXSSFWorkbook;
@@ -34,6 +33,7 @@ import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.DBExecUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
+import org.jkiss.dbeaver.tools.transfer.DTUtils;
 import org.jkiss.dbeaver.tools.transfer.stream.IAppendableDataExporter;
 import org.jkiss.dbeaver.tools.transfer.stream.IStreamDataExporterSite;
 import org.jkiss.dbeaver.tools.transfer.stream.exporter.StreamExporterAbstract;
@@ -42,14 +42,12 @@ import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.awt.Color;
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.Reader;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.StringTokenizer;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.text.SimpleDateFormat;
+import java.util.*;
 
 /**
  * Export XLSX with Apache POI
@@ -80,15 +78,20 @@ public class DataExporterXLSX extends StreamExporterAbstract implements IAppenda
 
     private static final String PROP_DATE_FORMAT = "dateFormat";
     private static final String PROP_APPEND_STRATEGY = "appendStrategy";
+    private static final String PROP_USE_DEFAULT_SPREADSHEET_NAMES = "useDefaultSpreadsheetNames";
 
     private static final int EXCEL2007MAXROWS = 1048575;
     private static final int EXCEL_MAX_CELL_CHARACTERS = 32767; // Total number of characters that a cell can contain - 32,767 characters
+    private static final int MINIMUM_LENGTH = 256 * 10;
 
     enum FontStyleProp {NONE, BOLD, ITALIC, STRIKEOUT, UNDERLINE}
 
     private static final int ROW_WINDOW = 100;
+    private static final Date EXCEL_MIN_DATE = new GregorianCalendar(1900, Calendar.JANUARY, 1).getTime();
+    private static final String DEFAULT_DATE_FORMAT = "MM/dd/yy";
 
     private String nullString;
+    private String dateFormatString;
 
     private DBDAttributeBinding[] columns;
     private DBDAttributeDecorator decorator;
@@ -104,6 +107,7 @@ public class DataExporterXLSX extends StreamExporterAbstract implements IAppenda
     private boolean exportSql = false;
     private boolean splitSqlText = false;
     private AppendStrategy appendStrategy = AppendStrategy.CREATE_NEW_SHEETS;
+    private String exportTableName = WorksheetUtils.DEFAULT_SHEET_NAME;
 
     private int splitByRowCount = EXCEL2007MAXROWS;
     private int splitByCol = 0;
@@ -132,6 +136,7 @@ public class DataExporterXLSX extends StreamExporterAbstract implements IAppenda
         properties.put(DataExporterXLSX.PROP_SPLIT_BYCOL, 0);
         properties.put(DataExporterXLSX.PROP_DATE_FORMAT, "");
         properties.put(DataExporterXLSX.PROP_APPEND_STRATEGY, AppendStrategy.CREATE_NEW_SHEETS.value);
+        properties.put(DataExporterXLSX.PROP_USE_DEFAULT_SPREADSHEET_NAMES, true);
         return properties;
     }
 
@@ -152,7 +157,6 @@ public class DataExporterXLSX extends StreamExporterAbstract implements IAppenda
         splitSqlText = CommonUtils.getBoolean(properties.get(PROP_SPLIT_SQLTEXT), false);
         splitByRowCount = CommonUtils.toInt(properties.get(PROP_SPLIT_BYROWCOUNT), EXCEL2007MAXROWS);
         splitByCol = CommonUtils.toInt(properties.get(PROP_SPLIT_BYCOL), 0);
-        String dateFormat = CommonUtils.toString(properties.get(PROP_DATE_FORMAT), "");
         appendStrategy = AppendStrategy.of(CommonUtils.toString(properties.get(PROP_APPEND_STRATEGY)));
 
         if (wb == null) {
@@ -210,14 +214,11 @@ public class DataExporterXLSX extends StreamExporterAbstract implements IAppenda
         styleDate.setBorderLeft(border);
         styleDate.setBorderRight(border);
 
-        if (CommonUtils.isEmpty(dateFormat)) {
-            styleDate.setDataFormat((short) 14);
-        } else {
-            styleDate.setDataFormat(wb.getCreationHelper().createDataFormat().getFormat(dateFormat));
-        }
-
         this.rowCount = 0;
         this.sheetIndex = 0;
+
+        this.dateFormatString = CommonUtils.toString(properties.get(PROP_DATE_FORMAT), DEFAULT_DATE_FORMAT);
+        styleDate.setDataFormat(wb.getCreationHelper().createDataFormat().getFormat(dateFormatString));
 
         super.init(site);
     }
@@ -281,6 +282,11 @@ public class DataExporterXLSX extends StreamExporterAbstract implements IAppenda
             DBExecUtils.bindAttributes(session, srcEntity, null, columns, null);
         }
         decorator = GeneralUtils.adapt(getSite().getSource(), DBDAttributeDecorator.class);
+
+        if (columns != null && columns.length > 0) {
+            exportTableName = DTUtils.getTableName(columns[0].getDataSource(), getSite().getSource(), true,
+                WorksheetUtils.DEFAULT_SHEET_NAME);
+        }
     }
 
     private void printHeader(DBCResultSet resultSet, Worksheet wsh) throws DBException {
@@ -390,7 +396,12 @@ public class DataExporterXLSX extends StreamExporterAbstract implements IAppenda
             sheet = wb.getSheetAt(sheetIndex++);
             worksheet = new Worksheet(sheet, colValue, getPhysicalNumberOfRows(sheet));
         } else {
-            sheet = wb.createSheet();
+            if (CommonUtils.toBoolean(getSite().getProperties().get(PROP_USE_DEFAULT_SPREADSHEET_NAMES), true)) {
+                sheet = wb.createSheet();
+            } else {
+                sheet = wb.createSheet(WorksheetUtils.makeUniqueSheetName(wb, exportTableName));
+            }
+
             worksheet = new Worksheet(sheet, colValue, 0);
         }
         printHeader(resultSet, worksheet);
@@ -417,7 +428,6 @@ public class DataExporterXLSX extends StreamExporterAbstract implements IAppenda
         throws DBException, IOException {
 
         Worksheet wsh = getWsh(resultSet, row);
-
         Row rowX = wsh.getSh().createRow(wsh.getCurrentRow());
 
         int startCol = 0;
@@ -467,10 +477,15 @@ public class DataExporterXLSX extends StreamExporterAbstract implements IAppenda
 
                 cell.setCellValue(((Number) row[i]).doubleValue());
 
-            } else if (row[i] instanceof Date) {
-
-                cell.setCellValue((Date) row[i]);
-                cell.setCellStyle(styleDate);
+            } else if (row[i] instanceof Date dateVal) {
+                if (dateVal.before(EXCEL_MIN_DATE)) {
+                    SimpleDateFormat fmt = new SimpleDateFormat(dateFormatString);
+                    String text = fmt.format(dateVal);
+                    cell.setCellValue(text);
+                } else {
+                    cell.setCellValue(dateVal);
+                    cell.setCellStyle(styleDate);
+                }
 
             } else {
                 String stringValue = super.getValueDisplayString(column, row[i]);
@@ -497,6 +512,20 @@ public class DataExporterXLSX extends StreamExporterAbstract implements IAppenda
 
     @Override
     public void exportFooter(DBRProgressMonitor monitor) throws DBException, IOException {
+        if (wb != null && sheetIndex > 0) { // if any sheets are present, then sheetIndex > 0
+            // Do it here because we can have a few sheets
+            SXSSFSheet sheet = wb.getSheetAt(sheetIndex);
+            HSSFFormulaEvaluator.evaluateAllFormulaCells(wb);
+            sheet.trackAllColumnsForAutoSizing();
+            for (int i = 0; i < columns.length; i++) {
+                sheet.autoSizeColumn(i);
+                if (sheet.getColumnWidth(i) < MINIMUM_LENGTH) {
+                    // Auto-size failed, use default minimum column width
+                    sheet.setColumnWidth(i, MINIMUM_LENGTH);
+                }
+            }
+            sheet.untrackAllColumnsForAutoSizing();
+        }
         if (rowCount == 0) {
             exportRow(null, null, new Object[columns.length]);
         }
@@ -504,12 +533,14 @@ public class DataExporterXLSX extends StreamExporterAbstract implements IAppenda
 
     @Override
     public void importData(@NotNull IStreamDataExporterSite site) throws DBException {
-        final File file = site.getOutputFile();
-        if (file == null || !file.exists()) {
+        final Path file = site.getOutputFile();
+        if (file == null || !Files.exists(file)) {
             return;
         }
         try {
-            wb = new SXSSFWorkbook(new XSSFWorkbook(new FileInputStream(file)));
+            wb = new SXSSFWorkbook(
+                new XSSFWorkbook(
+                    Files.newInputStream(file)));
         } catch (Exception e) {
             throw new DBException("Error opening workbook", e);
         }
@@ -543,7 +574,7 @@ public class DataExporterXLSX extends StreamExporterAbstract implements IAppenda
 
             if (bg != null) {
                 // Setting the foreground color sets the background color. Is this a bug/feature of POI?
-                final XSSFCellStyle style = (XSSFCellStyle) this.style.clone();
+                final XSSFCellStyle style = (XSSFCellStyle) this.style.copy();
                 style.setFillForegroundColor(new XSSFColor(asColor(bg), new DefaultIndexedColorMap()));
                 style.setFillPattern(FillPatternType.SOLID_FOREGROUND);
 

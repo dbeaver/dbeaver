@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.model.impl.sql.edit.struct;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
@@ -35,6 +36,7 @@ import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.struct.cache.DBSObjectCache;
 import org.jkiss.dbeaver.model.struct.rdb.DBSForeignKeyModifyRule;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableForeignKey;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.Collection;
@@ -55,13 +57,13 @@ public abstract class SQLForeignKeyManager<OBJECT_TYPE extends AbstractTableCons
     public static final String OPTION_OWN_ATTRIBUTES = "ownAttributes";
 
     @Override
-    public long getMakerOptions(DBPDataSource dataSource)
+    public long getMakerOptions(@NotNull DBPDataSource dataSource)
     {
         return FEATURE_EDITOR_ON_CREATE;
     }
 
     @Override
-    protected void addObjectCreateActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, ObjectCreateCommand command, Map<String, Object> options) throws DBException
+    protected void addObjectCreateActions(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext executionContext, @NotNull List<DBEPersistAction> actions, @NotNull ObjectCreateCommand command, @NotNull Map<String, Object> options) throws DBException
     {
         final TABLE_TYPE table = (TABLE_TYPE) command.getObject().getTable();
         actions.add(
@@ -72,7 +74,7 @@ public abstract class SQLForeignKeyManager<OBJECT_TYPE extends AbstractTableCons
     }
 
     @Override
-    protected void addObjectDeleteActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, ObjectDeleteCommand command, Map<String, Object> options) throws DBException
+    protected void addObjectDeleteActions(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext executionContext, @NotNull List<DBEPersistAction> actions, @NotNull ObjectDeleteCommand command, @NotNull Map<String, Object> options) throws DBException
     {
         actions.add(
             new SQLDatabasePersistAction(
@@ -190,6 +192,14 @@ public abstract class SQLForeignKeyManager<OBJECT_TYPE extends AbstractTableCons
         }
     }
 
+    @NotNull
+    public static String generateConstraintName(DBSEntity table, DBSEntityConstraint uniqueKey) {
+        DBSEntity targetTable = uniqueKey == null ? null : uniqueKey.getParentObject();
+
+        return CommonUtils.escapeIdentifier(table.getName()) + "_" + //$NON-NLS-1$
+            (uniqueKey == null ? "" : CommonUtils.escapeIdentifier(targetTable.getName()) + "_") + "FK"; //$NON-NLS-1$
+    }
+
     protected <T extends DBSEntityConstraint> T getReferencedKey(DBRProgressMonitor monitor, TABLE_TYPE table, Class<T> refKeyClass, Map<String, Object> options) {
         Object refConstraint = options.get(OPTION_REF_CONSTRAINT);
         if (refKeyClass.isInstance(refConstraint)) {
@@ -208,7 +218,7 @@ public abstract class SQLForeignKeyManager<OBJECT_TYPE extends AbstractTableCons
                         return refKeyClass.cast(entityConstraint);
                     }
                 } catch (DBException e) {
-                    log.debug("Error searchign constraint by attributes", e);
+                    log.debug("Error searching constraint by attributes", e);
                 }
             }
         }
@@ -222,5 +232,19 @@ public abstract class SQLForeignKeyManager<OBJECT_TYPE extends AbstractTableCons
     protected boolean isFKConstraintDuplicated(TABLE_TYPE owner) {
         return false;
     }
+
+    public static <FK extends AbstractTableConstraint> void updateForeignKeyName(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull FK foreignKey) {
+        SQLForeignKeyManager objectManager = DBWorkbench.getPlatform().getEditorsRegistry().getObjectManager(
+            foreignKey.getClass(), SQLForeignKeyManager.class);
+        if (objectManager == null) {
+            log.debug("Foreign key manager not found for " + foreignKey.getClass().getName());
+        } else {
+            String fkName = objectManager.getNewConstraintName(monitor, foreignKey);
+            foreignKey.setName(fkName);
+        }
+    }
+
 }
 

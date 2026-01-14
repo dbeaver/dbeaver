@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.ext.postgresql.model;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBDatabaseException;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
@@ -122,7 +123,7 @@ public class PostgreTrigger extends PostgreTriggerBase implements DBSEntityEleme
 
         Object attrNumbersObject = JDBCUtils.safeGetObject(dbResult, "tgattr");
         if (attrNumbersObject != null) {
-            int[] attrNumbers = PostgreUtils.getIntVector(attrNumbersObject);
+            int[] attrNumbers = PostgreUtils.getIntVector(attrNumbersObject, getDataSource());
             if (attrNumbers != null) {
                 int attrCount = attrNumbers.length;
                 columnRefs = new PostgreTableColumn[attrCount];
@@ -154,7 +155,7 @@ public class PostgreTrigger extends PostgreTriggerBase implements DBSEntityEleme
         return name;
     }
 
-    public void setName(String name) {
+    public void setName(@NotNull String name) {
         this.name = name;
     }
 
@@ -251,8 +252,9 @@ public class PostgreTrigger extends PostgreTriggerBase implements DBSEntityEleme
         return table.getDatabase();
     }
 
+    @NotNull
     @Property(hidden = true, editable = true, updatable = true, order = -1)
-    public String getObjectDefinitionText(DBRProgressMonitor monitor, Map<String, Object> options) throws DBException {
+    public String getObjectDefinitionText(@NotNull DBRProgressMonitor monitor, @NotNull Map<String, Object> options) throws DBException {
         StringBuilder ddl = new StringBuilder();
         if (CommonUtils.isEmpty(body)) {
             if (isPersisted()) {
@@ -262,7 +264,7 @@ public class PostgreTrigger extends PostgreTriggerBase implements DBSEntityEleme
                         body = SQLFormatUtils.formatSQL(getDataSource(), body);
                     }
                 } catch (SQLException e) {
-                    throw new DBException(e, getDataSource());
+                    throw new DBDatabaseException(e, getDataSource());
                 }
             } else {
                 body = "CREATE TRIGGER " + DBUtils.getQuotedIdentifier(this)
@@ -305,7 +307,7 @@ public class PostgreTrigger extends PostgreTriggerBase implements DBSEntityEleme
 
     @NotNull
     @Override
-    public String getFullyQualifiedName(DBPEvaluationContext context) {
+    public String getFullyQualifiedName(@NotNull DBPEvaluationContext context) {
         return DBUtils.getFullQualifiedName(getDataSource(),
                 getParentObject(),
                 this);
@@ -338,8 +340,9 @@ public class PostgreTrigger extends PostgreTriggerBase implements DBSEntityEleme
     }
 
     public static class ColumnNameTransformer implements IPropertyValueTransformer {
+        @Nullable
         @Override
-        public Object transform(Object object, Object value) throws IllegalArgumentException {
+        public Object transform(@NotNull Object object, @Nullable Object value) throws IllegalArgumentException {
             if (value instanceof PostgreTableColumn[]) {
                 StringBuilder sb = new StringBuilder();
                 for (PostgreTableColumn col : (PostgreTableColumn[])value) {

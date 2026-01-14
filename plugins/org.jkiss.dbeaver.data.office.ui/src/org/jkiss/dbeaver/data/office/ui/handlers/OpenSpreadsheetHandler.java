@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@ import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.ui.handlers.HandlerUtil;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.data.office.export.DataExporterXLSX;
 import org.jkiss.dbeaver.model.data.DBDDataFilter;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
@@ -85,8 +86,9 @@ public class OpenSpreadsheetHandler extends AbstractHandler
                 setSystem(false);
             }
 
+            @NotNull
             @Override
-            protected IStatus run(DBRProgressMonitor monitor) {
+            protected IStatus run(@NotNull DBRProgressMonitor monitor) {
                 try {
                     Path tempDir = DBWorkbench.getPlatform().getTempFolder(monitor, "office-files");
                     Path tempFile = tempDir.resolve(
@@ -104,7 +106,13 @@ public class OpenSpreadsheetHandler extends AbstractHandler
                     settings.setOutputFilePattern(tempFile.getFileName().toString());
 
                     Map<String, Object> properties = DataExporterXLSX.getDefaultProperties();
-                    consumer.initTransfer(dataContainer, settings, new IDataTransferConsumer.TransferParameters(true, false), exporter, properties);
+                    consumer.initTransfer(
+                        dataContainer,
+                        settings,
+                        new IDataTransferConsumer.TransferParameters(true, false),
+                        exporter,
+                        properties,
+                        null);
 
                     DBDDataFilter dataFilter = resultSet.getModel().getDataFilter();
                     DatabaseTransferProducer producer = new DatabaseTransferProducer(dataContainer, dataFilter);

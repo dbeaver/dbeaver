@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -75,7 +75,7 @@ public class DateTimeStandaloneEditor extends ValueViewDialog {
         timeEditor.createDateFormat(valueController.getValueType());
         timeEditor.setEditable(!valueController.isReadOnly());
 
-        if (!ModelPreferences.getPreferences().getBoolean(ModelPreferences.RESULT_SET_USE_DATETIME_EDITOR)){
+        if (!DBWorkbench.getPlatform().getPreferenceStore().getBoolean(ModelPreferences.RESULT_SET_USE_DATETIME_EDITOR)){
             timeEditor.setToTextComposite();
         }
         primeEditorValue(value);
@@ -94,7 +94,7 @@ public class DateTimeStandaloneEditor extends ValueViewDialog {
     }
 
     private boolean isCalendarMode() {
-        return ModelPreferences.getPreferences().getBoolean(ModelPreferences.RESULT_SET_USE_DATETIME_EDITOR);
+        return DBWorkbench.getPlatform().getPreferenceStore().getBoolean(ModelPreferences.RESULT_SET_USE_DATETIME_EDITOR);
     }
 
     @Override

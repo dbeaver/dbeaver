@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,6 +35,8 @@ public class SQLCompletionRequest {
     private final SQLScriptElement activeQuery;
     private final boolean simpleMode;
 
+    private final SQLCompletionActivityTracker stateTracker;
+
     private final SQLWordPartDetector wordDetector;
 
     private String wordPart;
@@ -47,6 +49,7 @@ public class SQLCompletionRequest {
         this.documentOffset = documentOffset;
         this.activeQuery = activeQuery;
         this.simpleMode = simpleMode;
+        this.stateTracker = new SQLCompletionActivityTracker(simpleMode);
 
         this.wordDetector = new SQLWordPartDetector(document, context.getSyntaxManager(), documentOffset);
         this.wordPart = wordDetector.getWordPart();
@@ -70,6 +73,10 @@ public class SQLCompletionRequest {
 
     public boolean isSimpleMode() {
         return simpleMode;
+    }
+
+    public SQLCompletionActivityTracker getActivityTracker() {
+        return this.stateTracker;
     }
 
     public SQLWordPartDetector getWordDetector() {

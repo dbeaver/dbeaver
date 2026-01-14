@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2022 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,68 +16,77 @@
  */
 package org.jkiss.dbeaver.ext.yashandb.model;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTableConstraint;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
+import org.jkiss.dbeaver.model.struct.rdb.DBSTableColumn;
 
-import java.util.ArrayList;
-import java.util.List;
+public abstract class YashanDBTableConstraintBase
+		extends JDBCTableConstraint<YashanDBTableBase, YashanDBTableConstraintColumn> {
 
-/**
- * OracleTableConstraint
- */
-public abstract class YashanDBTableConstraintBase extends JDBCTableConstraint<YashanDBTableBase> {
+	private YashanDBObjectStatus status;
+	private List<YashanDBTableConstraintColumn> columns = new ArrayList<>();
 
-    private static final Log log = Log.getLog(YashanDBTableConstraintBase.class);
+	public YashanDBTableConstraintBase(YashanDBTableBase table, String name, DBSEntityConstraintType constraintType,
+			YashanDBObjectStatus status, boolean persisted) {
+		super(table, name, null, constraintType, persisted);
+		this.status = status;
+	}
 
-    private YashanDBObjectStatus status;
-    private List<YashanDBTableConstraintColumn> columns;
+	protected YashanDBTableConstraintBase(YashanDBTableBase yashanDBTableBase, String name, String description,
+			DBSEntityConstraintType constraintType, boolean persisted) {
+		super(yashanDBTableBase, name, description, constraintType, persisted);
+	}
 
-    public YashanDBTableConstraintBase(YashanDBTableBase oracleTable, String name, DBSEntityConstraintType constraintType, YashanDBObjectStatus status, boolean persisted) {
-        super(oracleTable, name, null, constraintType, persisted);
-        this.status = status;
-    }
+	@NotNull
+	@Override
+	public YashanDBDataSource getDataSource() {
+		return getTable().getDataSource();
+	}
 
-    protected YashanDBTableConstraintBase(YashanDBTableBase yashanDBTableBase, String name, String description, DBSEntityConstraintType constraintType, boolean persisted) {
-        super(yashanDBTableBase, name, description, constraintType, persisted);
-    }
+	@NotNull
+	@Property(viewable = true, editable = false, valueTransformer = DBObjectNameCaseTransformer.class, order = 3)
+	@Override
+	public DBSEntityConstraintType getConstraintType() {
+		return constraintType;
+	}
 
-    @NotNull
-    @Override
-    public YashanDBDataSource getDataSource() {
-        return getTable().getDataSource();
-    }
+	@Property(viewable = true, editable = false, order = 9)
+	public YashanDBObjectStatus getStatus() {
+		return status;
+	}
 
-    @NotNull
-    @Property(viewable = true, editable = false, valueTransformer = DBObjectNameCaseTransformer.class, order = 3)
-    @Override
-    public DBSEntityConstraintType getConstraintType() {
-        return constraintType;
-    }
+	@Override
+	public void addAttributeReference(DBSTableColumn column) {
+		this.columns.add(new YashanDBTableConstraintColumn(this, (YashanDBTableColumn) column, columns.size()));
+	}
 
-    @Property(viewable = true, editable = false, order = 9)
-    public YashanDBObjectStatus getStatus() {
-        return status;
-    }
+	@Override
+	public List<YashanDBTableConstraintColumn> getAttributeReferences(DBRProgressMonitor monitor) {
+		return columns;
+	}
 
-    @Override
-    public List<YashanDBTableConstraintColumn> getAttributeReferences(DBRProgressMonitor monitor) {
-        return columns;
-    }
+	@Override
+	public void setAttributeReferences(List<YashanDBTableConstraintColumn> columns) {
+		this.columns.clear();
+		this.columns.addAll(columns);
+	}
 
-    public void addColumn(YashanDBTableConstraintColumn column) {
-        if (columns == null) {
-            columns = new ArrayList<>();
-        }
-        this.columns.add(column);
-    }
+	public void addColumn(YashanDBTableConstraintColumn column) {
+		if (columns == null) {
+			columns = new ArrayList<>();
+		}
+		this.columns.add(column);
+	}
 
-    void setColumns(List<YashanDBTableConstraintColumn> columns) {
-        this.columns = columns;
-    }
+	void setColumns(List<YashanDBTableConstraintColumn> columns) {
+		this.columns = columns;
+	}
 
 }

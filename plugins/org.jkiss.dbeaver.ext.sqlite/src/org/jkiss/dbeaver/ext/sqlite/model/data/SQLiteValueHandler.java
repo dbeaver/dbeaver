@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -110,7 +110,7 @@ public class SQLiteValueHandler extends JDBCAbstractValueHandler implements DBDV
             } else {
                 if (numberFormatter == null) {
                     try {
-                        numberFormatter = formatSettings.getDataFormatterProfile().createFormatter(DBDDataFormatter.TYPE_NAME_NUMBER, type);
+                        numberFormatter = formatSettings.getDataFormatterProfile().createFormatter(DBDDataFormatter.TYPE_NAME_NUMBER, column);
                     } catch (Exception e) {
                         log.error("Can't create numberFormatter for number value handler", e); //$NON-NLS-1$
                         numberFormatter = DefaultDataFormatter.INSTANCE;
@@ -130,8 +130,11 @@ public class SQLiteValueHandler extends JDBCAbstractValueHandler implements DBDV
             }
 
             return timestampFormatter.formatValue(value);
-        }
-        if (value instanceof byte[] && column.getDataKind() == DBPDataKind.STRING) {
+        } else if (value instanceof String string && column.getDataKind() == DBPDataKind.DATETIME) {
+            if (format == DBDDisplayFormat.NATIVE && !string.startsWith("'") && !string.endsWith("'")) {
+                return "'" + value + "'";
+            }
+        } else if (value instanceof byte[] && column.getDataKind() == DBPDataKind.STRING) {
             return new String((byte[]) value);
         }
         return super.getValueDisplayString(column, value, format);

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ext.mssql.edit;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.mssql.model.SQLServerTable;
 import org.jkiss.dbeaver.ext.mssql.model.SQLServerTableBase;
@@ -42,7 +43,7 @@ public class SQLServerForeignKeyManager extends SQLForeignKeyManager<SQLServerTa
     }
 
     @Override
-    protected SQLServerTableForeignKey createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, final Object table, Object from, Map<String, Object> options)
+    protected SQLServerTableForeignKey createDatabaseObject(@NotNull DBRProgressMonitor monitor, @NotNull DBECommandContext context, final Object table, Object from, @NotNull Map<String, Object> options)
     {
         SQLServerTableForeignKey foreignKey = new SQLServerTableForeignKey(
             (SQLServerTable) table,

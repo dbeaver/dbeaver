@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.ext.postgresql.model.generic;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBDatabaseException;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.generic.model.*;
 import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaModel;
@@ -62,8 +63,9 @@ public class PostgreMetaModel extends GenericMetaModel implements DBCQueryTransf
         super();
     }
 
+    @NotNull
     @Override
-    public GenericDataSource createDataSourceImpl(DBRProgressMonitor monitor, DBPDataSourceContainer container) throws DBException {
+    public GenericDataSource createDataSourceImpl(@NotNull DBRProgressMonitor monitor, @NotNull DBPDataSourceContainer container) throws DBException {
         return new PostgreGenericDataSource(monitor, container, this);
     }
 
@@ -72,23 +74,23 @@ public class PostgreMetaModel extends GenericMetaModel implements DBCQueryTransf
         return new PostgreGenericTypeCache(container);
     }
 
-    public String getViewDDL(DBRProgressMonitor monitor, GenericView sourceObject, Map<String, Object> options) throws DBException {
+    public String getViewDDL(@NotNull DBRProgressMonitor monitor, @NotNull GenericView sourceObject, @NotNull Map<String, Object> options) throws DBException {
         try (JDBCSession session = DBUtils.openMetaSession(monitor, sourceObject, "Read view definition")) {
             return JDBCUtils.queryString(session, "SELECT definition FROM PG_CATALOG.PG_VIEWS WHERE SchemaName=? and ViewName=?", sourceObject.getContainer().getName(), sourceObject.getName());
         } catch (SQLException e) {
-            throw new DBException(e, sourceObject.getDataSource());
+            throw new DBDatabaseException(e, sourceObject.getDataSource());
         }
     }
 
     @Override
-    public String getProcedureDDL(DBRProgressMonitor monitor, GenericProcedure sourceObject) throws DBException {
+    public String getProcedureDDL(@NotNull DBRProgressMonitor monitor, @NotNull GenericProcedure sourceObject) throws DBException {
         try (JDBCSession session = DBUtils.openMetaSession(monitor, sourceObject, "Read procedure definition")) {
             return JDBCUtils.queryString(session, "SELECT " +
                 (sourceObject.getDataSource().isServerVersionAtLeast(8, 4) ? "pg_get_functiondef(p.oid)" : "prosrc") +
                 " FROM pg_catalog.pg_proc P, pg_catalog.pg_namespace NS\n" +
                 "WHERE ns.oid=p.pronamespace AND ns.nspname=? AND p.proname=?", sourceObject.getContainer().getName(), sourceObject.getName());
         } catch (SQLException e) {
-            throw new DBException(e, sourceObject.getDataSource());
+            throw new DBDatabaseException(e, sourceObject.getDataSource());
         }
     }
 
@@ -133,7 +135,7 @@ public class PostgreMetaModel extends GenericMetaModel implements DBCQueryTransf
                     JDBCUtils.safeGetLong(seqResults, 4));
             }
         } catch (SQLException e) {
-            throw new DBException(e, container.getDataSource());
+            throw new DBDatabaseException(e, container.getDataSource());
         }
     }
 
@@ -142,6 +144,7 @@ public class PostgreMetaModel extends GenericMetaModel implements DBCQueryTransf
         return true;
     }
 
+    @NotNull
     @Override
     public JDBCStatement prepareTableTriggersLoadStatement(@NotNull JDBCSession session, @NotNull GenericStructContainer genericStructContainer, @Nullable GenericTableBase table) throws SQLException {
         StringBuilder sql = new StringBuilder();
@@ -168,6 +171,7 @@ public class PostgreMetaModel extends GenericMetaModel implements DBCQueryTransf
         return dbStat;
     }
 
+    @NotNull
     @Override
     public GenericTrigger createTableTriggerImpl(@NotNull JDBCSession session, @NotNull GenericStructContainer genericStructContainer, @NotNull GenericTableBase genericTableBase, String name, @NotNull JDBCResultSet dbResult) throws DBException {
         if (CommonUtils.isEmpty(name)) {
@@ -189,7 +193,7 @@ public class PostgreMetaModel extends GenericMetaModel implements DBCQueryTransf
     }
 
     @Override
-    public List<PostgreGenericTrigger> loadTriggers(DBRProgressMonitor monitor, @NotNull GenericStructContainer container, @Nullable GenericTableBase table) throws DBException {
+    public List<PostgreGenericTrigger> loadTriggers(@NotNull DBRProgressMonitor monitor, @NotNull GenericStructContainer container, @Nullable GenericTableBase table) throws DBException {
         try (JDBCSession session = DBUtils.openMetaSession(monitor, container, "Read triggers")) {
             StringBuilder sql = new StringBuilder();
             sql.append("SELECT trigger_name,event_manipulation,action_order,action_condition,action_statement,action_orientation");
@@ -242,7 +246,7 @@ public class PostgreMetaModel extends GenericMetaModel implements DBCQueryTransf
 
             }
         } catch (SQLException e) {
-            throw new DBException(e, container.getDataSource());
+            throw new DBDatabaseException(e, container.getDataSource());
         }
     }
 
@@ -252,11 +256,13 @@ public class PostgreMetaModel extends GenericMetaModel implements DBCQueryTransf
         return null;
     }
 
+    @Nullable
     @Override
     public DBCQueryPlanner getQueryPlanner(@NotNull GenericDataSource dataSource) {
         return new PostgreGenericQueryPlaner(dataSource);
     }
 
+    @Nullable
     @Override
     public DBPErrorAssistant.ErrorPosition getErrorPosition(@NotNull Throwable error) {
         String message = error.getMessage();

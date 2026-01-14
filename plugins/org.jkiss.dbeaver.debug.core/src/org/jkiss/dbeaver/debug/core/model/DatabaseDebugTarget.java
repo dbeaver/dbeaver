@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  * Copyright (C) 2017-2018 Alexander Fedorov (alexander.fedorov@jkiss.org)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -188,12 +188,7 @@ public class DatabaseDebugTarget extends DatabaseDebugElement implements IDataba
         IBreakpoint[] breakpoints = DebugPlugin.getDefault().getBreakpointManager().getBreakpoints(modelIdentifier);
         if (breakpoints != null) {
             for (IBreakpoint bp : breakpoints) {
-            	DBGBreakpointDescriptor  descriptor=null;
-            	try {
-            		descriptor = describeBreakpoint(bp);
-            	}catch(DBGException e) {
-                    log.error("Can't add initial breakpoint", e);
-            	}
+                DBGBreakpointDescriptor descriptor = describeBreakpoint(bp);
                 if (descriptor != null) {
                     try {
                         session.addBreakpoint(dbm, descriptor);
@@ -217,9 +212,7 @@ public class DatabaseDebugTarget extends DatabaseDebugElement implements IDataba
 
     @Override
     public void terminate() throws DebugException {
-        log.debug("terminate start");
         terminated();
-        log.debug("terminate over");
     }
 
     public synchronized void terminated() throws DebugException {
@@ -310,21 +303,16 @@ public class DatabaseDebugTarget extends DatabaseDebugElement implements IDataba
     @Override
     public void breakpointAdded(IBreakpoint breakpoint) {
         if (!terminated) {
-        	 DBGBreakpointDescriptor descriptor = null;
-             try {
-                 descriptor = describeBreakpoint(breakpoint);
-             } catch (DBGException e) {
-                 throw new RuntimeException(e);
-             }
-        	if (descriptor == null) {
+            DBGBreakpointDescriptor descriptor = describeBreakpoint(breakpoint);
+            if (descriptor == null) {
                 log.error(NLS.bind("Unable to describe breakpoint {0}", breakpoint));
                 return;
             }
-            DBGBreakpointDescriptor finalDescriptor = descriptor;
+
             RuntimeUtils.runTask(
                 monitor -> {
                     try {
-                        session.addBreakpoint(monitor, finalDescriptor);
+                        session.addBreakpoint(monitor, descriptor);
                     } catch (DBGException e) {
                         throw new InvocationTargetException(e);
                     }
@@ -336,22 +324,15 @@ public class DatabaseDebugTarget extends DatabaseDebugElement implements IDataba
     @Override
     public void breakpointRemoved(IBreakpoint breakpoint, IMarkerDelta delta) {
         if (!terminated) {
-        	DBGBreakpointDescriptor descriptor = null;
-            try {
-                descriptor = describeBreakpoint(breakpoint);
-            } catch (DBGException e) {
-                throw new RuntimeException(e);
-            }
-
-        	if (descriptor == null) {
+            DBGBreakpointDescriptor descriptor = describeBreakpoint(breakpoint);
+            if (descriptor == null) {
                 log.error(NLS.bind("Unable to describe breakpoint {0}", breakpoint));
                 return;
             }
-            DBGBreakpointDescriptor finalDescriptor = descriptor;
             RuntimeUtils.runTask(
                 monitor -> {
                     try {
-                        session.removeBreakpoint(monitor, finalDescriptor);
+                        session.removeBreakpoint(monitor, descriptor);
                     } catch (DBGException e) {
                         throw new InvocationTargetException(e);
                     }
@@ -387,13 +368,12 @@ public class DatabaseDebugTarget extends DatabaseDebugElement implements IDataba
         }
     }
 
-    protected DBGBreakpointDescriptor describeBreakpoint(IBreakpoint breakpoint) throws DBGException{
+    protected DBGBreakpointDescriptor describeBreakpoint(IBreakpoint breakpoint) {
         Map<String, Object> description = new HashMap<>();
         try {
             Map<String, Object> attributes = breakpoint.getMarker().getAttributes();
-//            Map<String, Object> remote = DebugUtils.toBreakpointDescriptor(attributes);
-//            description.putAll(remote);
-            description.putAll(attributes);
+            Map<String, Object> remote = DebugUtils.toBreakpointDescriptor(attributes);
+            description.putAll(remote);
         } catch (CoreException e) {
             log.log(e.getStatus());
             return null;

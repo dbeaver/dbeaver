@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  * Copyright (C) 2017-2018 Andrew Khitrin (ahitrin@gmail.com)
  * Copyright (C) 2017-2018 Alexander Fedorov (alexander.fedorov@jkiss.org)
  *
@@ -20,39 +20,5 @@
 package org.jkiss.dbeaver.debug;
 
 public enum DBGVariableType {
-    NUMBER, TEXT, DATE, BLOB,
-    
-  //yangmeng add
-    UNKNOWN,
-    BOOLEAN,
-    TINYINT,
-    SMALLINT,
-    INTEGER,
-    BIGINT,
-    UTINYINT,
-    USMALLINT,
-    UINTEGER,
-    UBIGINT,
-    FLOAT,
-    DOUBLE,
-    SHORTDATE,
-    SHORTTIME,
-    TIMESTAMP,
-    TIMESTAMP_TZ,
-    TIMESTAMP_LTZ,
-    YM_INTERVAL,
-    DS_INTERVAL,
-    CHAR,
-    NCHAR,
-    VARCHAR,
-    NVARCHAR,
-    RAW,
-    CLOB,
-    BIT,
-    ROWID,
-    NCLOB,
-    CURSOR,
-    JSON,
-    RECORD;
-
+    NUMBER, TEXT, DATE, BLOB
 }

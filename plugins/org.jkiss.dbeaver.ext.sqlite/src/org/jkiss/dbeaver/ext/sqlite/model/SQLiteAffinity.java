@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,7 +26,8 @@ public enum SQLiteAffinity {
     REAL(DBPDataKind.NUMERIC, Types.DOUBLE, 17, 17),
     NUMERIC(DBPDataKind.NUMERIC, Types.NUMERIC, 17, 17),
     TEXT(DBPDataKind.STRING, Types.VARCHAR, Integer.MAX_VALUE, 0),
-    BLOB(DBPDataKind.BINARY, Types.BINARY, Integer.MAX_VALUE, 0);
+    BLOB(DBPDataKind.BINARY, Types.BINARY, Integer.MAX_VALUE, 0),
+    ANY(DBPDataKind.ANY, Types.NULL, Integer.MAX_VALUE, 0);
 
     private final DBPDataKind dataKind;
     private final int valueType;

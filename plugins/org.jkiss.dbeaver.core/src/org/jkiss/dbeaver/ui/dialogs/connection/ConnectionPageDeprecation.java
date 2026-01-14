@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,7 +26,6 @@ import org.eclipse.ui.forms.events.IHyperlinkListener;
 import org.eclipse.ui.forms.widgets.FormText;
 import org.eclipse.ui.forms.widgets.FormToolkit;
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.ui.ShellUtils;
@@ -38,8 +37,8 @@ public class ConnectionPageDeprecation extends ConnectionWizardPage {
         super(ConnectionPageDeprecation.class.getName());
         this.driver = driver;
 
-        setTitle(CoreMessages.dialog_connection_deprecated_title);
-        setDescription(CoreMessages.dialog_connection_deprecated_description);
+        setTitle(driver.getNonAvailabilityTitle());
+        setDescription(driver.getNonAvailabilityDescription());
         setPageComplete(false);
     }
 
@@ -51,20 +50,18 @@ public class ConnectionPageDeprecation extends ConnectionWizardPage {
         composite.setLayoutData(new GridData(GridData.FILL_BOTH));
         composite.setLayout(new GridLayout(1, false));
 
-        final FormText text = new FormText(composite, SWT.NO_FOCUS);
+        final FormText text = toolkit.createFormText(composite, false);
         text.setFont("header", JFaceResources.getFont("org.eclipse.jface.headerfont"));
-        text.setText(driver.getDeprecationReason(), true, false);
+        text.setText(driver.getNonAvailabilityReason(), true, false);
         text.setHyperlinkSettings(toolkit.getHyperlinkGroup());
         text.addHyperlinkListener(IHyperlinkListener.linkActivatedAdapter(e -> ShellUtils.launchProgram(e.getHref().toString())));
         text.setLayoutData(GridDataFactory.fillDefaults().grab(true, true).hint(200, 200).create());
-
-        toolkit.adapt(text, false, true);
 
         setControl(composite);
     }
 
     @Override
-    public void saveSettings(DBPDataSourceContainer dataSourceDescriptor) {
+    public void saveSettings(@NotNull DBPDataSourceContainer dataSourceDescriptor) {
         // do nothing
     }
 }

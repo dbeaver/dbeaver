@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,15 +18,20 @@ package org.jkiss.dbeaver.model.sql.analyzer.builder.request;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ext.generic.model.GenericSQLDialect;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.DBPDataSourceInfo;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
+import org.jkiss.dbeaver.model.impl.struct.RelationalObjectType;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
+import org.jkiss.dbeaver.model.sql.SQLDialect;
+import org.jkiss.dbeaver.model.sql.SQLDialectMetadataRegistry;
 import org.jkiss.dbeaver.model.sql.analyzer.builder.*;
-import org.jkiss.dbeaver.model.sql.registry.SQLDialectRegistry;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
+import org.jkiss.dbeaver.model.struct.DBSObjectType;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 
 import java.util.List;
@@ -44,6 +49,13 @@ public class RequestBuilder {
         this.dataSource = dataSource;
         this.object = object;
         this.children = children;
+        SQLDialect dialect = new GenericSQLDialect() {
+            @Override
+            public boolean supportsAliasInSelect() {
+                return true;
+            }
+        };
+        when(dataSource.getSQLDialect()).thenReturn(dialect);
     }
 
     public static RequestBuilder databases(Builder.Consumer<DatabaseContainerBuilder> applier) throws DBException {
@@ -77,14 +89,12 @@ public class RequestBuilder {
     public RequestResult prepare() throws DBException {
         final DBPConnectionConfiguration connectionConfiguration = new DBPConnectionConfiguration();
         final DBPPreferenceStore preferenceStore = DBWorkbench.getPlatform().getPreferenceStore();
-        final SQLDialectRegistry dialectRegistry = SQLDialectRegistry.getInstance();
 
         final DBPDataSourceContainer dataSourceContainer = mock(DBPDataSourceContainer.class);
         when(dataSourceContainer.getConnectionConfiguration()).thenReturn(connectionConfiguration);
         when(dataSourceContainer.getActualConnectionConfiguration()).thenReturn(connectionConfiguration);
         when(dataSourceContainer.getPreferenceStore()).thenReturn(preferenceStore);
 
-        when(dataSource.getSQLDialect()).thenReturn(dialectRegistry.getDialect("generic").createInstance());
         when(dataSource.getContainer()).thenReturn(dataSourceContainer);
         when(dataSource.getChild(any(), any())).then(x -> DBUtils.findObject(children, x.getArgument(1, String.class)));
         when(dataSource.getChildren(any())).then(x -> children);
@@ -99,7 +109,23 @@ public class RequestBuilder {
 
     @NotNull
     private static DataSource createDataSource() {
-        return mock(DataSource.class);
+        DBPDataSourceInfo dsInfo = mock(DBPDataSourceInfo.class);
+        when(dsInfo.getSupportedObjectTypes()).then(x -> new DBSObjectType[] {
+            RelationalObjectType.TYPE_TABLE,
+            RelationalObjectType.TYPE_VIEW,
+            RelationalObjectType.TYPE_TABLE_COLUMN,
+            RelationalObjectType.TYPE_VIEW_COLUMN,
+            RelationalObjectType.TYPE_INDEX,
+            RelationalObjectType.TYPE_CONSTRAINT,
+            RelationalObjectType.TYPE_PROCEDURE,
+            RelationalObjectType.TYPE_SEQUENCE,
+            RelationalObjectType.TYPE_TRIGGER,
+            RelationalObjectType.TYPE_DATA_TYPE
+        });
+
+        DataSource ds = mock(DataSource.class);
+        when(ds.getInfo()).then(x -> dsInfo);
+        return ds;
     }
 
     public interface DataSource extends DBPDataSource, DBSObjectContainer {

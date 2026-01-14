@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,6 +32,21 @@ public class DTConstants {
     public static final String DEFAULT_FALLBACK_OUTPUT_DIRECTORY = System.getProperty(StandardConstants.ENV_TMP_DIR);
     public static final String PREF_RECONNECT_TO_LAST_DATABASE = "reconnectToLastDatabase";
 
+    public static final String PREF_NAME_CASE_MAPPING = "nameCaseMapping";
+    public static final String PREF_REPLACE_MAPPING = "replaceMapping";
+    public static final String PREF_MAX_TYPE_LENGTH = "maxTypeLengthMapping";
+    public static final String PREF_SAVE_LOCAL_SETTINGS = "saveLocalSettings";
+
+    public static final String PREF_OPEN_LOCAL_FS_BROWSER = "openLocalFSBrowser";
+
     public static final String PRODUCT_FEATURE_ADVANCED_DATA_TRANSFER = "database/data/transfer/advanced";
+
+    public static final String PROP_PRODUCER_TYPE = "producer";
+    public static final String PROP_CONSUMER_TYPE = "consumer";
+    public static final String PROP_PROCESSOR_TYPE = "processor";
+    public static final String PROP_PROCESSORS_LIST = "processors";
+    public static final String PROP_NAME = "@propNames";
+
+    public static final int DEFAULT_MAX_TYPE_LENGTH = 32767; // Max Oracle VARCHAR data type length
 
 }

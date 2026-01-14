@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,8 @@
  */
 package org.jkiss.dbeaver.model.impl.edit;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.edit.DBECommand;
@@ -32,6 +34,7 @@ public class DBECommandAbstract<OBJECT_TYPE extends DBPObject> implements DBECom
     private final OBJECT_TYPE object;
     private final String title;
     private boolean isDisableSessionLogging = false;
+    private boolean ignoreNestedCommands;
 
     public DBECommandAbstract(OBJECT_TYPE object, String title)
     {
@@ -39,6 +42,7 @@ public class DBECommandAbstract<OBJECT_TYPE extends DBPObject> implements DBECom
         this.title = title;
     }
 
+    @NotNull
     @Override
     public OBJECT_TYPE getObject()
     {
@@ -67,7 +71,16 @@ public class DBECommandAbstract<OBJECT_TYPE extends DBPObject> implements DBECom
     }
 
     @Override
-    public void validateCommand(DBRProgressMonitor monitor, Map<String, Object> options) throws DBException
+    public boolean ignoreNestedCommands() {
+        return ignoreNestedCommands;
+    }
+
+    public void setIgnoreNestedCommands(boolean ignoreNestedCommands) {
+        this.ignoreNestedCommands = ignoreNestedCommands;
+    }
+
+    @Override
+    public void validateCommand(@NotNull DBRProgressMonitor monitor, @NotNull Map<String, Object> options) throws DBException
     {
         // do nothing by default
     }
@@ -77,14 +90,16 @@ public class DBECommandAbstract<OBJECT_TYPE extends DBPObject> implements DBECom
     {
     }
 
+    @NotNull
     @Override
-    public DBECommand<?> merge(DBECommand<?> prevCommand, Map<Object, Object> userParams)
+    public DBECommand<?> merge(@Nullable DBECommand<?> prevCommand, @NotNull Map<Object, Object> userParams)
     {
         return this;
     }
 
+    @NotNull
     @Override
-    public DBEPersistAction[] getPersistActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, Map<String, Object> options) throws DBException
+    public DBEPersistAction[] getPersistActions(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext executionContext, @NotNull Map<String, Object> options) throws DBException
     {
         return null;
     }

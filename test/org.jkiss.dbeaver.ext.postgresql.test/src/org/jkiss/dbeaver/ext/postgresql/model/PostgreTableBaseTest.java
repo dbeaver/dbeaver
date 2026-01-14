@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,34 +17,25 @@
 
 package org.jkiss.dbeaver.ext.postgresql.model;
 
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.postgresql.PostgreTestUtils;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.exec.DBExecUtils;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.impl.edit.TestCommandContext;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
-import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.properties.PropertySourceEditable;
-import org.jkiss.utils.StandardConstants;
+import org.jkiss.junit.DBeaverUnitTest;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.Mock;
-import org.mockito.Mockito;
-import org.mockito.junit.MockitoJUnitRunner;
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 
-@RunWith(MockitoJUnitRunner.class)
-public class PostgreTableBaseTest {
-
-    @Mock
-    DBRProgressMonitor monitor;
+public class PostgreTableBaseTest extends DBeaverUnitTest {
 
     private PostgreDataSource testDataSource;
     private PostgreDatabase testDatabase;
@@ -54,23 +45,17 @@ public class PostgreTableBaseTest {
 
     private PostgreExecutionContext postgreExecutionContext;
 
-    @Mock
-    JDBCResultSet mockResults;
-    @Mock
-    DBPDataSourceContainer mockDataSourceContainer;
-
-    private final String lineBreak = System.getProperty(StandardConstants.ENV_LINE_SEPARATOR);
-
     @Before
     public void setUp() throws Exception {
-        Mockito.when(mockDataSourceContainer.getDriver()).thenReturn(DBWorkbench.getPlatform().getDataSourceProviderRegistry().findDriver("postgresql"));
+        DBPDataSourceContainer dataSourceContainer = configureTestContainer("postgresql");
 
-        testDataSource = new PostgreDataSource(mockDataSourceContainer, "PG Test", "postgres") {
+        testDataSource = new PostgreDataSource(dataSourceContainer, "PG Test", "postgres") {
             @Override
             public boolean isServerVersionAtLeast(int major, int minor) {
                 return major <= 10;
             }
 
+            @Nullable
             @Override
             public PostgreDataType getLocalDataType(String typeName) {
                 return super.getLocalDataType(typeName);
@@ -80,8 +65,6 @@ public class PostgreTableBaseTest {
         PostgreRole testUser = new PostgreRole(null, "tester", "test", true);
         testDatabase = testDataSource.createDatabaseImpl(monitor, "testdb", testUser, null, null, null);
         testSchema = new PostgreSchema(testDatabase, "test_schema", testUser);
-
-        Mockito.when(mockDataSourceContainer.getPreferenceStore()).thenReturn(DBWorkbench.getPlatform().getPreferenceStore());
 
 //        Mockito.when(mockResults.getString("relname")).thenReturn("sampleTable");
 //        long sampleId = 111111;
@@ -99,11 +82,13 @@ public class PostgreTableBaseTest {
         };
         testTableRegular.setName("test_table_regular");
         testTableRegular.setPartition(false);
+        testTableRegular.setPersisted(true);
         PostgreTestUtils.addColumn(testTableRegular, "column1", "int4", 1);
 
         // Test View
         testView = new PostgreView(testSchema);
         testView.setName("testView");
+        testView.setPersisted(true);
     }
 
     // Tables DDL tests
@@ -176,6 +161,7 @@ public class PostgreTableBaseTest {
 
         PostgreTableForeign tableForeign = new PostgreTableForeign(testSchema);
         tableForeign.setName("testForeignTable");
+        tableForeign.setPersisted(true);
 
         PropertySourceEditable pse = new PropertySourceEditable(commandContext, tableForeign, tableForeign);
         pse.collectProperties();
@@ -211,6 +197,7 @@ public class PostgreTableBaseTest {
 
         PostgreMaterializedView testMView = new PostgreMaterializedView(testSchema);
         testMView.setName("testMView");
+        testMView.setPersisted(true);
 
         PropertySourceEditable pse = new PropertySourceEditable(commandContext, testMView, testMView);
         pse.collectProperties();
@@ -229,7 +216,7 @@ public class PostgreTableBaseTest {
     @Test
     public void generateChangeOwnerQuery_whenProvidedView_thenShouldGenerateQuerySuccessfully() {
         Assert.assertEquals("ALTER TABLE " + testSchema.getName() + ".\"" + testView.getName() + "\" OWNER TO someOwner",
-            testView.generateChangeOwnerQuery("someOwner"));
+            testView.generateChangeOwnerQuery("someOwner", new HashMap<>()));
     }
 
     @Test

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,17 +19,31 @@ package org.jkiss.dbeaver.ui.views.qm;
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
+import org.eclipse.ui.IWorkbenchWindow;
+import org.eclipse.ui.commands.IElementUpdater;
 import org.eclipse.ui.handlers.HandlerUtil;
+import org.eclipse.ui.menus.UIElement;
 import org.jkiss.dbeaver.ui.UIUtils;
 
-public class QueryManagerFilterHandler extends AbstractHandler {
+import java.util.Map;
+
+public class QueryManagerFilterHandler extends AbstractHandler implements IElementUpdater {
+    public static final String ID = "org.jkiss.dbeaver.core.qm.filter";
 
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException {
         QueryManagerView view = UIUtils.findView(HandlerUtil.getActiveWorkbenchWindow(event), QueryManagerView.class);
         if (view != null) {
-            view.openFilterDialog();
+            view.setFilterPanelVisible(!view.isFilterPanelVisible());
         }
         return null;
+    }
+
+
+    @Override
+    public void updateElement(UIElement element, Map parameters) {
+        IWorkbenchWindow window = element.getServiceLocator().getService(IWorkbenchWindow.class);
+        QueryManagerView view = UIUtils.findView(window, QueryManagerView.class);
+        element.setChecked(view != null && view.isFilterPanelVisible());
     }
 }

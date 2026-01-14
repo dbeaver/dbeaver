@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,7 +38,6 @@ public enum SQLServerAuthentication {
     AD_MSI(SQLServerMessages.authentication_ad_msi_title, SQLServerMessages.authentication_ad_msi_description, false, true, false, SQLServerAuthModelMSI.ID),
     AD_INTERACTIVE(SQLServerMessages.authentication_ad_interactive_title, SQLServerMessages.authentication_ad_interactive_description, false, true, false, SQLServerAuthModelMFA.ID),
     AD_INTEGRATED(SQLServerMessages.authentication_ad_integrated_title, SQLServerMessages.authentication_ad_integrated_description, false, false, false, SQLServerAuthModelADIntegrated.ID),
-    KERBEROS_INTEGRATED(SQLServerMessages.authentication_kerberos_title, SQLServerMessages.authentication_kerberos_description, false, false, false, SQLServerAuthModelKerberos.ID),
     OTHER(SQLServerMessages.authentication_other_title, SQLServerMessages.authentication_other_description, true, true, true, SQLServerAuthModelCustom.ID)
     ;
 

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,6 +33,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.DBSObjectWithScript;
 import org.jkiss.dbeaver.model.struct.rdb.DBSIndexType;
+import org.jkiss.dbeaver.model.struct.rdb.DBSTableConstraint;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableIndex;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableIndexColumn;
 
@@ -45,7 +46,8 @@ import java.util.Map;
 /**
  * SQLServerTableIndex
  */
-public class SQLServerTableIndex extends JDBCTableIndex<SQLServerSchema, SQLServerTableBase> implements SQLServerObject, DBPNamedObject2, DBSObjectWithScript
+public class SQLServerTableIndex extends JDBCTableIndex<SQLServerSchema, SQLServerTableBase>
+    implements SQLServerObject, DBSTableConstraint, DBPNamedObject2, DBSObjectWithScript
 {
     private boolean unique;
     private boolean primary;
@@ -121,7 +123,7 @@ public class SQLServerTableIndex extends JDBCTableIndex<SQLServerSchema, SQLServ
     }
 
     @Override
-    @Property(viewable = true, order = 5)
+    @Property(viewable = true, editable = true, updatable = true, order = 5)
     public boolean isUnique()
     {
         return unique;
@@ -129,6 +131,7 @@ public class SQLServerTableIndex extends JDBCTableIndex<SQLServerSchema, SQLServ
 
     public void setUnique(boolean unique) {
         this.unique = unique;
+        ddl = null;
     }
 
     @Override
@@ -155,7 +158,7 @@ public class SQLServerTableIndex extends JDBCTableIndex<SQLServerSchema, SQLServ
     }
 
     @Override
-    public List<SQLServerTableIndexColumn> getAttributeReferences(DBRProgressMonitor monitor)
+    public List<SQLServerTableIndexColumn> getAttributeReferences(@Nullable DBRProgressMonitor monitor)
     {
         return columns;
     }
@@ -180,15 +183,16 @@ public class SQLServerTableIndex extends JDBCTableIndex<SQLServerSchema, SQLServ
 
     @NotNull
     @Override
-    public String getFullyQualifiedName(DBPEvaluationContext context)
+    public String getFullyQualifiedName(@NotNull DBPEvaluationContext context)
     {
         return DBUtils.getFullQualifiedName(getDataSource(),
             getTable().getContainer(),
             this);
     }
 
+    @NotNull
     @Override
-    public String getObjectDefinitionText(DBRProgressMonitor monitor, Map<String, Object> options) throws DBException {
+    public String getObjectDefinitionText(@NotNull DBRProgressMonitor monitor, @NotNull Map<String, Object> options) throws DBException {
         if (!isPersisted() || SQLServerUtils.isDriverBabelfish(getDataSource().getContainer().getDriver())) {
             return null;
         }
@@ -201,12 +205,20 @@ public class SQLServerTableIndex extends JDBCTableIndex<SQLServerSchema, SQLServ
     // Index DDL gen script taken from MS technet
     // https://gallery.technet.microsoft.com/scriptcenter/SQL-Server-Generate-Index-fa790441
     private String readIndexDefinition(DBRProgressMonitor monitor) throws DBCException {
+        String needToInsertUnique = unique ? "    'UNIQUE ' +\n" : "";
+        SQLServerDatabase database = this.getContainer().getDatabase();
+        String databaseNamePrefix = "";
+        if (database != null) {
+            databaseNamePrefix = "'" + database.getName() + ".' +";
+        }
+        String indexName = DBUtils.getQuotedIdentifier(this);
+
         String sql =
             "SELECT ' CREATE ' + \n" +
-                "    CASE WHEN I.is_unique = 1 THEN ' UNIQUE ' ELSE '' END  +  \n" +
+                needToInsertUnique +
                 "    I.type_desc COLLATE DATABASE_DEFAULT +' INDEX ' +   \n" +
-                "    I.name  + ' ON '  +  \n" +
-                "    Schema_name(T.Schema_id)+'.'+T.name + ' ( ' + \n" +
+                "    '" + indexName + "' + ' ON '  +  \n" +
+                "   " + databaseNamePrefix + "Schema_name(T.Schema_id)+'.'+T.name + ' ( ' + \n" +
                 "    KeyColumns + ' )  ' + \n" +
                 "    ISNULL('\n\t INCLUDE ('+IncludedColumns+' ) ','') + \n" +
                 "    ISNULL('\n\t WHERE  '+I.Filter_definition,'') + '\n\t WITH ( ' + \n" +
@@ -264,8 +276,7 @@ public class SQLServerTableIndex extends JDBCTableIndex<SQLServerSchema, SQLServ
                 "   GROUP BY IC2.object_id ,IC2.index_id) tmp1   \n" +
                 "   WHERE IncludedColumns IS NOT NULL ) tmp2    \n" +
                 "ON tmp2.object_id = I.object_id AND tmp2.index_id = I.index_id   \n" +
-                "WHERE I.is_primary_key = 0 AND I.is_unique_constraint = 0 \n" +
-                "AND I.Object_id = " + getTable().getObjectId() + "\n" +
+                "WHERE I.Object_id = " + getTable().getObjectId() + "\n" +
                 "AND I.name = '" + SQLUtils.escapeString(getDataSource(), getName()) + "'";
         try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Read SQL Server index definition")) {
             return JDBCUtils.queryString(session, sql);

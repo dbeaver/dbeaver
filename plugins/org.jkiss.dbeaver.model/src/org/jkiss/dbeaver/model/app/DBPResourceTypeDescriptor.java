@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,8 +17,13 @@
 
 package org.jkiss.dbeaver.model.app;
 
-import org.eclipse.core.resources.IResource;
+import org.eclipse.core.runtime.content.IContentType;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPImage;
+import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
+
+import java.util.Collection;
 
 /**
  * Resource handler info
@@ -27,21 +32,31 @@ public interface DBPResourceTypeDescriptor {
 
     String RESOURCE_ROOT_FOLDER_NODE = "resourceRootFolder";
 
+    @NotNull
     String getId();
 
+    @NotNull
     String getName();
 
+    @Nullable
     DBPImage getIcon();
 
+    @Nullable
     DBPImage getFolderIcon();
 
+    @NotNull
     String[] getFileExtensions();
 
-    String getDefaultRoot(DBPProject project);
+    @Nullable
+    String getDefaultRoot(@Nullable DBPProject project);
 
-    void setDefaultRoot(DBPProject project, String rootPath);
+    void setDefaultRoot(@NotNull DBPProject project, @Nullable String rootPath);
 
-    boolean isManagable();
+    boolean isManageable();
 
-    boolean isApplicableTo(IResource resource, boolean testContent);
+    Collection<IContentType> getContentTypes();
+
+    Collection<AbstractDescriptor.ObjectType> getResourceTypes();
+
+
 }

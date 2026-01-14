@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,12 +16,14 @@
  */
 package org.jkiss.dbeaver.model.impl.preferences;
 
-import org.eclipse.core.commands.common.EventManager;
+import org.eclipse.core.runtime.ListenerList;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceListener;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.utils.CommonUtils;
 
-public abstract class AbstractPreferenceStore extends EventManager implements DBPPreferenceStore {
+public abstract class AbstractPreferenceStore implements DBPPreferenceStore {
 
     public static final boolean BOOLEAN_DEFAULT_DEFAULT = false;
     public static final double DOUBLE_DEFAULT_DEFAULT = 0.0;
@@ -32,31 +34,125 @@ public abstract class AbstractPreferenceStore extends EventManager implements DB
     public static final String TRUE = "true"; //$NON-NLS-1$
     public static final String FALSE = "false"; //$NON-NLS-1$
 
+    private volatile transient ListenerList<DBPPreferenceListener> listenerList = null;
+
     @Override
-    public void firePropertyChangeEvent(String name, Object oldValue, Object newValue) {
+    public void firePropertyChangeEvent(@NotNull String name, @Nullable Object oldValue, @Nullable Object newValue) {
         this.firePropertyChangeEvent(this, name, oldValue, newValue);
     }
 
     public void firePropertyChangeEvent(Object source, String name, Object oldValue, Object newValue) {
-        final Object[] finalListeners = getListeners();
-        // Do we need to fire an event.
+        final DBPPreferenceListener[] finalListeners = getListeners();
+        // Do we need to fire an event
         if (finalListeners.length > 0 && !CommonUtils.equalObjects(oldValue, newValue)) {
             final DBPPreferenceListener.PreferenceChangeEvent pe = new DBPPreferenceListener.PreferenceChangeEvent(source, name, oldValue, newValue);
-            for (int i = 0; i < finalListeners.length; ++i) {
-                final DBPPreferenceListener l = (DBPPreferenceListener) finalListeners[i];
-                l.preferenceChange(pe);
+            for (DBPPreferenceListener finalListener : finalListeners) {
+                finalListener.preferenceChange(pe);
             }
         }
     }
 
     @Override
-    public void addPropertyChangeListener(DBPPreferenceListener listener) {
+    public void addPropertyChangeListener(@NotNull DBPPreferenceListener listener) {
         addListenerObject(listener);
     }
 
     @Override
-    public void removePropertyChangeListener(DBPPreferenceListener listener) {
+    public void removePropertyChangeListener(@NotNull DBPPreferenceListener listener) {
         removeListenerObject(listener);
+    }
+
+
+    protected boolean toBoolean(String value) {
+        return value != null && value.equals(AbstractPreferenceStore.TRUE);
+    }
+
+    protected double toDouble(String value) {
+        double ival = DOUBLE_DEFAULT_DEFAULT;
+        if (!CommonUtils.isEmpty(value)) {
+            try {
+                ival = Double.parseDouble(value);
+            } catch (NumberFormatException e) {
+                // do nothing
+            }
+        }
+        return ival;
+    }
+
+    protected float toFloat(String value) {
+        float ival = FLOAT_DEFAULT_DEFAULT;
+        if (!CommonUtils.isEmpty(value)) {
+            try {
+                ival = Float.parseFloat(value);
+            } catch (NumberFormatException e) {
+                // do nothing
+            }
+        }
+        return ival;
+    }
+
+    protected int toInt(String value) {
+        int ival = INT_DEFAULT_DEFAULT;
+        if (!CommonUtils.isEmpty(value)) {
+            try {
+                ival = Integer.parseInt(value);
+            } catch (NumberFormatException e) {
+                // do nothing
+            }
+        }
+        return ival;
+    }
+
+    protected long toLong(String value) {
+        long ival = LONG_DEFAULT_DEFAULT;
+        if (!CommonUtils.isEmpty(value)) {
+            try {
+                ival = Long.parseLong(value);
+            } catch (NumberFormatException e) {
+                // do nothing
+            }
+        }
+        return ival;
+    }
+
+    protected final DBPPreferenceListener[] getListeners() {
+        final ListenerList<DBPPreferenceListener> list = listenerList;
+        if (list == null) {
+            return new DBPPreferenceListener[0];
+        }
+
+        Object[] ol = list.getListeners();
+        DBPPreferenceListener[] listeners = new DBPPreferenceListener[ol.length];
+        for (int i = 0; i < list.size(); i++) {
+            listeners[i] = (DBPPreferenceListener) ol[i];
+        }
+        return listeners;
+    }
+
+    protected synchronized final void addListenerObject(final DBPPreferenceListener listener) {
+        if (listener == null) {
+            throw new IllegalArgumentException();
+        }
+
+        if (listenerList == null) {
+            listenerList = new ListenerList<>(ListenerList.IDENTITY);
+        }
+
+        listenerList.add(listener);
+    }
+
+    protected synchronized final void removeListenerObject(final DBPPreferenceListener listener) {
+        if (listener == null) {
+            throw new IllegalArgumentException();
+        }
+
+        if (listenerList != null) {
+            listenerList.remove(listener);
+
+            if (listenerList.isEmpty()) {
+                listenerList = null;
+            }
+        }
     }
 
 }

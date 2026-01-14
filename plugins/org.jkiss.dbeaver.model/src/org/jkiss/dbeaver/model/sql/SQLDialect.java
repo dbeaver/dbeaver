@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,13 +18,15 @@ package org.jkiss.dbeaver.model.sql;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.model.*;
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.DBPDataKind;
+import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBPIdentifierCase;
+import org.jkiss.dbeaver.model.DBPKeywordType;
 import org.jkiss.dbeaver.model.data.DBDBinaryFormatter;
 import org.jkiss.dbeaver.model.data.DBDDataFilter;
 import org.jkiss.dbeaver.model.exec.DBCLogicalOperator;
-import org.jkiss.dbeaver.model.impl.sql.SQLDialectQueryGenerator;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.sql.parser.EmptyTokenPredicateSet;
 import org.jkiss.dbeaver.model.sql.parser.SQLTokenPredicateSet;
 import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
@@ -33,13 +35,12 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureParameter;
 import org.jkiss.utils.Pair;
 
 import java.util.Collection;
+import java.util.EnumSet;
 import java.util.List;
 
 /**
  * SQL dialect
  */
-@DPIObject
-@DPIElement
 public interface SQLDialect {
 
     int USAGE_NONE = 0;
@@ -57,8 +58,19 @@ public interface SQLDialect {
         INSERT_ALL
     }
 
+    enum ProjectionAliasVisibilityScope {
+        WHERE,
+        HAVING,
+        GROUP_BY,
+        ORDER_BY
+    }
+
+    record GlobalVariableInfo(String name, String description, DBPDataKind type) {
+        public static GlobalVariableInfo[] EMPTY_ARRAY = new GlobalVariableInfo[0];
+    }
+
     @NotNull
-    SQLDialectQueryGenerator getQueryGenerator();
+    SQLQueryGenerator getQueryGenerator();
 
     @NotNull
     String getDialectId();
@@ -95,14 +107,12 @@ public interface SQLDialect {
 
     /**
      * Retrieves a list of execute keywords. If database doesn't support implicit execute returns empty list or null.
-     * @return the list of execute keywords.
      */
     @NotNull
     String[] getExecuteKeywords();
 
     /**
      * Retrieves a list of execute keywords. If database doesn't support implicit execute returns empty list or null.
-     * @return the list of execute keywords.
      */
     @NotNull
     String[] getDDLKeywords();
@@ -119,6 +129,7 @@ public interface SQLDialect {
      */
     @NotNull
     Collection<String> getReservedWords();
+
     @NotNull
     Collection<String> getFunctions();
     @NotNull
@@ -261,20 +272,42 @@ public interface SQLDialect {
 
     boolean supportsSubqueries();
 
+    /**
+     * Returns true when database dialect allows <b>table</b> alias in FROM clause
+     */
     boolean supportsAliasInSelect();
 
     boolean supportsAliasInUpdate();
 
-    default boolean supportsAliasInConditions() {
-        return true;
-    }
+    boolean supportsAsKeywordBeforeAliasInFromClause();
+    /**
+     * Column name to list all table columns. Usually asterisk (*).
+     */
+    @Nullable
+    String getAllAttributesAlias();
+
+    /**
+     * Column name to use in grouping queries like COUNT. Usually asterisk (*).
+     */
+    @Nullable
+    String getDefaultGroupAttribute();
+
+    boolean supportsAliasInConditions();
+
+    /**
+     * Returns offset and limit query parts. Limit syntax is different for databases.
+     */
+    String getOffsetLimitQueryPart(int offset, int limit);
+
+    /**
+     * Returns clob comparing part for where clause.
+     */
+    String getClobComparingPart(@NotNull String columnName);
 
     /**
      * Checks whether dialect supports alias for queries with HAVING syntax.
      */
-    default boolean supportsAliasInHaving() {
-        return true;
-    }
+    boolean supportsAliasInHaving();
 
     boolean supportsTableDropCascade();
 
@@ -303,7 +336,6 @@ public interface SQLDialect {
     /**
      * Enables to call particular cast operator or function for special attribute name.
      * @param attribute   attribute data to help decide whether cast and how to cast
-     * @param attributeName
      * @return            casted attribute name
      */
     String getCastedAttributeName(@NotNull DBSAttributeBase attribute, String attributeName);
@@ -372,7 +404,13 @@ public interface SQLDialect {
     @NotNull
     MultiValueInsertMode getDefaultMultiValueInsertMode();
 
-    String addFiltersToQuery(DBRProgressMonitor monitor, DBPDataSource dataSource, String query, DBDDataFilter filter);
+    @NotNull
+    String addFiltersToQuery(
+        @Nullable DBRProgressMonitor monitor,
+        @NotNull DBPDataSource dataSource,
+        @NotNull String query,
+        @NotNull DBDDataFilter filter
+    ) throws DBException;
 
     /**
      * Two-item array containing begin and end of multi-line comments.
@@ -432,6 +470,11 @@ public interface SQLDialect {
     boolean isStripCommentsBeforeBlocks();
 
     /**
+     * Returns true if need to escape backslash character
+     */
+    boolean isEscapeBackslash();
+
+    /**
      * Returns true if query is definitely transactional. Otherwise returns false, however it still may be transactional.
      * You need to check query results to ensure that it is not transactional.
      */
@@ -472,18 +515,33 @@ public interface SQLDialect {
 
     boolean supportsInsertAllDefaultValuesStatement();
 
+    boolean supportsUuid();
+
     /**
      * Generates a set of connection-specific dialect features which require special handling during SQL parsing
      * (empty by default)
      * @return a set of token predicates
      */
     @NotNull
-    default SQLTokenPredicateSet getSkipTokenPredicates() {
-        return EmptyTokenPredicateSet.INSTANCE;
+    SQLTokenPredicateSet getSkipTokenPredicates();
+
+    default EnumSet<ProjectionAliasVisibilityScope> getProjectionAliasVisibilityScope() {
+        return EnumSet.of(
+            ProjectionAliasVisibilityScope.WHERE,
+            ProjectionAliasVisibilityScope.GROUP_BY,
+            ProjectionAliasVisibilityScope.HAVING,
+            ProjectionAliasVisibilityScope.ORDER_BY
+        );
     }
-    
-    /**
-     * @return a set of SQLBlockCompletions with information about blocks for autoedit
-     */
-    SQLBlockCompletions getBlockCompletions();
+
+    default void afterDataSourceInitialization(@NotNull DBPDataSource dataSource) {
+    }
+
+    default boolean useEmptyStringForNulls() {
+        return false;
+    }
+
+    default boolean supportsQualifiedColumnNames() {
+        return true;
+    }
 }

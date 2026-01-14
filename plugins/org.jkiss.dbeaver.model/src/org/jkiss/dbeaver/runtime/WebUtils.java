@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,16 +18,19 @@ package org.jkiss.dbeaver.runtime;
 
 import org.eclipse.osgi.util.NLS;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.connection.DBPAuthInfo;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.ProgressMonitorWithExceptionContext;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.ByteNumberFormat;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.HttpConstants;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -56,6 +59,11 @@ public class WebUtils {
         return openURLConnection(urlString, authInfo, referrer, 1);
     }
 
+    @NotNull
+    public static URLConnection openConnection(DBRProgressMonitor monitor, String urlString, DBPAuthInfo authInfo, String referrer) throws IOException {
+        return openURLConnection(monitor, urlString, authInfo, referrer, "GET", 1, 10000, null);
+    }
+
     /**
      * Opens URL connection
      * @param urlString   URL
@@ -68,7 +76,6 @@ public class WebUtils {
     private static URLConnection openURLConnection(String urlString, DBPAuthInfo authInfo, String referrer, int retryNumber) throws IOException {
         return openURLConnection(urlString, authInfo, referrer, "GET", retryNumber, 10000, null);
     }
-
     public static URLConnection openURLConnection(
         String urlString,
         DBPAuthInfo authInfo,
@@ -78,8 +85,26 @@ public class WebUtils {
         int timeout,
         Map<String, String> headers
     ) throws IOException {
+    return openURLConnection(null, urlString, authInfo, referrer, method, retryNumber, timeout, headers);
+    }
+
+    public static URLConnection openURLConnection(
+        @Nullable DBRProgressMonitor monitor,
+        String urlString,
+        DBPAuthInfo authInfo,
+        String referrer,
+        String method,
+        int retryNumber,
+        int timeout,
+        Map<String, String> headers
+    ) throws IOException {
         if (retryNumber > MAX_RETRY_COUNT) {
-            throw new IOException("Too many redirects (" + retryNumber + ")");
+            String message = String.format("Too many redirects (%d times to %s)", retryNumber, urlString);
+            IOException ioException = new IOException(message);
+            if (monitor instanceof ProgressMonitorWithExceptionContext monitorWithExceptionContext) {
+                monitorWithExceptionContext.addException(ioException);
+            }
+            throw ioException;
         } else if (retryNumber > 1) {
             log.debug("Retry number " + retryNumber);
         }
@@ -100,24 +125,23 @@ public class WebUtils {
         final URLConnection connection = (proxy == null ? url.openConnection() : url.openConnection(proxy));
         connection.setReadTimeout(timeout);
         connection.setConnectTimeout(timeout);
-        if (connection instanceof HttpURLConnection) {
-            final HttpURLConnection httpConnection = (HttpURLConnection) connection;
+        if (connection instanceof HttpURLConnection httpConnection) {
             httpConnection.setRequestMethod(method); //$NON-NLS-1$
             httpConnection.setInstanceFollowRedirects(true);
             HttpURLConnection.setFollowRedirects(true);
             connection.setRequestProperty(
-                "User-Agent",  //$NON-NLS-1$
+                HttpConstants.HEADER_USER_AGENT,  //$NON-NLS-1$
                 GeneralUtils.getProductTitle());
             if (referrer != null) {
                 connection.setRequestProperty(
-                        "X-Referrer",  //$NON-NLS-1$
+                    HttpConstants.HEADER_X_REFERRER,  //$NON-NLS-1$
                         referrer);
             }
             if (authInfo != null && !CommonUtils.isEmpty(authInfo.getUserName())) {
                 // Set auth info
                 String encoded = Base64.getEncoder().encodeToString(
                     (authInfo.getUserName() + ":" + CommonUtils.notEmpty(authInfo.getUserPassword())).getBytes(GeneralUtils.UTF8_CHARSET));
-                connection.setRequestProperty("Authorization", "Basic " + encoded);
+                connection.setRequestProperty(HttpConstants.HEADER_AUTHORIZATION, "Basic " + encoded);
             }
         }
         if (headers != null) {
@@ -128,17 +152,26 @@ public class WebUtils {
         if ("POST".equals(method)) {
             connection.setDoOutput(true);
         } else {
-            connection.connect();
-            if (connection instanceof HttpURLConnection) {
-                final HttpURLConnection httpConnection = (HttpURLConnection) connection;
-                final int responseCode = httpConnection.getResponseCode();
-                if (responseCode != 200) {
-                    if (responseCode == HttpURLConnection.HTTP_MOVED_TEMP || responseCode == HttpURLConnection.HTTP_MOVED_PERM || responseCode == HttpURLConnection.HTTP_SEE_OTHER) {
-                        String newUrl = connection.getHeaderField("Location");
-                        return openURLConnection(newUrl, authInfo, referrer, retryNumber + 1);
+            try {
+                connection.connect();
+                if (connection instanceof HttpURLConnection httpConnection) {
+                    final int responseCode = httpConnection.getResponseCode();
+                    if (responseCode != 200) {
+                        if (responseCode == HttpURLConnection.HTTP_MOVED_TEMP || responseCode == HttpURLConnection.HTTP_MOVED_PERM || responseCode == HttpURLConnection.HTTP_SEE_OTHER) {
+                            String newUrl = connection.getHeaderField("Location");
+                            return openURLConnection(newUrl, authInfo, referrer, retryNumber + 1);
+                        }
+                        throw new IOException("Can't open '" + connection.getURL() + "': " + httpConnection.getResponseMessage());
                     }
-                    throw new IOException("Can't open '" + urlString + "': " + httpConnection.getResponseMessage());
                 }
+            } catch (Exception e) {
+                String message = String.format("Exception during a connection to %s", connection.getURL().toString());
+                log.debug(message, e);
+                IOException ioException = new IOException(message, e);
+                if (monitor instanceof ProgressMonitorWithExceptionContext monitorWithExceptionContext) {
+                    monitorWithExceptionContext.addException(ioException);
+                }
+                throw ioException;
             }
         }
 
@@ -152,6 +185,7 @@ public class WebUtils {
         Path localFile,
         DBPAuthInfo authInfo
     ) throws IOException, InterruptedException {
+        monitor.subTask("Download file '" + externalURL + "'");
         try (final OutputStream outputStream = Files.newOutputStream(localFile)) {
             return downloadRemoteFile(monitor, taskName, externalURL, outputStream, authInfo);
         }
@@ -166,7 +200,7 @@ public class WebUtils {
     ) throws IOException, InterruptedException {
         final URLConnection connection = openConnection(externalURL, authInfo, null);
         final int contentLength = connection.getContentLength();
-        final byte[] buffer = new byte[8192];
+        final byte[] buffer = new byte[8192 * 4];
         final NumberFormat numberFormat = new ByteNumberFormat(ByteNumberFormat.BinaryPrefix.ISO);
 
         // The value of getContentLength() may be -1 and this should not be handled, see IProgressMonitor#UNKNOWN

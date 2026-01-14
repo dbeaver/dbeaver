@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,6 +24,8 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPImage;
 
+import java.util.List;
+
 public interface IGridContentProvider extends IContentProvider {
 
     enum ElementState {
@@ -38,6 +40,9 @@ public interface IGridContentProvider extends IContentProvider {
     int STATE_TRANSFORMED = 1 << 2;
     int STATE_TOGGLE = 1 << 3;
     int STATE_DECORATED = 1 << 4;
+    int STATE_EXPANDED = 1 << 5;
+    int STATE_COLLAPSED = 1 << 6;
+    int STATE_BOOLEAN = 1 << 7;
 
     int ALIGN_LEFT = 0;
     int ALIGN_CENTER = 1;
@@ -72,13 +77,15 @@ public interface IGridContentProvider extends IContentProvider {
 
     ElementState getDefaultState(@NotNull IGridColumn element);
 
+    IGridStatusColumn[] getStatusColumns();
+
     int getColumnPinIndex(@NotNull IGridColumn element);
 
     boolean isElementSupportsFilter(@Nullable IGridColumn element);
 
     boolean isElementSupportsSort(@Nullable IGridColumn element);
 
-    boolean isElementReadOnly(IGridColumn element);
+    boolean isElementReadOnly(@NotNull IGridColumn element);
 
     boolean isElementExpandable(@NotNull IGridItem item);
 
@@ -93,6 +100,7 @@ public interface IGridContentProvider extends IContentProvider {
      * Returns cell information.
      * TODO: add returnColors parameter for optimization
      */
+    @NotNull
     CellInformation getCellInfo(IGridColumn colElement, IGridRow rowElement, boolean selected);
 
     boolean isVoidCell(IGridColumn gridColumn, IGridRow gridRow);
@@ -105,6 +113,14 @@ public interface IGridContentProvider extends IContentProvider {
 
     @NotNull
     String getCellLinkText(IGridColumn colElement, IGridRow rowElement);
+
+    String getCellToolTip(IGridColumn colElement, IGridRow rowElement);
+
+    List<IGridHint> getCellHints(IGridColumn colElement, IGridRow rowElement, Object cellValue, int options);
+
+    List<IGridHint> getColumnHints(IGridItem element, int options);
+
+    int getColumnHintsWidth(IGridColumn colElement);
 
     // Resets all cached colors
     void resetColors();

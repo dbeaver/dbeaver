@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,10 +22,12 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableItem;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.mssql.SQLServerConstants;
 import org.jkiss.dbeaver.ext.mssql.model.SQLServerTableColumn;
 import org.jkiss.dbeaver.ext.mssql.model.SQLServerTableIndex;
 import org.jkiss.dbeaver.ext.mssql.model.SQLServerTableIndexColumn;
+import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEObjectConfigurator;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -52,7 +54,7 @@ public class SQLServerIndexConfigurator implements DBEObjectConfigurator<SQLServ
     };
 
     @Override
-    public SQLServerTableIndex configureObject(DBRProgressMonitor monitor, Object container, SQLServerTableIndex index, Map<String, Object> options) {
+    public SQLServerTableIndex configureObject(@NotNull DBRProgressMonitor monitor, @Nullable DBECommandContext commandContext, @Nullable Object container, @NotNull SQLServerTableIndex index, @NotNull Map<String, Object> options) {
         return UITask.run(() -> {
             EditIndexPage editPage = new SQLServerEditIndexPage(index);
             if (!editPage.edit()) {

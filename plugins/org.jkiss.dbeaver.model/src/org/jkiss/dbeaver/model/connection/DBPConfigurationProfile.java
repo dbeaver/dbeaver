@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
 
 package org.jkiss.dbeaver.model.connection;
 
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.secret.DBPSecretHolder;
 import org.jkiss.utils.CommonUtils;
@@ -29,7 +30,8 @@ import java.util.Map;
  */
 public abstract class DBPConfigurationProfile implements DBPSecretHolder {
 
-    private final DBPProject project;
+    @Nullable
+    private final transient DBPProject project;
 
     private String profileId;
     private String profileName;
@@ -38,7 +40,11 @@ public abstract class DBPConfigurationProfile implements DBPSecretHolder {
     // Properties. Basically JSON
     private Map<String, String> properties = new LinkedHashMap<>();
 
-    public DBPConfigurationProfile(DBPProject project) {
+    public DBPConfigurationProfile() {
+        this.project = null;
+    }
+
+    public DBPConfigurationProfile(@Nullable DBPProject project) {
         this.project = project;
     }
 
@@ -52,8 +58,13 @@ public abstract class DBPConfigurationProfile implements DBPSecretHolder {
         }
     }
 
+    @Nullable
     public DBPProject getProject() {
         return project;
+    }
+
+    public boolean isExternallyProvided() {
+        return project == null;
     }
 
     public String getProfileId() {
@@ -61,6 +72,10 @@ public abstract class DBPConfigurationProfile implements DBPSecretHolder {
             return profileName;
         }
         return profileId;
+    }
+
+    public String getProfileSource() {
+        return null;
     }
 
     public void setProfileId(String profileId) {

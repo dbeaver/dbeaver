@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,12 +16,22 @@
  */
 package org.jkiss.dbeaver.ext.postgresql.model.impls;
 
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataSource;
+import org.jkiss.utils.CommonUtils;
+import org.osgi.framework.Version;
+
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * PostgreServerYugabyteDB
  */
 public class PostgreServerYugabyteDB extends PostgreServerExtensionBase {
+
+    private static final Log log = Log.getLog(PostgreServerYugabyteDB.class);
+
+    private Version yugabyteVersion;
 
     public PostgreServerYugabyteDB(PostgreDataSource dataSource) {
         super(dataSource);
@@ -30,6 +40,36 @@ public class PostgreServerYugabyteDB extends PostgreServerExtensionBase {
     @Override
     public String getServerTypeName() {
         return "YugabyteDB";
+    }
+
+    private boolean isYugabyteVersionAtLeast(int major, int minor) {
+        if (yugabyteVersion == null) {
+            String serverVersion = dataSource.getServerVersion();
+            if (!CommonUtils.isEmpty(serverVersion)) {
+                try {
+                    Matcher matcher = Pattern.compile(".*-YB-([0-9]*\\.[0-9]*).*").matcher(serverVersion);
+                    if (matcher.find()) {
+                        String versionStr = matcher.group(1);
+                        if (!CommonUtils.isEmpty(versionStr)) {
+                            yugabyteVersion = new Version(versionStr);
+                        }
+                    }
+                } catch (Exception e) {
+                    log.debug("Error reading YugabyteDB version", e);
+                    yugabyteVersion = new Version(2, 0,0);
+                }
+            }
+        }
+        if (yugabyteVersion != null) {
+            if (yugabyteVersion.getMajor() > major) {
+                return true;
+            } else if (yugabyteVersion.getMajor() == major) {
+                if (yugabyteVersion.getMinor() >= minor) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     @Override
@@ -44,17 +84,17 @@ public class PostgreServerYugabyteDB extends PostgreServerExtensionBase {
 
     @Override
     public boolean supportsMaterializedViews() {
-        return false;
+        return isYugabyteVersionAtLeast(2, 13);
     }
 
     @Override
     public boolean supportsPartitions() {
-        return false;
+        return isYugabyteVersionAtLeast(2, 4);
     }
 
     @Override
     public boolean supportsInheritance() {
-        return false;
+        return isYugabyteVersionAtLeast(2, 4);
     }
 
     @Override
@@ -89,7 +129,7 @@ public class PostgreServerYugabyteDB extends PostgreServerExtensionBase {
 
     @Override
     public boolean supportsTablespaces() {
-        return false;
+        return isYugabyteVersionAtLeast(2, 12);
     }
 
     @Override
@@ -143,7 +183,8 @@ public class PostgreServerYugabyteDB extends PostgreServerExtensionBase {
     }
 
     @Override
-    public boolean supportsTeblespaceLocation() {
+    public boolean supportsTablespaceLocation() {
+        // The pg_tablespace_location function exists, but locations are not supported in the creation statement
         return false;
     }
 

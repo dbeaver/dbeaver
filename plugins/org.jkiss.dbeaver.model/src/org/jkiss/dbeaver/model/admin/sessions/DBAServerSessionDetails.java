@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
 
 package org.jkiss.dbeaver.model.admin.sessions;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.DBPObject;
@@ -25,7 +26,7 @@ import org.jkiss.dbeaver.model.exec.DBCSession;
 import java.util.List;
 
 /**
- * Server session additiona details provider
+ * Server session additional details provider
  */
 public interface DBAServerSessionDetails {
 
@@ -35,7 +36,9 @@ public interface DBAServerSessionDetails {
 
     DBPImage getDetailsIcon();
 
-    List<? extends DBPObject> getSessionDetails(DBCSession session, DBAServerSession serverSession) throws DBException;
+    List<? extends DBPObject> getSessionDetails(
+        @NotNull DBCSession session,
+        @NotNull DBAServerSession serverSession) throws DBException;
 
     Class<?> getDetailsType();
 }

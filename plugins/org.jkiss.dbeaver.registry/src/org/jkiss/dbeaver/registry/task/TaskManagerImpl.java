@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,11 @@ package org.jkiss.dbeaver.registry.task;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.Strictness;
 import com.google.gson.stream.JsonWriter;
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
@@ -29,9 +33,10 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.data.json.JSONUtils;
+import org.jkiss.dbeaver.model.impl.app.BaseProjectImpl;
 import org.jkiss.dbeaver.model.rm.RMConstants;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.task.*;
-import org.jkiss.dbeaver.registry.BaseProjectImpl;
 import org.jkiss.dbeaver.registry.timezone.TimezoneRegistry;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.utils.GeneralUtils;
@@ -44,7 +49,9 @@ import java.io.StringReader;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.text.SimpleDateFormat;
+import java.time.Duration;
 import java.util.*;
+import java.util.concurrent.CopyOnWriteArraySet;
 
 /**
  * TaskManagerImpl
@@ -54,7 +61,7 @@ public class TaskManagerImpl implements DBTTaskManager {
     private static final Log log = Log.getLog(TaskManagerImpl.class);
 
     private static final Gson CONFIG_GSON = new GsonBuilder()
-        .setLenient()
+        .setStrictness(Strictness.LENIENT)
         .serializeNulls()
         .setPrettyPrinting()
         .create();
@@ -62,6 +69,7 @@ public class TaskManagerImpl implements DBTTaskManager {
     final SimpleDateFormat systemDateFormat;
 
     private final Set<TaskRunJob> runningTasks = Collections.synchronizedSet(new HashSet<>());
+    private Job serviceJob;
     private final BaseProjectImpl projectMetadata;
     private final List<TaskImpl> tasks = new ArrayList<>();
     private final List<TaskFolderImpl> tasksFolders = new ArrayList<>();
@@ -302,9 +310,44 @@ public class TaskManagerImpl implements DBTTaskManager {
         return statisticsFolder.resolve(task.getId());
     }
 
+    @NotNull
     @Override
-    public Job runTask(@NotNull DBTTask task, @NotNull DBTTaskExecutionListener listener, @NotNull Map<String, Object> options) {
-        TaskRunJob runJob = new TaskRunJob((TaskImpl) task, Locale.getDefault(), listener);
+    public DBTTaskRunStatus runTask(@NotNull DBRProgressMonitor monitor, @NotNull DBTTask task, @NotNull DBTTaskExecutionListener listener) throws DBException {
+        final TaskRunJob job = createJob((TaskImpl) task, listener);
+        if (serviceJob == null) {
+            serviceJob = new ServiceJob();
+            serviceJob.schedule();
+        }
+        runningTasks.add(job);
+        final IStatus result = job.runDirectly(monitor);
+        final Throwable error = result.getException();
+        if (error != null) {
+            runningTasks.remove(job);
+            if (error instanceof DBException e) {
+                throw e;
+            } else {
+                throw new DBException("Error executing task", error);
+            }
+        }
+        runningTasks.remove(job);
+        return job.getTaskRunStatus();
+    }
+
+    @NotNull
+    @Override
+    public TaskRunJob scheduleTask(@NotNull DBTTask task, @NotNull DBTTaskExecutionListener listener) throws DBException {
+        final TaskRunJob runJob = createJob((TaskImpl) task, listener);
+        runJob.schedule();
+        if (serviceJob == null) {
+            serviceJob = new ServiceJob();
+            serviceJob.schedule();
+        }
+        return runJob;
+    }
+ 
+    @NotNull
+    private TaskRunJob createJob(@NotNull TaskImpl task, @NotNull DBTTaskExecutionListener listener) {
+        TaskRunJob runJob = new TaskRunJob(task, Locale.getDefault(), listener);
         runJob.addJobChangeListener(new JobChangeAdapter() {
             @Override
             public void aboutToRun(IJobChangeEvent event) {
@@ -316,7 +359,6 @@ public class TaskManagerImpl implements DBTTaskManager {
                 runningTasks.remove((TaskRunJob) event.getJob());
             }
         });
-        runJob.schedule();
         return runJob;
     }
 
@@ -369,6 +411,7 @@ public class TaskManagerImpl implements DBTTaskManager {
                     String taskFolderName = JSONUtils.getString(taskJSON, TaskConstants.TAG_TASK_FOLDER);
                     Date createTime = systemDateFormat.parse(JSONUtils.getString(taskJSON, TaskConstants.TAG_CREATE_TIME));
                     Date updateTime = systemDateFormat.parse(JSONUtils.getString(taskJSON, TaskConstants.TAG_UPDATE_TIME));
+                    Duration maxExecutionTime = Duration.ofSeconds(JSONUtils.getInteger(taskJSON, TaskConstants.TAG_MAX_EXEC_TIME));
                     Map<String, Object> state = JSONUtils.getObject(taskJSON, TaskConstants.TAG_STATE);
 
                     DBTTaskType taskDescriptor = getRegistry().getTaskType(task);
@@ -388,6 +431,9 @@ public class TaskManagerImpl implements DBTTaskManager {
                         taskFolder,
                         state
                     );
+
+                    taskConfig.setMaxExecutionTime(maxExecutionTime);
+
                     if (taskFolder != null) {
                         taskFolder.addTaskToFolder(taskConfig);
                         if (!tasksFolders.contains(taskFolder)) {
@@ -491,6 +537,10 @@ public class TaskManagerImpl implements DBTTaskManager {
         saveConfiguration();
     }
 
+    protected void cancelJobIfNeeded(@NotNull TaskRunJob job) {
+        // does nothing.
+    }
+
     private void serializeTasks(@NotNull JsonWriter jsonWriter) throws IOException {
         jsonWriter.setIndent("\t");
         jsonWriter.beginObject();
@@ -519,10 +569,35 @@ public class TaskManagerImpl implements DBTTaskManager {
             }
             JSONUtils.field(jsonWriter, TaskConstants.TAG_CREATE_TIME, systemDateFormat.format(task.getCreateTime()));
             JSONUtils.field(jsonWriter, TaskConstants.TAG_UPDATE_TIME, systemDateFormat.format(task.getUpdateTime()));
-            JSONUtils.serializeProperties(jsonWriter, TaskConstants.TAG_STATE, task.getProperties());
+            if (task.getMaxExecutionTime().isPositive()) {
+                JSONUtils.field(jsonWriter, TaskConstants.TAG_MAX_EXEC_TIME, task.getMaxExecutionTime().toSeconds());
+            }
+            JSONUtils.serializeProperties(jsonWriter, TaskConstants.TAG_STATE, task.getProperties(), true);
             jsonWriter.endObject();
         }
         jsonWriter.endObject();
+    }
+
+    private class ServiceJob extends Job {
+        private static final int TASK_SLEEP_TIME = 1000;
+
+        public ServiceJob() {
+            super("Task canceling job");
+            setSystem(true);
+        }
+
+        @Override
+        protected IStatus run(IProgressMonitor monitor) {
+            CopyOnWriteArraySet<TaskRunJob> copyOfRunningTasks = new CopyOnWriteArraySet<>(runningTasks);
+            for (TaskRunJob taskJob : copyOfRunningTasks) {
+                if (taskJob.isFinished() || taskJob.isCanceled()) {
+                    continue;
+                }
+                cancelJobIfNeeded(taskJob);
+            }
+            schedule(TASK_SLEEP_TIME);
+            return Status.OK_STATUS;
+        }
     }
 
 }

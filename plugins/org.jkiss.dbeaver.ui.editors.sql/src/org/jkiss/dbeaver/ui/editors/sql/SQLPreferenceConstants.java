@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,11 @@
  */
 package org.jkiss.dbeaver.ui.editors.sql;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
+import org.jkiss.dbeaver.model.sql.SQLModelPreferences;
 import org.jkiss.dbeaver.ui.editors.sql.internal.SQLEditorMessages;
+import org.jkiss.utils.CommonUtils;
 
 public class SQLPreferenceConstants {
 
@@ -44,25 +48,108 @@ public class SQLPreferenceConstants {
             return NOTHING;
         }
         public static EmptyScriptCloseBehavior getByName(String name) {
-            switch (name) {
-                case "true":
-                    return SQLPreferenceConstants.EmptyScriptCloseBehavior.DELETE_NEW;
-                case "false":
-                    return SQLPreferenceConstants.EmptyScriptCloseBehavior.NOTHING;
-                default:
-                    try {
-                        return SQLPreferenceConstants.EmptyScriptCloseBehavior.valueOf(name);
-                    } catch (IllegalArgumentException e) {
-                        return NOTHING;
-                    }
-            }
+            return switch (name) {
+                case "true" -> EmptyScriptCloseBehavior.DELETE_NEW;
+                case "false" -> EmptyScriptCloseBehavior.NOTHING;
+                default -> CommonUtils.valueOf(EmptyScriptCloseBehavior.class, name, NOTHING);
+            };
         }
 
     }
+    
+    public enum SQLAutocompletionMode {
+        DEFAULT(true, false, SQLEditorMessages.pref_page_sql_completion_label_completion_mode_default),
+        NEW(false, true, SQLEditorMessages.pref_page_sql_completion_label_completion_mode_new_engine),
+        COMBINED(true, true, SQLEditorMessages.pref_page_sql_completion_label_completion_mode_combined);
+    
+        public final boolean useOldAnalyzer;
+        public final boolean useNewAnalyzer;
+
+        public final String title;
+    
+        SQLAutocompletionMode(boolean useOldAnalyzer, boolean useNewAnalyzer, String title) {
+            this.useOldAnalyzer = useOldAnalyzer;
+            this.useNewAnalyzer = useNewAnalyzer;
+            this.title = title;
+        }
+        
+        public String getName() {
+            return this.toString();
+        }
+
+        public static SQLAutocompletionMode valueByName(String name) {
+            return CommonUtils.valueOf(SQLAutocompletionMode.class, name, DEFAULT);
+        }
+
+        @NotNull
+        public static SQLAutocompletionMode fromPreferences(@NotNull DBPPreferenceStore preferenceStore) {
+            return valueByName(preferenceStore.getString(SQLModelPreferences.AUTOCOMPLETION_MODE));
+        }
+    }
+
+    public enum SQLCompletionObjectNameFormKind {
+        DEFAULT(false, false, SQLEditorMessages.pref_page_sql_default),
+        UNQUALIFIED(true, false, SQLEditorMessages.pref_page_sql_completion_label_use_short_names),
+        QUALIFIED(false, true, SQLEditorMessages.pref_page_sql_completion_label_use_long_names);
+
+        public final boolean unqualified;
+        public final boolean qualified;
+        @NotNull
+        public final String title;
+
+        SQLCompletionObjectNameFormKind(boolean unqualified, boolean qualified, @NotNull String title) {
+            this.unqualified = unqualified;
+            this.qualified = qualified;
+            this.title = title;
+        }
+
+        @NotNull
+        public String getName() {
+            return this.toString();
+        }
+
+        public void setToPreferences(@NotNull DBPPreferenceStore preferenceStore) {
+            preferenceStore.setValue(SQLModelPreferences.SQL_EDITOR_PROPOSAL_SHORT_NAME, this.unqualified);
+            preferenceStore.setValue(SQLModelPreferences.SQL_EDITOR_PROPOSAL_ALWAYS_FQ, this.qualified);
+        }
+
+        @NotNull
+        private static SQLCompletionObjectNameFormKind fromBooleanFlags(boolean useShortName, boolean useFqNames) {
+            if (useShortName) {
+                return UNQUALIFIED;
+            } else if (useFqNames) {
+                return QUALIFIED;
+            } else {
+                return DEFAULT;
+            }
+        }
+
+        @NotNull
+        public static SQLCompletionObjectNameFormKind getFromPreferences(@NotNull DBPPreferenceStore preferenceStore) {
+            return fromBooleanFlags(
+                preferenceStore.getBoolean(SQLModelPreferences.SQL_EDITOR_PROPOSAL_SHORT_NAME),
+                preferenceStore.getBoolean(SQLModelPreferences.SQL_EDITOR_PROPOSAL_ALWAYS_FQ)
+            );
+        }
+
+
+        @NotNull
+        public static SQLCompletionObjectNameFormKind getDefaultFromPreferences(@NotNull DBPPreferenceStore preferenceStore) {
+            return fromBooleanFlags(
+                preferenceStore.getDefaultBoolean(SQLModelPreferences.SQL_EDITOR_PROPOSAL_SHORT_NAME),
+                preferenceStore.getDefaultBoolean(SQLModelPreferences.SQL_EDITOR_PROPOSAL_ALWAYS_FQ)
+            );
+        }
+    }
+
+
     public static final String INSERT_SINGLE_PROPOSALS_AUTO            = "SQLEditor.ContentAssistant.insert.single.proposal";
     public static final String ENABLE_HIPPIE                           = "SQLEditor.ContentAssistant.activate.hippie";
     public static final String ENABLE_AUTO_ACTIVATION                  = "SQLEditor.ContentAssistant.auto.activation.enable";
-    public static final String ENABLE_EXPERIMENTAL_FEATURES            = "SQLEditor.ContentAssistant.experimental.enable";
+    public static final String AUTOCOMPLETION_MODE                     = SQLModelPreferences.AUTOCOMPLETION_MODE;
+    public static final String ADVANCED_HIGHLIGHTING_ENABLE            = SQLModelPreferences.ADVANCED_HIGHLIGHTING_ENABLE;
+    public static final String READ_METADATA_FOR_SEMANTIC_ANALYSIS     = SQLModelPreferences.READ_METADATA_FOR_SEMANTIC_ANALYSIS;
+    public static final String VALIDATE_FUNCTIONS                      = SQLModelPreferences.VALIDATE_FUNCTIONS;
     public static final String ENABLE_KEYSTROKE_ACTIVATION             = "SQLEditor.ContentAssistant.auto.keystrokes.activation";
     public static final String AUTO_ACTIVATION_DELAY                   = "SQLEditor.ContentAssistant.auto.activation.delay";
     public static final String PROPOSAL_INSERT_CASE                    = "SQLEditor.ContentAssistant.insert.case";
@@ -70,14 +157,13 @@ public class SQLPreferenceConstants {
     public static final String PROPOSAL_REPLACE_WORD                   = "SQLEditor.ContentAssistant.replace.word";
     public static final String PROPOSAL_SORT_ALPHABETICALLY            = "SQLEditor.ContentAssistant.proposals.sort.alphabetically";
     public static final String HIDE_DUPLICATE_PROPOSALS                = "SQLEditor.ContentAssistant.hide.duplicates";
-    public static final String PROPOSAL_SHORT_NAME                     = "SQLEditor.ContentAssistant.proposals.short.name";
-    public static final String PROPOSAL_ALWAYS_FQ                      = "SQLEditor.ContentAssistant.proposals.long.name";
     public static final String INSERT_SPACE_AFTER_PROPOSALS            = "SQLEditor.ContentAssistant.insert.space.after.proposal";
     public static final String USE_GLOBAL_ASSISTANT                    = "SQLEditor.ContentAssistant.use.global.search";
     public static final String PROPOSALS_MATCH_CONTAINS                = "SQLEditor.ContentAssistant.matching.fuzzy";
     public static final String SHOW_COLUMN_PROCEDURES                  = "SQLEditor.ContentAssistant.show.column.procedures";
     public static final String SHOW_SERVER_HELP_TOPICS                 = "SQLEditor.ContentAssistant.show.helpTopics";
     public static final String SHOW_VALUES                             = "SQLEditor.ContentAssistant.show.values";
+    public static final String QUALIFIED_COLUMN_NAMES                  = "SQLEditor.ContentAssistant.qualified.column.names";
 
     public static final String MARK_OCCURRENCES_UNDER_CURSOR           = "SQLEditor.markOccurrences";
     public static final String MARK_OCCURRENCES_FOR_SELECTION          = "SQLEditor.markOccurrences.forSelection";
@@ -107,7 +193,9 @@ public class SQLPreferenceConstants {
 
     public final static String RESET_CURSOR_ON_EXECUTE                  = "SQLEditor.resetCursorOnExecute";
     public final static String MAXIMIZE_EDITOR_ON_SCRIPT_EXECUTE        = "SQLEditor.maxEditorOnScriptExecute";
-    public static final String SHOW_STATISTICS_FOR_QUERIES_WITH_RESULTS = "SQLEditor.showStatisticsForQueriesWithResults";
+    public static final String SHOW_STATISTICS_ON_EXECUTION             = "SQLEditor.showStatisticsForQueriesWithResults";
+    public static final String SET_SELECTION_TO_STATISTICS_TAB          = "SQLEditor.setSelectionToStatisticsTab";
+    public static final String CLOSE_INCLUDED_SCRIPT_AFTER_EXECUTION    = "SQLEditor.closeIncludedScriptAfterExecution";
 
     public final static String SQL_FORMAT_KEYWORD_CASE_AUTO             = "SQLEditor.format.keywordCaseAuto";
     public final static String SQL_FORMAT_EXTRACT_FROM_SOURCE           = "SQLEditor.format.extractFromSource";
@@ -123,6 +211,7 @@ public class SQLPreferenceConstants {
     public final static String RESULT_SET_REPLACE_CURRENT_TAB           = "SQLEditor.resultSet.replaceCurrentTab"; //$NON-NLS-1$
     public final static String RESULT_SET_ORIENTATION                   = "SQLEditor.resultSet.orientation";
     public static final String RESULTS_PANEL_RATIO                      = "SQLEditor.resultSet.ratio";
+    public static final String MULTIPLE_RESULTS_PER_TAB                 = "SQLEditor.resultSet.multipleResultsPerTab";
     public static final String EXTRA_PANEL_RATIO                        = "SQLEditor.extraPanels.ratio";
     public static final String EXTRA_PANEL_LOCATION                     = "SQLEditor.extraPanels.location";
     public static final String OUTPUT_PANEL_AUTO_SHOW                   = "SQLEditor.outputPanel.autoShow";
@@ -159,11 +248,9 @@ public class SQLPreferenceConstants {
     public static final String EDITOR_CONNECT_ON_ACTIVATE               = "database.editor.connect.on.activate"; //$NON-NLS-1$
     public static final String EDITOR_CONNECT_ON_EXECUTE                = "database.editor.connect.on.execute"; //$NON-NLS-1$
 
-    public static final String CONFIRM_DANGER_SQL                       = "dangerous_sql"; //$NON-NLS-1$
-    public static final String CONFIRM_DROP_SQL                         = "drop_sql"; //$NON-NLS-1$
-    public static final String CONFIRM_MASS_PARALLEL_SQL                = "mass_parallel_sql"; //$NON-NLS-1$
     public static final String CONFIRM_RUNNING_QUERY_CLOSE              = "close_running_query"; //$NON-NLS-1$
     public static final String CONFIRM_RESULT_TABS_CLOSE                = "close_result_tabs"; //$NON-NLS-1$
+    public static final String CONFIRM_SAVE_SQL_CONSOLE                 = "save_sql_console"; //$NON-NLS-1$
 
     public static final String DEFAULT_SQL_EDITOR_OPEN_COMMAND          = "SQLEditor.defaultOpenCommand";
 
@@ -171,4 +258,36 @@ public class SQLPreferenceConstants {
     public static final String LOCATION_BOTTOM      = "bottom";
     public static final String LOCATION_RESULTS     = "results";
 
+    public enum StatisticsTabOnExecutionBehavior {
+        NEVER("Only when no data"),
+        FOR_MULTIPLE_QUERIES("For multiple queries with results"),
+        ALWAYS("Always");
+
+        private final String title;
+
+        StatisticsTabOnExecutionBehavior(String title) {
+            this.title = title;
+        }
+
+        public String getTitle() {
+            return title;
+        }
+
+        public static StatisticsTabOnExecutionBehavior getByTitle(String title) {
+            for (StatisticsTabOnExecutionBehavior statisticsTabOnExecution : values()) {
+                if (statisticsTabOnExecution.getTitle().equals(title)) {
+                    return statisticsTabOnExecution;
+                }
+            }
+            return StatisticsTabOnExecutionBehavior.NEVER;
+        }
+        public static StatisticsTabOnExecutionBehavior getByName(String name) {
+            return switch (name) {
+                case "true" -> StatisticsTabOnExecutionBehavior.FOR_MULTIPLE_QUERIES;
+                case "false" -> StatisticsTabOnExecutionBehavior.NEVER;
+                default -> CommonUtils.valueOf(StatisticsTabOnExecutionBehavior.class, name, NEVER);
+            };
+        }
+
+    }
 }

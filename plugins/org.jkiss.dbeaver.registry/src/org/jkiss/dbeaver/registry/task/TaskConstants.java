@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,6 +22,8 @@ public class TaskConstants {
     public static final String CONFIG_FILE = "tasks.json";
     public static final String TASK_STATS_FOLDER = "task-stats";
     static final String TASKS_FOLDERS_TAG = "##tasksFolders";
+    
+    public static final String TOOL_TASK_PROP = "isToolTask";
 
     static final String TAG_TASK = "task";
     static final String TAG_LABEL = "label";
@@ -32,4 +34,6 @@ public class TaskConstants {
     static final String TAG_STATE = "state";
 
     static final String TAG_PARENT = "parent";
+    static final String TAG_MAX_EXEC_TIME = "maxExecutionTime";
+
 }

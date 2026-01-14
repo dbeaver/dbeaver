@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  * Copyright (C) 2017-2018 Alexander Fedorov (alexander.fedorov@jkiss.org)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -25,7 +25,6 @@ import org.eclipse.debug.core.IBreakpointManagerListener;
 import org.eclipse.debug.core.IDebugEventSetListener;
 import org.eclipse.debug.core.model.IDebugTarget;
 import org.jkiss.dbeaver.debug.DBGController;
-import org.jkiss.dbeaver.debug.DBGException;
 import org.jkiss.dbeaver.debug.DBGSession;
 
 public interface IDatabaseDebugTarget extends IDebugTarget, IDebugEventSetListener, IBreakpointManagerListener {
@@ -34,7 +33,7 @@ public interface IDatabaseDebugTarget extends IDebugTarget, IDebugEventSetListen
 
     DBGSession getSession();
 
-    void connect(IProgressMonitor monitor) throws CoreException,DBGException;
+    void connect(IProgressMonitor monitor) throws CoreException;
 
     boolean canStepInto();
 

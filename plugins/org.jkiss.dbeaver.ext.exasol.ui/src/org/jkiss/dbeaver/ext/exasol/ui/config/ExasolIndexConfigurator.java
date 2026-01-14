@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,9 +16,12 @@
  */
 package org.jkiss.dbeaver.ext.exasol.ui.config;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.exasol.model.ExasolTableColumn;
 import org.jkiss.dbeaver.ext.exasol.model.ExasolTableIndex;
 import org.jkiss.dbeaver.ext.exasol.model.ExasolTableIndexColumn;
+import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEObjectConfigurator;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
@@ -34,7 +37,7 @@ public class ExasolIndexConfigurator implements DBEObjectConfigurator<ExasolTabl
 
 
 	@Override
-	public ExasolTableIndex configureObject(DBRProgressMonitor monitor, Object container, ExasolTableIndex index, Map<String, Object> options) {
+	public ExasolTableIndex configureObject(@NotNull DBRProgressMonitor monitor, @Nullable DBECommandContext commandContext, @Nullable Object container, @NotNull ExasolTableIndex index, @NotNull Map<String, Object> options) {
 		return UITask.run(() -> {
 				EditIndexPage editPage = new EditIndexPage(
 						"create index",

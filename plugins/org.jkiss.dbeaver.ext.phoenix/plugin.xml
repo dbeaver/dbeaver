@@ -13,7 +13,8 @@
         <provider
                 class="org.jkiss.dbeaver.ext.phoenix.model.data.PhoenixValueHandlerProvider"
                 description="phoenix data types provider"
-                id="org.jkiss.dbeaver.ext.phoenix.model.data.PhoenixValueHandlerProvider"
+                id="PhoenixValueHandlerProvider"
+                parent="GenericValueHandlerProvider"
                 label="Phoenix data types provider">
 
             <datasource class="org.jkiss.dbeaver.ext.phoenix.model.PhoenixDataSource"/>

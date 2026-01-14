@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -72,9 +72,10 @@ public class ProgramInfo {
             Program program = Program.findProgram(fileExtension);
             programInfo = new ProgramInfo(program, fileExtension);
             if (program != null) {
-                final ImageData imageData = program.getImageData();
-                if (imageData != null) {
-                    programInfo.image = new DBIconBinary(program.getName(), imageData);
+                final ImageData[] imageData = new ImageData[1];
+                UIUtils.syncExec(() -> imageData[0] = program.getImageData());
+                if (imageData[0] != null) {
+                    programInfo.image = new DBIconBinary(program.getName(), imageData[0]);
                 }
             }
             programMap.put(fileExtension, programInfo);

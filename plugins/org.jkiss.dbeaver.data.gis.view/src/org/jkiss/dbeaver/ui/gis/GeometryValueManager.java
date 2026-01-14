@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,9 +19,11 @@ package org.jkiss.dbeaver.ui.gis;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.ui.data.IValueController;
 import org.jkiss.dbeaver.ui.data.IValueEditor;
 import org.jkiss.dbeaver.ui.data.dialogs.DefaultValueViewDialog;
+import org.jkiss.dbeaver.ui.data.editors.StringInlineEditor;
 import org.jkiss.dbeaver.ui.data.managers.BaseValueManager;
 import org.jkiss.dbeaver.ui.gis.panel.GISPanelEditor;
 
@@ -39,11 +41,13 @@ public class GeometryValueManager extends BaseValueManager {
     }
 
     @Override
-    public IValueEditor createEditor(@NotNull final IValueController controller)
-        throws DBException
-    {
+    public IValueEditor createEditor(@NotNull final IValueController controller) throws DBException {
+        DBPDataKind dataKind = controller.getValueType().getDataKind();
         switch (controller.getEditType()) {
             case INLINE:
+                if (dataKind == DBPDataKind.OBJECT || dataKind == DBPDataKind.STRING) {
+                    return new StringInlineEditor(controller);
+                }
                 return null;
             case PANEL:
                 return new GISPanelEditor(controller);

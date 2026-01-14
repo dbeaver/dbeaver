@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,10 +38,10 @@ import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.impl.app.ApplicationRegistry;
-import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.ShellUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.controls.decorations.HolidayDecorations;
 import org.jkiss.dbeaver.ui.dialogs.InformationDialog;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
@@ -49,9 +49,6 @@ import org.jkiss.utils.CommonUtils;
 import java.io.InputStream;
 import java.net.URL;
 import java.text.DateFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 
 /**
  * About box
@@ -61,16 +58,11 @@ public class AboutBoxDialog extends InformationDialog
     public static final String PRODUCT_PROP_SUB_TITLE = "subTitle"; //$NON-NLS-1$
     public static final String PRODUCT_PROP_COPYRIGHT = "copyright"; //$NON-NLS-1$
     public static final String PRODUCT_PROP_WEBSITE = "website"; //$NON-NLS-1$
-    public static final String PRODUCT_PROP_EMAIL = "email"; //$NON-NLS-1$
-
-    public static final String PRODUCT_VERSION = "V23.1.1.";
+    //public static final String PRODUCT_PROP_EMAIL = "email"; //$NON-NLS-1$
 
     private final Font NAME_FONT,TITLE_FONT;
     private static final Log log = Log.getLog(AboutBoxDialog.class);
 
-    private Image ABOUT_IMAGE = AbstractUIPlugin.imageDescriptorFromPlugin(
-        Platform.getProduct().getDefiningBundle().getSymbolicName(),
-        "icons/dbeaver_for_yashandb_about.png").createImage();
     private Image splashImage;
 
     public AboutBoxDialog(Shell shell)
@@ -110,12 +102,6 @@ public class AboutBoxDialog extends InformationDialog
     }
 
     @Override
-    protected boolean isResizable()
-    {
-        return true;
-    }
-
-    @Override
     protected Control createDialogArea(Composite parent)
     {
         Color background = JFaceColors.getBannerBackground(parent.getDisplay());
@@ -138,7 +124,7 @@ public class AboutBoxDialog extends InformationDialog
             Label nameLabel = new Label(group, SWT.NONE);
             nameLabel.setBackground(background);
             nameLabel.setFont(NAME_FONT);
-            nameLabel.setText("DBeaver for YashanDB");
+            nameLabel.setText(product.getName());
             gd = new GridData(GridData.FILL_HORIZONTAL);
             gd.horizontalAlignment = GridData.CENTER;
             nameLabel.setLayoutData(gd);
@@ -172,15 +158,6 @@ public class AboutBoxDialog extends InformationDialog
                 });
             }
         });
-        
-        Label imageLabel = new Label(group, SWT.NONE);
-        imageLabel.setBackground(background);
-
-        gd = new GridData();
-        gd.verticalAlignment = GridData.BEGINNING;
-        gd.horizontalAlignment = GridData.CENTER;
-        gd.grabExcessHorizontalSpace = false;
-        imageLabel.setLayoutData(gd);
 
         if (splashImage == null) {
             try {
@@ -204,42 +181,49 @@ public class AboutBoxDialog extends InformationDialog
                 log.debug(e);
             }
         }
-        if (splashImage != null) {
-            imageLabel.setImage(splashImage);
-        } else {
-            imageLabel.setImage(ABOUT_IMAGE);
+
+        {
+            Image aboutImage = AbstractUIPlugin.imageDescriptorFromPlugin(
+                Platform.getProduct().getDefiningBundle().getSymbolicName(),
+            "icons/dbeaver_about.png").createImage();
+            parent.addDisposeListener(e -> aboutImage.dispose());
+
+            final Image image = splashImage != null ? splashImage : aboutImage;
+            final Canvas canvas = new Canvas(group, SWT.DOUBLE_BUFFERED | SWT.NO_BACKGROUND) {
+                @Override
+                public Point computeSize(int wHint, int hHint, boolean changed) {
+                    final Rectangle bounds = image.getBounds();
+                    return new Point(bounds.width, bounds.height);
+                }
+            };
+            canvas.setLayoutData(new GridData(SWT.CENTER, SWT.BEGINNING, true, true));
+            canvas.addPaintListener(e -> e.gc.drawImage(image, 0, 0));
+            HolidayDecorations.install(canvas);
         }
 
-        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMdd");
         Text versionLabel = new Text(group, SWT.NONE);
         versionLabel.setEditable(false);
         versionLabel.setBackground(background);
-        versionLabel.setText(CoreMessages.dialog_about_label_version + PRODUCT_VERSION + dateFormat.format(GeneralUtils.getProductReleaseDate()));
+        versionLabel.setText(CoreMessages.dialog_about_label_version + GeneralUtils.getProductVersion());
         gd = new GridData(GridData.FILL_HORIZONTAL);
         gd.horizontalAlignment = GridData.CENTER;
         versionLabel.setLayoutData(gd);
 
         Label releaseTimeLabel = new Label(group, SWT.NONE);
         releaseTimeLabel.setBackground(background);
-        try {
-            releaseTimeLabel.setText("Release date: " + DateFormat.getDateInstance(DateFormat.LONG).format(dateFormat.parse(dateFormat.format(GeneralUtils.getProductReleaseDate()))));
-        } catch (ParseException e) {
-            throw new RuntimeException(e);
-        }
+        releaseTimeLabel.setText("Release date: " + DateFormat.getDateInstance(DateFormat.LONG).format(GeneralUtils.getProductReleaseDate()));
         gd = new GridData(GridData.FILL_HORIZONTAL);
         gd.horizontalAlignment = GridData.CENTER;
         releaseTimeLabel.setLayoutData(gd);
 
-        /*
         Label authorLabel = new Label(group, SWT.NONE);
         authorLabel.setBackground(background);
         authorLabel.setText(product.getProperty(PRODUCT_PROP_COPYRIGHT));
         gd = new GridData(GridData.FILL_HORIZONTAL);
         gd.horizontalAlignment = GridData.CENTER;
         authorLabel.setLayoutData(gd);
-        */
 
-        Link siteLink = UIUtils.createLink(group, UIUtils.makeAnchor(product.getProperty(PRODUCT_PROP_WEBSITE)), new SelectionAdapter() {
+        Link siteLink = UIUtils.createLink(group, "   " + UIUtils.makeAnchor(product.getProperty(PRODUCT_PROP_WEBSITE)) + "   ", new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 ShellUtils.launchProgram(e.text);
@@ -250,7 +234,7 @@ public class AboutBoxDialog extends InformationDialog
         gd.horizontalAlignment = GridData.CENTER;
         siteLink.setLayoutData(gd);
 
-        String infoDetails = DBWorkbench.getPlatform().getApplication().getInfoDetails(new VoidProgressMonitor());
+        String infoDetails = DBWorkbench.getPlatform().getApplication().getInfoDetails();
         if (!CommonUtils.isEmpty(infoDetails)) {
             Text extraText = new Text(group, SWT.MULTI | SWT.BORDER | SWT.READ_ONLY | SWT.WRAP | SWT.V_SCROLL);
             extraText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));

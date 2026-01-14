@@ -1,4 +1,24 @@
+/*
+ * DBeaver - Universal Database Manager
+ * Copyright (C) 2010-2025 DBeaver Corp and others
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.jkiss.dbeaver.ext.yashandb.model;
+
+import java.sql.ResultSet;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
@@ -13,219 +33,180 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureParameter;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureParameterKind;
 import org.jkiss.utils.CommonUtils;
 
-import java.sql.ResultSet;
-import java.util.ArrayList;
-import java.util.List;
-
-/**
- * @Author: donghy
- * @Date: 2022/08
- * @Description:
- */
 public class YashanDBProcedureArgument implements DBSProcedureParameter, DBSTypedObject {
-    private final YashanDBProcedureBase procedure;
-    private String name;
-    private String value;
-    private String paramType;
-    private int position;
-    private int dataLevel;
-    private int sequence;
-    private YashanDBParameterMode mode;
-    private YashanDBDataType type;
-    private YashanDBDataType dataType;
-    private String packageTypeName;
-    private int dataLength;
-    private int dataScale;
-    private int dataPrecision;
-    private List<YashanDBProcedureArgument> attributes;
 
-    public YashanDBProcedureArgument(
-            DBRProgressMonitor monitor,
-            YashanDBProcedureBase procedure,
-            ResultSet dbResult) {
-        this.procedure = procedure;
-        this.name = JDBCUtils.safeGetString(dbResult, "ARGUMENT_NAME");
-        this.position = JDBCUtils.safeGetInt(dbResult, "POSITION");
-        this.dataLevel = JDBCUtils.safeGetInt(dbResult, "DATA_LEVEL");
-        this.sequence = JDBCUtils.safeGetInt(dbResult, "SEQUENCE");
-        if (CommonUtils.isEmpty(this.name)) {
-            this.mode = YashanDBParameterMode.RETURN;
-        } else {
-            this.mode = YashanDBParameterMode.getMode(JDBCUtils.safeGetString(dbResult, "IN_OUT"));
-        }
-        final String dataType = JDBCUtils.safeGetString(dbResult, "DATA_TYPE");
-        this.type = CommonUtils.isEmpty(dataType) ? null : YashanDBDataType.resolveDataType(
-                monitor,
-                procedure.getDataSource(),
-                null,
-                dataType);
-        final String typeName = JDBCUtils.safeGetString(dbResult, "TYPE_NAME");
-        final String typeOwner = JDBCUtils.safeGetString(dbResult, "TYPE_OWNER");
-        this.packageTypeName = JDBCUtils.safeGetString(dbResult, "TYPE_SUBNAME");
-        if (!CommonUtils.isEmpty(typeName) && !CommonUtils.isEmpty(typeOwner) && CommonUtils.isEmpty(this.packageTypeName)) {
-            this.dataType =YashanDBDataType.resolveDataType(
-                    monitor,
-                    procedure.getDataSource(),
-                    typeOwner,
-                    typeName);
-            if (this.dataType == null) {
-                this.packageTypeName = typeOwner + "." + typeName;
-            }
-        } else if (this.packageTypeName != null) {
-            packageTypeName = typeName + "." + packageTypeName;
-        }
-        this.dataLength = JDBCUtils.safeGetInt(dbResult, "DATA_LENGTH");
-        this.dataScale = JDBCUtils.safeGetInt(dbResult, "DATA_SCALE");
-        this.dataPrecision = JDBCUtils.safeGetInt(dbResult, "DATA_PRECISION");
-    }
+	private final YashanDBProcedureBase procedure;
+	private String name;
+	private int position;
+	private int dataLevel;
+	private int sequence;
+	private YashanDBParameterMode mode;
+	private YashanDBDataType type;
+	private YashanDBDataType dataType;
+	private String packageTypeName;
+	private int dataLength;
+	private int dataScale;
+	private int dataPrecision;
+	private List<YashanDBProcedureArgument> attributes;
 
-    @Nullable
-    @Override
-    public String getDescription() {
-        return null;
-    }
+	public YashanDBProcedureArgument(DBRProgressMonitor monitor, YashanDBProcedureBase procedure, ResultSet dbResult) {
+		this.procedure = procedure;
+		this.name = JDBCUtils.safeGetString(dbResult, "ARGUMENT_NAME");
+		this.position = JDBCUtils.safeGetInt(dbResult, "POSITION");
+		this.dataLevel = JDBCUtils.safeGetInt(dbResult, "DATA_LEVEL");
+		this.sequence = JDBCUtils.safeGetInt(dbResult, "SEQUENCE");
+		if (CommonUtils.isEmpty(this.name)) {
+			this.mode = YashanDBParameterMode.RETURN;
+		} else {
+			this.mode = YashanDBParameterMode.getMode(JDBCUtils.safeGetString(dbResult, "IN_OUT"));
+		}
+		final String dataType = JDBCUtils.safeGetString(dbResult, "DATA_TYPE");
+		this.type = CommonUtils.isEmpty(dataType) ? null
+				: YashanDBDataType.resolveDataType(monitor, procedure.getDataSource(), null, dataType);
+		final String typeName = JDBCUtils.safeGetString(dbResult, "TYPE_NAME");
+		final String typeOwner = JDBCUtils.safeGetString(dbResult, "TYPE_OWNER");
+		this.packageTypeName = JDBCUtils.safeGetString(dbResult, "TYPE_SUBNAME");
+		if (!CommonUtils.isEmpty(typeName) && !CommonUtils.isEmpty(typeOwner)
+				&& CommonUtils.isEmpty(this.packageTypeName)) {
+			this.dataType = YashanDBDataType.resolveDataType(monitor, procedure.getDataSource(), typeOwner, typeName);
+			if (this.dataType == null) {
+				this.packageTypeName = typeOwner + "." + typeName;
+			}
+		} else if (this.packageTypeName != null) {
+			packageTypeName = typeName + "." + packageTypeName;
+		}
+		this.dataLength = JDBCUtils.safeGetInt(dbResult, "DATA_LENGTH");
+		this.dataScale = JDBCUtils.safeGetInt(dbResult, "DATA_SCALE");
+		this.dataPrecision = JDBCUtils.safeGetInt(dbResult, "DATA_PRECISION");
+	}
 
-    @NotNull
-    @Override
-    public YashanDBDataSource getDataSource() {
-        return procedure.getDataSource();
-    }
+	@Nullable
+	@Override
+	public String getDescription() {
+		return null;
+	}
 
-    @Override
-    public YashanDBProcedureBase getParentObject() {
-        return procedure;
-    }
+	@NotNull
+	@Override
+	public YashanDBDataSource getDataSource() {
+		return procedure.getDataSource();
+	}
 
-    @Override
-    public boolean isPersisted() {
-        return true;
-    }
+	@Override
+	public YashanDBProcedureBase getParentObject() {
+		return procedure;
+	}
 
-    @NotNull
-    @Override
-    @Property(viewable = true, order = 10)
-    public String getName() {
-        if (CommonUtils.isEmpty(name)) {
-            if (dataLevel == 0) {
-                // Function result
-                return "RESULT";
-            } else {
-                // Collection element
-                return "ELEMENT";
-            }
-        }
-        return name;
-    }
+	@Override
+	public boolean isPersisted() {
+		return true;
+	}
 
-    public boolean isResultArgument() {
-        return CommonUtils.isEmpty(name) && dataLevel == 0;
-    }
+	@NotNull
+	@Override
+	@Property(viewable = true, order = 10)
+	public String getName() {
+		if (CommonUtils.isEmpty(name)) {
+			if (dataLevel == 0) {
+				return "RESULT";
+			} else {
+				return "ELEMENT";
+			}
+		}
+		return name;
+	}
 
-    @Property(viewable = true, order = 11)
-    public int getPosition() {
-        return position;
-    }
+	public boolean isResultArgument() {
+		return CommonUtils.isEmpty(name) && dataLevel == 0;
+	}
 
-    @NotNull
-    @Override
-    @Property(viewable = true, order = 20)
-    public DBSProcedureParameterKind getParameterKind() {
-        return mode == null ? DBSProcedureParameterKind.UNKNOWN : mode.getParameterKind();
-    }
+	@Property(viewable = true, order = 11)
+	public int getPosition() {
+		return position;
+	}
 
-    @Property(viewable = true, order = 21)
-    public Object getType() {
-        return packageTypeName != null ?
-                packageTypeName :
-                dataType == null ? type : dataType;
-    }
+	@NotNull
+	@Override
+	@Property(viewable = true, order = 20)
+	public DBSProcedureParameterKind getParameterKind() {
+		return mode == null ? DBSProcedureParameterKind.UNKNOWN : mode.getParameterKind();
+	}
 
-    @Override
-    @Property(viewable = true, order = 30)
-    public long getMaxLength() {
-        return dataLength;
-    }
+	@Property(viewable = true, order = 21)
+	public Object getType() {
+		return packageTypeName != null ? packageTypeName : dataType == null ? type : dataType;
+	}
 
-    @Override
-    public long getTypeModifiers() {
-        return 0;
-    }
+	@Override
+	@Property(viewable = true, order = 30)
+	public long getMaxLength() {
+		return dataLength;
+	}
 
-    @Override
-    public String getTypeName() {
-        return type == null ? packageTypeName : type.getName();
-    }
+	@Override
+	public long getTypeModifiers() {
+		return 0;
+	}
 
-    @Override
-    public String getFullTypeName() {
-        return DBUtils.getFullTypeName(this);
-    }
+	@Override
+	public String getTypeName() {
+		return type == null ? packageTypeName : type.getName();
+	}
 
-    @Override
-    public int getTypeID() {
-        return type == null ? 0 : type.getTypeID();
-    }
+	@Override
+	public String getFullTypeName() {
+		return DBUtils.getFullTypeName(this);
+	}
 
-    @Override
-    public DBPDataKind getDataKind() {
-        return type == null ? DBPDataKind.OBJECT : type.getDataKind();
-    }
+	@Override
+	public int getTypeID() {
+		return type == null ? 0 : type.getTypeID();
+	}
 
-    @Override
-    @Property(viewable = true, order = 40)
-    public Integer getScale() {
-        return dataScale;
-    }
+	@Override
+	public DBPDataKind getDataKind() {
+		return type == null ? DBPDataKind.OBJECT : type.getDataKind();
+	}
 
-    @Override
-    @Property(viewable = true, order = 50)
-    public Integer getPrecision() {
-        return dataPrecision;
-    }
+	@Override
+	@Property(viewable = true, order = 40)
+	public Integer getScale() {
+		return dataScale;
+	}
 
-    public int getDataLevel() {
-        return dataLevel;
-    }
+	@Override
+	@Property(viewable = true, order = 50)
+	public Integer getPrecision() {
+		return dataPrecision;
+	}
 
-    public int getSequence() {
-        return sequence;
-    }
+	public int getDataLevel() {
+		return dataLevel;
+	}
 
-    @Association
-    public List<YashanDBProcedureArgument> getAttributes() {
-        return attributes;
-    }
+	public int getSequence() {
+		return sequence;
+	}
 
-    void addAttribute(YashanDBProcedureArgument attribute) {
-        if (attributes == null) {
-            attributes = new ArrayList<>();
-        }
-        attributes.add(attribute);
-    }
+	@Association
+	public List<YashanDBProcedureArgument> getAttributes() {
+		return attributes;
+	}
 
-    public boolean hasAttributes() {
-        return !CommonUtils.isEmpty(attributes);
-    }
+	void addAttribute(YashanDBProcedureArgument attribute) {
+		if (attributes == null) {
+			attributes = new ArrayList<>();
+		}
+		attributes.add(attribute);
+	}
 
-    @NotNull
-    @Override
-    public DBSTypedObject getParameterType() {
-        return this;
-    }
+	public boolean hasAttributes() {
+		return !CommonUtils.isEmpty(attributes);
+	}
 
-    public String getValue() {
-        return value;
-    }
-
-    public void setValue(String value) {
-        this.value = value;
-    }
-
-    public String getParamType() {
-        return paramType;
-    }
-
-    public void setParamType(String paramType) {
-        this.paramType = paramType;
-    }
+	@NotNull
+	@Override
+	public DBSTypedObject getParameterType() {
+		return this;
+	}
 }

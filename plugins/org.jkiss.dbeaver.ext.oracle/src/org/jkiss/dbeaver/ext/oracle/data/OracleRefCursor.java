@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ext.oracle.data;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.oracle.model.OracleConstants;
@@ -74,11 +75,12 @@ public class OracleRefCursor implements DBDCursor {
         }
     }
 
+    @NotNull
     @Override
-    public DBCResultSet openResultSet(DBCSession session) throws DBCException {
+    public DBCResultSet openResultSet(@NotNull DBCSession session) throws DBCException {
         if (cursorValue instanceof ResultSet) {
             try {
-                return JDBCResultSetImpl.makeResultSet((JDBCSession) session, sourceStatement, (ResultSet) cursorValue, null, false);
+                return JDBCResultSetImpl.makeResultSet((JDBCSession) session, sourceStatement, (ResultSet) cursorValue, false);
             } catch (SQLException e) {
                 throw new DBCException(e, session.getExecutionContext());
             }

@@ -38,8 +38,8 @@
                     <replace provider="generic" driver="firebird_jaybird"/>
                     <replace provider="generic" driver="firebird_jaybird3"/>
 
-                    <file type="jar" path="maven:/org.firebirdsql.jdbc:jaybird:RELEASE[4.0.0.java8]" bundle="!drivers.firebird"/>
-                    <file type="license" path="https://www.gnu.org/licenses/lgpl-3.0.txt" bundle="!drivers.firebird"/>
+                    <file type="jar" path="maven:/org.firebirdsql.jdbc:jaybird:RELEASE[5.0.4.java11]" bundle="!drivers.firebird"/>
+                    <file type="license" path="licenses/external/lgpl-3.0.txt"/>
 
                     <file type="license" path="drivers/jaybird/LICENSE.txt" bundle="drivers.firebird"/>
                     <file type="jar" path="drivers/jaybird" bundle="drivers.firebird"/>
@@ -52,33 +52,6 @@
                     <parameter name="script-delimiter-redefiner" value="SET TERM"/>
                     <parameter name="supports-truncate" value="false"/>
                 </driver>
-
-<!--
-                <driver
-                        id="jaybird_embedded"
-                        label="Firebird Embedded"
-                        icon="icons/firebird_icon.png"
-                        class="org.firebirdsql.jdbc.FBDriver"
-                        sampleURL="jdbc:firebirdsql:embedded://{file}"
-                        embedded="true"
-                        webURL=""
-                        description="Firebird Jaybird embedded driver">
-
-                    <file type="jar" path="maven:/org.firebirdsql.jdbc:jaybird-jdk18:RELEASE[3.0.3]" bundle="!drivers.firebird"/>
-
-                    <file type="license" path="drivers/firebird3/LICENSE.txt" bundle="drivers.firebird"/>
-                    <file type="jar" path="drivers/firebird3/jaybird-full.jar" bundle="drivers.firebird"/>
-                    <file type="jar" path="drivers/firebird3/jna.jar" bundle="drivers.firebird"/>
-
-                    <property name="encoding" value="UTF8"/>
-
-                    <parameter name="supports-scroll" value="true"/>
-                    <parameter name="ddl-drop-column-short" value="true"/>
-                    <parameter name="script-delimiter-redefiner" value="SET TERM"/>
-                    <parameter name="supports-truncate" value="false"/>
-                </driver>
--->
-
             </drivers>
 
         </datasource>
@@ -88,7 +61,6 @@
         <manager class="org.jkiss.dbeaver.ext.firebird.edit.FireBirdTableManager" objectType="org.jkiss.dbeaver.ext.firebird.model.FireBirdTable"/>
         <manager class="org.jkiss.dbeaver.ext.firebird.edit.FireBirdTableColumnManager" objectType="org.jkiss.dbeaver.ext.firebird.model.FireBirdTableColumn"/>
         <manager class="org.jkiss.dbeaver.ext.firebird.edit.FireBirdProcedureManager" objectType="org.jkiss.dbeaver.ext.firebird.model.FireBirdProcedure"/>
-        <manager class="org.jkiss.dbeaver.ext.firebird.edit.FireBirdSequenceManager" objectType="org.jkiss.dbeaver.ext.firebird.model.FireBirdSequence"/>
     </extension>
 
     <extension point="org.jkiss.dbeaver.sqlInsertMethod">

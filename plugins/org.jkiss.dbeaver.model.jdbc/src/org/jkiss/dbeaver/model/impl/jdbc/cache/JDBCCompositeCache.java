@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,10 +18,12 @@ package org.jkiss.dbeaver.model.impl.jdbc.cache;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBDatabaseException;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBPObjectWithOrdinalPosition;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
@@ -31,10 +33,10 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.cache.AbstractObjectCache;
 import org.jkiss.dbeaver.model.struct.cache.DBSCompositeCache;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.SQLException;
-import java.sql.SQLFeatureNotSupportedException;
 import java.util.*;
 
 /**
@@ -43,7 +45,7 @@ import java.util.*;
  * Each row object refers to some other DB objects.
  * Each composite object belongs to some parent object (table usually) and it's name is unique within it's parent.
  * Each row object name is unique within main object.
- *
+ * <p>
  * Examples: table index, constraint.
  */
 public abstract class JDBCCompositeCache<
@@ -62,7 +64,7 @@ public abstract class JDBCCompositeCache<
     private final Object parentColumnName;
     private final Object objectColumnName;
 
-    private final Map<PARENT, List<OBJECT>> objectCache = new IdentityHashMap<>();
+    private final Map<PARENT, List<OBJECT>> objectCache = new LinkedHashMap<>();
 
     protected JDBCCompositeCache(
         JDBCStructCache<OWNER,?,?> parentCache,
@@ -77,27 +79,39 @@ public abstract class JDBCCompositeCache<
     }
 
     @NotNull
-    abstract protected JDBCStatement prepareObjectsStatement(JDBCSession session, OWNER owner, PARENT forParent)
-        throws SQLException;
+    abstract protected JDBCStatement prepareObjectsStatement(
+        @NotNull JDBCSession session,
+        @NotNull OWNER owner,
+        @Nullable PARENT forParent
+    ) throws SQLException;
 
     @Nullable
-    abstract protected OBJECT fetchObject(JDBCSession session, OWNER owner, PARENT parent, String childName, JDBCResultSet resultSet)
-        throws SQLException, DBException;
+    abstract protected OBJECT fetchObject(
+        @NotNull JDBCSession session,
+        @NotNull OWNER owner,
+        @NotNull PARENT parent,
+        @NotNull String childName,
+        @NotNull JDBCResultSet resultSet
+    ) throws SQLException, DBException;
 
     @Nullable
-    abstract protected ROW_REF[] fetchObjectRow(JDBCSession session, PARENT parent, OBJECT forObject, JDBCResultSet resultSet)
-        throws SQLException, DBException;
+    abstract protected ROW_REF[] fetchObjectRow(
+        @NotNull JDBCSession session,
+        @NotNull PARENT parent,
+        @NotNull OBJECT forObject,
+        @NotNull JDBCResultSet resultSet
+    ) throws SQLException, DBException;
 
-    protected PARENT getParent(OBJECT object)
+    protected PARENT getParent(@NotNull OBJECT object)
     {
         return (PARENT) object.getParentObject();
     }
 
-    abstract protected void cacheChildren(DBRProgressMonitor monitor, OBJECT object, List<ROW_REF> children);
+    abstract protected void cacheChildren(@NotNull DBRProgressMonitor monitor, @NotNull OBJECT object, @NotNull List<ROW_REF> children);
 
     // Second cache function. Needed for complex entities which refers to each other (foreign keys)
     // First cache must cache all unique constraint, second must cache foreign keys references which refers unique keys
-    protected void cacheChildren2(DBRProgressMonitor monitor, OBJECT object, List<ROW_REF> children) {
+    protected void cacheChildren2(@NotNull DBRProgressMonitor monitor, @NotNull OBJECT object, @NotNull List<ROW_REF> children) {
 
     }
 
@@ -114,14 +128,16 @@ public abstract class JDBCCompositeCache<
         return getObjects(monitor, owner, null);
     }
 
-    public List<OBJECT> getObjects(DBRProgressMonitor monitor, OWNER owner, PARENT forParent)
+    public List<OBJECT> getObjects(@NotNull DBRProgressMonitor monitor, OWNER owner, PARENT forParent)
         throws DBException
     {
-        loadObjects(monitor, owner, forParent);
+        if (!monitor.isCanceled() && !monitor.isForceCacheUsage()) {
+            loadObjects(monitor, owner, forParent);
+        }
         return getCachedObjects(forParent);
     }
 
-    public <TYPE extends OBJECT> List<TYPE > getTypedObjects(DBRProgressMonitor monitor, OWNER owner, PARENT forParent, Class<TYPE> type)
+    public <TYPE extends OBJECT> List<TYPE > getTypedObjects(@NotNull DBRProgressMonitor monitor, OWNER owner, PARENT forParent, Class<TYPE> type)
         throws DBException
     {
         List<TYPE> result = new ArrayList<>();
@@ -137,7 +153,7 @@ public abstract class JDBCCompositeCache<
     }
 
     @Override
-    public List<OBJECT> getCachedObjects(PARENT forParent)
+    public List<OBJECT> getCachedObjects(@Nullable PARENT forParent)
     {
         if (forParent == null) {
             synchronized (objectCache) {
@@ -159,7 +175,7 @@ public abstract class JDBCCompositeCache<
     }
 
     @Override
-    public OBJECT getObject(@NotNull DBRProgressMonitor monitor, @Nullable OWNER owner, @NotNull String objectName)
+    public OBJECT getObject(@NotNull DBRProgressMonitor monitor, @NotNull OWNER owner, @NotNull String objectName)
         throws DBException
     {
         loadObjects(monitor, owner, null);
@@ -167,7 +183,7 @@ public abstract class JDBCCompositeCache<
         return getCachedObject(objectName);
     }
 
-    public OBJECT getObject(DBRProgressMonitor monitor, OWNER owner, PARENT forParent, String objectName)
+    public OBJECT getObject(@NotNull DBRProgressMonitor monitor, @NotNull OWNER owner, @Nullable PARENT forParent, @NotNull String objectName)
         throws DBException
     {
         loadObjects(monitor, owner, forParent);
@@ -186,11 +202,7 @@ public abstract class JDBCCompositeCache<
         super.cacheObject(object);
         synchronized (objectCache) {
             PARENT parent = getParent(object);
-            List<OBJECT> objects = objectCache.get(parent);
-            if (objects == null) {
-                objects = new ArrayList<>();
-                objectCache.put(parent, objects);
-            }
+            List<OBJECT> objects = objectCache.computeIfAbsent(parent, k -> new ArrayList<>());
             objects.add(object);
         }
     }
@@ -213,28 +225,17 @@ public abstract class JDBCCompositeCache<
     }
 
     @Override
-    public void clearObjectCache(PARENT forParent)
-    {
-        if (forParent == null) {
-            super.clearCache();
-            objectCache.clear();
-        } else {
-            List<OBJECT> removedObjects = objectCache.remove(forParent);
-            if (removedObjects != null) {
-                for (OBJECT obj : removedObjects) {
-                    super.removeObject(obj, false);
-                }
+    public void clearObjectCache(@NotNull PARENT forParent) {
+        List<OBJECT> removedObjects = objectCache.remove(forParent);
+        if (removedObjects != null) {
+            for (OBJECT obj : removedObjects) {
+                super.removeObject(obj, false);
             }
         }
     }
 
-    public void setObjectCache(PARENT forParent, List<OBJECT> objects)
-    {
-    }
-
     @Override
-    public void clearCache()
-    {
+    public void clearCache() {
         synchronized (objectCache) {
             this.objectCache.clear();
         }
@@ -242,17 +243,13 @@ public abstract class JDBCCompositeCache<
     }
 
     @Override
-    public void setCache(List<OBJECT> objects) {
+    public void setCache(@NotNull List<OBJECT> objects) {
         super.setCache(objects);
         synchronized (objectCache) {
             objectCache.clear();
             for (OBJECT object : objects) {
                 PARENT parent = getParent(object);
-                List<OBJECT> parentObjects = objectCache.get(parent);
-                if (parentObjects == null) {
-                    parentObjects = new ArrayList<>();
-                    objectCache.put(parent, parentObjects);
-                }
+                List<OBJECT> parentObjects = objectCache.computeIfAbsent(parent, k -> new ArrayList<>());
                 parentObjects.add(object);
             }
         }
@@ -270,11 +267,16 @@ public abstract class JDBCCompositeCache<
         }
     }
 
-    protected void loadObjects(DBRProgressMonitor monitor, OWNER owner, PARENT forParent)
+    protected void loadObjects(@NotNull DBRProgressMonitor monitor, @NotNull OWNER owner, @Nullable PARENT forParent)
         throws DBException
     {
+        if (DBWorkbench.getPlatform().isUnitTestMode()) {
+            log.debug("[TEST] Skip composite cache read in test mode");
+            return;
+        }
         synchronized (objectCache) {
-            if ((forParent == null && isFullyCached()) ||
+            if (monitor.isForceCacheUsage() ||
+                (forParent == null && isFullyCached()) ||
                 (forParent != null && (!forParent.isPersisted() || objectCache.containsKey(forParent))))
             {
                 return;
@@ -295,101 +297,91 @@ public abstract class JDBCCompositeCache<
         monitor.beginTask("Load composite cache", 1);
         try (JDBCSession session = DBUtils.openMetaSession(monitor, owner, "Load composite objects")) {
 
-            JDBCStatement dbStat = prepareObjectsStatement(session, owner, forParent);
-            dbStat.setFetchSize(DBConstants.METADATA_FETCH_SIZE);
-            try {
+            try (JDBCStatement dbStat = prepareObjectsStatement(session, owner, forParent)) {
+                dbStat.setFetchSize(DBConstants.METADATA_FETCH_SIZE);
                 dbStat.executeStatement();
                 JDBCResultSet dbResult = dbStat.getResultSet();
-                if (dbResult != null) try {
-                    while (dbResult.next()) {
-                        if (monitor.isCanceled()) {
-                            return;
-                        }
-                        String parentName = forParent != null ?
-                            forParent.getName() :
-                            (parentColumnName instanceof Number ?
-                                JDBCUtils.safeGetString(dbResult, ((Number)parentColumnName).intValue()) :
-                                JDBCUtils.safeGetStringTrimmed(dbResult, parentColumnName.toString()));
-                        String objectName = objectColumnName instanceof Number ?
-                            JDBCUtils.safeGetString(dbResult, ((Number)objectColumnName).intValue()) :
-                            JDBCUtils.safeGetStringTrimmed(dbResult, objectColumnName.toString());
+                if (dbResult != null)
+                    try {
+                        while (dbResult.next()) {
+                            if (monitor.isCanceled()) {
+                                return;
+                            }
+                            String parentName = forParent != null ?
+                                forParent.getName() :
+                                (parentColumnName instanceof Number ?
+                                    JDBCUtils.safeGetString(dbResult, ((Number) parentColumnName).intValue()) :
+                                    JDBCUtils.safeGetStringTrimmed(dbResult, parentColumnName.toString()));
+                            String objectName = objectColumnName instanceof Number ?
+                                JDBCUtils.safeGetString(dbResult, ((Number) objectColumnName).intValue()) :
+                                JDBCUtils.safeGetStringTrimmed(dbResult, objectColumnName.toString());
 
-                        if (CommonUtils.isEmpty(objectName)) {
-                            // Use default name
-                            objectName = getDefaultObjectName(dbResult, parentName);
-                        }
+                            if (CommonUtils.isEmpty(objectName)) {
+                                // Use default name
+                                objectName = getDefaultObjectName(dbResult, parentName);
+                            }
 
-                        if (forParent == null && CommonUtils.isEmpty(parentName)) {
-                            // No parent - can't evaluate it
-                            log.debug("Empty parent name in " + this);
-                            continue;
-                        }
+                            if (forParent == null && CommonUtils.isEmpty(parentName)) {
+                                // No parent - can't evaluate it
+                                log.debug("Empty parent name in " + this);
+                                continue;
+                            }
 
-                        PARENT parent = forParent;
-                        if (parent == null) {
-                            parent = parentCache.getObject(monitor, owner, parentName, parentType);
+                            PARENT parent = forParent;
                             if (parent == null) {
-                                log.debug("Object '" + objectName + "' owner '" + parentName + "' not found");
-                                continue;
+                                parent = parentCache.getObject(monitor, owner, parentName, parentType);
+                                if (parent == null) {
+                                    log.debug("Object '" + objectName + "' owner '" + parentName + "' not found");
+                                    continue;
+                                }
                             }
-                        }
-                        synchronized (objectCache) {
-                            if (objectCache.containsKey(parent)) {
-                                // Already cached
-                                continue;
+                            synchronized (objectCache) {
+                                if (objectCache.containsKey(parent)) {
+                                    // Already cached
+                                    continue;
+                                }
                             }
-                        }
-                        // Add to map
-                        Map<String, ObjectInfo> objectMap = parentObjectMap.get(parent);
-                        if (objectMap == null) {
-                            objectMap = new TreeMap<>();
-                            parentObjectMap.put(parent, objectMap);
-                        }
+                            // Add to map
+                            Map<String, ObjectInfo> objectMap = parentObjectMap.computeIfAbsent(parent, k -> new TreeMap<>());
 
-                        ObjectInfo objectInfo = objectMap.get(objectName);
-                        if (objectInfo == null) {
-                            OBJECT object = fetchObject(session, owner, parent, objectName, dbResult);
-                            if (object == null || !isValidObject(monitor, owner, object)) {
-                                // Can't fetch object
+                            ObjectInfo objectInfo = objectMap.get(objectName);
+                            if (objectInfo == null) {
+                                OBJECT object = fetchObject(session, owner, parent, objectName, dbResult);
+                                if (object == null || !isValidObject(monitor, owner, object)) {
+                                    // Can't fetch object
+                                    continue;
+                                }
+                                objectName = object.getName();
+                                objectInfo = new ObjectInfo(object);
+                                objectMap.put(objectName, objectInfo);
+                            }
+                            ROW_REF[] rowRef = fetchObjectRow(session, parent, objectInfo.object, dbResult);
+                            if (rowRef == null || rowRef.length == 0) {
+                                if (!isEmptyObjectRowsAllowed()) {
+                                    // At least one of rows is broken.
+                                    // So entire object is broken, let's just skip it.
+                                    objectInfo.broken = true;
+                                    //log.debug("Object '" + objectName + "' metadata corrupted - NULL child returned");
+                                }
                                 continue;
                             }
-                            objectName = object.getName();
-                            objectInfo = new ObjectInfo(object);
-                            objectMap.put(objectName, objectInfo);
-                        }
-                        ROW_REF[] rowRef = fetchObjectRow(session, parent, objectInfo.object, dbResult);
-                        if (rowRef == null || rowRef.length == 0) {
-                            if (!isEmptyObjectRowsAllowed()) {
-                                // At least one of rows is broken.
-                                // So entire object is broken, let's just skip it.
-                                objectInfo.broken = true;
-                                //log.debug("Object '" + objectName + "' metadata corrupted - NULL child returned");
-                            }
-                            continue;
-                        }
-                        for (ROW_REF row : rowRef) {
-                            if (row != null) {
-                                objectInfo.rows.add(row);
+                            for (ROW_REF row : rowRef) {
+                                if (row != null) {
+                                    objectInfo.rows.add(row);
+                                }
                             }
                         }
+                    } finally {
+                        dbResult.close();
                     }
-                }
-                finally {
-                    dbResult.close();
-                }
             }
-            finally {
-                dbStat.close();
-            }
-        }
-        catch (SQLException ex) {
-            if (ex instanceof SQLFeatureNotSupportedException) {
-                log.debug("Error reading cache: feature not supported", ex);
+        } catch (SQLException ex) {
+            if (JDBCUtils.isFeatureNotSupportedError(dataSource, ex)) {
+                log.debug("Error reading cache " + getClass().getSimpleName() + ", feature not supported: " + ex.getMessage());
             } else {
-                throw new DBException(ex, dataSource);
+                throw new DBDatabaseException(ex, dataSource);
             }
-        }
-        finally {
+        } finally {
             monitor.done();
         }
 
@@ -454,6 +446,11 @@ public abstract class JDBCCompositeCache<
             // Cache children lists (we do it in the end because children caching may operate with other model objects)
             for (Map.Entry<PARENT, Map<String, ObjectInfo>> colEntry : parentObjectMap.entrySet()) {
                 for (ObjectInfo objectInfo : colEntry.getValue().values()) {
+                    // Sort rows using order comparator
+                    if (objectInfo.rows.size() > 1 && objectInfo.rows.getFirst() instanceof DBPObjectWithOrdinalPosition) {
+                        objectInfo.rows.sort((Comparator<? super ROW_REF>) DBUtils.orderComparator());
+                    }
+
                     if (objectInfo.needsCaching) {
                         cacheChildren(monitor, objectInfo.object, objectInfo.rows);
                     }

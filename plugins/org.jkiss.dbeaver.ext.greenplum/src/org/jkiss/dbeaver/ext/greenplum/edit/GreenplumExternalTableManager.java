@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  * Copyright (C) 2019 Dmitriy Dubson (ddubson@pivotal.io)
  * Copyright (C) 2019 Gavin Shaw (gshaw@pivotal.io)
  * Copyright (C) 2019 Zach Marcin (zmarcin@pivotal.io)
@@ -20,6 +20,7 @@
  */
 package org.jkiss.dbeaver.ext.greenplum.edit;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.greenplum.model.GreenplumExternalTable;
@@ -42,10 +43,10 @@ import java.util.Map;
 
 public class GreenplumExternalTableManager extends PostgreTableManager {
     @Override
-    protected GreenplumExternalTable createDatabaseObject(DBRProgressMonitor monitor,
-                                                          DBECommandContext context,
+    protected GreenplumExternalTable createDatabaseObject(@NotNull DBRProgressMonitor monitor,
+                                                          @NotNull DBECommandContext context,
                                                           Object container,
-                                                          Object copyFrom, Map<String, Object> options) {
+                                                          Object copyFrom, @NotNull Map<String, Object> options) {
         GreenplumExternalTable externalTable = new GreenplumExternalTable((PostgreSchema) container);
         setNewObjectName(monitor, (PostgreSchema) container, externalTable);
 
@@ -74,9 +75,9 @@ public class GreenplumExternalTableManager extends PostgreTableManager {
     }
 
     @Override
-    protected void addObjectDeleteActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions,
-                                          ObjectDeleteCommand command,
-                                          Map<String, Object> options) {
+    protected void addObjectDeleteActions(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext executionContext, @NotNull List<DBEPersistAction> actions,
+                                          @NotNull ObjectDeleteCommand command,
+                                          @NotNull Map<String, Object> options) {
         actions.add(createDeleteAction(command.getObject(), options));
     }
 

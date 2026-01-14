@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,8 +22,7 @@ import org.jkiss.dbeaver.model.DBPNamedObject;
 /**
  * PostgreTypeType
  */
-public enum PostgreTypeType implements DBPNamedObject
-{
+public enum PostgreTypeType implements DBPNamedObject {
     a("Abstract"), // This is non-standard extension (PG Enterprise?)
     b("Base"),
     c("Composite"),
@@ -31,7 +30,9 @@ public enum PostgreTypeType implements DBPNamedObject
     e("Enum type"),
     m("Multirange"), // Starting with the 14 PG version
     p("Pseudo-type"),
+    n("nested-table-type"), //Kingbase type
     r("Range");
+	
 
     private final String desc;
 

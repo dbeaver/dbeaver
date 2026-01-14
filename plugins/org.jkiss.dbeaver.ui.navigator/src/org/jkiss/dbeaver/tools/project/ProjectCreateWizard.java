@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,10 +29,11 @@ import org.eclipse.ui.wizards.newresource.BasicNewProjectResourceWizard;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.app.DBPPlatformDesktop;
 import org.jkiss.dbeaver.model.app.DBPProject;
+import org.jkiss.dbeaver.model.rcp.DBeaverNature;
+import org.jkiss.dbeaver.model.rcp.RCPProject;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
-import org.jkiss.dbeaver.runtime.resource.DBeaverNature;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.internal.UINavigatorMessages;
 import org.jkiss.dbeaver.ui.preferences.WizardPrefPage;
@@ -87,13 +88,21 @@ public class ProjectCreateWizard extends BasicNewProjectResourceWizard implement
 
     @Override
 	public boolean performFinish() {
+        if (!DBWorkbench.getPlatform().getWorkspace().canManageProjects()) {
+            DBWorkbench.getPlatformUI().showError(
+                UINavigatorMessages.dialog_project_create_wizard_error_cannot_create,
+                "You can't manage projects"
+            );
+            return false;
+        }
+
         if (DBWorkbench.isDistributed()) {
             try {
                 DBPProject newProject = DBPPlatformDesktop.getInstance().getWorkspace().createProject(
                     remoteProjectPage.getProjectName(),
                     remoteProjectPage.getProjectDescription()
                 );
-                project = newProject.getEclipseProject();
+                project = ((RCPProject)newProject).getEclipseProject();
             } catch (DBException e) {
                 DBWorkbench.getPlatformUI().showError(
                     UINavigatorMessages.dialog_project_create_wizard_error_cannot_create,

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,8 +37,6 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
-import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
@@ -107,10 +105,6 @@ public class ResultSetUtils
         }
     }
 
-    public static OrderingMode getOrderingMode(IResultSetController controller) {
-        return CommonUtils.valueOf(OrderingMode.class, controller.getPreferenceStore().getString(ResultSetPreferences.RESULT_SET_ORDERING_MODE), OrderingMode.SMART);
-    }
-
     // Use linear interpolation to make gradient color in a range
     // It is dummy but simple and fast
     public static RGB makeGradientValue(RGB c1, RGB c2, double minValue, double maxValue, double value) {
@@ -175,22 +169,6 @@ public class ResultSetUtils
 
     static String formatRowCount(long rows) {
         return rows < 0 ? "0" : String.valueOf(rows);
-    }
-
-    public enum OrderingMode {
-        SMART(ResultSetMessages.pref_page_database_resultsets_label_order_mode_smart),
-        CLIENT_SIDE(ResultSetMessages.pref_page_database_resultsets_label_order_mode_always_client),
-        SERVER_SIDE(ResultSetMessages.pref_page_database_resultsets_label_order_mode_always_server);
-
-        private final String text;
-
-        OrderingMode(String text) {
-            this.text = text;
-        }
-
-        public String getText() {
-            return text;
-        }
     }
 
     public static DBDDataFilter restoreDataFilter(final DBSDataContainer dataContainer, @NotNull DBRProgressMonitor monitor) {

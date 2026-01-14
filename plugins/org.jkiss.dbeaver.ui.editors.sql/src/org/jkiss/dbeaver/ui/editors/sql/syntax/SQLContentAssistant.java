@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,11 @@
  */
 package org.jkiss.dbeaver.ui.editors.sql.syntax;
 
+import org.eclipse.jface.text.contentassist.ContentAssistEvent;
 import org.eclipse.jface.text.contentassist.ContentAssistant;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.VerifyEvent;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorUtils;
 import org.jkiss.dbeaver.ui.editors.sql.SQLPreferenceConstants;
@@ -25,12 +29,37 @@ import org.jkiss.dbeaver.ui.editors.sql.SQLPreferenceConstants;
  * SQL Completion proposal
  */
 public class SQLContentAssistant extends ContentAssistant {
+
     private final SQLEditorBase editor;
+
+    private SQLCompletionSorterUI sorter;
+
+    private int lastCompletionOffset = - 1;
+    private volatile boolean restartRequested = false;
 
     public SQLContentAssistant(SQLEditorBase editor) {
         super(); // Sync. Maybe we should make it async
         this.editor = editor;
         enableColoredLabels(true);
+    }
+
+    public void setLastCompletionOffset(int lastCompletionOffset) {
+        this.lastCompletionOffset = lastCompletionOffset;
+        if (lastCompletionOffset == -1 && restartRequested) {
+            restartRequested = false;
+            UIUtils.asyncExec(() -> showPossibleCompletions());
+        }
+    }
+
+    public void setSorter(SQLCompletionSorterUI sorter) {
+        this.sorter = sorter;
+        super.setSorter(sorter);
+    }
+
+    public void assistSessionStarted(ContentAssistEvent event) {
+        if (this.sorter != null) {
+            this.sorter.refreshSettings();
+        }
     }
 
     @Override
@@ -52,6 +81,23 @@ public class SQLContentAssistant extends ContentAssistant {
             } finally {
                 SQLCompletionProcessor.setSimpleMode(false);
             }
+        }
+
+        @Override
+        public void verifyKey(VerifyEvent event) {
+            if (lastCompletionOffset >= 0 && (
+                event.character == SWT.BS ||
+                (event.character == 0 && event.keyCode == SWT.ARROW_LEFT)
+            ) && editor.getTextViewer() != null) {
+                int pos = editor.getTextViewer().getSelectedRange().x;
+                if ((pos - 1) < lastCompletionOffset) {
+                    restartRequested = true;
+                    hide();
+                    return;
+                }
+            }
+
+            super.verifyKey(event);
         }
     }
 

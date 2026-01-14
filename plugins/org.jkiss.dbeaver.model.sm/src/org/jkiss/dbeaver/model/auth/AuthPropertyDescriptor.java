@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.model.auth;
 
 import org.eclipse.core.runtime.IConfigurationElement;
+import org.jkiss.dbeaver.model.impl.LocalizedPropertyDescriptor;
 import org.jkiss.dbeaver.model.impl.PropertyDescriptor;
 import org.jkiss.utils.CommonUtils;
 
@@ -24,7 +25,7 @@ import org.jkiss.utils.CommonUtils;
  * Auth provider property.
  * Has some extra attributes.
  */
-public class AuthPropertyDescriptor extends PropertyDescriptor {
+public class AuthPropertyDescriptor extends LocalizedPropertyDescriptor {
 
     private final AuthPropertyEncryption encryption;
     private final boolean identifying; // Identifying parameter. Will be used during auth for user search by credentials

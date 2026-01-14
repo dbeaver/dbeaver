@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2023 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,39 +21,42 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.MultiStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Abstract Database Job
+ * Abstract job
  */
-public abstract class AbstractJob extends Job
-{
+public abstract class AbstractJob extends Job {
     private static final Log log = Log.getLog(AbstractJob.class);
-
-    public static final int TIMEOUT_BEFORE_BLOCK_CANCEL = 250;
 
     private DBRProgressMonitor progressMonitor;
     private volatile boolean finished = false;
     private volatile boolean blockCanceled = false;
     private volatile long cancelTimestamp = -1;
     private AbstractJob attachedJob = null;
+    private boolean skipErrorOnCanceling;
+    private volatile boolean runDirectly = false;
 
     // Attached job may be used to "overwrite" current job.
     // It happens if some other AbstractJob runs in sync mode
     protected final static ThreadLocal<AbstractJob> CURRENT_JOB = new ThreadLocal<>();
 
-    protected AbstractJob(String name)
+    protected AbstractJob(@NotNull String name)
     {
         super(name);
     }
@@ -62,20 +65,22 @@ public abstract class AbstractJob extends Job
         return finished;
     }
 
-    protected Thread getActiveThread()
-    {
-        final Thread thread = getThread();
-        return thread == null ? Thread.currentThread() : thread;
+    private boolean isSkipErrorOnCanceling() {
+        return skipErrorOnCanceling;
     }
 
-    public void setAttachedJob(AbstractJob attachedJob) {
+    protected void setSkipErrorOnCanceling(boolean skipErrorOnCanceling) {
+        this.skipErrorOnCanceling = skipErrorOnCanceling;
+    }
+
+    public void setAttachedJob(@Nullable AbstractJob attachedJob) {
         this.attachedJob = attachedJob;
     }
 
-    public final IStatus runDirectly(DBRProgressMonitor monitor)
-    {
+    public final IStatus runDirectly(@NotNull DBRProgressMonitor monitor) {
         progressMonitor = monitor;
         blockCanceled = false;
+        runDirectly = true;
         try {
             finished = false;
             IStatus result;
@@ -91,8 +96,8 @@ public abstract class AbstractJob extends Job
     }
 
     @Override
-    protected final IStatus run(IProgressMonitor monitor)
-    {
+    @NotNull
+    protected final IStatus run(@NotNull IProgressMonitor monitor) {
         progressMonitor = RuntimeUtils.makeMonitor(monitor);
         blockCanceled = false;
         CURRENT_JOB.set(this);
@@ -119,7 +124,11 @@ public abstract class AbstractJob extends Job
         }
     }
 
-    private boolean logErrorStatus(IStatus status) {
+    public final void schedule(@NotNull Duration delay) {
+        schedule(delay.toMillis());
+    }
+
+    private boolean logErrorStatus(@NotNull IStatus status) {
         if (status.getException() != null) {
             log.error("Error during job '" + getName() + "' execution", status.getException());
             return true;
@@ -133,7 +142,8 @@ public abstract class AbstractJob extends Job
         return false;
     }
 
-    protected abstract IStatus run(DBRProgressMonitor monitor);
+    @NotNull
+    protected abstract IStatus run(@NotNull DBRProgressMonitor monitor);
 
     public boolean isCanceled() {
         return cancelTimestamp > 0;
@@ -144,8 +154,7 @@ public abstract class AbstractJob extends Job
     }
 
     @Override
-    protected void canceling()
-    {
+    protected void canceling() {
         if (cancelTimestamp == -1) {
             cancelTimestamp = System.currentTimeMillis();
         }
@@ -159,6 +168,10 @@ public abstract class AbstractJob extends Job
         }
     }
 
+    public boolean isForceCancel() {
+        return true;
+    }
+
     private void runBlockCanceler() {
         final List<DBRBlockingObject> activeBlocks = new ArrayList<>(
             CommonUtils.safeList(progressMonitor.getActiveBlocks()));
@@ -167,7 +180,11 @@ public abstract class AbstractJob extends Job
             return;
         }
 
-        final DBRBlockingObject lastBlock = activeBlocks.remove(activeBlocks.size() - 1);
+        if (!isForceCancel() && activeBlocks.size() < 2) {
+            return;
+        }
+
+        final DBRBlockingObject lastBlock = activeBlocks.removeLast();
 
         try {
             new JobCanceler(lastBlock).schedule();
@@ -178,14 +195,11 @@ public abstract class AbstractJob extends Job
 
         if (!activeBlocks.isEmpty()) {
             DBPPreferenceStore preferenceStore;
-            if (activeBlocks.get(0) instanceof DBCSession) {
-                DBPDataSource dataSource = ((DBCSession) activeBlocks.get(0)).getDataSource();
-                if (dataSource == null) {
-                    return;
-                }
+            if (activeBlocks.getFirst() instanceof DBCSession session) {
+                DBPDataSource dataSource = session.getDataSource();
                 preferenceStore = dataSource.getContainer().getPreferenceStore();
             } else {
-                preferenceStore = ModelPreferences.getPreferences();
+                preferenceStore = DBWorkbench.getPlatform().getPreferenceStore();
             }
 
             int cancelCheckTimeout = preferenceStore.getInt(ModelPreferences.EXECUTE_CANCEL_CHECK_TIMEOUT);
@@ -201,7 +215,7 @@ public abstract class AbstractJob extends Job
                     @Override
                     protected IStatus run(IProgressMonitor monitor) {
                         if (!finished) {
-                            DBRBlockingObject nextBlock = activeBlocks.remove(activeBlocks.size() - 1);
+                            DBRBlockingObject nextBlock = activeBlocks.removeLast();
                             new JobCanceler(nextBlock).schedule();
                             if (!activeBlocks.isEmpty()) {
                                 schedule(cancelCheckTimeout);
@@ -227,21 +241,27 @@ public abstract class AbstractJob extends Job
         }
 
         @Override
-        protected IStatus run(IProgressMonitor monitor)
-        {
+        @NotNull
+        protected IStatus run(@NotNull IProgressMonitor monitor) {
             if (!finished) {
                 try {
-                    BlockCanceler.cancelBlock(progressMonitor, block, getActiveThread());
+                    BlockCanceler.cancelBlock(progressMonitor, block);
                 } catch (DBException e) {
                     log.debug("Block cancel error", e); //$NON-N LS-1$
-                    return GeneralUtils.makeExceptionStatus(e);
+                    if (!isSkipErrorOnCanceling()) {
+                        return GeneralUtils.makeExceptionStatus(e);
+                    }
                 } catch (Throwable e) {
-                    log.debug("Block cancel internal error", e); //$NON-N LS-1$
+                    log.debug("Block cancel internal error: " + e.getMessage()); //$NON-N LS-1$
                     return Status.CANCEL_STATUS;
                 }
                 blockCanceled = true;
             }
             return Status.OK_STATUS;
         }
+    }
+
+    public boolean isRunDirectly() {
+        return runDirectly;
     }
 }
