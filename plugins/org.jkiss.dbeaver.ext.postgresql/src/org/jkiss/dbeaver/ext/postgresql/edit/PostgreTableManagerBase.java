@@ -172,8 +172,8 @@ public abstract class PostgreTableManagerBase extends SQLTableManager<PostgreTab
                         }
                         for (PostgreTablePolicy policy : policies) {
                             actions.add(new SQLDatabasePersistAction(
-                                    "Create policy",
-                                    policy.getObjectDefinitionText(monitor, options)
+                                "Create policy",
+                                policy.getObjectDefinitionText(monitor, options)
                             ));
                         }
                     }
