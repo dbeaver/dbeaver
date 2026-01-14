@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -115,12 +115,13 @@ public class AltibaseMetaModel extends GenericMetaModel {
         return table;
     }
 
+    @NotNull
     @Override
     public GenericTableBase createTableOrViewImpl(
-            GenericStructContainer container,
-            @Nullable String tableName,
-            @Nullable String tableType,
-            @Nullable JDBCResultSet dbResult) {
+        @NotNull GenericStructContainer container,
+        @Nullable String tableName,
+        @Nullable String tableType,
+        @Nullable JDBCResultSet dbResult) {
         if (tableType != null && isView(tableType)) {
 
             if (tableType.equalsIgnoreCase(AltibaseConstants.OBJ_TYPE_MATERIALIZED_VIEW)) {
@@ -1122,10 +1123,10 @@ public class AltibaseMetaModel extends GenericMetaModel {
             String schemaName, String depObjectType) {
         String ddl = "";
         String sqlTerm = "SQLTERMINATOR";
-        String getDepDdlQry = "SELECT dbms_metadata.get_dependent_ddl('%s', '%s', '%s') FROM DUAL";
+        String getDepDdlQry = "SELECT dbms_metadata.get_dependent_ddl(?, ?, ?) FROM DUAL";
         
         Connection conn = null;
-        Statement stmt = null;
+        PreparedStatement pstmt = null;
         ResultSet rs = null;
         
         try (JDBCSession session = DBUtils.openMetaSession(monitor, sourceObject, "Get Dependent DDL from DBMS_METADATA")) {
@@ -1136,8 +1137,11 @@ public class AltibaseMetaModel extends GenericMetaModel {
                 setTransformParam(conn, sqlTerm, "T");
 
                 // get dependent ddl 
-                stmt = conn.createStatement();
-                rs = stmt.executeQuery(String.format(getDepDdlQry, depObjectType, sourceObject.getName(), schemaName));
+                pstmt = conn.prepareStatement(getDepDdlQry);
+                pstmt.setString(1, depObjectType);
+                pstmt.setString(2, sourceObject.getName());
+                pstmt.setString(3, schemaName);
+                rs = pstmt.executeQuery();
                 
                 if (rs.next()) {
                     ddl = rs.getString(1);
@@ -1157,8 +1161,8 @@ public class AltibaseMetaModel extends GenericMetaModel {
                     rs.close();
                 }
                 
-                if (stmt != null) {
-                    stmt.close();
+                if (pstmt != null) {
+                    pstmt.close();
                 }
                 
                 // SQLTERMINATOR: F

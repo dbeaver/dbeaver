@@ -67,8 +67,10 @@ class DataTransferPageFinal extends ActiveWizardPage<DataTransferWizard> impleme
         sash.setLayoutData(new GridData(GridData.FILL_BOTH));
 
         {
+            Composite topGroup = UIUtils.createComposite(sash, 1);
+            topGroup.setLayoutData(new GridData(GridData.FILL_BOTH));
             Composite tablesGroup = UIUtils.createTitledComposite(
-                sash,
+                topGroup,
                 DTUIMessages.data_transfer_wizard_final_group_objects,
                 3,
                 GridData.FILL_BOTH,
@@ -89,24 +91,31 @@ class DataTransferPageFinal extends ActiveWizardPage<DataTransferWizard> impleme
             Composite settingsGroup = UIUtils.createComposite(sash, 2);
             settingsGroup.setLayoutData(new GridData(GridData.FILL_BOTH));
 
+            Composite leftGroup = UIUtils.createComposite(settingsGroup, 1);
+            leftGroup.setLayoutData(new GridData(GridData.FILL_BOTH));
+            Composite rightGroup = UIUtils.createComposite(settingsGroup, 1);
+            rightGroup.setLayoutData(new GridData(GridData.FILL_BOTH));
+
             Composite sourceSettingsGroup = UIUtils.createTitledComposite(
-                settingsGroup,
+                leftGroup,
                 DTUIMessages.data_transfer_wizard_final_group_settings_source,
                 1,
                 GridData.FILL_BOTH,
                 -1
             );
             sourceSettingsText = new Text(sourceSettingsGroup, SWT.BORDER | SWT.READ_ONLY | SWT.V_SCROLL);
-            sourceSettingsText.setLayoutData(GridDataFactory.create(GridData.FILL_BOTH).hint(150, 30).create());
+            sourceSettingsText.setLayoutData(GridDataFactory.create(GridData.FILL_BOTH).create());
+            sourceSettingsGroup.setLayoutData(GridDataFactory.create(GridData.FILL_BOTH).hint(150, 50).create());
 
             Composite targetSettingsGroup = UIUtils.createTitledComposite(
-                settingsGroup,
+                rightGroup,
                 DTUIMessages.data_transfer_wizard_final_group_settings_target,
                 1,
                 GridData.FILL_BOTH,
                 -1);
             targetSettingsText = new Text(targetSettingsGroup, SWT.BORDER | SWT.READ_ONLY | SWT.V_SCROLL);
-            targetSettingsText.setLayoutData(GridDataFactory.create(GridData.FILL_BOTH).hint(150, 30).create());
+            targetSettingsText.setLayoutData(GridDataFactory.create(GridData.FILL_BOTH).create());
+            targetSettingsText.setLayoutData(GridDataFactory.create(GridData.FILL_BOTH).hint(150, 50).create());
         }
 
         setControl(composite);

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -44,8 +44,7 @@ import java.util.Set;
 /**
  * PrefPageDriversMaven
  */
-public class PrefPageDriversMaven extends AbstractPrefPage implements IWorkbenchPreferencePage, IWorkbenchPropertyPage
-{
+public class PrefPageDriversMaven extends AbstractPrefPage implements IWorkbenchPreferencePage, IWorkbenchPropertyPage {
     public static final String PAGE_ID = "org.jkiss.dbeaver.preferences.drivers.maven"; //$NON-NLS-1$
 
     private Table mavenRepoTable;
@@ -73,10 +72,10 @@ public class PrefPageDriversMaven extends AbstractPrefPage implements IWorkbench
     protected Control createPreferenceContent(@NotNull Composite parent) {
         enabledColor = parent.getForeground();
         disabledColor = parent.getDisplay().getSystemColor(SWT.COLOR_WIDGET_DARK_SHADOW);
-        Composite composite = UIUtils.createPlaceholder(parent, 1, 5);
+        Composite composite = UIUtils.createComposite(parent, 1);
 
         {
-            Group mavenGroup = UIUtils.createControlGroup(composite, UIConnectionMessages.pref_page_drivers_maven_group_repositories, 2, GridData.FILL_BOTH, 300);
+            Composite mavenGroup = UIUtils.createTitledComposite(composite, UIConnectionMessages.pref_page_drivers_maven_group_repositories, 2, GridData.FILL_BOTH, 300);
             mavenRepoTable = new Table(mavenGroup, SWT.BORDER | SWT.FULL_SELECTION);
             UIUtils.createTableColumn(mavenRepoTable, SWT.LEFT, "Id");
             UIUtils.createTableColumn(mavenRepoTable, SWT.LEFT, "URL");
@@ -165,8 +164,8 @@ public class PrefPageDriversMaven extends AbstractPrefPage implements IWorkbench
         }
 
         {
-            Group propsGroup = UIUtils.createControlGroup(composite,
-                UIConnectionMessages.pref_page_drivers_maven_group_properties, 1, GridData.FILL_HORIZONTAL, 0);
+            Composite propsGroup = UIUtils.createTitledComposite(composite,
+                UIConnectionMessages.pref_page_drivers_maven_group_properties, 1, GridData.FILL_HORIZONTAL);
             Composite fields = UIUtils.createPlaceholder(propsGroup, 2);
             fields.setLayoutData(new GridData(GridData.FILL_BOTH));
             idText = UIUtils.createLabelText(fields, "ID", "", SWT.BORDER | SWT.READ_ONLY);
@@ -208,7 +207,7 @@ public class PrefPageDriversMaven extends AbstractPrefPage implements IWorkbench
         }
 
         {
-            Group authGroup = UIUtils.createControlGroup(composite, UIConnectionMessages.pref_page_drivers_maven_group_authentication, 4, GridData.FILL_HORIZONTAL, 0);
+            Composite authGroup = UIUtils.createTitledComposite(composite, UIConnectionMessages.pref_page_drivers_maven_group_authentication, 4, GridData.FILL_HORIZONTAL);
             userNameText = UIUtils.createLabelText(authGroup, UIConnectionMessages.pref_page_drivers_maven_label_user, "", SWT.BORDER);
             userNameText.addModifyListener(e -> {
                 if (getSelectedRepository() != null) {
