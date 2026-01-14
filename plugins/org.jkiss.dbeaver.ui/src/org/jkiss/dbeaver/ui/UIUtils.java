@@ -667,7 +667,7 @@ public class UIUtils {
     ) {
         Composite composite = UIUtils.createComposite(parent, 1);
         {
-            GridData gd = new GridData(layoutStyle >0 ? layoutStyle : GridData.FILL_HORIZONTAL);
+            GridData gd = new GridData(layoutStyle >0 ? layoutStyle : GridData.HORIZONTAL_ALIGN_BEGINNING);
             if (widthHint > 0) {
                 gd.widthHint = widthHint;
             }
