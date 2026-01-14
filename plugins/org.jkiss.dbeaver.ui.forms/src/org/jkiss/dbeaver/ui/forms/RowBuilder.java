@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,10 +16,8 @@
  */
 package org.jkiss.dbeaver.ui.forms;
 
-import org.eclipse.core.databinding.conversion.IConverter;
 import org.eclipse.core.databinding.conversion.text.NumberToStringConverter;
 import org.eclipse.core.databinding.conversion.text.StringToNumberConverter;
-import org.eclipse.core.databinding.observable.value.IObservableValue;
 import org.eclipse.core.internal.databinding.validation.StringToIntegerValidator;
 import org.eclipse.swt.events.SelectionEvent;
 import org.jkiss.code.NotNull;
@@ -34,8 +32,8 @@ import java.util.stream.Stream;
  */
 public sealed interface RowBuilder permits RowBuilderImpl {
     @NotNull
-    static <T> IConverter<? super T, ? extends T> identityConverter() {
-        return IConverter.create(Function.identity());
+    static <T> Function<? super T, ? extends T> identityConverter() {
+        return Function.identity();
     }
 
     @NotNull
@@ -44,10 +42,10 @@ public sealed interface RowBuilder permits RowBuilderImpl {
     }
 
     @NotNull
-    RowBuilder enabled(@NotNull IObservableValue<Boolean> binding);
+    RowBuilder enabled(@NotNull Observable<Boolean> binding);
 
     @NotNull
-    RowBuilder visible(@NotNull IObservableValue<Boolean> binding);
+    RowBuilder visible(@NotNull Observable<Boolean> binding);
 
     @NotNull
     RowBuilder panel(@NotNull Consumer<? super PanelBuilder> handler);
@@ -93,24 +91,24 @@ public sealed interface RowBuilder permits RowBuilderImpl {
     RowBuilder checkBox(@NotNull String text, @NotNull Consumer<? super ControlBuilder.ButtonBuilder> handler);
 
     @NotNull
-    <T> RowBuilder textField(@NotNull IObservableValue<T> binding, @NotNull Consumer<? super ControlBuilder.TextBuilder<T>> handler);
+    <T> RowBuilder textField(@NotNull Observable<T> binding, @NotNull Consumer<? super ControlBuilder.TextBuilder<T>> handler);
 
     @NotNull
-    default <T> RowBuilder textField(@NotNull IObservableValue<T> binding) {
+    default <T> RowBuilder textField(@NotNull Observable<T> binding) {
         return textField(binding, identityConsumer());
     }
 
     @NotNull
-    <T> RowBuilder passwordField(@NotNull IObservableValue<T> binding, @NotNull Consumer<? super ControlBuilder.TextBuilder<T>> handler);
+    <T> RowBuilder passwordField(@NotNull Observable<T> binding, @NotNull Consumer<? super ControlBuilder.TextBuilder<T>> handler);
 
     @NotNull
-    default <T> RowBuilder passwordField(@NotNull IObservableValue<T> binding) {
+    default <T> RowBuilder passwordField(@NotNull Observable<T> binding) {
         return passwordField(binding, identityConsumer());
     }
 
     @NotNull
     default RowBuilder intTextField(
-        @NotNull IObservableValue<? super Integer> binding,
+        @NotNull Observable<? super Integer> binding,
         @NotNull Consumer<? super ControlBuilder.TextBuilder<? super Integer>> handler
     ) {
         var toModelConverter = StringToNumberConverter.toInteger(true);
@@ -118,29 +116,29 @@ public sealed interface RowBuilder permits RowBuilderImpl {
         var fromModelConverter = NumberToStringConverter.fromInteger(true);
         return textField(binding, tb -> {
             handler.accept(tb);
-            tb.toModel(toModelValidator, toModelConverter);
-            tb.fromModel(fromModelConverter);
+            tb.toModel(toModelValidator::validate, toModelConverter::convert);
+            tb.fromModel(fromModelConverter::convert);
         });
     }
 
     @NotNull
-    default RowBuilder intTextField(@NotNull IObservableValue<? super Integer> binding) {
+    default RowBuilder intTextField(@NotNull Observable<? super Integer> binding) {
         return intTextField(binding, identityConsumer());
     }
 
     @NotNull
     <T> RowBuilder comboBox(
         @NotNull List<? extends T> items,
-        @NotNull IObservableValue<T> binding,
-        @NotNull IConverter<? super T, String> converter,
+        @NotNull Observable<T> binding,
+        @NotNull Function<? super T, String> converter,
         @NotNull Consumer<? super ControlBuilder.ComboBuilder<T>> handler
     );
 
     @NotNull
     default <T> RowBuilder comboBox(
         @NotNull List<? extends T> items,
-        @NotNull IObservableValue<T> binding,
-        @NotNull IConverter<? super T, String> converter
+        @NotNull Observable<T> binding,
+        @NotNull Function<? super T, String> converter
     ) {
         return comboBox(items, binding, converter, identityConsumer());
     }
@@ -148,23 +146,18 @@ public sealed interface RowBuilder permits RowBuilderImpl {
     @NotNull
     default RowBuilder comboBox(
         @NotNull List<? extends String> items,
-        @NotNull IObservableValue<? super String> binding
+        @NotNull Observable<? super String> binding
     ) {
-        return comboBox(items, binding, IConverter.create(Object::toString), identityConsumer());
+        return comboBox(items, binding, Object::toString, identityConsumer());
     }
 
     @NotNull
     default <T extends Enum<T>> RowBuilder comboBox(
-        @NotNull IObservableValue<T> binding,
-        @NotNull IConverter<? super T, String> converter,
+        @NotNull Observable<T> binding,
+        @NotNull Function<? super T, String> converter,
         @NotNull Consumer<? super ControlBuilder.ComboBuilder<T>> handler
     ) {
-        if (!(binding.getValueType() instanceof Class<?> cls)) {
-            throw new IllegalArgumentException("Binding must have its value type set");
-        }
-
-        @SuppressWarnings("unchecked")
-        var items = Stream.of(cls.getEnumConstants())
+        var items = Stream.of(binding.type().getEnumConstants())
             .map(value -> (T) value)
             .toList();
 
@@ -173,8 +166,8 @@ public sealed interface RowBuilder permits RowBuilderImpl {
 
     @NotNull
     default <T extends Enum<T>> RowBuilder comboBox(
-        @NotNull IObservableValue<T> binding,
-        @NotNull IConverter<? super T, String> converter
+        @NotNull Observable<T> binding,
+        @NotNull Function<? super T, String> converter
     ) {
         return comboBox(binding, converter, identityConsumer());
     }

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,12 +16,11 @@
  */
 package org.jkiss.dbeaver.ui.forms;
 
-import org.eclipse.core.databinding.conversion.IConverter;
-import org.eclipse.core.databinding.observable.value.IObservableValue;
-import org.eclipse.core.databinding.validation.IValidator;
+import org.eclipse.core.runtime.IStatus;
 import org.jkiss.code.NotNull;
 
 import java.util.function.Consumer;
+import java.util.function.Function;
 
 /**
  * The builder for a control.
@@ -31,10 +30,10 @@ public sealed interface ControlBuilder<B extends ControlBuilder<B>>
     ControlBuilder.TextBuilder, ControlBuilderImpl, PanelBuilder {
 
     @NotNull
-    B visible(@NotNull IObservableValue<Boolean> binding);
+    B visible(@NotNull Observable<Boolean> binding);
 
     @NotNull
-    B enabled(@NotNull IObservableValue<Boolean> binding);
+    B enabled(@NotNull Observable<Boolean> binding);
 
     @NotNull
     B tooltip(@NotNull String value);
@@ -76,13 +75,13 @@ public sealed interface ControlBuilder<B extends ControlBuilder<B>>
     sealed interface TextBuilder<T> extends ControlBuilder<TextBuilder<T>> permits ControlBuilderImpl.TextBuilderImpl {
         @NotNull
         TextBuilder<T> toModel(
-            @NotNull IValidator<? super String> afterGetValidator,
-            @NotNull IConverter<? super String, ? extends T> targetToModelConverter
+            @NotNull Function<? super String, IStatus> afterGetValidator,
+            @NotNull Function<? super String, ? extends T> targetToModelConverter
         );
 
         @NotNull
         TextBuilder<T> fromModel(
-            @NotNull IConverter<? super T, String> modelToTargetConverter
+            @NotNull Function<? super T, String> modelToTargetConverter
         );
     }
 
@@ -91,7 +90,7 @@ public sealed interface ControlBuilder<B extends ControlBuilder<B>>
      */
     sealed interface ButtonBuilder extends ControlBuilder<ButtonBuilder> permits ControlBuilderImpl.ButtonBuilderImpl {
         @NotNull
-        ButtonBuilder selected(@NotNull IObservableValue<Boolean> binding);
+        ButtonBuilder selected(@NotNull Observable<Boolean> binding);
     }
 
     /**

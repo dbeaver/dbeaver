@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,7 +20,7 @@ import org.eclipse.core.databinding.DataBindingContext;
 import org.eclipse.core.databinding.UpdateValueStrategy;
 import org.eclipse.core.databinding.conversion.IConverter;
 import org.eclipse.core.databinding.observable.value.IObservableValue;
-import org.eclipse.core.databinding.validation.IValidator;
+import org.eclipse.core.runtime.IStatus;
 import org.eclipse.jface.databinding.fieldassist.ControlDecorationSupport;
 import org.eclipse.jface.databinding.swt.typed.WidgetProperties;
 import org.eclipse.jface.resource.JFaceResources;
@@ -35,17 +35,17 @@ import org.eclipse.swt.widgets.*;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.forms.util.Bindings;
 
 import java.util.List;
 import java.util.function.Consumer;
+import java.util.function.Function;
 
 abstract sealed class ControlBuilderImpl<B extends ControlBuilder<B>, C extends Control> implements ControlBuilder<B>
     permits ControlBuilderImpl.ButtonBuilderImpl, ControlBuilderImpl.ComboBuilderImpl, ControlBuilderImpl.CommentBuilderImpl,
     ControlBuilderImpl.LabelBuilderImpl, ControlBuilderImpl.TextBuilderImpl, PanelBuilderImpl {
 
-    private IObservableValue<Boolean> visible;
-    private IObservableValue<Boolean> enabled;
+    private Observable<Boolean> visible;
+    private Observable<Boolean> enabled;
     private String tooltip;
 
     int alignX = SWT.BEGINNING;
@@ -56,14 +56,14 @@ abstract sealed class ControlBuilderImpl<B extends ControlBuilder<B>, C extends 
 
     @NotNull
     @Override
-    public B visible(@NotNull IObservableValue<Boolean> binding) {
+    public B visible(@NotNull Observable<Boolean> binding) {
         visible = binding;
         return builder();
     }
 
     @NotNull
     @Override
-    public B enabled(@NotNull IObservableValue<Boolean> binding) {
+    public B enabled(@NotNull Observable<Boolean> binding) {
         enabled = binding;
         return builder();
     }
@@ -138,20 +138,21 @@ abstract sealed class ControlBuilderImpl<B extends ControlBuilder<B>, C extends 
     protected void bind(@NotNull DataBindingContext context, @NotNull C control, @Nullable RowBuilderImpl row) {
         if (row != null && row.visible != null || visible != null) {
             // FIXME: Initially non-visible controls occupy space
-            var binding = Bindings.and(row != null ? row.visible : null, visible);
-            binding.addValueChangeListener(event -> {
+            var binding = Observables.and(row != null ? row.visible : null, visible);
+            var delegate = delegate(binding);
+            delegate.addValueChangeListener(event -> {
                 var data = (GridData) control.getLayoutData();
-                var value = (boolean) binding.getValue();
+                var value = (boolean) binding.get();
                 if (data.exclude == value) {
                     data.exclude = !value;
                     control.requestLayout();
                 }
             });
-            context.bindValue(WidgetProperties.visible().observe(control), binding);
+            context.bindValue(WidgetProperties.visible().observe(control), delegate);
         }
         if (row != null && row.enabled != null || enabled != null) {
-            var binding = Bindings.and(row != null ? row.enabled : null, enabled);
-            context.bindValue(WidgetProperties.enabled().observe(control), binding);
+            var binding = Observables.and(row != null ? row.enabled : null, enabled);
+            context.bindValue(WidgetProperties.enabled().observe(control), delegate(binding));
         }
         if (tooltip != null) {
             control.setToolTipText(tooltip);
@@ -162,6 +163,11 @@ abstract sealed class ControlBuilderImpl<B extends ControlBuilder<B>, C extends 
     @SuppressWarnings("unchecked")
     private B builder() {
         return (B) this;
+    }
+
+    @NotNull
+    private static <T> IObservableValue<T> delegate(@NotNull Observable<T> observable) {
+        return ((ObservableImpl<T>) observable).delegate();
     }
 
     static final class LabelBuilderImpl extends ControlBuilderImpl<LabelBuilder, Label> implements LabelBuilder {
@@ -184,12 +190,12 @@ abstract sealed class ControlBuilderImpl<B extends ControlBuilder<B>, C extends 
 
     static final class TextBuilderImpl<T> extends ControlBuilderImpl<TextBuilder<T>, Text> implements TextBuilder<T> {
         private final int style;
-        private final IObservableValue<T> text;
-        private IValidator<? super String> toModelValidator;
-        private IConverter<? super String, ? extends T> toModelConverter;
-        private IConverter<? super T, String> fromModelConverter;
+        private final Observable<T> text;
+        private Function<? super String, IStatus> toModelValidator;
+        private Function<? super String, ? extends T> toModelConverter;
+        private Function<? super T, String> fromModelConverter;
 
-        TextBuilderImpl(int style, @NotNull IObservableValue<T> text) {
+        TextBuilderImpl(int style, @NotNull Observable<T> text) {
             this.style = style;
             this.text = text;
         }
@@ -197,8 +203,8 @@ abstract sealed class ControlBuilderImpl<B extends ControlBuilder<B>, C extends 
         @NotNull
         @Override
         public TextBuilder<T> toModel(
-            @NotNull IValidator<? super String> afterGetValidator,
-            @NotNull IConverter<? super String, ? extends T> targetToModelConverter
+            @NotNull Function<? super String, IStatus> afterGetValidator,
+            @NotNull Function<? super String, ? extends T> targetToModelConverter
         ) {
             this.toModelValidator = afterGetValidator;
             this.toModelConverter = targetToModelConverter;
@@ -207,7 +213,7 @@ abstract sealed class ControlBuilderImpl<B extends ControlBuilder<B>, C extends 
 
         @NotNull
         @Override
-        public TextBuilder<T> fromModel(@NotNull IConverter<? super T, String> modelToTargetConverter) {
+        public TextBuilder<T> fromModel(@NotNull Function<? super T, String> modelToTargetConverter) {
             this.fromModelConverter = modelToTargetConverter;
             return this;
         }
@@ -234,16 +240,16 @@ abstract sealed class ControlBuilderImpl<B extends ControlBuilder<B>, C extends 
             UpdateValueStrategy<? super T, String> fromModelStrategy = null;
 
             if (toModelConverter != null) {
-                toModelStrategy = (UpdateValueStrategy<String, ? extends T>) UpdateValueStrategy.create(toModelConverter);
-                toModelStrategy.setAfterGetValidator(toModelValidator);
+                toModelStrategy = (UpdateValueStrategy<String, ? extends T>) UpdateValueStrategy.create(IConverter.create(toModelConverter));
+                toModelStrategy.setAfterGetValidator(toModelValidator::apply);
             }
 
             if (fromModelConverter != null) {
-                fromModelStrategy = UpdateValueStrategy.create(fromModelConverter);
+                fromModelStrategy = UpdateValueStrategy.create(IConverter.create(fromModelConverter));
             }
 
             var target = WidgetProperties.text(SWT.Modify).observe(control);
-            var binding = context.bindValue(target, text, toModelStrategy, fromModelStrategy);
+            var binding = context.bindValue(target, delegate(text), toModelStrategy, fromModelStrategy);
 
             ControlDecorationSupport.create(binding, SWT.TOP | SWT.LEFT);
         }
@@ -253,7 +259,7 @@ abstract sealed class ControlBuilderImpl<B extends ControlBuilder<B>, C extends 
         private final String text;
         private final Consumer<SelectionEvent> onSelect;
         private final int style;
-        private IObservableValue<Boolean> selected;
+        private Observable<Boolean> selected;
 
         ButtonBuilderImpl(@NotNull String text, @Nullable Consumer<SelectionEvent> onSelect, int style) {
             this.text = text;
@@ -263,7 +269,7 @@ abstract sealed class ControlBuilderImpl<B extends ControlBuilder<B>, C extends 
 
         @NotNull
         @Override
-        public ButtonBuilder selected(@NotNull IObservableValue<Boolean> binding) {
+        public ButtonBuilder selected(@NotNull Observable<Boolean> binding) {
             selected = binding;
             return this;
         }
@@ -288,20 +294,20 @@ abstract sealed class ControlBuilderImpl<B extends ControlBuilder<B>, C extends 
         protected void bind(@NotNull DataBindingContext context, @NotNull Button control, @Nullable RowBuilderImpl row) {
             super.bind(context, control, row);
             if (selected != null) {
-                context.bindValue(WidgetProperties.buttonSelection().observe(control), selected);
+                context.bindValue(WidgetProperties.buttonSelection().observe(control), delegate(selected));
             }
         }
     }
 
     static final class ComboBuilderImpl<T> extends ControlBuilderImpl<ComboBuilder<T>, Combo> implements ComboBuilder<T> {
-        private final IObservableValue<T> binding;
-        private final IConverter<? super T, String> converter;
+        private final Observable<T> binding;
+        private final Function<? super T, String> converter;
         private final List<? extends T> items;
         private final int style;
 
         public ComboBuilderImpl(
-            @NotNull IObservableValue<T> binding,
-            @NotNull IConverter<? super T, String> converter,
+            @NotNull Observable<T> binding,
+            @NotNull Function<? super T, String> converter,
             @NotNull List<? extends T> items,
             int style
         ) {
@@ -316,7 +322,7 @@ abstract sealed class ControlBuilderImpl<B extends ControlBuilder<B>, C extends 
         protected Combo create(@NotNull DataBindingContext context, @NotNull Composite parent) {
             Combo combo = new Combo(parent, style);
             for (T item : items) {
-                combo.add(converter.convert(item));
+                combo.add(converter.apply(item));
             }
             return combo;
         }
@@ -327,7 +333,7 @@ abstract sealed class ControlBuilderImpl<B extends ControlBuilder<B>, C extends 
 
             context.bindValue(
                 WidgetProperties.singleSelectionIndex().observe(control),
-                binding,
+                delegate(binding),
                 UpdateValueStrategy.create(IConverter.create(items::get)),
                 UpdateValueStrategy.create(IConverter.create(items::indexOf))
             );

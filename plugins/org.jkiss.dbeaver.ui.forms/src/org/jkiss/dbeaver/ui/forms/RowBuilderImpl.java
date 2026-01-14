@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,8 +16,6 @@
  */
 package org.jkiss.dbeaver.ui.forms;
 
-import org.eclipse.core.databinding.conversion.IConverter;
-import org.eclipse.core.databinding.observable.value.IObservableValue;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionEvent;
 import org.jkiss.code.NotNull;
@@ -25,13 +23,14 @@ import org.jkiss.code.NotNull;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
+import java.util.function.Function;
 
 final class RowBuilderImpl implements RowBuilder {
     final List<ControlBuilderImpl<?, ?>> controls = new ArrayList<>();
     final int indent;
 
-    IObservableValue<Boolean> visible;
-    IObservableValue<Boolean> enabled;
+    Observable<Boolean> visible;
+    Observable<Boolean> enabled;
 
     RowBuilderImpl(int indent) {
         this.indent = indent;
@@ -39,14 +38,14 @@ final class RowBuilderImpl implements RowBuilder {
 
     @NotNull
     @Override
-    public RowBuilder visible(@NotNull IObservableValue<Boolean> binding) {
+    public RowBuilder visible(@NotNull Observable<Boolean> binding) {
         visible = binding;
         return this;
     }
 
     @NotNull
     @Override
-    public RowBuilder enabled(@NotNull IObservableValue<Boolean> binding) {
+    public RowBuilder enabled(@NotNull Observable<Boolean> binding) {
         enabled = binding;
         return this;
     }
@@ -120,7 +119,7 @@ final class RowBuilderImpl implements RowBuilder {
 
     @NotNull
     @Override
-    public <T> RowBuilder textField(@NotNull IObservableValue<T> binding, @NotNull Consumer<? super ControlBuilder.TextBuilder<T>> handler) {
+    public <T> RowBuilder textField(@NotNull Observable<T> binding, @NotNull Consumer<? super ControlBuilder.TextBuilder<T>> handler) {
         var builder = new ControlBuilderImpl.TextBuilderImpl<T>(SWT.BORDER, binding);
         handler.accept(builder);
         controls.add(builder);
@@ -129,7 +128,7 @@ final class RowBuilderImpl implements RowBuilder {
 
     @NotNull
     @Override
-    public <T> RowBuilder passwordField(@NotNull IObservableValue<T> binding, @NotNull Consumer<? super ControlBuilder.TextBuilder<T>> handler) {
+    public <T> RowBuilder passwordField(@NotNull Observable<T> binding, @NotNull Consumer<? super ControlBuilder.TextBuilder<T>> handler) {
         var builder = new ControlBuilderImpl.TextBuilderImpl<T>(SWT.BORDER | SWT.PASSWORD, binding);
         handler.accept(builder);
         controls.add(builder);
@@ -140,8 +139,8 @@ final class RowBuilderImpl implements RowBuilder {
     @Override
     public <T> RowBuilder comboBox(
         @NotNull List<? extends T> items,
-        @NotNull IObservableValue<T> binding,
-        @NotNull IConverter<? super T, String> converter,
+        @NotNull Observable<T> binding,
+        @NotNull Function<? super T, String> converter,
         @NotNull Consumer<? super ControlBuilder.ComboBuilder<T>> handler
     ) {
         if (items.isEmpty()) {

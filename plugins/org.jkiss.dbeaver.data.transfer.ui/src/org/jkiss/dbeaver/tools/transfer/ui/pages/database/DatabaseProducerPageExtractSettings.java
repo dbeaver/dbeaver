@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,10 +16,6 @@
  */
 package org.jkiss.dbeaver.tools.transfer.ui.pages.database;
 
-import org.eclipse.core.databinding.conversion.IConverter;
-import org.eclipse.core.databinding.observable.value.ComputedValue;
-import org.eclipse.core.databinding.observable.value.IObservableValue;
-import org.eclipse.core.databinding.observable.value.WritableValue;
 import org.eclipse.swt.widgets.Composite;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.data.DBDCellValue;
@@ -35,8 +31,9 @@ import org.jkiss.dbeaver.tools.transfer.ui.internal.DTUIMessages;
 import org.jkiss.dbeaver.tools.transfer.ui.pages.DataTransferPageNodeSettings;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.forms.AlignX;
+import org.jkiss.dbeaver.ui.forms.Observable;
+import org.jkiss.dbeaver.ui.forms.Observables;
 import org.jkiss.dbeaver.ui.forms.PanelBuilder;
-import org.jkiss.dbeaver.ui.forms.util.Bindings;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 
 import java.util.List;
@@ -49,21 +46,21 @@ public class DatabaseProducerPageExtractSettings extends DataTransferPageNodeSet
         USE_FETCHED_ROWS
     }
 
-    private final WritableValue<Strategy> strategy = Bindings.of(Strategy.QUERY_DATABASE);
+    private final Observable<Strategy> strategy = Observable.of(Strategy.QUERY_DATABASE);
 
     // Query database
-    private final WritableValue<Boolean> openNewConnections = Bindings.of(false);
-    private final WritableValue<Boolean> fetchRowCount = Bindings.of(false);
+    private final Observable<Boolean> openNewConnections = Observable.of(false);
+    private final Observable<Boolean> fetchRowCount = Observable.of(false);
 
     // Fetched rows
-    private final WritableValue<Boolean> selectedRowsOnly = Bindings.of(false);
-    private final WritableValue<Boolean> selectedColumnsOnly = Bindings.of(false);
+    private final Observable<Boolean> selectedRowsOnly = Observable.of(false);
+    private final Observable<Boolean> selectedColumnsOnly = Observable.of(false);
 
     // Advanced
-    private final WritableValue<Integer> fetchSize = Bindings.of(10000);
-    private final WritableValue<Integer> threadCount = Bindings.of(1);
-    private final WritableValue<Integer> segmentSize = Bindings.of(10000);
-    private final WritableValue<ExtractType> extractType = Bindings.of(ExtractType.SINGLE_QUERY);
+    private final Observable<Integer> fetchSize = Observable.of(10000);
+    private final Observable<Integer> threadCount = Observable.of(1);
+    private final Observable<Integer> segmentSize = Observable.of(10000);
+    private final Observable<ExtractType> extractType = Observable.of(ExtractType.SINGLE_QUERY);
 
     public DatabaseProducerPageExtractSettings() {
         super(DTUIMessages.database_producer_page_extract_settings_name_and_title);
@@ -93,8 +90,8 @@ public class DatabaseProducerPageExtractSettings extends DataTransferPageNodeSet
 
     @NotNull
     private Consumer<PanelBuilder> buildExtractionPanel() {
-        var queryDatabase = Bindings.select(strategy, Strategy.QUERY_DATABASE);
-        var useFetchedData = Bindings.select(strategy, Strategy.USE_FETCHED_ROWS);
+        var queryDatabase = Observables.equals(strategy, Strategy.QUERY_DATABASE);
+        var useFetchedData = Observables.equals(strategy, Strategy.USE_FETCHED_ROWS);
 
         return pb -> pb
             .row(rb -> rb
@@ -110,7 +107,7 @@ public class DatabaseProducerPageExtractSettings extends DataTransferPageNodeSet
     }
 
     @NotNull
-    private Consumer<PanelBuilder> buildQueryDatabasePanel(@NotNull IObservableValue<Boolean> enabled) {
+    private Consumer<PanelBuilder> buildQueryDatabasePanel(@NotNull Observable<Boolean> enabled) {
         return pb -> pb
             .row(rb -> rb
                 .enabled(enabled)
@@ -125,26 +122,26 @@ public class DatabaseProducerPageExtractSettings extends DataTransferPageNodeSet
     }
 
     @NotNull
-    private Consumer<PanelBuilder> buildUseFetchedRowsPanel(@NotNull IObservableValue<Boolean> enabled) {
-        var canExportSelection = Bindings.of(hasCellSelection() && canExportColumns());
+    private Consumer<PanelBuilder> buildUseFetchedRowsPanel(@NotNull Observable<Boolean> enabled) {
+        var canExportSelection = Observable.of(hasCellSelection() && canExportColumns());
 
         return pb -> pb
             .row(rb -> rb
-                .enabled(Bindings.and(enabled, canExportSelection))
+                .enabled(Observables.and(enabled, canExportSelection))
                 .checkBox("Selected rows only", bb -> bb.selected(selectedRowsOnly)))
             .row(rb -> rb
-                .enabled(Bindings.and(enabled, canExportSelection))
+                .enabled(Observables.and(enabled, canExportSelection))
                 .checkBox("Selected columns only", bb -> bb.selected(selectedColumnsOnly)));
     }
 
     @NotNull
-    private Consumer<PanelBuilder> buildAdvancedPanel(@NotNull IObservableValue<Boolean> queryDatabase) {
-        var canChangeThreads = Bindings.of(getWizard().getSettings().getDataPipes().size() > 2);
-        var canChangeSegment = ComputedValue.create(() -> extractType.getValue() == ExtractType.SEGMENTS);
+    private Consumer<PanelBuilder> buildAdvancedPanel(@NotNull Observable<Boolean> queryDatabase) {
+        var canChangeThreads = Observable.predicate(() -> getWizard().getSettings().getDataPipes().size() > 2);
+        var canChangeSegment = Observable.predicate(() -> extractType.get() == ExtractType.SEGMENTS);
 
         return pb -> pb
             .row(rb -> rb
-                .enabled(Bindings.and(queryDatabase, canChangeThreads))
+                .enabled(Observables.and(queryDatabase, canChangeThreads))
                 .controlLabel(DTMessages.data_transfer_wizard_output_label_max_threads)
                 .intTextField(threadCount, tb -> tb
                     .tooltip(DTUIMessages.database_producer_page_extract_settings_threads_num_text_tooltip)))
@@ -156,9 +153,9 @@ public class DatabaseProducerPageExtractSettings extends DataTransferPageNodeSet
             .row(rb -> rb
                 .enabled(queryDatabase)
                 .controlLabel(DTMessages.data_transfer_wizard_output_label_extract_type)
-                .comboBox(extractType, IConverter.create(DatabaseProducerPageExtractSettings::getExtractTypeLabel)))
+                .comboBox(extractType, DatabaseProducerPageExtractSettings::getExtractTypeLabel))
             .row(rb -> rb
-                .enabled(Bindings.and(queryDatabase, canChangeSegment))
+                .enabled(Observables.and(queryDatabase, canChangeSegment))
                 .controlLabel(DTMessages.data_transfer_wizard_output_label_segment_size)
                 .intTextField(segmentSize));
     }
@@ -170,20 +167,20 @@ public class DatabaseProducerPageExtractSettings extends DataTransferPageNodeSet
         var settings = getWizard().getPageSettings(this, DatabaseProducerSettings.class);
 
         // Query database
-        openNewConnections.setValue(settings.isOpenNewConnections());
-        fetchRowCount.setValue(settings.isQueryRowCount());
+        openNewConnections.set(settings.isOpenNewConnections());
+        fetchRowCount.set(settings.isQueryRowCount());
 
         // Fetched rows
         var useFetchedRows = settings.getFetchedRowsPolicy();
-        strategy.setValue(useFetchedRows != null ? Strategy.USE_FETCHED_ROWS : Strategy.QUERY_DATABASE);
-        selectedRowsOnly.setValue(useFetchedRows != null && useFetchedRows.selectedRowsOnly());
-        selectedColumnsOnly.setValue(useFetchedRows != null && useFetchedRows.selectedColumnsOnly());
+        strategy.set(useFetchedRows != null ? Strategy.USE_FETCHED_ROWS : Strategy.QUERY_DATABASE);
+        selectedRowsOnly.set(useFetchedRows != null && useFetchedRows.selectedRowsOnly());
+        selectedColumnsOnly.set(useFetchedRows != null && useFetchedRows.selectedColumnsOnly());
 
         // Advanced
-        fetchSize.setValue(settings.getFetchSize());
-        threadCount.setValue(getWizard().getSettings().getMaxJobCount());
-        segmentSize.setValue(settings.getSegmentSize());
-        extractType.setValue(settings.getExtractType());
+        fetchSize.set(settings.getFetchSize());
+        threadCount.set(getWizard().getSettings().getMaxJobCount());
+        segmentSize.set(settings.getSegmentSize());
+        extractType.set(settings.getExtractType());
 
         updatePageCompletion();
     }
@@ -193,25 +190,25 @@ public class DatabaseProducerPageExtractSettings extends DataTransferPageNodeSet
         var settings = getWizard().getPageSettings(this, DatabaseProducerSettings.class);
 
         // Query database
-        settings.setOpenNewConnections(openNewConnections.getValue());
-        settings.setQueryRowCount(fetchRowCount.getValue());
+        settings.setOpenNewConnections(openNewConnections.get());
+        settings.setQueryRowCount(fetchRowCount.get());
 
         // Fetched rows
-        if (strategy.getValue() == Strategy.USE_FETCHED_ROWS) {
+        if (strategy.get() == Strategy.USE_FETCHED_ROWS) {
             boolean canExportSelection = hasCellSelection() && canExportColumns();
             settings.setFetchedRowsPolicy(new FetchedRowsPolicy(
-                canExportSelection && selectedRowsOnly.getValue(),
-                canExportSelection && selectedColumnsOnly.getValue()
+                canExportSelection && selectedRowsOnly.get(),
+                canExportSelection && selectedColumnsOnly.get()
             ));
         } else {
             settings.setFetchedRowsPolicy(null);
         }
 
         // Advanced
-        settings.setFetchSize(fetchSize.getValue());
-        getWizard().getSettings().setMaxJobCount(threadCount.getValue());
-        settings.setSegmentSize(segmentSize.getValue());
-        settings.setExtractType(extractType.getValue());
+        settings.setFetchSize(fetchSize.get());
+        getWizard().getSettings().setMaxJobCount(threadCount.get());
+        settings.setSegmentSize(segmentSize.get());
+        settings.setExtractType(extractType.get());
     }
 
     @Override
