@@ -248,7 +248,7 @@ public class DBFUtils {
     @Nullable
     public static Path getPathFromURI(@NotNull String fileUriString) throws DBException {
         if (IOUtils.isLocalFile(fileUriString)) {
-            return Path.of(fileUriString);
+            return Path.of(fileUriString).toAbsolutePath();
         }
         URI fileUri = URI.create(fileUriString);
         if (!fileUri.isAbsolute() || fileUri.getScheme() == null) {
