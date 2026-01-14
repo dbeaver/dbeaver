@@ -330,15 +330,7 @@ public class DBNResource extends DBNNode implements DBNStreamData, DBNNodeWithCa
                 if (otherResource != null) {
                     try {
                         if (otherResource instanceof EFSNIOResource) {
-                            if (DBWorkbench.isDistributed() && resource.getRawLocation() == null) {
-                                fileStoreRecursiveCopy(monitor, otherResource);
-                            } else {
-                                otherResource.copy(
-                                    resource.getRawLocation().append(otherResource.getName()),
-                                    true,
-                                    monitor.getNestedMonitor()
-                                );
-                            }
+                            fileStoreRecursiveCopy(monitor, otherResource);
                         } else {
                             if (DBWorkbench.isDistributed() && !CommonUtils.equalObjects(otherResource.getProject(), resource.getProject())) {
                                 throw new DBException("Cross-project resource move is not supported in distributed workspaces");
@@ -360,6 +352,12 @@ public class DBNResource extends DBNNode implements DBNStreamData, DBNNodeWithCa
             }
         } finally {
             monitor.done();
+        }
+    }
+
+    private void resourceRecursiveCopy(@NotNull IResource otherResource) {
+        if (otherResource instanceof IFolder) {
+
         }
     }
 
