@@ -61,15 +61,15 @@ public class FormsDialog extends TrayDialog {
     private static void createFolderTab(
         @NotNull CTabFolder folder,
         @NotNull String text,
-        @NotNull Consumer<PanelBuilder> handler
+        @NotNull Consumer<UIPanelBuilder> handler
     ) {
         CTabItem item = new CTabItem(folder, SWT.NONE);
         item.setText(text);
-        item.setControl(PanelBuilder.build(folder, handler));
+        item.setControl(UIPanelBuilder.build(folder, handler));
     }
 
     @NotNull
-    private static Consumer<PanelBuilder> buildShowcasePanel() {
+    private static Consumer<UIPanelBuilder> buildShowcasePanel() {
         return pb -> pb
             .row(rb -> rb.group("Panel", buildPanelPanel()))
             .row(rb -> rb.group("Text", buildTextPanel()))
@@ -79,21 +79,21 @@ public class FormsDialog extends TrayDialog {
     }
 
     @NotNull
-    private static Consumer<PanelBuilder> buildControlsPanel() {
+    private static Consumer<UIPanelBuilder> buildControlsPanel() {
         return pb -> pb
             .row("label", rb -> rb.label("text"))
-            .row("button", rb -> rb.button("text", RowBuilder.identityConsumer()))
-            .row("radioButton", rb -> rb.radioButton("text", RowBuilder.identityConsumer()))
-            .row("checkBox", rb -> rb.checkBox("text", RowBuilder.identityConsumer()))
-            .row("textField", rb -> rb.textField(Observable.of("text")))
-            .row("passwordField", rb -> rb.passwordField(Observable.of("text")))
-            .row("intTextField", rb -> rb.intTextField(Observable.of(42)))
-            .row("comboBox", rb -> rb.comboBox(List.of(42), Observable.of(42), String::valueOf))
+            .row("button", rb -> rb.button("text", UIRowBuilder.identityConsumer()))
+            .row("radioButton", rb -> rb.radioButton("text", UIRowBuilder.identityConsumer()))
+            .row("checkBox", rb -> rb.checkBox("text", UIRowBuilder.identityConsumer()))
+            .row("textField", rb -> rb.textField(UIObservable.of("text")))
+            .row("passwordField", rb -> rb.passwordField(UIObservable.of("text")))
+            .row("intTextField", rb -> rb.intTextField(UIObservable.of(42)))
+            .row("comboBox", rb -> rb.comboBox(List.of(42), UIObservable.of(42), String::valueOf))
             .row("comment", rb -> rb.comment("text"));
     }
 
     @NotNull
-    private static Consumer<PanelBuilder> buildPanelPanel() {
+    private static Consumer<UIPanelBuilder> buildPanelPanel() {
         // @formatter:off
         return pb -> pb
             .row("Regular row", rb -> rb.label("A label"))
@@ -111,39 +111,39 @@ public class FormsDialog extends TrayDialog {
     }
 
     @NotNull
-    private static Consumer<PanelBuilder> buildTextPanel() {
-        var nonBlank = Observable.of("An ugly little beast");
-        var integer = Observable.of(1_000_000);
-        var text = Observable.of("value");
+    private static Consumer<UIPanelBuilder> buildTextPanel() {
+        var nonBlank = UIObservable.of("An ugly little beast");
+        var integer = UIObservable.of(1_000_000);
+        var text = UIObservable.of("value");
 
         // @formatter:off
         return pb -> pb
             .row("Requires not blank", rb -> rb
                 .textField(nonBlank, tb -> tb
-                    .toModel(Validators.requireNotBlank(), RowBuilder.identityConverter())))
+                    .toModel(UIValidators.requireNotBlank(), UIRowBuilder.identityConverter())))
             .row("Requires an integer", rb -> rb
                 .intTextField(integer))
             .row("Value", rb -> rb.textField(text))
             .indent(pb1 -> pb1
                 .row("As uppercase", rb -> rb.textField(text, tb -> tb
                     .fromModel(String::toUpperCase)
-                    .enabled(Observable.of(false))))
+                    .enabled(UIObservable.of(false))))
                 .row("As lowercase", rb -> rb.textField(text, tb -> tb
                     .fromModel(String::toLowerCase)
-                    .enabled(Observable.of(false)))));
+                    .enabled(UIObservable.of(false)))));
         // @formatter:on
     }
 
     @NotNull
-    private static Consumer<PanelBuilder> buildComboPanel() {
+    private static Consumer<UIPanelBuilder> buildComboPanel() {
         enum Test1 {
             OPTION_A,
             OPTION_B,
             OPTION_C
         }
 
-        var valueEnum = Observable.of(Test1.OPTION_B);
-        var valueString = Observable.of("value");
+        var valueEnum = UIObservable.of(Test1.OPTION_B);
+        var valueString = UIObservable.of("value");
 
         // @formatter:off
         return pb -> pb
@@ -157,12 +157,12 @@ public class FormsDialog extends TrayDialog {
     }
 
     @NotNull
-    private static Consumer<PanelBuilder> buildCheckPanel() {
-        var enabled1 = Observable.of(true);
-        var enabled2 = Observable.of(true);
-        var enabled3 = Observable.of(false);
-        var enabled4 = Observable.of(false);
-        var enabled5 = Observable.of(false);
+    private static Consumer<UIPanelBuilder> buildCheckPanel() {
+        var enabled1 = UIObservable.of(true);
+        var enabled2 = UIObservable.of(true);
+        var enabled3 = UIObservable.of(false);
+        var enabled4 = UIObservable.of(false);
+        var enabled5 = UIObservable.of(false);
 
         // @formatter:off
         return pb -> pb
@@ -174,18 +174,18 @@ public class FormsDialog extends TrayDialog {
             .row(rb -> rb
                 .enabled(enabled3)
                 .checkBox("Enable textField", bb -> bb.selected(enabled4))
-                .textField(Observable.of(""), tb -> tb.enabled(enabled4))
+                .textField(UIObservable.of(""), tb -> tb.enabled(enabled4))
                 .checkBox("Enable super additional options", bb -> bb.selected(enabled5)))
             .row(rb -> rb
                 .visible(enabled5)
-                .textField(Observable.of("textField1"))
-                .textField(Observable.of("textField2")));
+                .textField(UIObservable.of("textField1"))
+                .textField(UIObservable.of("textField2")));
         // @formatter:on
     }
 
     @NotNull
-    private static Consumer<PanelBuilder> buildButtonPanel() {
-        var enabled = Observable.of(false);
+    private static Consumer<UIPanelBuilder> buildButtonPanel() {
+        var enabled = UIObservable.of(false);
 
         // @formatter:off
         return pb -> pb
@@ -201,29 +201,29 @@ public class FormsDialog extends TrayDialog {
     }
 
     @NotNull
-    private static Consumer<PanelBuilder> buildAiConfigurationPanel() {
-        Consumer<PanelBuilder> general = pb -> pb
-            .row("Language", rb -> rb.comboBox(List.of("English"), Observable.of("English")));
+    private static Consumer<UIPanelBuilder> buildAiConfigurationPanel() {
+        Consumer<UIPanelBuilder> general = pb -> pb
+            .row("Language", rb -> rb.comboBox(List.of("English"), UIObservable.of("English")));
 
-        Consumer<PanelBuilder> completion = pb -> pb
-            .row(rb -> rb.checkBox("Include source in query comment", RowBuilder.identityConsumer()))
-            .row(rb -> rb.checkBox("Format SQL query", RowBuilder.identityConsumer()))
+        Consumer<UIPanelBuilder> completion = pb -> pb
+            .row(rb -> rb.checkBox("Include source in query comment", UIRowBuilder.identityConsumer()))
+            .row(rb -> rb.checkBox("Format SQL query", UIRowBuilder.identityConsumer()))
             .row(rb -> rb
                 .label("Table join rule:")
-                .comboBox(List.of("Default"), Observable.of("Default")))
-            .row(rb -> rb.checkBox("Execute SQL immediately", RowBuilder.identityConsumer()))
-            .row(rb -> rb.checkBox("Enable AI query suggestion", RowBuilder.identityConsumer()));
+                .comboBox(List.of("Default"), UIObservable.of("Default")))
+            .row(rb -> rb.checkBox("Execute SQL immediately", UIRowBuilder.identityConsumer()))
+            .row(rb -> rb.checkBox("Enable AI query suggestion", UIRowBuilder.identityConsumer()));
 
-        Consumer<PanelBuilder> execution = pb -> pb
-            .row("Select:", rb -> rb.comboBox(List.of("Execute immediately"), Observable.of("Execute immediately")))
-            .row("Modify:", rb -> rb.comboBox(List.of("Show confirmation"), Observable.of("Show confirmation")))
-            .row("Schema:", rb -> rb.comboBox(List.of("Show confirmation"), Observable.of("Show confirmation")));
+        Consumer<UIPanelBuilder> execution = pb -> pb
+            .row("Select:", rb -> rb.comboBox(List.of("Execute immediately"), UIObservable.of("Execute immediately")))
+            .row("Modify:", rb -> rb.comboBox(List.of("Show confirmation"), UIObservable.of("Show confirmation")))
+            .row("Schema:", rb -> rb.comboBox(List.of("Show confirmation"), UIObservable.of("Show confirmation")));
 
-        Consumer<PanelBuilder> structure = pb -> pb
-            .row(rb -> rb.checkBox("Send column data type information", RowBuilder.identityConsumer()))
-            .row(rb -> rb.checkBox("Send object description", RowBuilder.identityConsumer()))
-            .row(rb -> rb.checkBox("Send foreign keys information", RowBuilder.identityConsumer()))
-            .row(rb -> rb.checkBox("Send unique and primary keys information", RowBuilder.identityConsumer()));
+        Consumer<UIPanelBuilder> structure = pb -> pb
+            .row(rb -> rb.checkBox("Send column data type information", UIRowBuilder.identityConsumer()))
+            .row(rb -> rb.checkBox("Send object description", UIRowBuilder.identityConsumer()))
+            .row(rb -> rb.checkBox("Send foreign keys information", UIRowBuilder.identityConsumer()))
+            .row(rb -> rb.checkBox("Send unique and primary keys information", UIRowBuilder.identityConsumer()));
 
         return pb -> pb
             .row(rb -> rb.group("General", general))
@@ -234,35 +234,35 @@ public class FormsDialog extends TrayDialog {
     }
 
     @NotNull
-    private static Consumer<PanelBuilder> buildGeneralPanel() {
-        var checked = Observable.of(false);
-        var maximumElementsShown = Observable.of(1000);
-        var workbenchSaveInterval = Observable.of(5);
+    private static Consumer<UIPanelBuilder> buildGeneralPanel() {
+        var checked = UIObservable.of(false);
+        var maximumElementsShown = UIObservable.of(1000);
+        var workbenchSaveInterval = UIObservable.of(5);
 
         // @formatter:off
         return pb -> pb
-            .row(rb -> rb.checkBox("Always run in background", RowBuilder.identityConsumer()))
-            .row(rb -> rb.checkBox("Keep next/previous editor, view and perspectives dialog open", RowBuilder.identityConsumer()))
-            .row(rb -> rb.checkBox("Show heap status", RowBuilder.identityConsumer()))
+            .row(rb -> rb.checkBox("Always run in background", UIRowBuilder.identityConsumer()))
+            .row(rb -> rb.checkBox("Keep next/previous editor, view and perspectives dialog open", UIRowBuilder.identityConsumer()))
+            .row(rb -> rb.checkBox("Show heap status", UIRowBuilder.identityConsumer()))
             .row(rb -> rb
                 .label("Initial maximum number of elements shown in views:")
-                .intTextField(maximumElementsShown, tb -> tb.align(AlignX.FILL)))
-            .row(rb -> rb.checkBox("Rename resource inline if available", RowBuilder.identityConsumer()))
+                .intTextField(maximumElementsShown, tb -> tb.align(UIAlignX.FILL)))
+            .row(rb -> rb.checkBox("Rename resource inline if available", UIRowBuilder.identityConsumer()))
             .row(rb -> rb
                 .label("Workbench save interval (in minutes):")
-                .intTextField(workbenchSaveInterval, tb -> tb.align(AlignX.FILL)))
+                .intTextField(workbenchSaveInterval, tb -> tb.align(UIAlignX.FILL)))
             .row(rb -> rb
                 .group("Open mode", pb1 -> pb1
-                    .row(rb1 -> rb1.radioButton("Double click", RowBuilder.identityConsumer()))
+                    .row(rb1 -> rb1.radioButton("Double click", UIRowBuilder.identityConsumer()))
                     .row(rb1 -> rb1.radioButton("Single click", bb -> bb
                         .selected(checked)))
                     .indent(pb2 -> pb2
                         .row(rb1 -> rb1
                             .enabled(checked)
-                            .checkBox("Select on hover", RowBuilder.identityConsumer()))
+                            .checkBox("Select on hover", UIRowBuilder.identityConsumer()))
                         .row(rb1 -> rb1
                             .enabled(checked)
-                            .checkBox("Open when using arrow keys", RowBuilder.identityConsumer())))
+                            .checkBox("Open when using arrow keys", UIRowBuilder.identityConsumer())))
                     .row(rb1 -> rb1.label("Note: This preference may not take effect on all views"))));
         // @formatter:on
     }

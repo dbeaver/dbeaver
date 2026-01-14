@@ -25,35 +25,35 @@ import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
-final class RowBuilderImpl implements RowBuilder {
-    final List<ControlBuilderImpl<?, ?>> controls = new ArrayList<>();
+final class UIRowBuilderImpl implements UIRowBuilder {
+    final List<UIControlBuilderImpl<?, ?>> controls = new ArrayList<>();
     final int indent;
 
-    Observable<Boolean> visible;
-    Observable<Boolean> enabled;
+    UIObservable<Boolean> visible;
+    UIObservable<Boolean> enabled;
 
-    RowBuilderImpl(int indent) {
+    UIRowBuilderImpl(int indent) {
         this.indent = indent;
     }
 
     @NotNull
     @Override
-    public RowBuilder visible(@NotNull Observable<Boolean> binding) {
+    public UIRowBuilder visible(@NotNull UIObservable<Boolean> binding) {
         visible = binding;
         return this;
     }
 
     @NotNull
     @Override
-    public RowBuilder enabled(@NotNull Observable<Boolean> binding) {
+    public UIRowBuilder enabled(@NotNull UIObservable<Boolean> binding) {
         enabled = binding;
         return this;
     }
 
     @NotNull
     @Override
-    public RowBuilder panel(@NotNull Consumer<? super PanelBuilder> handler) {
-        var builder = PanelBuilderImpl.panel();
+    public UIRowBuilder panel(@NotNull Consumer<? super UIPanelBuilder> handler) {
+        var builder = UIPanelBuilderImpl.panel();
         handler.accept(builder);
         controls.add(builder);
         return this;
@@ -61,8 +61,8 @@ final class RowBuilderImpl implements RowBuilder {
 
     @NotNull
     @Override
-    public RowBuilder group(@NotNull String text, @NotNull Consumer<? super PanelBuilder> handler) {
-        var builder = PanelBuilderImpl.group(text);
+    public UIRowBuilder group(@NotNull String text, @NotNull Consumer<? super UIPanelBuilder> handler) {
+        var builder = UIPanelBuilderImpl.group(text);
         handler.accept(builder);
         controls.add(builder);
         return this;
@@ -70,8 +70,8 @@ final class RowBuilderImpl implements RowBuilder {
 
     @NotNull
     @Override
-    public RowBuilder expandableGroup(@NotNull String text, boolean expanded, @NotNull Consumer<? super PanelBuilder> handler) {
-        var builder = PanelBuilderImpl.expandableGroup(text, expanded);
+    public UIRowBuilder expandableGroup(@NotNull String text, boolean expanded, @NotNull Consumer<? super UIPanelBuilder> handler) {
+        var builder = UIPanelBuilderImpl.expandableGroup(text, expanded);
         handler.accept(builder);
         controls.add(builder);
         return this;
@@ -79,8 +79,8 @@ final class RowBuilderImpl implements RowBuilder {
 
     @NotNull
     @Override
-    public RowBuilder label(@NotNull String text, @NotNull Consumer<? super ControlBuilder.LabelBuilder> handler) {
-        var builder = new ControlBuilderImpl.LabelBuilderImpl(text, SWT.NONE);
+    public UIRowBuilder label(@NotNull String text, @NotNull Consumer<? super UIControlBuilder.LabelBuilder> handler) {
+        var builder = new UIControlBuilderImpl.LabelBuilderImpl(text, SWT.NONE);
         handler.accept(builder);
         controls.add(builder);
         return this;
@@ -88,12 +88,12 @@ final class RowBuilderImpl implements RowBuilder {
 
     @NotNull
     @Override
-    public RowBuilder button(
+    public UIRowBuilder button(
         @NotNull String text,
         @NotNull Consumer<SelectionEvent> onSelect,
-        @NotNull Consumer<? super ControlBuilder.ButtonBuilder> handler
+        @NotNull Consumer<? super UIControlBuilder.ButtonBuilder> handler
     ) {
-        var builder = new ControlBuilderImpl.ButtonBuilderImpl(text, onSelect, SWT.BORDER);
+        var builder = new UIControlBuilderImpl.ButtonBuilderImpl(text, onSelect, SWT.BORDER);
         handler.accept(builder);
         controls.add(builder);
         return this;
@@ -101,8 +101,8 @@ final class RowBuilderImpl implements RowBuilder {
 
     @NotNull
     @Override
-    public RowBuilder radioButton(@NotNull String text, @NotNull Consumer<? super ControlBuilder.ButtonBuilder> handler) {
-        var builder = new ControlBuilderImpl.ButtonBuilderImpl(text, null, SWT.BORDER | SWT.RADIO);
+    public UIRowBuilder radioButton(@NotNull String text, @NotNull Consumer<? super UIControlBuilder.ButtonBuilder> handler) {
+        var builder = new UIControlBuilderImpl.ButtonBuilderImpl(text, null, SWT.BORDER | SWT.RADIO);
         handler.accept(builder);
         controls.add(builder);
         return this;
@@ -110,8 +110,8 @@ final class RowBuilderImpl implements RowBuilder {
 
     @NotNull
     @Override
-    public RowBuilder checkBox(@NotNull String text, @NotNull Consumer<? super ControlBuilder.ButtonBuilder> handler) {
-        var builder = new ControlBuilderImpl.ButtonBuilderImpl(text, null, SWT.BORDER | SWT.CHECK);
+    public UIRowBuilder checkBox(@NotNull String text, @NotNull Consumer<? super UIControlBuilder.ButtonBuilder> handler) {
+        var builder = new UIControlBuilderImpl.ButtonBuilderImpl(text, null, SWT.BORDER | SWT.CHECK);
         handler.accept(builder);
         controls.add(builder);
         return this;
@@ -119,8 +119,8 @@ final class RowBuilderImpl implements RowBuilder {
 
     @NotNull
     @Override
-    public <T> RowBuilder textField(@NotNull Observable<T> binding, @NotNull Consumer<? super ControlBuilder.TextBuilder<T>> handler) {
-        var builder = new ControlBuilderImpl.TextBuilderImpl<T>(SWT.BORDER, binding);
+    public <T> UIRowBuilder textField(@NotNull UIObservable<T> binding, @NotNull Consumer<? super UIControlBuilder.TextBuilder<T>> handler) {
+        var builder = new UIControlBuilderImpl.TextBuilderImpl<T>(SWT.BORDER, binding);
         handler.accept(builder);
         controls.add(builder);
         return this;
@@ -128,8 +128,8 @@ final class RowBuilderImpl implements RowBuilder {
 
     @NotNull
     @Override
-    public <T> RowBuilder passwordField(@NotNull Observable<T> binding, @NotNull Consumer<? super ControlBuilder.TextBuilder<T>> handler) {
-        var builder = new ControlBuilderImpl.TextBuilderImpl<T>(SWT.BORDER | SWT.PASSWORD, binding);
+    public <T> UIRowBuilder passwordField(@NotNull UIObservable<T> binding, @NotNull Consumer<? super UIControlBuilder.TextBuilder<T>> handler) {
+        var builder = new UIControlBuilderImpl.TextBuilderImpl<T>(SWT.BORDER | SWT.PASSWORD, binding);
         handler.accept(builder);
         controls.add(builder);
         return this;
@@ -137,17 +137,17 @@ final class RowBuilderImpl implements RowBuilder {
 
     @NotNull
     @Override
-    public <T> RowBuilder comboBox(
+    public <T> UIRowBuilder comboBox(
         @NotNull List<? extends T> items,
-        @NotNull Observable<T> binding,
+        @NotNull UIObservable<T> binding,
         @NotNull Function<? super T, String> converter,
-        @NotNull Consumer<? super ControlBuilder.ComboBuilder<T>> handler
+        @NotNull Consumer<? super UIControlBuilder.ComboBuilder<T>> handler
     ) {
         if (items.isEmpty()) {
             throw new IllegalArgumentException("Enum doesn't have any constants");
         }
 
-        var builder = new ControlBuilderImpl.ComboBuilderImpl<T>(binding, converter, items, SWT.BORDER | SWT.DROP_DOWN | SWT.READ_ONLY);
+        var builder = new UIControlBuilderImpl.ComboBuilderImpl<T>(binding, converter, items, SWT.BORDER | SWT.DROP_DOWN | SWT.READ_ONLY);
         handler.accept(builder);
         controls.add(builder);
         return this;
@@ -155,8 +155,8 @@ final class RowBuilderImpl implements RowBuilder {
 
     @NotNull
     @Override
-    public RowBuilder comment(@NotNull String text) {
-        controls.add(new ControlBuilderImpl.CommentBuilderImpl(text));
+    public UIRowBuilder comment(@NotNull String text) {
+        controls.add(new UIControlBuilderImpl.CommentBuilderImpl(text));
         return this;
     }
 }

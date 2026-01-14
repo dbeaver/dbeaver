@@ -40,12 +40,12 @@ import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
-abstract sealed class ControlBuilderImpl<B extends ControlBuilder<B>, C extends Control> implements ControlBuilder<B>
-    permits ControlBuilderImpl.ButtonBuilderImpl, ControlBuilderImpl.ComboBuilderImpl, ControlBuilderImpl.CommentBuilderImpl,
-    ControlBuilderImpl.LabelBuilderImpl, ControlBuilderImpl.TextBuilderImpl, PanelBuilderImpl {
+abstract sealed class UIControlBuilderImpl<B extends UIControlBuilder<B>, C extends Control> implements UIControlBuilder<B>
+    permits UIControlBuilderImpl.ButtonBuilderImpl, UIControlBuilderImpl.ComboBuilderImpl, UIControlBuilderImpl.CommentBuilderImpl,
+    UIControlBuilderImpl.LabelBuilderImpl, UIControlBuilderImpl.TextBuilderImpl, UIPanelBuilderImpl {
 
-    private Observable<Boolean> visible;
-    private Observable<Boolean> enabled;
+    private UIObservable<Boolean> visible;
+    private UIObservable<Boolean> enabled;
     private String tooltip;
 
     int alignX = SWT.BEGINNING;
@@ -56,14 +56,14 @@ abstract sealed class ControlBuilderImpl<B extends ControlBuilder<B>, C extends 
 
     @NotNull
     @Override
-    public B visible(@NotNull Observable<Boolean> binding) {
+    public B visible(@NotNull UIObservable<Boolean> binding) {
         visible = binding;
         return builder();
     }
 
     @NotNull
     @Override
-    public B enabled(@NotNull Observable<Boolean> binding) {
+    public B enabled(@NotNull UIObservable<Boolean> binding) {
         enabled = binding;
         return builder();
     }
@@ -84,7 +84,7 @@ abstract sealed class ControlBuilderImpl<B extends ControlBuilder<B>, C extends 
 
     @NotNull
     @Override
-    public B align(@NotNull AlignX x, @NotNull AlignY y) {
+    public B align(@NotNull UIAlignX x, @NotNull UIAlignY y) {
         alignX = x.toSWT();
         alignY = y.toSWT();
         return builder();
@@ -92,14 +92,14 @@ abstract sealed class ControlBuilderImpl<B extends ControlBuilder<B>, C extends 
 
     @NotNull
     @Override
-    public B align(@NotNull AlignX x) {
+    public B align(@NotNull UIAlignX x) {
         alignX = x.toSWT();
         return builder();
     }
 
     @NotNull
     @Override
-    public B align(@NotNull AlignY y) {
+    public B align(@NotNull UIAlignY y) {
         alignY = y.toSWT();
         return builder();
     }
@@ -121,7 +121,7 @@ abstract sealed class ControlBuilderImpl<B extends ControlBuilder<B>, C extends 
     }
 
     @NotNull
-    C build(@NotNull DataBindingContext context, @NotNull Composite parent, @Nullable RowBuilderImpl row) {
+    C build(@NotNull DataBindingContext context, @NotNull Composite parent, @Nullable UIRowBuilderImpl row) {
         C control = create(context, parent);
         bind(context, control, row);
         return control;
@@ -135,10 +135,10 @@ abstract sealed class ControlBuilderImpl<B extends ControlBuilder<B>, C extends 
         return null;
     }
 
-    protected void bind(@NotNull DataBindingContext context, @NotNull C control, @Nullable RowBuilderImpl row) {
+    protected void bind(@NotNull DataBindingContext context, @NotNull C control, @Nullable UIRowBuilderImpl row) {
         if (row != null && row.visible != null || visible != null) {
             // FIXME: Initially non-visible controls occupy space
-            var binding = Observables.and(row != null ? row.visible : null, visible);
+            var binding = UIObservables.and(row != null ? row.visible : null, visible);
             var delegate = delegate(binding);
             delegate.addValueChangeListener(event -> {
                 var data = (GridData) control.getLayoutData();
@@ -151,7 +151,7 @@ abstract sealed class ControlBuilderImpl<B extends ControlBuilder<B>, C extends 
             context.bindValue(WidgetProperties.visible().observe(control), delegate);
         }
         if (row != null && row.enabled != null || enabled != null) {
-            var binding = Observables.and(row != null ? row.enabled : null, enabled);
+            var binding = UIObservables.and(row != null ? row.enabled : null, enabled);
             context.bindValue(WidgetProperties.enabled().observe(control), delegate(binding));
         }
         if (tooltip != null) {
@@ -166,11 +166,11 @@ abstract sealed class ControlBuilderImpl<B extends ControlBuilder<B>, C extends 
     }
 
     @NotNull
-    private static <T> IObservableValue<T> delegate(@NotNull Observable<T> observable) {
-        return ((ObservableImpl<T>) observable).delegate();
+    private static <T> IObservableValue<T> delegate(@NotNull UIObservable<T> observable) {
+        return ((UIObservableImpl<T>) observable).delegate();
     }
 
-    static final class LabelBuilderImpl extends ControlBuilderImpl<LabelBuilder, Label> implements LabelBuilder {
+    static final class LabelBuilderImpl extends UIControlBuilderImpl<LabelBuilder, Label> implements LabelBuilder {
         private final String text;
         private final int style;
 
@@ -188,14 +188,14 @@ abstract sealed class ControlBuilderImpl<B extends ControlBuilder<B>, C extends 
         }
     }
 
-    static final class TextBuilderImpl<T> extends ControlBuilderImpl<TextBuilder<T>, Text> implements TextBuilder<T> {
+    static final class TextBuilderImpl<T> extends UIControlBuilderImpl<TextBuilder<T>, Text> implements TextBuilder<T> {
         private final int style;
-        private final Observable<T> text;
+        private final UIObservable<T> text;
         private Function<? super String, IStatus> toModelValidator;
         private Function<? super String, ? extends T> toModelConverter;
         private Function<? super T, String> fromModelConverter;
 
-        TextBuilderImpl(int style, @NotNull Observable<T> text) {
+        TextBuilderImpl(int style, @NotNull UIObservable<T> text) {
             this.style = style;
             this.text = text;
         }
@@ -233,7 +233,7 @@ abstract sealed class ControlBuilderImpl<B extends ControlBuilder<B>, C extends 
 
         @Override
         @SuppressWarnings("unchecked")
-        protected void bind(@NotNull DataBindingContext context, @NotNull Text control, @Nullable RowBuilderImpl row) {
+        protected void bind(@NotNull DataBindingContext context, @NotNull Text control, @Nullable UIRowBuilderImpl row) {
             super.bind(context, control, row);
 
             UpdateValueStrategy<String, ? extends T> toModelStrategy = null;
@@ -255,11 +255,11 @@ abstract sealed class ControlBuilderImpl<B extends ControlBuilder<B>, C extends 
         }
     }
 
-    static final class ButtonBuilderImpl extends ControlBuilderImpl<ButtonBuilder, Button> implements ButtonBuilder {
+    static final class ButtonBuilderImpl extends UIControlBuilderImpl<ButtonBuilder, Button> implements ButtonBuilder {
         private final String text;
         private final Consumer<SelectionEvent> onSelect;
         private final int style;
-        private Observable<Boolean> selected;
+        private UIObservable<Boolean> selected;
 
         ButtonBuilderImpl(@NotNull String text, @Nullable Consumer<SelectionEvent> onSelect, int style) {
             this.text = text;
@@ -269,7 +269,7 @@ abstract sealed class ControlBuilderImpl<B extends ControlBuilder<B>, C extends 
 
         @NotNull
         @Override
-        public ButtonBuilder selected(@NotNull Observable<Boolean> binding) {
+        public ButtonBuilder selected(@NotNull UIObservable<Boolean> binding) {
             selected = binding;
             return this;
         }
@@ -291,7 +291,7 @@ abstract sealed class ControlBuilderImpl<B extends ControlBuilder<B>, C extends 
         }
 
         @Override
-        protected void bind(@NotNull DataBindingContext context, @NotNull Button control, @Nullable RowBuilderImpl row) {
+        protected void bind(@NotNull DataBindingContext context, @NotNull Button control, @Nullable UIRowBuilderImpl row) {
             super.bind(context, control, row);
             if (selected != null) {
                 context.bindValue(WidgetProperties.buttonSelection().observe(control), delegate(selected));
@@ -299,14 +299,14 @@ abstract sealed class ControlBuilderImpl<B extends ControlBuilder<B>, C extends 
         }
     }
 
-    static final class ComboBuilderImpl<T> extends ControlBuilderImpl<ComboBuilder<T>, Combo> implements ComboBuilder<T> {
-        private final Observable<T> binding;
+    static final class ComboBuilderImpl<T> extends UIControlBuilderImpl<ComboBuilder<T>, Combo> implements ComboBuilder<T> {
+        private final UIObservable<T> binding;
         private final Function<? super T, String> converter;
         private final List<? extends T> items;
         private final int style;
 
         public ComboBuilderImpl(
-            @NotNull Observable<T> binding,
+            @NotNull UIObservable<T> binding,
             @NotNull Function<? super T, String> converter,
             @NotNull List<? extends T> items,
             int style
@@ -328,7 +328,7 @@ abstract sealed class ControlBuilderImpl<B extends ControlBuilder<B>, C extends 
         }
 
         @Override
-        protected void bind(@NotNull DataBindingContext context, @NotNull Combo control, @Nullable RowBuilderImpl row) {
+        protected void bind(@NotNull DataBindingContext context, @NotNull Combo control, @Nullable UIRowBuilderImpl row) {
             super.bind(context, control, row);
 
             context.bindValue(
@@ -340,7 +340,7 @@ abstract sealed class ControlBuilderImpl<B extends ControlBuilder<B>, C extends 
         }
     }
 
-    static final class CommentBuilderImpl extends ControlBuilderImpl<CommentBuilder, Label> implements CommentBuilder {
+    static final class CommentBuilderImpl extends UIControlBuilderImpl<CommentBuilder, Label> implements CommentBuilder {
         private final String text;
 
         CommentBuilderImpl(@NotNull String text) {

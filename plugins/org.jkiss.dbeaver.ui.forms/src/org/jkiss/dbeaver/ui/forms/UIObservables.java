@@ -24,16 +24,16 @@ import org.jkiss.code.Nullable;
 import java.util.Objects;
 
 /**
- * Various utilities for working with {@link org.jkiss.dbeaver.ui.forms.Observable}.
+ * Various utilities for working with {@link UIObservable}.
  */
-public final class Observables {
-    private Observables() {
+public final class UIObservables {
+    private UIObservables() {
     }
 
     @NotNull
-    public static Observable<Boolean> and(
-        @Nullable Observable<Boolean> first,
-        @Nullable Observable<Boolean> second
+    public static UIObservable<Boolean> and(
+        @Nullable UIObservable<Boolean> first,
+        @Nullable UIObservable<Boolean> second
     ) {
         if (first == null && second == null) {
             throw new IllegalArgumentException("Either first or second must not be null");
@@ -51,11 +51,11 @@ public final class Observables {
                 return first.get() && second.get();
             }
         };
-        return new ObservableImpl<>(computed, Boolean.class);
+        return new UIObservableImpl<>(computed, Boolean.class);
     }
 
     @NotNull
-    public static <T> Observable<Boolean> equals(@NotNull Observable<T> observable, @NotNull T value) {
+    public static <T> UIObservable<Boolean> equals(@NotNull UIObservable<T> observable, @NotNull T value) {
         ComputedValue<Boolean> computed = new ComputedValue<>() {
             @NotNull
             @Override
@@ -74,6 +74,6 @@ public final class Observables {
                 }
             }
         };
-        return new ObservableImpl<>(computed, Boolean.class);
+        return new UIObservableImpl<>(computed, Boolean.class);
     }
 }

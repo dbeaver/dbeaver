@@ -28,7 +28,7 @@ import java.util.function.Function;
  * @param <T> value type
  */
 @FunctionalInterface
-public interface Validator<T> extends Function<T, IStatus> {
+public interface UIValidator<T> extends Function<T, IStatus> {
     @NotNull
     static IStatus error(@NotNull String message) {
         return ValidationStatus.error(message);

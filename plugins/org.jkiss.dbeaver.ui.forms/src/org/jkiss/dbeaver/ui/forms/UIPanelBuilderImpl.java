@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,8 +34,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
 
-final class PanelBuilderImpl extends ControlBuilderImpl<PanelBuilder, Control> implements PanelBuilder {
-    private final List<RowBuilderImpl> rows = new ArrayList<>();
+final class UIPanelBuilderImpl extends UIControlBuilderImpl<UIPanelBuilder, Control> implements UIPanelBuilder {
+    private final List<UIRowBuilderImpl> rows = new ArrayList<>();
     private final String text;
     private final boolean expandable;
     private final boolean expanded;
@@ -45,30 +45,30 @@ final class PanelBuilderImpl extends ControlBuilderImpl<PanelBuilder, Control> i
     private int marginRight = 5;
     private int marginBottom = 5;
 
-    private PanelBuilderImpl(@Nullable String text, boolean expandable, boolean expanded) {
+    private UIPanelBuilderImpl(@Nullable String text, boolean expandable, boolean expanded) {
         this.text = text;
         this.expandable = expandable;
         this.expanded = expanded;
     }
 
     @NotNull
-    static PanelBuilderImpl panel() {
-        return new PanelBuilderImpl(null, false, false);
+    static UIPanelBuilderImpl panel() {
+        return new UIPanelBuilderImpl(null, false, false);
     }
 
     @NotNull
-    static PanelBuilderImpl group(@NotNull String text) {
-        return new PanelBuilderImpl(text, false, false);
+    static UIPanelBuilderImpl group(@NotNull String text) {
+        return new UIPanelBuilderImpl(text, false, false);
     }
 
     @NotNull
-    static PanelBuilderImpl expandableGroup(@NotNull String text, boolean expanded) {
-        return new PanelBuilderImpl(text, true, expanded);
+    static UIPanelBuilderImpl expandableGroup(@NotNull String text, boolean expanded) {
+        return new UIPanelBuilderImpl(text, true, expanded);
     }
 
     @NotNull
     @Override
-    public PanelBuilder margins(int horizontal, int vertical) {
+    public UIPanelBuilder margins(int horizontal, int vertical) {
         marginLeft = marginRight = horizontal;
         marginTop = marginBottom = vertical;
         return this;
@@ -76,7 +76,7 @@ final class PanelBuilderImpl extends ControlBuilderImpl<PanelBuilder, Control> i
 
     @NotNull
     @Override
-    public PanelBuilder margins(int left, int top, int right, int bottom) {
+    public UIPanelBuilder margins(int left, int top, int right, int bottom) {
         marginLeft = left;
         marginTop = top;
         marginRight = right;
@@ -86,8 +86,8 @@ final class PanelBuilderImpl extends ControlBuilderImpl<PanelBuilder, Control> i
 
     @NotNull
     @Override
-    public PanelBuilder row(@NotNull Consumer<? super RowBuilder> handler) {
-        var builder = new RowBuilderImpl(indent);
+    public UIPanelBuilder row(@NotNull Consumer<? super UIRowBuilder> handler) {
+        var builder = new UIRowBuilderImpl(indent);
         handler.accept(builder);
         if (builder.controls.isEmpty()) {
             throw new IllegalStateException("Row cannot be empty");
@@ -98,7 +98,7 @@ final class PanelBuilderImpl extends ControlBuilderImpl<PanelBuilder, Control> i
 
     @NotNull
     @Override
-    public PanelBuilder indent(@NotNull Consumer<? super PanelBuilder> handler) {
+    public UIPanelBuilder indent(@NotNull Consumer<? super UIPanelBuilder> handler) {
         indent++;
         handler.accept(this);
         indent--;
@@ -139,7 +139,7 @@ final class PanelBuilderImpl extends ControlBuilderImpl<PanelBuilder, Control> i
             .extendedMargins(marginLeft, marginRight, marginTop, marginBottom)
             .applyTo(client);
 
-        for (RowBuilderImpl row : rows) {
+        for (UIRowBuilderImpl row : rows) {
             buildRow(context, row, client, columns);
         }
 
@@ -156,13 +156,13 @@ final class PanelBuilderImpl extends ControlBuilderImpl<PanelBuilder, Control> i
 
     private void buildRow(
         @NotNull DataBindingContext context,
-        @NotNull RowBuilderImpl row,
+        @NotNull UIRowBuilderImpl row,
         @NotNull Composite parent,
         int columns
     ) {
         for (int i = 0; i < row.controls.size(); i++) {
             @SuppressWarnings("unchecked")
-            var builder = (ControlBuilderImpl<?, Control>) row.controls.get(i);
+            var builder = (UIControlBuilderImpl<?, Control>) row.controls.get(i);
 
             var data = new GridData();
             data.horizontalAlignment = builder.alignX;

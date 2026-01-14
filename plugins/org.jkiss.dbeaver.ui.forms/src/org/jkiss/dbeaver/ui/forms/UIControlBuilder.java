@@ -25,15 +25,15 @@ import java.util.function.Function;
 /**
  * The builder for a control.
  */
-public sealed interface ControlBuilder<B extends ControlBuilder<B>>
-    permits ControlBuilder.ButtonBuilder, ControlBuilder.ComboBuilder, ControlBuilder.CommentBuilder, ControlBuilder.LabelBuilder,
-    ControlBuilder.TextBuilder, ControlBuilderImpl, PanelBuilder {
+public sealed interface UIControlBuilder<B extends UIControlBuilder<B>>
+    permits UIControlBuilder.ButtonBuilder, UIControlBuilder.ComboBuilder, UIControlBuilder.CommentBuilder, UIControlBuilder.LabelBuilder,
+    UIControlBuilder.TextBuilder, UIControlBuilderImpl, UIPanelBuilder {
 
     @NotNull
-    B visible(@NotNull Observable<Boolean> binding);
+    B visible(@NotNull UIObservable<Boolean> binding);
 
     @NotNull
-    B enabled(@NotNull Observable<Boolean> binding);
+    B enabled(@NotNull UIObservable<Boolean> binding);
 
     @NotNull
     B tooltip(@NotNull String value);
@@ -49,13 +49,13 @@ public sealed interface ControlBuilder<B extends ControlBuilder<B>>
     B grow();
 
     @NotNull
-    B align(@NotNull AlignX x, @NotNull AlignY y);
+    B align(@NotNull UIAlignX x, @NotNull UIAlignY y);
 
     @NotNull
-    B align(@NotNull AlignX x);
+    B align(@NotNull UIAlignX x);
 
     @NotNull
-    B align(@NotNull AlignY y);
+    B align(@NotNull UIAlignY y);
 
     @NotNull
     B hint(int width, int height);
@@ -66,13 +66,13 @@ public sealed interface ControlBuilder<B extends ControlBuilder<B>>
     /**
      * The builder for a label control.
      */
-    sealed interface LabelBuilder extends ControlBuilder<LabelBuilder> permits ControlBuilderImpl.LabelBuilderImpl {
+    sealed interface LabelBuilder extends UIControlBuilder<LabelBuilder> permits UIControlBuilderImpl.LabelBuilderImpl {
     }
 
     /**
      * The builder for a text control.
      */
-    sealed interface TextBuilder<T> extends ControlBuilder<TextBuilder<T>> permits ControlBuilderImpl.TextBuilderImpl {
+    sealed interface TextBuilder<T> extends UIControlBuilder<TextBuilder<T>> permits UIControlBuilderImpl.TextBuilderImpl {
         @NotNull
         TextBuilder<T> toModel(
             @NotNull Function<? super String, IStatus> afterGetValidator,
@@ -88,20 +88,20 @@ public sealed interface ControlBuilder<B extends ControlBuilder<B>>
     /**
      * The builder for a button control.
      */
-    sealed interface ButtonBuilder extends ControlBuilder<ButtonBuilder> permits ControlBuilderImpl.ButtonBuilderImpl {
+    sealed interface ButtonBuilder extends UIControlBuilder<ButtonBuilder> permits UIControlBuilderImpl.ButtonBuilderImpl {
         @NotNull
-        ButtonBuilder selected(@NotNull Observable<Boolean> binding);
+        ButtonBuilder selected(@NotNull UIObservable<Boolean> binding);
     }
 
     /**
      * The builder for a combo control.
      */
-    sealed interface ComboBuilder<T> extends ControlBuilder<ComboBuilder<T>> permits ControlBuilderImpl.ComboBuilderImpl {
+    sealed interface ComboBuilder<T> extends UIControlBuilder<ComboBuilder<T>> permits UIControlBuilderImpl.ComboBuilderImpl {
     }
 
     /**
      * The builder for a comment control.
      */
-    sealed interface CommentBuilder extends ControlBuilder<CommentBuilder> permits ControlBuilderImpl.CommentBuilderImpl {
+    sealed interface CommentBuilder extends UIControlBuilder<CommentBuilder> permits UIControlBuilderImpl.CommentBuilderImpl {
     }
 }

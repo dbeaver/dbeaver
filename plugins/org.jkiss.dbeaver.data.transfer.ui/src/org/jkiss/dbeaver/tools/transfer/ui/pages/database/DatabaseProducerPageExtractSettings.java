@@ -30,10 +30,10 @@ import org.jkiss.dbeaver.tools.transfer.internal.DTMessages;
 import org.jkiss.dbeaver.tools.transfer.ui.internal.DTUIMessages;
 import org.jkiss.dbeaver.tools.transfer.ui.pages.DataTransferPageNodeSettings;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.forms.AlignX;
-import org.jkiss.dbeaver.ui.forms.Observable;
-import org.jkiss.dbeaver.ui.forms.Observables;
-import org.jkiss.dbeaver.ui.forms.PanelBuilder;
+import org.jkiss.dbeaver.ui.forms.UIAlignX;
+import org.jkiss.dbeaver.ui.forms.UIObservable;
+import org.jkiss.dbeaver.ui.forms.UIObservables;
+import org.jkiss.dbeaver.ui.forms.UIPanelBuilder;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 
 import java.util.List;
@@ -46,21 +46,21 @@ public class DatabaseProducerPageExtractSettings extends DataTransferPageNodeSet
         USE_FETCHED_ROWS
     }
 
-    private final Observable<Strategy> strategy = Observable.of(Strategy.QUERY_DATABASE);
+    private final UIObservable<Strategy> strategy = UIObservable.of(Strategy.QUERY_DATABASE);
 
     // Query database
-    private final Observable<Boolean> openNewConnections = Observable.of(false);
-    private final Observable<Boolean> fetchRowCount = Observable.of(false);
+    private final UIObservable<Boolean> openNewConnections = UIObservable.of(false);
+    private final UIObservable<Boolean> fetchRowCount = UIObservable.of(false);
 
     // Fetched rows
-    private final Observable<Boolean> selectedRowsOnly = Observable.of(false);
-    private final Observable<Boolean> selectedColumnsOnly = Observable.of(false);
+    private final UIObservable<Boolean> selectedRowsOnly = UIObservable.of(false);
+    private final UIObservable<Boolean> selectedColumnsOnly = UIObservable.of(false);
 
     // Advanced
-    private final Observable<Integer> fetchSize = Observable.of(10000);
-    private final Observable<Integer> threadCount = Observable.of(1);
-    private final Observable<Integer> segmentSize = Observable.of(10000);
-    private final Observable<ExtractType> extractType = Observable.of(ExtractType.SINGLE_QUERY);
+    private final UIObservable<Integer> fetchSize = UIObservable.of(10000);
+    private final UIObservable<Integer> threadCount = UIObservable.of(1);
+    private final UIObservable<Integer> segmentSize = UIObservable.of(10000);
+    private final UIObservable<ExtractType> extractType = UIObservable.of(ExtractType.SINGLE_QUERY);
 
     public DatabaseProducerPageExtractSettings() {
         super(DTUIMessages.database_producer_page_extract_settings_name_and_title);
@@ -75,7 +75,7 @@ public class DatabaseProducerPageExtractSettings extends DataTransferPageNodeSet
 
         Composite composite = UIUtils.createComposite(parent, 1);
 
-        PanelBuilder.build(composite, pb -> pb
+        UIPanelBuilder.build(composite, pb -> pb
             .margins(0, 0)
             .row(rb -> rb
                 .group("Extraction", buildExtractionPanel())));
@@ -89,9 +89,9 @@ public class DatabaseProducerPageExtractSettings extends DataTransferPageNodeSet
     }
 
     @NotNull
-    private Consumer<PanelBuilder> buildExtractionPanel() {
-        var queryDatabase = Observables.equals(strategy, Strategy.QUERY_DATABASE);
-        var useFetchedData = Observables.equals(strategy, Strategy.USE_FETCHED_ROWS);
+    private Consumer<UIPanelBuilder> buildExtractionPanel() {
+        var queryDatabase = UIObservables.equals(strategy, Strategy.QUERY_DATABASE);
+        var useFetchedData = UIObservables.equals(strategy, Strategy.USE_FETCHED_ROWS);
 
         return pb -> pb
             .row(rb -> rb
@@ -102,12 +102,12 @@ public class DatabaseProducerPageExtractSettings extends DataTransferPageNodeSet
                 .panel(buildUseFetchedRowsPanel(useFetchedData)))
             .row(rb -> rb
                 .expandableGroup("Advanced", false, pb1 -> pb1
-                    .align(AlignX.FILL).grow()
+                    .align(UIAlignX.FILL).grow()
                     .accept(buildAdvancedPanel(queryDatabase))));
     }
 
     @NotNull
-    private Consumer<PanelBuilder> buildQueryDatabasePanel(@NotNull Observable<Boolean> enabled) {
+    private Consumer<UIPanelBuilder> buildQueryDatabasePanel(@NotNull UIObservable<Boolean> enabled) {
         return pb -> pb
             .row(rb -> rb
                 .enabled(enabled)
@@ -122,26 +122,26 @@ public class DatabaseProducerPageExtractSettings extends DataTransferPageNodeSet
     }
 
     @NotNull
-    private Consumer<PanelBuilder> buildUseFetchedRowsPanel(@NotNull Observable<Boolean> enabled) {
-        var canExportSelection = Observable.of(hasCellSelection() && canExportColumns());
+    private Consumer<UIPanelBuilder> buildUseFetchedRowsPanel(@NotNull UIObservable<Boolean> enabled) {
+        var canExportSelection = UIObservable.of(hasCellSelection() && canExportColumns());
 
         return pb -> pb
             .row(rb -> rb
-                .enabled(Observables.and(enabled, canExportSelection))
+                .enabled(UIObservables.and(enabled, canExportSelection))
                 .checkBox("Selected rows only", bb -> bb.selected(selectedRowsOnly)))
             .row(rb -> rb
-                .enabled(Observables.and(enabled, canExportSelection))
+                .enabled(UIObservables.and(enabled, canExportSelection))
                 .checkBox("Selected columns only", bb -> bb.selected(selectedColumnsOnly)));
     }
 
     @NotNull
-    private Consumer<PanelBuilder> buildAdvancedPanel(@NotNull Observable<Boolean> queryDatabase) {
-        var canChangeThreads = Observable.predicate(() -> getWizard().getSettings().getDataPipes().size() > 2);
-        var canChangeSegment = Observable.predicate(() -> extractType.get() == ExtractType.SEGMENTS);
+    private Consumer<UIPanelBuilder> buildAdvancedPanel(@NotNull UIObservable<Boolean> queryDatabase) {
+        var canChangeThreads = UIObservable.predicate(() -> getWizard().getSettings().getDataPipes().size() > 2);
+        var canChangeSegment = UIObservable.predicate(() -> extractType.get() == ExtractType.SEGMENTS);
 
         return pb -> pb
             .row(rb -> rb
-                .enabled(Observables.and(queryDatabase, canChangeThreads))
+                .enabled(UIObservables.and(queryDatabase, canChangeThreads))
                 .controlLabel(DTMessages.data_transfer_wizard_output_label_max_threads)
                 .intTextField(threadCount, tb -> tb
                     .tooltip(DTUIMessages.database_producer_page_extract_settings_threads_num_text_tooltip)))
@@ -155,7 +155,7 @@ public class DatabaseProducerPageExtractSettings extends DataTransferPageNodeSet
                 .controlLabel(DTMessages.data_transfer_wizard_output_label_extract_type)
                 .comboBox(extractType, DatabaseProducerPageExtractSettings::getExtractTypeLabel))
             .row(rb -> rb
-                .enabled(Observables.and(queryDatabase, canChangeSegment))
+                .enabled(UIObservables.and(queryDatabase, canChangeSegment))
                 .controlLabel(DTMessages.data_transfer_wizard_output_label_segment_size)
                 .intTextField(segmentSize));
     }

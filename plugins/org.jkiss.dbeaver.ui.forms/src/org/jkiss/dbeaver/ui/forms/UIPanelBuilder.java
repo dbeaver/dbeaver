@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,28 +26,28 @@ import java.util.function.Consumer;
 /**
  * The builder for a panel.
  */
-public sealed interface PanelBuilder extends ControlBuilder<PanelBuilder> permits PanelBuilderImpl {
+public sealed interface UIPanelBuilder extends UIControlBuilder<UIPanelBuilder> permits UIPanelBuilderImpl {
     @NotNull
-    static Control build(@NotNull Composite parent, @NotNull Consumer<? super PanelBuilder> handler) {
-        var builder = PanelBuilderImpl.panel();
+    static Control build(@NotNull Composite parent, @NotNull Consumer<? super UIPanelBuilder> handler) {
+        var builder = UIPanelBuilderImpl.panel();
         handler.accept(builder);
         return builder.build(new DataBindingContext(), parent, null);
     }
 
     @NotNull
-    PanelBuilder margins(int horizontal, int vertical);
+    UIPanelBuilder margins(int horizontal, int vertical);
 
     @NotNull
-    PanelBuilder margins(int left, int top, int right, int bottom);
+    UIPanelBuilder margins(int left, int top, int right, int bottom);
 
     @NotNull
-    PanelBuilder row(@NotNull Consumer<? super RowBuilder> handler);
+    UIPanelBuilder row(@NotNull Consumer<? super UIRowBuilder> handler);
 
     @NotNull
-    default PanelBuilder row(@NotNull String label, @NotNull Consumer<? super RowBuilder> handler) {
+    default UIPanelBuilder row(@NotNull String label, @NotNull Consumer<? super UIRowBuilder> handler) {
         return row(rb -> handler.accept(rb.label(label)));
     }
 
     @NotNull
-    PanelBuilder indent(@NotNull Consumer<? super PanelBuilder> handler);
+    UIPanelBuilder indent(@NotNull Consumer<? super UIPanelBuilder> handler);
 }

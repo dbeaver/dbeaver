@@ -28,70 +28,70 @@ import java.util.function.Supplier;
  * @param <T> the type of the value
  */
 @SuppressWarnings("CheckStyle")
-public sealed interface Observable<T> permits ObservableImpl {
+public sealed interface UIObservable<T> permits UIObservableImpl {
     @NotNull
-    static Observable<Byte> of(byte value) {
+    static UIObservable<Byte> of(byte value) {
         return of(value, byte.class);
     }
 
     @NotNull
-    static Observable<Short> of(short value) {
+    static UIObservable<Short> of(short value) {
         return of(value, short.class);
     }
 
     @NotNull
-    static Observable<Integer> of(int value) {
+    static UIObservable<Integer> of(int value) {
         return of(value, int.class);
     }
 
     @NotNull
-    static Observable<Long> of(long value) {
+    static UIObservable<Long> of(long value) {
         return of(value, long.class);
     }
 
     @NotNull
-    static Observable<Float> of(float value) {
+    static UIObservable<Float> of(float value) {
         return of(value, float.class);
     }
 
     @NotNull
-    static Observable<Double> of(double value) {
+    static UIObservable<Double> of(double value) {
         return of(value, double.class);
     }
 
     @NotNull
-    static Observable<Boolean> of(boolean value) {
+    static UIObservable<Boolean> of(boolean value) {
         return of(value, boolean.class);
     }
 
     @NotNull
-    static Observable<Character> of(char value) {
+    static UIObservable<Character> of(char value) {
         return of(value, char.class);
     }
 
     @NotNull
-    static Observable<String> of(@Nullable String value) {
+    static UIObservable<String> of(@Nullable String value) {
         return of(value, String.class);
     }
 
     @NotNull
-    static <T extends Enum<T>> Observable<T> of(@NotNull T value) {
+    static <T extends Enum<T>> UIObservable<T> of(@NotNull T value) {
         return of(value, value.getDeclaringClass());
     }
 
     @NotNull
-    static <T> Observable<T> of(@Nullable T value, @NotNull Class<T> type) {
-        return new ObservableImpl<>(value, type);
+    static <T> UIObservable<T> of(@Nullable T value, @NotNull Class<T> type) {
+        return new UIObservableImpl<>(value, type);
     }
 
     @NotNull
-    static Observable<Boolean> predicate(@NotNull Supplier<Boolean> supplier) {
+    static UIObservable<Boolean> predicate(@NotNull Supplier<Boolean> supplier) {
         return computed(supplier, Boolean.class);
     }
 
     @NotNull
-    static <T> Observable<T> computed(@NotNull Supplier<T> supplier, @NotNull Class<T> type) {
-        return new ObservableImpl<>(ComputedValue.create(supplier), type);
+    static <T> UIObservable<T> computed(@NotNull Supplier<T> supplier, @NotNull Class<T> type) {
+        return new UIObservableImpl<>(ComputedValue.create(supplier), type);
     }
 
     /**

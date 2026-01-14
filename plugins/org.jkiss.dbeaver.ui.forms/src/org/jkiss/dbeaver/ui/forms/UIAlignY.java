@@ -16,17 +16,23 @@
  */
 package org.jkiss.dbeaver.ui.forms;
 
-import org.jkiss.code.NotNull;
+import org.eclipse.swt.SWT;
 
 /**
- * Various utilities for working with {@link Validator}.
+ * Vertical alignment of a control.
  */
-public final class Validators {
-    private Validators() {
-    }
+public enum UIAlignY {
+    TOP,
+    CENTER,
+    BOTTOM,
+    FILL;
 
-    @NotNull
-    public static Validator<String> requireNotBlank() {
-        return value -> value.isBlank() ? Validator.error("Value cannot be blank") : Validator.ok();
+    int toSWT() {
+        return switch (this) {
+            case TOP -> SWT.BEGINNING;
+            case CENTER -> SWT.CENTER;
+            case BOTTOM -> SWT.END;
+            case FILL -> SWT.FILL;
+        };
     }
 }

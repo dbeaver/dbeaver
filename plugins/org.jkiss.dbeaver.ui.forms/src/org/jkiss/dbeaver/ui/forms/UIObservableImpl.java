@@ -22,16 +22,16 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 
 @SuppressWarnings("CheckStyle")
-final class ObservableImpl<T> implements Observable<T> {
+final class UIObservableImpl<T> implements UIObservable<T> {
     private final IObservableValue<T> delegate;
     private final Class<T> type;
 
-    ObservableImpl(@NotNull IObservableValue<T> delegate, Class<T> type) {
+    UIObservableImpl(@NotNull IObservableValue<T> delegate, Class<T> type) {
         this.delegate = delegate;
         this.type = type;
     }
 
-    ObservableImpl(@Nullable T value, @NotNull Class<T> type) {
+    UIObservableImpl(@Nullable T value, @NotNull Class<T> type) {
         this.delegate = new WritableValue<>(value, type);
         this.type = type;
     }
