@@ -665,12 +665,16 @@ public class UIUtils {
         int layoutStyle,
         int widthHint
     ) {
-        if (parent.getLayout() instanceof GridLayout gl && gl.numColumns > 1) {
-            parent = UIUtils.createPlaceholder(parent, 1, 10);
-            parent.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING | GridData.VERTICAL_ALIGN_BEGINNING));
+        Composite composite = UIUtils.createComposite(parent, 1);
+        {
+            GridData gd = new GridData(layoutStyle >0 ? layoutStyle : GridData.FILL_HORIZONTAL);
+            if (widthHint > 0) {
+                gd.widthHint = widthHint;
+            }
+            composite.setLayoutData(gd);
         }
 
-        Label titleLabel = new Label(parent, SWT.NONE);
+        Label titleLabel = new Label(composite, SWT.NONE);
         titleLabel.setText(label);
         titleLabel.setFont(BaseThemeSettings.instance.baseFontBold);
         if (false) {
@@ -685,7 +689,7 @@ public class UIUtils {
         }
         titleLabel.setLayoutData(lgd);
 
-        Composite group = new Composite(parent, SWT.NONE);
+        Composite group = new Composite(composite, SWT.NONE);
         GridLayout layout = new GridLayout(columns, false);
         layout.marginHeight = 0;
         layout.marginWidth = 0;
@@ -693,14 +697,7 @@ public class UIUtils {
         layout.marginLeft = 7;
         layout.marginBottom = 3;
         group.setLayout(layout);
-
-        if (parent.getLayout() instanceof GridLayout) {
-            GridData gd = new GridData(layoutStyle);
-            if (widthHint > 0) {
-                gd.widthHint = widthHint;
-            }
-            group.setLayoutData(gd);
-        }
+        group.setLayoutData(new GridData(GridData.FILL_BOTH));
 
         return group;
     }
