@@ -188,12 +188,14 @@ public class IoTDBTableMetaModel extends GenericMetaModel {
         return getTableDDLWithSQL(session, sourceObject, insertTableName, ttl, sql, List.of("ColumnName, DataType, Category, Comment"));
     }
 
-    private String getTableDDLWithSQL(JDBCSession session,
-                                      GenericTableBase sourceObject,
-                                      String insertTableName,
-                                      String ttl,
-                                      String sql,
-                                      List<String> columnTitles) throws SQLException {
+    @NotNull
+    private String getTableDDLWithSQL(
+            @NotNull JDBCSession session,
+            @NotNull GenericTableBase sourceObject,
+            @NotNull String insertTableName,
+            @NotNull String ttl,
+            @NotNull String sql,
+            @NotNull List<String> columnTitles) throws SQLException {
         StringBuilder toAppend = new StringBuilder(200);
         try (JDBCStatement stmt = session.createStatement()) {
             try (JDBCResultSet rs = stmt.executeQuery(sql)) {

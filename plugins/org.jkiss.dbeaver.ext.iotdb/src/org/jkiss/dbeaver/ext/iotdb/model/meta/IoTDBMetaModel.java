@@ -62,7 +62,7 @@ public class IoTDBMetaModel extends GenericMetaModel {
             try (JDBCStatement stmt = session.createStatement()) {
                 try (JDBCResultSet rs = stmt.executeQuery(sql)) {
                     if (rs != null && rs.next()) {
-                        isAligned = (rs.getBoolean("IsAligned"));
+                        isAligned = "true".equals(rs.getString("IsAligned"));
                     }
                 }
             }
@@ -74,7 +74,7 @@ public class IoTDBMetaModel extends GenericMetaModel {
             String sql = String.format("show timeseries %s.**", device);
             try (JDBCStatement stmt = session.createStatement()) {
                 try (JDBCResultSet rs = stmt.executeQuery(sql)) {
-                    if (rs.next()) {
+                    if (rs != null) {
                         while (rs.next()) {
                             ddl.append("delete timeseries ").append(rs.getString("Timeseries")).append(";\n");
                         }
