@@ -153,8 +153,7 @@ public abstract class PostgreTableManagerBase extends SQLTableManager<PostgreTab
                 }
 
                 // Add RLS enable DDL
-                if (table instanceof PostgreTable pgTable) {
-                    if (pgTable.isHasRowLevelSecurity()) {
+                if (table instanceof PostgreTable pgTable && pgTable.isHasRowLevelSecurity()) {
                         actions.add(new SQLDatabasePersistAction(
                             "Enable row level security",
                             "ALTER TABLE " + table.getFullyQualifiedName(DBPEvaluationContext.DDL)
