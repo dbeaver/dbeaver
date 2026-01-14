@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -59,7 +59,7 @@ public class SocksProxyConfiguratorUI extends AbstractObjectPropertyConfigurator
     }
 
     protected void createSocksGroup(Composite parent) {
-        final Composite composite = UIUtils.createControlGroup(parent, "SOCKS", 4, GridData.FILL_HORIZONTAL, SWT.DEFAULT);
+        final Composite composite = UIUtils.createTitledComposite(parent, "SOCKS", 4, GridData.FILL_HORIZONTAL, SWT.DEFAULT);
 
         hostText = UIUtils.createLabelText(composite, UIConnectionMessages.dialog_connection_network_socket_label_host, null); //$NON-NLS-2$
         hostText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));

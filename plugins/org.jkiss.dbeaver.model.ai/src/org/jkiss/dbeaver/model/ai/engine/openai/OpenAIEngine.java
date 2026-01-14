@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.ai.AIMessage;
 import org.jkiss.dbeaver.model.ai.AIMessageType;
+import org.jkiss.dbeaver.model.ai.AIUsage;
 import org.jkiss.dbeaver.model.ai.engine.*;
 import org.jkiss.dbeaver.model.ai.engine.openai.dto.*;
 import org.jkiss.dbeaver.model.ai.internal.AIMessages;
@@ -73,19 +74,30 @@ public class OpenAIEngine<PROPS extends OpenAIBaseProperties> extends BaseComple
         // Filter reasoning messages from the response for OpenAI reasoning models (e.g., gpt-5, gpt-5-mini, gpt-5-nano)
         List<OAIMessage> messages = completionResult.output.stream()
             .filter(msg -> !OAIMessage.TYPE_FUNCTION_REASONING.equals(msg.type))
-            .toList();        if (messages.isEmpty()) {
-            return new AIEngineResponse(AIMessageType.ASSISTANT, List.of(AIMessages.ai_empty_engine_response));
+            .toList();
+        AIUsage usage = new AIUsage(
+            completionResult.usage.inputTokens(),
+            completionResult.usage.inputTokensDetails().cachedTokens(),
+            completionResult.usage.outputTokens(),
+            completionResult.usage.outputTokensDetails().reasoningTokens()
+        );
+        if (messages.isEmpty()) {
+            return new AIEngineResponse(
+                AIMessageType.ASSISTANT,
+                List.of(AIMessages.ai_empty_engine_response),
+                usage
+            );
         }
         OAIMessage message = messages.getFirst();
         if (OAIMessage.TYPE_FUNCTION_CALL.equals(message.type)) {
             AIFunctionCall fc = OpenAIClient.createFunctionCall(message);
-            return new AIEngineResponse(fc);
+            return new AIEngineResponse(fc, usage);
         } else {
             List<String> choices = messages.stream()
                 .map(OAIMessage::getFullText)
                 .toList();
 
-            return new AIEngineResponse(AIMessageType.ASSISTANT, choices);
+            return new AIEngineResponse(AIMessageType.ASSISTANT, choices, usage);
         }
     }
 

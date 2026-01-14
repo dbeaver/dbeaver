@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -172,7 +172,7 @@ public class PrefPageConnectionTypes extends AbstractPrefPage implements IWorkbe
         }
 
         {
-            Group groupSettings = UIUtils.createControlGroup(
+            Composite groupSettings = UIUtils.createTitledComposite(
                 composite,
                 CoreMessages.pref_page_connection_types_group_parameters,
                 2,
@@ -242,7 +242,7 @@ public class PrefPageConnectionTypes extends AbstractPrefPage implements IWorkbe
         }
 
         {
-            Group placeholder = UIUtils.createControlGroup(
+            Composite placeholder = UIUtils.createTitledComposite(
                 composite,
                 CoreMessages.pref_page_connection_types_group_settings,
                 2,

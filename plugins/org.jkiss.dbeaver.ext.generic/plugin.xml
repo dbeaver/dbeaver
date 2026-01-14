@@ -415,26 +415,7 @@
                     <parameter name="supports-truncate" value="false"/>
                 </driver>
 
-                <!-- DuckDB -->
-                <driver
-                        id="duckdb_jdbc"
-                        label="DuckDB"
-                        icon="icons/duckdb_icon.png"
-                        iconBig="icons/duckdb_icon_big.png"
-                        class="org.duckdb.DuckDBDriver"
-                        sampleURL="jdbc:duckdb:{file}"
-                        defaultPort=""
-                        webURL="https://duckdb.org/docs/api/java"
-                        embedded="true"
-                        anonymous="true"
-                        description="DuckDB JDBC driver"
-                        supportedConfigurationTypes="MANUAL,URL"
-                        categories="sql,embedded">
-                    <file type="jar" path="maven:/org.duckdb:duckdb_jdbc:RELEASE" bundle="!drivers.duckdb"/>
-                    <file type="license" path="https://raw.githubusercontent.com/duckdb/duckdb/master/LICENSE" bundle="!drivers.duckdb"/>
-                    <file type="jar" path="drivers/duckdb" bundle="drivers.duckdb"/>
-                </driver>
-
+                <driver id="duckdb_jdbc"/>
                 <!-- Teradata -->
                 <driver
                     id="teradata"
