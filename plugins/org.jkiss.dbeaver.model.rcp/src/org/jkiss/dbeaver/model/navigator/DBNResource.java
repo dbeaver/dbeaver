@@ -355,12 +355,6 @@ public class DBNResource extends DBNNode implements DBNStreamData, DBNNodeWithCa
         }
     }
 
-    private void resourceRecursiveCopy(@NotNull IResource otherResource) {
-        if (otherResource instanceof IFolder) {
-
-        }
-    }
-
     private void fileStoreRecursiveCopy(
         @NotNull DBRProgressMonitor monitor,
         @NotNull IResource otherResource
