@@ -109,8 +109,8 @@ public class NavigatorHandlerObjectCreateCopy extends NavigatorHandlerObjectCrea
                         }
                     } else {
                         for (DBNNode nodeObject : cbNodes) {
-                            if (nodeObject instanceof DBNDatabaseNode) {
-                                createNewObject(HandlerUtil.getActiveWorkbenchWindow(event), curNode, ((DBNDatabaseNode) nodeObject));
+                            if (nodeObject instanceof DBNDatabaseNode otherNode) {
+                                createNewObject(HandlerUtil.getActiveWorkbenchWindow(event), curNode, otherNode);
                             } else if (curNode instanceof DBNResource currentResource) {
                                 try {
                                     UIUtils.runWithMonitor(monitor -> {
