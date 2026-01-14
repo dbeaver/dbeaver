@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
 
 package org.jkiss.dbeaver.model.sql;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSource;
 
@@ -25,6 +26,11 @@ import org.jkiss.dbeaver.model.DBPDataSource;
  */
 public interface SQLQueryTransformer {
 
-    SQLQuery transformQuery(DBPDataSource dataSource, SQLSyntaxManager syntaxManager, SQLQuery query) throws DBException;
+    @NotNull
+    SQLQuery transformQuery(
+        @NotNull DBPDataSource dataSource,
+        @NotNull SQLSyntaxManager syntaxManager,
+        @NotNull SQLQuery query
+    ) throws DBException;
 
 }
