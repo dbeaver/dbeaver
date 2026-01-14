@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,7 +21,10 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.widgets.*;
+import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 import org.eclipse.ui.IWorkbenchPropertyPage;
@@ -73,14 +76,17 @@ public class PrefPageQueryManager extends AbstractPrefPage implements IWorkbench
     @NotNull
     @Override
     protected Control createPreferenceContent(@NotNull Composite parent) {
-        Composite composite = UIUtils.createPlaceholder(parent, 1);
-
-        Composite filterSettings = UIUtils.createPlaceholder(composite, 2, 5);
-        filterSettings.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        Composite composite = UIUtils.createComposite(parent, 1);
 
         DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
 
-        Group groupQueryTypes = UIUtils.createControlGroup(filterSettings, CoreMessages.pref_page_query_manager_group_query_types, 1, GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING, 0);
+        Composite groupQueryTypes = UIUtils.createTitledComposite(
+            composite,
+            CoreMessages.pref_page_query_manager_group_query_types,
+            1,
+            GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING,
+            0
+        );
         checkQueryTypeUser = UIUtils.createCheckbox(groupQueryTypes, CoreMessages.pref_page_query_manager_checkbox_user_queries, false);
         checkQueryTypeUserFiltered = UIUtils.createCheckbox(groupQueryTypes, CoreMessages.pref_page_query_manager_checkbox_user_filtered, false);
         checkQueryTypeScript = UIUtils.createCheckbox(groupQueryTypes, CoreMessages.pref_page_query_manager_checkbox_user_scripts, false);
@@ -88,14 +94,19 @@ public class PrefPageQueryManager extends AbstractPrefPage implements IWorkbench
         checkQueryTypeMeta = UIUtils.createCheckbox(groupQueryTypes, CoreMessages.pref_page_query_manager_checkbox_metadata_read, false);
         checkQueryTypeDDL = UIUtils.createCheckbox(groupQueryTypes, CoreMessages.pref_page_query_manager_checkbox_metadata_write, false);
 
-        Group groupObjects = UIUtils.createControlGroup(filterSettings, CoreMessages.pref_page_query_manager_group_object_types, 1, GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING, 0);
+        Composite groupObjects = UIUtils.createTitledComposite(composite, CoreMessages.pref_page_query_manager_group_object_types, 1, GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING, 0);
         checkObjectTypeSessions = UIUtils.createCheckbox(groupObjects, CoreMessages.pref_page_query_manager_checkbox_sessions, false);
         checkObjectTypeTxn = UIUtils.createCheckbox(groupObjects, CoreMessages.pref_page_query_manager_checkbox_transactions, false);
         //checkObjectTypeScripts = UIUtils.createCheckbox(groupObjects, CoreMessages.pref_page_query_manager_checkbox_scripts, false);
         checkObjectTypeQueries = UIUtils.createCheckbox(groupObjects, CoreMessages.pref_page_query_manager_checkbox_queries, false);
 
         {
-            Group viewSettings = UIUtils.createControlGroup(composite, CoreMessages.pref_page_query_manager_group_settings, 2, GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING, 0);
+            Composite viewSettings = UIUtils.createTitledComposite(
+                composite,
+                CoreMessages.pref_page_query_manager_group_settings,
+                2,
+                GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING
+            );
             textEntriesPerPage = UIUtils.createLabelText(
                 viewSettings,
                 CoreMessages.pref_page_query_manager_label_entries_per_page,
@@ -105,7 +116,13 @@ public class PrefPageQueryManager extends AbstractPrefPage implements IWorkbench
         }
 
         {
-            Group storageSettings = UIUtils.createControlGroup(composite, CoreMessages.pref_page_query_manager_group_storage, 2, GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING, 0);
+            Composite storageSettings = UIUtils.createTitledComposite(
+                composite,
+                CoreMessages.pref_page_query_manager_group_storage,
+                2,
+                GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING,
+                0
+            );
             checkStoreLog = UIUtils.createCheckbox(
                 storageSettings,
                 CoreMessages.pref_page_query_manager_checkbox_store_log_file,

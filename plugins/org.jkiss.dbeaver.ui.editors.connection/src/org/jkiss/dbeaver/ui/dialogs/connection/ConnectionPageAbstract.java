@@ -362,7 +362,7 @@ public abstract class ConnectionPageAbstract extends DialogPage implements IData
 
     protected void createConnectionModeSwitcher(Composite parent, SelectionListener typeSwitcher) {
         Label cnnTypeLabel = UIUtils.createControlLabel(parent, UIConnectionMessages.dialog_connection_mode_label);
-        cnnTypeLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
+        cnnTypeLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
         Composite modeGroup = UIUtils.createComposite(parent, 3);
         typeManualRadio = UIUtils.createRadioButton(modeGroup, UIConnectionMessages.dialog_connection_host_label, false, typeSwitcher);
         typeURLRadio = UIUtils.createRadioButton(modeGroup, UIConnectionMessages.dialog_connection_url_label, true, typeSwitcher);
