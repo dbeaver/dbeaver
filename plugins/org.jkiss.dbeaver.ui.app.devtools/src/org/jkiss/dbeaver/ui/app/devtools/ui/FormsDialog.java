@@ -31,6 +31,7 @@ import org.jkiss.dbeaver.ui.forms.*;
 import java.util.List;
 import java.util.Locale;
 import java.util.function.Consumer;
+import java.util.function.Function;
 
 public class FormsDialog extends TrayDialog {
     public FormsDialog(@NotNull Shell shell) {
@@ -120,7 +121,7 @@ public class FormsDialog extends TrayDialog {
         return pb -> pb
             .row("Requires not blank", rb -> rb
                 .textField(nonBlank, tb -> tb
-                    .toModel(UIValidators.requireNotBlank(), UIRowBuilder.identityConverter())))
+                    .toModel(UIValidators.requireNotBlank(), Function.identity())))
             .row("Requires an integer", rb -> rb
                 .intTextField(integer))
             .row("Value", rb -> rb.textField(text))

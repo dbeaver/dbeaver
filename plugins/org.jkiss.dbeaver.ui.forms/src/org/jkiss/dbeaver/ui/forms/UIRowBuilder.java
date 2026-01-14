@@ -22,6 +22,7 @@ import org.eclipse.core.internal.databinding.validation.StringToIntegerValidator
 import org.eclipse.swt.events.SelectionEvent;
 import org.jkiss.code.NotNull;
 
+import java.text.NumberFormat;
 import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -31,11 +32,6 @@ import java.util.stream.Stream;
  * The builder for a row inside a panel.
  */
 public sealed interface UIRowBuilder permits UIRowBuilderImpl {
-    @NotNull
-    static <T> Function<? super T, ? extends T> identityConverter() {
-        return Function.identity();
-    }
-
     @NotNull
     static <T> Consumer<T> identityConsumer() {
         return t -> {/* does nothing */};
@@ -111,9 +107,12 @@ public sealed interface UIRowBuilder permits UIRowBuilderImpl {
         @NotNull UIObservable<? super Integer> binding,
         @NotNull Consumer<? super UIControlBuilder.TextBuilder<? super Integer>> handler
     ) {
+        var format = NumberFormat.getIntegerInstance();
+        format.setGroupingUsed(false);
+
         var toModelConverter = StringToNumberConverter.toInteger(true);
         var toModelValidator = new StringToIntegerValidator(toModelConverter);
-        var fromModelConverter = NumberToStringConverter.fromInteger(true);
+        var fromModelConverter = NumberToStringConverter.fromInteger(format, true);
         return textField(binding, tb -> {
             handler.accept(tb);
             tb.toModel(toModelValidator::validate, toModelConverter::convert);
