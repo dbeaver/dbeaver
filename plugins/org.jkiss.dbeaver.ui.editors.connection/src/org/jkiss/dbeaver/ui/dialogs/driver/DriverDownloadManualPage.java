@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -60,7 +60,12 @@ class DriverDownloadManualPage extends DriverDownloadPage {
         GridData gd = new GridData(GridData.FILL_HORIZONTAL);
         infoText.setLayoutData(gd);
 
-        Group filesGroup = UIUtils.createControlGroup(composite, UIConnectionMessages.dialog_driver_download_manual_page_driver_file, 1, -1, -1);
+        Composite filesGroup = UIUtils.createTitledComposite(
+            composite,
+            UIConnectionMessages.dialog_driver_download_manual_page_driver_file,
+            1,
+            GridData.FILL_HORIZONTAL
+        );
         gd = new GridData(GridData.FILL_HORIZONTAL);
         gd.verticalIndent = 10;
         filesGroup.setLayoutData(gd);
