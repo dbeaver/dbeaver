@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -71,7 +71,7 @@ public class StringEditorTable {
         @Nullable IContentProposalProvider proposalProvider,
         boolean withReordering
     ) {
-        Group group = UIUtils.createControlGroup(parent, name, 2, GridData.FILL_BOTH, 0);
+        Composite group = UIUtils.createTitledComposite(parent, name, 2, GridData.FILL_BOTH);
 
         final Table valueTable = new Table(group, SWT.SINGLE | SWT.FULL_SELECTION | SWT.BORDER | SWT.H_SCROLL | SWT.V_SCROLL);
         final GridData gd = new GridData(GridData.FILL_BOTH);
