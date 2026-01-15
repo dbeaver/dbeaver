@@ -68,10 +68,11 @@ public class ClickhouseArrayValueHandler extends JDBCArrayValueHandler {
         int index
     ) throws DBCException, SQLException {
         // Remove after https://github.com/ClickHouse/clickhouse-java/issues/2711 is fixed
-        if (type.getTypeName().toLowerCase().contains("ipv4")
-            || type.getTypeName().toLowerCase().contains("ipv6")
-            || type.getTypeName().toLowerCase().contains("uuid")
-            || type.getTypeName().toLowerCase().contains("map")
+        String lowerCaseTypename = type.getTypeName().toLowerCase();
+        if (lowerCaseTypename.contains("ipv4")
+            || lowerCaseTypename.contains("ipv6")
+            || lowerCaseTypename.contains("uuid")
+            || lowerCaseTypename.contains("map")
         ) {
             return getValueFromObject(session, type, resultSet.getString(index), false, false);
         }
