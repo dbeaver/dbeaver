@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -1247,25 +1247,8 @@ public class DataSourceSerializerModern<T extends DataSourceDescriptor> implemen
         // Permissions
         serializeModifyPermissions(json, dataSource);
 
-        {
-            // Filters
-            Collection<FilterMapping> filterMappings = dataSource.getObjectFilters();
-            if (!CommonUtils.isEmpty(filterMappings)) {
-                json.name(RegistryConstants.TAG_FILTERS);
-                json.beginArray();
-                for (FilterMapping filter : filterMappings) {
-                    if (filter.defaultFilter != null && !filter.defaultFilter.isEmpty()) {
-                        saveObjectFiler(json, filter.typeName, null, filter.defaultFilter);
-                    }
-                    for (Map.Entry<String, DBSObjectFilter> cf : filter.customFilters.entrySet()) {
-                        if (!cf.getValue().isEmpty()) {
-                            saveObjectFiler(json, filter.typeName, cf.getKey(), cf.getValue());
-                        }
-                    }
-                }
-                json.endArray();
-            }
-        }
+        // Filters
+        saveObjectFilters(json, RegistryConstants.TAG_FILTERS, dataSource, false);
 
         // Tags
         JSONUtils.serializeProperties(json, RegistryConstants.TAG_TAGS, dataSource.getTags(), true);
@@ -1290,6 +1273,7 @@ public class DataSourceSerializerModern<T extends DataSourceDescriptor> implemen
         // Extensions
         JSONUtils.serializeProperties(json, RegistryConstants.TAG_EXTENSIONS, dataSource.getExtensions(), true);
     }
+
 
     private void serializeModifyPermissions(
         @NotNull JsonWriter json,
@@ -1348,7 +1332,37 @@ public class DataSourceSerializerModern<T extends DataSourceDescriptor> implemen
         json.endObject();
     }
 
-    private static void saveObjectFiler(
+    public static <T extends DataSourceDescriptor> void saveObjectFilters(
+        @NotNull JsonWriter json,
+        @Nullable String arrayName,
+        @NotNull T dataSource,
+        boolean useCustomUserFilters
+    ) throws IOException {
+        Collection<FilterMapping> filterMappings = dataSource.getObjectFilters();
+        if (!CommonUtils.isEmpty(filterMappings)) {
+            if (arrayName != null) {
+                json.name(arrayName);
+            }
+            json.beginArray();
+            for (FilterMapping filter : filterMappings) {
+                DBSObjectFilter defaultFilter = filter.defaultFilter;
+                if (defaultFilter != null
+                    && !defaultFilter.isEmpty()
+                    && UserDBSObjectFilerUtils.isCustomUserFilter(defaultFilter) == useCustomUserFilters) {
+                    saveObjectFiler(json, filter.typeName, null, defaultFilter);
+                }
+                for (Map.Entry<String, DBSObjectFilter> cf : filter.customFilters.entrySet()) {
+                    if (!cf.getValue().isEmpty()
+                        && UserDBSObjectFilerUtils.isCustomUserFilter(cf.getValue()) == useCustomUserFilters) {
+                        saveObjectFiler(json, filter.typeName, cf.getKey(), cf.getValue());
+                    }
+                }
+            }
+            json.endArray();
+        }
+    }
+
+    public static void saveObjectFiler(
         @NotNull JsonWriter json,
         @Nullable String typeName,
         @Nullable String objectID,

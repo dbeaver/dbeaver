@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,6 +35,7 @@ import org.jkiss.dbeaver.model.navigator.meta.DBXTreeItem;
 import org.jkiss.dbeaver.model.navigator.meta.DBXTreeNode;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectFilter;
+import org.jkiss.dbeaver.registry.UserDBSObjectFilerUtils;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.internal.UINavigatorMessages;
@@ -80,9 +81,18 @@ public class NavigatorHandlerFilterConfig extends NavigatorHandlerObjectCreateBa
                     globalFilter ? "All " + dbNode.getNodeTypeLabel() : dbNode.getNodeTypeLabel() + " of " + parentName,
                     objectFilter,
                     globalFilter);
+
+                DBSObjectFilter currentDialogFilter = dialog.getFilter();
                 switch (dialog.open()) {
                     case IDialogConstants.OK_ID:
-                        parentNode.setNodeFilter(itemsMeta, dialog.getFilter(), true);
+                        boolean isCustomUserFilter = UserDBSObjectFilerUtils.isCustomUserFilter(currentDialogFilter);
+                        parentNode.setNodeFilter(itemsMeta, currentDialogFilter, !isCustomUserFilter);
+                        if (isCustomUserFilter) {
+                            UserDBSObjectFilerUtils.updateUserObjectFilters(
+                                parentNode.getDataSourceContainer(),
+                                currentDialogFilter.getName()
+                            );
+                        }
                         NavigatorHandlerRefresh.refreshNavigator(Collections.singletonList(parentNode));
                         break;
                     case EditObjectFilterDialog.SHOW_GLOBAL_FILTERS_ID: {
@@ -109,7 +119,7 @@ public class NavigatorHandlerFilterConfig extends NavigatorHandlerObjectCreateBa
                             true);
                         if (dialog.open() == IDialogConstants.OK_ID) {
                             // Set global filter
-                            dataSourceContainer.setObjectFilter(childrenClass, null, dialog.getFilter());
+                            dataSourceContainer.setObjectFilter(childrenClass, null, currentDialogFilter);
                             dataSourceContainer.persistConfiguration();
                             NavigatorHandlerRefresh.refreshNavigator(Collections.singletonList(parentNode));
                         }
