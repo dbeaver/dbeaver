@@ -676,7 +676,9 @@ public class UIUtils {
 
         Label titleLabel = new Label(composite, SWT.NONE);
         titleLabel.setText(label);
-        titleLabel.setFont(BaseThemeSettings.instance.baseFontBold);
+        if (PlatformUI.isWorkbenchRunning()) {
+            titleLabel.setFont(BaseThemeSettings.instance.baseFontBold);
+        }
         if (false) {
             titleLabel.addPaintListener(e -> {
                 e.gc.setForeground(titleLabel.getDisplay().getSystemColor(SWT.COLOR_WIDGET_NORMAL_SHADOW));
