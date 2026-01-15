@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,6 +28,7 @@ import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCSession;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.data.JDBCCollection;
 import org.jkiss.dbeaver.model.impl.jdbc.data.handlers.JDBCArrayValueHandler;
@@ -57,6 +58,21 @@ public class ClickhouseArrayValueHandler extends JDBCArrayValueHandler {
     @Override
     protected boolean useSetArray(@NotNull DBCSession session, @NotNull DBSTypedObject type) {
         return true;
+    }
+
+    @Override
+    protected Object fetchColumnValue(DBCSession session, JDBCResultSet resultSet, DBSTypedObject type, int index)
+    throws DBCException, SQLException {
+        // Remove after https://github.com/ClickHouse/clickhouse-java/issues/2711 is fixed
+        if (type.getTypeName().toLowerCase().contains("ipv4")
+            || type.getTypeName().toLowerCase().contains("ipv6")
+            || type.getTypeName().toLowerCase().contains("uuid")
+            || type.getTypeName().toLowerCase().contains("map")
+        ) {
+            return getValueFromObject(session, type, resultSet.getString(index), false, false);
+        }
+        return getValueFromObject(session, type, resultSet.getArray(index), false, false);
+
     }
 
     @Override
