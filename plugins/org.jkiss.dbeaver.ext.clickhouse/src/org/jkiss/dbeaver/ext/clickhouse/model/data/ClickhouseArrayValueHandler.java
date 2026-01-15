@@ -71,10 +71,10 @@ public class ClickhouseArrayValueHandler extends JDBCArrayValueHandler {
         int index
     ) throws DBCException, SQLException {
         // Remove after https://github.com/ClickHouse/clickhouse-java/issues/2711 is fixed
-        String lowerCaseTypename = type.getTypeName().toLowerCase();
         try {
             return super.fetchColumnValue(session, resultSet, type, index);
         } catch (SQLException exception) {
+            String lowerCaseTypename = type.getTypeName().toLowerCase();
             if (lowerCaseTypename.contains("ipv4")
                 || lowerCaseTypename.contains("ipv6")
                 || lowerCaseTypename.contains("uuid")
