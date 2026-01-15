@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -65,7 +65,7 @@ public abstract class AIPromptAbstract implements AIPromptGenerator {
     }
 
     @NotNull
-    public String build() {
+    public final String build() {
         StringBuilder prompt = new StringBuilder();
         prompt.append("Goals:\n");
         goals.forEach(goal -> prompt.append("- ").append(goal).append("\n"));
@@ -91,4 +91,18 @@ public abstract class AIPromptAbstract implements AIPromptGenerator {
         return prompt.toString();
     }
 
+    @NotNull
+    @Override
+    public AIPromptAbstract copy() {
+        AIPromptAbstract copy = create();
+        copy.goals.addAll(goals);
+        copy.instructions.addAll(instructions);
+        copy.examples.addAll(examples);
+        copy.contexts.addAll(contexts);
+        copy.outputFormats.addAll(outputFormats);
+        return copy;
+    }
+
+    @NotNull
+    protected abstract AIPromptAbstract create();
 }

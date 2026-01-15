@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,6 +39,7 @@ public class AISettings implements DBPAdaptable {
     private final Set<String> resolvedSecrets = new HashSet<>();
     private final Set<String> enabledFunctionCategories = new LinkedHashSet<>();
     private final Set<String> enabledFunctions = new LinkedHashSet<>();
+    private final Map<String, String> customInstructions = new LinkedHashMap<>();
 
     public AISettings() {
     }
@@ -61,7 +62,7 @@ public class AISettings implements DBPAdaptable {
 
     @NotNull
     public Set<String> getEnabledFunctions() {
-        return new HashSet<>(enabledFunctions);
+        return Set.copyOf(enabledFunctions);
     }
 
     public void setEnabledFunctions(@Nullable Set<String> functions) {
@@ -69,6 +70,21 @@ public class AISettings implements DBPAdaptable {
         if (functions != null) {
             this.enabledFunctions.addAll(functions);
         }
+    }
+
+    @NotNull
+    public Map<String, String> getCustomInstructions() {
+        return Map.copyOf(customInstructions);
+    }
+
+    @Nullable
+    public String getCustomInstructions(@NotNull String promptGeneratorId) {
+        return customInstructions.get(promptGeneratorId);
+    }
+
+    public void setCustomInstructions(@NotNull Map<String, String> instructions) {
+        customInstructions.clear();
+        customInstructions.putAll(instructions);
     }
 
     public boolean isFunctionEnabled(@NotNull String functionId) {

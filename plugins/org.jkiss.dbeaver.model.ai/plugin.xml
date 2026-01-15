@@ -31,7 +31,7 @@
     </extension>
 
     <extension point="com.dbeaver.ai.prompt">
-        <prompt id="sql" icon="icons/sql-generate.svg" class="org.jkiss.dbeaver.model.ai.prompt.AIPromptGenerateSql"/>
+        <prompt id="sql" label="SQL query generation" icon="icons/sql-generate.svg" class="org.jkiss.dbeaver.model.ai.prompt.AIPromptGenerateSql"/>
     </extension>
 
     <extension point="org.jkiss.dbeaver.sqlCommand">

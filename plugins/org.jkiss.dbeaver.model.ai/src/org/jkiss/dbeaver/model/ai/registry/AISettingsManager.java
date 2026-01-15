@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -46,6 +46,7 @@ public class AISettingsManager {
     private static final String ENGINE_CONFIGURATIONS_KEY = "engineConfigurations";
     private static final String ENABLED_FUNCTION_CATEGORIES_KEY = "enabledFunctionCategories";
     private static final String ENABLED_FUNCTIONS_KEY = "enabledFunctions";
+    private static final String CUSTOM_INSTRUCTIONS_KEY = "customInstructions";
     public static final String ENGINE_PROPERTIES = "properties";
 
     private static AISettingsManager instance = null;
@@ -129,6 +130,11 @@ public class AISettingsManager {
                     settings.setEnabledFunctions(new HashSet<>(enabledFunctions));
                 }
 
+                @SuppressWarnings("unchecked")
+                Map<String, String> customInstructions = (Map<String, String>) configMap.get(CUSTOM_INSTRUCTIONS_KEY);
+                if (!CommonUtils.isEmpty(customInstructions)) {
+                    settings.setCustomInstructions(customInstructions);
+                }
 
                 Map<String, Object> ecRoot = JSONUtils.getObject(configMap, ENGINE_CONFIGURATIONS_KEY);
 
@@ -217,6 +223,15 @@ public class AISettingsManager {
                 json.add(ENABLED_FUNCTIONS_KEY, functionsArray);
             }
 
+            Map<String, String> customInstructions = settings.getCustomInstructions();
+            if (!customInstructions.isEmpty()) {
+                JsonObject object = new JsonObject();
+
+                for (Map.Entry<String, String> entry : customInstructions.entrySet()) {
+                    object.addProperty(entry.getKey(), entry.getValue());
+                }
+                json.add(CUSTOM_INSTRUCTIONS_KEY, object);
+            }
 
             JsonObject engineConfigurations = new JsonObject();
             for (Map.Entry<String, AIEngineProperties> configuration : settings.getEngineConfigurations().entrySet()) {
