@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ext.clickhouse.model.data;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.clickhouse.ClickhouseTypeParser;
 import org.jkiss.dbeaver.ext.clickhouse.model.ClickhouseArrayType;
 import org.jkiss.dbeaver.ext.clickhouse.model.ClickhouseDataSource;
@@ -41,6 +42,8 @@ import java.sql.SQLException;
 import java.util.*;
 
 public class ClickhouseArrayValueHandler extends JDBCArrayValueHandler {
+    private static final Log log = Log.getLog(ClickhouseArrayValueHandler.class);
+
     public static final ClickhouseArrayValueHandler INSTANCE = new ClickhouseArrayValueHandler();
     public static final String ARRAY_DELIMITER = ",";
     public static final Set<Character> QUOTED_CHARS = Set.of('[', ']', '"', ' ', '\\');
@@ -69,14 +72,20 @@ public class ClickhouseArrayValueHandler extends JDBCArrayValueHandler {
     ) throws DBCException, SQLException {
         // Remove after https://github.com/ClickHouse/clickhouse-java/issues/2711 is fixed
         String lowerCaseTypename = type.getTypeName().toLowerCase();
-        if (lowerCaseTypename.contains("ipv4")
-            || lowerCaseTypename.contains("ipv6")
-            || lowerCaseTypename.contains("uuid")
-            || lowerCaseTypename.contains("map")
-        ) {
-            return getValueFromObject(session, type, resultSet.getString(index), false, false);
+        try {
+            return super.fetchColumnValue(session, resultSet, type, index);
+        } catch (SQLException exception) {
+            if (lowerCaseTypename.contains("ipv4")
+                || lowerCaseTypename.contains("ipv6")
+                || lowerCaseTypename.contains("uuid")
+                || lowerCaseTypename.contains("map")
+            ) {
+                log.warn("Falling back to getString() for type " + type.getTypeName(), exception);
+                return getValueFromObject(session, type, resultSet.getString(index), false, false);
+            } else {
+                throw exception;
+            }
         }
-        return super.fetchColumnValue(session, resultSet, type, index);
 
     }
 
