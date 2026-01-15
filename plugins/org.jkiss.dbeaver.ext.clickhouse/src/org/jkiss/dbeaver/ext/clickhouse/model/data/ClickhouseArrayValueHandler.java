@@ -71,7 +71,7 @@ public class ClickhouseArrayValueHandler extends JDBCArrayValueHandler {
         ) {
             return getValueFromObject(session, type, resultSet.getString(index), false, false);
         }
-        return getValueFromObject(session, type, resultSet.getArray(index), false, false);
+        return super.fetchColumnValue(session, resultSet, type, index);
 
     }
 
