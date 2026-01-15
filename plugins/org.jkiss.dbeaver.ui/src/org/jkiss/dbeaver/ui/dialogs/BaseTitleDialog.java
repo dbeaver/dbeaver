@@ -16,7 +16,6 @@
  */
 package org.jkiss.dbeaver.ui.dialogs;
 
-import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.TitleAreaDialog;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
@@ -54,20 +53,22 @@ public class BaseTitleDialog extends TitleAreaDialog {
 
     @Override
     protected Composite createDialogArea(Composite parent) {
-        Composite composite = UIUtils.createComposite(parent, 1);
-        UIUtils.createLabelSeparator(composite, SWT.HORIZONTAL);
-
-        Composite mainComposite = new Composite(composite, SWT.NONE);
+        Composite composite = new Composite(parent, SWT.NONE);
         GridLayout layout = new GridLayout();
-        layout.marginHeight = convertVerticalDLUsToPixels(IDialogConstants.VERTICAL_MARGIN);
-        layout.marginWidth = convertHorizontalDLUsToPixels(IDialogConstants.HORIZONTAL_MARGIN);
-        layout.verticalSpacing = convertVerticalDLUsToPixels(IDialogConstants.VERTICAL_SPACING);
-        layout.horizontalSpacing = convertHorizontalDLUsToPixels(IDialogConstants.HORIZONTAL_SPACING);
-        mainComposite.setLayout(layout);
-        mainComposite.setLayoutData(new GridData(GridData.FILL_BOTH));
-        applyDialogFont(mainComposite);
+        layout.verticalSpacing = 0;
+        layout.horizontalSpacing = 0;
+        composite.setLayout(layout);
+        composite.setLayoutData(new GridData(GridData.FILL_BOTH));
+        composite.setFont(parent.getFont());
+        if (needsTopSeparator()) {
+            // Build the separator line
+            UIUtils.createLabelSeparator(composite, SWT.HORIZONTAL);
+        }
+        return composite;
+    }
 
-        return mainComposite;
+    private boolean needsTopSeparator() {
+        return false;
     }
 
     @Override
