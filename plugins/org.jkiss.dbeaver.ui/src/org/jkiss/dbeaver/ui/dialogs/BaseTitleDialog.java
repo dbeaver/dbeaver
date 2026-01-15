@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,16 +26,15 @@ import org.eclipse.swt.widgets.Shell;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
+import org.jkiss.dbeaver.ui.UIUtils;
 
 /**
  * Base dialog with title and image
  */
-public class BaseTitleDialog extends TitleAreaDialog
-{
+public class BaseTitleDialog extends TitleAreaDialog {
     private DBPImage icon;
 
-    public BaseTitleDialog(Shell parentShell, @Nullable DBPImage icon)
-    {
+    public BaseTitleDialog(Shell parentShell, @Nullable DBPImage icon) {
         super(parentShell);
         this.icon = icon;
     }
@@ -44,8 +43,7 @@ public class BaseTitleDialog extends TitleAreaDialog
         return icon;
     }
 
-    public void setImage(DBPImage image)
-    {
+    public void setImage(DBPImage image) {
         this.icon = image;
     }
 
@@ -56,7 +54,8 @@ public class BaseTitleDialog extends TitleAreaDialog
 
     @Override
     protected Composite createDialogArea(Composite parent) {
-        Composite composite = (Composite) super.createDialogArea(parent);
+        Composite composite = UIUtils.createComposite(parent, 1);
+        UIUtils.createLabelSeparator(composite, SWT.HORIZONTAL);
 
         Composite mainComposite = new Composite(composite, SWT.NONE);
         GridLayout layout = new GridLayout();
@@ -72,8 +71,7 @@ public class BaseTitleDialog extends TitleAreaDialog
     }
 
     @Override
-    public void create()
-    {
+    public void create() {
         super.create();
         if (icon != null) {
             getShell().setImage(DBeaverIcons.getImage(icon));
