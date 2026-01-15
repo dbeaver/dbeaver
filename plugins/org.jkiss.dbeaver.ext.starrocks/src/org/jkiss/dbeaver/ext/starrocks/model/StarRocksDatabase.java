@@ -81,38 +81,46 @@ public class StarRocksDatabase implements DBSSchema, DBSObjectContainer, DBPRefr
         return catalog.getDataSource();
     }
 
+    @NotNull
     public StarRocksCatalog getCatalog() {
         return catalog;
     }
 
+    @NotNull
     public TableCache getTableCache() {
         return tableCache;
     }
 
+    @NotNull
     @Association
-    public Collection<StarRocksTable> getTables(DBRProgressMonitor monitor) throws DBException {
+    public Collection<StarRocksTable> getTables(@NotNull DBRProgressMonitor monitor) throws DBException {
         return tableCache.getTypedObjects(monitor, this, StarRocksTable.class);
     }
 
-    public StarRocksTable getTable(DBRProgressMonitor monitor, String name) throws DBException {
+    @Nullable
+    public StarRocksTable getTable(@NotNull DBRProgressMonitor monitor, @NotNull String name) throws DBException {
         return tableCache.getObject(monitor, this, name, StarRocksTable.class);
     }
 
+    @NotNull
     @Association
-    public Collection<StarRocksView> getViews(DBRProgressMonitor monitor) throws DBException {
+    public Collection<StarRocksView> getViews(@NotNull DBRProgressMonitor monitor) throws DBException {
         return tableCache.getTypedObjects(monitor, this, StarRocksView.class);
     }
 
-    public StarRocksView getView(DBRProgressMonitor monitor, String name) throws DBException {
+    @Nullable
+    public StarRocksView getView(@NotNull DBRProgressMonitor monitor, @NotNull String name) throws DBException {
         return tableCache.getObject(monitor, this, name, StarRocksView.class);
     }
 
+    @NotNull
     @Association
-    public Collection<StarRocksMaterializedView> getMaterializedViews(DBRProgressMonitor monitor) throws DBException {
+    public Collection<StarRocksMaterializedView> getMaterializedViews(@NotNull DBRProgressMonitor monitor) throws DBException {
         return tableCache.getTypedObjects(monitor, this, StarRocksMaterializedView.class);
     }
 
-    public StarRocksMaterializedView getMaterializedView(DBRProgressMonitor monitor, String name) throws DBException {
+    @Nullable
+    public StarRocksMaterializedView getMaterializedView(@NotNull DBRProgressMonitor monitor, @NotNull String name) throws DBException {
         return tableCache.getObject(monitor, this, name, StarRocksMaterializedView.class);
     }
 
@@ -145,7 +153,7 @@ public class StarRocksDatabase implements DBSSchema, DBSObjectContainer, DBPRefr
 
     void switchToCatalogContext(JDBCSession session) throws SQLException {
         try (Statement stmt = session.getOriginal().createStatement()) {
-            stmt.execute("SET CATALOG " + DBUtils.getQuotedIdentifier(getDataSource(), catalog.getName()));
+            stmt.execute("SET CATALOG " + DBUtils.getQuotedIdentifier(getDataSource(), catalog.getName())); //$NON-NLS-1$
         }
     }
 
@@ -154,26 +162,29 @@ public class StarRocksDatabase implements DBSSchema, DBSObjectContainer, DBPRefr
      */
     public class TableCache extends JDBCStructCache<StarRocksDatabase, StarRocksTableBase, StarRocksTableColumn> {
 
+        private static final String TYPE_MATERIALIZED_VIEW = "MATERIALIZED VIEW"; //$NON-NLS-1$
+        private static final String TYPE_VIEW = "VIEW"; //$NON-NLS-1$
+
         protected TableCache() {
-            super("Table");
+            super("Table"); //$NON-NLS-1$
         }
 
         @NotNull
         @Override
         protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull StarRocksDatabase owner) throws SQLException {
             switchToCatalogContext(session);
-            return session.prepareStatement("SHOW FULL TABLES FROM " + DBUtils.getQuotedIdentifier(owner));
+            return session.prepareStatement("SHOW FULL TABLES FROM " + DBUtils.getQuotedIdentifier(owner)); //$NON-NLS-1$
         }
 
         @Override
         protected StarRocksTableBase fetchObject(@NotNull JDBCSession session, @NotNull StarRocksDatabase owner, @NotNull JDBCResultSet dbResult) throws SQLException, DBException {
             String tableName = JDBCUtils.safeGetString(dbResult, 1);
             String tableType = JDBCUtils.safeGetString(dbResult, 2);
-            String tableTypeUpper = tableType != null ? tableType.toUpperCase() : "";
+            String tableTypeUpper = tableType != null ? tableType.toUpperCase() : ""; //$NON-NLS-1$
 
-            if (tableTypeUpper.contains("MATERIALIZED VIEW")) {
+            if (tableTypeUpper.contains(TYPE_MATERIALIZED_VIEW)) {
                 return new StarRocksMaterializedView(owner, tableName);
-            } else if (tableTypeUpper.contains("VIEW")) {
+            } else if (tableTypeUpper.contains(TYPE_VIEW)) {
                 return new StarRocksView(owner, tableName);
             } else {
                 return new StarRocksTable(owner, tableName);
@@ -183,11 +194,11 @@ public class StarRocksDatabase implements DBSSchema, DBSObjectContainer, DBPRefr
         @Override
         protected JDBCStatement prepareChildrenStatement(@NotNull JDBCSession session, @NotNull StarRocksDatabase owner, @Nullable StarRocksTableBase table) throws SQLException {
             if (table == null) {
-                throw new SQLException("Cannot load columns without specifying a table");
+                throw new SQLException("Cannot load columns without specifying a table"); //$NON-NLS-1$
             }
             switchToCatalogContext(session);
-            String sql = "SHOW FULL COLUMNS FROM " + DBUtils.getQuotedIdentifier(table) +
-                         " FROM " + DBUtils.getQuotedIdentifier(owner);
+            String sql = "SHOW FULL COLUMNS FROM " + DBUtils.getQuotedIdentifier(table) + //$NON-NLS-1$
+                         " FROM " + DBUtils.getQuotedIdentifier(owner); //$NON-NLS-1$
             return session.prepareStatement(sql);
         }
 

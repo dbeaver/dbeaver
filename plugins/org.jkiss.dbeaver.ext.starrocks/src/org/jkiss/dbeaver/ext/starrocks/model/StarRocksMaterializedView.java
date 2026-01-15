@@ -42,6 +42,8 @@ import java.util.Map;
  */
 public class StarRocksMaterializedView extends StarRocksTableBase implements DBPScriptObject {
 
+    private static final String COL_CREATE_MV = "Create Materialized View"; //$NON-NLS-1$
+
     private final AdditionalInfo additionalInfo = new AdditionalInfo();
 
     public static class AdditionalInfo {
@@ -123,15 +125,15 @@ public class StarRocksMaterializedView extends StarRocksTableBase implements DBP
             additionalInfo.loaded = true;
             return;
         }
-        try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Load materialized view definition")) {
+        try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Load materialized view definition")) { //$NON-NLS-1$
             // Switch to the correct catalog context
             getContainer().switchToCatalogContext(session);
 
             try (JDBCPreparedStatement dbStat = session.prepareStatement(
-                "SHOW CREATE MATERIALIZED VIEW " + getFullyQualifiedName(DBPEvaluationContext.DDL))) {
+                "SHOW CREATE MATERIALIZED VIEW " + getFullyQualifiedName(DBPEvaluationContext.DDL))) { //$NON-NLS-1$
                 try (JDBCResultSet dbResult = dbStat.executeQuery()) {
                     if (dbResult.next()) {
-                        String definition = JDBCUtils.safeGetString(dbResult, "Create Materialized View");
+                        String definition = JDBCUtils.safeGetString(dbResult, COL_CREATE_MV);
                         if (definition != null) {
                             additionalInfo.setDefinition(
                                 SQLFormatUtils.formatSQL(getDataSource(), definition));
@@ -143,7 +145,7 @@ public class StarRocksMaterializedView extends StarRocksTableBase implements DBP
             }
             additionalInfo.loaded = true;
         } catch (SQLException e) {
-            throw new DBCException("Error loading materialized view definition", e);
+            throw new DBCException("Error loading materialized view definition", e); //$NON-NLS-1$
         }
     }
 

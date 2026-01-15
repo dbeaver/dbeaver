@@ -48,15 +48,15 @@ public class StarRocksDataSource extends JDBCDataSource implements DBPRefreshabl
     /**
      * Default catalog name in StarRocks (internal catalog).
      */
-    public static final String DEFAULT_CATALOG_NAME = "default_catalog";
+    public static final String DEFAULT_CATALOG_NAME = "default_catalog"; //$NON-NLS-1$
 
     private final JDBCBasicDataTypeCache<StarRocksDataSource, JDBCDataType> dataTypeCache;
     private final CatalogCache catalogCache = new CatalogCache();
 
-    public StarRocksDataSource(DBRProgressMonitor monitor, DBPDataSourceContainer container)
+    public StarRocksDataSource(@NotNull DBRProgressMonitor monitor, @NotNull DBPDataSourceContainer container)
             throws DBException {
         super(monitor, container, new StarRocksDialect());
-        dataTypeCache = new JDBCBasicDataTypeCache<>(this); 
+        dataTypeCache = new JDBCBasicDataTypeCache<>(this);
     }
 
     @Override
@@ -103,24 +103,28 @@ public class StarRocksDataSource extends JDBCDataSource implements DBPRefreshabl
         return dataTypeCache.getCachedObjects();
     }
 
+    @NotNull
     @Association
-    public Collection<StarRocksCatalog> getCatalogs(DBRProgressMonitor monitor) throws DBException {
+    public Collection<StarRocksCatalog> getCatalogs(@NotNull DBRProgressMonitor monitor) throws DBException {
         return catalogCache.getAllObjects(monitor, this);
     }
 
-    public StarRocksCatalog getCatalog(DBRProgressMonitor monitor, String name) throws DBException {
+    @Nullable
+    public StarRocksCatalog getCatalog(@NotNull DBRProgressMonitor monitor, @NotNull String name) throws DBException {
         return catalogCache.getObject(monitor, this, name);
     }
 
-    public StarRocksCatalog getCatalog(String name) {
+    @Nullable
+    public StarRocksCatalog getCatalog(@NotNull String name) {
         return catalogCache.getCachedObject(name);
     }
 
-    public StarRocksCatalog getDefaultCatalog(DBRProgressMonitor monitor) throws DBException {
+    @Nullable
+    public StarRocksCatalog getDefaultCatalog(@NotNull DBRProgressMonitor monitor) throws DBException {
         return getCatalog(monitor, DEFAULT_CATALOG_NAME);
     }
 
-    public boolean isDefaultCatalog(StarRocksCatalog catalog) {
+    public boolean isDefaultCatalog(@NotNull StarRocksCatalog catalog) {
         return DEFAULT_CATALOG_NAME.equalsIgnoreCase(catalog.getName());
     }
 
@@ -180,7 +184,7 @@ public class StarRocksDataSource extends JDBCDataSource implements DBPRefreshabl
         protected JDBCPreparedStatement prepareObjectsStatement(
                 @NotNull JDBCSession session,
                 @NotNull StarRocksDataSource owner) throws SQLException {
-            return session.prepareStatement("SHOW CATALOGS");
+            return session.prepareStatement("SHOW CATALOGS"); //$NON-NLS-1$
         }
 
         @NotNull

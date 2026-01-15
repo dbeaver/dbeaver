@@ -28,13 +28,17 @@ import java.sql.ResultSet;
  */
 public class StarRocksTableColumn extends JDBCTableColumn<StarRocksTableBase> {
 
+    private static final String COL_FIELD = "Field"; //$NON-NLS-1$
+    private static final String COL_TYPE = "Type"; //$NON-NLS-1$
+    private static final String COL_NULL = "Null"; //$NON-NLS-1$
+
     public StarRocksTableColumn(StarRocksTableBase table, ResultSet dbResult) throws DBException {
         super(table, true);
         // Parse SHOW FULL COLUMNS result: Field | Type | Collation | Null | Key | Default | Extra | Privileges | Comment
-        setName(JDBCUtils.safeGetString(dbResult, "Field"));
-        setTypeName(JDBCUtils.safeGetString(dbResult, "Type"));
-        String nullableStr = JDBCUtils.safeGetString(dbResult, "Null");
-        setRequired(!"YES".equalsIgnoreCase(nullableStr));
+        setName(JDBCUtils.safeGetString(dbResult, COL_FIELD));
+        setTypeName(JDBCUtils.safeGetString(dbResult, COL_TYPE));
+        String nullableStr = JDBCUtils.safeGetString(dbResult, COL_NULL);
+        setRequired(!"YES".equalsIgnoreCase(nullableStr)); //$NON-NLS-1$
     }
 
     @NotNull

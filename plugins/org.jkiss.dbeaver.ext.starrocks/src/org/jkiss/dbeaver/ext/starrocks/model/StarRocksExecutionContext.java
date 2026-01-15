@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ext.starrocks.model;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -48,7 +49,7 @@ public class StarRocksExecutionContext extends JDBCExecutionContext
     private String activeCatalogName;
     private String activeDatabaseName;
 
-    StarRocksExecutionContext(@NotNull JDBCRemoteInstance instance, String purpose) {
+    StarRocksExecutionContext(@NotNull JDBCRemoteInstance instance, @NotNull String purpose) {
         super(instance, purpose);
     }
 
@@ -64,27 +65,31 @@ public class StarRocksExecutionContext extends JDBCExecutionContext
         return this;
     }
 
+    @Nullable
     public String getActiveCatalogName() {
         return activeCatalogName;
     }
 
-    public void setActiveCatalogName(String activeCatalogName) {
+    public void setActiveCatalogName(@Nullable String activeCatalogName) {
         this.activeCatalogName = activeCatalogName;
     }
 
+    @Nullable
     public String getActiveDatabaseName() {
         return activeDatabaseName;
     }
 
-    public void setActiveDatabaseName(String activeDatabaseName) {
+    public void setActiveDatabaseName(@Nullable String activeDatabaseName) {
         this.activeDatabaseName = activeDatabaseName;
     }
 
+    @Nullable
     @Override
     public StarRocksCatalog getDefaultCatalog() {
         return CommonUtils.isEmpty(activeCatalogName) ? null : getDataSource().getCatalog(activeCatalogName); 
     }
 
+    @Nullable
     @Override
     public StarRocksDatabase getDefaultSchema() {
         StarRocksCatalog catalog = getDefaultCatalog();
@@ -105,7 +110,11 @@ public class StarRocksExecutionContext extends JDBCExecutionContext
     }
 
     @Override
-    public void setDefaultCatalog(DBRProgressMonitor monitor, StarRocksCatalog catalog, StarRocksDatabase schema) throws DBCException {
+    public void setDefaultCatalog(
+            @NotNull DBRProgressMonitor monitor,
+            @Nullable StarRocksCatalog catalog,
+            @Nullable StarRocksDatabase schema
+    ) throws DBCException {
         if (catalog == null || isAlreadyActive(catalog, schema)) {
             return;
         }
@@ -124,7 +133,7 @@ public class StarRocksExecutionContext extends JDBCExecutionContext
         fireSelectionChangeEvents(oldCatalog, catalog, oldSchema, schema);
     }
 
-    private boolean isAlreadyActive(StarRocksCatalog catalog, StarRocksDatabase schema) {
+    private boolean isAlreadyActive(@NotNull StarRocksCatalog catalog, @Nullable StarRocksDatabase schema) {
         String newCatalogName = catalog.getName();
         boolean catalogMatch = newCatalogName.equals(activeCatalogName);
         boolean schemaMatch = schema == null || schema.getName().equals(activeDatabaseName);
@@ -132,8 +141,11 @@ public class StarRocksExecutionContext extends JDBCExecutionContext
     }
 
     private void fireSelectionChangeEvents(
-            StarRocksCatalog oldCatalog, StarRocksCatalog newCatalog,
-            StarRocksDatabase oldSchema, StarRocksDatabase newSchema) {
+            @Nullable StarRocksCatalog oldCatalog,
+            @NotNull StarRocksCatalog newCatalog,
+            @Nullable StarRocksDatabase oldSchema,
+            @Nullable StarRocksDatabase newSchema
+    ) {
         if (oldCatalog != null) {
             DBUtils.fireObjectSelectionChange(oldCatalog, newCatalog, this);
         }
@@ -143,7 +155,7 @@ public class StarRocksExecutionContext extends JDBCExecutionContext
     }
 
     @Override
-    public void setDefaultSchema(DBRProgressMonitor monitor, StarRocksDatabase schema) throws DBCException {
+    public void setDefaultSchema(@NotNull DBRProgressMonitor monitor, @Nullable StarRocksDatabase schema) throws DBCException {
         if (schema == null) {
             return;
         }
@@ -169,51 +181,52 @@ public class StarRocksExecutionContext extends JDBCExecutionContext
     }
 
     @Override
-    public boolean refreshDefaults(DBRProgressMonitor monitor, boolean useBootstrapSettings) throws DBException {
-        JDBCSession session = openSession(monitor, DBCExecutionPurpose.META, "Query active catalog and database");
-        if (useBootstrapSettings) {
-            DBPConnectionBootstrap bootstrap = getBootstrapSettings();
-            if (!CommonUtils.isEmpty(bootstrap.getDefaultCatalogName())) {
-                setCurrentCatalog(monitor, bootstrap.getDefaultCatalogName());
-                activeCatalogName = bootstrap.getDefaultCatalogName();
-            }
-            if (!CommonUtils.isEmpty(bootstrap.getDefaultSchemaName())) {
-                setCurrentDatabase(monitor, bootstrap.getDefaultSchemaName());
-                activeDatabaseName = bootstrap.getDefaultSchemaName();
-            }
-        }
-
-        // Get current catalog
-        try (JDBCPreparedStatement dbStat = session.prepareStatement("SELECT CATALOG()")) {
-            try (JDBCResultSet dbResult = dbStat.executeQuery()) {
-                if (dbResult.next()) {
-                    activeCatalogName = JDBCUtils.safeGetString(dbResult, 1);
+    public boolean refreshDefaults(@NotNull DBRProgressMonitor monitor, boolean useBootstrapSettings) throws DBException {
+        try (JDBCSession session = openSession(monitor, DBCExecutionPurpose.META, "Query active catalog and database")) { //$NON-NLS-1$
+            if (useBootstrapSettings) {
+                DBPConnectionBootstrap bootstrap = getBootstrapSettings();
+                if (!CommonUtils.isEmpty(bootstrap.getDefaultCatalogName())) {
+                    setCurrentCatalog(monitor, bootstrap.getDefaultCatalogName());
+                    activeCatalogName = bootstrap.getDefaultCatalogName();
+                }
+                if (!CommonUtils.isEmpty(bootstrap.getDefaultSchemaName())) {
+                    setCurrentDatabase(monitor, bootstrap.getDefaultSchemaName());
+                    activeDatabaseName = bootstrap.getDefaultSchemaName();
                 }
             }
-        } catch (SQLException e) {
-            log.debug("Error getting current catalog", e);
-            // Default to default_catalog if we can't determine
-            activeCatalogName = StarRocksDataSource.DEFAULT_CATALOG_NAME;
-        }
 
-        // Get current database
-        try (JDBCPreparedStatement dbStat = session.prepareStatement("SELECT DATABASE()")) {
-            try (JDBCResultSet dbResult = dbStat.executeQuery()) {
-                if (dbResult.next()) {
-                    activeDatabaseName = JDBCUtils.safeGetString(dbResult, 1);
+            // Get current catalog
+            try (JDBCPreparedStatement dbStat = session.prepareStatement("SELECT CATALOG()")) { //$NON-NLS-1$
+                try (JDBCResultSet dbResult = dbStat.executeQuery()) {
+                    if (dbResult.next()) {
+                        activeCatalogName = JDBCUtils.safeGetString(dbResult, 1);
+                    }
                 }
+            } catch (SQLException e) {
+                log.debug("Error getting current catalog", e); //$NON-NLS-1$
+                // Default to default_catalog if we can't determine
+                activeCatalogName = StarRocksDataSource.DEFAULT_CATALOG_NAME;
             }
-        } catch (SQLException e) {
-            log.debug("Error getting current database", e);
+
+            // Get current database
+            try (JDBCPreparedStatement dbStat = session.prepareStatement("SELECT DATABASE()")) { //$NON-NLS-1$
+                try (JDBCResultSet dbResult = dbStat.executeQuery()) {
+                    if (dbResult.next()) {
+                        activeDatabaseName = JDBCUtils.safeGetString(dbResult, 1);
+                    }
+                }
+            } catch (SQLException e) {
+                log.debug("Error getting current database", e); //$NON-NLS-1$
+            }
         }
 
         return true;
     }
 
-    private boolean setCurrentCatalog(DBRProgressMonitor monitor, String catalogName) throws DBCException {
-        try (JDBCSession session = openSession(monitor, DBCExecutionPurpose.UTIL, "Set active catalog")) {
+    private boolean setCurrentCatalog(@NotNull DBRProgressMonitor monitor, @NotNull String catalogName) throws DBCException {
+        try (JDBCSession session = openSession(monitor, DBCExecutionPurpose.UTIL, "Set active catalog")) { //$NON-NLS-1$
             try (JDBCPreparedStatement dbStat = session.prepareStatement(
-                    "SET CATALOG " + DBUtils.getQuotedIdentifier(getDataSource(), catalogName))) {
+                    "SET CATALOG " + DBUtils.getQuotedIdentifier(getDataSource(), catalogName))) { //$NON-NLS-1$
                 dbStat.execute();
             } catch (SQLException e) {
                 throw new DBCException(e, session.getExecutionContext());
@@ -222,10 +235,10 @@ public class StarRocksExecutionContext extends JDBCExecutionContext
         }
     }
 
-    private boolean setCurrentDatabase(DBRProgressMonitor monitor, String databaseName) throws DBCException {
-        try (JDBCSession session = openSession(monitor, DBCExecutionPurpose.UTIL, "Set active database")) {
+    private boolean setCurrentDatabase(@NotNull DBRProgressMonitor monitor, @NotNull String databaseName) throws DBCException {
+        try (JDBCSession session = openSession(monitor, DBCExecutionPurpose.UTIL, "Set active database")) { //$NON-NLS-1$
             try (JDBCPreparedStatement dbStat = session.prepareStatement(
-                    "USE " + DBUtils.getQuotedIdentifier(getDataSource(), databaseName))) {
+                    "USE " + DBUtils.getQuotedIdentifier(getDataSource(), databaseName))) { //$NON-NLS-1$
                 dbStat.execute();
             } catch (SQLException e) {
                 throw new DBCException(e, session.getExecutionContext());

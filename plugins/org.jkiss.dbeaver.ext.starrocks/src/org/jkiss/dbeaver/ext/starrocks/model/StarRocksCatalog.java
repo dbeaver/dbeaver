@@ -42,6 +42,10 @@ import java.util.Collection;
  */
 public class StarRocksCatalog implements DBSCatalog, DBPRefreshableObject {
 
+    private static final String COL_CATALOG = "Catalog"; //$NON-NLS-1$
+    private static final String COL_TYPE = "Type"; //$NON-NLS-1$
+    private static final String COL_COMMENT = "Comment"; //$NON-NLS-1$
+
     private final StarRocksDataSource dataSource;
     private final String name;
     private final String type;
@@ -52,9 +56,9 @@ public class StarRocksCatalog implements DBSCatalog, DBPRefreshableObject {
             @NotNull StarRocksDataSource dataSource,
             @NotNull JDBCResultSet resultSet) {
         this.dataSource = dataSource;
-        this.name = JDBCUtils.safeGetString(resultSet, "Catalog");
-        this.type = JDBCUtils.safeGetString(resultSet, "Type");
-        this.comment = JDBCUtils.safeGetString(resultSet, "Comment");
+        this.name = JDBCUtils.safeGetString(resultSet, COL_CATALOG);
+        this.type = JDBCUtils.safeGetString(resultSet, COL_TYPE);
+        this.comment = JDBCUtils.safeGetString(resultSet, COL_COMMENT);
     }
 
     @NotNull
@@ -96,16 +100,19 @@ public class StarRocksCatalog implements DBSCatalog, DBPRefreshableObject {
         return dataSource;
     }
 
+    @NotNull
     @Association
-    public Collection<StarRocksDatabase> getDatabases(DBRProgressMonitor monitor) throws DBException {
+    public Collection<StarRocksDatabase> getDatabases(@NotNull DBRProgressMonitor monitor) throws DBException {
         return databaseCache.getAllObjects(monitor, this);
     }
 
-    public StarRocksDatabase getDatabase(DBRProgressMonitor monitor, String name) throws DBException {
+    @Nullable
+    public StarRocksDatabase getDatabase(@NotNull DBRProgressMonitor monitor, @NotNull String name) throws DBException {
         return databaseCache.getObject(monitor, this, name);
     }
 
-    public StarRocksDatabase getCachedDatabase(String name) {
+    @Nullable
+    public StarRocksDatabase getCachedDatabase(@NotNull String name) {
         return databaseCache.getCachedObject(name);
     }
 
@@ -147,9 +154,9 @@ public class StarRocksCatalog implements DBSCatalog, DBPRefreshableObject {
                 @NotNull StarRocksCatalog owner) throws SQLException {
             // Switch to this catalog context
             try (Statement stmt = session.getOriginal().createStatement()) {
-                stmt.execute("SET CATALOG " + DBUtils.getQuotedIdentifier(dataSource, name));
+                stmt.execute("SET CATALOG " + DBUtils.getQuotedIdentifier(dataSource, name)); //$NON-NLS-1$
             }
-            return session.prepareStatement("SHOW DATABASES");
+            return session.prepareStatement("SHOW DATABASES"); //$NON-NLS-1$
         }
 
         @NotNull

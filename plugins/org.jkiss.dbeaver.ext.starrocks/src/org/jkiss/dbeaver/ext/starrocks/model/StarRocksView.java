@@ -43,6 +43,8 @@ import java.util.Map;
  */
 public class StarRocksView extends StarRocksTableBase implements DBSView, DBPScriptObject {
 
+    private static final String COL_CREATE_VIEW = "Create View"; //$NON-NLS-1$
+
     private final AdditionalInfo additionalInfo = new AdditionalInfo();
 
     public static class AdditionalInfo {
@@ -114,15 +116,15 @@ public class StarRocksView extends StarRocksTableBase implements DBSView, DBPScr
             additionalInfo.loaded = true;
             return;
         }
-        try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Load view definition")) {
+        try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Load view definition")) { //$NON-NLS-1$
             // Switch to the correct catalog context
             getContainer().switchToCatalogContext(session);
 
             try (JDBCPreparedStatement dbStat = session.prepareStatement(
-                "SHOW CREATE VIEW " + getFullyQualifiedName(DBPEvaluationContext.DDL))) {
+                "SHOW CREATE VIEW " + getFullyQualifiedName(DBPEvaluationContext.DDL))) { //$NON-NLS-1$
                 try (JDBCResultSet dbResult = dbStat.executeQuery()) {
                     if (dbResult.next()) {
-                        String definition = JDBCUtils.safeGetString(dbResult, "Create View");
+                        String definition = JDBCUtils.safeGetString(dbResult, COL_CREATE_VIEW);
                         if (definition != null) {
                             additionalInfo.setDefinition(
                                 SQLFormatUtils.formatSQL(getDataSource(), definition));
@@ -134,7 +136,7 @@ public class StarRocksView extends StarRocksTableBase implements DBSView, DBPScr
             }
             additionalInfo.loaded = true;
         } catch (SQLException e) {
-            throw new DBCException("Error loading view definition", e);
+            throw new DBCException("Error loading view definition", e); //$NON-NLS-1$
         }
     }
 
