@@ -61,8 +61,12 @@ public class ClickhouseArrayValueHandler extends JDBCArrayValueHandler {
     }
 
     @Override
-    protected Object fetchColumnValue(DBCSession session, JDBCResultSet resultSet, DBSTypedObject type, int index)
-    throws DBCException, SQLException {
+    protected Object fetchColumnValue(
+        @NotNull DBCSession session,
+        @NotNull JDBCResultSet resultSet,
+        @NotNull DBSTypedObject type,
+        int index
+    ) throws DBCException, SQLException {
         // Remove after https://github.com/ClickHouse/clickhouse-java/issues/2711 is fixed
         if (type.getTypeName().toLowerCase().contains("ipv4")
             || type.getTypeName().toLowerCase().contains("ipv6")
