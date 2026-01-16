@@ -394,9 +394,7 @@ public class TabbedFolderList extends ConComposite {
                 e.gc.fillRectangle(0, 0, bounds.width, bounds.height);
                 e.gc.setForeground(widgetNormalShadow);
                 if (!section || isDownScrollRequired()) {
-                    if (!UIUtils.isInDialog(this)) {
-                        e.gc.drawLine(bounds.width - 1, 0, bounds.width - 1, bounds.height - 1);
-                    }
+                    e.gc.drawLine(bounds.width - 1, 0, bounds.width - 1, bounds.height - 1);
                 } else {
                     e.gc.drawLine(bounds.width - 1, 0, bounds.width - 1, bounds.height - SECTION_DIV_HEIGHT);
                     e.gc.drawPoint(bounds.width - 1, bounds.height - 1);
@@ -435,10 +433,10 @@ public class TabbedFolderList extends ConComposite {
     }
 
     private Color getWidgetBackground(boolean adapt) {
-        if (UIUtils.isInDialog(this)) {
+        if (UIUtils.isInDialog(this) && UIStyles.isDarkTheme()) {
             return getParent().getBackground();
         } else {
-            Color listBackground = UIUtils.isInDialog(this) ? getParent().getBackground() : UIStyles.getDefaultTextBackground();
+            Color listBackground = UIStyles.getDefaultTextBackground();
 
             Color connectionColor = CSSUtils.getCurrentEditorConnectionColor(this);
             if (connectionColor != null) {
