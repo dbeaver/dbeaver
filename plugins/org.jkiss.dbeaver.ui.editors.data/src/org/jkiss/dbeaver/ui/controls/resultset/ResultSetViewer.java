@@ -1289,7 +1289,7 @@ public class ResultSetViewer extends Viewer
             trControl.setLayout(layout);
             trControl.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
             if (panel.needsSeparator()) {
-                new Label(panelComposite, SWT.SEPARATOR | SWT.HORIZONTAL).setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+                UIUtils.createLabelSeparator(panelComposite, SWT.HORIZONTAL);
             }
 
             // Content placeholder
@@ -2046,18 +2046,10 @@ public class ResultSetViewer extends Viewer
             CSSUtils.markConnectionTypeColor(rowCountLabel);
             rowCountLabel.setMessage("Row Count");
             rowCountLabel.setToolTipText("Calculates total row count in the current dataset");
-            //Label separator = new Label(statusBar, SWT.NONE);
-            //separator.setImage(DBeaverIcons.getImage(UIIcon.SEPARATOR_V));
-            //CSSUtils.markConnectionTypeColor(separator);
 
             selectionStatLabel = new Text(statusBar, SWT.READ_ONLY);
             selectionStatLabel.setToolTipText(ResultSetMessages.result_set_viewer_selection_stat_tooltip);
             selectionStatLabel.setText(" ");
-
-//            Label filler = new Label(statusComposite, SWT.NONE);
-//            filler.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-
-            //UIUtils.createToolBarSeparator(statusBar, SWT.VERTICAL);
 
             if (!supportsDecoratorFeature(IResultSetDecorator.FEATURE_COMPACT_STATUS)) {
                 statusLabel = new StatusLabel(statusBar, SWT.NONE, this);
