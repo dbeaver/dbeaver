@@ -84,14 +84,14 @@ public class NavigatorHandlerFilterConfig extends NavigatorHandlerObjectCreateBa
 
                 DBSObjectFilter currentDialogFilter = dialog.getFilter();
                 switch (dialog.open()) {
-                    case IDialogConstants.OK_ID:
+                    case IDialogConstants.OK_ID -> {
                         parentNode.setNodeFilter(itemsMeta, currentDialogFilter, !currentDialogFilter.isUserFilter());
                         if (currentDialogFilter.isUserFilter()) {
                             UserDBSObjectFilerUtils.updateUserObjectFilters(parentNode.getDataSourceContainer());
                         }
                         NavigatorHandlerRefresh.refreshNavigator(Collections.singletonList(parentNode));
-                        break;
-                    case EditObjectFilterDialog.SHOW_GLOBAL_FILTERS_ID: {
+                    }
+                    case EditObjectFilterDialog.SHOW_GLOBAL_FILTERS_ID -> {
                         Class<?> childrenClass = null;
                         if (dbNode instanceof DBNDatabaseFolder folder) {
                             childrenClass = folder.getChildrenClass();
@@ -119,7 +119,11 @@ public class NavigatorHandlerFilterConfig extends NavigatorHandlerObjectCreateBa
                             dataSourceContainer.persistConfiguration();
                             NavigatorHandlerRefresh.refreshNavigator(Collections.singletonList(parentNode));
                         }
-                        break;
+                    }
+                    case EditObjectFilterDialog.DELETE_USER_FILTER -> {
+                        UserDBSObjectFilerUtils.clearUserObjectFilers(parentNode.getDataSourceContainer());
+                        parentNode.setNodeFilter(itemsMeta, null, false);
+                        NavigatorHandlerRefresh.refreshNavigator(Collections.singletonList(parentNode));
                     }
                 }
             }

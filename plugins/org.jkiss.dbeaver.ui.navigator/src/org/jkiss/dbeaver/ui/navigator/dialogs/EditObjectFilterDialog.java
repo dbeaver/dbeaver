@@ -24,8 +24,10 @@ import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
 import org.jkiss.dbeaver.model.struct.DBSObjectFilter;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.IHelpContextIds;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.StringEditorTable;
@@ -44,6 +46,7 @@ import java.util.List;
 public class EditObjectFilterDialog extends HelpEnabledDialog {
 
     public static final int SHOW_GLOBAL_FILTERS_ID = 1000;
+    public static final int DELETE_USER_FILTER = 1001;
     private static final String NULL_FILTER_NAME = "";
 
     private final DBPDataSourceRegistry dsRegistry;
@@ -56,6 +59,9 @@ public class EditObjectFilterDialog extends HelpEnabledDialog {
     private Table excludeTable;
     private Combo namesCombo;
     private Button enableButton;
+
+    @Nullable
+    private Button customUserFilterCheckbox;
 
     public EditObjectFilterDialog(Shell shell, DBPDataSourceRegistry dsRegistry, String objectTitle, DBSObjectFilter filter, boolean globalFilter) {
         super(shell, IHelpContextIds.CTX_EDIT_OBJECT_FILTERS);
@@ -117,7 +123,13 @@ public class EditObjectFilterDialog extends HelpEnabledDialog {
         UIUtils.createInfoLabel(blockControl, UINavigatorMessages.dialog_filter_objects_scope_hint_text);
 
         {
-            Group sfGroup = UIUtils.createControlGroup(composite, UINavigatorMessages.dialog_filter_save_label, 4, GridData.FILL_HORIZONTAL, 0);
+            Group sfGroup = UIUtils.createControlGroup(
+                composite,
+                UINavigatorMessages.dialog_filter_save_label,
+                4,
+                GridData.FILL_HORIZONTAL,
+                0
+            );
             namesCombo = UIUtils.createLabelCombo(sfGroup, UINavigatorMessages.dialog_filter_name_label, SWT.DROP_DOWN);
             namesCombo.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
@@ -155,6 +167,20 @@ public class EditObjectFilterDialog extends HelpEnabledDialog {
                     namesCombo.setText(NULL_FILTER_NAME);
                 }
             });
+
+            if (DBWorkbench.isDistributed()) {
+                customUserFilterCheckbox = UIUtils.createCheckbox(sfGroup, "My custom checkbox", filter.isUserFilter());
+                customUserFilterCheckbox.addSelectionListener(new SelectionAdapter() {
+                    @Override
+                    public void widgetSelected(SelectionEvent e) {
+                        if (customUserFilterCheckbox.getSelection()) {
+                            filter.setUserFilter(true);
+                        } else {
+                            currentUserFilterUnselected();
+                        }
+                    }
+                });
+            }
         }
 
         enableFiltersContent();
@@ -214,4 +240,12 @@ public class EditObjectFilterDialog extends HelpEnabledDialog {
         super.cancelPressed();
     }
 
+    private void currentUserFilterUnselected() {
+        if (UIUtils.confirmAction("sure bout that?", "it will remove your custom stuff")) {
+            setReturnCode(DELETE_USER_FILTER);
+            close();
+        } else {
+            customUserFilterCheckbox.setSelection(true);
+        }
+    }
 }

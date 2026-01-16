@@ -24,12 +24,29 @@ import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.security.SMObjectType;
 
 import java.util.Map;
+import java.util.Set;
 
 public class UserDBSObjectFilerUtils {
 
     public static final String USER_FILTER_KEY = "navigator-filters";
 
     protected static final FilterSerializer<DataSourceDescriptor> filterSerializer = new FilterSerializer<>();
+
+    public static void clearUserObjectFilers(@NotNull DBPDataSourceContainer dataSource) {
+        DBPObjectSettingsProvider settingsProvider = DBUtils.getAdapter(DBPObjectSettingsProvider.class, dataSource.getProject());
+        if (settingsProvider == null) {
+            return;
+        }
+        try {
+            settingsProvider.clearObjectSettings(
+                SMObjectType.datasource,
+                dataSource.getId(),
+                Set.of(USER_FILTER_KEY)
+            );
+        } catch (DBException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
     public static void updateUserObjectFilters(@NotNull DBPDataSourceContainer dataSource) {
         DBPObjectSettingsProvider settingsProvider = DBUtils.getAdapter(DBPObjectSettingsProvider.class, dataSource.getProject());
