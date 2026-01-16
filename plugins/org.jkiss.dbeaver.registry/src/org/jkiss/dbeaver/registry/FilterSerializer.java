@@ -71,7 +71,7 @@ public class FilterSerializer<T extends DataSourceDescriptor> {
     }
 
     @NotNull
-    public String serializeFilters(@NotNull T dataSourceDescriptor) {
+    public String serializeCustomUserFilters(@NotNull T dataSourceDescriptor) {
         ByteArrayOutputStream dsConfigBuffer = new ByteArrayOutputStream(10000);
         try (OutputStreamWriter osw = new OutputStreamWriter(dsConfigBuffer, StandardCharsets.UTF_8)) {
             try (JsonWriter jsonWriter = CONFIG_GSON.newJsonWriter(osw)) {
@@ -102,12 +102,12 @@ public class FilterSerializer<T extends DataSourceDescriptor> {
                 DBSObjectFilter defaultFilter = filter.defaultFilter;
                 if (defaultFilter != null
                     && !defaultFilter.isEmpty()
-                    && UserDBSObjectFilerUtils.isCustomUserFilter(defaultFilter) == useCustomUserFilters) {
+                    && defaultFilter.isUserFilter() == useCustomUserFilters) {
                     saveObjectFiler(json, filter.typeName, null, defaultFilter);
                 }
                 for (Map.Entry<String, DBSObjectFilter> cf : filter.customFilters.entrySet()) {
                     if (!cf.getValue().isEmpty()
-                        && UserDBSObjectFilerUtils.isCustomUserFilter(cf.getValue()) == useCustomUserFilters) {
+                        && cf.getValue().isUserFilter() == useCustomUserFilters) {
                         saveObjectFiler(json, filter.typeName, cf.getKey(), cf.getValue());
                     }
                 }

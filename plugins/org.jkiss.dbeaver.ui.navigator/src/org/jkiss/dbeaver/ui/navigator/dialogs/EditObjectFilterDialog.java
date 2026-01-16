@@ -26,8 +26,6 @@ import org.eclipse.swt.widgets.*;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
 import org.jkiss.dbeaver.model.struct.DBSObjectFilter;
-import org.jkiss.dbeaver.model.struct.UserDBSObjectFilter;
-import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.IHelpContextIds;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.StringEditorTable;
@@ -63,7 +61,7 @@ public class EditObjectFilterDialog extends HelpEnabledDialog {
         super(shell, IHelpContextIds.CTX_EDIT_OBJECT_FILTERS);
         this.dsRegistry = dsRegistry;
         this.objectTitle = objectTitle;
-        this.filter = DBWorkbench.isDistributed() ? new UserDBSObjectFilter(filter) : new DBSObjectFilter(filter);
+        this.filter = new DBSObjectFilter(filter);
         this.globalFilter = globalFilter;
     }
 

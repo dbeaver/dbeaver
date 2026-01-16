@@ -85,13 +85,9 @@ public class NavigatorHandlerFilterConfig extends NavigatorHandlerObjectCreateBa
                 DBSObjectFilter currentDialogFilter = dialog.getFilter();
                 switch (dialog.open()) {
                     case IDialogConstants.OK_ID:
-                        boolean isCustomUserFilter = UserDBSObjectFilerUtils.isCustomUserFilter(currentDialogFilter);
-                        parentNode.setNodeFilter(itemsMeta, currentDialogFilter, !isCustomUserFilter);
-                        if (isCustomUserFilter) {
-                            UserDBSObjectFilerUtils.updateUserObjectFilters(
-                                parentNode.getDataSourceContainer(),
-                                currentDialogFilter.getName()
-                            );
+                        parentNode.setNodeFilter(itemsMeta, currentDialogFilter, !currentDialogFilter.isUserFilter());
+                        if (currentDialogFilter.isUserFilter()) {
+                            UserDBSObjectFilerUtils.updateUserObjectFilters(parentNode.getDataSourceContainer());
                         }
                         NavigatorHandlerRefresh.refreshNavigator(Collections.singletonList(parentNode));
                         break;
