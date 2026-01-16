@@ -7,6 +7,8 @@ Bundle-Release-Date: 20251222
 Require-Bundle: org.jkiss.dbeaver.ui,
  org.jkiss.dbeaver.registry,
  org.jkiss.dbeaver.ui.editors.base,
+ org.jkiss.dbeaver.ui.editors.session,
+ org.jkiss.dbeaver.ui.editors.locks,
  org.jkiss.dbeaver.ui.editors.connection,
  org.jkiss.dbeaver.ui.editors.sql,
  org.jkiss.dbeaver.ext.yashandb,

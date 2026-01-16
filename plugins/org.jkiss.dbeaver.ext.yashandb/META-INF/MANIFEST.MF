@@ -13,6 +13,7 @@ Require-Bundle: org.eclipse.core.runtime,
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-21
 Bundle-Vendor: DBeaver Corp
-Export-Package: org.jkiss.dbeaver.ext.yashandb.model
+Export-Package: org.jkiss.dbeaver.ext.yashandb.model,
+ org.jkiss.dbeaver.ext.yashandb.model.session
 Bundle-Localization: OSGI-INF/l10n/bundle
 Automatic-Module-Name: org.jkiss.dbeaver.ext.yashandb

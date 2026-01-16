@@ -19,7 +19,7 @@ package org.jkiss.dbeaver.ext.yashandb.model;
 public enum YashanDBSourceType {
 
 	TYPE(false), PROCEDURE(false), FUNCTION(false), PACKAGE(false), TRIGGER(false), VIEW(true), MATERIALIZED_VIEW(true),
-	SEQUENCE(false);
+	SEQUENCE(false),JOB(false);
 
 	private final boolean isCustom;
 
