@@ -85,7 +85,7 @@ public class DefaultFormattingConfigurator implements IObjectPropertyConfigurato
             UIMessages.controls_locale_selector_label_language,
             SWT.DROP_DOWN
         );
-        languageText.setLayoutData(GridDataFactory.create(GridData.FILL_HORIZONTAL).hint(100, 0).create());
+        languageText.setLayoutData(GridDataFactory.create(GridData.FILL_HORIZONTAL).hint(150, -1).create());
         languageText.setToolTipText(
             """
                 Language AI engine should use in chat by default.
