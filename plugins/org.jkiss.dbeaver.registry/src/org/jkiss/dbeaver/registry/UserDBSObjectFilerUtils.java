@@ -16,28 +16,30 @@
  */
 package org.jkiss.dbeaver.registry;
 
-import com.google.gson.stream.JsonWriter;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPObjectSettingsProvider;
 import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.data.json.JSONUtils;
 import org.jkiss.dbeaver.model.security.SMObjectType;
 import org.jkiss.dbeaver.model.struct.DBSObjectFilter;
 import org.jkiss.dbeaver.model.struct.UserDBSObjectFilter;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.OutputStreamWriter;
-import java.nio.charset.StandardCharsets;
 import java.util.Map;
 
 public class UserDBSObjectFilerUtils {
 
     public static final String USER_FILTER_KEY = "navigator-filters-";
+
+    protected static final FilterSerializer<DataSourceDescriptor> filterSerializer = new FilterSerializer<>() {
+        @NotNull
+        @Override
+        public DBSObjectFilter deserializeObjectFiler(@NotNull Map<String, Object> map) {
+            return new UserDBSObjectFilter(super.deserializeObjectFiler(map));
+        }
+    };
 
     public static void updateUserObjectFilters(
         @NotNull DBPDataSourceContainer dataSource,
@@ -48,29 +50,34 @@ public class UserDBSObjectFilerUtils {
             return;
         }
         try {
-
             settingsProvider.setObjectSettings(
                 SMObjectType.datasource,
                 dataSource.getId(),
-                Map.of(USER_FILTER_KEY + filterGroupName, filtersToArray(dataSourceDescriptor))
+                Map.of(USER_FILTER_KEY + filterGroupName, filterSerializer.serializeFilters(dataSourceDescriptor))
             );
         } catch (DBException e) {
             throw new RuntimeException(e);
         }
     }
 
-    private static String filtersToArray(@NotNull DataSourceDescriptor dataSourceDescriptor) {
-        ByteArrayOutputStream dsConfigBuffer = new ByteArrayOutputStream(10000);
-        try (OutputStreamWriter osw = new OutputStreamWriter(dsConfigBuffer, StandardCharsets.UTF_8)) {
-            try (JsonWriter jsonWriter = DataSourceSerializerModern.CONFIG_GSON.newJsonWriter(osw)) {
-                jsonWriter.setIndent(JSONUtils.EMPTY_INDENT);
-                DataSourceSerializerModern.saveObjectFilters(jsonWriter, null, dataSourceDescriptor, true);
-                jsonWriter.flush();
-                return dsConfigBuffer.toString();
-            }
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+    public static void setUserObjectFilters(@NotNull DataSourceDescriptor dataSourceDescriptor, @NotNull Map<String, String> userSettings) {
+        userSettings
+            .entrySet()
+            .stream()
+            .filter(e -> e.getKey().startsWith(USER_FILTER_KEY))
+            .map(Map.Entry::getValue)
+            .forEach(filterCfgString -> setUserObjectFilter(dataSourceDescriptor, filterCfgString));
+    }
+
+    private static void setUserObjectFilter(@NotNull DataSourceDescriptor dataSourceDescriptor, @NotNull String filterConfigJson) {
+        filterSerializer.deserializeObjectFilterConfig(filterConfigJson)
+            .stream()
+            .filter(FilterSerializer.FilterConfiguration::typeNamePresent)
+            .forEach(fc -> dataSourceDescriptor.updateObjectFilter(
+                fc.typeName(),
+                fc.objectID(),
+                fc.filter()
+            ));
     }
 
 

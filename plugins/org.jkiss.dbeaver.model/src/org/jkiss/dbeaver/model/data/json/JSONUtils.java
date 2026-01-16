@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -50,6 +50,8 @@ public class JSONUtils {
         .ofPattern("yyyy-MM-dd['T'HH:mm:ss['.'SSS]['Z']]")
         .withZone(ZoneId.of("UTC"));
     public static final Type MAP_TYPE_TOKEN = new TypeToken<Map<String, Object>>() {}.getType();
+    public static final Type LIST_TYPE_TOKEN = new TypeToken<List<Map<String, Object>>>() {
+    }.getType();
     public static final Gson GSON = new GsonBuilder().create();
 
     public static String formatDate(Date date) {
@@ -290,6 +292,15 @@ public class JSONUtils {
     ) throws DBCException {
         String json = GSON.toJson(map);
         return GSON.fromJson(json, type);
+    }
+
+    @NotNull
+    public static List<Map<String, Object>> parseList(@NotNull Gson gson, @NotNull Reader reader) {
+        List<Map<String, Object>> result = gson.fromJson(reader, LIST_TYPE_TOKEN);
+        if (result == null) {
+            return List.of();
+        }
+        return result;
     }
 
     @NotNull

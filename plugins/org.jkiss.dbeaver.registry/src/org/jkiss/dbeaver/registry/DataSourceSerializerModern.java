@@ -78,6 +78,8 @@ public class DataSourceSerializerModern<T extends DataSourceDescriptor> implemen
         .serializeNulls()
         .create();
 
+    protected final FilterSerializer<T> filterSerializer = new FilterSerializer<>();
+
     @NotNull
     private final DataSourceRegistry<T> registry;
     // Secure props.
@@ -176,7 +178,7 @@ public class DataSourceSerializerModern<T extends DataSourceDescriptor> implemen
                         jsonWriter.beginArray();
                         for (DBSObjectFilter cf : savedFilters) {
                             if (!cf.isEmpty()) {
-                                saveObjectFiler(jsonWriter, null, null, cf);
+                                filterSerializer.saveObjectFiler(jsonWriter, null, null, cf);
                             }
                         }
                         jsonWriter.endArray();
@@ -757,11 +759,13 @@ public class DataSourceSerializerModern<T extends DataSourceDescriptor> implemen
 
                 // Filters
                 for (Map<String, Object> filterCfg : JSONUtils.getObjectList(conObject, RegistryConstants.TAG_FILTERS)) {
-                    String typeName = JSONUtils.getString(filterCfg, RegistryConstants.ATTR_TYPE);
-                    String objectID = JSONUtils.getString(filterCfg, RegistryConstants.ATTR_ID);
-                    if (!CommonUtils.isEmpty(typeName)) {
-                        DBSObjectFilter filter = readObjectFiler(filterCfg);
-                        dataSource.updateObjectFilter(typeName, objectID, filter);
+                    var filterConfiguration = filterSerializer.deserializeObjectFilterConfig(filterCfg);
+                    if (filterConfiguration.typeNamePresent()) {
+                        dataSource.updateObjectFilter(
+                            filterConfiguration.typeName(),
+                            filterConfiguration.objectID(),
+                            filterConfiguration.filter()
+                        );
                     }
                 }
 
@@ -812,7 +816,7 @@ public class DataSourceSerializerModern<T extends DataSourceDescriptor> implemen
 
             // Saved filters
             for (Map<String, Object> ctMap : JSONUtils.getObjectList(configurationMap, "saved-filters")) {
-                DBSObjectFilter filter = readObjectFiler(ctMap);
+                DBSObjectFilter filter = filterSerializer.deserializeObjectFiler(ctMap);
                 registry.addSavedFilter(filter);
             }
         }
@@ -834,26 +838,33 @@ public class DataSourceSerializerModern<T extends DataSourceDescriptor> implemen
         dataSource.setDriverSubstitution(DataSourceProviderRegistry.getInstance()
             .getDriverSubstitution(CommonUtils.notEmpty(JSONUtils.getString(conObject, ATTR_DRIVER_SUBSTITUTION))));
 
-        DBPObjectSettingsProvider settingsProvider = DBUtils.getAdapter(DBPObjectSettingsProvider.class, dataSource.getProject());
-        Map<String, String> userSettings = settingsProvider == null ?
-            null :
-            settingsProvider.getObjectSettings(SMObjectType.datasource, dataSource.getId());
-
-        if (!CommonUtils.isEmpty(userSettings) && userSettings.keySet().stream().anyMatch(
-            DataSourceNavigatorSettings.NAVIGATOR_SETTINGS::contains)
-        ) {
-            // There are custom navigator settings
-            DataSourceNavigatorSettingsUtils.loadSettingsFromMap(dataSource.getNavigatorSettings(), userSettings);
-            dataSource.getNavigatorSettings().setUserSettings(true);
-        } else {
-            DataSourceNavigatorSettingsUtils.loadSettingsFromMap(dataSource.getNavigatorSettings(), conObject);
-        }
+        saveCurrentUserSettings(dataSource, conObject);
 
         dataSource.setConnectionReadOnly(JSONUtils.getBoolean(conObject, RegistryConstants.ATTR_READ_ONLY));
         final String folderPath = JSONUtils.getString(conObject, RegistryConstants.ATTR_FOLDER);
         dataSource.setFolder(folderPath == null ? null : registry.findFolderByPath(folderPath, true, parseResults));
         dataSource.setLockPasswordHash(CommonUtils.toString(conObject.get(RegistryConstants.ATTR_LOCK_PASSWORD)));
     }
+
+
+    private void saveCurrentUserSettings(@NotNull T dataSource, @NotNull Map<String, Object> conObject) {
+        DBPObjectSettingsProvider settingsProvider = DBUtils.getAdapter(DBPObjectSettingsProvider.class, dataSource.getProject());
+        Map<String, String> userSettings = settingsProvider == null ?
+            null :
+            settingsProvider.getObjectSettings(SMObjectType.datasource, dataSource.getId());
+
+        if (!CommonUtils.isEmpty(userSettings)) {
+            if (userSettings.keySet().stream().anyMatch(DataSourceNavigatorSettings.NAVIGATOR_SETTINGS::contains)) {
+                // There are custom navigator settings
+                DataSourceNavigatorSettingsUtils.loadSettingsFromMap(dataSource.getNavigatorSettings(), userSettings);
+                dataSource.getNavigatorSettings().setUserSettings(true);
+            } else {
+                DataSourceNavigatorSettingsUtils.loadSettingsFromMap(dataSource.getNavigatorSettings(), conObject);
+            }
+            UserDBSObjectFilerUtils.setUserObjectFilters(dataSource, userSettings);
+        }
+    }
+
 
     /**
      * Deserialize additional datasource properties
@@ -1036,17 +1047,6 @@ public class DataSourceSerializerModern<T extends DataSourceDescriptor> implemen
             }
             return curNetworkHandler;
         }
-    }
-
-    @NotNull
-    private static DBSObjectFilter readObjectFiler(@NotNull Map<String, Object> map) {
-        DBSObjectFilter filter = new DBSObjectFilter();
-        filter.setName(JSONUtils.getString(map, RegistryConstants.ATTR_NAME));
-        filter.setDescription(JSONUtils.getString(map, RegistryConstants.ATTR_DESCRIPTION));
-        filter.setEnabled(JSONUtils.getBoolean(map, RegistryConstants.ATTR_ENABLED));
-        filter.setInclude(JSONUtils.deserializeStringList(map, RegistryConstants.TAG_INCLUDE));
-        filter.setExclude(JSONUtils.deserializeStringList(map, RegistryConstants.TAG_EXCLUDE));
-        return filter;
     }
 
     private static void saveFolder(@NotNull JsonWriter json, @NotNull DataSourceFolder folder) throws IOException {
@@ -1248,7 +1248,7 @@ public class DataSourceSerializerModern<T extends DataSourceDescriptor> implemen
         serializeModifyPermissions(json, dataSource);
 
         // Filters
-        saveObjectFilters(json, RegistryConstants.TAG_FILTERS, dataSource, false);
+        filterSerializer.saveObjectFilters(json, RegistryConstants.TAG_FILTERS, dataSource, false);
 
         // Tags
         JSONUtils.serializeProperties(json, RegistryConstants.TAG_TAGS, dataSource.getTags(), true);
@@ -1332,52 +1332,6 @@ public class DataSourceSerializerModern<T extends DataSourceDescriptor> implemen
         json.endObject();
     }
 
-    public static <T extends DataSourceDescriptor> void saveObjectFilters(
-        @NotNull JsonWriter json,
-        @Nullable String arrayName,
-        @NotNull T dataSource,
-        boolean useCustomUserFilters
-    ) throws IOException {
-        Collection<FilterMapping> filterMappings = dataSource.getObjectFilters();
-        if (!CommonUtils.isEmpty(filterMappings)) {
-            if (arrayName != null) {
-                json.name(arrayName);
-            }
-            json.beginArray();
-            for (FilterMapping filter : filterMappings) {
-                DBSObjectFilter defaultFilter = filter.defaultFilter;
-                if (defaultFilter != null
-                    && !defaultFilter.isEmpty()
-                    && UserDBSObjectFilerUtils.isCustomUserFilter(defaultFilter) == useCustomUserFilters) {
-                    saveObjectFiler(json, filter.typeName, null, defaultFilter);
-                }
-                for (Map.Entry<String, DBSObjectFilter> cf : filter.customFilters.entrySet()) {
-                    if (!cf.getValue().isEmpty()
-                        && UserDBSObjectFilerUtils.isCustomUserFilter(cf.getValue()) == useCustomUserFilters) {
-                        saveObjectFiler(json, filter.typeName, cf.getKey(), cf.getValue());
-                    }
-                }
-            }
-            json.endArray();
-        }
-    }
-
-    public static void saveObjectFiler(
-        @NotNull JsonWriter json,
-        @Nullable String typeName,
-        @Nullable String objectID,
-        @NotNull DBSObjectFilter filter
-    ) throws IOException {
-        json.beginObject();
-        JSONUtils.fieldNE(json, RegistryConstants.ATTR_ID, objectID);
-        JSONUtils.fieldNE(json, RegistryConstants.ATTR_TYPE, typeName);
-        JSONUtils.fieldNE(json, RegistryConstants.ATTR_NAME, filter.getName());
-        JSONUtils.fieldNE(json, RegistryConstants.ATTR_DESCRIPTION, filter.getDescription());
-        JSONUtils.field(json, RegistryConstants.ATTR_ENABLED, filter.isEnabled());
-        JSONUtils.serializeStringList(json, RegistryConstants.TAG_INCLUDE, filter.getInclude());
-        JSONUtils.serializeStringList(json, RegistryConstants.TAG_EXCLUDE, filter.getExclude());
-        json.endObject();
-    }
 
     private void saveSecuredCredentials(
         @Nullable DataSourceDescriptor dataSource,
