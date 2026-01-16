@@ -93,8 +93,7 @@ public class MappingRulesDialog extends BaseDialog {
             composite,
             DTUIMessages.pref_data_transfer_mapping_group,
             2,
-            GridData.FILL_HORIZONTAL,
-            0);
+            GridData.FILL_HORIZONTAL);
 
         final Label label = UIUtils.createLabel(mappingGroup,
             DTUIMessages.pref_data_transfer_info_label_mapping);

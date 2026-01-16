@@ -76,9 +76,7 @@ public class DatabaseProducerPageExtractSettings extends DataTransferPageNodeSet
                 composite,
                 DTMessages.data_transfer_wizard_settings_group_general,
                 4,
-                GridData.HORIZONTAL_ALIGN_BEGINNING,
-                0
-            );
+                GridData.HORIZONTAL_ALIGN_BEGINNING);
 
             newConnectionCheckbox = UIUtils.createCheckbox(generalSettings, DTMessages.data_transfer_wizard_output_checkbox_new_connection, DTUIMessages.database_producer_page_extract_settings_new_connection_checkbox_tooltip, true, 4);
             newConnectionCheckbox.addSelectionListener(new SelectionAdapter() {

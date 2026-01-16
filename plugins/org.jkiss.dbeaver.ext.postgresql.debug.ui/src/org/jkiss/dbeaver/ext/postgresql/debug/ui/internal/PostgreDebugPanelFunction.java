@@ -79,9 +79,7 @@ public class PostgreDebugPanelFunction implements DBGConfigurationPanel {
                 parent,
                 "Attach type",
                 2,
-                GridData.HORIZONTAL_ALIGN_BEGINNING,
-                SWT.DEFAULT
-            );
+                GridData.HORIZONTAL_ALIGN_BEGINNING);
 
             SelectionListener listener = new SelectionAdapter() {
                 @Override

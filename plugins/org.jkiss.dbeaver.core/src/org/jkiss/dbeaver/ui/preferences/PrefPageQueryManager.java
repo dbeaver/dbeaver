@@ -84,9 +84,7 @@ public class PrefPageQueryManager extends AbstractPrefPage implements IWorkbench
             composite,
             CoreMessages.pref_page_query_manager_group_query_types,
             1,
-            GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING,
-            0
-        );
+            GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING);
         checkQueryTypeUser = UIUtils.createCheckbox(groupQueryTypes, CoreMessages.pref_page_query_manager_checkbox_user_queries, false);
         checkQueryTypeUserFiltered = UIUtils.createCheckbox(groupQueryTypes, CoreMessages.pref_page_query_manager_checkbox_user_filtered, false);
         checkQueryTypeScript = UIUtils.createCheckbox(groupQueryTypes, CoreMessages.pref_page_query_manager_checkbox_user_scripts, false);
@@ -94,7 +92,11 @@ public class PrefPageQueryManager extends AbstractPrefPage implements IWorkbench
         checkQueryTypeMeta = UIUtils.createCheckbox(groupQueryTypes, CoreMessages.pref_page_query_manager_checkbox_metadata_read, false);
         checkQueryTypeDDL = UIUtils.createCheckbox(groupQueryTypes, CoreMessages.pref_page_query_manager_checkbox_metadata_write, false);
 
-        Composite groupObjects = UIUtils.createTitledComposite(composite, CoreMessages.pref_page_query_manager_group_object_types, 1, GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING, 0);
+        Composite groupObjects = UIUtils.createTitledComposite(
+            composite,
+            CoreMessages.pref_page_query_manager_group_object_types,
+            1,
+            GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING);
         checkObjectTypeSessions = UIUtils.createCheckbox(groupObjects, CoreMessages.pref_page_query_manager_checkbox_sessions, false);
         checkObjectTypeTxn = UIUtils.createCheckbox(groupObjects, CoreMessages.pref_page_query_manager_checkbox_transactions, false);
         //checkObjectTypeScripts = UIUtils.createCheckbox(groupObjects, CoreMessages.pref_page_query_manager_checkbox_scripts, false);
@@ -120,9 +122,7 @@ public class PrefPageQueryManager extends AbstractPrefPage implements IWorkbench
                 composite,
                 CoreMessages.pref_page_query_manager_group_storage,
                 2,
-                GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING,
-                0
-            );
+                GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING);
             checkStoreLog = UIUtils.createCheckbox(
                 storageSettings,
                 CoreMessages.pref_page_query_manager_checkbox_store_log_file,

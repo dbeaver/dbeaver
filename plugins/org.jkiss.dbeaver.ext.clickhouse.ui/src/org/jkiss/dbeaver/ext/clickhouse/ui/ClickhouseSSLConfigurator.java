@@ -49,9 +49,7 @@ public class ClickhouseSSLConfigurator extends SSLConfiguratorTrustStoreUI {
         Composite advancedSettingsGroup = UIUtils.createTitledComposite(parent,
             ClickhouseMessages.dialog_connection_page_advanced_settings,
             1,
-            GridData.FILL_HORIZONTAL,
-            0
-        );
+            GridData.FILL_HORIZONTAL);
         Composite sslComposite = UIUtils.createPlaceholder(advancedSettingsGroup, 2);
         sslComposite.setLayoutData(new GridData(GridData.FILL_BOTH));
         sslModeCombo = UIUtils.createLabelCombo(sslComposite,

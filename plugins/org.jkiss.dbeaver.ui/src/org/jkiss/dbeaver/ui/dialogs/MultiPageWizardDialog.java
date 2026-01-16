@@ -194,12 +194,10 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
         wizardSash.setLayoutData(new GridData(GridData.FILL_BOTH));
 
         Composite leftPane = UIUtils.createPlaceholder(wizardSash, 1);
-        pagesTree = new Tree(leftPane, SWT.SINGLE);
+        pagesTree = new Tree(leftPane, SWT.SINGLE | SWT.FULL_SELECTION);
         pagesTree.setLayoutData(new GridData(GridData.FILL_BOTH));
 
-        leftPane.setBackground(pagesTree.getBackground());
         leftBottomPanel = UIUtils.createComposite(leftPane, 1);
-        leftBottomPanel.setBackground(pagesTree.getBackground());
         createBottomLeftArea(leftBottomPanel);
 
         pageArea = UIUtils.createPlaceholder(wizardSash, 1);
@@ -209,10 +207,10 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
 
         wizardSash.setWeights(220, 780);
 
-        Point size = leftPane.computeSize(SWT.DEFAULT, SWT.DEFAULT);
-        if (size.x > 0) {
-            ((GridData) wizardSash.getLayoutData()).widthHint = size.x * 6;
-        }
+//        Point size = leftPane.computeSize(SWT.DEFAULT, SWT.DEFAULT);
+//        if (size.x > 0) {
+//            ((GridData) wizardSash.getLayoutData()).widthHint = size.x * 6;
+//        }
 
         updateNavigationTree();
 

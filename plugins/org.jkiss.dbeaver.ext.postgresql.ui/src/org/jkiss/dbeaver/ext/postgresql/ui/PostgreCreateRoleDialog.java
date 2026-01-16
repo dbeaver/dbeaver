@@ -52,7 +52,7 @@ public class PostgreCreateRoleDialog extends BaseDialog
     protected Composite createDialogArea(@NotNull Composite parent) {
         final Composite composite = super.createDialogArea(parent);
 
-        final Composite groupGeneral = UIUtils.createTitledComposite(composite, PostgreMessages.dialog_create_role_group_general, 2, GridData.FILL_HORIZONTAL, SWT.NONE);
+        final Composite groupGeneral = UIUtils.createTitledComposite(composite, PostgreMessages.dialog_create_role_group_general, 2, GridData.FILL_HORIZONTAL);
 
         final Text nameText = UIUtils.createLabelText(groupGeneral, PostgreMessages.dialog_create_role_label_role_name, ""); //$NON-NLS-2$
         nameText.addModifyListener(e -> {
