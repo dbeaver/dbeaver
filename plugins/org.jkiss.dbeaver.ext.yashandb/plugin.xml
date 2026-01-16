@@ -293,6 +293,28 @@
                             <items label="%tree.dataType.node.name" path="dataType" property="dataTypes"
                                    icon="#data_type"/>
                         </folder>
+                        <folder type="org.jkiss.dbeaver.ext.yashandb.model.YashanDBSynonym"
+                                label="%tree.synonyms.node.name"
+                                icon="#synonyms" description="Synonyms">
+                            <items label="%tree.synonym.node.name" path="synonym" property="synonyms" icon="#synonym"/>
+                        </folder>
+                        <folder type="org.jkiss.dbeaver.ext.yashandb.model.YashanDBDBLink" label="%tree.database.links.node.name"
+                                icon="#folder_link" description="Database Links (DBLinks)">
+                            <items label="%tree.database.link.node.name" path="databaseLink" property="databaseLinks" icon="#link"/>
+                        </folder>
+                        <folder type="org.jkiss.dbeaver.ext.yashandb.model.YashanDBJob"
+                                label="%tree.jobs.node.name" icon="#scheduler_job_folder" description="Jobs">
+                            <items label="%tree.job.node.name" path="job" property="jobs" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/job_schedule.svg"/>
+                        </folder>
+                         <folder label="%tree.scheduler.node.name" icon="#scheduler_folder" id="schedulerFolder"
+                                description="Scheduler objects">
+                            <folder type="org.jkiss.dbeaver.ext.yashandb.model.YashanDBSchedulerJob" label="%tree.scheduler.jobs.node.name" icon="#scheduler_job_folder" description="Scheduler jobs">
+                                <items label="%tree.scheduler.job.node.name" path="schedulerJob" property="schedulerJobs" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/job_schedule.svg"/>
+                            </folder>
+                        </folder>
+                        <folder type="org.jkiss.dbeaver.ext.yashandb.model.YashanDBRecycledObject" label="%tree.recycle.bin.node.name" icon="#recycle_bin" description="Recycle Bin">
+                            <items label="%tree.recycled.object.node.name" path="object" property="recycledObjects" icon="#recycle_bin"/>
+                        </folder>
                     </items>
                 </folder>
                 <folder id="globalMetadata" label="%tree.global_metadata.node.name" icon="#logical" description="Global metadata objects">
@@ -300,6 +322,22 @@
                             icon="#data_types" description="Types">
                         <items label="%tree.dataType.node.name" path="type" property="localDataTypes"
                                icon="#data_type"/>
+                    </folder>
+                    <folder type="org.jkiss.dbeaver.ext.yashandb.model.YashanDBSynonym"
+                            label="%tree.public_synonyms.node.name"
+                            icon="#synonyms" description="Public synonyms">
+                        <items label="%tree.synonym.node.name" path="synonym" property="publicSynonyms"
+                               icon="#synonym"/>
+                    </folder>
+                    <folder type="org.jkiss.dbeaver.ext.yashandb.model.YashanDBDBLink" label="%tree.public.database.links.node.name"
+                            icon="#links" description="Public database links">
+                        <items label="%tree.public.database.link.node.name" path="databaseLink" property="publicDatabaseLinks" icon="#link"/>
+                    </folder>
+                    <folder type="org.jkiss.dbeaver.ext.yashandb.model.YashanDBRecycledObject"
+                            label="%tree.user.recycle.bin.node.name"
+                            icon="#recycle_bin" description="Current user's recycle bin">
+                        <items label="%tree.recycled.object.node.name" path="object"
+                               property="userRecycledObjects" icon="#recycle_bin"/>
                     </folder>
                 </folder>
                 <folder id="storage" label="%tree.storage.node.name" icon="#storage" description="Storage management">
@@ -357,6 +395,15 @@
                             </folder>
                         </items>
                     </folder>
+                    <folder type="org.jkiss.dbeaver.ext.yashandb.model.YashanDBUserProfile" label="%tree.profiles.node.name"
+                            icon="#folder_profile" description="User profiles">
+                        <items label="%tree.profile.node.name" path="profiles" property="profiles" icon="#profile">
+                            <items label="%tree.resource.node.name" path="resource" property="resources" icon="#resource"/>
+                        </items>
+                    </folder>
+                </folder>
+                <folder label="%tree.administer.node.name" icon="#folder_admin" description="Maintenance/Settings">
+                    <treeContribution category="connectionEditor"/>
                 </folder>
             </tree>
         </datasource>

@@ -75,6 +75,12 @@ public class YashanDBSchema extends YashanDBGlobalObject implements DBSSchema, D
 	public final ProceduresCache proceduresCache = new ProceduresCache();
 	public final PackageCache packageCache = new PackageCache();
 
+	public final SynonymCache synonymCache = new SynonymCache();
+	public final DBLinkCache dbLinkCache = new DBLinkCache();
+	public final JobCache jobCache = new JobCache();
+	public final SchedulerJobCache schedulerJobCache = new SchedulerJobCache();
+	public final RecycleBin recycleBin = new RecycleBin();
+
 	private long id;
 	private String name;
 	private Date createTime;
@@ -132,6 +138,10 @@ public class YashanDBSchema extends YashanDBGlobalObject implements DBSSchema, D
 	@Override
 	public boolean isStatisticsCollected() {
 		return hasStatistics;
+	}
+
+	public boolean isPublic() {
+		return YashanDBConstants.USER_PUBLIC.equals(this.name);
 	}
 
 	@Override
@@ -639,6 +649,140 @@ public class YashanDBSchema extends YashanDBGlobalObject implements DBSSchema, D
 
 	}
 
+	public class SynonymCache extends JDBCObjectLookupCache<YashanDBSchema, YashanDBSynonym> {
+
+		@Override
+		public JDBCStatement prepareLookupStatement(JDBCSession session, YashanDBSchema owner, YashanDBSynonym object,
+				String objectName) throws SQLException {
+
+			String synonymName = object != null ? object.getName() : objectName;
+			StringBuilder sql = new StringBuilder();
+			sql.append(
+					"SELECT OWNER, SYNONYM_NAME, MAX(TABLE_OWNER) as TABLE_OWNER, MAX(TABLE_NAME) as TABLE_NAME, MAX(DB_LINK) as DB_LINK, MAX(OBJECT_TYPE) as OBJECT_TYPE FROM (\n")
+					.append("SELECT S.*, NULL OBJECT_TYPE FROM ")
+					.append(YashanDBUtils.isAdminPriv(owner.getDataSource(), "SYNONYMS"))
+					.append(" S WHERE S.OWNER = ?");
+
+			if (synonymName != null) {
+				sql.append(" AND S.SYNONYM_NAME = ?");
+			}
+
+			sql.append("\nUNION ALL\n").append("SELECT S.*,O.OBJECT_TYPE FROM ")
+					.append(YashanDBUtils.isAdminPriv(owner.getDataSource(), "SYNONYMS")).append(" S, ")
+					.append(YashanDBUtils.isAdminPriv(owner.getDataSource(), "OBJECTS")).append(" O\n")
+					.append("WHERE S.OWNER = ?\n");
+
+			if (synonymName != null) {
+				sql.append(" AND S.SYNONYM_NAME = ? ");
+			}
+
+			sql.append("AND O.OWNER=S.TABLE_OWNER AND O.OBJECT_NAME=S.TABLE_NAME AND O.SUBOBJECT_NAME IS NULL\n)\n");
+			sql.append("GROUP BY OWNER, SYNONYM_NAME");
+
+			if (synonymName == null) {
+				sql.append("\nORDER BY SYNONYM_NAME");
+			}
+			JDBCPreparedStatement dbStat = session.prepareStatement(sql.toString());
+			int paramNum = 1;
+			dbStat.setString(paramNum++, owner.getName());
+			if (synonymName != null) {
+				dbStat.setString(paramNum++, synonymName);
+			}
+			dbStat.setString(paramNum++, owner.getName());
+			if (synonymName != null) {
+				dbStat.setString(paramNum++, synonymName);
+			}
+			return dbStat;
+		}
+
+		@Override
+		protected YashanDBSynonym fetchObject(JDBCSession session, YashanDBSchema owner, JDBCResultSet resultSet)
+				throws SQLException, DBException {
+			return new YashanDBSynonym(owner, resultSet);
+		}
+
+	}
+
+	static class DBLinkCache extends JDBCObjectCache<YashanDBSchema, YashanDBDBLink> {
+
+		@NotNull
+		@Override
+		protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull YashanDBSchema owner)
+				throws SQLException {
+			JDBCPreparedStatement dbStat = session
+					.prepareStatement("SELECT * FROM " + YashanDBUtils.isAdminPriv(owner.getDataSource(), "DB_LINKS")
+							+ " WHERE OWNER=? " + " ORDER BY DB_LINK");
+			dbStat.setString(1, owner.getName());
+			return dbStat;
+		}
+
+		@Override
+		protected YashanDBDBLink fetchObject(@NotNull JDBCSession session, @NotNull YashanDBSchema owner,
+				@NotNull JDBCResultSet dbResult) throws SQLException, DBException {
+			return new YashanDBDBLink(session.getProgressMonitor(), owner, dbResult);
+		}
+	}
+
+	static class JobCache extends JDBCObjectCache<YashanDBSchema, YashanDBJob> {
+		@NotNull
+		@Override
+		protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull YashanDBSchema owner)
+				throws SQLException {
+			return session.prepareStatement(
+					"SELECT * FROM " + YashanDBUtils.isAdminPriv(owner.getDataSource(), "JOBS") + " ORDER BY JOB");
+		}
+
+		@Override
+		protected YashanDBJob fetchObject(@NotNull JDBCSession session, @NotNull YashanDBSchema owner,
+				@NotNull JDBCResultSet dbResult) throws SQLException, DBException {
+			return new YashanDBJob(owner, dbResult);
+		}
+	}
+
+	static class SchedulerJobCache extends JDBCObjectCache<YashanDBSchema, YashanDBSchedulerJob> {
+
+		@NotNull
+		@Override
+		protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull YashanDBSchema owner)
+				throws SQLException {
+			JDBCPreparedStatement dbStat = session.prepareStatement(
+					"SELECT * FROM " + YashanDBUtils.isAdminPriv(owner.getDataSource(), "SCHEDULER_JOBS")
+							+ " WHERE OWNER=? ORDER BY JOB_NAME");
+			dbStat.setString(1, owner.getName());
+			return dbStat;
+		}
+
+		@Override
+		protected YashanDBSchedulerJob fetchObject(@NotNull JDBCSession session, @NotNull YashanDBSchema owner,
+				@NotNull JDBCResultSet dbResult) throws SQLException, DBException {
+			return new YashanDBSchedulerJob(owner, dbResult);
+		}
+	}
+
+	static class RecycleBin extends JDBCObjectCache<YashanDBSchema, YashanDBRecycledObject> {
+
+		@NotNull
+		@Override
+		protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull YashanDBSchema owner)
+				throws SQLException {
+			final boolean isPublic = owner.isPublic();
+			JDBCPreparedStatement dbStat = session.prepareStatement(isPublic
+					? "SELECT * FROM " + YashanDBUtils.getSysSchemaPrefix(owner.getDataSource()) + "USER_RECYCLEBIN"
+					: "SELECT * FROM " + YashanDBUtils.getSysSchemaPrefix(owner.getDataSource())
+							+ "DBA_RECYCLEBIN WHERE OWNER=?");
+			if (!isPublic) {
+				dbStat.setString(1, owner.getName());
+			}
+			return dbStat;
+		}
+
+		@Override
+		protected YashanDBRecycledObject fetchObject(@NotNull JDBCSession session, @NotNull YashanDBSchema owner,
+				@NotNull JDBCResultSet dbResult) throws SQLException, DBException {
+			return new YashanDBRecycledObject(owner, dbResult);
+		}
+	}
+
 	class SpecialPosition {
 
 		private final String column;
@@ -665,6 +809,32 @@ public class YashanDBSchema extends YashanDBGlobalObject implements DBSSchema, D
 		}
 
 	}
+
+	@Association
+	public Collection<YashanDBSynonym> getSynonyms(DBRProgressMonitor monitor) throws DBException {
+		return synonymCache.getAllObjects(monitor, this);
+	}
+
+	@Association
+	public Collection<YashanDBDBLink> getDatabaseLinks(DBRProgressMonitor monitor) throws DBException {
+		return dbLinkCache.getAllObjects(monitor, this);
+	}
+
+	@Association
+	public Collection<YashanDBJob> getJobs(@NotNull DBRProgressMonitor monitor) throws DBException {
+		return jobCache.getAllObjects(monitor, this);
+	}
+
+	@Association
+	public Collection<YashanDBSchedulerJob> getSchedulerJobs(DBRProgressMonitor monitor) throws DBException {
+		return schedulerJobCache.getAllObjects(monitor, this);
+	}
+	
+    @Association
+    public Collection<YashanDBRecycledObject> getRecycledObjects(DBRProgressMonitor monitor)
+            throws DBException {
+        return recycleBin.getAllObjects(monitor, this);
+    }
 
 	@Association
 	public Collection<YashanDBTableIndex> getIndexes(DBRProgressMonitor monitor) throws DBException {
@@ -758,6 +928,10 @@ public class YashanDBSchema extends YashanDBGlobalObject implements DBSSchema, D
 		sequenceCache.clearCache();
 		proceduresCache.clearCache();
 		packageCache.clearCache();
+		synonymCache.clearCache();
+		dbLinkCache.clearCache();
+		jobCache.clearCache();
+		schedulerJobCache.clearCache();
 		return this;
 	}
 

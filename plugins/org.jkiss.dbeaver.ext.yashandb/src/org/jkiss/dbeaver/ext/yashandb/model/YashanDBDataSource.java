@@ -30,11 +30,13 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.ext.yashandb.model.session.YashanDBServerSessionManager;
 import org.jkiss.dbeaver.ext.yashandb.model.util.YashanDBUtils;
 import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPObjectStatisticsCollector;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.admin.sessions.DBAServerSessionManager;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
@@ -53,6 +55,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCRemoteInstance;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
+import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCStructCache;
 import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLConstants;
@@ -71,6 +74,7 @@ public class YashanDBDataSource extends JDBCDataSource implements DBPObjectStati
 	final TablespaceCache tablespaceCache = new TablespaceCache();
 	final UserCache userCache = new UserCache();
 	final RoleCache roleCache = new RoleCache();
+	final ProfileCache profileCache = new ProfileCache();
 
 	private boolean isAdmin;
 	private boolean isAdminVisible;
@@ -147,6 +151,8 @@ public class YashanDBDataSource extends JDBCDataSource implements DBPObjectStati
 	public <T> T getAdapter(Class<T> adapter) {
 		if (adapter == DBCServerOutputReader.class) {
 			return adapter.cast(outputReader);
+		} else if (adapter == DBAServerSessionManager.class) {
+			return adapter.cast(new YashanDBServerSessionManager(this));
 		}
 		return super.getAdapter(adapter);
 	}
@@ -166,6 +172,7 @@ public class YashanDBDataSource extends JDBCDataSource implements DBPObjectStati
 		publicSchema.refreshObject(monitor);
 		this.tablespaceCache.clearCache();
 		this.userCache.clearCache();
+		this.profileCache.clearCache();
 		this.initialize(monitor);
 
 		return this;
@@ -333,8 +340,28 @@ public class YashanDBDataSource extends JDBCDataSource implements DBPObjectStati
 	}
 
 	@Association
+	public Collection<YashanDBSynonym> getPublicSynonyms(DBRProgressMonitor monitor) throws DBException {
+		return publicSchema.getSynonyms(monitor);
+	}
+
+	@Association
+	public Collection<YashanDBDBLink> getPublicDatabaseLinks(DBRProgressMonitor monitor) throws DBException {
+		return publicSchema.getDatabaseLinks(monitor);
+	}
+
+	@Association
+	public Collection<YashanDBUserProfile> getProfiles(DBRProgressMonitor monitor) throws DBException {
+		return profileCache.getAllObjects(monitor, this);
+	}
+
+	@Association
 	public Collection<YashanDBTablespace> getTablespaces(DBRProgressMonitor monitor) throws DBException {
 		return tablespaceCache.getAllObjects(monitor, this);
+	}
+
+	@Association
+	public Collection<YashanDBRecycledObject> getUserRecycledObjects(DBRProgressMonitor monitor) throws DBException {
+		return publicSchema.getRecycledObjects(monitor);
 	}
 
 	@Association
@@ -450,6 +477,46 @@ public class YashanDBDataSource extends JDBCDataSource implements DBPObjectStati
 		protected YashanDBRole fetchObject(@NotNull JDBCSession session, @NotNull YashanDBDataSource owner,
 				@NotNull JDBCResultSet resultSet) throws SQLException, DBException {
 			return new YashanDBRole(owner, resultSet);
+		}
+	}
+
+	static class ProfileCache
+			extends JDBCStructCache<YashanDBDataSource, YashanDBUserProfile, YashanDBUserProfile.ProfileResource> {
+
+		protected ProfileCache() {
+			super("PROFILE");
+		}
+
+		@NotNull
+		@Override
+		protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull YashanDBDataSource owner)
+				throws SQLException {
+			return session.prepareStatement("SELECT DISTINCT PROFILE FROM DBA_PROFILES ORDER BY PROFILE");
+		}
+
+		@Override
+		protected YashanDBUserProfile fetchObject(@NotNull JDBCSession session, @NotNull YashanDBDataSource owner,
+				@NotNull JDBCResultSet resultSet) throws SQLException, DBException {
+			return new YashanDBUserProfile(owner, resultSet);
+		}
+
+		@Override
+		protected JDBCStatement prepareChildrenStatement(@NotNull JDBCSession session,
+				@NotNull YashanDBDataSource dataSource, @Nullable YashanDBUserProfile forObject) throws SQLException {
+			final JDBCPreparedStatement dbStat = session
+					.prepareStatement("SELECT RESOURCE_NAME,RESOURCE_TYPE,LIMIT FROM DBA_PROFILES "
+							+ (forObject == null ? "" : "WHERE PROFILE=? ") + "ORDER BY RESOURCE_NAME");
+			if (forObject != null) {
+				dbStat.setString(1, forObject.getName());
+			}
+			return dbStat;
+		}
+
+		@Override
+		protected YashanDBUserProfile.ProfileResource fetchChild(@NotNull JDBCSession session,
+				@NotNull YashanDBDataSource dataSource, @NotNull YashanDBUserProfile parent,
+				@NotNull JDBCResultSet dbResult) throws SQLException, DBException {
+			return new YashanDBUserProfile.ProfileResource(parent, dbResult);
 		}
 	}
 
