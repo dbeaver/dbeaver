@@ -665,11 +665,25 @@ public class UIUtils {
         int layoutStyle,
         int widthHint
     ) {
+        return createTitledComposite(parent, label, columns, layoutStyle, widthHint, 1);
+    }
+
+    public static Composite createTitledComposite(
+        @NotNull Composite parent,
+        @NotNull String label,
+        int columns,
+        int layoutStyle,
+        int widthHint,
+        int hSpan
+    ) {
         Composite composite = UIUtils.createComposite(parent, 1);
         {
-            GridData gd = new GridData(layoutStyle >0 ? layoutStyle : GridData.HORIZONTAL_ALIGN_BEGINNING);
+            GridData gd = new GridData(layoutStyle > 0 ? layoutStyle : GridData.HORIZONTAL_ALIGN_BEGINNING);
             if (widthHint > 0) {
                 gd.widthHint = widthHint;
+            }
+            if (hSpan > 1) {
+                gd.horizontalSpan = hSpan;
             }
             composite.setLayoutData(gd);
         }
