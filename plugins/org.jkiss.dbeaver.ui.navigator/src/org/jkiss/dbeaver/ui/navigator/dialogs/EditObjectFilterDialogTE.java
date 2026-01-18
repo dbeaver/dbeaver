@@ -38,9 +38,10 @@ public class EditObjectFilterDialogTE extends EditObjectFilterDialog {
         @NotNull Shell shell,
         @NotNull DBPDataSourceRegistry dsRegistry,
         @NotNull String objectTitle,
-        @Nullable DBSObjectFilter filter
+        @Nullable DBSObjectFilter filter,
+        boolean globalFilter
     ) {
-        super(shell, dsRegistry, objectTitle, filter, false);
+        super(shell, dsRegistry, objectTitle, filter, globalFilter);
     }
 
     @Override

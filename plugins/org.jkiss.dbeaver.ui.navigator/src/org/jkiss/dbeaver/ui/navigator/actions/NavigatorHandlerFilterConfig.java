@@ -25,6 +25,7 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.commands.IElementUpdater;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.eclipse.ui.menus.UIElement;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSource;
@@ -85,13 +86,8 @@ public class NavigatorHandlerFilterConfig extends NavigatorHandlerObjectCreateBa
 
                 DBSObjectFilter currentDialogFilter = dialog.getFilter();
                 switch (dialog.open()) {
-                    case IDialogConstants.OK_ID -> {
-                        parentNode.setNodeFilter(itemsMeta, currentDialogFilter, !currentDialogFilter.isUserFilter());
-                        if (currentDialogFilter.isUserFilter()) {
-                            UserDBSObjectFilerUtils.updateUserObjectFilters(parentNode.getDataSourceContainer());
-                        }
-                        NavigatorHandlerRefresh.refreshNavigator(Collections.singletonList(parentNode));
-                    }
+                    case IDialogConstants.OK_ID ->
+                        setParentNodeFilter(parentNode, itemsMeta, currentDialogFilter, currentDialogFilter.isUserFilter());
                     case EditObjectFilterDialog.SHOW_GLOBAL_FILTERS_ID -> {
                         Class<?> childrenClass = null;
                         if (dbNode instanceof DBNDatabaseFolder folder) {
@@ -131,6 +127,19 @@ public class NavigatorHandlerFilterConfig extends NavigatorHandlerObjectCreateBa
         } catch (DBException e) {
             log.error(e);
         }
+    }
+
+    public static void setParentNodeFilter(
+        @NotNull DBNDatabaseNode parentNode,
+        @NotNull DBXTreeItem itemsMeta,
+        @NotNull DBSObjectFilter currentDialogFilter,
+        boolean isCurrentUserFilter
+    ) {
+        parentNode.setNodeFilter(itemsMeta, currentDialogFilter, !isCurrentUserFilter);
+        if (isCurrentUserFilter) {
+            UserDBSObjectFilerUtils.updateUserObjectFilters(parentNode.getDataSourceContainer());
+        }
+        NavigatorHandlerRefresh.refreshNavigator(Collections.singletonList(parentNode));
     }
 
     @Override
