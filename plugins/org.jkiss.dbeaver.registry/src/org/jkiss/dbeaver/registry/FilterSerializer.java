@@ -90,7 +90,7 @@ public class FilterSerializer<T extends DataSourceDescriptor> {
         @NotNull JsonWriter json,
         @Nullable String arrayName,
         @NotNull T dataSource,
-        boolean useCustomUserFilters
+        boolean serialiseCustomUserFilters
     ) throws IOException {
         Collection<FilterMapping> filterMappings = dataSource.getObjectFilters();
         if (!CommonUtils.isEmpty(filterMappings)) {
@@ -100,20 +100,23 @@ public class FilterSerializer<T extends DataSourceDescriptor> {
             json.beginArray();
             for (FilterMapping filter : filterMappings) {
                 DBSObjectFilter defaultFilter = filter.defaultFilter;
-                if (defaultFilter != null
-                    && !defaultFilter.isEmpty()
-                    && defaultFilter.isUserFilter() == useCustomUserFilters) {
+                if (shouldSerializeFilter(defaultFilter, serialiseCustomUserFilters)) {
                     saveObjectFiler(json, filter.typeName, null, defaultFilter);
                 }
                 for (Map.Entry<String, DBSObjectFilter> cf : filter.customFilters.entrySet()) {
-                    if (!cf.getValue().isEmpty()
-                        && cf.getValue().isUserFilter() == useCustomUserFilters) {
+                    if (shouldSerializeFilter(cf.getValue(), serialiseCustomUserFilters)) {
                         saveObjectFiler(json, filter.typeName, cf.getKey(), cf.getValue());
                     }
                 }
             }
             json.endArray();
         }
+    }
+
+    private boolean shouldSerializeFilter(@Nullable DBSObjectFilter filter, boolean useCustomUserFilters) {
+        return filter != null
+            && !filter.isEmpty()
+            && filter.isUserFilter() == useCustomUserFilters;
     }
 
     public void saveObjectFiler(

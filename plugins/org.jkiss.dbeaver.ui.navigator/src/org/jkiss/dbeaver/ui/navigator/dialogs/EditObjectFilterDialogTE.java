@@ -61,6 +61,11 @@ public class EditObjectFilterDialogTE extends EditObjectFilterDialog {
         updateTemplatesEnabledState();
     }
 
+    @Override
+    protected boolean shouldSaveFilterInRegistry() {
+        return !isCustomUserFilter() && super.shouldSaveFilterInRegistry();
+    }
+
     private void updateTemplatesEnabledState() {
         boolean isTemplatesEnabled = !isCustomUserFilter();
         saveButton.setEnabled(isTemplatesEnabled);

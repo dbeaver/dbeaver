@@ -223,9 +223,13 @@ public class EditObjectFilterDialog extends HelpEnabledDialog {
         filter.setInclude(StringEditorTable.collectStringValues(includeTable));
         filter.setExclude(StringEditorTable.collectStringValues(excludeTable));
         filter.setName(namesCombo.getText());
-        if (!CommonUtils.isEmpty(filter.getName())) {
+        if (shouldSaveFilterInRegistry()) {
             dsRegistry.updateSavedFilter(filter);
         }
+    }
+
+    protected boolean shouldSaveFilterInRegistry() {
+        return !CommonUtils.isEmpty(filter.getName());
     }
 
     @Override
