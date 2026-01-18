@@ -41,6 +41,7 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.internal.UINavigatorMessages;
 import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 import org.jkiss.dbeaver.ui.navigator.dialogs.EditObjectFilterDialog;
+import org.jkiss.dbeaver.ui.navigator.dialogs.EditObjectFilterDialogTE;
 
 import java.util.Collections;
 import java.util.List;
@@ -75,7 +76,7 @@ public class NavigatorHandlerFilterConfig extends NavigatorHandlerObjectCreateBa
                 if (dbNode.getValueObject() instanceof DBSObject dbsObject) {
                     parentName = dbsObject.getName();
                 }
-                EditObjectFilterDialog dialog = new EditObjectFilterDialog(
+                EditObjectFilterDialog dialog = EditObjectFilterDialog.createEditObjectFilterDialog(
                     shell,
                     dsRegistry,
                     globalFilter ? "All " + dbNode.getNodeTypeLabel() : dbNode.getNodeTypeLabel() + " of " + parentName,
@@ -108,7 +109,7 @@ public class NavigatorHandlerFilterConfig extends NavigatorHandlerObjectCreateBa
                         }
                         DBPDataSourceContainer dataSourceContainer = dbNode.getDataSourceContainer();
                         objectFilter = dataSourceContainer.getObjectFilter(childrenClass, null, true);
-                        dialog = new EditObjectFilterDialog(
+                        dialog = EditObjectFilterDialog.createEditObjectFilterDialog(
                             shell,
                             dsRegistry, "All " + dbNode.getNodeTypeLabel(),
                             objectFilter != null ? objectFilter : new DBSObjectFilter(),
@@ -120,7 +121,7 @@ public class NavigatorHandlerFilterConfig extends NavigatorHandlerObjectCreateBa
                             NavigatorHandlerRefresh.refreshNavigator(Collections.singletonList(parentNode));
                         }
                     }
-                    case EditObjectFilterDialog.DELETE_USER_FILTER -> {
+                    case EditObjectFilterDialogTE.DELETE_USER_FILTER -> {
                         UserDBSObjectFilerUtils.clearUserObjectFilers(parentNode.getDataSourceContainer());
                         parentNode.setNodeFilter(itemsMeta, null, false);
                         NavigatorHandlerRefresh.refreshNavigator(Collections.singletonList(parentNode));
