@@ -76,6 +76,7 @@ public class FilterSerializer<T extends DataSourceDescriptor> {
         try (OutputStreamWriter osw = new OutputStreamWriter(dsConfigBuffer, StandardCharsets.UTF_8)) {
             try (JsonWriter jsonWriter = CONFIG_GSON.newJsonWriter(osw)) {
                 jsonWriter.setFormattingStyle(FormattingStyle.COMPACT);
+                jsonWriter.setIndent("");
                 saveObjectFilters(jsonWriter, null, dataSourceDescriptor, true);
                 jsonWriter.flush();
                 return dsConfigBuffer.toString();

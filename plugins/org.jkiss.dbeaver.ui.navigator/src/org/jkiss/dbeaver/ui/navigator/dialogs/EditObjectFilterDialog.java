@@ -250,7 +250,8 @@ public class EditObjectFilterDialog extends HelpEnabledDialog {
         @Nullable DBSObjectFilter filter,
         boolean globalFilter
     ) {
-        return DBWorkbench.isDistributed() ? new EditObjectFilterDialogTE(shell, dsRegistry, objectTitle, filter, globalFilter)
+        return DBWorkbench.isDistributed() && !globalFilter
+            ? new EditObjectFilterDialogTE(shell, dsRegistry, objectTitle, filter)
             : new EditObjectFilterDialog(shell, dsRegistry, objectTitle, filter, globalFilter);
     }
 }
