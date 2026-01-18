@@ -22,6 +22,7 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Shell;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
 import org.jkiss.dbeaver.model.struct.DBSObjectFilter;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -31,40 +32,60 @@ public class EditObjectFilterDialogTE extends EditObjectFilterDialog {
 
     private Button customUserFilterCheckbox;
 
+    private boolean isUserFilterUnsaved;
+
     protected EditObjectFilterDialogTE(
-        Shell shell,
-        DBPDataSourceRegistry dsRegistry,
-        String objectTitle,
-        DBSObjectFilter filter,
+        @NotNull Shell shell,
+        @NotNull DBPDataSourceRegistry dsRegistry,
+        @NotNull String objectTitle,
+        @Nullable DBSObjectFilter filter,
         boolean globalFilter
     ) {
         super(shell, dsRegistry, objectTitle, filter, globalFilter);
     }
 
-    @NotNull
     @Override
-    protected Composite createSfGroup(Composite composite) {
-        Composite sfGroup = super.createSfGroup(composite);
+    protected void setSfGroup(@NotNull Composite composite) {
+        super.setSfGroup(composite);
         customUserFilterCheckbox = UIUtils.createCheckbox(sfGroup, "My custom checkbox", filter.isUserFilter());
         customUserFilterCheckbox.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 if (customUserFilterCheckbox.getSelection()) {
-                    filter.setUserFilter(true);
+                    currentUserFilterSelected();
                 } else {
                     currentUserFilterUnselected();
                 }
             }
         });
-        return sfGroup;
+        updateSaveRemoveButtonsState();
+    }
+
+    private void updateSaveRemoveButtonsState() {
+        boolean isButtonsEnabled = !isCustomUserFilter();
+        saveButton.setEnabled(isButtonsEnabled);
+        removeButton.setEnabled(isButtonsEnabled);
+    }
+
+    private void currentUserFilterSelected() {
+        filter.setUserFilter(true);
+        isUserFilterUnsaved = true;
+        updateSaveRemoveButtonsState();
     }
 
     private void currentUserFilterUnselected() {
-        if (UIUtils.confirmAction("sure bout that?", "it will remove your custom stuff")) {
+        if (isUserFilterUnsaved) {
+            filter.setUserFilter(false);
+            updateSaveRemoveButtonsState();
+        } else if (UIUtils.confirmAction("sure bout that?", "it will remove your custom stuff")) {
             setReturnCode(DELETE_USER_FILTER);
             close();
         } else {
             customUserFilterCheckbox.setSelection(true);
         }
+    }
+
+    private boolean isCustomUserFilter() {
+        return filter.isUserFilter();
     }
 }

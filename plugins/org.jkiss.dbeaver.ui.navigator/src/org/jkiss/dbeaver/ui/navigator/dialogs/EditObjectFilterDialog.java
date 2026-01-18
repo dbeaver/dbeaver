@@ -57,13 +57,17 @@ public class EditObjectFilterDialog extends HelpEnabledDialog {
     private Table includeTable;
     private Table excludeTable;
     protected Combo namesCombo;
+
+    protected Group sfGroup;
+    protected Button saveButton;
+    protected Button removeButton;
     private Button enableButton;
 
     protected EditObjectFilterDialog(
-        Shell shell,
-        DBPDataSourceRegistry dsRegistry,
-        String objectTitle,
-        DBSObjectFilter filter,
+        @NotNull Shell shell,
+        @NotNull DBPDataSourceRegistry dsRegistry,
+        @NotNull String objectTitle,
+        @Nullable DBSObjectFilter filter,
         boolean globalFilter
     ) {
         super(shell, IHelpContextIds.CTX_EDIT_OBJECT_FILTERS);
@@ -123,16 +127,14 @@ public class EditObjectFilterDialog extends HelpEnabledDialog {
         UIUtils.createInfoLabel(blockControl, UINavigatorMessages.dialog_filter_hint_text);
         UIUtils.createInfoLabel(blockControl, UINavigatorMessages.dialog_filter_objects_scope_hint_text);
 
-        createSfGroup(composite);
-
+        setSfGroup(composite);
         enableFiltersContent();
 
         return composite;
     }
 
-    @NotNull
-    protected Composite createSfGroup(Composite composite) {
-        Group sfGroup = UIUtils.createControlGroup(
+    protected void setSfGroup(@NotNull Composite composite) {
+        sfGroup = UIUtils.createControlGroup(
             composite,
             UINavigatorMessages.dialog_filter_save_label,
             4,
@@ -158,8 +160,12 @@ public class EditObjectFilterDialog extends HelpEnabledDialog {
                 changeSavedFilter();
             }
         });
+        setSaveButton();
+        setRemoveButton();
+    }
 
-        Button saveButton = UIUtils.createPushButton(sfGroup, UINavigatorMessages.dialog_filter_save_button, null);
+    protected void setSaveButton() {
+        saveButton = UIUtils.createPushButton(sfGroup, UINavigatorMessages.dialog_filter_save_button, null);
         saveButton.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
@@ -167,7 +173,10 @@ public class EditObjectFilterDialog extends HelpEnabledDialog {
                 saveConfigurations();
             }
         });
-        Button removeButton = UIUtils.createPushButton(sfGroup, UINavigatorMessages.dialog_filter_remove_button, null);
+    }
+
+    protected void setRemoveButton() {
+        removeButton = UIUtils.createPushButton(sfGroup, UINavigatorMessages.dialog_filter_remove_button, null);
         removeButton.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
@@ -176,7 +185,6 @@ public class EditObjectFilterDialog extends HelpEnabledDialog {
                 namesCombo.setText(NULL_FILTER_NAME);
             }
         });
-        return sfGroup;
     }
 
     private void changeSavedFilter() {
