@@ -58,25 +58,26 @@ public class EditObjectFilterDialogTE extends EditObjectFilterDialog {
                 }
             }
         });
-        updateSaveRemoveButtonsState();
+        updateTemplatesEnabledState();
     }
 
-    private void updateSaveRemoveButtonsState() {
-        boolean isButtonsEnabled = !isCustomUserFilter();
-        saveButton.setEnabled(isButtonsEnabled);
-        removeButton.setEnabled(isButtonsEnabled);
+    private void updateTemplatesEnabledState() {
+        boolean isTemplatesEnabled = !isCustomUserFilter();
+        saveButton.setEnabled(isTemplatesEnabled);
+        removeButton.setEnabled(isTemplatesEnabled);
+        namesCombo.setEnabled(isTemplatesEnabled);
     }
 
     private void currentUserFilterSelected() {
         filter.setUserFilter(true);
         isUserFilterUnsaved = true;
-        updateSaveRemoveButtonsState();
+        updateTemplatesEnabledState();
     }
 
     private void currentUserFilterUnselected() {
         if (isUserFilterUnsaved) {
             filter.setUserFilter(false);
-            updateSaveRemoveButtonsState();
+            updateTemplatesEnabledState();
         } else if (UIUtils.confirmAction("sure bout that?", "it will remove your custom stuff")) {
             setReturnCode(DELETE_USER_FILTER);
             close();
