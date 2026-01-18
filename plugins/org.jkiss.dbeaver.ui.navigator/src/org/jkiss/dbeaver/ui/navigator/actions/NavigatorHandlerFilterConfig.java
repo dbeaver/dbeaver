@@ -86,8 +86,7 @@ public class NavigatorHandlerFilterConfig extends NavigatorHandlerObjectCreateBa
 
                 DBSObjectFilter currentDialogFilter = dialog.getFilter();
                 switch (dialog.open()) {
-                    case IDialogConstants.OK_ID ->
-                        setParentNodeFilter(parentNode, itemsMeta, currentDialogFilter, currentDialogFilter.isUserFilter());
+                    case IDialogConstants.OK_ID -> setParentNodeFilter(parentNode, itemsMeta, currentDialogFilter);
                     case EditObjectFilterDialog.SHOW_GLOBAL_FILTERS_ID -> {
                         Class<?> childrenClass = null;
                         if (dbNode instanceof DBNDatabaseFolder folder) {
@@ -118,9 +117,15 @@ public class NavigatorHandlerFilterConfig extends NavigatorHandlerObjectCreateBa
                         }
                     }
                     case EditObjectFilterDialogTE.DELETE_USER_FILTER -> {
-                        UserDBSObjectFilerUtils.clearUserObjectFilers(parentNode.getDataSourceContainer());
-                        parentNode.setNodeFilter(itemsMeta, null, false);
-                        NavigatorHandlerRefresh.refreshNavigator(Collections.singletonList(parentNode));
+                        if (dialog.isGlobalFilter()) {
+                            UserDBSObjectFilerUtils.clearUserObjectFilers(parentNode.getDataSourceContainer());
+                            parentNode.setNodeFilter(itemsMeta, null, false); // TODO check what filter we should set!
+                            NavigatorHandlerRefresh.refreshNavigator(Collections.singletonList(parentNode));
+                        } else {
+                            DBSObjectFilter emptyFilter = new DBSObjectFilter();
+                            emptyFilter.setUserFilter(true);
+                            setParentNodeFilter(parentNode, itemsMeta, emptyFilter);
+                        }
                     }
                 }
             }
@@ -132,9 +137,9 @@ public class NavigatorHandlerFilterConfig extends NavigatorHandlerObjectCreateBa
     public static void setParentNodeFilter(
         @NotNull DBNDatabaseNode parentNode,
         @NotNull DBXTreeItem itemsMeta,
-        @NotNull DBSObjectFilter currentDialogFilter,
-        boolean isCurrentUserFilter
+        @NotNull DBSObjectFilter currentDialogFilter
     ) {
+        boolean isCurrentUserFilter = currentDialogFilter.isUserFilter();
         parentNode.setNodeFilter(itemsMeta, currentDialogFilter, !isCurrentUserFilter);
         if (isCurrentUserFilter) {
             UserDBSObjectFilerUtils.updateUserObjectFilters(parentNode.getDataSourceContainer());

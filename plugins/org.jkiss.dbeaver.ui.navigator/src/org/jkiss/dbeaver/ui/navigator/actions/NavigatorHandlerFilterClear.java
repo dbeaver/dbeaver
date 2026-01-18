@@ -48,11 +48,12 @@ public class NavigatorHandlerFilterClear extends AbstractHandler {
         try {
             DBXTreeItem itemsMeta = UIUtils.runWithMonitor(monitor -> DBNUtils.getValidItemsMeta(monitor, parentNode));
             if (itemsMeta != null) {
+                DBSObjectFilter emptyFilter = new DBSObjectFilter();
+                emptyFilter.setUserFilter(isUserObjectFilter(parentNode, itemsMeta));
                 NavigatorHandlerFilterConfig.setParentNodeFilter(
                     parentNode,
                     itemsMeta,
-                    new DBSObjectFilter(),
-                    isUserObjectFilter(parentNode, itemsMeta)
+                    emptyFilter
                 );
             }
         } catch (DBException e) {

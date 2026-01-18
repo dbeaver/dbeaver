@@ -49,9 +49,9 @@ public class EditObjectFilterDialog extends HelpEnabledDialog {
     private static final String NULL_FILTER_NAME = "";
 
     private final DBPDataSourceRegistry dsRegistry;
-    private String objectTitle;
+    private final String objectTitle;
     protected DBSObjectFilter filter;
-    private boolean globalFilter;
+    private final boolean globalFilter;
     private Composite blockControl;
     private ControlEnableState blockEnableState;
     private Table includeTable;
@@ -241,6 +241,10 @@ public class EditObjectFilterDialog extends HelpEnabledDialog {
     @Override
     protected void cancelPressed() {
         super.cancelPressed();
+    }
+
+    public boolean isGlobalFilter() {
+        return globalFilter;
     }
 
     public static EditObjectFilterDialog createEditObjectFilterDialog(
