@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -49,6 +49,7 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.tasks.ui.internal.TaskUIMessages;
 import org.jkiss.dbeaver.tasks.ui.registry.TaskUIRegistry;
 import org.jkiss.dbeaver.ui.IObjectPropertyConfigurator;
+import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.BaseWizard;
 import org.jkiss.dbeaver.ui.dialogs.IWizardPageActive;
@@ -371,7 +372,7 @@ public abstract class TaskConfigurationWizard<SETTINGS extends DBTTaskSettings> 
 
             if (supportsVariables) {
                 layout.numColumns++;
-                UIUtils.createDialogButton(panel, TaskUIMessages.task_config_wizard_button_variables + " ...", new SelectionAdapter() {
+                UIUtils.createPushButton(panel,  null, null, UIIcon.SQL_VARIABLE, new SelectionAdapter() {
                     @Override
                     public void widgetSelected(SelectionEvent e) {
                         configureVariables();
@@ -379,19 +380,20 @@ public abstract class TaskConfigurationWizard<SETTINGS extends DBTTaskSettings> 
                 });
             }
 
-            saveAsTaskButton = UIUtils.createDialogButton(panel, TaskUIMessages.task_config_wizard_button_save_task, new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
-                    saveTask();
-                }
-            });
-
-            layout.numColumns++;
-            Button taskViewButton = UIUtils.createDialogButton(
+            saveAsTaskButton = UIUtils.createPushButton(
                 panel,
                 null,
+                TaskUIMessages.task_config_wizard_button_save_task,
+                UIIcon.SAVE,
+                SelectionListener.widgetSelectedAdapter(selectionEvent -> saveTask())
+            );
+
+            layout.numColumns++;
+            Button taskViewButton = UIUtils.createPushButton(
+                panel,
                 null,
                 TaskUIMessages.task_config_wizard_link_open_tasks_view,
+                null,
                 SelectionListener.widgetSelectedAdapter(e -> {
                     try {
                         UIUtils.getActiveWorkbenchWindow().getActivePage().showView(tasksViewDescriptor.getId());
