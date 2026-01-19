@@ -100,7 +100,7 @@ public class DefaultResourceHandlerImpl extends AbstractResourceHandler {
                     if (fthd != null) {
                         try {
                             IFileOpenHandler handler = fthd.createHandler();
-                            handler.openFiles(Collections.singletonList(path), null, FileTypeAction.DATABASE);
+                            handler.openFiles(Collections.singletonList(path), null, FileTypeAction.INTERNAL_EDITOR);
                             return;
                         } catch (ReflectiveOperationException e) {
                             throw new DBException("Cannot create file handler", e);
