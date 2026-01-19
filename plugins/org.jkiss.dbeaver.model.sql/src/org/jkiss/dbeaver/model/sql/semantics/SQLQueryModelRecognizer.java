@@ -54,7 +54,6 @@ import org.jkiss.dbeaver.model.sql.semantics.model.expressions.*;
 import org.jkiss.dbeaver.model.sql.semantics.model.select.SQLQueryRowsSourceModel;
 import org.jkiss.dbeaver.model.sql.semantics.model.select.SQLQueryRowsTableDataModel;
 import org.jkiss.dbeaver.model.stm.*;
-import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 
 import java.util.*;
@@ -341,10 +340,13 @@ public class SQLQueryModelRecognizer {
         ) {
             Map<String, SQLQueryResultPseudoColumn> globalPseudoColumns = Stream.of(basicSQLDialect.getGlobalVariables())
                 .map(v -> new SQLQueryResultPseudoColumn(
-                    new SQLQuerySymbol(SQLUtils.identifierToCanonicalForm(basicSQLDialect, v.name(), false, false)),
-                    null, null, SQLQueryExprType.forPredefined(v.type()),
-                    DBDPseudoAttribute.PropagationPolicy.GLOBAL_VARIABLE, v.description()
-                )).collect(Collectors.toMap(c -> c.symbol.getName(), c -> c));;
+                    new SQLQuerySymbol(v.name()),
+                    null,
+                    null,
+                    SQLQueryExprType.forPredefined(v.type()),
+                    DBDPseudoAttribute.PropagationPolicy.GLOBAL_VARIABLE,
+                    v.description()
+                )).collect(Collectors.toMap(c -> c.symbol.getName(), c -> c));
 
             Function<SQLQueryRowsSourceModel, List<SQLQueryResultPseudoColumn>> rowsetPseudoColumns;
             if (this.executionContext.getDataSource() instanceof DBDPseudoAttributeContainer pac) {

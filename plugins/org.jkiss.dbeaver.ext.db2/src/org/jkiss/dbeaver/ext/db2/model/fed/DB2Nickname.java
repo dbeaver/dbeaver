@@ -151,6 +151,7 @@ public class DB2Nickname extends DB2TableBase implements DBPNamedObject2, DBPRef
     {
     }
 
+    @NotNull
     @Override
     public String getObjectDefinitionText(@NotNull DBRProgressMonitor monitor, @NotNull Map<String, Object> options) throws DBException
     {

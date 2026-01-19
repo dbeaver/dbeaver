@@ -285,8 +285,7 @@ public class DBNModel {
         if (rootDbNodeIndex < 0) {
             return null;
         }
-        Map<String, DBNDataSource> datasourceById = databaseRootNode.getDataSources()
-            .stream()
+        Map<String, DBNDataSource> datasourceById = Arrays.stream(databaseRootNode.getDataSources())
             .collect(Collectors.toMap(DBNDataSource::getNodeId, Function.identity()));
         for (int i = rootDbNodeIndex + 1; i < nodePath.pathItems.size(); i++) {
             // it can be folder name or datasource id
@@ -644,7 +643,7 @@ public class DBNModel {
                 }
 
                 try {
-                    DBWorkbench.getPlatformUI().executeWithProgress(() -> {
+                    DBWorkbench.getPlatformUI().executeInMainThread(() -> {
                         for (int i = 0; i < realEvents.length; i++) {
                             for (INavigatorListener listener : listenersCopy) {
                                 listener.nodeChanged(realEvents[i]);

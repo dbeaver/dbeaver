@@ -291,8 +291,8 @@ public class MavenRegistry {
 
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         XMLBuilder xml = new XMLBuilder(baos, GeneralUtils.UTF8_ENCODING);
-        xml.setButify(true);
-        try (final XMLBuilder.Element e1 = xml.startElement("maven")) {
+        xml.setBeautify(true);
+        try (var e1 = xml.startElement("maven")) {
             for (MavenRepository repository : repositories) {
                 try (final XMLBuilder.Element e2 = xml.startElement("repository")) {
                     xml.addAttribute("id", repository.getId());

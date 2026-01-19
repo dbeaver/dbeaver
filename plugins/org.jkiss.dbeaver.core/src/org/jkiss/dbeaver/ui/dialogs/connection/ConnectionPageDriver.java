@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,9 +37,7 @@ import org.jkiss.dbeaver.registry.DataSourceNavigatorSettings;
 import org.jkiss.dbeaver.registry.DataSourceProviderDescriptor;
 import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
-import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.IHelpContextIds;
-import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizardPage;
 import org.jkiss.dbeaver.ui.dialogs.driver.DriverSelectViewer;
@@ -50,25 +48,21 @@ import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
  * Driver selection page
  * step1
  */
-class ConnectionPageDriver extends ActiveWizardPage implements ISelectionChangedListener, IDoubleClickListener {
+class ConnectionPageDriver extends ActiveWizardPage<NewConnectionWizard> implements ISelectionChangedListener, IDoubleClickListener {
 
-    private NewConnectionWizard wizard;
     private DBPDriver selectedDriver;
     private DriverSelectViewer driverSelectViewer;
     private ProjectSelectorPanel projectSelector;
     private Control filterIndentLabel;
 
-    ConnectionPageDriver(NewConnectionWizard wizard)
-    {
+    ConnectionPageDriver(NewConnectionWizard wizard) {
         super("newConnectionDrivers");
-        this.wizard = wizard;
         setTitle(CoreMessages.dialog_new_connection_wizard_start_title);
         setDescription(CoreMessages.dialog_new_connection_wizard_start_description);
     }
 
     @Override
-    public void createControl(Composite parent)
-    {
+    public void createControl(Composite parent) {
         Composite placeholder = UIUtils.createComposite(parent, 1);
 
         setControl(placeholder);
@@ -77,10 +71,16 @@ class ConnectionPageDriver extends ActiveWizardPage implements ISelectionChanged
         controlsGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
         {
-            driverSelectViewer = new DriverSelectViewer(placeholder, this, wizard.getAvailableProvides(), true, DriverSelectViewer.SelectorViewType.browser) {
+            driverSelectViewer = new DriverSelectViewer(
+                placeholder,
+                this,
+                getWizard().getAvailableProvides(),
+                true,
+                DriverSelectViewer.SelectorViewType.browser
+            ) {
                 @Override
                 protected void createExtraFilterControlsBefore(Composite filterGroup) {
-                    ((GridLayout)filterGroup.getLayout()).numColumns++;
+                    ((GridLayout) filterGroup.getLayout()).numColumns++;
                     filterIndentLabel = UIUtils.createEmptyLabel(filterGroup, 1, 1);
                     GridData gd = new GridData();
                     gd.widthHint = 100;
@@ -89,7 +89,7 @@ class ConnectionPageDriver extends ActiveWizardPage implements ISelectionChanged
 
                 @Override
                 protected void createExtraFilterControlsAfter(Composite filterGroup) {
-                    ((GridLayout)filterGroup.getLayout()).numColumns++;
+                    ((GridLayout) filterGroup.getLayout()).numColumns++;
                     Composite extraControlsComposite = UIUtils.createComposite(filterGroup, 1);
                     extraControlsComposite.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
 
@@ -101,9 +101,9 @@ class ConnectionPageDriver extends ActiveWizardPage implements ISelectionChanged
             gd.widthHint = 400;
             driverSelectViewer.getControl().setLayoutData(gd);
 
-            ((GridData)filterIndentLabel.getLayoutData()).widthHint =
+            ((GridData) filterIndentLabel.getLayoutData()).widthHint =
                 driverSelectViewer.getTabbedViewer().getFolderComposite().getTabsWidth() -
-                ((GridLayout)filterIndentLabel.getParent().getLayout()).horizontalSpacing - 1;
+                    ((GridLayout) filterIndentLabel.getParent().getLayout()).horizontalSpacing - 1;
         }
 
         {
@@ -128,7 +128,6 @@ class ConnectionPageDriver extends ActiveWizardPage implements ISelectionChanged
         Composite orderGroup = new Composite(controlsGroup, SWT.NONE);
         orderGroup.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
         orderGroup.setLayout(new RowLayout());
-        //new Label(orderGroup, SWT.NONE).setImage(DBeaverIcons.getImage(UIIcon.SORT));
         new Label(orderGroup, SWT.NONE).setText(CoreMessages.driver_connection_sort_by + " ");
         DriverSelectViewer.OrderBy defaultOrderBy = DriverSelectViewer.getDefaultOrderBy();
 
@@ -150,16 +149,7 @@ class ConnectionPageDriver extends ActiveWizardPage implements ISelectionChanged
         }
     }
 
-    public void createPanelDivider(Composite controlsGroup) {
-        Composite filler = UIUtils.createComposite(controlsGroup, 3);
-        filler.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        new Label(filler, SWT.NONE).setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        new Label(filler, SWT.NONE).setImage(DBeaverIcons.getImage(UIIcon.SEPARATOR_V));
-        new Label(filler, SWT.NONE).setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-    }
-
-    public DBPDriver getSelectedDriver()
-    {
+    public DBPDriver getSelectedDriver() {
         return selectedDriver;
     }
 
@@ -181,8 +171,7 @@ class ConnectionPageDriver extends ActiveWizardPage implements ISelectionChanged
     }
 
     @Override
-    public boolean isPageComplete()
-    {
+    public boolean isPageComplete() {
         if (!DBWorkbench.getPlatform().getWorkspace().hasRealmPermission(RMConstants.PERMISSION_DATABASE_DEVELOPER)) {
             setErrorMessage("The user needs more permissions to create a new connection.");
             return false;
@@ -191,15 +180,14 @@ class ConnectionPageDriver extends ActiveWizardPage implements ISelectionChanged
     }
 
     @Override
-    public void selectionChanged(SelectionChangedEvent event)
-    {
+    public void selectionChanged(SelectionChangedEvent event) {
         this.selectedDriver = null;
         ISelection selection = event.getSelection();
-        if (selection instanceof IStructuredSelection) {
+        if (selection instanceof IStructuredSelection ss) {
             // TODO: Show current driver info somehow. setMessage is super-slow (it re-layouts entire wizard dialog)
-            Object selectedObject = ((IStructuredSelection) selection).getFirstElement();
-            if (selectedObject instanceof DBPDriver) {
-                selectedDriver = (DriverDescriptor) selectedObject;
+            Object selectedObject = ss.getFirstElement();
+            if (selectedObject instanceof DriverDescriptor driver) {
+                selectedDriver = driver;
                 //this.setMessage(selectedDriver.getDescription());
             } else if (selectedObject instanceof DataSourceProviderDescriptor) {
                 //this.setMessage(((DataSourceProviderDescriptor) selectedObject).getDescription());
@@ -213,22 +201,11 @@ class ConnectionPageDriver extends ActiveWizardPage implements ISelectionChanged
     }
 
     @Override
-    public void doubleClick(DoubleClickEvent event)
-    {
+    public void doubleClick(DoubleClickEvent event) {
         if (selectedDriver != null && projectSelector.getSelectedProject() != null) {
+            NewConnectionWizard wizard = getWizard();
             wizard.getContainer().showPage(wizard.getNextPage(this));
         }
-    }
-
-    @Override
-    public void activatePage()
-    {
-    }
-
-    @Override
-    public void deactivatePage()
-    {
-
     }
 
 }

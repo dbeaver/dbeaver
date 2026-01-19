@@ -16,7 +16,7 @@
  */
 package org.jkiss.dbeaver.ui.internal.statistics;
 
-import org.jkiss.dbeaver.utils.NLS;
+import org.eclipse.osgi.util.NLS;
 
 public class StatisticCollectionMessages extends NLS {
 

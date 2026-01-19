@@ -79,8 +79,9 @@ public class SQLBackgroundParsingJob {
     private IDocument document = null;
     @NotNull
     private final AbstractJob job = new AbstractJob("Background parsing job") {
+        @NotNull
         @Override
-        protected IStatus run(DBRProgressMonitor monitor) {
+        protected IStatus run(@NotNull DBRProgressMonitor monitor) {
             try {
                 SQLBackgroundParsingJob.this.doWork(monitor);
                 return Status.OK_STATUS;
@@ -475,8 +476,13 @@ public class SQLBackgroundParsingJob {
                 if (docTailDelta < 0) {
                     workLength += docTailDelta;
                 }
+                if (workOffset == this.document.getLength() && workOffset > 0) {
+                    workOffset--;
+                    workLength++;
+                }
                 if (DEBUG) {
                     {
+                        log.debug("requested " + workOffset + "+" + workLength);
                         NodesIterator<QueuedRegionInfo> it = this.queuedForReparse.nodesIteratorAt(Integer.MAX_VALUE);
                         while (it.prev()) {
                             log.debug("\t@" + it.getCurrOffset() + "+" + it.getCurrValue().length);

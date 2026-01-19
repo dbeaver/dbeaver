@@ -166,7 +166,7 @@ public class RegistryConstants {
     public static final String ATTR_EDITOR = "editor"; //$NON-NLS-1$
     public static final String ATTR_IF = "if"; //$NON-NLS-1$
     public static final String ATTR_DEFAULT = "default"; //$NON-NLS-1$
-    public static final String ATTR_MANAGABLE = "managable"; //$NON-NLS-1$
+    public static final String ATTR_MANAGEABLE = "managable"; //$NON-NLS-1$ FIXME: Historical type
     public static final String ATTR_CONTRIBUTOR = "contributor"; //$NON-NLS-1$
     public static final String ATTR_INPUT_FACTORY = "inputFactory"; //$NON-NLS-1$
 

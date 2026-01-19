@@ -71,6 +71,7 @@ public class ExasolView extends ExasolTableBase implements ExasolSourceObject, D
     }
 
 
+    @NotNull
     @Override
     public DBSObjectState getObjectState() {
         return DBSObjectState.NORMAL;
@@ -181,6 +182,7 @@ public class ExasolView extends ExasolTableBase implements ExasolSourceObject, D
         return Collections.emptyList();
     }
 
+    @NotNull
     @Override
     @Property(hidden = true, editable = true, updatable = true, order = -1)
     public String getObjectDefinitionText(@NotNull DBRProgressMonitor monitor, @NotNull Map<String, Object> options) throws DBException {

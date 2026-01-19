@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,14 +32,12 @@ import org.jkiss.dbeaver.model.app.DBPPlatformDesktop;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.app.DBPProjectListener;
 import org.jkiss.dbeaver.model.navigator.*;
-import org.jkiss.dbeaver.model.rcp.RCPProject;
 import org.jkiss.dbeaver.model.rm.RMConstants;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.actions.ObjectPropertyTester;
 import org.jkiss.dbeaver.ui.controls.ViewerColumnController;
 import org.jkiss.dbeaver.ui.internal.UINavigatorMessages;
-import org.jkiss.dbeaver.ui.project.PrefPageProjectResourceSettings;
 import org.jkiss.dbeaver.utils.ResourceUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -309,16 +307,6 @@ public class ProjectExplorerView extends DecoratedProjectView implements DBPProj
     }
 
     @Override
-    public void handleProjectAdd(@NotNull DBPProject project) {
-
-    }
-
-    @Override
-    public void handleProjectRemove(@NotNull DBPProject project) {
-
-    }
-
-    @Override
     public void handleActiveProjectChange(@NotNull DBPProject oldValue, @NotNull DBPProject newValue) {
         updateRepresentation();
     }
@@ -341,15 +329,7 @@ public class ProjectExplorerView extends DecoratedProjectView implements DBPProj
     }
 
     private void updateTitle() {
-        setPartName("Project - " + getRootNode().getNodeDisplayName());
-    }
-
-    public void configureView() {
-        //columnController.configureColumns();
-        DBPProject activeProject = DBWorkbench.getPlatform().getWorkspace().getActiveProject();
-        if (activeProject instanceof RCPProject rcpProject) {
-            UIUtils.showPreferencesFor(getSite().getShell(), rcpProject.getEclipseProject(), PrefPageProjectResourceSettings.PAGE_ID);
-        }
+        setPartName("Files - " + getRootNode().getNodeDisplayName());
     }
 
 }

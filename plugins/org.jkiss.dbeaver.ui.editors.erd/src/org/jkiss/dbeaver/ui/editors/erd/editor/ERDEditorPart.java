@@ -82,6 +82,7 @@ import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.controls.ProgressLoaderVisualizer;
 import org.jkiss.dbeaver.ui.controls.ProgressPageControl;
 import org.jkiss.dbeaver.ui.controls.PropertyPageStandard;
+import org.jkiss.dbeaver.ui.css.CSSUtils;
 import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
 import org.jkiss.dbeaver.ui.dialogs.DialogUtils;
 import org.jkiss.dbeaver.ui.editors.IDatabaseEditorInput;
@@ -284,6 +285,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
 
         editModeComposite = new EditModeComposite(contentContainer);
         contentContainer = editModeComposite.getPlaceholder();
+        CSSUtils.setExcludeFromStyling(contentContainer);
 
         super.createPartControl(contentContainer);
 
@@ -345,8 +347,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
      * Adaptable implementation for Editor
      */
     @Override
-    public Object getAdapter(Class adapter)
-    {
+    public Object getAdapter(Class adapter) {
         // we need to handle common .gef elements we created
         if (adapter == GraphicalViewer.class || adapter == EditPartViewer.class) {
             return getGraphicalViewer();
@@ -365,8 +366,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
         } else if (IWorkbenchAdapter.class.equals(adapter)) {
             return new WorkbenchAdapter() {
                 @Override
-                public String getLabel(Object o)
-                {
+                public String getLabel(Object o) {
                     return "ERD Editor";
                 }
             };
@@ -408,6 +408,10 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
     }
 
     public abstract boolean isReadOnly();
+
+    public boolean isERD() {
+        return true;
+    }
 
     public void setEditMode(boolean editMode) {
         if (editModeComposite != null) {
@@ -759,7 +763,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
     @Override
     public RefreshResult refreshPart(Object source, boolean force)
     {
-        refreshDiagram(force, true);
+        refreshDiagram(force, force);
         return RefreshResult.REFRESHED;
     }
 
@@ -1301,7 +1305,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
                 ERDNotationDescriptor defaultNotation = ERDNotationRegistry.getInstance().getActiveDescriptor();
                 setDiagramNotation(defaultNotation);
                 doSave(new NullProgressMonitor());
-                refreshDiagram(true, false);
+                refreshDiagram(true, true);
             } else if (ERDUIConstants.PREF_ROUTING_TYPE.equals(event.getProperty())) {
                 ERDConnectionRouterDescriptor defaultRouter = ERDConnectionRouterRegistry.getInstance().getActiveRouter();
                 setDiagramRouter(defaultRouter);
@@ -1311,7 +1315,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
         }
     }
 
-    private void refreshEntityAndAttributes() {
+    protected void refreshEntityAndAttributes() {
         getDiagram().getEntities().forEach(entity -> {
             entity.reloadAttributes(getDiagram());
         });

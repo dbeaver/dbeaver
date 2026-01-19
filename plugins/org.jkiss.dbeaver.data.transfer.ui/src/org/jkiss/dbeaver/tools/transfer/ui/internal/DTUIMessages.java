@@ -16,7 +16,7 @@
  */
 package org.jkiss.dbeaver.tools.transfer.ui.internal;
 
-import org.jkiss.dbeaver.utils.NLS;
+import org.eclipse.osgi.util.NLS;
 
 public class DTUIMessages extends NLS {
     static final String BUNDLE_NAME = "org.jkiss.dbeaver.tools.transfer.ui.internal.DTUIMessages"; //$NON-NLS-1$
@@ -236,6 +236,8 @@ public class DTUIMessages extends NLS {
     public static String pref_data_transfer_replacing_combo_tip;
     public static String pref_data_transfer_spanner_max_length;
     public static String pref_data_transfer_spanner_max_length_tip;
+    public static String pref_open_fs_browser_on_enter;
+    public static String pref_open_fs_browser_on_enter_tooltip;
 
     public static String mappings_rules_dialog_title;
     public static String mappings_rules_dialog_save_settings_checkbox;

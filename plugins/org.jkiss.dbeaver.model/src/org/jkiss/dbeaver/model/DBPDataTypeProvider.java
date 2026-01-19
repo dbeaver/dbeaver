@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -46,6 +46,7 @@ public interface DBPDataTypeProvider
      * @return data type or null if type not found
      * @throws DBException on any DB access error
      */
+    @Nullable
     DBSDataType resolveDataType(@NotNull DBRProgressMonitor monitor, @NotNull String typeFullName)
         throws DBException;
 
@@ -53,6 +54,7 @@ public interface DBPDataTypeProvider
      * Retrieves list of supported datatypes.
      * @return list of types
      */
+    @NotNull
     Collection<? extends DBSDataType> getLocalDataTypes();
 
     /**
@@ -61,6 +63,7 @@ public interface DBPDataTypeProvider
      * @param typeName type name
      * @return data type of null
      */
+    @Nullable
     DBSDataType getLocalDataType(@Nullable String typeName);
 
     /**
@@ -68,6 +71,7 @@ public interface DBPDataTypeProvider
      *
      * @return data type of null
      */
+    @Nullable
     DBSDataType getLocalDataType(int typeID);
 
     /**
@@ -75,5 +79,6 @@ public interface DBPDataTypeProvider
      * @param dataKind data kind
      * @return data type name or null if data kind not supported
      */
+    @NotNull
     String getDefaultDataTypeName(@NotNull DBPDataKind dataKind);
 }

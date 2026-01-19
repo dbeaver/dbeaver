@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -93,6 +93,7 @@ public class GroupingResultsContainer implements IResultSetContainer {
         return dataContainer == null || dataContainer.getDataSource() == null ? null : dataContainer.getDataSource().getContainer().getProject();
     }
 
+    @Nullable
     @Override
     public DBCExecutionContext getExecutionContext() {
         return presentation.getController().getExecutionContext();
@@ -123,6 +124,12 @@ public class GroupingResultsContainer implements IResultSetContainer {
     @Override
     public IResultSetDecorator createResultSetDecorator() {
         return new GroupingResultsDecorator(this);
+    }
+
+    @Nullable
+    @Override
+    public IResultSetContainer getParentContainer() {
+        return presentation.getController().getContainer();
     }
 
     void clearGroupingAttributes() {

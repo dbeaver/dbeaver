@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,7 +37,6 @@ import org.jkiss.dbeaver.ui.LoadingJob;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.css.CSSUtils;
-import org.jkiss.dbeaver.ui.css.DBStyles;
 import org.jkiss.dbeaver.ui.editors.TextEditorUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
@@ -71,7 +70,7 @@ abstract class ActiveStatusMessage extends Composite {
 
         // Toolbar
         ToolBar tb = new ToolBar(this, SWT.FLAT | SWT.HORIZONTAL);
-        CSSUtils.setCSSClass(tb, DBStyles.COLORED_BY_CONNECTION_TYPE);
+        CSSUtils.markConnectionTypeColor(tb);
         actionItem = new ToolItem(tb, SWT.NONE);
         actionItem.setImage(this.actionImage);
         if (actionText != null) {
@@ -80,11 +79,11 @@ abstract class ActiveStatusMessage extends Composite {
         actionItem.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
-                executeAction();
+                executeAction(true);
             }
         });
 
-        messageText = new Text(this, SWT.READ_ONLY);
+        messageText = new Text(this, SWT.BORDER | SWT.READ_ONLY);
         if (RuntimeUtils.isWindows()) {
             messageText.setBackground(null);
         } else {
@@ -117,20 +116,22 @@ abstract class ActiveStatusMessage extends Composite {
         }
     }
 
-    public void executeAction() {
+    public void executeAction(boolean showErrors) {
         if (loadService != null) {
             try {
                 loadService.cancel();
             } catch (InvocationTargetException e) {
-                log.error(e.getTargetException());
+                log.debug(e.getTargetException());
             }
             loadService = null;
-        } else {
-            loadService = createLoadService();
-            LoadingJob.createService(
-                loadService,
-                new LoadVisualizer()).schedule();
         }
+        loadService = createLoadService();
+        LoadingJob<String> service = LoadingJob.createService(
+            loadService,
+            new LoadVisualizer()
+        );
+        service.setShowErrors(showErrors);
+        service.schedule();
     }
 
     protected abstract boolean isActionEnabled();

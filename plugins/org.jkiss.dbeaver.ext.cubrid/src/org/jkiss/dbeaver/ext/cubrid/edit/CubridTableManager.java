@@ -25,6 +25,7 @@ import org.jkiss.dbeaver.ext.generic.model.GenericTableBase;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableForeignKey;
 import org.jkiss.dbeaver.ext.generic.model.GenericUniqueKey;
 import org.jkiss.dbeaver.model.DBPDataKind;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEObjectRenamer;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
@@ -51,7 +52,10 @@ public class CubridTableManager extends GenericTableManager implements DBEObject
     public boolean canCreateObject(@NotNull Object container) {
         CubridUser user = (CubridUser) container;
         CubridDataSource dataSource = (CubridDataSource) user.getDataSource();
-        return !dataSource.isShard();
+        boolean isDBAGroup = dataSource.isDBAGroup();
+        boolean supportsMultiSchema = dataSource.getSupportMultiSchema();
+        boolean isCurrentUser = user.getName().equalsIgnoreCase(dataSource.getCurrentUser());
+        return isDBAGroup || supportsMultiSchema || isCurrentUser || !dataSource.isShard();
     }
 
     @NotNull
@@ -87,7 +91,7 @@ public class CubridTableManager extends GenericTableManager implements DBEObject
         query.append(" (");
         for (CubridPartition partition : partitions) {
             String value = partition.getExpressionValues();
-            query.append("\n\tPARTITION ").append(partition.getPartitionName());
+            query.append("\n\tPARTITION ").append(DBUtils.getQuotedIdentifier(partition.getDataSource(), partition.getPartitionName()));
 
             if ("RANGE".equals(type)) {
                 query.append(" VALUES LESS THAN ");
@@ -120,8 +124,12 @@ public class CubridTableManager extends GenericTableManager implements DBEObject
     ) throws DBException {
         if (command.getProperties().size() > 1 || command.getProperty("schema") == null) {
             CubridTable table = (CubridTable) command.getObject();
+            boolean isSupportMultiSchema = table.getDataSource().getSupportMultiSchema();
+            String tableName = isSupportMultiSchema ? DBUtils.getQuotedIdentifier(table.getContainer()) + "."
+                + DBUtils.getQuotedIdentifier(table.getDataSource(), table.getName())
+                : DBUtils.getQuotedIdentifier(table.getDataSource(), table.getName());
             StringBuilder query = new StringBuilder("ALTER TABLE ");
-            query.append(table.getContainer()).append(".").append(table.getName());
+            query.append(tableName);
             appendTableModifiers(monitor, table, command, query, true, options);
             actionList.add(new SQLDatabasePersistAction(query.toString()));
         }
@@ -175,13 +183,25 @@ public class CubridTableManager extends GenericTableManager implements DBEObject
         @NotNull Map<String, Object> options
     ) {
         CubridTable table = (CubridTable) command.getObject();
-        if (table.isPersisted() && table.getContainer() != table.getSchema()) {
-            actions.add(
-                new SQLDatabasePersistAction(
-                    "Change Owner",
-                    "ALTER TABLE " + table.getContainer() + "." + table.getName() + " OWNER TO " + table.getSchema()
-                ));
+        boolean isDBAGroup = table.getDataSource().isDBAGroup();
+        boolean isSupportMultiSchema = table.getDataSource().getSupportMultiSchema();
+        String currentUser = table.getDataSource().getCurrentUser();
+        String schemaName = table.getSchema().getName();
+        if (table.isPersisted()) {
+            if (table.getContainer() == table.getSchema()) {
+                return;
+            }
+        } else {
+            if (!isDBAGroup || isSupportMultiSchema || currentUser.equalsIgnoreCase(schemaName)) {
+                return;
+            }
         }
+        actions.add(new SQLDatabasePersistAction(
+            "Change Owner",
+            "ALTER TABLE " + (isSupportMultiSchema ? DBUtils.getQuotedIdentifier(table.getContainer()) + "." : "")
+            + DBUtils.getQuotedIdentifier(table.getDataSource(), table.getName()) + " OWNER TO "
+            + DBUtils.getQuotedIdentifier(table.getSchema())
+        ));
     }
 
     @Override
@@ -193,11 +213,13 @@ public class CubridTableManager extends GenericTableManager implements DBEObject
         @NotNull Map<String, Object> options
     ) {
         CubridTable table = (CubridTable) command.getObject();
-        actions.add(
-            new SQLDatabasePersistAction(
-                "Rename table",
-                "RENAME TABLE " + table.getContainer() + "." + command.getOldName() + " TO " + command.getNewName()
-            ));
+        boolean isSupportMultiSchema = table.getDataSource().getSupportMultiSchema();
+        String schemaName = isSupportMultiSchema ? DBUtils.getQuotedIdentifier(table.getContainer()) + "." : "";
+        actions.add(new SQLDatabasePersistAction(
+            "Rename table",
+            "RENAME TABLE " + schemaName + DBUtils.getQuotedIdentifier(table.getDataSource(), command.getOldName())
+            + " TO " + schemaName + DBUtils.getQuotedIdentifier(table.getDataSource(), command.getNewName())
+        ));
     }
 
     @Override

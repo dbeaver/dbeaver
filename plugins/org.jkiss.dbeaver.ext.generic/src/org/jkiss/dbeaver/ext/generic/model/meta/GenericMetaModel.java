@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -145,9 +145,11 @@ public class GenericMetaModel {
     }
 
     @Nullable
-    public List<GenericSchema> loadSchemas(JDBCSession session, GenericDataSource dataSource, GenericCatalog catalog)
-        throws DBException
-    {
+    public List<GenericSchema> loadSchemas(
+        @NotNull JDBCSession session,
+        @NotNull GenericDataSource dataSource,
+        @Nullable GenericCatalog catalog
+    ) throws DBException {
         if (dataSource.isOmitSchema()) {
             return null;
         }
@@ -657,8 +659,9 @@ public class GenericMetaModel {
         return table;
     }
 
+    @NotNull
     public GenericTableBase createTableOrViewImpl(
-        GenericStructContainer container,
+        @NotNull GenericStructContainer container,
         @Nullable String tableName,
         @Nullable String tableType,
         @Nullable JDBCResultSet dbResult)
@@ -1077,7 +1080,7 @@ public class GenericMetaModel {
     }
 
     @NotNull
-    public GenericTrigger createTableTriggerImpl(
+    public GenericTrigger<?> createTableTriggerImpl(
         @NotNull JDBCSession session,
         @NotNull GenericStructContainer genericStructContainer,
         @NotNull GenericTableBase genericTableBase,

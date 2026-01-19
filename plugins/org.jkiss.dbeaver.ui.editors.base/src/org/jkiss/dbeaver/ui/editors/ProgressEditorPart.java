@@ -32,11 +32,13 @@ import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.part.EditorPart;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.load.AbstractLoadService;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.controls.ProgressLoaderVisualizer;
+import org.jkiss.dbeaver.ui.css.CSSUtils;
 import org.jkiss.dbeaver.ui.editors.internal.EditorsMessages;
 
 import java.lang.reflect.InvocationTargetException;
@@ -102,6 +104,7 @@ public class ProgressEditorPart extends EditorPart {
         final DatabaseLazyEditorInput input = getEditorInput();
 
         progressCanvas = new Composite(parent, SWT.NONE);
+        CSSUtils.setExcludeFromStyling(progressCanvas);
 
         if (input.canLoadImmediately()) {
             scheduleEditorLoad();
@@ -166,7 +169,7 @@ public class ProgressEditorPart extends EditorPart {
         }
 
         @Override
-        public IDatabaseEditorInput evaluate(DBRProgressMonitor monitor)
+        public IDatabaseEditorInput evaluate(@NotNull DBRProgressMonitor monitor)
             throws InvocationTargetException, InterruptedException
         {
             try {

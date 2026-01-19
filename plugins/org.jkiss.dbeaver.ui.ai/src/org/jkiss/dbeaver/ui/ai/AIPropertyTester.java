@@ -17,7 +17,7 @@
 package org.jkiss.dbeaver.ui.ai;
 
 import org.eclipse.core.expressions.PropertyTester;
-import org.jkiss.dbeaver.model.ai.registry.AISettingsRegistry;
+import org.jkiss.dbeaver.model.ai.registry.AISettingsManager;
 import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
 
@@ -27,13 +27,13 @@ public class AIPropertyTester extends PropertyTester {
     public static final String PROP_IS_DISABLED = "isDisabled";
 
     public AIPropertyTester() {
-        AISettingsRegistry.getInstance().addChangedListener(s -> UIUtils.asyncExec(() -> firePropertyChange(PROP_IS_DISABLED)));
+        AISettingsManager.getInstance().addChangedListener(s -> UIUtils.asyncExec(() -> firePropertyChange(PROP_IS_DISABLED)));
     }
 
     @Override
     public boolean test(Object receiver, String property, Object[] args, Object expectedValue) {
         if (property.equals(PROP_IS_DISABLED)) {
-            return AISettingsRegistry.getInstance().getSettings().isAiDisabled();
+            return AISettingsManager.getInstance().getSettings().isAiDisabled();
         }
         return false;
     }

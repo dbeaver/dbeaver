@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -57,7 +57,9 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Properties;
 
-public class SQLServerDataSource extends JDBCDataSource implements DBSInstanceContainer, DBPObjectStatisticsCollector, DBPAdaptable, DBCQueryTransformProviderExt {
+public class SQLServerDataSource
+    extends JDBCDataSource
+    implements DBSInstanceContainer, DBPObjectStatisticsCollector, DBPAdaptable, DBCQueryTransformProviderExt, DBSVisibilityScopeProvider {
 
     private static final Log log = Log.getLog(SQLServerDataSource.class);
     private static final String PROP_ENCRYPT_SSL = "encrypt";
@@ -78,7 +80,7 @@ public class SQLServerDataSource extends JDBCDataSource implements DBSInstanceCo
     public SQLServerDataSource(DBRProgressMonitor monitor, DBPDataSourceContainer container)
         throws DBException
     {
-        super(monitor, container, new SQLServerDialect());
+        super(monitor, container, new SQLServerDialectMssql());
         isBabelfish = SQLServerUtils.isDriverBabelfish(getContainer().getDriver());
     }
 
@@ -137,6 +139,7 @@ public class SQLServerDataSource extends JDBCDataSource implements DBSInstanceCo
         return info;
     }
 
+    @NotNull
     @Override
     public ErrorType discoverErrorType(@NotNull Throwable error) {
         int errorCode = SQLState.getCodeFromException(error);
@@ -357,6 +360,7 @@ public class SQLServerDataSource extends JDBCDataSource implements DBSInstanceCo
         return getLocalDataType(valueType).getDataKind();
     }
 
+    @NotNull
     @Override
     public List<SQLServerDataType> getLocalDataTypes() {
         return dataTypeCache.getCachedObjects();
@@ -376,11 +380,13 @@ public class SQLServerDataSource extends JDBCDataSource implements DBSInstanceCo
         return sdt;
     }
 
+    @Nullable
     @Override
     public SQLServerDataType getLocalDataType(String typeName) {
         return dataTypeCache.getCachedObject(typeName);
     }
 
+    @Nullable
     @Override
     public SQLServerDataType getLocalDataType(int typeID) {
         DBSDataType dt = super.getLocalDataType(typeID);
@@ -390,6 +396,7 @@ public class SQLServerDataSource extends JDBCDataSource implements DBSInstanceCo
         return (SQLServerDataType) dt;
     }
 
+    @NotNull
     @Override
     public String getDefaultDataTypeName(@NotNull DBPDataKind dataKind) {
         return switch (dataKind) {
@@ -439,6 +446,7 @@ public class SQLServerDataSource extends JDBCDataSource implements DBSInstanceCo
         return ((SQLServerExecutionContext)getDefaultInstance().getDefaultContext(monitor, true)).getDefaultCatalog();
     }
 
+    @Nullable
     @Override
     public Collection<? extends DBSObject> getChildren(@NotNull DBRProgressMonitor monitor) throws DBException {
         return databaseCache.getAllObjects(monitor, this);
@@ -477,7 +485,7 @@ public class SQLServerDataSource extends JDBCDataSource implements DBSInstanceCo
     }
 
     @Override
-    public <T> T getAdapter(Class<T> adapter) {
+    public <T> T getAdapter(@NotNull Class<T> adapter) {
         if (adapter == DBSStructureAssistant.class) {
             return adapter.cast(new SQLServerStructureAssistant(this));
         } else if (adapter == DBAServerSessionManager.class) {
@@ -517,7 +525,7 @@ public class SQLServerDataSource extends JDBCDataSource implements DBSInstanceCo
     }
 
     @Override
-    public void collectObjectStatistics(DBRProgressMonitor monitor, boolean totalSizeOnly, boolean forceRefresh) throws DBException {
+    public void collectObjectStatistics(@NotNull DBRProgressMonitor monitor, boolean totalSizeOnly, boolean forceRefresh) throws DBException {
         if (hasStatistics && !forceRefresh) {
             return;
         }
@@ -579,7 +587,20 @@ public class SQLServerDataSource extends JDBCDataSource implements DBSInstanceCo
         }
         return !hasNextValExpr;
     }
-    
+
+    @NotNull
+    @Override
+    public List<DBSObjectContainer> getPublicScopes(@NotNull DBRProgressMonitor monitor) throws DBException {
+        var tempdb = getDatabase(monitor, SQLServerConstants.TEMPDB_DATABASE);
+        if (tempdb != null) {
+            var dbo = tempdb.getSchema(monitor, SQLServerConstants.DEFAULT_SCHEMA_NAME);
+            if (dbo != null) {
+                return List.of(dbo);
+            }
+        }
+        return List.of();
+    }
+
     public static class DatabaseCache extends JDBCObjectCache<SQLServerDataSource, SQLServerDatabase> {
         DatabaseCache() {
             setListOrderComparator(DBUtils.nameComparator());

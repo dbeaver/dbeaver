@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,7 +21,10 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.*;
+import org.eclipse.swt.widgets.Combo;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.Text;
 import org.jkiss.dbeaver.ext.wmi.Activator;
 import org.jkiss.dbeaver.ext.wmi.WMIMessages;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
@@ -71,7 +74,7 @@ public class WMIConnectionPage extends ConnectionPageWithAuth
         addrGroup.setLayoutData(gd);
 
         {
-            Group hostGroup = UIUtils.createControlGroup(addrGroup, "Server", 4, GridData.FILL_HORIZONTAL, 0);
+            Composite hostGroup = UIUtils.createTitledComposite(addrGroup, "Server", 4, GridData.FILL_HORIZONTAL, 0);
             Label hostLabel = UIUtils.createControlLabel(hostGroup, WMIMessages.wmi_connection_page_label_host);
             hostLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
 

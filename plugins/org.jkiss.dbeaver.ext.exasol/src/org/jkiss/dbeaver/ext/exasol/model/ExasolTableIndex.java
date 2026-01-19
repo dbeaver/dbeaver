@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ext.exasol.model;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBPNamedObject;
@@ -92,7 +93,8 @@ public class ExasolTableIndex extends JDBCTableIndex<ExasolSchema, ExasolTable> 
 		return DBSIndexType.STATISTIC;
 	}
 	
-	@Property(viewable = true, editable = false, order = 15)
+	@NotNull
+    @Property(viewable = true, editable = false, order = 15)
 	public String getName()
 	{
 		return super.getName();
@@ -120,7 +122,7 @@ public class ExasolTableIndex extends JDBCTableIndex<ExasolSchema, ExasolTable> 
 	}
 
 	@Override
-	public List<ExasolTableIndexColumn> getAttributeReferences(@NotNull DBRProgressMonitor monitor) throws DBException {
+	public List<ExasolTableIndexColumn> getAttributeReferences(@Nullable DBRProgressMonitor monitor) throws DBException {
 		return this.columns;	
 	}
 

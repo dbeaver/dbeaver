@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.jface.dialogs.IDialogConstants;
+import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.ISaveablePart;
 import org.eclipse.ui.ISaveablePart2;
@@ -84,11 +85,10 @@ public class SaveChangesHandler extends AbstractHandler
         }
 
         @Override
-        public void run()
-        {
+        public void run() {
             int choice = -1;
-            if (saveable instanceof ISaveablePart2) {
-                choice = ((ISaveablePart2) saveable).promptToSaveOnClose();
+            if (saveable instanceof ISaveablePart2 saveablePart2) {
+                choice = saveablePart2.promptToSaveOnClose();
             } else if (!saveable.isDirty()) {
                 // Actual save could be performed in promptToSaveOnClose (e.g. transaction commit)
                 result = true;
@@ -97,9 +97,12 @@ public class SaveChangesHandler extends AbstractHandler
             if (choice == -1 || choice == ISaveablePart2.DEFAULT) {
                 Shell shell;
                 String saveableName;
-                if (saveable instanceof IWorkbenchPart) {
-                    shell = ((IWorkbenchPart) saveable).getSite().getShell();
-                    saveableName = ((IWorkbenchPart) saveable).getTitle();
+                if (saveable instanceof IWorkbenchPart workbenchPart) {
+                    shell = workbenchPart.getSite().getShell();
+                    saveableName = workbenchPart.getTitle();
+                    if (CommonUtils.isEmpty(saveableName)) {
+                        saveableName = workbenchPart.getTitleToolTip();
+                    }
                 } else {
                     shell = UIUtils.getActiveWorkbenchShell();
                     saveableName = CommonUtils.toString(saveable);
@@ -107,25 +110,20 @@ public class SaveChangesHandler extends AbstractHandler
                 int confirmResult = ConfirmationDialog.confirmAction(
                     shell,
                     NavigatorPreferences.CONFIRM_EDITOR_CLOSE,
-                    ConfirmationDialog.QUESTION_WITH_CANCEL,
-                    saveableName);
-                switch (confirmResult) {
-                    case IDialogConstants.YES_ID:
-                        choice = ISaveablePart2.YES;
-                        break;
-                    case IDialogConstants.NO_ID:
-                        choice = ISaveablePart2.NO;
-                        break;
-                    default:
-                        choice = ISaveablePart2.CANCEL;
-                        break;
-                }
+                    MessageDialog.QUESTION_WITH_CANCEL,
+                    saveableName
+                );
+                choice = switch (confirmResult) {
+                    case IDialogConstants.YES_ID -> ISaveablePart2.YES;
+                    case IDialogConstants.NO_ID -> ISaveablePart2.NO;
+                    default -> ISaveablePart2.CANCEL;
+                };
             }
             switch (choice) {
                 case ISaveablePart2.YES: //yes
                     saveable.doSave(RuntimeUtils.getNestedMonitor(monitor));
                     if (saveable.isDirty()) {
-                        log.debug("Saveable '" + saveable + "' is still dirty after save");
+                        log.debug("Savable '" + saveable + "' is still dirty after save");
                     }
                     result = true;
                     break;

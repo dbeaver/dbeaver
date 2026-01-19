@@ -235,9 +235,14 @@ public class MavenRepository
                 extPath = id;
                 break;
         }
-        Path customDriversHome = DBWorkbench.getPlatform().getApplication().isMultiuser() ?
-            DriverDescriptor.getWorkspaceDriversStorageFolder() :
-            DriverDescriptor.getExternalDriversStorageFolder();
+        Path customDriversHome;
+
+        if (DBWorkbench.getPlatform().getApplication().isMultiuser() && !DBWorkbench.getPlatform().getApplication().isDistributed()) {
+            customDriversHome = DriverDescriptor.getWorkspaceDriversStorageFolder();
+        } else {
+            customDriversHome = DriverDescriptor.getExternalDriversStorageFolder();
+        }
+
         Path homeFolder = customDriversHome.resolve("maven/" + extPath);
         //File homeFolder = new File(DBeaverActivator.getInstance().getStateLocation().toFile(), "maven/" + extPath);
         if (!Files.exists(homeFolder)) {

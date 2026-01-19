@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,20 +35,19 @@ import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.MenuCreator;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.controls.ToolbarSeparatorContribution;
 import org.jkiss.dbeaver.ui.controls.resultset.*;
 import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
+import org.jkiss.dbeaver.ui.controls.resultset.panel.ResultSetPanelBase;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
-import java.util.Collections;
 import java.util.List;
 
 /**
  * RSV grouping panel
  */
-public class GroupingPanel implements IResultSetPanel {
-
-    //private static final Log log = Log.getLog(GroupingPanel.class);
+public class GroupingPanel extends ResultSetPanelBase {
 
     private static final String PANEL_ID = "results-grouping";
 
@@ -102,7 +101,7 @@ public class GroupingPanel implements IResultSetPanel {
 
                 @Override
                 public void handleResultSetSelectionChange(SelectionChangedEvent event) {
-                    updateControls();
+                    //updateControls();
                 }
             };
             groupingViewer.addListener(groupingResultsListener);
@@ -170,14 +169,15 @@ public class GroupingPanel implements IResultSetPanel {
         fillToolBar(manager);
     }
 
-    private void fillToolBar(IContributionManager contributionManager)
-    {
-        contributionManager.add(new DefaultSortingAction());
+    private void fillToolBar(IContributionManager contributionManager) {
+        ActionContributionItem sortAction = new ActionContributionItem(new DefaultSortingAction());
+        sortAction.setMode(ActionContributionItem.MODE_FORCE_TEXT);
+        contributionManager.add(sortAction);
         contributionManager.add(new DuplicatesOnlyAction());
-        contributionManager.add(new Separator());
+        contributionManager.add(new ToolbarSeparatorContribution(true));
         contributionManager.add(new EditColumnsAction(getGroupingResultsContainer()));
         contributionManager.add(new DeleteColumnAction(getGroupingResultsContainer()));
-        contributionManager.add(new Separator());
+        contributionManager.add(new ToolbarSeparatorContribution(true));
         contributionManager.add(new ClearGroupingAction(getGroupingResultsContainer()));
     }
 
@@ -267,8 +267,9 @@ public class GroupingPanel implements IResultSetPanel {
     class DefaultSortingAction extends Action {
 
         DefaultSortingAction() {
-            super(ResultSetMessages.controls_resultset_grouping_default_sorting, Action.AS_DROP_DOWN_MENU);
+            super(ResultSetMessages.dialog_toolbar_sort, Action.AS_DROP_DOWN_MENU);
             setImageDescriptor(DBeaverIcons.getImageDescriptor(UIIcon.SORT_CONFIG));
+            setToolTipText(ResultSetMessages.controls_resultset_grouping_default_sorting);
         }
 
         @Override
@@ -289,9 +290,10 @@ public class GroupingPanel implements IResultSetPanel {
         ChangeSortingAction(Boolean descending) {
             super(descending == null ?
                 ResultSetMessages.grouping_panel_sorting_action_unsorted :
-                (descending ? ResultSetMessages.grouping_panel_sorting_action_decending : ResultSetMessages.grouping_panel_sorting_action_ascending),
-                Action.AS_CHECK_BOX);
-            setImageDescriptor(DBeaverIcons.getImageDescriptor(descending == null ? UIIcon.SORT_UNKNOWN : (descending ? UIIcon.SORT_INCREASE : UIIcon.SORT_DECREASE)));
+                (descending ?
+                    ResultSetMessages.grouping_panel_sorting_action_decending :
+                    ResultSetMessages.grouping_panel_sorting_action_ascending),
+                Action.AS_RADIO_BUTTON);
             this.descending = descending;
         }
 

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -121,7 +121,7 @@ public class JSCHSessionController extends AbstractSessionController<JSCHSession
 
             return session;
         } catch (JSchException e) {
-            throw new DBException("Failed to create session", e);
+            throw new DBException("Failed to open JSch tunnel", e);
         }
     }
 
@@ -227,7 +227,10 @@ public class JSCHSessionController extends AbstractSessionController<JSCHSession
                         message = reader.lines().collect(Collectors.joining("\n"));
                     }
 
-                    throw new IOException("Specified private key cannot be converted:\n" + message);
+                    log.error("Specified private key cannot be converted: " + message);
+                    // Add original key as is
+                    addIdentityKey0(jsch, key, password);
+                    return;
                 }
 
                 addIdentityKey0(jsch, tmp, password);

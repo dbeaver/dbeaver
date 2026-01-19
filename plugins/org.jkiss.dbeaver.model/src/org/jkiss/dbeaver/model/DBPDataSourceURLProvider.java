@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.model;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 
@@ -29,6 +30,7 @@ public interface DBPDataSourceURLProvider {
      * @param connectionInfo connection info
      * @return valid connection URL or null (if URLs not supported by driver)
      */
-    String getConnectionURL(DBPDriver driver, DBPConnectionConfiguration connectionInfo);
+    @NotNull
+    String getConnectionURL(@NotNull DBPDriver driver, @NotNull DBPConnectionConfiguration connectionInfo);
 
 }

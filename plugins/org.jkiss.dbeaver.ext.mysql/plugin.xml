@@ -288,6 +288,7 @@
                 </driver>
                 <provider-properties drivers="*">
                     <propertyGroup label="Advanced">
+                        <property id="@dbeaver-show-all-dbs@" label="Show all databases" type="boolean" description="Show all databases on server. Otherwise show current database only." defaultValue="false"/>
                         <property id="@dbeaver-serverTimezone@" label="Server Time Zone" type="string"/>
                     </propertyGroup>
                 </provider-properties>

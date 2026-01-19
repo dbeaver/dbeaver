@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,8 @@ import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.ui.IEditorActionBarContributor;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPImage;
@@ -37,8 +39,7 @@ import org.jkiss.utils.CommonUtils;
 /**
  * EntityEditorDescriptor
  */
-public class EntityEditorDescriptor extends AbstractContextDescriptor
-{
+public class EntityEditorDescriptor extends AbstractContextDescriptor {
     private static final Log log = Log.getLog(EntityEditorDescriptor.class);
 
     public static final String EXTENSION_ID = "org.jkiss.dbeaver.databaseEditor"; //NON-NLS-1 //$NON-NLS-1$
@@ -55,20 +56,19 @@ public class EntityEditorDescriptor extends AbstractContextDescriptor
         folder
     }
 
-    private String id;
-    private AbstractDescriptor.ObjectType editorType;
-    private AbstractDescriptor.ObjectType contributorType;
-    private AbstractDescriptor.ObjectType inputFactoryType;
-    private boolean main;
-    private String name;
-    private String description;
-    private String position;
-    private DBPImage icon;
-    private Type type;
+    private final String id;
+    private final AbstractDescriptor.ObjectType editorType;
+    private final AbstractDescriptor.ObjectType contributorType;
+    private final AbstractDescriptor.ObjectType inputFactoryType;
+    private final boolean main;
+    private final String name;
+    private final String description;
+    private final String position;
+    private final DBPImage icon;
+    private final Type type;
     private boolean embeddable;
 
-    EntityEditorDescriptor()
-    {
+    EntityEditorDescriptor() {
         super(UINavigatorActivator.PLUGIN_ID);
         this.id = DEFAULT_OBJECT_EDITOR_ID;
         this.editorType = new AbstractDescriptor.ObjectType(ObjectPropertiesEditor.class.getName());
@@ -82,8 +82,7 @@ public class EntityEditorDescriptor extends AbstractContextDescriptor
         this.type = Type.editor;
     }
 
-    public EntityEditorDescriptor(IConfigurationElement config)
-    {
+    public EntityEditorDescriptor(@NotNull IConfigurationElement config) {
         super(config);
 
         this.id = config.getAttribute("id");
@@ -104,8 +103,8 @@ public class EntityEditorDescriptor extends AbstractContextDescriptor
         this.embeddable = CommonUtils.toBoolean(config.getAttribute("embeddable"));
     }
 
-    public String getId()
-    {
+    @NotNull
+    public String getId() {
         return id;
     }
 
@@ -143,29 +142,27 @@ public class EntityEditorDescriptor extends AbstractContextDescriptor
         return embeddable;
     }
 
-    public Class<? extends IEditorActionBarContributor> getContributorClass()
-    {
-        return contributorType == null || contributorType.getImplName() == null ? null : contributorType.getObjectClass(IEditorActionBarContributor.class);
+    @Nullable
+    public Class<? extends IEditorActionBarContributor> getContributorClass() {
+        return contributorType == null ? null : contributorType.getObjectClass(IEditorActionBarContributor.class);
     }
 
-    public IEditorInput getNestedEditorInput(IDatabaseEditorInput mainInput)
-    {
+    @NotNull
+    public IEditorInput getNestedEditorInput(@NotNull IDatabaseEditorInput mainInput) {
         if (inputFactoryType == null || inputFactoryType.getImplName() == null) {
             return mainInput;
         }
         try {
             IDatabaseEditorInputFactory instance = inputFactoryType.createInstance(IDatabaseEditorInputFactory.class);
-            if (instance != null) {
-                return instance.createNestedEditorInput(mainInput);
-            }
+            return instance.createNestedEditorInput(mainInput);
         } catch (Exception e) {
             log.error("Error instantiating input factory", e);
         }
         return mainInput;
     }
 
-    public IEditorPart createEditor()
-    {
+    @Nullable
+    public IEditorPart createEditor() {
         try {
             return editorType.createInstance(IEditorPart.class);
         } catch (Exception ex) {

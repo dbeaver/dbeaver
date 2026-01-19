@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,6 +29,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.IMemento;
 import org.eclipse.ui.part.Page;
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.navigator.DBNContainer;
@@ -214,9 +215,10 @@ public abstract class AbstractSearchResultsPage <OBJECT_TYPE> extends Page imple
     }
 
     protected class SearchResultsControl extends NodeListControl {
-        public SearchResultsControl(Composite resultsGroup)
-        {
-            super(resultsGroup, SWT.SHEET, getSite(),
+        public SearchResultsControl(@NotNull Composite resultsGroup) {
+            super(resultsGroup,
+                SWT.SHEET,
+                getSite(),
                 DBWorkbench.getPlatform().getNavigatorModel().getRoot(),
                 new ResultsContentProvider());
         }

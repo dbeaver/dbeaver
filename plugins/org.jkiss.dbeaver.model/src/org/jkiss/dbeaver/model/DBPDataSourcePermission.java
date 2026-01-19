@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,13 +16,14 @@
  */
 package org.jkiss.dbeaver.model;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
 
 /**
  * Data-source permissions
  */
-public enum DBPDataSourcePermission
-{
+public enum DBPDataSourcePermission {
     PERMISSION_EDIT_DATA("edit.data", ModelMessages.dbp_permission_edit_data_name, ModelMessages.dbp_permission_edit_data_description),
     PERMISSION_EDIT_METADATA("edit.meta", ModelMessages.dbp_permission_edit_metadata_name, ModelMessages.dbp_permission_edit_metadata_description),
     PERMISSION_EXECUTE_SCRIPTS("edit.execute", ModelMessages.dbp_permission_execute_scripts_name, ModelMessages.dbp_permission_execute_scripts_description),
@@ -32,25 +33,29 @@ public enum DBPDataSourcePermission
     private final String label;
     private final String description;
 
-    DBPDataSourcePermission(String id, String label, String description) {
+    DBPDataSourcePermission(@NotNull String id, @NotNull String label, @Nullable String description) {
         this.id = id;
         this.label = label;
         this.description = description;
     }
 
+    @NotNull
     public String getId() {
         return id;
     }
 
+    @NotNull
     public String getLabel() {
         return label;
     }
 
+    @Nullable
     public String getDescription() {
         return description;
     }
 
-    public static DBPDataSourcePermission getById(String id) {
+    @NotNull
+    public static DBPDataSourcePermission getById(@NotNull String id) {
         for (DBPDataSourcePermission permission : values()) {
             if (permission.id.equals(id)) {
                 return permission;

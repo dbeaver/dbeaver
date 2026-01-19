@@ -100,7 +100,7 @@ public class DB2TableReference extends JDBCTableConstraint<DB2Table, DB2TableKey
     // Columns
     // -----------------
     @Override
-    public List<DB2TableKeyColumn> getAttributeReferences(DBRProgressMonitor monitor) throws DBException {
+    public List<DB2TableKeyColumn> getAttributeReferences(@Nullable DBRProgressMonitor monitor) throws DBException {
         return columns;
     }
 

@@ -19,13 +19,13 @@ package org.jkiss.dbeaver.ui.controls;
 import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.MouseAdapter;
-import org.eclipse.swt.events.MouseEvent;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.*;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.*;
+import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Combo;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Label;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
@@ -66,7 +66,7 @@ public abstract class ObjectContainerSelectorPanel extends Composite
     private final Combo containerNameCombo;
 
     private final List<HistoryItem> historyItems = new ArrayList<>();
-    private final ToolItem browseButton;
+    private final Button browseButton;
 
     private static class HistoryItem {
         private String containerName;
@@ -128,11 +128,6 @@ public abstract class ObjectContainerSelectorPanel extends Composite
             }
         });
 
-        ToolBar buttonToolbar = new ToolBar(this, SWT.FLAT | SWT.RIGHT);
-        browseButton = new ToolItem(buttonToolbar, SWT.NONE);
-        browseButton.setImage(DBeaverIcons.getImage(UIIcon.OPEN));
-        browseButton.setText(UIMessages.browse_button_choose);
-        browseButton.setToolTipText(UIMessages.browse_button_choose_tooltip);
         Runnable containerSelector = () -> {
             if (project != null) {
                 final DBNModel navigatorModel = DBWorkbench.getPlatform().getNavigatorModel();
@@ -160,12 +155,12 @@ public abstract class ObjectContainerSelectorPanel extends Composite
                 updateToolTips();
             }
         };
-        browseButton.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                containerSelector.run();
-            }
-        });
+        browseButton = UIUtils.createPushButton(
+            this,
+            UIMessages.browse_button_choose,
+            UIMessages.browse_button_choose_tooltip,
+            UIIcon.OPEN,
+            SelectionListener.widgetSelectedAdapter(e -> containerSelector.run()));
         containerNameCombo.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseDoubleClick(MouseEvent e) {

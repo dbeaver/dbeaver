@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -56,7 +56,6 @@ import org.jkiss.dbeaver.registry.RuntimeProjectPropertiesConstant;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.controls.ProgressPainter;
-import org.jkiss.dbeaver.ui.internal.UINavigatorMessages;
 import org.jkiss.dbeaver.ui.navigator.INavigatorFilter;
 import org.jkiss.dbeaver.ui.navigator.INavigatorItemRenderer;
 import org.jkiss.dbeaver.ui.navigator.NavigatorPreferences;
@@ -701,8 +700,9 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
                 super("Rename ");
             }
 
+            @NotNull
             @Override
-            protected IStatus runInUIThread(DBRProgressMonitor monitor) {
+            protected IStatus runInUIThread(@NotNull DBRProgressMonitor monitor) {
                 try {
                     if (!treeViewer.getTree().isDisposed() && treeViewer.getTree().isFocusControl() && curSelection == selection && !canceled) {
                         final TreeItem itemToRename = selection;
@@ -983,20 +983,23 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
         protected Composite createFilterControls(Composite parent) {
             super.createFilterControls(parent);
 
-            if (navigatorFilter instanceof DatabaseNavigatorTreeFilter) {
+            if (navigatorFilter instanceof DatabaseNavigatorTreeFilter dnf && !dnf.isConnectionsOnly()) {
                 ((GridLayout) parent.getLayout()).numColumns++;
 
-                IWorkbenchWindow workbenchWindow = UIUtils.getActiveWorkbenchWindow();
-
-                ToolBarManager filterManager = new ToolBarManager();
+                final ToolBarManager filterManager = new ToolBarManager();
                 filterManager.add(new Separator(IWorkbenchActionConstants.MB_ADDITIONS));
+
+                IWorkbenchWindow workbenchWindow = UIUtils.findWorkbenchWindow(parent);
+                if (workbenchWindow == null) {
+                    workbenchWindow = UIUtils.getActiveWorkbenchWindow();
+                }
+
                 final IMenuService menuService = workbenchWindow.getService(IMenuService.class);
                 if (menuService != null) {
                     menuService.populateContributionManager(filterManager, FILTER_TOOLBAR_CONTRIBUTION_ID);
                 }
 
                 filterManager.createControl(parent);
-
                 parent.addDisposeListener(e -> filterManager.dispose());
             }
 

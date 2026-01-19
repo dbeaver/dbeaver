@@ -3,13 +3,12 @@ Bundle-ManifestVersion: 2
 Bundle-Vendor: DBeaver Corp
 Bundle-Name: DBeaver GIS Support
 Bundle-SymbolicName: org.jkiss.dbeaver.data.gis;singleton:=true
-Bundle-Version: 1.0.186.qualifier
-Bundle-Release-Date: 20250901
+Bundle-Version: 1.0.196.qualifier
+Bundle-Release-Date: 20260202
 Bundle-RequiredExecutionEnvironment: JavaSE-21
 Bundle-ActivationPolicy: lazy
 Require-Bundle: org.jkiss.dbeaver.model;visibility:=reexport,
  org.jkiss.dbeaver.model.jdbc;visibility:=reexport,
- org.eclipse.core.runtime,
  org.jkiss.bundle.gis;visibility:=reexport
 Export-Package: org.jkiss.dbeaver.data.gis.handlers,
  org.jkiss.dbeaver.model.gis

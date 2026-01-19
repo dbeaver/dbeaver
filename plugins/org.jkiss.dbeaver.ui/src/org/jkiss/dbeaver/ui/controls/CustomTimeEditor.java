@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,6 +30,7 @@ import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.model.struct.DBSTypedObjectJDBC;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.css.CSSUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.JDBCType;
@@ -119,9 +120,10 @@ public class CustomTimeEditor {
 
     @NotNull
     private Composite initEditor(@NotNull Composite parent, int style) {
-
         if (!isInline) {
             GridLayout layout = new GridLayout(1, false);
+            layout.marginHeight = 0;
+            layout.marginWidth = 0;
             mainComposite = new Composite(parent, style);
             mainComposite.setLayout(layout);
             mainComposite.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
@@ -154,6 +156,7 @@ public class CustomTimeEditor {
         disposeEditor(dateEditor, dateLabel);
         dateEditor = null;
         textEditor = new Text(basePart, isPanel && !isInline ? style : SWT.BORDER);
+        CSSUtils.setExcludeFromStyling(textEditor);
         final GridData gridData = new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1);
         textEditor.setLayoutData(gridData);
         if (warningLabel != null) {

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.model.ai;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.ai.engine.AIFunctionCall;
 import org.jkiss.utils.CommonUtils;
 
 import java.time.LocalDateTime;
@@ -34,6 +35,12 @@ public class AIMessage {
     private final String displayMessage;
     @NotNull
     private final LocalDateTime time;
+    @Nullable
+    private final AIFunctionCall functionCall;
+    @Nullable
+    private final AIFunctionResult functionResult;
+    @Nullable
+    private final AIMessageMeta meta;
 
     /**
      * Creates AI message
@@ -42,41 +49,76 @@ public class AIMessage {
         @NotNull AIMessageType role,
         @NotNull String content,
         @Nullable String displayMessage,
-        @NotNull LocalDateTime time
+        @NotNull LocalDateTime time,
+        @Nullable AIMessageMeta meta
     ) {
         this.role = role;
         this.content = content;
         this.displayMessage = displayMessage;
         this.time = time;
+        this.meta = meta;
+        this.functionCall = null;
+        this.functionResult = null;
+    }
+
+    /**
+     * Creates AI message
+     */
+    private AIMessage(
+        @NotNull AIFunctionCall functionCall,
+        @NotNull AIFunctionResult result,
+        @Nullable AIMessageMeta meta
+    ) {
+        this.meta = meta;
+        this.role = AIMessageType.FUNCTION;
+        this.content = CommonUtils.toString(result.getValue()) + " was completed";
+        this.time = LocalDateTime.now();
+        this.functionCall = functionCall;
+        this.functionResult = result;
+        this.displayMessage = CommonUtils.toString(result.getValue());
     }
 
     @NotNull
     public static AIMessage systemMessage(@NotNull String message) {
-        return new AIMessage(AIMessageType.SYSTEM, message);
+        return new AIMessage(AIMessageType.SYSTEM, message, null);
     }
 
     @NotNull
     public static AIMessage userMessage(@NotNull String message) {
-        return new AIMessage(AIMessageType.USER, message);
+        return new AIMessage(AIMessageType.USER, message, null);
     }
 
     @NotNull
-    public static AIMessage assistantMessage(@NotNull String message) {
-        return new AIMessage(AIMessageType.ASSISTANT, message);
+    public static AIMessage assistantMessage(@NotNull String message, @Nullable AIMessageMeta meta) {
+        return new AIMessage(AIMessageType.ASSISTANT, message, meta);
+    }
+
+    @NotNull
+    public static AIMessage functionCall(@NotNull AIFunctionCall functionCall, @NotNull AIFunctionResult result) {
+        return new AIMessage(functionCall, result, null);
+    }
+
+    @NotNull
+    public static AIMessage warningMessage(@NotNull String message) {
+        return new AIMessage(AIMessageType.WARNING, message, null);
     }
 
     @NotNull
     public static AIMessage errorMessage(@NotNull Throwable throwable) {
-        return new AIMessage(AIMessageType.ERROR, CommonUtils.toString(CommonUtils.getAllExceptionMessages(throwable), "Unknown error"));
+        return new AIMessage(
+            AIMessageType.ERROR,
+            CommonUtils.toString(CommonUtils.getAllExceptionMessages(throwable), "Unknown error"),
+            null
+        );
     }
 
     @NotNull
     public static AIMessage userAutoMessage(@NotNull String prompt, @NotNull String uiMessage) {
-        return new AIMessage(AIMessageType.USER, prompt, uiMessage, LocalDateTime.now());
+        return new AIMessage(AIMessageType.USER, prompt, uiMessage, LocalDateTime.now(), null);
     }
 
-    public AIMessage(@NotNull AIMessageType role, @NotNull String content) {
-        this(role, content, content, LocalDateTime.now());
+    public AIMessage(@NotNull AIMessageType role, @NotNull String content, AIMessageMeta meta) {
+        this(role, content, content, LocalDateTime.now(), meta);
     }
 
     @Override
@@ -111,7 +153,22 @@ public class AIMessage {
         return time;
     }
 
+    @Nullable
+    public AIFunctionCall getFunctionCall() {
+        return functionCall;
+    }
+
+    @Nullable
+    public AIFunctionResult getFunctionResult() {
+        return functionResult;
+    }
+
+    @Nullable
+    public AIMessageMeta getMeta() {
+        return meta;
+    }
+
     public AIMessage withContent(String newContent) {
-        return new AIMessage(role, newContent, displayMessage, time);
+        return new AIMessage(role, newContent, displayMessage, time, meta);
     }
 }

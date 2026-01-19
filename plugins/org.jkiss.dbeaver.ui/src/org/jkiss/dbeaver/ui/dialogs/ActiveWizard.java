@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -51,8 +51,8 @@ public abstract class ActiveWizard extends BaseWizard implements IActiveWizard {
     protected WizardPrefPage createPreferencePage(IPreferencePage  prefPage, String title, String description) {
         WizardPrefPage wizardPage = new WizardPrefPage(prefPage, title, description);
         prefPages.add(wizardPage);
-        if (prefPage instanceof IWorkbenchPropertyPage) {
-            ((IWorkbenchPropertyPage) prefPage).setElement(getActiveElement());
+        if (prefPage instanceof IWorkbenchPropertyPage wpp) {
+            wpp.setElement(getActiveElement());
         }
         return wizardPage;
     }

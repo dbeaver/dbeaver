@@ -17,9 +17,7 @@
 
 package org.jkiss.dbeaver.ui.editors.sql;
 
-import org.eclipse.jface.text.IRegion;
-import org.eclipse.jface.text.ITextSelection;
-import org.eclipse.jface.text.Position;
+import org.eclipse.jface.text.*;
 import org.eclipse.jface.text.hyperlink.IHyperlinkPresenter;
 import org.eclipse.jface.text.source.Annotation;
 import org.eclipse.jface.text.source.IOverviewRuler;
@@ -36,7 +34,6 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 
-import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -46,6 +43,9 @@ public class SQLEditorSourceViewer extends ProjectionViewer {
 
     private final LinkedList<VerifyKeyListener> verifyKeyListeners = new LinkedList<>();
     private final Supplier<DBPPreferenceStore> currentPrefStoreSupplier;
+
+    @NotNull
+    private final SQLEditorBase sqlEditor;
     
     /**
      * Creates an instance of this class with the given parameters.
@@ -55,6 +55,7 @@ public class SQLEditorSourceViewer extends ProjectionViewer {
      * @param overviewRuler the overview ruler
      * @param showsAnnotationOverview <code>true</code> if the overview ruler should be shown
      * @param styles the SWT style bits
+     * @param sqlEditor editor
      */
     public SQLEditorSourceViewer(
         @NotNull Composite parent,
@@ -62,10 +63,17 @@ public class SQLEditorSourceViewer extends ProjectionViewer {
         @Nullable IOverviewRuler overviewRuler,
         boolean showsAnnotationOverview,
         int styles,
-        @NotNull Supplier<DBPPreferenceStore> currentPrefStoreSupplier
+        @NotNull Supplier<DBPPreferenceStore> currentPrefStoreSupplier,
+        @NotNull SQLEditorBase sqlEditor
     ) {
         super(parent, ruler, overviewRuler, showsAnnotationOverview, styles);
         this.currentPrefStoreSupplier = currentPrefStoreSupplier;
+        this.sqlEditor = sqlEditor;
+    }
+
+    @NotNull
+    public SQLEditorBase getSqlEditor() {
+        return this.sqlEditor;
     }
 
     void refreshTextSelection() {

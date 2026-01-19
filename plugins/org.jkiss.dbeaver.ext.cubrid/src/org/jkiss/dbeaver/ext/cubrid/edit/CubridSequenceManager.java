@@ -47,7 +47,9 @@ public class CubridSequenceManager extends GenericSequenceManager {
     public boolean canCreateObject(@NotNull Object container) {
         CubridUser user = (CubridUser) container;
         CubridDataSource dataSource = (CubridDataSource) user.getDataSource();
-        return dataSource.isShard();
+        boolean supportsMultiSchema = dataSource.getSupportMultiSchema();
+        boolean isCurrentUser = user.getName().equalsIgnoreCase(dataSource.getCurrentUser());
+        return supportsMultiSchema || isCurrentUser || !dataSource.isShard();
     }
 
     @Override
@@ -79,7 +81,6 @@ public class CubridSequenceManager extends GenericSequenceManager {
 
     @NotNull
     public String buildStatement(@NotNull CubridSequence sequence, boolean forUpdate, boolean hasComment) {
-
         StringBuilder sb = new StringBuilder();
         if (forUpdate) {
             sb.append("ALTER SERIAL ");

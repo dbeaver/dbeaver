@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -177,7 +177,7 @@ public class DataSourceInvalidateHandler extends AbstractDataSourceHandler
         }
 
         @Override
-        protected void createButtonsForButtonBar(Composite parent)
+        protected void createButtonsForButtonBar(@NotNull Composite parent)
         {
             createButton(parent, IDialogConstants.RETRY_ID, "&Reconnect", true);
             createButton(parent, IDialogConstants.OK_ID, IDialogConstants.OK_LABEL, false);

@@ -117,7 +117,7 @@ public class OracleTableIndex extends JDBCTableIndex<OracleSchema, OracleTableBa
     }
 
     @Override
-    public List<OracleTableIndexColumn> getAttributeReferences(@NotNull DBRProgressMonitor monitor) {
+    public List<OracleTableIndexColumn> getAttributeReferences(@Nullable DBRProgressMonitor monitor) {
         return columns;
     }
 
@@ -153,6 +153,7 @@ public class OracleTableIndex extends JDBCTableIndex<OracleSchema, OracleTableBa
         return getFullyQualifiedName(DBPEvaluationContext.UI);
     }
 
+    @NotNull
     @Override
     @Property(hidden = true, editable = true, updatable = true, order = -1)
     public String getObjectDefinitionText(@NotNull DBRProgressMonitor monitor, @NotNull Map<String, Object> options) throws DBException {

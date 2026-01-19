@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -86,8 +86,8 @@ import org.jkiss.utils.LongKeyMap;
 import java.lang.reflect.InvocationTargetException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.*;
 import java.util.List;
+import java.util.*;
 
 /**
  * QueryLogViewer
@@ -542,7 +542,7 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
     private Font getObjectFont(QMEvent event) {
         if (event.getObject() instanceof QMMStatementExecuteInfo exec) {
             if (!exec.isClosed() || exec.isFetching()) {
-                return BaseThemeSettings.instance.baseFontBold;
+                return BaseThemeSettings.instance.treeAndTableFontBold;
             }
         }
         return null;
@@ -1006,8 +1006,9 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
             super(ModelMessages.controls_querylog_job_refresh);
         }
 
+        @NotNull
         @Override
-        protected IStatus runInUIThread(DBRProgressMonitor monitor) {
+        protected IStatus runInUIThread(@NotNull DBRProgressMonitor monitor) {
             refresh();
             return Status.OK_STATUS;
         }
@@ -1135,13 +1136,14 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
         }
 
         @Override
-        protected void createButtonsForButtonBar(@NotNull Composite parent, int alignment) {
-            if (alignment == SWT.LEAD) {
-                createCopyButton(parent);
-                createExecuteButton(parent);
-            } else {
-                createButton(parent, IDialogConstants.OK_ID, IDialogConstants.OK_LABEL, true);
-            }
+        protected void createButtonsForLeftButtonBar(@NotNull Composite parent) {
+            createCopyButton(parent);
+            createExecuteButton(parent);
+        }
+
+        @Override
+        protected void createButtonsForButtonBar(@NotNull Composite parent) {
+            createButton(parent, IDialogConstants.OK_ID, IDialogConstants.OK_LABEL, true);
         }
 
         @Override
@@ -1230,7 +1232,7 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
         }
 
         @Override
-        public List<QMEvent> evaluate(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
+        public List<QMEvent> evaluate(@NotNull DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
             final List<QMEvent> events = new ArrayList<>();
             QMEventBrowser eventBrowser = QMUtils.getEventBrowser(currentSessionOnly);
             if (eventBrowser != null) {

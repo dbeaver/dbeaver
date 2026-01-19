@@ -30,6 +30,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.console.MessageConsole;
 import org.eclipse.ui.console.TextConsoleViewer;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.DBPObject;
@@ -99,6 +100,7 @@ class SQLToolTaskWizardPageStatus extends ActiveWizardPage<SQLToolTaskWizard> im
                 return "SQLToolStatus." + getWizard().getTaskType().getId();
             }
 
+            @Nullable
             @Override
             protected DBPImage getObjectImage(SQLToolStatistics item) {
                 return DBValueFormatting.getObjectImage(item.getObject());
@@ -152,8 +154,9 @@ class SQLToolTaskWizardPageStatus extends ActiveWizardPage<SQLToolTaskWizard> im
                     setSystem(true);
                     setUser(false);
                 }
+                @NotNull
                 @Override
-                protected IStatus run(DBRProgressMonitor monitor) {
+                protected IStatus run(@NotNull DBRProgressMonitor monitor) {
                     List<SQLToolStatistics> statsCopy;
                     synchronized (toolStatistics) {
                         statsCopy = new ArrayList<>(SQLToolTaskWizardPageStatus.this.toolStatistics);
@@ -213,7 +216,7 @@ class SQLToolTaskWizardPageStatus extends ActiveWizardPage<SQLToolTaskWizard> im
         }
 
         @Override
-        public Collection<SQLToolStatistics> evaluate(DBRProgressMonitor monitor)
+        public Collection<SQLToolStatistics> evaluate(@NotNull DBRProgressMonitor monitor)
             throws InvocationTargetException, InterruptedException {
             try {
                 return Collections.emptyList();

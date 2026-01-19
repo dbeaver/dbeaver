@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,10 +30,7 @@ import org.eclipse.swt.dnd.Clipboard;
 import org.eclipse.swt.dnd.ImageTransfer;
 import org.eclipse.swt.dnd.TextTransfer;
 import org.eclipse.swt.dnd.Transfer;
-import org.eclipse.swt.graphics.GC;
-import org.eclipse.swt.graphics.Image;
-import org.eclipse.swt.graphics.ImageData;
-import org.eclipse.swt.graphics.ImageLoader;
+import org.eclipse.swt.graphics.*;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.code.NotNull;
@@ -53,13 +50,13 @@ import org.jkiss.dbeaver.model.virtual.DBVEntity;
 import org.jkiss.dbeaver.model.virtual.DBVEntityAttribute;
 import org.jkiss.dbeaver.model.virtual.DBVUtils;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.runtime.IVariableResolver;
 import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.controls.lightgrid.GridPos;
 import org.jkiss.dbeaver.ui.controls.resultset.AbstractPresentation;
 import org.jkiss.dbeaver.ui.controls.resultset.IResultSetPresentation;
 import org.jkiss.dbeaver.ui.controls.resultset.spreadsheet.SpreadsheetPresentation;
 import org.jkiss.dbeaver.ui.css.CSSUtils;
-import org.jkiss.dbeaver.ui.css.DBStyles;
 import org.jkiss.dbeaver.ui.dialogs.DialogUtils;
 import org.jkiss.dbeaver.ui.gis.GeometryDataUtils;
 import org.jkiss.dbeaver.ui.gis.GeometryViewerConstants;
@@ -97,7 +94,8 @@ public class GISLeafletViewer implements IGeometryValueEditor, DBPPreferenceList
     private volatile boolean browserCreating = false;
 
     private static final Gson gson = new GsonBuilder()
-            .registerTypeHierarchyAdapter(DBDContent.class, new DBDContentAdapter()).create();
+        .disableHtmlEscaping()
+        .registerTypeHierarchyAdapter(DBDContent.class, new DBDContentAdapter()).create();
 
     private final DBDAttributeBinding[] bindings;
     private final IResultSetPresentation presentation;
@@ -123,7 +121,7 @@ public class GISLeafletViewer implements IGeometryValueEditor, DBPPreferenceList
         this.flipCoordinates = spatialDataProvider != null && spatialDataProvider.isFlipCoordinates();
 
         composite = UIUtils.createPlaceholder(parent, 1);
-        CSSUtils.setCSSClass(composite, DBStyles.COLORED_BY_CONNECTION_TYPE);
+        CSSUtils.markConnectionTypeColor(composite);
         browserCreating = true;
         try {
             browser = new Browser(composite, SWT.NONE);
@@ -177,7 +175,7 @@ public class GISLeafletViewer implements IGeometryValueEditor, DBPPreferenceList
         {
             statusBar = UIUtils.createPlaceholder(composite, 1);//new Composite(composite, SWT.NONE);
             statusBar.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-            CSSUtils.setCSSClass(statusBar, DBStyles.COLORED_BY_CONNECTION_TYPE);
+            CSSUtils.markConnectionTypeColor(statusBar);
 
             ToolBar bottomToolbar = new ToolBar(statusBar, SWT.FLAT | SWT.HORIZONTAL | SWT.RIGHT);
 
@@ -418,44 +416,36 @@ public class GISLeafletViewer implements IGeometryValueEditor, DBPPreferenceList
         if (fis == null) {
             throw new IOException("View template file not found (" + GISBrowserViewerConstants.VIEW_TEMPLATE_PATH + ")");
         }
+
+        String template;
         try (InputStreamReader isr = new InputStreamReader(fis)) {
-            String viewTemplate = IOUtils.readToString(isr);
-            viewTemplate = GeneralUtils.replaceVariables(viewTemplate, name -> {
-                switch (name) {
-                    case "geomValues":
-                        return geomValuesString;
-                    case "geomTipValues":
-                        return geomTipValuesString;
-                    case "geomSRID":
-                        return String.valueOf(defaultSRID);
-                    case "showMap":
-                        return String.valueOf(isShowMap);
-                    case "showTools":
-                        return String.valueOf(toolsVisible);
-                    case "showLabels":
-                        return String.valueOf(showLabels);
-                    case "geomCRS":
-                        return geomCRS;
-                    case "geomBounds":
-                        return CommonUtils.toString(bounds, "undefined");
-                    case "minZoomLevel":
-                        return String.valueOf(GISViewerActivator.getDefault().getPreferences().getInt(GeometryViewerConstants.PREF_MIN_ZOOM_LEVEL));
-                    case "defaultTiles":
-                        LeafletTilesDescriptor descriptor = GeometryViewerRegistry.getInstance().getDefaultLeafletTiles();
-                        if (descriptor == null) {
-                            return null;
-                        }
-                        return GeometryViewerRegistry.getInstance().getDefaultLeafletTiles().getLayersDefinition();
-                }
-                return null;
-            });
-            try (OutputStream fos = Files.newOutputStream(scriptFile)) {
-                fos.write(viewTemplate.getBytes(GeneralUtils.UTF8_CHARSET));
-            }
-        } finally {
-            ContentUtils.close(fis);
+            template = IOUtils.readToString(isr);
         }
 
+        IVariableResolver resolver = name -> switch (name) {
+            case "geomValues" -> CommonUtils.escapeHtml(geomValuesString);
+            case "geomTipValues" -> CommonUtils.escapeHtml(geomTipValuesString);
+            case "geomSRID" -> String.valueOf(defaultSRID);
+            case "showMap" -> String.valueOf(isShowMap);
+            case "showTools" -> String.valueOf(toolsVisible);
+            case "showLabels" -> String.valueOf(showLabels);
+            case "geomCRS" -> geomCRS;
+            case "geomBounds" -> CommonUtils.toString(bounds, "undefined");
+            case "minZoomLevel" -> {
+                DBPPreferenceStore preferences = GISViewerActivator.getDefault().getPreferences();
+                yield String.valueOf(preferences.getInt(GeometryViewerConstants.PREF_MIN_ZOOM_LEVEL));
+            }
+            case "defaultTiles" -> {
+                LeafletTilesDescriptor descriptor = GeometryViewerRegistry.getInstance().getDefaultLeafletTiles();
+                if (descriptor == null) {
+                    yield null;
+                }
+                yield GeometryViewerRegistry.getInstance().getDefaultLeafletTiles().getLayersDefinition();
+            }
+            default -> null;
+        };
+
+        Files.writeString(scriptFile, GeneralUtils.replaceVariables(template, resolver));
         return scriptFile;
     }
 
@@ -768,7 +758,8 @@ public class GISLeafletViewer implements IGeometryValueEditor, DBPPreferenceList
             }
             imageData = GISBrowserImageUtils.getControlScreenshotOnWindows(browser);
         } else {
-            Image image = new Image(Display.getDefault(), browser.getBounds());
+            Rectangle bounds = browser.getBounds();
+            Image image = new Image(Display.getDefault(), bounds.width, bounds.height);
             GC gc = new GC(image);
             try {
                 browser.print(gc);
@@ -776,6 +767,7 @@ public class GISLeafletViewer implements IGeometryValueEditor, DBPPreferenceList
                 gc.dispose();
             }
             imageData = image.getImageData();
+            image.dispose();
         }
 
         toolsVisible = toolsVisibility;

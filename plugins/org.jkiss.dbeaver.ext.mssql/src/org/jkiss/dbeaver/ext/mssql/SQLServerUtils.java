@@ -38,7 +38,6 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.exec.JDBCConnectionImpl;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.DBSQLException;
-import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLQuery;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
@@ -48,6 +47,7 @@ import org.jkiss.utils.CommonUtils;
 
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -60,6 +60,9 @@ public class SQLServerUtils {
 
     private static final Pattern CROSS_DATABASE_QUERY_ERROR_PATTERN =
         Pattern.compile("Reference to database and/or server name in '([^']+)' is not supported in this version of SQL Server\\.");
+
+    private static final Pattern TEMPDB_TABLE_NAME_PATTERN =
+        Pattern.compile("^(#.*?)_*[0-9A-Z]{12}$");
 
     public static boolean isDriverSqlServer(DBPDriver driver) {
         return driver.getSampleURL().contains(":sqlserver");
@@ -160,7 +163,11 @@ public class SQLServerUtils {
         return true;
     }
 
-    public static String getSystemSchemaFQN(JDBCDataSource dataSource, String catalog, String systemSchema) {
+    public static String getSystemSchemaFQN(
+        @NotNull JDBCDataSource dataSource,
+        @Nullable String catalog,
+        @NotNull String systemSchema
+    ) {
         return catalog != null && supportsCrossDatabaseQueries(dataSource) ?
                 DBUtils.getQuotedIdentifier(dataSource, catalog) + "." + systemSchema :
                 systemSchema;
@@ -232,12 +239,17 @@ public class SQLServerUtils {
         }
     }
 
-    public static String extractSource(@NotNull DBRProgressMonitor monitor, @NotNull SQLServerDatabase database, @NotNull SQLServerObject object) throws DBException {
-        SQLServerDataSource dataSource = database.getDataSource();
-        String systemSchema = getSystemSchemaFQN(dataSource, database.getName(), SQLServerConstants.SQL_SERVER_SYSTEM_SCHEMA);
+    @NotNull
+    public static String extractSource(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull SQLServerObject object
+    ) throws DBException {
+        SQLServerDataSource dataSource = object.getDataSource();
         try (JDBCSession session = DBUtils.openMetaSession(monitor, dataSource, "Read source code")) {
-            try (JDBCPreparedStatement dbStat = session.prepareStatement("SELECT definition FROM " + systemSchema + ".sql_modules WHERE object_id = ?")) {
-                dbStat.setLong(1, object.getObjectId());
+
+            String sqlQuery = selectObjectDefinitionDescriptionSQL(monitor, object);
+
+            try (JDBCPreparedStatement dbStat = session.prepareStatement(sqlQuery)) {
                 try (JDBCResultSet dbResult = dbStat.executeQuery()) {
                     StringBuilder sql = new StringBuilder();
                     while (dbResult.nextRow()) {
@@ -251,27 +263,30 @@ public class SQLServerUtils {
         }
     }
 
-    public static String extractSource(@NotNull DBRProgressMonitor monitor, @NotNull SQLServerSchema schema, @NotNull  String objectName) throws DBException {
-        SQLServerDataSource dataSource = schema.getDataSource();
-        String systemSchema = getSystemSchemaFQN(dataSource, schema.getDatabase().getName(), SQLServerConstants.SQL_SERVER_SYSTEM_SCHEMA);
-        try (JDBCSession session = DBUtils.openMetaSession(monitor, dataSource, "Read source code")) {
-            String objectFQN = DBUtils.getQuotedIdentifier(dataSource, schema.getName()) + "." + DBUtils.getQuotedIdentifier(dataSource, objectName);
-            String sqlQuery = systemSchema + ".sp_helptext '" + objectFQN + "'";
-            if (dataSource.isDataWarehouseServer(monitor) || isDriverBabelfish(dataSource.getContainer().getDriver()) || dataSource.isSynapseDatabase()) {
-                sqlQuery = "SELECT definition FROM sys.sql_modules WHERE object_id = (OBJECT_ID(N'" + objectFQN + "'))";
-            }
-            try (JDBCPreparedStatement dbStat = session.prepareStatement(sqlQuery)) {
-                try (JDBCResultSet dbResult = dbStat.executeQuery()) {
-                    StringBuilder sql = new StringBuilder();
-                    while (dbResult.nextRow()) {
-                        sql.append(dbResult.getString(1));
-                    }
-                    return sql.toString();
-                }
-            }
-        } catch (SQLException e) {
-            throw new DBDatabaseException(e, dataSource);
-        }
+    /**
+     * Generates SQL for selecting the Transact-SQL source text of the definition of a specified object.
+     * After call to DB might return NULL on error or if a caller does not have permission to view the object definition.
+     *
+     * @param object to get definition
+     * @return select function with single string column containing object definition
+     */
+    @NotNull
+    public static String selectObjectDefinitionDescriptionSQL(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull SQLServerObject object
+    ) {
+        long objectId = object.getObjectId();
+        Optional<SQLServerDatabase> database = Optional.ofNullable(object.getDatabase());
+        SQLServerDataSource dataSource = database.map(SQLServerDatabase::getDataSource).orElseGet(object::getDataSource);
+        String systemSchema = getSystemSchemaFQN(
+            dataSource,
+            database.map(SQLServerDatabase::getName).orElse(null),
+            SQLServerConstants.SQL_SERVER_SYSTEM_SCHEMA
+        );
+
+        return dataSource.isDataWarehouseServer(monitor) || isDriverAzure(dataSource.getContainer().getDriver())
+            ? "SELECT OBJECT_DEFINITION(%d)".formatted(objectId)
+            : "SELECT definition FROM " + systemSchema + ".sql_modules WHERE object_id = %d".formatted(objectId);
     }
 
     public static boolean isCommentSet(DBRProgressMonitor monitor, SQLServerDatabase database, SQLServerObjectClass objectClass, long majorId, long minorId) {
@@ -335,6 +350,7 @@ public class SQLServerUtils {
         }
         return ddl;
     }
+
 
     private static String getFullDeclarationFirstKeyWord(@NotNull String ddl) {
         var pattern = Pattern.compile("(CREATE\\s+OR\\s+ALTER|\\w+)");
@@ -442,5 +458,30 @@ public class SQLServerUtils {
         }
 
         return e;
+    }
+
+    /**
+     * Attempts to extract the name part from a user-created {@code tempdb} table's name.
+     * <p>
+     * User-created temp tables have names padded to 128 characters with underscores, with a
+     * unique 6-byte hexadecimal number at the end:
+     *
+     * <pre>{@code
+     *     #name__ <122 more underscores> __000000000018
+     * }</pre>
+     * <p>
+     * This function will strip underscores and the tail number and return just {@code #name}.
+     *
+     * @param name name of a table in {@code tempdb} database
+     * @return a tripped table name, or {@code null} if the supplied name
+     * doesn't resemble a {@code tempdb}'s table name.
+     */
+    @Nullable
+    public static String stripTempdbTableName(@NotNull String name) {
+        Matcher matcher = TEMPDB_TABLE_NAME_PATTERN.matcher(name);
+        if (matcher.matches()) {
+            return matcher.group(1);
+        }
+        return null;
     }
 }

@@ -17,6 +17,7 @@
 
 package org.jkiss.dbeaver.model.struct;
 
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.DBPObjectWithDescription;
@@ -32,6 +33,7 @@ public interface DBSObject extends DBPNamedObject, DBPObjectWithDescription, DBP
      *
      * @return parent object or null
      */
+    @Nullable
     DBSObject getParentObject();
 
     /**

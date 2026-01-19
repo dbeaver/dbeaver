@@ -43,6 +43,7 @@ public class PostgreEventTrigger extends PostgreTriggerBase {
     public enum TriggerEventTypes {
         ddl_command_start,
         ddl_command_end,
+        login, // It is available starting with PostgreSQL version 18
         table_rewrite,
         sql_drop
     }
@@ -108,6 +109,7 @@ public class PostgreEventTrigger extends PostgreTriggerBase {
         return DBUtils.getQuotedIdentifier(this);
     }
 
+    @NotNull
     @Override
     @Property(hidden = true, editable = true, updatable = true, order = -1)
     public String getObjectDefinitionText(@NotNull DBRProgressMonitor monitor, @NotNull Map<String, Object> options) throws DBException {

@@ -29,7 +29,7 @@ public class CubridConstants
     public static final String REUSE_OID = "is_reuse_oid_class";
     public static final String NAME = "name";
     public static final String COMMENT = "comment";
-    public static final String DBA = "dba";
+    public static final String DBA = "DBA";
     public static final String[] EVENT_OPTION = {"UPDATE", "UPDATE STATEMENT", "DELETE", "DELETE STATEMENT", "INSERT", "INSERT STATEMENT", "COMMIT", "ROLLBACK"};
     public static final String[] ACTION_TIME_OPTION = {"BEFORE", "AFTER", "DEFFERED"};
     public static final String[] ACTION_TYPE_OPTION = {"OTHER STATEMENT", "REJECT", "INVALIDATE TRANSACTION", "PRINT"};
@@ -45,4 +45,6 @@ public class CubridConstants
     public static final String[] SHARD_TYPE = {"SHARD ID", "SHARD VAL"};
     public static final String PREF_DBMS_OUTPUT = "pref.dbms.output";
     public static final String PREF_DBMS_OUTPUT_BUFFER_SIZE = "pref.dbms.output.buffer.size";
+    public static final String OID_NAVIGATOR = "oid_navigator";
+    public static final String CLASS = "CLASS";
 }

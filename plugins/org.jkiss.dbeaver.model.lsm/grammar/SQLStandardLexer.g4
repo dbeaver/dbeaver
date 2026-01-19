@@ -445,6 +445,7 @@ QuestionMark: '?';
 Underscore: '_';
 VerticalBar: '|';
 Tilda: '~';
+Hashtag: '#';
 
 
 // characters
@@ -466,10 +467,6 @@ ApproximateNumericLiteral: (UnsignedInteger|DecimalLiteral) 'E' SignedInteger;
 fragment SignedInteger: (PlusSign|MinusSign)? UnsignedInteger;
 
 
-Comment: (LineComment | MultilineComment) -> channel (HIDDEN);
-LineComment : ('--'|'#') ~ [\r\n]*;
-MultilineComment: ('/*' .*? '*/');
-
 // special characters and character sequences
 fragment NonquoteCharacter: ~'\'';
 fragment QuoteSymbol: SingleQuote SingleQuote;
@@ -480,10 +477,13 @@ Space: [ \t]+;
 
 
 Identifier: IdentifierBody;
-fragment IdentifierBody: IdentifierStart ((Underscore|IdentifierPart)+)?;
-fragment IdentifierStart: SimpleLatinLetter|Underscore;
-fragment IdentifierPart: (IdentifierStart|Digit);
+fragment IdentifierBody:  IdentifierStart IdentifierPart*;
+fragment IdentifierStart: SimpleLatinLetter|Underscore|Hashtag;
+fragment IdentifierPart:  SimpleLatinLetter|Underscore|Digit;
 
+Comment: (LineComment | MultilineComment) -> channel (HIDDEN);
+LineComment : ('--'|'#') ~ [\r\n]*;
+MultilineComment: ('/*' .*? '*/');
 
 // string literals
 fragment CharacterRepresentation: (NonquoteCharacter|QuoteSymbol);

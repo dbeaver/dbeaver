@@ -32,4 +32,9 @@ public class AthenaSQLDialect extends GenericSQLDialect {
     public boolean validIdentifierPart(char c, boolean quoted) {
         return SQLUtils.isLatinLetter(c) || Character.isDigit(c) || c == '_' || (quoted && validCharacters.indexOf(c) != -1);
     }
+
+    @Override
+    public boolean validIdentifierStart(char c) {
+        return SQLUtils.isLatinLetter(c);
+    }
 }

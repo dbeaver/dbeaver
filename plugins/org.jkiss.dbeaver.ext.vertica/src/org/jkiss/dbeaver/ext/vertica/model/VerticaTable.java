@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,7 +30,6 @@ import org.jkiss.dbeaver.model.meta.IPropertyCacheValidator;
 import org.jkiss.dbeaver.model.meta.LazyProperty;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.meta.PropertyLength;
-import org.jkiss.dbeaver.model.preferences.DBPPropertySource;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
@@ -96,7 +95,7 @@ public class VerticaTable extends GenericTable implements DBPObjectStatistics, D
     @Override
     @Property(viewable = true, editable = true, updatable = true, length = PropertyLength.MULTILINE, order = 100)
     @LazyProperty(cacheValidator = CommentsValidator.class)
-    public String getDescription(DBRProgressMonitor monitor) throws DBException {
+    public String getDescription(@NotNull DBRProgressMonitor monitor) throws DBException {
         if (description == null) {
             if (!((VerticaDataSource) getDataSource()).avoidCommentsReading()) {
                 VerticaUtils.readTableAndColumnsDescriptions(monitor, getDataSource(), this, false);
@@ -141,16 +140,10 @@ public class VerticaTable extends GenericTable implements DBPObjectStatistics, D
         return super.refreshObject(monitor);
     }
 
-    @Nullable
-    @Override
-    public DBPPropertySource getStatProperties() {
-        return null;
-    }
-
     public static class CommentsValidator implements IPropertyCacheValidator<VerticaTable> {
 
         @Override
-        public boolean isPropertyCached(VerticaTable object, Object propertyId)
+        public boolean isPropertyCached(@NotNull VerticaTable object, @NotNull Object propertyId)
         {
             return object.description != null;
         }

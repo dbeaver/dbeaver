@@ -62,7 +62,7 @@ public class DatabaseNavigatorLabelProvider extends ColumnLabelProvider implemen
         this.lockedForeground = Display.getDefault().getSystemColor(SWT.COLOR_DARK_GRAY);
 
         BaseThemeSettings.instance.addPropertyListener(
-            UIFonts.DBEAVER_FONTS_MAIN_FONT,
+            UIFonts.Eclipse.TREE_AND_TABLE_FONT_FOR_VIEWS,
             s -> setNavigatorFont(tree),
             tree);
 
@@ -70,7 +70,7 @@ public class DatabaseNavigatorLabelProvider extends ColumnLabelProvider implemen
     }
 
     private static void setNavigatorFont(@NotNull DatabaseNavigatorTree tree) {
-        Font normalFont = BaseThemeSettings.instance.baseFont;
+        Font normalFont = BaseThemeSettings.instance.treeAndTableFont;
 
         final TreeViewer viewer = tree.getViewer();
         viewer.getControl().setFont(normalFont);
@@ -138,15 +138,15 @@ public class DatabaseNavigatorLabelProvider extends ColumnLabelProvider implemen
     @Override
     public Font getFont(Object element) {
         if (DBNUtils.isDefaultElement(element)) {
-            return BaseThemeSettings.instance.baseFontBold;
+            return BaseThemeSettings.instance.treeAndTableFontBold;
         } else {
             if (element instanceof DBNDataSource dbnDataSource) {
                 final DBPDataSourceContainer ds = dbnDataSource.getDataSourceContainer();
                 if (ds != null && (ds.isProvided() || ds.isTemporary())) {
-                    return BaseThemeSettings.instance.baseFontItalic;
+                    return BaseThemeSettings.instance.treeAndTableFontItalic;
                 }
             }
-            return BaseThemeSettings.instance.baseFont;
+            return BaseThemeSettings.instance.treeAndTableFont;
         }
     }
 

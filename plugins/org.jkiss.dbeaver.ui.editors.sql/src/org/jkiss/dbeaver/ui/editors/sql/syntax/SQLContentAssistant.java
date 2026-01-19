@@ -32,7 +32,7 @@ public class SQLContentAssistant extends ContentAssistant {
 
     private final SQLEditorBase editor;
 
-    private SQLCompletionSorter sorter;
+    private SQLCompletionSorterUI sorter;
 
     private int lastCompletionOffset = - 1;
     private volatile boolean restartRequested = false;
@@ -51,7 +51,7 @@ public class SQLContentAssistant extends ContentAssistant {
         }
     }
 
-    public void setSorter(SQLCompletionSorter sorter) {
+    public void setSorter(SQLCompletionSorterUI sorter) {
         this.sorter = sorter;
         super.setSorter(sorter);
     }

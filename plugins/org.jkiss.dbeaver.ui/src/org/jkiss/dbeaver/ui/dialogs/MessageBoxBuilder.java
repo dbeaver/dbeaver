@@ -99,6 +99,12 @@ public final class MessageBoxBuilder {
         return this;
     }
 
+    @NotNull
+    public MessageBoxBuilder setCustomButton(@NotNull Consumer<? super Composite> customButton) {
+        dialog.setCustomButton(customButton);
+        return this;
+    }
+
     /**
      * Set custom labels
      */

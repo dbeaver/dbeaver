@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.ext.cubrid.ui.config;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ext.cubrid.model.CubridPrivilage;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.edit.prop.DBECommandComposite;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
@@ -42,7 +43,7 @@ public class CubridCommandHandler extends DBECommandComposite<CubridPrivilage, C
         StringBuilder builder = new StringBuilder();
         if (getObject().isPersisted()) {
             builder.append("ALTER USER ");
-            builder.append(this.getObject().getName());
+            builder.append(DBUtils.getQuotedIdentifier(getObject()));
         }
         buildBody(builder);
         actions.add(new SQLDatabasePersistAction("Update User", builder.toString()));

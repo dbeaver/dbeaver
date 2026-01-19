@@ -90,6 +90,8 @@ public class SQLControlCommand implements SQLScriptElement {
         return dataSource == null ? null : dataSource.getContainer();
     }
 
+    @Nullable
+    @Override
     public DBPDataSource getDataSource() {
         return dataSource;
     }

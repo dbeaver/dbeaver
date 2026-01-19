@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.IOUtils;
 
 import java.io.IOException;
 import java.net.URL;
@@ -158,7 +159,10 @@ public class DriverLibraryLocal extends DriverLibraryAbstract {
         if (DBWorkbench.isDistributed() || isCustom()) {
             return DriverDescriptor.getExternalDriversStorageFolder();
         }
-
+        var providedFolder = DriverDescriptor.getProvidedDriversStorageFolder();
+        if (!IOUtils.isFileFromDefaultFS(providedFolder) && isDownloadable()) {
+            return DriverDescriptor.getExternalDriversStorageFolder();
+        }
         return DriverDescriptor.getProvidedDriversStorageFolder();
     }
 
@@ -181,9 +185,15 @@ public class DriverLibraryLocal extends DriverLibraryAbstract {
             // Use custom drivers path
             file = DriverDescriptor.getCustomDriversHome().resolve(localPath);
         }
-        if (!Files.exists(file) && (DBWorkbench.isDistributed() || DBWorkbench.getPlatform().getApplication().isMultiuser())) {
-            // driver file can be in workspace folder for multiuser applications
-            return DriverDescriptor.getWorkspaceDriversStorageFolder().resolve(localPath);
+        if (!Files.exists(file)) {
+            if (DBWorkbench.isDistributed()) {
+                // in distributed mode we use external drivers storage folder to store
+                // all driver files (including custom ones)
+                return DriverDescriptor.getExternalDriversStorageFolder().resolve(localPath);
+            } else if (DBWorkbench.getPlatform().getApplication().isMultiuser()) {
+                // driver file can be in workspace folder for multiuser applications
+                return DriverDescriptor.getWorkspaceDriversStorageFolder().resolve(localPath);
+            }
         }
         return file;
     }

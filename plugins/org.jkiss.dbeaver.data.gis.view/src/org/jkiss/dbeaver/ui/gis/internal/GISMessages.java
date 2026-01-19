@@ -16,7 +16,7 @@
  */
 package org.jkiss.dbeaver.ui.gis.internal;
 
-import org.jkiss.dbeaver.utils.NLS;
+import org.eclipse.osgi.util.NLS;
 
 public class GISMessages extends NLS {
 	private static final String BUNDLE_NAME = "org.jkiss.dbeaver.ui.gis.internal.GISResources"; //$NON-NLS-1$

@@ -21,10 +21,10 @@ import org.eclipse.core.resources.IProjectDescription;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
-import org.jkiss.dbeaver.model.app.DBPResourceHandler;
 import org.jkiss.dbeaver.model.rcp.RCPProject;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -38,11 +38,8 @@ import java.util.List;
 public class DBNProjectDesktop extends DBNProject {
     private static final Log log = Log.getLog(DBNProjectDesktop.class);
 
-    private final DBPResourceHandler handler;
-
-    public DBNProjectDesktop(DBNNode parentNode, RCPProject project, DBPResourceHandler handler) {
+    public DBNProjectDesktop(@NotNull DBNNode parentNode, @NotNull RCPProject project) {
         super(parentNode, project);
-        this.handler = handler;
     }
 
     @NotNull
@@ -54,6 +51,7 @@ public class DBNProjectDesktop extends DBNProject {
         return getProject().getEclipseProject();
     }
 
+    @Nullable
     @Override
     public String getNodeDescription() {
         IProject iProject = getEclipseProject();
@@ -71,15 +69,16 @@ public class DBNProjectDesktop extends DBNProject {
     }
 
     @Override
-    public <T> T getAdapter(Class<T> adapter) {
-        if (adapter == IResource.class) {
+    public <T> T getAdapter(@NotNull Class<T> adapter) {
+        if (adapter == IResource.class || adapter == IProject.class) {
             return adapter.cast(getEclipseProject());
         }
         return super.getAdapter(adapter);
     }
 
     @Override
-    public void rename(DBRProgressMonitor monitor, String newName) throws DBException {
+    public void rename(@NotNull DBRProgressMonitor monitor, @NotNull String newName) throws DBException {
+        newName = newName.trim();
         GeneralUtils.validateResourceNameUnconditionally(newName);
 
         RCPProject project = getProject();
@@ -90,9 +89,15 @@ public class DBNProjectDesktop extends DBNProject {
             if (eclipseProject == null) {
                 throw new DBException("Eclipse project is null");
             }
-            final IProjectDescription description = eclipseProject.getDescription();
-            description.setName(newName);
-            eclipseProject.move(description, true, monitor.getNestedMonitor());
+            project.updateProject(newName, null);
+            if (DBWorkbench.isDistributed()) {
+                // We need to change the project name in the navigator
+                fireNodeEvent(new DBNEvent(this, DBNEvent.Action.UPDATE, this));
+            } else {
+                final IProjectDescription description = eclipseProject.getDescription();
+                description.setName(newName);
+                eclipseProject.move(description, true, monitor.getNestedMonitor());
+            }
         } catch (Exception e) {
             throw new DBException("Can't rename project: " + e.getMessage(), e);
         }
@@ -113,8 +118,9 @@ public class DBNProjectDesktop extends DBNProject {
         }
     }
 
+    @Nullable
     @Override
-    public DBNNode refreshNode(DBRProgressMonitor monitor, Object source) throws DBException {
+    public DBNNode refreshNode(@NotNull DBRProgressMonitor monitor, @Nullable Object source) throws DBException {
         NavigatorResources.refreshThisResource(monitor, this);
         return super.refreshNode(monitor, source);
     }

@@ -16,6 +16,8 @@
  */
 package org.jkiss.dbeaver.runtime.properties;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.meta.PropertyGroup;
 import org.jkiss.dbeaver.model.preferences.DBPPropertySource;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -64,7 +66,7 @@ public class ObjectPropertyGroupDescriptor extends ObjectAttributeDescriptor
         return children;
     }
 
-    public Object getGroupObject(Object object, DBRProgressMonitor progressMonitor)
+    public Object getGroupObject(@NotNull Object object, @Nullable DBRProgressMonitor progressMonitor)
         throws IllegalAccessException, IllegalArgumentException, InvocationTargetException
     {
         if (getParent() != null) {

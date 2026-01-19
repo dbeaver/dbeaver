@@ -16,7 +16,7 @@
  */
 package org.jkiss.dbeaver.ui.actions;
 
-import org.jkiss.api.DriverReference;
+import org.jkiss.api.CompositeObjectId;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -28,10 +28,12 @@ import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.fs.DBFUtils;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNUtils;
+import org.jkiss.dbeaver.registry.DataSourceRegistry;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.file.IFileTypeHandler;
 import org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerObjectOpen;
+import org.jkiss.dbeaver.utils.RuntimeUtils;
 
 import java.nio.file.Path;
 import java.util.Collections;
@@ -87,14 +89,26 @@ public abstract class AbstractFileDatabaseHandler implements IFileTypeHandler {
 
         UIUtils.runWithMonitor(monitor -> {
             if (dsContainer.isConnected() || dsContainer.connect(monitor, true, true)) {
+                if (dsContainer.getRegistry() instanceof DataSourceRegistry<?> registry) {
+                    // Ensure the node is created
+                    registry.flushDataSourceEvents();
+                }
+
                 DBPDataSource dataSource = dsContainer.getDataSource();
                 DBNDatabaseNode openNode = DBNUtils.getDefaultDatabaseNodeToOpen(monitor, dataSource);
+
+                // Try multiple times with a small delay in case the node is still not available
+                for (int i = 0; i < 10 && openNode == null; i++) {
+                    RuntimeUtils.pause(100);
+                    openNode = DBNUtils.getDefaultDatabaseNodeToOpen(monitor, dataSource);
+                }
 
                 if (openNode == null) {
                     throw new DBException("Cannot determine target node for " + dsContainer.getName());
                 } else {
+                    DBNDatabaseNode openNode1 = openNode;
                     UIUtils.syncExec(() -> NavigatorHandlerObjectOpen.openEntityEditor(
-                        openNode,
+                        openNode1,
                         null,
                         null,
                         null,
@@ -108,16 +122,20 @@ public abstract class AbstractFileDatabaseHandler implements IFileTypeHandler {
     }
 
 
+    @Override
+    public void importFiles(@NotNull List<Path> filePath, @Nullable String extension) throws DBException {
+        throw new DBException("Importing files is not supported for " + getDatabaseTerm());
+    }
+
     protected abstract String getDatabaseTerm();
 
     protected abstract String createDatabaseName(@NotNull List<Path> fileList);
 
-    protected abstract String createConnectionName(List<Path> fileList);
+    protected abstract String createConnectionName(@NotNull List<Path> fileList);
 
-    protected abstract DriverReference getDriverReference();
+    protected abstract CompositeObjectId getDriverReference();
 
     protected boolean isSingleDatabaseConnection() {
         return true;
     }
-
 }

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,8 @@
 
 package org.jkiss.dbeaver.registry.updater;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.app.DBPPlatform;
 import org.jkiss.dbeaver.runtime.WebUtils;
 import org.jkiss.utils.xml.SAXListener;
@@ -117,18 +119,18 @@ public class VersionDescriptor {
             private StringBuilder textBuffer = new StringBuilder();
 
             @Override
-            public void saxStartElement(SAXReader reader, String namespaceURI, String localName, Attributes atts) throws XMLException {
+            public void saxStartElement(@NotNull SAXReader reader, @Nullable String namespaceURI, @NotNull String localName, @NotNull Attributes attributes) throws XMLException {
                 lastTag = localName;
                 textBuffer.setLength(0);
             }
 
             @Override
-            public void saxText(SAXReader reader, String data) throws XMLException {
+            public void saxText(@NotNull SAXReader reader, @NotNull String data) throws XMLException {
                 textBuffer.append(data);
             }
 
             @Override
-            public void saxEndElement(SAXReader reader, String namespaceURI, String localName) throws XMLException {
+            public void saxEndElement(@NotNull SAXReader reader, @Nullable String namespaceURI, @NotNull String localName) throws XMLException {
                 final String text = textBuffer.toString();
                 switch (lastTag) {
                     case "name":

@@ -200,7 +200,8 @@ public class StatisticsNavigatorNodeRenderer extends DefaultNavigatorNodeRendere
     private void drawObjectChildrenCounter(@NotNull GC gc, @NotNull DBNDatabaseNode node, @NotNull Rectangle bounds) {
         int childCount = 0;
         try {
-            childCount = node.getChildren(new LocalCacheProgressMonitor(new VoidProgressMonitor())).length;
+            DBNDatabaseNode[] nodeChildren = node.getChildren(new LocalCacheProgressMonitor(new VoidProgressMonitor()));
+            childCount = nodeChildren == null ? 0 : nodeChildren.length;
         } catch (DBException e) {
             return;
         }
@@ -268,7 +269,7 @@ public class StatisticsNavigatorNodeRenderer extends DefaultNavigatorNodeRendere
 
         try {
             gc.setForeground(NavigatorThemeSettings.instance.hintColor);
-            gc.setFont(BaseThemeSettings.instance.baseFontItalic);
+            gc.setFont(BaseThemeSettings.instance.treeAndTableFontItalic);
 
             drawTextClipped(gc, text, bounds);
         } finally {
@@ -568,8 +569,9 @@ public class StatisticsNavigatorNodeRenderer extends DefaultNavigatorNodeRendere
             this.treeItem = treeItem;
         }
 
+        @NotNull
         @Override
-        protected IStatus run(DBRProgressMonitor monitor) {
+        protected IStatus run(@NotNull DBRProgressMonitor monitor) {
             try {
                 monitor.beginTask("Collect database statistics", 1);
                 if (object instanceof DBPObjectStatisticsCollector) {
@@ -579,9 +581,9 @@ public class StatisticsNavigatorNodeRenderer extends DefaultNavigatorNodeRendere
                 }
                 long maxStatSize = 0;
 
-                if (parentNode instanceof DBNDatabaseNode) {
+                if (parentNode instanceof DBNDatabaseNode dbNode) {
                     // Calculate max object size
-                    DBNDatabaseNode[] children = ((DBNDatabaseNode)parentNode).getChildren(monitor);
+                    DBNDatabaseNode[] children = dbNode.getChildren(monitor);
                     if (children != null) {
                         for (DBNDatabaseNode childNode : children) {
                             DBSObject child = childNode.getObject();

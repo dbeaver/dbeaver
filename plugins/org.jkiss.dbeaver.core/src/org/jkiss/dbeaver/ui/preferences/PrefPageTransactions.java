@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,7 +20,10 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.widgets.*;
+import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.preferences.IWorkbenchPreferenceContainer;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ModelPreferences;
@@ -37,8 +40,7 @@ import java.util.Locale;
 /**
  * PrefPageTransactions
  */
-public class PrefPageTransactions extends TargetPrefPage
-{
+public class PrefPageTransactions extends TargetPrefPage {
     public static final String PAGE_ID = "org.jkiss.dbeaver.preferences.main.transactions"; //$NON-NLS-1$
 
     private Button smartCommitCheck;
@@ -76,7 +78,7 @@ public class PrefPageTransactions extends TargetPrefPage
     protected Control createPreferenceContent(@NotNull Composite parent) {
         Composite composite = UIUtils.createPlaceholder(parent, 1, 5);
         boolean dataSourcePreferencePage = isDataSourcePreferencePage();
-        Group txnNameGroup = UIUtils.createControlGroup(
+        Composite txnNameGroup = UIUtils.createTitledComposite(
             composite,
             CoreMessages.dialog_connection_edit_wizard_transactions,
             2,
@@ -140,7 +142,7 @@ public class PrefPageTransactions extends TargetPrefPage
         );
 
         {
-            Group notifyNameGroup = UIUtils.createControlGroup(
+            Composite notifyNameGroup = UIUtils.createTitledComposite(
                 composite, CoreMessages.pref_page_transactions_notify_name_group_label, 2, GridData.FILL_HORIZONTAL, 0
             );
             showTransactionNotificationsCheck = UIUtils.createCheckbox(

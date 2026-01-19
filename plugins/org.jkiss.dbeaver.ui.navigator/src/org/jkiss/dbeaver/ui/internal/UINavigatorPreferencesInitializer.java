@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,7 +24,7 @@ import org.jkiss.dbeaver.utils.PrefUtils;
 
 /**
  * Preference initializer.
- * Note: in order to active this class we have to initiate preferences in activator (see UINavigatorActivator class)
+ * Note: in order to activate this class we have to initiate preferences in activator (see UINavigatorActivator class)
  */
 public class UINavigatorPreferencesInitializer extends AbstractPreferenceInitializer {
 
@@ -45,9 +45,11 @@ public class UINavigatorPreferencesInitializer extends AbstractPreferenceInitial
         PrefUtils.setDefaultPreferenceValue(store, NavigatorPreferences.NAVIGATOR_REFRESH_EDITORS_ON_OPEN, false);
 
         PrefUtils.setDefaultPreferenceValue(store, NavigatorPreferences.NAVIGATOR_GROUP_BY_DRIVER, false);
-        PrefUtils.setDefaultPreferenceValue(store, NavigatorPreferences.NAVIGATOR_EDITOR_SHOW_TABLE_GRID, true);
-        PrefUtils.setDefaultPreferenceValue(store, NavigatorPreferences.NAVIGATOR_OBJECT_DOUBLE_CLICK, NavigatorPreferences.DoubleClickBehavior.EDIT.name());
-        PrefUtils.setDefaultPreferenceValue(store, NavigatorPreferences.NAVIGATOR_CONNECTION_DOUBLE_CLICK, NavigatorPreferences.DoubleClickBehavior.EXPAND.name());
+        PrefUtils.setDefaultPreferenceValue(store, NavigatorPreferences.NAVIGATOR_EDITOR_SHOW_TABLE_GRID, false);
+        PrefUtils.setDefaultPreferenceValue(store, NavigatorPreferences.NAVIGATOR_OBJECT_DOUBLE_CLICK,
+            NavigatorPreferences.DoubleClickBehavior.EDIT.name());
+        PrefUtils.setDefaultPreferenceValue(store, NavigatorPreferences.NAVIGATOR_CONNECTION_DOUBLE_CLICK,
+            NavigatorPreferences.DoubleClickBehavior.EXPAND.name());
         PrefUtils.setDefaultPreferenceValue(store, NavigatorPreferences.NAVIGATOR_DEFAULT_EDITOR_PAGE, "");
         PrefUtils.setDefaultPreferenceValue(store, NavigatorPreferences.NAVIGATOR_SHOW_SQL_PREVIEW, true);
         PrefUtils.setDefaultPreferenceValue(store, NavigatorPreferences.NAVIGATOR_SHOW_OBJECT_TIPS, true);

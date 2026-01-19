@@ -22,6 +22,7 @@ import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.layout.GridDataFactory;
 import org.eclipse.jface.layout.GridLayoutFactory;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
@@ -30,7 +31,6 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
-import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.internal.WorkbenchMessages;
 import org.eclipse.ui.internal.WorkbenchPlugin;
@@ -66,15 +66,13 @@ class ErrorDetailsPart {
         this.parent = parent;
         this.reason = reason;
 
-        parent.setLayout(GridLayoutFactory.fillDefaults().extendedMargins(5, 0, 0, 0).numColumns(2).create());
+        parent.setLayout(GridLayoutFactory.fillDefaults().extendedMargins(5, 0, 5, 5).numColumns(2).create());
 
         Label imageLabel = new Label(parent, SWT.NONE);
         imageLabel.setImage(getImage());
         imageLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_CENTER | GridData.VERTICAL_ALIGN_BEGINNING));
 
-        Text text = new Text(parent, SWT.MULTI | SWT.READ_ONLY | SWT.WRAP | SWT.V_SCROLL);
-        text.setBackground(parent.getDisplay().getSystemColor(SWT.COLOR_LIST_BACKGROUND));
-        text.setForeground(parent.getDisplay().getSystemColor(SWT.COLOR_LIST_FOREGROUND));
+        StyledText text = new StyledText(parent, SWT.MULTI | SWT.READ_ONLY | SWT.WRAP | SWT.V_SCROLL | SWT.BORDER);
 
         text.setLayoutData(new GridData(GridData.FILL_BOTH));
         text.setText(GeneralUtils.normalizeLineSeparators(reason.getMessage()));

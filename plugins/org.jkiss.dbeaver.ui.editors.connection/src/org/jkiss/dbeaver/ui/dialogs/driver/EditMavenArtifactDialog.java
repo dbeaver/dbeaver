@@ -85,11 +85,6 @@ public class EditMavenArtifactDialog extends BaseDialog {
         this.originalArtifact = library;
     }
 
-    @Override
-    protected boolean isResizable() {
-        return true;
-    }
-
     @NotNull
     public List<DriverLibraryMavenArtifact> getArtifacts() {
         return artifacts;
@@ -177,7 +172,7 @@ public class EditMavenArtifactDialog extends BaseDialog {
     }
 
     private void setStatus(boolean error, String message) {
-        getButton(IDialogConstants.OK_ID).setEnabled(!error);
+        enableButton(IDialogConstants.OK_ID, !error);
         errorLabel.setVisible(!message.isEmpty());
         if (!message.isEmpty()) {
             errorLabel.setImage(DBeaverIcons.getImage(error ? DBIcon.SMALL_ERROR : DBIcon.SMALL_INFO));
@@ -273,7 +268,7 @@ public class EditMavenArtifactDialog extends BaseDialog {
     }
 
     private void updateButtons() {
-        getButton(IDialogConstants.OK_ID).setEnabled(
+        enableButton(IDialogConstants.OK_ID,
             !CommonUtils.isEmpty(groupText.getText()) &&
                 !CommonUtils.isEmpty(artifactText.getText()) &&
                 !CommonUtils.isEmpty(fallbackVersionText.getText())
@@ -339,7 +334,7 @@ public class EditMavenArtifactDialog extends BaseDialog {
         }
 
         @Override
-        public void saxStartElement(SAXReader reader, String namespaceURI, String name, Attributes atts) {
+        public void saxStartElement(@NotNull SAXReader reader, @Nullable String namespaceURI, @NotNull String name, @NotNull Attributes attributes) {
             if (state.isEmpty() && "dependencies".equals(name)) {
                 state.offer(State.DEPENDENCIES);
             } else if ((state.isEmpty() || state.element() == State.DEPENDENCIES) && "dependency".equals(name)) {
@@ -360,7 +355,7 @@ public class EditMavenArtifactDialog extends BaseDialog {
         }
 
         @Override
-        public void saxEndElement(SAXReader reader, String namespaceURI, String name) {
+        public void saxEndElement(@NotNull SAXReader reader, @Nullable String namespaceURI, @NotNull String name) {
             if (state.peekLast() == State.DEPENDENCY && "dependency".equals(name)) {
                 DriverLibraryMavenArtifact lib = new DriverLibraryMavenArtifact(EditMavenArtifactDialog.this.driver, DBPDriverLibrary.FileType.jar, "", version);
                 lib.setReference(new MavenArtifactReference(groupId, artifactId, classifier, MavenArtifactReference.VERSION_PATTERN_RELEASE, version));
@@ -377,7 +372,7 @@ public class EditMavenArtifactDialog extends BaseDialog {
         }
 
         @Override
-        public void saxText(SAXReader reader, String data) {
+        public void saxText(@NotNull SAXReader reader, @NotNull String data) {
             if (state.isEmpty()) {
                 return;
             }
