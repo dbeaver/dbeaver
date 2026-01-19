@@ -49,7 +49,6 @@ import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.meta.LazyProperty;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.meta.PropertyGroup;
-import org.jkiss.dbeaver.model.preferences.DBPPropertySource;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.utils.ArrayUtils;
@@ -296,12 +295,7 @@ public class YashanDBTable extends YashanDBTablePhysical implements DBPScriptObj
 	public long getStatObjectSize() {
 		return tableSize == null ? 0 : tableSize;
 	}
-
-	@Override
-	public DBPPropertySource getStatProperties() {
-		return null;
-	}
-
+	
 	@Override
 	public boolean supportsObjectDefinitionOption(String option) {
 		return ArrayUtils.contains(supportedOptions, option);

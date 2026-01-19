@@ -530,8 +530,8 @@
     </extension>
 
     <extension point="org.jkiss.dbeaver.sqlDialect">
-        <dialect id="sqlserver" parent="basic" class="org.jkiss.dbeaver.ext.mssql.model.SQLServerDialect" label="SQL Server" description="SQL Server SQL dialect." icon="icons/mssql_icon.png">
-        </dialect>
+        <dialect id="sqlserver" parent="basic" class="org.jkiss.dbeaver.ext.mssql.model.SQLServerDialectMssql" label="SQL Server" description="SQL Server SQL dialect." icon="icons/mssql_icon.png"/>
+        <dialect id="sybase" parent="basic" class="org.jkiss.dbeaver.ext.mssql.model.SQLServerDialectSybase" label="Sybase" description="Sybase SQL dialect." icon="icons/sybase_icon.png"/>
     </extension>
 
     <extension point="org.jkiss.dbeaver.task">

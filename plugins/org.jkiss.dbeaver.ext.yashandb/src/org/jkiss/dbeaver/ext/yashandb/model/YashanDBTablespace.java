@@ -36,7 +36,6 @@ import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
 import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.meta.IPropertyCacheValidator;
 import org.jkiss.dbeaver.model.meta.Property;
-import org.jkiss.dbeaver.model.preferences.DBPPropertySource;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectLazy;
@@ -193,12 +192,6 @@ public class YashanDBTablespace extends YashanDBGlobalObject implements DBPRefre
 	@Override
 	public long getStatObjectSize() {
 		return usedSize == null ? 0 : usedSize;
-	}
-
-	@Nullable
-	@Override
-	public DBPPropertySource getStatProperties() {
-		return null;
 	}
 
 	private void loadSizes(DBRProgressMonitor monitor) throws DBException {

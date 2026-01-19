@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,10 @@ package org.jkiss.dbeaver.ext.postgresql.ui;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.*;
+import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Combo;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Text;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
 import org.jkiss.dbeaver.ext.postgresql.PostgreMessages;
@@ -79,7 +82,7 @@ public class PostgreConnectionPageAdvanced extends ConnectionPageAbstract {
 
         boolean sessionRoleSupported = mainPage != null && mainPage.isSessionRoleSupported();
         if (sessionRoleSupported || serverType.supportsClient()) {
-            Group advancedGroup = UIUtils.createControlGroup(
+            Composite advancedGroup = UIUtils.createTitledComposite(
                 cfgGroup,
                 PostgreMessages.dialog_setting_connection_advanced_group_label,
                 2,
@@ -102,10 +105,12 @@ public class PostgreConnectionPageAdvanced extends ConnectionPageAbstract {
         }
 
         {
-            Group secureGroup = new Group(cfgGroup, SWT.NONE);
-            secureGroup.setText(PostgreMessages.dialog_setting_connection_settings);
-            secureGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-            secureGroup.setLayout(new GridLayout(2, false));
+            Composite secureGroup = UIUtils.createTitledComposite(
+                cfgGroup,
+                PostgreMessages.dialog_setting_connection_settings,
+                2,
+                GridData.FILL_HORIZONTAL
+            );
 
             showTemplates = UIUtils.createCheckbox(
                 secureGroup,
@@ -153,10 +158,12 @@ public class PostgreConnectionPageAdvanced extends ConnectionPageAbstract {
         }
 
         {
-            Group secureGroup = new Group(cfgGroup, SWT.NONE);
-            secureGroup.setText(PostgreMessages.dialog_setting_group_sql);
-            secureGroup.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
-            secureGroup.setLayout(new GridLayout(2, false));
+            Composite secureGroup = UIUtils.createTitledComposite(
+                cfgGroup,
+                PostgreMessages.dialog_setting_group_sql,
+                2,
+                GridData.HORIZONTAL_ALIGN_BEGINNING
+            );
 
             ddPlainBehaviorCombo = UIUtils.createLabelCombo(
                 secureGroup,
@@ -177,10 +184,12 @@ public class PostgreConnectionPageAdvanced extends ConnectionPageAbstract {
         }
 
         if (serverType.turnOffPreparedStatements()) {
-            Group performanceGroup = new Group(cfgGroup, SWT.NONE);
-            performanceGroup.setText(PostgreMessages.dialog_setting_group_performance);
-            performanceGroup.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
-            performanceGroup.setLayout(new GridLayout(2, false));
+            Composite performanceGroup = UIUtils.createTitledComposite(
+                cfgGroup,
+                PostgreMessages.dialog_setting_group_performance,
+                1,
+                GridData.HORIZONTAL_ALIGN_BEGINNING
+            );
             usePreparedStatements = UIUtils.createCheckbox(
                 performanceGroup,
                 PostgreMessages.dialog_setting_connection_use_prepared_statements,
