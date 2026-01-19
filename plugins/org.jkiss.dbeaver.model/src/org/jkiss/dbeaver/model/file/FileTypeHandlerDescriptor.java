@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.jkiss.dbeaver.ui.editors.file;
+package org.jkiss.dbeaver.model.file;
 
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.jkiss.code.NotNull;
@@ -34,7 +34,7 @@ import java.util.List;
 public class FileTypeHandlerDescriptor extends AbstractDescriptor {
     private static final Log log = Log.getLog(FileTypeHandlerDescriptor.class);
 
-    public static final String EXTENSION_ID = "org.jkiss.dbeaver.ui.fileTypeHandler"; //$NON-NLS-1$
+    public static final String EXTENSION_ID = "org.jkiss.dbeaver.fileTypeHandler"; //$NON-NLS-1$
 
     private final String id;
     private final ObjectType handlerType;
@@ -78,8 +78,8 @@ public class FileTypeHandlerDescriptor extends AbstractDescriptor {
         return order;
     }
 
-    public IFileTypeHandler createHandler() throws ReflectiveOperationException {
-        Class<? extends IFileTypeHandler> clazz = handlerType.getImplClass(IFileTypeHandler.class);
+    public IFileOpenHandler createHandler() throws ReflectiveOperationException {
+        Class<? extends IFileOpenHandler> clazz = handlerType.getImplClass(IFileOpenHandler.class);
         return clazz.getConstructor().newInstance();
     }
 
