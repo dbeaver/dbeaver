@@ -62,9 +62,4 @@ public class FileActionSelectorDialog extends BaseDialog {
     public FileTypeAction getSelectedAction() {
         return selectedAction;
     }
-
-    @Override
-    protected void okPressed() {
-        super.okPressed();
-    }
 }
