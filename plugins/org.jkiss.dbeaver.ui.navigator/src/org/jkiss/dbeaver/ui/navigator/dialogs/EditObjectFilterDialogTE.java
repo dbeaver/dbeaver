@@ -26,6 +26,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
 import org.jkiss.dbeaver.model.struct.DBSObjectFilter;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.internal.UINavigatorMessages;
 
 public class EditObjectFilterDialogTE extends EditObjectFilterDialog {
     public static final int DELETE_USER_FILTER = 1001;
@@ -47,7 +48,16 @@ public class EditObjectFilterDialogTE extends EditObjectFilterDialog {
     @Override
     protected void setSfGroup(@NotNull Composite composite) {
         super.setSfGroup(composite);
-        customUserFilterCheckbox = UIUtils.createCheckbox(sfGroup, "My custom checkbox", filter.isUserFilter());
+        setCustomUserFilterCheckbox();
+        updateTemplatesEnabledState();
+    }
+
+    private void setCustomUserFilterCheckbox() {
+        customUserFilterCheckbox = UIUtils.createCheckbox(
+            sfGroup,
+            UINavigatorMessages.dialog_filter_custom_user_filter_checkbox_label,
+            filter.isUserFilter()
+        );
         customUserFilterCheckbox.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
@@ -58,7 +68,7 @@ public class EditObjectFilterDialogTE extends EditObjectFilterDialog {
                 }
             }
         });
-        updateTemplatesEnabledState();
+        customUserFilterCheckbox.setToolTipText(UINavigatorMessages.dialog_filter_custom_user_filter_checkbox_tooltip);
     }
 
     @Override
@@ -83,7 +93,10 @@ public class EditObjectFilterDialogTE extends EditObjectFilterDialog {
         if (isUserFilterUnsaved) {
             filter.setUserFilter(false);
             updateTemplatesEnabledState();
-        } else if (UIUtils.confirmAction("sure bout that?", "it will remove your custom stuff")) {
+        } else if (UIUtils.confirmAction(
+            UINavigatorMessages.dialog_filter_remove_custom_user_filter_title,
+            UINavigatorMessages.dialog_filter_remove_custom_user_filter_question
+        )) {
             setReturnCode(DELETE_USER_FILTER);
             close();
         } else {

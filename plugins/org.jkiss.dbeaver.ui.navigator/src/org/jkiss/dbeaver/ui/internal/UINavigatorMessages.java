@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -52,6 +52,14 @@ public class UINavigatorMessages extends NLS {
     public static String dialog_filter_hint_text;
     public static String dialog_filter_objects_scope_hint_text;
 
+    // User filters TE only
+    public static String actions_navigator_user_filters_remove_title;
+    public static String actions_navigator_user_filters_remove_question;
+    public static String dialog_filter_remove_custom_user_filter_title;
+    public static String dialog_filter_remove_custom_user_filter_question;
+    public static String dialog_filter_custom_user_filter_checkbox_label;
+    public static String dialog_filter_custom_user_filter_checkbox_tooltip;
+
     public static String actions_navigator__objects;
     public static String actions_navigator_hide_objects;
     public static String actions_navigator_hide_object;
@@ -100,6 +108,7 @@ public class UINavigatorMessages extends NLS {
     public static String actions_navigator_rename_database_object_exception_message;
     public static String actions_navigator_configure_filters;
     public static String actions_navigator_reset_search;
+
 
     public static String dialog_project_create_wizard_error_already_exists;
     public static String dialog_project_create_wizard_error_cannot_create;

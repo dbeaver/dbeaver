@@ -28,6 +28,7 @@ import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.registry.UserDBSObjectFilerUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.internal.UINavigatorMessages;
 import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 
 public class NavigatorHandlerFilterUserFilterRemove extends AbstractHandler {
@@ -43,7 +44,10 @@ public class NavigatorHandlerFilterUserFilterRemove extends AbstractHandler {
             return null;
         }
         try {
-            if (UIUtils.confirmAction("Will remove all custom stuff", "Confinue?")) {
+            if (UIUtils.confirmAction(
+                UINavigatorMessages.actions_navigator_user_filters_remove_title,
+                UINavigatorMessages.actions_navigator_user_filters_remove_question
+            )) {
                 UserDBSObjectFilerUtils.clearUserObjectFilers(parentNode.getDataSourceContainer());
             }
         } catch (DBException e) {

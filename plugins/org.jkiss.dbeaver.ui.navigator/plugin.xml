@@ -256,7 +256,8 @@
         <command id="org.jkiss.dbeaver.core.object.filter.add.exclude" name="%command.org.jkiss.dbeaver.core.object.filter.add.exclude.name" description="%command.org.jkiss.dbeaver.core.object.filter.add.exclude.description" categoryId="org.jkiss.dbeaver.core.database"/>
         <command id="org.jkiss.dbeaver.core.object.filter.add.include" name="%command.org.jkiss.dbeaver.core.object.filter.add.include.name" description="%command.org.jkiss.dbeaver.core.object.filter.add.include.description" categoryId="org.jkiss.dbeaver.core.database"/>
         <command id="org.jkiss.dbeaver.core.object.filter.clear" name="%command.org.jkiss.dbeaver.core.object.filter.clear.name" description="%command.org.jkiss.dbeaver.core.object.filter.clear.description" categoryId="org.jkiss.dbeaver.core.database"/>
-        <command id="org.jkiss.dbeaver.core.object.filter.clear.user" name="clear user stuff" description="desc"
+        <command id="org.jkiss.dbeaver.core.object.filter.clear.user" name="%command.org.jkiss.dbeaver.core.object.filter.clear.user.name"
+                 description="%command.org.jkiss.dbeaver.core.object.filter.clear.user.description"
                  categoryId="org.jkiss.dbeaver.core.database"/>
         <command id="org.jkiss.dbeaver.core.object.filter.toggle" name="%command.org.jkiss.dbeaver.core.object.filter.toggle.name" description="%command.org.jkiss.dbeaver.core.object.filter.toggle.description" categoryId="org.jkiss.dbeaver.core.database"/>
 
