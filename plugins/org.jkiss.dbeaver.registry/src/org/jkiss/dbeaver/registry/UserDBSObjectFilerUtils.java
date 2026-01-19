@@ -38,36 +38,29 @@ public class UserDBSObjectFilerUtils {
 
     protected static final FilterSerializer<DataSourceDescriptor> filterSerializer = new FilterSerializer<>();
 
-    public static void clearUserObjectFilers(@NotNull DBPDataSourceContainer dataSource) {
+    public static void clearUserObjectFilers(@NotNull DBPDataSourceContainer dataSource) throws DBException {
         DBPObjectSettingsProvider settingsProvider = DBUtils.getAdapter(DBPObjectSettingsProvider.class, dataSource.getProject());
         if (settingsProvider == null) {
             return;
         }
-        try {
-            settingsProvider.clearObjectSettings(
-                SMObjectType.datasource,
-                dataSource.getId(),
-                Set.of(USER_FILTER_KEY)
-            );
-        } catch (DBException e) {
-            throw new RuntimeException(e);
-        }
+        settingsProvider.clearObjectSettings(
+            SMObjectType.datasource,
+            dataSource.getId(),
+            Set.of(USER_FILTER_KEY)
+        );
     }
 
-    public static void updateUserObjectFilters(@NotNull DBPDataSourceContainer dataSource) {
+    public static void updateUserObjectFilters(@NotNull DBPDataSourceContainer dataSource) throws DBException {
         DBPObjectSettingsProvider settingsProvider = DBUtils.getAdapter(DBPObjectSettingsProvider.class, dataSource.getProject());
         if (settingsProvider == null || !(dataSource instanceof DataSourceDescriptor dataSourceDescriptor)) {
             return;
         }
-        try {
-            settingsProvider.setObjectSettings(
-                SMObjectType.datasource,
-                dataSource.getId(),
-                Map.of(USER_FILTER_KEY, filterSerializer.serializeCustomUserFilters(dataSourceDescriptor))
-            );
-        } catch (DBException e) {
-            throw new RuntimeException(e);
-        }
+        settingsProvider.setObjectSettings(
+            SMObjectType.datasource,
+            dataSource.getId(),
+            Map.of(USER_FILTER_KEY, filterSerializer.serializeCustomUserFilters(dataSourceDescriptor))
+        );
+
     }
 
     public static void setUserObjectFilters(@NotNull DataSourceDescriptor dataSourceDescriptor, @NotNull Map<String, String> userSettings) {

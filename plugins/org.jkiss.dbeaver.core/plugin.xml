@@ -651,6 +651,9 @@
                 <command commandId="org.jkiss.dbeaver.core.object.filter.clear">
                     <visibleWhen checkEnabled="true"/>
                 </command>
+                <command commandId="org.jkiss.dbeaver.core.object.filter.clear.user">
+                    <visibleWhen checkEnabled="true"/>
+                </command>
             </menu>
 
 <!--

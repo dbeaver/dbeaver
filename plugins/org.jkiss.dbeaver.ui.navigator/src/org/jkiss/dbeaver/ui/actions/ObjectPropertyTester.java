@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -63,6 +63,7 @@ public class ObjectPropertyTester extends PropertyTester {
     public static final String PROP_CAN_MOVE_UP = "canMoveUp";
     public static final String PROP_CAN_MOVE_DOWN = "canMoveDown";
     public static final String PROP_CAN_FILTER = "canFilter";
+    public static final String PROP_CAN_REMOVE_USER_FILTERS = "canRemoveUserFilters";
     public static final String PROP_CAN_FILTER_OBJECT = "canFilterObject";
     public static final String PROP_HAS_FILTER = "hasFilter";
     public static final String PROP_HAS_TOOLS = "hasTools";
@@ -230,6 +231,9 @@ public class ObjectPropertyTester extends PropertyTester {
                     }
                 }
                 break;
+            }
+            case PROP_CAN_REMOVE_USER_FILTERS: {
+                return DBWorkbench.isDistributed() && node.getParentNode() instanceof DBNDataSource;
             }
             case PROP_CAN_FILTER: {
                 if (node instanceof DBNDataSource ds && ds.getDataSource() == null) {

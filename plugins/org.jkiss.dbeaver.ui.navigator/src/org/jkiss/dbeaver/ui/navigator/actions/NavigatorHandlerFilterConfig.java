@@ -132,7 +132,7 @@ public class NavigatorHandlerFilterConfig extends NavigatorHandlerObjectCreateBa
         @NotNull DBNDatabaseNode parentNode,
         @NotNull DBXTreeItem itemsMeta,
         @NotNull DBSObjectFilter currentDialogFilter
-    ) {
+    ) throws DBException {
         boolean isCurrentUserFilter = currentDialogFilter.isUserFilter();
         parentNode.setNodeFilter(itemsMeta, currentDialogFilter, !isCurrentUserFilter);
         if (isCurrentUserFilter) {
