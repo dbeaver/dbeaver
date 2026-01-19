@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -181,7 +181,6 @@ public class GenericExecutionContext extends JDBCExecutionContext implements DBC
                         dbStat.execute();
                     }
                 }
-                selectedEntityName = entityName;
             } catch (SQLException e) {
                 throw new DBCException(e, this);
             } finally {
@@ -190,6 +189,10 @@ public class GenericExecutionContext extends JDBCExecutionContext implements DBC
                 }
             }
         }
+        if (entityName == null) {
+            entityName = context.selectedEntityName;
+        }
+        selectedEntityName = entityName;
     }
 
     @Override
