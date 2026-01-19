@@ -769,6 +769,8 @@ public class DataSourceSerializerModern<T extends DataSourceDescriptor> implemen
                     }
                 }
 
+                setCurrentUserSettings(dataSource, conObject);
+
                 dataSource.setTags(
                     JSONUtils.deserializeStringMap(conObject, RegistryConstants.TAG_TAGS));
 
@@ -838,8 +840,6 @@ public class DataSourceSerializerModern<T extends DataSourceDescriptor> implemen
         dataSource.setDriverSubstitution(DataSourceProviderRegistry.getInstance()
             .getDriverSubstitution(CommonUtils.notEmpty(JSONUtils.getString(conObject, ATTR_DRIVER_SUBSTITUTION))));
 
-        saveCurrentUserSettings(dataSource, conObject);
-
         dataSource.setConnectionReadOnly(JSONUtils.getBoolean(conObject, RegistryConstants.ATTR_READ_ONLY));
         final String folderPath = JSONUtils.getString(conObject, RegistryConstants.ATTR_FOLDER);
         dataSource.setFolder(folderPath == null ? null : registry.findFolderByPath(folderPath, true, parseResults));
@@ -847,7 +847,7 @@ public class DataSourceSerializerModern<T extends DataSourceDescriptor> implemen
     }
 
 
-    private void saveCurrentUserSettings(@NotNull T dataSource, @NotNull Map<String, Object> conObject) {
+    private void setCurrentUserSettings(@NotNull T dataSource, @NotNull Map<String, Object> conObject) {
         DBPObjectSettingsProvider settingsProvider = DBUtils.getAdapter(DBPObjectSettingsProvider.class, dataSource.getProject());
         Map<String, String> userSettings = settingsProvider == null ?
             null :
