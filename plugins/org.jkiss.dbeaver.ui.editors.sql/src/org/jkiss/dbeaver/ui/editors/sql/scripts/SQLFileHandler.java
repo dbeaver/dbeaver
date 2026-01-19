@@ -47,11 +47,11 @@ public class SQLFileHandler extends AbstractFileHandler {
     ) throws DBException {
         if (action == FileTypeAction.INTERNAL_EDITOR) {
             for (Path path : fileList) {
-                File file = path.toFile();
                 if (dataSource != null) {
+                    File file = path.toFile();
                     EditorUtils.setFileDataSource(file, new SQLNavigatorContext(dataSource));
                 }
-                EditorUtils.openExternalFileEditor(file, UIUtils.getActiveWorkbenchWindow());
+                EditorUtils.openExternalFileEditor(path, UIUtils.getActiveWorkbenchWindow());
             }
         } else {
             super.openFiles(fileList, dataSource, action);
