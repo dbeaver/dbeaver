@@ -711,6 +711,7 @@ public class EditorUtils {
             }
             if (!IOUtils.isLocalPath(path) || Files.exists(path)) {
                 String fileExtension = IOUtils.getFileExtension(path);
+                fileExtension = fileExtension == null ? "" : fileExtension.toLowerCase();
                 FileTypeHandlerDescriptor.Extension extension = CommonUtils.isEmpty(fileExtension) ?
                     null : FileTypeHandlerRegistry.getInstance().findExtension(fileExtension);
                 if (extension != null && databaseOnly && !extension.getDescriptor().isDatabaseHandler()) {
