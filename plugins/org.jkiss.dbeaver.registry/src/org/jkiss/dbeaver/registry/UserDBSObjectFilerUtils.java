@@ -25,6 +25,7 @@ import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.security.SMObjectType;
 
+import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -55,11 +56,15 @@ public class UserDBSObjectFilerUtils {
         if (settingsProvider == null || !(dataSource instanceof DataSourceDescriptor dataSourceDescriptor)) {
             return;
         }
-        settingsProvider.setObjectSettings(
-            SMObjectType.datasource,
-            dataSource.getId(),
-            Map.of(USER_FILTER_KEY, filterSerializer.serializeCustomUserFilters(dataSourceDescriptor))
-        );
+        try {
+            settingsProvider.setObjectSettings(
+                SMObjectType.datasource,
+                dataSource.getId(),
+                Map.of(USER_FILTER_KEY, filterSerializer.serializeCustomUserFilters(dataSourceDescriptor))
+            );
+        } catch (IOException logged) {
+            log.warn("Error while serializing filter object settings", logged);
+        }
 
     }
 

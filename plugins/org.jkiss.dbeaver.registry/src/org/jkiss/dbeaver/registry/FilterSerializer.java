@@ -71,7 +71,7 @@ public class FilterSerializer<T extends DataSourceDescriptor> {
     }
 
     @NotNull
-    public String serializeCustomUserFilters(@NotNull T dataSourceDescriptor) {
+    public String serializeCustomUserFilters(@NotNull T dataSourceDescriptor) throws IOException {
         ByteArrayOutputStream dsConfigBuffer = new ByteArrayOutputStream(10000);
         try (OutputStreamWriter osw = new OutputStreamWriter(dsConfigBuffer, StandardCharsets.UTF_8)) {
             try (JsonWriter jsonWriter = CONFIG_GSON.newJsonWriter(osw)) {
@@ -81,8 +81,6 @@ public class FilterSerializer<T extends DataSourceDescriptor> {
                 jsonWriter.flush();
                 return dsConfigBuffer.toString();
             }
-        } catch (IOException e) {
-            throw new RuntimeException(e);
         }
     }
 

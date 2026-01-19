@@ -84,9 +84,8 @@ public class NavigatorHandlerFilterConfig extends NavigatorHandlerObjectCreateBa
                     objectFilter,
                     globalFilter);
 
-                DBSObjectFilter currentDialogFilter = dialog.getFilter();
                 switch (dialog.open()) {
-                    case IDialogConstants.OK_ID -> setParentNodeFilter(parentNode, itemsMeta, currentDialogFilter);
+                    case IDialogConstants.OK_ID -> setParentNodeFilter(parentNode, itemsMeta, dialog.getFilter());
                     case EditObjectFilterDialog.SHOW_GLOBAL_FILTERS_ID -> {
                         Class<?> childrenClass = null;
                         if (dbNode instanceof DBNDatabaseFolder folder) {
@@ -111,7 +110,7 @@ public class NavigatorHandlerFilterConfig extends NavigatorHandlerObjectCreateBa
                             true);
                         if (dialog.open() == IDialogConstants.OK_ID) {
                             // Set global filter
-                            dataSourceContainer.setObjectFilter(childrenClass, null, currentDialogFilter);
+                            dataSourceContainer.setObjectFilter(childrenClass, null, dialog.getFilter());
                             dataSourceContainer.persistConfiguration();
                             NavigatorHandlerRefresh.refreshNavigator(Collections.singletonList(parentNode));
                         }
