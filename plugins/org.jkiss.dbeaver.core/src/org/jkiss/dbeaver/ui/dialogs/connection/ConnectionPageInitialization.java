@@ -100,8 +100,10 @@ class ConnectionPageInitialization extends ConnectionWizardPage implements IDial
         ignoreBootstrapErrors = dataSourceDescriptor.getConnectionConfiguration().getBootstrap().isIgnoreErrors();
         shellCommandPage = new ConnectionPageShellCommands(dataSourceDescriptor);
         if (!dataSourceDescriptor.getDriver().isEmbedded()) {
+            PrefPageConnectionClient pageConnectionClient = new PrefPageConnectionClient();
+            pageConnectionClient.setElement(dataSourceDescriptor);
             clientAppPage = new WizardPrefPage(
-                new PrefPageConnectionClient(),
+                pageConnectionClient,
                 CoreMessages.dialog_connection_edit_wizard_connections,
                 CoreMessages.dialog_connection_edit_wizard_connections_description
             );
@@ -293,7 +295,7 @@ class ConnectionPageInitialization extends ConnectionWizardPage implements IDial
         Composite group = UIUtils.createPlaceholder(parent, 1, 5);
 
         {
-            Composite txnGroup = UIUtils.createControlGroup(
+            Composite txnGroup = UIUtils.createTitledComposite(
                 group,
                 CoreMessages.dialog_connection_edit_wizard_transactions,
                 2,
@@ -322,7 +324,7 @@ class ConnectionPageInitialization extends ConnectionWizardPage implements IDial
         );
 
         {
-            Composite conGroup = UIUtils.createControlGroup(
+            Composite conGroup = UIUtils.createTitledComposite(
                 group,
                 CoreMessages.dialog_connection_wizard_final_label_connection,
                 2,

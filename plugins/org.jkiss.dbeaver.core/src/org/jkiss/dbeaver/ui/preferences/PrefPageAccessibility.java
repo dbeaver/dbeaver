@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,10 @@ package org.jkiss.dbeaver.ui.preferences;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.widgets.*;
+import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Combo;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 import org.eclipse.ui.IWorkbenchPropertyPage;
@@ -50,8 +53,8 @@ public class PrefPageAccessibility extends AbstractPrefPage implements IWorkbenc
     }
 
     private Composite createControls(Composite parent) {
-        Composite composite = UIUtils.createPlaceholder(parent, 1, 5);
-        Group accessibilityGroup = UIUtils.createControlGroup(
+        Composite composite = UIUtils.createComposite(parent, 1);
+        Composite accessibilityGroup = UIUtils.createTitledComposite(
             composite,
             CoreMessages.pref_page_accessibility_screen_reader_group_lbl,
             2,
