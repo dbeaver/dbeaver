@@ -36,6 +36,27 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 
+/**
+ * Base implementation of {@link IFileOpenHandler} that provides default handling
+ * for opening files in DBeaver.
+ * <p>
+ * By default, this handler supports {@link FileTypeAction#EXTERNAL_EDITOR} and
+ * {@link FileTypeAction#INTERNAL_EDITOR} actions:
+ * <ul>
+ *     <li>For {@link FileTypeAction#EXTERNAL_EDITOR}, files are opened in the
+ *     operating system's default external editor. If a file is located on a
+ *     non-local file system, it is first copied to a temporary local directory.</li>
+ *     <li>For {@link FileTypeAction#INTERNAL_EDITOR}, files are opened in
+ *     DBeaver's internal editor.</li>
+ * </ul>
+ * <p>
+ * Subclasses may override {@link #openFiles(List, DBPDataSourceContainer, FileTypeAction)}
+ * to customize how files are opened (for example, to support additional actions
+ * or integrate with different editors), and/or override {@link #supportedActions()}
+ * to advertise a different set of supported {@link FileTypeAction} values.
+ * This class does not handle {@link FileTypeAction#DATABASE} by default and
+ * will throw a {@link DBException} if that action is requested.
+ */
 public class AbstractFileHandler implements IFileOpenHandler {
     @Override
     public void openFiles(
