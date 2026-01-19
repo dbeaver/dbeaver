@@ -770,8 +770,8 @@ public class EditorUtils {
     }
 
     @Nullable
-    private static FileTypeAction getFileTypeActionWithDialog(@NotNull FileTypeAction[] actions, boolean removeExternal) {
-        if (removeExternal) {
+    private static FileTypeAction getFileTypeActionWithDialog(@NotNull FileTypeAction[] actions, boolean hasLocalFiles) {
+        if (hasLocalFiles) {
             actions = Arrays.stream(actions)
                 .filter(action -> action != FileTypeAction.EXTERNAL_EDITOR)
                 .toArray(FileTypeAction[]::new);
