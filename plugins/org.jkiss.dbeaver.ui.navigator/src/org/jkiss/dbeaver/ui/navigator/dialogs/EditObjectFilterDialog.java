@@ -243,10 +243,6 @@ public class EditObjectFilterDialog extends HelpEnabledDialog {
         super.cancelPressed();
     }
 
-    public boolean isGlobalFilter() {
-        return globalFilter;
-    }
-
     public static EditObjectFilterDialog createEditObjectFilterDialog(
         @NotNull Shell shell,
         @NotNull DBPDataSourceRegistry dsRegistry,
@@ -254,7 +250,7 @@ public class EditObjectFilterDialog extends HelpEnabledDialog {
         @Nullable DBSObjectFilter filter,
         boolean globalFilter
     ) {
-        return DBWorkbench.isDistributed()
+        return DBWorkbench.isDistributed() && !globalFilter
             ? new EditObjectFilterDialogTE(shell, dsRegistry, objectTitle, filter, globalFilter)
             : new EditObjectFilterDialog(shell, dsRegistry, objectTitle, filter, globalFilter);
     }
