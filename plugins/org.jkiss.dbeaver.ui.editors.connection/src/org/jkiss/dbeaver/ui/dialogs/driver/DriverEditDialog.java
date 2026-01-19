@@ -343,8 +343,8 @@ public class DriverEditDialog extends HelpEnabledDialog {
             groupWrapper,
             UIConnectionMessages.dialog_edit_driver_description,
             4,
-            -1,
-            -1
+            GridData.FILL_HORIZONTAL,
+            SWT.DEFAULT
         );
         infoGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 

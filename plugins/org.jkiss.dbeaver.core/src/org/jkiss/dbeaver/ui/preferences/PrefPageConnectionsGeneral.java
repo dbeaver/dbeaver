@@ -148,11 +148,10 @@ public class PrefPageConnectionsGeneral extends AbstractPrefPage implements IWor
         }
 
         {
-            Composite groupObjects = UIUtils.createTitledComposite(
+            UIUtils.createLabelSeparator(composite, SWT.HORIZONTAL);
+            Composite groupObjects = UIUtils.createComposite(
                 composite,
-                CoreMessages.pref_page_eclipse_ui_general_group_general,
-                1,
-                GridData.VERTICAL_ALIGN_BEGINNING);
+                1);
             Label descLabel = new Label(groupObjects, SWT.WRAP);
             descLabel.setText(CoreMessages.pref_page_eclipse_ui_general_connections_group_label);
 
