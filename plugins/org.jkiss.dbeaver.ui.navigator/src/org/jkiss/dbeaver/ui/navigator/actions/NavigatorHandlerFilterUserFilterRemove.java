@@ -50,7 +50,7 @@ public class NavigatorHandlerFilterUserFilterRemove extends AbstractHandler {
                 UINavigatorMessages.actions_navigator_user_filters_remove_title,
                 UINavigatorMessages.actions_navigator_user_filters_remove_question
             )) {
-                UserDBSObjectFilterUtils.clearUserObjectFilers(parentNode.getDataSourceContainer());
+                UserDBSObjectFilterUtils.clearUserObjectFilters(parentNode.getDataSourceContainer());
                 NavigatorHandlerRefresh.refreshNavigator(Collections.singletonList(parentNode));
             }
         } catch (DBException e) {
