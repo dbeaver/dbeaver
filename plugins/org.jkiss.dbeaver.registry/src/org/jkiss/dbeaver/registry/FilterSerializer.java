@@ -55,12 +55,12 @@ public class FilterSerializer<T extends DataSourceDescriptor> {
     public FilterConfiguration deserializeObjectFilterConfig(@NotNull Map<String, Object> filterCfg) {
         String typeName = JSONUtils.getString(filterCfg, RegistryConstants.ATTR_TYPE);
         String objectID = JSONUtils.getString(filterCfg, RegistryConstants.ATTR_ID);
-        DBSObjectFilter filter = deserializeObjectFiler(filterCfg);
+        DBSObjectFilter filter = deserializeObjectFilter(filterCfg);
         return new FilterConfiguration(typeName, objectID, filter);
     }
 
     @NotNull
-    public DBSObjectFilter deserializeObjectFiler(@NotNull Map<String, Object> map) {
+    public DBSObjectFilter deserializeObjectFilter(@NotNull Map<String, Object> map) {
         DBSObjectFilter filter = new DBSObjectFilter();
         filter.setName(JSONUtils.getString(map, RegistryConstants.ATTR_NAME));
         filter.setDescription(JSONUtils.getString(map, RegistryConstants.ATTR_DESCRIPTION));
@@ -100,11 +100,11 @@ public class FilterSerializer<T extends DataSourceDescriptor> {
             for (FilterMapping filter : filterMappings) {
                 DBSObjectFilter defaultFilter = filter.defaultFilter;
                 if (shouldSerializeFilter(defaultFilter, serialiseCustomUserFilters)) {
-                    saveObjectFiler(json, filter.typeName, null, defaultFilter);
+                    saveObjectFilter(json, filter.typeName, null, defaultFilter);
                 }
                 for (Map.Entry<String, DBSObjectFilter> cf : filter.customFilters.entrySet()) {
                     if (shouldSerializeFilter(cf.getValue(), serialiseCustomUserFilters)) {
-                        saveObjectFiler(json, filter.typeName, cf.getKey(), cf.getValue());
+                        saveObjectFilter(json, filter.typeName, cf.getKey(), cf.getValue());
                     }
                 }
             }
@@ -118,7 +118,7 @@ public class FilterSerializer<T extends DataSourceDescriptor> {
             && filter.isUserFilter() == useCustomUserFilters;
     }
 
-    public void saveObjectFiler(
+    public void saveObjectFilter(
         @NotNull JsonWriter json,
         @Nullable String typeName,
         @Nullable String objectID,

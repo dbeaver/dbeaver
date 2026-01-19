@@ -36,7 +36,7 @@ import org.jkiss.dbeaver.model.navigator.meta.DBXTreeItem;
 import org.jkiss.dbeaver.model.navigator.meta.DBXTreeNode;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectFilter;
-import org.jkiss.dbeaver.registry.UserDBSObjectFilerUtils;
+import org.jkiss.dbeaver.registry.UserDBSObjectFilterUtils;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.internal.UINavigatorMessages;
@@ -135,7 +135,7 @@ public class NavigatorHandlerFilterConfig extends NavigatorHandlerObjectCreateBa
         boolean isCurrentUserFilter = currentDialogFilter.isUserFilter();
         parentNode.setNodeFilter(itemsMeta, currentDialogFilter, !isCurrentUserFilter);
         if (isCurrentUserFilter) {
-            UserDBSObjectFilerUtils.updateUserObjectFilters(parentNode.getDataSourceContainer());
+            UserDBSObjectFilterUtils.updateUserObjectFilters(parentNode.getDataSourceContainer());
         }
         NavigatorHandlerRefresh.refreshNavigator(Collections.singletonList(parentNode));
     }

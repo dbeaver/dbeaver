@@ -26,10 +26,12 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseItem;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
-import org.jkiss.dbeaver.registry.UserDBSObjectFilerUtils;
+import org.jkiss.dbeaver.registry.UserDBSObjectFilterUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.internal.UINavigatorMessages;
 import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
+
+import java.util.Collections;
 
 public class NavigatorHandlerFilterUserFilterRemove extends AbstractHandler {
 
@@ -48,7 +50,8 @@ public class NavigatorHandlerFilterUserFilterRemove extends AbstractHandler {
                 UINavigatorMessages.actions_navigator_user_filters_remove_title,
                 UINavigatorMessages.actions_navigator_user_filters_remove_question
             )) {
-                UserDBSObjectFilerUtils.clearUserObjectFilers(parentNode.getDataSourceContainer());
+                UserDBSObjectFilterUtils.clearUserObjectFilers(parentNode.getDataSourceContainer());
+                NavigatorHandlerRefresh.refreshNavigator(Collections.singletonList(parentNode));
             }
         } catch (DBException e) {
             log.error(e);

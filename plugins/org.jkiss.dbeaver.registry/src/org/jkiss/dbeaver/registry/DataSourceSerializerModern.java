@@ -178,7 +178,7 @@ public class DataSourceSerializerModern<T extends DataSourceDescriptor> implemen
                         jsonWriter.beginArray();
                         for (DBSObjectFilter cf : savedFilters) {
                             if (!cf.isEmpty()) {
-                                filterSerializer.saveObjectFiler(jsonWriter, null, null, cf);
+                                filterSerializer.saveObjectFilter(jsonWriter, null, null, cf);
                             }
                         }
                         jsonWriter.endArray();
@@ -818,7 +818,7 @@ public class DataSourceSerializerModern<T extends DataSourceDescriptor> implemen
 
             // Saved filters
             for (Map<String, Object> ctMap : JSONUtils.getObjectList(configurationMap, "saved-filters")) {
-                DBSObjectFilter filter = filterSerializer.deserializeObjectFiler(ctMap);
+                DBSObjectFilter filter = filterSerializer.deserializeObjectFilter(ctMap);
                 registry.addSavedFilter(filter);
             }
         }
@@ -861,7 +861,7 @@ public class DataSourceSerializerModern<T extends DataSourceDescriptor> implemen
             } else {
                 DataSourceNavigatorSettingsUtils.loadSettingsFromMap(dataSource.getNavigatorSettings(), conObject);
             }
-            UserDBSObjectFilerUtils.setUserObjectFilters(dataSource, userSettings);
+            UserDBSObjectFilterUtils.setUserObjectFilters(dataSource, userSettings);
         }
     }
 

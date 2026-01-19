@@ -31,9 +31,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-public class UserDBSObjectFilerUtils {
+public class UserDBSObjectFilterUtils {
 
-    private static final Log log = Log.getLog(UserDBSObjectFilerUtils.class);
+    private static final Log log = Log.getLog(UserDBSObjectFilterUtils.class);
 
     public static final String USER_FILTER_KEY = "navigator-filters";
 
@@ -87,7 +87,7 @@ public class UserDBSObjectFilerUtils {
             log.warn("Data source container '" + objectId + "' not found in registry");
             return;
         }
-        if (settingIds.stream().noneMatch(UserDBSObjectFilerUtils.USER_FILTER_KEY::contains)) {
+        if (settingIds.stream().noneMatch(UserDBSObjectFilterUtils.USER_FILTER_KEY::contains)) {
             // No relevant settings changed
             return;
         }

@@ -60,7 +60,7 @@ import org.jkiss.dbeaver.model.struct.DBSObjectFilter;
 import org.jkiss.dbeaver.model.struct.DBSStructContainer;
 import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
 import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
-import org.jkiss.dbeaver.registry.UserDBSObjectFilerUtils;
+import org.jkiss.dbeaver.registry.UserDBSObjectFilterUtils;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.IActionConstants;
@@ -494,7 +494,7 @@ public class NavigatorUtils {
             // Save configs
             for (DBPDataSourceContainer ds : changedContainers) {
                 if (isSaveAsCurrentUserFilterOnly) {
-                    UserDBSObjectFilerUtils.updateUserObjectFilters(ds);
+                    UserDBSObjectFilterUtils.updateUserObjectFilters(ds);
                 } else {
                     ds.persistConfiguration();
                 }
