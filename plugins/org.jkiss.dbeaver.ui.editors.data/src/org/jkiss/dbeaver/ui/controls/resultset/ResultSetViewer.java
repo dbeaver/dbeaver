@@ -5270,6 +5270,11 @@ public class ResultSetViewer extends Viewer
             this.presentationState = savePresentationState();
         }
 
+        @Override
+        public String toString() {
+            return "ResultSetDataPumpJob: " + getName();
+        }
+
         @NotNull
         @Override
         protected IStatus run(@NotNull DBRProgressMonitor monitor) {

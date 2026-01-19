@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -44,6 +44,7 @@ public class AISettingsManager {
     private static final String ACTIVE_ENGINE_KEY = "activeEngine";
     private static final String PROPERTIES_KEY = "properties";
     private static final String ENGINE_CONFIGURATIONS_KEY = "engineConfigurations";
+    private static final String FUNCTIONS_ENABLED_KEY = "functionsEnabled";
     private static final String ENABLED_FUNCTION_CATEGORIES_KEY = "enabledFunctionCategories";
     private static final String ENABLED_FUNCTIONS_KEY = "enabledFunctions";
     public static final String ENGINE_PROPERTIES = "properties";
@@ -123,7 +124,7 @@ public class AISettingsManager {
                 if (!enabledCategories.isEmpty()) {
                     settings.setEnabledFunctionCategories(new HashSet<>(enabledCategories));
                 }
-
+                settings.setFunctionsEnabled(JSONUtils.getBoolean(configMap, FUNCTIONS_ENABLED_KEY, true));
                 List<String> enabledFunctions = JSONUtils.getStringList(configMap, ENABLED_FUNCTIONS_KEY);
                 if (!enabledFunctions.isEmpty()) {
                     settings.setEnabledFunctions(new HashSet<>(enabledFunctions));
@@ -199,6 +200,7 @@ public class AISettingsManager {
             }
             json.add(PROPERTIES_KEY, propertiesObject);
 
+            json.add(FUNCTIONS_ENABLED_KEY, new JsonPrimitive(settings.isFunctionsEnabled()));
             Set<String> enabledCategories = settings.getEnabledFunctionCategories();
             if (!enabledCategories.isEmpty()) {
                 JsonArray categoriesArray = new JsonArray();
