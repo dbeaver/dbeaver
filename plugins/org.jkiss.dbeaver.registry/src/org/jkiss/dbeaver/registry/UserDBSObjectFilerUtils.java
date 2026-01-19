@@ -18,15 +18,21 @@ package org.jkiss.dbeaver.registry;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPObjectSettingsProvider;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.security.SMObjectType;
 
+import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 public class UserDBSObjectFilerUtils {
+
+    private static final Log log = Log.getLog(UserDBSObjectFilerUtils.class);
 
     public static final String USER_FILTER_KEY = "navigator-filters";
 
@@ -71,6 +77,24 @@ public class UserDBSObjectFilerUtils {
             .filter(e -> e.getKey().startsWith(USER_FILTER_KEY))
             .map(Map.Entry::getValue)
             .forEach(filterCfgString -> setUserObjectFilter(dataSourceDescriptor, filterCfgString));
+    }
+
+    public static void objectSettingUpdated(
+        @NotNull DBPProject project,
+        @NotNull String objectId,
+        @NotNull Collection<String> settingIds
+    ) {
+        DBPDataSourceContainer dataSourceContainer = project.getDataSourceRegistry().getDataSource(objectId);
+        if (dataSourceContainer == null) {
+            log.warn("Data source container '" + objectId + "' not found in registry");
+            return;
+        }
+        if (settingIds.stream().noneMatch(UserDBSObjectFilerUtils.USER_FILTER_KEY::contains)) {
+            // No relevant settings changed
+            return;
+        }
+
+        dataSourceContainer.getRegistry().refreshConfig(List.of(dataSourceContainer.getId()));
     }
 
     private static void setUserObjectFilter(@NotNull DataSourceDescriptor dataSourceDescriptor, @NotNull String filterConfigJson) {

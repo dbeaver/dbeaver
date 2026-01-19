@@ -117,15 +117,9 @@ public class NavigatorHandlerFilterConfig extends NavigatorHandlerObjectCreateBa
                         }
                     }
                     case EditObjectFilterDialogTE.DELETE_USER_FILTER -> {
-                        if (dialog.isGlobalFilter()) {
-                            UserDBSObjectFilerUtils.clearUserObjectFilers(parentNode.getDataSourceContainer());
-                            parentNode.setNodeFilter(itemsMeta, null, false); // TODO check what filter we should set!
-                            NavigatorHandlerRefresh.refreshNavigator(Collections.singletonList(parentNode));
-                        } else {
                             DBSObjectFilter emptyFilter = new DBSObjectFilter();
                             emptyFilter.setUserFilter(true);
                             setParentNodeFilter(parentNode, itemsMeta, emptyFilter);
-                        }
                     }
                 }
             }
