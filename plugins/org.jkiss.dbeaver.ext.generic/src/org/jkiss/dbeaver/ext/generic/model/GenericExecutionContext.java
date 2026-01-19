@@ -181,6 +181,7 @@ public class GenericExecutionContext extends JDBCExecutionContext implements DBC
                         dbStat.execute();
                     }
                 }
+                selectedEntityName = entityName;
             } catch (SQLException e) {
                 throw new DBCException(e, this);
             } finally {
@@ -188,11 +189,9 @@ public class GenericExecutionContext extends JDBCExecutionContext implements DBC
                     txnManager.setAutoCommit(monitor, false);
                 }
             }
+        } else {
+            selectedEntityName = context.selectedEntityName;
         }
-        if (entityName == null) {
-            entityName = context.selectedEntityName;
-        }
-        selectedEntityName = entityName;
     }
 
     @Override
