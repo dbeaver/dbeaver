@@ -98,7 +98,7 @@ public class ConnectionViewSettingsContributor extends DataSourceMenuContributor
             this.dsContainer = dsContainer;
         }
 
-        void updateSettings(DBNBrowseSettings settings) {
+        void updateSettings(@NotNull DBNBrowseSettings settings) {
             if (DBWorkbench.isDistributed() && settings instanceof DataSourceNavigatorSettings dataSourceNavigatorSettings) {
                 try {
                     DataSourceNavigatorSettingsUtils.updateCustomNavigatorSettings(dsContainer, dataSourceNavigatorSettings);
@@ -265,16 +265,16 @@ public class ConnectionViewSettingsContributor extends DataSourceMenuContributor
             refreshNavigator();
         }
 
-        public void setSeparator(Separator separator) {
+        public void setSeparator(@NotNull Separator separator) {
             this.separator = separator;
         }
 
-        public void setClearUserSettings(ActionContributionItem clearUserSettings) {
+        public void setClearUserSettings(@NotNull ActionContributionItem clearUserSettings) {
             this.clearUserSettings = clearUserSettings;
         }
 
         @Override
-        void updateSettings(DBNBrowseSettings settings) {
+        void updateSettings(@NotNull DBNBrowseSettings settings) {
             super.updateSettings(settings);
             visibleCheck();
         }
