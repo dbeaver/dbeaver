@@ -34,7 +34,6 @@ import java.io.Reader;
 import java.math.BigDecimal;
 import java.net.URL;
 import java.sql.*;
-import java.time.Duration;
 import java.util.Calendar;
 import java.util.Map;
 
@@ -310,11 +309,6 @@ public class JDBCResultSetImpl extends AbstractResultSet<JDBCSession, JDBCStatem
 */
             if (!disableLogging) {
                 // Handle close
-                try {
-                    Thread.sleep(Duration.ofSeconds(20));
-                } catch (InterruptedException e) {
-                    throw new RuntimeException(e);
-                }
                 QMUtils.getDefaultHandler().handleResultSetClose(this, rowsFetched);
             }
 
