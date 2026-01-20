@@ -58,7 +58,7 @@ public class EditObjectFilterDialog extends HelpEnabledDialog {
     private Table excludeTable;
     protected Combo namesCombo;
 
-    protected Group sfGroup;
+    protected Composite sfGroup;
     protected Button saveButton;
     protected Button removeButton;
     private Button enableButton;
@@ -134,7 +134,7 @@ public class EditObjectFilterDialog extends HelpEnabledDialog {
     }
 
     protected void setSfGroup(@NotNull Composite composite) {
-        sfGroup = UIUtils.createControlGroup(
+        sfGroup = UIUtils.createTitledComposite(
             composite,
             UINavigatorMessages.dialog_filter_save_label,
             4,

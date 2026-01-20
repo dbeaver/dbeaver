@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -77,7 +77,6 @@ public class TabbedFolderList extends ConComposite {
     Color widgetForeground;
     Color widgetNormalShadow;
     Color widgetDarkShadow;
-    private Color listBackground;
     private Color hoverGradientStart;
     private Color hoverGradientEnd;
     private Color elementBackground;
@@ -160,7 +159,7 @@ public class TabbedFolderList extends ConComposite {
          * @param e the paint event.
          */
         private void paint(PaintEvent e) {
-            Color bgColor = listBackground;//getWidgetBackgrund();
+            Color bgColor = getWidgetBackground(true);
             /*
 			 * draw the top two lines of the tab, same for selected, hover and
 			 * default
@@ -307,7 +306,7 @@ public class TabbedFolderList extends ConComposite {
          * @param e the paint event.
          */
         private void paint(PaintEvent e) {
-            Color bgColor = getWidgetBackgrund(false);
+            Color bgColor = getWidgetBackground(false);
             e.gc.setForeground(widgetForeground);
             Rectangle bounds = getBounds();
 
@@ -335,7 +334,7 @@ public class TabbedFolderList extends ConComposite {
                 e.gc.drawLine(middle, 3, middle - 4, 7);
                 e.gc.drawLine(middle - 3, 7, middle + 4, 7);
 
-                e.gc.setForeground(listBackground);
+                e.gc.setForeground(bgColor);
                 e.gc.drawLine(middle, 4, middle + 1, 4);
                 e.gc.drawLine(middle - 1, 5, middle + 2, 5);
                 e.gc.drawLine(middle - 2, 6, middle + 3, 6);
@@ -385,7 +384,7 @@ public class TabbedFolderList extends ConComposite {
          * @param e the paint event.
          */
         private void paint(PaintEvent e) {
-            Color bgColor = getWidgetBackgrund(true);
+            Color bgColor = getWidgetBackground(true);
 
             e.gc.setForeground(widgetForeground);
             Rectangle bounds = getBounds();
@@ -419,7 +418,7 @@ public class TabbedFolderList extends ConComposite {
                 e.gc.drawLine(middle, bottom, middle - 4, bottom - 4);
                 e.gc.drawLine(middle - 3, bottom - 4, middle + 4, bottom - 4);
 
-                e.gc.setForeground(listBackground);
+                e.gc.setForeground(bgColor);
                 e.gc.drawLine(middle, bottom - 1, middle + 1, bottom - 1);
                 e.gc.drawLine(middle - 1, bottom - 2, middle + 2, bottom - 2);
                 e.gc.drawLine(middle - 2, bottom - 3, middle + 3, bottom - 3);
@@ -433,23 +432,29 @@ public class TabbedFolderList extends ConComposite {
         }
     }
 
-    private Color getWidgetBackgrund(boolean adapt) {
-        Color connectionColor = CSSUtils.getCurrentEditorConnectionColor(this);
-        if (connectionColor != null) {
-            if (adapt) {
-                SharedTextColors sharedColors = UIUtils.getSharedTextColors();
-                if (listBackground.hashCode() < connectionColor.hashCode()) {
-                    // Foreground darker than background - make element background darker
-                    connectionColor = sharedColors.getColor(UIUtils.blend(black, connectionColor.getRGB(), 15));
-                } else {
-                    // Make element background lighter
-                    connectionColor = sharedColors.getColor(UIUtils.blend(white, connectionColor.getRGB(), 15));
-                }
-            }
+    private Color getWidgetBackground(boolean adapt) {
+        if (UIUtils.isInDialog(this) && UIStyles.isDarkTheme()) {
+            return getParent().getBackground();
+        } else {
+            Color listBackground = UIStyles.getDefaultTextBackground();
 
-            return connectionColor;
+            Color connectionColor = CSSUtils.getCurrentEditorConnectionColor(this);
+            if (connectionColor != null) {
+                if (adapt) {
+                    SharedTextColors sharedColors = UIUtils.getSharedTextColors();
+                    if (listBackground.hashCode() < connectionColor.hashCode()) {
+                        // Foreground darker than background - make element background darker
+                        connectionColor = sharedColors.getColor(UIUtils.blend(black, connectionColor.getRGB(), 15));
+                    } else {
+                        // Make element background lighter
+                        connectionColor = sharedColors.getColor(UIUtils.blend(white, connectionColor.getRGB(), 15));
+                    }
+                }
+
+                return connectionColor;
+            }
+            return listBackground;
         }
-        return listBackground;
     }
 
     public TabbedFolderList(Composite parent, boolean section) {
@@ -722,7 +727,6 @@ public class TabbedFolderList extends ConComposite {
         Display display = getDisplay();
         ISharedTextColors sharedColors = UIUtils.getSharedTextColors();
 
-        listBackground = UIStyles.getDefaultTextBackground();
         Color widgetBackground;
         if (UIStyles.isDarkTheme()) {
             // By some reason E4 sets white background in dark theme.

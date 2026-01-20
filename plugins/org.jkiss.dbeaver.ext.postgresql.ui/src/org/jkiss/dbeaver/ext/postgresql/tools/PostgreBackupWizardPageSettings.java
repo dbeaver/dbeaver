@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,7 +24,6 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Group;
 import org.jkiss.dbeaver.ext.postgresql.PostgreMessages;
 import org.jkiss.dbeaver.ext.postgresql.PostgreUIUtils;
 import org.jkiss.dbeaver.ext.postgresql.tasks.PostgreBackupRestoreSettings;
@@ -63,7 +62,12 @@ class PostgreBackupWizardPageSettings extends PostgreToolWizardPageSettings<Post
             }
         };
 
-        Group formatGroup = UIUtils.createControlGroup(composite, PostgreMessages.wizard_backup_page_setting_group_setting, 2, GridData.FILL_HORIZONTAL, 0);
+        Composite formatGroup = UIUtils.createTitledComposite(
+            composite,
+            PostgreMessages.wizard_backup_page_setting_group_setting,
+            2,
+            GridData.FILL_HORIZONTAL
+        );
         formatCombo = UIUtils.createLabelCombo(formatGroup, PostgreMessages.wizard_backup_page_setting_label_format, SWT.DROP_DOWN | SWT.READ_ONLY);
         formatCombo.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
         for (PostgreDatabaseBackupSettings.ExportFormat format : PostgreDatabaseBackupSettings.ExportFormat.values()) {
@@ -139,7 +143,12 @@ class PostgreBackupWizardPageSettings extends PostgreToolWizardPageSettings<Post
         );
         createDatabase.addSelectionListener(changeListener);
 
-        Group outputGroup = UIUtils.createControlGroup(composite, PostgreMessages.wizard_backup_page_setting_group_output, 2, GridData.FILL_HORIZONTAL, 0);
+        Composite outputGroup = UIUtils.createTitledComposite(
+            composite,
+            PostgreMessages.wizard_backup_page_setting_group_output,
+            2,
+            GridData.FILL_HORIZONTAL
+        );
         createOutputFolderInput(outputGroup, settings);
         createExtraArgsInput(outputGroup);
 
