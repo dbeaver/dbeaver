@@ -206,9 +206,6 @@ public class PrefPageResultSetMain extends TargetPrefPage {
 
             filterForceSubselect = UIUtils.createCheckbox(advGroup, ResultSetMessages.pref_page_database_resultsets_label_filter_force_subselect,
                 ResultSetMessages.pref_page_database_resultsets_label_filter_force_subselect_tip, false, 2);
-        }
-        {
-            Composite advGroup = UIUtils.createTitledComposite(leftPane, ResultSetMessages.pref_page_results_group_advanced, 1, GridData.VERTICAL_ALIGN_BEGINNING, 0);
 
             ignoreColumnLabelCheck = UIUtils.createCheckbox(advGroup, ResultSetMessages.pref_page_database_general_use_column_names, ResultSetMessages.pref_page_database_general_use_column_names_tip, false, 2);
             advUseFetchSize = UIUtils.createCheckbox(advGroup, ResultSetMessages.pref_page_database_resultsets_label_fetch_size, ResultSetMessages.pref_page_database_resultsets_label_fetch_size_tip, false, 2);

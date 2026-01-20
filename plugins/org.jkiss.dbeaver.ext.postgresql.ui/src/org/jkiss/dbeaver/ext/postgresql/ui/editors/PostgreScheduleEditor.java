@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -75,7 +75,7 @@ public class PostgreScheduleEditor extends AbstractDatabaseObjectEditor<PostgreJ
             final Calendar calendar = Calendar.getInstance();
 
             listeners.add(createCheckboxPanel(
-                UIUtils.createControlGroup(category, "Week Days", 4, GridData.FILL_HORIZONTAL, 0),
+                UIUtils.createTitledComposite(category, "Week Days", 4, GridData.FILL_HORIZONTAL),
                 DayOfWeek.values(),
                 new Decorator<>() {
                     @NotNull
@@ -98,7 +98,7 @@ public class PostgreScheduleEditor extends AbstractDatabaseObjectEditor<PostgreJ
             ));
 
             listeners.add(createCheckboxPanel(
-                UIUtils.createControlGroup(category, "Month Days", 4, GridData.FILL_HORIZONTAL, 0),
+                UIUtils.createTitledComposite(category, "Month Days", 4, GridData.FILL_HORIZONTAL),
                 IntStream.range(1, 33).boxed().toArray(Integer[]::new),
                 new Decorator<>() {
                     @NotNull
@@ -137,7 +137,7 @@ public class PostgreScheduleEditor extends AbstractDatabaseObjectEditor<PostgreJ
             ));
 
             listeners.add(createCheckboxPanel(
-                UIUtils.createControlGroup(category, "Months", 4, GridData.FILL_HORIZONTAL, 0),
+                UIUtils.createTitledComposite(category, "Months", 4, GridData.FILL_HORIZONTAL),
                 Month.values(),
                 new Decorator<>() {
                     @NotNull
@@ -178,7 +178,7 @@ public class PostgreScheduleEditor extends AbstractDatabaseObjectEditor<PostgreJ
             category.setLayoutData(new GridData(SWT.BEGINNING, SWT.BEGINNING, false, false));
 
             listeners.add(createCheckboxPanel(
-                UIUtils.createControlGroup(category, "Hours", 6, GridData.FILL_HORIZONTAL, 0),
+                UIUtils.createTitledComposite(category, "Hours", 6, GridData.FILL_HORIZONTAL),
                 IntStream.range(0, 24).boxed().toArray(Integer[]::new),
                 new Decorator<>() {
                     @NotNull
@@ -201,7 +201,7 @@ public class PostgreScheduleEditor extends AbstractDatabaseObjectEditor<PostgreJ
             ));
 
             listeners.add(createCheckboxPanel(
-                UIUtils.createControlGroup(category, "Minutes", 6, GridData.FILL_HORIZONTAL, 0),
+                UIUtils.createTitledComposite(category, "Minutes", 6, GridData.FILL_HORIZONTAL),
                 IntStream.range(0, 60).boxed().toArray(Integer[]::new),
                 new Decorator<>() {
                     @NotNull

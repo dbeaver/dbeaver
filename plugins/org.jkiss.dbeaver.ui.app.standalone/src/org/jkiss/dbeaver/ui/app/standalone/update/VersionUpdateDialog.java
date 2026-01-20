@@ -115,7 +115,12 @@ public class VersionUpdateDialog extends Dialog {
         Composite composite = new Composite(parent, SWT.NONE);
         composite.setLayoutData(new GridData(GridData.FILL_BOTH));
         composite.setLayout(new GridLayout(1, false));
-        Composite propGroup = UIUtils.createControlGroup(composite, CoreMessages.dialog_version_update_title, 2, GridData.FILL_BOTH, 0);
+        Composite propGroup = UIUtils.createTitledComposite(
+            composite,
+            CoreMessages.dialog_version_update_title,
+            2,
+            GridData.FILL_BOTH
+        );
 
         createTopArea(composite);
 

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,7 +24,6 @@ import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.jkiss.dbeaver.ext.postgresql.PostgreMessages;
 import org.jkiss.dbeaver.model.DBConstants;
@@ -48,8 +47,8 @@ public abstract class PostgreToolWizardPageSettings<WIZARD extends AbstractNativ
         final DBPConnectionConfiguration connectionInfo = wizard.getSettings().getDataSourceContainer().getActualConnectionConfiguration();
         final String authProperty = DBConstants.INTERNAL_PROP_PREFIX + "-auth-" + wizard.getObjectsName() + "@";
 
-        Group securityGroup = UIUtils.createControlGroup(
-            parent, PostgreMessages.wizard_backup_page_setting_group_security, 2, GridData.HORIZONTAL_ALIGN_BEGINNING, 0);
+        Composite securityGroup = UIUtils.createTitledComposite(
+            parent, PostgreMessages.wizard_backup_page_setting_group_security, 2, GridData.HORIZONTAL_ALIGN_BEGINNING);
         Label infoLabel = new Label(securityGroup, SWT.NONE);
         infoLabel.setText(NLS.bind(PostgreMessages.wizard_backup_page_setting_group_security_label_info, connectionInfo.getUserName(),
              wizard.getObjectsName()));

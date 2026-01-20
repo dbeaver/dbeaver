@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,7 +20,10 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.widgets.*;
+import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Combo;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Text;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ui.IObjectPropertyConfigurator;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -36,7 +39,12 @@ public class DatabaseChartViewSettingsEditor implements IObjectPropertyConfigura
     @Override
     public void createControl(@NotNull Composite composite, DashboardItemViewSettings dashboardConfig, @NotNull Runnable propertyChangeListener) {
         {
-            Group updateGroup = UIUtils.createControlGroup(composite, UIDashboardMessages.dialog_dashboard_item_config_dashboardupdate, 2, GridData.FILL_HORIZONTAL, 0);
+            Composite updateGroup = UIUtils.createTitledComposite(
+                composite,
+                UIDashboardMessages.dialog_dashboard_item_config_dashboardupdate,
+                2,
+                GridData.FILL_HORIZONTAL
+            );
 
             Text updatePeriodText = UIUtils.createLabelText(
                 updateGroup,
@@ -64,7 +72,12 @@ public class DatabaseChartViewSettingsEditor implements IObjectPropertyConfigura
         }
 
         {
-            Group viewGroup = UIUtils.createControlGroup(composite, UIDashboardMessages.dialog_dashboard_item_config_dashboardview, 2, GridData.FILL_HORIZONTAL, 0);
+            Composite viewGroup = UIUtils.createTitledComposite(
+                composite,
+                UIDashboardMessages.dialog_dashboard_item_config_dashboardview,
+                2,
+                GridData.FILL_HORIZONTAL
+            );
 
             Combo typeCombo = UIUtils.createLabelCombo(viewGroup, UIDashboardMessages.dialog_dashboard_item_config_dashboardview_combos_view, UIDashboardMessages.dialog_dashboard_item_config_dashboardview_combos_view_tooltip, SWT.BORDER | SWT.READ_ONLY);
             typeCombo.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));

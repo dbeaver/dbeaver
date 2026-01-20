@@ -29,7 +29,6 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Event;
-import org.eclipse.swt.widgets.Group;
 import org.eclipse.ui.*;
 import org.eclipse.ui.views.IViewDescriptor;
 import org.jkiss.code.NotNull;
@@ -239,7 +238,7 @@ public abstract class TaskConfigurationWizard<SETTINGS extends DBTTaskSettings> 
         if (page instanceof TaskConfigurationWizardPageTask) {
             return false;
         }
-        if (page instanceof IWizardPageNavigable && !((IWizardPageNavigable) page).isPageApplicable()) {
+        if (page instanceof IWizardPageNavigable pageNavigable && !pageNavigable.isPageApplicable()) {
             return false;
         }
         return true;
@@ -434,19 +433,16 @@ public abstract class TaskConfigurationWizard<SETTINGS extends DBTTaskSettings> 
     }
 
     public void createVariablesEditButton(Composite parent) {
-        final Group group = UIUtils.createControlGroup(
+        Composite group = UIUtils.createTitledComposite(
             parent,
             TaskUIMessages.task_config_wizard_button_variables,
             1,
-            GridData.HORIZONTAL_ALIGN_BEGINNING | GridData.VERTICAL_ALIGN_BEGINNING,
-            0
+            GridData.HORIZONTAL_ALIGN_BEGINNING | GridData.VERTICAL_ALIGN_BEGINNING
         );
-        UIUtils.createDialogButton(group, TaskUIMessages.task_config_wizard_button_variables_configure, new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                configureVariables();
-            }
-        });
+        UIUtils.createDialogButton(
+            group,
+            TaskUIMessages.task_config_wizard_button_variables_configure,
+            SelectionListener.widgetSelectedAdapter(e -> configureVariables()));
         final Button promptTaskVariablesCheckbox = UIUtils.createCheckbox(
             group,
             TaskUIMessages.task_config_wizard_button_variables_prompt,
