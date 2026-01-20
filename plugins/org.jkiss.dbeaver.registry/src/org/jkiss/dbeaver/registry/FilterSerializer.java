@@ -18,8 +18,6 @@ package org.jkiss.dbeaver.registry;
 
 import com.google.gson.FormattingStyle;
 import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.Strictness;
 import com.google.gson.stream.JsonWriter;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
@@ -38,10 +36,7 @@ import java.util.Map;
 
 public class FilterSerializer<T extends DataSourceDescriptor> {
 
-    protected static final Gson CONFIG_GSON = new GsonBuilder()
-        .setStrictness(Strictness.LENIENT)
-        .serializeNulls()
-        .create();
+    protected static final Gson CONFIG_GSON = DataSourceSerializerModern.CONFIG_GSON;
 
     @NotNull
     public List<FilterConfiguration> deserializeObjectFilterConfig(@NotNull String filterCfgJsonStringArray) {

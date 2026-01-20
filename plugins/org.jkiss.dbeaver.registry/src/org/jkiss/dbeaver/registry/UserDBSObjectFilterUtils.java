@@ -37,7 +37,7 @@ public final class UserDBSObjectFilterUtils {
 
     public static final String USER_FILTER_KEY = "navigator-filters";
 
-    protected static final FilterSerializer<DataSourceDescriptor> filterSerializer = new FilterSerializer<>();
+    private static final FilterSerializer<DataSourceDescriptor> filterSerializer = new FilterSerializer<>();
 
     public static void clearUserObjectFilters(@NotNull DBPDataSourceContainer dataSource) throws DBException {
         DBPObjectSettingsProvider settingsProvider = DBUtils.getAdapter(DBPObjectSettingsProvider.class, dataSource.getProject());
