@@ -20,6 +20,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.DBPDataSourceFolder;
 import org.jkiss.dbeaver.model.access.DBAAuthCredentials;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.app.DBPWorkspace;
@@ -28,9 +29,12 @@ import org.jkiss.dbeaver.model.cli.model.option.DataSourceOptions;
 import org.jkiss.dbeaver.model.cli.model.option.InputFileOption;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
+import org.jkiss.dbeaver.model.meta.IPropertyValueListProvider;
+import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.model.runtime.LoggingProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.utils.PropertySerializationUtils;
+import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.IOException;
@@ -186,10 +190,8 @@ public class CLIUtils {
             dataSource.setName(dsName);
         }
         if (CommonUtils.isNotEmpty(dataSourceOptions.getFolder())) {
-            var folder = dataSource.getRegistry().getFolder(dataSourceOptions.getFolder());
-            if (folder != null) {
-                dataSource.setFolder(folder);
-            }
+            DBPDataSourceFolder folder = dataSource.getRegistry().getFolder(dataSourceOptions.getFolder());
+            dataSource.setFolder(folder);
         }
         dataSource.setSavePassword(dataSourceOptions.isSavePassword());
         processDataSourceAuthOptions(dataSource, authOptions);
@@ -278,5 +280,33 @@ public class CLIUtils {
                     .provideCredentials(dataSource, dataSource.getConnectionConfiguration(), credentialsInstance);
             }
         }
+    }
+
+    @NotNull
+    public static String getPropertyHelpText(@NotNull DBPPropertyDescriptor property) {
+        String displayName = property.getDisplayName();
+        String description = property.getDescription();
+        var helpText = new StringBuilder();
+
+        helpText.append("  - ").append(property.getId());
+        if (!CommonUtils.equalObjects(displayName, description)) {
+            helpText.append(" (").append(displayName).append(")");
+        }
+        helpText.append(": ").append(description);
+        if (property instanceof IPropertyValueListProvider<?> valueListProvider) {
+            Object[] possibleValues = valueListProvider.getPossibleValues(null);
+            if (!ArrayUtils.isEmpty(possibleValues)) {
+                helpText.append(", possible values: ");
+                for (int i = 0; i < possibleValues.length; i++) {
+                    helpText.append(possibleValues[i]);
+                    if (i < possibleValues.length - 1) {
+                        helpText.append(", ");
+                    }
+                }
+            }
+        }
+        helpText.append("\n");
+
+        return helpText.toString();
     }
 }

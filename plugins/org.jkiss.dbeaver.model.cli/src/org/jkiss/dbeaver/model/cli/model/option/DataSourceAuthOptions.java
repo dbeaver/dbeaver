@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.model.cli.model.option;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import picocli.CommandLine;
 
@@ -53,6 +54,10 @@ public class DataSourceAuthOptions {
     )
     private List<String> connectionParams;
 
+    @NotNull
+    @CommandLine.Mixin
+    private NetworkHandlerOptions networkHandlerOptions;
+
     @Nullable
     public List<String> getAuthParams() {
         return authParams;
@@ -78,4 +83,8 @@ public class DataSourceAuthOptions {
         return connectionParams;
     }
 
+    @NotNull
+    public NetworkHandlerOptions getNetworkHandlerOptions() {
+        return networkHandlerOptions;
+    }
 }
