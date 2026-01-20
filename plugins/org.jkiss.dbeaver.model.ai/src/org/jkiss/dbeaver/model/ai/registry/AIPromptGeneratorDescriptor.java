@@ -34,7 +34,6 @@ public class AIPromptGeneratorDescriptor extends AbstractDescriptor {
 
     public static final String EXTENSION_ID = "com.dbeaver.ai.prompt";
 
-    private final IConfigurationElement contributorConfig;
     private final ObjectType objectType;
     private final String id;
     private final String label;
@@ -43,9 +42,8 @@ public class AIPromptGeneratorDescriptor extends AbstractDescriptor {
 
     protected AIPromptGeneratorDescriptor(@NotNull IConfigurationElement config) {
         super(config);
-        this.contributorConfig = config;
         this.objectType = new ObjectType(config, RegistryConstants.ATTR_CLASS);
-        this.id = contributorConfig.getAttribute("id");
+        this.id = config.getAttribute(RegistryConstants.ATTR_ID);
         this.label = config.getAttribute(RegistryConstants.ATTR_LABEL);
         this.icon = iconToImage(config.getAttribute(RegistryConstants.ATTR_ICON));
         this.dependsOn = CommonUtils.splitString(config.getAttribute("dependsOn"), ',').toArray(new String[0]);
