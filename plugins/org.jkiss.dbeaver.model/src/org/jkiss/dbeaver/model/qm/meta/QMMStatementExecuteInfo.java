@@ -47,7 +47,7 @@ public class QMMStatementExecuteInfo extends QMMObject {
     @Nullable
     private final String catalog;
 
-    // Event id in database
+    // Statement id in database
     @Nullable
     private Long statementId;
 

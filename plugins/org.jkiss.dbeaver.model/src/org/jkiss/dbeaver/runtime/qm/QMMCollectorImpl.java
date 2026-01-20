@@ -307,7 +307,7 @@ public class QMMCollectorImpl extends DefaultExecutionHandler implements QMMColl
         if (session != null) {
             QMMStatementExecuteInfo exec = session.endExecution(statement, rows, error);
             if (exec != null) {
-                tryFireMetaEvent(exec, QMEventAction.UPDATE, exec.getCloseTime(), statement.getSession().getExecutionContext());
+                tryFireMetaEvent(exec, QMEventAction.END, exec.getCloseTime(), statement.getSession().getExecutionContext());
             }
         }
     }
