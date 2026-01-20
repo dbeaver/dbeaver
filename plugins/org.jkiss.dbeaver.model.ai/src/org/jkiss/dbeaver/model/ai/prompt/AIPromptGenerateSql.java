@@ -59,6 +59,7 @@ public class AIPromptGenerateSql extends AIPromptAbstract {
         @NotNull AIPromptAbstract builder
     ) {
         DBSLogicalDataSource dataSource = dsSupplier.get();
+        builder.addInstructions(AIPromptUtils.createGeneralRulesInstructions());
         if (dataSource != null) {
             builder
                 .addContexts(AIPromptUtils.describeDataSourceInfo(dataSource))

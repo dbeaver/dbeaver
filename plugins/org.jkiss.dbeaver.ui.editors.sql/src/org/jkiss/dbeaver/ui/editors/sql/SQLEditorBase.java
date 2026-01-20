@@ -45,6 +45,7 @@ import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IEditorInput;
+import org.eclipse.ui.IWorkbenchCommandConstants;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.editors.text.EditorsUI;
 import org.eclipse.ui.internal.dialogs.PropertyDialog;
@@ -770,6 +771,14 @@ public abstract class SQLEditorBase extends BaseTextEditor implements
 
         setAction(ITextEditorActionConstants.CONTEXT_PREFERENCES, new ShowPreferencesAction());
 
+        action = new SmartCopyCutAction(ITextOperationTarget.COPY);
+        action.setActionDefinitionId(IWorkbenchCommandConstants.EDIT_COPY);
+        setAction(ITextEditorActionConstants.COPY, action);
+
+        action = new SmartCopyCutAction(ITextOperationTarget.CUT);
+        action.setActionDefinitionId(IWorkbenchCommandConstants.EDIT_CUT);
+        setAction(ITextEditorActionConstants.CUT, action);
+
         SQLEditorCustomActions.registerCustomActions(this);
     }
 
@@ -1369,6 +1378,53 @@ public abstract class SQLEditorBase extends BaseTextEditor implements
                 return ((AbstractStorageEditorInput) element).isReadOnly();
             }
             return editorInput.isReadOnly();
+        }
+    }
+
+    private class SmartCopyCutAction extends Action {
+        private final int operationCode;
+
+        SmartCopyCutAction(int operationCode) {
+            this.operationCode = operationCode;
+        }
+
+        @Override
+        public void run() {
+            StyledText textWidget = getSourceViewer().getTextWidget();
+            if (textWidget == null || textWidget.isDisposed()) return;
+
+            if (operationCode == ITextOperationTarget.CUT && !textWidget.getEditable()) {
+                return;
+            }
+
+            if (textWidget.getSelectionCount() == 0) {
+                performSmartAction(textWidget);
+            } else if (operationCode == ITextOperationTarget.COPY) {
+                textWidget.copy();
+            } else if (operationCode == ITextOperationTarget.CUT) {
+                textWidget.cut();
+            }
+        }
+
+        private void performSmartAction(@NotNull StyledText textWidget) {
+            try {
+                int caretOffset = textWidget.getCaretOffset();
+                int lineIndex = textWidget.getLineAtOffset(caretOffset);
+
+                int start = textWidget.getOffsetAtLine(lineIndex);
+                int end = (lineIndex < textWidget.getLineCount() - 1)
+                        ? textWidget.getOffsetAtLine(lineIndex + 1)
+                        : textWidget.getCharCount();
+
+                textWidget.setSelection(start, end);
+            } catch (Exception e) {
+                log.error("Error performing smart copy/cut actions", e);
+            }
+            if (operationCode == ITextOperationTarget.COPY) {
+                textWidget.copy();
+            } else if (operationCode == ITextOperationTarget.CUT) {
+                textWidget.cut();
+            }
         }
     }
 

@@ -25,6 +25,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.impl.AbstractContextDescriptor;
 import org.jkiss.dbeaver.model.sql.SQLControlCommandHandler;
+import org.jkiss.utils.CommonUtils;
 
 /**
  * SQLCommandHandlerDescriptor
@@ -38,6 +39,7 @@ public class SQLCommandHandlerDescriptor extends AbstractContextDescriptor {
     private final String description;
     private final ObjectType implClass;
     private final DBPImage icon;
+    private final boolean interactive;
     private final Expression enablementExpression;
 
     public SQLCommandHandlerDescriptor(@NotNull IConfigurationElement config) {
@@ -47,6 +49,7 @@ public class SQLCommandHandlerDescriptor extends AbstractContextDescriptor {
         this.description = config.getAttribute("description");
         this.implClass = new ObjectType(config.getAttribute("class"));
         this.icon = iconToImage(config.getAttribute("icon"));
+        this.interactive = CommonUtils.getBoolean(config.getAttribute("interactive"), false);
         this.enablementExpression = getEnablementExpression(config);
     }
 
@@ -68,6 +71,10 @@ public class SQLCommandHandlerDescriptor extends AbstractContextDescriptor {
     @Nullable
     public DBPImage getIcon() {
         return icon;
+    }
+
+    public boolean isInteractive() {
+        return interactive;
     }
 
     public boolean isEnabled() {
