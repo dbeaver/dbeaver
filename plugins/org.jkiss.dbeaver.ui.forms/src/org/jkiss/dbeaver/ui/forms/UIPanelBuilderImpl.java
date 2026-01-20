@@ -19,8 +19,6 @@ package org.jkiss.dbeaver.ui.forms;
 import org.eclipse.core.databinding.DataBindingContext;
 import org.eclipse.jface.layout.GridLayoutFactory;
 import org.eclipse.jface.layout.LayoutConstants;
-import org.eclipse.jface.widgets.CompositeFactory;
-import org.eclipse.jface.widgets.GroupFactory;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
@@ -28,7 +26,6 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.forms.widgets.ExpandableComposite;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.ui.UIUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -114,19 +111,16 @@ final class UIPanelBuilderImpl extends UIControlBuilderImpl<UIPanelBuilder, Cont
 
         Composite host;
         if (expandable) {
-            host = UIUtils.createExpandableCompositeWithSeparator(parent, ExpandableComposite.CLIENT_INDENT, ExpandableComposite.TWISTIE);
+            host = UIControlFactory.createExpandableComposite(parent);
         } else {
             host = parent;
         }
 
         Composite client;
         if (text != null && !expandable) {
-            client = GroupFactory.newGroup(SWT.NONE)
-                .text(text)
-                .create(host);
+            client = UIControlFactory.createTitledComposite(host, text);
         } else {
-            client = CompositeFactory.newComposite(SWT.NONE)
-                .create(host);
+            client = UIControlFactory.createComposite(host);
         }
 
         // Compute max number of columns based on rows' controls

@@ -153,10 +153,4 @@ final class UIRowBuilderImpl implements UIRowBuilder {
         return this;
     }
 
-    @NotNull
-    @Override
-    public UIRowBuilder comment(@NotNull String text) {
-        controls.add(new UIControlBuilderImpl.CommentBuilderImpl(text));
-        return this;
-    }
 }

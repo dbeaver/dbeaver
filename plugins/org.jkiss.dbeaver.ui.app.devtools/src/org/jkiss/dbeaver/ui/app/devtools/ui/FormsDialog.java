@@ -89,8 +89,7 @@ public class FormsDialog extends TrayDialog {
             .row("textField", rb -> rb.textField(UIObservable.of("text")))
             .row("passwordField", rb -> rb.passwordField(UIObservable.of("text")))
             .row("intTextField", rb -> rb.intTextField(UIObservable.of(42)))
-            .row("comboBox", rb -> rb.comboBox(List.of(42), UIObservable.of(42), String::valueOf))
-            .row("comment", rb -> rb.comment("text"));
+            .row("comboBox", rb -> rb.comboBox(List.of(42), UIObservable.of(42), String::valueOf));
     }
 
     @NotNull
@@ -107,6 +106,7 @@ public class FormsDialog extends TrayDialog {
                     .row(rb1 -> rb1.label("A group label"))))
             .row(rb -> rb
                 .expandableGroup("An expandable group", true, pb1 -> pb1
+                    .align(UIAlignX.FILL)
                     .row(rb1 -> rb1.label("An expandable group label"))));
         // @formatter:on
     }
@@ -230,8 +230,7 @@ public class FormsDialog extends TrayDialog {
             .row(rb -> rb.group("General", general))
             .row(rb -> rb.group("Completion", completion))
             .row(rb -> rb.group("Execution", execution))
-            .row(rb -> rb.group("Send database structure", structure))
-            .row(rb -> rb.comment("This is a comment. :^)"));
+            .row(rb -> rb.group("Send database structure", structure));
     }
 
     @NotNull

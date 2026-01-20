@@ -23,12 +23,9 @@ import org.eclipse.core.databinding.observable.value.IObservableValue;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.jface.databinding.fieldassist.ControlDecorationSupport;
 import org.eclipse.jface.databinding.swt.typed.WidgetProperties;
-import org.eclipse.jface.resource.JFaceResources;
-import org.eclipse.jface.widgets.ButtonFactory;
-import org.eclipse.jface.widgets.LabelFactory;
-import org.eclipse.jface.widgets.TextFactory;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
@@ -41,8 +38,8 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 
 abstract sealed class UIControlBuilderImpl<B extends UIControlBuilder<B>, C extends Control> implements UIControlBuilder<B>
-    permits UIControlBuilderImpl.ButtonBuilderImpl, UIControlBuilderImpl.ComboBuilderImpl, UIControlBuilderImpl.CommentBuilderImpl,
-    UIControlBuilderImpl.LabelBuilderImpl, UIControlBuilderImpl.TextBuilderImpl, UIPanelBuilderImpl {
+    permits UIControlBuilderImpl.ButtonBuilderImpl, UIControlBuilderImpl.ComboBuilderImpl, UIControlBuilderImpl.LabelBuilderImpl,
+    UIControlBuilderImpl.TextBuilderImpl, UIPanelBuilderImpl {
 
     private UIObservable<Boolean> visible;
     private UIObservable<Boolean> enabled;
@@ -182,9 +179,7 @@ abstract sealed class UIControlBuilderImpl<B extends UIControlBuilder<B>, C exte
         @NotNull
         @Override
         protected Label create(@NotNull DataBindingContext context, @NotNull Composite parent) {
-            return LabelFactory.newLabel(style)
-                .text(text)
-                .create(parent);
+            return UIControlFactory.createLabel(parent, style, text);
         }
     }
 
@@ -221,8 +216,7 @@ abstract sealed class UIControlBuilderImpl<B extends UIControlBuilder<B>, C exte
         @NotNull
         @Override
         protected Text create(@NotNull DataBindingContext context, @NotNull Composite parent) {
-            return TextFactory.newText(style)
-                .create(parent);
+            return UIControlFactory.createText(parent, style);
         }
 
         @NotNull
@@ -240,7 +234,8 @@ abstract sealed class UIControlBuilderImpl<B extends UIControlBuilder<B>, C exte
             UpdateValueStrategy<? super T, String> fromModelStrategy = null;
 
             if (toModelConverter != null) {
-                toModelStrategy = (UpdateValueStrategy<String, ? extends T>) UpdateValueStrategy.create(IConverter.create(toModelConverter));
+                toModelStrategy
+                    = (UpdateValueStrategy<String, ? extends T>) UpdateValueStrategy.create(IConverter.create(toModelConverter));
                 toModelStrategy.setAfterGetValidator(toModelValidator::apply);
             }
 
@@ -277,11 +272,11 @@ abstract sealed class UIControlBuilderImpl<B extends UIControlBuilder<B>, C exte
         @NotNull
         @Override
         protected Button create(@NotNull DataBindingContext context, @NotNull Composite parent) {
-            ButtonFactory factory = ButtonFactory.newButton(style).text(text);
+            Button button = UIControlFactory.createButton(parent, style, text);
             if (onSelect != null) {
-                factory.onSelect(onSelect);
+                button.addSelectionListener(SelectionListener.widgetSelectedAdapter(onSelect));
             }
-            return factory.create(parent);
+            return button;
         }
 
         @NotNull
@@ -320,7 +315,7 @@ abstract sealed class UIControlBuilderImpl<B extends UIControlBuilder<B>, C exte
         @NotNull
         @Override
         protected Combo create(@NotNull DataBindingContext context, @NotNull Composite parent) {
-            Combo combo = new Combo(parent, style);
+            Combo combo = UIControlFactory.createCombo(parent, style);
             for (T item : items) {
                 combo.add(converter.apply(item));
             }
@@ -337,24 +332,6 @@ abstract sealed class UIControlBuilderImpl<B extends UIControlBuilder<B>, C exte
                 UpdateValueStrategy.create(IConverter.create(items::get)),
                 UpdateValueStrategy.create(IConverter.create(items::indexOf))
             );
-        }
-    }
-
-    static final class CommentBuilderImpl extends UIControlBuilderImpl<CommentBuilder, Label> implements CommentBuilder {
-        private final String text;
-
-        CommentBuilderImpl(@NotNull String text) {
-            this.text = text;
-        }
-
-        @NotNull
-        @Override
-        protected Label create(@NotNull DataBindingContext context, @NotNull Composite parent) {
-            return LabelFactory.newLabel(SWT.NONE)
-                .text(text)
-                .foreground(parent.getDisplay().getSystemColor(SWT.COLOR_WIDGET_DISABLED_FOREGROUND)) // TODO use dedicated color
-                .font(JFaceResources.getFont("org.jkiss.dbeaver.erd.diagram.font.notation.label")) // TODO use dedicated font
-                .create(parent);
         }
     }
 }

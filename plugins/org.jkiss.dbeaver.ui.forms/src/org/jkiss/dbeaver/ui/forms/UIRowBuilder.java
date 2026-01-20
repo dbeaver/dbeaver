@@ -170,7 +170,4 @@ public sealed interface UIRowBuilder permits UIRowBuilderImpl {
     ) {
         return comboBox(binding, converter, identityConsumer());
     }
-
-    @NotNull
-    UIRowBuilder comment(@NotNull String text);
 }

@@ -26,8 +26,8 @@ import java.util.function.Function;
  * The builder for a control.
  */
 public sealed interface UIControlBuilder<B extends UIControlBuilder<B>>
-    permits UIControlBuilder.ButtonBuilder, UIControlBuilder.ComboBuilder, UIControlBuilder.CommentBuilder, UIControlBuilder.LabelBuilder,
-    UIControlBuilder.TextBuilder, UIControlBuilderImpl, UIPanelBuilder {
+    permits UIControlBuilder.ButtonBuilder,UIControlBuilder.ComboBuilder, UIControlBuilder.LabelBuilder, UIControlBuilder.TextBuilder,
+    UIControlBuilderImpl, UIPanelBuilder {
 
     @NotNull
     B visible(@NotNull UIObservable<Boolean> binding);
@@ -97,11 +97,5 @@ public sealed interface UIControlBuilder<B extends UIControlBuilder<B>>
      * The builder for a combo control.
      */
     sealed interface ComboBuilder<T> extends UIControlBuilder<ComboBuilder<T>> permits UIControlBuilderImpl.ComboBuilderImpl {
-    }
-
-    /**
-     * The builder for a comment control.
-     */
-    sealed interface CommentBuilder extends UIControlBuilder<CommentBuilder> permits UIControlBuilderImpl.CommentBuilderImpl {
     }
 }
