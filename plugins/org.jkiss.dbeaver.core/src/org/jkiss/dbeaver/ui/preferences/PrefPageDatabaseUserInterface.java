@@ -120,9 +120,7 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
                 composite,
                 CoreMessages.pref_page_ui_general_group_regional,
                 2,
-                GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING,
-                0
-            );
+                GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING);
             workspaceLanguage = UIUtils.createLabelCombo(regionalSettingsGroup,
                 CoreMessages.pref_page_ui_general_combo_language,
                 CoreMessages.pref_page_ui_general_combo_language_tip,

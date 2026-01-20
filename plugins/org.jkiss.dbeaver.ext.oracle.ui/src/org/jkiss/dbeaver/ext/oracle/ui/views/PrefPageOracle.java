@@ -164,9 +164,7 @@ public class PrefPageOracle extends TargetPrefPage {
                 composite,
                 OracleUIMessages.pref_page_oracle_group_data,
                 1,
-                GridData.HORIZONTAL_ALIGN_BEGINNING,
-                0
-            );
+                GridData.HORIZONTAL_ALIGN_BEGINNING);
 
             showDateAsDate = UIUtils.createCheckbox(
                 dataGroup,

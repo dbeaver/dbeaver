@@ -108,6 +108,8 @@ public class PrefPageSQLExecute extends TargetPrefPage {
                 store.contains(ModelPreferences.SQL_VARIABLES_ENABLED) ||
 
                 store.contains(SQLPreferenceConstants.MAXIMIZE_EDITOR_ON_SCRIPT_EXECUTE) ||
+                store.contains(SQLPreferenceConstants.SET_SELECTION_TO_STATISTICS_TAB) ||
+                store.contains(SQLPreferenceConstants.CLOSE_INCLUDED_SCRIPT_AFTER_EXECUTION) ||
                 store.contains(SQLPreferenceConstants.REFRESH_DEFAULTS_AFTER_EXECUTE) ||
                 store.contains(SQLPreferenceConstants.CLEAR_OUTPUT_BEFORE_EXECUTE)
             ;
@@ -481,6 +483,8 @@ public class PrefPageSQLExecute extends TargetPrefPage {
         store.setToDefault(SQLPreferenceConstants.SCRIPT_FETCH_RESULT_SETS);
 
         store.setToDefault(SQLPreferenceConstants.MAXIMIZE_EDITOR_ON_SCRIPT_EXECUTE);
+        store.setToDefault(SQLPreferenceConstants.SET_SELECTION_TO_STATISTICS_TAB);
+        store.setToDefault(SQLPreferenceConstants.CLOSE_INCLUDED_SCRIPT_AFTER_EXECUTION);
 
         store.setToDefault(ModelPreferences.SCRIPT_STATEMENT_DELIMITER);
         store.setToDefault(ModelPreferences.SCRIPT_IGNORE_NATIVE_DELIMITER);
