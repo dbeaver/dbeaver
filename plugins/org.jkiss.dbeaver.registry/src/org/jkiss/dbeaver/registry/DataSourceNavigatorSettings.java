@@ -234,6 +234,7 @@ public class DataSourceNavigatorSettings implements DBNBrowseSettings {
         return getDefaultDataSourceNavigatorSettings();
     }
 
+    @NotNull
     public static DataSourceNavigatorSettings getDefaultDataSourceNavigatorSettings() {
         DBPPreferenceStore preferences = DBWorkbench.getPlatform().getPreferenceStore();
 

@@ -689,7 +689,7 @@ public class ConnectionPageGeneral extends ConnectionWizardPage implements Navig
         }
     }
 
-    private void processNavigatorSettings(DataSourceDescriptor dsDescriptor) {
+    private void processNavigatorSettings(@NotNull DataSourceDescriptor dsDescriptor) {
         if (DBWorkbench.isDistributed()) {
             DataSourceNavigatorSettings.setDefaultSettings(this.navigatorSettings);
             if (dsDescriptor.getNavigatorSettings().isUserSettings()) {
