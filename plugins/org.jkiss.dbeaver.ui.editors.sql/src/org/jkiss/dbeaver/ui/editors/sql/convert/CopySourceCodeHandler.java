@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -158,7 +158,12 @@ public class CopySourceCodeHandler extends AbstractHandler implements IElementUp
                 GridData gd = new GridData(GridData.FILL_BOTH);
                 gd.minimumWidth = 200;
                 formatPanel.setLayoutData(gd);
-                Group formatsGroup = UIUtils.createControlGroup(formatPanel, SQLEditorMessages.sql_editor_panel_format, 1, GridData.FILL_HORIZONTAL, 0);
+                Composite formatsGroup = UIUtils.createTitledComposite(
+                    formatPanel,
+                    SQLEditorMessages.sql_editor_panel_format,
+                    1,
+                    GridData.FILL_HORIZONTAL
+                );
                 for (SQLTargetConverterDescriptor converter : SQLConverterRegistry.getInstance().getTargetConverters()) {
                     Button formatButton = new Button(formatsGroup, SWT.RADIO);
                     formatButton.setText(converter.getLabel());
@@ -170,7 +175,12 @@ public class CopySourceCodeHandler extends AbstractHandler implements IElementUp
                     formatButton.addSelectionListener(formatChangeListener);
                 }
 
-                Group settingsGroup = UIUtils.createControlGroup(formatPanel, SQLEditorMessages.pref_page_sql_format_label_settings, 1, GridData.FILL_HORIZONTAL, 0);
+                Composite settingsGroup = UIUtils.createTitledComposite(
+                    formatPanel,
+                    SQLEditorMessages.pref_page_sql_format_label_settings,
+                    1,
+                    GridData.FILL_HORIZONTAL
+                );
                 settingsGroup.setLayoutData(new GridData(GridData.FILL_BOTH));
                 propsViewer = new PropertyTreeViewer(settingsGroup, SWT.BORDER);
                 propsViewer.getTree().addListener(SWT.Modify, new Listener() {

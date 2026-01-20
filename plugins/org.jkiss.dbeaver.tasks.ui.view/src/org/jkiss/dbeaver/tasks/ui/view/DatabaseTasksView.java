@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -131,7 +131,7 @@ public class DatabaseTasksView extends ViewPart implements DBTTaskListener {
         projectListener = new DBPProjectListener() {
             @Override
             public void handleActiveProjectChange(@NotNull DBPProject oldValue, @NotNull DBPProject newValue) {
-                UIUtils.asyncExec(() -> refresh());
+                UIExecutionQueue.queueExec(() -> UIUtils.syncExec(() -> refresh()));
             }
         };
         DBPPlatformDesktop.getInstance().getWorkspace().addProjectListener(projectListener);
@@ -400,7 +400,7 @@ public class DatabaseTasksView extends ViewPart implements DBTTaskListener {
         tasksTree.loadViewConfig();
     }
 
-    public void refresh() {
+    void refresh() {
         updateViewTitle();
 
         if (tasksTree != null) {

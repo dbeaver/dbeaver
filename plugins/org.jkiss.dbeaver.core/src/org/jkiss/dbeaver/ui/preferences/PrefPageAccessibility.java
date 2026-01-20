@@ -58,8 +58,7 @@ public class PrefPageAccessibility extends AbstractPrefPage implements IWorkbenc
             composite,
             CoreMessages.pref_page_accessibility_screen_reader_group_lbl,
             2,
-            GridData.GRAB_HORIZONTAL,
-            0);
+            GridData.GRAB_HORIZONTAL);
         createForceFocusCheckbox(composite);
         cmbScreenReaderSupport = UIUtils.createLabelCombo(
             accessibilityGroup,
