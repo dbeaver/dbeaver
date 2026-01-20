@@ -22,22 +22,25 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Shell;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.file.FileTypeAction;
 import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
 import org.jkiss.dbeaver.ui.editors.internal.EditorsMessages;
+
+import java.util.Set;
 
 /**
  * FileActionSelectorDialog
  */
 public class FileActionSelectorDialog extends BaseDialog {
 
-    private final FileTypeAction[] actions;
+    private final Set<FileTypeAction> actions;
     private FileTypeAction selectedAction;
 
-    public FileActionSelectorDialog(@NotNull Shell shell, @NotNull FileTypeAction[] actions) {
+    public FileActionSelectorDialog(@NotNull Shell shell, @NotNull Set<FileTypeAction> actions) {
         super(shell, EditorsMessages.dialog_file_type_selector_title, null);
         this.actions = actions;
-        this.selectedAction = actions.length > 0 ? actions[0] : null;
+        this.selectedAction = actions.isEmpty() ? null : actions.iterator().next();
     }
 
     @NotNull
@@ -59,6 +62,7 @@ public class FileActionSelectorDialog extends BaseDialog {
         return composite;
     }
 
+    @Nullable
     public FileTypeAction getSelectedAction() {
         return selectedAction;
     }

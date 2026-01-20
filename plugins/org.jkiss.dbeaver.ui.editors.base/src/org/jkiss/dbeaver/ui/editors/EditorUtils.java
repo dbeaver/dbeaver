@@ -370,25 +370,25 @@ public class EditorUtils {
         @NotNull IEditorInput editorInput,
         @NotNull DatabaseEditorContext context)
     {
-        if (editorInput instanceof IInMemoryEditorInput iInMemoryEditorInput) {
-            iInMemoryEditorInput.setProperty(PROP_EDITOR_CONTEXT, context);
+        if (editorInput instanceof IInMemoryEditorInput inMemoryEditorInput) {
+            inMemoryEditorInput.setProperty(PROP_EDITOR_CONTEXT, context);
             DBCExecutionContext executionContext = context.getExecutionContext();
             if (executionContext != null) {
-                iInMemoryEditorInput.setProperty(PROP_EXECUTION_CONTEXT, executionContext);
+                inMemoryEditorInput.setProperty(PROP_EXECUTION_CONTEXT, executionContext);
             }
             DBPDataSourceContainer dataSourceContainer = context.getDataSourceContainer();
             if (dataSourceContainer != null) {
-                iInMemoryEditorInput.setProperty(PROP_SQL_DATA_SOURCE_CONTAINER, dataSourceContainer);
+                inMemoryEditorInput.setProperty(PROP_SQL_DATA_SOURCE_CONTAINER, dataSourceContainer);
             }
             if (!isDefaultContextSettings(context)) {
                 if (dataSourceContainer != null) {
-                    iInMemoryEditorInput.setProperty(DBConstants.PROP_RESOURCE_DEFAULT_DATASOURCE, dataSourceContainer.getId());
+                    inMemoryEditorInput.setProperty(DBConstants.PROP_RESOURCE_DEFAULT_DATASOURCE, dataSourceContainer.getId());
                 }
                 String catalogName = getDefaultCatalogName(context);
-                if (catalogName != null) iInMemoryEditorInput.setProperty(PROP_CONTEXT_DEFAULT_CATALOG, getDefaultCatalogName(context));
+                if (catalogName != null) inMemoryEditorInput.setProperty(PROP_CONTEXT_DEFAULT_CATALOG, getDefaultCatalogName(context));
                 String schemaName = getDefaultSchemaName(context);
                 if (schemaName != null) {
-                    iInMemoryEditorInput.setProperty(PROP_CONTEXT_DEFAULT_SCHEMA, schemaName);
+                    inMemoryEditorInput.setProperty(PROP_CONTEXT_DEFAULT_SCHEMA, schemaName);
                 }
             }
             return;
@@ -513,24 +513,12 @@ public class EditorUtils {
         return null;
     }
 
-    public static IEditorPart openExternalFileEditor(Path path, IWorkbenchWindow window) {
+    @Nullable
+    public static IEditorPart openExternalFileEditor(@NotNull Path path, @NotNull IWorkbenchWindow window) {
         try {
             IEditorDescriptor desc = getFileEditorDescriptor(path, window);
             if (!IOUtils.isLocalPath(path)) {
-                final Path remotePath = path;
-                path = UIUtils.runWithMonitor(monitor -> {
-                    try {
-                        Path tempFile = ContentUtils.createTempContentFile(monitor, DBWorkbench.getPlatform(), remotePath.getFileName().toString());
-                        try (InputStream is = Files.newInputStream(remotePath)) {
-                            try (OutputStream os = Files.newOutputStream(tempFile)) {
-                                ContentUtils.copyStreams(is, Files.size(remotePath), os, monitor);
-                            }
-                        }
-                        return tempFile;
-                    } catch (IOException e) {
-                        throw new DBException("Error copying file", e);
-                    }
-                });
+               path = copyRemoteFileToTempDir(path);
             }
             IFileStore fileStore = EFS.getStore(path.toUri());
             IEditorInput input = new FileStoreEditorInput(fileStore);
@@ -539,6 +527,27 @@ public class EditorUtils {
             log.error("Can't open editor from path '" + path.toAbsolutePath(), e);
             return null;
         }
+    }
+
+    @NotNull
+    public static Path copyRemoteFileToTempDir(@NotNull Path remotePath) throws DBException {
+        return UIUtils.runWithMonitor(monitor -> {
+            try {
+                Path tempFile = ContentUtils.makeTempFile(
+                    ContentUtils.getLobFolder(monitor, DBWorkbench.getPlatform()),
+                    remotePath.getFileName().toString(),
+                    IOUtils.getFileExtension(remotePath)
+                );
+                try (InputStream is = Files.newInputStream(remotePath)) {
+                    try (OutputStream os = Files.newOutputStream(tempFile)) {
+                        ContentUtils.copyStreams(is, Files.size(remotePath), os, monitor);
+                    }
+                }
+                return tempFile;
+            } catch (IOException e) {
+                throw new DBException("Error copying file", e);
+            }
+        });
     }
 
     @NotNull
@@ -554,7 +563,8 @@ public class EditorUtils {
         return desc;
     }
 
-    public static IEditorPart openExternalFileEditor(File file, IWorkbenchWindow window) {
+    @Nullable
+    public static IEditorPart openExternalFileEditor(@NotNull File file, @NotNull IWorkbenchWindow window) {
         return openExternalFileEditor(file.toPath(), window);
     }
 
@@ -770,20 +780,18 @@ public class EditorUtils {
     }
 
     @Nullable
-    private static FileTypeAction getFileTypeActionWithDialog(@NotNull FileTypeAction[] actions, boolean hasLocalFiles) {
+    private static FileTypeAction getFileTypeActionWithDialog(@NotNull Set<FileTypeAction> actions, boolean hasLocalFiles) {
         if (hasLocalFiles) {
-            actions = Arrays.stream(actions)
-                .filter(action -> action != FileTypeAction.EXTERNAL_EDITOR)
-                .toArray(FileTypeAction[]::new);
+            actions.remove(FileTypeAction.EXTERNAL_EDITOR);
         }
         FileTypeAction selectedAction = null;
-        if (actions.length > 1) {
+        if (actions.size() > 1) {
             FileActionSelectorDialog dialog = new FileActionSelectorDialog(UIUtils.getActiveWorkbenchShell(), actions);
             if (dialog.open() == IDialogConstants.OK_ID) {
                 selectedAction = dialog.getSelectedAction();
             }
-        } else if (actions.length == 1) {
-            selectedAction = actions[0];
+        } else if (actions.size() == 1) {
+            selectedAction = actions.iterator().next();
         }
         return selectedAction;
     }

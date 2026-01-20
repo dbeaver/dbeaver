@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.model.file;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
@@ -78,9 +79,13 @@ public class FileTypeHandlerDescriptor extends AbstractDescriptor {
         return order;
     }
 
-    public IFileOpenHandler createHandler() throws ReflectiveOperationException {
+    public IFileOpenHandler createHandler() throws DBException {
         Class<? extends IFileOpenHandler> clazz = handlerType.getImplClass(IFileOpenHandler.class);
-        return clazz.getConstructor().newInstance();
+        try {
+            return clazz.getConstructor().newInstance();
+        } catch (ReflectiveOperationException e) {
+            throw new DBException("Can't instantiate file handler '" + clazz.getName() + "'", e);
+        }
     }
 
     public class Extension {

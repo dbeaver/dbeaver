@@ -22,19 +22,16 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.file.FileTypeAction;
 import org.jkiss.dbeaver.model.file.IFileOpenHandler;
-import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.ShellUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.EditorUtils;
-import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.utils.IOUtils;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Base implementation of {@link IFileOpenHandler} that provides default handling
@@ -68,7 +65,7 @@ public class AbstractFileHandler implements IFileOpenHandler {
             case EXTERNAL_EDITOR -> {
                 for (Path path : fileList) {
                     if (!IOUtils.isLocalPath(path)) {
-                        path = copyRemoteFileToTempDir(path);
+                        path = EditorUtils.copyRemoteFileToTempDir(path);
                     }
                     ShellUtils.openExternalFile(path);
                 }
@@ -86,28 +83,7 @@ public class AbstractFileHandler implements IFileOpenHandler {
 
     @NotNull
     @Override
-    public FileTypeAction[] supportedActions() {
-        return new FileTypeAction[]{FileTypeAction.EXTERNAL_EDITOR, FileTypeAction.INTERNAL_EDITOR};
-    }
-
-    @NotNull
-    private Path copyRemoteFileToTempDir(@NotNull Path remotePath) throws DBException {
-        return UIUtils.runWithMonitor(monitor -> {
-            try {
-                Path tempFile = ContentUtils.makeTempFile(
-                    ContentUtils.getLobFolder(monitor, DBWorkbench.getPlatform()),
-                    remotePath.getFileName().toString(),
-                    IOUtils.getFileExtension(remotePath)
-                );
-                try (InputStream is = Files.newInputStream(remotePath)) {
-                    try (OutputStream os = Files.newOutputStream(tempFile)) {
-                        ContentUtils.copyStreams(is, Files.size(remotePath), os, monitor);
-                    }
-                }
-                return tempFile;
-            } catch (IOException e) {
-                throw new DBException("Error copying file", e);
-            }
-        });
+    public Set<FileTypeAction> supportedActions() {
+        return new HashSet<>(Arrays.asList(FileTypeAction.EXTERNAL_EDITOR, FileTypeAction.INTERNAL_EDITOR));
     }
 }

@@ -23,7 +23,13 @@ import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 
 import java.nio.file.Path;
 import java.util.List;
+import java.util.Set;
 
+/**
+ * Interface that defines the contract for handling the opening of files.
+ * Implementations of this interface are responsible for managing how files are opened
+ * based on the provided parameters, including the action type and optional data source context.
+ */
 public interface IFileOpenHandler {
 
     /**
@@ -33,5 +39,5 @@ public interface IFileOpenHandler {
     throws DBException;
 
     @NotNull
-    FileTypeAction[] supportedActions();
+    Set<FileTypeAction> supportedActions();
 }

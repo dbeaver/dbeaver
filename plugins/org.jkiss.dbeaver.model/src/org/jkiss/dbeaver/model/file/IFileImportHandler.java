@@ -23,6 +23,18 @@ import org.jkiss.dbeaver.DBException;
 import java.nio.file.Path;
 import java.util.List;
 
+/**
+ * Interface for handling the import of files into a database or other target systems.
+ * Implementations of this interface are responsible for processing a list of file paths
+ * and optionally filtering by a specific file extension.
+ */
 public interface IFileImportHandler {
+    /**
+     * Imports a list of files, optionally filtered by a specified file extension, into a target system.
+     *
+     * @param filePath  the list of file paths to import; must not be null.
+     * @param extension the file extension to filter the files by; can be null to include all files.
+     * @throws DBException if an error occurs during the import operation.
+     */
     void importFiles(@NotNull List<Path> filePath, @Nullable String extension) throws DBException;
 }

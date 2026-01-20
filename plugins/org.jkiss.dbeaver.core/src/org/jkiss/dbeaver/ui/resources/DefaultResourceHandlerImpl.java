@@ -98,13 +98,9 @@ public class DefaultResourceHandlerImpl extends AbstractResourceHandler {
                 if (!CommonUtils.isEmpty(fileExtension)) {
                     FileTypeHandlerDescriptor fthd = FileTypeHandlerRegistry.getInstance().findHandler(fileExtension);
                     if (fthd != null) {
-                        try {
-                            IFileOpenHandler handler = fthd.createHandler();
-                            handler.openFiles(Collections.singletonList(path), null, FileTypeAction.INTERNAL_EDITOR);
-                            return;
-                        } catch (ReflectiveOperationException e) {
-                            throw new DBException("Cannot create file handler", e);
-                        }
+                        IFileOpenHandler handler = fthd.createHandler();
+                        handler.openFiles(Collections.singletonList(path), null, FileTypeAction.INTERNAL_EDITOR);
+                        return;
                     }
                 }
             }
