@@ -45,6 +45,7 @@ import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IEditorInput;
+import org.eclipse.ui.ISharedImages;
 import org.eclipse.ui.IWorkbenchCommandConstants;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.editors.text.EditorsUI;
@@ -771,15 +772,34 @@ public abstract class SQLEditorBase extends BaseTextEditor implements
 
         setAction(ITextEditorActionConstants.CONTEXT_PREFERENCES, new ShowPreferencesAction());
 
-        action = new SmartCopyCutAction(ITextOperationTarget.COPY);
-        action.setActionDefinitionId(IWorkbenchCommandConstants.EDIT_COPY);
+        action = createSmartCopyCutAction(ITextOperationTarget.COPY, IWorkbenchCommandConstants.EDIT_COPY);
         setAction(ITextEditorActionConstants.COPY, action);
 
-        action = new SmartCopyCutAction(ITextOperationTarget.CUT);
-        action.setActionDefinitionId(IWorkbenchCommandConstants.EDIT_CUT);
+        action = createSmartCopyCutAction(ITextOperationTarget.CUT, IWorkbenchCommandConstants.EDIT_CUT);
         setAction(ITextEditorActionConstants.CUT, action);
 
         SQLEditorCustomActions.registerCustomActions(this);
+    }
+
+    private IAction createSmartCopyCutAction(int operationCode, String actionDefinitionId) {
+        SmartCopyCutAction action = new SmartCopyCutAction(operationCode);
+        action.setActionDefinitionId(actionDefinitionId);
+
+        ISharedImages sharedImages = PlatformUI.getWorkbench().getSharedImages();
+
+        if (operationCode == ITextOperationTarget.CUT) {
+            action.setText("Cut");
+            action.setToolTipText("Cut selection or current line");
+            action.setImageDescriptor(sharedImages.getImageDescriptor(ISharedImages.IMG_TOOL_CUT));
+            action.setDisabledImageDescriptor(sharedImages.getImageDescriptor(ISharedImages.IMG_TOOL_CUT_DISABLED));
+        } else {
+            action.setText("Copy");
+            action.setToolTipText("Copy selection or current line");
+            action.setImageDescriptor(sharedImages.getImageDescriptor(ISharedImages.IMG_TOOL_COPY));
+            action.setDisabledImageDescriptor(sharedImages.getImageDescriptor(ISharedImages.IMG_TOOL_COPY_DISABLED));
+        }
+
+        return action;
     }
 
     // Exclude input additions. Get rid of tons of crap from debug/team extensions
