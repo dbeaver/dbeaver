@@ -61,11 +61,6 @@ public sealed interface UIRowBuilder permits UIRowBuilderImpl {
     }
 
     @NotNull
-    default UIRowBuilder controlLabel(@NotNull String text) {
-        return label(text + ":");
-    }
-
-    @NotNull
     UIRowBuilder button(
         @NotNull String text,
         @NotNull Consumer<SelectionEvent> onSelect,

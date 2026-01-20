@@ -140,23 +140,19 @@ public class DatabaseProducerPageExtractSettings extends DataTransferPageNodeSet
         var canChangeSegment = UIObservable.predicate(() -> extractType.get() == ExtractType.SEGMENTS);
 
         return pb -> pb
-            .row(rb -> rb
+            .row(DTMessages.data_transfer_wizard_output_label_max_threads, rb -> rb
                 .enabled(UIObservables.and(queryDatabase, canChangeThreads))
-                .controlLabel(DTMessages.data_transfer_wizard_output_label_max_threads)
                 .intTextField(threadCount, tb -> tb
                     .tooltip(DTUIMessages.database_producer_page_extract_settings_threads_num_text_tooltip)))
-            .row(rb -> rb
+            .row(DTUIMessages.database_producer_page_extract_settings_text_fetch_size_label, rb -> rb
                 .enabled(queryDatabase)
-                .controlLabel(DTUIMessages.database_producer_page_extract_settings_text_fetch_size_label)
                 .intTextField(fetchSize, tb -> tb
                     .tooltip(DTUIMessages.database_producer_page_extract_settings_text_fetch_size_tooltip)))
-            .row(rb -> rb
+            .row(DTMessages.data_transfer_wizard_output_label_extract_type, rb -> rb
                 .enabled(queryDatabase)
-                .controlLabel(DTMessages.data_transfer_wizard_output_label_extract_type)
                 .comboBox(extractType, DatabaseProducerPageExtractSettings::getExtractTypeLabel))
-            .row(rb -> rb
+            .row(DTMessages.data_transfer_wizard_output_label_segment_size, rb -> rb
                 .enabled(UIObservables.and(queryDatabase, canChangeSegment))
-                .controlLabel(DTMessages.data_transfer_wizard_output_label_segment_size)
                 .intTextField(segmentSize));
     }
 
