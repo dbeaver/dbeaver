@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -54,8 +54,7 @@ import org.jkiss.dbeaver.utils.PrefUtils;
 /**
  * PrefPageSQLResources
  */
-public class PrefPageSQLResources extends AbstractPrefPage implements IWorkbenchPreferencePage, IWorkbenchPropertyPage
-{
+public class PrefPageSQLResources extends AbstractPrefPage implements IWorkbenchPreferencePage, IWorkbenchPropertyPage {
     public static final String PAGE_ID = "org.jkiss.dbeaver.preferences.main.sql.resources"; //$NON-NLS-1$
 
     private static final Log log = Log.getLog(PrefPageSQLResources.class);
@@ -91,7 +90,12 @@ public class PrefPageSQLResources extends AbstractPrefPage implements IWorkbench
 
         // Resources
         {
-            Composite scriptsGroup = UIUtils.createControlGroup(composite, SQLEditorMessages.pref_page_sql_editor_group_resources, 2, GridData.FILL_HORIZONTAL, 0);
+            Composite scriptsGroup = UIUtils.createTitledComposite(
+                composite,
+                SQLEditorMessages.pref_page_sql_editor_group_resources,
+                2,
+                GridData.FILL_HORIZONTAL
+            );
 
             if (this.isStandaloneApp) {
                 deleteEmptyCombo = UIUtils.createLabelCombo(scriptsGroup, SQLEditorMessages.pref_page_sql_editor_checkbox_delete_empty_scripts, SWT.DROP_DOWN | SWT.READ_ONLY);
@@ -163,8 +167,7 @@ public class PrefPageSQLResources extends AbstractPrefPage implements IWorkbench
 
         // New Script template
         {
-            Composite group = UIUtils.createControlGroup(composite, SQLEditorMessages.pref_page_sql_editor_new_script_template_group, 1, GridData.FILL_BOTH, 0);
-            ((GridData) group.getLayoutData()).horizontalSpan = 2;
+            Composite group = UIUtils.createTitledComposite(composite, SQLEditorMessages.pref_page_sql_editor_new_script_template_group, 1, GridData.FILL_BOTH);
 
             sqlTemplateEnabledCheckbox = UIUtils.createCheckbox(
                 group,
@@ -212,12 +215,11 @@ public class PrefPageSQLResources extends AbstractPrefPage implements IWorkbench
             expander.setLayoutData(new GridData(GridData.FILL, GridData.BEGINNING, false, false, 1, 1));
             expander.setText(SQLEditorMessages.sql_editor_prefs_script_advanced_settings);
 
-            Composite connGroup = UIUtils.createControlGroup(
+            Composite connGroup = UIUtils.createTitledComposite(
                 expander,
                 SQLEditorMessages.pref_page_sql_editor_group_connection_association,
                 2,
-                GridData.FILL_HORIZONTAL,
-                0
+                GridData.FILL_HORIZONTAL
             );
             expander.setClient(connGroup);
             Label tipLabel = new Label(connGroup, SWT.WRAP);

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,10 @@
 package org.jkiss.dbeaver.ui.gis.preferences;
 
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.widgets.*;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Spinner;
+import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 import org.jkiss.code.NotNull;
@@ -51,7 +54,7 @@ public class PrefPageGIS extends AbstractPrefPage implements IWorkbenchPreferenc
         final DBPPreferenceStore preferences = GISViewerActivator.getDefault().getPreferences();
 
         {
-            final Group group = UIUtils.createControlGroup(composite, GISMessages.pref_page_gis_viewer_group, 2, SWT.NONE, 0);
+            Composite group = UIUtils.createTitledComposite(composite, GISMessages.pref_page_gis_viewer_group, 2);
 
             defaultSridText = UIUtils.createLabelText(group, GISMessages.pref_page_gis_viewer_label_srid, preferences.getString(GeometryViewerConstants.PREF_DEFAULT_SRID), SWT.BORDER);
             defaultSridText.addVerifyListener(UIUtils.getIntegerVerifyListener(Locale.ENGLISH));

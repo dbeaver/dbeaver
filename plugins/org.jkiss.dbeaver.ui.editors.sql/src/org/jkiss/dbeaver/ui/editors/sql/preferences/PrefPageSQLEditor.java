@@ -113,12 +113,12 @@ public class PrefPageSQLEditor extends TargetPrefPage {
                 NLS.bind(SQLEditorMessages.pref_page_sql_editor_label_separate_connection_each_editor_tip, DriverUtils.collectSingleConnectionDrivers()),
                 SWT.READ_ONLY | SWT.DROP_DOWN
             );
+            editorSeparateConnectionCombo.setItems(editorUseSeparateConnectionValues.stream()
+                .map(SeparateConnectionBehavior::getTitle).toArray(String[]::new));
             if (this.getDataSourceContainer() != null && this.getDataSourceContainer().getDriver().isEmbedded()) {
                 editorSeparateConnectionCombo.setEnabled(false);
-            } else {
-                editorSeparateConnectionCombo.setItems(editorUseSeparateConnectionValues.stream()
-                    .map(SeparateConnectionBehavior::getTitle).toArray(String[]::new));
             }
+
             editorSeparateConnectionCombo.setToolTipText(
                 NLS.bind(SQLEditorMessages.pref_page_sql_editor_label_separate_connection_each_editor_tip, DriverUtils.collectSingleConnectionDrivers())
             );
@@ -213,10 +213,12 @@ public class PrefPageSQLEditor extends TargetPrefPage {
     @Override
     protected void savePreferences(@NotNull DBPPreferenceStore store) {
         try {
-            store.setValue(
-                SQLPreferenceConstants.EDITOR_SEPARATE_CONNECTION,
-                editorUseSeparateConnectionValues.get(editorSeparateConnectionCombo.getSelectionIndex()).name()
-            );
+            if (this.getDataSourceContainer() != null && !this.getDataSourceContainer().getDriver().isEmbedded()) {
+                store.setValue(
+                    SQLPreferenceConstants.EDITOR_SEPARATE_CONNECTION,
+                    editorUseSeparateConnectionValues.get(editorSeparateConnectionCombo.getSelectionIndex()).name()
+                );
+            }
             store.setValue(SQLPreferenceConstants.EDITOR_CONNECT_ON_ACTIVATE, connectOnActivationCheck.getSelection());
             store.setValue(SQLPreferenceConstants.EDITOR_CONNECT_ON_EXECUTE, connectOnExecuteCheck.getSelection());
 

@@ -1605,7 +1605,7 @@ public class DataSourceDescriptor
     public void acquire(@NotNull DBPDataSourceTask user) {
         synchronized (users) {
             if (users.contains(user)) {
-                log.warn("Datasource user '" + user + "' already registered in datasource '" + getName() + "'");
+                log.debug("Datasource user '" + user + "' already registered in datasource '" + getName() + "'");
             } else {
                 users.add(user);
             }
@@ -1617,7 +1617,7 @@ public class DataSourceDescriptor
         synchronized (users) {
             if (!users.remove(user)) {
                 if (!isDisposed()) {
-                    log.warn("Datasource user '" + user + "' is not registered in datasource '" + getName() + "'");
+                    log.debug("Datasource user '" + user + "' is not registered in datasource '" + getName() + "'");
                 }
             }
         }

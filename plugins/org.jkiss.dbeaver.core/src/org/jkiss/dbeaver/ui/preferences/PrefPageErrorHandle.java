@@ -78,16 +78,14 @@ public class PrefPageErrorHandle extends TargetPrefPage {
     @NotNull
     @Override
     protected Control createPreferenceContent(@NotNull Composite parent) {
-        Composite composite = UIUtils.createPlaceholder(parent, 1, 5);
+        Composite composite = UIUtils.createComposite(parent, 1);
 
         // Misc settings
         {
             Composite timeoutsGroup = UIUtils.createTitledComposite(
                 composite,
                 CoreMessages.pref_page_error_handle_group_timeouts_title,
-                2,
-                GridData.VERTICAL_ALIGN_BEGINNING,
-                0
+                2
             );
 
             connectionOpenTimeout = UIUtils.createLabelSpinner(
@@ -121,9 +119,7 @@ public class PrefPageErrorHandle extends TargetPrefPage {
             Composite errorGroup = UIUtils.createTitledComposite(
                 composite,
                 CoreMessages.pref_page_error_handle_group_execute_title,
-                2,
-                GridData.VERTICAL_ALIGN_BEGINNING,
-                0
+                2
             );
 
             rollbackOnErrorCheck = UIUtils.createCheckbox(
