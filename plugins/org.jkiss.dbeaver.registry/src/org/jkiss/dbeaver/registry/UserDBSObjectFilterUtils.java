@@ -31,7 +31,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-public class UserDBSObjectFilterUtils {
+public final class UserDBSObjectFilterUtils {
 
     private static final Log log = Log.getLog(UserDBSObjectFilterUtils.class);
 
