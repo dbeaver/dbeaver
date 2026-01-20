@@ -763,7 +763,7 @@ public class EditorUtils {
             } else {
                 try {
                     IFileOpenHandler fileOpenHandler = handler.createHandler();
-                    FileTypeAction[] actions = fileOpenHandler.supportedActions();
+                    Set<FileTypeAction> actions = fileOpenHandler.supportedActions();
 
                     boolean allRemote = pathList.stream().noneMatch(IOUtils::isLocalPath);
                     FileTypeAction selectedAction = getFileTypeActionWithDialog(actions, !allRemote);

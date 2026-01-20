@@ -79,6 +79,7 @@ public class FileTypeHandlerDescriptor extends AbstractDescriptor {
         return order;
     }
 
+    @NotNull
     public IFileOpenHandler createHandler() throws DBException {
         Class<? extends IFileOpenHandler> clazz = handlerType.getImplClass(IFileOpenHandler.class);
         try {
