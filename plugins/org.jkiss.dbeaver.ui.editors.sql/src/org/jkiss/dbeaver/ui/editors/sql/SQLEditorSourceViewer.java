@@ -190,8 +190,14 @@ public class SQLEditorSourceViewer extends ProjectionViewer {
 
     @Override
     public boolean canDoOperation(int operation) {
-        if (operation == COPY || operation == CUT) {
-            return getTextWidget() != null;
+        if (getTextWidget() == null) {
+            return false;
+        }
+        if (operation == COPY) {
+            return true;
+        }
+        if (operation == CUT) {
+            return isEditable();
         }
         return super.canDoOperation(operation);
     }
