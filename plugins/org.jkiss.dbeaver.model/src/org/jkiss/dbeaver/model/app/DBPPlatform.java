@@ -18,7 +18,6 @@
 package org.jkiss.dbeaver.model.app;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBConfigurationController;
 import org.jkiss.dbeaver.model.DBFileController;
 import org.jkiss.dbeaver.model.connection.DBPDataSourceProviderRegistry;
@@ -94,20 +93,6 @@ public interface DBPPlatform {
      */
     @NotNull
     DBConfigurationController getConfigurationController();
-    
-    /**
-     * Returns configuration controller,
-     * which keeps product configuration which can be shared with other users.
-     */
-    @NotNull
-    DBConfigurationController getProductConfigurationController();
-    
-    /**
-     * Returns configuration controller,
-     * which keeps plugin configuration which can be shared with other users.
-     */
-    @NotNull
-    DBConfigurationController getPluginConfigurationController(@Nullable String pluginId);
 
     /**
      * Local config files are used to store some configuration specific to local machine only.

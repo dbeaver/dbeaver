@@ -140,7 +140,7 @@ public class DataFormatterRegistry implements DBPDataFormatterRegistry {
     private synchronized void loadProfiles() {
         customProfiles = new ArrayList<>();
         try {
-            String content = DBWorkbench.getPlatform().getProductConfigurationController().loadConfigurationFile(CONFIG_FILE_NAME);
+            String content = DBWorkbench.getPlatform().getConfigurationController().loadConfigurationFile(CONFIG_FILE_NAME);
             if (CommonUtils.isEmpty(content)) {
                 return;
             }
@@ -189,7 +189,7 @@ public class DataFormatterRegistry implements DBPDataFormatterRegistry {
             xml.flush();
 
             out.flush();
-            DBWorkbench.getPlatform().getProductConfigurationController()
+            DBWorkbench.getPlatform().getConfigurationController()
                 .saveConfigurationFile(CONFIG_FILE_NAME, out.getBuffer().toString());
         } catch (Throwable ex) {
             log.warn("Failed to save data formatter profiles to " + CONFIG_FILE_NAME, ex);

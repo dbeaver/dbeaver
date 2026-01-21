@@ -26,6 +26,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.WorkspaceConfigEventManager;
+import org.jkiss.dbeaver.model.app.DBPPlatform;
 import org.jkiss.dbeaver.model.connection.DBPDataSourceProviderDescriptor;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.dashboard.DBDashboardContext;
@@ -34,11 +35,13 @@ import org.jkiss.dbeaver.model.dashboard.DBDashboardProvider;
 import org.jkiss.dbeaver.model.dashboard.DashboardConstants;
 import org.jkiss.dbeaver.model.rm.RMConstants;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.registry.BasePlatformImpl;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.xml.XMLBuilder;
 import org.jkiss.utils.xml.XMLUtils;
+import org.osgi.framework.Bundle;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -97,13 +100,15 @@ public class DashboardRegistry {
                 .getConfigurationController()
                 .loadConfigurationFile(CONFIG_FILE_NAME);
             if (CommonUtils.isEmpty(configContent) && !DBWorkbench.isDistributed()) {
-                // Backward compatibility
-                configContent = DBWorkbench.getPlatform()
-                    .getPluginConfigurationController(DashboardConstants.DASHBOARDS_LEGACY_PLUGIN_ID)
-                    .loadConfigurationFile(CONFIG_FILE_NAME);
-                if (CommonUtils.isEmpty(configContent)) {
-                    configContent = DBWorkbench.getPlatform()
-                        .getPluginConfigurationController(DashboardConstants.DASHBOARDS_LEGACY_PLUGIN_ID2)
+                DBPPlatform platform = DBWorkbench.getPlatform();
+                if (platform instanceof BasePlatformImpl basePlatform) {
+                    // Backward compatibility
+                    Bundle bundle = Platform.getBundle(DashboardConstants.DASHBOARDS_LEGACY_PLUGIN_ID);
+                    if (bundle == null) {
+                        throw new IllegalStateException("Bundle '" + DashboardConstants.DASHBOARDS_LEGACY_PLUGIN_ID + "' not found");
+                    }
+                    configContent = basePlatform
+                        .getConfigurationController(bundle)
                         .loadConfigurationFile(CONFIG_FILE_NAME);
                 }
             }
