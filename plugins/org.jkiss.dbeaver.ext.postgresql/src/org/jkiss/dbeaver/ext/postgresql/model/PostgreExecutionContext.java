@@ -44,7 +44,6 @@ import java.util.List;
 public class PostgreExecutionContext extends JDBCExecutionContext implements DBCExecutionContextDefaults<PostgreDatabase, PostgreSchema> {
 
     private final List<String> searchPath = new ArrayList<>();
-    private List<String> defaultSearchPath = new ArrayList<>();
     private String activeUser;
     private long activeSchemaId;
     private boolean isolatedContext;
@@ -203,10 +202,7 @@ public class PostgreExecutionContext extends JDBCExecutionContext implements DBC
                 this.searchPath.add(PostgreConstants.PUBLIC_SCHEMA_NAME);
             }
 
-            if (defaultSearchPath.isEmpty()) {
-                setUserInTheEndOfThePath(searchPath);
-                defaultSearchPath = new ArrayList<>(searchPath);
-            }
+            setUserInTheEndOfThePath(searchPath);
 
             if (useBootstrapSettings) {
                 DBPConnectionBootstrap bootstrap = getBootstrapSettings();
