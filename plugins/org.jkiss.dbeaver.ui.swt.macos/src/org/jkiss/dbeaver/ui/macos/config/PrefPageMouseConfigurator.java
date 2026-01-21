@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,7 +22,6 @@ import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Text;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ModelPreferences;
@@ -47,7 +46,7 @@ public class PrefPageMouseConfigurator implements
     public void createControl(@NotNull Composite parent, PrefPageMiscellaneousAbstract object, @NotNull Runnable propertyChangeListener) {
         final DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
         {
-            final Group group = UIUtils.createControlGroup(parent, "Mouse pointer", 2, GridData.FILL_HORIZONTAL, 0);
+            Composite group = UIUtils.createTitledComposite(parent, "Mouse pointer", 2, GridData.FILL_HORIZONTAL);
 
             tooltipDelayCheck = UIUtils.createCheckbox(group, "Set tooltip delay (ms)", false);
             tooltipDelayCheck.setLayoutData(new GridData());
