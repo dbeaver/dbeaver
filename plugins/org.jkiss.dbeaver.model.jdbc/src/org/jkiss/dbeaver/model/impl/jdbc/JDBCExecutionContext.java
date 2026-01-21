@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -49,7 +49,7 @@ import java.util.concurrent.locks.ReentrantLock;
  * Implements transaction manager and execution context defaults.
  * Both depend on datasource implementation.
  */
-public class JDBCExecutionContext extends AbstractExecutionContext<JDBCDataSource> implements DBCTransactionManager, DBPAdaptable {
+public class JDBCExecutionContext extends AbstractExecutionContext<JDBCDataSource, JDBCRemoteInstance> implements DBCTransactionManager, DBPAdaptable {
     public static final String TYPE_MAIN = "Main";
     public static final String TYPE_METADATA = "Metadata";
 
@@ -60,8 +60,6 @@ public class JDBCExecutionContext extends AbstractExecutionContext<JDBCDataSourc
     // Time to wait for txn level/auto-commit detection
     static final int TXN_INFO_READ_TIMEOUT = 5000;
 
-    @NotNull
-    private volatile JDBCRemoteInstance instance;
     private volatile Connection connection;
     private volatile Boolean autoCommit;
     private volatile Integer transactionIsolationLevel;
@@ -70,25 +68,14 @@ public class JDBCExecutionContext extends AbstractExecutionContext<JDBCDataSourc
     private StatementLock statementLock = NoOpLock.INSTANCE;
 
     public JDBCExecutionContext(@NotNull JDBCRemoteInstance instance, String purpose) {
-        super(instance.getDataSource(), purpose);
-        this.instance = instance;
+        super(instance, purpose);
         if (!instance.getDataSource().getContainer().getDriver().isThreadSafeDriver()) {
             statementLock = new SingleThreadLock();
         }
     }
 
     public JDBCExecutionContext(@NotNull JDBCRemoteInstance instance, boolean test) {
-        super(instance.getDataSource(), "Test for " + instance);
-        this.instance = instance;
-    }
-
-    @Override
-    public JDBCRemoteInstance getOwnerInstance() {
-        return instance;
-    }
-
-    protected void setOwnerInstance(@NotNull JDBCRemoteInstance instance) {
-        this.instance = instance;
+        super(instance, "Test for " + instance);
     }
 
     @NotNull
@@ -114,7 +101,6 @@ public class JDBCExecutionContext extends AbstractExecutionContext<JDBCDataSourc
             log.error("Reopening not-closed connection");
             close();
         }
-        boolean connectionReadOnly = dataSource.getContainer().isConnectionReadOnly();
         final JDBCRemoteInstance currentInstance = this.instance;
 
         DBExecUtils.startContextInitiation(dataSource.getContainer());
@@ -302,8 +288,9 @@ public class JDBCExecutionContext extends AbstractExecutionContext<JDBCDataSourc
             if (!txnIsolationLevelReadInProgress) {
                 txnIsolationLevelReadInProgress = true;
                 new AbstractJob("Get transaction isolation level") {
+                    @NotNull
                     @Override
-                    protected IStatus run(DBRProgressMonitor monitor) {
+                    protected IStatus run(@NotNull DBRProgressMonitor monitor) {
                         try {
                             DBExecUtils.tryExecuteRecover(monitor, getDataSource(), monitor1 -> {
                                 try {
@@ -506,11 +493,6 @@ public class JDBCExecutionContext extends AbstractExecutionContext<JDBCDataSourc
     @Override
     public boolean isSupportsTransactions() {
         return instance.getDataSource().getInfo().supportsTransactions();
-    }
-
-    public void reconnect(DBRProgressMonitor monitor) throws DBCException {
-        close();
-        connect(monitor, null, null, this, true);
     }
 
     @Override

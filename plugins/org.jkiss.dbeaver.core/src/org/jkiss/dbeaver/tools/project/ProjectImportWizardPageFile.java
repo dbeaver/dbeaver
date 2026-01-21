@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -68,7 +68,12 @@ class ProjectImportWizardPageFile extends WizardPage {
     public void createControl(Composite parent)
     {
         Composite placeholder = UIUtils.createPlaceholder(parent, 1);
-        Composite configGroup = UIUtils.createControlGroup(placeholder, CoreMessages.dialog_project_import_wizard_file_group_input, 3, GridData.FILL_HORIZONTAL, 0);
+        Composite configGroup = UIUtils.createTitledComposite(
+            placeholder,
+            CoreMessages.dialog_project_import_wizard_file_group_input,
+            3,
+            GridData.FILL_HORIZONTAL
+        );
 
         final Text fileNameText = UIUtils.createLabelText(configGroup, CoreMessages.dialog_project_import_wizard_file_label_file, null); //$NON-NLS-2$
         fileNameText.addModifyListener(e -> {
@@ -112,7 +117,12 @@ class ProjectImportWizardPageFile extends WizardPage {
         gd.horizontalSpan = 3;
         importDriverCheck.setLayoutData(gd);
 
-        Group projectsGroup = UIUtils.createControlGroup(placeholder, CoreMessages.dialog_project_import_wizard_file_group_projects, 1, GridData.FILL_BOTH, 0);
+        Composite projectsGroup = UIUtils.createTitledComposite(
+            placeholder,
+            CoreMessages.dialog_project_import_wizard_file_group_projects,
+            1,
+            GridData.FILL_BOTH
+        );
 
         // Project list
         projectsTable = new Table(projectsGroup, SWT.MULTI | SWT.CHECK | SWT.BORDER | SWT.FULL_SELECTION);

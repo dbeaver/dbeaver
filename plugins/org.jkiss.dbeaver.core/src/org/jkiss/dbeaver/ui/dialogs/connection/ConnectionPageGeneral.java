@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ui.dialogs.connection;
 
 import org.eclipse.jface.dialogs.IDialogConstants;
+import org.eclipse.jface.layout.GridDataFactory;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionListener;
@@ -100,7 +101,7 @@ public class ConnectionPageGeneral extends ConnectionWizardPage implements Navig
     private List<DBPDataSourcePermission> accessRestrictions;
 
     private final List<FilterInfo> filters = new ArrayList<>();
-    private Group filtersGroup;
+    private Composite filtersGroup;
 
     ConnectionPageGeneral(ConnectionWizard wizard) {
         super(PAGE_NAME);
@@ -297,12 +298,11 @@ public class ConnectionPageGeneral extends ConnectionWizardPage implements Navig
         Composite group = UIUtils.createComposite(parent, 1);
 
         {
-            Composite miscGroup = UIUtils.createControlGroup(
+            Composite miscGroup = UIUtils.createTitledComposite(
                 group,
                 CoreMessages.pref_page_ui_general_group_general,
                 2,
-                GridData.FILL_HORIZONTAL,
-                0
+                GridData.FILL_HORIZONTAL
             );
 
             String connectionName = dataSourceDescriptor == null ? "" : dataSourceDescriptor.getName(); //$NON-NLS-1$
@@ -383,10 +383,10 @@ public class ConnectionPageGeneral extends ConnectionWizardPage implements Navig
 
         {
             // Security
-            Group securityGroup = UIUtils.createControlGroup(
+            Composite securityGroup = UIUtils.createTitledComposite(
                 refsGroup,
                 CoreMessages.dialog_connection_wizard_final_group_security,
-                1, GridData.VERTICAL_ALIGN_BEGINNING | GridData.HORIZONTAL_ALIGN_BEGINNING, 0);
+                1, GridData.VERTICAL_ALIGN_BEGINNING | GridData.HORIZONTAL_ALIGN_BEGINNING);
 
             readOnlyConnection = UIUtils.createCheckbox(
                 securityGroup,
@@ -402,10 +402,12 @@ public class ConnectionPageGeneral extends ConnectionWizardPage implements Navig
 
         {
             // Filters
-            filtersGroup = UIUtils.createControlGroup(
+            filtersGroup = UIUtils.createTitledComposite(
                 refsGroup,
                 CoreMessages.dialog_connection_wizard_final_group_filters,
-                1, GridData.VERTICAL_ALIGN_BEGINNING | GridData.HORIZONTAL_ALIGN_BEGINNING, 0);
+                1,
+                GridData.VERTICAL_ALIGN_BEGINNING | GridData.HORIZONTAL_ALIGN_BEGINNING
+            );
             for (final FilterInfo filterInfo : filters) {
                 filterInfo.link = UIUtils.createLink(
                     filtersGroup,
@@ -432,10 +434,12 @@ public class ConnectionPageGeneral extends ConnectionWizardPage implements Navig
 
         {
             // Filters
-            Composite vmGroup = UIUtils.createControlGroup(
+            Composite vmGroup = UIUtils.createTitledComposite(
                 refsGroup,
                 "Virtual model",
-                1, GridData.VERTICAL_ALIGN_BEGINNING | GridData.HORIZONTAL_ALIGN_BEGINNING, 0);
+                1,
+                GridData.VERTICAL_ALIGN_BEGINNING | GridData.HORIZONTAL_ALIGN_BEGINNING
+            );
             showVirtualModelCheck = UIUtils.createCheckbox(
                 vmGroup,
                 "Show virtual model editor",
@@ -478,43 +482,41 @@ public class ConnectionPageGeneral extends ConnectionWizardPage implements Navig
 //                "It also contains information about\nrow coloring and columns transformations", GridData.FILL_HORIZONTAL, 1);
         }
 
-        {
-            Composite linkGroup = UIUtils.createComposite(refsGroup, 1);
-            gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
-            gd.horizontalSpan = 3;
-            linkGroup.setLayoutData(gd);
+        if (getWizard().isNew()) {
+            Composite linkGroup = UIUtils.createComposite(group, 1);
 
-            Link initConfigLink = new Link(linkGroup, SWT.NONE);
-            initConfigLink.setText("<a>" + CoreMessages.dialog_connection_wizard_connection_init_description + "</a>");
-            initConfigLink.addSelectionListener(SelectionListener.widgetSelectedAdapter(selectionEvent -> {
-                if (getWizard().isNew()) {
+            // Fill all the space so links are bottom-aligned
+            GridDataFactory.fillDefaults()
+                .align(SWT.BEGINNING, SWT.END)
+                .grab(true, true)
+                .applyTo(linkGroup);
+
+            {
+                Link initConfigLink = new Link(linkGroup, SWT.NONE);
+                initConfigLink.setText("<a>" + CoreMessages.dialog_connection_wizard_connection_init_description + "</a>");
+                initConfigLink.addSelectionListener(SelectionListener.widgetSelectedAdapter(selectionEvent -> {
                     DataSourceDescriptor dataSource = getActiveDataSource();
                     EditWizardPageDialog dialog = new EditWizardPageDialog(
                         getWizard(),
                         new ConnectionPageInitialization(dataSource),
                         dataSource);
                     dialog.open();
-                } else {
-                    getWizard().openSettingsPage(ConnectionPageInitialization.PAGE_NAME);
-                }
-            }));
-            initConfigLink.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
+                }));
+                initConfigLink.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
 
-            Link shellConfigLink = new Link(linkGroup, SWT.NONE);
-            shellConfigLink.setText("<a>" + CoreMessages.dialog_connection_edit_wizard_shell_cmd + "</a>");
-            shellConfigLink.addSelectionListener(SelectionListener.widgetSelectedAdapter(selectionEvent -> {
-                if (getWizard().isNew()) {
+                Link shellConfigLink = new Link(linkGroup, SWT.NONE);
+                shellConfigLink.setText("<a>" + CoreMessages.dialog_connection_edit_wizard_shell_cmd + "</a>");
+                shellConfigLink.addSelectionListener(SelectionListener.widgetSelectedAdapter(selectionEvent -> {
                     DataSourceDescriptor dataSource = getActiveDataSource();
                     EditWizardPageDialog dialog = new EditWizardPageDialog(
                         getWizard(),
                         new ConnectionPageShellCommands(dataSource),
-                        dataSource);
+                        dataSource
+                    );
                     dialog.open();
-                } else {
-                    getWizard().openSettingsPage(ConnectionPageShellCommands.PAGE_NAME);
-                }
-            }));
-            shellConfigLink.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
+                }));
+                shellConfigLink.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
+            }
         }
 
         setControl(group);

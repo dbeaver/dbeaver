@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,13 +23,11 @@ import org.eclipse.jface.action.IContributionItem;
 import org.eclipse.jface.action.Separator;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.ui.IEditorPart;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.core.CoreMessages;
-import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.DBPDataSourceInfo;
-import org.jkiss.dbeaver.model.DBPTransactionIsolation;
-import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCTransactionManager;
@@ -133,8 +131,9 @@ public class DataSourceTransactionModeContributor extends DataSourceMenuContribu
             DBCTransactionManager txnManager = DBUtils.getTransactionManager(executionContext);
             if (txnManager != null) {
                 new AbstractJob("Set auto-commit") {
+                    @NotNull
                     @Override
-                    protected IStatus run(DBRProgressMonitor monitor) {
+                    protected IStatus run(@NotNull DBRProgressMonitor monitor) {
                         monitor.beginTask("Change connection auto-commit to " + autoCommit, 1);
                         try {
                             monitor.subTask("Change context '" + executionContext.getContextName() + "' auto-commit state");
@@ -221,15 +220,17 @@ public class DataSourceTransactionModeContributor extends DataSourceMenuContribu
             DBCTransactionManager txnManager = DBUtils.getTransactionManager(executionContext);
             if (txnManager != null) {
                 new AbstractJob("Set transaction isolation level") {
+                    @NotNull
                     @Override
-                    protected IStatus run(DBRProgressMonitor monitor) {
+                    protected IStatus run(@NotNull DBRProgressMonitor monitor) {
                         monitor.beginTask("Change transaction isolation level to " + level.getTitle(), 1);
                         try {
                             monitor.subTask("Change context '" + executionContext.getContextName() + "' transaction isolation level");
                             DBExecUtils.tryExecuteRecover(monitor, executionContext.getDataSource(), param ->
                                 txnManager.setTransactionIsolation(monitor, level));
-                            executionContext.getDataSource().getContainer().setDefaultTransactionsIsolation(level);
-                            executionContext.getDataSource().getContainer().persistConfiguration();
+                            DBPDataSourceContainer container = executionContext.getDataSource().getContainer();
+                            container.getConnectionConfiguration().getBootstrap().setDefaultTransactionIsolation(level.getCode());
+                            container.persistConfiguration();
                         } catch (Exception e) {
                             return GeneralUtils.makeExceptionStatus(e);
                         } finally {

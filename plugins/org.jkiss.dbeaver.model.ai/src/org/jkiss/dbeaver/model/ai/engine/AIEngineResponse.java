@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.model.ai.engine;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.ai.AIMessageType;
+import org.jkiss.dbeaver.model.ai.AIUsage;
 
 import java.util.List;
 
@@ -33,9 +34,8 @@ public class AIEngineResponse {
     private final List<String> variants;
     @Nullable
     private final AIFunctionCall functionCall;
-
-    private int inputTokensConsumed;
-    private int outputTokensConsumed;
+    @Nullable
+    private final AIUsage usage;
     private int processingTime;
 
     /**
@@ -43,17 +43,20 @@ public class AIEngineResponse {
      */
     public AIEngineResponse(
         @NotNull AIMessageType type,
-        @NotNull List<String> variants
+        @NotNull List<String> variants,
+        @Nullable AIUsage usage
     ) {
         this.type = type;
         this.variants = variants;
+        this.usage = usage;
         this.functionCall = null;
     }
 
     /**
      * Constructs response with function call
      */
-    public AIEngineResponse(@NotNull AIFunctionCall functionCall) {
+    public AIEngineResponse(@NotNull AIFunctionCall functionCall, @Nullable AIUsage usage) {
+        this.usage = usage;
         this.type = AIMessageType.FUNCTION;
         this.variants = null;
         this.functionCall = functionCall;
@@ -74,28 +77,9 @@ public class AIEngineResponse {
         return functionCall;
     }
 
-    public int getInputTokensConsumed() {
-        return inputTokensConsumed;
-    }
-
-    public void setInputTokensConsumed(int inputTokensConsumed) {
-        this.inputTokensConsumed = inputTokensConsumed;
-    }
-
-    public int getOutputTokensConsumed() {
-        return outputTokensConsumed;
-    }
-
-    public void setOutputTokensConsumed(int outputTokensConsumed) {
-        this.outputTokensConsumed = outputTokensConsumed;
-    }
-
-    public int getProcessingTime() {
-        return processingTime;
-    }
-
-    public void setProcessingTime(int processingTime) {
-        this.processingTime = processingTime;
+    @Nullable
+    public AIUsage getUsage() {
+        return usage;
     }
 
     @Override

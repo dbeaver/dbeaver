@@ -133,9 +133,15 @@ public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor
         }
 
         this.propName = getLocalizedString(propInfo.name(), Property.RESOURCE_TYPE_NAME, getId(), !propInfo.hidden(), locale);
-        this.propDescription = CommonUtils.isEmpty(propInfo.description()) ?
-                propName :
-                getLocalizedString(propInfo.name(), Property.RESOURCE_TYPE_DESCRIPTION, propName, false, locale);
+        this.propDescription = CommonUtils.isEmpty(propInfo.description())
+            ? propName
+            : getLocalizedString(
+                propInfo.name(),
+                Property.RESOURCE_TYPE_DESCRIPTION,
+                Property.DEFAULT_LOCAL_STRING.equals(propInfo.description()) ? propName : propInfo.description(),
+                false,
+                locale
+            );
         this.propHint = CommonUtils.isEmpty(propInfo.hint()) ?
             null :
             getLocalizedString(propInfo.name(), Property.RESOURCE_TYPE_HINT, null, false, locale);

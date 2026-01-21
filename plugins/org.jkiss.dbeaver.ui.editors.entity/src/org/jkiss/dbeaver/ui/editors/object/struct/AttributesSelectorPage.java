@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -136,7 +136,8 @@ public abstract class AttributesSelectorPage<T_OBJECT extends DBSObject, T_ATTRI
 
     @Override
     protected Composite createPageContents(Composite parent) {
-        final Composite panel = UIUtils.createPlaceholder(parent, 1);
+        final Composite panel = new Composite(parent, SWT.NONE);
+        panel.setLayout(new GridLayout(1, false));
         panel.setLayoutData(new GridData(GridData.FILL_BOTH));
 
         {
@@ -151,10 +152,8 @@ public abstract class AttributesSelectorPage<T_OBJECT extends DBSObject, T_ATTRI
         return panel;
     }
 
-    protected void createColumnsGroup(Composite panel)
-    {
-        columnsGroup = new Composite(panel, SWT.NONE);
-        columnsGroup.setLayout(new GridLayout(1, false));
+    protected void createColumnsGroup(Composite panel) {
+        columnsGroup = UIUtils.createComposite(panel, 1);
         columnsGroup.setLayoutData(new GridData(GridData.FILL_BOTH));
 
         UIUtils.createControlLabel(columnsGroup, ObjectEditorMessages.dialog_struct_columns_select_group_columns);
@@ -163,8 +162,8 @@ public abstract class AttributesSelectorPage<T_OBJECT extends DBSObject, T_ATTRI
         columnsTable = new Table(columnsGroup, SWT.BORDER | SWT.SINGLE | SWT.FULL_SELECTION | SWT.CHECK);
         columnsTable.setHeaderVisible(true);
         GridData gd = new GridData(GridData.FILL_BOTH);
-        gd.minimumWidth = 300;
-        gd.minimumHeight = 150;
+        gd.widthHint = 300;
+        gd.heightHint = 150;
         columnsTable.setLayoutData(gd);
         columnsTable.addSelectionListener(new SelectionAdapter() {
             @Override
@@ -268,8 +267,9 @@ public abstract class AttributesSelectorPage<T_OBJECT extends DBSObject, T_ATTRI
         }
         final List<T_ATTRIBUTE> attrList = new ArrayList<>();
         AbstractJob loadJob = new AbstractJob("Load entity attributes") {
+            @NotNull
             @Override
-            protected IStatus run(DBRProgressMonitor monitor) {
+            protected IStatus run(@NotNull DBRProgressMonitor monitor) {
                 monitor.beginTask("Load attributes", 1);
                 try {
                     for (T_ATTRIBUTE attr : getAttributes(monitor, object)) {
@@ -436,15 +436,11 @@ public abstract class AttributesSelectorPage<T_OBJECT extends DBSObject, T_ATTRI
 
     @NotNull
     public List<T_ATTRIBUTE> getSelectedAttributes() {
-        List<T_ATTRIBUTE> tableColumns = new ArrayList<>();
-        Set<AttributeInfo<T_ATTRIBUTE>> orderedAttributes = new TreeSet<>(Comparator.comparingInt(o -> o.position));
-        orderedAttributes.addAll(attributes);
-        for (AttributeInfo<T_ATTRIBUTE> col : orderedAttributes) {
-            if (col.position >= 0) {
-                tableColumns.add(col.attribute);
-            }
-        }
-        return tableColumns;
+        return attributes.stream()
+            .filter(o -> o.position >= 0)
+            .sorted(Comparator.comparingInt(AttributeInfo::getPosition))
+            .map(AttributeInfo::getAttribute)
+            .toList();
     }
 
     protected void createContentsBeforeColumns(Composite panel)
@@ -461,7 +457,32 @@ public abstract class AttributesSelectorPage<T_OBJECT extends DBSObject, T_ATTRI
         return true;
     }
 
-    public void updateColumnSelection(@NotNull Predicate<T_ATTRIBUTE> predicate) {
+    public void setSelectedColumns(@NotNull Collection<? extends DBSAttributeBase> attributes) {
+        // Reset checked columns
+        for (TableItem item : columnsTable.getItems()) {
+            if (item.getChecked()) {
+                item.setChecked(false);
+                handleItemSelect(item, false);
+            }
+        }
+        // Check columns, in order
+        for (DBSAttributeBase attribute : attributes) {
+            setColumnSelected(attribute, true);
+        }
+    }
+
+    public void setColumnSelected(@NotNull DBSAttributeBase attribute, boolean selected) {
+        for (TableItem item : columnsTable.getItems()) {
+            if (item.getData() instanceof AttributeInfo<?> info && attribute.equals(info.attribute)) {
+                item.setChecked(selected);
+                handleItemSelect(item, false);
+                break;
+            }
+        }
+        updateToggleButton();
+    }
+
+    private void updateColumnSelection(@NotNull Predicate<T_ATTRIBUTE> predicate) {
         for (TableItem item : columnsTable.getItems()) {
             item.setChecked(false);
             if (item.getData() instanceof AttributeInfo<?> info) {

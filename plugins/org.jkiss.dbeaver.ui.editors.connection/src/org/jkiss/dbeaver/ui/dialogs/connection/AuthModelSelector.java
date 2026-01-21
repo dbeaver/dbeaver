@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,11 +17,15 @@
 package org.jkiss.dbeaver.ui.dialogs.connection;
 
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.CTabFolder;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.widgets.*;
+import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Combo;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.Shell;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -80,14 +84,14 @@ public class AuthModelSelector extends Composite implements DBPEventListener {
         DBPConnectionEditIntention intention
     ) {
         super(parent, SWT.NONE);
-        setLayout(new FillLayout());
+        setLayout(new GridLayout(1, false));
 
         this.panelExtender = panelExtender;
         this.changeListener = changeListener;
         this.isEnableSharedConfigurator = enableShared;
         this.intention = intention;
 
-        modelConfigPlaceholder = UIUtils.createControlGroup(
+        modelConfigPlaceholder = UIUtils.createTitledComposite(
             this,
             UIConnectionMessages.dialog_connection_auth_group,
             2,
@@ -206,7 +210,7 @@ public class AuthModelSelector extends Composite implements DBPEventListener {
     }
 
     protected void showAuthModelSettings() {
-        Composite parentFolder = UIUtils.getParentOfType(modelConfigPlaceholder, TabFolder.class);
+        Composite parentFolder = UIUtils.getParentOfType(modelConfigPlaceholder, CTabFolder.class);
         if (parentFolder == null) {
             parentFolder = UIUtils.getParentOfType(modelConfigPlaceholder, Shell.class);
         }
@@ -260,7 +264,7 @@ public class AuthModelSelector extends Composite implements DBPEventListener {
         boolean authSelectorVisible = this.intention.authModelSelectionEnabled && allAuthModels.size() >= 2;
         UIUtils.setControlVisible(authModelLabel, authSelectorVisible);
         UIUtils.setControlVisible(authModelComp, authSelectorVisible);
-        ((Group) modelConfigPlaceholder).setText(authSelectorVisible
+        UIUtils.updateTitledComposite(modelConfigPlaceholder, authSelectorVisible
             ? UIConnectionMessages.dialog_connection_auth_group
             : UIConnectionMessages.dialog_connection_auth_group + " (" + selectedAuthModel.getName() + ")");
 

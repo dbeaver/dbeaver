@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,6 +30,7 @@ import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
+import org.jkiss.dbeaver.registry.fs.FileSystemProviderRegistry;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.IOUtils;
@@ -40,10 +41,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.FileSystem;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.StandardCopyOption;
+import java.nio.file.*;
 import java.util.*;
 
 /**
@@ -129,7 +127,7 @@ public class DBFUtils {
         }
     }
 
-    public static String convertPathToString(Path path) {
+    public static String convertPathToString(@NotNull Path path) {
         return IOUtils.isLocalPath(path) ? path.toString() : DBFUtils.getUriFromPath(path).toString();
     }
 
@@ -162,7 +160,8 @@ public class DBFUtils {
         return uri;
     }
 
-    public static Map<String, String> getQueryParameters(String query) {
+    @NotNull
+    public static Map<String, String> getQueryParameters(@Nullable String query) {
         if (query == null || query.isEmpty()) {
             return Collections.emptyMap();
         }
@@ -244,5 +243,45 @@ public class DBFUtils {
             Files.copy(from, to, StandardCopyOption.REPLACE_EXISTING);
             Files.delete(from);
         }
+    }
+
+    @Nullable
+    public static Path getPathFromURI(@NotNull String fileUriString) throws DBException {
+        if (IOUtils.isLocalFile(fileUriString)) {
+            return Path.of(fileUriString).toAbsolutePath();
+        }
+        URI fileUri = URI.create(fileUriString);
+        if (!fileUri.isAbsolute() || fileUri.getScheme() == null) {
+            return Path.of(fileUriString).toAbsolutePath();
+        }
+        FileSystem defaultFs = FileSystems.getDefault();
+        if (defaultFs.provider().getScheme().equals(fileUri.getScheme())) {
+            // default filesystem
+            return defaultFs.provider().getPath(fileUri);
+        } else {
+            var externalFsProvider =
+                FileSystemProviderRegistry.getInstance().getFileSystemProviderBySchema(fileUri.getScheme());
+            if (externalFsProvider == null) {
+                log.error("File system not found for scheme: " + fileUri.getScheme());
+                return null;
+            }
+
+            DBFFileSystemProvider fileSystemProvider = externalFsProvider.getInstance();
+            // Use provider's classloader because filesystem registered there as service
+            ClassLoader fsClassloader = fileSystemProvider.getClass().getClassLoader();
+            Map<String, ?> env = fileSystemProvider.prepareEnv(System.getenv());
+            try (
+                FileSystem externalFileSystem = FileSystems.newFileSystem(
+                    fileUri,
+                    env,
+                    fsClassloader
+                )
+            ) {
+                return externalFileSystem.provider().getPath(fileUri);
+            } catch (Exception e) {
+                log.error("Failed to initialize path: " + fileUri, e);
+            }
+        }
+        return null;
     }
 }

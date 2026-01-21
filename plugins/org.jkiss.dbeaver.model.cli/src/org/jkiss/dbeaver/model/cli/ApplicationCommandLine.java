@@ -23,6 +23,7 @@ import org.eclipse.core.runtime.IExtensionRegistry;
 import org.eclipse.core.runtime.Platform;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.cli.command.AbstractTopLevelCommand;
 import org.jkiss.dbeaver.model.cli.registry.CommandLineParameterDescriptor;
@@ -104,7 +105,17 @@ public abstract class ApplicationCommandLine<T extends ApplicationInstanceContro
                     message = e.getMessage();
                 }
                 log.error(message);
-                return new CLIProcessResult(CLIProcessResult.PostAction.ERROR, message);
+                return new CLIProcessResult(
+                    CLIProcessResult.PostAction.ERROR,
+                    List.of(message),
+                    CLIConstants.EXIT_CODE_ERROR
+                );
+            } catch (CommandLine.MissingParameterException e) {
+                return new CLIProcessResult(
+                    CLIProcessResult.PostAction.ERROR,
+                    List.of(e.getMessage()),
+                    CLIConstants.EXIT_CODE_ERROR
+                );
             }
 
             if (commandLineIsEmpty(parseResult)) {
@@ -112,17 +123,8 @@ public abstract class ApplicationCommandLine<T extends ApplicationInstanceContro
             }
             validateCommandLineParameters(parseResult);
 
-            for (CommandLineParameterDescriptor descriptor : customParameters.values()) {
-                CommandLine.ParseResult cliCommand = findCommand(parseResult, descriptor.getImplClass());
-                if (cliCommand == null) {
-                    continue;
-                }
-                if (supportNewInstance && descriptor.isExclusiveMode() && descriptor.isForceNewInstance()) {
-                    return new CLIProcessResult(CLIProcessResult.PostAction.START_INSTANCE);
-                }
-            }
-
-
+            // Handle help/version before executing commands,
+            // because we don't need to execute/start new instance for this cases
             CommandLine.Model.CommandSpec commandForHelp = null;
             if (parseResult.isUsageHelpRequested()) {
                 commandForHelp = parseResult.commandSpec();
@@ -155,6 +157,16 @@ public abstract class ApplicationCommandLine<T extends ApplicationInstanceContro
             if (parseResult.isVersionHelpRequested()) {
                 String version = GeneralUtils.getLongProductTitle();
                 return new CLIProcessResult(CLIProcessResult.PostAction.SHUTDOWN, version);
+            }
+
+            for (CommandLineParameterDescriptor descriptor : customParameters.values()) {
+                CommandLine.ParseResult cliCommand = findCommand(parseResult, descriptor.getImplClass());
+                if (cliCommand == null) {
+                    continue;
+                }
+                if (supportNewInstance && descriptor.isExclusiveMode() && descriptor.isForceNewInstance()) {
+                    return new CLIProcessResult(CLIProcessResult.PostAction.START_INSTANCE);
+                }
             }
 
             commandLine.execute(args);
@@ -201,7 +213,7 @@ public abstract class ApplicationCommandLine<T extends ApplicationInstanceContro
     }
 
     @NotNull
-    public String[] preprocessCommandLine(@NotNull String[] args) {
+    public String[] preprocessCommandLine(@NotNull String[] args) throws DBException {
         try (var context = new CommandLineContext(null)) {
             CommandLine commandLine = initCommandLine(
                 null,
@@ -212,7 +224,7 @@ public abstract class ApplicationCommandLine<T extends ApplicationInstanceContro
             CommandLine.ParseResult parseResult;
             parseResult = commandLine.parseArgs(args);
             if (commandLineIsEmpty(parseResult)) {
-                return args;
+                return new String[0];
             }
             for (CommandLineParameterDescriptor descriptor : customParameters.values()) {
                 CommandLine.ParseResult cliCommand = findCommand(parseResult, descriptor.getImplClass());
@@ -226,6 +238,8 @@ public abstract class ApplicationCommandLine<T extends ApplicationInstanceContro
                     false
                 );
             }
+        } catch (Exception e) {
+            log.error("Error preprocessing command line: " + e.getMessage(), e);
         }
         return args;
     }
@@ -260,11 +274,15 @@ public abstract class ApplicationCommandLine<T extends ApplicationInstanceContro
     }
 
     protected boolean commandLineIsEmpty(@Nullable CommandLine.ParseResult commandLine) {
-        return commandLine == null || (
-            CommonUtils.isEmpty(commandLine.matchedArgs())
-                && CommonUtils.isEmpty(commandLine.matchedOptions())
-                && CommonUtils.isEmpty(commandLine.subcommands())
-        );
+        if (commandLine == null) {
+            return true;
+        }
+        var noArgs = commandLine.matchedArgs()
+            .stream().allMatch(CommandLine.Model.ArgSpec::hidden);
+
+        var noOptions = commandLine.matchedOptions()
+            .stream().allMatch(CommandLine.Model.ArgSpec::hidden);
+        return noArgs && noOptions && CommonUtils.isEmpty(commandLine.subcommands());
     }
 
 

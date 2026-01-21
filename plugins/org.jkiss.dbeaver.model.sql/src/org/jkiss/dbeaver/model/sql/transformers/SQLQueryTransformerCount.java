@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,10 +20,15 @@ import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.Function;
 import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
 import net.sf.jsqlparser.statement.Statement;
-import net.sf.jsqlparser.statement.select.*;
+import net.sf.jsqlparser.statement.select.AllColumns;
+import net.sf.jsqlparser.statement.select.Distinct;
+import net.sf.jsqlparser.statement.select.PlainSelect;
+import net.sf.jsqlparser.statement.select.SelectItem;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.sql.*;
 import org.jkiss.dbeaver.model.sql.parser.SQLSemanticProcessor;
 import org.jkiss.utils.CommonUtils;
@@ -42,11 +47,16 @@ public class SQLQueryTransformerCount implements SQLQueryTransformer {
     private static final String COUNT_WRAP_PREFIX = "SELECT COUNT(*) FROM (";
     private static final String COUNT_WRAP_POSTFIX = "\n) dbvrcnt";
 
+    @NotNull
     @Override
-    public SQLQuery transformQuery(DBPDataSource dataSource, SQLSyntaxManager syntaxManager, SQLQuery query) throws DBException {
+    public SQLQuery transformQuery(
+        @NotNull DBPDataSource dataSource,
+        @NotNull SQLSyntaxManager syntaxManager,
+        @NotNull SQLQuery query
+    ) throws DBException {
         try {
             SQLDialect sqlDialect = dataSource.getSQLDialect();
-            if (!sqlDialect.supportsSubqueries() || (sqlDialect instanceof SQLDialectRelational && ((SQLDialectRelational)sqlDialect).isAmbiguousCountBroken())) {
+            if (!sqlDialect.supportsSubqueries() || (sqlDialect instanceof SQLDialectRelational sdr && sdr.isAmbiguousCountBroken())) {
                 return tryInjectCount(dataSource, query);
             }
         } catch (Throwable e) {
@@ -56,19 +66,23 @@ public class SQLQueryTransformerCount implements SQLQueryTransformer {
         return wrapSourceQuery(dataSource, syntaxManager, query);
     }
 
-    private SQLQuery wrapSourceQuery(DBPDataSource dataSource, SQLSyntaxManager syntaxManager, SQLQuery query) {
+    @NotNull
+    private SQLQuery wrapSourceQuery(
+        @NotNull DBPDataSource dataSource,
+        @NotNull SQLSyntaxManager syntaxManager,
+        @NotNull SQLQuery query
+    ) throws DBException {
         String queryText = null;
-        try {
-            // Remove orderings (#4652)
-            Statement statement = SQLSemanticProcessor.parseQuery(query.getText());
-            if (statement instanceof PlainSelect plainSelect) {
-                if (!CommonUtils.isEmpty(plainSelect.getOrderByElements())) {
-                    plainSelect.setOrderByElements(null);
-                    queryText = statement.toString();
-                }
+
+        // Remove orderings (#4652)
+        Statement statement = SQLSemanticProcessor.parseQuery(query.getText());
+        if (statement instanceof PlainSelect plainSelect) {
+            if (!CommonUtils.isEmpty(plainSelect.getOrderByElements())) {
+                plainSelect.setOrderByElements(null);
+                queryText = statement.toString();
             }
-        } catch (Throwable e) {
-            log.debug("Error parsing query for COUNT transformation: " + e.getMessage());
+        } else {
+            throw new DBCException("Cannot calculate row count for non-SELECT statement '" + query.getText() + "'");
         }
         // Trim query delimiters (#2541)
         if (queryText == null) {
@@ -79,7 +93,8 @@ public class SQLQueryTransformerCount implements SQLQueryTransformer {
         return new SQLQuery(dataSource, countQuery, query, false);
     }
 
-    private SQLQuery tryInjectCount(DBPDataSource dataSource, SQLQuery query) throws DBException {
+    @NotNull
+    private SQLQuery tryInjectCount(@NotNull DBPDataSource dataSource, @NotNull SQLQuery query) throws DBException {
         try {
             Statement statement = SQLSemanticProcessor.parseQuery(query.getText());
             if (statement instanceof PlainSelect select) {

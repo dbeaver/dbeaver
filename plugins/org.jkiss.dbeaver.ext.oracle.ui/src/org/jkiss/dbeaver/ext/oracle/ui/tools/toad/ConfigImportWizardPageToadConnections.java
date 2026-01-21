@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.ext.oracle.model.dict.OracleConnectionRole;
 import org.jkiss.dbeaver.ext.oracle.model.dict.OracleConnectionType;
 import org.jkiss.dbeaver.ext.oracle.ui.internal.OracleUIActivator;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
+import org.jkiss.dbeaver.model.net.DBWUtils;
 import org.jkiss.dbeaver.model.net.ssh.SSHConstants;
 import org.jkiss.dbeaver.registry.network.NetworkHandlerDescriptor;
 import org.jkiss.dbeaver.registry.network.NetworkHandlerRegistry;
@@ -118,7 +119,7 @@ public class ConfigImportWizardPageToadConnections extends ConfigImportWizardPag
                                         String sshRemotePort = attrMap.get("SSHRemotePort");
                                         String sshRemoteHost = attrMap.get("SSHRemoteHost");
 
-                                        NetworkHandlerDescriptor sslHD = NetworkHandlerRegistry.getInstance().getDescriptor("ssh_tunnel");
+                                        NetworkHandlerDescriptor sslHD = NetworkHandlerRegistry.getInstance().getDescriptor(DBWUtils.SSH_TUNNEL);
                                         sshHandler = new DBWHandlerConfiguration(sslHD, null);
                                         sshHandler.setUserName(sshUser);
                                         sshHandler.setSavePassword(true);

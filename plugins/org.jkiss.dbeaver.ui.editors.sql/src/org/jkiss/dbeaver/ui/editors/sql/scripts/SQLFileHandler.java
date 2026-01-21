@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.ui.editors.sql.scripts;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.EditorUtils;
@@ -53,4 +54,8 @@ public class SQLFileHandler implements IFileTypeHandler {
         }
     }
 
+    @Override
+    public void importFiles(@NotNull List<Path> filePath, @Nullable String extension) throws DBException {
+        throw new DBException("Importing files is not supported for SQL files");
+    }
 }

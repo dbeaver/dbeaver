@@ -42,8 +42,8 @@ public class CopilotClient extends AbstractHttpAIClient {
     private static final Log log = Log.getLog(CopilotClient.class);
     private static final String DATA_EVENT = "data: ";
     private static final String DONE_EVENT = "[DONE]";
-    private static final Duration TIMEOUT = Duration.ofSeconds(30);
-    private static final Gson GSON = new GsonBuilder()
+    protected static final Duration TIMEOUT = Duration.ofSeconds(30);
+    protected static final Gson GSON = new GsonBuilder()
         .setStrictness(Strictness.LENIENT)
         .serializeNulls()
         .create();
@@ -54,7 +54,7 @@ public class CopilotClient extends AbstractHttpAIClient {
     private static final String EDITOR_VERSION = "Neovim/0.6.1"; // TODO replace after partnership
     private static final String EDITOR_PLUGIN_VERSION = "copilot.vim/1.16.0"; // TODO replace after partnership
     private static final String USER_AGENT = "GithubCopilot/1.155.0";
-    private static final String CHAT_EDITOR_VERSION = "vscode/1.80.1"; // TODO replace after partnership
+    protected static final String CHAT_EDITOR_VERSION = "vscode/1.80.1"; // TODO replace after partnership
     private static final String DBEAVER_OAUTH_APP = "Iv1.b507a08c87ecfe98";
 
     /**
@@ -179,26 +179,25 @@ public class CopilotClient extends AbstractHttpAIClient {
             request,
             line -> {
                 if (line.startsWith(DATA_EVENT)) {
-
                     String data = line.substring(6).trim();
-                    if (DONE_EVENT.equals(data)) {
-                        listener.close();
-                    } else {
-                        try {
-                            CopilotChatChunk chunk = GSON.fromJson(data, CopilotChatChunk.class);
-                            List<String> choices = chunk.choices().stream()
-                                .takeWhile(it -> it.delta().content() != null)
-                                .map(it -> it.delta().content())
-                                .toList();
-                            listener.nextChunk(new AIEngineResponseChunk(choices));
-                        } catch (Exception e) {
-                            listener.error(e);
-                        }
+                    if (data.equals(DONE_EVENT)) {
+                        listener.completeBlock();
+                        return;
+                    }
+                    try {
+                        CopilotChatChunk chunk = GSON.fromJson(data, CopilotChatChunk.class);
+                        List<String> choices = chunk.choices().stream()
+                            .takeWhile(it -> it.delta().content() != null)
+                            .map(it -> it.delta().content())
+                            .toList();
+                        listener.nextChunk(new AIEngineResponseChunk(choices));
+                    } catch (Exception e) {
+                        listener.error(e);
                     }
                 }
             },
             listener::error,
-            listener::close
+            listener::completeBlock
         );
     }
 

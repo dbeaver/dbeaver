@@ -57,4 +57,8 @@ public interface ERDDecorator {
 
     void fillPalette(@NotNull PaletteRoot paletteRoot, boolean readOnly);
 
+    default boolean isHideUnusedColumns() {return false;}
+
+    default void setHideUnusedColumns(boolean b) {}
+
 }

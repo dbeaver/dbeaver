@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -93,11 +93,10 @@ public class PrefPageDatabaseNavigator extends AbstractPrefPage implements IWork
     @NotNull
     @Override
     protected Control createPreferenceContent(@NotNull Composite parent) {
-        Composite composite = UIUtils.createPlaceholder(parent, 2, 5);
+        Composite composite = UIUtils.createComposite(parent, 2);
 
         {
-            Group navigatorGroup = UIUtils.createControlGroup(composite, UINavigatorMessages.pref_page_database_general_group_navigator, 2, SWT.NONE, 0);
-            ((GridData)navigatorGroup.getLayoutData()).verticalSpan = 2;
+            Composite navigatorGroup = UIUtils.createTitledComposite(composite, UINavigatorMessages.pref_page_database_general_group_navigator, 2);
 
             showConnectionHostCheck = UIUtils.createCheckbox(
                 navigatorGroup,
@@ -217,7 +216,12 @@ public class PrefPageDatabaseNavigator extends AbstractPrefPage implements IWork
         }
 
         {
-            Group behaviorGroup = UIUtils.createControlGroup(composite, UINavigatorMessages.pref_page_database_navigator_group_behavior, 2, GridData.VERTICAL_ALIGN_BEGINNING, 0);
+            Composite behaviorGroup = UIUtils.createTitledComposite(
+                composite,
+                UINavigatorMessages.pref_page_database_navigator_group_behavior,
+                2,
+                GridData.VERTICAL_ALIGN_BEGINNING
+            );
 
             objDoubleClickBehavior = UIUtils.createLabelCombo(behaviorGroup, UINavigatorMessages.pref_page_database_general_label_double_click_node, SWT.DROP_DOWN | SWT.READ_ONLY);
             objDoubleClickBehavior.add(UINavigatorMessages.pref_page_database_general_label_double_click_node_open_properties, 0);
@@ -234,7 +238,12 @@ public class PrefPageDatabaseNavigator extends AbstractPrefPage implements IWork
         }
 
         {
-            Group miscGroup = UIUtils.createControlGroup(composite, UINavigatorMessages.pref_page_database_navigator_group_misc, 2, GridData.VERTICAL_ALIGN_BEGINNING, 0);
+            Composite miscGroup = UIUtils.createTitledComposite(
+                composite,
+                UINavigatorMessages.pref_page_database_navigator_group_misc,
+                2,
+                GridData.VERTICAL_ALIGN_BEGINNING
+            );
 
             expandOnConnectCheck = UIUtils.createCheckbox(
                 miscGroup,

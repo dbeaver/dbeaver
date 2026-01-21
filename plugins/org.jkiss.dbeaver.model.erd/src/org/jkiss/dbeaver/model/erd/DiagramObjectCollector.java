@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.model.erd;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
@@ -30,6 +31,7 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSTablePartition;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Table collector
@@ -186,14 +188,16 @@ public class DiagramObjectCollector {
         return erdEntities;
     }
 
+    @NotNull
     public static List<ERDEntity> generateEntityList(
-        DBRProgressMonitor monitor,
-        final ERDDiagram diagram,
-        DBPProject diagramProject,
-        Collection<DBPNamedObject> objects,
-        DiagramCollectSettings settings,
-        boolean forceShowViews)
-    {
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull ERDDiagram diagram,
+        @NotNull DBPProject diagramProject,
+        @NotNull Collection<DBPNamedObject> objects,
+        @NotNull DiagramCollectSettings settings,
+        boolean forceShowViews,
+        boolean enforceSameProject
+    ) {
         final List<DBSObject> roots = new ArrayList<>();
         for (DBPNamedObject object : objects) {
             if (!(object instanceof DBSObject)) {
@@ -211,28 +215,32 @@ public class DiagramObjectCollector {
             }
             roots.add((DBSObject) object);
         }
-        if (roots.isEmpty()) {
-            return Collections.emptyList();
-        }
-        for (Map.Entry<DBPProject, List<DBSObject>> entry : CommonUtils.group(roots, r -> r.getDataSource().getContainer().getProject()).entrySet()) {
-            final DBPProject project = entry.getKey();
-            final List<DBSObject> values = entry.getValue();
-            if (project != diagramProject) {
-                final StringJoiner joiner = new StringJoiner(", ");
+
+        if (enforceSameProject) {
+            Map<DBPProject, List<DBSObject>> foreignObjectsPerProject = roots.stream()
+                .filter(r -> r.getDataSource().getContainer().getProject() != diagramProject)
+                .collect(Collectors.groupingBy(r -> r.getDataSource().getContainer().getProject()));
+            for (var entry : foreignObjectsPerProject.entrySet()) {
+                StringJoiner joiner = new StringJoiner(", ");
+                DBPProject project = entry.getKey();
+                List<DBSObject> values = entry.getValue();
                 for (DBSObject value : values) {
                     joiner.add("'" + DBUtils.getObjectFullName(value, DBPEvaluationContext.UI) + "'");
                 }
-                diagram.addErrorMessage("Can't add object" + (values.size() > 1 ? "s" : "") + " " + joiner + " from a different project '" + project + "' (current project is '" + diagramProject.getName() + "')");
+                diagram.addErrorMessage(
+                    "Can't add object" + (values.size() > 1 ? "s" : "") + " " + joiner + " from a different project '" + project.getName()
+                        + "' (current project is '" + diagramProject.getName() + "')");
                 roots.removeAll(values);
             }
         }
 
-        final List<ERDEntity> entities = new ArrayList<>();
+        if (roots.isEmpty()) {
+            return Collections.emptyList();
+        }
 
         monitor.beginTask("Collect diagram objects", 1);
         DiagramObjectCollector collector = new DiagramObjectCollector(diagram);
         collector.setShowViews(forceShowViews);
-        //boolean showViews = ERDUIActivator.getDefault().getPreferenceStore().getBoolean(ERDUIConstants.PREF_DIAGRAM_SHOW_VIEWS);
 
         try {
             DBExecUtils.tryExecuteRecover(monitor, roots.getFirst().getDataSource(), monitor1 ->
@@ -240,10 +248,11 @@ public class DiagramObjectCollector {
         } catch (Exception e) {
             log.error(e);
         }
-        entities.addAll(collector.getDiagramEntities());
-        monitor.done();
-
-        return entities;
+        try {
+            return collector.getDiagramEntities();
+        } finally {
+            monitor.done();
+        }
     }
 
 }
