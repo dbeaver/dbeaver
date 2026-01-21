@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -143,8 +143,8 @@ public class PostgreExecutionContext extends JDBCExecutionContext implements DBC
             return false;
         }
 
-        setSearchPath(monitor, schema);
-        setSearchPath(schema.getName());
+        addToSearchPath(schema.getName());
+        addSchemaAndRefreshSearchPath(monitor, schema);
 
         final PostgreSchema oldActiveSchema = getDefaultSchema();
 
@@ -212,9 +212,9 @@ public class PostgreExecutionContext extends JDBCExecutionContext implements DBC
                 DBPConnectionBootstrap bootstrap = getBootstrapSettings();
                 String bsSchemaName = bootstrap.getDefaultSchemaName();
                 if (!CommonUtils.isEmpty(bsSchemaName)) {
-                    setSearchPath(monitor, bsSchemaName);
                     PostgreSchema bsSchema = getDefaultCatalog().getSchema(monitor, bsSchemaName);
                     if (bsSchema != null) {
+                        addSchemaAndRefreshSearchPath(monitor, bsSchema);
                         activeSchemaId = bsSchema.getObjectId();
                     }
                 }
@@ -234,24 +234,14 @@ public class PostgreExecutionContext extends JDBCExecutionContext implements DBC
         return searchPath;
     }
 
-    private void setSearchPath(DBRProgressMonitor monitor, PostgreSchema schema) throws DBCException {
+    private void addSchemaAndRefreshSearchPath(@NotNull DBRProgressMonitor monitor, @NotNull PostgreSchema schema) throws DBCException {
         // Construct search path from current search path but put default schema first
-        setSearchPath(monitor, schema.getName());
+        addToSearchPath(schema.getName());
+        refreshSearchPath(monitor);
     }
 
-    private void setSearchPath(@NotNull DBRProgressMonitor monitor, @NotNull String defSchemaName) throws DBCException {
+    private void refreshSearchPath(@NotNull DBRProgressMonitor monitor) throws DBCException {
         List<String> newSearchPath = new ArrayList<>(getSearchPath());
-
-        if (!newSearchPath.isEmpty() && defSchemaName.equals(newSearchPath.getFirst())) {
-            return;
-        }
-
-        newSearchPath.remove(defSchemaName);
-        newSearchPath.addFirst(defSchemaName);
-
-        if (activeUser != null && !newSearchPath.contains(activeUser)) {
-            newSearchPath.add(activeUser);
-        }
 
         StringBuilder spString = new StringBuilder();
         for (String sp : newSearchPath) {
@@ -273,16 +263,12 @@ public class PostgreExecutionContext extends JDBCExecutionContext implements DBC
         }
     }
 
-    private void setSearchPath(@NotNull String path) {
+    private void addToSearchPath(@NotNull String path) {
         if (searchPath.isEmpty()) {
             searchPath.addFirst(path);
         } else if (!searchPath.getFirst().equals(path)) {
             searchPath.remove(path);
             searchPath.addFirst(path);
-        }
-        if (activeUser != null && !searchPath.contains(activeUser)) {
-            searchPath.add(activeUser);
-            setUserInTheEndOfThePath(searchPath);
         }
     }
 
