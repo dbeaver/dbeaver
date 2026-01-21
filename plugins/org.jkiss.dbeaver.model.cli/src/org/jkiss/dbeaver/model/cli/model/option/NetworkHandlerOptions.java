@@ -24,32 +24,19 @@ import java.util.List;
 public class NetworkHandlerOptions {
     @Nullable
     @CommandLine.Option(
-        names = {"--network-handler"},
+        names = {"-net", "--network-handler-param"},
         arity = "1",
-        description = "Network handler id")
-    private String handlerId;
+        description = "Network handler parameter in the form 'name=value'. May be specified multiple times.")
+    private List<String> handlerParams;
 
-    private boolean remove;
-
-    @Nullable
     @CommandLine.Option(
-        names = {"--network-handler-param"},
+        names = {"-net-save-pwd", "--network-handler-param"},
         arity = "1",
-        description = "Network handler parameter in the form 'name=value'. May be specified multiple times")
-    private List<String> authParams;
+        description = "Save network handler secure parameters (like passwords).")
 
+    private boolean savePassword;
     @Nullable
-    public List<String> getAuthParams() {
-        return authParams;
-    }
-
-    @Nullable
-    public String getHandlerId() {
-        return handlerId;
-    }
-
-
-    public boolean isRemove() {
-        return remove;
+    public List<String> getHandlerParams() {
+        return handlerParams;
     }
 }

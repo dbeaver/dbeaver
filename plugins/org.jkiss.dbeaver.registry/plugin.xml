@@ -55,6 +55,7 @@
             type="proxy"
             id="socks_proxy"
             codeName="Proxy"
+            prefix="proxy"
             label="%handler.socks_proxy.label"
             description="%handler.socks_proxy.description"
             desktop="true"

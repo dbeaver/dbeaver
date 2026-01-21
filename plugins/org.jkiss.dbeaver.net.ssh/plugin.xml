@@ -10,6 +10,7 @@
                 type="tunnel"
                 id="ssh_tunnel"
                 codeName="SSH"
+                prefix="ssh"
                 label="%handler.ssh_tunnel.label"
                 description="%handler.ssh_tunnel.description"
                 desktop="false"

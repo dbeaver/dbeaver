@@ -30,6 +30,9 @@ import org.jkiss.dbeaver.model.cli.model.option.InputFileOption;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.meta.IPropertyValueListProvider;
+import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
+import org.jkiss.dbeaver.model.net.DBWHandlerDescriptor;
+import org.jkiss.dbeaver.model.net.DBWHandlerRegistry;
 import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.model.runtime.LoggingProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -40,9 +43,8 @@ import org.jkiss.utils.CommonUtils;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 
 public class CLIUtils {
     private static final Log log = Log.getLog(CLIUtils.class);
@@ -280,15 +282,103 @@ public class CLIUtils {
                     .provideCredentials(dataSource, dataSource.getConnectionConfiguration(), credentialsInstance);
             }
         }
+
+        processNetworkHandlerProperties(dataSource, authOptions, connectionConfiguration);
+    }
+
+    private static void processNetworkHandlerProperties(
+        @NotNull DBPDataSourceContainer dataSource,
+        @NotNull DataSourceAuthOptions authOptions,
+        @NotNull DBPConnectionConfiguration connectionConfiguration
+    ) throws CLIException {
+        if (authOptions.getNetworkHandlerOptions() != null
+            && !CommonUtils.isEmpty(authOptions.getNetworkHandlerOptions().getHandlerParams())
+        ) {
+            DBWHandlerRegistry handlerRegistry = DBWorkbench.getPlatform().getNetworkHandlerRegistry();
+            Map<String, ? extends DBWHandlerDescriptor> availableHandlers = handlerRegistry.getDescriptors(dataSource.getDriver())
+                .stream()
+                .collect(Collectors.toMap(DBWHandlerDescriptor::getPrefix, h -> h));
+
+            Map<String, List<String>> paramsByPrefix = new HashMap<>();
+            List<String> unknownParams = new ArrayList<>();
+            for (String networkHandlerParam : authOptions.getNetworkHandlerOptions().getHandlerParams()) {
+                String[] paramParts = networkHandlerParam.split("\\.", 2);
+                if (paramParts.length != 2) {
+                    unknownParams.add(networkHandlerParam);
+                    continue;
+                }
+                String prefix = paramParts[0];
+                String param = paramParts[1];
+
+                if (!availableHandlers.containsKey(prefix)) {
+                    unknownParams.add(networkHandlerParam);
+                    continue;
+                }
+                paramsByPrefix.computeIfAbsent(prefix, k -> new ArrayList<>()).add(param);
+            }
+            if (!CommonUtils.isEmpty(unknownParams)) {
+                throw new CLIException(
+                    "Invalid network handler parameters: " + String.join(", ", unknownParams),
+                    CLIConstants.EXIT_CODE_ILLEGAL_ARGUMENTS
+                );
+            }
+
+
+            for (Map.Entry<String, List<String>> entry : paramsByPrefix.entrySet()) {
+                DBWHandlerDescriptor handlerDescriptor = availableHandlers.get(entry.getKey());
+                DBWHandlerConfiguration handlerConfiguration = connectionConfiguration.getHandler(handlerDescriptor.getId());
+                if (handlerConfiguration == null) {
+                    handlerConfiguration = new DBWHandlerConfiguration(handlerDescriptor, dataSource);
+                }
+                Map<String, String> handlerProperties = prepareKeyValueParams(
+                    handlerConfiguration.getSecureProperties(),
+                    entry.getValue()
+                );
+                for (DBPPropertyDescriptor propertyDescriptor : handlerDescriptor.getHandlerProperties()) {
+                    if (!handlerProperties.containsKey(propertyDescriptor.getId())) {
+                        continue;
+                    }
+                    String value = handlerProperties.get(propertyDescriptor.getId());
+                    switch (propertyDescriptor.getId()) {
+                        case "user":
+                            handlerConfiguration.setUserName(value);
+                            break;
+                        case "password":
+                            handlerConfiguration.setPassword(value);
+                            break;
+                        default:
+                            if (propertyDescriptor.hasFeature("secured")) {
+                                handlerConfiguration.setSecureProperty(propertyDescriptor.getId(), value);
+                            } else {
+                                handlerConfiguration.setProperty(propertyDescriptor.getId(), value);
+                            }
+                    }
+
+                }
+                handlerConfiguration.setSecureProperties(handlerProperties);
+            }
+        }
+    }
+
+    public static String getPropertyHelpText(@NotNull DBPPropertyDescriptor property) {
+        return getPropertyHelpText(property, null);
     }
 
     @NotNull
-    public static String getPropertyHelpText(@NotNull DBPPropertyDescriptor property) {
+    public static String getPropertyHelpText(
+        @NotNull DBPPropertyDescriptor property,
+        @Nullable String namePrefix
+    ) {
         String displayName = property.getDisplayName();
         String description = property.getDescription();
         var helpText = new StringBuilder();
 
-        helpText.append("  - ").append(property.getId());
+
+        helpText.append("  - ");
+        if (CommonUtils.isNotEmpty(namePrefix) && !property.getId().startsWith(namePrefix)) {
+            helpText.append(namePrefix);
+        }
+        helpText.append(property.getId());
         if (!CommonUtils.equalObjects(displayName, description)) {
             helpText.append(" (").append(displayName).append(")");
         }
