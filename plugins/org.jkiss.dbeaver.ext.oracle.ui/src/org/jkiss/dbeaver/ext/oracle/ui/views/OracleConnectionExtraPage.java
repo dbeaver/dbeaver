@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,7 +20,10 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.*;
+import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Combo;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Text;
 import org.jkiss.dbeaver.ext.oracle.model.OracleConstants;
 import org.jkiss.dbeaver.ext.oracle.model.dict.OracleLanguage;
 import org.jkiss.dbeaver.ext.oracle.model.dict.OracleTerritory;
@@ -85,7 +88,12 @@ public class OracleConnectionExtraPage extends ConnectionPageAbstract
         cfgGroup.setLayoutData(gd);
 
         {
-            final Group sessionGroup = UIUtils.createControlGroup(cfgGroup, OracleUIMessages.dialog_controlgroup_session_settings, 2, GridData.HORIZONTAL_ALIGN_BEGINNING, 0);
+            Composite sessionGroup = UIUtils.createTitledComposite(
+                cfgGroup,
+                OracleUIMessages.dialog_controlgroup_session_settings,
+                2,
+                GridData.HORIZONTAL_ALIGN_BEGINNING
+            );
             ((GridData)sessionGroup.getLayoutData()).horizontalSpan = 2;
 
             languageCombo = UIUtils.createLabelCombo(sessionGroup, OracleUIMessages.edit_label_combo_language, SWT.DROP_DOWN);
@@ -111,7 +119,12 @@ public class OracleConnectionExtraPage extends ConnectionPageAbstract
         }
 
         {
-            final Group performanceGroup = UIUtils.createControlGroup(cfgGroup, OracleUIMessages.dialog_controlgroup_performance, 1, GridData.HORIZONTAL_ALIGN_BEGINNING, 0);
+            Composite performanceGroup = UIUtils.createTitledComposite(
+                cfgGroup,
+                OracleUIMessages.dialog_controlgroup_performance,
+                1,
+                GridData.HORIZONTAL_ALIGN_BEGINNING
+            );
 
             useOptimizerHint = UIUtils.createCheckbox(performanceGroup, OracleUIMessages.edit_create_checkbox_group_use_metadata_optimizer, true);
             useOptimizerHint.setToolTipText(OracleUIMessages.edit_create_checkbox_group_use_metadata_optimizer_tip);
@@ -153,12 +166,11 @@ public class OracleConnectionExtraPage extends ConnectionPageAbstract
         }
 
         {
-            final Group contentGroup = UIUtils.createControlGroup(
+            Composite contentGroup = UIUtils.createTitledComposite(
                 cfgGroup,
                 OracleUIMessages.dialog_controlgroup_content,
                 1,
-                GridData.HORIZONTAL_ALIGN_BEGINNING | GridData.VERTICAL_ALIGN_BEGINNING,
-                0
+                GridData.HORIZONTAL_ALIGN_BEGINNING | GridData.VERTICAL_ALIGN_BEGINNING
             );
 
             showOnlyOneSchema = UIUtils.createCheckbox(
@@ -177,12 +189,11 @@ public class OracleConnectionExtraPage extends ConnectionPageAbstract
         }
 
         {
-            final Group dataGroup = UIUtils.createControlGroup(
+            Composite dataGroup = UIUtils.createTitledComposite(
                 cfgGroup,
                 OracleUIMessages.pref_page_oracle_group_data,
                 1,
-                GridData.HORIZONTAL_ALIGN_BEGINNING,
-                0
+                GridData.HORIZONTAL_ALIGN_BEGINNING
             );
 
             showDateAsDate = UIUtils.createCheckbox(

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -656,7 +656,7 @@ public class EditForeignKeyPage extends BaseObjectEditPage {
             }
             List<DBNDatabaseNode> allContainers = schemaCombo.getItems();
             if (!allContainers.isEmpty()) {
-                String nodeType = allContainers.get(0).getMeta().getNodeTypeLabel(foreignKey.getDataSource(), null);
+                String nodeType = allContainers.getFirst().getMeta().getNodeTypeLabel(foreignKey.getDataSource(), null);
                 if (!CommonUtils.isEmpty(nodeType)) {
                     controlLabel.setText(nodeType);
                 }
@@ -716,7 +716,7 @@ public class EditForeignKeyPage extends BaseObjectEditPage {
         return newContainerNode;
     }
 
-    private void createContainerSelector(Composite tableGroup) throws DBException {
+    private void createContainerSelector(Composite tableGroup) {
         ObjectContainerSelectorPanel containerPanel = new ObjectContainerSelectorPanel(
             tableGroup,
             this.getOwnerProject(),
@@ -1301,10 +1301,11 @@ public class EditForeignKeyPage extends BaseObjectEditPage {
             this.columnName = fkColumnInfo.getCustomName();
         }
 
+        @NotNull
         @Override
-        protected Composite createDialogArea(Composite parent) {
+        protected Composite createDialogArea(@NotNull Composite parent) {
             Composite composite = super.createDialogArea(parent);
-            Group group = UIUtils.createControlGroup(composite, "New column options", 2, GridData.FILL_HORIZONTAL, 300);
+            Composite group = UIUtils.createTitledComposite(composite, "New column options", 2, GridData.FILL_HORIZONTAL, 300);
             Text columnNameText = UIUtils.createLabelText(group, "Column name", fkColumnInfo.getCustomName(), SWT.BORDER);
             columnNameText.addModifyListener(e -> columnName = columnNameText.getText());
             Button notNullCheck = UIUtils.createCheckbox(group, "Not Null", "Make new column required", false, 2);
