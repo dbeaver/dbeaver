@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,9 +32,7 @@ import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.utils.CommonUtils;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
+import java.util.*;
 
 public class SQLGroupingQueryGenerator {
 
@@ -78,6 +76,7 @@ public class SQLGroupingQueryGenerator {
         this.showDuplicatesOnly = showDuplicatesOnly;
     }
 
+    @NotNull
     public String generateGroupingQuery(String queryText) throws DBException {
 
         if (queryText == null || queryText.isEmpty()) {
@@ -93,7 +92,7 @@ public class SQLGroupingQueryGenerator {
             }
         }
 
-        boolean useAliasForColumns = dataSource.getSQLDialect().supportsAliasInConditions();
+        boolean useAliasForColumns = dataSource.getSQLDialect().supportsAliasInSelect();
         StringBuilder sql = new StringBuilder();
         funcAliases = new String[groupFunctions.size()];
         for (int i = 0; i < groupFunctions.size(); i++) {
@@ -171,12 +170,12 @@ public class SQLGroupingQueryGenerator {
             }
             sql.append(groupAttributes.get(i).prepareSqlString(subqueryAlias));
         }
-        boolean isDefaultGrouping = groupFunctions.size() == 1 && groupFunctions.get(0).equalsIgnoreCase(DEFAULT_FUNCTION);
 
-        if (isDefaultGrouping && showDuplicatesOnly) {
+        if (showDuplicatesOnly) {
             sql.append("\nHAVING ");
-            if (dataSource.getSQLDialect().supportsAliasInHaving()) {
-                sql.append(funcAliases[0]);
+            int foundCountIndex = countFunctionIndex();
+            if (dataSource.getSQLDialect().supportsAliasInHaving() && foundCountIndex >= 0) {
+                sql.append(funcAliases[foundCountIndex]);
             } else {
                 // very special case
                 sql.append(DEFAULT_FUNCTION);
@@ -186,17 +185,31 @@ public class SQLGroupingQueryGenerator {
         return sql.toString();
     }
 
+    @NotNull
     private String makeGroupFunctionAlias(List<String> groupFunctions, int funcIndex) {
         String function = groupFunctions.get(funcIndex);
         StringBuilder alias = new StringBuilder();
+        char delimeter = '_';
         for (int i = 0; i < function.length(); i++) {
             char c = function.charAt(i);
-            if (Character.isLetterOrDigit(c) || c == '_') {
+            if (Character.isLetterOrDigit(c) || c == delimeter) {
                 alias.append(c);
+            } else if (c == '(' || c == ')') {
+                alias.append(delimeter);
             }
         }
-        if (alias.length() > 0) {
-            alias.append('_');
+        while (!alias.isEmpty() && alias.charAt(alias.length() - 1) == delimeter) {
+            alias.deleteCharAt(alias.length() - 1);
+        }
+        if (!alias.isEmpty()) {
+            long numberOfSameColumnNames = Arrays.stream(funcAliases)
+                .filter(Objects::nonNull)
+                .filter(a -> a.startsWith(alias.toString().toLowerCase(Locale.ENGLISH)))
+                .count();
+
+            if (numberOfSameColumnNames > 0) {
+                alias.append(delimeter).append(numberOfSameColumnNames);
+            }
             return alias.toString().toLowerCase(Locale.ENGLISH);
         }
         return "i_" + funcIndex;
@@ -221,12 +234,24 @@ public class SQLGroupingQueryGenerator {
         }
 
         @Override
+        @NotNull
         public String getFullyQualifiedName() {
             String databaseName = !CommonUtils.isEmpty(getDatabase().getDatabaseName())
-                    ? getDatabase().getDatabaseName() + sqlDialect.getCatalogSeparator()
-                    : "";
+                ? getDatabase().getDatabaseName() + sqlDialect.getCatalogSeparator()
+                : "";
             String schemaName = getSchemaName() != null ? getSchemaName() + sqlDialect.getStructSeparator() : "";
             return databaseName + schemaName + getName();
         }
+    }
+
+    private int countFunctionIndex() {
+        for (int i = 0; i < groupFunctions.size(); i++) {
+            if (groupFunctions.get(i).equalsIgnoreCase(DEFAULT_FUNCTION)) {
+                return funcAliases.length > i
+                    ? i
+                    : -1;
+            }
+        }
+        return -1;
     }
 }
