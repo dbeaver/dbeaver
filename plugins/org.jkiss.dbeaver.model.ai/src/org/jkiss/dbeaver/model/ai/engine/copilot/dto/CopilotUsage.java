@@ -16,16 +16,21 @@
  */
 package org.jkiss.dbeaver.model.ai.engine.copilot.dto;
 
-import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
+import com.google.gson.annotations.SerializedName;
 
-import java.util.List;
-
-public record CopilotChatChunk(
-    @NotNull
-    List<CopilotChunkChoice> choices,
-    @Nullable
-    CopilotUsage usage
+public record CopilotUsage(
+    @SerializedName("prompt_tokens")
+    int promptTokens,
+    @SerializedName("prompt_tokens_details")
+    PromptTokensDetails promptTokensDetails,
+    @SerializedName("completion_tokens")
+    int completionTokens,
+    @SerializedName("total_tokens")
+    int totalTokens
 ) {
 
+    public record PromptTokensDetails(
+        @SerializedName("cached_tokens") int cachedTokens
+    ) {
+    }
 }
