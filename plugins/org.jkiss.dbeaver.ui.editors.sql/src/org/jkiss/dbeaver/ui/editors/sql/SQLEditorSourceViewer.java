@@ -29,6 +29,7 @@ import org.eclipse.swt.custom.ST;
 import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.custom.VerifyKeyListener;
 import org.eclipse.swt.events.VerifyEvent;
+import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.Composite;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
@@ -185,5 +186,44 @@ public class SQLEditorSourceViewer extends ProjectionViewer {
             verifyKeyListeners.remove(listener);
         }
         super.removeVerifyKeyListener(listener);
+    }
+
+    @Override
+    public boolean canDoOperation(int operation) {
+        if (operation == COPY || operation == CUT) {
+            return getTextWidget() != null;
+        }
+        return super.canDoOperation(operation);
+    }
+
+    @Override
+    protected void copyMarkedRegion(boolean delete) {
+        Point selection = getSelectedRange();
+
+        if (selection.y == 0) {
+            try {
+                IDocument document = getDocument();
+                int caretOffset = selection.x;
+                int line = document.getLineOfOffset(caretOffset);
+
+                IRegion lineInfo = document.getLineInformation(line);
+
+                String lineDelimiter = document.getLineDelimiter(line);
+                int delimiterLength = lineDelimiter != null ? lineDelimiter.length() : 0;
+
+                setSelectedRange(lineInfo.getOffset(), lineInfo.getLength() + delimiterLength);
+
+                if (delete) {
+                    getTextWidget().cut();
+                } else {
+                    getTextWidget().copy();
+                }
+            } catch (BadLocationException e) {
+                super.copyMarkedRegion(delete);
+            }
+        } else {
+            super.copyMarkedRegion(delete);
+        }
+
     }
 }

@@ -45,8 +45,6 @@ import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IEditorInput;
-import org.eclipse.ui.ISharedImages;
-import org.eclipse.ui.IWorkbenchCommandConstants;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.editors.text.EditorsUI;
 import org.eclipse.ui.internal.dialogs.PropertyDialog;
@@ -772,34 +770,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements
 
         setAction(ITextEditorActionConstants.CONTEXT_PREFERENCES, new ShowPreferencesAction());
 
-        action = createSmartCopyCutAction(ITextOperationTarget.COPY, IWorkbenchCommandConstants.EDIT_COPY);
-        setAction(ITextEditorActionConstants.COPY, action);
-
-        action = createSmartCopyCutAction(ITextOperationTarget.CUT, IWorkbenchCommandConstants.EDIT_CUT);
-        setAction(ITextEditorActionConstants.CUT, action);
-
         SQLEditorCustomActions.registerCustomActions(this);
-    }
-
-    private IAction createSmartCopyCutAction(int operationCode, String actionDefinitionId) {
-        SmartCopyCutAction action = new SmartCopyCutAction(operationCode);
-        action.setActionDefinitionId(actionDefinitionId);
-
-        ISharedImages sharedImages = PlatformUI.getWorkbench().getSharedImages();
-
-        if (operationCode == ITextOperationTarget.CUT) {
-            action.setText("Cut");
-            action.setToolTipText("Cut selection or current line");
-            action.setImageDescriptor(sharedImages.getImageDescriptor(ISharedImages.IMG_TOOL_CUT));
-            action.setDisabledImageDescriptor(sharedImages.getImageDescriptor(ISharedImages.IMG_TOOL_CUT_DISABLED));
-        } else {
-            action.setText("Copy");
-            action.setToolTipText("Copy selection or current line");
-            action.setImageDescriptor(sharedImages.getImageDescriptor(ISharedImages.IMG_TOOL_COPY));
-            action.setDisabledImageDescriptor(sharedImages.getImageDescriptor(ISharedImages.IMG_TOOL_COPY_DISABLED));
-        }
-
-        return action;
     }
 
     // Exclude input additions. Get rid of tons of crap from debug/team extensions
@@ -1400,52 +1371,4 @@ public abstract class SQLEditorBase extends BaseTextEditor implements
             return editorInput.isReadOnly();
         }
     }
-
-    private class SmartCopyCutAction extends Action {
-        private final int operationCode;
-
-        SmartCopyCutAction(int operationCode) {
-            this.operationCode = operationCode;
-        }
-
-        @Override
-        public void run() {
-            StyledText textWidget = getSourceViewer().getTextWidget();
-            if (textWidget == null || textWidget.isDisposed()) return;
-
-            if (operationCode == ITextOperationTarget.CUT && !textWidget.getEditable()) {
-                return;
-            }
-
-            if (textWidget.getSelectionCount() == 0) {
-                performSmartAction(textWidget);
-            } else if (operationCode == ITextOperationTarget.COPY) {
-                textWidget.copy();
-            } else if (operationCode == ITextOperationTarget.CUT) {
-                textWidget.cut();
-            }
-        }
-
-        private void performSmartAction(@NotNull StyledText textWidget) {
-            try {
-                int caretOffset = textWidget.getCaretOffset();
-                int lineIndex = textWidget.getLineAtOffset(caretOffset);
-
-                int start = textWidget.getOffsetAtLine(lineIndex);
-                int end = (lineIndex < textWidget.getLineCount() - 1)
-                        ? textWidget.getOffsetAtLine(lineIndex + 1)
-                        : textWidget.getCharCount();
-
-                textWidget.setSelection(start, end);
-            } catch (Exception e) {
-                log.error("Error performing smart copy/cut actions", e);
-            }
-            if (operationCode == ITextOperationTarget.COPY) {
-                textWidget.copy();
-            } else if (operationCode == ITextOperationTarget.CUT) {
-                textWidget.cut();
-            }
-        }
-    }
-
 }
