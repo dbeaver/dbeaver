@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -201,7 +201,13 @@ public class FilterValueEditPopup extends AbstractPopupPanel {
             close();
         });
 
-        final Group optionsGroup = UIUtils.createControlGroup(tableComposite, ResultSetMessages.dialog_filter_value_edit_table_group_options, 0, GridData.FILL_HORIZONTAL, 0);
+        Composite optionsGroup = UIUtils.createTitledComposite(
+            tableComposite,
+            ResultSetMessages.dialog_filter_value_edit_table_group_options,
+            0,
+            GridData.FILL_HORIZONTAL,
+            0
+        );
         optionsGroup.setLayout(new RowLayout());
         optionsGroup.moveAbove(filter.getButtonsPanel());
         {

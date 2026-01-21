@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,6 +23,7 @@ import com.google.gson.annotations.SerializedName;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.ai.AIUsage;
 import org.jkiss.dbeaver.model.ai.engine.AIEngineResponseChunk;
 import org.jkiss.dbeaver.model.ai.engine.AIEngineResponseConsumer;
 import org.jkiss.dbeaver.model.ai.engine.AbstractHttpAIClient;
@@ -157,7 +158,8 @@ public class CopilotClient extends AbstractHttpAIClient {
             .timeout(TIMEOUT)
             .build();
 
-        return GSON.fromJson(client.send(monitor, request), CopilotChatResponse.class);
+        String responseJson = client.send(monitor, request);
+        return GSON.fromJson(responseJson, CopilotChatResponse.class);
     }
 
     public void createChatCompletionStream(
@@ -191,6 +193,14 @@ public class CopilotClient extends AbstractHttpAIClient {
                             .map(it -> it.delta().content())
                             .toList();
                         listener.nextChunk(new AIEngineResponseChunk(choices));
+                        if (chunk.usage() != null) {
+                            listener.usage(new AIUsage(
+                                chunk.usage().promptTokens(),
+                                chunk.usage().promptTokensDetails().cachedTokens(),
+                                chunk.usage().completionTokens(),
+                                0
+                            ));
+                        }
                     } catch (Exception e) {
                         listener.error(e);
                     }

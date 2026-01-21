@@ -82,8 +82,7 @@ public class PrefPageTransactions extends TargetPrefPage {
             composite,
             CoreMessages.dialog_connection_edit_wizard_transactions,
             2,
-            GridData.FILL_HORIZONTAL,
-            0);
+            GridData.FILL_HORIZONTAL);
         String settingsTipString;
         if (dataSourcePreferencePage) {
             smartCommitCheck = UIUtils.createCheckbox(
@@ -143,8 +142,7 @@ public class PrefPageTransactions extends TargetPrefPage {
 
         {
             Composite notifyNameGroup = UIUtils.createTitledComposite(
-                composite, CoreMessages.pref_page_transactions_notify_name_group_label, 2, GridData.FILL_HORIZONTAL, 0
-            );
+                composite, CoreMessages.pref_page_transactions_notify_name_group_label, 2, GridData.FILL_HORIZONTAL);
             showTransactionNotificationsCheck = UIUtils.createCheckbox(
                 notifyNameGroup,
                 CoreMessages.pref_page_transactions_notifications_show_check_label,
