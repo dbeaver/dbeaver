@@ -51,7 +51,7 @@ public class EditObjectFilterDialog extends HelpEnabledDialog {
     private final DBPDataSourceRegistry dsRegistry;
     private final String objectTitle;
     protected DBSObjectFilter filter;
-    private final boolean globalFilter;
+    protected final boolean globalFilter;
     private Composite blockControl;
     private ControlEnableState blockEnableState;
     private Table includeTable;
@@ -88,28 +88,7 @@ public class EditObjectFilterDialog extends HelpEnabledDialog {
 
         Composite composite = super.createDialogArea(parent);
 
-        Composite topPanel = UIUtils.createPlaceholder(composite, globalFilter ? 1 : 2);
-        topPanel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        enableButton = UIUtils.createCheckbox(topPanel, UIMessages.button_enable, false);
-        enableButton.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                filter.setEnabled(enableButton.getSelection());
-                enableFiltersContent();
-            }
-        });
-        enableButton.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        enableButton.setSelection(filter.isEnabled());
-        if (!globalFilter) {
-            Link globalLink = UIUtils.createLink(topPanel, UINavigatorMessages.dialog_filter_global_link, new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
-                    setReturnCode(SHOW_GLOBAL_FILTERS_ID);
-                    close();
-                }
-            });
-            globalLink.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
-        }
+        setTopPanel(composite);
         blockControl = UIUtils.createPlaceholder(composite, 1);
         GridData blockControlGd = new GridData(GridData.FILL_BOTH);
         blockControlGd.heightHint = 350;
@@ -131,6 +110,51 @@ public class EditObjectFilterDialog extends HelpEnabledDialog {
         enableFiltersContent();
 
         return composite;
+    }
+
+    @NotNull
+    protected Composite setTopPanel(@NotNull Composite composite) {
+        Composite topPanel = getTopPanelPlaceholder(composite);
+        setEnableCheckbox(topPanel);
+        if (!globalFilter) {
+            setGlobalFilterLink(topPanel);
+        }
+        return topPanel;
+    }
+
+    @NotNull
+    protected Composite getTopPanelPlaceholder(@NotNull Composite composite) {
+        Composite topPanel = UIUtils.createPlaceholder(composite, globalFilter ? 1 : 2);
+        topPanel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        return topPanel;
+    }
+
+    protected void setEnableCheckbox(Composite topPanel) {
+        enableButton = UIUtils.createCheckbox(topPanel, UIMessages.button_enable, false);
+        enableButton.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                filter.setEnabled(enableButton.getSelection());
+                enableFiltersContent();
+            }
+        });
+        GridData cbGd = new GridData(SWT.LEFT, SWT.CENTER, true, false);
+        enableButton.setLayoutData(cbGd);
+        enableButton.setSelection(filter.isEnabled());
+    }
+
+    protected void setGlobalFilterLink(@NotNull Composite topPanel) {
+        Link globalLink = UIUtils.createLink(
+            topPanel, UINavigatorMessages.dialog_filter_global_link, new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    setReturnCode(SHOW_GLOBAL_FILTERS_ID);
+                    close();
+                }
+            }
+        );
+        GridData linkGD = new GridData(SWT.RIGHT, SWT.CENTER, true, false);
+        globalLink.setLayoutData(linkGD);
     }
 
     protected void setSfGroup(@NotNull Composite composite) {

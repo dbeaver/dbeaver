@@ -16,9 +16,9 @@
  */
 package org.jkiss.dbeaver.ui.navigator.dialogs;
 
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Shell;
 import org.jkiss.code.NotNull;
@@ -31,7 +31,7 @@ import org.jkiss.dbeaver.ui.internal.UINavigatorMessages;
 public class EditObjectFilterDialogTE extends EditObjectFilterDialog {
     public static final int DELETE_USER_FILTER = 1001;
 
-    private Button customUserFilterCheckbox;
+    private Combo customUserFilterCombo;
 
     private boolean isUserFilterUnsaved;
 
@@ -45,30 +45,39 @@ public class EditObjectFilterDialogTE extends EditObjectFilterDialog {
         super(shell, dsRegistry, objectTitle, filter, globalFilter);
     }
 
+    @NotNull
     @Override
-    protected void setSfGroup(@NotNull Composite composite) {
-        super.setSfGroup(composite);
-        setCustomUserFilterCheckbox();
-        updateTemplatesEnabledState();
+    protected Composite setTopPanel(@NotNull Composite composite) {
+        Composite topPanel = getTopPanelPlaceholder(composite);
+        setEnableCheckbox(topPanel);
+        setCustomUserFilterCombo(topPanel);
+        if (!globalFilter) {
+            setGlobalFilterLink(topPanel);
+        }
+        return topPanel;
     }
 
-    private void setCustomUserFilterCheckbox() {
-        customUserFilterCheckbox = UIUtils.createCheckbox(
-            sfGroup,
-            UINavigatorMessages.dialog_filter_custom_user_filter_checkbox_label,
-            filter.isUserFilter()
+
+    @NotNull
+    @Override
+    protected Composite getTopPanelPlaceholder(@NotNull Composite composite) {
+        Composite topPanel = UIUtils.createPlaceholder(composite, globalFilter ? 3 : 4, 5);
+        topPanel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        return topPanel;
+    }
+
+    private void setCustomUserFilterCombo(@NotNull Composite parent) {
+        customUserFilterCombo = UIUtils.createLabelCombo(
+            parent,
+            "Filter for",
+            "Set this filter for all DBeaver users, or only for current one",
+            SWT.DROP_DOWN | SWT.READ_ONLY | SWT.BORDER
         );
-        customUserFilterCheckbox.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                if (customUserFilterCheckbox.getSelection()) {
-                    currentUserFilterSelected();
-                } else {
-                    currentUserFilterUnselected();
-                }
-            }
-        });
-        customUserFilterCheckbox.setToolTipText(UINavigatorMessages.dialog_filter_custom_user_filter_checkbox_tooltip);
+        customUserFilterCombo.add("All users");
+        customUserFilterCombo.add("Current user");
+        customUserFilterCombo.select(0);
+        GridData comboGD = new GridData(SWT.FILL, SWT.CENTER, false, false);
+        customUserFilterCombo.setLayoutData(comboGD);
     }
 
     @Override
@@ -100,7 +109,7 @@ public class EditObjectFilterDialogTE extends EditObjectFilterDialog {
             setReturnCode(DELETE_USER_FILTER);
             close();
         } else {
-            customUserFilterCheckbox.setSelection(true);
+            // customUserFilterCombo.setSelection(true);
         }
     }
 
