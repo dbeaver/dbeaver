@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,7 +20,6 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
-import org.eclipse.jface.layout.GridLayoutFactory;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.jface.viewers.IStructuredSelection;
@@ -53,8 +52,8 @@ import org.jkiss.dbeaver.ui.editors.object.internal.ObjectEditorMessages;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 
-import java.util.*;
 import java.util.List;
+import java.util.*;
 import java.util.function.Predicate;
 
 /**
@@ -137,7 +136,8 @@ public abstract class AttributesSelectorPage<T_OBJECT extends DBSObject, T_ATTRI
 
     @Override
     protected Composite createPageContents(Composite parent) {
-        final Composite panel = UIUtils.createPlaceholder(parent, 1);
+        final Composite panel = new Composite(parent, SWT.NONE);
+        panel.setLayout(new GridLayout(1, false));
         panel.setLayoutData(new GridData(GridData.FILL_BOTH));
 
         {
@@ -153,8 +153,7 @@ public abstract class AttributesSelectorPage<T_OBJECT extends DBSObject, T_ATTRI
     }
 
     protected void createColumnsGroup(Composite panel) {
-        columnsGroup = new Composite(panel, SWT.NONE);
-        columnsGroup.setLayout(GridLayoutFactory.fillDefaults().create());
+        columnsGroup = UIUtils.createComposite(panel, 1);
         columnsGroup.setLayoutData(new GridData(GridData.FILL_BOTH));
 
         UIUtils.createControlLabel(columnsGroup, ObjectEditorMessages.dialog_struct_columns_select_group_columns);
@@ -163,8 +162,8 @@ public abstract class AttributesSelectorPage<T_OBJECT extends DBSObject, T_ATTRI
         columnsTable = new Table(columnsGroup, SWT.BORDER | SWT.SINGLE | SWT.FULL_SELECTION | SWT.CHECK);
         columnsTable.setHeaderVisible(true);
         GridData gd = new GridData(GridData.FILL_BOTH);
-        gd.minimumWidth = 300;
-        gd.minimumHeight = 150;
+        gd.widthHint = 300;
+        gd.heightHint = 150;
         columnsTable.setLayoutData(gd);
         columnsTable.addSelectionListener(new SelectionAdapter() {
             @Override

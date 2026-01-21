@@ -67,9 +67,7 @@ public class PrefPageAltibase extends TargetPrefPage {
             composite,
             AltibaseUIMessages.pref_page_altibase_explain_plan_legend,
             1,
-            GridData.FILL_HORIZONTAL,
-            0
-        );
+            GridData.FILL_HORIZONTAL);
 
         /* Description */
         Label descLabel = new Label(planGroup, SWT.WRAP);
@@ -109,9 +107,7 @@ public class PrefPageAltibase extends TargetPrefPage {
                 composite,
                 AltibaseUIMessages.pref_page_altibase_legend_misc,
                 1,
-                GridData.FILL_HORIZONTAL,
-                0
-            );
+                GridData.FILL_HORIZONTAL);
             enableDbmsOutputCheck = UIUtils.createCheckbox(
                     miscGroup, AltibaseUIMessages.pref_page_altibase_checkbox_enable_dbms_output, true);
             enablePlanPrefixDepthCheck = UIUtils.createCheckbox(

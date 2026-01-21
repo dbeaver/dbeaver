@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,8 @@
  */
 package org.jkiss.dbeaver.model.navigator;
 
+import org.eclipse.core.filesystem.EFS;
+import org.eclipse.core.filesystem.IFileStore;
 import org.eclipse.core.resources.*;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
@@ -36,6 +38,7 @@ import org.jkiss.utils.CommonUtils;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URI;
 import java.nio.file.Path;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
@@ -327,13 +330,7 @@ public class DBNResource extends DBNNode implements DBNStreamData, DBNNodeWithCa
                 if (otherResource != null) {
                     try {
                         if (otherResource instanceof EFSNIOResource) {
-                            if (DBWorkbench.isDistributed() && resource.getRawLocation() == null) {
-                                throw new DBException("Paste is not supported for " + resource);
-                            }
-                            otherResource.copy(
-                                resource.getRawLocation().append(otherResource.getName()),
-                                true,
-                                monitor.getNestedMonitor());
+                            fileStoreRecursiveCopy(monitor, otherResource);
                         } else {
                             if (DBWorkbench.isDistributed() && !CommonUtils.equalObjects(otherResource.getProject(), resource.getProject())) {
                                 throw new DBException("Cross-project resource move is not supported in distributed workspaces");
@@ -356,6 +353,55 @@ public class DBNResource extends DBNNode implements DBNStreamData, DBNNodeWithCa
         } finally {
             monitor.done();
         }
+    }
+
+    private void fileStoreRecursiveCopy(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull IResource otherResource
+    ) throws DBException, CoreException {
+        fileStoreRecursiveCopy(monitor, otherResource, null);
+    }
+
+    private void fileStoreRecursiveCopy(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull IResource otherResource,
+        @Nullable IFileStore destinationStore
+    ) throws DBException, CoreException {
+        IFileStore dstStore = destinationStore != null ? destinationStore : getDestinationStore();
+        dstStore = dstStore.getChild(otherResource.getName());
+        if (otherResource instanceof IFolder folderSource) {
+            dstStore.mkdir(EFS.NONE, monitor.getNestedMonitor());
+            for (IResource memeber : folderSource.members()) {
+                fileStoreRecursiveCopy(monitor, memeber, dstStore);
+            }
+        } else {
+            fileStoreSingleFileCopy(monitor, otherResource, dstStore);
+        }
+    }
+
+    @NotNull
+    private IFileStore getDestinationStore() throws DBException, CoreException {
+        URI dstUri = resource.getLocationURI();
+        if (dstUri == null) {
+            throw new DBException("Destination resource has no location URI");
+        }
+        return EFS.getStore(dstUri);
+    }
+
+    private void fileStoreSingleFileCopy(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull IResource otherResource,
+        @NotNull IFileStore dstStore
+    ) throws DBException, CoreException {
+        URI srcUri = otherResource.getLocationURI();
+        if (srcUri == null) {
+            throw new DBException("Source resource has no location URI");
+        }
+        EFS.getStore(srcUri).copy(
+            dstStore,
+            EFS.OVERWRITE | EFS.SHALLOW,
+            monitor.getNestedMonitor()
+        );
     }
 
     public boolean supportsPaste(@NotNull DBNNode other) {

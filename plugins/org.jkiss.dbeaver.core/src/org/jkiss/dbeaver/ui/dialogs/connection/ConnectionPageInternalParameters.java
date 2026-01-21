@@ -74,8 +74,7 @@ public class ConnectionPageInternalParameters extends ConnectionWizardPage {
             parent,
             CoreMessages.dialog_connection_internal_parameters_parameters,
             4,
-            GridData.FILL_HORIZONTAL,
-            0
+            GridData.FILL_HORIZONTAL
         );
 
         Text projectIdText = UIUtils.createLabelText(
@@ -116,8 +115,7 @@ public class ConnectionPageInternalParameters extends ConnectionWizardPage {
             parent,
             CoreMessages.dialog_connection_internal_parameters_custom,
             1,
-            GridData.FILL_BOTH,
-            0
+            GridData.FILL_BOTH
         );
 
         TableViewer viewer = new TableViewer(group, SWT.SINGLE | SWT.FULL_SELECTION | SWT.BORDER | SWT.H_SCROLL | SWT.V_SCROLL);
