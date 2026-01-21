@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -70,16 +70,15 @@ public class PrefPageNotifications extends AbstractPrefPage implements IWorkbenc
     @NotNull
     @Override
     protected Control createPreferenceContent(@NotNull Composite parent) {
-        final Composite composite = UIUtils.createPlaceholder(parent, 1, 5);
+        final Composite composite = UIUtils.createComposite(parent, 1);
 
         {
             final DBPPreferenceStore preferences = DBWorkbench.getPlatform().getPreferenceStore();
-            final Group group = UIUtils.createControlGroup(
+            Composite group = UIUtils.createTitledComposite(
                 composite,
                 CoreMessages.pref_page_notifications_group_global,
                 2,
-                GridData.FILL_HORIZONTAL,
-                0
+                GridData.FILL_HORIZONTAL
             );
 
             enablePopupsCheckbox = UIUtils.createCheckbox(

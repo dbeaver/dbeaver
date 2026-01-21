@@ -90,8 +90,7 @@ public class PrefPageMetaData extends TargetPrefPage
                 composite,
                 CoreMessages.pref_page_database_general_group_metadata,
                 1,
-                GridData.HORIZONTAL_ALIGN_BEGINNING,
-                0);
+                GridData.HORIZONTAL_ALIGN_BEGINNING);
 
             separateMetaConnectionCombo = UIUtils.createLabelCombo(
                 UIUtils.createComposite(metadataGroup, 3),
@@ -134,8 +133,7 @@ public class PrefPageMetaData extends TargetPrefPage
                 composite,
                 CoreMessages.pref_page_database_general_group_performance,
                 1,
-                GridData.HORIZONTAL_ALIGN_BEGINNING,
-                0);
+                GridData.HORIZONTAL_ALIGN_BEGINNING);
 
             disableExtraMetadataRead = UIUtils.createCheckbox(
                 performanceGroup,

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -268,7 +268,12 @@ public class TransformerSettingsDialog extends BaseDialog {
             settingsPanel.setLayoutData(new GridData(GridData.FILL_BOTH));
         }
         if (selector || transformer != null) {
-            final Composite placeholder = UIUtils.createControlGroup(settingsPanel, "Transformer", 2, GridData.FILL_HORIZONTAL, -1);
+            final Composite placeholder = UIUtils.createTitledComposite(
+                settingsPanel,
+                "Transformer",
+                2,
+                GridData.FILL_HORIZONTAL
+            );
             if (!selector) {
                 UIUtils.createLabelText(placeholder, "Name", transformer.getName(), SWT.READ_ONLY);
             } else {

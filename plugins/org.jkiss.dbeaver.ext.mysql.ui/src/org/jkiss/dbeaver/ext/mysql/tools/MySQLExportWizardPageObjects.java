@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -53,7 +53,7 @@ class MySQLExportWizardPageObjects extends MySQLWizardPageSettings<MySQLExportWi
 
     private Table catalogTable;
     private Table tablesTable;
-    private Map<MySQLCatalog, Set<MySQLTableBase>> checkedObjects = new HashMap<>();
+    private final Map<MySQLCatalog, Set<MySQLTableBase>> checkedObjects = new HashMap<>();
 
     private MySQLCatalog curCatalog;
     private Button exportViewsCheck;
@@ -70,7 +70,7 @@ class MySQLExportWizardPageObjects extends MySQLWizardPageSettings<MySQLExportWi
     {
         Composite composite = UIUtils.createPlaceholder(parent, 1);
 
-        Group objectsGroup = UIUtils.createControlGroup(composite, MySQLUIMessages.tools_db_export_wizard_page_settings_group_objects, 1, GridData.FILL_HORIZONTAL, 0);
+        Composite objectsGroup = UIUtils.createTitledComposite(composite, MySQLUIMessages.tools_db_export_wizard_page_settings_group_objects, 1, GridData.FILL_HORIZONTAL);
         objectsGroup.setLayoutData(new GridData(GridData.FILL_BOTH));
 
         connInfo = new CLabel(objectsGroup, SWT.WRAP);

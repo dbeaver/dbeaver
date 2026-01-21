@@ -57,6 +57,7 @@ public class PrefPageDataTransfer extends TargetPrefPage implements IWorkbenchPr
         return true;
     }
 
+    @NotNull
     @Override
     protected String getPropertyPageID() {
         return PAGE_ID;
@@ -70,7 +71,7 @@ public class PrefPageDataTransfer extends TargetPrefPage implements IWorkbenchPr
     @NotNull
     @Override
     protected Control createPreferenceContent(@NotNull Composite parent) {
-        final Composite composite = UIUtils.createPlaceholder(parent, 1);
+        final Composite composite = UIUtils.createComposite(parent, 1);
         final DBPPreferenceStore preferences = DTActivator.getDefault().getPreferences();
 
         if (!isDataSourcePreferencePage()) {
@@ -78,9 +79,7 @@ public class PrefPageDataTransfer extends TargetPrefPage implements IWorkbenchPr
                 composite,
                 DTUIMessages.pref_data_transfer_wizard_title,
                 1,
-                GridData.FILL_HORIZONTAL,
-                0
-            );
+                GridData.FILL_HORIZONTAL);
 
             reconnectToLastDatabaseButton = UIUtils.createCheckbox(
                 group,
@@ -93,9 +92,7 @@ public class PrefPageDataTransfer extends TargetPrefPage implements IWorkbenchPr
             Composite group = UIUtils.createTitledComposite(
                 composite,
                 DTUIMessages.pref_data_transfer_options_title,
-                2,
-                GridData.FILL_HORIZONTAL,
-                0
+                2
             );
 
             fallbackOutputDirectoryText = DialogUtils.createOutputFolderChooser(
@@ -114,15 +111,7 @@ public class PrefPageDataTransfer extends TargetPrefPage implements IWorkbenchPr
             Composite mappingGroup = UIUtils.createTitledComposite(
                 composite,
                 DTUIMessages.pref_data_transfer_mapping_group,
-                2,
-                GridData.FILL_HORIZONTAL,
-                0);
-
-            final Label label = UIUtils.createLabel(mappingGroup,
-                DTUIMessages.pref_data_transfer_info_label_mapping);
-            GridData gd = new GridData();
-            gd.horizontalSpan = 2;
-            label.setLayoutData(gd);
+                2);
 
             nameCaseCombo = UIUtils.createLabelCombo(
                 mappingGroup,
@@ -150,13 +139,16 @@ public class PrefPageDataTransfer extends TargetPrefPage implements IWorkbenchPr
                 DTConstants.DEFAULT_MAX_TYPE_LENGTH,
                 1,
                 Integer.MAX_VALUE);
+
+            UIUtils.createInfoLabel(mappingGroup,
+                DTUIMessages.pref_data_transfer_info_label_mapping, GridData.HORIZONTAL_ALIGN_BEGINNING, 2);
         }
 
         return composite;
     }
 
     @Override
-    protected void loadPreferences(DBPPreferenceStore store) {
+    protected void loadPreferences(@NotNull DBPPreferenceStore store) {
         DBPPreferenceStore preferences = DTActivator.getDefault().getPreferences();
         if (reconnectToLastDatabaseButton != null) {
             reconnectToLastDatabaseButton.setSelection(preferences.getBoolean(DTConstants.PREF_RECONNECT_TO_LAST_DATABASE));
@@ -175,7 +167,7 @@ public class PrefPageDataTransfer extends TargetPrefPage implements IWorkbenchPr
     }
 
     @Override
-    protected void savePreferences(DBPPreferenceStore store) {
+    protected void savePreferences(@NotNull DBPPreferenceStore store) {
         DBPPreferenceStore preferences = DTActivator.getDefault().getPreferences();
 
         if (reconnectToLastDatabaseButton != null) {

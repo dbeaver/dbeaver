@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,7 +20,11 @@ import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.widgets.*;
+import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Shell;
+import org.eclipse.swt.widgets.Spinner;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
@@ -46,19 +50,33 @@ public class AutoRefreshConfigDialog extends BaseDialog {
         return UIUtils.getDialogSettings(DIALOG_ID);
     }
 
+    @NotNull
     @Override
-    protected Composite createDialogArea(Composite parent) {
+    protected Composite createDialogArea(@NotNull Composite parent) {
         Composite composite = super.createDialogArea(parent);
 
-        Group settingsGroup = UIUtils.createControlGroup(composite, "Settings", 2, GridData.FILL_BOTH, 0);
-        final Spinner intervalSpinner = UIUtils.createLabelSpinner(settingsGroup, "Interval (sec)", "Auto-refresh interval in seconds", refreshSettings.getRefreshInterval(), 1, Integer.MAX_VALUE);
+        Composite settingsGroup = UIUtils.createTitledComposite(composite, "Settings", 2, GridData.FILL_BOTH);
+        final Spinner intervalSpinner = UIUtils.createLabelSpinner(
+            settingsGroup,
+            "Interval (sec)",
+            "Auto-refresh interval in seconds",
+            refreshSettings.getRefreshInterval(),
+            1,
+            Integer.MAX_VALUE
+        );
         intervalSpinner.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 refreshSettings.setRefreshInterval(intervalSpinner.getSelection());
             }
         });
-        final Button stopOnErrorCheck = UIUtils.createCheckbox(settingsGroup, "Stop on error", "Stop auto-refresh if error happens", refreshSettings.isStopOnError(), 2);
+        final Button stopOnErrorCheck = UIUtils.createCheckbox(
+            settingsGroup,
+            "Stop on error",
+            "Stop auto-refresh if error happens",
+            refreshSettings.isStopOnError(),
+            2
+        );
         stopOnErrorCheck.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
