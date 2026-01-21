@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,16 +37,20 @@ public class AISettings implements DBPAdaptable {
     private final Map<String, AIEngineProperties> engineConfigurations = new LinkedHashMap<>();
     private final Map<String, Object> properties = new LinkedHashMap<>();
     private final Set<String> resolvedSecrets = new HashSet<>();
+
+    private boolean functionsEnabled = true;
     private final Set<String> enabledFunctionCategories = new LinkedHashSet<>();
     private final Set<String> enabledFunctions = new LinkedHashSet<>();
 
     public AISettings() {
     }
 
+    @NotNull
     public Map<String, Object> getAllProperties() {
         return properties;
     }
 
+    @Nullable
     public <T> T getProperty(@NotNull String name, @Nullable T defaultValue) {
         return (T) properties.getOrDefault(name, defaultValue);
     }
@@ -57,6 +61,14 @@ public class AISettings implements DBPAdaptable {
         } else {
             properties.put(name, value);
         }
+    }
+
+    public boolean isFunctionsEnabled() {
+        return functionsEnabled;
+    }
+
+    public void setFunctionsEnabled(boolean functionsEnabled) {
+        this.functionsEnabled = functionsEnabled;
     }
 
     @NotNull

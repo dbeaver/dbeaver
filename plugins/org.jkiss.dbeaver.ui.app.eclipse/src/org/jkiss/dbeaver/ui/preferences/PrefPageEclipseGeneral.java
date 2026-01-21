@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,7 +21,6 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
-import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
@@ -47,7 +46,12 @@ public class PrefPageEclipseGeneral extends AbstractPrefPage implements IWorkben
     protected Control createPreferenceContent(@NotNull Composite parent) {
         Composite composite = UIUtils.createPlaceholder(parent, 1, 5);
 
-        Group groupObjects = UIUtils.createControlGroup(composite, CoreMessages.pref_page_eclipse_ui_general_group_general, 1, GridData.VERTICAL_ALIGN_BEGINNING, 0);
+        Composite groupObjects = UIUtils.createTitledComposite(
+            composite,
+            CoreMessages.pref_page_eclipse_ui_general_group_general,
+            1,
+            GridData.VERTICAL_ALIGN_BEGINNING
+        );
         Label descLabel = new Label(groupObjects, SWT.WRAP);
         descLabel.setText(CoreMessages.pref_page_eclipse_ui_general_group_label);
 

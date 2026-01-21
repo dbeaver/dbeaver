@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -72,7 +72,11 @@ public class DatabaseProducerPageExtractSettings extends DataTransferPageNodeSet
         final DatabaseProducerSettings settings = getWizard().getPageSettings(this, DatabaseProducerSettings.class);
 
         {
-            Group generalSettings = UIUtils.createControlGroup(composite, DTMessages.data_transfer_wizard_settings_group_general, 4, GridData.HORIZONTAL_ALIGN_BEGINNING, 0);
+            Composite generalSettings = UIUtils.createTitledComposite(
+                composite,
+                DTMessages.data_transfer_wizard_settings_group_general,
+                4,
+                GridData.HORIZONTAL_ALIGN_BEGINNING);
 
             newConnectionCheckbox = UIUtils.createCheckbox(generalSettings, DTMessages.data_transfer_wizard_output_checkbox_new_connection, DTUIMessages.database_producer_page_extract_settings_new_connection_checkbox_tooltip, true, 4);
             newConnectionCheckbox.addSelectionListener(new SelectionAdapter() {
@@ -152,12 +156,11 @@ public class DatabaseProducerPageExtractSettings extends DataTransferPageNodeSet
             }
         }
         {
-            Group generalSettings = UIUtils.createControlGroup(
+            Composite generalSettings = UIUtils.createTitledComposite(
                 composite,
                 UIConnectionMessages.dialog_connection_advanced_settings,
                 4,
-                GridData.HORIZONTAL_ALIGN_BEGINNING,
-                0
+                GridData.HORIZONTAL_ALIGN_BEGINNING
             );
 
             Label threadsNumLabel = UIUtils.createControlLabel(generalSettings, DTMessages.data_transfer_wizard_output_label_max_threads);

@@ -1,7 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
- * Copyright (C) 2017-2018 Alexander Fedorov (alexander.fedorov@jkiss.org)
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,6 +26,7 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.debug.ui.DBGConfigurationPanel;
 import org.jkiss.dbeaver.debug.ui.DBGConfigurationPanelContainer;
@@ -71,11 +71,15 @@ public class PostgreDebugPanelFunction implements DBGConfigurationPanel {
     private Table parametersTable;
 
     @Override
-    public void createPanel(Composite parent, DBGConfigurationPanelContainer container) {
+    public void createPanel(@NotNull Composite parent, DBGConfigurationPanelContainer container) {
         this.container = container;
 
         {
-            Group kindGroup = UIUtils.createControlGroup(parent, "Attach type", 2, GridData.HORIZONTAL_ALIGN_BEGINNING, SWT.DEFAULT);
+            Composite kindGroup = UIUtils.createTitledComposite(
+                parent,
+                "Attach type",
+                2,
+                GridData.HORIZONTAL_ALIGN_BEGINNING);
 
             SelectionListener listener = new SelectionAdapter() {
                 @Override
@@ -99,9 +103,9 @@ public class PostgreDebugPanelFunction implements DBGConfigurationPanel {
     }
 
     private void createFunctionGroup(Composite parent) {
-        Group functionGroup = UIUtils.createControlGroup(parent, "Function", 2, GridData.VERTICAL_ALIGN_BEGINNING, SWT.DEFAULT);
+        Composite functionGroup = UIUtils.createTitledComposite(parent, "Function", 2, GridData.VERTICAL_ALIGN_BEGINNING);
         UIUtils.createControlLabel(functionGroup, "Function");
-        functionCombo = new CSmartSelector<PostgreProcedure>(functionGroup, SWT.BORDER | SWT.DROP_DOWN | SWT.READ_ONLY, new LabelProvider() {
+        functionCombo = new CSmartSelector<>(functionGroup, SWT.BORDER | SWT.DROP_DOWN | SWT.READ_ONLY, new LabelProvider() {
             @Override
             public Image getImage(Object element) {
                 return DBeaverIcons.getImage(DBIcon.TREE_PROCEDURE);
@@ -112,7 +116,7 @@ public class PostgreDebugPanelFunction implements DBGConfigurationPanel {
                 if (element == null) {
                     return "N/A";
                 }
-                return ((PostgreProcedure)element).getFullQualifiedSignature();
+                return ((PostgreProcedure) element).getFullQualifiedSignature();
             }
         }) {
             @Override
@@ -127,8 +131,9 @@ public class PostgreDebugPanelFunction implements DBGConfigurationPanel {
                             "Select function to debug",
                             dsNode,
                             curNode,
-                            new Class[]{DBSInstance.class, DBSObjectContainer.class, PostgreProcedure.class},
-                            new Class[]{PostgreProcedure.class}, null);
+                            new Class[] {DBSInstance.class, DBSObjectContainer.class, PostgreProcedure.class},
+                            new Class[] {PostgreProcedure.class}, null
+                        );
                         if (node instanceof DBNDatabaseNode && ((DBNDatabaseNode) node).getObject() instanceof PostgreProcedure) {
                             functionCombo.removeAll();
                             selectedFunction = (PostgreProcedure) ((DBNDatabaseNode) node).getObject();
@@ -155,7 +160,7 @@ public class PostgreDebugPanelFunction implements DBGConfigurationPanel {
     }
 
     private void createParametersGroup(Composite parent) {
-        Group composite = UIUtils.createControlGroup(parent, "Function parameters", 2, GridData.FILL_BOTH, SWT.DEFAULT);
+        Composite composite = UIUtils.createTitledComposite(parent, "Function parameters", 2, GridData.FILL_BOTH);
 
         parametersTable = new Table(composite, SWT.SINGLE | SWT.FULL_SELECTION | SWT.BORDER | SWT.H_SCROLL | SWT.V_SCROLL);
         final GridData gd = new GridData(SWT.FILL, SWT.FILL, true, true);

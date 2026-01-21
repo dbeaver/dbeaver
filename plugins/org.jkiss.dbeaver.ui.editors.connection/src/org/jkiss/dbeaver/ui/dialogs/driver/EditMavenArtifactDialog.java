@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -115,7 +115,12 @@ public class EditMavenArtifactDialog extends BaseDialog {
             createDeclareArtifactManuallyTab(tabFolder);
         }
         {
-            Group settingsGroup = UIUtils.createControlGroup(composite, UIConnectionMessages.dialog_edit_driver_edit_maven_settings, 1, GridData.FILL_HORIZONTAL, 0);
+            Composite settingsGroup = UIUtils.createTitledComposite(
+                composite,
+                UIConnectionMessages.dialog_edit_driver_edit_maven_settings,
+                1,
+                GridData.FILL_HORIZONTAL
+            );
 
             Button ignoreDependenciesCheckbox = UIUtils.createCheckbox(settingsGroup,
                 UIConnectionMessages.dialog_edit_driver_edit_maven_ignore_transient_dependencies,
