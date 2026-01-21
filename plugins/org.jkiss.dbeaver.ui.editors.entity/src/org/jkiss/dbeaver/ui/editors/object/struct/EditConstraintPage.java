@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,10 +21,12 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.widgets.*;
+import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Combo;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Text;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.impl.struct.AbstractTableConstraint;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
@@ -44,7 +46,6 @@ import java.util.List;
  * @author Serge Rider
  */
 public class EditConstraintPage extends AttributesSelectorPage<DBSEntity, DBSEntityAttribute> {
-    private static final Log log = Log.getLog(EditConstraintPage.class);
 
     private DBSEntityConstraintType[] constraintTypes;
     private DBSEntityConstraintType selectedConstraintType;
@@ -53,7 +54,7 @@ public class EditConstraintPage extends AttributesSelectorPage<DBSEntity, DBSEnt
     private Collection<? extends DBSEntityAttributeRef> attributes;
     private final ConstraintNameGenerator nameGenerator;
 
-    private Group expressionGroup;
+    private Composite expressionGroup;
     private Text expressionText;
     private boolean enableConstraint = true;
     private boolean showEnable = false;
@@ -193,7 +194,12 @@ public class EditConstraintPage extends AttributesSelectorPage<DBSEntity, DBSEnt
 
     @Override
     protected void createContentsAfterColumns(Composite panel) {
-        expressionGroup = UIUtils.createControlGroup(panel, ObjectEditorMessages.edit_constraints_expression_text, 1, GridData.FILL_BOTH, 0);
+        expressionGroup = UIUtils.createTitledComposite(
+            panel,
+            ObjectEditorMessages.edit_constraints_expression_text,
+            1,
+            GridData.FILL_BOTH
+        );
         expressionText = new Text(expressionGroup, SWT.BORDER | SWT.MULTI);
         GridData gd = new GridData(GridData.FILL_BOTH);
         gd.heightHint = expressionText.getLineHeight() * 3;

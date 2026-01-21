@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -109,7 +109,7 @@ public class GenericConnectionPage extends ConnectionPageWithAuth implements IDi
         GridData gd = new GridData(GridData.FILL_BOTH);
         addrGroup.setLayoutData(gd);
 
-        settingsGroup = UIUtils.createControlGroup(addrGroup, GenericMessages.dialog_connection_general_tab, 4, GridData.FILL_HORIZONTAL, 0);
+        settingsGroup = UIUtils.createTitledComposite(addrGroup, GenericMessages.dialog_connection_general_tab, 4, GridData.FILL_HORIZONTAL);
         GridLayout gl = new GridLayout(4, false);
         settingsGroup.setLayout(gl);
 
@@ -117,7 +117,7 @@ public class GenericConnectionPage extends ConnectionPageWithAuth implements IDi
             SelectionAdapter typeSwitcher = new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
-                    if (controlGroupsByUrl.size() > 0) {
+                    if (!controlGroupsByUrl.isEmpty()) {
                         setupConnectionModeSelection(urlText, typeURLRadio.getSelection(), controlGroupsByUrl);
                     }
                     saveAndUpdate();
@@ -127,13 +127,13 @@ public class GenericConnectionPage extends ConnectionPageWithAuth implements IDi
 
             
             Label urlLabel = UIUtils.createControlLabel(settingsGroup, GenericMessages.dialog_connection_jdbc_url_);
-            urlLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
+            urlLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
 
             urlText = new Text(settingsGroup, SWT.BORDER);
             gd = new GridData(GridData.FILL_HORIZONTAL);
             gd.horizontalSpan = 3;
             gd.grabExcessHorizontalSpace = true;
-            gd.widthHint = 355;
+            gd.widthHint = 200;
             urlText.setLayoutData(gd);
             urlText.addModifyListener(e -> site.updateButtons());
 
@@ -143,7 +143,7 @@ public class GenericConnectionPage extends ConnectionPageWithAuth implements IDi
         {
             Label hostLabel = new Label(settingsGroup, SWT.NONE);
             hostLabel.setText(GenericMessages.dialog_connection_host_label);
-            hostLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
+            hostLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
 
             hostText = new Text(settingsGroup, SWT.BORDER);
             gd = new GridData(GridData.FILL_HORIZONTAL);
@@ -154,7 +154,7 @@ public class GenericConnectionPage extends ConnectionPageWithAuth implements IDi
 
             Label portLabel = new Label(settingsGroup, SWT.NONE);
             portLabel.setText(GenericMessages.dialog_connection_port_label);
-            portLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
+            portLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
 
             portText = new Text(settingsGroup, SWT.BORDER);
             gd = new GridData(GridData.CENTER);
@@ -180,7 +180,7 @@ public class GenericConnectionPage extends ConnectionPageWithAuth implements IDi
                 serverLabel.setText(GenericMessages.dialog_connection_server_label);
             }
 
-            serverLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
+            serverLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
 
             serverText = new Text(settingsGroup, SWT.BORDER);
             gd = new GridData(GridData.FILL_HORIZONTAL);
@@ -207,7 +207,7 @@ public class GenericConnectionPage extends ConnectionPageWithAuth implements IDi
                 dbLabel = new Label(settingsGroup, SWT.NONE);
                 dbLabel.setText(GenericMessages.dialog_connection_database_schema_label);
             }
-            dbLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
+            dbLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
 
             dbText = new Text(settingsGroup, SWT.BORDER);
             gd = new GridData(GridData.FILL_HORIZONTAL);
@@ -229,7 +229,7 @@ public class GenericConnectionPage extends ConnectionPageWithAuth implements IDi
         {
             Label pathLabel = new Label(settingsGroup, SWT.NONE);
             pathLabel.setText(GenericMessages.dialog_connection_path_label);
-            pathLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
+            pathLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
 
             pathText = new Text(settingsGroup, SWT.BORDER);
             gd = new GridData(GridData.FILL_HORIZONTAL);
@@ -244,7 +244,7 @@ public class GenericConnectionPage extends ConnectionPageWithAuth implements IDi
             gl.marginHeight = 0;
             gl.marginWidth = 0;
             buttonsPanel.setLayout(gl);
-            gd = new GridData(GridData.HORIZONTAL_ALIGN_END);
+            gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
             //gd.widthHint = 150;
             buttonsPanel.setLayoutData(gd);
 
@@ -420,7 +420,7 @@ public class GenericConnectionPage extends ConnectionPageWithAuth implements IDi
         DBPConnectionConfiguration connectionInfo = dataSource.getConnectionConfiguration();
         this.parseSampleURL(site.getDriver());
         final boolean useURL = connectionInfo.getConfigurationType() == DBPDriverConfigurationType.URL;
-        if (controlGroupsByUrl.size() > 0) {
+        if (!controlGroupsByUrl.isEmpty()) {
             setupConnectionModeSelection(urlText, useURL, controlGroupsByUrl);
         }
         site.updateButtons();

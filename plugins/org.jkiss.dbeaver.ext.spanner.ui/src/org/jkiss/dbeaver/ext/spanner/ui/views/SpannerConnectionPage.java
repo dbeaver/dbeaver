@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -72,7 +72,12 @@ public class SpannerConnectionPage extends ConnectionPageWithAuth implements IDi
         ModifyListener textListener = e -> site.updateButtons();
 
         {
-            Composite addrGroup = UIUtils.createControlGroup(settingsGroup, SpannerMessages.label_connection, 2, 0, 0);
+            Composite addrGroup = UIUtils.createTitledComposite(
+                settingsGroup,
+                SpannerMessages.label_connection,
+                2,
+                GridData.FILL_HORIZONTAL
+            );
             addrGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
             projectText = UIUtils.createLabelText(addrGroup, SpannerMessages.label_project, ""); //$NON-NLS-2$

@@ -105,8 +105,8 @@ public class DataTransferPagePipes extends ActiveWizardPage<DataTransferWizard> 
 
         nodesTable = new TableViewer(panel, SWT.BORDER | SWT.SINGLE | SWT.FULL_SELECTION);
         GridData gd = new GridData(GridData.FILL_BOTH);
-        gd.heightHint = 200;
-        gd.widthHint = 300;
+        gd.heightHint = 350;
+        gd.widthHint = 400;
         nodesTable.getTable().setLayoutData(gd);
         nodesTable.getTable().setLinesVisible(true);
         nodesTable.setContentProvider((IStructuredContentProvider) inputElement -> {
@@ -201,7 +201,7 @@ public class DataTransferPagePipes extends ActiveWizardPage<DataTransferWizard> 
 
         inputsTable = new TableViewer(panel, SWT.BORDER | SWT.SINGLE | SWT.FULL_SELECTION);
         GridData gd = new GridData(GridData.FILL_BOTH);
-        //gd.widthHint = 300;
+        gd.widthHint = 200;
         gd.heightHint = 200;
         inputsTable.getTable().setLayoutData(gd);
         inputsTable.getTable().setLinesVisible(true);

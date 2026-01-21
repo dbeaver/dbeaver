@@ -101,7 +101,7 @@ public class ConnectionPageGeneral extends ConnectionWizardPage implements Navig
     private List<DBPDataSourcePermission> accessRestrictions;
 
     private final List<FilterInfo> filters = new ArrayList<>();
-    private Group filtersGroup;
+    private Composite filtersGroup;
 
     ConnectionPageGeneral(ConnectionWizard wizard) {
         super(PAGE_NAME);
@@ -298,12 +298,11 @@ public class ConnectionPageGeneral extends ConnectionWizardPage implements Navig
         Composite group = UIUtils.createComposite(parent, 1);
 
         {
-            Composite miscGroup = UIUtils.createControlGroup(
+            Composite miscGroup = UIUtils.createTitledComposite(
                 group,
                 CoreMessages.pref_page_ui_general_group_general,
                 2,
-                GridData.FILL_HORIZONTAL,
-                0
+                GridData.FILL_HORIZONTAL
             );
 
             String connectionName = dataSourceDescriptor == null ? "" : dataSourceDescriptor.getName(); //$NON-NLS-1$
@@ -384,10 +383,10 @@ public class ConnectionPageGeneral extends ConnectionWizardPage implements Navig
 
         {
             // Security
-            Group securityGroup = UIUtils.createControlGroup(
+            Composite securityGroup = UIUtils.createTitledComposite(
                 refsGroup,
                 CoreMessages.dialog_connection_wizard_final_group_security,
-                1, GridData.VERTICAL_ALIGN_BEGINNING | GridData.HORIZONTAL_ALIGN_BEGINNING, 0);
+                1, GridData.VERTICAL_ALIGN_BEGINNING | GridData.HORIZONTAL_ALIGN_BEGINNING);
 
             readOnlyConnection = UIUtils.createCheckbox(
                 securityGroup,
@@ -403,10 +402,12 @@ public class ConnectionPageGeneral extends ConnectionWizardPage implements Navig
 
         {
             // Filters
-            filtersGroup = UIUtils.createControlGroup(
+            filtersGroup = UIUtils.createTitledComposite(
                 refsGroup,
                 CoreMessages.dialog_connection_wizard_final_group_filters,
-                1, GridData.VERTICAL_ALIGN_BEGINNING | GridData.HORIZONTAL_ALIGN_BEGINNING, 0);
+                1,
+                GridData.VERTICAL_ALIGN_BEGINNING | GridData.HORIZONTAL_ALIGN_BEGINNING
+            );
             for (final FilterInfo filterInfo : filters) {
                 filterInfo.link = UIUtils.createLink(
                     filtersGroup,
@@ -433,10 +434,12 @@ public class ConnectionPageGeneral extends ConnectionWizardPage implements Navig
 
         {
             // Filters
-            Composite vmGroup = UIUtils.createControlGroup(
+            Composite vmGroup = UIUtils.createTitledComposite(
                 refsGroup,
                 "Virtual model",
-                1, GridData.VERTICAL_ALIGN_BEGINNING | GridData.HORIZONTAL_ALIGN_BEGINNING, 0);
+                1,
+                GridData.VERTICAL_ALIGN_BEGINNING | GridData.HORIZONTAL_ALIGN_BEGINNING
+            );
             showVirtualModelCheck = UIUtils.createCheckbox(
                 vmGroup,
                 "Show virtual model editor",

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,12 +16,9 @@
  */
 package org.jkiss.dbeaver.ui.editors.data.preferences;
 
-import org.eclipse.swt.SWT;
-import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
-import org.eclipse.swt.widgets.Group;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
@@ -79,11 +76,10 @@ public class PrefPageResultSetPresentation extends TargetPrefPage {
     @NotNull
     @Override
     protected Control createPreferenceContent(@NotNull Composite parent) {
-        Composite composite = UIUtils.createPlaceholder(parent, 2, 5);
+        Composite composite = UIUtils.createComposite(parent, 1);
 
         {
-            Group uiGroup = UIUtils.createControlGroup(composite, DataEditorsMessages.pref_page_database_resultsets_group_common, 1, SWT.NONE, 0);
-            ((GridData) uiGroup.getLayoutData()).horizontalSpan = 2;
+            Composite uiGroup = UIUtils.createTitledComposite(composite, DataEditorsMessages.pref_page_database_resultsets_group_common, 1);
             autoSwitchMode = UIUtils.createCheckbox(uiGroup, DataEditorsMessages.pref_page_database_resultsets_label_switch_mode_on_rows, false);
             showFiltersInSingleTabMode = UIUtils.createCheckbox(uiGroup, DataEditorsMessages.pref_page_database_resultsets_label_filters_panel_in_singletab_mode, true);
             showDescription = UIUtils.createCheckbox(uiGroup, DataEditorsMessages.pref_page_database_resultsets_label_show_column_description, false);
@@ -99,7 +95,7 @@ public class PrefPageResultSetPresentation extends TargetPrefPage {
     }
 
     @Override
-    protected void loadPreferences(DBPPreferenceStore store) {
+    protected void loadPreferences(@NotNull DBPPreferenceStore store) {
         try {
             autoSwitchMode.setSelection(store.getBoolean(ResultSetPreferences.RESULT_SET_AUTO_SWITCH_MODE));
             showFiltersInSingleTabMode.setSelection(store.getBoolean(ResultSetPreferences.RESULT_SET_SHOW_FILTERS_IN_SINGLE_TAB_MODE));
@@ -116,7 +112,7 @@ public class PrefPageResultSetPresentation extends TargetPrefPage {
     }
 
     @Override
-    protected void savePreferences(DBPPreferenceStore store) {
+    protected void savePreferences(@NotNull DBPPreferenceStore store) {
         try {
             store.setValue(ResultSetPreferences.RESULT_SET_AUTO_SWITCH_MODE, autoSwitchMode.getSelection());
             store.setValue(ResultSetPreferences.RESULT_SET_SHOW_FILTERS_IN_SINGLE_TAB_MODE, showFiltersInSingleTabMode.getSelection());
@@ -161,6 +157,7 @@ public class PrefPageResultSetPresentation extends TargetPrefPage {
         super.performDefaults();
     }
 
+    @NotNull
     @Override
     protected String getPropertyPageID() {
         return PAGE_ID;
