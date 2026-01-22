@@ -665,14 +665,34 @@ public class UIUtils {
         int layoutStyle,
         int widthHint
     ) {
-        if (parent.getLayout() instanceof GridLayout gl && gl.numColumns > 1) {
-            parent = UIUtils.createPlaceholder(parent, 1, 10);
-            parent.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING | GridData.VERTICAL_ALIGN_BEGINNING));
+        return createTitledComposite(parent, label, columns, layoutStyle, widthHint, 1);
+    }
+
+    public static Composite createTitledComposite(
+        @NotNull Composite parent,
+        @NotNull String label,
+        int columns,
+        int layoutStyle,
+        int widthHint,
+        int hSpan
+    ) {
+        Composite composite = UIUtils.createComposite(parent, 1);
+        {
+            GridData gd = new GridData(layoutStyle > 0 ? layoutStyle : GridData.HORIZONTAL_ALIGN_BEGINNING);
+            if (widthHint > 0) {
+                gd.widthHint = widthHint;
+            }
+            if (hSpan > 1) {
+                gd.horizontalSpan = hSpan;
+            }
+            composite.setLayoutData(gd);
         }
 
-        Label titleLabel = new Label(parent, SWT.NONE);
+        Label titleLabel = new Label(composite, SWT.NONE);
         titleLabel.setText(label);
-        titleLabel.setFont(BaseThemeSettings.instance.baseFontBold);
+        if (PlatformUI.isWorkbenchRunning()) {
+            titleLabel.setFont(BaseThemeSettings.instance.baseFontBold);
+        }
         if (false) {
             titleLabel.addPaintListener(e -> {
                 e.gc.setForeground(titleLabel.getDisplay().getSystemColor(SWT.COLOR_WIDGET_NORMAL_SHADOW));
@@ -685,7 +705,7 @@ public class UIUtils {
         }
         titleLabel.setLayoutData(lgd);
 
-        Composite group = new Composite(parent, SWT.NONE);
+        Composite group = new Composite(composite, SWT.NONE);
         GridLayout layout = new GridLayout(columns, false);
         layout.marginHeight = 0;
         layout.marginWidth = 0;
@@ -693,26 +713,16 @@ public class UIUtils {
         layout.marginLeft = 7;
         layout.marginBottom = 3;
         group.setLayout(layout);
-
-        if (parent.getLayout() instanceof GridLayout) {
-            GridData gd = new GridData(layoutStyle);
-            if (widthHint > 0) {
-                gd.widthHint = widthHint;
-            }
-            group.setLayoutData(gd);
-        }
+        group.setLayoutData(new GridData(GridData.FILL_BOTH));
 
         return group;
     }
 
     public static void updateTitledComposite(@NotNull Composite titledComposite, @NotNull String title) {
-        Control[] children = titledComposite.getParent().getChildren();
-        if (children.length > 0) {
-            int index = ArrayUtils.indexOf(children, titledComposite);
-            if (index > 0 && children[index - 1] instanceof Label label) {
-                label.setText(title);
-                return;
-            }
+        Control[] children = titledComposite.getChildren();
+        if (children.length > 0 && children[0] instanceof Label label) {
+            label.setText(title);
+            return;
         }
         log.error("Composite is not titled!");
     }

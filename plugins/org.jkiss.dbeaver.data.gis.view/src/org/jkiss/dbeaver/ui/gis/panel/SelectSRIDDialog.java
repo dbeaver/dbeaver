@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,7 +24,7 @@ import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
-import org.jkiss.dbeaver.Log;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.gis.GisConstants;
 import org.jkiss.dbeaver.model.gis.GisTransformUtils;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -39,8 +39,6 @@ import java.util.List;
  * Database select dialog
  */
 public class SelectSRIDDialog extends BaseDialog {
-
-    private static final Log log = Log.getLog(SelectSRIDDialog.class);
 
     private static final String DIALOG_ID = "DBeaver.SelectSRIDDialog";//$NON-NLS-1$
     private static final int MANAGE_BUTTON_ID = 1000;
@@ -62,11 +60,12 @@ public class SelectSRIDDialog extends BaseDialog {
         return null;//UIUtils.getSettingsSection(UIActivator.getDefault().getDialogSettings(), DIALOG_ID);
     }
 
+    @NotNull
     @Override
-    protected Composite createDialogArea(Composite parent) {
+    protected Composite createDialogArea(@NotNull Composite parent) {
         Composite dialogArea = super.createDialogArea(parent);
 
-        Group crsGroup = UIUtils.createControlGroup(dialogArea, "CRS", 2, SWT.NONE, 0);
+        Composite crsGroup = UIUtils.createTitledComposite(dialogArea, "CRS", 2, GridData.FILL_HORIZONTAL);
         crsGroup.setLayoutData(new GridData(GridData.FILL_BOTH));
         sridCombo = UIUtils.createLabelCombo(crsGroup, GISMessages.panel_select_srid_dialog_label_combo_source_srid, GISMessages.panel_select_srid_dialog_label_combo_tooltip_source_crs, SWT.BORDER | SWT.DROP_DOWN);
         sridCombo.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
@@ -125,14 +124,14 @@ public class SelectSRIDDialog extends BaseDialog {
     }
 
     @Override
-    protected Control createContents(Composite parent) {
+    protected Control createContents(@NotNull Composite parent) {
         Control contents = super.createContents(parent);
         updateButtons();
         return contents;
     }
 
     private void updateButtons() {
-        getButton(IDialogConstants.OK_ID).setEnabled(selectedSRID != 0);
+        enableButton(IDialogConstants.OK_ID, selectedSRID != 0);
     }
 
     public int getSelectedSRID() {
@@ -140,7 +139,7 @@ public class SelectSRIDDialog extends BaseDialog {
     }
 
     @Override
-    protected void createButtonsForButtonBar(Composite parent) {
+    protected void createButtonsForButtonBar(@NotNull Composite parent) {
         createButton(parent, MANAGE_BUTTON_ID, GISMessages.panel_select_srid_dialog_button_label_manage, false);
         super.createButtonsForButtonBar(parent);
     }

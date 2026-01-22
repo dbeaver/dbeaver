@@ -33,6 +33,9 @@ import org.jkiss.dbeaver.ui.controls.lightgrid.LightGrid;
 import org.jkiss.dbeaver.ui.controls.resultset.IResultSetPresentation;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetDecoratorBase;
 import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
+import org.jkiss.dbeaver.ui.controls.resultset.panel.grouping.action.ClearGroupingAction;
+import org.jkiss.dbeaver.ui.controls.resultset.panel.grouping.action.DeleteColumnAction;
+import org.jkiss.dbeaver.ui.controls.resultset.panel.grouping.action.EditColumnsAction;
 import org.jkiss.dbeaver.ui.controls.resultset.spreadsheet.Spreadsheet;
 import org.jkiss.utils.ArrayUtils;
 
@@ -84,9 +87,9 @@ public class GroupingResultsDecorator extends ResultSetDecoratorBase {
 
     @Override
     public void fillContributions(@NotNull IContributionManager contributionManager) {
-        contributionManager.add(new GroupingPanel.EditColumnsAction(container));
-        contributionManager.add(new GroupingPanel.DeleteColumnAction(container));
-        contributionManager.add(new GroupingPanel.ClearGroupingAction(container));
+        contributionManager.add(new EditColumnsAction(container));
+        contributionManager.add(new DeleteColumnAction(container));
+        contributionManager.add(new ClearGroupingAction(container));
     }
 
     @Override

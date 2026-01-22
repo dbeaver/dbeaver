@@ -20,7 +20,10 @@ import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.widgets.*;
+import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Text;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ext.cubrid.CubridConstants;
 import org.jkiss.dbeaver.ext.cubrid.ui.internal.CubridMessages;
@@ -149,7 +152,12 @@ public class PrefPageCubrid extends TargetPrefPage {
             dbmsOutputBufferSize.addVerifyListener(UIUtils.getIntegerVerifyListener(Locale.ENGLISH));
         }
 
-        Group oidNavigator = UIUtils.createControlGroup(composite, CubridMessages.pref_page_cubrid_oid_title, 1, GridData.FILL_HORIZONTAL, 0);
+        Composite oidNavigator = UIUtils.createTitledComposite(
+            composite,
+            CubridMessages.pref_page_cubrid_oid_title,
+            1,
+            GridData.FILL_HORIZONTAL
+        );
         oid = UIUtils.createCheckbox(oidNavigator, CubridMessages.pref_page_cubrid_oid_checkbox, false);
 
         oid.addSelectionListener(new SelectionAdapter()

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -73,7 +73,7 @@ public class MySQLUserEditorGeneral extends MySQLUserEditorAbstract
 
         newUser = !getDatabaseObject().isPersisted();
         {
-            Composite loginGroup = UIUtils.createControlGroup(container, MySQLUIMessages.editors_user_editor_general_group_login, 2, GridData.FILL_HORIZONTAL, 0);
+            Composite loginGroup = UIUtils.createTitledComposite(container, MySQLUIMessages.editors_user_editor_general_group_login, 2, GridData.FILL_HORIZONTAL);
 
             userNameText = UIUtils.createLabelText(loginGroup, MySQLUIMessages.editors_user_editor_general_label_user_name, getDatabaseObject().getUserName());
             userNameText.setEditable(newUser);
@@ -96,7 +96,7 @@ public class MySQLUserEditorGeneral extends MySQLUserEditorAbstract
         }
 
         {
-            Composite limitsGroup = UIUtils.createControlGroup(container, MySQLUIMessages.editors_user_editor_general_group_limits, 2, GridData.FILL_HORIZONTAL, 0);
+            Composite limitsGroup = UIUtils.createTitledComposite(container, MySQLUIMessages.editors_user_editor_general_group_limits, 2, GridData.FILL_HORIZONTAL);
 
             Spinner maxQueriesText = UIUtils.createLabelSpinner(limitsGroup, MySQLUIMessages.editors_user_editor_general_spinner_max_queries, getDatabaseObject().getMaxQuestions(), 0, Integer.MAX_VALUE);
             ControlPropertyCommandListener.create(this, maxQueriesText, UserPropertyHandler.MAX_QUERIES);
@@ -239,7 +239,7 @@ public class MySQLUserEditorGeneral extends MySQLUserEditorAbstract
             super(parent);
         }
         public ProgressVisualizer<List<MySQLPrivilege>> createLoadVisualizer() {
-            return new ProgressVisualizer<List<MySQLPrivilege>>() {
+            return new ProgressVisualizer<>() {
                 @Override
                 public void completeLoading(List<MySQLPrivilege> privs) {
                     super.completeLoading(privs);
@@ -257,20 +257,16 @@ public class MySQLUserEditorGeneral extends MySQLUserEditorAbstract
         {
             if (newUser && getDatabaseObject().isPersisted()) {
                 newUser = false;
-                UIUtils.asyncExec(new Runnable() {
-                    @Override
-                    public void run() {
-                        userNameText.setEditable(false);
-                        hostText.setEditable(false);
-                    }
+                UIUtils.asyncExec(() -> {
+                    userNameText.setEditable(false);
+                    hostText.setEditable(false);
                 });
             }
         }
 
         @Override
         public void onCommandChange(DBECommand<?> command) {
-            if (command instanceof MySQLUserManager.CommandRenameUser) {
-                MySQLUserManager.CommandRenameUser mysqlCommand = (MySQLUserManager.CommandRenameUser) command;
+            if (command instanceof MySQLUserManager.CommandRenameUser mysqlCommand) {
                 setUsernameAndHost(mysqlCommand.getNewUserName(), mysqlCommand.getNewHost());
             }
         }
