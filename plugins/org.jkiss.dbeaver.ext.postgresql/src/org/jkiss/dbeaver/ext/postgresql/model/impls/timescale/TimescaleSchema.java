@@ -26,7 +26,7 @@ public class TimescaleSchema extends PostgreSchema {
     public void collectObjectStatistics(@NotNull DBRProgressMonitor monitor, boolean totalSizeOnly, boolean forceRefresh) throws DBException {
         super.collectObjectStatistics(monitor, totalSizeOnly, forceRefresh);
         try (DBCSession session = DBUtils.openMetaSession(monitor, this, "Read hypertable statistics")) {
-            try (JDBCPreparedStatement stmt = ((JDBCSession)session).prepareStatement(
+            try (JDBCPreparedStatement stmt = ((JDBCSession) session).prepareStatement(
                 """
                 SELECT c.oid,
                        (size_info).total_bytes as total_rel_size,
