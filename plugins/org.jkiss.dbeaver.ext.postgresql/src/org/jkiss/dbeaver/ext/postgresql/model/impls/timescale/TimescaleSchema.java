@@ -35,16 +35,16 @@ public class TimescaleSchema extends PostgreSchema {
                 JOIN timescaledb_information.hypertables h
                   ON h.hypertable_schema = ? AND h.hypertable_name = c.relname
                 CROSS JOIN LATERAL hypertable_detailed_size(c.oid) AS size_info
-                WHERE c.relnamespace = ?"""))
-            {
+                WHERE c.relnamespace = ?"""
+            )) {
                 stmt.setString(1, getName());
                 stmt.setLong(2, getObjectId());
                 try (JDBCResultSet dbResult = stmt.executeQuery()) {
                     while (dbResult.next()) {
                         long tableId = dbResult.getLong(1);
                         PostgreTableBase table = getTable(monitor, tableId);
-                        if (table instanceof TimescaleTable) {
-                            ((TimescaleTable) table).fetchStatistics(dbResult);
+                        if (table instanceof TimescaleTable timescaleTable) {
+                            timescaleTable.fetchStatistics(dbResult);
                         }
                     }
                 }

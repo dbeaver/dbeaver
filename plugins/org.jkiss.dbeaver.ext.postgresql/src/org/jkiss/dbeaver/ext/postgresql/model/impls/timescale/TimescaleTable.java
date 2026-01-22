@@ -1,5 +1,6 @@
 package org.jkiss.dbeaver.ext.postgresql.model.impls.timescale;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreSchema;
@@ -20,7 +21,7 @@ public class TimescaleTable extends PostgreTableRegular {
     }
 
     @Override
-    protected void readTableStatistics(JDBCSession session) throws DBException, SQLException {
+    protected void readTableStatistics(@NotNull JDBCSession session) throws DBException, SQLException {
         if (!getDataSource().getServerType().supportsTableStatistics()) {
             return;
         }
@@ -42,7 +43,7 @@ public class TimescaleTable extends PostgreTableRegular {
         }
     }
 
-    private boolean isHypertable(JDBCSession session) throws SQLException {
+    private boolean isHypertable(@NotNull JDBCSession session) throws SQLException {
         String sql =
             "SELECT 1 FROM timescaledb_information.hypertables " +
             "WHERE hypertable_schema = ? AND hypertable_name = ?";
@@ -60,7 +61,7 @@ public class TimescaleTable extends PostgreTableRegular {
     }
 
     @Override
-    protected void fetchStatistics(JDBCResultSet dbResult) throws DBException, SQLException {
+    protected void fetchStatistics(@NotNull JDBCResultSet dbResult) throws DBException, SQLException {
         super.fetchStatistics(dbResult);
     }
 }

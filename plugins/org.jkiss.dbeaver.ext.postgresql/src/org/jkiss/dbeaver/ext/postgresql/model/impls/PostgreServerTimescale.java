@@ -51,10 +51,11 @@ public class PostgreServerTimescale extends PostgreServerExtensionBase {
     }
 
     @Override
-    public PostgreTableBase createRelationOfClass(PostgreSchema schema, PostgreClass.RelKind kind, JDBCResultSet dbResult) {
+    public PostgreTableBase createRelationOfClass(@NotNull PostgreSchema schema, @NotNull PostgreClass.RelKind kind, @NotNull JDBCResultSet dbResult) {
         if (kind == PostgreClass.RelKind.r ||
             kind == PostgreClass.RelKind.t ||
-            kind == PostgreClass.RelKind.p) {
+            kind == PostgreClass.RelKind.p
+        ) {
             return new TimescaleTable(schema, dbResult);
         }
         return super.createRelationOfClass(schema, kind, dbResult);
