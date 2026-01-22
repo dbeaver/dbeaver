@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -108,6 +108,8 @@ public class PrefPageSQLExecute extends TargetPrefPage {
                 store.contains(ModelPreferences.SQL_VARIABLES_ENABLED) ||
 
                 store.contains(SQLPreferenceConstants.MAXIMIZE_EDITOR_ON_SCRIPT_EXECUTE) ||
+                store.contains(SQLPreferenceConstants.SET_SELECTION_TO_STATISTICS_TAB) ||
+                store.contains(SQLPreferenceConstants.CLOSE_INCLUDED_SCRIPT_AFTER_EXECUTION) ||
                 store.contains(SQLPreferenceConstants.REFRESH_DEFAULTS_AFTER_EXECUTE) ||
                 store.contains(SQLPreferenceConstants.CLEAR_OUTPUT_BEFORE_EXECUTE)
             ;
@@ -129,12 +131,11 @@ public class PrefPageSQLExecute extends TargetPrefPage {
 
         // General settings
         {
-            Composite commonGroup = UIUtils.createControlGroup(
+            Composite commonGroup = UIUtils.createTitledComposite(
                 leftPane,
                 SQLEditorMessages.pref_page_sql_editor_group_common,
                 2,
-                GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING,
-                0
+                GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING
             );
             {
                 invalidateBeforeExecuteCheck = UIUtils.createCheckbox(
@@ -180,12 +181,11 @@ public class PrefPageSQLExecute extends TargetPrefPage {
 
         // Scripts
         {
-            Composite scriptsGroup = UIUtils.createControlGroup(
+            Composite scriptsGroup = UIUtils.createTitledComposite(
                 rightPane,
                 SQLEditorMessages.pref_page_sql_editor_group_scripts,
                 2,
-                GridData.FILL_HORIZONTAL,
-                0
+                GridData.FILL_HORIZONTAL
             );
             {
                 commitTypeCombo = UIUtils.createLabelCombo(
@@ -275,12 +275,11 @@ public class PrefPageSQLExecute extends TargetPrefPage {
         }
         // Parameters
         {
-            Composite paramsGroup = UIUtils.createControlGroup(
+            Composite paramsGroup = UIUtils.createTitledComposite(
                 leftPane,
                 SQLEditorMessages.pref_page_sql_editor_group_parameters,
                 2,
-                GridData.VERTICAL_ALIGN_FILL,
-                0
+                GridData.VERTICAL_ALIGN_FILL
             );
             enableSQLParameters = UIUtils.createCheckbox(
                 paramsGroup,
@@ -357,12 +356,11 @@ public class PrefPageSQLExecute extends TargetPrefPage {
 
         // Delimiters
         {
-            Composite delimGroup = UIUtils.createControlGroup(
+            Composite delimGroup = UIUtils.createTitledComposite(
                 rightPane,
                 SQLEditorMessages.pref_page_sql_editor_group_delimiters,
                 2,
-                GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING,
-                0
+                GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING
             );
             statementDelimiterText = UIUtils.createLabelText(
                 delimGroup,
@@ -485,6 +483,8 @@ public class PrefPageSQLExecute extends TargetPrefPage {
         store.setToDefault(SQLPreferenceConstants.SCRIPT_FETCH_RESULT_SETS);
 
         store.setToDefault(SQLPreferenceConstants.MAXIMIZE_EDITOR_ON_SCRIPT_EXECUTE);
+        store.setToDefault(SQLPreferenceConstants.SET_SELECTION_TO_STATISTICS_TAB);
+        store.setToDefault(SQLPreferenceConstants.CLOSE_INCLUDED_SCRIPT_AFTER_EXECUTION);
 
         store.setToDefault(ModelPreferences.SCRIPT_STATEMENT_DELIMITER);
         store.setToDefault(ModelPreferences.SCRIPT_IGNORE_NATIVE_DELIMITER);

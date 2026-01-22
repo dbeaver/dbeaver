@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -47,8 +47,7 @@ import java.util.StringJoiner;
 /**
  * PrefPageDrivers
  */
-public class PrefPageDrivers extends AbstractPrefPage implements IWorkbenchPreferencePage, IWorkbenchPropertyPage
-{
+public class PrefPageDrivers extends AbstractPrefPage implements IWorkbenchPreferencePage, IWorkbenchPropertyPage {
     private static final Log log = Log.getLog(PrefPageDrivers.class);
 
     public static final String PAGE_ID = "org.jkiss.dbeaver.preferences.drivers"; //$NON-NLS-1$
@@ -76,7 +75,13 @@ public class PrefPageDrivers extends AbstractPrefPage implements IWorkbenchPrefe
         DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
 
         {
-            Group settings = UIUtils.createControlGroup(composite, UIConnectionMessages.pref_page_ui_general_group_settings, 2, GridData.FILL_HORIZONTAL, 300);
+            Composite settings = UIUtils.createTitledComposite(
+                composite,
+                UIConnectionMessages.pref_page_ui_general_group_settings,
+                2,
+                GridData.FILL_HORIZONTAL,
+                300
+            );
             versionUpdateCheck = UIUtils.createCheckbox(
                 settings,
                 UIConnectionMessages.pref_page_ui_general_check_new_driver_versions,
@@ -86,7 +91,13 @@ public class PrefPageDrivers extends AbstractPrefPage implements IWorkbenchPrefe
         }
 
         {
-            Group proxyObjects = UIUtils.createControlGroup(composite, UIConnectionMessages.pref_page_ui_general_group_http_proxy, 4, GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING, 300);
+            Composite proxyObjects = UIUtils.createTitledComposite(
+                composite,
+                UIConnectionMessages.pref_page_ui_general_group_http_proxy,
+                4,
+                GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING,
+                300
+            );
             proxyHostText = UIUtils.createLabelText(
                 proxyObjects,
                 UIConnectionMessages.pref_page_ui_general_label_proxy_host,
@@ -105,13 +116,25 @@ public class PrefPageDrivers extends AbstractPrefPage implements IWorkbenchPrefe
         }
 
         {
-            Group drivers = UIUtils.createControlGroup(composite, UIConnectionMessages.pref_page_drivers_group_location, 2, GridData.FILL_HORIZONTAL, 300);
+            Composite drivers = UIUtils.createTitledComposite(
+                composite,
+                UIConnectionMessages.pref_page_drivers_group_location,
+                2,
+                GridData.FILL_HORIZONTAL,
+                300
+            );
             customDriversHome = DialogUtils.createOutputFolderChooser(drivers, UIConnectionMessages.pref_page_drivers_local_folder, null, null, null, false, null);
             customDriversHome.setText(store.getString(ModelPreferences.UI_DRIVERS_HOME));
         }
 
         {
-            Group repoGroup = UIUtils.createControlGroup(composite, UIConnectionMessages.pref_page_drivers_group_file_repositories, 2, GridData.FILL_HORIZONTAL, 300);
+            Composite repoGroup = UIUtils.createTitledComposite(
+                composite,
+                UIConnectionMessages.pref_page_drivers_group_file_repositories,
+                2,
+                GridData.FILL_HORIZONTAL,
+                300
+            );
             sourceList = new List(repoGroup, SWT.BORDER | SWT.SINGLE | SWT.H_SCROLL | SWT.V_SCROLL);
             sourceList.setLayoutData(new GridData(GridData.FILL_BOTH));
 

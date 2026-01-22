@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -70,8 +70,8 @@ import java.util.stream.Collectors;
 
 public class StreamConsumerPageOutput extends DataTransferPageNodeSettings {
     
-    private class EnumSelectionGroup<T extends Enum<T>> {
-        private final Group group; 
+    private static class EnumSelectionGroup<T extends Enum<T>> {
+        private final Composite group;
         private final Map<T, Button> radioButtonByValue;
         private final T defaultValue;
         private final Consumer<T> onValueSelected;
@@ -87,7 +87,7 @@ public class StreamConsumerPageOutput extends DataTransferPageNodeSettings {
             @NotNull Consumer<T> onValueSelected,
             @NotNull Function<T, Boolean> valueSelectionConfirmation
         ) {
-            group = UIUtils.createControlGroup(parent, header, 1, GridData.VERTICAL_ALIGN_BEGINNING, 0);
+            group = UIUtils.createTitledComposite(parent, header, 1, GridData.VERTICAL_ALIGN_BEGINNING);
             
             SelectionListener selectionListener = SelectionListener.widgetSelectedAdapter(e -> {
                 Button triggered = (Button) e.widget;
@@ -193,7 +193,12 @@ public class StreamConsumerPageOutput extends DataTransferPageNodeSettings {
         final StreamConsumerSettings settings = getWizard().getPageSettings(this, StreamConsumerSettings.class);
 
         {
-            Group generalSettings = UIUtils.createControlGroup(composite, DTMessages.data_transfer_wizard_output_group_general, 5, GridData.FILL_HORIZONTAL, 0);
+            Composite generalSettings = UIUtils.createTitledComposite(
+                composite,
+                DTMessages.data_transfer_wizard_output_group_general,
+                5,
+                GridData.FILL_HORIZONTAL
+            );
             clipboardCheck = UIUtils.createCheckbox(generalSettings, DTMessages.data_transfer_wizard_output_label_copy_to_clipboard, null, false, 5);
             clipboardCheck.addSelectionListener(new SelectionAdapter() {
                 @Override
@@ -239,9 +244,8 @@ public class StreamConsumerPageOutput extends DataTransferPageNodeSettings {
                     updatePageCompletion();
                 });
                 timestampPattern = UIUtils.createLabelText(generalSettings, DTMessages.data_transfer_wizard_output_label_timestamp_pattern, GeneralUtils.DEFAULT_TIMESTAMP_PATTERN, SWT.BORDER);
-                timestampPattern.addModifyListener(e -> {
-                    settings.setOutputTimestampPattern(timestampPattern.getText());
-                });
+                timestampPattern.addModifyListener(e ->
+                    settings.setOutputTimestampPattern(timestampPattern.getText()));
                 encodingBOMCheckbox = UIUtils.createCheckbox(generalSettings, DTMessages.data_transfer_wizard_output_label_insert_bom, DTMessages.data_transfer_wizard_output_label_insert_bom_tooltip, false, 1);
                 encodingBOMCheckbox.addSelectionListener(new SelectionAdapter() {
                     @Override
@@ -346,7 +350,12 @@ public class StreamConsumerPageOutput extends DataTransferPageNodeSettings {
         }
 
         {
-            Group resultsSettings = UIUtils.createControlGroup(composite, DTUIMessages.stream_consumer_page_output_label_results, 2, GridData.FILL_HORIZONTAL, 0);
+            Composite resultsSettings = UIUtils.createTitledComposite(
+                composite,
+                DTUIMessages.stream_consumer_page_output_label_results,
+                2,
+                GridData.FILL_HORIZONTAL
+            );
 
             showFinalMessageCheckbox = UIUtils.createCheckbox(resultsSettings, DTUIMessages.stream_consumer_page_output_label_show_finish_message, getWizard().getSettings().isShowFinalMessage());
             showFinalMessageCheckbox.addSelectionListener(new SelectionAdapter() {
@@ -537,7 +546,7 @@ public class StreamConsumerPageOutput extends DataTransferPageNodeSettings {
 
         final List<DataTransferPipe> pipes = getWizard().getSettings().getDataPipes();
         if (pipes.size() == 1) {
-            final DBSObject object = pipes.get(0).getProducer().getDatabaseObject();
+            final DBSObject object = pipes.getFirst().getProducer().getDatabaseObject();
             final SQLQueryContainer container = DBUtils.getAdapter(SQLQueryContainer.class, object);
             if (container != null) {
                 variables.addAll(container.getQueryParameters().keySet());
