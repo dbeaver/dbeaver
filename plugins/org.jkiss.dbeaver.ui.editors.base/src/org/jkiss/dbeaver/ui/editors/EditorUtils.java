@@ -788,13 +788,13 @@ public class EditorUtils {
             actionList.remove(FileTypeAction.EXTERNAL_EDITOR);
         }
         FileTypeAction selectedAction = null;
-        if (actions.size() > 1 && UIUtils.getActiveWorkbenchShell() != null) {
+        if (actionList.size() > 1 && UIUtils.getActiveWorkbenchShell() != null) {
             FileActionSelectorDialog dialog = new FileActionSelectorDialog(UIUtils.getActiveWorkbenchShell(), actionList);
             if (dialog.open() == IDialogConstants.OK_ID) {
                 selectedAction = dialog.getSelectedAction();
             }
-        } else if (actions.size() == 1) {
-            selectedAction = actions.iterator().next();
+        } else if (actionList.size() == 1) {
+            selectedAction = actionList.getFirst();
         }
         return selectedAction;
     }
