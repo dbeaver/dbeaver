@@ -16,9 +16,9 @@
  */
 package org.jkiss.dbeaver.ui.navigator.dialogs;
 
-import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.widgets.Combo;
+import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Shell;
 import org.jkiss.code.NotNull;
@@ -31,7 +31,8 @@ import org.jkiss.dbeaver.ui.internal.UINavigatorMessages;
 public class EditObjectFilterDialogTE extends EditObjectFilterDialog {
     public static final int DELETE_USER_FILTER = 1001;
 
-    private Combo customUserFilterCombo;
+    private Button allUsersRadioButton;
+    private Button currentUserRadioButton;
 
     private boolean isUserFilterUnsaved;
 
@@ -45,39 +46,72 @@ public class EditObjectFilterDialogTE extends EditObjectFilterDialog {
         super(shell, dsRegistry, objectTitle, filter, globalFilter);
     }
 
+    @Override
+    protected Composite createDialogArea(Composite parent) {
+        Composite dialog = super.createDialogArea(parent);
+        updateTemplatesEnabledState();
+        return dialog;
+    }
+
     @NotNull
     @Override
     protected Composite setTopPanel(@NotNull Composite composite) {
         Composite topPanel = getTopPanelPlaceholder(composite);
         setEnableCheckbox(topPanel);
-        setCustomUserFilterCombo(topPanel);
         if (!globalFilter) {
             setGlobalFilterLink(topPanel);
         }
+        setCustomUserFilterButtons(composite);
         return topPanel;
     }
 
 
     @NotNull
     @Override
-    protected Composite getTopPanelPlaceholder(@NotNull Composite composite) {
-        Composite topPanel = UIUtils.createPlaceholder(composite, globalFilter ? 3 : 4, 5);
+    protected Composite getTopPanelPlaceholder(@NotNull Composite parent) {
+        Composite topPanel = UIUtils.createPlaceholder(parent, globalFilter ? 3 : 4, 5);
         topPanel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         return topPanel;
     }
 
-    private void setCustomUserFilterCombo(@NotNull Composite parent) {
-        customUserFilterCombo = UIUtils.createLabelCombo(
+    private void setCustomUserFilterButtons(@NotNull Composite parent) {
+        Composite buttonsPlaceholder = UIUtils.createPlaceholder(
             parent,
-            "Filter for",
-            "Set this filter for all DBeaver users, or only for current one",
-            SWT.DROP_DOWN | SWT.READ_ONLY | SWT.BORDER
+            3,
+            10
         );
-        customUserFilterCombo.add("All users");
-        customUserFilterCombo.add("Current user");
-        customUserFilterCombo.select(0);
-        GridData comboGD = new GridData(SWT.FILL, SWT.CENTER, false, false);
-        customUserFilterCombo.setLayoutData(comboGD);
+        buttonsPlaceholder.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+
+        UIUtils.createLabel(buttonsPlaceholder, "Filter for: ")
+            .setToolTipText("My custom tooltip text");
+
+        SelectionListener allUsersSelected = SelectionListener.widgetSelectedAdapter(e -> {
+            if (allUsersRadioButton.getSelection()) {
+                allUsersFilterSelected();
+            }
+        });
+        allUsersRadioButton = UIUtils.createRadioButton(
+            buttonsPlaceholder,
+            "All users",
+            !isCustomUserFilter(),
+            allUsersSelected
+        );
+        allUsersRadioButton.setSelection(!isCustomUserFilter());
+
+
+        SelectionListener currentUserSelected = SelectionListener.widgetSelectedAdapter(e -> {
+            if (currentUserRadioButton.getSelection()) {
+                currentUserFilterSelected();
+            }
+        });
+        currentUserRadioButton = UIUtils.createRadioButton(
+            buttonsPlaceholder,
+            "Current user",
+            isCustomUserFilter(),
+            currentUserSelected
+        );
+        currentUserRadioButton.setSelection(isCustomUserFilter());
+
     }
 
     @Override
@@ -98,7 +132,7 @@ public class EditObjectFilterDialogTE extends EditObjectFilterDialog {
         updateTemplatesEnabledState();
     }
 
-    private void currentUserFilterUnselected() {
+    private void allUsersFilterSelected() {
         if (isUserFilterUnsaved) {
             filter.setUserFilter(false);
             updateTemplatesEnabledState();
@@ -109,7 +143,8 @@ public class EditObjectFilterDialogTE extends EditObjectFilterDialog {
             setReturnCode(DELETE_USER_FILTER);
             close();
         } else {
-            // customUserFilterCombo.setSelection(true);
+            allUsersRadioButton.setSelection(false);
+            currentUserRadioButton.setSelection(true);
         }
     }
 
