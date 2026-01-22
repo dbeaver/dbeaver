@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,6 +34,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.qm.QMUtils;
 import org.jkiss.dbeaver.model.runtime.DBRBlockingObject;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.sql.SQLUtils;
 
 import java.sql.*;
 import java.util.Map;
@@ -258,7 +259,9 @@ public class JDBCConnectionImpl extends AbstractSession implements JDBCSession, 
     public JDBCPreparedStatement prepareStatement(String sql)
         throws SQLException
     {
-        return createPreparedStatementImpl(() -> getOriginal().prepareStatement(sql), sql);
+        sql = SQLUtils.addQueryIdentificationComment(this, sql);
+        final String finalSql = sql;
+        return createPreparedStatementImpl(() -> getOriginal().prepareStatement(finalSql), finalSql);
     }
 
     @NotNull
@@ -266,7 +269,9 @@ public class JDBCConnectionImpl extends AbstractSession implements JDBCSession, 
     public JDBCCallableStatement prepareCall(String sql)
         throws SQLException
     {
-        return createCallableStatementImpl(() -> getOriginal().prepareCall(sql), sql);
+        sql = SQLUtils.addQueryIdentificationComment(this, sql);
+        final String finalSql = sql;
+        return createCallableStatementImpl(() -> getOriginal().prepareCall(finalSql), finalSql);
     }
 
     @Override
