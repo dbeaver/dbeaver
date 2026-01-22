@@ -63,7 +63,7 @@ public abstract class AIPromptAbstract implements AIPromptGenerator {
         StringBuilder prompt = new StringBuilder();
 
         if (!instructions.isEmpty()) {
-            prompt.append("\nInstructions:\n");
+            prompt.append("Instructions:\n");
             instructions.forEach(instruction -> prompt.append("- ").append(instruction).append("\n"));
         }
 
