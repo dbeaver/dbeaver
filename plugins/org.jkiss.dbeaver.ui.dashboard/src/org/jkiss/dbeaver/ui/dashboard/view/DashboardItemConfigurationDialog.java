@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -71,7 +71,12 @@ public class DashboardItemConfigurationDialog extends BaseDialog {
         DashboardRendererDescriptor renderer = DashboardUIRegistry.getInstance().getViewType(itemDescriptor.getDashboardRenderer());
 
         {
-            Group infoGroup = UIUtils.createControlGroup(composite, UIDashboardMessages.dialog_edit_dashboard_maininfo, 4, GridData.FILL_HORIZONTAL, 0);
+            Composite infoGroup = UIUtils.createTitledComposite(
+                composite,
+                UIDashboardMessages.dialog_edit_dashboard_maininfo,
+                4,
+                GridData.FILL_HORIZONTAL
+            );
 
             idText = UIUtils.createLabelText(infoGroup, UIDashboardMessages.dialog_edit_dashboard_maininfo_labels_id, itemDescriptor.getId(), SWT.BORDER | baseStyle);
             idText.setLayoutData(new GridData(GridData.FILL, GridData.BEGINNING, true, false, 3, 1));
@@ -103,7 +108,12 @@ public class DashboardItemConfigurationDialog extends BaseDialog {
         }
 
         if (itemConfigurationEditor != null) {
-            Composite configComposite = UIUtils.createControlGroup(composite, UIDashboardMessages.dialog_dashboard_item_config_dashboardinfo, 1, GridData.FILL_HORIZONTAL, 0);
+            Composite configComposite = UIUtils.createTitledComposite(
+                composite,
+                UIDashboardMessages.dialog_dashboard_item_config_dashboardinfo,
+                1,
+                GridData.FILL_HORIZONTAL
+            );
             itemConfigurationEditor.createControl(configComposite, itemDescriptor, this::updateButtons);
 
             itemConfigurationEditor.loadSettings(itemDescriptor);

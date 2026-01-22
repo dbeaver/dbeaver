@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -53,18 +53,18 @@ public class MappingRulesDialog extends BaseDialog {
 
     private final DBPDataSource dataSource;
     private final List<Object> elementList;
-    private DBPPreferenceStore dbpPreferenceStore;
-    private DBPPreferenceStore store;
+    private final DBPPreferenceStore dbpPreferenceStore;
+    private final DBPPreferenceStore store;
 
     private Combo nameCaseCombo;
     private Combo replaceCombo;
     private Spinner typeLengthSpinner;
     private Button saveSettings;
 
-    private int originalNameCaseSelection;
-    private int originalReplaceSelection;
-    private int originalMaxTypeLength;
-    private boolean originalSaveSettingsValue;
+    private final int originalNameCaseSelection;
+    private final int originalReplaceSelection;
+    private final int originalMaxTypeLength;
+    private final boolean originalSaveSettingsValue;
 
     public MappingRulesDialog(@NotNull Shell parentShell, @NotNull DBPDataSource dataSource, @NotNull List<Object> elementList) {
         super(parentShell, DTUIMessages.mappings_rules_dialog_title, null);
@@ -84,16 +84,16 @@ public class MappingRulesDialog extends BaseDialog {
             store.getBoolean(DTConstants.PREF_SAVE_LOCAL_SETTINGS) : true;
     }
 
+    @NotNull
     @Override
-    protected Composite createDialogArea(Composite parent) {
+    protected Composite createDialogArea(@NotNull Composite parent) {
         Composite composite = super.createDialogArea(parent);
 
-        final Group mappingGroup = UIUtils.createControlGroup(
+        Composite mappingGroup = UIUtils.createTitledComposite(
             composite,
             DTUIMessages.pref_data_transfer_mapping_group,
             2,
-            GridData.FILL_HORIZONTAL,
-            0);
+            GridData.FILL_HORIZONTAL);
 
         final Label label = UIUtils.createLabel(mappingGroup,
             DTUIMessages.pref_data_transfer_info_label_mapping);
@@ -183,8 +183,7 @@ public class MappingRulesDialog extends BaseDialog {
         boolean changeReplaceMechanism = replaceCombo != null && replaceCombo.getSelectionIndex() != originalReplaceSelection;
         boolean changeDataTypeLength = typeLengthSpinner != null && typeLengthSpinner.getSelection() != originalMaxTypeLength;
         for (Object element : elementList) {
-            if (element instanceof DatabaseMappingContainer) {
-                DatabaseMappingContainer container = (DatabaseMappingContainer) element;
+            if (element instanceof DatabaseMappingContainer container) {
                 DatabaseMappingType mappingType = container.getMappingType();
                 if (mappingType == DatabaseMappingType.skip || mappingType == DatabaseMappingType.unspecified) {
                     // Skip this cases

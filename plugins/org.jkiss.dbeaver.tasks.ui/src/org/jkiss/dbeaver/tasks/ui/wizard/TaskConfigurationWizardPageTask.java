@@ -124,7 +124,7 @@ class TaskConfigurationWizardPageTask extends ActiveWizardPage<TaskConfiguration
         {
             Composite formPanel = UIUtils.createComposite(composite, task == null ? 1 : 2);
             formPanel.setLayoutData(new GridData(GridData.FILL_BOTH));
-            UIUtils.createControlLabel(formPanel, TaskUIMessages.task_config_wizard_page_task_label_task_type, task == null ? 1 : 2);
+            //UIUtils.createControlLabel(formPanel, TaskUIMessages.task_config_wizard_page_task_label_task_type, task == null ? 1 : 2);
 
             {
                 Composite infoPanel = UIUtils.createComposite(formPanel, 2);
