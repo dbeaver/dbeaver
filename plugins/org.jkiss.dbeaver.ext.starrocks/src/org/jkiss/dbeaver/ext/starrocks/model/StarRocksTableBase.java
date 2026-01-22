@@ -18,98 +18,84 @@ package org.jkiss.dbeaver.ext.starrocks.model;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ext.generic.model.GenericCatalog;
+import org.jkiss.dbeaver.ext.generic.model.GenericSchema;
+import org.jkiss.dbeaver.ext.generic.model.GenericStructContainer;
+import org.jkiss.dbeaver.ext.generic.model.GenericTableBase;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
-import org.jkiss.dbeaver.model.DBPQualifiedObject;
 import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCStructCache;
-import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTable;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSEntityAssociation;
-import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
-import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.model.struct.rdb.DBSTableConstraint;
-import org.jkiss.dbeaver.model.struct.rdb.DBSTableIndex;
-
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 
 /**
  * StarRocks Table/View base class - abstract base for tables and views.
  * Implements catalog-aware fully qualified names.
  */
-public abstract class StarRocksTableBase extends JDBCTable<StarRocksDataSource, StarRocksDatabase>
-        implements DBPQualifiedObject {
+public abstract class StarRocksTableBase extends GenericTableBase {
 
-    public StarRocksTableBase(StarRocksDatabase database, String tableName, boolean persisted) {
-        super(database, tableName, persisted);
+    public StarRocksTableBase(
+        GenericStructContainer container,
+        @Nullable String tableName,
+        @Nullable String tableType,
+        @Nullable JDBCResultSet dbResult
+    ) {
+        super(container, tableName, tableType, dbResult);
     }
 
     @NotNull
     @Override
     public StarRocksDataSource getDataSource() {
-        return getContainer().getDataSource();
+        return (StarRocksDataSource) super.getDataSource();
     }
 
-    public StarRocksCatalog getCatalog() {
-        return getContainer().getCatalog();
+    @Nullable
+    @Override
+    public GenericCatalog getCatalog() {
+        // Get catalog from the container hierarchy
+        GenericStructContainer container = getContainer();
+        if (container instanceof GenericSchema) {
+            return ((GenericSchema) container).getCatalog();
+        }
+        return container.getCatalog();
+    }
+
+    @Nullable
+    @Override
+    public GenericSchema getSchema() {
+        // The container should be the schema (StarRocksDatabase)
+        GenericStructContainer container = getContainer();
+        if (container instanceof GenericSchema) {
+            return (GenericSchema) container;
+        }
+        return container.getSchema();
+    }
+
+    @Nullable
+    public StarRocksCatalog getStarRocksCatalog() {
+        return (StarRocksCatalog) getCatalog();
     }
 
     @NotNull
     @Override
     public String getFullyQualifiedName(DBPEvaluationContext context) {
-        StarRocksCatalog catalog = getCatalog();
-        StarRocksDatabase database = getContainer();
+        // StarRocks always requires 3-level FQN: catalog.database.table
+        // This is required for cross-catalog queries and data reading
+        GenericCatalog catalog = getCatalog();
+        GenericSchema schema = getSchema();
 
-        // For DML/DDL contexts, use 3-level FQN (catalog.database.table) when catalog is available
-        if (catalog != null && (context == DBPEvaluationContext.DML || context == DBPEvaluationContext.DDL)) {
-            return DBUtils.getQuotedIdentifier(catalog) + "." +
-                   DBUtils.getQuotedIdentifier(database) + "." +
-                   DBUtils.getQuotedIdentifier(this);
+        if (catalog != null && schema != null) {
+            // catalog.schema.table
+            return DBUtils.getFullQualifiedName(
+                getDataSource(),
+                catalog,
+                schema,
+                this);
+        } else if (schema != null) {
+            // schema.table
+            return DBUtils.getFullQualifiedName(
+                getDataSource(),
+                schema,
+                this);
         }
-        // For other contexts or when catalog is unavailable, use 2-level FQN
-        return DBUtils.getQuotedIdentifier(database) + "." +
-               DBUtils.getQuotedIdentifier(this);
-    }
-
-    @Override
-    public JDBCStructCache<StarRocksDatabase, StarRocksTableBase, StarRocksTableColumn> getCache() {
-        return getContainer().getTableCache();
-    }
-
-    @Nullable
-    @Override
-    public List<? extends DBSEntityAttribute> getAttributes(@NotNull DBRProgressMonitor monitor) throws DBException {
-        return getContainer().getTableCache().getChildren(monitor, getContainer(), this);
-    }
-
-    @Override
-    public DBSEntityAttribute getAttribute(@NotNull DBRProgressMonitor monitor, @NotNull String attributeName) throws DBException {
-        return getContainer().getTableCache().getChild(monitor, getContainer(), this, attributeName);
-    }
-
-    @Nullable
-    @Override
-    public Collection<? extends DBSTableIndex> getIndexes(@NotNull DBRProgressMonitor monitor) throws DBException {
-        return Collections.emptyList();
-    }
-
-    @Nullable
-    @Override
-    public Collection<? extends DBSTableConstraint> getConstraints(@NotNull DBRProgressMonitor monitor) throws DBException {
-        return Collections.emptyList();
-    }
-
-    @Nullable
-    @Override
-    public Collection<? extends DBSEntityAssociation> getAssociations(@NotNull DBRProgressMonitor monitor) throws DBException {
-        return Collections.emptyList();
-    }
-
-    @Nullable
-    @Override
-    public Collection<? extends DBSEntityAssociation> getReferences(@NotNull DBRProgressMonitor monitor) throws DBException {
-        return Collections.emptyList();
+        return DBUtils.getQuotedIdentifier(getDataSource(), getName());
     }
 }

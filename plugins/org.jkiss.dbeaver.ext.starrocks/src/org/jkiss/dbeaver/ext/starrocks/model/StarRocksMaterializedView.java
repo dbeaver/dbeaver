@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ext.starrocks.model;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ext.generic.model.GenericStructContainer;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBPScriptObject;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -35,6 +36,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.format.SQLFormatUtils;
 
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.Map;
 
 /**
@@ -90,8 +92,13 @@ public class StarRocksMaterializedView extends StarRocksTableBase implements DBP
         }
     }
 
-    public StarRocksMaterializedView(StarRocksDatabase database, String viewName) {
-        super(database, viewName, true);
+    public StarRocksMaterializedView(
+        GenericStructContainer container,
+        @Nullable String viewName,
+        @Nullable String tableType,
+        @Nullable JDBCResultSet dbResult
+    ) {
+        super(container, viewName, tableType, dbResult);
     }
 
     @Override
@@ -99,10 +106,9 @@ public class StarRocksMaterializedView extends StarRocksTableBase implements DBP
         return true;
     }
 
-    @Nullable
     @Override
-    public String getDescription() {
-        return null;
+    public String getDDL() {
+        return additionalInfo.getDefinition();
     }
 
     public AdditionalInfo getAdditionalInfo() {
@@ -127,7 +133,12 @@ public class StarRocksMaterializedView extends StarRocksTableBase implements DBP
         }
         try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Load materialized view definition")) { //$NON-NLS-1$
             // Switch to the correct catalog context
-            getContainer().switchToCatalogContext(session);
+            StarRocksCatalog catalog = getStarRocksCatalog();
+            if (catalog != null) {
+                try (Statement stmt = session.getOriginal().createStatement()) {
+                    stmt.execute("SET CATALOG " + DBUtils.getQuotedIdentifier(getDataSource(), catalog.getName())); //$NON-NLS-1$
+                }
+            }
 
             try (JDBCPreparedStatement dbStat = session.prepareStatement(
                 "SHOW CREATE MATERIALIZED VIEW " + getFullyQualifiedName(DBPEvaluationContext.DDL))) { //$NON-NLS-1$

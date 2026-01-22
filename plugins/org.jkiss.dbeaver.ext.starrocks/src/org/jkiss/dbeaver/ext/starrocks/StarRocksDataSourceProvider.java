@@ -18,24 +18,31 @@ package org.jkiss.dbeaver.ext.starrocks;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ext.mysql.MySQLDataSourceProvider;
+import org.jkiss.dbeaver.ext.generic.GenericDataSourceProvider;
 import org.jkiss.dbeaver.ext.starrocks.model.StarRocksDataSource;
+import org.jkiss.dbeaver.ext.starrocks.model.StarRocksMetaModel;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 /**
- * StarRocks DataSource Provider - extends MySQL provider to reuse connection UI
- * and driver handling, but creates StarRocksDataSource instances.
+ * StarRocks DataSource Provider - creates StarRocksDataSource instances.
  */
-public class StarRocksDataSourceProvider extends MySQLDataSourceProvider {
+public class StarRocksDataSourceProvider extends GenericDataSourceProvider {
+
+    private static final StarRocksMetaModel META_MODEL = new StarRocksMetaModel();
+
+    @Override
+    public long getFeatures() {
+        return FEATURE_CATALOGS | FEATURE_SCHEMAS;
+    }
 
     @NotNull
     @Override
     public DBPDataSource openDataSource(
-            @NotNull DBRProgressMonitor monitor,
-            @NotNull DBPDataSourceContainer container)
-            throws DBException {
-        return new StarRocksDataSource(monitor, container);
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBPDataSourceContainer container
+    ) throws DBException {
+        return new StarRocksDataSource(monitor, container, META_MODEL);
     }
 }

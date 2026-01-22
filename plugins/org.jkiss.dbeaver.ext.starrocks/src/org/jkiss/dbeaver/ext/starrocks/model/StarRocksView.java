@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ext.starrocks.model;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ext.generic.model.GenericStructContainer;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBPScriptObject;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -36,6 +37,7 @@ import org.jkiss.dbeaver.model.sql.format.SQLFormatUtils;
 import org.jkiss.dbeaver.model.struct.rdb.DBSView;
 
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.Map;
 
 /**
@@ -81,8 +83,13 @@ public class StarRocksView extends StarRocksTableBase implements DBSView, DBPScr
         }
     }
 
-    public StarRocksView(StarRocksDatabase database, String viewName) {
-        super(database, viewName, true);
+    public StarRocksView(
+        GenericStructContainer container,
+        @Nullable String viewName,
+        @Nullable String tableType,
+        @Nullable JDBCResultSet dbResult
+    ) {
+        super(container, viewName, tableType, dbResult);
     }
 
     @Override
@@ -90,10 +97,9 @@ public class StarRocksView extends StarRocksTableBase implements DBSView, DBPScr
         return true;
     }
 
-    @Nullable
     @Override
-    public String getDescription() {
-        return null;
+    public String getDDL() {
+        return additionalInfo.getDefinition();
     }
 
     public AdditionalInfo getAdditionalInfo() {
@@ -118,7 +124,12 @@ public class StarRocksView extends StarRocksTableBase implements DBSView, DBPScr
         }
         try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Load view definition")) { //$NON-NLS-1$
             // Switch to the correct catalog context
-            getContainer().switchToCatalogContext(session);
+            StarRocksCatalog catalog = getStarRocksCatalog();
+            if (catalog != null) {
+                try (Statement stmt = session.getOriginal().createStatement()) {
+                    stmt.execute("SET CATALOG " + DBUtils.getQuotedIdentifier(getDataSource(), catalog.getName())); //$NON-NLS-1$
+                }
+            }
 
             try (JDBCPreparedStatement dbStat = session.prepareStatement(
                 "SHOW CREATE VIEW " + getFullyQualifiedName(DBPEvaluationContext.DDL))) { //$NON-NLS-1$

@@ -6,7 +6,7 @@
                 class="org.jkiss.dbeaver.ext.starrocks.StarRocksDataSourceProvider"
                 description="StarRocks Database"
                 id="starrocks"
-                parent="mysql"
+                parent="generic"
                 dialect="starrocks"
                 label="StarRocks"
                 icon="icons/starrocks_icon.png">
@@ -16,7 +16,7 @@
                 <folder type="org.jkiss.dbeaver.ext.starrocks.model.StarRocksCatalog" label="Catalogs" icon="#folder_schema" description="StarRocks catalogs">
                     <items label="Catalog" path="catalog" property="catalogs" icon="#database">
                         <folder type="org.jkiss.dbeaver.ext.starrocks.model.StarRocksDatabase" label="Databases" icon="#folder_database" description="Databases in catalog">
-                            <items label="Database" path="database" property="databases" icon="#database">
+                            <items label="Database" path="database" property="schemas" icon="#database">
                                 <folder type="org.jkiss.dbeaver.ext.starrocks.model.StarRocksTable" label="Tables" icon="#folder_table" description="Tables in database">
                                     <items label="Table" path="table" property="tables" icon="#table">
                                         <folder type="org.jkiss.dbeaver.ext.starrocks.model.StarRocksTableColumn" label="Columns" icon="#columns" description="Table columns">
@@ -77,7 +77,7 @@
     </extension>
 
     <extension point="org.jkiss.dbeaver.sqlDialect">
-        <dialect id="starrocks" parent="mysql" class="org.jkiss.dbeaver.ext.starrocks.model.StarRocksDialect"
+        <dialect id="starrocks" parent="generic" class="org.jkiss.dbeaver.ext.starrocks.model.StarRocksDialect"
                  label="StarRocks" description="StarRocks SQL dialect" icon="icons/starrocks_icon.png">
             <keywords value="CATALOG,CATALOGS,MATERIALIZED,REFRESH,ASYNC,DEFERRED,IMMEDIATE,BUCKETS,DISTRIBUTED,PROPERTIES,BROKER,ROUTINE,LOAD,STREAM,PAUSE,RESUME,STOP,SUBMIT,TASK,PIPE,PIPES,REPOSITORY,SNAPSHOT,RESTORE,ADMIN"/>
             <functions value="ARRAY_AGG,ARRAY_CONCAT,ARRAY_CONTAINS,ARRAY_LENGTH,ARRAY_POSITION,BITMAP_COUNT,BITMAP_UNION,HLL_UNION_AGG,PERCENTILE_APPROX,RETENTION,WINDOW_FUNNEL,APPROX_COUNT_DISTINCT"/>

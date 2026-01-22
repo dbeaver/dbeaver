@@ -1,0 +1,319 @@
+/*
+ * DBeaver - Universal Database Manager
+ * Copyright (C) 2010-2025 DBeaver Corp and others
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.jkiss.dbeaver.ext.starrocks.model;
+
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ext.generic.model.*;
+import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaModel;
+import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaObject;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
+/**
+ * StarRocks meta model - provides StarRocks-specific metadata loading
+ */
+public class StarRocksMetaModel extends GenericMetaModel {
+
+    private static final String TYPE_MATERIALIZED_VIEW = "MATERIALIZED VIEW"; //$NON-NLS-1$
+    private static final String TYPE_VIEW = "VIEW"; //$NON-NLS-1$
+
+    public StarRocksMetaModel() {
+        super();
+    }
+
+    @NotNull
+    @Override
+    public GenericDataSource createDataSourceImpl(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBPDataSourceContainer container
+    ) throws DBException {
+        return new StarRocksDataSource(monitor, container, this);
+    }
+
+    @Override
+    public GenericCatalog createCatalogImpl(
+        @NotNull GenericDataSource dataSource,
+        @NotNull String catalogName
+    ) {
+        StarRocksDataSource starRocksDataSource = (StarRocksDataSource) dataSource;
+        StarRocksCatalog catalog = new StarRocksCatalog(starRocksDataSource, catalogName);
+
+        // Populate type and comment from cached metadata
+        StarRocksDataSource.CatalogMetadata metadata = starRocksDataSource.getCatalogMetadata(catalogName);
+        if (metadata != null) {
+            catalog.setType(metadata.type);
+            catalog.setComment(metadata.comment);
+        }
+
+        return catalog;
+    }
+
+    @Override
+    public GenericSchema createSchemaImpl(
+        @NotNull GenericDataSource dataSource,
+        @Nullable GenericCatalog catalog,
+        @NotNull String schemaName
+    ) throws DBException {
+        return new StarRocksDatabase((StarRocksDataSource) dataSource, (StarRocksCatalog) catalog, schemaName);
+    }
+
+    @Nullable
+    @Override
+    public List<GenericSchema> loadSchemas(
+        @NotNull JDBCSession session,
+        @NotNull GenericDataSource dataSource,
+        @Nullable GenericCatalog catalog
+    ) throws DBException {
+        if (catalog == null) {
+            return null;
+        }
+
+        List<GenericSchema> schemas = new ArrayList<>();
+        try {
+            // Switch to the catalog context
+            try (Statement stmt = session.getOriginal().createStatement()) {
+                stmt.execute("SET CATALOG " + DBUtils.getQuotedIdentifier(dataSource, catalog.getName())); //$NON-NLS-1$
+            }
+
+            // Load databases using SHOW DATABASES
+            try (JDBCPreparedStatement dbStat = session.prepareStatement("SHOW DATABASES")) { //$NON-NLS-1$
+                try (JDBCResultSet dbResult = dbStat.executeQuery()) {
+                    while (dbResult.next()) {
+                        String schemaName = JDBCUtils.safeGetString(dbResult, 1);
+                        if (schemaName != null) {
+                            schemas.add(createSchemaImpl(dataSource, catalog, schemaName));
+                        }
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            throw new DBException("Error loading StarRocks databases", e);
+        }
+        return schemas;
+    }
+
+    @Override
+    public JDBCStatement prepareTableLoadStatement(
+        @NotNull JDBCSession session,
+        @NotNull GenericStructContainer owner,
+        @Nullable GenericTableBase object,
+        @Nullable String objectName
+    ) throws SQLException {
+        // Switch to the catalog context
+        GenericCatalog catalog = owner.getCatalog();
+        if (catalog != null) {
+            try (Statement stmt = session.getOriginal().createStatement()) {
+                stmt.execute("SET CATALOG " + DBUtils.getQuotedIdentifier(owner.getDataSource(), catalog.getName())); //$NON-NLS-1$
+            }
+        }
+
+        GenericSchema schema = owner.getSchema();
+        String schemaName = schema != null ? schema.getName() : owner.getName();
+
+        return session.prepareStatement(
+            "SHOW FULL TABLES FROM " + DBUtils.getQuotedIdentifier(owner.getDataSource(), schemaName)); //$NON-NLS-1$
+    }
+
+    @Override
+    public GenericTableBase createTableImpl(
+        @NotNull JDBCSession session,
+        @NotNull GenericStructContainer owner,
+        @NotNull GenericMetaObject tableObject,
+        @NotNull JDBCResultSet dbResult
+    ) {
+        String tableName = JDBCUtils.safeGetString(dbResult, 1);
+        String tableType = JDBCUtils.safeGetString(dbResult, 2);
+
+        return createTableOrViewImpl(owner, tableName, tableType, dbResult);
+    }
+
+    @Override
+    public GenericTableBase createTableOrViewImpl(
+        GenericStructContainer container,
+        @Nullable String tableName,
+        @Nullable String tableType,
+        @Nullable JDBCResultSet dbResult
+    ) {
+        if (tableName == null) {
+            return null;
+        }
+
+        String tableTypeUpper = tableType != null ? tableType.toUpperCase() : "";
+
+        if (tableTypeUpper.contains(TYPE_MATERIALIZED_VIEW)) {
+            return new StarRocksMaterializedView(container, tableName, tableType, dbResult);
+        } else if (tableTypeUpper.contains(TYPE_VIEW)) {
+            return new StarRocksView(container, tableName, tableType, dbResult);
+        } else {
+            return new StarRocksTable(container, tableName, tableType, dbResult);
+        }
+    }
+
+    @Override
+    public JDBCStatement prepareTableColumnLoadStatement(
+        @NotNull JDBCSession session,
+        @NotNull GenericStructContainer owner,
+        @Nullable GenericTableBase forTable
+    ) throws SQLException {
+        if (forTable == null) {
+            throw new SQLException("Cannot load columns without specifying a table");
+        }
+
+        // Switch to the catalog context
+        GenericCatalog catalog = owner.getCatalog();
+        if (catalog != null) {
+            try (Statement stmt = session.getOriginal().createStatement()) {
+                stmt.execute("SET CATALOG " + DBUtils.getQuotedIdentifier(owner.getDataSource(), catalog.getName())); //$NON-NLS-1$
+            }
+        }
+
+        GenericSchema schema = owner.getSchema();
+        String schemaName = schema != null ? schema.getName() : owner.getName();
+
+        String sql = "SHOW FULL COLUMNS FROM " + DBUtils.getQuotedIdentifier(owner.getDataSource(), forTable.getName()) + //$NON-NLS-1$
+                     " FROM " + DBUtils.getQuotedIdentifier(owner.getDataSource(), schemaName); //$NON-NLS-1$
+        return session.prepareStatement(sql);
+    }
+
+    @Override
+    public GenericTableColumn createTableColumnImpl(
+        @NotNull DBRProgressMonitor monitor,
+        @Nullable JDBCResultSet dbResult,
+        @NotNull GenericTableBase table,
+        String columnName,
+        String typeName,
+        int valueType,
+        int sourceType,
+        int ordinalPos,
+        long columnSize,
+        long charLength,
+        Integer scale,
+        Integer precision,
+        int radix,
+        boolean notNull,
+        String remarks,
+        String defaultValue,
+        boolean autoIncrement,
+        boolean autoGenerated
+    ) throws DBException {
+        // StarRocks uses a different result set format from SHOW FULL COLUMNS
+        // So we parse it directly from the result set
+        if (dbResult != null && table instanceof StarRocksTableBase) {
+            return new StarRocksTableColumn((StarRocksTableBase) table, dbResult);
+        }
+        if (table instanceof StarRocksTableBase) {
+            return new StarRocksTableColumn((StarRocksTableBase) table, columnName, typeName, notNull);
+        }
+        return super.createTableColumnImpl(monitor, dbResult, table, columnName, typeName, valueType, sourceType, ordinalPos, columnSize, charLength, scale, precision, radix, notNull, remarks, defaultValue, autoIncrement, autoGenerated);
+    }
+
+    @Override
+    public GenericTableColumn fetchTableColumn(
+        @NotNull JDBCSession session,
+        @NotNull GenericStructContainer owner,
+        @NotNull GenericTableBase table,
+        @NotNull JDBCResultSet dbResult
+    ) throws DBException {
+        if (table instanceof StarRocksTableBase) {
+            return new StarRocksTableColumn((StarRocksTableBase) table, dbResult);
+        }
+        return super.fetchTableColumn(session, owner, table, dbResult);
+    }
+
+    @Override
+    public String getViewDDL(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull GenericView sourceObject,
+        @NotNull Map<String, Object> options
+    ) throws DBException {
+        // StarRocksView and StarRocksMaterializedView extend StarRocksTableBase (GenericTableBase),
+        // not GenericView. So this method won't be called for them directly.
+        // The DDL is loaded through their own getObjectDefinitionText() methods.
+        return sourceObject.getDDL();
+    }
+
+    @Override
+    public String getTableDDL(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull GenericTableBase sourceObject,
+        @NotNull Map<String, Object> options
+    ) throws DBException {
+        if (sourceObject instanceof StarRocksTable) {
+            return ((StarRocksTable) sourceObject).getObjectDefinitionText(monitor, options);
+        }
+        if (sourceObject instanceof StarRocksView) {
+            return ((StarRocksView) sourceObject).getObjectDefinitionText(monitor, options);
+        }
+        if (sourceObject instanceof StarRocksMaterializedView) {
+            return ((StarRocksMaterializedView) sourceObject).getObjectDefinitionText(monitor, options);
+        }
+        return super.getTableDDL(monitor, sourceObject, options);
+    }
+
+    @Override
+    public boolean isView(@NotNull String tableType) {
+        String upperType = tableType.toUpperCase();
+        return upperType.contains(TYPE_VIEW) || upperType.contains(TYPE_MATERIALIZED_VIEW);
+    }
+
+    @Override
+    public boolean hasProcedureSupport() {
+        return false;
+    }
+
+    @Override
+    public boolean hasFunctionSupport() {
+        return false;
+    }
+
+    @Override
+    public boolean supportsTriggers(@NotNull GenericDataSource dataSource) {
+        return false;
+    }
+
+    @Override
+    public boolean supportsSequences(@NotNull GenericDataSource dataSource) {
+        return false;
+    }
+
+    @Override
+    public boolean supportsSynonyms(@NotNull GenericDataSource dataSource) {
+        return false;
+    }
+
+    @Override
+    public boolean isSystemSchema(GenericSchema schema) {
+        String schemaName = schema.getName();
+        return "information_schema".equalsIgnoreCase(schemaName) || //$NON-NLS-1$
+               "sys".equalsIgnoreCase(schemaName) || //$NON-NLS-1$
+               "_statistics_".equalsIgnoreCase(schemaName); //$NON-NLS-1$
+    }
+}
