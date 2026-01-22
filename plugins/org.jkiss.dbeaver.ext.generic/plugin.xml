@@ -1310,6 +1310,8 @@
                     <file type="jar" path="drivers/salesforce_datacloud" bundle="drivers.salesforce_datacloud"/>
                     <file type="license" path="licenses/external/asl-2.0.txt"/>
                     <parameter name="read-only-meta-data" value="true"/>
+                    <parameter name="query-get-active-db" value="SELECT CURRENT_SCHEMA"/>
+                    <parameter name="active-entity-type" value="schema"/>
                 </driver>
 
                 <!-- Teiid -->
