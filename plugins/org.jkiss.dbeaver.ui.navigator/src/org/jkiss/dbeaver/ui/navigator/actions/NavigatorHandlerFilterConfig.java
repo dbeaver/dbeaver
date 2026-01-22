@@ -123,7 +123,10 @@ public class NavigatorHandlerFilterConfig extends NavigatorHandlerObjectCreateBa
         public void configFilterInDialog() throws DBException {
             boolean globalFilter = originalNode.getValueObject() instanceof DBPDataSource;
             String dialogObjectTitle = createDialogTitle(globalFilter);
-            DBSObjectFilter objectFilter = Objects.requireNonNullElseGet(parentNode.getNodeFilter(itemsMeta, true), DBSObjectFilter::new);
+            DBSObjectFilter objectFilter = Objects.requireNonNullElseGet(
+                parentNode.getNodeFilter(itemsMeta, true),
+                DBSObjectFilter::new
+            );
             EditObjectFilterDialog dialog = getDialog(dialogObjectTitle, objectFilter, globalFilter);
             processDialogResponse(dialog);
         }

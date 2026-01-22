@@ -633,7 +633,7 @@
                 <visibleWhen checkEnabled="true"/>
             </command>
 
-            <menu
+            <menu id="navigator.filter"
                   icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/misc/filter.svg"
                   label="%menu.filter.label">
                 <command commandId="org.jkiss.dbeaver.core.object.filter.add.exclude">
@@ -649,9 +649,6 @@
                     <visibleWhen checkEnabled="true"/>
                 </command>
                 <command commandId="org.jkiss.dbeaver.core.object.filter.clear">
-                    <visibleWhen checkEnabled="true"/>
-                </command>
-                <command commandId="org.jkiss.dbeaver.core.object.filter.clear.user">
                     <visibleWhen checkEnabled="true"/>
                 </command>
             </menu>

@@ -63,7 +63,6 @@ public class ObjectPropertyTester extends PropertyTester {
     public static final String PROP_CAN_MOVE_UP = "canMoveUp";
     public static final String PROP_CAN_MOVE_DOWN = "canMoveDown";
     public static final String PROP_CAN_FILTER = "canFilter";
-    public static final String PROP_CAN_REMOVE_USER_FILTERS = "canRemoveUserFilters";
     public static final String PROP_CAN_FILTER_OBJECT = "canFilterObject";
     public static final String PROP_HAS_FILTER = "hasFilter";
     public static final String PROP_HAS_TOOLS = "hasTools";
@@ -231,9 +230,6 @@ public class ObjectPropertyTester extends PropertyTester {
                     }
                 }
                 break;
-            }
-            case PROP_CAN_REMOVE_USER_FILTERS: {
-                return DBWorkbench.isDistributed() && node.getParentNode() instanceof DBNDataSource;
             }
             case PROP_CAN_FILTER: {
                 if (node instanceof DBNDataSource ds && ds.getDataSource() == null) {

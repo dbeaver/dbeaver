@@ -128,7 +128,7 @@ public class EditObjectFilterDialog extends HelpEnabledDialog {
         return topPanel;
     }
 
-    protected void setEnableCheckbox(Composite topPanel) {
+    protected void setEnableCheckbox(@NotNull Composite topPanel) {
         enableButton = UIUtils.createCheckbox(topPanel, UIMessages.button_enable, false);
         enableButton.addSelectionListener(new SelectionAdapter() {
             @Override
