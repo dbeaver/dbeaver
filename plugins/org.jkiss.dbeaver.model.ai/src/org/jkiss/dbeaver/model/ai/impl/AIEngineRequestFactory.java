@@ -69,7 +69,7 @@ public class AIEngineRequestFactory {
         @Nullable AIDatabaseContext databaseContext,
         @NotNull List<AIMessage> messages
     ) throws DBException {
-        String systemPrompt = systemPromptGenerator.build();
+        String systemPrompt = systemPromptGenerator.build(databaseContext);
 
         // Tokens available for user/system/chat history after we reserve reply + overhead
         int maxContextWindowSize = getContextWindowSize(monitor, engine);

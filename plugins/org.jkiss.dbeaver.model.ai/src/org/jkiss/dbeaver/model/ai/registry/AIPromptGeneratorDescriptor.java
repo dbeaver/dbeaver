@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,12 +23,8 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.ai.AIPromptGenerator;
 import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
-import org.jkiss.dbeaver.model.logical.DBSLogicalDataSourceSupplier;
 import org.jkiss.dbeaver.registry.RegistryConstants;
 import org.jkiss.utils.CommonUtils;
-
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
 
 public class AIPromptGeneratorDescriptor extends AbstractDescriptor {
 
@@ -70,18 +66,13 @@ public class AIPromptGeneratorDescriptor extends AbstractDescriptor {
     }
 
     @NotNull
-    public AIPromptGenerator createGenerator(@NotNull DBSLogicalDataSourceSupplier dataSource) throws DBException {
+    public AIPromptGenerator createGenerator() throws DBException {
         Class<? extends AIPromptGenerator> objectClass = objectType.getObjectClass(AIPromptGenerator.class);
         if (objectClass == null) {
             throw new DBException("Object class " + objectType.getImplName() + " not found");
         }
         try {
-            Method createMethod = objectClass.getMethod("create", DBSLogicalDataSourceSupplier.class);
-            if (Modifier.isStatic(createMethod.getModifiers())) {
-                return (AIPromptGenerator) createMethod.invoke(null, dataSource);
-            } else {
-                throw new DBException("Prompt method '" + createMethod + "' is not static");
-            }
+            return objectClass.getConstructor().newInstance();
         } catch (Exception e) {
             throw new DBException("Error creating prompt generator " + getId(), e);
         }
