@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,18 +29,6 @@ public class AIPromptGenerateSql extends AIPromptAbstract {
 
     public static final String SQL_GENERATOR_ID = "sql";
 
-    public static final String[] SQL_GENERATE_GOALS = {
-        "Help users write SQL queries.",
-        "Provide information about SQL syntax, functions, and best practices.",
-        "Assist with database design and data modeling.",
-        "Answer questions about database concepts and technologies.",
-        "Provide information about database performance tuning and optimization."
-    };
-    public static final String[] SQL_OUTPUT_FORMATS = {
-        "Place any explanation or comments before the SQL code block.",
-        "Provide the SQL query in a fenced Markdown code block."
-    };
-
     @NotNull
     @Override
     public String generatorId() {
@@ -65,14 +53,12 @@ public class AIPromptGenerateSql extends AIPromptAbstract {
                 .addContexts(AIPromptUtils.describeDataSourceInfo(dataSource))
                 .addInstructions(AIPromptUtils.createGenerateQueryInstructions(dataSource));
         }
-        builder
-            .addGoals(SQL_GENERATE_GOALS)
-            .addOutputFormats(SQL_OUTPUT_FORMATS);
+        builder.addOutputFormats(AIPromptUtils.SQL_OUTPUT_FORMATS);
 
         addJoinInstructions(builder);
     }
 
-    public static void addJoinInstructions(AIPromptAbstract builder) {
+    public static void addJoinInstructions(@NotNull AIPromptAbstract builder) {
         AISqlJoinRule joinRule = CommonUtils.valueOf(
             AISqlJoinRule.class,
             DBWorkbench.getPlatform().getPreferenceStore().getString(AIConstants.AI_JOIN_RULE),
