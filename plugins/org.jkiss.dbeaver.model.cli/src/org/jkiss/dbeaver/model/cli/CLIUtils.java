@@ -205,11 +205,21 @@ public class CLIUtils {
         @NotNull DataSourceOptions dataSourceOptions,
         @NotNull DBPConnectionConfiguration connectionConfiguration
     ) {
-        connectionConfiguration.setUrl(dataSourceOptions.getUrl());
-        connectionConfiguration.setHostName(dataSourceOptions.getHost());
-        connectionConfiguration.setHostPort(dataSourceOptions.getPort() == null ? null : dataSourceOptions.getPort().toString());
-        connectionConfiguration.setServerName(dataSourceOptions.getServer());
-        connectionConfiguration.setDatabaseName(dataSourceOptions.getDbName());
+        if (CommonUtils.isNotEmpty(dataSourceOptions.getUrl())) {
+            connectionConfiguration.setUrl(dataSourceOptions.getUrl());
+        }
+        if (CommonUtils.isNotEmpty(dataSourceOptions.getHost())) {
+            connectionConfiguration.setHostName(dataSourceOptions.getHost());
+        }
+        if (dataSourceOptions.getPort() != null) {
+            connectionConfiguration.setHostPort(dataSourceOptions.getPort().toString());
+        }
+        if (CommonUtils.isNotEmpty(dataSourceOptions.getServer())) {
+            connectionConfiguration.setServerName(dataSourceOptions.getServer());
+        }
+        if (CommonUtils.isNotEmpty(dataSourceOptions.getDbName())) {
+            connectionConfiguration.setDatabaseName(dataSourceOptions.getDbName());
+        }
 
         if (!CommonUtils.isEmpty(dataSourceOptions.getAuthModel())) {
             connectionConfiguration.setAuthModelId(dataSourceOptions.getAuthModel());
