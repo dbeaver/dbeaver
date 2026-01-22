@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -102,7 +102,12 @@ public class JDBCRemoteInstance implements DBSInstance {
                 mainContextName = getMainContextName();
             }
             this.executionContext = dataSource.createExecutionContext(this, mainContextName);
-            this.executionContext.connect(monitor, null, null, null, true);
+            try {
+                this.executionContext.connect(monitor, null, null, null, true);
+            } catch (Exception e) {
+                this.executionContext.close();
+                throw e;
+            }
         }
     }
 
@@ -137,8 +142,13 @@ public class JDBCRemoteInstance implements DBSInstance {
             // FIXME: do not sync expensive operations
             //synchronized (allContexts) {
                 this.metaContext = dataSource.createExecutionContext(this, getMetadataContextName());
+            try {
                 this.metaContext.connect(monitor, true, null, null, true);
-                return this.metaContext;
+            } catch (DBCException e) {
+                this.metaContext.close();
+                throw e;
+            }
+            return this.metaContext;
             //}
         } else {
             return this.executionContext;
