@@ -41,6 +41,7 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.actions.exec.SQLNativeExecutorDescriptor;
 import org.jkiss.dbeaver.ui.actions.exec.SQLNativeExecutorRegistry;
+import org.jkiss.dbeaver.ui.navigator.UIServiceFilterConfig;
 import org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerObjectCreateNew;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
@@ -255,10 +256,16 @@ public class ObjectPropertyTester extends PropertyTester {
                 }
                 if (node instanceof DBNDatabaseNode dbNode && dbNode.getItemsMeta() != null) {
                     DBSObjectFilter filter = dbNode.getNodeFilter(dbNode.getItemsMeta(), true);
-                    if ("defined".equals(expectedValue)) {
-                        return filter != null && !filter.isEmpty();
+                    if (filter != null) {
+                        UIServiceFilterConfig service = DBWorkbench.getService(UIServiceFilterConfig.class);
+                        boolean isUserChangeable = service == null || service.isUserChangeable(filter);
+                        if ("defined".equals(expectedValue)) {
+                            return isUserChangeable && !filter.isEmpty();
+                        } else {
+                            return isUserChangeable && !filter.isNotApplicable();
+                        }
                     } else {
-                        return filter != null && !filter.isNotApplicable();
+                        return false;
                     }
                 }
                 break;

@@ -18,12 +18,15 @@ package org.jkiss.dbeaver.ui.navigator;
 
 import org.eclipse.swt.widgets.Shell;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.meta.DBXTreeItem;
 import org.jkiss.dbeaver.model.struct.DBSObjectFilter;
 
 public interface UIServiceFilterConfig {
+
+    boolean isUserChangeable(@Nullable DBSObjectFilter filter);
 
     void configFilterInDialog(
         @NotNull Shell shell,
