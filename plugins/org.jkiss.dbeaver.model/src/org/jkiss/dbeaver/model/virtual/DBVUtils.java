@@ -158,13 +158,24 @@ public abstract class DBVUtils {
     }
 
     @Nullable
-    public static DBDAttributeTransformer[] findAttributeTransformers(@NotNull DBDAttributeBinding binding, @Nullable Boolean custom)
-    {
+    public static DBDAttributeTransformer[] findAttributeTransformers(@NotNull DBDAttributeBinding binding, @Nullable Boolean custom) {
+        List<DBDAttributeTransformer> allTransformers = new ArrayList<>();
+        if (binding.getDataContainer() instanceof DBDAttributeTransformerProvider dbdAttributeTransformerProvider) {
+            List<DBDAttributeTransformer> inMemoryAddedTransformers = dbdAttributeTransformerProvider.findTransformerForBinding(binding);
+            allTransformers.addAll(inMemoryAddedTransformers);
+        }
+        List<DBDAttributeTransformer> savedTransformers = findBindingTransformers(binding, custom);
+        allTransformers.addAll(savedTransformers);
+        return allTransformers.isEmpty() ? null : allTransformers.toArray(DBDAttributeTransformer[]::new);
+    }
+
+    @NotNull
+    public static List<DBDAttributeTransformer> findBindingTransformers(@NotNull DBDAttributeBinding binding, @Nullable Boolean custom) {
         DBPDataSource dataSource = binding.getDataSource();
         List<? extends DBDAttributeTransformerDescriptor> tdList =
             DBWorkbench.getPlatform().getValueHandlerRegistry().findTransformers(dataSource, binding.getAttribute(), custom);
         if (tdList == null || tdList.isEmpty()) {
-            return null;
+            return List.of();
         }
         {
             boolean filtered = false;
@@ -184,14 +195,13 @@ public abstract class DBVUtils {
                 }
             }
             if (tdList.isEmpty()) {
-                return null;
+                return List.of();
             }
         }
-        DBDAttributeTransformer[] result = new DBDAttributeTransformer[tdList.size()];
-        for (int i = 0; i < tdList.size(); i++) {
-            result[i] = tdList.get(i).getInstance();
-        }
-        return result;
+        return tdList
+            .stream()
+            .map(DBDAttributeTransformerDescriptor::getInstance)
+            .toList();
     }
 
     public static String getDictionaryDescriptionColumns(DBRProgressMonitor monitor, DBSEntityAttribute attribute) throws DBException {
