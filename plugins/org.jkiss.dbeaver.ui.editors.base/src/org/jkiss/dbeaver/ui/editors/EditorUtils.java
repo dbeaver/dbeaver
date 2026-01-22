@@ -782,7 +782,7 @@ public class EditorUtils {
     @Nullable
     private static FileTypeAction getFileTypeActionWithDialog(@NotNull Set<FileTypeAction> actions, boolean hasLocalFiles) {
         List<FileTypeAction> actionList = new ArrayList<>(actions.stream()
-            .sorted(Comparator.comparing(FileTypeAction::getOrder))
+            .sorted()
             .toList());
         if (hasLocalFiles) {
             actionList.remove(FileTypeAction.EXTERNAL_EDITOR);
