@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,7 +20,6 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Group;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
@@ -47,12 +46,10 @@ public class ClickhouseSSLConfigurator extends SSLConfiguratorTrustStoreUI {
     public void createControl(@NotNull Composite parent, Object object, @NotNull Runnable propertyChangeListener) {
         createSSLConfigHint(parent, true, 0);
         createTrustStoreConfigGroup(parent);
-        Group advancedSettingsGroup = UIUtils.createControlGroup(parent,
+        Composite advancedSettingsGroup = UIUtils.createTitledComposite(parent,
             ClickhouseMessages.dialog_connection_page_advanced_settings,
             1,
-            GridData.FILL_HORIZONTAL,
-            0
-        );
+            GridData.FILL_HORIZONTAL);
         Composite sslComposite = UIUtils.createPlaceholder(advancedSettingsGroup, 2);
         sslComposite.setLayoutData(new GridData(GridData.FILL_BOTH));
         sslModeCombo = UIUtils.createLabelCombo(sslComposite,

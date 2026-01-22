@@ -343,8 +343,8 @@ public class DriverEditDialog extends HelpEnabledDialog {
             groupWrapper,
             UIConnectionMessages.dialog_edit_driver_description,
             4,
-            -1,
-            -1
+            GridData.FILL_HORIZONTAL,
+            SWT.DEFAULT
         );
         infoGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
@@ -569,7 +569,7 @@ public class DriverEditDialog extends HelpEnabledDialog {
         });
         deleteButton.setEnabled(false);
 
-        UIUtils.createHorizontalLine(libsControlGroup);
+        UIUtils.createLabelSeparator(libsControlGroup, SWT.HORIZONTAL);
 
         if (!DBWorkbench.isDistributed()) {
             updateVersionButton = UIUtils.createToolButton(libsControlGroup, UIConnectionMessages.dialog_edit_driver_button_update_version, new SelectionAdapter() {

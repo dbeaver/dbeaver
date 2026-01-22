@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,13 +24,10 @@ import org.eclipse.core.runtime.Platform;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.handlers.HandlerUtil;
@@ -98,34 +95,32 @@ public class ClearHistoryHandler extends AbstractHandler {
             setShellStyle(SWT.DIALOG_TRIM);
         }
 
+        @NotNull
         @Override
-        protected Composite createDialogArea(Composite parent) {
+        protected Composite createDialogArea(@NotNull Composite parent) {
             final Composite composite = super.createDialogArea(parent);
 
             UIUtils.createLabel(composite, CoreApplicationMessages.clear_history_dialog_message);
 
-            final Group group = UIUtils.createControlGroup(
-                composite, CoreApplicationMessages.clear_history_dialog_options, 1, GridData.FILL_BOTH, 0);
+            Composite group = UIUtils.createTitledComposite(
+                composite, CoreApplicationMessages.clear_history_dialog_options, 1, GridData.FILL_BOTH);
 
-            final SelectionListener listener = new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
-                    final Button checkbox = (Button) e.widget;
-                    final HandlerDescriptor descriptor = (HandlerDescriptor) checkbox.getData();
+            SelectionListener listener = SelectionListener.widgetSelectedAdapter(e -> {
+                Button checkbox = (Button) e.widget;
+                HandlerDescriptor descriptor = (HandlerDescriptor) checkbox.getData();
 
-                    if (checkbox.getSelection()) {
-                        options.add(descriptor.id);
-                    } else {
-                        options.remove(descriptor.id);
-                    }
-
-                    final Button button = getButton(IDialogConstants.OK_ID);
-
-                    if (button != null) {
-                        button.setEnabled(!options.isEmpty());
-                    }
+                if (checkbox.getSelection()) {
+                    options.add(descriptor.id);
+                } else {
+                    options.remove(descriptor.id);
                 }
-            };
+
+                final Button button = getButton(IDialogConstants.OK_ID);
+
+                if (button != null) {
+                    button.setEnabled(!options.isEmpty());
+                }
+            });
 
             for (HandlerDescriptor descriptor : descriptors.values()) {
                 final Button checkbox = UIUtils.createCheckbox(group, descriptor.name, descriptor.description, false, 1);
@@ -137,7 +132,7 @@ public class ClearHistoryHandler extends AbstractHandler {
         }
 
         @Override
-        protected void createButtonsForButtonBar(Composite parent) {
+        protected void createButtonsForButtonBar(@NotNull Composite parent) {
             createButton(parent, IDialogConstants.OK_ID, CoreApplicationMessages.button_apply_and_restart, true).setEnabled(false);
             createButton(parent, IDialogConstants.CANCEL_ID, IDialogConstants.CANCEL_LABEL, false);
         }

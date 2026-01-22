@@ -152,9 +152,7 @@ public class PrefPageErrorHandle extends TargetPrefPage {
                 composite,
                 CoreMessages.pref_page_error_handle_group_cancel_title,
                 2,
-                GridData.VERTICAL_ALIGN_BEGINNING,
-                0
-            );
+                GridData.VERTICAL_ALIGN_BEGINNING);
 
             cancelCheckTimeout = UIUtils.createLabelSpinner(
                 errorGroup,
