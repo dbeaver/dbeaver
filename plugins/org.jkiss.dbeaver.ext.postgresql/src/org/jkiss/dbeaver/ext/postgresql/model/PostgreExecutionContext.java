@@ -143,8 +143,10 @@ public class PostgreExecutionContext extends JDBCExecutionContext implements DBC
             return false;
         }
 
-        setSearchPath(monitor, schema.getName());
-        addSearchPath(schema.getName());
+        if (!schema.isSystem() && !schema.isPublicSchema()) {
+            setSearchPath(monitor, schema.getName());
+            addSearchPath(schema.getName());
+        }
 
         final PostgreSchema oldActiveSchema = getDefaultSchema();
 
