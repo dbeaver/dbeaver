@@ -47,6 +47,9 @@ import java.util.concurrent.ConcurrentHashMap;
 public class StarRocksDataSource extends GenericDataSource {
 
     public static final String DEFAULT_CATALOG_NAME = "default_catalog"; //$NON-NLS-1$
+    private static final String COL_CATALOG = "Catalog"; //$NON-NLS-1$
+    private static final String COL_TYPE = "Type"; //$NON-NLS-1$
+    private static final String COL_COMMENT = "Comment"; //$NON-NLS-1$
 
     /**
      * catalog name -> [type, comment]
@@ -117,9 +120,9 @@ public class StarRocksDataSource extends GenericDataSource {
             try (JDBCPreparedStatement dbStat = session.prepareStatement("SHOW CATALOGS")) { //$NON-NLS-1$
                 try (JDBCResultSet dbResult = dbStat.executeQuery()) {
                     while (dbResult.next()) {
-                        String catalogName = JDBCUtils.safeGetString(dbResult, "Catalog"); //$NON-NLS-1$
-                        String catalogType = JDBCUtils.safeGetString(dbResult, "Type"); //$NON-NLS-1$
-                        String catalogComment = JDBCUtils.safeGetString(dbResult, "Comment"); //$NON-NLS-1$
+                        String catalogName = JDBCUtils.safeGetString(dbResult, COL_CATALOG);
+                        String catalogType = JDBCUtils.safeGetString(dbResult, COL_TYPE);
+                        String catalogComment = JDBCUtils.safeGetString(dbResult, COL_COMMENT);
 
                         if (catalogName != null) {
                             // Store metadata for later use in createCatalogImpl

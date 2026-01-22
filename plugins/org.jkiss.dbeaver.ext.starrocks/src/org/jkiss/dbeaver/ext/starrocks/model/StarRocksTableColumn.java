@@ -30,6 +30,12 @@ import java.sql.Types;
  */
 public class StarRocksTableColumn extends GenericTableColumn {
 
+    private static final String COL_FIELD = "Field"; //$NON-NLS-1$
+    private static final String COL_TYPE = "Type"; //$NON-NLS-1$
+    private static final String COL_NULL = "Null"; //$NON-NLS-1$
+    private static final String COL_COMMENT = "Comment"; //$NON-NLS-1$
+    private static final String COL_DEFAULT = "Default"; //$NON-NLS-1$
+
     private static int ordinalCounter = 0;
 
     public StarRocksTableColumn(StarRocksTableBase table) {
@@ -45,19 +51,19 @@ public class StarRocksTableColumn extends GenericTableColumn {
         @NotNull JDBCResultSet dbResult
     ) {
         super(table,
-            JDBCUtils.safeGetString(dbResult, "Field"),
-            JDBCUtils.safeGetString(dbResult, "Type"),
-            mapSqlType(JDBCUtils.safeGetString(dbResult, "Type")),
+            JDBCUtils.safeGetString(dbResult, COL_FIELD),
+            JDBCUtils.safeGetString(dbResult, COL_TYPE),
+            mapSqlType(JDBCUtils.safeGetString(dbResult, COL_TYPE)),
             Types.OTHER,
             ++ordinalCounter,
-            extractColumnSize(JDBCUtils.safeGetString(dbResult, "Type")),
-            extractColumnSize(JDBCUtils.safeGetString(dbResult, "Type")),
-            extractScale(JDBCUtils.safeGetString(dbResult, "Type")),
+            extractColumnSize(JDBCUtils.safeGetString(dbResult, COL_TYPE)),
+            extractColumnSize(JDBCUtils.safeGetString(dbResult, COL_TYPE)),
+            extractScale(JDBCUtils.safeGetString(dbResult, COL_TYPE)),
             null,
             10,
-            !"NO".equalsIgnoreCase(JDBCUtils.safeGetString(dbResult, "Null")),
-            JDBCUtils.safeGetString(dbResult, "Comment"),
-            JDBCUtils.safeGetString(dbResult, "Default"),
+            !"NO".equalsIgnoreCase(JDBCUtils.safeGetString(dbResult, COL_NULL)),
+            JDBCUtils.safeGetString(dbResult, COL_COMMENT),
+            JDBCUtils.safeGetString(dbResult, COL_DEFAULT),
             false,
             false
         );
