@@ -33,6 +33,7 @@ import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.Composite;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 
 import java.util.Iterator;
@@ -41,6 +42,8 @@ import java.util.List;
 import java.util.function.Supplier;
 
 public class SQLEditorSourceViewer extends ProjectionViewer {
+
+    static protected final Log log = Log.getLog(SQLEditorSourceViewer.class);
 
     private final LinkedList<VerifyKeyListener> verifyKeyListeners = new LinkedList<>();
     private final Supplier<DBPPreferenceStore> currentPrefStoreSupplier;
@@ -206,30 +209,31 @@ public class SQLEditorSourceViewer extends ProjectionViewer {
     protected void copyMarkedRegion(boolean delete) {
         Point selection = getSelectedRange();
 
-        if (selection.y == 0) {
-            try {
-                IDocument document = getDocument();
-                int caretOffset = selection.x;
-                int line = document.getLineOfOffset(caretOffset);
-
-                IRegion lineInfo = document.getLineInformation(line);
-
-                String lineDelimiter = document.getLineDelimiter(line);
-                int delimiterLength = lineDelimiter != null ? lineDelimiter.length() : 0;
-
-                setSelectedRange(lineInfo.getOffset(), lineInfo.getLength() + delimiterLength);
-
-                if (delete) {
-                    getTextWidget().cut();
-                } else {
-                    getTextWidget().copy();
-                }
-            } catch (BadLocationException e) {
-                super.copyMarkedRegion(delete);
-            }
-        } else {
+        if (selection.y != 0) {
             super.copyMarkedRegion(delete);
+            return;
         }
 
+        try {
+            IDocument document = getDocument();
+            int caretOffset = selection.x;
+            int line = document.getLineOfOffset(caretOffset);
+
+            IRegion lineInfo = document.getLineInformation(line);
+
+            String lineDelimiter = document.getLineDelimiter(line);
+            int delimiterLength = lineDelimiter != null ? lineDelimiter.length() : 0;
+
+            setSelectedRange(lineInfo.getOffset(), lineInfo.getLength() + delimiterLength);
+
+            if (delete) {
+                getTextWidget().cut();
+            } else {
+                getTextWidget().copy();
+            }
+        } catch (BadLocationException e) {
+            log.error("Error selecting current line for copy/cut operation", e);
+            super.copyMarkedRegion(delete);
+        }
     }
 }
