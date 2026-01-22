@@ -101,7 +101,6 @@ public class UINavigatorMessages extends NLS {
     public static String actions_navigator_configure_filters;
     public static String actions_navigator_reset_search;
 
-
     public static String dialog_project_create_wizard_error_already_exists;
     public static String dialog_project_create_wizard_error_cannot_create;
     public static String dialog_project_create_wizard_error_cannot_create_message;
