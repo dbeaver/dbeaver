@@ -125,10 +125,15 @@ public class NavigatorHandlerFilterConfig extends NavigatorHandlerObjectCreateBa
             String dialogObjectTitle = createDialogTitle(globalFilter);
             DBSObjectFilter objectFilter = Objects.requireNonNullElseGet(
                 parentNode.getNodeFilter(itemsMeta, true),
-                DBSObjectFilter::new
+                this::getNewDBSObjectFilter
             );
             EditObjectFilterDialog dialog = getDialog(dialogObjectTitle, objectFilter, globalFilter);
             processDialogResponse(dialog);
+        }
+
+        @NotNull
+        protected DBSObjectFilter getNewDBSObjectFilter() {
+            return new DBSObjectFilter();
         }
 
         @NotNull
@@ -176,7 +181,7 @@ public class NavigatorHandlerFilterConfig extends NavigatorHandlerObjectCreateBa
             DBPDataSourceContainer dataSourceContainer = originalNode.getDataSourceContainer();
             DBSObjectFilter globalFilterForObject = Objects.requireNonNullElseGet(
                 dataSourceContainer.getObjectFilter(childrenClass, null, true),
-                DBSObjectFilter::new
+                this::getNewDBSObjectFilter
             );
             EditObjectFilterDialog globalFilterDialog = getDialog("All " + originalNode.getNodeTypeLabel(), globalFilterForObject, true);
             if (globalFilterDialog.open() == IDialogConstants.OK_ID) {
