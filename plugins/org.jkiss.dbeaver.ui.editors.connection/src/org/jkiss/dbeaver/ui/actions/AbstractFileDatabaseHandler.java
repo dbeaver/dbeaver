@@ -37,7 +37,9 @@ import org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerObjectOpen;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 
 import java.nio.file.Path;
-import java.util.*;
+import java.util.Collections;
+import java.util.List;
+import java.util.Set;
 
 /**
  * Database file handler
@@ -127,7 +129,7 @@ public abstract class AbstractFileDatabaseHandler extends AbstractFileHandler {
     @NotNull
     @Override
     public Set<FileTypeAction> supportedActions() {
-        return new HashSet<>(Arrays.asList(FileTypeAction.DATABASE, FileTypeAction.INTERNAL_EDITOR, FileTypeAction.EXTERNAL_EDITOR));
+        return Set.of(FileTypeAction.DATABASE, FileTypeAction.INTERNAL_EDITOR, FileTypeAction.EXTERNAL_EDITOR);
     }
 
     protected abstract String getDatabaseTerm();

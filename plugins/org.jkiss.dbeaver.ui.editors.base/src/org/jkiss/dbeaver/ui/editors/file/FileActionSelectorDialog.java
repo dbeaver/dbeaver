@@ -27,20 +27,20 @@ import org.jkiss.dbeaver.model.file.FileTypeAction;
 import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
 import org.jkiss.dbeaver.ui.editors.internal.EditorsMessages;
 
-import java.util.Set;
+import java.util.List;
 
 /**
  * FileActionSelectorDialog
  */
 public class FileActionSelectorDialog extends BaseDialog {
 
-    private final Set<FileTypeAction> actions;
+    private final List<FileTypeAction> actions;
     private FileTypeAction selectedAction;
 
-    public FileActionSelectorDialog(@NotNull Shell shell, @NotNull Set<FileTypeAction> actions) {
+    public FileActionSelectorDialog(@NotNull Shell shell, @NotNull List<FileTypeAction> actions) {
         super(shell, EditorsMessages.dialog_file_type_selector_title, null);
         this.actions = actions;
-        this.selectedAction = actions.isEmpty() ? null : actions.iterator().next();
+        this.selectedAction = actions.isEmpty() ? null : actions.getFirst();
     }
 
     @NotNull

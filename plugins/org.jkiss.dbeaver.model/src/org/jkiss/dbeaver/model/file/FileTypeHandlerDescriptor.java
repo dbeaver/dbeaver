@@ -80,8 +80,8 @@ public class FileTypeHandlerDescriptor extends AbstractDescriptor {
     }
 
     @NotNull
-    public IFileOpenHandler createHandler() throws DBException {
-        Class<? extends IFileOpenHandler> clazz = handlerType.getImplClass(IFileOpenHandler.class);
+    public FileOpenHandler createHandler() throws DBException {
+        Class<? extends FileOpenHandler> clazz = handlerType.getImplClass(FileOpenHandler.class);
         try {
             return clazz.getConstructor().newInstance();
         } catch (ReflectiveOperationException e) {

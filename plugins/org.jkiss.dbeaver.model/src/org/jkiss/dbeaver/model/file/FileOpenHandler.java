@@ -30,7 +30,7 @@ import java.util.Set;
  * Implementations of this interface are responsible for managing how files are opened
  * based on the provided parameters, including the action type and optional data source context.
  */
-public interface IFileOpenHandler {
+public interface FileOpenHandler {
 
     /**
      * Open NIO files in associated handlers

@@ -32,10 +32,10 @@ import org.eclipse.ui.ide.IDE;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.file.FileOpenHandler;
 import org.jkiss.dbeaver.model.file.FileTypeAction;
 import org.jkiss.dbeaver.model.file.FileTypeHandlerDescriptor;
 import org.jkiss.dbeaver.model.file.FileTypeHandlerRegistry;
-import org.jkiss.dbeaver.model.file.IFileOpenHandler;
 import org.jkiss.dbeaver.model.fs.DBFFileStoreProvider;
 import org.jkiss.dbeaver.model.fs.DBFUtils;
 import org.jkiss.dbeaver.model.fs.nio.EFSNIOResource;
@@ -98,7 +98,7 @@ public class DefaultResourceHandlerImpl extends AbstractResourceHandler {
                 if (!CommonUtils.isEmpty(fileExtension)) {
                     FileTypeHandlerDescriptor fthd = FileTypeHandlerRegistry.getInstance().findHandler(fileExtension);
                     if (fthd != null) {
-                        IFileOpenHandler handler = fthd.createHandler();
+                        FileOpenHandler handler = fthd.createHandler();
                         handler.openFiles(Collections.singletonList(path), null, FileTypeAction.INTERNAL_EDITOR);
                         return;
                     }

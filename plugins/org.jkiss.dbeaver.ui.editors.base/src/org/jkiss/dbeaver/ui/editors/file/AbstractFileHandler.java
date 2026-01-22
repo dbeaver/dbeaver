@@ -20,21 +20,19 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.file.FileOpenHandler;
 import org.jkiss.dbeaver.model.file.FileTypeAction;
-import org.jkiss.dbeaver.model.file.IFileOpenHandler;
 import org.jkiss.dbeaver.ui.ShellUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.EditorUtils;
 import org.jkiss.utils.IOUtils;
 
 import java.nio.file.Path;
-import java.util.Arrays;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
 /**
- * Base implementation of {@link IFileOpenHandler} that provides default handling
+ * Base implementation of {@link FileOpenHandler} that provides default handling
  * for opening files in DBeaver.
  * <p>
  * By default, this handler supports {@link FileTypeAction#EXTERNAL_EDITOR} and
@@ -54,7 +52,7 @@ import java.util.Set;
  * This class does not handle {@link FileTypeAction#DATABASE} by default and
  * will throw a {@link DBException} if that action is requested.
  */
-public class AbstractFileHandler implements IFileOpenHandler {
+public class AbstractFileHandler implements FileOpenHandler {
     @Override
     public void openFiles(
         @NotNull List<Path> fileList,
@@ -84,6 +82,6 @@ public class AbstractFileHandler implements IFileOpenHandler {
     @NotNull
     @Override
     public Set<FileTypeAction> supportedActions() {
-        return new HashSet<>(Arrays.asList(FileTypeAction.EXTERNAL_EDITOR, FileTypeAction.INTERNAL_EDITOR));
+        return Set.of(FileTypeAction.EXTERNAL_EDITOR, FileTypeAction.INTERNAL_EDITOR);
     }
 }

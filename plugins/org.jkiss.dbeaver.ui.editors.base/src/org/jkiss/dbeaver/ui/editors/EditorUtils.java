@@ -44,10 +44,10 @@ import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.app.DBPPlatformDesktop;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.exec.*;
+import org.jkiss.dbeaver.model.file.FileOpenHandler;
 import org.jkiss.dbeaver.model.file.FileTypeAction;
 import org.jkiss.dbeaver.model.file.FileTypeHandlerDescriptor;
 import org.jkiss.dbeaver.model.file.FileTypeHandlerRegistry;
-import org.jkiss.dbeaver.model.file.IFileOpenHandler;
 import org.jkiss.dbeaver.model.rcp.RCPProject;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
@@ -762,7 +762,7 @@ public class EditorUtils {
                 }
             } else {
                 try {
-                    IFileOpenHandler fileOpenHandler = handler.createHandler();
+                    FileOpenHandler fileOpenHandler = handler.createHandler();
                     Set<FileTypeAction> actions = fileOpenHandler.supportedActions();
 
                     boolean allRemote = pathList.stream().noneMatch(IOUtils::isLocalPath);
@@ -781,12 +781,15 @@ public class EditorUtils {
 
     @Nullable
     private static FileTypeAction getFileTypeActionWithDialog(@NotNull Set<FileTypeAction> actions, boolean hasLocalFiles) {
+        List<FileTypeAction> actionList = new ArrayList<>(actions.stream()
+            .sorted(Comparator.comparing(FileTypeAction::getOrder))
+            .toList());
         if (hasLocalFiles) {
-            actions.remove(FileTypeAction.EXTERNAL_EDITOR);
+            actionList.remove(FileTypeAction.EXTERNAL_EDITOR);
         }
         FileTypeAction selectedAction = null;
-        if (actions.size() > 1) {
-            FileActionSelectorDialog dialog = new FileActionSelectorDialog(UIUtils.getActiveWorkbenchShell(), actions);
+        if (actions.size() > 1 && UIUtils.getActiveWorkbenchShell() != null) {
+            FileActionSelectorDialog dialog = new FileActionSelectorDialog(UIUtils.getActiveWorkbenchShell(), actionList);
             if (dialog.open() == IDialogConstants.OK_ID) {
                 selectedAction = dialog.getSelectedAction();
             }

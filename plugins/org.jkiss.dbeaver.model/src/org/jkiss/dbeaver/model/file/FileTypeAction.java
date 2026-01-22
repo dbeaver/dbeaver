@@ -19,18 +19,24 @@ package org.jkiss.dbeaver.model.file;
 import org.jkiss.code.NotNull;
 
 public enum FileTypeAction {
-    DATABASE("Open as database"),
-    INTERNAL_EDITOR("Open in embedded text editor"),
-    EXTERNAL_EDITOR("Open in external application");
+    DATABASE("Open as database", 1),
+    INTERNAL_EDITOR("Open in embedded text editor", 2),
+    EXTERNAL_EDITOR("Open in external application", 3);
 
     private final String label;
+    private final int order;
 
-    FileTypeAction(@NotNull String label) {
+    FileTypeAction(@NotNull String label, int order) {
         this.label = label;
+        this.order = order;
     }
 
     @NotNull
     public String getLabel() {
         return label;
+    }
+
+    public int getOrder() {
+        return order;
     }
 }
