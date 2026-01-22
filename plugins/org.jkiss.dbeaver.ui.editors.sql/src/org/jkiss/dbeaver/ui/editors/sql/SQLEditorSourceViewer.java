@@ -43,7 +43,7 @@ import java.util.function.Supplier;
 
 public class SQLEditorSourceViewer extends ProjectionViewer {
 
-    static protected final Log log = Log.getLog(SQLEditorSourceViewer.class);
+    private static final Log log = Log.getLog(SQLEditorSourceViewer.class);
 
     private final LinkedList<VerifyKeyListener> verifyKeyListeners = new LinkedList<>();
     private final Supplier<DBPPreferenceStore> currentPrefStoreSupplier;
