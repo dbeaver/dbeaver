@@ -26,6 +26,7 @@ import org.eclipse.ui.IWorkbenchPreferencePage;
 import org.eclipse.ui.IWorkbenchPropertyPage;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.erd.ERDAttributeVisibility;
+import org.jkiss.dbeaver.model.erd.ERDConstants;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -65,6 +66,7 @@ public class ERDPreferencePage extends AbstractPrefPage implements IWorkbenchPre
     private Button snapCheck;
     private Combo routingType;
     private Combo notationType;
+    private Button loadLazyDescriptions;
     private Spinner spinnerGridWidth;
     private Spinner spinnerGridHeight;
 
@@ -129,6 +131,13 @@ public class ERDPreferencePage extends AbstractPrefPage implements IWorkbenchPre
         } else {
             notationType.select(0);
         }
+        // Load lazy descriptions
+        loadLazyDescriptions = UIUtils.createCheckbox(
+            contentsGroup,
+            ERDUIMessages.erd_preference_page_title_load_lazy_descriptions,
+            null,
+            store.getBoolean(ERDUIConstants.PREF_LOAD_LAZY_DESCRIPTIONS),
+            2);
     }
 
     private void createContentsGroup(DBPPreferenceStore store, Composite composite) {
@@ -266,6 +275,7 @@ public class ERDPreferencePage extends AbstractPrefPage implements IWorkbenchPre
         if (hasAdvancedGroup()) {
             routingType.select(routerDescriptors.indexOf(routerRegistry.getActiveRouter()));
             notationType.select(notationDescriptors.indexOf(notationRegistry.getDefaultDescriptor()));
+            loadLazyDescriptions.setSelection(store.getDefaultBoolean(ERDUIConstants.PREF_LOAD_LAZY_DESCRIPTIONS));
         }
 
         if (hasVisibilityGroup()) {
@@ -304,6 +314,7 @@ public class ERDPreferencePage extends AbstractPrefPage implements IWorkbenchPre
             if (erdNotation != null) {
                 ERDNotationRegistry.getInstance().setActiveDescriptor(erdNotation);
             }
+            store.setValue(ERDUIConstants.PREF_LOAD_LAZY_DESCRIPTIONS, loadLazyDescriptions.getSelection());
         }
 
         if (hasColorPrefGroup()) {
