@@ -1,7 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
- * Copyright (C) 2017-2018 Alexander Fedorov (alexander.fedorov@jkiss.org)
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,7 +27,10 @@ import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.*;
+import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.PlatformUI;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
@@ -63,7 +65,7 @@ public class DatabaseDebugConfigurationTab extends AbstractLaunchConfigurationTa
     private Text driverText;
 
     private SelectDataSourceCombo connectionCombo;
-    private Group typesGroup;
+    private Composite typesGroup;
     private Composite panelPlaceholder;
 
     @Override
@@ -83,7 +85,12 @@ public class DatabaseDebugConfigurationTab extends AbstractLaunchConfigurationTa
     }
 
     protected void createConnectionSettingsGroup(Composite composite) {
-        Group group = UIUtils.createControlGroup(composite, DebugUIMessages.DatabaseTab_connection_group_text, 4, GridData.FILL_HORIZONTAL, SWT.DEFAULT);
+        Composite group = UIUtils.createTitledComposite(
+            composite,
+            DebugUIMessages.DatabaseTab_connection_group_text,
+            4,
+            GridData.FILL_HORIZONTAL
+        );
 
         UIUtils.createControlLabel(group, DebugUIMessages.DatabaseTab_datasource_label_text);
         connectionCombo = new SelectDataSourceCombo(group) {
@@ -105,7 +112,12 @@ public class DatabaseDebugConfigurationTab extends AbstractLaunchConfigurationTa
     }
 
     protected void createPanelListGroup(Composite composite) {
-        typesGroup = UIUtils.createControlGroup(composite, DebugUIMessages.DatabaseTab_debug_type_group_text, 3, GridData.FILL_HORIZONTAL, SWT.DEFAULT);
+        typesGroup = UIUtils.createTitledComposite(
+            composite,
+            DebugUIMessages.DatabaseTab_debug_type_group_text,
+            3,
+            GridData.FILL_HORIZONTAL
+        );
         panelPlaceholder = UIUtils.createPlaceholder(composite, 1, 5);
         loadConnectionDebugTypes();
     }

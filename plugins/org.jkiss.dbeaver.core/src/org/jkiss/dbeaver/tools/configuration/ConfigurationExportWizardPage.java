@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,7 +20,6 @@ import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Group;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -43,12 +42,11 @@ public class ConfigurationExportWizardPage extends WizardPage {
     @Override
     public void createControl(@NotNull Composite parent) {
         Composite composite = UIUtils.createComposite(parent, 1);
-        Group exportSettingsGroup = UIUtils.createControlGroup(
+        Composite exportSettingsGroup = UIUtils.createTitledComposite(
             composite,
             CoreMessages.dialog_workspace_export_wizard_group,
             2,
-            GridData.FILL_BOTH,
-            0
+            GridData.FILL_BOTH
         );
 
         UIUtils.createControlLabel(exportSettingsGroup, CoreMessages.dialog_workspace_export_wizard_file_name);

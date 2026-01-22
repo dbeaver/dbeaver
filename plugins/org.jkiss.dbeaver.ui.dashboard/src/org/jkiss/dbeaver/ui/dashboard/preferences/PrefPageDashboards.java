@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -68,7 +68,12 @@ public class PrefPageDashboards extends TargetPrefPage
 
         // General settings
         {
-            Composite commonGroup = UIUtils.createControlGroup(composite, UIDashboardMessages.pref_page_dashboards_group_common, 2, GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING, 0);
+            Composite commonGroup = UIUtils.createTitledComposite(
+                composite,
+                UIDashboardMessages.pref_page_dashboards_group_common,
+                2,
+                GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING
+            );
             {
                 openSeparateConnectionCheck = UIUtils.createCheckbox(commonGroup, UIDashboardMessages.pref_page_dashboards_open_separate_connection_label, null, false, 2);
             }

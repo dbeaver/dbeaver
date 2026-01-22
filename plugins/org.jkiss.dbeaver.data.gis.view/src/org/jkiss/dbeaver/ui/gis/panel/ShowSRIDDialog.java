@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,9 +23,9 @@ import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.gis.GisTransformUtils;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -54,13 +54,19 @@ public class ShowSRIDDialog extends BaseDialog {
         return null;//UIUtils.getSettingsSection(UIActivator.getDefault().getDialogSettings(), DIALOG_ID);
     }
 
+    @NotNull
     @Override
-    protected Composite createDialogArea(Composite parent) {
+    protected Composite createDialogArea(@NotNull Composite parent) {
         Composite dialogArea = super.createDialogArea(parent);
         try {
             CoordinateReferenceSystem crs = GisTransformUtils.getCRSFactory().getCRS("EPSG:" + selectedSRID);
 
-            Group crsGroup = UIUtils.createControlGroup(dialogArea, GISMessages.panel_show_srid_dialog_control_group_label_details, 2, SWT.NONE, 0);
+            Composite crsGroup = UIUtils.createTitledComposite(
+                dialogArea,
+                GISMessages.panel_show_srid_dialog_control_group_label_details,
+                2,
+                GridData.FILL_HORIZONTAL
+            );
             crsGroup.setLayoutData(new GridData(GridData.FILL_BOTH));
             UIUtils.createLabelText(crsGroup, "SRID", String.valueOf(selectedSRID), SWT.BORDER | SWT.READ_ONLY);
             UIUtils.createLabelText(crsGroup, GISMessages.panel_show_srid_dialog_label_text_name, crs.getName(), SWT.BORDER | SWT.READ_ONLY);
@@ -81,7 +87,7 @@ public class ShowSRIDDialog extends BaseDialog {
     }
 
     @Override
-    protected void createButtonsForButtonBar(Composite parent) {
+    protected void createButtonsForButtonBar(@NotNull Composite parent) {
         createButton(parent, IDialogConstants.OK_ID, IDialogConstants.OK_LABEL, true);
     }
 
