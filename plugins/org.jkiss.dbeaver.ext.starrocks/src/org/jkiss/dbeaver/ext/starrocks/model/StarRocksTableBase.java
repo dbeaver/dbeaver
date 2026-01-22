@@ -33,7 +33,7 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 public abstract class StarRocksTableBase extends GenericTableBase {
 
     public StarRocksTableBase(
-        GenericStructContainer container,
+        @NotNull GenericStructContainer container,
         @Nullable String tableName,
         @Nullable String tableType,
         @Nullable JDBCResultSet dbResult
@@ -76,7 +76,7 @@ public abstract class StarRocksTableBase extends GenericTableBase {
 
     @NotNull
     @Override
-    public String getFullyQualifiedName(DBPEvaluationContext context) {
+    public String getFullyQualifiedName(@NotNull DBPEvaluationContext context) {
         // StarRocks always requires 3-level FQN: catalog.database.table
         // This is required for cross-catalog queries and data reading
         GenericCatalog catalog = getCatalog();

@@ -58,29 +58,32 @@ public class StarRocksMaterializedView extends StarRocksTableBase implements DBP
             return loaded;
         }
 
+        @Nullable
         public String getDefinition() {
             return definition;
         }
 
-        public void setDefinition(String definition) {
+        public void setDefinition(@Nullable String definition) {
             this.definition = definition;
         }
 
+        @Nullable
         @Property(viewable = true, order = 4)
         public String getRefreshType() {
             return refreshType;
         }
 
-        public void setRefreshType(String refreshType) {
+        public void setRefreshType(@Nullable String refreshType) {
             this.refreshType = refreshType;
         }
 
+        @Nullable
         @Property(viewable = true, order = 5)
         public String getStatus() {
             return status;
         }
 
-        public void setStatus(String status) {
+        public void setStatus(@Nullable String status) {
             this.status = status;
         }
     }
@@ -93,7 +96,7 @@ public class StarRocksMaterializedView extends StarRocksTableBase implements DBP
     }
 
     public StarRocksMaterializedView(
-        GenericStructContainer container,
+        @NotNull GenericStructContainer container,
         @Nullable String viewName,
         @Nullable String tableType,
         @Nullable JDBCResultSet dbResult
@@ -106,18 +109,21 @@ public class StarRocksMaterializedView extends StarRocksTableBase implements DBP
         return true;
     }
 
+    @Nullable
     @Override
     public String getDDL() {
         return additionalInfo.getDefinition();
     }
 
+    @NotNull
     public AdditionalInfo getAdditionalInfo() {
         return additionalInfo;
     }
 
+    @NotNull
     @PropertyGroup()
     @LazyProperty(cacheValidator = AdditionalInfoValidator.class)
-    public AdditionalInfo getAdditionalInfo(DBRProgressMonitor monitor) throws DBCException {
+    public AdditionalInfo getAdditionalInfo(@NotNull DBRProgressMonitor monitor) throws DBCException {
         synchronized (additionalInfo) {
             if (!additionalInfo.loaded) {
                 loadAdditionalInfo(monitor);
@@ -126,7 +132,7 @@ public class StarRocksMaterializedView extends StarRocksTableBase implements DBP
         }
     }
 
-    private void loadAdditionalInfo(DBRProgressMonitor monitor) throws DBCException {
+    private void loadAdditionalInfo(@NotNull DBRProgressMonitor monitor) throws DBCException {
         if (!isPersisted()) {
             additionalInfo.loaded = true;
             return;
@@ -171,7 +177,7 @@ public class StarRocksMaterializedView extends StarRocksTableBase implements DBP
         return definition != null ? definition : "";
     }
 
-    public void setObjectDefinitionText(String sourceText) throws DBException {
+    public void setObjectDefinitionText(@Nullable String sourceText) throws DBException {
         getAdditionalInfo().setDefinition(sourceText);
     }
 }

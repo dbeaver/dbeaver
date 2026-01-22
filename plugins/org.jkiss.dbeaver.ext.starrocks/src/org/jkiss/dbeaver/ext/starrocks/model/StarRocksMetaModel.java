@@ -157,7 +157,7 @@ public class StarRocksMetaModel extends GenericMetaModel {
 
     @Override
     public GenericTableBase createTableOrViewImpl(
-        GenericStructContainer container,
+        @NotNull GenericStructContainer container,
         @Nullable String tableName,
         @Nullable String tableType,
         @Nullable JDBCResultSet dbResult

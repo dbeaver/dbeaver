@@ -47,7 +47,7 @@ public class StarRocksTable extends StarRocksTableBase {
     private String ddl;
 
     public StarRocksTable(
-        GenericStructContainer container,
+        @NotNull GenericStructContainer container,
         @Nullable String tableName,
         @Nullable String tableType,
         @Nullable JDBCResultSet dbResult
@@ -60,6 +60,7 @@ public class StarRocksTable extends StarRocksTableBase {
         return false;
     }
 
+    @Nullable
     @Override
     public String getDDL() {
         return ddl;
@@ -78,7 +79,7 @@ public class StarRocksTable extends StarRocksTableBase {
         return ddl != null ? ddl : "";
     }
 
-    private void loadDDL(DBRProgressMonitor monitor) throws DBCException {
+    private void loadDDL(@NotNull DBRProgressMonitor monitor) throws DBCException {
         try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Load table DDL")) { //$NON-NLS-1$
             // Switch to the correct catalog context
             StarRocksCatalog catalog = getStarRocksCatalog();

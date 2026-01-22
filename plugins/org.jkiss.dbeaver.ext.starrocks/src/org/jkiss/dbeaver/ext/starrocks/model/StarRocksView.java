@@ -58,20 +58,22 @@ public class StarRocksView extends StarRocksTableBase implements DBSView, DBPScr
             return loaded;
         }
 
+        @Nullable
         public String getDefinition() {
             return definition;
         }
 
-        public void setDefinition(String definition) {
+        public void setDefinition(@Nullable String definition) {
             this.definition = definition;
         }
 
+        @Nullable
         @Property(viewable = true, order = 4)
         public String getDefiner() {
             return definer;
         }
 
-        public void setDefiner(String definer) {
+        public void setDefiner(@Nullable String definer) {
             this.definer = definer;
         }
     }
@@ -84,7 +86,7 @@ public class StarRocksView extends StarRocksTableBase implements DBSView, DBPScr
     }
 
     public StarRocksView(
-        GenericStructContainer container,
+        @NotNull GenericStructContainer container,
         @Nullable String viewName,
         @Nullable String tableType,
         @Nullable JDBCResultSet dbResult
@@ -97,18 +99,21 @@ public class StarRocksView extends StarRocksTableBase implements DBSView, DBPScr
         return true;
     }
 
+    @Nullable
     @Override
     public String getDDL() {
         return additionalInfo.getDefinition();
     }
 
+    @NotNull
     public AdditionalInfo getAdditionalInfo() {
         return additionalInfo;
     }
 
+    @NotNull
     @PropertyGroup()
     @LazyProperty(cacheValidator = AdditionalInfoValidator.class)
-    public AdditionalInfo getAdditionalInfo(DBRProgressMonitor monitor) throws DBCException {
+    public AdditionalInfo getAdditionalInfo(@NotNull DBRProgressMonitor monitor) throws DBCException {
         synchronized (additionalInfo) {
             if (!additionalInfo.loaded) {
                 loadAdditionalInfo(monitor);
@@ -117,7 +122,7 @@ public class StarRocksView extends StarRocksTableBase implements DBSView, DBPScr
         }
     }
 
-    private void loadAdditionalInfo(DBRProgressMonitor monitor) throws DBCException {
+    private void loadAdditionalInfo(@NotNull DBRProgressMonitor monitor) throws DBCException {
         if (!isPersisted()) {
             additionalInfo.loaded = true;
             return;
@@ -162,7 +167,7 @@ public class StarRocksView extends StarRocksTableBase implements DBSView, DBPScr
         return definition != null ? definition : "";
     }
 
-    public void setObjectDefinitionText(String sourceText) throws DBException {
+    public void setObjectDefinitionText(@Nullable String sourceText) throws DBException {
         getAdditionalInfo().setDefinition(sourceText);
     }
 }
