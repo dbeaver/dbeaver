@@ -34,7 +34,11 @@
     background-color: #fbfbfb;
 }
 
-CTabFolder, .EditorStack, .MPartStack, #org-eclipse-ui-editorss {
+.EditorStack, .MPartStack {
+    swt-tab-renderer: url('bundleclass://org.jkiss.dbeaver.core/org.jkiss.dbeaver.ui.e4.DBeaverCTabFolderRenderer');
+}
+
+#org-eclipse-ui-editorss CTabFolder.coloredByConnectionType {
     swt-tab-renderer: url('bundleclass://org.jkiss.dbeaver.core/org.jkiss.dbeaver.ui.e4.DBeaverCTabFolderRenderer');
 
     /* Workaround for org.eclipse.e4.ui.workbench.renderers.swt.CTabRendering.TAB_OUTLINE_WIDTH */
