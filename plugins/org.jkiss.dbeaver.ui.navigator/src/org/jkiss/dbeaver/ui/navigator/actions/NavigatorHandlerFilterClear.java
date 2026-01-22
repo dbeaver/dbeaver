@@ -30,8 +30,12 @@ import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.DBNUtils;
 import org.jkiss.dbeaver.model.navigator.meta.DBXTreeItem;
 import org.jkiss.dbeaver.model.struct.DBSObjectFilter;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
+import org.jkiss.dbeaver.ui.navigator.UIServiceFilterConfig;
+
+import java.util.Collections;
 
 public class NavigatorHandlerFilterClear extends AbstractHandler {
 
@@ -49,12 +53,14 @@ public class NavigatorHandlerFilterClear extends AbstractHandler {
             DBXTreeItem itemsMeta = UIUtils.runWithMonitor(monitor -> DBNUtils.getValidItemsMeta(monitor, parentNode));
             if (itemsMeta != null) {
                 DBSObjectFilter emptyFilter = new DBSObjectFilter();
-                emptyFilter.setUserFilter(isUserObjectFilter(parentNode, itemsMeta));
-                NavigatorHandlerFilterConfig.setParentNodeFilter(
-                    parentNode,
-                    itemsMeta,
-                    emptyFilter
-                );
+                UIServiceFilterConfig uiServiceFilterConfig = DBWorkbench.getService(UIServiceFilterConfig.class);
+                if (uiServiceFilterConfig == null) {
+                    parentNode.setNodeFilter(itemsMeta, emptyFilter, true);
+                    NavigatorHandlerRefresh.refreshNavigator(Collections.singleton(parentNode));
+                } else {
+                    emptyFilter.setUserFilter(isUserObjectFilter(parentNode, itemsMeta));
+                    uiServiceFilterConfig.setParentNodeFilter(parentNode, itemsMeta, emptyFilter);
+                }
             }
         } catch (DBException e) {
             log.error(e);

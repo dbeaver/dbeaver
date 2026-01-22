@@ -27,7 +27,6 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
 import org.jkiss.dbeaver.model.struct.DBSObjectFilter;
-import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.IHelpContextIds;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.StringEditorTable;
@@ -63,7 +62,7 @@ public class EditObjectFilterDialog extends HelpEnabledDialog {
     protected Button removeButton;
     private Button enableButton;
 
-    protected EditObjectFilterDialog(
+    public EditObjectFilterDialog(
         @NotNull Shell shell,
         @NotNull DBPDataSourceRegistry dsRegistry,
         @NotNull String objectTitle,
@@ -265,17 +264,5 @@ public class EditObjectFilterDialog extends HelpEnabledDialog {
     @Override
     protected void cancelPressed() {
         super.cancelPressed();
-    }
-
-    public static EditObjectFilterDialog createEditObjectFilterDialog(
-        @NotNull Shell shell,
-        @NotNull DBPDataSourceRegistry dsRegistry,
-        @NotNull String objectTitle,
-        @Nullable DBSObjectFilter filter,
-        boolean globalFilter
-    ) {
-        return DBWorkbench.isDistributed() && !globalFilter
-            ? new EditObjectFilterDialogTE(shell, dsRegistry, objectTitle, filter, globalFilter)
-            : new EditObjectFilterDialog(shell, dsRegistry, objectTitle, filter, globalFilter);
     }
 }
