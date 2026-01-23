@@ -217,6 +217,7 @@ public class QMMCollectorImpl extends DefaultExecutionHandler implements QMMColl
         QMMConnectionInfo connectionInfo = getConnectionInfo(context);
         if (connectionInfo != null) {
             connectionInfo.setTransactional(transactional);
+            tryFireMetaEvent(connectionInfo, QMEventAction.UPDATE, connectionInfo.getOpenTime(), context);
         }
     }
 
