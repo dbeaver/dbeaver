@@ -24,7 +24,7 @@
 
     <extension point="org.jkiss.dbeaver.fileTypeHandler">
         <handler id="duckdb" class="org.jkiss.dbeaver.ext.duckdb.ui.DuckDBFileDatabaseHandler" remote="false" order="103">
-            <extension id="duckdb" extensions="duckdb,db,ddb" icon="platform:/plugin/org.jkiss.dbeaver.ext.generic/icons/duckdb_icon_big.png"/>
+            <extension id="duckdb" extensions="duckdb,ddb" icon="platform:/plugin/org.jkiss.dbeaver.ext.generic/icons/duckdb_icon_big.png"/>
         </handler>
     </extension>
 </plugin>
