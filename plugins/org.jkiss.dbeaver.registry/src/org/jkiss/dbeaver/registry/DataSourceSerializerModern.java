@@ -849,9 +849,14 @@ public class DataSourceSerializerModern<T extends DataSourceDescriptor> implemen
 
     private void setCurrentUserSettings(@NotNull T dataSource, @NotNull Map<String, Object> conObject) {
         DBPObjectSettingsProvider settingsProvider = DBUtils.getAdapter(DBPObjectSettingsProvider.class, dataSource.getProject());
-        Map<String, String> userSettings = settingsProvider == null ?
-            null :
-            settingsProvider.getObjectSettings(SMObjectType.datasource, dataSource.getId());
+        Map<String, String> userSettings = null;
+        if (settingsProvider != null) {
+            try {
+                userSettings = settingsProvider.getObjectSettings(SMObjectType.datasource, dataSource.getId());
+            } catch (Exception e) {
+                log.warn("Error reading user datasource settings", e);
+            }
+        }
 
         if (!CommonUtils.isEmpty(userSettings)) {
             if (userSettings.keySet().stream().anyMatch(DataSourceNavigatorSettings.NAVIGATOR_SETTINGS::contains)) {
@@ -1273,7 +1278,6 @@ public class DataSourceSerializerModern<T extends DataSourceDescriptor> implemen
         // Extensions
         JSONUtils.serializeProperties(json, RegistryConstants.TAG_EXTENSIONS, dataSource.getExtensions(), true);
     }
-
 
     private void serializeModifyPermissions(
         @NotNull JsonWriter json,
