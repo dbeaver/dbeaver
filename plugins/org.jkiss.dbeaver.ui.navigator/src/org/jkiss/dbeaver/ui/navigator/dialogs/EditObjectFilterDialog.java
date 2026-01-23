@@ -230,14 +230,22 @@ public class EditObjectFilterDialog extends HelpEnabledDialog {
         filter.setName(filterName);
     }
 
-    private void enableFiltersContent() {
+    protected void enableFiltersContent() {
         if (filter.isEnabled()) {
-            if (blockEnableState != null) {
-                blockEnableState.restore();
-                blockEnableState = null;
-            }
+            enableFilterChange();
         } else if (blockEnableState == null) {
-            blockEnableState = ControlEnableState.disable(blockControl);
+            disableFilterChange();
+        }
+    }
+
+    protected void disableFilterChange() {
+        blockEnableState = ControlEnableState.disable(blockControl);
+    }
+
+    protected void enableFilterChange() {
+        if (blockEnableState != null) {
+            blockEnableState.restore();
+            blockEnableState = null;
         }
     }
 
