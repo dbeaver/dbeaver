@@ -52,8 +52,8 @@ public abstract class StarRocksViewBase extends GenericView {
     public GenericCatalog getCatalog() {
         // Get catalog from the container hierarchy
         GenericStructContainer container = getContainer();
-        if (container instanceof GenericSchema) {
-            return ((GenericSchema) container).getCatalog();
+        if (container instanceof GenericSchema schema) {
+            return schema.getCatalog();
         }
         return container.getCatalog();
     }
@@ -63,8 +63,8 @@ public abstract class StarRocksViewBase extends GenericView {
     public GenericSchema getSchema() {
         // The container should be the schema (StarRocksDatabase)
         GenericStructContainer container = getContainer();
-        if (container instanceof GenericSchema) {
-            return (GenericSchema) container;
+        if (container instanceof GenericSchema schema) {
+            return schema;
         }
         return container.getSchema();
     }

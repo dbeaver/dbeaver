@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.ext.starrocks.model;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableBase;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableColumn;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
@@ -31,15 +32,15 @@ import java.sql.Types;
  */
 public class StarRocksTableColumn extends GenericTableColumn {
 
+    private static final Log log = Log.getLog(StarRocksTableColumn.class);
+
     private static final String COL_FIELD = "Field"; //$NON-NLS-1$
     private static final String COL_TYPE = "Type"; //$NON-NLS-1$
     private static final String COL_NULL = "Null"; //$NON-NLS-1$
     private static final String COL_COMMENT = "Comment"; //$NON-NLS-1$
     private static final String COL_DEFAULT = "Default"; //$NON-NLS-1$
 
-    private static int ordinalCounter = 0;
-
-    public StarRocksTableColumn(GenericTableBase table) {
+    public StarRocksTableColumn(@NotNull GenericTableBase table) {
         super(table);
     }
 
@@ -49,14 +50,15 @@ public class StarRocksTableColumn extends GenericTableColumn {
      */
     public StarRocksTableColumn(
         @NotNull GenericTableBase table,
-        @NotNull JDBCResultSet dbResult
+        @NotNull JDBCResultSet dbResult,
+        int ordinal
     ) {
         super(table,
             JDBCUtils.safeGetString(dbResult, COL_FIELD),
             JDBCUtils.safeGetString(dbResult, COL_TYPE),
             mapSqlType(JDBCUtils.safeGetString(dbResult, COL_TYPE)),
             Types.OTHER,
-            ++ordinalCounter,
+            ordinal,
             extractColumnSize(JDBCUtils.safeGetString(dbResult, COL_TYPE)),
             extractColumnSize(JDBCUtils.safeGetString(dbResult, COL_TYPE)),
             extractScale(JDBCUtils.safeGetString(dbResult, COL_TYPE)),
@@ -77,14 +79,15 @@ public class StarRocksTableColumn extends GenericTableColumn {
         @NotNull GenericTableBase table,
         @NotNull String columnName,
         @NotNull String typeName,
-        boolean notNull
+        boolean notNull,
+        int ordinal
     ) {
         super(table,
             columnName,
             typeName,
             mapSqlType(typeName),
             Types.OTHER,
-            ++ordinalCounter,
+            ordinal,
             extractColumnSize(typeName),
             extractColumnSize(typeName),
             extractScale(typeName),
@@ -104,7 +107,7 @@ public class StarRocksTableColumn extends GenericTableColumn {
         return (StarRocksDataSource) super.getDataSource();
     }
 
-    private static int mapSqlType(String typeName) {
+    private static int mapSqlType(@Nullable String typeName) {
         if (typeName == null) {
             return Types.OTHER;
         }
@@ -135,7 +138,7 @@ public class StarRocksTableColumn extends GenericTableColumn {
         };
     }
 
-    private static long extractColumnSize(String typeName) {
+    private static long extractColumnSize(@Nullable String typeName) {
         if (typeName == null) {
             return 0;
         }
@@ -150,6 +153,7 @@ public class StarRocksTableColumn extends GenericTableColumn {
             try {
                 return Long.parseLong(sizeStr.trim());
             } catch (NumberFormatException e) {
+                log.debug("Failed to parse column size from type: " + typeName, e); //$NON-NLS-1$
                 return 0;
             }
         }
@@ -157,7 +161,7 @@ public class StarRocksTableColumn extends GenericTableColumn {
     }
 
     @Nullable
-    private static Integer extractScale(String typeName) {
+    private static Integer extractScale(@Nullable String typeName) {
         if (typeName == null) {
             return null;
         }
@@ -170,6 +174,7 @@ public class StarRocksTableColumn extends GenericTableColumn {
                 try {
                     return Integer.parseInt(sizeStr.substring(commaIndex + 1).trim());
                 } catch (NumberFormatException e) {
+                    log.debug("Failed to parse column scale from type: " + typeName, e); //$NON-NLS-1$
                     return null;
                 }
             }

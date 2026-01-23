@@ -56,14 +56,7 @@ public class StarRocksDataSource extends GenericDataSource {
      */
     private final Map<String, CatalogMetadata> catalogMetadataCache = new ConcurrentHashMap<>();
 
-    public static class CatalogMetadata {
-        public final String type;
-        public final String comment;
-
-        public CatalogMetadata(String type, String comment) {
-            this.type = type;
-            this.comment = comment;
-        }
+    public record CatalogMetadata(@Nullable String type, @Nullable String comment) {
     }
 
     public StarRocksDataSource(
@@ -89,10 +82,10 @@ public class StarRocksDataSource extends GenericDataSource {
     protected void initializeContextState(
         @NotNull DBRProgressMonitor monitor,
         @NotNull JDBCExecutionContext context,
-        JDBCExecutionContext initFrom
+        @Nullable JDBCExecutionContext initFrom
     ) throws DBException {
+        StarRocksExecutionContext starRocksContext = (StarRocksExecutionContext) context;
         if (initFrom != null) {
-            StarRocksExecutionContext starRocksContext = (StarRocksExecutionContext) context;
             StarRocksExecutionContext starRocksInitFrom = (StarRocksExecutionContext) initFrom;
             String activeCatalog = starRocksInitFrom.getActiveCatalogName();
             String activeDatabase = starRocksInitFrom.getActiveDatabaseName();
@@ -103,7 +96,7 @@ public class StarRocksDataSource extends GenericDataSource {
                 starRocksContext.setActiveDatabaseName(activeDatabase);
             }
         } else {
-            ((StarRocksExecutionContext) context).refreshDefaults(monitor, true);
+            starRocksContext.refreshDefaults(monitor, true);
         }
     }
 

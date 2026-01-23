@@ -19,13 +19,14 @@ package org.jkiss.dbeaver.ext.starrocks.model;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.generic.model.GenericCatalog;
 import org.jkiss.dbeaver.ext.generic.model.GenericSchema;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.LocalCacheProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
-
-import java.util.Collection;
 
 /**
  * StarRocks Catalog - represents a catalog (e.g., default_catalog, hive_catalog)
@@ -33,26 +34,32 @@ import java.util.Collection;
  */
 public class StarRocksCatalog extends GenericCatalog {
 
+    private static final Log log = Log.getLog(StarRocksCatalog.class);
+
+    @Nullable
     private String type;
+    @Nullable
     private String comment;
 
     public StarRocksCatalog(@NotNull StarRocksDataSource dataSource, @NotNull String catalogName) {
         super(dataSource, catalogName);
     }
 
-    public void setType(String type) {
+    public void setType(@Nullable String type) {
         this.type = type;
     }
 
-    public void setComment(String comment) {
+    public void setComment(@Nullable String comment) {
         this.comment = comment;
     }
 
+    @Nullable
     @Property(viewable = true, order = 2)
     public String getType() {
         return type;
     }
 
+    @Nullable
     @Property(viewable = true, order = 3)
     public String getComment() {
         return comment;
@@ -82,18 +89,12 @@ public class StarRocksCatalog extends GenericCatalog {
     @Nullable
     public StarRocksDatabase getCachedDatabase(@NotNull String name) {
         try {
-            Collection<GenericSchema> schemas = getSchemas(null);
-            if (schemas != null) {
-                for (GenericSchema schema : schemas) {
-                    if (schema.getName().equals(name)) {
-                        return (StarRocksDatabase) schema;
-                    }
-                }
-            }
+            GenericSchema schema = getSchema(new LocalCacheProgressMonitor(new VoidProgressMonitor()), name);
+            return schema instanceof StarRocksDatabase ? (StarRocksDatabase) schema : null;
         } catch (DBException e) {
-            // Return null if schemas haven't been loaded yet
+            log.debug("Error getting cached database: " + name, e); //$NON-NLS-1$
+            return null;
         }
-        return null;
     }
 
     @NotNull

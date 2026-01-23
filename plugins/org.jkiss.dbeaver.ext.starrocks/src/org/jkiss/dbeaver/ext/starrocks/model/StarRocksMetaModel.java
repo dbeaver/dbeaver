@@ -64,6 +64,7 @@ public class StarRocksMetaModel extends GenericMetaModel {
         return new StarRocksDataSource(monitor, container, this);
     }
 
+    @NotNull
     @Override
     public GenericCatalog createCatalogImpl(
         @NotNull GenericDataSource dataSource,
@@ -75,13 +76,14 @@ public class StarRocksMetaModel extends GenericMetaModel {
         // Populate type and comment from cached metadata
         StarRocksDataSource.CatalogMetadata metadata = starRocksDataSource.getCatalogMetadata(catalogName);
         if (metadata != null) {
-            catalog.setType(metadata.type);
-            catalog.setComment(metadata.comment);
+            catalog.setType(metadata.type());
+            catalog.setComment(metadata.comment());
         }
 
         return catalog;
     }
 
+    @NotNull
     @Override
     public GenericSchema createSchemaImpl(
         @NotNull GenericDataSource dataSource,
@@ -144,7 +146,7 @@ public class StarRocksMetaModel extends GenericMetaModel {
         // Only internal catalogs support materialized views - external catalogs don't.
         // For internal catalogs, we join with information_schema.materialized_views to distinguish them.
         // Result columns: table_name, table_type, is_materialized
-        boolean isInternalCatalog = catalog instanceof StarRocksCatalog && ((StarRocksCatalog) catalog).isInternal();
+        boolean isInternalCatalog = catalog instanceof StarRocksCatalog starRocksCatalog && starRocksCatalog.isInternal();
 
         String query;
         if (isInternalCatalog) {
@@ -170,6 +172,7 @@ public class StarRocksMetaModel extends GenericMetaModel {
         return stmt;
     }
 
+    @Nullable
     @Override
     public GenericTableBase createTableImpl(
         @NotNull JDBCSession session,
@@ -183,6 +186,7 @@ public class StarRocksMetaModel extends GenericMetaModel {
         return createTableOrViewImpl(owner, tableName, tableType, dbResult);
     }
 
+    @Nullable
     @Override
     public GenericTableBase createTableOrViewImpl(
         @NotNull GenericStructContainer container,
@@ -209,6 +213,7 @@ public class StarRocksMetaModel extends GenericMetaModel {
         }
     }
 
+    @NotNull
     @Override
     public JDBCStatement prepareTableColumnLoadStatement(
         @NotNull JDBCSession session,
@@ -233,6 +238,7 @@ public class StarRocksMetaModel extends GenericMetaModel {
         return session.prepareStatement(sql);
     }
 
+    @Nullable
     @Override
     public GenericTableColumn fetchTableColumn(
         @NotNull JDBCSession session,
@@ -241,11 +247,14 @@ public class StarRocksMetaModel extends GenericMetaModel {
         @NotNull JDBCResultSet dbResult
     ) throws DBException {
         if (table instanceof StarRocksTable || table instanceof StarRocksViewBase) {
-            return new StarRocksTableColumn(table, dbResult);
+            // Calculate ordinal based on currently cached columns
+            int ordinal = table.getCachedAttributes() != null ? table.getCachedAttributes().size() + 1 : 1;
+            return new StarRocksTableColumn(table, dbResult, ordinal);
         }
         return super.fetchTableColumn(session, owner, table, dbResult);
     }
 
+    @Nullable
     @Override
     public String getViewDDL(
         @NotNull DBRProgressMonitor monitor,
@@ -255,20 +264,21 @@ public class StarRocksMetaModel extends GenericMetaModel {
         return sourceObject.getDDL();
     }
 
+    @Nullable
     @Override
     public String getTableDDL(
         @NotNull DBRProgressMonitor monitor,
         @NotNull GenericTableBase sourceObject,
         @NotNull Map<String, Object> options
     ) throws DBException {
-        if (sourceObject instanceof StarRocksTable) {
-            return ((StarRocksTable) sourceObject).getObjectDefinitionText(monitor, options);
+        if (sourceObject instanceof StarRocksTable table) {
+            return table.getObjectDefinitionText(monitor, options);
         }
-        if (sourceObject instanceof StarRocksView) {
-            return ((StarRocksView) sourceObject).getObjectDefinitionText(monitor, options);
+        if (sourceObject instanceof StarRocksView view) {
+            return view.getObjectDefinitionText(monitor, options);
         }
-        if (sourceObject instanceof StarRocksMaterializedView) {
-            return ((StarRocksMaterializedView) sourceObject).getObjectDefinitionText(monitor, options);
+        if (sourceObject instanceof StarRocksMaterializedView materializedView) {
+            return materializedView.getObjectDefinitionText(monitor, options);
         }
         return super.getTableDDL(monitor, sourceObject, options);
     }
@@ -305,7 +315,7 @@ public class StarRocksMetaModel extends GenericMetaModel {
     }
 
     @Override
-    public boolean isSystemSchema(GenericSchema schema) {
+    public boolean isSystemSchema(@NotNull GenericSchema schema) {
         String schemaName = schema.getName();
         return "information_schema".equalsIgnoreCase(schemaName) || //$NON-NLS-1$
                "sys".equalsIgnoreCase(schemaName) || //$NON-NLS-1$

@@ -111,9 +111,9 @@ public class StarRocksExecutionContext extends JDBCExecutionContext
 
     @Override
     public void setDefaultCatalog(
-            @NotNull DBRProgressMonitor monitor,
-            @Nullable StarRocksCatalog catalog,
-            @Nullable StarRocksDatabase schema
+        @NotNull DBRProgressMonitor monitor,
+        @Nullable StarRocksCatalog catalog,
+        @Nullable StarRocksDatabase schema
     ) throws DBCException {
         if (catalog == null || isAlreadyActive(catalog, schema)) {
             return;
@@ -141,10 +141,10 @@ public class StarRocksExecutionContext extends JDBCExecutionContext
     }
 
     private void fireSelectionChangeEvents(
-            @Nullable StarRocksCatalog oldCatalog,
-            @NotNull StarRocksCatalog newCatalog,
-            @Nullable StarRocksDatabase oldSchema,
-            @Nullable StarRocksDatabase newSchema
+        @Nullable StarRocksCatalog oldCatalog,
+        @NotNull StarRocksCatalog newCatalog,
+        @Nullable StarRocksDatabase oldSchema,
+        @Nullable StarRocksDatabase newSchema
     ) {
         if (oldCatalog != null) {
             DBUtils.fireObjectSelectionChange(oldCatalog, newCatalog, this);

@@ -9,7 +9,7 @@
                 parent="generic"
                 dialect="starrocks"
                 label="StarRocks"
-                icon="icons/starrocks_icon.png">
+                icon="icons/starrocks_icon.svg">
 
             <!-- Define StarRocks tree with catalog layer -->
             <tree path="starrocks" label="StarRocks" icon="#folder_database">
@@ -48,9 +48,7 @@
                 <driver
                         id="starrocks"
                         label="StarRocks"
-                        icon="icons/starrocks_icon.png"
-                        iconBig="icons/starrocks_icon_big.png"
-                        logoImage="icons/starrocks_logo.png"
+                        icon="icons/starrocks_icon.svg"
                         class="com.mysql.cj.jdbc.Driver"
                         sampleURL="jdbc:mysql://{host}[:{port}]/[{database}]"
                         defaultPort="9030"
@@ -58,6 +56,7 @@
                         webURL="https://docs.starrocks.io/"
                         description="StarRocks using MySQL 8 driver"
                         categories="sql">
+                    <replace provider="mysql" driver="starRocks"/>
                     <file type="jar" path="maven:/com.mysql:mysql-connector-j:RELEASE[8.3.0]" bundle="!drivers.mysql"/>
                     <file type="license" path="https://www.gnu.org/licenses/old-licenses/lgpl-2.0.txt" bundle="!drivers.mysql"/>
                     <file type="license" path="drivers/mysql/LICENSE.txt" bundle="drivers.mysql"/>
@@ -78,7 +77,7 @@
 
     <extension point="org.jkiss.dbeaver.sqlDialect">
         <dialect id="starrocks" parent="generic" class="org.jkiss.dbeaver.ext.starrocks.model.StarRocksDialect"
-                 label="StarRocks" description="StarRocks SQL dialect" icon="icons/starrocks_icon.png">
+                 label="StarRocks" description="StarRocks SQL dialect" icon="icons/starrocks_icon.svg">
             <keywords value="CATALOG,CATALOGS,MATERIALIZED,REFRESH,ASYNC,DEFERRED,IMMEDIATE,BUCKETS,DISTRIBUTED,PROPERTIES,BROKER,ROUTINE,LOAD,STREAM,PAUSE,RESUME,STOP,SUBMIT,TASK,PIPE,PIPES,REPOSITORY,SNAPSHOT,RESTORE,ADMIN"/>
             <functions value="ARRAY_AGG,ARRAY_CONCAT,ARRAY_CONTAINS,ARRAY_LENGTH,ARRAY_POSITION,BITMAP_COUNT,BITMAP_UNION,HLL_UNION_AGG,PERCENTILE_APPROX,RETENTION,WINDOW_FUNNEL,APPROX_COUNT_DISTINCT"/>
             <types value="ARRAY,BITMAP,HLL,JSON,MAP,STRUCT,LARGEINT"/>
