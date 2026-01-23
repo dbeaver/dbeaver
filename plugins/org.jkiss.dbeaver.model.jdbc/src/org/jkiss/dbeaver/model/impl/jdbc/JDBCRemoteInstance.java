@@ -24,7 +24,6 @@ import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.ModelPreferences.SeparateConnectionBehavior;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPExclusiveResource;
-import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBExecUtils;
 import org.jkiss.dbeaver.model.impl.SimpleExclusiveLock;
@@ -92,7 +91,7 @@ public class JDBCRemoteInstance implements DBSInstance {
         return null;
     }
 
-    protected void initializeMainContext(@NotNull DBRProgressMonitor monitor) throws DBCException {
+    protected void initializeMainContext(@NotNull DBRProgressMonitor monitor) throws DBException {
         if (sharedInstance != null) {
             return;
         }
@@ -102,12 +101,9 @@ public class JDBCRemoteInstance implements DBSInstance {
                 mainContextName = getMainContextName();
             }
             this.executionContext = dataSource.createExecutionContext(this, mainContextName);
-            try {
-                this.executionContext.connect(monitor, null, null, null, true);
-            } catch (Exception e) {
-                this.executionContext.close();
-                throw e;
-            }
+            DBExecUtils.tryOpenContext(this.executionContext, (context) ->
+                context.connect(monitor, null, null, null, true));
+
         }
     }
 
@@ -124,32 +120,16 @@ public class JDBCRemoteInstance implements DBSInstance {
         SeparateConnectionBehavior behavior = SeparateConnectionBehavior.parse(
             container.getPreferenceStore().getString(ModelPreferences.META_SEPARATE_CONNECTION)
         );
-        boolean isMetaConnectionSeparate;
-        switch (behavior) {
-            case ALWAYS:
-                isMetaConnectionSeparate = true;
-                break;
-            case NEVER:
-                isMetaConnectionSeparate = false;
-                break;
-            case DEFAULT:
-            default: 
-                isMetaConnectionSeparate = !container.getDriver().isEmbedded() && !container.isForceUseSingleConnection();
-                break;
-        }
+        boolean isMetaConnectionSeparate = switch (behavior) {
+            case ALWAYS -> true;
+            case NEVER -> false;
+            default -> !container.getDriver().isEmbedded() && !container.isForceUseSingleConnection();
+        };
 
         if (isMetaConnectionSeparate) {
-            // FIXME: do not sync expensive operations
-            //synchronized (allContexts) {
-                this.metaContext = dataSource.createExecutionContext(this, getMetadataContextName());
-            try {
-                this.metaContext.connect(monitor, true, null, null, true);
-            } catch (DBCException e) {
-                this.metaContext.close();
-                throw e;
-            }
-            return this.metaContext;
-            //}
+            this.metaContext = dataSource.createExecutionContext(this, getMetadataContextName());
+            return DBExecUtils.tryOpenContext(this.metaContext, (context) ->
+                context.connect(monitor, true, null, null, true));
         } else {
             return this.executionContext;
         }
@@ -175,10 +155,11 @@ public class JDBCRemoteInstance implements DBSInstance {
         if (sharedInstance != null) {
             return sharedInstance.openIsolatedContext(monitor, purpose, initFrom);
         }
-        JDBCExecutionContext context = dataSource.createExecutionContext(this, purpose);
+        JDBCExecutionContext isolatedContext = dataSource.createExecutionContext(this, purpose);
         DBExecUtils.tryExecuteRecover(monitor, getDataSource(), monitor1 ->
-            context.connect(monitor1, null, null, (JDBCExecutionContext) initFrom, true));
-        return context;
+            DBExecUtils.tryOpenContext(isolatedContext, (context) ->
+                context.connect(monitor1, null, null, (JDBCExecutionContext) initFrom, true)));
+        return isolatedContext;
     }
 
     @NotNull
