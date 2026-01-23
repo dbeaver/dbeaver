@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,7 +26,6 @@ import org.eclipse.swt.custom.CTabItem;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Image;
-import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
@@ -116,7 +115,8 @@ class FilterSettingsDialog extends HelpEnabledDialog {
         tabFolder.setLayoutData(gd);
 
         {
-            Composite columnsGroup = UIUtils.createPlaceholder(tabFolder, 1);
+            Composite columnsGroup = UIUtils.createComposite(tabFolder, 1);
+            columnsGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
             new FilteredTree(columnsGroup, SWT.MULTI | SWT.FULL_SELECTION, new NamedObjectPatternFilter(), true, false) {
                 @Override
@@ -273,11 +273,9 @@ class FilterSettingsDialog extends HelpEnabledDialog {
             treeEditor = new FilterSettingsTreeEditor(columnsTree);
 
             {
-                ToolBar toolbar = new ToolBar(columnsGroup, SWT.HORIZONTAL | SWT.RIGHT);
-                gd = new GridData(GridData.FILL_HORIZONTAL);
-                gd.verticalIndent = 3;
-                toolbar.setLayoutData(gd);
-                toolbar.setLayout(new FillLayout());
+                Composite tph = UIUtils.createComposite(columnsGroup, 1);
+                ToolBar toolbar = new ToolBar(tph, SWT.HORIZONTAL | SWT.FLAT);
+                toolbar.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
                 moveTopButton = createToolItem(toolbar, ResultSetMessages.dialog_toolbar_move_to_top, UIIcon.ARROW_TOP, () -> {
                     moveSelectedItems(false, false);
                 });
