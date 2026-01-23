@@ -30,7 +30,6 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
-import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContextDefaults;
@@ -88,7 +87,7 @@ public class SelectDatabaseDialog extends ObjectListDialog<DBNDatabaseNode> {
     }
 
     @Override
-    protected void createUpperControls(Composite dialogArea) {
+    protected void createUpperControls(@NotNull Composite dialogArea) {
         DBPDataSource dataSource = dataSourceContainer.getDataSource();
         if (currentInstanceName == null || dataSource == null) {
             return;
@@ -107,7 +106,7 @@ public class SelectDatabaseDialog extends ObjectListDialog<DBNDatabaseNode> {
     }
 
     @Override
-    protected <T extends DBPObject> void handleObjectsLoaded(Collection<T> items, boolean append) {
+    protected void handleObjectsLoaded(Collection<DBNDatabaseNode> items, boolean append) {
         // Now select the default object
         if (selectedInstances.isEmpty()) {
             return;
@@ -190,7 +189,7 @@ public class SelectDatabaseDialog extends ObjectListDialog<DBNDatabaseNode> {
         closeOnFocusLost(instanceList.getItemsViewer().getControl());
     }
 
-    protected List<DBNDatabaseNode> getObjects(DBRProgressMonitor monitor) {
+    protected List<DBNDatabaseNode> getObjects(@NotNull DBRProgressMonitor monitor) {
         DBSObject rootObject;
         if (selectedInstances != null && currentInstanceName != null && getContextDefaults() != null
             && getContextDefaults().supportsSchemaChange()) {

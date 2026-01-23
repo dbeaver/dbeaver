@@ -69,8 +69,14 @@ public class ObjectListDialog<T extends DBPObject> extends AbstractPopupPanel {
     protected List<T> selectedObjects = new ArrayList<>();
     protected DatabaseObjectListControl<T> objectList;
 
-    public ObjectListDialog(Shell parentShell, String title, boolean singleSelection, String listId, Collection<T> objects, Collection<T> selected)
-    {
+    public ObjectListDialog(
+        @NotNull Shell parentShell,
+        @NotNull String title,
+        boolean singleSelection,
+        @NotNull String listId,
+        @NotNull Collection<T> objects,
+        @Nullable Collection<T> selected
+    ) {
         super(parentShell, title);
         this.singleSelection = singleSelection;
         this.listId = listId;
@@ -94,16 +100,23 @@ public class ObjectListDialog<T extends DBPObject> extends AbstractPopupPanel {
 
         createUpperControls(group);
 
-        objectList = createObjectSelector(group, singleSelection, listId, selectedObjects, false, new DBRRunnableWithResult<>() {
-            @Override
-            public void run(DBRProgressMonitor monitor) throws InvocationTargetException {
-                try {
-                    result = getObjects(monitor);
-                } catch (DBException e) {
-                    throw new InvocationTargetException(e);
+        objectList = createObjectSelector(
+            group,
+            singleSelection,
+            listId,
+            selectedObjects,
+            false,
+            new DBRRunnableWithResult<>() {
+                @Override
+                public void run(DBRProgressMonitor monitor) throws InvocationTargetException {
+                    try {
+                        result = getObjects(monitor);
+                    } catch (DBException e) {
+                        throw new InvocationTargetException(e);
+                    }
                 }
             }
-        });
+        );
         objectList.createProgressPanel();
         GridData gd = new GridData(GridData.FILL_BOTH);
         gd.minimumHeight = 300;
@@ -131,33 +144,33 @@ public class ObjectListDialog<T extends DBPObject> extends AbstractPopupPanel {
     }
 
     @NotNull
-    protected <T extends DBPObject> DatabaseObjectListControl<T> createObjectSelector(
-        Composite group,
+    protected DatabaseObjectListControl<T> createObjectSelector(
+        @NotNull Composite group,
         boolean singleSelection,
-        String listId,
-        List<T> selectedObjects,
-        DBRRunnableWithResult<List<T>> objectReader
+        @NotNull String listId,
+        @NotNull List<T> selectedObjects,
+        @NotNull DBRRunnableWithResult<List<T>> objectReader
     ) {
         return createObjectSelector(group, singleSelection, listId, selectedObjects, true, objectReader);
     }
     
     @NotNull
-    private <T extends DBPObject> DatabaseObjectListControl<T> createObjectSelector(
-        Composite group,
+    private DatabaseObjectListControl<T> createObjectSelector(
+        @NotNull Composite group,
         boolean singleSelection,
-        String listId,
-        List<T> selectedObjects,
+        @NotNull String listId,
+        @NotNull List<T> selectedObjects,
         boolean isSetFocusAfterLoad,
-        DBRRunnableWithResult<List<T>> objectReader
+        @NotNull DBRRunnableWithResult<List<T>> objectReader
     ) {
-        return new DialogObjectListControl<>(group, singleSelection, listId, objectReader, isSetFocusAfterLoad, selectedObjects);
+        return new DialogObjectListControl(group, singleSelection, listId, objectReader, isSetFocusAfterLoad, selectedObjects);
     }
 
-    protected List<T> getObjects(DBRProgressMonitor monitor) throws DBException {
+    protected List<T> getObjects(@NotNull DBRProgressMonitor monitor) throws DBException {
         return objects;
     }
 
-    protected void createUpperControls(Composite composite) {
+    protected void createUpperControls(@NotNull Composite composite) {
 
     }
 
@@ -167,8 +180,7 @@ public class ObjectListDialog<T extends DBPObject> extends AbstractPopupPanel {
     }
 
     @Override
-    protected Control createContents(Composite parent)
-    {
+    protected Control createContents(Composite parent) {
         Control ctl = super.createContents(parent);
         if (!isModeless()) {
             enableButton(IDialogConstants.OK_ID, false);
@@ -186,8 +198,13 @@ public class ObjectListDialog<T extends DBPObject> extends AbstractPopupPanel {
         return selectedObjects.isEmpty() ? null : selectedObjects.getFirst();
     }
 
-    public static <T extends DBPObject> T selectObject(Shell parentShell, String title, String listId, Collection<T> objects)
-    {
+    @Nullable
+    public static <T extends DBPObject> T selectObject(
+        @NotNull Shell parentShell,
+        @NotNull String title,
+        @NotNull String listId,
+        @NotNull Collection<T> objects
+    ) {
         ObjectListDialog<T> scDialog = new ObjectListDialog<>(parentShell, title, true, listId, objects, null);
         if (scDialog.open() == IDialogConstants.OK_ID) {
             final List<T> selectedObjects = scDialog.getSelectedObjects();
@@ -197,7 +214,7 @@ public class ObjectListDialog<T extends DBPObject> extends AbstractPopupPanel {
         }
     }
 
-    private class DialogObjectListControl<T extends DBPObject> extends DatabaseObjectListControl<T> implements DBNNodeReference {
+    private class DialogObjectListControl extends DatabaseObjectListControl<T> implements DBNNodeReference {
         private final Composite group;
         private final String listId;
         private final DBRRunnableWithResult<List<T>> objectReader;
@@ -207,12 +224,12 @@ public class ObjectListDialog<T extends DBPObject> extends AbstractPopupPanel {
         private final ISearchExecutor searcher;
 
         public DialogObjectListControl(
-            Composite group,
+            @NotNull Composite group,
             boolean singleSelection,
-            String listId,
-            DBRRunnableWithResult<List<T>> objectReader,
+            @NotNull String listId,
+            @NotNull DBRRunnableWithResult<List<T>> objectReader,
             boolean isSetFocusAfterLoad,
-            List<T> selectedObjects
+            @NotNull List<T> selectedObjects
         ) {
             super(group, (singleSelection ? SWT.SINGLE : SWT.MULTI), null, new ListContentProvider());
             this.group = group;
@@ -263,7 +280,7 @@ public class ObjectListDialog<T extends DBPObject> extends AbstractPopupPanel {
         @NotNull
         @Override
         protected Object getObjectValue(@NotNull T item) {
-            if (item instanceof DBSWrapper wrapper) {
+            if (item instanceof DBSWrapper wrapper && wrapper.getObject() != null) {
                 return wrapper.getObject();
             }
             return super.getObjectValue(item);
@@ -333,7 +350,7 @@ public class ObjectListDialog<T extends DBPObject> extends AbstractPopupPanel {
         }
     }
 
-    protected  <T extends DBPObject> void handleObjectsLoaded(Collection<T> items, boolean append) {
+    protected  void handleObjectsLoaded(Collection<T> items, boolean append) {
         // Just a listener
     }
 }
