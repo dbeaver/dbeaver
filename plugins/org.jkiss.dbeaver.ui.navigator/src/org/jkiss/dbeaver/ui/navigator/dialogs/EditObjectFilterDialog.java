@@ -82,7 +82,7 @@ public class EditObjectFilterDialog extends HelpEnabledDialog {
     }
 
     @Override
-    protected Composite createDialogArea(Composite parent) {
+    protected Composite createDialogArea(@NotNull Composite parent) {
         getShell().setText(NLS.bind(UINavigatorMessages.dialog_filter_title, objectTitle));
 
         Composite composite = super.createDialogArea(parent);
