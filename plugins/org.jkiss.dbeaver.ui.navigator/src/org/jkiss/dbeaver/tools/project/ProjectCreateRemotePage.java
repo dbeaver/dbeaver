@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -40,7 +40,7 @@ class ProjectCreateRemotePage extends ActiveWizardPage<ProjectCreateWizard> {
 
     @Override
     public void createControl(Composite parent) {
-        Composite panel = UIUtils.createControlGroup(parent, "Project", 2, GridData.FILL_HORIZONTAL, SWT.DEFAULT);
+        Composite panel = UIUtils.createTitledComposite(parent, "Project", 2, GridData.FILL_HORIZONTAL);
         panel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
         Text nameText = UIUtils.createLabelText(panel, "Project name", null);

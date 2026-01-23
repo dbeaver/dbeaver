@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.model.ai.engine.copilot;
 
 import com.google.gson.annotations.SerializedName;
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.ai.engine.AIEngineProperties;
@@ -57,6 +58,11 @@ public class CopilotProperties implements AIEngineProperties {
     @Property(order = 1, password = true, required = true)
     public String getToken() {
         return token;
+    }
+
+    @NotNull
+    public String getBaseAuthUrl() {
+        return CopilotConstants.BASE_AUTH_URL;
     }
 
     public void setToken(@Nullable String token) {

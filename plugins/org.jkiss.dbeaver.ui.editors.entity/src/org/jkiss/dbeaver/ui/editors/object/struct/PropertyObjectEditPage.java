@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,7 +21,6 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
-import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Text;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
@@ -83,12 +82,11 @@ public class PropertyObjectEditPage<OBJECT extends DBSObject> extends BaseObject
         String groupTitle = getPropertiesGroupTitle();
         if (CommonUtils.isEmpty(groupTitle)) {
             composite = new ConComposite(parent, SWT.NONE);
+            composite.setLayout(new GridLayout(2, false));
+            composite.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         } else {
-            composite = new Group(parent, SWT.NONE);
-            ((Group)composite).setText(groupTitle);
+            composite = UIUtils.createTitledComposite(parent, groupTitle, 2, GridData.FILL_HORIZONTAL);
         }
-        composite.setLayout(new GridLayout(2, false));
-        composite.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
         createDefaultEditControls(composite);
         createAdditionalEditControls(parent);

@@ -44,6 +44,7 @@ public class PrefPageCubrid extends TargetPrefPage {
     private Button allInfo;
     private Button enableDbmsOutputCheck;
     private Text dbmsOutputBufferSize;
+    private Button oid;
 
     public PrefPageCubrid() {
         setPreferenceStore(new PreferenceStoreDelegate(DBWorkbench.getPlatform().getPreferenceStore()));
@@ -71,6 +72,7 @@ public class PrefPageCubrid extends TargetPrefPage {
         enableDbmsOutputCheck.setSelection(store.getBoolean(CubridConstants.PREF_DBMS_OUTPUT));
         dbmsOutputBufferSize.setText(String.valueOf(store.getInt(CubridConstants.PREF_DBMS_OUTPUT_BUFFER_SIZE)));
 
+        oid.setSelection(store.getBoolean(CubridConstants.OID_NAVIGATOR));
     }
 
     @Override
@@ -97,6 +99,7 @@ public class PrefPageCubrid extends TargetPrefPage {
         allInfo.setSelection(false);
         store.setToDefault(CubridConstants.PREF_DBMS_OUTPUT);
         store.setToDefault(CubridConstants.PREF_DBMS_OUTPUT_BUFFER_SIZE);
+        oid.setSelection(false);
     }
 
     @NotNull
@@ -148,6 +151,22 @@ public class PrefPageCubrid extends TargetPrefPage {
             dbmsOutputBufferSize = UIUtils.createLabelText(miscGroup, CubridMessages.pref_page_cubrid_label_buffer_size, "");
             dbmsOutputBufferSize.addVerifyListener(UIUtils.getIntegerVerifyListener(Locale.ENGLISH));
         }
+
+        Composite oidNavigator = UIUtils.createTitledComposite(
+            composite,
+            CubridMessages.pref_page_cubrid_oid_title,
+            1,
+            GridData.FILL_HORIZONTAL
+        );
+        oid = UIUtils.createCheckbox(oidNavigator, CubridMessages.pref_page_cubrid_oid_checkbox, false);
+
+        oid.addSelectionListener(new SelectionAdapter()
+        {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                preferenceStore.setValue(CubridConstants.OID_NAVIGATOR, ((Button) e.widget).getSelection());
+            }
+        });
         return composite;
     }
 

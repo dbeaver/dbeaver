@@ -93,9 +93,7 @@ public class PrefPageConnectionsGeneral extends AbstractPrefPage implements IWor
                 composite,
                 CoreMessages.pref_page_connection_label_default_settings,
                 1,
-                GridData.VERTICAL_ALIGN_BEGINNING,
-                0
-            );
+                GridData.VERTICAL_ALIGN_BEGINNING);
             Composite groupComposite = UIUtils.createComposite(groupDefaults, 2);
             connectionTypeCombo = ConnectionPageGeneral.createConnectionTypeCombo(groupComposite);
             connectionTypeCombo.addSelectionListener(new SelectionAdapter() {
@@ -150,13 +148,10 @@ public class PrefPageConnectionsGeneral extends AbstractPrefPage implements IWor
         }
 
         {
-            Composite groupObjects = UIUtils.createTitledComposite(
+            UIUtils.createLabelSeparator(composite, SWT.HORIZONTAL);
+            Composite groupObjects = UIUtils.createComposite(
                 composite,
-                CoreMessages.pref_page_eclipse_ui_general_group_general,
-                1,
-                GridData.VERTICAL_ALIGN_BEGINNING,
-                0
-            );
+                1);
             Label descLabel = new Label(groupObjects, SWT.WRAP);
             descLabel.setText(CoreMessages.pref_page_eclipse_ui_general_connections_group_label);
 
@@ -191,8 +186,7 @@ public class PrefPageConnectionsGeneral extends AbstractPrefPage implements IWor
                 CoreMessages.pref_page_connections_group_security,
                 2,
                 GridData.FILL_HORIZONTAL,
-                300
-            );
+                300);
             if (CommonUtils.isNotEmpty(System.getProperty(GeneralUtils.PROP_TRUST_STORE))
                 || (CommonUtils.isNotEmpty(System.getProperty(GeneralUtils.PROP_TRUST_STORE_TYPE))
                 && !System.getProperty(GeneralUtils.PROP_TRUST_STORE_TYPE).equalsIgnoreCase(VALUE_TRUST_STORE_TYPE_WINDOWS))
