@@ -66,8 +66,8 @@ public class CubridTableUniqueKeyConfigurator implements DBEObjectConfigurator<C
 
                 primaryKey.setConstraintType(editPage.getConstraintType());
                 primaryKey.setName(editPage.getConstraintName());
-                if (primaryKey instanceof DBSTableCheckConstraint) {
-                    ((DBSTableCheckConstraint)primaryKey).setCheckConstraintDefinition(editPage.getConstraintExpression());
+                if (primaryKey instanceof DBSTableCheckConstraint checkConstraint) {
+                    (checkConstraint.setCheckConstraintDefinition(editPage.getConstraintExpression());
                 }
                 int colIndex = 1;
                 for (DBSEntityAttribute tableColumn : editPage.getSelectedAttributes()) {
