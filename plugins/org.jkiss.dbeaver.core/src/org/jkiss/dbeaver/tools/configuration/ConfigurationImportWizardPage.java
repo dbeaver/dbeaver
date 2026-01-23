@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,6 @@ package org.jkiss.dbeaver.tools.configuration;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Group;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.TextWithOpen;
@@ -39,12 +38,11 @@ public class ConfigurationImportWizardPage extends WizardPage {
     @Override
     public void createControl(Composite parent) {
         Composite composite = UIUtils.createComposite(parent, 1);
-        Group importSettingsGroup = UIUtils.createControlGroup(
+        Composite importSettingsGroup = UIUtils.createTitledComposite(
             composite,
             CoreMessages.dialog_workspace_import_wizard_group,
             2,
-            GridData.FILL_BOTH,
-            0
+            GridData.FILL_BOTH
         );
         UIUtils.createControlLabel(importSettingsGroup, CoreMessages.dialog_workspace_import_wizard_file_select_name);
         file = new TextWithOpenFile(importSettingsGroup, CoreMessages.dialog_workspace_import_wizard_file_select_title,

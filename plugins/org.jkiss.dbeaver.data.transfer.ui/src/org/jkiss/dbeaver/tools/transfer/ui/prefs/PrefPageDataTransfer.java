@@ -79,9 +79,7 @@ public class PrefPageDataTransfer extends TargetPrefPage implements IWorkbenchPr
                 composite,
                 DTUIMessages.pref_data_transfer_wizard_title,
                 1,
-                GridData.FILL_HORIZONTAL,
-                0
-            );
+                GridData.FILL_HORIZONTAL);
 
             reconnectToLastDatabaseButton = UIUtils.createCheckbox(
                 group,

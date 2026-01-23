@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,10 +32,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.ai.engine.AIEngineProperties;
 import org.jkiss.dbeaver.model.ai.engine.AIModel;
 import org.jkiss.dbeaver.model.ai.engine.AIModelFeature;
-import org.jkiss.dbeaver.model.ai.engine.copilot.CopilotClient;
-import org.jkiss.dbeaver.model.ai.engine.copilot.CopilotCompletionEngine;
-import org.jkiss.dbeaver.model.ai.engine.copilot.CopilotModels;
-import org.jkiss.dbeaver.model.ai.engine.copilot.CopilotProperties;
+import org.jkiss.dbeaver.model.ai.engine.copilot.*;
 import org.jkiss.dbeaver.model.ai.registry.AIEngineDescriptor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -189,7 +186,7 @@ public class CopilotConfigurator<ENGINE extends AIEngineDescriptor, PROPERTIES e
         logQueryCheck.setSelection(logQuery);
     }
 
-    private void createConnectionParameters(@NotNull Composite parent) {
+    protected void createConnectionParameters(@NotNull Composite parent) {
 
         accessTokenText = UIUtils.createLabelText(
             parent,
@@ -241,7 +238,7 @@ public class CopilotConfigurator<ENGINE extends AIEngineDescriptor, PROPERTIES e
         if (service == null) {
             throw new DBException("No authentication service available");
         }
-        try (var client = new CopilotClient()) {
+        try (var client = new CopilotClient(getCurrentAuthURL())) {
             monitor.subTask("Requesting device code");
             var deviceCodeResponse = client.requestDeviceCode(monitor);
 
@@ -252,6 +249,11 @@ public class CopilotConfigurator<ENGINE extends AIEngineDescriptor, PROPERTIES e
         } catch (InterruptedException e) {
             throw new DBException("Authorization was interrupted", e);
         }
+    }
+
+    @NotNull
+    protected String getCurrentAuthURL() {
+        return CopilotConstants.BASE_AUTH_URL;
     }
 
     @NotNull

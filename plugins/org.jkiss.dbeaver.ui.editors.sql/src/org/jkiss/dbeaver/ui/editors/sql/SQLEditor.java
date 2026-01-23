@@ -150,8 +150,8 @@ import java.net.URI;
 import java.nio.file.Path;
 import java.text.SimpleDateFormat;
 import java.time.Duration;
-import java.util.List;
 import java.util.*;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
@@ -243,6 +243,7 @@ public class SQLEditor extends SQLEditorBase implements
     private QueryResultsContainer curResultsContainer;
     private Image baseEditorImage;
     private Image editorImage;
+    private Image tmpImage;
     private ToolBarManager topBarMan;
     private ToolBarManager bottomBarMan;
     private VerticalFolder presentationSwitchFolder;
@@ -305,6 +306,11 @@ public class SQLEditor extends SQLEditorBase implements
     };
 
     public SQLEditor() {
+    }
+
+    @Override
+    public String toString() {
+        return "SQLEditor " + getEditorInput();
     }
 
     public void setResultSetAutoFocusEnabled(boolean value) {
@@ -2428,7 +2434,7 @@ public class SQLEditor extends SQLEditorBase implements
         Runnable inputinitializer = new Runnable() {
             @Override
             public void run() {
-                if (SQLEditor.this.isPartControlInitialized) {
+                if (SQLEditor.this.isPartControlInitialized || finalEditorInput instanceof IncludedScriptFileEditorInput) {
                     accomplishEditorInputInitialization(finalEditorInput);
                 } else {
                     UIExecutionQueue.queueExec(this);
@@ -2436,14 +2442,18 @@ public class SQLEditor extends SQLEditorBase implements
             }
         };
 
-        UIExecutionQueue.queueExec(inputinitializer);
+        if (editorInput instanceof IncludedScriptFileEditorInput) {
+            inputinitializer.run();
+        } else {
+            UIExecutionQueue.queueExec(inputinitializer);
+        }
 
         setPartName(getEditorName());
         if (isNonPersistentEditor() && isDetectTitleImageFromInput()) {
             setTitleImage(DBeaverIcons.getImage(UIIcon.SQL_CONSOLE));
         }
         baseEditorImage = getTitleImage();
-        editorImage = new Image(Display.getCurrent(), baseEditorImage, SWT.IMAGE_COPY);
+        editorImage = baseEditorImage;
     }
 
     private void accomplishEditorInputInitialization(@NotNull IEditorInput editorInput) {
@@ -2936,7 +2946,8 @@ public class SQLEditor extends SQLEditorBase implements
             return false;
         }
 
-        final boolean isSingleQuery = !forceScript && (queries.size() == 1);
+        boolean isSingleQuery = queries.size() == 1;
+        boolean isSingleQueryNotScript = isSingleQuery && !forceScript;
         if (!isHideQueryText() && resultsSash.getMaximizedControl() != null) {
             resultsSash.setMaximizedControl(null);
         }
@@ -2958,7 +2969,7 @@ public class SQLEditor extends SQLEditorBase implements
             // 1. The user is not executing query in a new tab
             // 2. The user is executing script that may open several result sets
             //    and replace current tab on single query execution option is not set
-            if (isResultSetAutoFocusEnabled && !newTab && (!isSingleQuery || (isSingleQuery && !replaceCurrentTab))) {
+            if (isResultSetAutoFocusEnabled && !newTab && (!isSingleQueryNotScript || (isSingleQueryNotScript && !replaceCurrentTab))) {
                 int tabsClosed = closeExtraResultTabs(null, true, false);
                 if (tabsClosed == IDialogConstants.CANCEL_ID) {
                     return false;
@@ -2976,7 +2987,7 @@ public class SQLEditor extends SQLEditorBase implements
             var noQueryProcessors = queryProcessors.isEmpty();
             var hasRunningJobs = !noQueryProcessors && curQueryProcessor.getRunningJobs() > 0;
             var hasPinnedTabs = !noQueryProcessors && curQueryProcessor.hasPinnedTabs();
-            var needAnotherQueryProcessor = !noQueryProcessors && useTabPerQuery(isSingleQuery)
+            var needAnotherQueryProcessor = !noQueryProcessors && useTabPerQuery(isSingleQueryNotScript)
                 && !(curQueryProcessor instanceof MultiTabsQueryProcessor);
 
             if (newTab || noQueryProcessors || hasRunningJobs || hasPinnedTabs || needAnotherQueryProcessor) {
@@ -2986,7 +2997,7 @@ public class SQLEditor extends SQLEditorBase implements
                 // Try to find suitable query processor among exiting ones if:
                 // 1. New tab is not required
                 // 2. The user is executing only single query
-                if (!newTab && isSingleQuery) {
+                if (!newTab && isSingleQueryNotScript) {
                     for (QueryProcessor processor : queryProcessors) {
                         if (!processor.hasPinnedTabs() && processor.getRunningJobs() == 0) {
                             foundSuitableTab = true;
@@ -3011,7 +3022,7 @@ public class SQLEditor extends SQLEditorBase implements
 
             // Close all extra tabs of this query processor
             // if the user is executing only single query
-            if (!newTab && isSingleQuery && curQueryProcessor.getResultContainers().size() > 1) {
+            if (!newTab && isSingleQueryNotScript && curQueryProcessor.getResultContainers().size() > 1) {
                 closeExtraResultTabs(curQueryProcessor, false, true);
             }
 
@@ -3027,7 +3038,7 @@ public class SQLEditor extends SQLEditorBase implements
         }
 
         if (curQueryProcessor == null || (newTab
-            && useTabPerQuery(isSingleQuery) == (curQueryProcessor instanceof SingleTabQueryProcessor))) {
+            && useTabPerQuery(isSingleQueryNotScript) == (curQueryProcessor instanceof SingleTabQueryProcessor))) {
             createQueryProcessor(true, isSingleQuery, true);
         }
 
@@ -3350,13 +3361,12 @@ public class SQLEditor extends SQLEditorBase implements
      * Build and update icon and title
      */
     public void refreshEditorIconAndTitle() {
+        if (tmpImage != null) {
+            tmpImage.dispose();
+            tmpImage = null;
+        }
         DBPDataSourceContainer dsContainer = getDataSourceContainer();
         setPartName(getEditorName());
-
-        // Update icon
-        if (editorImage != null) {
-            editorImage.dispose();
-        }
 
         DBPImage bottomLeft;
         DBPImage bottomRight;
@@ -3383,8 +3393,9 @@ public class SQLEditor extends SQLEditorBase implements
         if (bottomLeft != null || bottomRight != null) {
             DBPImage image = new DBIconComposite(new DBIconBinary(null, baseEditorImage), false, null, null, bottomLeft, bottomRight);
             editorImage = DBeaverIcons.getImage(image, false);
+            tmpImage = editorImage;
         } else {
-            editorImage = new Image(Display.getCurrent(), baseEditorImage, SWT.IMAGE_COPY);
+            editorImage = baseEditorImage;
         }
         setTitleImage(editorImage);
     }
@@ -3436,7 +3447,8 @@ public class SQLEditor extends SQLEditorBase implements
             deleteFileIfEmpty(sqlFile);
         }
 
-        UIUtils.dispose(editorImage);
+        UIUtils.dispose(tmpImage);
+        tmpImage = null;
         baseEditorImage = null;
         editorImage = null;
     }
@@ -5241,7 +5253,7 @@ public class SQLEditor extends SQLEditorBase implements
         return tabName;
     }
 
-    private class SQLEditorQueryListener implements SQLQueryListener {
+    public class SQLEditorQueryListener implements SQLQueryListener {
         private final QueryProcessor queryProcessor;
         private boolean scriptMode;
         private long lastUIUpdateTime;
@@ -5533,6 +5545,10 @@ public class SQLEditor extends SQLEditorBase implements
             if (extListener != null) {
                 extListener.onEndSqlJob(session, result);
             }
+        }
+
+        public void redrawEditor() {
+            showResultsPanel(false);
         }
     }
 

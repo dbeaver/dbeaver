@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,6 +22,7 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.internal.UIMessages;
 import org.jkiss.utils.CommonUtils;
@@ -32,29 +33,49 @@ public class EditUserDialog extends BaseDialog {
     private String password;
     private String verifyText;
 
-    public EditUserDialog(Shell parentShell, String title) {
+    public EditUserDialog(@NotNull Shell parentShell, @NotNull String title) {
         super(parentShell, title, null);
     }
 
+    @NotNull
     @Override
-    protected Composite createDialogArea(Composite parent) {
+    protected Composite createDialogArea(@NotNull Composite parent) {
         final Composite composite = super.createDialogArea(parent);
 
-        final Composite groupGeneral = UIUtils.createControlGroup(composite, UIMessages.dialogs_name_and_password_dialog_group_settings, 2, GridData.FILL_HORIZONTAL, SWT.NONE);
+        final Composite groupGeneral = UIUtils.createTitledComposite(
+            composite,
+            UIMessages.dialogs_name_and_password_dialog_group_settings,
+            2,
+            GridData.FILL_HORIZONTAL
+        );
 
-        final Text nameText = UIUtils.createLabelText(groupGeneral, UIMessages.dialogs_name_and_password_dialog_label_name, ""); //$NON-NLS-2$
+        final Text nameText = UIUtils.createLabelText(
+            groupGeneral,
+            UIMessages.dialogs_name_and_password_dialog_label_name,
+            ""
+        ); //$NON-NLS-2$
         nameText.addModifyListener(e -> {
             name = nameText.getText().trim();
             updateButtons();
         });
 
-        final Text passwordText = UIUtils.createLabelText(groupGeneral, UIMessages.dialogs_name_and_password_dialog_label_password, "", SWT.BORDER | SWT.PASSWORD); //$NON-NLS-2$
+        final Text passwordText = UIUtils.createLabelText(
+            groupGeneral,
+            UIMessages.dialogs_name_and_password_dialog_label_password,
+            "",
+            SWT.BORDER | SWT.PASSWORD
+        ); //$NON-NLS-2$
         passwordText.addModifyListener(e -> {
             password = passwordText.getText();
             updateButtons();
         });
 
-        Text verifyPasswordText = UIUtils.createLabelText(groupGeneral, UIMessages.dialogs_name_and_password_dialog_label_verify_password, "", SWT.BORDER | SWT.PASSWORD);
+        Text verifyPasswordText = UIUtils.createLabelText(
+            groupGeneral,
+            UIMessages.dialogs_name_and_password_dialog_label_verify_password,
+            "",
+            SWT.BORDER | SWT.PASSWORD
+        );
         verifyPasswordText.addModifyListener(e -> {
             verifyText = verifyPasswordText.getText();
             updateButtons();
@@ -72,16 +93,17 @@ public class EditUserDialog extends BaseDialog {
     }
 
     @Override
-    protected void createButtonsForButtonBar(Composite parent)
-    {
+    protected void createButtonsForButtonBar(@NotNull Composite parent) {
         super.createButtonsForButtonBar(parent);
-        getButton(IDialogConstants.OK_ID).setEnabled(false);
+        enableButton(IDialogConstants.OK_ID, false);
     }
 
     private void updateButtons() {
-        getButton(IDialogConstants.OK_ID).setEnabled(
+        enableButton(
+            IDialogConstants.OK_ID,
             CommonUtils.isNotEmpty(name) &&
                 CommonUtils.isNotEmpty(password) &&
-                CommonUtils.equalObjects(password, verifyText));
+                CommonUtils.equalObjects(password, verifyText)
+        );
     }
 }

@@ -95,9 +95,7 @@ public class PostgreConnectionPage extends ConnectionPageWithAuth implements IDi
             mainGroup,
             UIConnectionMessages.dialog_connection_server_label,
             4,
-            GridData.FILL_HORIZONTAL,
-            0
-        );
+            GridData.FILL_HORIZONTAL);
 
         SelectionAdapter typeSwitcher = new SelectionAdapter() {
             @Override
