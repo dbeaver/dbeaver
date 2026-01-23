@@ -67,10 +67,12 @@ public class AthenaDataSource extends GenericDataSource {
         }
 
         // Hack to fix update from v2 -> v3 driver version https://github.com/dbeaver/dbeaver/issues/39947
-        if (!CommonUtils.isEmpty(connectionInfo.getProperties()) && connectionInfo.getProperties()
-            .get(AthenaConstants.PROP_AWS_CREDENTIALS_PROVIDER_CLASS)
-            .equals(AthenaConstants.PROP_OLD_VALUE_AWS_CREDENTIALS_PROVIDER_CLASS)) {
-            connectionInfo.getProperties().remove(AthenaConstants.PROP_AWS_CREDENTIALS_PROVIDER_CLASS);
+        if (!CommonUtils.isEmpty(connectionInfo.getProperties())) {
+            String credentialsProviderClass = connectionInfo.getProperties()
+                .get(AthenaConstants.PROP_AWS_CREDENTIALS_PROVIDER_CLASS);
+            if (AthenaConstants.PROP_OLD_VALUE_AWS_CREDENTIALS_PROVIDER_CLASS.equals(credentialsProviderClass)) {
+                connectionInfo.getProperties().remove(AthenaConstants.PROP_AWS_CREDENTIALS_PROVIDER_CLASS);
+            }
         }
 
         return props;
