@@ -30,13 +30,20 @@ public class NetworkHandlerOptions {
     private List<String> handlerParams;
 
     @CommandLine.Option(
-        names = {"-net-save-pwd", "--network-handler-param"},
+        names = {"-net-save-pwd", "--network-handler-save-password"},
         arity = "1",
-        description = "Save network handler secure parameters (like passwords).")
+        description = "Save network handler secure parameters (like passwords). Default true.",
+        defaultValue = "true"
+    )
 
     private boolean savePassword;
+
     @Nullable
     public List<String> getHandlerParams() {
         return handlerParams;
+    }
+    
+    public boolean isSavePassword() {
+        return savePassword;
     }
 }

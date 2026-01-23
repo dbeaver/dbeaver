@@ -293,80 +293,98 @@ public class CLIUtils {
             }
         }
 
-        processNetworkHandlerProperties(dataSource, authOptions, connectionConfiguration);
+        if (authOptions.getNetworkHandlerOptions() != null) {
+            processNetworkHandlerProperties(
+                dataSource,
+                authOptions.getNetworkHandlerOptions().isSavePassword(),
+                authOptions.getNetworkHandlerOptions().getHandlerParams()
+            );
+        }
     }
 
-    private static void processNetworkHandlerProperties(
+    public static void processNetworkHandlerProperties(
         @NotNull DBPDataSourceContainer dataSource,
-        @NotNull DataSourceAuthOptions authOptions,
-        @NotNull DBPConnectionConfiguration connectionConfiguration
+        boolean savePassword,
+        @Nullable List<String> handlerParams
     ) throws CLIException {
-        if (authOptions.getNetworkHandlerOptions() != null
-            && !CommonUtils.isEmpty(authOptions.getNetworkHandlerOptions().getHandlerParams())
-        ) {
-            DBWHandlerRegistry handlerRegistry = DBWorkbench.getPlatform().getNetworkHandlerRegistry();
-            Map<String, ? extends DBWHandlerDescriptor> availableHandlers = handlerRegistry.getDescriptors(dataSource.getDriver())
-                .stream()
-                .collect(Collectors.toMap(DBWHandlerDescriptor::getPrefix, h -> h));
+        if (CommonUtils.isEmpty(handlerParams)) {
+            return;
+        }
+        DBWHandlerRegistry handlerRegistry = DBWorkbench.getPlatform().getNetworkHandlerRegistry();
+        Map<String, ? extends DBWHandlerDescriptor> availableHandlers = handlerRegistry.getDescriptors(dataSource.getDriver())
+            .stream()
+            .collect(Collectors.toMap(DBWHandlerDescriptor::getPrefix, h -> h));
 
-            Map<String, List<String>> paramsByPrefix = new HashMap<>();
-            List<String> unknownParams = new ArrayList<>();
-            for (String networkHandlerParam : authOptions.getNetworkHandlerOptions().getHandlerParams()) {
-                String[] paramParts = networkHandlerParam.split("\\.", 2);
-                if (paramParts.length != 2) {
-                    unknownParams.add(networkHandlerParam);
+        Map<String, List<String>> paramsByPrefix = new HashMap<>();
+        List<String> unknownParams = new ArrayList<>();
+        for (String networkHandlerParam : handlerParams) {
+            String[] paramParts = networkHandlerParam.split("\\.", 2);
+            if (paramParts.length != 2) {
+                unknownParams.add(networkHandlerParam);
+                continue;
+            }
+            String prefix = paramParts[0];
+            String param = paramParts[1];
+
+            if (!availableHandlers.containsKey(prefix)) {
+                unknownParams.add(networkHandlerParam);
+                continue;
+            }
+            paramsByPrefix.computeIfAbsent(prefix, k -> new ArrayList<>()).add(param);
+        }
+        if (!CommonUtils.isEmpty(unknownParams)) {
+            throw new CLIException(
+                "Invalid network handler parameters: " + String.join(", ", unknownParams),
+                CLIConstants.EXIT_CODE_ILLEGAL_ARGUMENTS
+            );
+        }
+
+        var connectionConfiguration = dataSource.getConnectionConfiguration();
+
+        for (Map.Entry<String, List<String>> entry : paramsByPrefix.entrySet()) {
+            DBWHandlerDescriptor handlerDescriptor = availableHandlers.get(entry.getKey());
+            String handlerPrefix = handlerDescriptor.getPrefix() + ".";
+            DBWHandlerConfiguration handlerConfiguration = connectionConfiguration.getHandler(handlerDescriptor.getId());
+            if (handlerConfiguration == null) {
+                handlerConfiguration = new DBWHandlerConfiguration(handlerDescriptor, dataSource);
+            }
+            Map<String, String> handlerProperties = prepareKeyValueParams(
+                handlerConfiguration.getSecureProperties(),
+                entry.getValue()
+            );
+            for (DBPPropertyDescriptor propertyDescriptor : handlerDescriptor.getHandlerProperties()) {
+                String propId = propertyDescriptor.getId();
+                String value = handlerProperties.get(propId);
+                if (CommonUtils.isEmpty(value) && propId.startsWith(handlerPrefix)) {
+                    value = propId.substring(handlerPrefix.length());
+                }
+                if (CommonUtils.isEmpty(value)) {
+                    value = CommonUtils.toString(propertyDescriptor.getDefaultValue());
+                }
+                if (CommonUtils.isEmpty(value)) {
+                    //no value and default value for property
                     continue;
                 }
-                String prefix = paramParts[0];
-                String param = paramParts[1];
 
-                if (!availableHandlers.containsKey(prefix)) {
-                    unknownParams.add(networkHandlerParam);
-                    continue;
+                switch (propertyDescriptor.getId()) {
+                    case "user":
+                        handlerConfiguration.setUserName(value);
+                        break;
+                    case "password":
+                        handlerConfiguration.setPassword(value);
+                        break;
+                    default:
+                        //id from descriptor must be used, because id entered by the user may differ
+                        if (propertyDescriptor.hasFeature("secured")) {
+                            handlerConfiguration.setSecureProperty(propertyDescriptor.getId(), value);
+                        } else {
+                            handlerConfiguration.setProperty(propertyDescriptor.getId(), value);
+                        }
                 }
-                paramsByPrefix.computeIfAbsent(prefix, k -> new ArrayList<>()).add(param);
             }
-            if (!CommonUtils.isEmpty(unknownParams)) {
-                throw new CLIException(
-                    "Invalid network handler parameters: " + String.join(", ", unknownParams),
-                    CLIConstants.EXIT_CODE_ILLEGAL_ARGUMENTS
-                );
-            }
-
-
-            for (Map.Entry<String, List<String>> entry : paramsByPrefix.entrySet()) {
-                DBWHandlerDescriptor handlerDescriptor = availableHandlers.get(entry.getKey());
-                DBWHandlerConfiguration handlerConfiguration = connectionConfiguration.getHandler(handlerDescriptor.getId());
-                if (handlerConfiguration == null) {
-                    handlerConfiguration = new DBWHandlerConfiguration(handlerDescriptor, dataSource);
-                }
-                Map<String, String> handlerProperties = prepareKeyValueParams(
-                    handlerConfiguration.getSecureProperties(),
-                    entry.getValue()
-                );
-                for (DBPPropertyDescriptor propertyDescriptor : handlerDescriptor.getHandlerProperties()) {
-                    if (!handlerProperties.containsKey(propertyDescriptor.getId())) {
-                        continue;
-                    }
-                    String value = handlerProperties.get(propertyDescriptor.getId());
-                    switch (propertyDescriptor.getId()) {
-                        case "user":
-                            handlerConfiguration.setUserName(value);
-                            break;
-                        case "password":
-                            handlerConfiguration.setPassword(value);
-                            break;
-                        default:
-                            if (propertyDescriptor.hasFeature("secured")) {
-                                handlerConfiguration.setSecureProperty(propertyDescriptor.getId(), value);
-                            } else {
-                                handlerConfiguration.setProperty(propertyDescriptor.getId(), value);
-                            }
-                    }
-
-                }
-                handlerConfiguration.setSecureProperties(handlerProperties);
-            }
+            handlerConfiguration.setEnabled(true);
+            handlerConfiguration.setSavePassword(savePassword);
+            connectionConfiguration.updateHandler(handlerConfiguration);
         }
     }
 
