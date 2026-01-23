@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -74,16 +74,24 @@ public class GaussDBCreateDatabaseDialog extends BaseDialog {
         boolean supportsTablespaces = dataSource.getServerType().supportsTablespaces();
 
         final Composite composite = super.createDialogArea(parent);
-        final Composite groupGeneral = UIUtils.createControlGroup(composite, PostgreMessages.dialog_create_db_group_general, 2,
-            GridData.FILL_HORIZONTAL, SWT.NONE);
+        final Composite groupGeneral = UIUtils.createTitledComposite(
+            composite,
+            PostgreMessages.dialog_create_db_group_general,
+            2,
+            GridData.FILL_HORIZONTAL
+        );
         final Text nameText = UIUtils.createLabelText(groupGeneral, PostgreMessages.dialog_create_db_label_db_name, "");
         nameText.addModifyListener(e -> {
             name = nameText.getText().trim();
-            getButton(IDialogConstants.OK_ID).setEnabled(!name.isEmpty());
+            enableButton(IDialogConstants.OK_ID, !name.isEmpty());
         });
 
-        final Composite groupDefinition = UIUtils.createControlGroup(composite, PostgreMessages.dialog_create_db_group_definition, 2,
-            GridData.FILL_HORIZONTAL, SWT.NONE);
+        final Composite groupDefinition = UIUtils.createTitledComposite(
+            composite,
+            PostgreMessages.dialog_create_db_group_definition,
+            2,
+            GridData.FILL_HORIZONTAL
+        );
         supportsRoles(supportsRoles, groupGeneral);
         supportsEncodings(supportsEncodings, groupDefinition);
         supportsTablespaces(supportsTablespaces, groupDefinition);
