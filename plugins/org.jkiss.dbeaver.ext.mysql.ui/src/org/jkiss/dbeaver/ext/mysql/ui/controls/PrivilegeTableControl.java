@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -46,11 +46,11 @@ import java.util.List;
  */
 public class PrivilegeTableControl extends Composite {
 
-    private boolean isStatic;
+    private final boolean isStatic;
 
-    private TableViewer tableViewer;
-    private ViewerColumnController<Object, Object> columnsController;
-    private Table privTable;
+    private final TableViewer tableViewer;
+    private final ViewerColumnController<Object, Object> columnsController;
+    private final Table privTable;
 
     private List<MySQLPrivilege> privileges;
     private List<MySQLObjectPrivilege> currentPrivileges = new ArrayList<>();
@@ -66,7 +66,7 @@ public class PrivilegeTableControl extends Composite {
         gl.horizontalSpacing = 0;
         setLayout(gl);
 
-        Composite privsGroup = UIUtils.createControlGroup(this, title, 1, GridData.FILL_BOTH, 0);
+        Composite privsGroup = UIUtils.createTitledComposite(this, title, 1, GridData.FILL_BOTH);
         GridData gd = (GridData) privsGroup.getLayoutData();
         gd.horizontalSpan = 2;
 
@@ -117,8 +117,7 @@ public class PrivilegeTableControl extends Composite {
 
             @Override
             protected void setValue(Object element, Object value) {
-                if (element instanceof MySQLObjectPrivilege) {
-                    MySQLObjectPrivilege elementPriv = (MySQLObjectPrivilege) element;
+                if (element instanceof MySQLObjectPrivilege elementPriv) {
                     if (elementPriv.enabled != Boolean.TRUE.equals(value)) { // handle double click on the box cell
                         elementPriv.enabled = Boolean.TRUE.equals(value);
                         boolean withGrantOption = false;
@@ -197,7 +196,7 @@ public class PrivilegeTableControl extends Composite {
             // Add "With Grant Option" manually. We will use this option to expand grant statements on the "WITH GRANT STATEMENT" string
             MySQLDataSource dataSource = null;
             if (!CommonUtils.isEmpty(privileges)) {
-                dataSource = (MySQLDataSource) privileges.get(0).getDataSource();
+                dataSource = (MySQLDataSource) privileges.getFirst().getDataSource();
             }
             privileges.add(new MySQLPrivilege(
                 dataSource,
@@ -276,9 +275,9 @@ public class PrivilegeTableControl extends Composite {
         drawColumns(currentPrivileges);
     }
 
-    private class MySQLObjectPrivilege {
+    private static class MySQLObjectPrivilege {
 
-        private MySQLPrivilege privilege;
+        private final MySQLPrivilege privilege;
         private boolean enabled;
 
         MySQLObjectPrivilege(MySQLPrivilege privilege, boolean enabled) {

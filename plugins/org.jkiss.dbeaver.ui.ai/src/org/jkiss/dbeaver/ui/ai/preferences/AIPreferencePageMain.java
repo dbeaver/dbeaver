@@ -171,8 +171,12 @@ public class AIPreferencePageMain extends AbstractPrefPage implements IWorkbench
             serviceCombo.select(defaultEngineSelection);
         }
 
-        Composite engineGroup = UIUtils.createTitledComposite(composite, "Engine Settings", 2, SWT.BORDER, 5);
-        engineGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        Composite engineGroup = UIUtils.createTitledComposite(
+            composite,
+            "Engine Settings",
+            2,
+            GridData.FILL_HORIZONTAL
+        );
         if (completionEngine != null) {
             drawConfiguratorComposite(this.settings.activeEngine(), engineGroup);
         }
@@ -185,7 +189,7 @@ public class AIPreferencePageMain extends AbstractPrefPage implements IWorkbench
                     activeEngineConfiguratorPage.disposeControl();
                 }
                 drawConfiguratorComposite(id, engineGroup);
-                engineGroup.layout(true, true);
+                engineGroup.getShell().layout(true, true);
                 UIUtils.resizeShell(parent.getShell());
             }
         });

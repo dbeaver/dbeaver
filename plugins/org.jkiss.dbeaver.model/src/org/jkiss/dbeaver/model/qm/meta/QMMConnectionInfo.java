@@ -228,6 +228,7 @@ public class QMMConnectionInfo extends QMMObject implements QMMDataSourceInfo {
         return null;
     }
 
+    @Nullable
     public QMMStatementExecuteInfo getExecution(DBCStatement statement) {
         for (QMMStatementExecuteInfo exec = this.executionStack; exec != null; exec = exec.getPrevious()) {
             if (exec.getStatement().getReference() == statement) {

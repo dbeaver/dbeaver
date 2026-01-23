@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.model.ai.engine.copilot;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.ai.AIMessageType;
+import org.jkiss.dbeaver.model.ai.AIUsage;
 import org.jkiss.dbeaver.model.ai.engine.*;
 import org.jkiss.dbeaver.model.ai.engine.copilot.dto.CopilotChatRequest;
 import org.jkiss.dbeaver.model.ai.engine.copilot.dto.CopilotChatResponse;
@@ -38,7 +39,7 @@ public class CopilotCompletionEngine<P extends CopilotProperties> extends BaseCo
         @NotNull
         @Override
         protected CopilotClient initialize() throws DBException {
-            return createClient();
+            return createClient(getProperties().getBaseAuthUrl());
         }
 
         @Override
@@ -88,7 +89,13 @@ public class CopilotCompletionEngine<P extends CopilotProperties> extends BaseCo
         return new AIEngineResponse(
             AIMessageType.ASSISTANT,
             choices,
-            null);
+            new AIUsage(
+                chatResponse.usage().promptTokens(),
+                chatResponse.usage().promptTokensDetails().cachedTokens(),
+                chatResponse.usage().completionTokens(),
+                0
+            )
+        );
     }
 
     @Override
@@ -152,12 +159,12 @@ public class CopilotCompletionEngine<P extends CopilotProperties> extends BaseCo
         );
     }
 
-    protected CopilotClient createClient() throws DBException {
+    protected CopilotClient createClient(@NotNull String baseAuthUrl) throws DBException {
         String token = properties.getToken();
         if (token == null || token.isEmpty()) {
             throw new DBException("Copilot API token is not set");
         }
 
-        return new CopilotClient();
+        return new CopilotClient(baseAuthUrl);
     }
 }
