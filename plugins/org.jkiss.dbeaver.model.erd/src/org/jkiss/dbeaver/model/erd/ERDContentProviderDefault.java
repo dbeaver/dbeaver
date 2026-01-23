@@ -66,9 +66,9 @@ public class ERDContentProviderDefault implements ERDContentProvider {
         @NotNull ERDAttributeSettings settings
     ) {
         DBSEntity entity = erdEntity.getObject();
-        if (settings.isLoadLazyDescriptions() && entity instanceof DBPObjectWithLazyDescription) {
+        if (settings.isLoadLazyDescriptions() && entity instanceof DBPObjectWithLazyDescription entityWithDescription) {
             try {
-                ((DBPObjectWithLazyDescription) entity).getDescription(monitor);
+                entityWithDescription.getDescription(monitor);
             } catch (DBException e) {
                 log.warn("Unable to load lazy description when filling ERDEntity from object");
             }
@@ -122,11 +122,11 @@ public class ERDContentProviderDefault implements ERDContentProvider {
                             break;
                     }
 
-                    if (settings.isLoadLazyDescriptions() && attribute instanceof DBPObjectWithLazyDescription) {
+                    if (settings.isLoadLazyDescriptions() && attribute instanceof DBPObjectWithLazyDescription attributeWithDescription) {
                         try {
-                            ((DBPObjectWithLazyDescription) attribute).getDescription(monitor);
+                            attributeWithDescription.getDescription(monitor);
                         } catch (DBException e) {
-                            log.warn("Unable to load lazy description for attribute", e);
+                            log.warn("Unable to load lazy description for attribute: " + attribute.getName(), e);
                         }
                     }
 
