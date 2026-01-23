@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -62,8 +62,8 @@ public class ObjectListDialog<T extends DBPObject> extends AbstractPopupPanel {
 
     private static final String DIALOG_ID = "DBeaver.SelectDatabaseObjectDialog";//$NON-NLS-1$
 
-    private String listId;
-    private boolean singleSelection;
+    private final String listId;
+    private final boolean singleSelection;
 
     protected List<T> objects;
     protected List<T> selectedObjects = new ArrayList<>();
@@ -86,9 +86,9 @@ public class ObjectListDialog<T extends DBPObject> extends AbstractPopupPanel {
         return null;//UIUtils.getDialogSettings(DIALOG_ID + "." + listId);
     }
 
+    @NotNull
     @Override
-    protected Composite createDialogArea(Composite parent)
-    {
+    protected Composite createDialogArea(@NotNull Composite parent) {
         Composite group = super.createDialogArea(parent);
         group.setLayoutData(new GridData(GridData.FILL_BOTH));
 
@@ -114,7 +114,7 @@ public class ObjectListDialog<T extends DBPObject> extends AbstractPopupPanel {
             selectedObjects.clear();
             selectedObjects.addAll(selection.toList());
             if (!isModeless()) {
-                getButton(IDialogConstants.OK_ID).setEnabled(!selectedObjects.isEmpty());
+                enableButton(IDialogConstants.OK_ID, !selectedObjects.isEmpty());
             }
         });
         objectList.setDoubleClickHandler(event -> {
@@ -131,7 +131,7 @@ public class ObjectListDialog<T extends DBPObject> extends AbstractPopupPanel {
     }
 
     @NotNull
-    protected static <T extends DBPObject> DatabaseObjectListControl<T> createObjectSelector(
+    protected <T extends DBPObject> DatabaseObjectListControl<T> createObjectSelector(
         Composite group,
         boolean singleSelection,
         String listId,
@@ -142,7 +142,7 @@ public class ObjectListDialog<T extends DBPObject> extends AbstractPopupPanel {
     }
     
     @NotNull
-    private static <T extends DBPObject> DatabaseObjectListControl<T> createObjectSelector(
+    private <T extends DBPObject> DatabaseObjectListControl<T> createObjectSelector(
         Composite group,
         boolean singleSelection,
         String listId,
@@ -171,7 +171,7 @@ public class ObjectListDialog<T extends DBPObject> extends AbstractPopupPanel {
     {
         Control ctl = super.createContents(parent);
         if (!isModeless()) {
-            getButton(IDialogConstants.OK_ID).setEnabled(false);
+            enableButton(IDialogConstants.OK_ID, false);
         }
         return ctl;
     }
@@ -183,7 +183,7 @@ public class ObjectListDialog<T extends DBPObject> extends AbstractPopupPanel {
 
     public T getSelectedObject()
     {
-        return selectedObjects.isEmpty() ? null : selectedObjects.get(0);
+        return selectedObjects.isEmpty() ? null : selectedObjects.getFirst();
     }
 
     public static <T extends DBPObject> T selectObject(Shell parentShell, String title, String listId, Collection<T> objects)
@@ -191,13 +191,13 @@ public class ObjectListDialog<T extends DBPObject> extends AbstractPopupPanel {
         ObjectListDialog<T> scDialog = new ObjectListDialog<>(parentShell, title, true, listId, objects, null);
         if (scDialog.open() == IDialogConstants.OK_ID) {
             final List<T> selectedObjects = scDialog.getSelectedObjects();
-            return CommonUtils.isEmpty(selectedObjects) ? null : selectedObjects.get(0);
+            return CommonUtils.isEmpty(selectedObjects) ? null : selectedObjects.getFirst();
         } else {
             return null;
         }
     }
 
-    private static class DialogObjectListControl<T extends DBPObject> extends DatabaseObjectListControl<T> implements DBNNodeReference {
+    private class DialogObjectListControl<T extends DBPObject> extends DatabaseObjectListControl<T> implements DBNNodeReference {
         private final Composite group;
         private final String listId;
         private final DBRRunnableWithResult<List<T>> objectReader;
@@ -263,8 +263,8 @@ public class ObjectListDialog<T extends DBPObject> extends AbstractPopupPanel {
         @NotNull
         @Override
         protected Object getObjectValue(@NotNull T item) {
-            if (item instanceof DBSWrapper) {
-                return ((DBSWrapper) item).getObject();
+            if (item instanceof DBSWrapper wrapper) {
+                return wrapper.getObject();
             }
             return super.getObjectValue(item);
         }
@@ -286,6 +286,7 @@ public class ObjectListDialog<T extends DBPObject> extends AbstractPopupPanel {
             if (selectedObjects != null) {
                 getItemsViewer().setSelection(new StructuredSelection(selectedObjects), true);
             }
+            handleObjectsLoaded(items, append);
         }
 
         @Override
@@ -310,7 +311,7 @@ public class ObjectListDialog<T extends DBPObject> extends AbstractPopupPanel {
 
         @Override
         public DBNNode getReferencedNode() {
-            return selectedObjects.isEmpty() ? null : selectedObjects.get(0) instanceof DBNNode node ? node : null;
+            return selectedObjects.isEmpty() ? null : selectedObjects.getFirst() instanceof DBNNode node ? node : null;
         }
 
         class ObjectLabelProvider extends ObjectColumnLabelProvider implements IFontProvider {
@@ -330,5 +331,9 @@ public class ObjectListDialog<T extends DBPObject> extends AbstractPopupPanel {
                 return null;
             }
         }
+    }
+
+    protected  <T extends DBPObject> void handleObjectsLoaded(Collection<T> items, boolean append) {
+        // Just a listener
     }
 }
