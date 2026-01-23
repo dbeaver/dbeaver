@@ -349,14 +349,11 @@ public class VersionUpdateDialog extends Dialog {
 
     @Nullable
     private PlatformInstaller getPlatformInstaller() {
-        switch (Platform.getOS()) {
-            case Platform.OS_WIN32:
-                return new WindowsInstaller();
-            case Platform.OS_MACOSX:
-                return new MacintoshInstaller();
-            default:
-                return null;
-        }
+        return switch (Platform.getOS()) {
+            case Platform.OS_WIN32 -> new WindowsInstaller();
+            case Platform.OS_MACOSX -> new MacintoshInstaller();
+            default -> null;
+        };
     }
 
     @NotNull
@@ -376,7 +373,7 @@ public class VersionUpdateDialog extends Dialog {
             os = OS_LINUX;
         }
         String dist = System.getProperty(PROP_DISTRIBUTION_TYPE);
-        if (RuntimeUtils.isLinux() && CommonUtils.isEmpty(dist)) {
+        if (CommonUtils.isEmpty(dist) && RuntimeUtils.isLinux()) {
             // If distribution type was not set explicitly, then let's attempt a dumb guess.
             try {
                 RuntimeUtils.executeProcess("/usr/bin/apt-get", "--version");
@@ -412,9 +409,9 @@ public class VersionUpdateDialog extends Dialog {
         @Override
         public String getExecutableName(@NotNull ApplicationDescriptor application) {
             if ("zip".equals(System.getProperty(PROP_DISTRIBUTION_TYPE))) {
-                return application.getId() + "-latest-win32.win32.x86_64.zip";
+                return application.getId() + "-latest-win32.win32." + Platform.getOSArch() + ".zip";
             } else {
-                return application.getId() + "-latest-x86_64-setup.exe";
+                return application.getId() + "-latest-" + Platform.getOSArch() + "-setup.exe";
             }
         }
     }
