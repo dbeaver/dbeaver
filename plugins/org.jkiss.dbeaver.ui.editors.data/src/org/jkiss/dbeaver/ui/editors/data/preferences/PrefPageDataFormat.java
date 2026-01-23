@@ -19,8 +19,7 @@ package org.jkiss.dbeaver.ui.editors.data.preferences;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
@@ -109,22 +108,12 @@ public class PrefPageDataFormat extends TargetPrefPage {
             UIUtils.createControlLabel(profileGroup, ResultSetMessages.pref_page_data_format_label_profile);
             profilesCombo = new Combo(profileGroup, SWT.DROP_DOWN | SWT.READ_ONLY);
             profilesCombo.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-            profilesCombo.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
-                    changeProfile();
-                }
-            });
+            profilesCombo.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> changeProfile()));
             if (DBWorkbench.getPlatform().getWorkspace().hasRealmPermission(RMConstants.PERMISSION_CONFIGURATION_MANAGER)) {
                 UIUtils.createDialogButton(
                     profileGroup,
-                    ResultSetMessages.pref_page_data_format_button_manage_profiles, new SelectionAdapter() {
-                        @Override
-                        public void widgetSelected(SelectionEvent e) {
-                            manageProfiles();
-                        }
-                    }
-                );
+                    ResultSetMessages.pref_page_data_format_button_manage_profiles,
+                    SelectionListener.widgetSelectedAdapter(e -> manageProfiles()));
             }
         }
     }
@@ -174,12 +163,8 @@ public class PrefPageDataFormat extends TargetPrefPage {
                 false,
                 2
             );
-            numericNativeFormatCheck.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
-                    numericScientificFormatCheck.setEnabled(numericNativeFormatCheck.getSelection());
-                }
-            });
+            numericNativeFormatCheck.addSelectionListener(SelectionListener.widgetSelectedAdapter(e ->
+                numericScientificFormatCheck.setEnabled(numericNativeFormatCheck.getSelection())));
         }
 
         // formats
@@ -188,17 +173,14 @@ public class PrefPageDataFormat extends TargetPrefPage {
                 composite,
                 ResultSetMessages.pref_page_data_format_group_format,
                 2,
-                GridData.VERTICAL_ALIGN_BEGINNING | GridData.FILL_HORIZONTAL
+                GridData.VERTICAL_ALIGN_BEGINNING | GridData.FILL_HORIZONTAL,
+                SWT.DEFAULT,
+                2
             );
 
             UIUtils.createControlLabel(formatGroup, ResultSetMessages.pref_page_data_format_label_type);
             typeCombo = new Combo(formatGroup, SWT.DROP_DOWN | SWT.READ_ONLY);
-            typeCombo.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
-                    reloadFormatter();
-                }
-            });
+            typeCombo.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> reloadFormatter()));
 
             Label propsLabel = UIUtils.createControlLabel(formatGroup, ResultSetMessages.pref_page_data_format_label_settingt);
             propsLabel.setLayoutData(new GridData(GridData.VERTICAL_ALIGN_BEGINNING));
@@ -212,14 +194,16 @@ public class PrefPageDataFormat extends TargetPrefPage {
                 formatGroup,
                 "<a href=\"" + HelpUtils.getHelpExternalReference(HELP_DATA_FORMAT_LINK) + "\">"
                     + ResultSetMessages.pref_page_data_format_link_patterns + "</a>",
-                new SelectionAdapter() {
-                    @Override
-                    public void widgetSelected(SelectionEvent e) {
-                        ShellUtils.launchProgram(HelpUtils.getHelpExternalReference(HELP_DATA_FORMAT_LINK));
-                    }
-                }
-            );
-            urlHelpLabel.setLayoutData(new GridData(GridData.FILL, GridData.VERTICAL_ALIGN_BEGINNING, false, false, 2, 1));
+                SelectionListener.widgetSelectedAdapter(e ->
+                    ShellUtils.launchProgram(HelpUtils.getHelpExternalReference(HELP_DATA_FORMAT_LINK))));
+            urlHelpLabel.setLayoutData(new GridData(
+                GridData.FILL,
+                GridData.VERTICAL_ALIGN_BEGINNING,
+                false,
+                false,
+                2,
+                1
+            ));
         }
 
         return composite;
@@ -544,12 +528,8 @@ public class PrefPageDataFormat extends TargetPrefPage {
             gd.heightHint = 200;
             profileList.setLayoutData(gd);
 
-            profileList.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
-                    getButton(DELETE_ID).setEnabled(profileList.getSelectionIndex() >= 0);
-                }
-            });
+            profileList.addSelectionListener(SelectionListener.widgetSelectedAdapter(e ->
+                getButton(DELETE_ID).setEnabled(profileList.getSelectionIndex() >= 0)));
 
             loadProfiles();
             return parent;

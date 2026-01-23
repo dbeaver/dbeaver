@@ -86,8 +86,7 @@ public class PostgreConnectionPageAdvanced extends ConnectionPageAbstract {
                 cfgGroup,
                 PostgreMessages.dialog_setting_connection_advanced_group_label,
                 2,
-                GridData.HORIZONTAL_ALIGN_BEGINNING,
-                0);
+                GridData.HORIZONTAL_ALIGN_BEGINNING);
 
             if (sessionRoleSupported) {
                 roleText = UIUtils.createLabelText(advancedGroup, PostgreMessages.dialog_setting_session_role, null, SWT.BORDER);

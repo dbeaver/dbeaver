@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -52,7 +52,7 @@ public class SQLServerSSLConfigurator extends SSLConfiguratorTrustStoreUI {
         }
 
         /*{
-            Group settingsGroup = UIUtils.createControlGroup(composite, "Settings", 1, GridData.FILL_HORIZONTAL, SWT.DEFAULT);
+            Composite settingsGroup = UIUtils.createTitledComposite(composite, "Settings", 1, GridData.FILL_HORIZONTAL, SWT.DEFAULT);
 
             trustServerCertificate = UIUtils.createCheckbox(settingsGroup, SQLServerUIMessages.dialog_setting_trust_server_certificate, SQLServerUIMessages.dialog_setting_trust_server_certificate_tip, true, 2);
         }*/

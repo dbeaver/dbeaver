@@ -30,7 +30,7 @@
     </extension>
 
     <extension point="org.jkiss.dbeaver.sqlCommand">
-        <command id="include" class="org.jkiss.dbeaver.ui.editors.sql.commands.SQLCommandInclude" label="Include" description="Include another SQL script file"/>
+        <command id="include" class="org.jkiss.dbeaver.ui.editors.sql.commands.SQLCommandInclude" label="Include" description="Include another SQL script file" interactive="true"/>
     </extension>
 
     <extension point="org.jkiss.dbeaver.sql.plan.view">
