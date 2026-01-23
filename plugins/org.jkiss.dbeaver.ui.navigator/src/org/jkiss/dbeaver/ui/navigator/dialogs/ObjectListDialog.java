@@ -38,6 +38,7 @@ import org.jkiss.dbeaver.model.DBPImageProvider;
 import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.DBNNodeReference;
+import org.jkiss.dbeaver.model.navigator.DBNUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithResult;
 import org.jkiss.dbeaver.model.runtime.load.AbstractLoadService;
@@ -338,7 +339,7 @@ public class ObjectListDialog<T extends DBPObject> extends AbstractPopupPanel {
 
             @Override
             public Font getFont(Object element) {
-                if (selectedObjects.contains(element)) {
+                if (selectedObjects.contains(element) || DBNUtils.isDefaultElement(element)) {
                     if (boldFont == null) {
                         boldFont = UIUtils.makeBoldFont(group.getFont());
                         group.addDisposeListener(e -> boldFont.dispose());
