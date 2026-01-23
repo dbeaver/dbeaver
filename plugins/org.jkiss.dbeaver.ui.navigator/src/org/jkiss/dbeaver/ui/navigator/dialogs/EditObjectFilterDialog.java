@@ -60,7 +60,7 @@ public class EditObjectFilterDialog extends HelpEnabledDialog {
     protected Composite sfGroup;
     protected Button saveButton;
     protected Button removeButton;
-    private Button enableButton;
+    protected Button enableButton;
 
     public EditObjectFilterDialog(
         @NotNull Shell shell,
