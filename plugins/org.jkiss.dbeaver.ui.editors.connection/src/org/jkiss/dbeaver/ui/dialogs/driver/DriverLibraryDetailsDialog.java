@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,7 +25,6 @@ import org.eclipse.swt.custom.CTabItem;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 import org.jkiss.dbeaver.DBException;
@@ -73,7 +72,12 @@ public class DriverLibraryDetailsDialog extends HelpEnabledDialog {
         gd.widthHint = 500;
         group.setLayoutData(gd);
 
-        Group propsGroup = UIUtils.createControlGroup(group, UIConnectionMessages.dialog_edit_driver_info, 2, -1, -1);
+        Composite propsGroup = UIUtils.createTitledComposite(
+            group,
+            UIConnectionMessages.dialog_edit_driver_info,
+            2,
+            GridData.FILL_HORIZONTAL
+        );
         propsGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
         UIUtils.createLabelText(propsGroup, UIConnectionMessages.dialog_edit_driver_driver, driver.getName(), SWT.BORDER | SWT.READ_ONLY);

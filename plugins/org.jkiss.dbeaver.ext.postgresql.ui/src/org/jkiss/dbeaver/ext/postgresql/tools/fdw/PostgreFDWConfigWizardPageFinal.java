@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,7 +23,6 @@ import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Group;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataSource;
@@ -70,7 +69,7 @@ class PostgreFDWConfigWizardPageFinal extends ActiveWizardPage<PostgreFDWConfigW
         Composite composite = UIUtils.createComposite(parent, 1);
 
         {
-            Group settingsGroup = UIUtils.createControlGroup(composite, "Script", 1, GridData.FILL_BOTH, 0);
+            Composite settingsGroup = UIUtils.createTitledComposite(composite, "Script", 1, GridData.FILL_BOTH);
 
             Composite sqlPanelPH = new Composite(settingsGroup, SWT.NONE);
             sqlPanelPH.setLayoutData(new GridData(GridData.FILL_BOTH));

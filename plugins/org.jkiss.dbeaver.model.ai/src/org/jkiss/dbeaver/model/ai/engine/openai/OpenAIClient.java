@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,6 +22,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.ai.AIUsage;
 import org.jkiss.dbeaver.model.ai.engine.AIEngineResponseChunk;
 import org.jkiss.dbeaver.model.ai.engine.AIEngineResponseConsumer;
 import org.jkiss.dbeaver.model.ai.engine.AIFunctionCall;
@@ -131,7 +132,8 @@ public class OpenAIClient extends AbstractHttpAIClient {
         HttpRequest request = createCompletionRequest(completionRequest);
 
         HttpRequest modifiedRequest = applyFilters(request);
-        return GSON.fromJson(client.send(monitor, modifiedRequest), OAIResponsesResponse.class);
+        String responseJson = client.send(monitor, modifiedRequest);
+        return GSON.fromJson(responseJson, OAIResponsesResponse.class);
     }
 
     public void createChatCompletionStream(
@@ -196,6 +198,14 @@ public class OpenAIClient extends AbstractHttpAIClient {
                 try {
                     OAIResponsesChunk chunk = GSON.fromJson(data, OAIResponsesChunk.class);
                     if (EVENT_TYPE_RESPONSE_COMPLETED.equals(chunk.type)) {
+                        listener.usage(
+                            new AIUsage(
+                                chunk.response.usage.inputTokens(),
+                                chunk.response.usage.inputTokensDetails().cachedTokens(),
+                                chunk.response.usage.outputTokens(),
+                                chunk.response.usage.outputTokensDetails().reasoningTokens()
+                            )
+                        );
                     } else {
 
                         if (chunk.item != null && OAIMessage.TYPE_FUNCTION_CALL.equals(chunk.item.type)) {

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -106,7 +106,9 @@ class SQLScriptTaskPageSettings extends ActiveWizardPage<SQLScriptTaskConfigurat
         DBNProject projectNode = project.getNavigatorModel().getRoot().getProjectNode(project);
 
         {
-            Composite filesGroup = UIUtils.createControlGroup(mainGroup, DTMessages.sql_script_task_page_settings_group_files, 2, GridData.FILL_BOTH, 0);
+            Composite filesGroup = UIUtils.createComposite(mainGroup, 2);
+            filesGroup.setLayoutData(new GridData(GridData.FILL_BOTH));
+            UIUtils.createControlLabel(filesGroup, DTMessages.sql_script_task_page_settings_group_files, 2);
 
             scriptsViewer = new TableViewer(filesGroup, SWT.BORDER | SWT.MULTI | SWT.FULL_SELECTION);
             scriptsViewer.setContentProvider(new ListContentProvider());
@@ -184,7 +186,7 @@ class SQLScriptTaskPageSettings extends ActiveWizardPage<SQLScriptTaskConfigurat
                     SelectionListener.widgetSelectedAdapter(e -> {
                             int selectionIndex = scriptTable.getSelectionIndex();
                             DBNNode nextScript = selectionIndex < 0 || selectionIndex >= selectedScripts.size() ?
-                                (selectedScripts.isEmpty() ? null : selectedScripts.get(0)) : selectedScripts.get(selectionIndex);
+                                (selectedScripts.isEmpty() ? null : selectedScripts.getFirst()) : selectedScripts.get(selectionIndex);
 
                             DBNPathBase selected = DBWorkbench.getPlatformUI().openFileSystemSelector(
                                 UIMessages.text_with_open_dialog_browse_remote,
@@ -257,12 +259,12 @@ class SQLScriptTaskPageSettings extends ActiveWizardPage<SQLScriptTaskConfigurat
         }
 
         {
-            Composite connectionsGroup = UIUtils.createControlGroup(
+            Composite connectionsGroup = UIUtils.createComposite(
                 mainGroup,
-                DTMessages.sql_script_task_page_settings_group_connections,
-                2,
-                GridData.FILL_BOTH,
-                0);
+                2);
+            connectionsGroup.setLayoutData(new GridData(GridData.FILL_BOTH));
+            UIUtils.createControlLabel(connectionsGroup, DTMessages.sql_script_task_page_settings_group_connections, 2);
+
 
             dataSourceViewer = new TableViewer(connectionsGroup, SWT.BORDER | SWT.MULTI | SWT.FULL_SELECTION);
             dataSourceViewer.setContentProvider(new ListContentProvider());
@@ -358,15 +360,14 @@ class SQLScriptTaskPageSettings extends ActiveWizardPage<SQLScriptTaskConfigurat
             });
             deleteItem.setEnabled(false);
         }
-        mainGroup.setWeights(700, 300);
+        mainGroup.setWeights(600, 400);
 
         {
-            Composite settingsGroup = UIUtils.createControlGroup(
+            Composite settingsGroup = UIUtils.createTitledComposite(
                 composite,
                 DTMessages.sql_script_task_page_settings_group_script,
                 3,
-                GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING,
-                0
+                GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING
             );
 
             ignoreErrorsCheck = UIUtils.createCheckbox(settingsGroup, DTMessages.sql_script_task_page_settings_option_ignore_errors, "", dtSettings.isIgnoreErrors(), 1);

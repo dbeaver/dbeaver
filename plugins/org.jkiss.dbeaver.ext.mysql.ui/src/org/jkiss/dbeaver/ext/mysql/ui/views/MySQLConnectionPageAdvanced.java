@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,7 +21,6 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Group;
 import org.jkiss.dbeaver.ext.mysql.MySQLConstants;
 import org.jkiss.dbeaver.ext.mysql.ui.internal.MySQLUIMessages;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
@@ -65,12 +64,11 @@ public class MySQLConnectionPageAdvanced extends ConnectionPageAbstract {
         GridData gd = new GridData(GridData.FILL_BOTH);
         cfgGroup.setLayoutData(gd);
 
-        Group advancedGroup = UIUtils.createControlGroup(
+        Composite advancedGroup = UIUtils.createTitledComposite(
             cfgGroup,
             MySQLUIMessages.dialog_connection_group_advanced,
             2,
-            GridData.HORIZONTAL_ALIGN_BEGINNING,
-            0);
+            GridData.HORIZONTAL_ALIGN_BEGINNING);
 
         if (MANAGE_SERVER_TIME_ZONE) {
             serverTimezoneCombo = UIUtils.createLabelCombo(advancedGroup, MySQLUIMessages.dialog_connection_server_timezone, SWT.DROP_DOWN);

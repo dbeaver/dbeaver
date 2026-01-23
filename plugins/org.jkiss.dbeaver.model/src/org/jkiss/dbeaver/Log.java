@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -404,23 +404,29 @@ public class Log {
     }
 
     private void writeExceptionStatus(int severity, Object message, Throwable t) {
-        debugMessage(message, t);
+        boolean logWritten = false;
         if (logWriter.get() == null) {
             if (t == null) {
-                writeEclipseLog(createStatus(severity, message));
+                logWritten = writeEclipseLog(createStatus(severity, message));
             } else {
                 if (message == null) {
-                    writeEclipseLog(GeneralUtils.makeExceptionStatus(severity, t));
+                    logWritten = writeEclipseLog(GeneralUtils.makeExceptionStatus(severity, t));
                 } else {
-                    writeEclipseLog(GeneralUtils.makeExceptionStatus(severity, message.toString(), t));
+                    logWritten = writeEclipseLog(GeneralUtils.makeExceptionStatus(severity, message.toString(), t));
                 }
             }
         }
+        if (!logWritten) {
+            debugMessage(message, t);
+        }
     }
 
-    private void writeEclipseLog(IStatus status) {
+    private boolean writeEclipseLog(IStatus status) {
         if (doEclipseLog && logWriter.get() == null && eclipseLog != null) {
             eclipseLog.log(status);
+            return true;
+        } else {
+            return false;
         }
     }
 
