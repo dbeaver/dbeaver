@@ -19,7 +19,14 @@ package org.jkiss.dbeaver.ext.starrocks.model;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ext.generic.model.*;
+import org.jkiss.dbeaver.ext.starrocks.StarRocksUtils;
+import org.jkiss.dbeaver.ext.generic.model.GenericCatalog;
+import org.jkiss.dbeaver.ext.generic.model.GenericDataSource;
+import org.jkiss.dbeaver.ext.generic.model.GenericSchema;
+import org.jkiss.dbeaver.ext.generic.model.GenericStructContainer;
+import org.jkiss.dbeaver.ext.generic.model.GenericTableBase;
+import org.jkiss.dbeaver.ext.generic.model.GenericTableColumn;
+import org.jkiss.dbeaver.ext.generic.model.GenericView;
 import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaModel;
 import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaObject;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
@@ -32,7 +39,6 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -99,9 +105,7 @@ public class StarRocksMetaModel extends GenericMetaModel {
         List<GenericSchema> schemas = new ArrayList<>();
         try {
             // Switch to the catalog context
-            try (Statement stmt = session.getOriginal().createStatement()) {
-                stmt.execute("SET CATALOG " + DBUtils.getQuotedIdentifier(dataSource, catalog.getName())); //$NON-NLS-1$
-            }
+            StarRocksUtils.setCatalogContext(session, (StarRocksDataSource) dataSource, catalog.getName());
 
             // Load databases using SHOW DATABASES
             try (JDBCPreparedStatement dbStat = session.prepareStatement("SHOW DATABASES")) { //$NON-NLS-1$
@@ -121,25 +125,49 @@ public class StarRocksMetaModel extends GenericMetaModel {
     }
 
     @Override
+    @NotNull
     public JDBCStatement prepareTableLoadStatement(
         @NotNull JDBCSession session,
         @NotNull GenericStructContainer owner,
         @Nullable GenericTableBase object,
         @Nullable String objectName
     ) throws SQLException {
-        // Switch to the catalog context
         GenericCatalog catalog = owner.getCatalog();
         if (catalog != null) {
-            try (Statement stmt = session.getOriginal().createStatement()) {
-                stmt.execute("SET CATALOG " + DBUtils.getQuotedIdentifier(owner.getDataSource(), catalog.getName())); //$NON-NLS-1$
-            }
+            StarRocksUtils.setCatalogContext(session, (StarRocksDataSource) owner.getDataSource(), catalog.getName());
         }
 
         GenericSchema schema = owner.getSchema();
         String schemaName = schema != null ? schema.getName() : owner.getName();
 
-        return session.prepareStatement(
-            "SHOW FULL TABLES FROM " + DBUtils.getQuotedIdentifier(owner.getDataSource(), schemaName)); //$NON-NLS-1$
+        // StarRocks returns Table_type="VIEW" for both views and materialized views.
+        // Only internal catalogs support materialized views - external catalogs don't.
+        // For internal catalogs, we join with information_schema.materialized_views to distinguish them.
+        // Result columns: table_name, table_type, is_materialized
+        boolean isInternalCatalog = catalog instanceof StarRocksCatalog && ((StarRocksCatalog) catalog).isInternal();
+
+        String query;
+        if (isInternalCatalog) {
+            query =
+                "SELECT t.table_name, " + //$NON-NLS-1$
+                "       CASE WHEN t.table_type = 'BASE TABLE' THEN 'BASE TABLE' ELSE 'VIEW' END as table_type, " + //$NON-NLS-1$
+                "       (mv.table_name IS NOT NULL) as is_materialized " + //$NON-NLS-1$
+                "FROM information_schema.tables t " + //$NON-NLS-1$
+                "LEFT JOIN information_schema.materialized_views mv " + //$NON-NLS-1$
+                "  ON t.table_schema = mv.table_schema AND t.table_name = mv.table_name " + //$NON-NLS-1$
+                "WHERE t.table_schema = ?"; //$NON-NLS-1$
+        } else {
+            query =
+                "SELECT t.table_name, " + //$NON-NLS-1$
+                "       CASE WHEN t.table_type = 'BASE TABLE' THEN 'BASE TABLE' ELSE 'VIEW' END as table_type, " + //$NON-NLS-1$
+                "       FALSE as is_materialized " + //$NON-NLS-1$
+                "FROM information_schema.tables t " + //$NON-NLS-1$
+                "WHERE t.table_schema = ?"; //$NON-NLS-1$
+        }
+
+        JDBCPreparedStatement stmt = session.prepareStatement(query);
+        stmt.setString(1, schemaName);
+        return stmt;
     }
 
     @Override
@@ -168,10 +196,14 @@ public class StarRocksMetaModel extends GenericMetaModel {
 
         String tableTypeUpper = tableType != null ? tableType.toUpperCase() : "";
 
-        if (tableTypeUpper.contains(TYPE_MATERIALIZED_VIEW)) {
-            return new StarRocksMaterializedView(container, tableName, tableType, dbResult);
-        } else if (tableTypeUpper.contains(TYPE_VIEW)) {
-            return new StarRocksView(container, tableName, tableType, dbResult);
+        // Check if this view is actually a materialized view
+        if (tableTypeUpper.contains(TYPE_VIEW)) {
+            Boolean isMaterialized = JDBCUtils.safeGetBoolean(dbResult, 3);
+            if (Boolean.TRUE.equals(isMaterialized)) {
+                return new StarRocksMaterializedView(container, tableName, tableType, dbResult);
+            } else {
+                return new StarRocksView(container, tableName, tableType, dbResult);
+            }
         } else {
             return new StarRocksTable(container, tableName, tableType, dbResult);
         }
@@ -190,9 +222,7 @@ public class StarRocksMetaModel extends GenericMetaModel {
         // Switch to the catalog context
         GenericCatalog catalog = owner.getCatalog();
         if (catalog != null) {
-            try (Statement stmt = session.getOriginal().createStatement()) {
-                stmt.execute("SET CATALOG " + DBUtils.getQuotedIdentifier(owner.getDataSource(), catalog.getName())); //$NON-NLS-1$
-            }
+            StarRocksUtils.setCatalogContext(session, (StarRocksDataSource) owner.getDataSource(), catalog.getName());
         }
 
         GenericSchema schema = owner.getSchema();
@@ -210,8 +240,8 @@ public class StarRocksMetaModel extends GenericMetaModel {
         @NotNull GenericTableBase table,
         @NotNull JDBCResultSet dbResult
     ) throws DBException {
-        if (table instanceof StarRocksTableBase) {
-            return new StarRocksTableColumn((StarRocksTableBase) table, dbResult);
+        if (table instanceof StarRocksTable || table instanceof StarRocksViewBase) {
+            return new StarRocksTableColumn(table, dbResult);
         }
         return super.fetchTableColumn(session, owner, table, dbResult);
     }
@@ -222,9 +252,6 @@ public class StarRocksMetaModel extends GenericMetaModel {
         @NotNull GenericView sourceObject,
         @NotNull Map<String, Object> options
     ) throws DBException {
-        // StarRocksView and StarRocksMaterializedView extend StarRocksTableBase (GenericTableBase),
-        // not GenericView. So this method won't be called for them directly.
-        // The DDL is loaded through their own getObjectDefinitionText() methods.
         return sourceObject.getDDL();
     }
 

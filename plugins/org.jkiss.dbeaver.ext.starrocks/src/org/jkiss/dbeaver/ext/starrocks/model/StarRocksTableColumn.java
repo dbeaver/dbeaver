@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.ext.starrocks.model;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.ext.generic.model.GenericTableBase;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableColumn;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
@@ -38,7 +39,7 @@ public class StarRocksTableColumn extends GenericTableColumn {
 
     private static int ordinalCounter = 0;
 
-    public StarRocksTableColumn(StarRocksTableBase table) {
+    public StarRocksTableColumn(GenericTableBase table) {
         super(table);
     }
 
@@ -47,7 +48,7 @@ public class StarRocksTableColumn extends GenericTableColumn {
      * SHOW FULL COLUMNS returns: Field | Type | Collation | Null | Key | Default | Extra | Privileges | Comment
      */
     public StarRocksTableColumn(
-        @NotNull StarRocksTableBase table,
+        @NotNull GenericTableBase table,
         @NotNull JDBCResultSet dbResult
     ) {
         super(table,
@@ -73,7 +74,7 @@ public class StarRocksTableColumn extends GenericTableColumn {
      * Constructs a column with basic properties (for manual creation).
      */
     public StarRocksTableColumn(
-        @NotNull StarRocksTableBase table,
+        @NotNull GenericTableBase table,
         @NotNull String columnName,
         @NotNull String typeName,
         boolean notNull

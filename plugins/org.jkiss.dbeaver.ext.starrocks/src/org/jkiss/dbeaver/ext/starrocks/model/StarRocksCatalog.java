@@ -64,6 +64,10 @@ public class StarRocksCatalog extends GenericCatalog {
         return comment;
     }
 
+    public boolean isInternal() {
+        return "Internal".equalsIgnoreCase(type); //$NON-NLS-1$
+    }
+
     @NotNull
     @Override
     public StarRocksDataSource getDataSource() {

@@ -20,30 +20,23 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.generic.model.GenericStructContainer;
-import org.jkiss.dbeaver.model.DBPEvaluationContext;
+import org.jkiss.dbeaver.ext.starrocks.StarRocksUtils;
 import org.jkiss.dbeaver.model.DBPScriptObject;
-import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCException;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
-import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.IPropertyCacheValidator;
 import org.jkiss.dbeaver.model.meta.LazyProperty;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.meta.PropertyGroup;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.sql.format.SQLFormatUtils;
 import org.jkiss.dbeaver.model.struct.rdb.DBSView;
 
-import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.Map;
 
 /**
  * StarRocks View - represents a view within a StarRocks database.
  */
-public class StarRocksView extends StarRocksTableBase implements DBSView, DBPScriptObject {
+public class StarRocksView extends StarRocksViewBase implements DBSView, DBPScriptObject {
 
     private static final String COL_CREATE_VIEW = "Create View"; //$NON-NLS-1$
 
@@ -127,33 +120,9 @@ public class StarRocksView extends StarRocksTableBase implements DBSView, DBPScr
             additionalInfo.loaded = true;
             return;
         }
-        try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Load view definition")) { //$NON-NLS-1$
-            // Switch to the correct catalog context
-            StarRocksCatalog catalog = getStarRocksCatalog();
-            if (catalog != null) {
-                try (Statement stmt = session.getOriginal().createStatement()) {
-                    stmt.execute("SET CATALOG " + DBUtils.getQuotedIdentifier(getDataSource(), catalog.getName())); //$NON-NLS-1$
-                }
-            }
-
-            try (JDBCPreparedStatement dbStat = session.prepareStatement(
-                "SHOW CREATE VIEW " + getFullyQualifiedName(DBPEvaluationContext.DDL))) { //$NON-NLS-1$
-                try (JDBCResultSet dbResult = dbStat.executeQuery()) {
-                    if (dbResult.next()) {
-                        String definition = JDBCUtils.safeGetString(dbResult, COL_CREATE_VIEW);
-                        if (definition != null) {
-                            additionalInfo.setDefinition(
-                                SQLFormatUtils.formatSQL(getDataSource(), definition));
-                        }
-                    }
-                }
-            } catch (SQLException e) {
-                throw new DBCException(e, session.getExecutionContext());
-            }
-            additionalInfo.loaded = true;
-        } catch (SQLException e) {
-            throw new DBCException("Error loading view definition", e); //$NON-NLS-1$
-        }
+        String definition = StarRocksUtils.loadShowCreateDDL(monitor, this, "Load view definition", "SHOW CREATE VIEW", COL_CREATE_VIEW); //$NON-NLS-1$ //$NON-NLS-2$
+        additionalInfo.setDefinition(definition);
+        additionalInfo.loaded = true;
     }
 
     @NotNull
@@ -167,7 +136,7 @@ public class StarRocksView extends StarRocksTableBase implements DBSView, DBPScr
         return definition != null ? definition : "";
     }
 
-    public void setObjectDefinitionText(@Nullable String sourceText) throws DBException {
+    public void setObjectDefinitionText(@Nullable String sourceText) {
         getAdditionalInfo().setDefinition(sourceText);
     }
 }

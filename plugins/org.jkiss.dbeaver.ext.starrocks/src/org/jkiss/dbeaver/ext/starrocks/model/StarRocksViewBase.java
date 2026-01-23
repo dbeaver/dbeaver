@@ -21,24 +21,24 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.generic.model.GenericCatalog;
 import org.jkiss.dbeaver.ext.generic.model.GenericSchema;
 import org.jkiss.dbeaver.ext.generic.model.GenericStructContainer;
-import org.jkiss.dbeaver.ext.generic.model.GenericTableBase;
+import org.jkiss.dbeaver.ext.generic.model.GenericView;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 
 /**
- * StarRocks Table/View base class - abstract base for tables and views.
- * Implements catalog-aware fully qualified names.
+ * StarRocks View Base - abstract base class for views and materialized views.
+ * Extends GenericView and implements catalog-aware fully qualified names.
  */
-public abstract class StarRocksTableBase extends GenericTableBase {
+public abstract class StarRocksViewBase extends GenericView {
 
-    public StarRocksTableBase(
+    public StarRocksViewBase(
         @NotNull GenericStructContainer container,
-        @Nullable String tableName,
-        @Nullable String tableType,
+        @Nullable String viewName,
+        @Nullable String viewType,
         @Nullable JDBCResultSet dbResult
     ) {
-        super(container, tableName, tableType, dbResult);
+        super(container, viewName, viewType, dbResult);
     }
 
     @NotNull
@@ -69,28 +69,23 @@ public abstract class StarRocksTableBase extends GenericTableBase {
         return container.getSchema();
     }
 
-    @Nullable
-    public StarRocksCatalog getStarRocksCatalog() {
-        return (StarRocksCatalog) getCatalog();
-    }
-
     @NotNull
     @Override
     public String getFullyQualifiedName(@NotNull DBPEvaluationContext context) {
-        // StarRocks always requires 3-level FQN: catalog.database.table
+        // StarRocks always requires 3-level FQN: catalog.database.view
         // This is required for cross-catalog queries and data reading
         GenericCatalog catalog = getCatalog();
         GenericSchema schema = getSchema();
 
         if (catalog != null && schema != null) {
-            // catalog.schema.table
+            // catalog.schema.view
             return DBUtils.getFullQualifiedName(
                 getDataSource(),
                 catalog,
                 schema,
                 this);
         } else if (schema != null) {
-            // schema.table
+            // schema.view
             return DBUtils.getFullQualifiedName(
                 getDataSource(),
                 schema,
