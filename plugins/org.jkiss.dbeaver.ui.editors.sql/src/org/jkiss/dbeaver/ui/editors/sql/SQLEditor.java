@@ -1085,16 +1085,13 @@ public class SQLEditor extends SQLEditorBase implements
 
         sqlExtraPanelFolder = new CTabFolder(sqlExtraPanelSash, SWT.TOP | SWT.CLOSE | SWT.FLAT);
         sqlExtraPanelFolder.setSelection(0);
-        sqlExtraPanelFolder.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                CTabItem item = sqlExtraPanelFolder.getSelection();
-                if (item != null) {
-                    IActionContributor ac = (IActionContributor) item.getData("actionContributor");
-                    updateExtraViewToolbar(ac);
-                }
+        sqlExtraPanelFolder.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
+            CTabItem item = sqlExtraPanelFolder.getSelection();
+            if (item != null) {
+                IActionContributor ac = (IActionContributor) item.getData("actionContributor");
+                updateExtraViewToolbar(ac);
             }
-        });
+        }));
 
         sqlExtraPanelToolbar = new ToolBarManager();
         sqlExtraPanelToolbar.createControl(sqlExtraPanelFolder);
@@ -1127,12 +1124,7 @@ public class SQLEditor extends SQLEditorBase implements
             StyledText textWidget = viewer.getTextWidget();
             if (textWidget != null) {
                 textWidget.addModifyListener(this::onTextChange);
-                textWidget.addFocusListener(new FocusAdapter() {
-                    @Override
-                    public void focusGained(FocusEvent e) {
-                        refreshActions();
-                    }
-                });
+                textWidget.addFocusListener(FocusListener.focusGainedAdapter(focusEvent -> refreshActions()));
             }
         }
         suggestionTextPainter = new SQLSuggestionTextPainter(getViewer());
@@ -1288,20 +1280,17 @@ public class SQLEditor extends SQLEditorBase implements
         presentationSwitchFolder = new VerticalFolder(sqlEditorPanel, SWT.RIGHT);
         presentationSwitchFolder.setLayoutData(new GridData(GridData.FILL_VERTICAL));
 
-        SelectionListener switchListener = new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                final VerticalButton button = (VerticalButton) e.item;
-                final SQLPresentationDescriptor newPresentation = (SQLPresentationDescriptor) button.getData();
-                final SQLPresentationDescriptor curPresentation = getExtraPresentationDescriptor();
+        SelectionListener switchListener = SelectionListener.widgetSelectedAdapter(e -> {
+            final VerticalButton button = (VerticalButton) e.item;
+            final SQLPresentationDescriptor newPresentation = (SQLPresentationDescriptor) button.getData();
+            final SQLPresentationDescriptor curPresentation = getExtraPresentationDescriptor();
 
-                if (curPresentation != null && curPresentation == newPresentation) {
-                    showExtraPresentation((SQLPresentationDescriptor) null);
-                } else {
-                    showExtraPresentation(newPresentation);
-                }
+            if (curPresentation != null && curPresentation == newPresentation) {
+                showExtraPresentation((SQLPresentationDescriptor) null);
+            } else {
+                showExtraPresentation(newPresentation);
             }
-        };
+        });
 
         switchPresentationSQLButton = new VerticalButton(presentationSwitchFolder, SWT.RIGHT | SWT.CHECK);
         switchPresentationSQLButton.setText(SQLEditorMessages.editors_sql_editor_presentation);
@@ -1457,17 +1446,14 @@ public class SQLEditor extends SQLEditorBase implements
         resultTabs.setSimple(true);
         resultTabs.setFont(JFaceResources.getFont(UIFonts.Eclipse.PART_TITLE_FONT));
 
-        resultTabs.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseUp(MouseEvent e) {
-                if (e.button == 2) {
-                    CTabItem item = resultTabs.getItem(new Point(e.x, e.y));
-                    if (item != null && item.getShowClose()) {
-                        item.dispose();
-                    }
+        resultTabs.addMouseListener(MouseListener.mouseUpAdapter(e -> {
+            if (e.button == 2) {
+                CTabItem item = resultTabs.getItem(new Point(e.x, e.y));
+                if (item != null && item.getShowClose()) {
+                    item.dispose();
                 }
             }
-        });
+        }));
         resultTabs.addListener(SWT.MouseDoubleClick, event -> {
             if (event.button != 1) {
                 return;
@@ -1488,12 +1474,8 @@ public class SQLEditor extends SQLEditorBase implements
         }
 
         {
-            resultTabs.addMouseListener(new MouseAdapter() {
-                @Override
-                public void mouseDown(MouseEvent e) {
-                    activeResultsTab = resultTabs.getItem(new Point(e.x, e.y));
-                }
-            });
+            resultTabs.addMouseListener(MouseListener.mouseDownAdapter(e ->
+                activeResultsTab = resultTabs.getItem(new Point(e.x, e.y))));
             MenuManager menuMgr = new MenuManager();
             Menu menu = menuMgr.createContextMenu(resultTabs);
             menuMgr.addMenuListener(manager -> {
