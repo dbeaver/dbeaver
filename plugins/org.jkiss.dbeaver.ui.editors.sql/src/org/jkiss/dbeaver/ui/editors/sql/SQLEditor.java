@@ -150,8 +150,8 @@ import java.net.URI;
 import java.nio.file.Path;
 import java.text.SimpleDateFormat;
 import java.time.Duration;
-import java.util.List;
 import java.util.*;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
@@ -2946,7 +2946,8 @@ public class SQLEditor extends SQLEditorBase implements
             return false;
         }
 
-        final boolean isSingleQuery = !forceScript && (queries.size() == 1);
+        boolean isSingleQuery = queries.size() == 1;
+        boolean isSingleQueryNotScript = isSingleQuery && !forceScript;
         if (!isHideQueryText() && resultsSash.getMaximizedControl() != null) {
             resultsSash.setMaximizedControl(null);
         }
@@ -2968,7 +2969,7 @@ public class SQLEditor extends SQLEditorBase implements
             // 1. The user is not executing query in a new tab
             // 2. The user is executing script that may open several result sets
             //    and replace current tab on single query execution option is not set
-            if (isResultSetAutoFocusEnabled && !newTab && (!isSingleQuery || (isSingleQuery && !replaceCurrentTab))) {
+            if (isResultSetAutoFocusEnabled && !newTab && (!isSingleQueryNotScript || (isSingleQueryNotScript && !replaceCurrentTab))) {
                 int tabsClosed = closeExtraResultTabs(null, true, false);
                 if (tabsClosed == IDialogConstants.CANCEL_ID) {
                     return false;
@@ -2986,7 +2987,7 @@ public class SQLEditor extends SQLEditorBase implements
             var noQueryProcessors = queryProcessors.isEmpty();
             var hasRunningJobs = !noQueryProcessors && curQueryProcessor.getRunningJobs() > 0;
             var hasPinnedTabs = !noQueryProcessors && curQueryProcessor.hasPinnedTabs();
-            var needAnotherQueryProcessor = !noQueryProcessors && useTabPerQuery(isSingleQuery)
+            var needAnotherQueryProcessor = !noQueryProcessors && useTabPerQuery(isSingleQueryNotScript)
                 && !(curQueryProcessor instanceof MultiTabsQueryProcessor);
 
             if (newTab || noQueryProcessors || hasRunningJobs || hasPinnedTabs || needAnotherQueryProcessor) {
@@ -2996,7 +2997,7 @@ public class SQLEditor extends SQLEditorBase implements
                 // Try to find suitable query processor among exiting ones if:
                 // 1. New tab is not required
                 // 2. The user is executing only single query
-                if (!newTab && isSingleQuery) {
+                if (!newTab && isSingleQueryNotScript) {
                     for (QueryProcessor processor : queryProcessors) {
                         if (!processor.hasPinnedTabs() && processor.getRunningJobs() == 0) {
                             foundSuitableTab = true;
@@ -3021,7 +3022,7 @@ public class SQLEditor extends SQLEditorBase implements
 
             // Close all extra tabs of this query processor
             // if the user is executing only single query
-            if (!newTab && isSingleQuery && curQueryProcessor.getResultContainers().size() > 1) {
+            if (!newTab && isSingleQueryNotScript && curQueryProcessor.getResultContainers().size() > 1) {
                 closeExtraResultTabs(curQueryProcessor, false, true);
             }
 
@@ -3037,7 +3038,7 @@ public class SQLEditor extends SQLEditorBase implements
         }
 
         if (curQueryProcessor == null || (newTab
-            && useTabPerQuery(isSingleQuery) == (curQueryProcessor instanceof SingleTabQueryProcessor))) {
+            && useTabPerQuery(isSingleQueryNotScript) == (curQueryProcessor instanceof SingleTabQueryProcessor))) {
             createQueryProcessor(true, isSingleQuery, true);
         }
 
