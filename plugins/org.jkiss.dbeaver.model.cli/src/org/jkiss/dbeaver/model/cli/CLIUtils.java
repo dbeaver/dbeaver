@@ -234,8 +234,8 @@ public class CLIUtils {
         @NotNull List<String> cliParams
     ) throws CLIException {
         Map<String, String> properties = parentParams == null ? new LinkedHashMap<>() : new LinkedHashMap<>(parentParams);
-        for (String authParam : cliParams) {
-            String[] paramParts = authParam.split("=", 2);
+        for (String param : cliParams) {
+            String[] paramParts = param.split("=", 2);
             if (paramParts.length == 2) {
                 String paramName = paramParts[0].trim();
                 String paramValue = paramParts[1].trim();
@@ -243,7 +243,7 @@ public class CLIUtils {
                     properties.put(paramName, paramValue);
                 }
             } else {
-                throw new CLIException("Invalid auth-param format: " + authParam, CLIConstants.EXIT_CODE_ILLEGAL_ARGUMENTS);
+                throw new CLIException("Invalid param format: " + param, CLIConstants.EXIT_CODE_ILLEGAL_ARGUMENTS);
             }
         }
         return properties;

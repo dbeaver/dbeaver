@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.registry;
+package org.jkiss.dbeaver.utils;
 
 import com.google.gson.reflect.TypeToken;
 import org.jkiss.code.NotNull;
@@ -27,11 +27,11 @@ import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.connection.DBPDriverConfigurationType;
+import org.jkiss.dbeaver.model.navigator.DBNBrowseSettings;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
 import org.jkiss.dbeaver.model.net.DBWUtils;
 import org.jkiss.dbeaver.model.secret.DBSSecretValue;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
-import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.HashMap;
@@ -67,7 +67,8 @@ public class DataSourceUtils {
     private static final String PARAM_CREATE = "create";
     public static final String PARAM_SAVE = "save";
 
-    private static final String PREFIX_HANDLER = "handler.";
+    private static final String PREFIX_HANDLER = "handler."; //for search
+    private static final String PREFIX_NET_HANDLER = "netHandler."; // set params
     private static final String PREFIX_PROP = "prop.";
     private static final String PREFIX_AUTH_PROP = "authProp.";
     private static final String PREFIX_ADVANCED_PROP = "advProp.";
@@ -97,6 +98,7 @@ public class DataSourceUtils {
         Map<String, String> conProperties = new HashMap<>();
         Map<String, Map<String, String>> handlerProps = new HashMap<>();
         Map<String, String> authProperties = new HashMap<>();
+        Map<String, String> n = new HashMap<>();
         Map<String, String> advancedProperties = new HashMap<>();
         DBPDataSourceFolder folder = null;
         String dsId = null, dsName = null, dsIdOrName = null;
@@ -368,7 +370,7 @@ public class DataSourceUtils {
         if (folder != null) {
             newDS.setFolder(folder);
         }
-        DataSourceNavigatorSettings navSettings = ((DataSourceDescriptor)newDS).getNavigatorSettings();
+        DBNBrowseSettings navSettings = newDS.getNavigatorSettings();
         navSettings.setShowSystemObjects(showSystemObjects);
         navSettings.setShowUtilityObjects(showUtilityObjects);
         navSettings.setShowOnlyEntities(showOnlyEntities);
