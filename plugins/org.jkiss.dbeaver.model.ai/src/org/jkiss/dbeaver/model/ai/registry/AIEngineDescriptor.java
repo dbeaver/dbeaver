@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -36,6 +36,7 @@ public class AIEngineDescriptor extends AbstractDescriptor {
     private final ObjectType propertiesType;
     private final boolean supportsFunctions;
     private final boolean providesMetadata;
+    private final boolean passFunctionsCallBackToAI;
 
     protected AIEngineDescriptor(@NotNull IConfigurationElement contributorConfig) {
         super(contributorConfig);
@@ -45,6 +46,7 @@ public class AIEngineDescriptor extends AbstractDescriptor {
         this.supportsFunctions = CommonUtils.toBoolean(contributorConfig.getAttribute("supportsFunctions"));
         this.propertiesType = new ObjectType(contributorConfig, "properties");
         this.providesMetadata = CommonUtils.toBoolean(contributorConfig.getAttribute("providesMetadata"), true);
+        this.passFunctionsCallBackToAI = CommonUtils.toBoolean(contributorConfig.getAttribute("passFunctionCallsBackToAI"));
     }
 
     @NotNull
@@ -78,6 +80,10 @@ public class AIEngineDescriptor extends AbstractDescriptor {
      */
     public boolean isProvidesMetadata() {
         return providesMetadata;
+    }
+
+    public boolean passFunctionCallsBackToAI() {
+        return passFunctionsCallBackToAI;
     }
 
     public boolean isSupportsFunctions() {
