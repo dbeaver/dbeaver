@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,7 +27,7 @@ import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
 import org.jkiss.dbeaver.model.struct.DBSObjectFilter;
 import org.jkiss.dbeaver.ui.IHelpContextIds;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.controls.StringEditorTable;
+import org.jkiss.dbeaver.ui.controls.StringEditorTableUtils;
 import org.jkiss.dbeaver.ui.dialogs.HelpEnabledDialog;
 import org.jkiss.dbeaver.ui.internal.UIMessages;
 import org.jkiss.dbeaver.ui.internal.UINavigatorMessages;
@@ -102,11 +102,11 @@ public class EditObjectFilterDialog extends HelpEnabledDialog {
         blockControlGd.heightHint = 350;
         blockControl.setLayoutData(blockControlGd);
 
-        includeTable = StringEditorTable.createEditableList(
+        includeTable = StringEditorTableUtils.createEditableList(
             blockControl, UINavigatorMessages.dialog_filter_list_include,
             filter.getInclude(), null, null
         );
-        excludeTable = StringEditorTable.createEditableList(
+        excludeTable = StringEditorTableUtils.createEditableList(
             blockControl, UINavigatorMessages.dialog_filter_list_exclude,
             filter.getExclude(), null, null
         );
@@ -115,7 +115,12 @@ public class EditObjectFilterDialog extends HelpEnabledDialog {
         UIUtils.createInfoLabel(blockControl, UINavigatorMessages.dialog_filter_objects_scope_hint_text);
 
         {
-            Group sfGroup = UIUtils.createControlGroup(composite, UINavigatorMessages.dialog_filter_save_label, 4, GridData.FILL_HORIZONTAL, 0);
+            Composite sfGroup = UIUtils.createTitledComposite(
+                composite,
+                UINavigatorMessages.dialog_filter_save_label,
+                4,
+                GridData.FILL_HORIZONTAL
+            );
             namesCombo = UIUtils.createLabelCombo(sfGroup, UINavigatorMessages.dialog_filter_name_label, SWT.DROP_DOWN);
             namesCombo.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
@@ -167,14 +172,14 @@ public class EditObjectFilterDialog extends HelpEnabledDialog {
         }
         if (CommonUtils.isEmpty(filterName)) {
             // Reset filter
-            StringEditorTable.replaceAllStringValues(includeTable, null, null);
-            StringEditorTable.replaceAllStringValues(excludeTable, null, null);
+            StringEditorTableUtils.replaceAllStringValues(includeTable, null, null);
+            StringEditorTableUtils.replaceAllStringValues(excludeTable, null, null);
         } else {
             // Find saved filter
             DBSObjectFilter savedFilter = dsRegistry.getSavedFilter(filterName);
             if (savedFilter != null) {
-                StringEditorTable.replaceAllStringValues(includeTable, savedFilter.getInclude(), null);
-                StringEditorTable.replaceAllStringValues(excludeTable, savedFilter.getExclude(), null);
+                StringEditorTableUtils.replaceAllStringValues(includeTable, savedFilter.getInclude(), null);
+                StringEditorTableUtils.replaceAllStringValues(excludeTable, savedFilter.getExclude(), null);
             }
         }
         filter.setName(filterName);
@@ -193,8 +198,8 @@ public class EditObjectFilterDialog extends HelpEnabledDialog {
 
     private void saveConfigurations() {
         filter.setEnabled(enableButton.getSelection());
-        filter.setInclude(StringEditorTable.collectStringValues(includeTable));
-        filter.setExclude(StringEditorTable.collectStringValues(excludeTable));
+        filter.setInclude(StringEditorTableUtils.collectStringValues(includeTable));
+        filter.setExclude(StringEditorTableUtils.collectStringValues(excludeTable));
         filter.setName(namesCombo.getText());
         if (!CommonUtils.isEmpty(filter.getName())) {
             dsRegistry.updateSavedFilter(filter);

@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.model.ai.engine.copilot;
 
 import com.google.gson.annotations.SerializedName;
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.ai.engine.AIEngineProperties;
@@ -57,6 +58,11 @@ public class CopilotProperties implements AIEngineProperties {
     @Property(order = 1, password = true, required = true)
     public String getToken() {
         return token;
+    }
+
+    @NotNull
+    public String getBaseAuthUrl() {
+        return CopilotConstants.BASE_AUTH_URL;
     }
 
     public void setToken(@Nullable String token) {

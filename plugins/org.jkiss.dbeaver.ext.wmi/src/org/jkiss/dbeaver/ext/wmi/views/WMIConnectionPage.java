@@ -74,7 +74,7 @@ public class WMIConnectionPage extends ConnectionPageWithAuth
         addrGroup.setLayoutData(gd);
 
         {
-            Composite hostGroup = UIUtils.createTitledComposite(addrGroup, "Server", 4, GridData.FILL_HORIZONTAL, 0);
+            Composite hostGroup = UIUtils.createTitledComposite(addrGroup, "Server", 4, GridData.FILL_HORIZONTAL);
             Label hostLabel = UIUtils.createControlLabel(hostGroup, WMIMessages.wmi_connection_page_label_host);
             hostLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
 
