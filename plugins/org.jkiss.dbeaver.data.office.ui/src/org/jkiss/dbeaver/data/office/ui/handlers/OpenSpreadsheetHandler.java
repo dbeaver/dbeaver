@@ -119,8 +119,7 @@ public class OpenSpreadsheetHandler extends AbstractHandler
                     DatabaseProducerSettings producerSettings = new DatabaseProducerSettings();
                     producerSettings.setExtractType(DatabaseProducerSettings.ExtractType.SINGLE_QUERY);
                     producerSettings.setQueryRowCount(false);
-                    producerSettings.setSelectedRowsOnly(true);
-                    producerSettings.setSelectedColumnsOnly(true);
+                    producerSettings.setFetchedRowsPolicy(new DatabaseProducerSettings.FetchedRowsPolicy(true, true));
 
                     producer.transferData(monitor, consumer, null, producerSettings, null);
 
