@@ -135,6 +135,14 @@
             <type name="IPV6"/>
             <type name="TUPLE*"/>
             <type name="MAP*"/>
+
+            <!-- https://clickhouse.com/docs/sql-reference/data-types/geo -->
+            <type name="POINT"/>
+            <type name="RING"/>
+            <type name="LINESTRING"/>
+            <type name="MULTILINESTRING"/>
+            <type name="POLYGON"/>
+            <type name="MULTIPOLYGON"/>
         </provider>
     </extension>
 

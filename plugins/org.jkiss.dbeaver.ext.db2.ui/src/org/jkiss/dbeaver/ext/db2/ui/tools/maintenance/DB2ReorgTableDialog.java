@@ -1,7 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2013-2015 Denis Forveille (titou10.titou10@gmail.com)
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,7 +25,6 @@ import org.eclipse.swt.layout.RowLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Group;
 import org.eclipse.ui.IWorkbenchPartSite;
 import org.jkiss.dbeaver.ext.db2.model.DB2DataSource;
 import org.jkiss.dbeaver.ext.db2.model.DB2Index;
@@ -116,7 +114,12 @@ public class DB2ReorgTableDialog extends DB2BaseTableToolDialog {
     @Override
     protected void createControls(Composite parent)
     {
-        Group optionsGroup = UIUtils.createControlGroup(parent, DB2Messages.dialog_table_tools_options, 1, 0, 0);
+        Composite optionsGroup = UIUtils.createTitledComposite(
+            parent,
+            DB2Messages.dialog_table_tools_options,
+            1,
+            GridData.FILL_HORIZONTAL
+        );
         optionsGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
         Composite composite = new Composite(optionsGroup, 2);

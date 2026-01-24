@@ -48,6 +48,7 @@ import org.jkiss.dbeaver.tools.transfer.DTConstants;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferConsumer;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferProcessor;
 import org.jkiss.dbeaver.tools.transfer.database.DatabaseProducerSettings;
+import org.jkiss.dbeaver.tools.transfer.database.DatabaseProducerSettings.FetchedRowsPolicy;
 import org.jkiss.dbeaver.tools.transfer.database.DatabaseTransferProducer;
 import org.jkiss.dbeaver.tools.transfer.registry.DataTransferNodeDescriptor;
 import org.jkiss.dbeaver.tools.transfer.registry.DataTransferProcessorDescriptor;
@@ -221,8 +222,14 @@ public class ResultSetHandlerOpenWith extends AbstractHandler implements IElemen
                     producerSettings.setQueryRowCount(false);
                     // disable OpenNewconnection by default (#6432)
                     producerSettings.setOpenNewConnections(false);
-                    producerSettings.setSelectedRowsOnly(!CommonUtils.isEmpty(options.getSelectedRows()));
-                    producerSettings.setSelectedColumnsOnly(!CommonUtils.isEmpty(options.getSelectedColumns()));
+
+                    boolean selectedRowsOnly = !CommonUtils.isEmpty(options.getSelectedRows());
+                    boolean selectedColumnsOnly = !CommonUtils.isEmpty(options.getSelectedColumns());
+                    if (selectedRowsOnly || selectedColumnsOnly) {
+                        producerSettings.setFetchedRowsPolicy(new FetchedRowsPolicy(selectedRowsOnly, selectedColumnsOnly));
+                    } else {
+                        producerSettings.setFetchedRowsPolicy(null);
+                    }
 
                     producer.transferData(monitor, consumer, null, producerSettings, null);
 

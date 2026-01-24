@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -78,7 +78,7 @@ class DashboardCreateWizardPage extends WizardPage {
 
     @Override
     public void createControl(Composite parent) {
-        Composite configGroup = UIUtils.createControlGroup(parent, "Settings", 2, GridData.FILL_BOTH, 0);
+        Composite configGroup = UIUtils.createTitledComposite(parent, "Settings", 2, GridData.FILL_BOTH);
 
         final Text dashboardNameText = UIUtils.createLabelText(configGroup, "Name", null); //$NON-NLS-1$
         final Text dashboardIdText = UIUtils.createLabelText(configGroup, "ID", null); //$NON-NLS-1$

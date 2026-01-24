@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ui.net.ssh;
 
 import org.eclipse.jface.dialogs.MessageDialog;
+import org.eclipse.jface.layout.GridDataFactory;
 import org.eclipse.jface.layout.GridLayoutFactory;
 import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.StructuredSelection;
@@ -105,7 +106,12 @@ public class SSHTunnelDefaultConfiguratorUI implements IObjectPropertyConfigurat
         composite.setLayout(new GridLayout(1, false));
 
         {
-            Group settingsGroup = UIUtils.createControlGroup(composite, SSHUIMessages.model_ssh_configurator_group_settings, 1, GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING, SWT.DEFAULT);
+            Composite settingsGroup = UIUtils.createTitledComposite(
+                composite,
+                SSHUIMessages.model_ssh_configurator_group_settings,
+                1,
+                GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING
+            );
             credentialsPanel = new CredentialsPanel(settingsGroup, propertyChangeListener, DBPConnectionEditIntention.DEFAULT);
         }
 
@@ -238,12 +244,11 @@ public class SSHTunnelDefaultConfiguratorUI implements IObjectPropertyConfigurat
             client.setLayoutData(new GridData(GridData.FILL_BOTH));
             group.setClient(client);
 
-            final Group generalGroup = UIUtils.createControlGroup(
+            Composite generalGroup = UIUtils.createTitledComposite(
                 client,
                 SSHUIMessages.model_ssh_configurator_group_general_text,
                 2,
-                GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING,
-                0
+                GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING
             );
 
             tunnelImplCombo = UIUtils.createLabelCombo(
@@ -281,12 +286,11 @@ public class SSHTunnelDefaultConfiguratorUI implements IObjectPropertyConfigurat
             // Hide tunnel sharing option if it's disabled
             UIUtils.setControlVisible(enableTunnelSharingCheck, !SSHUtils.DISABLE_SESSION_SHARING);
 
-            final Group timeoutsGroup = UIUtils.createControlGroup(
+            Composite timeoutsGroup = UIUtils.createTitledComposite(
                 client,
                 SSHUIMessages.model_ssh_configurator_group_timeouts_text,
                 2,
-                GridData.VERTICAL_ALIGN_FILL,
-                0
+                GridData.VERTICAL_ALIGN_FILL
             );
             keepAliveText = UIUtils.createLabelText(
                 timeoutsGroup,
@@ -301,14 +305,15 @@ public class SSHTunnelDefaultConfiguratorUI implements IObjectPropertyConfigurat
             );
             setNumberEditStyles(tunnelTimeout);
 
-            final Group portForwardingGroup = UIUtils.createControlGroup(
-                client,
+            Composite pfWrapper = UIUtils.createComposite(client, 1);
+            pfWrapper.setLayoutData(GridDataFactory.create(GridData.FILL_HORIZONTAL).span(2, 1).create());
+
+            Composite portForwardingGroup = UIUtils.createTitledComposite(
+                pfWrapper,
                 SSHUIMessages.model_ssh_configurator_group_port_forwarding_text,
                 4,
-                GridData.FILL_HORIZONTAL,
-                0
+                GridData.FILL_HORIZONTAL
             );
-            ((GridData) portForwardingGroup.getLayoutData()).horizontalSpan = 2;
             localHostText = UIUtils.createLabelText(
                 portForwardingGroup,
                 SSHUIMessages.model_ssh_configurator_label_local_host,
