@@ -30,12 +30,10 @@ import org.jkiss.dbeaver.model.cli.model.option.InputFileOption;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.meta.IPropertyValueListProvider;
-import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
-import org.jkiss.dbeaver.model.net.DBWHandlerDescriptor;
-import org.jkiss.dbeaver.model.net.DBWHandlerRegistry;
 import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.model.runtime.LoggingProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.utils.DataSourceUtils;
 import org.jkiss.dbeaver.utils.PropertySerializationUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
@@ -43,8 +41,10 @@ import org.jkiss.utils.CommonUtils;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 
 public class CLIUtils {
     private static final Log log = Log.getLog(CLIUtils.class);
@@ -293,100 +293,29 @@ public class CLIUtils {
             }
         }
 
-        if (authOptions.getNetworkHandlerOptions() != null) {
-            processNetworkHandlerProperties(
-                dataSource,
-                authOptions.getNetworkHandlerOptions().isSavePassword(),
+        if (authOptions.getNetworkHandlerOptions() != null
+            && !CommonUtils.isEmpty(authOptions.getNetworkHandlerOptions().getHandlerParams())
+        ) {
+            Map<String, String> handlerParams = prepareKeyValueParams(
+                new HashMap<>(),
                 authOptions.getNetworkHandlerOptions().getHandlerParams()
             );
+            try {
+                DataSourceUtils.processNetworkHandlerProperties(
+                    dataSource,
+                    authOptions.getNetworkHandlerOptions().isSavePassword(),
+                    handlerParams
+                );
+            } catch (Exception e) {
+                throw new CLIException(
+                    "Error processing network handler properties: " + e.getMessage(),
+                    e,
+                    CLIConstants.EXIT_CODE_ERROR
+                );
+            }
         }
     }
 
-    public static void processNetworkHandlerProperties(
-        @NotNull DBPDataSourceContainer dataSource,
-        boolean savePassword,
-        @Nullable List<String> handlerParams
-    ) throws CLIException {
-        if (CommonUtils.isEmpty(handlerParams)) {
-            return;
-        }
-        DBWHandlerRegistry handlerRegistry = DBWorkbench.getPlatform().getNetworkHandlerRegistry();
-        Map<String, ? extends DBWHandlerDescriptor> availableHandlers = handlerRegistry.getDescriptors(dataSource.getDriver())
-            .stream()
-            .collect(Collectors.toMap(DBWHandlerDescriptor::getPrefix, h -> h));
-
-        Map<String, List<String>> paramsByPrefix = new HashMap<>();
-        List<String> unknownParams = new ArrayList<>();
-        for (String networkHandlerParam : handlerParams) {
-            String[] paramParts = networkHandlerParam.split("\\.", 2);
-            if (paramParts.length != 2) {
-                unknownParams.add(networkHandlerParam);
-                continue;
-            }
-            String prefix = paramParts[0];
-            String param = paramParts[1];
-
-            if (!availableHandlers.containsKey(prefix)) {
-                unknownParams.add(networkHandlerParam);
-                continue;
-            }
-            paramsByPrefix.computeIfAbsent(prefix, k -> new ArrayList<>()).add(param);
-        }
-        if (!CommonUtils.isEmpty(unknownParams)) {
-            throw new CLIException(
-                "Invalid network handler parameters: " + String.join(", ", unknownParams),
-                CLIConstants.EXIT_CODE_ILLEGAL_ARGUMENTS
-            );
-        }
-
-        var connectionConfiguration = dataSource.getConnectionConfiguration();
-
-        for (Map.Entry<String, List<String>> entry : paramsByPrefix.entrySet()) {
-            DBWHandlerDescriptor handlerDescriptor = availableHandlers.get(entry.getKey());
-            String handlerPrefix = handlerDescriptor.getPrefix() + ".";
-            DBWHandlerConfiguration handlerConfiguration = connectionConfiguration.getHandler(handlerDescriptor.getId());
-            if (handlerConfiguration == null) {
-                handlerConfiguration = new DBWHandlerConfiguration(handlerDescriptor, dataSource);
-            }
-            Map<String, String> handlerProperties = prepareKeyValueParams(
-                handlerConfiguration.getSecureProperties(),
-                entry.getValue()
-            );
-            for (DBPPropertyDescriptor propertyDescriptor : handlerDescriptor.getHandlerProperties()) {
-                String propId = propertyDescriptor.getId();
-                String value = handlerProperties.get(propId);
-                if (CommonUtils.isEmpty(value) && propId.startsWith(handlerPrefix)) {
-                    value = propId.substring(handlerPrefix.length());
-                }
-                if (CommonUtils.isEmpty(value)) {
-                    value = CommonUtils.toString(propertyDescriptor.getDefaultValue());
-                }
-                if (CommonUtils.isEmpty(value)) {
-                    //no value and default value for property
-                    continue;
-                }
-
-                switch (propertyDescriptor.getId()) {
-                    case "user":
-                        handlerConfiguration.setUserName(value);
-                        break;
-                    case "password":
-                        handlerConfiguration.setPassword(value);
-                        break;
-                    default:
-                        //id from descriptor must be used, because id entered by the user may differ
-                        if (propertyDescriptor.hasFeature("secured")) {
-                            handlerConfiguration.setSecureProperty(propertyDescriptor.getId(), value);
-                        } else {
-                            handlerConfiguration.setProperty(propertyDescriptor.getId(), value);
-                        }
-                }
-            }
-            handlerConfiguration.setEnabled(true);
-            handlerConfiguration.setSavePassword(savePassword);
-            connectionConfiguration.updateHandler(handlerConfiguration);
-        }
-    }
 
     public static String getPropertyHelpText(@NotNull DBPPropertyDescriptor property) {
         return getPropertyHelpText(property, null);

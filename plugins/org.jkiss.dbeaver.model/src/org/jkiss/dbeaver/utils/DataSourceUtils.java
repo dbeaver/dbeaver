@@ -29,13 +29,16 @@ import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.connection.DBPDriverConfigurationType;
 import org.jkiss.dbeaver.model.navigator.DBNBrowseSettings;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
+import org.jkiss.dbeaver.model.net.DBWHandlerDescriptor;
+import org.jkiss.dbeaver.model.net.DBWHandlerRegistry;
 import org.jkiss.dbeaver.model.net.DBWUtils;
+import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.model.secret.DBSSecretValue;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.CommonUtils;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Connection spec utils.
@@ -80,8 +83,8 @@ public class DataSourceUtils {
         @NotNull String connectionSpec,
         @Nullable GeneralUtils.IParameterHandler parameterHandler,
         boolean searchByParameters,
-        boolean createNewDataSource)
-    {
+        boolean createNewDataSource
+    ) {
         String driverName = null, url = null, host = null, port = null,
             server = null, database = null,
             user = null, password = null, authModelId = null;
@@ -98,7 +101,7 @@ public class DataSourceUtils {
         Map<String, String> conProperties = new HashMap<>();
         Map<String, Map<String, String>> handlerProps = new HashMap<>();
         Map<String, String> authProperties = new HashMap<>();
-        Map<String, String> n = new HashMap<>();
+        Map<String, String> handlerUpdateParams = new HashMap<>();
         Map<String, String> advancedProperties = new HashMap<>();
         DBPDataSourceFolder folder = null;
         String dsId = null, dsName = null, dsIdOrName = null;
@@ -215,6 +218,12 @@ public class DataSourceUtils {
                                 advancedProperties.put(suffix, paramValue);
                                 handled = true;
                             }
+                        } else if (paramName.startsWith(PREFIX_NET_HANDLER)) {
+                            String suffix = paramName.substring(PREFIX_NET_HANDLER.length());
+                            if (!suffix.isEmpty()) {
+                                handlerUpdateParams.put(suffix, paramValue);
+                                handled = true;
+                            }
                         } else if (parameterHandler != null) {
                             handled = parameterHandler.setParameter(paramName, paramValue);
                         }
@@ -253,6 +262,13 @@ public class DataSourceUtils {
             if (!CommonUtils.isEmpty(advancedProperties)) connConfig.setProviderProperties(advancedProperties);
             if (!CommonUtils.isEmpty(authModelId)) connConfig.setAuthModelId(authModelId);
 
+            if (!CommonUtils.isEmpty(handlerUpdateParams)) {
+                try {
+                    processNetworkHandlerProperties(dataSource, savePassword, handlerUpdateParams);
+                } catch (DBException e) {
+                    log.error("Error applying network handler properties", e);
+                }
+            }
             return dataSource;
         }
 
@@ -378,6 +394,13 @@ public class DataSourceUtils {
         navSettings.setHideFolders(hideFolders);
         navSettings.setMergeEntities(mergeEntities);
 
+        if (!CommonUtils.isEmpty(handlerUpdateParams)) {
+            try {
+                processNetworkHandlerProperties(newDS, savePassword, handlerUpdateParams);
+            } catch (DBException e) {
+                log.error("Error applying network handler properties", e);
+            }
+        }
         //ds.set
         try {
             dsRegistry.addDataSource(newDS);
@@ -444,5 +467,87 @@ public class DataSourceUtils {
             }
         }
         return "......";
+    }
+
+    public static void processNetworkHandlerProperties(
+        @NotNull DBPDataSourceContainer dataSource,
+        boolean savePassword,
+        @Nullable Map<String, String> handlerParams
+    ) throws DBException {
+        if (CommonUtils.isEmpty(handlerParams)) {
+            return;
+        }
+        DBWHandlerRegistry handlerRegistry = DBWorkbench.getPlatform().getNetworkHandlerRegistry();
+        Map<String, ? extends DBWHandlerDescriptor> availableHandlers = handlerRegistry.getDescriptors(dataSource.getDriver())
+            .stream()
+            .collect(Collectors.toMap(DBWHandlerDescriptor::getPrefix, h -> h));
+
+        Set<String> prefixes = new HashSet<>();
+        List<String> unknownParams = new ArrayList<>();
+        for (String networkHandlerParam : handlerParams.keySet()) {
+            String[] paramParts = networkHandlerParam.split("\\.", 2);
+            if (paramParts.length != 2) {
+                unknownParams.add(networkHandlerParam);
+                continue;
+            }
+            String prefix = paramParts[0];
+            String param = paramParts[1];
+
+            if (!availableHandlers.containsKey(prefix)) {
+                unknownParams.add(networkHandlerParam);
+                continue;
+            }
+            prefixes.add(prefix);
+        }
+        if (!CommonUtils.isEmpty(unknownParams)) {
+            throw new DBException(
+                "Invalid network handler parameters: " + String.join(", ", unknownParams)
+            );
+        }
+
+        var connectionConfiguration = dataSource.getConnectionConfiguration();
+
+        for (String prefix : prefixes) {
+            DBWHandlerDescriptor handlerDescriptor = availableHandlers.get(prefix);
+            String handlerPrefix = handlerDescriptor.getPrefix() + ".";
+            DBWHandlerConfiguration handlerConfiguration = connectionConfiguration.getHandler(handlerDescriptor.getId());
+            if (handlerConfiguration == null) {
+                handlerConfiguration = new DBWHandlerConfiguration(handlerDescriptor, dataSource);
+            }
+
+            for (DBPPropertyDescriptor propertyDescriptor : handlerDescriptor.getHandlerProperties()) {
+                String propId = propertyDescriptor.getId();
+                String value = handlerParams.get(propId);
+                if (CommonUtils.isEmpty(value) && !propId.startsWith(handlerPrefix)) {
+                    value = handlerParams.get(handlerPrefix + propId);
+                }
+                if (CommonUtils.isEmpty(value)) {
+                    value = CommonUtils.toString(propertyDescriptor.getDefaultValue());
+                }
+                if (CommonUtils.isEmpty(value)) {
+                    //no value and default value for property
+                    continue;
+                }
+
+                switch (propertyDescriptor.getId()) {
+                    case "user":
+                        handlerConfiguration.setUserName(value);
+                        break;
+                    case "password":
+                        handlerConfiguration.setPassword(value);
+                        break;
+                    default:
+                        //id from descriptor must be used, because id entered by the user may differ
+                        if (propertyDescriptor.hasFeature("secured")) {
+                            handlerConfiguration.setSecureProperty(propertyDescriptor.getId(), value);
+                        } else {
+                            handlerConfiguration.setProperty(propertyDescriptor.getId(), value);
+                        }
+                }
+            }
+            handlerConfiguration.setEnabled(true);
+            handlerConfiguration.setSavePassword(savePassword);
+            connectionConfiguration.updateHandler(handlerConfiguration);
+        }
     }
 }
