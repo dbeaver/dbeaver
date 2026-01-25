@@ -46,7 +46,8 @@ public class TimescaleSchema extends PostgreSchema {
                 """
                 SELECT c.oid,
                        (size_info).total_bytes as total_rel_size,
-                       (size_info).table_bytes as rel_size
+                       (size_info).table_bytes as rel_size,
+                       approximate_row_count(c.oid::regclass) as approx_rows
                 FROM pg_class c
                 JOIN timescaledb_information.hypertables h
                   ON h.hypertable_schema = ? AND h.hypertable_name = c.relname
@@ -57,10 +58,13 @@ public class TimescaleSchema extends PostgreSchema {
                 stmt.setLong(2, getObjectId());
                 try (JDBCResultSet dbResult = stmt.executeQuery()) {
                     while (dbResult.next()) {
-                        long tableId = dbResult.getLong(1);
+                        long tableId = dbResult.getLong("oid");
                         PostgreTableBase table = getTable(monitor, tableId);
                         if (table instanceof TimescaleTable timescaleTable) {
+                            timescaleTable.markAsHypertable();
                             timescaleTable.fetchStatistics(dbResult);
+                            long approxRows = dbResult.getLong("approx_rows");
+                            timescaleTable.setRowCountEstimateFromBulk(approxRows);
                         }
                     }
                 }

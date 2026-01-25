@@ -32,6 +32,10 @@ public class TimescaleTable extends PostgreTableRegular {
 
     private static final Log log = Log.getLog(TimescaleTable.class);
 
+    private volatile Boolean cachedIsHypertable;
+
+    private volatile boolean rowCountEstimateSetFromBulk = false;
+
     public TimescaleTable(PostgreSchema schema, ResultSet dbResult) {
         super(schema, dbResult);
     }
@@ -57,9 +61,20 @@ public class TimescaleTable extends PostgreTableRegular {
                 }
             }
         }
+
+        if (!rowCountEstimateSetFromBulk) {
+            long approximateRowCount = fetchApproximateRowCount(session);
+            if (approximateRowCount >= 0) {
+                rowCountEstimate = approximateRowCount;
+            }
+        }
     }
 
-    private boolean isHypertable(@NotNull JDBCSession session) throws SQLException {
+    private synchronized boolean isHypertable(@NotNull JDBCSession session) throws SQLException {
+        if (cachedIsHypertable != null) {
+            return cachedIsHypertable;
+        }
+
         String sql =
             "SELECT 1 FROM timescaledb_information.hypertables " +
             "WHERE hypertable_schema = ? AND hypertable_name = ?";
@@ -68,12 +83,39 @@ public class TimescaleTable extends PostgreTableRegular {
             stmt.setString(1, getSchema().getName());
             stmt.setString(2, getName());
             try (JDBCResultSet rs = stmt.executeQuery()) {
-                return rs.next();
+                cachedIsHypertable = rs.next();
+                return cachedIsHypertable;
             }
         } catch (SQLException e) {
             log.error("Failed to check if table is a hypertable: " + e.getMessage(), e);
             return false;
         }
+    }
+
+    private long fetchApproximateRowCount(@NotNull JDBCSession session) {
+        String sql = "SELECT approximate_row_count(format('%I.%I', ?, ?)::regclass)";
+        try (JDBCPreparedStatement stmt = session.prepareStatement(sql)) {
+            stmt.setString(1, getSchema().getName());
+            stmt.setString(2, getName());
+            try (JDBCResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getLong(1);
+                }
+                return -1L;
+            }
+        } catch (SQLException e) {
+            log.debug("Failed to get approximate row count: " + e.getMessage(), e);
+            return -1L;
+        }
+    }
+
+    synchronized void markAsHypertable() {
+        this.cachedIsHypertable = true;
+    }
+
+    synchronized void setRowCountEstimateFromBulk(long rowCount) {
+        this.rowCountEstimate = rowCount;
+        this.rowCountEstimateSetFromBulk = true;
     }
 
     @Override
