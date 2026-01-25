@@ -4385,8 +4385,6 @@ public class ResultSetViewer extends Viewer
     public void updateRowCount(boolean showErrors) {
         if (rowCountLabel != null) {
             rowCountLabel.executeAction(showErrors);
-        } else {
-            log.error("Cannot calculate row count with disabled row count UI");
         }
     }
 
@@ -4394,7 +4392,7 @@ public class ResultSetViewer extends Viewer
         if (selectionStatLabel == null || selectionStatLabel.isDisposed()) {
             return;
         }
-        if (stats.equals(selectionStatLabel.getText())) {
+        if (Objects.equals(stats, selectionStatLabel.getText())) {
             return;
         }
         if (CommonUtils.isEmptyTrimmed(stats)) {

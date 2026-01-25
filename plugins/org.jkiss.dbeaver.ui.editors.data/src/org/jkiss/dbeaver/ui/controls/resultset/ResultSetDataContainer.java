@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -96,9 +96,13 @@ public class ResultSetDataContainer implements DBSDataContainer, DBPContextProvi
         long flags,
         int fetchSize
     ) throws DBException {
-        filterAttributes = proceedSelectedColumnsOnly(flags);
-        if (filterAttributes || proceedSelectedRowsOnly(flags)) {
+        boolean fetchedRowsOnly = proceedFetchedRowsOnly(flags);
+        boolean selectedRowsOnly = proceedSelectedRowsOnly(flags);
+        boolean selectedColumnsOnly = proceedSelectedColumnsOnly(flags);
 
+        filterAttributes = selectedColumnsOnly;
+
+        if (fetchedRowsOnly || selectedRowsOnly || selectedColumnsOnly) {
             long startTime = System.currentTimeMillis();
             DBCStatistics statistics = new DBCStatistics();
             statistics.setExecuteTime(System.currentTimeMillis() - startTime);
@@ -109,7 +113,7 @@ public class ResultSetDataContainer implements DBSDataContainer, DBPContextProvi
             try (resultSet) {
                 DBDDataReceiver.startFetchWorkflow(dataReceiver, session, resultSet, firstRow, maxRows);
                 while (!session.getProgressMonitor().isCanceled() && resultSet.nextRow()) {
-                    if (!proceedSelectedRowsOnly(flags) || options.getSelectedRows().contains(resultSet.curRow.getRowNumber())) {
+                    if (!selectedRowsOnly || options.getSelectedRows().contains(resultSet.curRow.getRowNumber())) {
                         dataReceiver.fetchRow(session, resultSet);
                     }
                     resultCount++;
@@ -121,6 +125,10 @@ public class ResultSetDataContainer implements DBSDataContainer, DBPContextProvi
         } else {
             return dataContainer.readData(source, session, dataReceiver, dataFilter, firstRow, maxRows, flags, fetchSize);
         }
+    }
+
+    private boolean proceedFetchedRowsOnly(long flags) {
+        return (flags & DBSDataContainer.FLAG_USE_FETCHED_ROWS) != 0;
     }
 
     private boolean proceedSelectedColumnsOnly(long flags) {
@@ -135,7 +143,7 @@ public class ResultSetDataContainer implements DBSDataContainer, DBPContextProvi
     public long countData(@NotNull DBCExecutionSource source, @NotNull DBCSession session, @Nullable DBDDataFilter dataFilter, long flags) throws DBException {
         if (proceedSelectedRowsOnly(flags)) {
             return options.getSelectedRows().size();
-        } else if (proceedSelectedColumnsOnly(flags)) {
+        } else if (proceedFetchedRowsOnly(flags) || proceedSelectedColumnsOnly(flags)) {
             return model.getRowCount();
         } else {
             return dataContainer.countData(source, session, dataFilter, flags);
@@ -319,8 +327,8 @@ public class ResultSetDataContainer implements DBSDataContainer, DBPContextProvi
         }
 
         @Override
-        public void close() {
-            // do nothing
+        public void close() throws DBException {
+            localStatement.close();
         }
 
         private class CustomResultSetMeta extends LocalResultSetMeta {

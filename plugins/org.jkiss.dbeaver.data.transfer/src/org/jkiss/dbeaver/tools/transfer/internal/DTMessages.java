@@ -35,6 +35,7 @@ public class DTMessages extends NLS {
     public static String data_transfer_wizard_output_checkbox_split_files_tip;
     public static String data_transfer_wizard_output_checkbox_new_connection;
     public static String data_transfer_wizard_output_checkbox_select_row_count;
+    public static String data_transfer_wizard_output_checkbox_fetched_rows_only;
     public static String data_transfer_wizard_output_checkbox_selected_columns_only;
     public static String data_transfer_wizard_output_checkbox_selected_rows_only;
     public static String data_transfer_wizard_output_combo_extract_type_item_by_segments;
