@@ -1474,8 +1474,12 @@ public class SQLEditor extends SQLEditorBase implements
         }
 
         {
-            resultTabs.addMouseListener(MouseListener.mouseDownAdapter(e ->
-                activeResultsTab = resultTabs.getItem(new Point(e.x, e.y))));
+            resultTabs.addSelectionListener(SelectionListener.widgetSelectedAdapter(selectionEvent -> {
+                if (selectionEvent.item instanceof CTabItem cTabItem) {
+                    activeResultsTab = cTabItem;
+                }
+            }));
+
             MenuManager menuMgr = new MenuManager();
             Menu menu = menuMgr.createContextMenu(resultTabs);
             menuMgr.addMenuListener(manager -> {
@@ -1881,8 +1885,17 @@ public class SQLEditor extends SQLEditorBase implements
     }
 
     private CTabItem getActiveResultsTab() {
-        return activeResultsTab == null || activeResultsTab.isDisposed() ?
-            (resultTabs == null ? null : resultTabs.getSelection()) : activeResultsTab;
+        if (resultTabs == null || resultTabs.isDisposed()) {
+            return null;
+        }
+
+        CTabItem selection = resultTabs.getSelection();
+        if (selection != null && !selection.isDisposed()) {
+            return selection;
+        }
+
+        return activeResultsTab != null && !activeResultsTab.isDisposed() ? activeResultsTab : null;
+
     }
 
     public void closeActiveTab() {
