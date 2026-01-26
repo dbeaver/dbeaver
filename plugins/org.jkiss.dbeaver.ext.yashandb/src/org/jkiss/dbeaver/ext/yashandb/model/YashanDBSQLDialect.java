@@ -361,6 +361,7 @@ public class YashanDBSQLDialect extends JDBCSQLDialect implements SQLDataTypeCon
 		case YashanDBConstants.TYPE_OCTET:
 		case YashanDBConstants.TYPE_INTERVAL_YEAR_MONTH:
 			return "";
+		default:
 		}
 		return super.getColumnTypeModifiers(dataSource, column, typeName, dataKind);
 	}
@@ -372,8 +373,10 @@ public class YashanDBSQLDialect extends JDBCSQLDialect implements SQLDataTypeCon
 		if (type != null) {
 			return type;
 		}
-		String externalTypeName = sourceTypedObject.getTypeName().toUpperCase(Locale.ENGLISH);
-		String localDataType = null, dataTypeModifies = null;
+
+		final String externalTypeName = sourceTypedObject.getTypeName().toUpperCase(Locale.ENGLISH);
+		String localDataType = null;
+		String dataTypeModifies = null;
 
 		switch (externalTypeName) {
 		case "VARCHAR":
@@ -395,22 +398,21 @@ public class YashanDBSQLDialect extends JDBCSQLDialect implements SQLDataTypeCon
 		case "NUMERIC":
 			localDataType = YashanDBConstants.TYPE_NUMBER;
 			if (sourceTypedObject.getPrecision() != null) {
-				dataTypeModifies = sourceTypedObject.getPrecision().toString();
+				StringBuilder modifier = new StringBuilder(sourceTypedObject.getPrecision().toString());
 				if (sourceTypedObject.getScale() != null) {
-					dataTypeModifies += "," + sourceTypedObject.getScale();
+					modifier.append(",").append(sourceTypedObject.getScale());
 				}
+				dataTypeModifies = modifier.toString();
 			}
 			break;
+		default:
 		}
-		if (localDataType == null) {
-			return null;
-		}
+
 		if (targetTypeProvider != null) {
 			try {
 				DBSDataType dataType = targetTypeProvider.resolveDataType(new VoidProgressMonitor(), localDataType);
 				if (dataType == null) {
 					return null;
-
 				}
 				String targetTypeName = DBUtils.getObjectFullName(dataType, DBPEvaluationContext.DDL);
 				if (dataTypeModifies != null) {
@@ -422,6 +424,7 @@ public class YashanDBSQLDialect extends JDBCSQLDialect implements SQLDataTypeCon
 				return null;
 			}
 		}
+
 		return localDataType;
 	}
 

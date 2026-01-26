@@ -28,12 +28,12 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 public class YashanDBUserProfile extends YashanDBGlobalObject {
 
+	private String name;
+	
 	public YashanDBUserProfile(YashanDBDataSource dataSource, ResultSet resultSet) {
 		super(dataSource, resultSet != null);
 		this.name = JDBCUtils.safeGetString(resultSet, "PROFILE");
 	}
-
-	private String name;
 	
 	@NotNull
 	@Override

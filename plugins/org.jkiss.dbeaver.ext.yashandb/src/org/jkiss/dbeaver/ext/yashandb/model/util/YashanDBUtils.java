@@ -59,69 +59,110 @@ public final class YashanDBUtils {
 
 	private static final Log log = Log.getLog(YashanDBUtils.class);
 
+	private static final String DEFAULT_CUSTOM_SOURCE = "-- ??? CUSTOM SOURCE";
+	private static final int MONITOR_TOTAL_WORK = 1;
+	private static final String SUB_TASK_LINE_PREFIX = "Line ";
+
 	public static String isAdminPriv(YashanDBDataSource dataSource, String viewName) {
-		return dataSource.isAdminVisible() == true ? "DBA_" + viewName : "ALL_" + viewName;
+		return dataSource.isAdminVisible() ? "DBA_" + viewName : "ALL_" + viewName;
 	}
 
-	public static String getSource(DBRProgressMonitor monitor, YashanDBSourceObject sourceObject, boolean body,
-			boolean insertCreateReplace) throws DBCException {
+	private static String preCheckSourceObject(YashanDBSourceObject sourceObject, DBRProgressMonitor monitor) {
 		if (sourceObject.getSourceType().isCustom()) {
 			log.warn("Can't read source for custom source objects");
-			return "-- ??? CUSTOM SOURCE";
+			return DEFAULT_CUSTOM_SOURCE;
 		}
-		final YashanDBSchema sourceOwner = sourceObject.getSchema();
+
+		YashanDBSchema sourceOwner = sourceObject.getSchema();
 		if (sourceOwner == null) {
-			log.warn("No source owner for object '" + sourceObject.getName() + "'");
+			String warnMsg = "No source owner for object '" + sourceObject.getName() + "'";
+			log.warn(warnMsg);
 			return null;
 		}
-		monitor.beginTask("Load sources for '" + sourceObject.getName() + "'...", 1);
+		return null;
+	}
+
+	private static void initMonitor(DBRProgressMonitor monitor, YashanDBSourceObject sourceObject) {
+		String taskName = "Load sources for '" + sourceObject.getName() + "'...";
+		monitor.beginTask(taskName, MONITOR_TOTAL_WORK);
+	}
+
+	private static String getSysViewName(YashanDBDataSource dataSource, DBRProgressMonitor monitor) {
 		String sysViewName = YashanDBConstants.VIEW_DBA_SOURCE;
-		if (!sourceObject.getDataSource().isViewAvailable(monitor, YashanDBConstants.SCHEMA_SYS, sysViewName)) {
+		if (!dataSource.isViewAvailable(monitor, YashanDBConstants.SCHEMA_SYS, sysViewName)) {
 			sysViewName = YashanDBConstants.VIEW_ALL_SOURCE;
 		}
-		String sourceType = sourceObject.getSourceType().name().replace("_", " ");
-		try (final JDBCSession session = DBUtils.openMetaSession(monitor, sourceOwner,
-				"Load source code for " + sourceType + " '" + sourceObject.getName() + "'")) {
-			try (JDBCPreparedStatement dbStat = session
-					.prepareStatement("SELECT TEXT FROM " + getSysSchemaPrefix(sourceObject.getDataSource())
-							+ sysViewName + " " + "WHERE TYPE=? AND OWNER=? AND NAME=? ")) {
-				String sourceName = sourceObject.getName();
-				sourceType = sourceType.equalsIgnoreCase("FUNCTION") ? "UDF" : sourceType;
+		return sysViewName;
+	}
 
-				dbStat.setString(1, body ? sourceType + " BODY" : sourceType);
-				dbStat.setString(2, sourceOwner.getName());
-				dbStat.setString(3, sourceName);
-				dbStat.setFetchSize(DBConstants.METADATA_FETCH_SIZE);
+	private static String querySourceContent(DBRProgressMonitor monitor, YashanDBSourceObject sourceObject,
+			boolean body, String sysViewName) throws DBCException {
+		YashanDBSchema sourceOwner = sourceObject.getSchema();
+		String sourceType = getAdaptedSourceType(sourceObject.getSourceType().name());
+		String sourceName = sourceObject.getName();
+
+		String taskDesc = "Load source code for " + sourceType + " '" + sourceName + "'";
+		try (JDBCSession session = DBUtils.openMetaSession(monitor, sourceOwner, taskDesc)) {
+			try (JDBCPreparedStatement dbStat = buildSourceQueryStatement(sourceObject, session, sysViewName,
+					sourceType, sourceOwner.getName(), sourceName, body)) {
 				try (JDBCResultSet dbResult = dbStat.executeQuery()) {
-					StringBuilder source = null;
-					int lineCount = 0;
-					while (dbResult.next()) {
-						if (monitor.isCanceled()) {
-							break;
-						}
-						String line = dbResult.getString(1);
-						if (source == null) {
-							source = new StringBuilder(200);
-						}
-						if (line == null) {
-							line = "";
-						}
-						source.append(line);
-						lineCount++;
-						monitor.subTask("Line " + lineCount);
-					}
-					if (source == null) {
-						return null;
-					}
-					if (insertCreateReplace) {
-						return insertCreateReplace(sourceObject, body, source.toString());
-					} else {
-						return source.toString();
-					}
+					return buildSourceContent(monitor, dbResult);
 				}
 			} catch (SQLException e) {
 				throw new DBCException(e, session.getExecutionContext());
 			}
+		}
+	}
+
+	private static String getAdaptedSourceType(String originalType) {
+		String sourceType = originalType.replace("_", " ");
+		return sourceType.equalsIgnoreCase("FUNCTION") ? "UDF" : sourceType;
+	}
+
+	private static JDBCPreparedStatement buildSourceQueryStatement(YashanDBSourceObject sourceObject,
+			JDBCSession session, String sysViewName, String sourceType, String ownerName, String sourceName,
+			boolean body) throws SQLException {
+		String sql = "SELECT TEXT FROM " + getSysSchemaPrefix(sourceObject.getDataSource()) + sysViewName
+				+ " WHERE TYPE=? AND OWNER=? AND NAME=?";
+
+		JDBCPreparedStatement dbStat = session.prepareStatement(sql);
+		dbStat.setString(1, body ? sourceType + " BODY" : sourceType);
+		dbStat.setString(2, ownerName);
+		dbStat.setString(3, sourceName);
+		dbStat.setFetchSize(DBConstants.METADATA_FETCH_SIZE);
+		return dbStat;
+	}
+
+	private static String buildSourceContent(DBRProgressMonitor monitor, JDBCResultSet dbResult) throws SQLException {
+		StringBuilder source = null;
+		int lineCount = 0;
+
+		while (dbResult.next() && !monitor.isCanceled()) {
+			String line = dbResult.getString(1);
+			if (source == null) {
+				source = new StringBuilder(200);
+			}
+			source.append(line == null ? "" : line);
+			lineCount++;
+			monitor.subTask(SUB_TASK_LINE_PREFIX + lineCount);
+		}
+
+		return source == null ? null : source.toString();
+	}
+
+	public static String getSource(DBRProgressMonitor monitor, YashanDBSourceObject sourceObject, boolean body,
+			boolean insertCreateReplace) throws DBCException {
+		String preCheckResult = preCheckSourceObject(sourceObject, monitor);
+		if (preCheckResult != null) {
+			return preCheckResult;
+		}
+
+		initMonitor(monitor, sourceObject);
+
+		try {
+			String sysViewName = getSysViewName(sourceObject.getDataSource(), monitor);
+			String sourceContent = querySourceContent(monitor, sourceObject, body, sysViewName);
+			return insertCreateReplace ? insertCreateReplace(sourceObject, body, sourceContent) : sourceContent;
 		} finally {
 			monitor.done();
 		}
@@ -138,11 +179,13 @@ public final class YashanDBUtils {
 		if (body) {
 			sourceType += " BODY";
 		}
-		Pattern srcPattern = Pattern.compile("^(" + sourceType + ")\\s+(\"{0,1}\\w+\"{0,1})", Pattern.CASE_INSENSITIVE);
-		Matcher matcher = srcPattern.matcher(source);
-		if (matcher.find()) {
-			return "CREATE OR REPLACE " + matcher.group(1) + " " + DBUtils.getQuotedIdentifier(object.getSchema()) + "."
-					+ matcher.group(2) + source.substring(matcher.end());
+		if(source != null) {
+			Pattern srcPattern = Pattern.compile("^(" + sourceType + ")\\s+(\"{0,1}\\w+\"{0,1})", Pattern.CASE_INSENSITIVE);
+			Matcher matcher = srcPattern.matcher(source);
+			if (matcher.find()) {
+				return "CREATE OR REPLACE " + matcher.group(1) + " " + DBUtils.getQuotedIdentifier(object.getSchema()) + "."
+						+ matcher.group(2) + source.substring(matcher.end());
+			}
 		}
 		return source;
 	}
@@ -209,7 +252,7 @@ public final class YashanDBUtils {
 	public static String getTableOrViewDDL(DBRProgressMonitor monitor, String objectType, YashanDBTableBase object,
 			Map<String, Object> options) throws DBException {
 
-		String ddl = new String();
+		String ddl = "";
 		String objectFullName = DBUtils.getObjectFullName(object, DBPEvaluationContext.DDL);
 		YashanDBSchema schema = object.getContainer();
 

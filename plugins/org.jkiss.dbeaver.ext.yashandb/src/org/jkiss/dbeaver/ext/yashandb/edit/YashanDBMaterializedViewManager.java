@@ -81,14 +81,14 @@ public class YashanDBMaterializedViewManager extends SQLObjectEditor<YashanDBMat
 	protected void addObjectCreateActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext,
 			List<DBEPersistAction> actions, ObjectCreateCommand command, Map<String, Object> options)
 			throws DBException {
-		createOrReplaceViewQuery(monitor, actions, command, options);
+		createOrReplaceViewQuery(actions, command);
 	}
 
 	@Override
 	protected void addObjectModifyActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext,
 			List<DBEPersistAction> actionList, ObjectChangeCommand command, Map<String, Object> options)
 			throws DBException {
-		createOrReplaceViewQuery(monitor, actionList, command, options);
+		createOrReplaceViewQuery(actionList, command);
 	}
 
 	@Override
@@ -98,9 +98,8 @@ public class YashanDBMaterializedViewManager extends SQLObjectEditor<YashanDBMat
 				"DROP MATERIALIZED VIEW " + command.getObject().getFullyQualifiedName(DBPEvaluationContext.DDL)));
 	}
 
-	private void createOrReplaceViewQuery(DBRProgressMonitor monitor, List<DBEPersistAction> actions,
-			DBECommandComposite<YashanDBMaterializedView, PropertyHandler> command, Map<String, Object> options)
-			throws DBException {
+	private void createOrReplaceViewQuery(List<DBEPersistAction> actions,
+			DBECommandComposite<YashanDBMaterializedView, PropertyHandler> command) throws DBException {
 		YashanDBMaterializedView view = command.getObject();
 		StringBuilder decl = new StringBuilder(200);
 		final String lineSeparator = GeneralUtils.getDefaultLineSeparator();

@@ -29,14 +29,14 @@ import org.jkiss.dbeaver.model.struct.DBSObjectLazy;
 
 public class YashanDBPrivUser extends YashanDBPriv implements DBSObjectLazy<YashanDBDataSource> {
 
+	private Object user;
+	private String grantedRole;
+	
 	public YashanDBPrivUser(YashanDBGrantee user, ResultSet resultSet) {
 		super(user, JDBCUtils.safeGetString(resultSet, "GRANTEE"), resultSet);
 		this.grantedRole = JDBCUtils.safeGetString(resultSet, "GRANTED_ROLE");
 		this.user = this.name;
 	}
-
-	private Object user;
-	private String grantedRole;
 
 	@NotNull
 	@Override

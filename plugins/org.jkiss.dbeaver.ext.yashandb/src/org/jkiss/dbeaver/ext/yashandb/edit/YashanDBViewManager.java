@@ -45,6 +45,9 @@ import org.jkiss.utils.CommonUtils;
 
 public class YashanDBViewManager extends SQLTableManager<YashanDBView, YashanDBSchema> {
 
+	private static final Class<? extends DBSObject>[] CHILD_TYPES = CommonUtils.array(YashanDBTableConstraint.class,
+			YashanDBTableForeignKey.class);
+
 	@Override
 	public long getMakerOptions(DBPDataSource dataSource) {
 		return FEATURE_EDITOR_ON_CREATE;
@@ -138,9 +141,6 @@ public class YashanDBViewManager extends SQLTableManager<YashanDBView, YashanDBS
 			}
 		}
 	}
-
-	private static final Class<? extends DBSObject>[] CHILD_TYPES = CommonUtils.array(YashanDBTableConstraint.class,
-			YashanDBTableForeignKey.class);
 
 	@Override
 	public Class<? extends DBSObject>[] getChildTypes() {

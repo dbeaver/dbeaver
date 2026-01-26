@@ -28,6 +28,12 @@ import org.jkiss.utils.CommonUtils;
 
 public class YashanDBPrivObject extends YashanDBObject<YashanDBGrantee> implements DBAPrivilege {
 
+	private String objectOwner;
+	private String objectType;
+	private String privilege;
+	private String grantor;
+	private boolean grantable;
+	
 	public YashanDBPrivObject(YashanDBGrantee grantee, ResultSet resultSet) {
 		super(grantee, JDBCUtils.safeGetString(resultSet, "TABLE_NAME"), true);
 		this.objectOwner = JDBCUtils.safeGetString(resultSet, "OWNER");
@@ -38,12 +44,6 @@ public class YashanDBPrivObject extends YashanDBObject<YashanDBGrantee> implemen
 		this.grantor = JDBCUtils.safeGetString(resultSet, "GRANTOR");
 		this.grantable = JDBCUtils.safeGetBoolean(resultSet, "GRANTABLE", "Y");
 	}
-
-	private String objectOwner;
-	private String objectType;
-	private String privilege;
-	private String grantor;
-	private boolean grantable;
 
 	@NotNull
 	@Override

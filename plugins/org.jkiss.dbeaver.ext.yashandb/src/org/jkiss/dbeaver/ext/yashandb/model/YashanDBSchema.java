@@ -181,8 +181,8 @@ public class YashanDBSchema extends YashanDBGlobalObject implements DBSSchema, D
 		}
 	}
 
-	private static YashanDBTableColumn getTableColumn(JDBCSession session, YashanDBTableBase parent, ResultSet dbResult,
-			String columnName) throws DBException {
+	private static YashanDBTableColumn getTableColumn(JDBCSession session, YashanDBTableBase parent, String columnName)
+			throws DBException {
 		YashanDBTableColumn tableColumn = columnName == null ? null
 				: parent.getAttribute(session.getProgressMonitor(), columnName);
 		if (tableColumn == null) {
@@ -228,7 +228,7 @@ public class YashanDBSchema extends YashanDBGlobalObject implements DBSSchema, D
 				@NotNull JDBCResultSet dbResult) throws SQLException, DBException {
 			final String tableType = JDBCUtils.safeGetString(dbResult, "OBJECT_TYPE");
 			if ("TABLE".equals(tableType)) {
-				return new YashanDBTable(session.getProgressMonitor(), owner, dbResult);
+				return new YashanDBTable(owner, dbResult);
 			} else if ("VIEW".equals(tableType)) {
 				return new YashanDBView(owner, dbResult);
 			} else if ("MATERIALIZED VIEW".equals(tableType)) {
@@ -326,7 +326,7 @@ public class YashanDBSchema extends YashanDBGlobalObject implements DBSSchema, D
 		@Override
 		protected YashanDBTableConstraintColumn[] fetchObjectRow(JDBCSession session, YashanDBTableBase parent,
 				YashanDBTableConstraint object, JDBCResultSet dbResult) throws SQLException, DBException {
-			final YashanDBTableColumn tableColumn = getTableColumn(session, parent, dbResult,
+			final YashanDBTableColumn tableColumn = getTableColumn(session, parent,
 					JDBCUtils.safeGetStringTrimmed(dbResult, "COLUMN_NAME"));
 			return tableColumn == null ? null
 					: new YashanDBTableConstraintColumn[] { new YashanDBTableConstraintColumn(object, tableColumn,
@@ -421,7 +421,7 @@ public class YashanDBSchema extends YashanDBGlobalObject implements DBSSchema, D
 		protected YashanDBTableForeignKeyColumn[] fetchObjectRow(JDBCSession session, YashanDBTable parent,
 				YashanDBTableForeignKey object, JDBCResultSet dbResult) throws SQLException, DBException {
 
-			YashanDBTableColumn column = getTableColumn(session, parent, dbResult,
+			YashanDBTableColumn column = getTableColumn(session, parent,
 					JDBCUtils.safeGetStringTrimmed(dbResult, "COLUMN_NAME"));
 
 			if (column == null) {
@@ -566,7 +566,7 @@ public class YashanDBSchema extends YashanDBGlobalObject implements DBSSchema, D
 					return null;
 				}
 				return new YashanDBTriggerColumn[] {
-						new YashanDBTriggerColumn(session.getProgressMonitor(), trigger, tableColumn, resultSet) };
+						new YashanDBTriggerColumn(trigger, tableColumn, resultSet) };
 			}
 			return null;
 		}
@@ -719,7 +719,7 @@ public class YashanDBSchema extends YashanDBGlobalObject implements DBSSchema, D
 		@Override
 		protected YashanDBDBLink fetchObject(@NotNull JDBCSession session, @NotNull YashanDBSchema owner,
 				@NotNull JDBCResultSet dbResult) throws SQLException, DBException {
-			return new YashanDBDBLink(session.getProgressMonitor(), owner, dbResult);
+			return new YashanDBDBLink(owner, dbResult);
 		}
 	}
 
@@ -829,12 +829,11 @@ public class YashanDBSchema extends YashanDBGlobalObject implements DBSSchema, D
 	public Collection<YashanDBSchedulerJob> getSchedulerJobs(DBRProgressMonitor monitor) throws DBException {
 		return schedulerJobCache.getAllObjects(monitor, this);
 	}
-	
-    @Association
-    public Collection<YashanDBRecycledObject> getRecycledObjects(DBRProgressMonitor monitor)
-            throws DBException {
-        return recycleBin.getAllObjects(monitor, this);
-    }
+
+	@Association
+	public Collection<YashanDBRecycledObject> getRecycledObjects(DBRProgressMonitor monitor) throws DBException {
+		return recycleBin.getAllObjects(monitor, this);
+	}
 
 	@Association
 	public Collection<YashanDBTableIndex> getIndexes(DBRProgressMonitor monitor) throws DBException {

@@ -47,17 +47,13 @@ public class YashanDBProcedureStandalone extends YashanDBProcedureBase<YashanDBS
 	private int subprogramId;;
 	private List<YashanDBProcedureArgument> params = new ArrayList<>();
 
-	public YashanDBProcedureStandalone(DBRProgressMonitor monitor, YashanDBSchema schema, ResultSet dbResult) {
+	public YashanDBProcedureStandalone(DBRProgressMonitor monitor, YashanDBSchema schema, ResultSet dbResult) throws DBException {
 		super(schema, JDBCUtils.safeGetString(dbResult, "OBJECT_NAME"), JDBCUtils.safeGetLong(dbResult, "OBJECT_ID"),
 				Objects.equals(JDBCUtils.safeGetString(dbResult, "OBJECT_TYPE"), "UDF") ? DBSProcedureType.FUNCTION
 						: DBSProcedureType.PROCEDURE);
 		this.valid = "VALID".equals(JDBCUtils.safeGetString(dbResult, "STATUS"));
-		try {
-			subprogramId = JDBCUtils.safeGetInt(dbResult, "SUBPROGRAM_ID");
-			this.params = (List<YashanDBProcedureArgument>) this.getParameters(monitor);
-		} catch (DBException e) {
-			throw new RuntimeException(e);
-		}
+		subprogramId = JDBCUtils.safeGetInt(dbResult, "SUBPROGRAM_ID");
+		this.params = (List<YashanDBProcedureArgument>) this.getParameters(monitor);
 	}
 
 	public int getSubprogramId() {
