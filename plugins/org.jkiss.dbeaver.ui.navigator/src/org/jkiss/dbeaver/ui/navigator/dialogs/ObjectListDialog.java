@@ -127,12 +127,10 @@ public class ObjectListDialog<T extends DBPObject> extends AbstractPopupPanel {
             IStructuredSelection selection = (IStructuredSelection) event.getSelection();
             selectedObjects.clear();
             selectedObjects.addAll(selection.toList());
-            if (!isModeless()) {
-                enableButton(IDialogConstants.OK_ID, !selectedObjects.isEmpty());
-            }
+            updateButtons();
         });
         objectList.setDoubleClickHandler(event -> {
-            if (isModeless() || isButtonEnabled(IDialogConstants.OK_ID)) {
+            if (isDialogComplete()) {
                 okPressed();
             }
         });
@@ -142,6 +140,14 @@ public class ObjectListDialog<T extends DBPObject> extends AbstractPopupPanel {
         closeOnFocusLost(objectList.getItemsViewer().getControl(), objectList.getSearchTextControl());
 
         return group;
+    }
+
+    protected boolean isDialogComplete() {
+        return !selectedObjects.isEmpty();
+    }
+
+    protected void updateButtons() {
+        enableButton(IDialogConstants.OK_ID, isDialogComplete());
     }
 
     @NotNull
@@ -305,6 +311,7 @@ public class ObjectListDialog<T extends DBPObject> extends AbstractPopupPanel {
                 getItemsViewer().setSelection(new StructuredSelection(selectedObjects), true);
             }
             handleObjectsLoaded(items, append);
+            updateButtons();
         }
 
         @Override
@@ -340,11 +347,7 @@ public class ObjectListDialog<T extends DBPObject> extends AbstractPopupPanel {
             @Override
             public Font getFont(Object element) {
                 if (selectedObjects.contains(element) || DBNUtils.isDefaultElement(element)) {
-                    if (boldFont == null) {
-                        boldFont = UIUtils.makeBoldFont(group.getFont());
-                        group.addDisposeListener(e -> boldFont.dispose());
-                    }
-                    return boldFont;
+                    return BaseThemeSettings.instance.treeAndTableFontBold;
                 }
                 return null;
             }

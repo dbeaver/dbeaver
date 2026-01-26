@@ -24,6 +24,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Shell;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
@@ -85,6 +86,14 @@ public class SelectDatabaseDialog extends ObjectListDialog<DBNDatabaseNode> {
             selected);
         this.dataSourceContainer = dataSourceContainer;
         this.currentInstanceName = currentInstanceName;
+    }
+
+    @NotNull
+    @Override
+    protected Control createButtonBar(@NotNull Composite parent) {
+        Control buttonBar = super.createButtonBar(parent);
+        enableButton(IDialogConstants.OK_ID, false);
+        return buttonBar;
     }
 
     @Override
@@ -176,11 +185,14 @@ public class SelectDatabaseDialog extends ObjectListDialog<DBNDatabaseNode> {
             DBNDatabaseNode instance = selectedInstances.isEmpty() ? null : selectedInstances.getFirst();
             if (instance != null && !CommonUtils.equalObjects(instance.getNodeDisplayName(), currentInstanceName)) {
                 currentInstanceName = instance.getNodeDisplayName();
+                selectedObjects.clear();
+                enableButton(IDialogConstants.OK_ID, false);
                 objectList.loadData();
             }
+            updateButtons();
         });
         instanceList.setDoubleClickHandler(event -> {
-            if (isModeless() || isButtonEnabled(IDialogConstants.OK_ID)) {
+            if (isDialogComplete()) {
                 okPressed();
             }
         });
@@ -188,6 +200,11 @@ public class SelectDatabaseDialog extends ObjectListDialog<DBNDatabaseNode> {
 
         instanceList.loadData();
         closeOnFocusLost(instanceList.getItemsViewer().getControl());
+    }
+
+    @Override
+    protected boolean isDialogComplete() {
+        return super.isDialogComplete() && currentInstanceName != null;
     }
 
     protected List<DBNDatabaseNode> getObjects(@NotNull DBRProgressMonitor monitor) {
