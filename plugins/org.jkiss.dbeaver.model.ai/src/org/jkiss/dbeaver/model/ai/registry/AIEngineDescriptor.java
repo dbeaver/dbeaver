@@ -36,7 +36,6 @@ public class AIEngineDescriptor extends AbstractDescriptor {
     private final ObjectType propertiesType;
     private final boolean supportsFunctions;
     private final boolean providesMetadata;
-    private final boolean passFunctionsCallBackToAI;
 
     protected AIEngineDescriptor(@NotNull IConfigurationElement contributorConfig) {
         super(contributorConfig);
@@ -46,7 +45,6 @@ public class AIEngineDescriptor extends AbstractDescriptor {
         this.supportsFunctions = CommonUtils.toBoolean(contributorConfig.getAttribute("supportsFunctions"));
         this.propertiesType = new ObjectType(contributorConfig, "properties");
         this.providesMetadata = CommonUtils.toBoolean(contributorConfig.getAttribute("providesMetadata"), true);
-        this.passFunctionsCallBackToAI = CommonUtils.toBoolean(contributorConfig.getAttribute("passFunctionCallsBackToAI"));
     }
 
     @NotNull
@@ -82,9 +80,6 @@ public class AIEngineDescriptor extends AbstractDescriptor {
         return providesMetadata;
     }
 
-    public boolean passFunctionCallsBackToAI() {
-        return passFunctionsCallBackToAI;
-    }
 
     public boolean isSupportsFunctions() {
         return supportsFunctions;
