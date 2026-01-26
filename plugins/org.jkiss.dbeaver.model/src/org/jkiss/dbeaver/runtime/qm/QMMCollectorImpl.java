@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -217,6 +217,7 @@ public class QMMCollectorImpl extends DefaultExecutionHandler implements QMMColl
         QMMConnectionInfo connectionInfo = getConnectionInfo(context);
         if (connectionInfo != null) {
             connectionInfo.setTransactional(transactional);
+            tryFireMetaEvent(connectionInfo, QMEventAction.UPDATE, connectionInfo.getOpenTime(), context);
         }
     }
 

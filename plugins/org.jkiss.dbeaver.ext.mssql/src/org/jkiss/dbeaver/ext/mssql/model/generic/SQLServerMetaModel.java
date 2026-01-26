@@ -314,7 +314,7 @@ public class SQLServerMetaModel extends GenericMetaModel implements DBCQueryTran
         try (JDBCSession session = DBUtils.openMetaSession(monitor, dataSource, "Read source code")) {
             String mdQuery;
             if (serverType == ServerType.SQL_SERVER && object instanceof SQLServerObject sqlServerObject) {
-                mdQuery = SQLServerUtils.selectObjectDefinitionDescriptionSQL(monitor, sqlServerObject);
+                mdQuery = SQLServerUtils.selectObjectDefinitionDescriptionSQL(monitor, sqlServerObject, true);
             } else {
                 if (isSapIQ(dataSource)) {
                     mdQuery = "SELECT s.source\n" +
