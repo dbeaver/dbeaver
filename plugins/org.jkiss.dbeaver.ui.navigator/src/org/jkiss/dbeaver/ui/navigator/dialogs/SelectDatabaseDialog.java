@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ui.navigator.dialogs;
 
+import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.osgi.util.NLS;
@@ -111,22 +112,16 @@ public class SelectDatabaseDialog extends ObjectListDialog<DBNDatabaseNode> {
         if (selectedInstances.isEmpty()) {
             return;
         }
-        DBCExecutionContext instanceEC = selectedInstances.getFirst().getExecutionContext();
-        if (instanceEC != null) {
-            DBCExecutionContextDefaults<?, ?> contextDefaults = instanceEC.getContextDefaults();
-            if (contextDefaults != null) {
-                Collection<?> schemas = (Collection<?>) objectList.getItemsViewer().getInput();
-                for (Object node : schemas) {
-                    if (node instanceof DBNDatabaseNode dbNode && (
-                        dbNode.getObject() == contextDefaults.getDefaultSchema() ||
-                        dbNode.getObject() == contextDefaults.getDefaultCatalog())
-                    ) {
-                        objectList.getSelectionProvider().setSelection(new StructuredSelection(node));
-                        break;
-                    }
+        List<Object> selObjects = new ArrayList<>();
+        Collection<?> schemas = (Collection<?>) objectList.getItemsViewer().getInput();
+        if (schemas != null) {
+            for (Object node : schemas) {
+                if (DBNUtils.isDefaultElement(node)) {
+                    selObjects.add(node);
                 }
             }
         }
+        objectList.getSelectionProvider().setSelection(new StructuredSelection(selObjects));
     }
 
     @Nullable
@@ -184,6 +179,12 @@ public class SelectDatabaseDialog extends ObjectListDialog<DBNDatabaseNode> {
                 objectList.loadData();
             }
         });
+        instanceList.setDoubleClickHandler(event -> {
+            if (isModeless() || isButtonEnabled(IDialogConstants.OK_ID)) {
+                okPressed();
+            }
+        });
+
 
         instanceList.loadData();
         closeOnFocusLost(instanceList.getItemsViewer().getControl());
