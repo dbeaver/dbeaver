@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,6 +29,7 @@ import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.util.List;
 
 public class AIPromptGeneratorDescriptor extends AbstractDescriptor {
 
@@ -38,7 +39,7 @@ public class AIPromptGeneratorDescriptor extends AbstractDescriptor {
     private final ObjectType objectType;
     private final String label;
     private final DBPImage icon;
-    private final String[] dependsOn;
+    private final List<String> populateDescriptionOn;
 
     protected AIPromptGeneratorDescriptor(@NotNull IConfigurationElement config) {
         super(config);
@@ -46,7 +47,7 @@ public class AIPromptGeneratorDescriptor extends AbstractDescriptor {
         this.objectType = new ObjectType(config, RegistryConstants.ATTR_CLASS);
         this.icon = iconToImage(config.getAttribute(RegistryConstants.ATTR_ICON));
         this.label = config.getAttribute(RegistryConstants.ATTR_LABEL);
-        this.dependsOn = CommonUtils.splitString(config.getAttribute("dependsOn"), ',').toArray(new String[0]);
+        this.populateDescriptionOn = CommonUtils.splitString(config.getAttribute("populateDescriptionOn"), ',');
     }
 
     @NotNull
@@ -65,8 +66,8 @@ public class AIPromptGeneratorDescriptor extends AbstractDescriptor {
     }
 
     @NotNull
-    public String[] getDependsOn() {
-        return dependsOn;
+    public List<String> getPopulateDescriptionOn() {
+        return populateDescriptionOn;
     }
 
     @NotNull
