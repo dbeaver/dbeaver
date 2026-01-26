@@ -188,6 +188,10 @@ public class JDBCExecutionContext extends AbstractExecutionContext<JDBCDataSourc
     }
 
     protected void disconnect() {
+        disconnect(true);
+    }
+
+    protected void disconnect(boolean removeContext) {
         // [JDBC] Need sync here because real connection close could take some time
         // while UI may invoke callbacks to operate with connection
         synchronized (this) {
@@ -197,8 +201,10 @@ public class JDBCExecutionContext extends AbstractExecutionContext<JDBCDataSourc
             }
             this.connection = null;
         }
-        // Notify QM
-        super.closeContext();
+        if (removeContext) {
+            // Notify QM
+            super.closeContext();
+        }
     }
 
     @NotNull
@@ -272,7 +278,7 @@ public class JDBCExecutionContext extends AbstractExecutionContext<JDBCDataSourc
             this.instance.removeContext(this);
         }
 
-        disconnect();
+        disconnect(removeContext);
     }
 
     //////////////////////////////////////////////////////////////

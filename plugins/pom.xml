@@ -154,6 +154,7 @@
                 <module>org.jkiss.dbeaver.ui.editors.session</module>
                 <module>org.jkiss.dbeaver.ui.editors.xml</module>
                 <module>org.jkiss.dbeaver.ui.navigator</module>
+                <module>org.jkiss.dbeaver.ui.forms</module>
                 <module>org.jkiss.dbeaver.ui.charts</module>
                 <module>org.jkiss.dbeaver.ui.dashboard</module>
                 <module>org.jkiss.dbeaver.ui.search</module>
