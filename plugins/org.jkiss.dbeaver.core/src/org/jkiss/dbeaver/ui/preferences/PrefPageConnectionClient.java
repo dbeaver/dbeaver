@@ -101,9 +101,7 @@ public class PrefPageConnectionClient extends TargetPrefPage {
                 composite,
                 CoreMessages.pref_page_database_client_name_group,
                 2,
-                GridData.FILL_HORIZONTAL,
-                0
-            );
+                GridData.FILL_HORIZONTAL);
 
             disableClientApplicationNameCheck = UIUtils.createCheckbox(
                 clientNameGroup,
@@ -153,9 +151,7 @@ public class PrefPageConnectionClient extends TargetPrefPage {
                 composite,
                 CoreMessages.pref_page_connection_label_general,
                 2,
-                GridData.FILL_HORIZONTAL,
-                0
-            );
+                GridData.FILL_HORIZONTAL);
             connUseEnvVariables = UIUtils.createCheckbox(
                 connGroup,
                 CoreMessages.pref_page_connection_label_use_environment,

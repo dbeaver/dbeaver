@@ -638,7 +638,7 @@ public abstract class AbstractSQLDialect implements SQLDialect {
 
     @Override
     public boolean supportsAliasInHaving() {
-        return true;
+        return false;
     }
 
     @Override

@@ -99,9 +99,7 @@ class DataTransferPageFinal extends ActiveWizardPage<DataTransferWizard> impleme
                 leftGroup,
                 DTUIMessages.data_transfer_wizard_final_group_settings_source,
                 1,
-                GridData.FILL_BOTH,
-                -1
-            );
+                GridData.FILL_BOTH);
             sourceSettingsText = new Text(sourceSettingsGroup, SWT.BORDER | SWT.READ_ONLY | SWT.V_SCROLL);
             sourceSettingsText.setLayoutData(GridDataFactory.create(GridData.FILL_BOTH).create());
             sourceSettingsGroup.setLayoutData(GridDataFactory.create(GridData.FILL_BOTH).hint(130, 50).create());
@@ -110,8 +108,7 @@ class DataTransferPageFinal extends ActiveWizardPage<DataTransferWizard> impleme
                 rightGroup,
                 DTUIMessages.data_transfer_wizard_final_group_settings_target,
                 1,
-                GridData.FILL_BOTH,
-                -1);
+                GridData.FILL_BOTH);
             targetSettingsText = new Text(targetSettingsGroup, SWT.BORDER | SWT.READ_ONLY | SWT.V_SCROLL);
             targetSettingsText.setLayoutData(GridDataFactory.create(GridData.FILL_BOTH).create());
             targetSettingsText.setLayoutData(GridDataFactory.create(GridData.FILL_BOTH).hint(130, 50).create());

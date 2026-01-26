@@ -49,6 +49,7 @@ public class DataEditorsPreferencesInitializer extends AbstractPreferenceInitial
         PrefUtils.setDefaultPreferenceValue(store, ResultSetPreferences.RS_EDIT_REFRESH_AFTER_UPDATE, true);
         PrefUtils.setDefaultPreferenceValue(store, ResultSetPreferences.RS_GROUPING_DEFAULT_SORTING, "");
         PrefUtils.setDefaultPreferenceValue(store, ResultSetPreferences.RS_GROUPING_SHOW_DUPLICATES_ONLY, false);
+        PrefUtils.setDefaultPreferenceValue(store, ResultSetPreferences.RS_GROUPING_SHOW_PERCENT_OF_TOTAL_ROWS, false);
 
         // ResultSet
         PrefUtils.setDefaultPreferenceValue(store, ResultSetPreferences.RESULT_SET_AUTO_FETCH_NEXT_SEGMENT, true);

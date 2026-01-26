@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,7 +20,10 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.widgets.*;
+import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Combo;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Text;
 import org.jkiss.dbeaver.ext.mysql.tasks.MySQLScriptExecuteSettings;
 import org.jkiss.dbeaver.ext.mysql.ui.internal.MySQLUIMessages;
 import org.jkiss.dbeaver.model.app.DBPProject;
@@ -60,8 +63,8 @@ public class MySQLScriptExecuteWizardPageSettings extends MySQLWizardPageSetting
     public void createControl(Composite parent) {
         Composite composite = UIUtils.createPlaceholder(parent, 1);
 
-        Group outputGroup = UIUtils.createControlGroup(
-            composite, MySQLUIMessages.tools_script_execute_wizard_page_settings_group_input, 3, GridData.FILL_HORIZONTAL, 0);
+        Composite outputGroup = UIUtils.createTitledComposite(
+            composite, MySQLUIMessages.tools_script_execute_wizard_page_settings_group_input, 3, GridData.FILL_HORIZONTAL);
 
         DBPProject project = getWizard().getProject();
         TextWithOpenFile inputText = new TextWithOpenFileRemote(
@@ -78,8 +81,12 @@ public class MySQLScriptExecuteWizardPageSettings extends MySQLWizardPageSetting
             inputFileText.setText(wizard.getSettings().getInputFile());
         }
 
-        Group settingsGroup = UIUtils.createControlGroup(
-            composite, MySQLUIMessages.tools_script_execute_wizard_page_settings_group_settings, 2, GridData.HORIZONTAL_ALIGN_BEGINNING, 0);
+        Composite settingsGroup = UIUtils.createTitledComposite(
+            composite,
+            MySQLUIMessages.tools_script_execute_wizard_page_settings_group_settings,
+            2,
+            GridData.HORIZONTAL_ALIGN_BEGINNING
+        );
         settingsGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         logLevelCombo = UIUtils.createLabelCombo(
             settingsGroup, MySQLUIMessages.tools_script_execute_wizard_page_settings_label_log_level, SWT.DROP_DOWN | SWT.READ_ONLY);
