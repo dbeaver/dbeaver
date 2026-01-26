@@ -45,10 +45,10 @@ import org.jkiss.utils.CommonUtils;
 
 public class YashanDBSessionEditor extends AbstractSessionEditor {
 
+	private KillSessionAction killSessionAction;
+	
 	public YashanDBSessionEditor() {
 	}
-
-	private KillSessionAction killSessionAction;
 
 	@Override
 	public void createEditorControl(Composite parent) {

@@ -16,8 +16,6 @@
  */
 package org.jkiss.dbeaver.ext.yashandb.model;
 
-import java.sql.ResultSet;
-
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
@@ -35,11 +33,6 @@ public class YashanDBDataTypeMember implements DBSEntityElement {
 	protected YashanDBDataTypeMember(YashanDBDataType ownerType) {
 		this.ownerType = ownerType;
 		this.persisted = false;
-	}
-
-	protected YashanDBDataTypeMember(YashanDBDataType ownerType, ResultSet dbResult) {
-		this.ownerType = ownerType;
-		this.persisted = true;
 	}
 
 	@NotNull

@@ -119,10 +119,8 @@ public class YashanDBExecutionContext extends JDBCExecutionContext
 				}
 			}
 			this.activeSchemaName = YashanDBUtils.getCurrentSchema(session);
-			if (this.activeSchemaName != null) {
-				if (this.activeSchemaName.isEmpty()) {
-					this.activeSchemaName = null;
-				}
+			if (this.activeSchemaName != null && this.activeSchemaName.isEmpty()) {
+				this.activeSchemaName = null;
 			}
 		} catch (Exception e) {
 			throw new DBCException(e, this);

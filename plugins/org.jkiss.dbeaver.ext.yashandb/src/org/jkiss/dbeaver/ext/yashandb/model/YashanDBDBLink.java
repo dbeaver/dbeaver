@@ -34,7 +34,7 @@ public class YashanDBDBLink extends YashanDBSchemaObject {
 	private String host;
 	private Date created;
 
-	protected YashanDBDBLink(DBRProgressMonitor progressMonitor, YashanDBSchema schema, ResultSet dbResult) {
+	protected YashanDBDBLink(YashanDBSchema schema, ResultSet dbResult) {
 		super(schema, JDBCUtils.safeGetString(dbResult, "DB_LINK"), true);
 		this.userName = JDBCUtils.safeGetString(dbResult, "USERNAME");
 		this.host = JDBCUtils.safeGetString(dbResult, "HOST");

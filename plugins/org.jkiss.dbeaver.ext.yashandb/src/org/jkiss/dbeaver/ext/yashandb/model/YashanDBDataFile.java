@@ -38,7 +38,7 @@ public class YashanDBDataFile extends YashanDBObject<YashanDBTablespace> {
 	public Status status;
 	public AutoExtend autoExtend;
 
-	protected YashanDBDataFile(YashanDBTablespace tablespace, ResultSet dbResult, boolean temporary) {
+	protected YashanDBDataFile(YashanDBTablespace tablespace, ResultSet dbResult) {
 		super(tablespace, JDBCUtils.safeGetString(dbResult, "FILE_NAME"), true);
 		this.tablespace = tablespace;
 		this.status = CommonUtils.valueOf(Status.class, JDBCUtils.safeGetString(dbResult, "STATUS"), null, true);

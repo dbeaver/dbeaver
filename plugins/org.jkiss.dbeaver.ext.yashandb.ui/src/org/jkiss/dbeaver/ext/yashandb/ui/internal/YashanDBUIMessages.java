@@ -22,13 +22,6 @@ public final class YashanDBUIMessages extends NLS {
 
 	private static final String BUNDLE_NAME = "org.jkiss.dbeaver.ext.yashandb.ui.internal.YashanDBUIMessages";
 
-	static {
-		NLS.initializeMessages(BUNDLE_NAME, YashanDBUIMessages.class);
-	}
-
-	private YashanDBUIMessages() {
-	}
-
 	/* Schema */
 	public static String dialog_schema_edit_title;
 	public static String dialog_schema_edit_user_name;
@@ -51,4 +44,11 @@ public final class YashanDBUIMessages extends NLS {
     public static String views_session_manager_viewer_show_background_tasks_tip;
     public static String views_session_manager_viewer_show_inactive;
     public static String views_session_manager_viewer_show_inactive_sessions_tip;
+    
+	static {
+		NLS.initializeMessages(BUNDLE_NAME, YashanDBUIMessages.class);
+	}
+
+	private YashanDBUIMessages() {
+	}
 }

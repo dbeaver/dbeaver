@@ -35,7 +35,7 @@ public class YashanDBDataTypeAttribute extends YashanDBDataTypeMember implements
 	private final Integer scale;
 
 	public YashanDBDataTypeAttribute(DBRProgressMonitor monitor, YashanDBDataType dataType, ResultSet dbResult) {
-		super(dataType, dbResult);
+		super(dataType);
 		this.name = JDBCUtils.safeGetString(dbResult, "ATTR_NAME");
 		this.inherited = JDBCUtils.safeGetBoolean(dbResult, "INHERITED", YashanDBConstants.YES);
 		this.no = JDBCUtils.safeGetInt(dbResult, "ATTR_NO");

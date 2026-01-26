@@ -103,6 +103,7 @@ public class YashanDBView extends YashanDBTableBase implements YashanDBSourceObj
 
 	@Override
 	public void refreshObjectState(DBRProgressMonitor monitor) throws DBCException {
+		// empty body
 	}
 
 	@Override

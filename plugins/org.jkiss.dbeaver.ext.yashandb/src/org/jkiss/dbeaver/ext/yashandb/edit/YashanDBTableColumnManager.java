@@ -16,7 +16,6 @@
  */
 package org.jkiss.dbeaver.ext.yashandb.edit;
 
-import java.sql.Types;
 import java.util.List;
 import java.util.Map;
 
@@ -39,6 +38,7 @@ import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.cache.DBSObjectCache;
+import org.jkiss.utils.CommonUtils;
 
 public class YashanDBTableColumnManager extends SQLTableColumnManager<YashanDBTableColumn, YashanDBTableBase>
 		implements DBEObjectRenamer<YashanDBTableColumn> {
@@ -62,13 +62,15 @@ public class YashanDBTableColumnManager extends SQLTableColumnManager<YashanDBTa
 	protected YashanDBTableColumn createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context,
 			Object container, Object copyFrom, Map<String, Object> options) throws DBException {
 		YashanDBTableBase table = (YashanDBTableBase) container;
-		DBSDataType columnType = findBestDataType(table, "varchar2");
+		DBSDataType columnType = findBestDataType(table, "VARCHAR");
 		final YashanDBTableColumn column = new YashanDBTableColumn(table);
 		column.setName(getNewColumnName(monitor, context, table));
-		column.setDataType((YashanDBDataType) columnType);
-		column.setTypeName(columnType == null ? "INTEGER" : columnType.getName());
-		column.setMaxLength(columnType != null && columnType.getDataKind() == DBPDataKind.STRING ? 100 : 0);
-		column.setValueType(columnType == null ? Types.INTEGER : columnType.getTypeID());
+		if (columnType != null) {
+			column.setDataType((YashanDBDataType) columnType);
+			column.setTypeName(columnType.getName());
+			column.setMaxLength(columnType.getDataKind() == DBPDataKind.STRING ? 100 : 0);
+			column.setValueType(columnType.getTypeID());
+		}
 		column.setOrdinalPosition(-1);
 		return column;
 	}
@@ -78,7 +80,7 @@ public class YashanDBTableColumnManager extends SQLTableColumnManager<YashanDBTa
 			List<DBEPersistAction> actions, ObjectCreateCommand command, Map<String, Object> options)
 			throws DBException {
 		super.addObjectCreateActions(monitor, executionContext, actions, command, options);
-		if (command.getProperties().size() > 1 || command.getProperty("comment") == null) {
+		if (CommonUtils.isNotEmpty(command.getObject().getComment(monitor))) {
 			final YashanDBTableColumn column = command.getObject();
 			actions.add(new SQLDatabasePersistAction("Comment column",
 					"COMMENT ON COLUMN " + column.getTable().getFullyQualifiedName(DBPEvaluationContext.DDL) + "."
@@ -112,15 +114,17 @@ public class YashanDBTableColumnManager extends SQLTableColumnManager<YashanDBTa
 	protected void addObjectModifyActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext,
 			List<DBEPersistAction> actionList, ObjectChangeCommand command, Map<String, Object> options) {
 		final YashanDBTableColumn column = command.getObject();
-		actionList.add(new SQLDatabasePersistAction("Modify column",
-				"ALTER TABLE " + column.getTable().getFullyQualifiedName(DBPEvaluationContext.DDL) + " MODIFY "
-						+ getNestedDeclaration(monitor, column.getTable(), command, options)));
-		if (command.getProperties().size() > 1 || command.getProperty("comment") == null) {
+		boolean hasComment = command.getProperty("comment") != null;
+		if (!hasComment || command.getProperties().size() > 1) {
+			actionList.add(new SQLDatabasePersistAction("Modify column",
+					"ALTER TABLE " + column.getTable().getFullyQualifiedName(DBPEvaluationContext.DDL) + " MODIFY "
+							+ getNestedDeclaration(monitor, column.getTable(), command, options)));
+		}
+		if (hasComment) {
 			actionList.add(new SQLDatabasePersistAction("Comment column",
 					"COMMENT ON COLUMN " + column.getTable().getFullyQualifiedName(DBPEvaluationContext.DDL) + "."
 							+ DBUtils.getQuotedIdentifier(column) + " IS '"
 							+ column.getComment(new VoidProgressMonitor()) + "'"));
 		}
 	}
-
 }

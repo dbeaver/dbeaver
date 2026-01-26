@@ -20,7 +20,6 @@ import java.sql.ResultSet;
 
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntityMethod;
 
 public class YashanDBDataTypeMethod extends YashanDBDataTypeMember implements DBSEntityMethod {
@@ -34,8 +33,8 @@ public class YashanDBDataTypeMethod extends YashanDBDataTypeMember implements DB
 		super(dataType);
 	}
 
-	public YashanDBDataTypeMethod(DBRProgressMonitor monitor, YashanDBDataType dataType, ResultSet dbResult) {
-		super(dataType, dbResult);
+	public YashanDBDataTypeMethod(YashanDBDataType dataType, ResultSet dbResult) {
+		super(dataType);
 		this.name = JDBCUtils.safeGetString(dbResult, "METHOD_NAME");
 		this.no = JDBCUtils.safeGetInt(dbResult, "METHOD_NO");
 		this.methodType = JDBCUtils.safeGetString(dbResult, "METHOD_TYPE");

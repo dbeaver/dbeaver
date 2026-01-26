@@ -39,6 +39,17 @@ import org.jkiss.utils.CommonUtils;
 public abstract class YashanDBTrigger<PARENT extends DBSObject> extends YashanDBObject<PARENT>
 		implements DBSTrigger, DBPQualifiedObject, YashanDBSourceObject {
 
+	private BaseObjectType objectType;
+	private String triggerType;
+	private String triggeringEvent;
+	private String columnName;
+	private String refNames;
+	private String whenClause;
+	private YashanDBObjectStatus status;
+	private String description;
+	private String actionType;
+	private String objectDefinitionText;
+	
 	public YashanDBTrigger(PARENT parent, String name) {
 		super(parent, name, false);
 	}
@@ -57,17 +68,6 @@ public abstract class YashanDBTrigger<PARENT extends DBSObject> extends YashanDB
 		this.description = JDBCUtils.safeGetString(dbResult, "DESCRIPTION");
 		this.actionType = JDBCUtils.safeGetString(dbResult, "ACTION_TYPE");
 	}
-
-	private BaseObjectType objectType;
-	private String triggerType;
-	private String triggeringEvent;
-	private String columnName;
-	private String refNames;
-	private String whenClause;
-	private YashanDBObjectStatus status;
-	private String description;
-	private String actionType;
-	private String objectDefinitionText;
 
 	@NotNull
 	@Override

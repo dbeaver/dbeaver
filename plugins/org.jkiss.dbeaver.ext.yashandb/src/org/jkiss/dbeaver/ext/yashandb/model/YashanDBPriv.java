@@ -25,12 +25,12 @@ import org.jkiss.dbeaver.model.meta.Property;
 
 public abstract class YashanDBPriv extends YashanDBObject<YashanDBGrantee> implements DBAPrivilege {
 
+	private boolean adminOption;
+	
 	public YashanDBPriv(YashanDBGrantee user, String name, ResultSet resultSet) {
 		super(user, name, true);
 		this.adminOption = JDBCUtils.safeGetBoolean(resultSet, "ADMIN_OPTION", YashanDBConstants.Y);
 	}
-
-	private boolean adminOption;
 
 	@NotNull
 	@Override

@@ -32,6 +32,13 @@ public abstract class YashanDBPartitionBase<PARENT extends DBSObject> extends Ya
 		implements DBSObjectLazy {
 
 	public static final String CAT_PARTITIONING = "Partitioning";
+	
+	private int position;
+	private String highValue;
+	private Object tablespace;
+	private long numRows;
+	private long sampleSize;
+	private Timestamp lastAnalyzed;
 
 	protected YashanDBPartitionBase(PARENT parent, boolean subpartition, ResultSet dbResult) {
 		super(parent, subpartition ? JDBCUtils.safeGetString(dbResult, "SUBPARTITION_NAME")
@@ -44,13 +51,6 @@ public abstract class YashanDBPartitionBase<PARENT extends DBSObject> extends Ya
 		this.sampleSize = JDBCUtils.safeGetLong(dbResult, "SAMPLE_SIZE");
 		this.lastAnalyzed = JDBCUtils.safeGetTimestamp(dbResult, "LAST_ANALYZED");
 	}
-
-	private int position;
-	private String highValue;
-	private Object tablespace;
-	private long numRows;
-	private long sampleSize;
-	private Timestamp lastAnalyzed;
 
 	@Override
 	public Object getLazyReference(Object propertyId) {

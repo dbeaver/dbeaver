@@ -51,6 +51,12 @@ import org.jkiss.dbeaver.model.struct.DBSObjectState;
 public abstract class YashanDBTablePhysical extends YashanDBTableBase implements DBSObjectLazy<YashanDBDataSource> {
 
 	private static final Log log = Log.getLog(YashanDBTablePhysical.class);
+	
+	private boolean partitioned;
+	private long rowCount;
+	private Object tablespace;
+	private PartitionInfo partitionInfo;
+	private PartitionCache partitionCache;
 
 	protected YashanDBTablePhysical(YashanDBSchema schema, String name) {
 		super(schema, name, false);
@@ -63,12 +69,6 @@ public abstract class YashanDBTablePhysical extends YashanDBTableBase implements
 		this.partitioned = JDBCUtils.safeGetBoolean(dbResult, "PARTITIONED", "Y");
 		this.partitionCache = partitioned ? new PartitionCache() : null;
 	}
-
-	private boolean partitioned;
-	private long rowCount;
-	private Object tablespace;
-	private PartitionInfo partitionInfo;
-	private PartitionCache partitionCache;
 
 	@Association
 	@Property(viewable = true, order = 13)

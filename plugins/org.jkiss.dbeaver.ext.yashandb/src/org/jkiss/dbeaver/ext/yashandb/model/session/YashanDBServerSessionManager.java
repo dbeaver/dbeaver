@@ -38,16 +38,16 @@ import org.jkiss.utils.CommonUtils;
 public class YashanDBServerSessionManager implements DBAServerSessionManager<YashanDBServerSession>,
 		DBAServerSessionManagerSQL, DBAServerSessionDetailsProvider {
 
-	public YashanDBServerSessionManager(YashanDBDataSource dataSource) {
-		this.dataSource = dataSource;
-	}
-
 	public static final String PROP_KILL_SESSION = "killSession";
 
 	public static final String OPTION_SHOW_BACKGROUND = "showBackground";
 	public static final String OPTION_SHOW_INACTIVE = "showInactive";
 
 	private final YashanDBDataSource dataSource;
+	
+	public YashanDBServerSessionManager(YashanDBDataSource dataSource) {
+		this.dataSource = dataSource;
+	}
 
 	@Override
 	public DBPDataSource getDataSource() {

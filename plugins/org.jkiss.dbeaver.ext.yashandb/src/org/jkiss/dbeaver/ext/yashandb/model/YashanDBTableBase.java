@@ -61,6 +61,9 @@ public abstract class YashanDBTableBase extends JDBCTable<YashanDBDataSource, Ya
 
 	private static final Log log = Log.getLog(YashanDBTableBase.class);
 
+	protected boolean valid;
+	private String comment;
+	
 	protected YashanDBTableBase(YashanDBSchema schema, String name, boolean persisted) {
 		super(schema, name, persisted);
 	}
@@ -70,9 +73,6 @@ public abstract class YashanDBTableBase extends JDBCTable<YashanDBDataSource, Ya
 		setName(JDBCUtils.safeGetString(dbResult, "OBJECT_NAME"));
 		this.valid = "VALID".equals(JDBCUtils.safeGetString(dbResult, "STATUS"));
 	}
-
-	protected boolean valid;
-	private String comment;
 
 	@NotNull
 	@Override
@@ -84,7 +84,7 @@ public abstract class YashanDBTableBase extends JDBCTable<YashanDBDataSource, Ya
 	@Property(viewable = true, editable = true, updatable = true, length = PropertyLength.MULTILINE, order = 100)
 	@LazyProperty(cacheValidator = CommentsValidator.class)
 	public String getComment(DBRProgressMonitor monitor) {
-		if (comment == null) {
+		if (comment == null && monitor != null) {
 			comment = "";
 			try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Load table comments")) {
 				comment = queryTableComment(session);

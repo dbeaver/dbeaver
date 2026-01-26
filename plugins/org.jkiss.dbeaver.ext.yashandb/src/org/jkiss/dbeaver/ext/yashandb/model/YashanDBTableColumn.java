@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.ext.yashandb.model;
 
 import java.sql.ResultSet;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBPHiddenObject;
@@ -41,6 +42,10 @@ public class YashanDBTableColumn extends JDBCTableColumn<YashanDBTableBase>
 		implements DBSTableColumn, DBSTypedObjectEx, DBSTypedObjectExt3, DBPHiddenObject, DBPNamedObject2,
 		DBSTypedObjectExt4<YashanDBDataType>, DBPObjectWithLazyDescription {
 
+	private YashanDBDataType type;
+	private String comment;
+	private Integer scale;
+
 	public YashanDBTableColumn(YashanDBTableBase table) {
 		super(table, false);
 	}
@@ -48,6 +53,10 @@ public class YashanDBTableColumn extends JDBCTableColumn<YashanDBTableBase>
 	public YashanDBTableColumn(DBRProgressMonitor monitor, YashanDBTableBase table, ResultSet dbResult)
 			throws DBException {
 		super(table, true);
+		dealValue(monitor, dbResult);
+	}
+
+	private void dealValue(DBRProgressMonitor monitor, ResultSet dbResult) {
 		setDefaultValue(JDBCUtils.safeGetString(dbResult, "DATA_DEFAULT"));
 		setName(JDBCUtils.safeGetString(dbResult, "COLUMN_NAME"));
 		setOrdinalPosition(JDBCUtils.safeGetInt(dbResult, "COLUMN_ID"));
@@ -84,12 +93,7 @@ public class YashanDBTableColumn extends JDBCTableColumn<YashanDBTableBase>
 				this.scale = this.type.getScale();
 			}
 		}
-
 	}
-
-	private YashanDBDataType type;
-	private String comment;
-	private Integer scale;
 
 	@Override
 	public YashanDBDataSource getDataSource() {
@@ -146,6 +150,7 @@ public class YashanDBTableColumn extends JDBCTableColumn<YashanDBTableBase>
 		return super.getTypeName();
 	}
 
+	@NotNull
 	@Property(viewable = true, editable = true, updatable = true, order = 20, listProvider = ColumnTypeNameListProvider.class)
 	@Override
 	public String getFullTypeName() {
