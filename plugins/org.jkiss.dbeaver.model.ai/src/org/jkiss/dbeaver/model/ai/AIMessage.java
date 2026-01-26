@@ -34,7 +34,7 @@ public class AIMessage {
     @Nullable
     private final String displayMessage;
     @Nullable
-    private final String functionCallID;
+    private final String customResultInfo;
     @NotNull
     private final LocalDateTime time;
     @Nullable
@@ -59,7 +59,7 @@ public class AIMessage {
         this.meta = meta;
         this.functionCall = null;
         this.functionResult = null;
-        this.functionCallID = functionCallID;
+        this.customResultInfo = functionCallID;
     }
     /**
      * Creates AI message
@@ -78,7 +78,7 @@ public class AIMessage {
         this.meta = meta;
         this.functionCall = null;
         this.functionResult = null;
-        this.functionCallID = null;
+        this.customResultInfo = null;
     }
 
     /**
@@ -96,7 +96,7 @@ public class AIMessage {
         this.functionCall = functionCall;
         this.functionResult = result;
         this.displayMessage = CommonUtils.toString(result.getValue());
-        this.functionCallID = null;
+        this.customResultInfo = null;
     }
 
     @NotNull
@@ -182,7 +182,7 @@ public class AIMessage {
 
     @Nullable
     public String getToolUseID() {
-        return functionCallID;
+        return customResultInfo;
     }
 
     @NotNull
