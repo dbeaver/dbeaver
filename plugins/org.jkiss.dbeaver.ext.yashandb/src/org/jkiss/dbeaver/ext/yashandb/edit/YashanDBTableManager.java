@@ -129,16 +129,13 @@ public class YashanDBTableManager extends SQLTableManager<YashanDBTable, YashanD
 	@Override
 	protected void appendTableModifiers(DBRProgressMonitor monitor, YashanDBTable table, NestedObjectCommand tableProps,
 			StringBuilder ddl, boolean alter, Map<String, Object> options) throws DBException {
-		super.appendTableModifiers(monitor, table, tableProps, ddl, alter, options);
 		if (tableProps.getProperty("tablespace") != null) {
 			Object tablespace = table.getTablespace();
 			if (tablespace instanceof YashanDBTablespace) {
 				if (table.isPersisted()) {
-					if (table.isPersisted()) {
-						ddl.append(" MOVE TABLESPACE ").append(((YashanDBTablespace) tablespace).getName());
-					} else {
-						ddl.append(" TABLESPACE ").append(((YashanDBTablespace) tablespace).getName());
-					}
+					ddl.append(" MOVE TABLESPACE ").append(((YashanDBTablespace) tablespace).getName());
+				} else {
+					ddl.append(" TABLESPACE ").append(((YashanDBTablespace) tablespace).getName());
 				}
 			}
 		}

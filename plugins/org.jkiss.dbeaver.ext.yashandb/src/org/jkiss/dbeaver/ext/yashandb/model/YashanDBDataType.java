@@ -61,11 +61,29 @@ public class YashanDBDataType extends YashanDBObject<DBSObject>
 
 	private static final Log log = Log.getLog(YashanDBDataType.class);
 
+	private String typeCode;
+	private byte[] typeOID;
+	private YashanDBLazyReference superType;
+	private final AttributeCache attributeCache;
+	private final MethodCache methodCache;
+	private boolean flagPredefined;
+	private boolean flagIncomplete;
+	private boolean flagFinal;
+	private boolean flagInstantiable;
+	private TypeDesc typeDesc;
+	private int valueType = Types.OTHER;
+	private String sourceDeclaration;
+	private String sourceDefinition;
+	private YashanDBDataType componentType;
+
 	public static final String TYPE_CODE_COLLECTION = "COLLECTION";
 	public static final String TYPE_CODE_OBJECT = "OBJECT";
+	
+	static final Map<String, TypeDesc> PREDEFINED_TYPES = new HashMap<>();
+	static final Map<Integer, TypeDesc> PREDEFINED_TYPE_IDS = new HashMap<>();
 
 	public static class TypeDesc {
-		
+
 		final DBPDataKind dataKind;
 		final int valueType;
 		final int precision;
@@ -80,9 +98,6 @@ public class YashanDBDataType extends YashanDBObject<DBSObject>
 			this.maxScale = maxScale;
 		}
 	}
-
-	static final Map<String, TypeDesc> PREDEFINED_TYPES = new HashMap<>();
-	static final Map<Integer, TypeDesc> PREDEFINED_TYPE_IDS = new HashMap<>();
 
 	static {
 		// Numeric type
@@ -142,21 +157,6 @@ public class YashanDBDataType extends YashanDBObject<DBSObject>
 			PREDEFINED_TYPE_IDS.put(type.valueType, type);
 		}
 	}
-
-	private String typeCode;
-	private byte[] typeOID;
-	private YashanDBLazyReference superType;
-	private final AttributeCache attributeCache;
-	private final MethodCache methodCache;
-	private boolean flagPredefined;
-	private boolean flagIncomplete;
-	private boolean flagFinal;
-	private boolean flagInstantiable;
-	private TypeDesc typeDesc;
-	private int valueType = Types.OTHER;
-	private String sourceDeclaration;
-	private String sourceDefinition;
-	private YashanDBDataType componentType;
 
 	public YashanDBDataType(DBSObject owner, String typeName, boolean persisted) {
 		super(owner, typeName, persisted);
@@ -294,10 +294,10 @@ public class YashanDBDataType extends YashanDBObject<DBSObject>
 		if (typeName.startsWith("PL/SQL")) {
 			return true;
 		}
-		typeName = normalizeTypeName(typeName);
-		this.typeDesc = PREDEFINED_TYPES.get(typeName);
+		String typeNameCopy = normalizeTypeName(typeName);
+		this.typeDesc = PREDEFINED_TYPES.get(typeNameCopy);
 		if (this.typeDesc == null) {
-			log.warn("Unknown predefined type: " + typeName);
+			log.warn("Unknown predefined type: " + typeNameCopy);
 			return false;
 		} else {
 			this.valueType = this.typeDesc.valueType;
@@ -442,7 +442,7 @@ public class YashanDBDataType extends YashanDBObject<DBSObject>
 
 	public static YashanDBDataType resolveDataType(DBRProgressMonitor monitor, YashanDBDataSource dataSource,
 			String typeOwner, String typeName) {
-		typeName = normalizeTypeName(typeName);
+		String typeNameNorlmalize = normalizeTypeName(typeName);
 		YashanDBSchema typeSchema = null;
 		YashanDBDataType type = null;
 		if (typeOwner != null) {
@@ -451,17 +451,17 @@ public class YashanDBDataType extends YashanDBObject<DBSObject>
 				if (typeSchema == null) {
 					log.error("Type attr schema '" + typeOwner + "' not found");
 				} else {
-					type = typeSchema.getDataType(monitor, typeName);
+					type = typeSchema.getDataType(monitor, typeNameNorlmalize);
 				}
 			} catch (DBException e) {
 				log.error(e);
 			}
 		} else {
-			type = (YashanDBDataType) dataSource.getLocalDataType(typeName);
+			type = (YashanDBDataType) dataSource.getLocalDataType(typeNameNorlmalize);
 		}
 		if (type == null) {
-			log.debug("Data type '" + typeName + "' not found - declare new one");
-			type = new YashanDBDataType(typeSchema == null ? dataSource : typeSchema, typeName, true);
+			log.debug("Data type '" + typeNameNorlmalize + "' not found - declare new one");
+			type = new YashanDBDataType(typeSchema == null ? dataSource : typeSchema, typeNameNorlmalize, true);
 			type.flagPredefined = true;
 			if (typeSchema == null) {
 				dataSource.dataTypeCache.cacheObject(type);
@@ -472,23 +472,23 @@ public class YashanDBDataType extends YashanDBObject<DBSObject>
 		return type;
 	}
 
-	private static String normalizeTypeName(String typeName) {
-		if (CommonUtils.isEmpty(typeName)) {
+	private static String normalizeTypeName(final String typeName) {
+		String type = typeName;
+		if (CommonUtils.isEmpty(type)) {
 			return "";
 		}
 		for (;;) {
-			int modIndex = typeName.indexOf('(');
+			int modIndex = type.indexOf('(');
 			if (modIndex == -1) {
 				break;
 			}
-			int modEnd = typeName.indexOf(')', modIndex);
+			int modEnd = type.indexOf(')', modIndex);
 			if (modEnd == -1) {
 				break;
 			}
-			typeName = typeName.substring(0, modIndex)
-					+ (modEnd == typeName.length() - 1 ? "" : typeName.substring(modEnd + 1));
+			type = type.substring(0, modIndex) + (modEnd == type.length() - 1 ? "" : type.substring(modEnd + 1));
 		}
-		return typeName;
+		return type;
 	}
 
 	@NotNull
@@ -499,7 +499,7 @@ public class YashanDBDataType extends YashanDBObject<DBSObject>
 
 	@Override
 	public void refreshObjectState(@NotNull DBRProgressMonitor monitor) throws DBCException {
-
+		// empty body
 	}
 
 	private class AttributeCache extends JDBCObjectCache<YashanDBDataType, YashanDBDataTypeAttribute> {
@@ -540,7 +540,7 @@ public class YashanDBDataType extends YashanDBObject<DBSObject>
 		@Override
 		protected YashanDBDataTypeMethod fetchObject(@NotNull JDBCSession session, @NotNull YashanDBDataType owner,
 				@NotNull JDBCResultSet resultSet) throws SQLException, DBException {
-			return new YashanDBDataTypeMethod(session.getProgressMonitor(), YashanDBDataType.this, resultSet);
+			return new YashanDBDataTypeMethod(YashanDBDataType.this, resultSet);
 		}
 	}
 }

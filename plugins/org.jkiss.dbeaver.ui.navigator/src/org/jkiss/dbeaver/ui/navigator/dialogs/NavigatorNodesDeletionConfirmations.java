@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -133,12 +133,11 @@ public final class NavigatorNodesDeletionConfirmations {
     private static void createObjectsTable(@NotNull Composite parent, @NotNull Collection<?> selectedObjects) {
         Composite placeholder = UIUtils.createComposite(parent, 1);
         placeholder.setLayoutData(new GridData(GridData.FILL_BOTH));
-        Group tableGroup = UIUtils.createControlGroup(
+        Composite tableGroup = UIUtils.createTitledComposite(
             placeholder,
             UINavigatorMessages.confirm_deleting_multiple_objects_table_group_name,
             1,
-            GridData.FILL_BOTH,
-            0
+            GridData.FILL_BOTH
         );
         tableGroup.setLayoutData(new GridData(GridData.FILL_BOTH));
         Table objectsTable = new Table(tableGroup, SWT.BORDER | SWT.FULL_SELECTION);
@@ -146,7 +145,6 @@ public final class NavigatorNodesDeletionConfirmations {
         objectsTable.setLinesVisible(true);
         GridData gd = new GridData(GridData.FILL_BOTH);
         int fontHeight = UIUtils.getFontHeight(objectsTable);
-        int rowCount = selectedObjects.size();
         gd.widthHint = fontHeight * 7;
         //gd.heightHint = rowCount < 6 ? fontHeight * 2 * rowCount : fontHeight * 10;
         objectsTable.setLayoutData(gd);
@@ -154,10 +152,9 @@ public final class NavigatorNodesDeletionConfirmations {
         UIUtils.createTableColumn(objectsTable, SWT.LEFT, "Type");
         UIUtils.createTableColumn(objectsTable, SWT.LEFT, UINavigatorMessages.confirm_deleting_multiple_objects_column_description);
         for (Object obj: selectedObjects) {
-            if (!(obj instanceof DBNNode)) {
+            if (!(obj instanceof DBNNode node)) {
                 continue;
             }
-            DBNNode node = (DBNNode) obj;
             TableItem item = new TableItem(objectsTable, SWT.NONE);
             item.setImage(DBeaverIcons.getImage(node.getNodeIcon()));
             if (node.getAdapter(IResource.class) != null) {

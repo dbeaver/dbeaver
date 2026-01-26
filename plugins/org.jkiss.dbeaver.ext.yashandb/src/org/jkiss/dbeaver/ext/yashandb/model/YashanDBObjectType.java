@@ -110,6 +110,8 @@ public enum YashanDBObjectType implements DBSObjectType {
 	private final DBPImage image;
 	private final Class<? extends DBSObject> typeClass;
 
+	private static Map<String, YashanDBObjectType> typeMap = new HashMap<>();
+	
 	<OBJECT_TYPE extends DBSObject> YashanDBObjectType(String objectType, DBPImage image, Class<OBJECT_TYPE> typeClass,
 			ObjectFinder finder) {
 		this.objectType = objectType;
@@ -117,8 +119,6 @@ public enum YashanDBObjectType implements DBSObjectType {
 		this.typeClass = typeClass;
 		this.finder = finder;
 	}
-
-	private static Map<String, YashanDBObjectType> typeMap = new HashMap<>();
 
 	public static YashanDBObjectType getByType(String typeName) {
 		YashanDBObjectType type = typeMap.get(typeName);

@@ -6,6 +6,7 @@ Bundle-Version: 2.0.0.qualifier
 Bundle-Release-Date: 20240722
 Require-Bundle: org.jkiss.dbeaver.core,
  org.jkiss.dbeaver.model,
+ org.jkiss.dbeaver.ui.forms,
  org.eclipse.core.resources,
  com.sun.jna,
  com.sun.jna.platform

@@ -210,6 +210,11 @@ public abstract class SQLGroupingAttribute {
             return new Column(this.prepareSqlString(null));
         }
 
+        @NotNull
+        public String getBindingName() {
+            return binding.getName();
+        }
+
         @Override
         public boolean equals(Object o) {
             if (!(o instanceof BoundAttribute that)) {

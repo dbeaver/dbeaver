@@ -168,6 +168,7 @@ public class YashanDBJob extends YashanDBSchemaObject implements YashanDBSourceO
 
 	@Override
 	public void setObjectDefinitionText(String source) {
+		// empty body
 	}
 
 	@NotNull
@@ -178,5 +179,6 @@ public class YashanDBJob extends YashanDBSchemaObject implements YashanDBSourceO
 
 	@Override
 	public void refreshObjectState(@NotNull DBRProgressMonitor monitor) throws DBCException {
+		// empty body
 	}
 }

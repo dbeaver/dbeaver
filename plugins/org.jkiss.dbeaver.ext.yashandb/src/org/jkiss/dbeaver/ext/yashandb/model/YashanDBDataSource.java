@@ -180,15 +180,15 @@ public class YashanDBDataSource extends JDBCDataSource implements DBPObjectStati
 
 	public boolean isViewAvailable(@NotNull DBRProgressMonitor monitor, @Nullable String schemaName,
 			@NotNull String viewName) {
-		viewName = viewName.toUpperCase();
+		String viewNameCopy = viewName.toUpperCase();
 		Boolean available;
 		synchronized (availableViews) {
-			available = availableViews.get(viewName);
+			available = availableViews.get(viewNameCopy);
 		}
 		if (available == null) {
 			try {
 				try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Check view existence")) {
-					String viewNameQuoted = DBUtils.getQuotedIdentifier(this, viewName);
+					String viewNameQuoted = DBUtils.getQuotedIdentifier(this, viewNameCopy);
 					try (final JDBCPreparedStatement dbStat = session.prepareStatement("SELECT 1 FROM "
 							+ (schemaName == null ? viewNameQuoted
 									: DBUtils.getQuotedIdentifier(this, schemaName) + "." + viewNameQuoted)
@@ -202,7 +202,7 @@ public class YashanDBDataSource extends JDBCDataSource implements DBPObjectStati
 				available = false;
 			}
 			synchronized (availableViews) {
-				availableViews.put(viewName, available);
+				availableViews.put(viewNameCopy, available);
 			}
 		}
 		return available;
@@ -324,7 +324,7 @@ public class YashanDBDataSource extends JDBCDataSource implements DBPObjectStati
 
 	@Override
 	public void cacheStructure(DBRProgressMonitor monitor, int scope) throws DBException {
-
+		// empty body
 	}
 
 	@Association

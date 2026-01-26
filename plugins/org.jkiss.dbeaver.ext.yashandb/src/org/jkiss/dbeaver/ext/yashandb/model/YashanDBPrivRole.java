@@ -29,14 +29,14 @@ import org.jkiss.dbeaver.model.struct.DBSObjectLazy;
 
 public class YashanDBPrivRole extends YashanDBPriv implements DBSObjectLazy<YashanDBDataSource> {
 
+	private Object role;
+	private boolean defaultRole;
+	
 	public YashanDBPrivRole(YashanDBGrantee user, ResultSet resultSet) {
 		super(user, JDBCUtils.safeGetString(resultSet, "GRANTED_ROLE"), resultSet);
 		this.defaultRole = JDBCUtils.safeGetBoolean(resultSet, "DEFAULT_ROLE", "Y");
 		this.role = this.name;
 	}
-
-	private Object role;
-	private boolean defaultRole;
 
 	@NotNull
 	@Override

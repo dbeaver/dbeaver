@@ -33,7 +33,7 @@ public class YashanDBTriggerColumn extends AbstractTriggerColumn {
 	private YashanDBTableColumn tableColumn;
 	private boolean columnList;
 
-	public YashanDBTriggerColumn(DBRProgressMonitor monitor, YashanDBTrigger trigger, YashanDBTableColumn tableColumn,
+	public YashanDBTriggerColumn(YashanDBTrigger trigger, YashanDBTableColumn tableColumn,
 			ResultSet dbResult) throws DBException {
 		this.trigger = trigger;
 		this.tableColumn = tableColumn;

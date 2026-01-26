@@ -236,7 +236,7 @@ public class YashanDBTablespace extends YashanDBGlobalObject implements DBPRefre
 		@Override
 		protected YashanDBDataFile fetchObject(@NotNull JDBCSession session, @NotNull YashanDBTablespace owner,
 				@NotNull JDBCResultSet resultSet) throws SQLException, DBException {
-			return new YashanDBDataFile(owner, resultSet, owner.getContents() == Contents.TEMPORARY);
+			return new YashanDBDataFile(owner, resultSet);
 		}
 	}
 

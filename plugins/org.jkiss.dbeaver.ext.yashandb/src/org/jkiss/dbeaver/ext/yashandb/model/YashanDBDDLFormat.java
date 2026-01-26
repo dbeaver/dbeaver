@@ -31,7 +31,7 @@ public enum YashanDBDDLFormat {
 
 	public static final String PREF_KEY_DDL_FORMAT = "yashandb.ddl.format";
 
-	private static final Log log = org.jkiss.dbeaver.Log.getLog(YashanDBDDLFormat.class);
+	private static final Log log = Log.getLog(YashanDBDDLFormat.class);
 
 	private YashanDBDDLFormat(String title, boolean showStorage, boolean showSegments, boolean showTablespace) {
 		this.showTablespace = showTablespace;

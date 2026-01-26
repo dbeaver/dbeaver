@@ -37,8 +37,6 @@ import org.jkiss.dbeaver.model.DBPReferentialIntegrityController;
 import org.jkiss.dbeaver.model.DBPScriptObject;
 import org.jkiss.dbeaver.model.DBPScriptObjectExt2;
 import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.data.DBDPseudoAttribute;
-import org.jkiss.dbeaver.model.data.DBDPseudoAttributeContainer;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
@@ -55,22 +53,10 @@ import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.ByteNumberFormat;
 import org.jkiss.utils.CommonUtils;
 
-public class YashanDBTable extends YashanDBTablePhysical implements DBPScriptObject, DBDPseudoAttributeContainer,
+public class YashanDBTable extends YashanDBTablePhysical implements DBPScriptObject,
 		DBPObjectStatistics, DBPImageProvider, DBPReferentialIntegrityController, DBPScriptObjectExt2 {
 
 	private static final Log log = Log.getLog(YashanDBTable.class);
-
-	public YashanDBTable(YashanDBSchema schema, String name) {
-		super(schema, name);
-	}
-
-	public YashanDBTable(DBRProgressMonitor monitor, YashanDBSchema schema, ResultSet dbResult) {
-		super(schema, dbResult);
-
-		this.tableType = JDBCUtils.safeGetString(dbResult, "TABLE_TYPE");
-		this.temporary = JDBCUtils.safeGetBoolean(dbResult, "TEMPORARY", "Y");
-		this.secondary = JDBCUtils.safeGetBoolean(dbResult, "SECONDARY", "Y");
-	}
 
 	private static final CharSequence TABLE_NAME_PLACEHOLDER = "%table_name%";
 	private static final CharSequence FOREIGN_KEY_NAME_PLACEHOLDER = "%foreign_key_name%";
@@ -88,6 +74,18 @@ public class YashanDBTable extends YashanDBTablePhysical implements DBPScriptObj
 	private transient volatile Long tableSize;
 
 	private final AdditionalInfo additionalInfo = new AdditionalInfo();
+
+	public YashanDBTable(YashanDBSchema schema, String name) {
+		super(schema, name);
+	}
+
+	public YashanDBTable(YashanDBSchema schema, ResultSet dbResult) {
+		super(schema, dbResult);
+
+		this.tableType = JDBCUtils.safeGetString(dbResult, "TABLE_TYPE");
+		this.temporary = JDBCUtils.safeGetBoolean(dbResult, "TEMPORARY", "Y");
+		this.secondary = JDBCUtils.safeGetBoolean(dbResult, "SECONDARY", "Y");
+	}
 
 	public class AdditionalInfo extends TableAdditionalInfo {
 
@@ -168,11 +166,6 @@ public class YashanDBTable extends YashanDBTablePhysical implements DBPScriptObj
 	@Override
 	public String getObjectDefinitionText(DBRProgressMonitor monitor, Map<String, Object> options) throws DBException {
 		return getDDL(monitor, options);
-	}
-
-	@Override
-	public DBDPseudoAttribute[] getPseudoAttributes() throws DBException {
-		return new DBDPseudoAttribute[0];
 	}
 
 	@Override
@@ -295,7 +288,7 @@ public class YashanDBTable extends YashanDBTablePhysical implements DBPScriptObj
 	public long getStatObjectSize() {
 		return tableSize == null ? 0 : tableSize;
 	}
-	
+
 	@Override
 	public boolean supportsObjectDefinitionOption(String option) {
 		return ArrayUtils.contains(supportedOptions, option);
@@ -343,10 +336,5 @@ public class YashanDBTable extends YashanDBTablePhysical implements DBPScriptObj
 			return ENABLE_REFERENTIAL_INTEGRITY_STATEMENT;
 		}
 		return DISABLE_REFERENTIAL_INTEGRITY_STATEMENT;
-	}
-
-	@Override
-	public DBDPseudoAttribute[] getAllPseudoAttributes(DBRProgressMonitor monitor) throws DBException {
-		return null;
 	}
 }

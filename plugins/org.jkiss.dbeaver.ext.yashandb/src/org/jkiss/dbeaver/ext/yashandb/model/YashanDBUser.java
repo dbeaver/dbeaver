@@ -34,6 +34,17 @@ import org.jkiss.dbeaver.model.struct.DBSObjectLazy;
 
 public class YashanDBUser extends YashanDBGrantee implements DBAUser, DBSObjectLazy<YashanDBDataSource> {
 
+	private long id;
+	private String name;
+	private String status;
+	private Timestamp createDate;
+	private Timestamp lockDate;
+	private Timestamp expiryDate;
+	private Object defaultTablespace;
+	private Object tempTablespace;
+	private String consumerGroup;
+	private transient String password;
+	
 	public YashanDBUser(YashanDBDataSource dataSource) {
 		super(dataSource);
 	}
@@ -50,17 +61,6 @@ public class YashanDBUser extends YashanDBGrantee implements DBAUser, DBSObjectL
 		this.tempTablespace = JDBCUtils.safeGetString(resultSet, "TEMPORARY_TABLESPACE");
 		this.consumerGroup = JDBCUtils.safeGetString(resultSet, "INITIAL_RSRC_CONSUMER_GROUP");
 	}
-
-	private long id;
-	private String name;
-	private String status;
-	private Timestamp createDate;
-	private Timestamp lockDate;
-	private Timestamp expiryDate;
-	private Object defaultTablespace;
-	private Object tempTablespace;
-	private String consumerGroup;
-	private transient String password;
 
 	@Property(order = 1)
 	public long getId() {

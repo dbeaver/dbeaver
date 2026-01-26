@@ -206,9 +206,6 @@ public class PrefPageResultSetMain extends TargetPrefPage {
 
             filterForceSubselect = UIUtils.createCheckbox(advGroup, ResultSetMessages.pref_page_database_resultsets_label_filter_force_subselect,
                 ResultSetMessages.pref_page_database_resultsets_label_filter_force_subselect_tip, false, 2);
-        }
-        {
-            Composite advGroup = UIUtils.createTitledComposite(leftPane, ResultSetMessages.pref_page_results_group_advanced, 1, GridData.VERTICAL_ALIGN_BEGINNING, 0);
 
             ignoreColumnLabelCheck = UIUtils.createCheckbox(advGroup, ResultSetMessages.pref_page_database_general_use_column_names, ResultSetMessages.pref_page_database_general_use_column_names_tip, false, 2);
             advUseFetchSize = UIUtils.createCheckbox(advGroup, ResultSetMessages.pref_page_database_resultsets_label_fetch_size, ResultSetMessages.pref_page_database_resultsets_label_fetch_size_tip, false, 2);
@@ -250,27 +247,6 @@ public class PrefPageResultSetMain extends TargetPrefPage {
             );
             useBrowserCheckbox.setToolTipText(DataEditorsMessages.pref_page_database_resultsets_label_image_browser_tip);
 
-        }
-        {
-            Composite group = UIUtils.createTitledComposite(
-                leftPane,
-                ResultSetMessages.pref_page_content_editor_group_editing,
-                1,
-                GridData.VERTICAL_ALIGN_BEGINNING,
-                0
-            );
-
-            alwaysUseAllColumns = UIUtils.createCheckbox(
-                group,
-                ResultSetMessages.pref_page_content_editor_checkbox_keys_always_use_all_columns,
-                false
-            );
-
-            disableEditingOnMissingKey = UIUtils.createCheckbox(
-                group,
-                ResultSetMessages.pref_page_content_editor_checkbox_disable_editing_if_key_missing,
-                false
-            );
         }
 
         return composite;
