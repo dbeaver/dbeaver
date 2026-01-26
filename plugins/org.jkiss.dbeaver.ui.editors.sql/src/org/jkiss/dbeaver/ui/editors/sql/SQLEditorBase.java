@@ -1371,5 +1371,4 @@ public abstract class SQLEditorBase extends BaseTextEditor implements
             return editorInput.isReadOnly();
         }
     }
-
 }

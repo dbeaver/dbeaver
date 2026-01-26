@@ -339,11 +339,6 @@ public class PostgreDatabase extends JDBCRemoteInstance
         this.description = description;
     }
 
-    @Override
-    public DBSObject getParentObject() {
-        return dataSource.getContainer();
-    }
-
     @NotNull
     @Override
     public PostgreDataSource getDataSource() {
