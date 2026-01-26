@@ -81,7 +81,7 @@ public class ERDPreferencePage extends AbstractPrefPage implements IWorkbenchPre
         DBPPreferenceStore store = ERDUIActivator.getDefault().getPreferences();
         routerDescriptors = routerRegistry.getDescriptors();
         notationDescriptors = notationRegistry.getNotations();
-        Composite composite = UIUtils.createPlaceholder(parent, 2, 5);
+        Composite composite = UIUtils.createComposite(parent, 2);
         if (hasContentGroup()) {
             createContentsGroup(store, composite);
         }

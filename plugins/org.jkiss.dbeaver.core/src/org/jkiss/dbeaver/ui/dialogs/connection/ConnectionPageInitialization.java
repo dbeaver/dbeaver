@@ -299,8 +299,7 @@ class ConnectionPageInitialization extends ConnectionWizardPage implements IDial
                 group,
                 CoreMessages.dialog_connection_edit_wizard_transactions,
                 2,
-                GridData.HORIZONTAL_ALIGN_BEGINNING,
-                -1
+                GridData.HORIZONTAL_ALIGN_BEGINNING
             );
 
             autocommit = UIUtils.createLabelCombo(
@@ -328,8 +327,7 @@ class ConnectionPageInitialization extends ConnectionWizardPage implements IDial
                 group,
                 CoreMessages.dialog_connection_wizard_final_label_connection,
                 2,
-                GridData.HORIZONTAL_ALIGN_BEGINNING,
-                -1
+                GridData.HORIZONTAL_ALIGN_BEGINNING
             );
 
             defaultCatalog = UIUtils.createLabelCombo(conGroup, CoreMessages.dialog_connection_wizard_final_label_default_database,

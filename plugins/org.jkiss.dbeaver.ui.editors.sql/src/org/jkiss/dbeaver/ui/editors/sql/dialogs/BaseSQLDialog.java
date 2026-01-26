@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -48,9 +48,9 @@ public abstract class BaseSQLDialog extends BaseDialog {
 
     private static final Log log = Log.getLog(BaseSQLDialog.class);
 
-    private IEditorSite subSite;
+    private final IEditorSite subSite;
     private SQLEditorBase sqlViewer;
-    private StringEditorInput sqlInput;
+    private final StringEditorInput sqlInput;
 
     public BaseSQLDialog(final IWorkbenchPartSite parentSite, String title, @Nullable DBPImage image) {
         this(parentSite.getShell(), parentSite, title, image);
@@ -93,7 +93,7 @@ public abstract class BaseSQLDialog extends BaseDialog {
         }
 //        new Label(panel, SWT.SEPARATOR | SWT.HORIZONTAL).setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
-        Composite editorPH = new Composite(panel, SWT.BORDER);
+        Composite editorPH = new Composite(panel, SWT.NONE);
         GridData gd = new GridData(GridData.FILL_BOTH);
         gd.verticalIndent = 3;
         gd.horizontalSpan = 1;

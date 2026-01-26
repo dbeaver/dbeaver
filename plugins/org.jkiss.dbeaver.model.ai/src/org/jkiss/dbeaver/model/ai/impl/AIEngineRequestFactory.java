@@ -152,7 +152,11 @@ public class AIEngineRequestFactory {
         @NotNull AIPromptGenerator systemPromptGenerator,
         @NotNull AIEngineRequest request
     ) {
-        if (!engineDescriptor.isSupportsFunctions() || DBWorkbench.getPlatform().getApplication().isMultiuser()) {
+        AISettings aiSettings = AISettingsManager.getInstance().getSettings();
+        if (!engineDescriptor.isSupportsFunctions()
+            || !aiSettings.isFunctionsEnabled()
+            || DBWorkbench.getPlatform().getApplication().isMultiuser() // FIXME: For now disabled for server apps
+        ) {
             return;
         }
         List<AIFunctionDescriptor> functions = new ArrayList<>();
@@ -170,7 +174,6 @@ public class AIEngineRequestFactory {
             }
         }
 
-        AISettings aiSettings = AISettingsManager.getInstance().getSettings();
         Set<String> enabledFunctions = aiSettings.getEnabledFunctions();
 
         List<AIFunctionDescriptor> selectedFunctions = new ArrayList<>(functions);
@@ -192,7 +195,7 @@ public class AIEngineRequestFactory {
     }
 
 
-    private static int getContextWindowSize(@NotNull DBRProgressMonitor monitor, @NotNull AIEngine engine) {
+    private static int getContextWindowSize(@NotNull DBRProgressMonitor monitor, @NotNull AIEngine<?> engine) {
         try {
             return engine.getContextWindowSize(monitor);
         } catch (DBException e) {
