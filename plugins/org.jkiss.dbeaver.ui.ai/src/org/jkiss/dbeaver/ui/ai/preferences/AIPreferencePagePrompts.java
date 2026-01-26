@@ -30,6 +30,7 @@ import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.ai.AISettings;
 import org.jkiss.dbeaver.model.ai.registry.AIPromptGeneratorDescriptor;
 import org.jkiss.dbeaver.model.ai.registry.AIPromptGeneratorRegistry;
 import org.jkiss.dbeaver.model.ai.registry.AISettingsManager;
@@ -86,7 +87,12 @@ public final class AIPreferencePagePrompts extends AbstractPrefPage implements I
                 instructions.put(entry.getKey(), entry.getValue());
             }
         }
-        AISettingsManager.getInstance().getSettings().setCustomInstructions(instructions);
+
+        AISettingsManager manager = AISettingsManager.getInstance();
+        AISettings settings = manager.getSettings();
+        settings.setCustomInstructions(instructions);
+        manager.saveSettings(settings);
+
         return super.performOk();
     }
 
