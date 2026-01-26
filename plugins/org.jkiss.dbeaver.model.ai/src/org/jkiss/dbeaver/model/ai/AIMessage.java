@@ -22,6 +22,7 @@ import org.jkiss.dbeaver.model.ai.engine.AIFunctionCall;
 import org.jkiss.utils.CommonUtils;
 
 import java.time.LocalDateTime;
+import java.util.Objects;
 
 /**
  * Represents a single AI message
@@ -207,5 +208,30 @@ public class AIMessage {
 
     public AIMessage withContent(String newContent) {
         return new AIMessage(role, newContent, displayMessage, time, meta);
+    }
+
+    @Override
+    public final boolean equals(Object o) {
+        if (!(o instanceof AIMessage aiMessage)) {
+            return false;
+        }
+
+        return role == aiMessage.role && content.equals(aiMessage.content) && Objects.equals(displayMessage, aiMessage.displayMessage)
+            && time.equals(aiMessage.time) && Objects.equals(functionCall, aiMessage.functionCall) && Objects.equals(
+            functionResult,
+            aiMessage.functionResult
+        ) && Objects.equals(meta, aiMessage.meta);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = role.hashCode();
+        result = 31 * result + content.hashCode();
+        result = 31 * result + Objects.hashCode(displayMessage);
+        result = 31 * result + time.hashCode();
+        result = 31 * result + Objects.hashCode(functionCall);
+        result = 31 * result + Objects.hashCode(functionResult);
+        result = 31 * result + Objects.hashCode(meta);
+        return result;
     }
 }
