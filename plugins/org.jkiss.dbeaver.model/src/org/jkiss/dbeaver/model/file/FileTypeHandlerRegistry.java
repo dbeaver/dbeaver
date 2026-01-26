@@ -74,7 +74,7 @@ public class FileTypeHandlerRegistry {
     public FileTypeHandlerDescriptor.Extension findExtension(String fileExtension) {
         for (FileTypeHandlerDescriptor.Extension ext : extensions) {
             for (String extName : ext.getExtensions()) {
-                if (fileExtension.endsWith(extName) || extName.equals("*")) {
+                if (fileExtension.equals(extName) || extName.equals("*")) {
                     return ext;
                 }
             }
