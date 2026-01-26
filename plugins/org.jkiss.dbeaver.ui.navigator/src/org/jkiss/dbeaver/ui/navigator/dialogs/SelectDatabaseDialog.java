@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,9 @@
  */
 package org.jkiss.dbeaver.ui.navigator.dialogs;
 
+import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
@@ -58,8 +60,7 @@ import java.util.List;
 /**
  * SelectDatabaseDialog
  */
-public class SelectDatabaseDialog extends ObjectListDialog<DBNDatabaseNode>
-{
+public class SelectDatabaseDialog extends ObjectListDialog<DBNDatabaseNode> {
     private static final Log log = Log.getLog(SelectDatabaseDialog.class);
 
     private final DBPDataSourceContainer dataSourceContainer;
@@ -68,11 +69,11 @@ public class SelectDatabaseDialog extends ObjectListDialog<DBNDatabaseNode>
     private final List<DBNDatabaseNode> selectedInstances = new ArrayList<>();
 
     public SelectDatabaseDialog(
-        Shell parentShell,
-        DBPDataSourceContainer dataSourceContainer,
-        String currentInstanceName,
-        Collection<DBNDatabaseNode> objects,
-        Collection<DBNDatabaseNode> selected)
+        @NotNull Shell parentShell,
+        @NotNull DBPDataSourceContainer dataSourceContainer,
+        @Nullable String currentInstanceName,
+        @NotNull Collection<DBNDatabaseNode> objects,
+        @NotNull Collection<DBNDatabaseNode> selected)
     {
         super(parentShell,
             NLS.bind(
@@ -87,7 +88,7 @@ public class SelectDatabaseDialog extends ObjectListDialog<DBNDatabaseNode>
     }
 
     @Override
-    protected void createUpperControls(Composite dialogArea) {
+    protected void createUpperControls(@NotNull Composite dialogArea) {
         DBPDataSource dataSource = dataSourceContainer.getDataSource();
         if (currentInstanceName == null || dataSource == null) {
             return;
@@ -105,6 +106,24 @@ public class SelectDatabaseDialog extends ObjectListDialog<DBNDatabaseNode>
         }
     }
 
+    @Override
+    protected void handleObjectsLoaded(Collection<DBNDatabaseNode> items, boolean append) {
+        // Now select the default object
+        if (selectedInstances.isEmpty()) {
+            return;
+        }
+        List<Object> selObjects = new ArrayList<>();
+        Collection<?> schemas = (Collection<?>) objectList.getItemsViewer().getInput();
+        if (schemas != null) {
+            for (Object node : schemas) {
+                if (DBNUtils.isDefaultElement(node)) {
+                    selObjects.add(node);
+                }
+            }
+        }
+        objectList.getSelectionProvider().setSelection(new StructuredSelection(selObjects));
+    }
+
     @Nullable
     private DBCExecutionContextDefaults<?,?> getContextDefaults() {
         DBPDataSource dataSource = dataSourceContainer.getDataSource();
@@ -118,27 +137,33 @@ public class SelectDatabaseDialog extends ObjectListDialog<DBNDatabaseNode>
 
     private void createInstanceSelector(Composite group, DBSObjectContainer instanceContainer) {
         ((GridLayout)group.getLayout()).numColumns++;
-        DatabaseObjectListControl<DBNDatabaseNode> instanceList = createObjectSelector(group, true, "DatabaseInstanceSelector", selectedInstances, new DBRRunnableWithResult<>() {
-            @Override
-            public void run(DBRProgressMonitor monitor) throws InvocationTargetException {
-                try {
-                    if (!CommonUtils.isEmpty(currentInstanceName) && selectedInstances.isEmpty()) {
-                        DBSObject activeInstance = instanceContainer.getChild(monitor, currentInstanceName);
-                        if (activeInstance != null) {
-                            DBNDatabaseNode activeInstanceNode = DBNUtils.getNodeByObject(monitor, activeInstance, false);
-                            if (activeInstanceNode != null) {
-                                selectedInstances.add(activeInstanceNode);
+        DatabaseObjectListControl<DBNDatabaseNode> instanceList = createObjectSelector(
+            group,
+            true,
+            "DatabaseInstanceSelector",
+            selectedInstances,
+            new DBRRunnableWithResult<>() {
+                @Override
+                public void run(DBRProgressMonitor monitor) throws InvocationTargetException {
+                    try {
+                        if (!CommonUtils.isEmpty(currentInstanceName) && selectedInstances.isEmpty()) {
+                            DBSObject activeInstance = instanceContainer.getChild(monitor, currentInstanceName);
+                            if (activeInstance != null) {
+                                DBNDatabaseNode activeInstanceNode = DBNUtils.getNodeByObject(monitor, activeInstance, false);
+                                if (activeInstanceNode != null) {
+                                    selectedInstances.add(activeInstanceNode);
+                                }
                             }
                         }
+                        Collection<? extends DBSObject> instances = instanceContainer.getChildren(monitor);
+                        result = getNodeList(monitor, instances);
+                        objectList.loadData();
+                    } catch (DBException e) {
+                        throw new InvocationTargetException(e);
                     }
-                    Collection<? extends DBSObject> instances = instanceContainer.getChildren(monitor);
-                    result = getNodeList(monitor, instances);
-                    objectList.loadData();
-                } catch (DBException e) {
-                    throw new InvocationTargetException(e);
                 }
             }
-        });
+        );
         instanceList.createProgressPanel();
         GridData gd = new GridData(GridData.FILL_BOTH);
         gd.heightHint = 300;
@@ -148,18 +173,24 @@ public class SelectDatabaseDialog extends ObjectListDialog<DBNDatabaseNode>
             IStructuredSelection selection = (IStructuredSelection) event.getSelection();
             selectedInstances.clear();
             selectedInstances.addAll(selection.toList());
-            DBNDatabaseNode instance = selectedInstances.isEmpty() ? null : selectedInstances.get(0);
+            DBNDatabaseNode instance = selectedInstances.isEmpty() ? null : selectedInstances.getFirst();
             if (instance != null && !CommonUtils.equalObjects(instance.getNodeDisplayName(), currentInstanceName)) {
                 currentInstanceName = instance.getNodeDisplayName();
                 objectList.loadData();
             }
         });
+        instanceList.setDoubleClickHandler(event -> {
+            if (isModeless() || isButtonEnabled(IDialogConstants.OK_ID)) {
+                okPressed();
+            }
+        });
+
 
         instanceList.loadData();
         closeOnFocusLost(instanceList.getItemsViewer().getControl());
     }
 
-    protected List<DBNDatabaseNode> getObjects(DBRProgressMonitor monitor) {
+    protected List<DBNDatabaseNode> getObjects(@NotNull DBRProgressMonitor monitor) {
         DBSObject rootObject;
         if (selectedInstances != null && currentInstanceName != null && getContextDefaults() != null
             && getContextDefaults().supportsSchemaChange()) {
