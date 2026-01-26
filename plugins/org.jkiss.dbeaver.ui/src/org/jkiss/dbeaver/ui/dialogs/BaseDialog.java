@@ -180,4 +180,12 @@ public class BaseDialog extends Dialog {
         }
     }
 
+    protected boolean isButtonEnabled(int buttonID) {
+        Button button = getButton(buttonID);
+        if (button != null) {
+            return button.isEnabled();
+        }
+        return false;
+    }
+
 }
