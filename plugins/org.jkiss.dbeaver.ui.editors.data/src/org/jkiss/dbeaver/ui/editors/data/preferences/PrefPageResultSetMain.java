@@ -248,27 +248,6 @@ public class PrefPageResultSetMain extends TargetPrefPage {
             useBrowserCheckbox.setToolTipText(DataEditorsMessages.pref_page_database_resultsets_label_image_browser_tip);
 
         }
-        {
-            Composite group = UIUtils.createTitledComposite(
-                leftPane,
-                ResultSetMessages.pref_page_content_editor_group_editing,
-                1,
-                GridData.VERTICAL_ALIGN_BEGINNING,
-                0
-            );
-
-            alwaysUseAllColumns = UIUtils.createCheckbox(
-                group,
-                ResultSetMessages.pref_page_content_editor_checkbox_keys_always_use_all_columns,
-                false
-            );
-
-            disableEditingOnMissingKey = UIUtils.createCheckbox(
-                group,
-                ResultSetMessages.pref_page_content_editor_checkbox_disable_editing_if_key_missing,
-                false
-            );
-        }
 
         return composite;
     }
