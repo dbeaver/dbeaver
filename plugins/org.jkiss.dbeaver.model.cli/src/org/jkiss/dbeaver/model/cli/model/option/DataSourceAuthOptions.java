@@ -23,11 +23,11 @@ import java.util.List;
 
 public class DataSourceAuthOptions {
     @Nullable
-    @CommandLine.Option(names = {"-u", "--user"}, arity = "1", description = "Database user name for database native authentication")
+    @CommandLine.Option(names = {"-u", "--user"}, arity = "1", description = "Database user name for username/password authentication")
     private String dbUser;
 
     @Nullable
-    @CommandLine.Option(names = {"-p", "--password"}, arity = "1", description = "Database password for database native authentication")
+    @CommandLine.Option(names = {"-p", "--password"}, arity = "1", description = "Database password for username/password authentication")
     private String dbPassword;
 
     @Nullable
