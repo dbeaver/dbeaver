@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -46,6 +46,10 @@ public class QMMStatementExecuteInfo extends QMMObject {
     private final String schema;
     @Nullable
     private final String catalog;
+
+    // Statement id in database
+    @Nullable
+    private Long statementId;
 
     private transient QMMStatementExecuteInfo previous;
 
@@ -201,6 +205,15 @@ public class QMMStatementExecuteInfo extends QMMObject {
     public QMMStatementExecuteInfo getPrevious()
     {
         return previous;
+    }
+
+    @Nullable
+    public Long getStatementId() {
+        return statementId;
+    }
+
+    public void setStatementId(long statementId) {
+        this.statementId = statementId;
     }
 
     @Override
