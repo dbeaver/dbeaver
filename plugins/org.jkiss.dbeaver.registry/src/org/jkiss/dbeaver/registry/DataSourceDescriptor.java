@@ -1003,6 +1003,12 @@ public class DataSourceDescriptor
         secretsResolved = true;
     }
 
+    public void clearOldSecrets(DBSSecretController secretController) throws DBException {
+        if (!isSharedCredentials()) {
+            secretController.setPrivateSecretValue(getSecretValueId(), null);
+        }
+    }
+
     @Override
     public boolean isConnected() {
         return dataSource != null && !connecting;
