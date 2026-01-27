@@ -2722,15 +2722,12 @@ public class UIUtils {
                 Rectangle bounds = getBounds();
                 Rectangle label = textLabel.getBounds();
 
-                e.gc.setFont(textLabel.getFont());
-                int descent = e.gc.getFontMetrics().getDescent();
-
                 e.gc.setForeground(Display.getDefault().getSystemColor(SWT.COLOR_WIDGET_NORMAL_SHADOW));
                 e.gc.drawLine(
                     label.x + label.width + 6,
-                    label.y + (label.height + descent) / 2,
+                    label.y + label.height / 2,
                     bounds.width,
-                    label.y + (label.height + descent) / 2
+                    label.y + label.height / 2
                 );
             });
         }};
