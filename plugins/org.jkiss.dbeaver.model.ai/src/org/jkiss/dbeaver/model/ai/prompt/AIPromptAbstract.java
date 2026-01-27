@@ -70,8 +70,8 @@ public abstract class AIPromptAbstract implements AIPromptGenerator {
         AISettings settings = AISettingsManager.getInstance().getSettings();
         if (gd != null && settings.isFunctionsEnabled()) {
             for (AIPromptGeneratorDescriptor.Uses use : gd.getUses()) {
-                if (settings.getEnabledFunctions().contains(use.getFunction())) {
-                    this.addInstructions(use.getInstructions());
+                if (settings.getEnabledFunctions().contains(use.function())) {
+                    this.addInstructions(use.instructions());
                 }
             }
         }
