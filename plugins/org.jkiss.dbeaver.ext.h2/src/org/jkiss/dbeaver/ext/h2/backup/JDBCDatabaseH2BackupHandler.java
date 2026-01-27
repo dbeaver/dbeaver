@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.model.connection.InternalDatabaseConfig;
 import org.jkiss.dbeaver.model.sql.backup.JDBCDatabaseBackupHandler;
 import org.jkiss.dbeaver.model.sql.backup.SQLBackupConstants;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.utils.IOUtils;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -40,6 +41,10 @@ public class JDBCDatabaseH2BackupHandler implements JDBCDatabaseBackupHandler {
         @NotNull InternalDatabaseConfig databaseConfig
     ) throws DBException, IOException {
         Path workspace = DBWorkbench.getPlatform().getWorkspace().getAbsolutePath().resolve(SQLBackupConstants.BACKUP_FOLDER);
+        if (!IOUtils.isFileFromDefaultFS(workspace)) {
+            log.warn("Backup to an external workspace is not supported");
+            return;
+        }
         Path backupFile = workspace.resolve(SQLBackupConstants.BACKUP_FILE_NAME + currentSchemaVersion
             + SQLBackupConstants.BACKUP_FILE_TYPE);
         try (Statement statement = connection.createStatement()) {
