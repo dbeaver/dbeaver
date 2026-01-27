@@ -201,8 +201,10 @@ public class DBNUtils {
     public static boolean isDefaultElement(@Nullable Object element) {
         if (element instanceof DBSWrapper wrapper) {
             DBSObject object = wrapper.getObject();
-            if (object != null && !(object instanceof DBSInstance)) {
-                // Do not check instance because it is always the "default" for itself
+            if (object != null) {
+                if (object instanceof DBSInstance i && object.getParentObject() instanceof DBSInstanceContainer ic) {
+                    return ic.getDefaultInstance() == i;
+                }
 
                 // Get default context from default instance - not from active object
                 DBCExecutionContext defaultContext = DBUtils.getDefaultContext(object, false);

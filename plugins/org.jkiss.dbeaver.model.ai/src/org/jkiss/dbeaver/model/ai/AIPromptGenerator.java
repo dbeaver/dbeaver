@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,5 +28,13 @@ public interface AIPromptGenerator {
 
     @NotNull
     String build();
+
+    /**
+     * Creates a copy of this prompt generator.
+     *
+     * @return a new instance of the prompt generator with the same configuration
+     */
+    @NotNull
+    AIPromptGenerator copy();
 
 }
