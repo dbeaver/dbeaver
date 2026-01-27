@@ -89,7 +89,6 @@ public class AIFunctionDescriptor extends AbstractDescriptor {
     private final boolean hidden;
     private final AIFunctionResult.FunctionType type;
     private final String[] dependsOn;
-    private final String onPopulateDescription;
     private final String description;
     private final String categoryId;
     private final Parameter[] parameters;
@@ -104,7 +103,6 @@ public class AIFunctionDescriptor extends AbstractDescriptor {
         this.hidden = CommonUtils.toBoolean(config.getAttribute("hidden"));
         this.categoryId = config.getAttribute("categoryId");
         this.description = config.getAttribute("description");
-        this.onPopulateDescription = config.getAttribute("onPopulateDescription");
         this.dependsOn = CommonUtils.splitString(config.getAttribute("dependsOn"), ',').toArray(new String[0]);
         this.type = CommonUtils.valueOf(
             AIFunctionResult.FunctionType.class,
@@ -143,12 +141,6 @@ public class AIFunctionDescriptor extends AbstractDescriptor {
     public String getDescription() {
         return description;
     }
-
-    @Nullable
-    public String getOnPopulateDescription() {
-        return onPopulateDescription;
-    }
-
     /**
      * Global functions are passed in ALL requests
      */

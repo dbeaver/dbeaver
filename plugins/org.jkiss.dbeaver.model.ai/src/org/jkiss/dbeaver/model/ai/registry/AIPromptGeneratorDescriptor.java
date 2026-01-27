@@ -25,10 +25,10 @@ import org.jkiss.dbeaver.model.ai.AIPromptGenerator;
 import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
 import org.jkiss.dbeaver.model.logical.DBSLogicalDataSourceSupplier;
 import org.jkiss.dbeaver.registry.RegistryConstants;
-import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.util.ArrayList;
 import java.util.List;
 
 public class AIPromptGeneratorDescriptor extends AbstractDescriptor {
@@ -39,7 +39,7 @@ public class AIPromptGeneratorDescriptor extends AbstractDescriptor {
     private final String id;
     private final String label;
     private final DBPImage icon;
-    private final List<String> populateDescriptionOn;
+    private final List<Uses> uses;
 
     protected AIPromptGeneratorDescriptor(@NotNull IConfigurationElement config) {
         super(config);
@@ -47,7 +47,10 @@ public class AIPromptGeneratorDescriptor extends AbstractDescriptor {
         this.id = config.getAttribute(RegistryConstants.ATTR_ID);
         this.label = config.getAttribute(RegistryConstants.ATTR_LABEL);
         this.icon = iconToImage(config.getAttribute(RegistryConstants.ATTR_ICON));
-        this.populateDescriptionOn = CommonUtils.splitString(config.getAttribute("populateDescriptionOn"), ',');
+        this.uses = new ArrayList<>();
+        for (IConfigurationElement pe : config.getChildren("uses")) {
+            uses.add(new Uses(pe));
+        }
     }
 
     @NotNull
@@ -66,8 +69,8 @@ public class AIPromptGeneratorDescriptor extends AbstractDescriptor {
     }
 
     @NotNull
-    public List<String> getPopulateDescriptionOn() {
-        return populateDescriptionOn;
+    public List<Uses> getUses() {
+        return uses;
     }
 
     @NotNull
@@ -86,5 +89,26 @@ public class AIPromptGeneratorDescriptor extends AbstractDescriptor {
         } catch (Exception e) {
             throw new DBException("Error creating prompt generator " + getId(), e);
         }
+    }
+
+    public static class Uses {
+        private final String function;
+        private final String instructions;
+
+        Uses(@NotNull IConfigurationElement config) {
+            this.function = config.getAttribute("function");
+            this.instructions = config.getAttribute("instructions");
+        }
+
+        @NotNull
+        public String getFunction() {
+            return function;
+        }
+
+        @NotNull
+        public String getInstructions() {
+            return instructions;
+        }
+
     }
 }

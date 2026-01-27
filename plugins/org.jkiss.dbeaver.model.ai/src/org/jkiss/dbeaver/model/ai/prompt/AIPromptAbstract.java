@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,9 @@ package org.jkiss.dbeaver.model.ai.prompt;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.ai.AIPromptGenerator;
 import org.jkiss.dbeaver.model.ai.AISettings;
-import org.jkiss.dbeaver.model.ai.registry.*;
+import org.jkiss.dbeaver.model.ai.registry.AIPromptGeneratorDescriptor;
+import org.jkiss.dbeaver.model.ai.registry.AIPromptGeneratorRegistry;
+import org.jkiss.dbeaver.model.ai.registry.AISettingsManager;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -67,13 +69,9 @@ public abstract class AIPromptAbstract implements AIPromptGenerator {
         AIPromptGeneratorDescriptor gd = AIPromptGeneratorRegistry.getInstance().getPromptGenerator(this.generatorId());
         AISettings settings = AISettingsManager.getInstance().getSettings();
         if (gd != null && settings.isFunctionsEnabled()) {
-            for (String fd : settings.getEnabledFunctions()) {
-                if (gd.getPopulateDescriptionOn().contains(fd)) {
-                    AIFunctionDescriptor functionDescriptor = AIFunctionRegistry.getInstance().getFunction(fd);
-                    if (functionDescriptor == null) {
-                        continue;
-                    }
-                    this.addInstructions(functionDescriptor.getOnPopulateDescription());
+            for (AIPromptGeneratorDescriptor.Uses use : gd.getUses()) {
+                if (settings.getEnabledFunctions().contains(use.getFunction())) {
+                    this.addInstructions(use.getInstructions());
                 }
             }
         }
