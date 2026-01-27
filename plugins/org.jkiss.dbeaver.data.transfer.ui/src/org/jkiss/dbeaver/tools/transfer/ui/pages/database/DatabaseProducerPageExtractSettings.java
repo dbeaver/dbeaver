@@ -30,10 +30,7 @@ import org.jkiss.dbeaver.tools.transfer.internal.DTMessages;
 import org.jkiss.dbeaver.tools.transfer.ui.internal.DTUIMessages;
 import org.jkiss.dbeaver.tools.transfer.ui.pages.DataTransferPageNodeSettings;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.forms.UIAlignX;
-import org.jkiss.dbeaver.ui.forms.UIObservable;
-import org.jkiss.dbeaver.ui.forms.UIObservables;
-import org.jkiss.dbeaver.ui.forms.UIPanelBuilder;
+import org.jkiss.dbeaver.ui.forms.*;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 
 import java.util.List;
@@ -90,6 +87,25 @@ public class DatabaseProducerPageExtractSettings extends DataTransferPageNodeSet
 
     @NotNull
     private Consumer<UIPanelBuilder> buildExtractionPanel() {
+        var canExportFetchedOnly = canExportFetchedRows();
+        if (canExportFetchedOnly) {
+            return buildQueryDatabaseOrUseFetchedRowsPanel();
+        } else {
+            return buildQueryDatabaseOnlyPanel();
+        }
+    }
+
+    @NotNull
+    private Consumer<UIPanelBuilder> buildQueryDatabaseOnlyPanel() {
+        var useFetchedData = UIObservable.of(true);
+
+        return pb -> pb
+            .row(rb -> rb.panel(buildQueryDatabasePanel(useFetchedData)))
+            .row(buildAdvancedRow(useFetchedData));
+    }
+
+    @NotNull
+    private Consumer<UIPanelBuilder> buildQueryDatabaseOrUseFetchedRowsPanel() {
         var queryDatabase = UIObservables.equals(strategy, Strategy.QUERY_DATABASE);
         var useFetchedData = UIObservables.equals(strategy, Strategy.USE_FETCHED_ROWS);
 
@@ -100,10 +116,7 @@ public class DatabaseProducerPageExtractSettings extends DataTransferPageNodeSet
             .row(rb -> rb
                 .panel(buildQueryDatabasePanel(queryDatabase))
                 .panel(buildUseFetchedRowsPanel(useFetchedData)))
-            .row(rb -> rb
-                .expandableGroup("Advanced", false, pb1 -> pb1
-                    .align(UIAlignX.FILL).grow()
-                    .accept(buildAdvancedPanel(queryDatabase))));
+            .row(buildAdvancedRow(queryDatabase));
     }
 
     @NotNull
@@ -123,7 +136,7 @@ public class DatabaseProducerPageExtractSettings extends DataTransferPageNodeSet
 
     @NotNull
     private Consumer<UIPanelBuilder> buildUseFetchedRowsPanel(@NotNull UIObservable<Boolean> enabled) {
-        var canExportSelection = UIObservable.of(hasCellSelection() && canExportColumns());
+        var canExportSelection = UIObservable.of(hasSelection() && canExportColumns());
 
         return pb -> pb
             .row(rb -> rb
@@ -132,6 +145,14 @@ public class DatabaseProducerPageExtractSettings extends DataTransferPageNodeSet
             .row(rb -> rb
                 .enabled(UIObservables.and(enabled, canExportSelection))
                 .checkBox("Selected columns only", bb -> bb.selected(selectedColumnsOnly)));
+    }
+
+    @NotNull
+    private Consumer<UIRowBuilder> buildAdvancedRow(@NotNull UIObservable<Boolean> queryDatabase) {
+        return rb -> rb
+            .expandableGroup("Advanced", false, pb -> pb
+                .align(UIAlignX.FILL).grow()
+                .accept(buildAdvancedPanel(queryDatabase)));
     }
 
     @NotNull
@@ -190,8 +211,8 @@ public class DatabaseProducerPageExtractSettings extends DataTransferPageNodeSet
         settings.setQueryRowCount(fetchRowCount.get());
 
         // Fetched rows
-        if (strategy.get() == Strategy.USE_FETCHED_ROWS) {
-            boolean canExportSelection = hasCellSelection() && canExportColumns();
+        if (strategy.get() == Strategy.USE_FETCHED_ROWS && canExportFetchedRows()) {
+            boolean canExportSelection = hasSelection() && canExportColumns();
             settings.setFetchedRowsPolicy(new FetchedRowsPolicy(
                 canExportSelection && selectedRowsOnly.get(),
                 canExportSelection && selectedColumnsOnly.get()
@@ -220,7 +241,7 @@ public class DatabaseProducerPageExtractSettings extends DataTransferPageNodeSet
         };
     }
 
-    private boolean hasCellSelection() {
+    private boolean hasSelection() {
         var selection = getWizard().getCurrentSelection();
         return selection != null && !selection.isEmpty() && selection.getFirstElement() instanceof DBDCellValue;
     }
@@ -233,6 +254,18 @@ public class DatabaseProducerPageExtractSettings extends DataTransferPageNodeSet
                 return false;
             }
             if (container != null && container.getDataSource().getInfo().isDynamicMetadata()) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private boolean canExportFetchedRows() {
+        for (DBSObject object : getWizard().getSettings().getSourceObjects()) {
+            if (!(object instanceof DBSDataContainer container)) {
+                return false;
+            }
+            if (!container.isFeatureSupported(DBSDataContainer.FEATURE_DATA_READ_FETCHED)) {
                 return false;
             }
         }
