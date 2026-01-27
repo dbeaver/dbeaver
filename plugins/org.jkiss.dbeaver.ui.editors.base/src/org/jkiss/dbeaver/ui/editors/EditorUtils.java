@@ -747,33 +747,35 @@ public class EditorUtils {
         for (Map.Entry<FileTypeHandlerDescriptor, List<Path>> entry : filesByHandler.entrySet()) {
             FileTypeHandlerDescriptor handler = entry.getKey();
             List<Path> pathList = entry.getValue();
+            boolean allRemote = pathList.stream().noneMatch(IOUtils::isLocalPath);
 
             for (Path path : pathList) {
                 if (!IOUtils.isLocalPath(path)) {
-                    if (handler == null || !handler.supportsRemoteFiles() || Files.isDirectory(path)) {
+                    if (handler == null || Files.isDirectory(path)) {
+                        return false;
+                    }
+                }
+                if (!handler.supportsRemoteFiles()) {
+                    try {
+                        Path newPath = copyRemoteFileToTempDir(path);
+                        pathList.set(pathList.indexOf(path), newPath);
+                    } catch (DBException e) {
+                        log.error("Can't copy remote file to temp", e);
                         return false;
                     }
                 }
             }
-            if (handler == null) {
-                for (Path path : pathList) {
-                    final IWorkbenchWindow window = UIUtils.getActiveWorkbenchWindow();
-                    EditorUtils.openExternalFileEditor(path, window);
-                }
-            } else {
-                try {
-                    FileOpenHandler fileOpenHandler = handler.createHandler();
-                    Set<FileTypeAction> actions = fileOpenHandler.supportedActions();
+            try {
+                FileOpenHandler fileOpenHandler = handler.createHandler();
+                Set<FileTypeAction> actions = fileOpenHandler.supportedActions();
 
-                    boolean allRemote = pathList.stream().noneMatch(IOUtils::isLocalPath);
-                    FileTypeAction selectedAction = getFileTypeActionWithDialog(actions, !allRemote);
+                FileTypeAction selectedAction = getFileTypeActionWithDialog(actions, !allRemote);
 
-                    if (selectedAction != null) {
-                        fileOpenHandler.openFiles(pathList, currentContainer, selectedAction);
-                    }
-                } catch (Exception e) {
-                    DBWorkbench.getPlatformUI().showError("Open file error", "Can't open file '" + pathList + "'", e);
+                if (selectedAction != null) {
+                    fileOpenHandler.openFiles(pathList, currentContainer, selectedAction);
                 }
+            } catch (Exception e) {
+                DBWorkbench.getPlatformUI().showError("Open file error", "Can't open file '" + pathList + "'", e);
             }
         }
         return true;
