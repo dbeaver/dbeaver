@@ -27,12 +27,20 @@
             <keywordReference id="dbeaver.ai.pref"/>
             <keywordReference id="dbeaver.ai.config"/>
         </page>
+        <page id="org.jkiss.dbeaver.preferences.ai.prompts" category="org.jkiss.dbeaver.preferences.ai" class="org.jkiss.dbeaver.ui.ai.preferences.AIPreferencePagePrompts" name="%pref.page.ai.prompts.name">
+            <keywordReference id="org.jkiss.dbeaver.core.keyword.dbeaver"/>
+            <keywordReference id="dbeaver.ai.pref"/>
+            <keywordReference id="dbeaver.ai.prompts"/>
+        </page>
     </extension>
     <extension point="org.eclipse.ui.propertyPages">
         <page id="org.jkiss.dbeaver.preferences.ai" class="org.jkiss.dbeaver.ui.ai.preferences.AIPreferencePageMain" name="%pref.page.ai.engines.name">
             <enabledWhen><reference definitionId="org.jkiss.dbeaver.ai.preferences"/></enabledWhen>
         </page>
         <page id="org.jkiss.dbeaver.preferences.ai.config" class="org.jkiss.dbeaver.ui.ai.preferences.AIPreferencePageConfiguration" name="%prop.page.ai.config.name">
+            <enabledWhen><reference definitionId="org.jkiss.dbeaver.ai.preferences"/></enabledWhen>
+        </page>
+        <page id="org.jkiss.dbeaver.preferences.ai.prompts" class="org.jkiss.dbeaver.ui.ai.preferences.AIPreferencePagePrompts" name="%pref.page.ai.prompts.name">
             <enabledWhen><reference definitionId="org.jkiss.dbeaver.ai.preferences"/></enabledWhen>
         </page>
     </extension>
@@ -119,6 +127,7 @@
     <extension point="org.eclipse.ui.keywords">
         <keyword id="dbeaver.ai.pref" label="%keyword.org.jkiss.dbeaver.ai.pref"/>
         <keyword id="dbeaver.ai.config" label="%keyword.org.jkiss.dbeaver.ai.config"/>
+        <keyword id="dbeaver.ai.prompts" label="%keyword.org.jkiss.dbeaver.ai.prompts"/>
     </extension>
 
 </plugin>
