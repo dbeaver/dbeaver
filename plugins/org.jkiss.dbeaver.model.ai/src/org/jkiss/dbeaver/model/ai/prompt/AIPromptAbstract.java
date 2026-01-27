@@ -89,7 +89,6 @@ public abstract class AIPromptAbstract implements AIPromptGenerator {
     @Override
     public AIPromptAbstract copy() {
         AIPromptAbstract copy = create();
-        copy.goals.addAll(goals);
         copy.instructions.addAll(instructions);
         copy.examples.addAll(examples);
         copy.contexts.addAll(contexts);
