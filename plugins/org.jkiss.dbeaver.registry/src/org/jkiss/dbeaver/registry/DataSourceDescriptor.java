@@ -1003,19 +1003,6 @@ public class DataSourceDescriptor
         secretsResolved = true;
     }
 
-    /**
-     * Clears previously saved secrets from datastore.
-     * Its necessary since otherwise  when this secret controller is recreated it stores old secret value
-     *
-     * @param secretController secret controller
-     * @throws DBException if secret clearing fails
-     */
-    public void clearDataSourceSecrets(@NotNull DBSSecretController secretController) throws DBException {
-        if (!isSharedCredentials()) {
-            secretController.setPrivateSecretValue(getSecretValueId(), null);
-        }
-    }
-
     @Override
     public boolean isConnected() {
         return dataSource != null && !connecting;
