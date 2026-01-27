@@ -78,7 +78,7 @@ public abstract class AIPromptAbstract implements AIPromptGenerator {
 
         if (!contexts.isEmpty()) {
             prompt.append("\nContext:\n");
-            contexts.forEach(context -> prompt.append("- ").append(context).append("\n"));
+            contexts.forEach(ctx -> prompt.append("- ").append(ctx).append("\n"));
         }
 
         if (!outputFormats.isEmpty()) {

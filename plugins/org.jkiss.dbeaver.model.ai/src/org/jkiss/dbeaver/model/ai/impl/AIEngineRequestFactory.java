@@ -80,7 +80,7 @@ public class AIEngineRequestFactory {
             }
         }
 
-        String systemPrompt = systemPromptGenerator.build(databaseContext);
+        String systemPrompt = promptGenerator.build(databaseContext);
 
         // Tokens available for user/system/chat history after we reserve reply + overhead
         int maxContextWindowSize = getContextWindowSize(monitor, engine);
