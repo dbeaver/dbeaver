@@ -451,9 +451,4 @@ public class MySQLDialect extends JDBCSQLDialect implements SQLDialectSchemaCont
     public boolean supportsAlterHasColumn() {
         return true;
     }
-
-    @Override
-    public String getUnicodeVarCharDataType() {
-        return "VARCHAR";
-    }
 }

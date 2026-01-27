@@ -817,11 +817,6 @@ public class OracleSQLDialect extends JDBCSQLDialect
     }
 
     @Override
-    public String getUnicodeVarCharDataType() {
-        return OracleConstants.TYPE_NAME_VARCHAR2;
-    }
-
-    @Override
     public boolean needsDefaultDataTypes() {
         return false;
     }

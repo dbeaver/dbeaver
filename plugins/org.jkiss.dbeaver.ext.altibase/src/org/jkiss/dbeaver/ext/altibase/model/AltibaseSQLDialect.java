@@ -583,11 +583,6 @@ public class AltibaseSQLDialect extends JDBCSQLDialect
         return false;
     }
 
-    @Override
-    public String getUnicodeVarCharDataType() {
-        return AltibaseDataTypeDomain.VARCHAR.getTypeName();
-    }
-
     @NotNull
     @Override
     public String getSchemaExistQuery(@NotNull String schemaName) {

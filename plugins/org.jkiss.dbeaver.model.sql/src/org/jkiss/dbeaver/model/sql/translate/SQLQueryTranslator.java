@@ -290,9 +290,9 @@ public class SQLQueryTranslator implements SQLTranslator {
                     newDataType = "";
                 }
             }
-            case "VARCHAR" -> {
+            case "NVARCHAR" -> {
                 if (extendedDialect != null) {
-                    newDataType = extendedDialect.getUnicodeVarCharDataType() + (parenthesisIndex > 0 ? ' ' + colDataType.substring(parenthesisIndex) : "");
+                    newDataType = extendedDialect.getNVarCharDataType() + (parenthesisIndex > 0 ? ' ' + colDataType.substring(parenthesisIndex) : "");
                 }
             }
             default -> {

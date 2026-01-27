@@ -1259,11 +1259,6 @@ public class PostgreDialect extends JDBCSQLDialect implements TPRuleProvider, SQ
         return true;
     }
 
-    @Override
-    public String getUnicodeVarCharDataType() {
-        return PostgreConstants.TYPE_VARCHAR;
-    }
-
     @NotNull
     @Override
     public String getSchemaExistQuery(@NotNull String schemaName) {

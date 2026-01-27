@@ -105,5 +105,7 @@ public interface SQLDialectDDLExtension extends SQLDialect {
      */
     boolean supportsAlterHasColumn();
 
-    String getUnicodeVarCharDataType();
+    default String getNVarCharDataType() {
+        return "VARCHAR";
+    }
 }

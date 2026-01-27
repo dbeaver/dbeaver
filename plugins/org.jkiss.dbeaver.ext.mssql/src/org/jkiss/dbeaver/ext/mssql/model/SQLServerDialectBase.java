@@ -451,7 +451,7 @@ public abstract class SQLServerDialectBase extends JDBCSQLDialect implements TPR
     }
 
     @Override
-    public String getUnicodeVarCharDataType() {
+    public String getNVarCharDataType() {
         return SQLServerConstants.TYPE_NVARCHAR;
     }
 
