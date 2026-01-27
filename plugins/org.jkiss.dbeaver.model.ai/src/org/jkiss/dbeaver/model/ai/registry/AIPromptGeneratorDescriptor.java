@@ -28,8 +28,8 @@ import org.jkiss.dbeaver.registry.RegistryConstants;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Stream;
 
 public class AIPromptGeneratorDescriptor extends AbstractDescriptor {
 
@@ -90,23 +90,9 @@ public class AIPromptGeneratorDescriptor extends AbstractDescriptor {
         }
     }
 
-    public static class Uses {
-        private final String function;
-        private final String instructions;
-
+    public record Uses(@NotNull String function, @NotNull String instructions) {
         Uses(@NotNull IConfigurationElement config) {
-            this.function = config.getAttribute("function");
-            this.instructions = config.getAttribute("instructions");
-        }
-
-        @NotNull
-        public String getFunction() {
-            return function;
-        }
-
-        @NotNull
-        public String getInstructions() {
-            return instructions;
+            this(config.getAttribute("function"), config.getAttribute("instructions"));
         }
 
     }
