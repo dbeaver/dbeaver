@@ -34,6 +34,7 @@ import org.jkiss.utils.CommonUtils;
 
 import java.io.StringReader;
 import java.util.*;
+import java.util.function.Consumer;
 
 public class AISettingsManager {
     private static final Log log = Log.getLog(AISettingsManager.class);
@@ -47,6 +48,7 @@ public class AISettingsManager {
     private static final String FUNCTIONS_ENABLED_KEY = "functionsEnabled";
     private static final String ENABLED_FUNCTION_CATEGORIES_KEY = "enabledFunctionCategories";
     private static final String ENABLED_FUNCTIONS_KEY = "enabledFunctions";
+    private static final String CUSTOM_INSTRUCTIONS_KEY = "customInstructions";
     public static final String ENGINE_PROPERTIES = "properties";
 
     private static AISettingsManager instance = null;
@@ -130,6 +132,11 @@ public class AISettingsManager {
                     settings.setEnabledFunctions(new HashSet<>(enabledFunctions));
                 }
 
+                @SuppressWarnings("unchecked")
+                Map<String, String> customInstructions = (Map<String, String>) configMap.get(CUSTOM_INSTRUCTIONS_KEY);
+                if (!CommonUtils.isEmpty(customInstructions)) {
+                    settings.setCustomInstructions(customInstructions);
+                }
 
                 Map<String, Object> ecRoot = JSONUtils.getObject(configMap, ENGINE_CONFIGURATIONS_KEY);
 
@@ -182,6 +189,17 @@ public class AISettingsManager {
         return settings;
     }
 
+    /**
+     * Modify settings with given consumer and save them.
+     *
+     * @param consumer consumer to modify settings
+     */
+    public void modifySettings(@NotNull Consumer<AISettings> consumer) {
+        AISettings settings = this.getSettings();
+        consumer.accept(settings);
+        this.saveSettings(settings);
+    }
+
     public void saveSettings(@NotNull AISettings settings) {
         try {
             if (!DBWorkbench.getPlatform().getWorkspace().hasRealmPermission(RMConstants.PERMISSION_CONFIGURATION_MANAGER)) {
@@ -219,6 +237,15 @@ public class AISettingsManager {
                 json.add(ENABLED_FUNCTIONS_KEY, functionsArray);
             }
 
+            Map<String, String> customInstructions = settings.getCustomInstructions();
+            if (!customInstructions.isEmpty()) {
+                JsonObject object = new JsonObject();
+
+                for (Map.Entry<String, String> entry : customInstructions.entrySet()) {
+                    object.addProperty(entry.getKey(), entry.getValue());
+                }
+                json.add(CUSTOM_INSTRUCTIONS_KEY, object);
+            }
 
             JsonObject engineConfigurations = new JsonObject();
             for (Map.Entry<String, AIEngineProperties> configuration : settings.getEngineConfigurations().entrySet()) {

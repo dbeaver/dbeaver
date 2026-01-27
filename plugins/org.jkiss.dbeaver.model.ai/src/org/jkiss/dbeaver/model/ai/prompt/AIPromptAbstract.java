@@ -32,18 +32,12 @@ import java.util.List;
  * prompt usage in chat conversations. It is used on persisted conversation loading.
  */
 public abstract class AIPromptAbstract implements AIPromptGenerator {
-    private final List<String> goals = new ArrayList<>();
     private final List<String> instructions = new ArrayList<>();
     private final List<String> examples = new ArrayList<>();
     private final List<String> contexts = new ArrayList<>();
     private final List<String> outputFormats = new ArrayList<>();
 
     protected AIPromptAbstract() {
-    }
-
-    public AIPromptAbstract addGoals(@NotNull String... goals) {
-        this.goals.addAll(Arrays.asList(goals));
-        return this;
     }
 
     public AIPromptAbstract addExamples(@NotNull String... examples) {
@@ -69,12 +63,11 @@ public abstract class AIPromptAbstract implements AIPromptGenerator {
     @NotNull
     public String build(@Nullable AIDatabaseContext context) {
         initializePrompt(context);
+
         StringBuilder prompt = new StringBuilder();
-        prompt.append("Goals:\n");
-        goals.forEach(goal -> prompt.append("- ").append(goal).append("\n"));
 
         if (!instructions.isEmpty()) {
-            prompt.append("\nInstructions:\n");
+            prompt.append("Instructions:\n");
             instructions.forEach(instruction -> prompt.append("- ").append(instruction).append("\n"));
         }
 
@@ -83,8 +76,10 @@ public abstract class AIPromptAbstract implements AIPromptGenerator {
             examples.forEach(example -> prompt.append("- ").append(example).append("\n"));
         }
 
-        prompt.append("\nContext:\n");
-        contexts.forEach(ctx -> prompt.append("- ").append(ctx).append("\n"));
+        if (!contexts.isEmpty()) {
+            prompt.append("\nContext:\n");
+            contexts.forEach(context -> prompt.append("- ").append(context).append("\n"));
+        }
 
         if (!outputFormats.isEmpty()) {
             prompt.append("\nOutput Format:\n");
@@ -93,6 +88,20 @@ public abstract class AIPromptAbstract implements AIPromptGenerator {
 
         return prompt.toString();
     }
+
+    @NotNull
+    @Override
+    public AIPromptAbstract copy() {
+        AIPromptAbstract copy = create();
+        copy.instructions.addAll(instructions);
+        copy.examples.addAll(examples);
+        copy.contexts.addAll(contexts);
+        copy.outputFormats.addAll(outputFormats);
+        return copy;
+    }
+
+    @NotNull
+    protected abstract AIPromptAbstract create();
 
     protected abstract void initializePrompt(@Nullable AIDatabaseContext context);
 

@@ -77,7 +77,7 @@ public class SQLCommandAI implements SQLControlCommandHandler {
 
         DBPDataSourceContainer dataSourceContainer = lDataSource.getDataSourceContainer();
         AICompletionSettings completionSettings = new AICompletionSettings(dataSourceContainer);
-        if (!DBWorkbench.getPlatform().getApplication().isHeadlessMode() && !completionSettings.isMetaTransferConfirmed()) {
+        if (!completionSettings.isMetaTransferConfirmed()) {
             if (DBWorkbench.getPlatformUI().confirmAction("Do you confirm AI usage",
                 "Do you confirm AI usage for '" + dataSourceContainer.getName() + "'?"
             )) {

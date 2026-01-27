@@ -39,6 +39,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class AIPromptUtils {
+    public static final String[] SQL_OUTPUT_FORMATS = {
+        "Place any explanation or comments before the SQL code block.",
+        "Provide the SQL query in a fenced Markdown code block."
+    };
 
     public static int calcSystemPromptLength(@NotNull List<AIMessage> messages) {
         return messages.stream()
