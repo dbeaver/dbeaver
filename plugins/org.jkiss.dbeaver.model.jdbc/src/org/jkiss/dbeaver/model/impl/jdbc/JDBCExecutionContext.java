@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -101,7 +101,6 @@ public class JDBCExecutionContext extends AbstractExecutionContext<JDBCDataSourc
             log.error("Reopening not-closed connection");
             close();
         }
-        boolean connectionReadOnly = dataSource.getContainer().isConnectionReadOnly();
         final JDBCRemoteInstance currentInstance = this.instance;
 
         DBExecUtils.startContextInitiation(dataSource.getContainer());
@@ -189,6 +188,10 @@ public class JDBCExecutionContext extends AbstractExecutionContext<JDBCDataSourc
     }
 
     protected void disconnect() {
+        disconnect(true);
+    }
+
+    protected void disconnect(boolean removeContext) {
         // [JDBC] Need sync here because real connection close could take some time
         // while UI may invoke callbacks to operate with connection
         synchronized (this) {
@@ -198,8 +201,10 @@ public class JDBCExecutionContext extends AbstractExecutionContext<JDBCDataSourc
             }
             this.connection = null;
         }
-        // Notify QM
-        super.closeContext();
+        if (removeContext) {
+            // Notify QM
+            super.closeContext();
+        }
     }
 
     @NotNull
@@ -273,7 +278,7 @@ public class JDBCExecutionContext extends AbstractExecutionContext<JDBCDataSourc
             this.instance.removeContext(this);
         }
 
-        disconnect();
+        disconnect(removeContext);
     }
 
     //////////////////////////////////////////////////////////////
@@ -494,11 +499,6 @@ public class JDBCExecutionContext extends AbstractExecutionContext<JDBCDataSourc
     @Override
     public boolean isSupportsTransactions() {
         return instance.getDataSource().getInfo().supportsTransactions();
-    }
-
-    public void reconnect(DBRProgressMonitor monitor) throws DBCException {
-        close();
-        connect(monitor, null, null, this, true);
     }
 
     @Override

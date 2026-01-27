@@ -569,7 +569,7 @@ public class NavigatorUtils {
                 DBPResourceHandler resourceHandler = resource.getHandler();
                 resourceHandler.openResource(resource.getResource());
             } else if (node instanceof DBNPathBase dbnPath) {
-                if (!EditorUtils.openExternalFiles(new Path[]{ dbnPath.getPath() }, null)) {
+                if (!EditorUtils.openExternalFiles(new Path[]{ dbnPath.getPath() }, null, false)) {
                     // Try resource handler
                     IResource resource = dbnPath.getAdapter(IResource.class);
                     if (resource instanceof IFile file) {

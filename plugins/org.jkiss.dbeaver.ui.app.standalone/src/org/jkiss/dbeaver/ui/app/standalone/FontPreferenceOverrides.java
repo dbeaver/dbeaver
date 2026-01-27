@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,9 +34,11 @@ import org.eclipse.ui.internal.WorkbenchPlugin;
 import org.eclipse.ui.internal.themes.*;
 import org.eclipse.ui.themes.ITheme;
 import org.eclipse.ui.themes.IThemeManager;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ui.DBIconBinary;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.preferences.PrefPageConstants;
 
 import java.util.*;
 
@@ -462,8 +464,10 @@ public class FontPreferenceOverrides {
         }   
     }
 
-    public static void hideFontPrefs(PreferenceManager pm, Set<String> prefIdsToHide) {
-        String wbPrefPageId = ApplicationWorkbenchAdvisor.WORKBENCH_PREF_PAGE_ID ;
+    public static void hideFontPrefs(@NotNull Set<String> prefIdsToHide) {
+        PreferenceManager pm = PlatformUI.getWorkbench().getPreferenceManager();
+
+        String wbPrefPageId = PrefPageConstants.WORKBENCH_PREF_PAGE_ID ;
         String viewsCatId = wbPrefPageId  + "/org.eclipse.ui.preferencePages.Views";
         String fontsPrefPageId = wbPrefPageId + "/org.eclipse.ui.preferencePages.Views/org.eclipse.ui.preferencePages.ColorsAndFonts";
         

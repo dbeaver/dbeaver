@@ -46,6 +46,7 @@ import org.jkiss.dbeaver.runtime.ui.UIServiceSQL;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferConsumer;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferProcessor;
 import org.jkiss.dbeaver.tools.transfer.database.DatabaseProducerSettings;
+import org.jkiss.dbeaver.tools.transfer.database.DatabaseProducerSettings.FetchedRowsPolicy;
 import org.jkiss.dbeaver.tools.transfer.database.DatabaseTransferProducer;
 import org.jkiss.dbeaver.tools.transfer.registry.DataTransferNodeDescriptor;
 import org.jkiss.dbeaver.tools.transfer.registry.DataTransferProcessorDescriptor;
@@ -186,8 +187,14 @@ public class ResultSetHandlerCopyAs extends AbstractHandler implements IElementU
                     }
                     producerSettings.setExtractType(DatabaseProducerSettings.ExtractType.SINGLE_QUERY);
                     producerSettings.setQueryRowCount(false);
-                    producerSettings.setSelectedRowsOnly(!CommonUtils.isEmpty(options.getSelectedRows()));
-                    producerSettings.setSelectedColumnsOnly(!CommonUtils.isEmpty(options.getSelectedColumns()));
+
+                    boolean selectedRowsOnly = !CommonUtils.isEmpty(options.getSelectedRows());
+                    boolean selectedColumnsOnly = !CommonUtils.isEmpty(options.getSelectedColumns());
+                    if (selectedRowsOnly || selectedColumnsOnly) {
+                        producerSettings.setFetchedRowsPolicy(new FetchedRowsPolicy(selectedRowsOnly, selectedColumnsOnly));
+                    } else {
+                        producerSettings.setFetchedRowsPolicy(null);
+                    }
 
                     monitor.worked(1);
                     monitor.subTask("Export data");

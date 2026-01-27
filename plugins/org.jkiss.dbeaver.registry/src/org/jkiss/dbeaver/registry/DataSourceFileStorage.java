@@ -71,12 +71,6 @@ class DataSourceFileStorage implements DBPDataSourceConfigurationStorage
         return true;
     }
 
-    @NotNull
-    @Override
-    public String getStatus() {
-        return "Valid";
-    }
-
     public String getName() {
         return sourceFile.getFileName().toString();
     }

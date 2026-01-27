@@ -41,6 +41,12 @@ public class DTConstants {
 
     public static final String PRODUCT_FEATURE_ADVANCED_DATA_TRANSFER = "database/data/transfer/advanced";
 
+    public static final String PROP_PRODUCER_TYPE = "producer";
+    public static final String PROP_CONSUMER_TYPE = "consumer";
+    public static final String PROP_PROCESSOR_TYPE = "processor";
+    public static final String PROP_PROCESSORS_LIST = "processors";
+    public static final String PROP_NAME = "@propNames";
+
     public static final int DEFAULT_MAX_TYPE_LENGTH = 32767; // Max Oracle VARCHAR data type length
 
 }

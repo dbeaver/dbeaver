@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,6 @@
  */
 package org.jkiss.dbeaver.ui.dialogs;
 
-import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.TitleAreaDialog;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
@@ -26,16 +25,15 @@ import org.eclipse.swt.widgets.Shell;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
+import org.jkiss.dbeaver.ui.UIUtils;
 
 /**
  * Base dialog with title and image
  */
-public class BaseTitleDialog extends TitleAreaDialog
-{
+public class BaseTitleDialog extends TitleAreaDialog {
     private DBPImage icon;
 
-    public BaseTitleDialog(Shell parentShell, @Nullable DBPImage icon)
-    {
+    public BaseTitleDialog(Shell parentShell, @Nullable DBPImage icon) {
         super(parentShell);
         this.icon = icon;
     }
@@ -44,8 +42,7 @@ public class BaseTitleDialog extends TitleAreaDialog
         return icon;
     }
 
-    public void setImage(DBPImage image)
-    {
+    public void setImage(DBPImage image) {
         this.icon = image;
     }
 
@@ -56,24 +53,26 @@ public class BaseTitleDialog extends TitleAreaDialog
 
     @Override
     protected Composite createDialogArea(Composite parent) {
-        Composite composite = (Composite) super.createDialogArea(parent);
-
-        Composite mainComposite = new Composite(composite, SWT.NONE);
+        Composite composite = new Composite(parent, SWT.NONE);
         GridLayout layout = new GridLayout();
-        layout.marginHeight = convertVerticalDLUsToPixels(IDialogConstants.VERTICAL_MARGIN);
-        layout.marginWidth = convertHorizontalDLUsToPixels(IDialogConstants.HORIZONTAL_MARGIN);
-        layout.verticalSpacing = convertVerticalDLUsToPixels(IDialogConstants.VERTICAL_SPACING);
-        layout.horizontalSpacing = convertHorizontalDLUsToPixels(IDialogConstants.HORIZONTAL_SPACING);
-        mainComposite.setLayout(layout);
-        mainComposite.setLayoutData(new GridData(GridData.FILL_BOTH));
-        applyDialogFont(mainComposite);
+        layout.verticalSpacing = 0;
+        layout.horizontalSpacing = 0;
+        composite.setLayout(layout);
+        composite.setLayoutData(new GridData(GridData.FILL_BOTH));
+        composite.setFont(parent.getFont());
+        if (needsTopSeparator()) {
+            // Build the separator line
+            UIUtils.createLabelSeparator(composite, SWT.HORIZONTAL);
+        }
+        return composite;
+    }
 
-        return mainComposite;
+    private boolean needsTopSeparator() {
+        return false;
     }
 
     @Override
-    public void create()
-    {
+    public void create() {
         super.create();
         if (icon != null) {
             getShell().setImage(DBeaverIcons.getImage(icon));

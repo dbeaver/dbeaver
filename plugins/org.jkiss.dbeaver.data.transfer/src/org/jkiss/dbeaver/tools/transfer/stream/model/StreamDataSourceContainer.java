@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -45,6 +45,7 @@ import org.jkiss.dbeaver.model.sql.SQLDialectMetadata;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectFilter;
 import org.jkiss.dbeaver.model.virtual.DBVModel;
+import org.jkiss.dbeaver.registry.DataSourceOriginLocal;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.IVariableResolver;
 
@@ -64,12 +65,14 @@ public class StreamDataSourceContainer implements DBPDataSourceContainer {
     private static final Log log = Log.getLog(StreamDataSourceContainer.class);
 
     private Path inputFile;
-    private String name;
+    private final String name;
+    private final DBPProject project;
     private final DBPExclusiveResource exclusiveLock = new SimpleExclusiveLock();
     private final DBVModel virtualModel;
 
-    StreamDataSourceContainer(String name) {
+    StreamDataSourceContainer(@NotNull String name, @NotNull DBPProject project) {
         this.name = name;
+        this.project = project;
         this.virtualModel = new DBVModel(this);
     }
 
@@ -82,7 +85,7 @@ public class StreamDataSourceContainer implements DBPDataSourceContainer {
     @NotNull
     @Override
     public DBPDriver getDriver() {
-        throw new IllegalStateException("Not supported");
+        return StreamDataSourceDriver.INSTANCE;
     }
 
     @NotNull
@@ -94,7 +97,7 @@ public class StreamDataSourceContainer implements DBPDataSourceContainer {
     @NotNull
     @Override
     public DBPDataSourceOrigin getOrigin() {
-        throw new IllegalStateException("Stream datasource doesn't have origin");
+        return DataSourceOriginLocal.INSTANCE;
     }
 
     @NotNull
@@ -177,12 +180,7 @@ public class StreamDataSourceContainer implements DBPDataSourceContainer {
 
     @Override
     public boolean isDefaultAutoCommit() {
-        return false;
-    }
-
-    @Override
-    public void setDefaultAutoCommit(boolean autoCommit) {
-
+        return true;
     }
 
     @Nullable
@@ -195,11 +193,6 @@ public class StreamDataSourceContainer implements DBPDataSourceContainer {
     @Override
     public Integer getDefaultTransactionsIsolation() {
         return null;
-    }
-
-    @Override
-    public void setDefaultTransactionsIsolation(@Nullable DBPTransactionIsolation isolationLevel) {
-
     }
 
     @Override
@@ -341,14 +334,13 @@ public class StreamDataSourceContainer implements DBPDataSourceContainer {
     @NotNull
     @Override
     public DBPDataSourceRegistry getRegistry() {
-        // Mustn't be called
-        return null;
+        return project.getDataSourceRegistry();
     }
 
     @NotNull
     @Override
     public DBPProject getProject() {
-        return null;
+        return project;
     }
 
     @Override

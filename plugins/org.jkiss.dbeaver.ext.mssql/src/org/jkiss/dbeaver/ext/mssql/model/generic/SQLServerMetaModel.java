@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -314,7 +314,7 @@ public class SQLServerMetaModel extends GenericMetaModel implements DBCQueryTran
         try (JDBCSession session = DBUtils.openMetaSession(monitor, dataSource, "Read source code")) {
             String mdQuery;
             if (serverType == ServerType.SQL_SERVER && object instanceof SQLServerObject sqlServerObject) {
-                mdQuery = SQLServerUtils.selectObjectDefinitionDescriptionSQL(monitor, sqlServerObject);
+                mdQuery = SQLServerUtils.selectObjectDefinitionDescriptionSQL(monitor, sqlServerObject, true);
             } else {
                 if (isSapIQ(dataSource)) {
                     mdQuery = "SELECT s.source\n" +
@@ -545,6 +545,7 @@ public class SQLServerMetaModel extends GenericMetaModel implements DBCQueryTran
             JDBCUtils.safeGetString(dbResult, "base_object_name"));
     }
 
+    @NotNull
     @Override
     public GenericTableBase createTableOrViewImpl(
         @NotNull GenericStructContainer container,
