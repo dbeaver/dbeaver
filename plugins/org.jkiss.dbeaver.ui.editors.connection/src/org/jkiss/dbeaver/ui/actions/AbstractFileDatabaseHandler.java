@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,32 +25,37 @@ import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
+import org.jkiss.dbeaver.model.file.FileTypeAction;
 import org.jkiss.dbeaver.model.fs.DBFUtils;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNUtils;
 import org.jkiss.dbeaver.registry.DataSourceRegistry;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.editors.file.IFileTypeHandler;
+import org.jkiss.dbeaver.ui.editors.file.AbstractFileHandler;
 import org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerObjectOpen;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 
 import java.nio.file.Path;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
+import java.util.Set;
 
 /**
  * Database file handler
  */
-public abstract class AbstractFileDatabaseHandler implements IFileTypeHandler {
+public abstract class AbstractFileDatabaseHandler extends AbstractFileHandler {
 
     @Override
     public void openFiles(
         @NotNull List<Path> fileList,
-        @NotNull Map<String, String> parameters,
-        @Nullable DBPDataSourceContainer providedDataSource
+        @Nullable DBPDataSourceContainer dataSource,
+        @NotNull FileTypeAction action
     ) throws DBException {
+        if (action != FileTypeAction.DATABASE) {
+            super.openFiles(fileList, dataSource, action);
+            return;
+        }
         DBPProject project = DBWorkbench.getPlatform().getWorkspace().getActiveProject();
         if (project == null) {
             throw new DBException("No active project - cannot open file");
@@ -121,10 +126,10 @@ public abstract class AbstractFileDatabaseHandler implements IFileTypeHandler {
         });
     }
 
-
+    @NotNull
     @Override
-    public void importFiles(@NotNull List<Path> filePath, @Nullable String extension) throws DBException {
-        throw new DBException("Importing files is not supported for " + getDatabaseTerm());
+    public Set<FileTypeAction> supportedActions() {
+        return Set.of(FileTypeAction.DATABASE, FileTypeAction.INTERNAL_EDITOR, FileTypeAction.EXTERNAL_EDITOR);
     }
 
     protected abstract String getDatabaseTerm();
