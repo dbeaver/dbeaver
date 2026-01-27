@@ -451,6 +451,11 @@ public abstract class SQLServerDialectBase extends JDBCSQLDialect implements TPR
     }
 
     @Override
+    public String getNVarCharDataType() {
+        return SQLServerConstants.TYPE_NVARCHAR;
+    }
+
+    @Override
     public boolean supportsNoActionIndex() {
         return true;
     }

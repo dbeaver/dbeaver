@@ -52,8 +52,14 @@ public class AISettings implements DBPAdaptable {
     }
 
     @Nullable
-    public <T> T getProperty(@NotNull String name, @Nullable T defaultValue) {
-        return (T) properties.getOrDefault(name, defaultValue);
+    @SuppressWarnings("unchecked")
+    public <T> T getProperty(@NotNull String name) {
+        return (T) properties.get(name);
+    }
+
+    @NotNull
+    public <T> T getProperty(@NotNull String name, @NotNull T defaultValue) {
+        return Objects.requireNonNullElse(getProperty(name), defaultValue);
     }
 
     public void setProperty(@NotNull String name, @Nullable Object value) {
