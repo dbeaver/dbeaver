@@ -108,9 +108,13 @@ public class FilterSerializer<T extends DataSourceDescriptor> {
     }
 
     private boolean shouldSerializeFilter(@Nullable DBSObjectFilter filter, boolean useCustomUserFilters) {
-        return filter != null
-            && !filter.isEmpty()
-            && filter.isUserFilter() == useCustomUserFilters;
+        if (filter != null) {
+            boolean emptySerializationCheck = useCustomUserFilters || !filter.isEmpty();
+            return emptySerializationCheck
+                && filter.isUserFilter() == useCustomUserFilters;
+        } else {
+            return false;
+        }
     }
 
     public void saveObjectFilter(
