@@ -102,7 +102,7 @@ public class AIFunctionDescriptor extends AbstractDescriptor {
         this.global = CommonUtils.toBoolean(config.getAttribute("global"));
         this.hidden = CommonUtils.toBoolean(config.getAttribute("hidden"));
         this.categoryId = config.getAttribute("categoryId");
-        this.description = config.getAttribute("description");
+        this.description = config.getAttribute(RegistryConstants.ATTR_DESCRIPTION);
         this.dependsOn = CommonUtils.splitString(config.getAttribute("dependsOn"), ',').toArray(new String[0]);
         this.type = CommonUtils.valueOf(
             AIFunctionResult.FunctionType.class,
