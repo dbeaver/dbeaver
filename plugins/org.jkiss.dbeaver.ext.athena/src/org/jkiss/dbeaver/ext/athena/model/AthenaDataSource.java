@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -66,6 +66,16 @@ public class AthenaDataSource extends GenericDataSource {
             props.put(AthenaConstants.DRIVER_PROP_METADATA_RETRIEVAL_METHOD, "ProxyAPI");
         }
 
+        // Hack to fix update from v2 -> v3 driver version https://github.com/dbeaver/dbeaver/issues/39947
+        // https://docs.aws.amazon.com/athena/latest/ug/jdbc-v3-driver-aws-configuration-profile-credentials.html
+        String credentialsProviderClass = connectionInfo.getProperties()
+            .get(AthenaConstants.PROP_AWS_CREDENTIALS_PROVIDER_CLASS);
+        if (AthenaConstants.PROP_OLD_VALUE_AWS_CREDENTIALS_PROVIDER_CLASS.equals(credentialsProviderClass)) {
+            connectionInfo.getProperties().put(
+                AthenaConstants.PROP_AWS_CREDENTIALS_PROVIDER_CLASS,
+                AthenaConstants.PROP_NEW_VALUE_AWS_CREDENTIALS_PROVIDER_CLASS
+            );
+        }
         return props;
     }
 

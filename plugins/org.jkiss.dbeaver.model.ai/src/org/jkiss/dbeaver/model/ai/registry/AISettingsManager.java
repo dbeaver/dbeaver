@@ -34,6 +34,7 @@ import org.jkiss.utils.CommonUtils;
 
 import java.io.StringReader;
 import java.util.*;
+import java.util.function.Consumer;
 
 public class AISettingsManager {
     private static final Log log = Log.getLog(AISettingsManager.class);
@@ -186,6 +187,17 @@ public class AISettingsManager {
         }
 
         return settings;
+    }
+
+    /**
+     * Modify settings with given consumer and save them.
+     *
+     * @param consumer consumer to modify settings
+     */
+    public void modifySettings(@NotNull Consumer<AISettings> consumer) {
+        AISettings settings = this.getSettings();
+        consumer.accept(settings);
+        this.saveSettings(settings);
     }
 
     public void saveSettings(@NotNull AISettings settings) {
