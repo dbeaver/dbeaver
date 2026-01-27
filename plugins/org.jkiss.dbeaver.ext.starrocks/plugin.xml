@@ -31,7 +31,7 @@
                                         </folder>
                                     </items>
                                 </folder>
-                                <folder type="org.jkiss.dbeaver.ext.starrocks.model.StarRocksMaterializedView" label="Materialized Views" icon="#folder_view" description="Materialized views in database">
+                                <folder type="org.jkiss.dbeaver.ext.starrocks.model.StarRocksMaterializedView" label="Materialized Views" icon="#folder_view" description="Materialized views in database" visibleIf="connected &amp;&amp; object.catalog.isInternal()">
                                     <items label="Materialized View" path="materializedView" property="materializedViews" icon="#view">
                                         <folder type="org.jkiss.dbeaver.ext.starrocks.model.StarRocksTableColumn" label="Columns" icon="#columns" description="Materialized view columns">
                                             <items label="Column" path="attribute" property="attributes" icon="#column"/>
