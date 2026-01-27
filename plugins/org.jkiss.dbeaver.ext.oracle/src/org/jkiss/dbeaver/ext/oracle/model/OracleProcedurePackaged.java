@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,18 +17,21 @@
 package org.jkiss.dbeaver.ext.oracle.model;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.model.DBPEvaluationContext;
-import org.jkiss.dbeaver.model.DBPUniqueObject;
-import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureType;
 
 import java.sql.ResultSet;
+import java.util.Map;
 
 /**
  * GenericProcedure
  */
-public class OracleProcedurePackaged extends OracleProcedureBase<OraclePackage> implements DBPUniqueObject
+public class OracleProcedurePackaged extends OracleProcedureBase<OraclePackage> implements DBPUniqueObject, DBPScriptObject, DBSObject,
+    DBPScriptObjectExt
 {
     private Integer overload;
 
@@ -76,4 +79,15 @@ public class OracleProcedurePackaged extends OracleProcedureBase<OraclePackage> 
         return overload == null || overload <= 1 ? getName() : getName() + "#" + overload;
     }
 
+    @NotNull
+    @Override
+    public String getObjectDefinitionText(@NotNull DBRProgressMonitor monitor, @NotNull Map<String, Object> options) throws DBException {
+        return "test normal definition";
+    }
+
+    @NotNull
+    @Override
+    public String getExtendedDefinitionText(@NotNull DBRProgressMonitor monitor) throws DBException {
+        return "test extended definition";
+    }
 }
