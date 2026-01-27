@@ -24,6 +24,7 @@ import org.jkiss.dbeaver.model.ai.*;
 import org.jkiss.dbeaver.model.ai.engine.AIDatabaseContext;
 import org.jkiss.dbeaver.model.ai.engine.AIEngine;
 import org.jkiss.dbeaver.model.ai.engine.AIEngineRequest;
+import org.jkiss.dbeaver.model.ai.prompt.AIPromptAbstract;
 import org.jkiss.dbeaver.model.ai.registry.*;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -65,11 +66,21 @@ public class AIEngineRequestFactory {
         @NotNull DBRProgressMonitor monitor,
         @NotNull AIEngine<?> engine,
         @NotNull AIEngineDescriptor engineDescriptor,
-        @NotNull AIPromptGenerator systemPromptGenerator,
+        @NotNull AIPromptGenerator promptGenerator,
         @Nullable AIDatabaseContext databaseContext,
         @NotNull List<AIMessage> messages
     ) throws DBException {
-        String systemPrompt = systemPromptGenerator.build();
+        if (promptGenerator instanceof AIPromptAbstract promptAbstract) {
+            AISettings settings = AISettingsManager.getInstance().getSettings();
+            String customInstructions = settings.getCustomInstructions(promptAbstract.generatorId());
+            if (CommonUtils.isNotEmpty(customInstructions)) {
+                promptGenerator = promptAbstract
+                    .copy()
+                    .addInstructions(customInstructions);
+            }
+        }
+
+        String systemPrompt = promptGenerator.build();
 
         // Tokens available for user/system/chat history after we reserve reply + overhead
         int maxContextWindowSize = getContextWindowSize(monitor, engine);
@@ -130,7 +141,7 @@ public class AIEngineRequestFactory {
         AIEngineRequest request = new AIEngineRequest(truncated);
         request.setWasPromptTruncated(isContextTruncated);
 
-        determineRequestTools(monitor, engineDescriptor, systemPromptGenerator, request);
+        determineRequestTools(monitor, engineDescriptor, promptGenerator, request);
 
         return request;
     }
