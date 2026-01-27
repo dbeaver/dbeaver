@@ -132,7 +132,7 @@ public class ObjectListDialog<T extends DBPObject> extends AbstractPopupPanel {
             }
         });
         objectList.setDoubleClickHandler(event -> {
-            if (isModeless() || getButton(IDialogConstants.OK_ID).isEnabled()) {
+            if (isModeless() || isButtonEnabled(IDialogConstants.OK_ID)) {
                 okPressed();
             }
         });
