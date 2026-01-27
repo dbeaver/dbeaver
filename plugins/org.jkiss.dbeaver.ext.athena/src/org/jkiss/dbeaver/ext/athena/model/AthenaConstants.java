@@ -33,5 +33,6 @@ public class AthenaConstants
 
     public static final String PROP_AWS_CREDENTIALS_PROVIDER_CLASS = "AwsCredentialsProviderClass";
     public static final String PROP_OLD_VALUE_AWS_CREDENTIALS_PROVIDER_CLASS = "com.simba.athena.amazonaws.auth.profile.ProfileCredentialsProvider";
+    public static final String PROP_NEW_VALUE_AWS_CREDENTIALS_PROVIDER_CLASS = "ProfileCredentials";
 
 }
