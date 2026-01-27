@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ui.editors.file;
+package org.jkiss.dbeaver.model.file;
 
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExtensionRegistry;
@@ -47,9 +47,12 @@ public class FileTypeHandlerRegistry {
             for (IConfigurationElement ext : extElements) {
                 FileTypeHandlerDescriptor formatterDescriptor = new FileTypeHandlerDescriptor(ext);
                 handlers.add(formatterDescriptor);
-                extensions.addAll(Arrays.asList(formatterDescriptor.getExtensions()));
             }
             handlers.sort(Comparator.comparingInt(FileTypeHandlerDescriptor::getOrder));
+            handlers.stream()
+                .map(FileTypeHandlerDescriptor::getExtensions)
+                .flatMap(Arrays::stream)
+                .forEach(extensions::add);
         }
     }
 
@@ -71,7 +74,7 @@ public class FileTypeHandlerRegistry {
     public FileTypeHandlerDescriptor.Extension findExtension(String fileExtension) {
         for (FileTypeHandlerDescriptor.Extension ext : extensions) {
             for (String extName : ext.getExtensions()) {
-                if (fileExtension.endsWith(extName)) {
+                if (fileExtension.equals(extName) || extName.equals("*")) {
                     return ext;
                 }
             }
