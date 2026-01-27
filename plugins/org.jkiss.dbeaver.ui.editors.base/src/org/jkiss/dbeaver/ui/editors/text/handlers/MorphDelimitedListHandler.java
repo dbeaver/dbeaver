@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -53,8 +53,7 @@ public final class MorphDelimitedListHandler extends AbstractTextHandler {
             ISelectionProvider provider = textEditor.getSelectionProvider();
             if (provider != null) {
                 ISelection selection = provider.getSelection();
-                if (selection instanceof ITextSelection) {
-                    ITextSelection textSelection = (ITextSelection) selection;
+                if (selection instanceof ITextSelection textSelection) {
                     if (textSelection.getLength() <= 0) {
                         UIUtils.showMessageBox(activeShell, "Morph text", "Text selection is empty. You need to select some text to morph", SWT.ICON_INFORMATION);
                         return null;
@@ -293,20 +292,65 @@ public final class MorphDelimitedListHandler extends AbstractTextHandler {
             int textWidthHint = UIUtils.getFontHeight(parent) * 10;
 
             {
-                Group sourceGroup = UIUtils.createControlGroup(group, EditorsMessages.dialog_morph_delimited_source_group, 2, GridData.FILL_HORIZONTAL, SWT.DEFAULT);
-                sourceDelimCombo = UIWidgets.createDelimiterCombo(sourceGroup, EditorsMessages.dialog_morph_delimited_source_group_delimiter, new String[] {"\n", "\t", ";", ","}, morphSettings.getSourceDelimiter(), true);
+                Composite sourceGroup = UIUtils.createTitledComposite(
+                    group,
+                    EditorsMessages.dialog_morph_delimited_source_group,
+                    2,
+                    GridData.FILL_HORIZONTAL
+                );
+                sourceDelimCombo = UIWidgets.createDelimiterCombo(
+                    sourceGroup,
+                    EditorsMessages.dialog_morph_delimited_source_group_delimiter,
+                    new String[] {"\n", "\t", ";", ","},
+                    morphSettings.getSourceDelimiter(),
+                    true
+                );
                 ((GridData) sourceDelimCombo.getLayoutData()).widthHint = textWidthHint;
             }
             {
-                Group targetGroup = UIUtils.createControlGroup(group, EditorsMessages.dialog_morph_delimited_target_group_label, 2, GridData.FILL_BOTH, SWT.DEFAULT);
-                targetDelimCombo = UIWidgets.createDelimiterCombo(targetGroup, EditorsMessages.dialog_morph_delimited_target_group_delim_result, new String[] {"\n", "\t", ";", ","}, morphSettings.getTargetDelimiter(), false);
-                quoteStringCombo = UIWidgets.createDelimiterCombo(targetGroup, EditorsMessages.dialog_morph_delimited_target_group_delim_quote, new String[] {"\"", "'"}, morphSettings.getQuoteString(), false);
-                wrapLineAtColumn = UIUtils.createLabelSpinner(targetGroup, EditorsMessages.dialog_morph_delimited_target_group_spinner_wrap_line, EditorsMessages.dialog_morph_delimited_target_group_spinner_wrap_line_tip, morphSettings.getWrapLine(), 0, Integer.MAX_VALUE);
-                leadingText = UIUtils.createLabelText(targetGroup, EditorsMessages.dialog_morph_delimited_target_group_leading_text, morphSettings.getLeadingText(), SWT.BORDER | SWT.MULTI | SWT.V_SCROLL);
+                Composite targetGroup = UIUtils.createTitledComposite(
+                    group,
+                    EditorsMessages.dialog_morph_delimited_target_group_label,
+                    2,
+                    GridData.FILL_BOTH
+                );
+                targetDelimCombo = UIWidgets.createDelimiterCombo(
+                    targetGroup,
+                    EditorsMessages.dialog_morph_delimited_target_group_delim_result,
+                    new String[] {"\n", "\t", ";", ","},
+                    morphSettings.getTargetDelimiter(),
+                    false
+                );
+                quoteStringCombo = UIWidgets.createDelimiterCombo(
+                    targetGroup,
+                    EditorsMessages.dialog_morph_delimited_target_group_delim_quote,
+                    new String[] {"\"", "'"},
+                    morphSettings.getQuoteString(),
+                    false
+                );
+                wrapLineAtColumn = UIUtils.createLabelSpinner(
+                    targetGroup,
+                    EditorsMessages.dialog_morph_delimited_target_group_spinner_wrap_line,
+                    EditorsMessages.dialog_morph_delimited_target_group_spinner_wrap_line_tip,
+                    morphSettings.getWrapLine(),
+                    0,
+                    Integer.MAX_VALUE
+                );
+                leadingText = UIUtils.createLabelText(
+                    targetGroup,
+                    EditorsMessages.dialog_morph_delimited_target_group_leading_text,
+                    morphSettings.getLeadingText(),
+                    SWT.BORDER | SWT.MULTI | SWT.V_SCROLL
+                );
                 ((GridData) leadingText.getLayoutData()).widthHint = textWidthHint;
                 ((GridData) leadingText.getLayoutData()).verticalAlignment = GridData.FILL;
                 ((GridData) leadingText.getLayoutData()).grabExcessVerticalSpace = true;
-                trailingText = UIUtils.createLabelText(targetGroup, EditorsMessages.dialog_morph_delimited_target_group_trailing_text, morphSettings.getTrailingText(), SWT.BORDER | SWT.MULTI | SWT.V_SCROLL);
+                trailingText = UIUtils.createLabelText(
+                    targetGroup,
+                    EditorsMessages.dialog_morph_delimited_target_group_trailing_text,
+                    morphSettings.getTrailingText(),
+                    SWT.BORDER | SWT.MULTI | SWT.V_SCROLL
+                );
                 ((GridData) trailingText.getLayoutData()).widthHint = textWidthHint;
                 ((GridData) trailingText.getLayoutData()).verticalAlignment = GridData.FILL;
                 ((GridData) trailingText.getLayoutData()).grabExcessVerticalSpace = true;

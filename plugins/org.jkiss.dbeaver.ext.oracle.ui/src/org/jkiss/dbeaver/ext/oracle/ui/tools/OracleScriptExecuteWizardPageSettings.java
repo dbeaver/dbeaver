@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,6 @@ package org.jkiss.dbeaver.ext.oracle.ui.tools;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Group;
 import org.jkiss.dbeaver.ext.oracle.tasks.OracleScriptExecuteSettings;
 import org.jkiss.dbeaver.ext.oracle.ui.internal.OracleUIMessages;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -53,7 +52,12 @@ class OracleScriptExecuteWizardPageSettings extends AbstractNativeToolWizardPage
     public void createControl(Composite parent) {
         Composite composite = UIUtils.createPlaceholder(parent, 1);
 
-        Group outputGroup = UIUtils.createControlGroup(composite, OracleUIMessages.tools_script_execute_wizard_page_settings_group_input, 3, GridData.FILL_HORIZONTAL, 0);
+        Composite outputGroup = UIUtils.createTitledComposite(
+            composite,
+            OracleUIMessages.tools_script_execute_wizard_page_settings_group_input,
+            3,
+            GridData.FILL_HORIZONTAL
+        );
         outputGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         inputFileText = new TextWithOpenFileRemote(
             outputGroup,

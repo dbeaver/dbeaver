@@ -32,10 +32,8 @@ import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.Button;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Control;
-import org.eclipse.swt.widgets.Shell;
+import org.eclipse.swt.layout.RowLayout;
+import org.eclipse.swt.widgets.*;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
@@ -49,6 +47,7 @@ import org.osgi.framework.FrameworkUtil;
 import java.io.File;
 import java.net.URL;
 import java.util.*;
+import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
@@ -89,7 +88,12 @@ public class IconDialog extends TrayDialog {
             }
         });
 
-        Button showBordersCheck = new Button(composite, SWT.CHECK);
+        Group options = new Group(composite, SWT.NONE);
+        options.setText("Options");
+        options.setLayout(new RowLayout());
+        options.setLayoutData(new GridData(SWT.FILL, SWT.BEGINNING, true, false));
+
+        Button showBordersCheck = new Button(options, SWT.CHECK);
         showBordersCheck.setSelection(showBorders);
         showBordersCheck.setText("Show borders");
         showBordersCheck.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
@@ -104,7 +108,7 @@ public class IconDialog extends TrayDialog {
             ));
 
         extensions.forEach((extension, count) -> {
-            Button extensionCheck = new Button(composite, SWT.CHECK);
+            Button extensionCheck = new Button(options, SWT.CHECK);
             extensionCheck.setSelection(true);
             extensionCheck.setText("%s (%d)".formatted(extension.toUpperCase(), count));
             extensionCheck.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
@@ -217,7 +221,7 @@ public class IconDialog extends TrayDialog {
             addPaintListener(e -> {
                 e.gc.setForeground(e.display.getSystemColor(SWT.COLOR_WIDGET_NORMAL_SHADOW));
                 e.gc.fillRectangle(0, 0, e.width, e.height);
-                e.gc.setAdvanced(true);
+                e.gc.setAdvanced(!hiddenExtensions.isEmpty());
 
                 Rectangle area = getClientArea();
                 int columns = getColumns(area.width, size.x);

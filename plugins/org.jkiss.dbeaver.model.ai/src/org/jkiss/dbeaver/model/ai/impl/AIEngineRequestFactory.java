@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -63,7 +63,7 @@ public class AIEngineRequestFactory {
 
     public AIEngineRequest build(
         @NotNull DBRProgressMonitor monitor,
-        @NotNull AIEngine engine,
+        @NotNull AIEngine<?> engine,
         @NotNull AIEngineDescriptor engineDescriptor,
         @NotNull AIPromptGenerator systemPromptGenerator,
         @Nullable AIDatabaseContext databaseContext,
@@ -141,7 +141,11 @@ public class AIEngineRequestFactory {
         @NotNull AIPromptGenerator systemPromptGenerator,
         @NotNull AIEngineRequest request
     ) {
-        if (!engineDescriptor.isSupportsFunctions() || DBWorkbench.getPlatform().getApplication().isMultiuser()) {
+        AISettings aiSettings = AISettingsManager.getInstance().getSettings();
+        if (!engineDescriptor.isSupportsFunctions()
+            || !aiSettings.isFunctionsEnabled()
+            || DBWorkbench.getPlatform().getApplication().isMultiuser() // FIXME: For now disabled for server apps
+        ) {
             return;
         }
         List<AIFunctionDescriptor> functions = new ArrayList<>();
@@ -159,7 +163,6 @@ public class AIEngineRequestFactory {
             }
         }
 
-        AISettings aiSettings = AISettingsManager.getInstance().getSettings();
         Set<String> enabledFunctions = aiSettings.getEnabledFunctions();
 
         List<AIFunctionDescriptor> selectedFunctions = new ArrayList<>(functions);
@@ -181,7 +184,7 @@ public class AIEngineRequestFactory {
     }
 
 
-    private static int getContextWindowSize(@NotNull DBRProgressMonitor monitor, @NotNull AIEngine engine) {
+    private static int getContextWindowSize(@NotNull DBRProgressMonitor monitor, @NotNull AIEngine<?> engine) {
         try {
             return engine.getContextWindowSize(monitor);
         } catch (DBException e) {

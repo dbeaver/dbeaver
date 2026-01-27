@@ -87,6 +87,8 @@ public class OracleConstants {
     public static final String PROP_INTERNAL_LOGON = DBConstants.INTERNAL_PROP_PREFIX + "internal-logon@";
     public static final String PROP_TNS_PATH = DBConstants.INTERNAL_PROP_PREFIX + "tns-path@";
     public static final String PROP_AUTH_LOGON_AS = "oracle.logon-as";
+    public static final String PROP_SET_OS_USER = "oracle.set-os-user"; //$NON-NLS-1$
+    public static final String CONN_PROP_SESSION_OS_USER = "v$session.osuser"; //$NON-NLS-1$
 
     public static final String PROP_SESSION_LANGUAGE = DBConstants.INTERNAL_PROP_PREFIX + "session-language@";
     public static final String PROP_SESSION_TERRITORY = DBConstants.INTERNAL_PROP_PREFIX + "session-territory@";

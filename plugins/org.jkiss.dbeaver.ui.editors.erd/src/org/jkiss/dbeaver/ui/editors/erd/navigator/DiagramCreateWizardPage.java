@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -92,7 +92,12 @@ class DiagramCreateWizardPage extends WizardPage {
     public void createControl(Composite parent)
     {
         Composite placeholder = UIUtils.createPlaceholder(parent, 1);
-        Composite configGroup = UIUtils.createControlGroup(placeholder, ERDUIMessages.wizard_page_diagram_create_group_settings, 2, GridData.FILL_BOTH, 0);
+        Composite configGroup = UIUtils.createTitledComposite(
+            placeholder,
+            ERDUIMessages.wizard_page_diagram_create_group_settings,
+            2,
+            GridData.FILL_BOTH
+        );
 
         final Text projectNameText = UIUtils.createLabelText(configGroup, "Name", null); //$NON-NLS-1$
         projectNameText.addModifyListener(new ModifyListener() {

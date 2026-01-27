@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,12 +24,14 @@ import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.ui.IViewPart;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.navigator.DBNBrowseSettings;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.registry.DataSourceNavigatorSettings;
+import org.jkiss.dbeaver.registry.DataSourceNavigatorSettingsUtils;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.actions.AbstractDataSourceHandler;
@@ -80,8 +82,17 @@ public class ConnectionViewSettingsContributor extends DataSourceMenuContributor
         }
 
         void updateSettings(DBNBrowseSettings settings) {
-            ((DataSourceDescriptor)this.dsContainer).setNavigatorSettings(settings);
-            dsContainer.persistConfiguration();
+            if (DBWorkbench.isDistributed()) {
+                try {
+                    DataSourceNavigatorSettingsUtils.updateCustomNavigatorSettings(dsContainer, (DataSourceNavigatorSettings) settings);
+                } catch (DBException e) {
+                    log.error("Error updating custom navigator settings", e);
+                    return;
+                }
+            } else {
+                ((DataSourceDescriptor) this.dsContainer).setNavigatorSettings(settings);
+                dsContainer.persistConfiguration();
+            }
 
             if (dsContainer.isConnected()) {
                 if (UIUtils.confirmAction(

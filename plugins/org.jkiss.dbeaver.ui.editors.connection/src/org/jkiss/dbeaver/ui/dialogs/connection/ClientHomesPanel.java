@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -121,7 +121,13 @@ public class ClientHomesPanel extends Composite {
             }
         });
 
-        Group infoGroup = UIUtils.createControlGroup(this, UIConnectionMessages.controls_client_homes_panel_group_information, 2, GridData.VERTICAL_ALIGN_BEGINNING | GridData.FILL_HORIZONTAL, 0);
+        Composite infoGroup = UIUtils.createTitledComposite(
+            this,
+            UIConnectionMessages.controls_client_homes_panel_group_information,
+            2,
+            GridData.VERTICAL_ALIGN_BEGINNING | GridData.FILL_HORIZONTAL,
+            0
+        );
         ((GridData) (infoGroup.getLayoutData())).minimumWidth = 300;
         idText = UIUtils.createLabelText(infoGroup, UIConnectionMessages.controls_client_homes_panel_label_id, null, SWT.BORDER | SWT.READ_ONLY);
         pathText = UIUtils.createLabelText(infoGroup, UIConnectionMessages.controls_client_homes_panel_label_path, null, SWT.BORDER | SWT.READ_ONLY);

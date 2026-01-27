@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,7 +21,6 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Group;
 import org.jkiss.dbeaver.ext.snowflake.SnowflakeConstants;
 import org.jkiss.dbeaver.ext.snowflake.ui.internal.SnowflakeMessages;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
@@ -36,7 +35,7 @@ public class SnowflakeConnectionPageAdvanced extends ConnectionPageAbstract {
     private Combo sqlDollarQuoteBehaviorCombo;
 
     public SnowflakeConnectionPageAdvanced() {
-        setTitle("Snowflake");
+        setTitle("Advanced");
     }
 
     @Override
@@ -46,12 +45,18 @@ public class SnowflakeConnectionPageAdvanced extends ConnectionPageAbstract {
         group.setLayoutData(new GridData(GridData.FILL_BOTH));
 
         {
-            Group sqlGroup = new Group(group, SWT.NONE);
-            sqlGroup.setText(SnowflakeMessages.dialog_setting_sql);
-            sqlGroup.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
-            sqlGroup.setLayout(new GridLayout(2, false));
+            Composite sqlGroup = UIUtils.createTitledComposite(
+                group,
+                SnowflakeMessages.dialog_setting_sql,
+                2,
+                GridData.HORIZONTAL_ALIGN_BEGINNING
+            );
 
-            sqlDollarQuoteBehaviorCombo = UIUtils.createLabelCombo(sqlGroup, SnowflakeMessages.dialog_setting_sql_dd_label, SWT.DROP_DOWN | SWT.READ_ONLY);
+            sqlDollarQuoteBehaviorCombo = UIUtils.createLabelCombo(
+                sqlGroup,
+                SnowflakeMessages.dialog_setting_sql_dd_label,
+                SWT.DROP_DOWN | SWT.READ_ONLY
+            );
             sqlDollarQuoteBehaviorCombo.add(SnowflakeMessages.dialog_setting_sql_dd_string);
             sqlDollarQuoteBehaviorCombo.add(SnowflakeMessages.dialog_setting_sql_dd_code_block);
         }

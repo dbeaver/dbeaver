@@ -17,8 +17,7 @@
 package org.jkiss.dbeaver.ui.dialogs.connection;
 
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
@@ -29,7 +28,6 @@ import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.access.DBAAuthModel;
 import org.jkiss.dbeaver.model.impl.auth.AuthModelDatabaseNative;
 import org.jkiss.dbeaver.registry.ApplicationPolicyProvider;
-import org.jkiss.dbeaver.registry.DBConnectionConstants;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.ui.UIServiceSecurity;
@@ -54,12 +52,16 @@ public class DatabaseNativeAuthModelConfigurator implements IObjectPropertyConfi
     protected Text passwordText;
 
     protected Button savePasswordCheck;
-    protected Button userManagementToolbar;
+    protected Button showPasswordButton;
 
     protected DBPDataSourceContainer dataSource;
 
-    public static final boolean CREDENTIALS_SAVE_RESTRICTED = ApplicationPolicyProvider.getInstance()
-        .isPolicyEnabled(DBConnectionConstants.POLICY_RESTRICT_PASSWORD_SAVE);
+    protected final boolean canEditCredentialsPerPolicy;
+
+    public DatabaseNativeAuthModelConfigurator() {
+        canEditCredentialsPerPolicy = !ApplicationPolicyProvider.getInstance()
+            .isPolicyEnabled(ApplicationPolicyProvider.POLICY_CREDENTIALS_EDIT);
+    }
 
     public void createControl(@NotNull Composite authPanel, DBAAuthModel<?> object, @NotNull Runnable propertyChangeListener) {
         boolean userNameApplicable = true;
@@ -110,17 +112,21 @@ public class DatabaseNativeAuthModelConfigurator implements IObjectPropertyConfi
         }
         if (this.passwordText != null && !this.passwordText.isDisposed()) {
             this.passwordText.setText(CommonUtils.notEmpty(dataSource.getConnectionConfiguration().getUserPassword()));
-            if (CREDENTIALS_SAVE_RESTRICTED) {
-                this.savePasswordCheck.setSelection(false);
-                this.savePasswordCheck.setEnabled(false);
-                if (userManagementToolbar != null) {
-                    this.userManagementToolbar.setEnabled(false);
+            if (canEditCredentialsPerPolicy) {
+                this.passwordText.setEnabled(dataSource.isSavePassword());
+                if (this.savePasswordCheck != null) {
+                    this.savePasswordCheck.setSelection(dataSource.isSavePassword() || isForceSaveCredentials());
+                }
+                if (showPasswordButton != null) {
+                    this.showPasswordButton.setEnabled(dataSource.isSavePassword() || isForceSaveCredentials());
                 }
             } else {
-                this.savePasswordCheck.setSelection(dataSource.isSavePassword() || isForceSaveCredentials());
-                this.passwordText.setEnabled(dataSource.isSavePassword());
-                if (userManagementToolbar != null) {
-                    this.userManagementToolbar.setEnabled(dataSource.isSavePassword() || isForceSaveCredentials());
+                if (this.savePasswordCheck != null) {
+                    this.savePasswordCheck.setSelection(false);
+                    this.savePasswordCheck.setEnabled(false);
+                }
+                if (showPasswordButton != null) {
+                    this.showPasswordButton.setEnabled(false);
                 }
             }
         }
@@ -132,15 +138,18 @@ public class DatabaseNativeAuthModelConfigurator implements IObjectPropertyConfi
                 this.savePasswordCheck.setSelection(true);
                 this.savePasswordCheck.setEnabled(false);
             }
-            if (this.userManagementToolbar != null) {
-                this.userManagementToolbar.setEnabled(false);
+            if (this.showPasswordButton != null) {
+                this.showPasswordButton.setEnabled(false);
             }
         }
     }
 
     @Override
     public void saveSettings(@NotNull DBPDataSourceContainer dataSource) {
-        boolean resetPassword = CREDENTIALS_SAVE_RESTRICTED || (this.savePasswordCheck != null && !this.savePasswordCheck.getSelection());
+        boolean resetPassword = !canEditCredentialsPerPolicy || (this.savePasswordCheck != null && !this.savePasswordCheck.getSelection());
+        if (dataSource.isSharedCredentials()) {
+            resetPassword = false;
+        }
 
         if (this.usernameText != null) {
             dataSource.getConnectionConfiguration().setUserName(GeneralUtils.trimAllWhitespaces(this.usernameText.getText()));
@@ -150,12 +159,10 @@ public class DatabaseNativeAuthModelConfigurator implements IObjectPropertyConfi
         } else {
             dataSource.getConnectionConfiguration().setUserPassword(null);
         }
-        if (CREDENTIALS_SAVE_RESTRICTED) {
-            dataSource.setSavePassword(false);
-        } else {
-            if (this.savePasswordCheck != null) {
-                dataSource.setSavePassword(this.savePasswordCheck.getSelection());
-            }
+        if (!canEditCredentialsPerPolicy) {
+            dataSource.setSavePassword(dataSource.isSharedCredentials());
+        } else if (this.savePasswordCheck != null) {
+            dataSource.setSavePassword(this.savePasswordCheck.getSelection());
         }
     }
 
@@ -208,35 +215,30 @@ public class DatabaseNativeAuthModelConfigurator implements IObjectPropertyConfi
         GridData gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
         panel.setLayoutData(gd);
 
-        savePasswordCheck = UIUtils.createCheckbox(panel,
-            UIConnectionMessages.dialog_connection_wizard_final_checkbox_save_password,
-            !CREDENTIALS_SAVE_RESTRICTED &&
-                (dataSource == null || dataSource.isSavePassword() || isForceSaveCredentials()));
-        savePasswordCheck.setToolTipText(UIConnectionMessages.dialog_connection_wizard_final_checkbox_save_password);
-        savePasswordCheck.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
+        if (canEditCredentialsPerPolicy) {
+            savePasswordCheck = UIUtils.createCheckbox(
+                panel,
+                UIConnectionMessages.dialog_connection_wizard_final_checkbox_save_password,
+                UIConnectionMessages.dialog_connection_wizard_final_checkbox_save_password,
+                dataSource == null || dataSource.isSavePassword() || isForceSaveCredentials(),
+                1
+            );
+            savePasswordCheck.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
                 passwordText.setEnabled(savePasswordCheck.getSelection());
-                if (userManagementToolbar != null) {
-                    userManagementToolbar.setEnabled(savePasswordCheck.getSelection());
+                if (showPasswordButton != null) {
+                    showPasswordButton.setEnabled(savePasswordCheck.getSelection());
                 }
-            }
-        });
-        if (isForceSaveCredentials()) {
-            this.savePasswordCheck.setEnabled(false);
+            }));
+            savePasswordCheck.setEnabled(!isForceSaveCredentials());
         }
 
-        if (supportsPasswordView) {
-            userManagementToolbar = UIUtils.createPushButton(
+        if (supportsPasswordView && canEditCredentialsPerPolicy) {
+            showPasswordButton = UIUtils.createPushButton(
                 panel,
                 null,
                 UIConnectionMessages.dialog_connection_auth_label_show_password,
-                UIIcon.SHOW_ALL_DETAILS, new SelectionAdapter() {
-                    @Override
-                    public void widgetSelected(SelectionEvent e) {
-                        showPasswordText(serviceSecurity);
-                    }
-                });
+                UIIcon.SHOW_ALL_DETAILS, SelectionListener.widgetSelectedAdapter(e -> showPasswordText(serviceSecurity))
+            );
         }
     }
 

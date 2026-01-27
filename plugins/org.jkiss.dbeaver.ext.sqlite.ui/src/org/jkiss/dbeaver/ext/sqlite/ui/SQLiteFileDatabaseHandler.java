@@ -36,11 +36,11 @@ public class SQLiteFileDatabaseHandler extends AbstractFileDatabaseHandler {
 
     @Override
     protected String createDatabaseName(@NotNull List<Path> fileList) {
-        return fileList.isEmpty() ? "" : fileList.get(0).toString();
+        return fileList.isEmpty() ? "" : fileList.getFirst().toString();
     }
 
     @Override
-    protected String createConnectionName(List<Path> fileList) {
+    protected String createConnectionName(@NotNull List<Path> fileList) {
         return createDatabaseName(fileList);
     }
 
