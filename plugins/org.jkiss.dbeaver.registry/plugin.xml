@@ -70,8 +70,8 @@
     <extension point="org.jkiss.dbeaver.dataSourceAuth">
         <authModel
             id="native"
-            label="Database Native"
-            description="Database native authentication"
+            label="Username/password"
+            description="Database authentication (username/password)"
             class="org.jkiss.dbeaver.model.impl.auth.AuthModelDatabaseNative"
             default="true">
 
