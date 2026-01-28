@@ -74,6 +74,7 @@ public abstract class AIPromptAbstract implements AIPromptGenerator {
 
     @NotNull
     public String build(@Nullable AIDatabaseContext context) {
+        clear();
         initializePrompt(context);
 
         StringBuilder prompt = new StringBuilder();

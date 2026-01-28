@@ -71,7 +71,6 @@ public class AIPromptGenerateSql extends AIPromptAbstract {
 
     @Override
     protected void initializePrompt(@Nullable AIDatabaseContext context) {
-        this.clear();
         addSqlGenerateInstructions(() -> context == null ? null : context.getDataSource(), this);
     }
 }
