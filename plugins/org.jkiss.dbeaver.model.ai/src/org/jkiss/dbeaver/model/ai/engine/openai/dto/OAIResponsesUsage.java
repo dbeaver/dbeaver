@@ -17,14 +17,20 @@
 package org.jkiss.dbeaver.model.ai.engine.openai.dto;
 
 import com.google.gson.annotations.SerializedName;
+import org.jkiss.code.Nullable;
 
-public record OAIUsage(
+public record OAIResponsesUsage(
     @SerializedName("input_tokens")
     int inputTokens,
+
+    @Nullable
     @SerializedName("input_tokens_details")
     InputTokenDetails inputTokensDetails,
+
     @SerializedName("output_tokens")
     int outputTokens,
+
+    @Nullable
     @SerializedName("output_tokens_details")
     OutputTokenDetails outputTokensDetails
 ) {
