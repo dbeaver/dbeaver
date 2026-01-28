@@ -14,28 +14,48 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.ai.engine.copilot.dto;
+package org.jkiss.dbeaver.model.ai.engine.openai.dto.legacy;
 
 import com.google.gson.annotations.SerializedName;
 import org.jkiss.code.Nullable;
 
-public record CopilotUsage(
+public record OAICompletionUsage(
     @SerializedName("prompt_tokens")
     int promptTokens,
-
-    @Nullable
-    @SerializedName("prompt_tokens_details")
-    PromptTokensDetails promptTokensDetails,
 
     @SerializedName("completion_tokens")
     int completionTokens,
 
     @SerializedName("total_tokens")
-    int totalTokens
+    int totalTokens,
+
+    @Nullable
+    @SerializedName("prompt_tokens_details")
+    PromptTokensDetails promptTokensDetails,
+
+    @Nullable
+    @SerializedName("completion_tokens_details")
+    CompletionTokensDetails completionTokensDetails
 ) {
 
     public record PromptTokensDetails(
-        @SerializedName("cached_tokens") int cachedTokens
+        @SerializedName("cached_tokens")
+        int cachedTokens,
+        @SerializedName("audio_tokens")
+        int audioTokens
     ) {
+    }
+
+    public record CompletionTokensDetails(
+        @SerializedName("reasoning_tokens")
+        int reasoningTokens,
+        @SerializedName("audio_tokens")
+        int audioTokens,
+        @SerializedName("accepted_prediction_tokens")
+        int acceptedPredictionTokens,
+        @SerializedName("rejected_prediction_tokens")
+        int rejectedPredictionTokens
+    ) {
+
     }
 }
