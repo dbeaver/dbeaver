@@ -70,14 +70,14 @@ public class SQLiteTableForeignKeyManager extends GenericForeignKeyManager {
             deleteCommand,
             new DeleteObjectReflector<>(this),
             true);
-        if (object.getTable() instanceof SQLiteTable table) {
+        if (object.getTable() instanceof SQLiteTable table && table.isPersisted()) {
             SQLiteUtils.makeRecreateTableCommand(commandContext, table, deleteCommand);
         }
     }
 
     @Override
     protected void createObjectReferences(DBRProgressMonitor monitor, DBECommandContext commandContext, ObjectCreateCommand createCommand) throws DBException {
-        if (createCommand.getObject().getTable() instanceof SQLiteTable table) {
+        if (createCommand.getObject().getTable() instanceof SQLiteTable table && table.isPersisted()) {
             SQLiteUtils.makeRecreateTableCommand(commandContext, table, createCommand);
         }
     }

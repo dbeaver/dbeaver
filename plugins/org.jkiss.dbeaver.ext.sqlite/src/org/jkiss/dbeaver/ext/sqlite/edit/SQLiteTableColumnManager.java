@@ -73,7 +73,7 @@ public class SQLiteTableColumnManager extends GenericTableColumnManager implemen
             deleteCommand,
             new DeleteObjectReflector<>(this),
             true);
-        if (object.getTable() instanceof SQLiteTable table) {
+        if (object.getTable() instanceof SQLiteTable table && table.isPersisted()) {
             SQLiteUtils.makeRecreateTableCommand(commandContext, table, deleteCommand);
         }
     }
