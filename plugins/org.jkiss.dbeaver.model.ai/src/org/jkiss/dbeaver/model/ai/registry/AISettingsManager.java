@@ -174,18 +174,6 @@ public class AISettingsManager {
             settings.setActiveEngine(OpenAIConstants.OPENAI_ENGINE);
         }
 
-        // Fill missing settings
-        Map<String, AIEngineProperties> configurations = settings.getEngineConfigurations();
-        for (AIEngineDescriptor aed : AIEngineRegistry.getInstance().getCompletionEngines()) {
-            if (!configurations.containsKey(aed.getId())) {
-                try {
-                    configurations.put(aed.getId(), aed.createPropertiesInstance());
-                } catch (DBException e) {
-                    log.error(e);
-                }
-            }
-        }
-
         return settings;
     }
 
