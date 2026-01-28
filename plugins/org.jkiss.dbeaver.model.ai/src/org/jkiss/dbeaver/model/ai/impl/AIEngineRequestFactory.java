@@ -24,6 +24,10 @@ import org.jkiss.dbeaver.model.ai.*;
 import org.jkiss.dbeaver.model.ai.engine.AIDatabaseContext;
 import org.jkiss.dbeaver.model.ai.engine.AIEngine;
 import org.jkiss.dbeaver.model.ai.engine.AIEngineRequest;
+import org.jkiss.dbeaver.model.ai.registry.AIEngineDescriptor;
+import org.jkiss.dbeaver.model.ai.registry.AIFunctionDescriptor;
+import org.jkiss.dbeaver.model.ai.registry.AIFunctionRegistry;
+import org.jkiss.dbeaver.model.ai.registry.AISettingsManager;
 import org.jkiss.dbeaver.model.ai.prompt.AIPromptAbstract;
 import org.jkiss.dbeaver.model.ai.registry.*;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
@@ -166,14 +170,6 @@ public class AIEngineRequestFactory {
             }
         }
 
-        AIPromptGeneratorDescriptor currentPromptGenerator = null;
-        for (AIPromptGeneratorDescriptor promptGeneratorDescriptor : AIPromptGeneratorRegistry.getInstance().getAllPromptGenerator()) {
-            if (systemPromptGenerator.generatorId().equals(promptGeneratorDescriptor.getId())) {
-                currentPromptGenerator = promptGeneratorDescriptor;
-                break;
-            }
-        }
-
         Set<String> enabledFunctions = aiSettings.getEnabledFunctions();
 
         List<AIFunctionDescriptor> selectedFunctions = new ArrayList<>(functions);
@@ -181,7 +177,7 @@ public class AIEngineRequestFactory {
             !enabledFunctions.contains(aiFunctionDescriptor.getId())
         );
 
-        Set<String> requiredByDeps = resolveDependencies(selectedFunctions, currentPromptGenerator);
+        Set<String> requiredByDeps = resolveDependencies(selectedFunctions);
 
         if (!requiredByDeps.isEmpty()) {
             for (AIFunctionDescriptor f : functions) {
@@ -220,13 +216,10 @@ public class AIEngineRequestFactory {
      * Resolves transitive dependencies for the given list of already selected function descriptors.
      */
     @NotNull
-    private static Set<String> resolveDependencies(@NotNull List<AIFunctionDescriptor> selected, @Nullable AIPromptGeneratorDescriptor pg) {
+    private static Set<String> resolveDependencies(@NotNull List<AIFunctionDescriptor> selected) {
         Set<String> result = new HashSet<>();
         for (AIFunctionDescriptor fd : selected) {
             collectDependencies(fd.getDependsOn(), result);
-        }
-        if (pg != null) {
-            collectDependencies(pg.getDependsOn(), result);
         }
         return result;
     }
