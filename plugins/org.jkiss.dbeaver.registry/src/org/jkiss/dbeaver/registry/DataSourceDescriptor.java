@@ -158,7 +158,7 @@ public class DataSourceDescriptor
     private boolean hidden;
 
     @NotNull
-    private DataSourceNavigatorSettings navigatorSettings;
+    private final DataSourceNavigatorSettings navigatorSettings;
     @NotNull
     private DBVModel virtualModel;
     private final boolean manageable;
@@ -399,11 +399,11 @@ public class DataSourceDescriptor
 
     @NotNull
     public DataSourceNavigatorSettings getOriginalNavigatorSettings() {
-        return navigatorSettings;
+        return (DataSourceNavigatorSettings) navigatorSettings.getOriginalSettings();
     }
 
-    public void setNavigatorSettings(DBNBrowseSettings copyFrom) {
-        this.navigatorSettings = new DataSourceNavigatorSettings(copyFrom);
+    public void setNavigatorSettings(@NotNull DBNBrowseSettings copyFrom) {
+        getOriginalNavigatorSettings().copyFrom(copyFrom);
     }
 
     @NotNull
@@ -1885,7 +1885,7 @@ public class DataSourceDescriptor
         this.connectionReadOnly = descriptor.connectionReadOnly;
         this.forceUseSingleConnection = descriptor.forceUseSingleConnection;
 
-        this.navigatorSettings = new DataSourceNavigatorSettings(descriptor.getOriginalNavigatorSettings());
+        setNavigatorSettings(descriptor.navigatorSettings);
     }
 
     @Override

@@ -77,7 +77,7 @@ public class ResultSetDataContainer implements DBSDataContainer, DBPContextProvi
     @NotNull
     @Override
     public String[] getSupportedFeatures() {
-        return new String[] {FEATURE_DATA_SELECT, FEATURE_DATA_COUNT};
+        return new String[] {FEATURE_DATA_SELECT, FEATURE_DATA_COUNT, FEATURE_DATA_READ_FETCHED};
     }
 
     public ResultSetDataContainerOptions getOptions() {

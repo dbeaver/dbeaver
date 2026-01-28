@@ -34,6 +34,8 @@ public class AIMessage {
     private final String content;
     @Nullable
     private final String displayMessage;
+    @Nullable
+    private final String customResultInfo;
     @NotNull
     private final LocalDateTime time;
     @Nullable
@@ -43,6 +45,23 @@ public class AIMessage {
     @Nullable
     private final List<AIMessageMeta> meta;
 
+    public AIMessage(
+        @NotNull AIMessageType role,
+        @NotNull String content,
+        @Nullable String displayMessage,
+        @NotNull LocalDateTime time,
+        @Nullable AIMessageMeta meta,
+        @Nullable String functionCallID
+    ) {
+        this.role = role;
+        this.content = content;
+        this.displayMessage = displayMessage;
+        this.time = time;
+        this.meta = meta;
+        this.functionCall = null;
+        this.functionResult = null;
+        this.customResultInfo = functionCallID;
+    }
     /**
      * Creates AI message
      */
@@ -60,6 +79,7 @@ public class AIMessage {
         this.meta = meta;
         this.functionCall = null;
         this.functionResult = null;
+        this.customResultInfo = null;
     }
 
     /**
@@ -77,6 +97,7 @@ public class AIMessage {
         this.functionCall = functionCall;
         this.functionResult = result;
         this.displayMessage = CommonUtils.toString(result.getValue());
+        this.customResultInfo = null;
     }
 
     @NotNull
@@ -129,6 +150,17 @@ public class AIMessage {
         this(role, content, content, LocalDateTime.now(), meta);
     }
 
+    public static AIMessage functionMessage(String id, String payload, AIMessageType type) {
+        return new AIMessage(
+            type,
+            payload,
+            null,
+            LocalDateTime.now(),
+            null,
+            id
+        );
+    }
+
     @Override
     public String toString() {
         return "Message (" + role + "): " + content;
@@ -154,6 +186,11 @@ public class AIMessage {
     @NotNull
     public String getContent() {
         return content;
+    }
+
+    @Nullable
+    public String getToolUseID() {
+        return customResultInfo;
     }
 
     @NotNull
