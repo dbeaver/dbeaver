@@ -18,9 +18,10 @@ package org.jkiss.dbeaver.model.ai.prompt;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBRuntimeException;
 import org.jkiss.dbeaver.model.ai.AIPromptGenerator;
-import org.jkiss.dbeaver.model.ai.engine.AIDatabaseContext;
 import org.jkiss.dbeaver.model.ai.AISettings;
+import org.jkiss.dbeaver.model.ai.engine.AIDatabaseContext;
 import org.jkiss.dbeaver.model.ai.registry.AIPromptGeneratorDescriptor;
 import org.jkiss.dbeaver.model.ai.registry.AIPromptGeneratorRegistry;
 import org.jkiss.dbeaver.model.ai.registry.AISettingsManager;
@@ -62,6 +63,13 @@ public abstract class AIPromptAbstract implements AIPromptGenerator {
     public AIPromptAbstract addOutputFormats(@NotNull String... outputFormats) {
         this.outputFormats.addAll(Arrays.asList(outputFormats));
         return this;
+    }
+
+    protected void clear() {
+        this.examples.clear();
+        this.instructions.clear();
+        this.contexts.clear();
+        this.outputFormats.clear();
     }
 
     @NotNull
@@ -106,16 +114,17 @@ public abstract class AIPromptAbstract implements AIPromptGenerator {
     @NotNull
     @Override
     public AIPromptAbstract copy() {
-        AIPromptAbstract copy = create();
-        copy.instructions.addAll(instructions);
-        copy.examples.addAll(examples);
-        copy.contexts.addAll(contexts);
-        copy.outputFormats.addAll(outputFormats);
-        return copy;
+        try {
+            AIPromptAbstract copy = getClass().getConstructor().newInstance();
+            copy.instructions.addAll(instructions);
+            copy.examples.addAll(examples);
+            copy.contexts.addAll(contexts);
+            copy.outputFormats.addAll(outputFormats);
+            return copy;
+        } catch (Exception e) {
+            throw new DBRuntimeException("Error copying prompt generator", e);
+        }
     }
-
-    @NotNull
-    protected abstract AIPromptAbstract create();
 
     protected abstract void initializePrompt(@Nullable AIDatabaseContext context);
 

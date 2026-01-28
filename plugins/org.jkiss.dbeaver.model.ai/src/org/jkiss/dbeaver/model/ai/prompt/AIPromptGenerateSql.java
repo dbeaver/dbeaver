@@ -37,19 +37,6 @@ public class AIPromptGenerateSql extends AIPromptAbstract {
         return SQL_GENERATOR_ID;
     }
 
-    @NotNull
-    @Override
-    protected AIPromptAbstract create() {
-        return new AIPromptGenerateSql();
-    }
-
-    @NotNull
-    public static AIPromptGenerateSql create(@NotNull DBSLogicalDataSourceSupplier dsSupplier) {
-        AIPromptGenerateSql builder = new AIPromptGenerateSql();
-        addSqlGenerateInstructions(dsSupplier, builder);
-        return builder;
-    }
-
     public static void addSqlGenerateInstructions(
         @NotNull DBSLogicalDataSourceSupplier dsSupplier,
         @NotNull AIPromptAbstract builder
@@ -84,6 +71,7 @@ public class AIPromptGenerateSql extends AIPromptAbstract {
 
     @Override
     protected void initializePrompt(@Nullable AIDatabaseContext context) {
+        this.clear();
         addSqlGenerateInstructions(() -> context == null ? null : context.getDataSource(), this);
     }
 }
