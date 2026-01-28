@@ -30,13 +30,4 @@ public interface AIPromptGenerator {
 
     @NotNull
     String build(@Nullable AIDatabaseContext context);
-
-    /**
-     * Creates a copy of this prompt generator.
-     *
-     * @return a new instance of the prompt generator with the same configuration
-     */
-    @NotNull
-    AIPromptGenerator copy();
-
 }
