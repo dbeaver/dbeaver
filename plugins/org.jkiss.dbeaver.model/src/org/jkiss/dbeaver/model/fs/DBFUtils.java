@@ -269,19 +269,19 @@ public class DBFUtils {
     public static DBFPath getDBFPathFromURI(@NotNull String fileUriString) throws DBException {
         if (IOUtils.isLocalFile(fileUriString)) {
             Path path = Path.of(fileUriString).toAbsolutePath();
-            return new DBFPath(path);
+            return DBFPath.create(path);
         }
 
         URI fileUri = URI.create(fileUriString);
         if (!fileUri.isAbsolute() || fileUri.getScheme() == null) {
             Path path = Path.of(fileUriString).toAbsolutePath();
-            return new DBFPath(path);
+            return DBFPath.create(path);
         }
         FileSystem defaultFs = FileSystems.getDefault();
         if (defaultFs.provider().getScheme().equals(fileUri.getScheme())) {
             // default filesystem
             Path path = defaultFs.provider().getPath(fileUri);
-            return new DBFPath(path);
+            return DBFPath.create(path);
         } else {
             var externalFsProvider =
                 FileSystemProviderRegistry.getInstance().getFileSystemProviderBySchema(fileUri.getScheme());
@@ -302,7 +302,7 @@ public class DBFUtils {
                 );
 
                 Path path = externalFileSystem.provider().getPath(fileUri);
-                return new DBFPath(externalFileSystem, path);
+                return DBFPath.createExclusive(path);
             } catch (Exception e) {
                 log.error("Failed to initialize path: " + fileUri, e);
             }

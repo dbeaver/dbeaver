@@ -17,36 +17,36 @@
 package org.jkiss.dbeaver.model.fs;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
 
 import java.io.IOException;
-import java.nio.file.FileSystem;
 import java.nio.file.Path;
 
 public final class DBFPath implements AutoCloseable {
 
-    @Nullable
-    private final FileSystem ownedFileSystem;
     private final Path path;
+    private final boolean ownsFileSystem;
 
-    public DBFPath(@NotNull Path path) {
+    private DBFPath(Path path, boolean ownsFileSystem) {
         this.path = path;
-        this.ownedFileSystem = null;
+        this.ownsFileSystem = ownsFileSystem;
     }
 
-    public DBFPath(@NotNull FileSystem fileSystem, @NotNull Path path) {
-        this.ownedFileSystem = fileSystem;
-        this.path = path;
+    public static DBFPath create(@NotNull Path path) {
+        return new DBFPath(path, false);
     }
 
-    public @NotNull Path path() {
+    public static DBFPath createExclusive(@NotNull Path path) {
+        return new DBFPath(path, true);
+    }
+
+    public Path path() {
         return path;
     }
 
     @Override
     public void close() throws IOException {
-        if (ownedFileSystem != null && ownedFileSystem.isOpen()) {
-            ownedFileSystem.close();
+        if (ownsFileSystem) {
+            path.getFileSystem().close();
         }
     }
 
