@@ -132,13 +132,15 @@ public class PrefPageTransactions extends TargetPrefPage {
             settingsTipString = CoreMessages.action_menu_transaction_pref_page_link;
         }
 
-        UIUtils.createPreferenceLink(
-            txnNameGroup,
-            settingsTipString,
-            PrefPageConnectionTypes.PAGE_ID,
-            (IWorkbenchPreferenceContainer) getContainer(),
-            null
-        );
+        if (getContainer() instanceof IWorkbenchPreferenceContainer wpc) {
+            UIUtils.createPreferenceLink(
+                txnNameGroup,
+                settingsTipString,
+                PrefPageConnectionTypes.PAGE_ID,
+                wpc,
+                null
+            );
+            }
 
         {
             Composite notifyNameGroup = UIUtils.createTitledComposite(
