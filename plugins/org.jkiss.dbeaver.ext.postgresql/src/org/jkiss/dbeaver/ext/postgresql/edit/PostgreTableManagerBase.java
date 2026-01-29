@@ -162,7 +162,10 @@ public abstract class PostgreTableManagerBase extends SQLTableManager<PostgreTab
                 }
 
                 // Add policy DDL
-                if (table instanceof PostgreTable pgTable && !monitor.isCanceled()) {
+                if (table instanceof PostgreTable pgTable
+                    && table.getDataSource().getServerType().supportsRowLevelSecurity()
+                    && !monitor.isCanceled()
+                ) {
                     Collection<PostgreTablePolicy> policies = pgTable.getPolicies(monitor);
                     if (!CommonUtils.isEmpty(policies)) {
                         if (addExtraActionComment) {
