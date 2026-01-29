@@ -53,6 +53,11 @@ public class DataSourceAuthOptions {
     )
     private List<String> connectionParams;
 
+    @CommandLine.ArgGroup(
+        exclusive = false
+    )
+    private NetworkHandlerOptions networkHandlerOptions;
+
     @Nullable
     public List<String> getAuthParams() {
         return authParams;
@@ -78,4 +83,8 @@ public class DataSourceAuthOptions {
         return connectionParams;
     }
 
+    @Nullable
+    public NetworkHandlerOptions getNetworkHandlerOptions() {
+        return networkHandlerOptions;
+    }
 }
