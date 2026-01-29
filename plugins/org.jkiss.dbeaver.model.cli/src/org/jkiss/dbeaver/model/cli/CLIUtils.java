@@ -89,7 +89,7 @@ public class CLIUtils {
 
 
     @NotNull
-    public static DBPProject findProject(@Nullable String projectIdOrName, @NotNull CommandLineContext context) throws CLIException {
+    public static DBPProject findProject(@Nullable String projectIdOrName, @NotNull CLIContext context) throws CLIException {
         DBPProject project;
         DBPWorkspace workspace = context.getContextParameter(DBPWorkspace.class.getName());
         if (workspace == null) {
@@ -169,7 +169,7 @@ public class CLIUtils {
         try {
             registry.addDataSource(dataSource);
         } catch (Exception e) {
-            log.error("Error adding datasource", e);
+            throw new CLIException("Error adding datasource: " + e.getMessage(), e, CLIConstants.EXIT_CODE_ERROR);
         }
         return dataSource;
     }
