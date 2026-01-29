@@ -339,7 +339,9 @@ public class CLIUtils {
         if (!CommonUtils.equalObjects(displayName, description)) {
             helpText.append(" (").append(displayName).append(")");
         }
-        helpText.append(": ").append(description);
+        if (CommonUtils.isNotEmpty(description)) {
+            helpText.append(" = ").append(description);
+        }
         if (property instanceof IPropertyValueListProvider<?> valueListProvider) {
             Object[] possibleValues = valueListProvider.getPossibleValues(null);
             if (!ArrayUtils.isEmpty(possibleValues)) {
