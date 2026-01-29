@@ -741,6 +741,7 @@
                 type="config"
                 id="postgre_ssl"
                 codeName="SSL"
+                prefix="ssl"
                 label="%handler.ssl.name"
                 description="%handler.ssl.description"
                 desktop="false"

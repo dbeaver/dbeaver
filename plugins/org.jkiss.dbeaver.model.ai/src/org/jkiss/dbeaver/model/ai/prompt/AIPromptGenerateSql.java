@@ -17,8 +17,10 @@
 package org.jkiss.dbeaver.model.ai.prompt;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.ai.AIConstants;
 import org.jkiss.dbeaver.model.ai.AISqlJoinRule;
+import org.jkiss.dbeaver.model.ai.engine.AIDatabaseContext;
 import org.jkiss.dbeaver.model.ai.impl.AIPromptUtils;
 import org.jkiss.dbeaver.model.logical.DBSLogicalDataSource;
 import org.jkiss.dbeaver.model.logical.DBSLogicalDataSourceSupplier;
@@ -33,19 +35,6 @@ public class AIPromptGenerateSql extends AIPromptAbstract {
     @Override
     public String generatorId() {
         return SQL_GENERATOR_ID;
-    }
-
-    @NotNull
-    @Override
-    protected AIPromptAbstract create() {
-        return new AIPromptGenerateSql();
-    }
-
-    @NotNull
-    public static AIPromptGenerateSql create(@NotNull DBSLogicalDataSourceSupplier dsSupplier) {
-        AIPromptGenerateSql builder = new AIPromptGenerateSql();
-        addSqlGenerateInstructions(dsSupplier, builder);
-        return builder;
     }
 
     public static void addSqlGenerateInstructions(
@@ -78,5 +67,10 @@ public class AIPromptGenerateSql extends AIPromptAbstract {
         };
 
         builder.addInstructions(joinHint);
+    }
+
+    @Override
+    protected void initializePrompt(@Nullable AIDatabaseContext context) {
+        addSqlGenerateInstructions(() -> context == null ? null : context.getDataSource(), this);
     }
 }

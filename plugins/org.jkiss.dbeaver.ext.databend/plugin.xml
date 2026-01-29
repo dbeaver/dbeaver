@@ -65,6 +65,7 @@
                 type="config"
                 id="databend-ssl"
                 codeName="SSL"
+                prefix="ssl"
                 label="SSL"
                 description="SSL settings"
                 secured="false"
