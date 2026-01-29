@@ -50,7 +50,7 @@ public class AIMessage {
         @NotNull String content,
         @Nullable String displayMessage,
         @NotNull LocalDateTime time,
-        @Nullable AIMessageMeta meta,
+        @Nullable List<AIMessageMeta> meta,
         @Nullable String functionCallID
     ) {
         this.role = role;

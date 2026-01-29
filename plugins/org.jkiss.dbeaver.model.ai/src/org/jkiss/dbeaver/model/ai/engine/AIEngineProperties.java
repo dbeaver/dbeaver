@@ -20,8 +20,6 @@ import org.jkiss.dbeaver.DBException;
 
 public interface AIEngineProperties {
 
-    String getEngineId();
-
     String getModel();
 
     Integer getContextWindowSize();

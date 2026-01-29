@@ -69,11 +69,6 @@ public class CopilotProperties implements AIEngineProperties {
         this.token = token;
     }
 
-    @Override
-    public String getEngineId() {
-        return "copilot";
-    }
-
     @Nullable
     @Property(order = 2)
     public String getModel() {

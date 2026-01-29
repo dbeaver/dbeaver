@@ -105,11 +105,6 @@ public class OpenAIProperties implements OpenAIBaseProperties {
         this.token = token;
     }
 
-    @Override
-    public String getEngineId() {
-        return "openai";
-    }
-
     @Nullable
     @Override
     @Property(order = 3, listProvider = OpenAIModelListProvider.class)
