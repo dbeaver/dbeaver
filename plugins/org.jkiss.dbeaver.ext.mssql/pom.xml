@@ -9,6 +9,6 @@
      <relativePath>../</relativePath>
   </parent>
   <artifactId>org.jkiss.dbeaver.ext.mssql</artifactId>
-  <version>1.0.266-SNAPSHOT</version>
+  <version>1.0.267-SNAPSHOT</version>
   <packaging>eclipse-plugin</packaging>
 </project>

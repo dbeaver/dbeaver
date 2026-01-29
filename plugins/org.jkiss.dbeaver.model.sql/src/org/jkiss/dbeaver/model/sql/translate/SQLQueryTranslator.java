@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -253,47 +253,51 @@ public class SQLQueryTranslator implements SQLTranslator {
         var colDataType = cd.getColDataType() != null
             ? cd.getColDataType().getDataType().toUpperCase(Locale.ENGLISH)
             : "";
-        switch (colDataType) {
-            case "CLOB":
-                newDataType = (extendedDialect != null) ? extendedDialect.getClobDataType() : "varchar";
-                break;
-            case "BLOB":
-                newDataType = (extendedDialect != null) ? extendedDialect.getBlobDataType() : "blob";
-                break;
-            case "TEXT":
+
+        int parenthesisIndex = colDataType.indexOf('(');
+        String baseDataType = colDataType.substring(0, parenthesisIndex > 0 ? parenthesisIndex : colDataType.length()).trim();
+        switch (baseDataType) {
+            case "CLOB" -> newDataType = (extendedDialect != null) ? extendedDialect.getClobDataType() : "varchar";
+            case "BLOB" -> newDataType = (extendedDialect != null) ? extendedDialect.getBlobDataType() : "blob";
+            case "TEXT" -> {
                 String dialectName = targetDialect.getDialectName().toLowerCase();
                 if (extendedDialect != null && (dialectName.equals("oracle") || dialectName.equals("sqlserver"))) {
                     newDataType = extendedDialect.getClobDataType();
                 }
-                break;
-            case "TIMESTAMP":
+            }
+            case "TIMESTAMP" -> {
                 if (extendedDialect != null) {
                     newDataType = extendedDialect.getTimestampDataType();
                 }
-                break;
-            case SQLConstants.DATA_TYPE_BIGINT:
+            }
+            case SQLConstants.DATA_TYPE_BIGINT -> {
                 if (extendedDialect != null) {
                     newDataType = extendedDialect.getBigIntegerType();
                 }
-                break;
-            case "UUID":
+            }
+            case "UUID" -> {
                 if (extendedDialect != null) {
                     newDataType = extendedDialect.getUuidDataType();
                 }
-                break;
-            case "BOOLEAN":
+            }
+            case "BOOLEAN" -> {
                 if (extendedDialect != null) {
                     newDataType = extendedDialect.getBooleanDataType();
                 }
-                break;
-            case "SET":
+            }
+            case "SET" -> {
                 if (extendedDialect != null && !extendedDialect.supportsAlterColumnSet()) {
                     newDataType = "";
                 }
-                break;
-            default:
-                //no action
-                break;
+            }
+            case "NVARCHAR" -> {
+                if (extendedDialect != null) {
+                    newDataType = extendedDialect.getNVarCharDataType() + (parenthesisIndex > 0 ? ' ' + colDataType.substring(parenthesisIndex) : "");
+                }
+            }
+            default -> {
+            }
+            //no action
         }
         if (newDataType != null) {
             cd.getColDataType().setDataType(newDataType);

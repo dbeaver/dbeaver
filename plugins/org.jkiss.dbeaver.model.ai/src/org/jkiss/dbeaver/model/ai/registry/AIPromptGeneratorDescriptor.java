@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,33 +25,36 @@ import org.jkiss.dbeaver.model.ai.AIPromptGenerator;
 import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
 import org.jkiss.dbeaver.model.logical.DBSLogicalDataSourceSupplier;
 import org.jkiss.dbeaver.registry.RegistryConstants;
-import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.util.List;
+import java.util.stream.Stream;
 
 public class AIPromptGeneratorDescriptor extends AbstractDescriptor {
 
     public static final String EXTENSION_ID = "com.dbeaver.ai.prompt";
 
-    private final IConfigurationElement contributorConfig;
     private final ObjectType objectType;
+    private final String id;
     private final String label;
     private final DBPImage icon;
-    private final String[] dependsOn;
+    private final List<Uses> uses;
 
     protected AIPromptGeneratorDescriptor(@NotNull IConfigurationElement config) {
         super(config);
-        this.contributorConfig = config;
         this.objectType = new ObjectType(config, RegistryConstants.ATTR_CLASS);
-        this.icon = iconToImage(config.getAttribute(RegistryConstants.ATTR_ICON));
+        this.id = config.getAttribute(RegistryConstants.ATTR_ID);
         this.label = config.getAttribute(RegistryConstants.ATTR_LABEL);
-        this.dependsOn = CommonUtils.splitString(config.getAttribute("dependsOn"), ',').toArray(new String[0]);
+        this.icon = iconToImage(config.getAttribute(RegistryConstants.ATTR_ICON));
+        this.uses = Stream.of(config.getChildren("uses"))
+            .map(Uses::new)
+            .toList();
     }
 
     @NotNull
     public String getId() {
-        return contributorConfig.getAttribute("id");
+        return id;
     }
 
     @Nullable
@@ -59,14 +62,14 @@ public class AIPromptGeneratorDescriptor extends AbstractDescriptor {
         return icon;
     }
 
-    @Nullable
+    @NotNull
     public String getLabel() {
-        return label;
+        return label != null ? label : id;
     }
 
     @NotNull
-    public String[] getDependsOn() {
-        return dependsOn;
+    public List<Uses> getUses() {
+        return uses;
     }
 
     @NotNull
@@ -85,5 +88,12 @@ public class AIPromptGeneratorDescriptor extends AbstractDescriptor {
         } catch (Exception e) {
             throw new DBException("Error creating prompt generator " + getId(), e);
         }
+    }
+
+    public record Uses(@NotNull String function, @NotNull String instructions) {
+        Uses(@NotNull IConfigurationElement config) {
+            this(config.getAttribute("function"), config.getAttribute("instructions"));
+        }
+
     }
 }

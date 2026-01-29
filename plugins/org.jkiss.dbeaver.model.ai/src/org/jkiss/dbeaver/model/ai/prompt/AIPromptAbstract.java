@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,10 @@ package org.jkiss.dbeaver.model.ai.prompt;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.ai.AIPromptGenerator;
+import org.jkiss.dbeaver.model.ai.AISettings;
+import org.jkiss.dbeaver.model.ai.registry.AIPromptGeneratorDescriptor;
+import org.jkiss.dbeaver.model.ai.registry.AIPromptGeneratorRegistry;
+import org.jkiss.dbeaver.model.ai.registry.AISettingsManager;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -30,18 +34,12 @@ import java.util.List;
  * prompt usage in chat conversations. It is used on persisted conversation loading.
  */
 public abstract class AIPromptAbstract implements AIPromptGenerator {
-    private final List<String> goals = new ArrayList<>();
     private final List<String> instructions = new ArrayList<>();
     private final List<String> examples = new ArrayList<>();
     private final List<String> contexts = new ArrayList<>();
     private final List<String> outputFormats = new ArrayList<>();
 
     protected AIPromptAbstract() {
-    }
-
-    public AIPromptAbstract addGoals(@NotNull String... goals) {
-        this.goals.addAll(Arrays.asList(goals));
-        return this;
     }
 
     public AIPromptAbstract addExamples(@NotNull String... examples) {
@@ -65,13 +63,21 @@ public abstract class AIPromptAbstract implements AIPromptGenerator {
     }
 
     @NotNull
-    public String build() {
+    public final String build() {
         StringBuilder prompt = new StringBuilder();
-        prompt.append("Goals:\n");
-        goals.forEach(goal -> prompt.append("- ").append(goal).append("\n"));
+
+        AIPromptGeneratorDescriptor gd = AIPromptGeneratorRegistry.getInstance().getPromptGenerator(this.generatorId());
+        AISettings settings = AISettingsManager.getInstance().getSettings();
+        if (gd != null && settings.isFunctionsEnabled()) {
+            for (AIPromptGeneratorDescriptor.Uses use : gd.getUses()) {
+                if (settings.getEnabledFunctions().contains(use.function())) {
+                    this.addInstructions(use.instructions());
+                }
+            }
+        }
 
         if (!instructions.isEmpty()) {
-            prompt.append("\nInstructions:\n");
+            prompt.append("Instructions:\n");
             instructions.forEach(instruction -> prompt.append("- ").append(instruction).append("\n"));
         }
 
@@ -80,8 +86,10 @@ public abstract class AIPromptAbstract implements AIPromptGenerator {
             examples.forEach(example -> prompt.append("- ").append(example).append("\n"));
         }
 
-        prompt.append("\nContext:\n");
-        contexts.forEach(context -> prompt.append("- ").append(context).append("\n"));
+        if (!contexts.isEmpty()) {
+            prompt.append("\nContext:\n");
+            contexts.forEach(context -> prompt.append("- ").append(context).append("\n"));
+        }
 
         if (!outputFormats.isEmpty()) {
             prompt.append("\nOutput Format:\n");
@@ -91,4 +99,17 @@ public abstract class AIPromptAbstract implements AIPromptGenerator {
         return prompt.toString();
     }
 
+    @NotNull
+    @Override
+    public AIPromptAbstract copy() {
+        AIPromptAbstract copy = create();
+        copy.instructions.addAll(instructions);
+        copy.examples.addAll(examples);
+        copy.contexts.addAll(contexts);
+        copy.outputFormats.addAll(outputFormats);
+        return copy;
+    }
+
+    @NotNull
+    protected abstract AIPromptAbstract create();
 }
