@@ -14,30 +14,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.ai.engine.openai.dto;
+package org.jkiss.dbeaver.model.file;
 
-import com.google.gson.annotations.SerializedName;
+import org.jkiss.code.NotNull;
 
-public record OAIUsage(
-    @SerializedName("input_tokens")
-    int inputTokens,
-    @SerializedName("input_tokens_details")
-    InputTokenDetails inputTokensDetails,
-    @SerializedName("output_tokens")
-    int outputTokens,
-    @SerializedName("output_tokens_details")
-    OutputTokenDetails outputTokensDetails
-) {
+public enum FileTypeAction {
+    DATABASE("Open as database"),
+    INTERNAL_EDITOR("Open in embedded text editor"),
+    EXTERNAL_EDITOR("Open in external application");
 
-    public record InputTokenDetails(
-        @SerializedName("cached_tokens")
-        int cachedTokens
-    ) {
+    private final String label;
+
+    FileTypeAction(@NotNull String label) {
+        this.label = label;
     }
 
-    public record OutputTokenDetails(
-        @SerializedName("reasoning_tokens")
-        int reasoningTokens
-    ) {
+    @NotNull
+    public String getLabel() {
+        return label;
     }
+
 }

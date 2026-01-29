@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,20 +20,20 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.file.FileTypeAction;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.EditorUtils;
-import org.jkiss.dbeaver.ui.editors.file.IFileTypeHandler;
+import org.jkiss.dbeaver.ui.editors.file.AbstractFileHandler;
 import org.jkiss.dbeaver.ui.editors.sql.handlers.SQLNavigatorContext;
 
 import java.io.File;
 import java.nio.file.Path;
 import java.util.List;
-import java.util.Map;
 
 /**
  * SQL file handler
  */
-public class SQLFileHandler implements IFileTypeHandler {
+public class SQLFileHandler extends AbstractFileHandler {
 
     /**
      * Handles SQL files. Local sql files are processed by resource handlers.
@@ -42,20 +42,19 @@ public class SQLFileHandler implements IFileTypeHandler {
     @Override
     public void openFiles(
         @NotNull List<Path> fileList,
-        @NotNull Map<String, String> parameters,
-        @Nullable DBPDataSourceContainer dataSource
-    ) {
-        for (Path path : fileList) {
-            File file = path.toFile();
-            if (dataSource != null) {
-                EditorUtils.setFileDataSource(file, new SQLNavigatorContext(dataSource));
+        @Nullable DBPDataSourceContainer dataSource,
+        @NotNull FileTypeAction action
+    ) throws DBException {
+        if (action == FileTypeAction.INTERNAL_EDITOR) {
+            for (Path path : fileList) {
+                if (dataSource != null) {
+                    File file = path.toFile();
+                    EditorUtils.setFileDataSource(file, new SQLNavigatorContext(dataSource));
+                }
+                EditorUtils.openExternalFileEditor(path, UIUtils.getActiveWorkbenchWindow());
             }
-            EditorUtils.openExternalFileEditor(file, UIUtils.getActiveWorkbenchWindow());
+        } else {
+            super.openFiles(fileList, dataSource, action);
         }
-    }
-
-    @Override
-    public void importFiles(@NotNull List<Path> filePath, @Nullable String extension) throws DBException {
-        throw new DBException("Importing files is not supported for SQL files");
     }
 }

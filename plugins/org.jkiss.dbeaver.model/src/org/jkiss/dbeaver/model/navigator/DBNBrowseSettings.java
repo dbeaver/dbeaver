@@ -16,6 +16,8 @@
  */
 package org.jkiss.dbeaver.model.navigator;
 
+import org.jkiss.code.NotNull;
+
 /**
  * Browse settings
  */
@@ -39,6 +41,12 @@ public interface DBNBrowseSettings {
      * If settings were redefined for current user.
      */
     boolean isUserSettings();
+
+    /**
+     * Get original settings (before user customization)
+     */
+    @NotNull
+    DBNBrowseSettings getOriginalSettings();
 
     void setShowSystemObjects(boolean showSystemObjects);
 

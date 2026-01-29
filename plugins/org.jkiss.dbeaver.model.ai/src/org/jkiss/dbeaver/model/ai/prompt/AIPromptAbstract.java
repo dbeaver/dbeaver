@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,14 @@
 package org.jkiss.dbeaver.model.ai.prompt;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.ai.AIPromptGenerator;
+import org.jkiss.dbeaver.model.ai.AISettings;
+import org.jkiss.dbeaver.model.ai.engine.AIDatabaseContext;
+import org.jkiss.dbeaver.model.ai.registry.AIPromptGeneratorDescriptor;
+import org.jkiss.dbeaver.model.ai.registry.AIPromptGeneratorRegistry;
+import org.jkiss.dbeaver.model.ai.registry.AISettingsManager;
+import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -30,18 +37,12 @@ import java.util.List;
  * prompt usage in chat conversations. It is used on persisted conversation loading.
  */
 public abstract class AIPromptAbstract implements AIPromptGenerator {
-    private final List<String> goals = new ArrayList<>();
     private final List<String> instructions = new ArrayList<>();
     private final List<String> examples = new ArrayList<>();
     private final List<String> contexts = new ArrayList<>();
     private final List<String> outputFormats = new ArrayList<>();
 
     protected AIPromptAbstract() {
-    }
-
-    public AIPromptAbstract addGoals(@NotNull String... goals) {
-        this.goals.addAll(Arrays.asList(goals));
-        return this;
     }
 
     public AIPromptAbstract addExamples(@NotNull String... examples) {
@@ -64,14 +65,40 @@ public abstract class AIPromptAbstract implements AIPromptGenerator {
         return this;
     }
 
+    protected void clear() {
+        this.examples.clear();
+        this.instructions.clear();
+        this.contexts.clear();
+        this.outputFormats.clear();
+    }
+
     @NotNull
-    public String build() {
+    public String build(@Nullable AIDatabaseContext context) {
+        clear();
+        initializePrompt(context);
+
+        AISettings settings = AISettingsManager.getInstance().getSettings();
+
+        // Additional function instructions
+        AIPromptGeneratorDescriptor gd = AIPromptGeneratorRegistry.getInstance().getPromptGenerator(generatorId());
+        if (gd != null && settings.isFunctionsEnabled()) {
+            for (AIPromptGeneratorDescriptor.Uses use : gd.getUses()) {
+                if (settings.getEnabledFunctions().contains(use.function())) {
+                    addInstructions(use.instructions());
+                }
+            }
+        }
+
+        // User custom instructions
+        String customInstructions = settings.getCustomInstructions(generatorId());
+        if (CommonUtils.isNotEmpty(customInstructions)) {
+            addInstructions(customInstructions);
+        }
+
         StringBuilder prompt = new StringBuilder();
-        prompt.append("Goals:\n");
-        goals.forEach(goal -> prompt.append("- ").append(goal).append("\n"));
 
         if (!instructions.isEmpty()) {
-            prompt.append("\nInstructions:\n");
+            prompt.append("Instructions:\n");
             instructions.forEach(instruction -> prompt.append("- ").append(instruction).append("\n"));
         }
 
@@ -80,8 +107,10 @@ public abstract class AIPromptAbstract implements AIPromptGenerator {
             examples.forEach(example -> prompt.append("- ").append(example).append("\n"));
         }
 
-        prompt.append("\nContext:\n");
-        contexts.forEach(context -> prompt.append("- ").append(context).append("\n"));
+        if (!contexts.isEmpty()) {
+            prompt.append("\nContext:\n");
+            contexts.forEach(ctx -> prompt.append("- ").append(ctx).append("\n"));
+        }
 
         if (!outputFormats.isEmpty()) {
             prompt.append("\nOutput Format:\n");
@@ -90,5 +119,7 @@ public abstract class AIPromptAbstract implements AIPromptGenerator {
 
         return prompt.toString();
     }
+
+    protected abstract void initializePrompt(@Nullable AIDatabaseContext context);
 
 }

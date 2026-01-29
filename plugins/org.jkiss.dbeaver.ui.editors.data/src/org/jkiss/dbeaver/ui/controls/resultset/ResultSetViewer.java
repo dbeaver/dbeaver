@@ -89,7 +89,6 @@ import org.jkiss.dbeaver.runtime.DBeaverNotifications;
 import org.jkiss.dbeaver.runtime.jobs.DataSourceJob;
 import org.jkiss.dbeaver.tools.transfer.ui.internal.DTUIMessages;
 import org.jkiss.dbeaver.ui.*;
-import org.jkiss.dbeaver.ui.actions.DisabledLabelAction;
 import org.jkiss.dbeaver.ui.controls.*;
 import org.jkiss.dbeaver.ui.controls.autorefresh.AutoRefreshControl;
 import org.jkiss.dbeaver.ui.controls.resultset.actions.*;
@@ -123,8 +122,8 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
-import java.util.List;
 import java.util.*;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 /**
@@ -790,10 +789,10 @@ public class ResultSetViewer extends Viewer
             if (resultSet instanceof StatResultSet) {
                 // Statistics - let's use special presentation for it
                 if (filtersPanel != null) {
-                    UIUtils.setControlVisible(filtersPanel, false);
+                    UIUtils.setControlVisible(filtersPanel.getParent(), false);
                 }
                 if (statusBar != null) {
-                    UIUtils.setControlVisible(statusBar, false);
+                    UIUtils.setControlVisible(statusBar.getParent(), false);
                 }
                 availablePresentations = Collections.emptyList();
                 setActivePresentation(new StatisticsPresentation());
@@ -802,10 +801,10 @@ public class ResultSetViewer extends Viewer
             } else {
                 // Regular results
                 if (filtersPanel != null) {
-                    UIUtils.setControlVisible(filtersPanel, true);
+                    UIUtils.setControlVisible(filtersPanel.getParent(), true);
                 }
                 if (statusBar != null) {
-                    UIUtils.setControlVisible(statusBar, true);
+                    UIUtils.setControlVisible(statusBar.getParent(), true);
                 }
                 IResultSetContext context = new ResultSetContextImpl(this, resultSet);
                 final List<ResultSetPresentationDescriptor> newPresentations;
@@ -1864,6 +1863,12 @@ public class ResultSetViewer extends Viewer
                 public void handleEvent(@NotNull Event event) {
                     createFilterPanel0(composite);
                     updateFiltersText(false);
+
+                    if (getActivePresentation() instanceof StatisticsPresentation) {
+                        // No filters in statistics presentation
+                        UIUtils.setControlVisible(composite, false);
+                    }
+
                     mainPanel.removeListener(SWT.Activate, this);
                 }
             });
@@ -1892,10 +1897,14 @@ public class ResultSetViewer extends Viewer
                 @Override
                 public void handleEvent(@NotNull Event event) {
                     createStatusBar0(composite);
-
                     updateStatusMessage();
                     updateEditControls();
                     updateFiltersText(false);
+
+                    if (getActivePresentation() instanceof StatisticsPresentation) {
+                        // No status bar in statistics presentation
+                        UIUtils.setControlVisible(composite, false);
+                    }
 
                     mainPanel.removeListener(SWT.Activate, this);
                 }
@@ -3271,7 +3280,7 @@ public class ResultSetViewer extends Viewer
         if (hdList.isEmpty()) {
             return;
         }
-        menuManager.add(new DisabledLabelAction(getHintObjectLabel(ho) + " hints"));
+        menuManager.add(new EmptyAction(getHintObjectLabel(ho) + " hints"));
         for (ValueHintProviderDescriptor hd : hdList) {
             menuManager.add(new HintEnablementAction(this, hd, attr));
 

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -413,33 +413,34 @@ public class ProgressPageControl extends ConComposite implements ISearchContextP
                 }
             });
 
-            //ToolBar searchTools = new ToolBar(searchControlsComposite, SWT.HORIZONTAL);
-            if (searchToolbarManager == null) {
-                searchToolbarManager = new ToolBarManager(SWT.FLAT | SWT.HORIZONTAL);
-                searchToolbarManager.add(ActionUtils.makeCommandContribution(
-                    PlatformUI.getWorkbench(),
-                    IWorkbenchActionDefinitionIds.FIND_PREVIOUS,
-                    null,
-                    UIIcon.ARROW_UP
-                ));
-                searchToolbarManager.add(ActionUtils.makeCommandContribution(
-                    PlatformUI.getWorkbench(),
-                    IWorkbenchActionDefinitionIds.FIND_NEXT,
-                    null,
-                    UIIcon.ARROW_DOWN
-                ));
-                searchToolbarManager.add(new Action(
-                    UIMessages.controls_progress_page_action_close,
-                    UIUtils.getShardImageDescriptor(ISharedImages.IMG_ELCL_REMOVE)
-                ) {
-                    @Override
-                    public void run() {
-                        cancelSearch(true);
-                    }
-                });
+            if (!UIUtils.isInDialog(getShell())) {
+                if (searchToolbarManager == null) {
+                    searchToolbarManager = new ToolBarManager(SWT.FLAT | SWT.HORIZONTAL);
+                    searchToolbarManager.add(ActionUtils.makeCommandContribution(
+                        PlatformUI.getWorkbench(),
+                        IWorkbenchActionDefinitionIds.FIND_PREVIOUS,
+                        null,
+                        UIIcon.ARROW_UP
+                    ));
+                    searchToolbarManager.add(ActionUtils.makeCommandContribution(
+                        PlatformUI.getWorkbench(),
+                        IWorkbenchActionDefinitionIds.FIND_NEXT,
+                        null,
+                        UIIcon.ARROW_DOWN
+                    ));
+                    searchToolbarManager.add(new Action(
+                        UIMessages.controls_progress_page_action_close,
+                        UIUtils.getShardImageDescriptor(ISharedImages.IMG_ELCL_REMOVE)
+                    ) {
+                        @Override
+                        public void run() {
+                            cancelSearch(true);
+                        }
+                    });
+                }
+                searchToolbarManager.createControl(searchControlsComposite);
+                defaultBackgroundColor = searchText.getBackground();
             }
-            searchToolbarManager.createControl(searchControlsComposite);
-            defaultBackgroundColor = searchText.getBackground();
             searchControlsComposite.getParent().layout();
         } finally {
             searchControlsComposite.getParent().setRedraw(true);
