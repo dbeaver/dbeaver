@@ -75,12 +75,7 @@ public class OpenAIEngine<PROPS extends OpenAIBaseProperties> extends BaseComple
         List<OAIMessage> messages = completionResult.output.stream()
             .filter(msg -> !OAIMessage.TYPE_FUNCTION_REASONING.equals(msg.type))
             .toList();
-        AIUsage usage = new AIUsage(
-            completionResult.usage.inputTokens(),
-            completionResult.usage.inputTokensDetails().cachedTokens(),
-            completionResult.usage.outputTokens(),
-            completionResult.usage.outputTokensDetails().reasoningTokens()
-        );
+        AIUsage usage = completionResult.getAIUsage();
         if (messages.isEmpty()) {
             return new AIEngineResponse(
                 AIMessageType.ASSISTANT,

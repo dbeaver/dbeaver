@@ -109,7 +109,7 @@ public class SQLCommandAI implements SQLControlCommandHandler {
         }
         AIDatabaseContext dbContext = contextBuilder.build();
 
-        AIPromptAbstract sysPromptBuilder = AIPromptGenerateSql.create(dbContext::getDataSource);
+        AIPromptAbstract sysPromptBuilder = new AIPromptGenerateSql();
 
         monitor.subTask("Generate SQL from prompt");
 
