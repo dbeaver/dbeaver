@@ -61,8 +61,8 @@ final class UIRowBuilderImpl implements UIRowBuilder {
 
     @NotNull
     @Override
-    public UIRowBuilder group(@NotNull String text, @NotNull Consumer<? super UIPanelBuilder> handler) {
-        var builder = UIPanelBuilderImpl.group(text);
+    public UIRowBuilder titledGroup(@NotNull String text, @NotNull Consumer<? super UIPanelBuilder> handler) {
+        var builder = UIPanelBuilderImpl.titled(text);
         handler.accept(builder);
         controls.add(builder);
         return this;
@@ -71,7 +71,7 @@ final class UIRowBuilderImpl implements UIRowBuilder {
     @NotNull
     @Override
     public UIRowBuilder expandableGroup(@NotNull String text, boolean expanded, @NotNull Consumer<? super UIPanelBuilder> handler) {
-        var builder = UIPanelBuilderImpl.expandableGroup(text, expanded);
+        var builder = UIPanelBuilderImpl.expandable(text, expanded);
         handler.accept(builder);
         controls.add(builder);
         return this;

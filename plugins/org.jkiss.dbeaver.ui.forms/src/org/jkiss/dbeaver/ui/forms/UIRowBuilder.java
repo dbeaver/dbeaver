@@ -47,7 +47,7 @@ public sealed interface UIRowBuilder permits UIRowBuilderImpl {
     UIRowBuilder panel(@NotNull Consumer<? super UIPanelBuilder> handler);
 
     @NotNull
-    UIRowBuilder group(@NotNull String text, @NotNull Consumer<? super UIPanelBuilder> handler);
+    UIRowBuilder titledGroup(@NotNull String text, @NotNull Consumer<? super UIPanelBuilder> handler);
 
     @NotNull
     UIRowBuilder expandableGroup(@NotNull String text, boolean expanded, @NotNull Consumer<? super UIPanelBuilder> handler);

@@ -75,7 +75,7 @@ public class DatabaseProducerPageExtractSettings extends DataTransferPageNodeSet
         UIPanelBuilder.build(composite, pb -> pb
             .margins(0, 0)
             .row(rb -> rb
-                .group("Extraction", buildExtractionPanel())));
+                .titledGroup("Extraction", buildExtractionPanel())));
 
         if (getWizard().getCurrentTask() != null) {
             Composite buttonsPanel = UIUtils.createComposite(composite, 1);

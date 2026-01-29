@@ -61,7 +61,6 @@ import org.eclipse.swt.layout.RowLayout;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.*;
 import org.eclipse.ui.dialogs.PreferencesUtil;
-import org.eclipse.ui.forms.widgets.ExpandableComposite;
 import org.eclipse.ui.handlers.IHandlerActivation;
 import org.eclipse.ui.handlers.IHandlerService;
 import org.eclipse.ui.internal.WorkbenchMessages;
@@ -88,6 +87,7 @@ import org.jkiss.dbeaver.ui.contentassist.ContentAssistUtils;
 import org.jkiss.dbeaver.ui.contentassist.SmartTextContentAdapter;
 import org.jkiss.dbeaver.ui.contentassist.StringContentProposalProvider;
 import org.jkiss.dbeaver.ui.controls.CustomSashForm;
+import org.jkiss.dbeaver.ui.controls.TitledComposite;
 import org.jkiss.dbeaver.ui.dialogs.EditTextDialog;
 import org.jkiss.dbeaver.ui.dialogs.MessageBoxBuilder;
 import org.jkiss.dbeaver.ui.dialogs.Reply;
@@ -657,6 +657,7 @@ public class UIUtils {
         return group;
     }
 
+    @NotNull
     public static Composite createTitledComposite(
         @NotNull Composite parent,
         @NotNull String label,
@@ -665,6 +666,7 @@ public class UIUtils {
         return createTitledComposite(parent, label, columns, GridData.HORIZONTAL_ALIGN_BEGINNING, SWT.DEFAULT);
     }
 
+    @NotNull
     public static Composite createTitledComposite(
         @NotNull Composite parent,
         @NotNull String label,
@@ -674,6 +676,7 @@ public class UIUtils {
         return createTitledComposite(parent, label, columns, layoutStyle, SWT.DEFAULT);
     }
 
+    @NotNull
     public static Composite createTitledComposite(
         @NotNull Composite parent,
         @NotNull String label,
@@ -684,63 +687,43 @@ public class UIUtils {
         return createTitledComposite(parent, label, columns, layoutStyle, widthHint, 1);
     }
 
+    @NotNull
     public static Composite createTitledComposite(
         @NotNull Composite parent,
         @NotNull String label,
         int columns,
         int layoutStyle,
         int widthHint,
-        int hSpan
+        int horizontalSpan
     ) {
-        Composite composite = UIUtils.createComposite(parent, 1);
-        {
-            GridData gd = new GridData(layoutStyle > 0 ? layoutStyle : GridData.HORIZONTAL_ALIGN_BEGINNING);
-            if (widthHint > 0) {
-                gd.widthHint = widthHint;
-            }
-            if (hSpan > 1) {
-                gd.horizontalSpan = hSpan;
-            }
-            composite.setLayoutData(gd);
+        GridData gd = new GridData(layoutStyle > 0 ? layoutStyle : GridData.HORIZONTAL_ALIGN_BEGINNING);
+        if (widthHint > 0) {
+            gd.widthHint = widthHint;
+        }
+        if (horizontalSpan > 1) {
+            gd.horizontalSpan = horizontalSpan;
         }
 
-        Label titleLabel = new Label(composite, SWT.NONE);
-        titleLabel.setText(label);
-        if (PlatformUI.isWorkbenchRunning()) {
-            titleLabel.setFont(BaseThemeSettings.instance.baseFontBold);
-        }
-        if (false) {
-            titleLabel.addPaintListener(e -> {
-                e.gc.setForeground(titleLabel.getDisplay().getSystemColor(SWT.COLOR_WIDGET_NORMAL_SHADOW));
-                e.gc.drawLine(0, e.height - 1, e.width, e.height - 1);
-            });
-        }
-        GridData lgd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
-        if (parent.getLayout() instanceof GridLayout pgl) {
-            //lgd.horizontalSpan = pgl.numColumns;
-        }
-        titleLabel.setLayoutData(lgd);
+        var host = new TitledComposite(parent, SWT.NONE);
+        host.setText(label);
+        host.setLayoutData(gd);
 
-        Composite group = new Composite(composite, SWT.NONE);
-        GridLayout layout = new GridLayout(columns, false);
-        layout.marginHeight = 0;
-        layout.marginWidth = 0;
-        layout.marginTop = 0;
-        layout.marginLeft = 7;
-        layout.marginBottom = 3;
-        group.setLayout(layout);
-        group.setLayoutData(new GridData(GridData.FILL_BOTH));
+        var client = new Composite(host, SWT.NONE);
+        GridLayoutFactory.fillDefaults()
+            .margins(0, 5)
+            .numColumns(columns)
+            .applyTo(client);
 
-        return group;
+        host.setClient(client);
+        return client;
     }
 
-    public static void updateTitledComposite(@NotNull Composite titledComposite, @NotNull String title) {
-        Control[] children = titledComposite.getChildren();
-        if (children.length > 0 && children[0] instanceof Label label) {
-            label.setText(title);
+    public static void updateTitledComposite(@NotNull Composite client, @NotNull String title) {
+        if (!(client.getParent() instanceof TitledComposite titledComposite)) {
+            log.error("Composite is not titled!");
             return;
         }
-        log.error("Composite is not titled!");
+        titledComposite.setText(title);
     }
 
     public static Label createControlLabel(Composite parent, String label) {
@@ -2717,36 +2700,6 @@ public class UIUtils {
         return Arrays.stream(display.getShells())
             .map(Widget::getData)
             .anyMatch(data -> data != null && clazz.isAssignableFrom(data.getClass()));
-    }
-
-    /**
-     * Creates an {@link ExpandableComposite} that paints a separator on top.
-     *
-     * @param parent         the parent
-     * @param style          the control style (as expected by SWT subclass)
-     * @param expansionStyle the style of the expansion widget (see {@link ExpandableComposite})
-     */
-    @NotNull
-    public static ExpandableComposite createExpandableCompositeWithSeparator(
-        @NotNull Composite parent,
-        int style,
-        int expansionStyle
-    ) {
-        // We have to use an anonymous class because "textLabel" has protected access
-        return new ExpandableComposite(parent, style, expansionStyle) {{
-            addPaintListener(e -> {
-                Rectangle bounds = getBounds();
-                Rectangle label = textLabel.getBounds();
-
-                e.gc.setForeground(Display.getDefault().getSystemColor(SWT.COLOR_WIDGET_NORMAL_SHADOW));
-                e.gc.drawLine(
-                    label.x + label.width + 6,
-                    label.y + label.height / 2,
-                    bounds.width,
-                    label.y + label.height / 2
-                );
-            });
-        }};
     }
 
     /**

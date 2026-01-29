@@ -24,7 +24,8 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.forms.widgets.ExpandableComposite;
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.controls.ExpandableCompositeEx;
+import org.jkiss.dbeaver.ui.controls.TitledComposite;
 
 /**
  * Manages creation of UI controls for forms.
@@ -40,17 +41,21 @@ final class UIControlFactory {
     }
 
     @NotNull
-    static Composite createTitledComposite(@NotNull Composite parent, @NotNull String text) {
-        // FIXME: Bug! Since titled composite is implemented as two nested composites
-        //        and the inner one is returned from the function to be populated,
-        //        all layout operations that are supposed to be applied to the outer
-        //        composite get applied to the inner one instead.
-        return UIUtils.createTitledComposite(parent, text, 1);
+    static TitledComposite createTitledComposite(@NotNull Composite parent, @NotNull String text) {
+        TitledComposite composite = new TitledComposite(parent, SWT.NONE);
+        composite.setText(text);
+        return composite;
     }
 
     @NotNull
-    static ExpandableComposite createExpandableComposite(@NotNull Composite parent) {
-        return UIUtils.createExpandableCompositeWithSeparator(parent, ExpandableComposite.CLIENT_INDENT, ExpandableComposite.TWISTIE);
+    static ExpandableComposite createExpandableComposite(@NotNull Composite parent, @NotNull String text) {
+        ExpandableCompositeEx composite = new ExpandableCompositeEx(
+            parent,
+            ExpandableComposite.CLIENT_INDENT | SWT.SEPARATOR,
+            ExpandableComposite.TWISTIE
+        );
+        composite.setText(text);
+        return composite;
     }
 
     @NotNull
