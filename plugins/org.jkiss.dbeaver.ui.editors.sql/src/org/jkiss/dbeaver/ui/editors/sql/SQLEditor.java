@@ -149,8 +149,7 @@ public class SQLEditor extends SQLEditorBase implements
     DBPDataSourceAcquirer,
     IResultSetProvider,
     ISmartTransactionManager,
-    IStatefulEditor
-{
+    IStatefulEditor {
     private static final long SCRIPT_UI_UPDATE_PERIOD = 100;
 
     private static final String PANEL_ITEM_PREFIX = "SQLPanelToggle:";
@@ -200,6 +199,7 @@ public class SQLEditor extends SQLEditorBase implements
     private CTabFolder resultTabs;
     private TabFolderReorder resultTabsReorder;
     private CTabItem activeResultsTab;
+    private CTabItem selectedResultsTab;
 
     private SQLLogPanel logViewer;
     private SQLEditorOutputViewer outputViewer;
@@ -1396,29 +1396,26 @@ public class SQLEditor extends SQLEditorBase implements
         CSSUtils.markConnectionTypeColor(resultTabs);
         resultTabsReorder = new TabFolderReorder(resultTabs);
         resultTabs.setLayoutData(new GridData(GridData.FILL_BOTH));
-        resultTabs.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                if (extraPresentationManager.activePresentationPanel != null) {
-                    extraPresentationManager.activePresentationPanel.deactivatePanel();
-                    extraPresentationManager.activePresentationPanel = null;
-                }
-                Object data = e.item.getData();
-                if (data instanceof QueryResultsContainer qrc) {
-                    setActiveResultsContainer(qrc);
-                } else if (data instanceof SingleTabQueryProcessor stqp) {
-                    setActiveResultsContainer(stqp.getFirstResults());
-                } else if (data instanceof SQLEditorPresentationPanel pp) {
-                    extraPresentationManager.activePresentationPanel = pp;
-                    extraPresentationManager.activePresentationPanel.activatePanel();
-                } else if (data instanceof ExplainPlanViewer epv) {
-                    SQLQuery planQuery = epv.getQuery();
-                    if (planQuery != null) {
-                        getSelectionProvider().setSelection(new TextSelection(planQuery.getOffset(), 0));
-                    }
+        resultTabs.addSelectionListener(SelectionListener.widgetSelectedAdapter(selectionEvent -> {
+            if (extraPresentationManager.activePresentationPanel != null) {
+                extraPresentationManager.activePresentationPanel.deactivatePanel();
+                extraPresentationManager.activePresentationPanel = null;
+            }
+            Object data = selectionEvent.item.getData();
+            if (data instanceof QueryResultsContainer qrc) {
+                setActiveResultsContainer(qrc);
+            } else if (data instanceof SingleTabQueryProcessor stqp) {
+                setActiveResultsContainer(stqp.getFirstResults());
+            } else if (data instanceof SQLEditorPresentationPanel pp) {
+                extraPresentationManager.activePresentationPanel = pp;
+                extraPresentationManager.activePresentationPanel.activatePanel();
+            } else if (data instanceof ExplainPlanViewer epv) {
+                SQLQuery planQuery = epv.getQuery();
+                if (planQuery != null) {
+                    getSelectionProvider().setSelection(new TextSelection(planQuery.getOffset(), 0));
                 }
             }
-        });
+        }));
         this.addSashRatioSaveListener(resultsSash, SQLPreferenceConstants.RESULTS_PANEL_RATIO);
         this.resultTabs.addListener(TabFolderReorder.ITEM_MOVE_EVENT, event -> {
             CTabItem item = (CTabItem) event.item;
@@ -1474,8 +1471,12 @@ public class SQLEditor extends SQLEditorBase implements
         }
 
         {
-            resultTabs.addMouseListener(MouseListener.mouseDownAdapter(e ->
-                activeResultsTab = resultTabs.getItem(new Point(e.x, e.y))));
+            resultTabs.addMouseListener(MouseListener.mouseDownAdapter(e -> {
+                //Keep track of the currently selected tab before click
+                selectedResultsTab = activeResultsTab;
+                //On mouse click set active results tab as the clicked tab
+                activeResultsTab = resultTabs.getItem(new Point(e.x, e.y));
+            }));
             MenuManager menuMgr = new MenuManager();
             Menu menu = menuMgr.createContextMenu(resultTabs);
             menuMgr.addMenuListener(manager -> {
@@ -1690,7 +1691,6 @@ public class SQLEditor extends SQLEditorBase implements
 
     /////////////////////////////////////////////////////////////
     // Panels
-
     public void toggleExtraPanelsLayout() {
         CTabItem outTab = getExtraViewTab(outputViewer);
         CTabItem logTab = getExtraViewTab(logViewer);
@@ -1932,7 +1932,8 @@ public class SQLEditor extends SQLEditorBase implements
                 currTabItem = nextTabItem;
             }
         }
-
+        // Set as activeResultsTab the selected tab, the next keyboard shortcut operates on this tab
+        activeResultsTab = selectedResultsTab;
     }
 
     /**
@@ -2311,7 +2312,6 @@ public class SQLEditor extends SQLEditorBase implements
 
     /////////////////////////////////////////////////////////////
     // Initialization
-
     @Override
     public void init(IEditorSite site, IEditorInput editorInput)
     throws PartInitException {
@@ -3006,7 +3006,7 @@ public class SQLEditor extends SQLEditorBase implements
                 }
                 // Just create a new query processor
                 if (!foundSuitableTab && (newTab || !anyNotPinnedTab)) {
-                    // If we already have useless multi-tabbed processor, but we want single-tabbed, then get rid of the useless one  
+                    // If we already have useless multi-tabbed processor, but we want single-tabbed, then get rid of the useless one
                     if (needAnotherQueryProcessor
                         && curQueryProcessor.getResultContainers().size() == 1
                         && !curQueryProcessor.getFirstResults().viewer.hasData()
@@ -3032,6 +3032,7 @@ public class SQLEditor extends SQLEditorBase implements
                     setResultTabSelection(tabItem);
                 }
             }
+            activeResultsTab = tabItem;
         }
 
         if (curQueryProcessor == null || (newTab
