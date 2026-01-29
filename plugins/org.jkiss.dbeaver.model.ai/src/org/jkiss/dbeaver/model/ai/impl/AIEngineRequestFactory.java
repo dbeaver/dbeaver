@@ -28,8 +28,6 @@ import org.jkiss.dbeaver.model.ai.registry.AIEngineDescriptor;
 import org.jkiss.dbeaver.model.ai.registry.AIFunctionDescriptor;
 import org.jkiss.dbeaver.model.ai.registry.AIFunctionRegistry;
 import org.jkiss.dbeaver.model.ai.registry.AISettingsManager;
-import org.jkiss.dbeaver.model.ai.prompt.AIPromptAbstract;
-import org.jkiss.dbeaver.model.ai.registry.*;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -74,17 +72,7 @@ public class AIEngineRequestFactory {
         @Nullable AIDatabaseContext databaseContext,
         @NotNull List<AIMessage> messages
     ) throws DBException {
-        if (promptGenerator instanceof AIPromptAbstract promptAbstract) {
-            AISettings settings = AISettingsManager.getInstance().getSettings();
-            String customInstructions = settings.getCustomInstructions(promptAbstract.generatorId());
-            if (CommonUtils.isNotEmpty(customInstructions)) {
-                promptGenerator = promptAbstract
-                    .copy()
-                    .addInstructions(customInstructions);
-            }
-        }
-
-        String systemPrompt = promptGenerator.build();
+        String systemPrompt = promptGenerator.build(databaseContext);
 
         // Tokens available for user/system/chat history after we reserve reply + overhead
         int maxContextWindowSize = getContextWindowSize(monitor, engine);
