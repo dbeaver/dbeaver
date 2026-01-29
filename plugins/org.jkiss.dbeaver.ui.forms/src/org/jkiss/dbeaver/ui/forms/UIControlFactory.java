@@ -21,9 +21,11 @@ import org.eclipse.jface.widgets.CompositeFactory;
 import org.eclipse.jface.widgets.LabelFactory;
 import org.eclipse.jface.widgets.TextFactory;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.ScrolledComposite;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.forms.widgets.ExpandableComposite;
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.ExpandableCompositeEx;
 import org.jkiss.dbeaver.ui.controls.TitledComposite;
 
@@ -56,6 +58,18 @@ final class UIControlFactory {
         );
         composite.setText(text);
         return composite;
+    }
+
+    @NotNull
+    static ScrolledComposite createScrolledComposite(@NotNull Composite parent, boolean horizontal, boolean vertical) {
+        int style = SWT.NONE;
+        if (horizontal) {
+            style |= SWT.H_SCROLL;
+        }
+        if (vertical) {
+            style |= SWT.V_SCROLL;
+        }
+        return UIUtils.createScrolledComposite(parent, style);
     }
 
     @NotNull

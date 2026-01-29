@@ -47,10 +47,13 @@ public sealed interface UIRowBuilder permits UIRowBuilderImpl {
     UIRowBuilder panel(@NotNull Consumer<? super UIPanelBuilder> handler);
 
     @NotNull
-    UIRowBuilder titledGroup(@NotNull String text, @NotNull Consumer<? super UIPanelBuilder> handler);
+    UIRowBuilder expandablePanel(@NotNull String text, boolean expanded, @NotNull Consumer<? super UIPanelBuilder> handler);
 
     @NotNull
-    UIRowBuilder expandableGroup(@NotNull String text, boolean expanded, @NotNull Consumer<? super UIPanelBuilder> handler);
+    UIRowBuilder titledPanel(@NotNull String text, @NotNull Consumer<? super UIPanelBuilder> handler);
+
+    @NotNull
+    UIRowBuilder scrolledPanel(boolean horizontal, boolean vertical, @NotNull Consumer<? super UIPanelBuilder> handler);
 
     @NotNull
     UIRowBuilder label(@NotNull String text, @NotNull Consumer<? super UIControlBuilder.LabelBuilder> handler);

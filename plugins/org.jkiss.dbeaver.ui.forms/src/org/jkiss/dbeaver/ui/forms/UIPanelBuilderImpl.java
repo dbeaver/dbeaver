@@ -20,11 +20,13 @@ import org.eclipse.core.databinding.DataBindingContext;
 import org.eclipse.jface.layout.GridLayoutFactory;
 import org.eclipse.jface.layout.LayoutConstants;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.ScrolledComposite;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.forms.widgets.ExpandableComposite;
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.TitledComposite;
 
 import java.util.ArrayList;
@@ -37,6 +39,9 @@ final class UIPanelBuilderImpl extends UIControlBuilderImpl<UIPanelBuilder, Cont
         }
 
         record Titled(@NotNull String text) implements Kind {
+        }
+
+        record Scrolled(boolean horizontal, boolean vertical) implements Kind {
         }
 
         record Simple() implements Kind {
@@ -61,13 +66,18 @@ final class UIPanelBuilderImpl extends UIControlBuilderImpl<UIPanelBuilder, Cont
     }
 
     @NotNull
+    static UIPanelBuilderImpl expandable(@NotNull String text, boolean expanded) {
+        return new UIPanelBuilderImpl(new Kind.Expandable(text, expanded));
+    }
+
+    @NotNull
     static UIPanelBuilderImpl titled(@NotNull String text) {
         return new UIPanelBuilderImpl(new Kind.Titled(text));
     }
 
     @NotNull
-    static UIPanelBuilderImpl expandable(@NotNull String text, boolean expanded) {
-        return new UIPanelBuilderImpl(new Kind.Expandable(text, expanded));
+    static UIPanelBuilderImpl scrolled(boolean horizontal, boolean vertical) {
+        return new UIPanelBuilderImpl(new Kind.Scrolled(horizontal, vertical));
     }
 
     @NotNull
@@ -119,6 +129,7 @@ final class UIPanelBuilderImpl extends UIControlBuilderImpl<UIPanelBuilder, Cont
         Composite host = switch (kind) {
             case Kind.Expandable k -> UIControlFactory.createExpandableComposite(parent, k.text());
             case Kind.Titled k -> UIControlFactory.createTitledComposite(parent, k.text());
+            case Kind.Scrolled k -> UIControlFactory.createScrolledComposite(parent, k.horizontal(), k.vertical());
             case Kind.Simple ignored -> parent;
         };
         Composite client = UIControlFactory.createComposite(host);
@@ -150,6 +161,11 @@ final class UIPanelBuilderImpl extends UIControlBuilderImpl<UIPanelBuilder, Cont
                 composite.setClient(client);
                 yield composite;
             }
+            case Kind.Scrolled ignored -> {
+                var composite = (ScrolledComposite) host;
+                UIUtils.configureScrolledComposite(composite, client);
+                yield composite;
+            }
             case Kind.Simple ignored -> client;
         };
     }
@@ -168,6 +184,7 @@ final class UIPanelBuilderImpl extends UIControlBuilderImpl<UIPanelBuilder, Cont
             data.horizontalAlignment = builder.alignX;
             data.verticalAlignment = builder.alignY;
             data.grabExcessHorizontalSpace = builder.grow;
+            data.grabExcessVerticalSpace = builder.grow;
 
             var control = builder.build(context, parent, row);
 

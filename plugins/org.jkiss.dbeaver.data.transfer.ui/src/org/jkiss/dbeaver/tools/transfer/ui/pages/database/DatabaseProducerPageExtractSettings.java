@@ -75,7 +75,7 @@ public class DatabaseProducerPageExtractSettings extends DataTransferPageNodeSet
         UIPanelBuilder.build(composite, pb -> pb
             .margins(0, 0)
             .row(rb -> rb
-                .titledGroup("Extraction", buildExtractionPanel())));
+                .titledPanel("Extraction", buildExtractionPanel())));
 
         if (getWizard().getCurrentTask() != null) {
             Composite buttonsPanel = UIUtils.createComposite(composite, 1);
@@ -150,7 +150,7 @@ public class DatabaseProducerPageExtractSettings extends DataTransferPageNodeSet
     @NotNull
     private Consumer<UIRowBuilder> buildAdvancedRow(@NotNull UIObservable<Boolean> queryDatabase) {
         return rb -> rb
-            .expandableGroup("Advanced", false, pb -> pb
+            .expandablePanel("Advanced", false, pb -> pb
                 .align(UIAlignX.FILL).grow()
                 .accept(buildAdvancedPanel(queryDatabase)));
     }

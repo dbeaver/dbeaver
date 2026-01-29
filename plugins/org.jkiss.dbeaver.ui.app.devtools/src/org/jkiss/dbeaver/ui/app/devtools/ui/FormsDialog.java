@@ -66,20 +66,22 @@ public class FormsDialog extends TrayDialog {
     ) {
         CTabItem item = new CTabItem(folder, SWT.NONE);
         item.setText(text);
-        item.setControl(UIPanelBuilder.build(folder, pb -> {
-            pb.margins(5, 5);
-            handler.accept(pb);
-        }));
+        item.setControl(UIPanelBuilder.build(
+            folder, pb -> {
+                pb.margins(5, 5);
+                handler.accept(pb);
+            }
+        ));
     }
 
     @NotNull
     private static Consumer<UIPanelBuilder> buildShowcasePanel() {
         return pb -> pb
-            .row(rb -> rb.titledGroup("Panel", buildPanelPanel()))
-            .row(rb -> rb.titledGroup("Text", buildTextPanel()))
-            .row(rb -> rb.titledGroup("Combo", buildComboPanel()))
-            .row(rb -> rb.titledGroup("Check", buildCheckPanel()))
-            .row(rb -> rb.titledGroup("Buttons", buildButtonPanel()));
+            .row(rb -> rb.titledPanel("Panel", buildPanelPanel()))
+            .row(rb -> rb.titledPanel("Text", buildTextPanel()))
+            .row(rb -> rb.titledPanel("Combo", buildComboPanel()))
+            .row(rb -> rb.titledPanel("Check", buildCheckPanel()))
+            .row(rb -> rb.titledPanel("Buttons", buildButtonPanel()));
     }
 
     @NotNull
@@ -105,12 +107,20 @@ public class FormsDialog extends TrayDialog {
                 .indent(pb2 -> pb2
                     .row("Indented row", rb -> rb.label("A doubly indented label"))))
             .row(rb -> rb
-                .titledGroup("A named group", pb1 -> pb1
-                    .row(rb1 -> rb1.label("A group label"))))
+                .titledPanel("A named panel", pb1 -> pb1
+                    .row(rb1 -> rb1.label("A panel label"))))
             .row(rb -> rb
-                .expandableGroup("An expandable group", true, pb1 -> pb1
+                .expandablePanel("An expandable panel", true, pb1 -> pb1
                     .align(UIAlignX.FILL)
-                    .row(rb1 -> rb1.label("An expandable group label"))));
+                    .row(rb1 -> rb1.label("An expandable panel label"))))
+            .row(rb -> rb
+                .titledPanel("A scrolled panel", pb1 -> pb1
+                    .row(rb1 -> rb1.scrolledPanel(true, true, pb2 -> pb2
+                        .hint(50, 50)
+                        .row(rb2 -> rb2.label("Label10").label("Label11").label("Label12").label("Label13"))
+                        .row(rb2 -> rb2.label("Label20").label("Label21").label("Label22").label("Label23"))
+                        .row(rb2 -> rb2.label("Label30").label("Label31").label("Label32").label("Label33"))
+                        .row(rb2 -> rb2.label("Label40").label("Label41").label("Label42").label("Label43"))))));
         // @formatter:on
     }
 
@@ -228,10 +238,10 @@ public class FormsDialog extends TrayDialog {
             .row(rb -> rb.checkBox("Send unique and primary keys information", UIRowBuilder.identityConsumer()));
 
         return pb -> pb
-            .row(rb -> rb.titledGroup("General", general))
-            .row(rb -> rb.titledGroup("Completion", completion))
-            .row(rb -> rb.titledGroup("Execution", execution))
-            .row(rb -> rb.titledGroup("Send database structure", structure));
+            .row(rb -> rb.titledPanel("General", general))
+            .row(rb -> rb.titledPanel("Completion", completion))
+            .row(rb -> rb.titledPanel("Execution", execution))
+            .row(rb -> rb.titledPanel("Send database structure", structure));
     }
 
     @NotNull
@@ -251,7 +261,7 @@ public class FormsDialog extends TrayDialog {
             .row("Workbench save interval (in minutes)", rb -> rb
                 .intTextField(workbenchSaveInterval, tb -> tb.align(UIAlignX.FILL)))
             .row(rb -> rb
-                .titledGroup("Open mode", pb1 -> pb1
+                .titledPanel("Open mode", pb1 -> pb1
                     .row(rb1 -> rb1.radioButton("Double click", UIRowBuilder.identityConsumer()))
                     .row(rb1 -> rb1.radioButton("Single click", bb -> bb
                         .selected(checked)))
