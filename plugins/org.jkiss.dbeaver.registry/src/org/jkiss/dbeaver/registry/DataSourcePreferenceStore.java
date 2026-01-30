@@ -51,19 +51,7 @@ public class DataSourcePreferenceStore extends SimplePreferenceStore implements 
         Map<String, Object> defaultConnectionProperties = dataSourceDescriptor.getDriver()
             .getDefaultConnectionProperties();
         //fixme скорее надо подсовыать эти сетинги на каждый гет пропертис
-        DBPDataSourceRegistry registry = dataSourceDescriptor.getRegistry();
-        DBACredentialsProvider authCredentialsProvider = registry.getAuthCredentialsProvider();
-        Map<String, String> properties = getProperties();
-        if(authCredentialsProvider instanceof DBPObjectSettingsProvider settingsProvider){
-            Map<String, String> objectSettings = settingsProvider.getObjectSettings(
-                dataSourceDescriptor.getProjectId(),
-                SMObjectType.datasource,
-                dataSourceDescriptor.getId()
-            );
-            if (objectSettings != null) {
-                properties.putAll(objectSettings);
-            }
-        }
+        fetchSettingFromSettingProvider();
         for (Map.Entry<String, Object> prop : defaultConnectionProperties.entrySet()) {
             String propName = prop.getKey();
             if (propName.startsWith(DBConstants.DEFAULT_DRIVER_PROP_PREFIX)) {
@@ -83,6 +71,28 @@ public class DataSourcePreferenceStore extends SimplePreferenceStore implements 
         throws IOException
     {
         dataSourceDescriptor.getRegistry().flushConfig();
+    }
+
+    @Override
+    public Map<String, String> getProperties() {
+        fetchSettingFromSettingProvider();
+        return super.getProperties();
+    }
+
+    private void fetchSettingFromSettingProvider() {
+        DBPDataSourceRegistry registry = dataSourceDescriptor.getRegistry();
+        DBACredentialsProvider authCredentialsProvider = registry.getAuthCredentialsProvider();
+        Map<String, String> properties = super.getProperties();
+        if(authCredentialsProvider instanceof DBPObjectSettingsProvider settingsProvider){
+            Map<String, String> objectSettings = settingsProvider.getObjectSettings(
+                dataSourceDescriptor.getProjectId(),
+                SMObjectType.datasource,
+                dataSourceDescriptor.getId()
+            );
+            if (objectSettings != null) {
+                properties.putAll(objectSettings);
+            }
+        }
     }
 
     @Nullable
