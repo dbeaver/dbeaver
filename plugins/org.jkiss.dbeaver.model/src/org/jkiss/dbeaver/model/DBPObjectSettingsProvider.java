@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,6 +37,7 @@ public interface DBPObjectSettingsProvider {
      */
     @Nullable
     Map<String, String> getObjectSettings(
+        @NotNull String projectId,
         @NotNull SMObjectType objectType,
         @NotNull String objectId
     );
@@ -45,12 +46,14 @@ public interface DBPObjectSettingsProvider {
      * Set user settings for the specified object.
      */
     void setObjectSettings(
+        @NotNull String projectId,
         @NotNull SMObjectType objectType,
         @NotNull String objectId,
         @NotNull Map<String, String> settings
     ) throws DBException;
 
     void clearObjectSettings(
+        @NotNull String projectId,
         @NotNull SMObjectType objectType,
         @NotNull String objectId,
         @NotNull Set<String> settings

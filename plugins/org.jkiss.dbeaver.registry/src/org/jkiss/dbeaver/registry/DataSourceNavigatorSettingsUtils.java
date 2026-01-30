@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -54,6 +54,7 @@ public class DataSourceNavigatorSettingsUtils {
         Map<String, String> settingsMap = DataSourceNavigatorSettings.saveSettingsToMap(settings);
 
         settingsProvider.setObjectSettings(
+            dataSource.getProject().getId(),
             SMObjectType.datasource,
             dataSource.getId(),
             settingsMap
@@ -68,6 +69,7 @@ public class DataSourceNavigatorSettingsUtils {
             return;
         }
         settingsProvider.clearObjectSettings(
+            dataSource.getProject().getId(),
             SMObjectType.datasource,
             dataSource.getId(),
             DataSourceNavigatorSettings.NAVIGATOR_SETTINGS

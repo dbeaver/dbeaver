@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,9 +21,13 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPDataSourceContainerProvider;
+import org.jkiss.dbeaver.model.DBPObjectSettingsProvider;
+import org.jkiss.dbeaver.model.access.DBACredentialsProvider;
+import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
 import org.jkiss.dbeaver.model.impl.preferences.AbstractPreferenceStore;
 import org.jkiss.dbeaver.model.impl.preferences.SimplePreferenceStore;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
+import org.jkiss.dbeaver.model.security.SMObjectType;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.CommonUtils;
 
@@ -46,6 +50,20 @@ public class DataSourcePreferenceStore extends SimplePreferenceStore implements 
         // Init default properties from driver overrides
         Map<String, Object> defaultConnectionProperties = dataSourceDescriptor.getDriver()
             .getDefaultConnectionProperties();
+        //fixme скорее надо подсовыать эти сетинги на каждый гет пропертис
+        DBPDataSourceRegistry registry = dataSourceDescriptor.getRegistry();
+        DBACredentialsProvider authCredentialsProvider = registry.getAuthCredentialsProvider();
+        Map<String, String> properties = getProperties();
+        if(authCredentialsProvider instanceof DBPObjectSettingsProvider settingsProvider){
+            Map<String, String> objectSettings = settingsProvider.getObjectSettings(
+                dataSourceDescriptor.getProjectId(),
+                SMObjectType.datasource,
+                dataSourceDescriptor.getId()
+            );
+            if (objectSettings != null) {
+                properties.putAll(objectSettings);
+            }
+        }
         for (Map.Entry<String, Object> prop : defaultConnectionProperties.entrySet()) {
             String propName = prop.getKey();
             if (propName.startsWith(DBConstants.DEFAULT_DRIVER_PROP_PREFIX)) {

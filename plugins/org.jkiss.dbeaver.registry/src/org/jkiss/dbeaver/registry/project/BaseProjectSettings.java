@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -46,7 +46,7 @@ public abstract class BaseProjectSettings implements DBPObjectSettingsProvider {
 
     @Nullable
     @Override
-    public Map<String, String> getObjectSettings(@NotNull SMObjectType objectType, @NotNull String objectId) {
+    public Map<String, String> getObjectSettings(@NotNull String projectId, @NotNull SMObjectType objectType, @NotNull String objectId) {
         synchronized (this) {
             if (projectSettings == null) {
                 try {
@@ -63,6 +63,7 @@ public abstract class BaseProjectSettings implements DBPObjectSettingsProvider {
 
     @Override
     public void setObjectSettings(
+        @NotNull String projectId,
         @NotNull SMObjectType objectType,
         @NotNull String objectId,
         @NotNull Map<String, String> settings
@@ -75,6 +76,7 @@ public abstract class BaseProjectSettings implements DBPObjectSettingsProvider {
 
     @Override
     public void clearObjectSettings(
+        @NotNull String projectId,
         @NotNull SMObjectType objectType,
         @NotNull String objectId,
         @NotNull Set<String> settings
