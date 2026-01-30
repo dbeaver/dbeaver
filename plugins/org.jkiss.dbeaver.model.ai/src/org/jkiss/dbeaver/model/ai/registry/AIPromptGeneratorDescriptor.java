@@ -23,7 +23,6 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.ai.AIPromptGenerator;
 import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
-import org.jkiss.dbeaver.model.logical.DBSLogicalDataSourceSupplier;
 import org.jkiss.dbeaver.registry.RegistryConstants;
 
 import java.lang.reflect.Method;
@@ -73,18 +72,13 @@ public class AIPromptGeneratorDescriptor extends AbstractDescriptor {
     }
 
     @NotNull
-    public AIPromptGenerator createGenerator(@NotNull DBSLogicalDataSourceSupplier dataSource) throws DBException {
+    public AIPromptGenerator createGenerator() throws DBException {
         Class<? extends AIPromptGenerator> objectClass = objectType.getObjectClass(AIPromptGenerator.class);
         if (objectClass == null) {
             throw new DBException("Object class " + objectType.getImplName() + " not found");
         }
         try {
-            Method createMethod = objectClass.getMethod("create", DBSLogicalDataSourceSupplier.class);
-            if (Modifier.isStatic(createMethod.getModifiers())) {
-                return (AIPromptGenerator) createMethod.invoke(null, dataSource);
-            } else {
-                throw new DBException("Prompt method '" + createMethod + "' is not static");
-            }
+            return objectClass.getConstructor().newInstance();
         } catch (Exception e) {
             throw new DBException("Error creating prompt generator " + getId(), e);
         }
