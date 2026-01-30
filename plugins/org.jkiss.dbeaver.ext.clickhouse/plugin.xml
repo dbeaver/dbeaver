@@ -94,6 +94,7 @@
                 type="config"
                 id="clickhouse-ssl"
                 codeName="SSL"
+                prefix="ssl"
                 label="SSL"
                 description="SSL settings"
                 secured="false"

@@ -63,4 +63,10 @@
         </configurator>
     </extension>
 
+    <extension point="org.jkiss.dbeaver.fileTypeHandler">
+        <handler id="msaccess" class="org.jkiss.dbeaver.ext.generic.file.MSAccessFileDatabaseHandler" remote="false" order="102">
+            <extension id="msaccess" extensions="accdb,mdb" icon="platform:/plugin/org.jkiss.dbeaver.ext.generic/icons/msaccess_icon_big.png"/>
+        </handler>
+    </extension>
+
 </plugin>

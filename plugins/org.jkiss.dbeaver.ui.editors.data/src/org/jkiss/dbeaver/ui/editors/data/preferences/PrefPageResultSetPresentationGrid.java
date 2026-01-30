@@ -144,12 +144,14 @@ public class PrefPageResultSetPresentationGrid extends TargetPrefPage {
                 DataEditorsMessages.pref_page_database_resultsets_label_max_def_column_width_tip);
             maxDefColumnWidth.addVerifyListener(UIUtils.getIntegerVerifyListener(Locale.getDefault()));
 
-            UIUtils.createPreferenceLink(
-                appearanceGroup,
-                DataEditorsMessages.pref_page_database_resultsets_link_colors_and_fonts,
-                EditorUtils.COLORS_AND_FONTS_PAGE_ID,
-                (IWorkbenchPreferenceContainer) getContainer(), null
-            ).setLayoutData(GridDataFactory.fillDefaults().span(2, 1).create());
+            if (getContainer() instanceof IWorkbenchPreferenceContainer wpc) {
+                UIUtils.createPreferenceLink(
+                    appearanceGroup,
+                    DataEditorsMessages.pref_page_database_resultsets_link_colors_and_fonts,
+                    EditorUtils.COLORS_AND_FONTS_PAGE_ID,
+                    wpc, null
+                ).setLayoutData(GridDataFactory.fillDefaults().span(2, 1).create());
+            }
 
             Composite behaviorGroup = UIUtils.createTitledComposite(
                 composite,
@@ -174,12 +176,15 @@ public class PrefPageResultSetPresentationGrid extends TargetPrefPage {
                 DataEditorsMessages.pref_page_database_resultsets_label_enter_for_inline_behavior_tip, false, 2
             );
 
-            UIUtils.createPreferenceLink(
-                behaviorGroup,
-                "<a>" + DataEditorsMessages.pref_page_database_resultsets_label_show_boolean_config_link + "  - ''{0}''</a>",
-                "org.jkiss.dbeaver.preferences.main.misc",
-                (IWorkbenchPreferenceContainer) getContainer(), null
-            ).setLayoutData(GridDataFactory.fillDefaults().span(2, 1).create());
+            if (getContainer() instanceof IWorkbenchPreferenceContainer wpc) {
+                UIUtils.createPreferenceLink(
+                    behaviorGroup,
+                    "<a>" + DataEditorsMessages.pref_page_database_resultsets_label_show_boolean_config_link + "  - ''{0}''</a>",
+                    "org.jkiss.dbeaver.preferences.main.misc",
+                    wpc,
+                    null
+                ).setLayoutData(GridDataFactory.fillDefaults().span(2, 1).create());
+            }
 
             gridDoubleClickBehavior = UIUtils.createLabelCombo(behaviorGroup,
                 DataEditorsMessages.pref_page_database_resultsets_label_double_click_behavior, SWT.READ_ONLY

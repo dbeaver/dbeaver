@@ -32,7 +32,7 @@ public class DataSourceOptions {
     private String server;
 
     @Nullable
-    @CommandLine.Option(names = {"--jdbc-url"}, arity = "1", description = "Database jdbc url")
+    @CommandLine.Option(names = {"--url"}, arity = "1", description = "Database url(e.g. JDBC url)")
     private String url;
 
     @Nullable

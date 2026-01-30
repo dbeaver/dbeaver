@@ -844,12 +844,16 @@ public class DataSourceSerializerModern<T extends DataSourceDescriptor> implemen
             }
         }
 
+        dataSource.getNavigatorSettings().reset();
+
         if (!CommonUtils.isEmpty(userSettings) && userSettings.keySet().stream().anyMatch(
             DataSourceNavigatorSettings.NAVIGATOR_SETTINGS::contains)
         ) {
             // There are custom navigator settings
             DataSourceNavigatorSettingsUtils.loadSettingsFromMap(dataSource.getNavigatorSettings(), userSettings);
-            dataSource.getNavigatorSettings().setUserSettings(true);
+            DataSourceNavigatorSettings originalSettings = new DataSourceNavigatorSettings();
+            DataSourceNavigatorSettingsUtils.loadSettingsFromMap(originalSettings, conObject);
+            dataSource.getNavigatorSettings().setOriginalSettings(originalSettings);
         } else {
             DataSourceNavigatorSettingsUtils.loadSettingsFromMap(dataSource.getNavigatorSettings(), conObject);
         }
@@ -1112,7 +1116,7 @@ public class DataSourceSerializerModern<T extends DataSourceDescriptor> implemen
         if (dataSource.isSavePassword()) JSONUtils.field(json, RegistryConstants.ATTR_SAVE_PASSWORD, true);
         if (dataSource.isSharedCredentials()) JSONUtils.field(json, RegistryConstants.ATTR_SHARED_CREDENTIALS, true);
 
-        DataSourceNavigatorSettings.saveSettingsToMap(json, dataSource.getNavigatorSettings());
+        DataSourceNavigatorSettings.saveSettingsToMap(json, dataSource.getOriginalNavigatorSettings());
 
         if (dataSource.isConnectionReadOnly()) JSONUtils.field(json, RegistryConstants.ATTR_READ_ONLY, true);
 
