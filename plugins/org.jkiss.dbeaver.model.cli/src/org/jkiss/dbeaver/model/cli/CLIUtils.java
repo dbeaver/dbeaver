@@ -358,4 +358,35 @@ public class CLIUtils {
 
         return helpText.toString();
     }
+
+    @NotNull
+    public static String formatAsTable(@NotNull List<Map<String, String>> data) {
+        if (data.isEmpty()) {
+            return "";
+        }
+        Map<String, Integer> columnWidths = new LinkedHashMap<>();
+        for (String key : data.getFirst().keySet()) {
+            columnWidths.put(key, key.length());
+        }
+        for (Map<String, String> row : data) {
+            for (Map.Entry<String, String> entry : row.entrySet()) {
+                columnWidths.put(entry.getKey(), Math.max(columnWidths.get(entry.getKey()), entry.getValue().length()));
+            }
+        }
+
+        StringBuilder sb = new StringBuilder();
+        // header
+        for (Map.Entry<String, Integer> entry : columnWidths.entrySet()) {
+            sb.append(String.format("%-" + (entry.getValue() + 3) + "s", entry.getKey()));
+        }
+        sb.append("\n");
+        // rows
+        for (Map<String, String> row : data) {
+            for (Map.Entry<String, Integer> entry : columnWidths.entrySet()) {
+                sb.append(String.format("%-" + (entry.getValue() + 3) + "s", row.get(entry.getKey())));
+            }
+            sb.append("\n");
+        }
+        return sb.toString().trim();
+    }
 }
