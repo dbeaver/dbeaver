@@ -152,7 +152,7 @@ public class AIEngineRequestFactory {
             return;
         }
         List<AIFunctionDescriptor> functions = new ArrayList<>();
-        for (AIFunctionDescriptor fd : AIFunctionRegistry.getInstance().getAllFunctions()) {
+        for (AIFunctionDescriptor fd : AIFunctionRegistry.getInstance().getAllFunctions(AIFunctionPurpose.TOOL)) {
             if (fd.isGlobal() || fd.isApplicable(engineDescriptor, systemPromptGenerator)) {
                 functions.add(fd);
             }
