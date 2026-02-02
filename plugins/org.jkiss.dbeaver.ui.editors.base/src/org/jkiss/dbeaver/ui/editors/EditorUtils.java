@@ -753,15 +753,14 @@ public class EditorUtils {
                 if (!IOUtils.isLocalPath(path)) {
                     if (handler == null || Files.isDirectory(path)) {
                         return false;
-                    }
-                }
-                if (!handler.supportsRemoteFiles()) {
-                    try {
-                        Path newPath = copyRemoteFileToTempDir(path);
-                        pathList.set(pathList.indexOf(path), newPath);
-                    } catch (DBException e) {
-                        log.error("Can't copy remote file to temp", e);
-                        return false;
+                    } else if (!handler.supportsRemoteFiles()) {
+                        try {
+                            Path newPath = copyRemoteFileToTempDir(path);
+                            pathList.set(pathList.indexOf(path), newPath);
+                        } catch (DBException e) {
+                            log.error("Can't copy remote file to temp", e);
+                            return false;
+                        }
                     }
                 }
             }
