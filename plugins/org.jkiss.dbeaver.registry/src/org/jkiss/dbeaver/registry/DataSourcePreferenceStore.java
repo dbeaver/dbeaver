@@ -18,20 +18,23 @@ package org.jkiss.dbeaver.registry;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPDataSourceContainerProvider;
-import org.jkiss.dbeaver.model.DBPObjectSettingsProvider;
-import org.jkiss.dbeaver.model.access.DBACredentialsProvider;
 import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
 import org.jkiss.dbeaver.model.impl.preferences.AbstractPreferenceStore;
 import org.jkiss.dbeaver.model.impl.preferences.SimplePreferenceStore;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
+import org.jkiss.dbeaver.model.security.SMController;
+import org.jkiss.dbeaver.model.security.SMObjectSettings;
 import org.jkiss.dbeaver.model.security.SMObjectType;
+import org.jkiss.dbeaver.registry.rm.DataSourceRegistryRM;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -81,18 +84,31 @@ public class DataSourcePreferenceStore extends SimplePreferenceStore implements 
 
     private void fetchSettingFromSettingProvider() {
         DBPDataSourceRegistry registry = dataSourceDescriptor.getRegistry();
-        DBACredentialsProvider authCredentialsProvider = registry.getAuthCredentialsProvider();
         Map<String, String> properties = super.getProperties();
-        if(authCredentialsProvider instanceof DBPObjectSettingsProvider settingsProvider){
-            Map<String, String> objectSettings = settingsProvider.getObjectSettings(
-                dataSourceDescriptor.getProjectId(),
-                SMObjectType.datasource,
-                dataSourceDescriptor.getId()
-            );
-            if (objectSettings != null) {
-                properties.putAll(objectSettings);
+        if (registry instanceof DataSourceRegistryRM dataSourceRegistryRM) {
+            SMObjectType objectType = SMObjectType.datasource;
+            try {
+                SMController smController = dataSourceRegistryRM.getSmController();
+                if(smController == null) {
+                    return;
+                }
+                List<SMObjectSettings> objectSettings = smController
+                    .getObjectSettings(dataSourceDescriptor.getProjectId(), objectType, dataSourceDescriptor.getId(), null);
+                objectSettings.forEach(setting -> properties.putAll(setting.settings()));
+            } catch (DBException e) {
+                throw new RuntimeException(e);
             }
         }
+//        if(authCredentialsProvider instanceof DBPObjectSettingsProvider settingsProvider){
+//            Map<String, String> objectSettings = settingsProvider.getObjectSettings(
+//                dataSourceDescriptor.getProjectId(),
+//                SMObjectType.datasource,
+//                dataSourceDescriptor.getId()
+//            );
+//            if (objectSettings != null) {
+//                properties.putAll(objectSettings);
+//            }
+//        }
     }
 
     @Nullable
