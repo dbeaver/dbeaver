@@ -48,4 +48,15 @@ public interface DBNBrowseSettings {
     @NotNull
     DBNBrowseSettings getOriginalSettings();
 
+    void setShowSystemObjects(boolean showSystemObjects);
+
+    void setShowUtilityObjects(boolean showUtilityObjects);
+
+    void setShowOnlyEntities(boolean showOnlyEntities);
+
+    void setHideSchemas(boolean hideSchemas);
+
+    void setHideFolders(boolean hideFolders);
+
+    void setMergeEntities(boolean mergeEntities);
 }

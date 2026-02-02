@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.ai.AIFunction;
+import org.jkiss.dbeaver.model.ai.AIFunctionPurpose;
 import org.jkiss.dbeaver.model.ai.AIFunctionResult;
 import org.jkiss.dbeaver.model.ai.AIPromptGenerator;
 import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
@@ -87,6 +88,7 @@ public class AIFunctionDescriptor extends AbstractDescriptor {
     private final DBPImage icon;
     private final boolean global;
     private final boolean hidden;
+    private final AIFunctionPurpose purpose;
     private final AIFunctionResult.FunctionType type;
     private final String[] dependsOn;
     private final String description;
@@ -101,6 +103,7 @@ public class AIFunctionDescriptor extends AbstractDescriptor {
         this.name = config.getAttribute(RegistryConstants.ATTR_NAME);
         this.global = CommonUtils.toBoolean(config.getAttribute("global"));
         this.hidden = CommonUtils.toBoolean(config.getAttribute("hidden"));
+        this.purpose = CommonUtils.valueOf(AIFunctionPurpose.class, config.getAttribute("purpose"), AIFunctionPurpose.TOOL);
         this.categoryId = config.getAttribute("categoryId");
         this.description = config.getAttribute(RegistryConstants.ATTR_DESCRIPTION);
         this.dependsOn = CommonUtils.splitString(config.getAttribute("dependsOn"), ',').toArray(new String[0]);
@@ -135,6 +138,11 @@ public class AIFunctionDescriptor extends AbstractDescriptor {
     @NotNull
     public AIFunctionResult.FunctionType getType() {
         return type;
+    }
+
+    @NotNull
+    public AIFunctionPurpose getPurpose() {
+        return purpose;
     }
 
     @Nullable
@@ -175,18 +183,14 @@ public class AIFunctionDescriptor extends AbstractDescriptor {
         return false;
     }
 
+    @Nullable
+    public String getCategoryId() {
+        return categoryId;
+    }
+
     @Override
     public String toString() {
         return "AI function: " + getId();
     }
 
-    @NotNull
-    public String getSignature() {
-        return getId();
-    }
-
-    @Nullable
-    public String getCategoryId() {
-        return categoryId;
-    }
 }
