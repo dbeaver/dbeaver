@@ -259,8 +259,7 @@ public class JDBCConnectionImpl extends AbstractSession implements JDBCSession, 
     public JDBCPreparedStatement prepareStatement(String sql)
         throws SQLException
     {
-        sql = SQLUtils.addQueryIdentificationComment(this, sql);
-        final String finalSql = sql;
+        final String finalSql = SQLUtils.addQueryIdentificationComment(this, sql);
         return createPreparedStatementImpl(() -> getOriginal().prepareStatement(finalSql), finalSql);
     }
 
@@ -269,8 +268,7 @@ public class JDBCConnectionImpl extends AbstractSession implements JDBCSession, 
     public JDBCCallableStatement prepareCall(String sql)
         throws SQLException
     {
-        sql = SQLUtils.addQueryIdentificationComment(this, sql);
-        final String finalSql = sql;
+        final String finalSql = SQLUtils.addQueryIdentificationComment(this, sql);
         return createCallableStatementImpl(() -> getOriginal().prepareCall(finalSql), finalSql);
     }
 
