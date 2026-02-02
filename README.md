@@ -89,5 +89,6 @@ Thank you!
 
 <a href="https://github.com/dbeaver/cloudbeaver/"><img src="https://github.com/dbeaver/cloudbeaver/wiki/images/cloudbeaver-logo.png" width="250"/></a>
 
-<a href="https://github.com/dbeaver/cloudbeaver">CloudBeaver</a> is a web-based database management tool built on the DBeaver platform. It brings the capabilities of DBeaver to the browser, enabling database management from any device with an internet connection and eliminating the need for local installation. Supporting any database, CloudBeaver incorporates most of DBeaver's features and includes advanced access management for secure collaboration.
+<a href="https://github.com/dbeaver/cloudbeaver">CloudBeaver</a> is a web-based database management tool built on the DBeaver platform. It brings the capabilities of DBeaver to the web interface, enabling database management from any device with an internet connection and eliminating the need for local installation.   
+Supporting any database, CloudBeaver incorporates most of DBeaver's features and includes advanced access management for secure collaboration.    
 Designed with a user-friendly interface, CloudBeaver simplifies complex database operations and is suitable for both individual developers and organizations. Its scalable architecture accommodates various needs, making it a convenient solution for managing databases anytime and anywhere through web-based accessibility.

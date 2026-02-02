@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ui.editors.file;
+package org.jkiss.dbeaver.model.file;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
@@ -23,18 +23,21 @@ import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 
 import java.nio.file.Path;
 import java.util.List;
-import java.util.Map;
+import java.util.Set;
 
-public interface IFileTypeHandler {
+/**
+ * Interface that defines the contract for handling the opening of files.
+ * Implementations of this interface are responsible for managing how files are opened
+ * based on the provided parameters, including the action type and optional data source context.
+ */
+public interface FileOpenHandler {
 
     /**
      * Open NIO files in associated handlers
      */
-    void openFiles(
-        @NotNull List<Path> fileList,
-        @NotNull Map<String, String> parameters,
-        @Nullable DBPDataSourceContainer dataSource)
-        throws DBException;
+    void openFiles(@NotNull List<Path> fileList, @Nullable DBPDataSourceContainer dataSource, @NotNull FileTypeAction action)
+    throws DBException;
 
-    void importFiles(@NotNull List<Path> filePath, @Nullable String extension) throws DBException;
+    @NotNull
+    Set<FileTypeAction> supportedActions();
 }

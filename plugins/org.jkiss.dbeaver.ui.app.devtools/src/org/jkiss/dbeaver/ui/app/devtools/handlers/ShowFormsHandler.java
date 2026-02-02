@@ -14,30 +14,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.ai.engine.openai.dto;
+package org.jkiss.dbeaver.ui.app.devtools.handlers;
 
-import com.google.gson.annotations.SerializedName;
+import org.eclipse.core.commands.AbstractHandler;
+import org.eclipse.core.commands.ExecutionEvent;
+import org.eclipse.ui.handlers.HandlerUtil;
+import org.jkiss.dbeaver.ui.app.devtools.ui.FormsDialog;
 
-public record OAIUsage(
-    @SerializedName("input_tokens")
-    int inputTokens,
-    @SerializedName("input_tokens_details")
-    InputTokenDetails inputTokensDetails,
-    @SerializedName("output_tokens")
-    int outputTokens,
-    @SerializedName("output_tokens_details")
-    OutputTokenDetails outputTokensDetails
-) {
-
-    public record InputTokenDetails(
-        @SerializedName("cached_tokens")
-        int cachedTokens
-    ) {
-    }
-
-    public record OutputTokenDetails(
-        @SerializedName("reasoning_tokens")
-        int reasoningTokens
-    ) {
+public class ShowFormsHandler extends AbstractHandler {
+    @Override
+    public Object execute(ExecutionEvent event) {
+        new FormsDialog(HandlerUtil.getActiveShell(event)).open();
+        return null;
     }
 }

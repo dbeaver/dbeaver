@@ -1847,11 +1847,11 @@ public class UIUtils {
         return link;
     }
 
-    public static Point drawMessageOverControl(Control control, PaintEvent e, String message, int offset) {
-        return drawMessageOverControl(control, e.gc, message, offset);
+    public static Point drawMessageOverControl(Control control, PaintEvent e, String message, int verticalOffset) {
+        return drawMessageOverControl(control, e.gc, message, verticalOffset);
     }
 
-    public static Point drawMessageOverControl(Control control, GC gc, String message, int offset) {
+    public static Point drawMessageOverControl(Control control, GC gc, String message, int verticalOffset) {
         Rectangle bounds = getControlPaintBounds(control);
         Point textSize = gc.textExtent(message);
 
@@ -1862,16 +1862,16 @@ public class UIUtils {
             textSize = gc.textExtent(message);
         }
 
-        final int height = textSize.y;
+        int y = bounds.y + verticalOffset;
         for (String line : message.split("\n")) {
             line = line.trim();
             Point ext = gc.textExtent(line);
             gc.drawText(
                 line,
                 (bounds.width - ext.x) / 2,
-                (bounds.height - height) / 2 + offset
+                (bounds.height - textSize.y) / 2 + y
             );
-            offset += ext.y;
+            y += ext.y;
         }
 
         return textSize;

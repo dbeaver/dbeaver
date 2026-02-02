@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,25 +14,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.jkiss.dbeaver.ui.forms;
 
-package org.jkiss.dbeaver.ui.actions;
+import org.eclipse.swt.SWT;
 
-import org.eclipse.jface.action.Action;
+/**
+ * Horizontal alignment of a control.
+ */
+public enum UIAlignX {
+    LEFT,
+    CENTER,
+    RIGHT,
+    FILL;
 
-public class DisabledLabelAction extends Action {
-    private final String label;
-
-    public DisabledLabelAction(String label) {
-        this.label = label;
-    }
-
-    @Override
-    public String getText() {
-        return label;
-    }
-
-    @Override
-    public boolean isEnabled() {
-        return false;
+    int toSWT() {
+        return switch (this) {
+            case LEFT -> SWT.BEGINNING;
+            case CENTER -> SWT.CENTER;
+            case RIGHT -> SWT.END;
+            case FILL -> SWT.FILL;
+        };
     }
 }
