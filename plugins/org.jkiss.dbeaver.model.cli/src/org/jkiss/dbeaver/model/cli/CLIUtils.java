@@ -370,7 +370,8 @@ public class CLIUtils {
         }
         for (Map<String, String> row : data) {
             for (Map.Entry<String, String> entry : row.entrySet()) {
-                columnWidths.put(entry.getKey(), Math.max(columnWidths.get(entry.getKey()), entry.getValue().length()));
+                String value = entry.getValue();
+                columnWidths.put(entry.getKey(), Math.max(columnWidths.get(entry.getKey()), value == null ? 0 : value.length()));
             }
         }
 
@@ -383,7 +384,7 @@ public class CLIUtils {
         // rows
         for (Map<String, String> row : data) {
             for (Map.Entry<String, Integer> entry : columnWidths.entrySet()) {
-                sb.append(String.format("%-" + (entry.getValue() + 3) + "s", row.get(entry.getKey())));
+                sb.append(String.format("%-" + (entry.getValue() + 3) + "s", CommonUtils.notNull(row.get(entry.getKey()), "")));
             }
             sb.append("\n");
         }
