@@ -19,13 +19,15 @@ package org.jkiss.dbeaver.model.cli.command;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.access.DBAAuthCredentials;
+import org.jkiss.dbeaver.model.access.DBAAuthModel;
 import org.jkiss.dbeaver.model.cli.*;
 import org.jkiss.dbeaver.model.cli.model.option.ProjectOption;
+import org.jkiss.dbeaver.model.connection.DBPAuthModelDescriptor;
+import org.jkiss.dbeaver.model.connection.DBPDataSourceProviderDescriptor;
+import org.jkiss.dbeaver.model.connection.DBPDataSourceProviderRegistry;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
-import org.jkiss.dbeaver.registry.DataSourceAuthModelDescriptor;
-import org.jkiss.dbeaver.registry.DataSourceProviderDescriptor;
-import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.properties.PropertyCollector;
 import org.jkiss.utils.CommonUtils;
 import picocli.CommandLine;
@@ -51,7 +53,8 @@ public class ListAuthenticationModelParameterHandler extends AbstractRootCommand
 
     @Override
     public void run() throws CLIException {
-        List<DataSourceAuthModelDescriptor> authModels = DataSourceProviderRegistry.getInstance().getAllAuthModels();
+        DBPDataSourceProviderRegistry dataSourceProviderRegistry = DBWorkbench.getPlatform().getDataSourceProviderRegistry();
+        List<? extends DBPAuthModelDescriptor> authModels = dataSourceProviderRegistry.getAllAuthModels();
         List<DBPDriver> applicableDrivers = new ArrayList<>();
 
         if (CommonUtils.isNotEmpty(datasourceId)) {
@@ -65,7 +68,7 @@ public class ListAuthenticationModelParameterHandler extends AbstractRootCommand
                 .filter(am -> am.isApplicableTo(driver))
                 .toList();
         } else if (CommonUtils.isNotEmpty(driverId)) {
-            DBPDriver driver = DataSourceProviderRegistry.getInstance().findDriver(driverId);
+            DBPDriver driver = dataSourceProviderRegistry.findDriver(driverId);
             if (driver != null) {
                 applicableDrivers.add(driver);
                 authModels = authModels.stream()
@@ -75,7 +78,7 @@ public class ListAuthenticationModelParameterHandler extends AbstractRootCommand
                 throw new CLIException("Can't find driver '" + driverId + "'", CLIConstants.EXIT_CODE_ILLEGAL_ARGUMENTS);
             }
         } else if (CommonUtils.isNotEmpty(providerId)) {
-            DataSourceProviderDescriptor provider = DataSourceProviderRegistry.getInstance().getDataSourceProvider(providerId);
+            DBPDataSourceProviderDescriptor provider = dataSourceProviderRegistry.getDataSourceProvider(providerId);
             if (provider != null) {
                 applicableDrivers.addAll(provider.getEnabledDrivers());
                 authModels = authModels.stream()
@@ -95,9 +98,9 @@ public class ListAuthenticationModelParameterHandler extends AbstractRootCommand
     }
 
     @NotNull
-    private static String getConsoleOutput(List<DataSourceAuthModelDescriptor> authModels, List<DBPDriver> applicableDrivers) {
+    private static String getConsoleOutput(List<? extends DBPAuthModelDescriptor> authModels, List<DBPDriver> applicableDrivers) {
         StringBuilder outBuilder = new StringBuilder();
-        for (DataSourceAuthModelDescriptor authModel : authModels) {
+        for (DBPAuthModelDescriptor authModel : authModels) {
             outBuilder.append(String.format(
                 "Auth Model ID: %s, Name: %s, Description: %s%n",
                 authModel.getId(),
@@ -114,7 +117,8 @@ public class ListAuthenticationModelParameterHandler extends AbstractRootCommand
             }
 
             outBuilder.append("Parameters:\n");
-            DBAAuthCredentials credentials = authModel.getInstance().createCredentials();
+            DBAAuthModel<? extends DBAAuthCredentials> authModelInstance = authModel.getInstance();
+            DBAAuthCredentials credentials = authModelInstance.createCredentials();
             PropertyCollector propertyCollector = new PropertyCollector(credentials, true);
             propertyCollector.collectProperties();
             for (DBPPropertyDescriptor property : propertyCollector.getProperties()) {
