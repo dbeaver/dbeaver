@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.model.cli.model.option.DataSourceOptions;
 import org.jkiss.dbeaver.model.cli.model.option.InputFileOption;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
+import org.jkiss.dbeaver.model.fs.DBFPath;
 import org.jkiss.dbeaver.model.meta.IPropertyValueListProvider;
 import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.model.runtime.LoggingProgressMonitor;
@@ -41,6 +42,7 @@ import org.jkiss.utils.CommonUtils;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -51,27 +53,34 @@ public class CLIUtils {
 
     @Nullable
     public static String readValueFromFileOrSystemIn(@Nullable InputFileOption filesOptions) throws CLIException {
-        String value = null;
-        if (filesOptions == null || filesOptions.getInputFile() == null) {
-            value = tryReadFromSystemIn();
-        } else if (filesOptions.getInputFile() != null) {
-            if (Files.notExists(filesOptions.getInputFile())) {
+
+        if (filesOptions == null) {
+            return tryReadFromSystemIn();
+        }
+
+        DBFPath inputFile = filesOptions.getInputFile();
+        if (inputFile == null) {
+            return tryReadFromSystemIn();
+        }
+
+        try (inputFile) {
+            Path path = inputFile.path();
+            if (Files.notExists(path)) {
                 throw new CLIException(
-                    "Input file does not exist: " + filesOptions.getInputFile(),
+                    "Input file does not exist: " + inputFile,
                     CLIConstants.EXIT_CODE_ILLEGAL_ARGUMENTS
                 );
             }
-            try {
-                value = Files.readString(filesOptions.getInputFile());
-            } catch (IOException e) {
-                throw new CLIException(
-                    "Error reading GQL from input file: " + filesOptions.getInputFile(),
-                    e,
-                    CLIConstants.EXIT_CODE_ERROR
-                );
-            }
+
+            return Files.readString(path);
+
+        } catch (IOException e) {
+            throw new CLIException(
+                "Error reading GQL from input file: " + inputFile,
+                e,
+                CLIConstants.EXIT_CODE_ERROR
+            );
         }
-        return value;
     }
 
     @Nullable

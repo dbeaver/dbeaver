@@ -123,6 +123,7 @@ class SingleTabQueryProcessor extends QueryProcessor {
         tabContentScroller = new ScrolledComposite(owner.getResultTabsContainer(), SWT.V_SCROLL | SWT.BORDER);
         tabContentScroller.setExpandHorizontal(true);
         tabContentScroller.setExpandVertical(true);
+        tabContentScroller.setBackgroundMode(SWT.INHERIT_DEFAULT);
 
         int tabIndex = owner.obtainDesiredTabIndex(makeDefault);
         resultsTab = new CTabItem(owner.getResultTabsContainer(), SWT.NONE, tabIndex);
