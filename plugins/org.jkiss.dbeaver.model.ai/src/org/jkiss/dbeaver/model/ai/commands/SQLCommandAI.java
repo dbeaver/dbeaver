@@ -70,7 +70,6 @@ public class SQLCommandAI implements SQLControlCommandHandler {
             throw new DBException("Empty AI prompt");
         }
 
-        AIBaseFeatures.SQL_AI_COMMAND.use();
 
         final DBSLogicalDataSource lDataSource = new DBSLogicalDataSource(
             command.getDataSourceContainer(), "AI logical wrapper", null);
@@ -120,7 +119,8 @@ public class SQLCommandAI implements SQLControlCommandHandler {
             monitor,
             dbContext,
             sysPromptBuilder,
-            List.of(AIMessage.userMessage(prompt))
+            List.of(AIMessage.userMessage(prompt)),
+            AIBaseFeatures.createStatCollector(AIBaseFeatures.SQL_AI_COMMAND, dataSourceContainer, null)
         );
         if (!result.isText()) {
             return SQLControlResult.success();
