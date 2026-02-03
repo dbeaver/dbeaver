@@ -349,8 +349,23 @@ public class CLIUtils {
             helpText.append(" (").append(displayName).append(")");
         }
         if (CommonUtils.isNotEmpty(description)) {
-            helpText.append(" = ").append(description);
+            helpText.append(" = ");
+            collectPropertyHelpDescriptionText(property, helpText);
         }
+        helpText.append("\n");
+
+        return helpText.toString();
+    }
+
+    public static void collectPropertyHelpDescriptionText(
+        @NotNull DBPPropertyDescriptor property,
+        @NotNull StringBuilder helpText
+    ) {
+        String description = property.getDescription();
+        if (CommonUtils.isEmpty(description)) {
+            return;
+        }
+        helpText.append(description);
         if (property instanceof IPropertyValueListProvider<?> valueListProvider) {
             Object[] possibleValues = valueListProvider.getPossibleValues(null);
             if (!ArrayUtils.isEmpty(possibleValues)) {
@@ -363,9 +378,6 @@ public class CLIUtils {
                 }
             }
         }
-        helpText.append("\n");
-
-        return helpText.toString();
     }
 
     @NotNull

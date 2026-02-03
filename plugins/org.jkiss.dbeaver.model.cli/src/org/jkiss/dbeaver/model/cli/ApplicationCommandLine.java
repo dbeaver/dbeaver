@@ -125,17 +125,7 @@ public abstract class ApplicationCommandLine<T extends ApplicationInstanceContro
 
             // Handle help/version before executing commands,
             // because we don't need to execute/start new instance for this cases
-            CommandLine.Model.CommandSpec commandForHelp = null;
-            if (parseResult.isUsageHelpRequested()) {
-                commandForHelp = parseResult.commandSpec();
-            } else {
-                for (var sub : parseResult.subcommands()) {
-                    if (sub.isUsageHelpRequested()) {
-                        commandForHelp = sub.commandSpec();
-                        break;
-                    }
-                }
-            }
+            CommandLine.Model.CommandSpec commandForHelp = findCommandRecursive(parseResult);
 
             if (commandForHelp != null) {
                 CommandLine.Model.UsageMessageSpec helpSpec = commandForHelp.usageMessage();
@@ -208,6 +198,22 @@ public abstract class ApplicationCommandLine<T extends ApplicationInstanceContro
         return result;
     }
 
+    @Nullable
+    private static CommandLine.Model.CommandSpec findCommandRecursive(
+        @NotNull CommandLine.ParseResult parseResult
+    ) {
+        if (parseResult.isUsageHelpRequested()) {
+            return parseResult.commandSpec();
+        }
+        for (var sub : parseResult.subcommands()) {
+            var found = findCommandRecursive(sub);
+            if (found != null) {
+                return found;
+            }
+        }
+        return null;
+    }
+
     protected void validateCommandLineParameters(@NotNull CommandLine.ParseResult parseResult) throws CLIException {
 
     }
@@ -260,6 +266,7 @@ public abstract class ApplicationCommandLine<T extends ApplicationInstanceContro
         @NotNull CLIRunMeta runMeta
     ) {
         var cmd = new CommandLine(createTopLevelCommand(applicationInstanceController, context, runMeta));
+        CommandLine.Model.CommandSpec topLevelSpec = cmd.getCommandSpec();
         cmd.setExecutionStrategy(new CommandLine.RunAll());
         ExceptionHandler exceptionHandler = new ExceptionHandler();
         cmd.setExecutionExceptionHandler(exceptionHandler);
@@ -268,7 +275,12 @@ public abstract class ApplicationCommandLine<T extends ApplicationInstanceContro
                 log.warn("Class is not annotated '" + param.getImplClass().getName() + "'");
                 continue;
             }
-            cmd.addSubcommand(param.getImplClass());
+            var subCommandSpec = CommandLine.Model.CommandSpec.forAnnotatedObject(param.getImplClass());
+            cmd.addSubcommand(new CommandLine(param.getImplClass()));
+            //            topLevelSpec.addSubcommand(
+            //                subCommandSpec.name(),
+            //                subCommandSpec
+            //            );
         }
         return cmd;
     }
