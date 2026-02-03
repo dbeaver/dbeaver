@@ -62,8 +62,8 @@ import org.jkiss.utils.IOUtils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Path;
-import java.util.List;
 import java.util.*;
+import java.util.List;
 
 /**
  * SQL task settings page
@@ -471,27 +471,30 @@ class SQLScriptTaskPageSettings extends ActiveWizardPage<SQLScriptTaskConfigurat
             List<String> scriptFiles = settings.getScriptFiles();
             for (String filePath : scriptFiles) {
                 if (IOUtils.isLocalFile(filePath)) {
-                    Path workspaceFile;
-                    RMControllerProvider rmControllerProvider = DBUtils.getAdapter(RMControllerProvider.class, project);
-                    try {
-                        if (rmControllerProvider != null) {
-                            workspaceFile = project.getAbsolutePath().resolve(filePath);
-                        } else {
-                            workspaceFile = DTUtils.findProjectFile(project, filePath);
+                    DBNNode resource = projectNode.findResource(monitor, filePath);
+                    if (resource == null) {
+                        Path workspaceFile;
+                        RMControllerProvider rmControllerProvider = DBUtils.getAdapter(RMControllerProvider.class, project);
+                        try {
+                            if (rmControllerProvider != null) {
+                                workspaceFile = project.getAbsolutePath().resolve(filePath);
+                            } else {
+                                workspaceFile = DTUtils.findProjectFile(project, filePath);
+                            }
+                        } catch (Exception e) {
+                            log.error(e);
+                            continue;
                         }
-                    } catch (Exception e) {
-                        log.error(e);
-                        continue;
+                        if (workspaceFile != null) {
+                            resource = projectNode.findResource(monitor, workspaceFile);
+                        }
                     }
-                    if (workspaceFile == null) {
+                    if (resource == null) {
                         UIUtils.syncExec(() -> setMessage("Script file '" + filePath + "' not found", WARNING));
                         log.error("Script file '" + filePath + "' not found");
                         continue;
                     }
-                    DBNNode resource = projectNode.findResource(monitor, workspaceFile);
-                    if (resource != null) {
-                        selectedScripts.add(resource);
-                    }
+                    selectedScripts.add(resource);
                 } else {
                     DBNFileSystems fsNode = projectNode.getExtraNode(DBNFileSystems.class);
                     if (fsNode != null) {
