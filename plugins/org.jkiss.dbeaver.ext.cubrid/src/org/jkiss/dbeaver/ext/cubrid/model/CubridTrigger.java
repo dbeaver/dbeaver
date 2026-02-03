@@ -20,7 +20,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.cubrid.CubridConstants;
-import org.jkiss.dbeaver.ext.generic.model.GenericTableBase;
+import org.jkiss.dbeaver.ext.generic.model.GenericStructContainer;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableColumn;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableTrigger;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
@@ -49,17 +49,20 @@ public class CubridTrigger extends GenericTableTrigger {
     private String actionTime;
     private String actionType;
     private String actionDefinition;
-    private Map<Integer, String> events = Map.of(0, "UPDATE", 1, "UPDATE STATEMENT", 2, "DELETE", 3, "DELETE STATEMENT", 4, "INSERT", 5, "INSERT STATEMENT", 8, "COMMIT", 9, "ROLLBACK");
+    private CubridUser container;
+    private Map<Integer, String> events = Map.of(0, "UPDATE", 1, "STATEMENT UPDATE", 2, "DELETE", 3, "STATEMENT DELETE", 4, "INSERT", 5, "STATEMENT INSERT", 8, "COMMIT", 9, "ROLLBACK");
     private Map<Integer, String> actionTimes = Map.of(1, "BEFORE", 2, "AFTER", 3, "DEFERRED");
     private Map<Integer, String> actionTypes = Map.of(1, "OTHER STATEMENT", 2, "REJECT", 3, "INVALIDATE TRANSACTION", 4, "PRINT");
     List<String> columnList = new ArrayList<>();
 
     public CubridTrigger(
-            @NotNull GenericTableBase container,
+            @NotNull GenericStructContainer container,
+            @Nullable CubridTable table,
             @NotNull String name,
             @Nullable String description,
             @NotNull JDBCResultSet dbResult) {
-        super(container, name, description);
+        super(table, name, description);
+        this.container = (CubridUser) container;
         this.owner = JDBCUtils.safeGetString(dbResult, "owner.name");
         this.active = JDBCUtils.safeGetInteger(dbResult, "status").equals(2);
         this.targetColumn = JDBCUtils.safeGetString(dbResult, "target_attribute");
@@ -73,20 +76,31 @@ public class CubridTrigger extends GenericTableTrigger {
     }
 
     public CubridTrigger(
-            @NotNull GenericTableBase container,
+            @NotNull GenericStructContainer container,
+            @NotNull CubridTable table,
             @NotNull String name,
             DBRProgressMonitor monitor) throws DBException {
-        super(container, name, null);
-        this.owner = container.getSchema().getName();
+        super(table, name, null);
+        this.container = (CubridUser) container;
         this.active = true;
         this.priority = 0.0;
         this.event = "UPDATE";
         this.actionTime = "BEFORE";
         this.actionType = "OTHER STATEMENT";
         this.persisted = false;
-        for (GenericTableColumn col : container.getAttributes(monitor)) {
-            columnList.add(col.getName());
+        if (table != null) {
+            this.owner = table.getSchema().getName();
+            for (GenericTableColumn col : table.getAttributes(monitor)) {
+                columnList.add(col.getName());
+            }
+        } else {
+            this.owner = container.getName();
         }
+    }
+
+    @Override
+    public CubridDataSource getDataSource() {
+        return container.getDataSource();
     }
 
     @NotNull
@@ -98,10 +112,10 @@ public class CubridTrigger extends GenericTableTrigger {
     @NotNull
     @Property(viewable = true, order = 2)
     public CubridUser getOwner() {
-        return new CubridUser(getTable().getDataSource(), owner, null);
+        return new CubridUser(getDataSource(), owner, null);
     }
 
-    @NotNull
+    @Nullable
     @Override
     @Property(viewable = true, order = 4)
     public CubridTable getTable() {
@@ -203,8 +217,8 @@ public class CubridTrigger extends GenericTableTrigger {
     @NotNull
     @Override
     public String getFullyQualifiedName(@NotNull DBPEvaluationContext context) {
-        if (getTable().getDataSource().getSupportMultiSchema()) {
-            return DBUtils.getQuotedIdentifier(getTable().getSchema()) + "." + DBUtils.getFullQualifiedName(getDataSource(), this);
+        if (getDataSource().getSupportMultiSchema()) {
+            return DBUtils.getQuotedIdentifier(container) + "." + DBUtils.getFullQualifiedName(getDataSource(), this);
         } else {
             return DBUtils.getFullQualifiedName(getDataSource(), this);
         }
@@ -221,17 +235,15 @@ public class CubridTrigger extends GenericTableTrigger {
             ddl.append("\nPRIORITY ").append(getPriority());
             ddl.append("\n" + getActionTime());
             ddl.append(" ");
-            if (getEvent().equals("COMMIT") || getEvent().equals("ROLLBACK")) {
-                ddl.append(getEvent());
-            } else {
-                ddl.append(getEvent());
+            ddl.append(getEvent());
+            if (!getEvent().equals("COMMIT") && !getEvent().equals("ROLLBACK")) {
                 ddl.append(" ON ").append(getTable().getFullyQualifiedName(DBPEvaluationContext.DDL));
                 if (getEvent().contains("UPDATE") && getTargetColumn() != null) {
                     ddl.append("(" + DBUtils.getQuotedIdentifier(getDataSource(), getTargetColumn()) + ")");
                 }
-                if (getCondition() != null) {
-                    ddl.append("\nIF ").append(getCondition());
-                }
+            }
+            if (getCondition() != null) {
+                ddl.append("\nIF ").append(getCondition());
             }
             ddl.append("\nEXECUTE ");
             if (getActionType().equals("REJECT") || getActionType().equals("INVALIDATE TRANSACTION")) {
@@ -246,6 +258,7 @@ public class CubridTrigger extends GenericTableTrigger {
             if (getDescription() != null && !getDescription().isEmpty()) {
                 ddl.append("\nCOMMENT ").append(SQLUtils.quoteString(getDataSource(), getDescription()));
             }
+            ddl.append(";");
             return ddl.toString();
         }
         return "-- Trigger definition not available";
