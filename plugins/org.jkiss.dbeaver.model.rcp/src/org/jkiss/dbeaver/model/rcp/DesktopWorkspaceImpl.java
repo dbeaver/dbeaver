@@ -292,13 +292,16 @@ public class DesktopWorkspaceImpl extends EclipseWorkspaceImpl implements DBPWor
 
     @Override
     public void renameProject(@NotNull DBPProject project, @NotNull String newName) throws DBException {
-        IProject eclipseProject = ((DesktopProjectImpl) project).getEclipseProject();
-        try {
-            IProjectDescription description = eclipseProject.getDescription();
-            description.setName(newName);
-            eclipseProject.move(description, IResource.FORCE | IResource.SHALLOW, null);
-        } catch (CoreException e) {
-            throw new DBException("Error renaming project", e);
+        if (project instanceof DesktopProjectImpl projectImpl) {
+            IProject eclipseProject = projectImpl.getEclipseProject();
+            try {
+                project.updateProject(newName, null);
+                IProjectDescription description = eclipseProject.getDescription();
+                description.setName(newName);
+                eclipseProject.move(description, true, null);
+            } catch (CoreException e) {
+                throw new DBException("Error renaming project", e);
+            }
         }
     }
 
