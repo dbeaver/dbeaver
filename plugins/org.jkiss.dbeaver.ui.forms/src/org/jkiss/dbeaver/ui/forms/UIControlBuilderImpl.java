@@ -39,7 +39,7 @@ import java.util.function.Function;
 
 abstract sealed class UIControlBuilderImpl<B extends UIControlBuilder<B>, C extends Control> implements UIControlBuilder<B>
     permits UIControlBuilderImpl.ButtonBuilderImpl, UIControlBuilderImpl.ComboBuilderImpl, UIControlBuilderImpl.LabelBuilderImpl,
-    UIControlBuilderImpl.TextBuilderImpl, UIPanelBuilderImpl {
+    UIControlBuilderImpl.LinkBuilderImpl, UIControlBuilderImpl.TextBuilderImpl, UIPanelBuilderImpl {
 
     private UIObservable<Boolean> visible;
     private UIObservable<Boolean> enabled;
@@ -173,10 +173,10 @@ abstract sealed class UIControlBuilderImpl<B extends UIControlBuilder<B>, C exte
     }
 
     static final class LabelBuilderImpl extends UIControlBuilderImpl<LabelBuilder, Label> implements LabelBuilder {
-        private final String text;
+        private final UIObservable<String> text;
         private final int style;
 
-        LabelBuilderImpl(@NotNull String text, int style) {
+        LabelBuilderImpl(@NotNull UIObservable<String> text, int style) {
             this.text = text;
             this.style = style;
         }
@@ -184,7 +184,39 @@ abstract sealed class UIControlBuilderImpl<B extends UIControlBuilder<B>, C exte
         @NotNull
         @Override
         protected Label create(@NotNull DataBindingContext context, @NotNull Composite parent) {
-            return UIControlFactory.createLabel(parent, style, text);
+            return UIControlFactory.createLabel(parent, style);
+        }
+
+        @Override
+        protected void bind(@NotNull DataBindingContext context, @NotNull Label control, @Nullable UIRowBuilderImpl row) {
+            super.bind(context, control, row);
+            context.bindValue(WidgetProperties.text().observe(control), UIControlBuilderImpl.delegate(text));
+        }
+    }
+
+    static final class LinkBuilderImpl extends UIControlBuilderImpl<LinkBuilder, Link> implements LinkBuilder {
+        private final UIObservable<String> text;
+        private final Consumer<SelectionEvent> onSelect;
+        private final int style;
+
+        LinkBuilderImpl(@NotNull UIObservable<String> text, @NotNull Consumer<SelectionEvent> onSelect, int style) {
+            this.text = text;
+            this.onSelect = onSelect;
+            this.style = style;
+        }
+
+        @NotNull
+        @Override
+        protected Link create(@NotNull DataBindingContext context, @NotNull Composite parent) {
+            Link link = UIControlFactory.createLink(parent, style);
+            link.addSelectionListener(SelectionListener.widgetSelectedAdapter(onSelect));
+            return link;
+        }
+
+        @Override
+        protected void bind(@NotNull DataBindingContext context, @NotNull Link control, @Nullable UIRowBuilderImpl row) {
+            super.bind(context, control, row);
+            context.bindValue(WidgetProperties.text().observe(control), UIControlBuilderImpl.delegate(text));
         }
     }
 

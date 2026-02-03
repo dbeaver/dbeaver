@@ -16,10 +16,7 @@
  */
 package org.jkiss.dbeaver.ui.forms;
 
-import org.eclipse.jface.widgets.ButtonFactory;
-import org.eclipse.jface.widgets.CompositeFactory;
-import org.eclipse.jface.widgets.LabelFactory;
-import org.eclipse.jface.widgets.TextFactory;
+import org.eclipse.jface.widgets.*;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.ScrolledComposite;
 import org.eclipse.swt.widgets.*;
@@ -73,9 +70,8 @@ final class UIControlFactory {
     }
 
     @NotNull
-    static Label createLabel(@NotNull Composite parent, int style, @NotNull String text) {
+    static Label createLabel(@NotNull Composite parent, int style) {
         return LabelFactory.newLabel(style)
-            .text(text)
             .create(parent);
     }
 
@@ -95,5 +91,11 @@ final class UIControlFactory {
     @NotNull
     static Combo createCombo(@NotNull Composite parent, int style) {
         return new Combo(parent, style);
+    }
+
+    @NotNull
+    static Link createLink(@NotNull Composite parent, int style) {
+        return LinkFactory.newLink(style)
+            .create(parent);
     }
 }

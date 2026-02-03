@@ -55,11 +55,33 @@ public sealed interface UIRowBuilder permits UIRowBuilderImpl {
     UIRowBuilder scrolledPanel(boolean horizontal, boolean vertical, @NotNull Consumer<? super UIPanelBuilder> handler);
 
     @NotNull
-    UIRowBuilder label(@NotNull String text, @NotNull Consumer<? super UIControlBuilder.LabelBuilder> handler);
+    UIRowBuilder label(@NotNull UIObservable<String> text, @NotNull Consumer<? super UIControlBuilder.LabelBuilder> handler);
+
+    @NotNull
+    default UIRowBuilder label(@NotNull UIObservable<String> text) {
+        return label(text, identityConsumer());
+    }
 
     @NotNull
     default UIRowBuilder label(@NotNull String text) {
-        return label(text, identityConsumer());
+        return label(UIObservable.of(text));
+    }
+
+    @NotNull
+    UIRowBuilder link(
+        @NotNull UIObservable<String> text,
+        @NotNull Consumer<SelectionEvent> onSelect,
+        @NotNull Consumer<? super UIControlBuilder.LinkBuilder> handler
+    );
+
+    @NotNull
+    default UIRowBuilder link(@NotNull UIObservable<String> text, @NotNull Consumer<SelectionEvent> onSelect) {
+        return link(text, onSelect, identityConsumer());
+    }
+
+    @NotNull
+    default UIRowBuilder link(@NotNull String text, @NotNull Consumer<SelectionEvent> onSelect) {
+        return link(UIObservable.of(text), onSelect);
     }
 
     @NotNull
