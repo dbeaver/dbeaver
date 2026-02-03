@@ -189,7 +189,7 @@ public class AIMessage {
     }
 
     @Nullable
-    public String getToolUseID() {
+    public String getToolName() {
         return customResultInfo;
     }
 

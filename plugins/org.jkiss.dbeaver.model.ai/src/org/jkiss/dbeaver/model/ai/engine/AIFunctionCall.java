@@ -36,12 +36,19 @@ public class AIFunctionCall {
     @Nullable
     private AIFunctionDescriptor function;
 
+    private Map<String, String> additionalProperties;
+
     public AIFunctionCall() {
     }
 
-    public AIFunctionCall(@NotNull String functionName, @Nullable Map<String, Object> arguments) {
+    public AIFunctionCall(@NotNull String functionName, @Nullable Map<String, Object> arguments, @Nullable Map<String, String> additionalProperties) {
         this.functionName = functionName;
         this.arguments = arguments;
+        this.additionalProperties = additionalProperties;
+    }
+
+    public AIFunctionCall(@NotNull String functionName, @Nullable Map<String, Object> arguments) {
+        this(functionName, arguments, null);
     }
 
     @Nullable
@@ -60,6 +67,14 @@ public class AIFunctionCall {
 
     public void setArguments(@NotNull Map<String, Object> arguments) {
         this.arguments = arguments;
+    }
+
+    public Map<String, String> getAdditionalProperties() {
+        return additionalProperties;
+    }
+
+    public void setAdditionalProperties(Map<String, String> additionalProperties) {
+        this.additionalProperties = additionalProperties;
     }
 
     @Nullable
@@ -84,5 +99,6 @@ public class AIFunctionCall {
     public String toString() {
         return functionName + "(" + arguments + ")";
     }
+
 
 }
