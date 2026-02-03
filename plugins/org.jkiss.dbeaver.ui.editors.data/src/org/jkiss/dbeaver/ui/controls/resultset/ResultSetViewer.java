@@ -789,10 +789,10 @@ public class ResultSetViewer extends Viewer
             if (resultSet instanceof StatResultSet) {
                 // Statistics - let's use special presentation for it
                 if (filtersPanel != null) {
-                    UIUtils.setControlVisible(filtersPanel, false);
+                    UIUtils.setControlVisible(filtersPanel.getParent(), false);
                 }
                 if (statusBar != null) {
-                    UIUtils.setControlVisible(statusBar, false);
+                    UIUtils.setControlVisible(statusBar.getParent(), false);
                 }
                 availablePresentations = Collections.emptyList();
                 setActivePresentation(new StatisticsPresentation());
@@ -801,10 +801,10 @@ public class ResultSetViewer extends Viewer
             } else {
                 // Regular results
                 if (filtersPanel != null) {
-                    UIUtils.setControlVisible(filtersPanel, true);
+                    UIUtils.setControlVisible(filtersPanel.getParent(), true);
                 }
                 if (statusBar != null) {
-                    UIUtils.setControlVisible(statusBar, true);
+                    UIUtils.setControlVisible(statusBar.getParent(), true);
                 }
                 IResultSetContext context = new ResultSetContextImpl(this, resultSet);
                 final List<ResultSetPresentationDescriptor> newPresentations;
@@ -1863,6 +1863,12 @@ public class ResultSetViewer extends Viewer
                 public void handleEvent(@NotNull Event event) {
                     createFilterPanel0(composite);
                     updateFiltersText(false);
+
+                    if (getActivePresentation() instanceof StatisticsPresentation) {
+                        // No filters in statistics presentation
+                        UIUtils.setControlVisible(composite, false);
+                    }
+
                     mainPanel.removeListener(SWT.Activate, this);
                 }
             });
@@ -1891,10 +1897,14 @@ public class ResultSetViewer extends Viewer
                 @Override
                 public void handleEvent(@NotNull Event event) {
                     createStatusBar0(composite);
-
                     updateStatusMessage();
                     updateEditControls();
                     updateFiltersText(false);
+
+                    if (getActivePresentation() instanceof StatisticsPresentation) {
+                        // No status bar in statistics presentation
+                        UIUtils.setControlVisible(composite, false);
+                    }
 
                     mainPanel.removeListener(SWT.Activate, this);
                 }
