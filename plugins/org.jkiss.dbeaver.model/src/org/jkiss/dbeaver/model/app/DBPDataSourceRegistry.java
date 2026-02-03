@@ -202,6 +202,4 @@ public interface DBPDataSourceRegistry extends DBPObject, DBPSecretHolder {
     DBPPreferenceStore getPreferenceStore();
 
     void dispose();
-
-    DBPObjectSettingsProvider getDatasourceSettingsProvider();
 }

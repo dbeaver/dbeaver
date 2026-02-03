@@ -54,7 +54,6 @@ public class DataSourceNavigatorSettingsUtils {
         Map<String, String> settingsMap = DataSourceNavigatorSettings.saveSettingsToMap(settings);
 
         settingsProvider.setObjectSettings(
-            dataSource.getProject().getId(),
             SMObjectType.datasource,
             dataSource.getId(),
             settingsMap
@@ -69,7 +68,6 @@ public class DataSourceNavigatorSettingsUtils {
             return;
         }
         settingsProvider.clearObjectSettings(
-            dataSource.getProject().getId(),
             SMObjectType.datasource,
             dataSource.getId(),
             DataSourceNavigatorSettings.NAVIGATOR_SETTINGS

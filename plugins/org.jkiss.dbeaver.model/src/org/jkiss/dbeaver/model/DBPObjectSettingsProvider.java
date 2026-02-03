@@ -37,7 +37,6 @@ public interface DBPObjectSettingsProvider {
      */
     @Nullable
     Map<String, String> getObjectSettings(
-        @NotNull String projectId,
         @NotNull SMObjectType objectType,
         @NotNull String objectId
     );
@@ -46,14 +45,12 @@ public interface DBPObjectSettingsProvider {
      * Set user settings for the specified object.
      */
     void setObjectSettings(
-        @NotNull String projectId,
         @NotNull SMObjectType objectType,
         @NotNull String objectId,
         @NotNull Map<String, String> settings
     ) throws DBException;
 
     void clearObjectSettings(
-        @NotNull String projectId,
         @NotNull SMObjectType objectType,
         @NotNull String objectId,
         @NotNull Set<String> settings

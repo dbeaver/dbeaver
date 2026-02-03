@@ -46,7 +46,7 @@ public abstract class BaseProjectSettings implements DBPObjectSettingsProvider {
 
     @Nullable
     @Override
-    public Map<String, String> getObjectSettings(@NotNull String projectId, @NotNull SMObjectType objectType, @NotNull String objectId) {
+    public Map<String, String> getObjectSettings(@NotNull SMObjectType objectType, @NotNull String objectId) {
         synchronized (this) {
             if (projectSettings == null) {
                 try {
@@ -63,7 +63,6 @@ public abstract class BaseProjectSettings implements DBPObjectSettingsProvider {
 
     @Override
     public void setObjectSettings(
-        @NotNull String projectId,
         @NotNull SMObjectType objectType,
         @NotNull String objectId,
         @NotNull Map<String, String> settings
@@ -76,7 +75,6 @@ public abstract class BaseProjectSettings implements DBPObjectSettingsProvider {
 
     @Override
     public void clearObjectSettings(
-        @NotNull String projectId,
         @NotNull SMObjectType objectType,
         @NotNull String objectId,
         @NotNull Set<String> settings

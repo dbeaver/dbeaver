@@ -129,11 +129,6 @@ public class DataSourceRegistry<T extends DataSourceDescriptor> implements DBPDa
     }
 
     @Override
-    public DBPObjectSettingsProvider getDatasourceSettingsProvider() {
-        return null;
-    }
-
-    @Override
     public void dispose() {
         if (!isMultiUser()) {
             removeDataSourceListener(modelChangeListener);

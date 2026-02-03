@@ -838,7 +838,7 @@ public class DataSourceSerializerModern<T extends DataSourceDescriptor> implemen
         Map<String, String> userSettings = null;
         if (settingsProvider != null) {
             try {
-                userSettings = settingsProvider.getObjectSettings(dataSource.getProjectId(), SMObjectType.datasource, dataSource.getId());
+                userSettings = settingsProvider.getObjectSettings(SMObjectType.datasource, dataSource.getId());
             } catch (Exception e) {
                 log.warn("Error reading user datasource settings", e);
             }
