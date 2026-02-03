@@ -16,17 +16,10 @@
  */
 package org.jkiss.dbeaver.model.ai;
 
-import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
+public final class AIMetaTypes {
+    private AIMetaTypes() {
+    }
 
-import java.time.Duration;
-
-public record AIMessageMeta(
-    @NotNull String type,
-    @NotNull String engineId,
-    @Nullable String modelId,
-    @NotNull AIUsage usage,
-    @NotNull Duration timeSpent,
-    int systemPromptLength
-) {
+    public static final String PROMPT = "prompt";
+    public static final String EMBEDDING = "embedding";
 }
