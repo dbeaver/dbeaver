@@ -26,7 +26,6 @@ import java.text.NumberFormat;
 import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Function;
-import java.util.stream.Stream;
 
 /**
  * The builder for a row inside a panel.
@@ -125,11 +124,38 @@ public sealed interface UIRowBuilder permits UIRowBuilderImpl {
 
     @NotNull
     <T> UIRowBuilder comboBox(
-        @NotNull List<? extends T> items,
+        @NotNull UIObservableList<? extends T> items,
         @NotNull UIObservable<T> binding,
         @NotNull Function<? super T, String> converter,
         @NotNull Consumer<? super UIControlBuilder.ComboBuilder<T>> handler
     );
+
+    @NotNull
+    default <T> UIRowBuilder comboBox(
+        @NotNull UIObservableList<? extends T> items,
+        @NotNull UIObservable<T> binding,
+        @NotNull Function<? super T, String> converter
+    ) {
+        return comboBox(items, binding, converter, identityConsumer());
+    }
+
+    @NotNull
+    default <T> UIRowBuilder comboBox(
+        @NotNull List<? extends T> items,
+        @NotNull UIObservable<T> binding,
+        @NotNull Function<? super T, String> converter,
+        @NotNull Consumer<? super UIControlBuilder.ComboBuilder<T>> handler
+    ) {
+        if (items.isEmpty()) {
+            throw new IllegalArgumentException("Collection doesn't have any elements");
+        }
+        return comboBox(
+            UIObservableList.copyOf(items, binding.type()),
+            binding,
+            converter,
+            handler
+        );
+    }
 
     @NotNull
     default <T> UIRowBuilder comboBox(
@@ -154,11 +180,12 @@ public sealed interface UIRowBuilder permits UIRowBuilderImpl {
         @NotNull Function<? super T, String> converter,
         @NotNull Consumer<? super UIControlBuilder.ComboBuilder<T>> handler
     ) {
-        var items = Stream.of(binding.type().getEnumConstants())
-            .map(value -> (T) value)
-            .toList();
-
-        return comboBox(items, binding, converter, handler);
+        return comboBox(
+            List.of(binding.type().getEnumConstants()),
+            binding,
+            converter,
+            handler
+        );
     }
 
     @NotNull

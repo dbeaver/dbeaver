@@ -128,7 +128,10 @@ final class UIRowBuilderImpl implements UIRowBuilder {
 
     @NotNull
     @Override
-    public <T> UIRowBuilder textField(@NotNull UIObservable<T> binding, @NotNull Consumer<? super UIControlBuilder.TextBuilder<T>> handler) {
+    public <T> UIRowBuilder textField(
+        @NotNull UIObservable<T> binding,
+        @NotNull Consumer<? super UIControlBuilder.TextBuilder<T>> handler
+    ) {
         var builder = new UIControlBuilderImpl.TextBuilderImpl<T>(SWT.BORDER, binding);
         handler.accept(builder);
         controls.add(builder);
@@ -137,7 +140,10 @@ final class UIRowBuilderImpl implements UIRowBuilder {
 
     @NotNull
     @Override
-    public <T> UIRowBuilder passwordField(@NotNull UIObservable<T> binding, @NotNull Consumer<? super UIControlBuilder.TextBuilder<T>> handler) {
+    public <T> UIRowBuilder passwordField(
+        @NotNull UIObservable<T> binding,
+        @NotNull Consumer<? super UIControlBuilder.TextBuilder<T>> handler
+    ) {
         var builder = new UIControlBuilderImpl.TextBuilderImpl<T>(SWT.BORDER | SWT.PASSWORD, binding);
         handler.accept(builder);
         controls.add(builder);
@@ -147,19 +153,19 @@ final class UIRowBuilderImpl implements UIRowBuilder {
     @NotNull
     @Override
     public <T> UIRowBuilder comboBox(
-        @NotNull List<? extends T> items,
+        @NotNull UIObservableList<? extends T> items,
         @NotNull UIObservable<T> binding,
         @NotNull Function<? super T, String> converter,
         @NotNull Consumer<? super UIControlBuilder.ComboBuilder<T>> handler
     ) {
-        if (items.isEmpty()) {
-            throw new IllegalArgumentException("Enum doesn't have any constants");
-        }
-
-        var builder = new UIControlBuilderImpl.ComboBuilderImpl<T>(binding, converter, items, SWT.BORDER | SWT.DROP_DOWN | SWT.READ_ONLY);
+        var builder = new UIControlBuilderImpl.ComboBuilderImpl<>(
+            items,
+            binding,
+            converter,
+            SWT.BORDER | SWT.DROP_DOWN | SWT.READ_ONLY
+        );
         handler.accept(builder);
         controls.add(builder);
         return this;
     }
-
 }

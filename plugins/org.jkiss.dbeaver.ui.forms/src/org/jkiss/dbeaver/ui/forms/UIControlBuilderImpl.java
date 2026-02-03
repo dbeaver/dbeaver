@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ui.forms;
 import org.eclipse.core.databinding.DataBindingContext;
 import org.eclipse.core.databinding.UpdateValueStrategy;
 import org.eclipse.core.databinding.conversion.IConverter;
+import org.eclipse.core.databinding.observable.list.IObservableList;
 import org.eclipse.core.databinding.observable.value.IObservableValue;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.jface.databinding.fieldassist.ControlDecorationSupport;
@@ -33,7 +34,6 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ui.UIUtils;
 
-import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
@@ -167,6 +167,11 @@ abstract sealed class UIControlBuilderImpl<B extends UIControlBuilder<B>, C exte
         return ((UIObservableImpl<T>) observable).delegate();
     }
 
+    @NotNull
+    private static <E> IObservableList<E> delegate(@NotNull UIObservableList<E> observable) {
+        return ((UIObservableListImpl<E>) observable).delegate();
+    }
+
     static final class LabelBuilderImpl extends UIControlBuilderImpl<LabelBuilder, Label> implements LabelBuilder {
         private final String text;
         private final int style;
@@ -295,20 +300,20 @@ abstract sealed class UIControlBuilderImpl<B extends UIControlBuilder<B>, C exte
     }
 
     static final class ComboBuilderImpl<T> extends UIControlBuilderImpl<ComboBuilder<T>, Combo> implements ComboBuilder<T> {
+        private final UIObservableList<? extends T> items;
         private final UIObservable<T> binding;
         private final Function<? super T, String> converter;
-        private final List<? extends T> items;
         private final int style;
 
         public ComboBuilderImpl(
+            @NotNull UIObservableList<? extends T> items,
             @NotNull UIObservable<T> binding,
             @NotNull Function<? super T, String> converter,
-            @NotNull List<? extends T> items,
             int style
         ) {
+            this.items = items;
             this.binding = binding;
             this.converter = converter;
-            this.items = List.copyOf(items);
             this.style = style;
         }
 
@@ -319,6 +324,15 @@ abstract sealed class UIControlBuilderImpl<B extends UIControlBuilder<B>, C exte
             for (T item : items) {
                 combo.add(converter.apply(item));
             }
+            UIControlBuilderImpl.delegate(items).addListChangeListener(event -> {
+                // NOTE: Could possibly be optimized to reflect just the changed elements
+                var selection = combo.getText();
+                combo.removeAll();
+                for (T item : items) {
+                    combo.add(converter.apply(item));
+                }
+                combo.setText(selection);
+            });
             return combo;
         }
 

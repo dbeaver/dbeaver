@@ -81,7 +81,7 @@ public sealed interface UIObservable<T> permits UIObservableImpl {
 
     @NotNull
     static <T> UIObservable<T> of(@Nullable T value, @NotNull Class<T> type) {
-        return new UIObservableImpl<>(value, type);
+        return UIObservableImpl.of(value, type);
     }
 
     @NotNull
