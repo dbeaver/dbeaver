@@ -96,21 +96,10 @@ public class DataSourceRegistry<T extends DataSourceDescriptor> implements DBPDa
         DataSourceConfigurationManager configurationManager,
         @NotNull DBPPreferenceStore preferenceStore
     ) {
-        this(project, configurationManager, preferenceStore, true);
-    }
-
-    public DataSourceRegistry(
-        @NotNull DBPProject project,
-        DataSourceConfigurationManager configurationManager,
-        @NotNull DBPPreferenceStore preferenceStore,
-        boolean loadNow
-    ) {
         this.project = project;
         this.configurationManager = configurationManager;
         this.preferenceStore = preferenceStore;
-        if (loadNow) {
-            initLoadDataSources();
-        }
+        initLoadDataSources();
     }
 
     protected void initLoadDataSources() {

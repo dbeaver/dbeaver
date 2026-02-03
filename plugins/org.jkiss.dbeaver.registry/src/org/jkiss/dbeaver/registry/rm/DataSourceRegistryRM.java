@@ -28,7 +28,6 @@ import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.rm.RMController;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
-import org.jkiss.dbeaver.model.security.SMController;
 import org.jkiss.dbeaver.registry.DataSourceConfigurationManagerBuffer;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.registry.DataSourceFolder;
@@ -42,7 +41,6 @@ public class DataSourceRegistryRM<T extends DataSourceDescriptor> extends DataSo
 
     @NotNull
     private final RMController rmController;
-    private SMController smController;
 
     public DataSourceRegistryRM(
         @NotNull DBPProject project,
@@ -51,22 +49,6 @@ public class DataSourceRegistryRM<T extends DataSourceDescriptor> extends DataSo
     ) {
         super(project, new DataSourceConfigurationManagerRM(project, rmController), preferenceStore);
         this.rmController = rmController;
-    }
-
-    public DataSourceRegistryRM(
-        @NotNull DBPProject project,
-        @NotNull RMController rmController,
-        @NotNull DBPPreferenceStore preferenceStore,
-        SMController smController
-    ) {
-        super(project, new DataSourceConfigurationManagerRM(project, rmController), preferenceStore, false);
-        this.rmController = rmController;
-        this.smController = smController;
-        initLoadDataSources();
-    }
-
-    public SMController getSmController() {
-        return smController;
     }
 
     @Override
