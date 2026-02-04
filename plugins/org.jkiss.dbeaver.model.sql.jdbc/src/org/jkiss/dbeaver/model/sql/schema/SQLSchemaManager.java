@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.app.DBPApplication;
 import org.jkiss.dbeaver.model.connection.InternalDatabaseConfig;
 import org.jkiss.dbeaver.model.impl.jdbc.exec.JDBCTransaction;
 import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
@@ -30,6 +31,7 @@ import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.backup.JDBCDatabaseBackupDescriptor;
 import org.jkiss.dbeaver.model.sql.backup.JDBCDatabaseBackupRegistry;
 import org.jkiss.dbeaver.model.sql.translate.SQLQueryTranslator;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.IOUtils;
@@ -151,6 +153,11 @@ public final class SQLSchemaManager {
                     descriptor.getInstance().doBackup(dbCon, currentSchemaVersion, databaseConfig);
                     log.info("Starting backup execution");
                 } catch (DBException e) {
+                    DBPApplication application = DBWorkbench.getPlatform().getApplication();
+                    if (application.isHeadlessMode() && application.isCommunity()) {
+                        log.warn("Database backup failed: " + e.getMessage());
+                        return;
+                    }
                     throw new DBException("Internal database backup has failed", e);
                 }
             }
