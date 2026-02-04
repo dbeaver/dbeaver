@@ -111,33 +111,7 @@ record ValueHintReference(@NotNull List<Reference> references) implements DBDVal
     @Override
     public void performAction(@NotNull IResultSetController controller, @NotNull Point location, long state) {
         if (references.size() > 1) {
-            var manager = new MenuManager();
-            manager.addMenuListener(new IMenuListener2() {
-                @Override
-                public void menuAboutToShow(@NotNull IMenuManager manager) {
-                    manager.add(new EmptyAction("Navigate to"));
-                    for (int i = 0; i < references.size(); i++) {
-                        var reference = references.get(i);
-                        var label = ActionUtils.getLabelWithIndexMnemonic(reference.toDisplayString(), i);
-                        var image = DBeaverIcons.getImageDescriptor(DBSEntityType.TABLE.getIcon());
-                        manager.add(new Action(label, image) {
-                            @Override
-                            public void run() {
-                                performAction(reference, controller, state);
-                            }
-                        });
-                    }
-                }
-
-                @Override
-                public void menuAboutToHide(@NotNull IMenuManager manager) {
-                    UIUtils.asyncExec(manager::dispose);
-                }
-            });
-
-            var menu = manager.createContextMenu(controller.getControl());
-            menu.setLocation(location);
-            menu.setVisible(true);
+            showActionsMenu(controller, location, state);
         } else {
             performAction(references.getFirst(), controller, state);
         }
@@ -169,5 +143,35 @@ record ValueHintReference(@NotNull List<Reference> references) implements DBDVal
                 return Status.OK_STATUS;
             }
         }.schedule();
+    }
+
+    private void showActionsMenu(@NotNull IResultSetController controller, @NotNull Point location, long state) {
+        var manager = new MenuManager();
+        manager.addMenuListener(new IMenuListener2() {
+            @Override
+            public void menuAboutToShow(@NotNull IMenuManager manager) {
+                manager.add(new EmptyAction("Navigate to"));
+                for (int i = 0; i < references.size(); i++) {
+                    var reference = references.get(i);
+                    var label = ActionUtils.getLabelWithIndexMnemonic(reference.toDisplayString(), i);
+                    var image = DBeaverIcons.getImageDescriptor(DBSEntityType.TABLE.getIcon());
+                    manager.add(new Action(label, image) {
+                        @Override
+                        public void run() {
+                            performAction(reference, controller, state);
+                        }
+                    });
+                }
+            }
+
+            @Override
+            public void menuAboutToHide(@NotNull IMenuManager manager) {
+                UIUtils.asyncExec(manager::dispose);
+            }
+        });
+
+        var menu = manager.createContextMenu(controller.getControl());
+        menu.setLocation(location);
+        menu.setVisible(true);
     }
 }
