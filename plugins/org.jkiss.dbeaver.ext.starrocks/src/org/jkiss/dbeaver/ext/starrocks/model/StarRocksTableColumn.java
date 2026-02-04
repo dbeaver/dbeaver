@@ -34,19 +34,19 @@ public class StarRocksTableColumn extends GenericTableColumn {
 
     private static final Log log = Log.getLog(StarRocksTableColumn.class);
 
-    private static final String COL_FIELD = "Field"; //$NON-NLS-1$
-    private static final String COL_TYPE = "Type"; //$NON-NLS-1$
-    private static final String COL_NULL = "Null"; //$NON-NLS-1$
-    private static final String COL_COMMENT = "Comment"; //$NON-NLS-1$
-    private static final String COL_DEFAULT = "Default"; //$NON-NLS-1$
+    private static final String COL_COLUMN_NAME = "COLUMN_NAME"; //$NON-NLS-1$
+    private static final String COL_COLUMN_TYPE = "COLUMN_TYPE"; //$NON-NLS-1$
+    private static final String COL_IS_NULLABLE = "IS_NULLABLE"; //$NON-NLS-1$
+    private static final String COL_COLUMN_KEY = "COLUMN_KEY"; //$NON-NLS-1$
+    private static final String COL_COLUMN_DEFAULT = "COLUMN_DEFAULT"; //$NON-NLS-1$
+    private static final String COL_COLUMN_COMMENT = "COLUMN_COMMENT"; //$NON-NLS-1$
 
     public StarRocksTableColumn(@NotNull GenericTableBase table) {
         super(table);
     }
 
     /**
-     * Constructs a column by parsing SHOW FULL COLUMNS result set.
-     * SHOW FULL COLUMNS returns: Field | Type | Collation | Null | Key | Default | Extra | Privileges | Comment
+     * Constructs a column by parsing information_schema.columns result set.
      */
     public StarRocksTableColumn(
         @NotNull GenericTableBase table,
@@ -54,19 +54,19 @@ public class StarRocksTableColumn extends GenericTableColumn {
         int ordinal
     ) {
         super(table,
-            JDBCUtils.safeGetString(dbResult, COL_FIELD),
-            JDBCUtils.safeGetString(dbResult, COL_TYPE),
-            mapSqlType(JDBCUtils.safeGetString(dbResult, COL_TYPE)),
+            JDBCUtils.safeGetString(dbResult, COL_COLUMN_NAME),
+            JDBCUtils.safeGetString(dbResult, COL_COLUMN_TYPE),
+            mapSqlType(JDBCUtils.safeGetString(dbResult, COL_COLUMN_TYPE)),
             Types.OTHER,
             ordinal,
-            extractColumnSize(JDBCUtils.safeGetString(dbResult, COL_TYPE)),
-            extractColumnSize(JDBCUtils.safeGetString(dbResult, COL_TYPE)),
-            extractScale(JDBCUtils.safeGetString(dbResult, COL_TYPE)),
+            extractColumnSize(JDBCUtils.safeGetString(dbResult, COL_COLUMN_TYPE)),
+            extractColumnSize(JDBCUtils.safeGetString(dbResult, COL_COLUMN_TYPE)),
+            extractScale(JDBCUtils.safeGetString(dbResult, COL_COLUMN_TYPE)),
             null,
             10,
-            !"NO".equalsIgnoreCase(JDBCUtils.safeGetString(dbResult, COL_NULL)),
-            JDBCUtils.safeGetString(dbResult, COL_COMMENT),
-            JDBCUtils.safeGetString(dbResult, COL_DEFAULT),
+            "YES".equalsIgnoreCase(JDBCUtils.safeGetString(dbResult, COL_IS_NULLABLE)),
+            JDBCUtils.safeGetString(dbResult, COL_COLUMN_COMMENT),
+            JDBCUtils.safeGetString(dbResult, COL_COLUMN_DEFAULT),
             false,
             false
         );

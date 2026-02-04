@@ -50,6 +50,7 @@ public class StarRocksMetaModel extends GenericMetaModel {
 
     private static final String TYPE_MATERIALIZED_VIEW = "MATERIALIZED VIEW"; //$NON-NLS-1$
     private static final String TYPE_VIEW = "VIEW"; //$NON-NLS-1$
+    private static final String ORDINAL_POSITION = "ORDINAL_POSITION"; //$NON-NLS-1$
 
     public StarRocksMetaModel() {
         super();
@@ -121,7 +122,7 @@ public class StarRocksMetaModel extends GenericMetaModel {
                 }
             }
         } catch (SQLException e) {
-            throw new DBException("Error loading StarRocks databases", e);
+            throw new DBException("Error loading StarRocks databases", e); //$NON-NLS-1$
         }
         return schemas;
     }
@@ -153,7 +154,8 @@ public class StarRocksMetaModel extends GenericMetaModel {
             query =
                 "SELECT t.table_name, " + //$NON-NLS-1$
                 "       CASE WHEN t.table_type = 'BASE TABLE' THEN 'BASE TABLE' ELSE 'VIEW' END as table_type, " + //$NON-NLS-1$
-                "       (mv.table_name IS NOT NULL) as is_materialized " + //$NON-NLS-1$
+                "       (mv.table_name IS NOT NULL) as is_materialized, " + //$NON-NLS-1$
+                "       t.table_comment as REMARKS " + //$NON-NLS-1$
                 "FROM information_schema.tables t " + //$NON-NLS-1$
                 "LEFT JOIN information_schema.materialized_views mv " + //$NON-NLS-1$
                 "  ON t.table_schema = mv.table_schema AND t.table_name = mv.table_name " + //$NON-NLS-1$
@@ -162,7 +164,8 @@ public class StarRocksMetaModel extends GenericMetaModel {
             query =
                 "SELECT t.table_name, " + //$NON-NLS-1$
                 "       CASE WHEN t.table_type = 'BASE TABLE' THEN 'BASE TABLE' ELSE 'VIEW' END as table_type, " + //$NON-NLS-1$
-                "       FALSE as is_materialized " + //$NON-NLS-1$
+                "       FALSE as is_materialized, " + //$NON-NLS-1$
+                "       t.table_comment as REMARKS " + //$NON-NLS-1$
                 "FROM information_schema.tables t " + //$NON-NLS-1$
                 "WHERE t.table_schema = ?"; //$NON-NLS-1$
         }
@@ -198,7 +201,7 @@ public class StarRocksMetaModel extends GenericMetaModel {
             return null;
         }
 
-        String tableTypeUpper = tableType != null ? tableType.toUpperCase() : "";
+        String tableTypeUpper = tableType != null ? tableType.toUpperCase() : ""; //$NON-NLS-1$
 
         // Check if this view is actually a materialized view
         if (tableTypeUpper.contains(TYPE_VIEW)) {
@@ -221,7 +224,7 @@ public class StarRocksMetaModel extends GenericMetaModel {
         @Nullable GenericTableBase forTable
     ) throws SQLException {
         if (forTable == null) {
-            throw new SQLException("Cannot load columns without specifying a table");
+            throw new SQLException("Cannot load columns without specifying a table"); //$NON-NLS-1$
         }
 
         // Switch to the catalog context
@@ -233,12 +236,26 @@ public class StarRocksMetaModel extends GenericMetaModel {
         GenericSchema schema = owner.getSchema();
         String schemaName = schema != null ? schema.getName() : owner.getName();
 
-        String sql = "SHOW FULL COLUMNS FROM " + DBUtils.getQuotedIdentifier(owner.getDataSource(), forTable.getName()) + //$NON-NLS-1$
-                     " FROM " + DBUtils.getQuotedIdentifier(owner.getDataSource(), schemaName); //$NON-NLS-1$
-        return session.prepareStatement(sql);
+        // Use information_schema.columns to get ORDINAL_POSITION
+        String sql = "SELECT " + //$NON-NLS-1$
+            "COLUMN_NAME, " + //$NON-NLS-1$
+            "DATA_TYPE, " + //$NON-NLS-1$
+            "COLUMN_TYPE, " + //$NON-NLS-1$
+            "IS_NULLABLE, " + //$NON-NLS-1$
+            "COLUMN_KEY, " + //$NON-NLS-1$
+            "COLUMN_DEFAULT, " + //$NON-NLS-1$
+            "COLUMN_COMMENT, " + //$NON-NLS-1$
+            "ORDINAL_POSITION " + //$NON-NLS-1$
+            "FROM information_schema.columns " + //$NON-NLS-1$
+            "WHERE table_schema = ? AND table_name = ? " + //$NON-NLS-1$
+            "ORDER BY ORDINAL_POSITION"; //$NON-NLS-1$
+
+        JDBCPreparedStatement stmt = session.prepareStatement(sql);
+        stmt.setString(1, schemaName);
+        stmt.setString(2, forTable.getName());
+        return stmt;
     }
 
-    @Nullable
     @Override
     public GenericTableColumn fetchTableColumn(
         @NotNull JDBCSession session,
@@ -246,12 +263,8 @@ public class StarRocksMetaModel extends GenericMetaModel {
         @NotNull GenericTableBase table,
         @NotNull JDBCResultSet dbResult
     ) throws DBException {
-        if (table instanceof StarRocksTable || table instanceof StarRocksViewBase) {
-            // Calculate ordinal based on currently cached columns
-            int ordinal = table.getCachedAttributes() != null ? table.getCachedAttributes().size() + 1 : 1;
-            return new StarRocksTableColumn(table, dbResult, ordinal);
-        }
-        return super.fetchTableColumn(session, owner, table, dbResult);
+        int ordinal = JDBCUtils.safeGetInt(dbResult, ORDINAL_POSITION);
+        return new StarRocksTableColumn(table, dbResult, ordinal);
     }
 
     @Nullable
