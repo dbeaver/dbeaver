@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,20 +17,33 @@
 package org.jkiss.dbeaver.model.cli.model.option;
 
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.model.fs.DBFPath;
 import picocli.CommandLine;
 
-public class InputFileOption extends AbstractFileOption {
+import java.util.List;
+
+public class NetworkHandlerOptions {
     @Nullable
     @CommandLine.Option(
-        names = {"-in", "-input-file"},
+        names = {"-net", "--network-handler-param"},
         arity = "1",
-        description = "Argument value that can be written in the file."
+        description = "Network handler parameter in the form 'name=value'. May be specified multiple times.")
+    private List<String> handlerParams;
+
+    @CommandLine.Option(
+        names = {"-net-save-pwd", "--network-handler-save-password"},
+        arity = "1",
+        description = "Save network handler secure parameters (like passwords). Default true.",
+        defaultValue = "true"
     )
-    private String inputFile;
+
+    private boolean savePassword;
 
     @Nullable
-    public DBFPath getInputFile() {
-        return getPath(inputFile);
+    public List<String> getHandlerParams() {
+        return handlerParams;
+    }
+    
+    public boolean isSavePassword() {
+        return savePassword;
     }
 }

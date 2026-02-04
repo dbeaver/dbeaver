@@ -17,6 +17,8 @@
 package org.jkiss.dbeaver.model.ai;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.ai.engine.AIDatabaseContext;
 
 /**
  * Generates AI prompts.
@@ -27,14 +29,5 @@ public interface AIPromptGenerator {
     String generatorId();
 
     @NotNull
-    String build();
-
-    /**
-     * Creates a copy of this prompt generator.
-     *
-     * @return a new instance of the prompt generator with the same configuration
-     */
-    @NotNull
-    AIPromptGenerator copy();
-
+    String build(@Nullable AIDatabaseContext context);
 }

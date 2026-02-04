@@ -558,6 +558,7 @@
                 type="config"
                 id="mssql_ssl"
                 codeName="SSL"
+                prefix="ssl"
                 label="SSL"
                 description="SSL settings"
                 desktop="false"

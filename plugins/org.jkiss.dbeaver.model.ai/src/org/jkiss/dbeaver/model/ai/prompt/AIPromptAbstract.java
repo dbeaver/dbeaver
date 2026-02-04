@@ -17,11 +17,14 @@
 package org.jkiss.dbeaver.model.ai.prompt;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.ai.AIPromptGenerator;
 import org.jkiss.dbeaver.model.ai.AISettings;
+import org.jkiss.dbeaver.model.ai.engine.AIDatabaseContext;
 import org.jkiss.dbeaver.model.ai.registry.AIPromptGeneratorDescriptor;
 import org.jkiss.dbeaver.model.ai.registry.AIPromptGeneratorRegistry;
 import org.jkiss.dbeaver.model.ai.registry.AISettingsManager;
+import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -62,19 +65,37 @@ public abstract class AIPromptAbstract implements AIPromptGenerator {
         return this;
     }
 
-    @NotNull
-    public final String build() {
-        StringBuilder prompt = new StringBuilder();
+    protected void clear() {
+        this.examples.clear();
+        this.instructions.clear();
+        this.contexts.clear();
+        this.outputFormats.clear();
+    }
 
-        AIPromptGeneratorDescriptor gd = AIPromptGeneratorRegistry.getInstance().getPromptGenerator(this.generatorId());
+    @NotNull
+    public String build(@Nullable AIDatabaseContext context) {
+        clear();
+        initializePrompt(context);
+
         AISettings settings = AISettingsManager.getInstance().getSettings();
+
+        // Additional function instructions
+        AIPromptGeneratorDescriptor gd = AIPromptGeneratorRegistry.getInstance().getPromptGenerator(generatorId());
         if (gd != null && settings.isFunctionsEnabled()) {
             for (AIPromptGeneratorDescriptor.Uses use : gd.getUses()) {
                 if (settings.getEnabledFunctions().contains(use.function())) {
-                    this.addInstructions(use.instructions());
+                    addInstructions(use.instructions());
                 }
             }
         }
+
+        // User custom instructions
+        String customInstructions = settings.getCustomInstructions(generatorId());
+        if (CommonUtils.isNotEmpty(customInstructions)) {
+            addInstructions(customInstructions);
+        }
+
+        StringBuilder prompt = new StringBuilder();
 
         if (!instructions.isEmpty()) {
             prompt.append("Instructions:\n");
@@ -88,7 +109,7 @@ public abstract class AIPromptAbstract implements AIPromptGenerator {
 
         if (!contexts.isEmpty()) {
             prompt.append("\nContext:\n");
-            contexts.forEach(context -> prompt.append("- ").append(context).append("\n"));
+            contexts.forEach(ctx -> prompt.append("- ").append(ctx).append("\n"));
         }
 
         if (!outputFormats.isEmpty()) {
@@ -99,17 +120,6 @@ public abstract class AIPromptAbstract implements AIPromptGenerator {
         return prompt.toString();
     }
 
-    @NotNull
-    @Override
-    public AIPromptAbstract copy() {
-        AIPromptAbstract copy = create();
-        copy.instructions.addAll(instructions);
-        copy.examples.addAll(examples);
-        copy.contexts.addAll(contexts);
-        copy.outputFormats.addAll(outputFormats);
-        return copy;
-    }
+    protected abstract void initializePrompt(@Nullable AIDatabaseContext context);
 
-    @NotNull
-    protected abstract AIPromptAbstract create();
 }
