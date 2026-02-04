@@ -35,7 +35,7 @@ public class AIFunctionCall {
     private String hint;
     @Nullable
     private AIFunctionDescriptor function;
-
+    @Nullable
     private Map<String, String> additionalProperties;
 
     public AIFunctionCall() {
@@ -69,6 +69,7 @@ public class AIFunctionCall {
         this.arguments = arguments;
     }
 
+    @Nullable
     public Map<String, String> getAdditionalProperties() {
         return additionalProperties;
     }
