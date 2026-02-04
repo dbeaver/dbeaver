@@ -35,11 +35,15 @@ import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.model.runtime.LoggingProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.utils.DataSourceUtils;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.PropertySerializationUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
+import picocli.CommandLine;
 
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -50,6 +54,66 @@ import java.util.Map;
 
 public class CLIUtils {
     private static final Log log = Log.getLog(CLIUtils.class);
+
+    @NotNull
+    public static String normalizeOptionName(@NotNull String name) {
+        if (name.startsWith("--")) {
+            return name.substring(2);
+        } else if (name.startsWith("-")) {
+            return name.substring(1);
+        }
+        return name;
+    }
+
+    @FunctionalInterface
+    public interface DataSourceUpdater {
+        void updateDataSource(@NotNull DBPDataSourceContainer dataSource) throws CLIException;
+    }
+
+    public static class DataSourceAuthUpdater implements DataSourceUpdater {
+        @NotNull
+        private final DataSourceAuthOptions authOptions;
+
+        public DataSourceAuthUpdater(@NotNull DataSourceAuthOptions authOptions) {
+            this.authOptions = authOptions;
+        }
+
+        @Override
+        public void updateDataSource(@NotNull DBPDataSourceContainer dataSource) throws CLIException {
+            CLIUtils.processDataSourceAuthOptions(dataSource, authOptions);
+        }
+    }
+
+    public static class DataSourceRootUpdater implements DataSourceUpdater {
+        @NotNull
+        private final DataSourceOptions dataSourceOptions;
+
+        public DataSourceRootUpdater(@NotNull DataSourceOptions dataSourceOptions) {
+            this.dataSourceOptions = dataSourceOptions;
+        }
+
+        @Override
+        public void updateDataSource(@NotNull DBPDataSourceContainer dataSource) throws CLIException {
+            String dsName = dataSourceOptions.getDatasourceName();
+            if (CommonUtils.isEmpty(dsName)) {
+                dsName = "Ext: " + dataSource.getDriver().getName();
+                if (CommonUtils.isNotEmpty(dataSourceOptions.getDbName())) {
+                    dsName += " - " + dataSourceOptions.getDbName();
+                } else if (CommonUtils.isNotEmpty(dataSourceOptions.getServer())) {
+                    dsName += " - " + dataSourceOptions.getServer();
+                }
+            }
+            if (CommonUtils.isNotEmpty(dataSourceOptions.getDatasourceName())) {
+                dataSource.setName(dsName);
+            }
+            if (CommonUtils.isNotEmpty(dataSourceOptions.getFolder())) {
+                DBPDataSourceFolder folder = dataSource.getRegistry().getFolder(dataSourceOptions.getFolder());
+                dataSource.setFolder(folder);
+            }
+            dataSource.setSavePassword(dataSourceOptions.isSavePassword());
+
+        }
+    }
 
     @Nullable
     public static String readValueFromFileOrSystemIn(@Nullable InputFileOption filesOptions) throws CLIException {
@@ -140,18 +204,15 @@ public class CLIUtils {
         @NotNull DBPProject project,
         @NotNull String driverId,
         @NotNull DataSourceOptions dataSourceOptions,
-        @NotNull DataSourceAuthOptions authOptions
+        @NotNull List<DataSourceUpdater> dataSourceUpdaters
     ) throws CLIException {
-        DBPDataSourceContainer tempDatasource = createDataSource(
+        return createDataSource(
             project,
             driverId,
             dataSourceOptions,
-            authOptions,
+            dataSourceUpdaters,
             true
         );
-
-        processDataSourceAuthOptions(tempDatasource, authOptions);
-        return tempDatasource;
     }
 
     @NotNull
@@ -159,7 +220,7 @@ public class CLIUtils {
         @NotNull DBPProject project,
         @NotNull String driverId,
         @NotNull DataSourceOptions dataSourceOptions,
-        @NotNull DataSourceAuthOptions authOptions,
+        @NotNull List<DataSourceUpdater> dataSourceUpdaters,
         boolean temporary
     ) throws CLIException {
         DBPDriver driver = DBWorkbench.getPlatform().getDataSourceProviderRegistry().findDriver(driverId);
@@ -173,7 +234,7 @@ public class CLIUtils {
 
         var registry = project.getDataSourceRegistry();
         DBPDataSourceContainer dataSource = registry.createDataSource(driver, connectionConfiguration);
-        updateDataSource(dataSourceOptions, authOptions, dataSource);
+        updateDataSource(dataSource, dataSourceUpdaters);
         dataSource.setTemporary(temporary);
         try {
             registry.addDataSource(dataSource);
@@ -184,28 +245,12 @@ public class CLIUtils {
     }
 
     public static void updateDataSource(
-        @NotNull DataSourceOptions dataSourceOptions,
-        @NotNull DataSourceAuthOptions authOptions,
-        @NotNull DBPDataSourceContainer dataSource
+        @NotNull DBPDataSourceContainer dataSource,
+        @NotNull List<DataSourceUpdater> dataSourceUpdaters
     ) throws CLIException {
-        String dsName = dataSourceOptions.getDatasourceName();
-        if (CommonUtils.isEmpty(dsName)) {
-            dsName = "Ext: " + dataSource.getDriver().getName();
-            if (CommonUtils.isNotEmpty(dataSourceOptions.getDbName())) {
-                dsName += " - " + dataSourceOptions.getDbName();
-            } else if (CommonUtils.isNotEmpty(dataSourceOptions.getServer())) {
-                dsName += " - " + dataSourceOptions.getServer();
-            }
+        for (DataSourceUpdater dataSourceUpdater : dataSourceUpdaters) {
+            dataSourceUpdater.updateDataSource(dataSource);
         }
-        if (CommonUtils.isNotEmpty(dataSourceOptions.getDatasourceName())) {
-            dataSource.setName(dsName);
-        }
-        if (CommonUtils.isNotEmpty(dataSourceOptions.getFolder())) {
-            DBPDataSourceFolder folder = dataSource.getRegistry().getFolder(dataSourceOptions.getFolder());
-            dataSource.setFolder(folder);
-        }
-        dataSource.setSavePassword(dataSourceOptions.isSavePassword());
-        processDataSourceAuthOptions(dataSource, authOptions);
     }
 
 
@@ -410,4 +455,24 @@ public class CLIUtils {
         }
         return sb.toString().trim();
     }
+
+
+    public static String getHelpFromCommand(@NotNull CommandLine.Model.CommandSpec commandForHelp) throws CLIException {
+        CommandLine.Model.UsageMessageSpec helpSpec = commandForHelp.usageMessage();
+        helpSpec.header(GeneralUtils.getProductTitle());
+        try (
+            var out = new StringWriter();
+            var print = new PrintWriter(out)
+        ) {
+            var updatedCmd = new CommandLine(commandForHelp);
+            updatedCmd.usage(print);
+            return out.toString();
+        } catch (Exception e) {
+            throw new CLIException(
+                "Error generating help message: " + e.getMessage(), e,
+                CLIConstants.EXIT_CODE_ERROR
+            );
+        }
+    }
+
 }

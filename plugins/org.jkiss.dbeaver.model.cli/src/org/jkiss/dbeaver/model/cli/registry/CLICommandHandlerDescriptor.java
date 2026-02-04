@@ -18,22 +18,30 @@ package org.jkiss.dbeaver.model.cli.registry;
 
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.Platform;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.utils.CommonUtils;
 import org.osgi.framework.Bundle;
 
-public class CommandLineParameterDescriptor {
+public class CLICommandHandlerDescriptor {
     private final boolean exitAfterExecute;
     private final boolean exclusiveMode;
     private final boolean forceNewInstance;
     private final Class<?> implClass;
+    private final Class<?> replace;
 
 
-    public CommandLineParameterDescriptor(IConfigurationElement config) throws Exception {
+    public CLICommandHandlerDescriptor(IConfigurationElement config) throws Exception {
         this.exitAfterExecute = CommonUtils.toBoolean(config.getAttribute("exitAfterExecute"));
         this.exclusiveMode = CommonUtils.toBoolean(config.getAttribute("exclusiveMode"));
         this.forceNewInstance = CommonUtils.toBoolean(config.getAttribute("forceNewInstance"));
         Bundle cBundle = Platform.getBundle(config.getContributor().getName());
         this.implClass = cBundle.loadClass(config.getAttribute("handler"));
+        if (CommonUtils.isNotEmpty(config.getAttribute("replace"))) {
+            this.replace = cBundle.loadClass(config.getAttribute("replace"));
+        } else {
+            this.replace = null;
+        }
     }
 
 
@@ -49,8 +57,16 @@ public class CommandLineParameterDescriptor {
         return forceNewInstance;
     }
 
+    @NotNull
     public Class<?> getImplClass() {
         return implClass;
     }
+
+    @Nullable
+    public Class<?> getReplacedHandler() {
+        return replace;
+    }
+
+
 }
 

@@ -335,6 +335,10 @@ public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor
         return propInfo.editable();
     }
 
+    public boolean isMutable() {
+        return propInfo.mutable();
+    }
+
     private boolean isNewObject(Object object) {
         return object instanceof DBPPersistedObject po && !po.isPersisted();
     }

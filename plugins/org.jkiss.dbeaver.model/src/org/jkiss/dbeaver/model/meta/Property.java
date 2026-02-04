@@ -95,6 +95,13 @@ public @interface Property
     boolean updatable() default false;
 
     /**
+     * Mutable flag. If set to true then property can be changed after creation.
+     *
+     * @return mutable flag
+     */
+    boolean mutable() default true;
+
+    /**
      * Expression to verify updatable status
      */
     @NotNull String updatableExpr() default "";
