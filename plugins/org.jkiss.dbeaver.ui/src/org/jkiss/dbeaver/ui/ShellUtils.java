@@ -54,10 +54,11 @@ public final class ShellUtils {
         try {
             if (RuntimeUtils.isMacOS()) {
                 try {
-                    // For known associations
+                    // In recent versions of macOS, open -a Finder.app <path> no longer works for known file associations,
+                    // so we have to rely on open <path>, but we can't use it for unknown associations either,
+                    // as it doesn't know how to deal with them. So probe the latter first, and fall back to the former. If both fail, show an error.
                     executeWithReturnCodeCheck("open", path.toAbsolutePath().toString());
                 } catch (IOException e) {
-                    // For unknown associations
                     executeWithReturnCodeCheck("open", "-a", "Finder.app", path.toAbsolutePath().toString());
                 }
                 return true;
