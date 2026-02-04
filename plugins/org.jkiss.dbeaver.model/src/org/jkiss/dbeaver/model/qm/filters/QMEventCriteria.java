@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -57,6 +57,8 @@ public class QMEventCriteria {
     private Set<String> catalogs = Collections.emptySet();
     @NotNull
     private QMSortField sortField = QMSortField.DATE;
+    @NotNull
+    private Set<String> ipAddresses = Collections.emptySet();
     @Nullable
     private QMDateRange startDateRange;
     private boolean desc = true;
@@ -247,5 +249,14 @@ public class QMEventCriteria {
 
     public void setSchemas(@NotNull Set<String> schemas) {
         this.schemas = schemas;
+    }
+
+    @NotNull
+    public Set<String> getIpAddresses() {
+        return ipAddresses;
+    }
+
+    public void setIpAddresses(@NotNull Set<String> ipAddresses) {
+        this.ipAddresses = ipAddresses;
     }
 }
