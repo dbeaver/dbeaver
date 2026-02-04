@@ -623,6 +623,15 @@ public class UIUtils {
         return new Font(normalFont.getDevice(), data);
     }
 
+    @NotNull
+    public static Font multiplyFontSize(@NotNull Font normalFont, double modifier) {
+        final FontData[] data = normalFont.getFontData();
+        for (FontData fd : data) {
+            fd.setHeight((int) Math.round(fd.getHeight() * modifier));
+        }
+        return new Font(normalFont.getDevice(), data);
+    }
+
     public static Group createControlGroup(Composite parent, String label, int columns, int layoutStyle, int widthHint) {
         Group group = new Group(parent, SWT.NONE);
         group.setText(label);
