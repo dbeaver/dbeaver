@@ -37,7 +37,6 @@ public class StarRocksTableColumn extends GenericTableColumn {
     private static final String COL_COLUMN_NAME = "COLUMN_NAME"; //$NON-NLS-1$
     private static final String COL_COLUMN_TYPE = "COLUMN_TYPE"; //$NON-NLS-1$
     private static final String COL_IS_NULLABLE = "IS_NULLABLE"; //$NON-NLS-1$
-    private static final String COL_COLUMN_KEY = "COLUMN_KEY"; //$NON-NLS-1$
     private static final String COL_COLUMN_DEFAULT = "COLUMN_DEFAULT"; //$NON-NLS-1$
     private static final String COL_COLUMN_COMMENT = "COLUMN_COMMENT"; //$NON-NLS-1$
 
