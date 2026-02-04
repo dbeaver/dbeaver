@@ -50,6 +50,7 @@ import java.util.Map;
 
 public class CLIUtils {
     private static final Log log = Log.getLog(CLIUtils.class);
+    public static final int STRING_FORMAT_PADDING = 3;
 
     @Nullable
     public static String readValueFromFileOrSystemIn(@Nullable InputFileOption filesOptions) throws CLIException {
@@ -387,13 +388,16 @@ public class CLIUtils {
         StringBuilder sb = new StringBuilder();
         // header
         for (Map.Entry<String, Integer> entry : columnWidths.entrySet()) {
-            sb.append(String.format("%-" + (entry.getValue() + 3) + "s", entry.getKey()));
+            sb.append(String.format("%-" + (entry.getValue() + STRING_FORMAT_PADDING) + "s", entry.getKey()));
         }
         sb.append("\n");
         // rows
         for (Map<String, String> row : data) {
             for (Map.Entry<String, Integer> entry : columnWidths.entrySet()) {
-                sb.append(String.format("%-" + (entry.getValue() + 3) + "s", CommonUtils.notNull(row.get(entry.getKey()), "")));
+                sb.append(String.format(
+                    "%-" + (entry.getValue() + STRING_FORMAT_PADDING) + "s",
+                    CommonUtils.notNull(row.get(entry.getKey()), "")
+                ));
             }
             sb.append("\n");
         }
