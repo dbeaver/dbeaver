@@ -57,8 +57,6 @@ public class QMEventCriteria {
     private Set<String> catalogs = Collections.emptySet();
     @NotNull
     private QMSortField sortField = QMSortField.DATE;
-    @NotNull
-    private Set<String> ipAddresses = Collections.emptySet();
     @Nullable
     private QMDateRange startDateRange;
     private boolean desc = true;
@@ -249,14 +247,5 @@ public class QMEventCriteria {
 
     public void setSchemas(@NotNull Set<String> schemas) {
         this.schemas = schemas;
-    }
-
-    @NotNull
-    public Set<String> getIpAddresses() {
-        return ipAddresses;
-    }
-
-    public void setIpAddresses(@NotNull Set<String> ipAddresses) {
-        this.ipAddresses = ipAddresses;
     }
 }
