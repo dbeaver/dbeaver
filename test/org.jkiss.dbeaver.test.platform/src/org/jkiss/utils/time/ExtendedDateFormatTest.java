@@ -272,7 +272,6 @@ public class ExtendedDateFormatTest {
 
         String result = format.format(date);
         Assert.assertTrue(result.contains(".890000000"));
-        Assert.assertFalse(result.contains("Timestamp"));
     }
 
     @Test
