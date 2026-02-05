@@ -473,6 +473,36 @@ public class ResultSetViewer extends Viewer
         });
     }
 
+    @NotNull
+    @Override
+    public List<ResultSetRow> getSelectedRows() {
+        return getSelection().getSelectedRows();
+    }
+
+    @Nullable
+    @Override
+    public DBSEntity getSingleEntity() {
+        return getModel().getSingleSource();
+    }
+
+    @NotNull
+    @Override
+    public Collection<DBDAttributeBinding> getAllAttributes() {
+        return getModel().getVisibleAttributes();
+    }
+
+    @Nullable
+    @Override
+    public Object getCellValue(@NotNull DBDAttributeBinding binding, @NotNull DBDValueRow row) {
+        return getModel().getCellValue(binding, row);
+    }
+
+    @Nullable
+    @Override
+    public DBDRowIdentifier getDefaultRowIdentifier() {
+        return getModel().getDefaultRowIdentifier();
+    }
+
     private void applyCurrentPresentationThemeSettings() {
         if (panelFolder != null) {
             panelFolder.setFont(JFaceResources.getFont(UIFonts.Eclipse.PART_TITLE_FONT));
@@ -2144,7 +2174,7 @@ public class ResultSetViewer extends Viewer
     private void changeMode(boolean recordMode)
     {
         //Object state = savePresentationState();
-        List<ResultSetRow> selectedRows = getSelection().getSelectedRows();
+        List<ResultSetRow> selectedRows = getSelectedRows();
         if (selectedRows.isEmpty()) {
             if (model.getRowCount() > 0) {
                 selectedRows = Collections.singletonList(model.getRow(0));
@@ -2863,7 +2893,7 @@ public class ResultSetViewer extends Viewer
             }
         }
 
-        Collection<ResultSetRow> selectedRows = getSelection().getSelectedRows();
+        Collection<ResultSetRow> selectedRows = getSelectedRows();
         ResultSetRow[] rows = selectedRows.toArray(new ResultSetRow[0]);
 
         FilterValueEditPopup popup = new FilterValueEditPopup(getSite().getShell(), ResultSetViewer.this, curAttribute, rows);
@@ -3476,10 +3506,10 @@ public class ResultSetViewer extends Viewer
         refTablesMenu.setActionDefinitionId(IResultSetCommands.CMD_REFERENCES_MENU);
         refTablesMenu.add(ResultSetReferenceMenu.NOREFS_ACTION);
         if (monitor != null) {
-            ResultSetReferenceMenu.fillRefTablesActions(monitor, this, getSelection().getSelectedRows(), singleSource, refTablesMenu, openInNewWindow);
+            ResultSetReferenceMenu.fillRefTablesActions(monitor, this, getSelectedRows(), singleSource, refTablesMenu, openInNewWindow);
         } else {
             refTablesMenu.addMenuListener(manager ->
-                ResultSetReferenceMenu.fillRefTablesActions(null, this, getSelection().getSelectedRows(), singleSource, manager, openInNewWindow));
+                ResultSetReferenceMenu.fillRefTablesActions(null, this, getSelectedRows(), singleSource, manager, openInNewWindow));
         }
 
         return refTablesMenu;
@@ -4747,7 +4777,7 @@ public class ResultSetViewer extends Viewer
             final DBDAttributeBinding docAttribute = model.getDocumentAttribute();
             final DBDAttributeBinding[] attributes = model.getAttributes();
 
-            final List<ResultSetRow> selectedRows = getSelection().getSelectedRows();
+            final List<ResultSetRow> selectedRows = getSelectedRows();
             final int[][] partitionedSelectedRows;
 
             if (selectedRows.isEmpty()) {
@@ -4875,7 +4905,7 @@ public class ResultSetViewer extends Viewer
         }
 
         final DBDAttributeBinding docAttribute = model.getDocumentAttribute();
-        final List<ResultSetRow> selectedRows = getSelection().getSelectedRows();
+        final List<ResultSetRow> selectedRows = getSelectedRows();
         final List<DBDAttributeBinding> selectedAttributes = getSelection().getSelectedAttributes();
         final int[][] partitionedSelectedRows = groupConsecutiveRows(
             selectedRows.stream()

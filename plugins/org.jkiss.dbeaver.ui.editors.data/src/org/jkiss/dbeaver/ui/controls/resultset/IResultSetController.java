@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,6 +24,7 @@ import org.eclipse.swt.widgets.Control;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.DBDDataProvider;
 import org.jkiss.dbeaver.model.DBPContextProvider;
 import org.jkiss.dbeaver.model.DBPMessageType;
 import org.jkiss.dbeaver.model.DBPObject;
@@ -46,7 +47,7 @@ import java.util.List;
  * ResultSet controller.
  * This interface is not supposed to be implemented by clients.
  */
-public interface IResultSetController extends IDataController, DBPContextProvider, DBPObject {
+public interface IResultSetController extends IDataController, DBPContextProvider, DBPObject, DBDDataProvider {
 
     String MENU_ID_EDIT = "edit";
     String MENU_ID_VIEW = "view";
