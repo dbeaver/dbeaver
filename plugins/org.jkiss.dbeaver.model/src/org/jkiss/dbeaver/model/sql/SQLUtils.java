@@ -776,14 +776,13 @@ public final class SQLUtils {
         return sb.toString();
     }
 
-    private static final String QUERY_ID_COMMENT_MARK = " (auto-gen)";
-
     /**
      * Appends query identification comment if it is enabled in preferences.
      */
     @NotNull
     public static String addQueryIdentificationComment(@NotNull DBCSession session, @NotNull String query) {
-        if (query.contains(QUERY_ID_COMMENT_MARK)) {
+        String comment = NLS.bind(ModelMessages.sql_utils_query_generated_by, GeneralUtils.getProductName());
+        if (query.contains(comment)) {
             return query;
         }
         var prefStore = session.getDataSource().getContainer().getPreferenceStore();
@@ -793,7 +792,7 @@ public final class SQLUtils {
         if (session.getPurpose().isUser()) {
             return query;
         }
-        return generateCommentLine(session.getDataSource(), NLS.bind(ModelMessages.sql_utils_query_generated_by, GeneralUtils.getProductName()) + QUERY_ID_COMMENT_MARK) + query;
+        return generateCommentLine(session.getDataSource(), comment) + query;
     }
 
     public static String generateParamList(int paramCount) {
