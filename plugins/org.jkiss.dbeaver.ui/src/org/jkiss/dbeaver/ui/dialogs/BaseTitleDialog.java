@@ -53,6 +53,10 @@ public class BaseTitleDialog extends TitleAreaDialog {
 
     @Override
     protected Composite createDialogArea(Composite parent) {
+        if (needsTopSeparator()) {
+            // Build the separator line
+            UIUtils.createLabelSeparator(parent, SWT.HORIZONTAL);
+        }
         Composite composite = new Composite(parent, SWT.NONE);
         GridLayout layout = new GridLayout();
         layout.verticalSpacing = 0;
@@ -60,15 +64,11 @@ public class BaseTitleDialog extends TitleAreaDialog {
         composite.setLayout(layout);
         composite.setLayoutData(new GridData(GridData.FILL_BOTH));
         composite.setFont(parent.getFont());
-        if (needsTopSeparator()) {
-            // Build the separator line
-            UIUtils.createLabelSeparator(composite, SWT.HORIZONTAL);
-        }
         return composite;
     }
 
     private boolean needsTopSeparator() {
-        return false;
+        return true;
     }
 
     @Override

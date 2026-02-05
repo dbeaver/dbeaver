@@ -14,22 +14,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.cli;
+package org.jkiss.dbeaver.model.ai;
 
-import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.model.cli.command.AbstractTopLevelCommand;
-import picocli.CommandLine;
-
-// Base class for first level commands, which use AbstractTopLevelCommand as parent
-public abstract class AbstractRootCommandLineParameterHandler extends AbstractCommandLineParameterHandler {
-    /**
-     * Root command uses as context
-     */
-    @CommandLine.ParentCommand
-    private AbstractTopLevelCommand parent;
-
-    @NotNull
-    public CLIContext context() {
-        return parent.getContext();
+public final class AIMetaTypes {
+    private AIMetaTypes() {
     }
+
+    public static final String PROMPT = "prompt";
+    public static final String EMBEDDING = "embedding";
 }

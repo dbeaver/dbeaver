@@ -65,6 +65,10 @@ public class AIFunctionDescriptor extends AbstractDescriptor {
             return CommonUtils.getBoolean(config.getAttribute("required"));
         }
 
+        public String getDefaultValue() {
+            return config.getAttribute("defaultValue");
+        }
+
         @Nullable
         public String[] getValidValues() {
             String validValues = config.getAttribute("validValues");
