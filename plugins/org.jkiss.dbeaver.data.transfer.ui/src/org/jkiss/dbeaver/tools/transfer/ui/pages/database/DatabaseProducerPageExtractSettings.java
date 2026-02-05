@@ -157,8 +157,8 @@ public class DatabaseProducerPageExtractSettings extends DataTransferPageNodeSet
 
     @NotNull
     private Consumer<UIPanelBuilder> buildAdvancedPanel(@NotNull UIObservable<Boolean> queryDatabase) {
-        var canChangeThreads = UIObservable.predicate(() -> getWizard().getSettings().getDataPipes().size() > 2);
-        var canChangeSegment = UIObservable.predicate(() -> extractType.get() == ExtractType.SEGMENTS);
+        var canChangeThreads = UIObservables.predicate(() -> getWizard().getSettings().getDataPipes().size() > 2);
+        var canChangeSegment = UIObservables.predicate(() -> extractType.get() == ExtractType.SEGMENTS);
 
         return pb -> pb
             .row(DTMessages.data_transfer_wizard_output_label_max_threads, rb -> rb

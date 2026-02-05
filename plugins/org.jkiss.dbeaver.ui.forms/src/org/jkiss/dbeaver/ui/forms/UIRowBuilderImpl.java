@@ -88,8 +88,8 @@ final class UIRowBuilderImpl implements UIRowBuilder {
 
     @NotNull
     @Override
-    public UIRowBuilder label(@NotNull UIObservable<String> text, @NotNull Consumer<? super UIControlBuilder.LabelBuilder> handler) {
-        var builder = new UIControlBuilderImpl.LabelBuilderImpl(text, SWT.NONE);
+    public UIRowBuilder label(@NotNull Consumer<? super UIControlBuilder.LabelBuilder> handler) {
+        var builder = new UIControlBuilderImpl.LabelBuilderImpl();
         handler.accept(builder);
         controls.add(builder);
         return this;

@@ -17,7 +17,10 @@
 package org.jkiss.dbeaver.ui.forms;
 
 import org.eclipse.core.runtime.IStatus;
+import org.eclipse.swt.graphics.Font;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.DBIcon;
 
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -34,6 +37,9 @@ public sealed interface UIControlBuilder<B extends UIControlBuilder<B>>
 
     @NotNull
     B enabled(@NotNull UIObservable<Boolean> binding);
+
+    @NotNull
+    B font(@NotNull UIObservable<Font> value);
 
     @NotNull
     B tooltip(@NotNull String value);
@@ -67,6 +73,21 @@ public sealed interface UIControlBuilder<B extends UIControlBuilder<B>>
      * The builder for a label control.
      */
     sealed interface LabelBuilder extends UIControlBuilder<LabelBuilder> permits UIControlBuilderImpl.LabelBuilderImpl {
+        @NotNull
+        LabelBuilder text(@Nullable UIObservable<String> text);
+
+        @NotNull
+        default LabelBuilder text(@Nullable String text) {
+            return text(text != null ? UIObservable.of(text) : null);
+        }
+
+        @NotNull
+        LabelBuilder image(@Nullable UIObservable<DBIcon> image);
+
+        @NotNull
+        default LabelBuilder image(@Nullable DBIcon image) {
+            return image(image != null ? UIObservable.of(image, DBIcon.class) : null);
+        }
     }
 
     /**

@@ -27,11 +27,15 @@ import org.eclipse.jface.databinding.swt.typed.WidgetProperties;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
+import org.eclipse.swt.graphics.Font;
+import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.DBIcon;
+import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
 
 import java.util.function.Consumer;
@@ -43,6 +47,7 @@ abstract sealed class UIControlBuilderImpl<B extends UIControlBuilder<B>, C exte
 
     private UIObservable<Boolean> visible;
     private UIObservable<Boolean> enabled;
+    private UIObservable<Font> font;
     private String tooltip;
 
     int alignX = SWT.BEGINNING;
@@ -62,6 +67,13 @@ abstract sealed class UIControlBuilderImpl<B extends UIControlBuilder<B>, C exte
     @Override
     public B enabled(@NotNull UIObservable<Boolean> binding) {
         enabled = binding;
+        return builder();
+    }
+
+    @NotNull
+    @Override
+    public B font(@NotNull UIObservable<Font> value) {
+        font = value;
         return builder();
     }
 
@@ -151,6 +163,9 @@ abstract sealed class UIControlBuilderImpl<B extends UIControlBuilder<B>, C exte
             var binding = UIObservables.and(row != null ? row.enabled : null, enabled);
             context.bindValue(WidgetProperties.enabled().observe(control), delegate(binding));
         }
+        if (font != null) {
+            context.bindValue(WidgetProperties.font().observe(control), delegate(font));
+        }
         if (tooltip != null) {
             control.setToolTipText(tooltip);
         }
@@ -173,24 +188,39 @@ abstract sealed class UIControlBuilderImpl<B extends UIControlBuilder<B>, C exte
     }
 
     static final class LabelBuilderImpl extends UIControlBuilderImpl<LabelBuilder, Label> implements LabelBuilder {
-        private final UIObservable<String> text;
-        private final int style;
+        private UIObservable<String> text;
+        private UIObservable<DBIcon> image;
 
-        LabelBuilderImpl(@NotNull UIObservable<String> text, int style) {
+        @NotNull
+        @Override
+        public LabelBuilder text(@Nullable UIObservable<String> text) {
             this.text = text;
-            this.style = style;
+            return this;
+        }
+
+        @NotNull
+        @Override
+        public LabelBuilder image(@Nullable UIObservable<DBIcon> image) {
+            this.image = image;
+            return this;
         }
 
         @NotNull
         @Override
         protected Label create(@NotNull DataBindingContext context, @NotNull Composite parent) {
-            return UIControlFactory.createLabel(parent, style);
+            return UIControlFactory.createLabel(parent, SWT.NONE);
         }
 
         @Override
         protected void bind(@NotNull DataBindingContext context, @NotNull Label control, @Nullable UIRowBuilderImpl row) {
             super.bind(context, control, row);
-            context.bindValue(WidgetProperties.text().observe(control), UIControlBuilderImpl.delegate(text));
+            if (text != null) {
+                context.bindValue(WidgetProperties.text().observe(control), UIControlBuilderImpl.delegate(text));
+            }
+            if (image != null) {
+                var observable = image.map(DBeaverIcons::getImage, Image.class);
+                context.bindValue(WidgetProperties.image().observe(control), UIControlBuilderImpl.delegate(observable));
+            }
         }
     }
 
