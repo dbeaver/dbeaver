@@ -16,10 +16,16 @@
  */
 package org.jkiss.dbeaver.ui.editors.file;
 
+import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IResource;
+import org.eclipse.core.runtime.IAdaptable;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.app.DBPPlatformDesktop;
+import org.jkiss.dbeaver.model.app.DBPResourceHandler;
 import org.jkiss.dbeaver.model.file.FileOpenHandler;
 import org.jkiss.dbeaver.model.file.FileTypeAction;
 import org.jkiss.dbeaver.ui.ShellUtils;
@@ -53,6 +59,15 @@ import java.util.Set;
  * will throw a {@link DBException} if that action is requested.
  */
 public class AbstractFileHandler implements FileOpenHandler {
+    private static final Log log = Log.getLog(AbstractFileHandler.class);
+
+    protected Object sourceNode;
+
+    @Override
+    public void setSourceNode(@Nullable Object sourceNode) {
+        this.sourceNode = sourceNode;
+    }
+
     @Override
     public void openFiles(
         @NotNull List<Path> fileList,
@@ -70,6 +85,9 @@ public class AbstractFileHandler implements FileOpenHandler {
             }
             case INTERNAL_EDITOR -> {
                 for (Path path : fileList) {
+                    if (!IOUtils.isLocalPath(path)) {
+                        path = EditorUtils.copyRemoteFileToTempDir(path);
+                    }
                     EditorUtils.openExternalFileEditor(path, UIUtils.getActiveWorkbenchWindow());
                 }
             }
@@ -83,5 +101,23 @@ public class AbstractFileHandler implements FileOpenHandler {
     @Override
     public Set<FileTypeAction> supportedActions() {
         return Set.of(FileTypeAction.EXTERNAL_EDITOR, FileTypeAction.INTERNAL_EDITOR);
+    }
+
+    protected boolean tryOpenViaResourceAdapter(@NotNull Path path, @NotNull Object sourceNode) {
+        try {
+            if (sourceNode instanceof IAdaptable adaptable) {
+                IResource resource = adaptable.getAdapter(IResource.class);
+                if (resource instanceof IFile file) {
+                    DBPResourceHandler handler = DBPPlatformDesktop.getInstance().getWorkspace().getResourceHandler(file);
+                    if (handler != null) {
+                        handler.openResource(file);
+                        return true;
+                    }
+                }
+            }
+        } catch (Exception e) {
+            log.debug("Failed to open file via resource adapter: " + path, e);
+        }
+        return false;
     }
 }

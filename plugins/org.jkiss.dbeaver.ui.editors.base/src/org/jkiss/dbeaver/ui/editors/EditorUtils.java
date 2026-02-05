@@ -517,13 +517,10 @@ public class EditorUtils {
     public static IEditorPart openExternalFileEditor(@NotNull Path path, @NotNull IWorkbenchWindow window) {
         try {
             IEditorDescriptor desc = getFileEditorDescriptor(path, window);
-            if (!IOUtils.isLocalPath(path)) {
-               path = copyRemoteFileToTempDir(path);
-            }
             IFileStore fileStore = EFS.getStore(path.toUri());
             IEditorInput input = new FileStoreEditorInput(fileStore);
             return IDE.openEditor(window.getActivePage(), input, desc.getId());
-        } catch (CoreException | DBException e) {
+        } catch (CoreException e) {
             log.error("Can't open editor from path '" + path.toAbsolutePath(), e);
             return null;
         }
@@ -665,7 +662,7 @@ public class EditorUtils {
         }
         Path[] filePaths = fileNameStream
             .map(Path::of).toArray(Path[]::new);
-        openFileEditors(filePaths, currentContainer, openedFiles, false);
+        openFileEditors(filePaths, currentContainer, openedFiles, false, null);
 
         return openedFiles;
     }
@@ -673,11 +670,12 @@ public class EditorUtils {
     public static boolean openExternalFiles(
         @NotNull Path[] filePaths,
         @Nullable DBPDataSourceContainer currentContainer,
-        boolean databaseOnly
+        boolean databaseOnly,
+        @Nullable Object sourceNode
     ) {
         log.debug("Open external file(s) [" + Arrays.toString(filePaths) + "]");
         List<Path> openedFiles = new ArrayList<>();
-        return openFileEditors(filePaths, currentContainer, openedFiles, databaseOnly);
+        return openFileEditors(filePaths, currentContainer, openedFiles, databaseOnly, sourceNode);
     }
 
     @NotNull
@@ -741,7 +739,8 @@ public class EditorUtils {
         @NotNull Path[] fileNames,
         @Nullable DBPDataSourceContainer currentContainer,
         @NotNull List<Path> openedFiles,
-        boolean databaseOnly
+        boolean databaseOnly,
+        @Nullable Object sourceNode
     ) {
         Map<FileTypeHandlerDescriptor, List<Path>> filesByHandler = getHandlerFiles(fileNames, openedFiles, databaseOnly);
         for (Map.Entry<FileTypeHandlerDescriptor, List<Path>> entry : filesByHandler.entrySet()) {
@@ -753,19 +752,17 @@ public class EditorUtils {
                 if (!IOUtils.isLocalPath(path)) {
                     if (handler == null || Files.isDirectory(path)) {
                         return false;
-                    } else if (!handler.supportsRemoteFiles()) {
-                        try {
-                            Path newPath = copyRemoteFileToTempDir(path);
-                            pathList.set(pathList.indexOf(path), newPath);
-                        } catch (DBException e) {
-                            log.error("Can't copy remote file to temp", e);
-                            return false;
-                        }
                     }
                 }
             }
+
             try {
                 FileOpenHandler fileOpenHandler = handler.createHandler();
+
+                if (sourceNode != null) {
+                    fileOpenHandler.setSourceNode(sourceNode);
+                }
+
                 Set<FileTypeAction> actions = fileOpenHandler.supportedActions();
 
                 FileTypeAction selectedAction = getFileTypeActionWithDialog(actions, !allRemote);
@@ -779,6 +776,7 @@ public class EditorUtils {
         }
         return true;
     }
+
 
     @Nullable
     private static FileTypeAction getFileTypeActionWithDialog(@NotNull Set<FileTypeAction> actions, boolean hasLocalFiles) {

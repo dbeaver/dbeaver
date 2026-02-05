@@ -32,6 +32,12 @@ import java.util.Set;
  */
 public interface FileOpenHandler {
 
+
+    /**
+     *
+     */
+    void setSourceNode(@Nullable Object sourceNode);
+
     /**
      * Open NIO files in associated handlers
      */
