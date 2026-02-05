@@ -200,6 +200,7 @@ public class SQLUtilsTest extends DBeaverUnitTest {
             sb.toString()
         );
     }
+
     @Test
     public void addQueryIdentificationCommentTest() {
         DBCSession session = Mockito.mock(DBCSession.class);
