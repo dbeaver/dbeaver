@@ -48,6 +48,7 @@ import org.jkiss.dbeaver.model.file.FileOpenHandler;
 import org.jkiss.dbeaver.model.file.FileTypeAction;
 import org.jkiss.dbeaver.model.file.FileTypeHandlerDescriptor;
 import org.jkiss.dbeaver.model.file.FileTypeHandlerRegistry;
+import org.jkiss.dbeaver.model.navigator.fs.DBNPathBase;
 import org.jkiss.dbeaver.model.rcp.RCPProject;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
@@ -671,7 +672,7 @@ public class EditorUtils {
         @NotNull Path[] filePaths,
         @Nullable DBPDataSourceContainer currentContainer,
         boolean databaseOnly,
-        @Nullable Object sourceNode
+        @Nullable DBNPathBase sourceNode
     ) {
         log.debug("Open external file(s) [" + Arrays.toString(filePaths) + "]");
         List<Path> openedFiles = new ArrayList<>();
@@ -740,7 +741,7 @@ public class EditorUtils {
         @Nullable DBPDataSourceContainer currentContainer,
         @NotNull List<Path> openedFiles,
         boolean databaseOnly,
-        @Nullable Object sourceNode
+        @Nullable DBNPathBase sourceNode
     ) {
         Map<FileTypeHandlerDescriptor, List<Path>> filesByHandler = getHandlerFiles(fileNames, openedFiles, databaseOnly);
         for (Map.Entry<FileTypeHandlerDescriptor, List<Path>> entry : filesByHandler.entrySet()) {
@@ -764,7 +765,6 @@ public class EditorUtils {
                 }
 
                 Set<FileTypeAction> actions = fileOpenHandler.supportedActions();
-
                 FileTypeAction selectedAction = getFileTypeActionWithDialog(actions, !allRemote);
 
                 if (selectedAction != null) {

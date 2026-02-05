@@ -18,7 +18,6 @@ package org.jkiss.dbeaver.ui.editors.file;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResource;
-import org.eclipse.core.runtime.IAdaptable;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -28,6 +27,7 @@ import org.jkiss.dbeaver.model.app.DBPPlatformDesktop;
 import org.jkiss.dbeaver.model.app.DBPResourceHandler;
 import org.jkiss.dbeaver.model.file.FileOpenHandler;
 import org.jkiss.dbeaver.model.file.FileTypeAction;
+import org.jkiss.dbeaver.model.navigator.fs.DBNPathBase;
 import org.jkiss.dbeaver.ui.ShellUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.EditorUtils;
@@ -61,10 +61,10 @@ import java.util.Set;
 public class AbstractFileHandler implements FileOpenHandler {
     private static final Log log = Log.getLog(AbstractFileHandler.class);
 
-    protected Object sourceNode;
+    protected DBNPathBase sourceNode;
 
     @Override
-    public void setSourceNode(@Nullable Object sourceNode) {
+    public void setSourceNode(@Nullable DBNPathBase sourceNode) {
         this.sourceNode = sourceNode;
     }
 
@@ -103,16 +103,14 @@ public class AbstractFileHandler implements FileOpenHandler {
         return Set.of(FileTypeAction.EXTERNAL_EDITOR, FileTypeAction.INTERNAL_EDITOR);
     }
 
-    protected boolean tryOpenViaResourceAdapter(@NotNull Path path, @NotNull Object sourceNode) {
+    protected boolean tryOpenViaResourceAdapter(@NotNull Path path, @NotNull DBNPathBase sourceNode) {
         try {
-            if (sourceNode instanceof IAdaptable adaptable) {
-                IResource resource = adaptable.getAdapter(IResource.class);
-                if (resource instanceof IFile file) {
-                    DBPResourceHandler handler = DBPPlatformDesktop.getInstance().getWorkspace().getResourceHandler(file);
-                    if (handler != null) {
-                        handler.openResource(file);
-                        return true;
-                    }
+            IResource resource = sourceNode.getAdapter(IResource.class);
+            if (resource instanceof IFile file) {
+                DBPResourceHandler handler = DBPPlatformDesktop.getInstance().getWorkspace().getResourceHandler(file);
+                if (handler != null) {
+                    handler.openResource(file);
+                    return true;
                 }
             }
         } catch (Exception e) {
