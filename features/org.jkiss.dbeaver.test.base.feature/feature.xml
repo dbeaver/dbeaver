@@ -2,7 +2,7 @@
 <feature
         id="org.jkiss.dbeaver.test.base.feature"
         label="DBeaver Standalone"
-        version="25.3.4.qualifier"
+        version="25.3.5.qualifier"
         provider-name="DBeaver Corp"
         plugin="org.jkiss.dbeaver.headless.application">
 

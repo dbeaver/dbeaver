@@ -221,7 +221,7 @@ public class PrefPageSQLResources extends AbstractPrefPage implements IWorkbench
                 2,
                 GridData.FILL_HORIZONTAL
             );
-            expander.setClient(connGroup);
+            expander.setClient(connGroup.getParent());
             Label tipLabel = new Label(connGroup, SWT.WRAP);
             tipLabel.setText(SQLEditorMessages.pref_page_sql_editor_checkbox_bind_connection_hint);
             GridData gd = new GridData(GridData.FILL_HORIZONTAL);

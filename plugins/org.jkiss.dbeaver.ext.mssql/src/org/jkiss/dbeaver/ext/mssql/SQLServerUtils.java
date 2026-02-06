@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.exec.DBCEntityMetaData;
+import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
@@ -246,20 +247,15 @@ public class SQLServerUtils {
     ) throws DBException {
         SQLServerDataSource dataSource = object.getDataSource();
         try (JDBCSession session = DBUtils.openMetaSession(monitor, dataSource, "Read source code")) {
-
-            String sqlQuery = selectObjectDefinitionDescriptionSQL(monitor, object);
-
-            try (JDBCPreparedStatement dbStat = session.prepareStatement(sqlQuery)) {
-                try (JDBCResultSet dbResult = dbStat.executeQuery()) {
-                    StringBuilder sql = new StringBuilder();
-                    while (dbResult.nextRow()) {
-                        sql.append(dbResult.getString(1));
-                    }
-                    return sql.toString();
-                }
-            }
+            String sqlQuery = selectObjectDefinitionDescriptionSQL(monitor, object, false);
+            return doRequestObjectDefinition(session, sqlQuery);
         } catch (SQLException e) {
-            throw new DBDatabaseException(e, dataSource);
+            try (JDBCSession session = DBUtils.openMetaSession(monitor, dataSource, "Read source code fallback to default function")) {
+                String sqlQuery = selectObjectDefinitionDescriptionSQL(monitor, object, true);
+                return doRequestObjectDefinition(session, sqlQuery);
+            } catch (SQLException secondException) {
+                throw new DBDatabaseException(secondException, dataSource);
+            }
         }
     }
 
@@ -268,12 +264,14 @@ public class SQLServerUtils {
      * After call to DB might return NULL on error or if a caller does not have permission to view the object definition.
      *
      * @param object to get definition
+     * @param useDefaultFunction if true will always fall back to default function
      * @return select function with single string column containing object definition
      */
     @NotNull
     public static String selectObjectDefinitionDescriptionSQL(
         @NotNull DBRProgressMonitor monitor,
-        @NotNull SQLServerObject object
+        @NotNull SQLServerObject object,
+        boolean useDefaultFunction
     ) {
         long objectId = object.getObjectId();
         Optional<SQLServerDatabase> database = Optional.ofNullable(object.getDatabase());
@@ -284,7 +282,8 @@ public class SQLServerUtils {
             SQLServerConstants.SQL_SERVER_SYSTEM_SCHEMA
         );
 
-        return dataSource.isDataWarehouseServer(monitor) || isDriverAzure(dataSource.getContainer().getDriver())
+        return !useDefaultFunction
+            && (dataSource.isDataWarehouseServer(monitor) || isDriverAzure(dataSource.getContainer().getDriver()))
             ? "SELECT OBJECT_DEFINITION(%d)".formatted(objectId)
             : "SELECT definition FROM " + systemSchema + ".sql_modules WHERE object_id = %d".formatted(objectId);
     }
@@ -483,5 +482,19 @@ public class SQLServerUtils {
             return matcher.group(1);
         }
         return null;
+    }
+
+    @NotNull
+    private static String doRequestObjectDefinition(@NotNull JDBCSession session, @NotNull String sqlQuery)
+    throws DBCException, SQLException {
+        try (JDBCPreparedStatement dbStat = session.prepareStatement(sqlQuery)) {
+            try (JDBCResultSet dbResult = dbStat.executeQuery()) {
+                StringBuilder sql = new StringBuilder();
+                while (dbResult.nextRow()) {
+                    sql.append(dbResult.getString(1));
+                }
+                return sql.toString();
+            }
+        }
     }
 }

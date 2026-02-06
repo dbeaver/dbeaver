@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -835,16 +835,25 @@ public class DataSourceSerializerModern<T extends DataSourceDescriptor> implemen
             .getDriverSubstitution(CommonUtils.notEmpty(JSONUtils.getString(conObject, ATTR_DRIVER_SUBSTITUTION))));
 
         DBPObjectSettingsProvider settingsProvider = DBUtils.getAdapter(DBPObjectSettingsProvider.class, dataSource.getProject());
-        Map<String, String> userSettings = settingsProvider == null ?
-            null :
-            settingsProvider.getObjectSettings(SMObjectType.datasource, dataSource.getId());
+        Map<String, String> userSettings = null;
+        if (settingsProvider != null) {
+            try {
+                userSettings = settingsProvider.getObjectSettings(SMObjectType.datasource, dataSource.getId());
+            } catch (Exception e) {
+                log.warn("Error reading user datasource settings", e);
+            }
+        }
+
+        dataSource.getNavigatorSettings().reset();
 
         if (!CommonUtils.isEmpty(userSettings) && userSettings.keySet().stream().anyMatch(
             DataSourceNavigatorSettings.NAVIGATOR_SETTINGS::contains)
         ) {
             // There are custom navigator settings
             DataSourceNavigatorSettingsUtils.loadSettingsFromMap(dataSource.getNavigatorSettings(), userSettings);
-            dataSource.getNavigatorSettings().setUserSettings(true);
+            DataSourceNavigatorSettings originalSettings = new DataSourceNavigatorSettings();
+            DataSourceNavigatorSettingsUtils.loadSettingsFromMap(originalSettings, conObject);
+            dataSource.getNavigatorSettings().setOriginalSettings(originalSettings);
         } else {
             DataSourceNavigatorSettingsUtils.loadSettingsFromMap(dataSource.getNavigatorSettings(), conObject);
         }
@@ -1107,7 +1116,7 @@ public class DataSourceSerializerModern<T extends DataSourceDescriptor> implemen
         if (dataSource.isSavePassword()) JSONUtils.field(json, RegistryConstants.ATTR_SAVE_PASSWORD, true);
         if (dataSource.isSharedCredentials()) JSONUtils.field(json, RegistryConstants.ATTR_SHARED_CREDENTIALS, true);
 
-        DataSourceNavigatorSettings.saveSettingsToMap(json, dataSource.getNavigatorSettings());
+        DataSourceNavigatorSettings.saveSettingsToMap(json, dataSource.getOriginalNavigatorSettings());
 
         if (dataSource.isConnectionReadOnly()) JSONUtils.field(json, RegistryConstants.ATTR_READ_ONLY, true);
 

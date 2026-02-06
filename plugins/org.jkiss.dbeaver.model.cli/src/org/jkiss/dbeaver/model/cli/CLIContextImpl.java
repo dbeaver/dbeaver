@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,8 +25,8 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-public class CommandLineContext implements AutoCloseable {
-    private static final Log log = Log.getLog(CommandLineContext.class);
+public class CLIContextImpl implements AutoCloseable, CLIContext {
+    private static final Log log = Log.getLog(CLIContextImpl.class);
     @NotNull
     private final Map<String, Object> contextParameter = new LinkedHashMap<>();
     private final List<Runnable> closeHandlers = new ArrayList<>();
@@ -38,43 +38,50 @@ public class CommandLineContext implements AutoCloseable {
     @Nullable
     private CLIProcessResult.PostAction postAction = null;
 
-    public CommandLineContext(@Nullable ApplicationInstanceController instanceController) {
+    public CLIContextImpl(@Nullable ApplicationInstanceController instanceController) {
         this.instanceController = instanceController;
     }
 
     @NotNull
-    public Map<String, Object> getContext() {
+    public Map<String, Object> getContextParameters() {
         return contextParameter;
     }
 
+    @Override
     @Nullable
     public <T> T getContextParameter(String name) {
         return (T) contextParameter.get(name);
     }
 
+    @Override
     public void setContextParameter(@NotNull String name, @NotNull Object value) {
         contextParameter.put(name, value);
     }
 
 
+    @Override
     public void addResult(@NotNull String result) {
         this.results.add(result);
     }
 
+    @Override
     @NotNull
     public List<String> getResults() {
         return List.copyOf(results);
     }
 
+    @Override
     public void addCloseHandler(@NotNull Runnable closeHandler) {
         closeHandlers.add(closeHandler);
     }
 
+    @Override
     @Nullable
     public CLIProcessResult.PostAction getPostAction() {
         return postAction;
     }
 
+    @Override
     public void setPostAction(@Nullable CLIProcessResult.PostAction postAction) {
         this.postAction = postAction;
     }
