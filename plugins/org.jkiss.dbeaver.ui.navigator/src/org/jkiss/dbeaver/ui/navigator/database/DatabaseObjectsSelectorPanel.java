@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,6 +27,9 @@ import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.navigator.*;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.model.struct.*;
+import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
+import org.jkiss.dbeaver.model.struct.rdb.DBSProcedure;
+import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
 import org.jkiss.dbeaver.ui.navigator.INavigatorFilter;
 import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 import org.jkiss.dbeaver.ui.navigator.database.load.TreeNodeSpecial;
@@ -42,10 +45,14 @@ public class DatabaseObjectsSelectorPanel extends Composite {
     private DatabaseObjectsTreeManager checkboxTreeManager;
 
     public DatabaseObjectsSelectorPanel(Composite parent, boolean multiSelector, DBRRunnableContext runnableContext) {
-        this(parent, runnableContext, SWT.SINGLE | SWT.BORDER | (multiSelector ? SWT.CHECK : SWT.NONE));
+        this(parent, runnableContext, SWT.SINGLE | SWT.BORDER | (multiSelector ? SWT.CHECK : SWT.NONE), false);
     }
 
     public DatabaseObjectsSelectorPanel(Composite parent, DBRRunnableContext runnableContext, int style) {
+        this(parent, runnableContext, style, false);
+    }
+
+    public DatabaseObjectsSelectorPanel(Composite parent, DBRRunnableContext runnableContext, int style, boolean enableFilter) {
         super(parent, SWT.NONE);
         if (parent.getLayout() instanceof GridLayout) {
             setLayoutData(new GridData(GridData.FILL_BOTH));
@@ -57,35 +64,19 @@ public class DatabaseObjectsSelectorPanel extends Composite {
 
         selectedProject = this.getSelectedProject();
         DBNNode rootNode = this.getRootNode();
-        dataSourceTree = new DatabaseNavigatorTree(this, rootNode, style);
+        INavigatorFilter navigatorFilter = enableFilter ? createNavigatorFilter() : null;
+        dataSourceTree = new DatabaseNavigatorTree(this, rootNode, style, false, navigatorFilter);
         GridData gd = new GridData(GridData.FILL_BOTH);
         gd.heightHint = 300;
         dataSourceTree.setLayoutData(gd);
-        dataSourceTree.getViewer().addFilter(new ViewerFilter() {
-            @Override
-            public boolean select(Viewer viewer, Object parentElement, Object element) {
-                if (element instanceof TreeNodeSpecial) {
-                    return true;
+        if (!enableFilter) {
+            dataSourceTree.getViewer().addFilter(new ViewerFilter() {
+                @Override
+                public boolean select(Viewer viewer, Object parentElement, Object element) {
+                    return isElementAccepted(element);
                 }
-                if (element instanceof DBNNode) {
-                    if (element instanceof DBNDatabaseFolder folder) {
-                        return isDatabaseFolderVisible(folder);
-                    }
-                    if (element instanceof DBNProjectDatabases) {
-                        return true;
-                    }
-                    if (element instanceof DBNLocalFolder localFolder) {
-                        return isFolderVisible(localFolder);
-                    } else if (element instanceof DBNDataSource dataSource) {
-                        return isDataSourceVisible(dataSource);
-                    }
-                    if (element instanceof DBSWrapper wrapper) {
-                        return isDatabaseObjectVisible(wrapper.getObject());
-                    }
-                }
-                return false;
-            }
-        });
+            });
+        }
         if ((style & SWT.CHECK) != 0) {
             final CheckboxTreeViewer viewer = dataSourceTree.getCheckboxViewer();
 
@@ -206,6 +197,76 @@ public class DatabaseObjectsSelectorPanel extends Composite {
 
     protected boolean isFolderVisible(DBNLocalFolder folder) {
         return true;
+    }
+
+    protected boolean isElementAccepted(Object element) {
+        if (element instanceof TreeNodeSpecial) {
+            return true;
+        }
+        if (element instanceof DBNNode) {
+            switch (element) {
+                case DBNDatabaseFolder folder -> {
+                    return isDatabaseFolderVisible(folder);
+                }
+                case DBNProjectDatabases dbnProjectDatabases -> {
+                    return true;
+                }
+                case DBNLocalFolder localFolder -> {
+                    return isFolderVisible(localFolder);
+                }
+                case DBNDataSource dataSource -> {
+                    return isDataSourceVisible(dataSource);
+                }
+                case DBSWrapper wrapper -> {
+                    return isDatabaseObjectVisible(wrapper.getObject());
+                }
+                default -> {
+                }
+            }
+        }
+        return false;
+    }
+
+    protected INavigatorFilter createNavigatorFilter() {
+        return new INavigatorFilter() {
+            @Override
+            public boolean select(Object element) {
+                return isElementAccepted(element);
+            }
+
+            @Override
+            public boolean filterFolders() {
+                return false;
+            }
+
+            @Override
+            public boolean isLeafObject(Object object) {
+                if (object instanceof DBNDatabaseNode dbn) {
+                    DBSObject dbObject = dbn.getObject();
+                    return dbObject instanceof DBSEntity;
+                }
+                return false;
+            }
+
+            @Override
+            public boolean filterObjectByPattern(Object object) {
+                if (object instanceof DBNDatabaseFolder) {
+                    return false;
+                }
+
+                if (object instanceof DBNDatabaseNode dbn) {
+                    DBSObject dbObject = dbn.getObject();
+                    if (dbObject instanceof DBSInstance ||
+                        dbObject instanceof DBSCatalog) {
+                        return false;
+                    }
+                    return dbObject instanceof DBSSchema ||
+                           dbObject instanceof DBSEntity ||
+                           dbObject instanceof DBSProcedure;
+                }
+                return false;
+            }
+        };
     }
 
     protected void onSelectionChange(Object element) {
