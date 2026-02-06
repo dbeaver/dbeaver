@@ -23,12 +23,11 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.ai.AIPromptGenerator;
 import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
-import org.jkiss.dbeaver.model.logical.DBSLogicalDataSourceSupplier;
 import org.jkiss.dbeaver.registry.RegistryConstants;
-import org.jkiss.utils.CommonUtils;
 
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
+import java.util.List;
+import java.util.Objects;
+import java.util.stream.Stream;
 
 public class AIPromptGeneratorDescriptor extends AbstractDescriptor {
 
@@ -37,16 +36,20 @@ public class AIPromptGeneratorDescriptor extends AbstractDescriptor {
     private final ObjectType objectType;
     private final String id;
     private final String label;
+    private final String description;
     private final DBPImage icon;
-    private final String[] dependsOn;
+    private final List<Uses> uses;
 
     protected AIPromptGeneratorDescriptor(@NotNull IConfigurationElement config) {
         super(config);
         this.objectType = new ObjectType(config, RegistryConstants.ATTR_CLASS);
-        this.id = config.getAttribute(RegistryConstants.ATTR_ID);
-        this.label = config.getAttribute(RegistryConstants.ATTR_LABEL);
+        this.id = Objects.requireNonNull(config.getAttribute(RegistryConstants.ATTR_ID));
+        this.label = Objects.requireNonNull(config.getAttribute(RegistryConstants.ATTR_LABEL));
+        this.description = config.getAttribute(RegistryConstants.ATTR_DESCRIPTION);
         this.icon = iconToImage(config.getAttribute(RegistryConstants.ATTR_ICON));
-        this.dependsOn = CommonUtils.splitString(config.getAttribute("dependsOn"), ',').toArray(new String[0]);
+        this.uses = Stream.of(config.getChildren("uses"))
+            .map(Uses::new)
+            .toList();
     }
 
     @NotNull
@@ -64,26 +67,33 @@ public class AIPromptGeneratorDescriptor extends AbstractDescriptor {
         return label != null ? label : id;
     }
 
-    @NotNull
-    public String[] getDependsOn() {
-        return dependsOn;
+    @Nullable
+    public String getDescription() {
+        return description;
     }
 
     @NotNull
-    public AIPromptGenerator createGenerator(@NotNull DBSLogicalDataSourceSupplier dataSource) throws DBException {
+    public List<Uses> getUses() {
+        return uses;
+    }
+
+    @NotNull
+    public AIPromptGenerator createGenerator() throws DBException {
         Class<? extends AIPromptGenerator> objectClass = objectType.getObjectClass(AIPromptGenerator.class);
         if (objectClass == null) {
             throw new DBException("Object class " + objectType.getImplName() + " not found");
         }
         try {
-            Method createMethod = objectClass.getMethod("create", DBSLogicalDataSourceSupplier.class);
-            if (Modifier.isStatic(createMethod.getModifiers())) {
-                return (AIPromptGenerator) createMethod.invoke(null, dataSource);
-            } else {
-                throw new DBException("Prompt method '" + createMethod + "' is not static");
-            }
+            return objectClass.getConstructor().newInstance();
         } catch (Exception e) {
             throw new DBException("Error creating prompt generator " + getId(), e);
         }
+    }
+
+    public record Uses(@NotNull String function, @NotNull String instructions) {
+        Uses(@NotNull IConfigurationElement config) {
+            this(config.getAttribute("function"), config.getAttribute("instructions"));
+        }
+
     }
 }

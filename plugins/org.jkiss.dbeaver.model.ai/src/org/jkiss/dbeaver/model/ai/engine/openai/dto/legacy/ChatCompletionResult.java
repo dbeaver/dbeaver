@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,6 +15,9 @@
  * limitations under the License.
  */
 package org.jkiss.dbeaver.model.ai.engine.openai.dto.legacy;
+
+import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.ai.AIUsage;
 
 import java.util.List;
 
@@ -47,6 +50,9 @@ public class ChatCompletionResult {
      * A list of all generated completions.
      */
     private List<ChatCompletionChoice> choices;
+
+    @Nullable
+    private OAICompletionUsage usage;
 
     public String getId() {
         return id;
@@ -88,4 +94,25 @@ public class ChatCompletionResult {
         this.choices = choices;
     }
 
+    @Nullable
+    public OAICompletionUsage getUsage() {
+        return usage;
+    }
+
+    @Nullable
+    public AIUsage getAIUsage() {
+        if (usage == null) {
+            return null;
+        }
+
+        int cachedTokens = usage.promptTokensDetails() != null ? usage.promptTokensDetails().cachedTokens() : 0;
+        int reasoningTokens = usage.completionTokensDetails() != null ? usage.completionTokensDetails().reasoningTokens() : 0;
+
+        return new AIUsage(
+            usage.promptTokens(),
+            cachedTokens,
+            usage.completionTokens(),
+            reasoningTokens
+        );
+    }
 }

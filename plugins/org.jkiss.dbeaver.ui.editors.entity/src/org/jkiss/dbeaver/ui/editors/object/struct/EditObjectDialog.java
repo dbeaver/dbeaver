@@ -18,7 +18,6 @@ package org.jkiss.dbeaver.ui.editors.object.struct;
 
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.IDialogPage;
-import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.GridData;
@@ -46,18 +45,7 @@ class EditObjectDialog extends BaseTitleDialog implements IDialogPageContainer {
         if (this.dialogPage instanceof BaseObjectEditPage editPage) {
             editPage.setContainer(this);
         }
-        if (dialogPage instanceof IHelpContextIdProvider hcp && hcp.getHelpContextId() != null) {
-            setHelpAvailable(true);
-        } else {
-            setHelpAvailable(false);
-        }
-    }
-
-    @Override
-    protected IDialogSettings getDialogBoundsSettings() {
-        //String dialogId = "DBeaver.EditObjectDialog." + dialogPage.getClass().getSimpleName();
-        //return UIUtils.getDialogSettings(dialogId);
-        return null;
+        setHelpAvailable(dialogPage instanceof IHelpContextIdProvider hcp && hcp.getHelpContextId() != null);
     }
 
     @Override
@@ -75,13 +63,7 @@ class EditObjectDialog extends BaseTitleDialog implements IDialogPageContainer {
     }
 
     @Override
-    protected boolean isResizable() {
-        return true;
-    }
-
-    @Override
-    protected Composite createDialogArea(Composite parent)
-    {
+    protected Composite createDialogArea(Composite parent) {
         String title = dialogPage.getTitle();
         if (dialogPage instanceof BaseObjectEditPage editPage) {
             DBSObject object = editPage.getObject();
@@ -99,8 +81,8 @@ class EditObjectDialog extends BaseTitleDialog implements IDialogPageContainer {
 
         dialogPage.createControl(composite);
 
-        if (dialogPage instanceof IHelpContextIdProvider) {
-            UIUtils.setHelp(dialogPage.getControl(), ((IHelpContextIdProvider) dialogPage).getHelpContextId());
+        if (dialogPage instanceof IHelpContextIdProvider hcp) {
+            UIUtils.setHelp(dialogPage.getControl(), hcp.getHelpContextId());
         }
 
         return group;
@@ -115,9 +97,9 @@ class EditObjectDialog extends BaseTitleDialog implements IDialogPageContainer {
 
     @Override
     protected void okPressed() {
-        if (dialogPage instanceof BaseObjectEditPage) {
+        if (dialogPage instanceof BaseObjectEditPage oep) {
             try {
-                ((BaseObjectEditPage) dialogPage).performFinish();
+                oep.performFinish();
             } catch (Exception e) {
                 DBWorkbench.getPlatformUI().showError("Error saving data", null, e);
                 return;

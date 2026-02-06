@@ -152,6 +152,34 @@ public abstract class PostgreTableManagerBase extends SQLTableManager<PostgreTab
                     }
                 }
 
+                // Add RLS enable DDL
+                if (table instanceof PostgreTable pgTable && pgTable.isHasRowLevelSecurity()) {
+                    actions.add(new SQLDatabasePersistAction(
+                        "Enable row level security",
+                        "ALTER TABLE " + table.getFullyQualifiedName(DBPEvaluationContext.DDL)
+                            + " ENABLE ROW LEVEL SECURITY"
+                    ));
+                }
+
+                // Add policy DDL
+                if (table instanceof PostgreTable pgTable
+                    && table.getDataSource().getServerType().supportsRowLevelSecurity()
+                    && !monitor.isCanceled()
+                ) {
+                    Collection<PostgreTablePolicy> policies = pgTable.getPolicies(monitor);
+                    if (!CommonUtils.isEmpty(policies)) {
+                        if (addExtraActionComment) {
+                            actions.add(new SQLDatabasePersistActionComment(dataSource, "Table Policies"));
+                        }
+                        for (PostgreTablePolicy policy : policies) {
+                            actions.add(new SQLDatabasePersistAction(
+                                "Create policy",
+                                policy.getObjectDefinitionText(monitor, options)
+                            ));
+                        }
+                    }
+                }
+
                 // Partitions
                 if (CommonUtils.getOption(options, DBPScriptObject.OPTION_INCLUDE_PARTITIONS)
                     && table instanceof PostgreTable
