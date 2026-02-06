@@ -20,7 +20,6 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
-import org.jkiss.dbeaver.model.DBPDataSourceFolder;
 import org.jkiss.dbeaver.model.access.DBAAuthCredentials;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.app.DBPWorkspace;
@@ -68,51 +67,6 @@ public class CLIUtils {
     @FunctionalInterface
     public interface DataSourceUpdater {
         void updateDataSource(@NotNull DBPDataSourceContainer dataSource) throws CLIException;
-    }
-
-    public static class DataSourceAuthUpdater implements DataSourceUpdater {
-        @NotNull
-        private final DataSourceAuthOptions authOptions;
-
-        public DataSourceAuthUpdater(@NotNull DataSourceAuthOptions authOptions) {
-            this.authOptions = authOptions;
-        }
-
-        @Override
-        public void updateDataSource(@NotNull DBPDataSourceContainer dataSource) throws CLIException {
-            CLIUtils.processDataSourceAuthOptions(dataSource, authOptions);
-        }
-    }
-
-    public static class DataSourceRootUpdater implements DataSourceUpdater {
-        @NotNull
-        private final DataSourceOptions dataSourceOptions;
-
-        public DataSourceRootUpdater(@NotNull DataSourceOptions dataSourceOptions) {
-            this.dataSourceOptions = dataSourceOptions;
-        }
-
-        @Override
-        public void updateDataSource(@NotNull DBPDataSourceContainer dataSource) throws CLIException {
-            String dsName = dataSourceOptions.getDatasourceName();
-            if (CommonUtils.isEmpty(dsName)) {
-                dsName = "Ext: " + dataSource.getDriver().getName();
-                if (CommonUtils.isNotEmpty(dataSourceOptions.getDbName())) {
-                    dsName += " - " + dataSourceOptions.getDbName();
-                } else if (CommonUtils.isNotEmpty(dataSourceOptions.getServer())) {
-                    dsName += " - " + dataSourceOptions.getServer();
-                }
-            }
-            if (CommonUtils.isNotEmpty(dataSourceOptions.getDatasourceName())) {
-                dataSource.setName(dsName);
-            }
-            if (CommonUtils.isNotEmpty(dataSourceOptions.getFolder())) {
-                DBPDataSourceFolder folder = dataSource.getRegistry().getFolder(dataSourceOptions.getFolder());
-                dataSource.setFolder(folder);
-            }
-            dataSource.setSavePassword(dataSourceOptions.isSavePassword());
-
-        }
     }
 
     @Nullable

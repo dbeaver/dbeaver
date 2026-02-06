@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,7 +23,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.utils.CommonUtils;
 import org.osgi.framework.Bundle;
 
-public class CLICommandHandlerDescriptor {
+public class CLICommandDescriptor {
     private final boolean exitAfterExecute;
     private final boolean exclusiveMode;
     private final boolean forceNewInstance;
@@ -31,7 +31,7 @@ public class CLICommandHandlerDescriptor {
     private final Class<?> replace;
 
 
-    public CLICommandHandlerDescriptor(IConfigurationElement config) throws Exception {
+    public CLICommandDescriptor(IConfigurationElement config) throws Exception {
         this.exitAfterExecute = CommonUtils.toBoolean(config.getAttribute("exitAfterExecute"));
         this.exclusiveMode = CommonUtils.toBoolean(config.getAttribute("exclusiveMode"));
         this.forceNewInstance = CommonUtils.toBoolean(config.getAttribute("forceNewInstance"));

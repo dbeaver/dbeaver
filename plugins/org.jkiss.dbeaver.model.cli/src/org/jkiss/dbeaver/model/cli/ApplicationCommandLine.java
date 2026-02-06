@@ -24,7 +24,8 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.cli.command.AbstractTopLevelCommand;
-import org.jkiss.dbeaver.model.cli.registry.CLICommandHandlerDescriptor;
+import org.jkiss.dbeaver.model.cli.registry.CLICommandDescriptor;
+import org.jkiss.dbeaver.model.cli.registry.CLITransformerDescriptor;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 import picocli.CommandLine;
@@ -38,27 +39,35 @@ public abstract class ApplicationCommandLine<T extends ApplicationInstanceContro
 
     public static final String EXTENSION_ID = "org.jkiss.dbeaver.commandLine";
 
-    protected static final Map<Class<?>, CLICommandHandlerDescriptor> customParameters = new LinkedHashMap<>();
+    protected static final Map<Class<?>, CLICommandDescriptor> commands = new LinkedHashMap<>();
+    protected static final Map<Class<?>, List<CLITransformerDescriptor>> commandTransformer = new LinkedHashMap<>();
 
     static {
         IExtensionRegistry er = Platform.getExtensionRegistry();
         // Load datasource providers from external plugins
         IConfigurationElement[] extElements = er.getConfigurationElementsFor(EXTENSION_ID);
-        Map<Class<?>, CLICommandHandlerDescriptor> replacedBy = new LinkedHashMap<>();
+        Map<Class<?>, CLICommandDescriptor> replacedBy = new LinkedHashMap<>();
         for (IConfigurationElement ext : extElements) {
             if ("parameter".equals(ext.getName())) {
                 try {
-                    CLICommandHandlerDescriptor parameter = new CLICommandHandlerDescriptor(ext);
+                    CLICommandDescriptor parameter = new CLICommandDescriptor(ext);
                     if (parameter.getReplacedHandler() != null) {
                         replacedBy.put(parameter.getReplacedHandler(), parameter);
                     }
-                    customParameters.put(parameter.getImplClass(), parameter);
+                    commands.put(parameter.getImplClass(), parameter);
                 } catch (Exception e) {
                     log.error("Can't load contributed parameter", e);
                 }
+            } else if ("transformer".equals(ext.getName())) {
+                try {
+                    CLITransformerDescriptor transformer = new CLITransformerDescriptor(ext);
+                    commandTransformer.computeIfAbsent(transformer.getCommandClass(), k -> new java.util.ArrayList<>()).add(transformer);
+                } catch (Exception e) {
+                    log.error("Can't load contributed transformer", e);
+                }
             }
         }
-        replacedBy.keySet().forEach(customParameters::remove);
+        replacedBy.keySet().forEach(commands::remove);
     }
 
     protected ApplicationCommandLine() {
@@ -133,7 +142,7 @@ public abstract class ApplicationCommandLine<T extends ApplicationInstanceContro
                 return new CLIProcessResult(CLIProcessResult.PostAction.SHUTDOWN, version);
             }
 
-            for (CLICommandHandlerDescriptor descriptor : customParameters.values()) {
+            for (CLICommandDescriptor descriptor : commands.values()) {
                 CommandLine.ParseResult cliCommand = findCommand(parseResult, descriptor.getImplClass());
                 if (cliCommand == null) {
                     continue;
@@ -216,7 +225,7 @@ public abstract class ApplicationCommandLine<T extends ApplicationInstanceContro
             if (commandLineIsEmpty(parseResult)) {
                 return new String[0];
             }
-            for (CLICommandHandlerDescriptor descriptor : customParameters.values()) {
+            for (CLICommandDescriptor descriptor : commands.values()) {
                 CommandLine.ParseResult cliCommand = findCommand(parseResult, descriptor.getImplClass());
                 if (cliCommand == null) {
                     continue;
@@ -235,7 +244,7 @@ public abstract class ApplicationCommandLine<T extends ApplicationInstanceContro
     }
 
     protected void preprocessCommandLineParameter(
-        @NotNull CLICommandHandlerDescriptor descriptor,
+        @NotNull CLICommandDescriptor descriptor,
         @NotNull CommandLine.ParseResult cliCommand,
         @NotNull CLIContextImpl context,
         boolean uiActivated
@@ -253,14 +262,35 @@ public abstract class ApplicationCommandLine<T extends ApplicationInstanceContro
         cmd.setExecutionStrategy(new CommandLine.RunAll());
         ExceptionHandler exceptionHandler = new ExceptionHandler();
         cmd.setExecutionExceptionHandler(exceptionHandler);
-        for (CLICommandHandlerDescriptor param : customParameters.values()) {
+        for (CLICommandDescriptor param : commands.values()) {
             if (param.getImplClass().getAnnotation(CommandLine.Command.class) == null) {
                 log.warn("Class is not annotated '" + param.getImplClass().getName() + "'");
                 continue;
             }
-            cmd.addSubcommand(new CommandLine(param.getImplClass()));
+            CommandLine.Model.CommandSpec commandSpec =
+                CommandLine.Model.CommandSpec.forAnnotatedObject(param.getImplClass());
+            transformCommand(commandSpec, param.getImplClass());
+            cmd.addSubcommand(commandSpec);
         }
         return cmd;
+    }
+
+    private void transformCommand(
+        @NotNull CommandLine.Model.CommandSpec commandSpec,
+        @NotNull Class<?> implClass
+    ) {
+        List<CLITransformerDescriptor> transformers = commandTransformer.get(implClass);
+        if (!CommonUtils.isEmpty(transformers)) {
+            for (CLITransformerDescriptor transformer : transformers) {
+                transformer.getTransformer().transform(commandSpec);
+            }
+        }
+        if (!CommonUtils.isEmpty(commandSpec.subcommands())) {
+            for (Map.Entry<String, CommandLine> stringCommandLineEntry : commandSpec.subcommands().entrySet()) {
+                CommandLine.Model.CommandSpec subCommandSpec = stringCommandLineEntry.getValue().getCommandSpec();
+                transformCommand(subCommandSpec, subCommandSpec.userObject().getClass());
+            }
+        }
     }
 
     protected boolean commandLineIsEmpty(@Nullable CommandLine.ParseResult commandLine) {
