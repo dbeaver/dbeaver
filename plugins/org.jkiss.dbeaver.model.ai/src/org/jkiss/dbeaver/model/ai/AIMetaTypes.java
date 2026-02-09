@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,23 +14,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.cli.model.option;
+package org.jkiss.dbeaver.model.ai;
 
-import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.model.fs.DBFPath;
-import picocli.CommandLine;
-
-public class InputFileOption extends AbstractFileOption {
-    @Nullable
-    @CommandLine.Option(
-        names = {"-in", "-input-file"},
-        arity = "1",
-        description = "Argument value that can be written in the file."
-    )
-    private String inputFile;
-
-    @Nullable
-    public DBFPath getInputFile() {
-        return getPath(inputFile);
+public final class AIMetaTypes {
+    private AIMetaTypes() {
     }
+
+    public static final String PROMPT = "prompt";
+    public static final String EMBEDDING = "embedding";
 }

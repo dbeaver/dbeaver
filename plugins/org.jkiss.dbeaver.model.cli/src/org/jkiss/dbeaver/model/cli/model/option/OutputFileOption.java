@@ -17,9 +17,8 @@
 package org.jkiss.dbeaver.model.cli.model.option;
 
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.fs.DBFPath;
 import picocli.CommandLine;
-
-import java.nio.file.Path;
 
 public class OutputFileOption extends AbstractFileOption {
     //stdin file name
@@ -33,7 +32,7 @@ public class OutputFileOption extends AbstractFileOption {
     private String outputFile;
 
     @Nullable
-    public Path getOutputFile() {
+    public DBFPath getOutputFile() {
         return getPath(outputFile);
     }
 }
