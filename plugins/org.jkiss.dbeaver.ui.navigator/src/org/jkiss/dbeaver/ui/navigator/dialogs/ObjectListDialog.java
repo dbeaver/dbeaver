@@ -346,8 +346,12 @@ public class ObjectListDialog<T extends DBPObject> extends AbstractPopupPanel {
 
             @Override
             public Font getFont(Object element) {
-                if (selectedObjects.contains(element) || DBNUtils.isDefaultElement(element)) {
-                    return BaseThemeSettings.instance.treeAndTableFontBold;
+                if (element instanceof DBSWrapper wrapper && objectColumn.isNameColumn(wrapper.getObject())) {
+                    if (DBNUtils.isDefaultElement(element)) {
+                        return BaseThemeSettings.instance.treeAndTableFontBold;
+                    } else if (selectedObjects.contains(element)) {
+                        return BaseThemeSettings.instance.treeAndTableFontItalic;
+                    }
                 }
                 return null;
             }

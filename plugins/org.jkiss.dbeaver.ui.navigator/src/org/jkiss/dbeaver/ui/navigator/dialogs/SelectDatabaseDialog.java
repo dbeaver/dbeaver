@@ -192,6 +192,9 @@ public class SelectDatabaseDialog extends ObjectListDialog<DBNDatabaseNode> {
             updateButtons();
         });
         instanceList.setDoubleClickHandler(event -> {
+            IStructuredSelection selection = (IStructuredSelection) event.getSelection();
+            selectedObjects.clear();
+            selectedObjects.addAll(selection.toList());
             if (isDialogComplete()) {
                 okPressed();
             }
@@ -204,7 +207,7 @@ public class SelectDatabaseDialog extends ObjectListDialog<DBNDatabaseNode> {
 
     @Override
     protected boolean isDialogComplete() {
-        return super.isDialogComplete() && currentInstanceName != null;
+        return super.isDialogComplete();
     }
 
     protected List<DBNDatabaseNode> getObjects(@NotNull DBRProgressMonitor monitor) {
