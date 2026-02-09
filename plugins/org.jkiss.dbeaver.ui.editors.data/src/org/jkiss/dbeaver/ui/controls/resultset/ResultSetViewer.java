@@ -122,8 +122,8 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
-import java.util.*;
 import java.util.List;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 /**
@@ -2030,7 +2030,12 @@ public class ResultSetViewer extends Viewer
             });
             UIUtils.addDefaultEditActionsSupport(site, resultSetSize);
 
-            rowCountLabel = new ActiveStatusMessage(statusBar, DBeaverIcons.getImage(UIIcon.COMPILE), ResultSetMessages.controls_resultset_viewer_calculate_row_count, this) {
+            rowCountLabel = new ActiveStatusMessage(
+                statusBar,
+                DBeaverIcons.getImage(UIIcon.COMPILE),
+                ResultSetMessages.controls_resultset_viewer_calculate_row_count,
+                this
+            ) {
                 @Override
                 protected boolean isActionEnabled() {
                     return hasData();
@@ -2051,10 +2056,6 @@ public class ResultSetViewer extends Viewer
                     };
                 }
             };
-            //rowCountLabel.setLayoutData();
-            CSSUtils.markConnectionTypeColor(rowCountLabel);
-            rowCountLabel.setMessage("Row Count");
-            rowCountLabel.setToolTipText("Calculates total row count in the current dataset");
 
             selectionStatLabel = new Text(statusBar, SWT.READ_ONLY);
             selectionStatLabel.setToolTipText(ResultSetMessages.result_set_viewer_selection_stat_tooltip);
@@ -2380,8 +2381,7 @@ public class ResultSetViewer extends Viewer
         statusLabel.setStatusTooltip(message);
     }
 
-    public void updateStatusMessage()
-    {
+    public void updateStatusMessage() {
         updateStatusInfo(false);
         updateStatusInfo(true);
         if (rowCountLabel != null && !rowCountLabel.isDisposed()) {
@@ -5243,7 +5243,7 @@ public class ResultSetViewer extends Viewer
 
     private static class PanelInfo {
         private ResultSetPanelDescriptor descriptor;
-        private IResultSetPanel panel;
+        private final IResultSetPanel panel;
         private ToolBarManager actionToolBar;
 
         public PanelInfo(ResultSetPanelDescriptor descriptor, IResultSetPanel panel) {
