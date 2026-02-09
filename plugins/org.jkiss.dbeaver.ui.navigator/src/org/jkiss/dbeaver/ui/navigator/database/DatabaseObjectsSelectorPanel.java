@@ -234,15 +234,10 @@ public class DatabaseObjectsSelectorPanel extends Composite {
 
     @NotNull
     protected INavigatorFilter createNavigatorFilter() {
-        return new INavigatorFilter() {
+        return new DatabaseNavigatorTreeFilter() {
             @Override
             public boolean select(Object element) {
                 return isElementAccepted(element);
-            }
-
-            @Override
-            public boolean filterFolders() {
-                return false;
             }
 
             @Override
