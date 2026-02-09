@@ -18,9 +18,6 @@ package org.jkiss.dbeaver.ui.dialogs.connection;
 
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.IDialogSettings;
-import org.eclipse.swt.SWT;
-import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.code.NotNull;
@@ -101,19 +98,9 @@ public class EditConnectionDialog extends MultiPageWizardDialog {
     }
 
     @Override
-    protected void createButtonsForButtonBar(Composite parent) {
-        parent.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
-
+    protected void createButtonsForLeftButtonBar(@NotNull Composite parent) {
         testButton = createButton(parent, TEST_BUTTON_ID, "   " + CoreMessages.dialog_connection_button_test + "   ", false);
         testButton.setEnabled(false);
-
-        Label spacer = new Label(parent, SWT.NONE);
-        spacer.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        ((GridLayout) parent.getLayout()).numColumns++;
-        ((GridLayout) parent.getLayout()).makeColumnsEqualWidth = false;
-
-        super.createButtonsForButtonBar(parent);
-        //testButton.moveAbove(getButton(IDialogConstants.CANCEL_ID));
     }
 
     @Override

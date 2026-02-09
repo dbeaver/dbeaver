@@ -23,7 +23,6 @@ import com.google.gson.annotations.SerializedName;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.ai.AIUsage;
 import org.jkiss.dbeaver.model.ai.engine.AIEngineResponseChunk;
 import org.jkiss.dbeaver.model.ai.engine.AIEngineResponseConsumer;
 import org.jkiss.dbeaver.model.ai.engine.AbstractHttpAIClient;
@@ -200,14 +199,7 @@ public class CopilotClient extends AbstractHttpAIClient {
                             .map(it -> it.delta().content())
                             .toList();
                         listener.nextChunk(new AIEngineResponseChunk(choices));
-                        if (chunk.usage() != null) {
-                            listener.usage(new AIUsage(
-                                chunk.usage().promptTokens(),
-                                chunk.usage().promptTokensDetails().cachedTokens(),
-                                chunk.usage().completionTokens(),
-                                0
-                            ));
-                        }
+                        listener.usage(chunk.getAIUsage());
                     } catch (Exception e) {
                         listener.error(e);
                     }

@@ -14,30 +14,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.ai.engine.openai.dto;
+package org.jkiss.dbeaver.model.ai;
 
-import com.google.gson.annotations.SerializedName;
-
-public record OAIUsage(
-    @SerializedName("input_tokens")
-    int inputTokens,
-    @SerializedName("input_tokens_details")
-    InputTokenDetails inputTokensDetails,
-    @SerializedName("output_tokens")
-    int outputTokens,
-    @SerializedName("output_tokens_details")
-    OutputTokenDetails outputTokensDetails
-) {
-
-    public record InputTokenDetails(
-        @SerializedName("cached_tokens")
-        int cachedTokens
-    ) {
+public final class AIMetaTypes {
+    private AIMetaTypes() {
     }
 
-    public record OutputTokenDetails(
-        @SerializedName("reasoning_tokens")
-        int reasoningTokens
-    ) {
-    }
+    public static final String PROMPT = "prompt";
+    public static final String EMBEDDING = "embedding";
 }

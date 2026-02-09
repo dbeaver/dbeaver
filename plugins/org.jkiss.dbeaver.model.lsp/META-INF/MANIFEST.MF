@@ -2,8 +2,8 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: DBeaver LSP server implementation
 Bundle-Vendor: DBeaver Corp
-Bundle-Version: 0.0.2.qualifier
-Bundle-Release-Date: 20260202
+Bundle-Version: 0.0.3.qualifier
+Bundle-Release-Date: 20260216
 Bundle-SymbolicName: org.jkiss.dbeaver.model.lsp;singleton:=true
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-21
