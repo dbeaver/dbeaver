@@ -519,18 +519,19 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
         @NotNull IWizardPage currentPage,
         @NotNull Predicate<PageCompletionMark> canShowMark
     ) {
-        DBPImage itemImage;
         if (page == currentPage) {
-            itemImage = canShowMark.test(PageCompletionMark.COMPLETE) ? UIIcon.RS_FORWARD : null;
-        } else if (page instanceof IWizardPage wizardPage && !wizardPage.isPageComplete()) {
-            itemImage = canShowMark.test(PageCompletionMark.ERROR) ? DBIcon.SMALL_ERROR : null;
+            return canShowMark.test(PageCompletionMark.COMPLETE) ? UIIcon.RS_FORWARD : null;
+        } else if (page.getControl() == null) {
+            return canShowMark.test(PageCompletionMark.COMPLETE) ? UIIcon.DOTS_BUTTON : null;
+        } else if (page instanceof IWizardPage wizardPage) {
+            if (wizardPage.isPageComplete()) {
+                return canShowMark.test(PageCompletionMark.COMPLETE) ? UIIcon.OK_MARK : null;
+            } else {
+                return canShowMark.test(PageCompletionMark.ERROR) ? DBIcon.SMALL_ERROR : null;
+            }
         } else {
-            itemImage = canShowMark.test(PageCompletionMark.COMPLETE) ? UIIcon.OK_MARK : null;
+            return null;
         }
-        if (itemImage == null && canShowMark.test(PageCompletionMark.COMPLETE)) {
-            itemImage = UIIcon.DOTS_BUTTON;
-        }
-        return itemImage;
     }
 
     @Nullable
