@@ -93,6 +93,7 @@
                     <useProjectSettings>false</useProjectSettings>
                     <source>${java.version}</source>
                     <target>${java.version}</target>
+                    <compilerId>${tycho.compiler.id}</compilerId>
                     <compilerVersion>${java.version}</compilerVersion>
                 </configuration>
             </plugin>
