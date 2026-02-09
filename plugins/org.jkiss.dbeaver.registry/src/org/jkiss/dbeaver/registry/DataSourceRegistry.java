@@ -99,10 +99,6 @@ public class DataSourceRegistry<T extends DataSourceDescriptor> implements DBPDa
         this.project = project;
         this.configurationManager = configurationManager;
         this.preferenceStore = preferenceStore;
-        initLoadDataSources();
-    }
-
-    protected void initLoadDataSources() {
         boolean isLoaded = loadDataSources(true) != null;
         if (!isMultiUser() && isLoaded) {
             DataSourceProviderRegistry.getInstance().fireRegistryChange(this, true);

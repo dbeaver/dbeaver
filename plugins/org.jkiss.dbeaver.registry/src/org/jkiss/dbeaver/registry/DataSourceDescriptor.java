@@ -43,6 +43,7 @@ import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.meta.PropertyLength;
 import org.jkiss.dbeaver.model.navigator.DBNBrowseSettings;
 import org.jkiss.dbeaver.model.net.*;
+import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.preferences.DBPPropertySource;
 import org.jkiss.dbeaver.model.rm.RMProjectType;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
@@ -223,7 +224,7 @@ public class DataSourceDescriptor
         this.connectionInfo = connectionInfo;
         this.tags = new LinkedHashMap<>();
         this.extensions = new LinkedHashMap<>();
-        this.preferenceStore = new DataSourcePreferenceStore(registry.getPreferenceStore(), this);
+        this.preferenceStore = getNewDataSourcePreferenceStore(registry.getPreferenceStore());
         this.virtualModel = new DBVModel(this);
         this.navigatorSettings = new DataSourceNavigatorSettings(DataSourceNavigatorSettings.getDefaultSettings());
         this.forceUseSingleConnection = driver.isSingleConnection();
@@ -275,7 +276,7 @@ public class DataSourceDescriptor
 
         this.tags = new LinkedHashMap<>(source.tags);
         this.extensions = new LinkedHashMap<>(source.extensions);
-        this.preferenceStore = new DataSourcePreferenceStore(this);
+        this.preferenceStore = getNewDataSourcePreferenceStore(source.getPreferenceStore().getParentStore());
         this.preferenceStore.setProperties(source.preferenceStore.getProperties());
         this.preferenceStore.setDefaultProperties(source.preferenceStore.getDefaultProperties());
 
@@ -286,6 +287,11 @@ public class DataSourceDescriptor
         }
 
         this.virtualModel = new DBVModel(this, source.virtualModel);
+    }
+
+
+    protected DataSourcePreferenceStore getNewDataSourcePreferenceStore(DBPPreferenceStore parentStore) {
+        return new DataSourcePreferenceStore(parentStore, this);
     }
 
     public boolean isDisposed() {

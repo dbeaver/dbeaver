@@ -768,13 +768,6 @@ public class DataSourceSerializerModern<T extends DataSourceDescriptor> implemen
                 dataSource.setTags(
                     JSONUtils.deserializeStringMap(conObject, RegistryConstants.TAG_TAGS));
 
-                // Preferences
-                Map<String, String> preferenceProperties = dataSource.getPreferenceStore().getProperties();
-                preferenceProperties.clear();
-                preferenceProperties.putAll(
-                    JSONUtils.deserializeStringMap(conObject, RegistryConstants.TAG_CUSTOM_PROPERTIES)
-                );
-
                 {
                     // Extensions
                     Map<String, Object> extensions = null;
@@ -844,8 +837,11 @@ public class DataSourceSerializerModern<T extends DataSourceDescriptor> implemen
             }
         }
 
+        readDataSourcePreference(dataSource, conObject, userSettings);
+
         dataSource.getNavigatorSettings().reset();
 
+        // Navigator settings
         if (!CommonUtils.isEmpty(userSettings) && userSettings.keySet().stream().anyMatch(
             DataSourceNavigatorSettings.NAVIGATOR_SETTINGS::contains)
         ) {
@@ -862,6 +858,20 @@ public class DataSourceSerializerModern<T extends DataSourceDescriptor> implemen
         final String folderPath = JSONUtils.getString(conObject, RegistryConstants.ATTR_FOLDER);
         dataSource.setFolder(folderPath == null ? null : registry.findFolderByPath(folderPath, true, parseResults));
         dataSource.setLockPasswordHash(CommonUtils.toString(conObject.get(RegistryConstants.ATTR_LOCK_PASSWORD)));
+    }
+
+    protected  <T extends DataSourceDescriptor> void readDataSourcePreference(
+        @NotNull T dataSource,
+        @NotNull Map<String, Object> conObject,
+        Map<String, String> userSettings
+    ) {
+        // Preferences
+        DataSourcePreferenceStore preferenceStore = dataSource.getPreferenceStore();
+        Map<String, String> preferenceProperties = preferenceStore.getProperties();
+        preferenceProperties.clear();
+        preferenceProperties.putAll(
+            JSONUtils.deserializeStringMap(conObject, RegistryConstants.TAG_CUSTOM_PROPERTIES)
+        );
     }
 
     /**

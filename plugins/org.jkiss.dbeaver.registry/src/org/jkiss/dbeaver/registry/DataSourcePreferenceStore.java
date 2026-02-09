@@ -18,24 +18,17 @@ package org.jkiss.dbeaver.registry;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPDataSourceContainerProvider;
-import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
 import org.jkiss.dbeaver.model.impl.preferences.AbstractPreferenceStore;
 import org.jkiss.dbeaver.model.impl.preferences.SimplePreferenceStore;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
-import org.jkiss.dbeaver.model.security.SMController;
-import org.jkiss.dbeaver.model.security.SMControllerProvider;
-import org.jkiss.dbeaver.model.security.SMObjectSettings;
-import org.jkiss.dbeaver.model.security.SMObjectType;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.IOException;
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -46,7 +39,7 @@ public class DataSourcePreferenceStore extends SimplePreferenceStore implements 
     private static final Log log = Log.getLog(DataSourcePreferenceStore.class);
     private final DataSourceDescriptor dataSourceDescriptor;
 
-    DataSourcePreferenceStore(
+    protected DataSourcePreferenceStore(
         @NotNull DBPPreferenceStore parentStore,
         @NotNull DataSourceDescriptor dataSourceDescriptor
     ) {
@@ -55,7 +48,6 @@ public class DataSourcePreferenceStore extends SimplePreferenceStore implements 
         // Init default properties from driver overrides
         Map<String, Object> defaultConnectionProperties = dataSourceDescriptor.getDriver()
             .getDefaultConnectionProperties();
-        fetchSettingFromSettingProvider();
         for (Map.Entry<String, Object> prop : defaultConnectionProperties.entrySet()) {
             String propName = prop.getKey();
             if (propName.startsWith(DBConstants.DEFAULT_DRIVER_PROP_PREFIX)) {
@@ -67,7 +59,7 @@ public class DataSourcePreferenceStore extends SimplePreferenceStore implements 
         }
     }
 
-    DataSourcePreferenceStore(DataSourceDescriptor dataSourceDescriptor) {
+    protected DataSourcePreferenceStore(DataSourceDescriptor dataSourceDescriptor) {
         this(dataSourceDescriptor.getRegistry().getPreferenceStore(), dataSourceDescriptor);
     }
 
@@ -80,30 +72,7 @@ public class DataSourcePreferenceStore extends SimplePreferenceStore implements 
 
     @Override
     public Map<String, String> getProperties() {
-        fetchSettingFromSettingProvider();
         return super.getProperties();
-    }
-
-    private void fetchSettingFromSettingProvider() {
-        DBPDataSourceRegistry registry = dataSourceDescriptor.getRegistry();
-        Map<String, String> properties = super.getProperties();
-        if (registry instanceof SMControllerProvider smControllerProvider) {
-            SMObjectType objectType = SMObjectType.datasource;
-            try {
-                SMController smController = smControllerProvider.getSecurityController();
-                if (smController == null) {
-                    return;
-                }
-                List<SMObjectSettings> objectSettings = smController
-                    .getObjectSettings(dataSourceDescriptor.getProjectId(), objectType, dataSourceDescriptor.getId(), null);
-                objectSettings.forEach(setting -> properties.putAll(setting.settings()));
-            } catch (DBException e) {
-                log.warn(
-                    "Error fetching datasource settings from security controller for datasource '"
-                        + dataSourceDescriptor.getName() + "'", e
-                );
-            }
-        }
     }
 
     @Nullable
