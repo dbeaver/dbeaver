@@ -749,15 +749,19 @@ public class EditorUtils {
             List<Path> pathList = entry.getValue();
             boolean allRemote = pathList.stream().noneMatch(IOUtils::isLocalPath);
 
-            for (Path path : pathList) {
-                if (!IOUtils.isLocalPath(path)) {
-                    if (handler == null || Files.isDirectory(path)) {
-                        return false;
+            try {
+                for (int i = 0; i < pathList.size(); i++) {
+                    Path path = pathList.get(i);
+                    if (!IOUtils.isLocalPath(path)) {
+                        if (handler == null || Files.isDirectory(path)) {
+                            return false;
+                        } else if (!handler.supportsRemoteFiles()) {
+                            pathList.set(i, copyRemoteFileToTempDir(path));
+                        }
                     }
                 }
-            }
 
-            try {
+
                 FileOpenHandler fileOpenHandler = handler.createHandler();
 
                 if (sourceNode != null) {
@@ -770,7 +774,7 @@ public class EditorUtils {
                 if (selectedAction != null) {
                     fileOpenHandler.openFiles(pathList, currentContainer, selectedAction);
                 }
-            } catch (Exception e) {
+            } catch (DBException e) {
                 DBWorkbench.getPlatformUI().showError("Open file error", "Can't open file '" + pathList + "'", e);
             }
         }
