@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,10 +23,8 @@ import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.code.NotNull;
@@ -73,24 +71,10 @@ public class NativeToolWizardDialog extends TaskConfigurationWizardDialog {
     }
 
     @Override
-    protected void createButtonsForButtonBar(Composite parent) {
-        if (getWizard() instanceof AbstractNativeToolWizard<?, ?, ?>) {
-            boolean nativeClientRequired = ((AbstractNativeToolWizard) getWizard()).isNativeClientHomeRequired();
-            if (nativeClientRequired) {
-                parent.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
-
-                Button configButton = createButton(parent, CLIENT_CONFIG_ID, TaskNativeUIMessages.tools_wizard_client_button, false);
-                //configButton.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
-
-                Label spacer = new Label(parent, SWT.NONE);
-                spacer.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
-
-                ((GridLayout) parent.getLayout()).numColumns++;
-                ((GridLayout) parent.getLayout()).makeColumnsEqualWidth = false;
-            }
+    protected void createButtonsForLeftButtonBar(@NotNull Composite parent) {
+        if (getWizard() instanceof AbstractNativeToolWizard<?, ?, ?> wizard && wizard.isNativeClientHomeRequired()) {
+            createButton(parent, CLIENT_CONFIG_ID, TaskNativeUIMessages.tools_wizard_client_button, false);
         }
-
-        super.createButtonsForButtonBar(parent);
     }
 
     @Override

@@ -584,7 +584,7 @@
         <handler commandId="org.jkiss.dbeaver.ui.editors.sql.switch.presentation" class="org.jkiss.dbeaver.ui.editors.sql.handlers.SQLEditorHandlerSwitchPresentation">
             <enabledWhen><reference definitionId="org.jkiss.dbeaver.core.ui.sql.editor"/></enabledWhen>
         </handler>
-        <handler commandId="org.jkiss.dbeaver.ui.editors.sql.multipleResultsPerTab" class="org.jkiss.dbeaver.ui.editors.sql.handlers.SQLEditorHandlerExecute">
+        <handler commandId="org.jkiss.dbeaver.ui.editors.sql.multipleResultsPerTab" class="org.jkiss.dbeaver.ui.editors.sql.handlers.SQLEditorHandlerToggleMultipleResultsPerTab">
             <enabledWhen><reference definitionId="org.jkiss.dbeaver.core.ui.sql.editor"/></enabledWhen>
         </handler>
         <handler commandId="org.jkiss.dbeaver.ui.editors.sql.run.explain" class="org.jkiss.dbeaver.ui.editors.sql.handlers.SQLEditorHandlerExecute">
