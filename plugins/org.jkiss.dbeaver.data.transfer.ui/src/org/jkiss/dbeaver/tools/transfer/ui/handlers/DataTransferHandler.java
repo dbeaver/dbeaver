@@ -60,7 +60,8 @@ public abstract class DataTransferHandler extends AbstractHandler {
                 DataTransferWizard.openWizard(
                     workbenchWindow,
                     producers,
-                    consumers);
+                    consumers,
+                    true);
             } catch (Exception e) {
                 DBWorkbench.getPlatformUI().showError(DTUIMessages.data_transfer_handler_title_data_transfer_error, DTUIMessages.data_transfer_handler_message_data_transfer_error, e);
             }
