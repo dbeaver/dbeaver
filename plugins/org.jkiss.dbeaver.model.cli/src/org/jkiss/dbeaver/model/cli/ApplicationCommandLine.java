@@ -267,10 +267,9 @@ public abstract class ApplicationCommandLine<T extends ApplicationInstanceContro
                 log.warn("Class is not annotated '" + param.getImplClass().getName() + "'");
                 continue;
             }
-            CommandLine.Model.CommandSpec commandSpec =
-                CommandLine.Model.CommandSpec.forAnnotatedObject(param.getImplClass());
-            transformCommand(commandSpec, param.getImplClass());
-            cmd.addSubcommand(commandSpec);
+            CommandLine command = new CommandLine(param.getImplClass());
+            transformCommand(command.getCommandSpec(), param.getImplClass());
+            cmd.addSubcommand(command);
         }
         return cmd;
     }
