@@ -19,7 +19,6 @@ package org.jkiss.dbeaver.ui.ai.preferences;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.jface.layout.GridLayoutFactory;
 import org.eclipse.jface.viewers.*;
-import org.eclipse.jface.window.ToolTip;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.SashForm;
 import org.eclipse.swt.graphics.Image;
@@ -43,7 +42,6 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.ai.internal.AIUIMessages;
 import org.jkiss.dbeaver.ui.controls.ListContentProvider;
 import org.jkiss.dbeaver.ui.preferences.AbstractPrefPage;
-import org.jkiss.utils.StringUtils;
 
 import java.util.Comparator;
 import java.util.LinkedHashMap;
@@ -133,13 +131,9 @@ public final class AIPreferencePagePrompts extends AbstractPrefPage implements I
         viewer.setLabelProvider(new DelegatingStyledCellLabelProvider(new ViewerLabelProvider()));
         viewer.setInput(generators);
         viewer.addSelectionChangedListener(event -> {
-            IStructuredSelection selection = event.getStructuredSelection();
-            if (!selection.isEmpty()) {
-                var descriptor = (AIPromptGeneratorDescriptor) selection.getFirstElement();
-                onGeneratorChanged(descriptor);
-            }
+            var descriptor = (AIPromptGeneratorDescriptor) event.getStructuredSelection().getFirstElement();
+            onGeneratorChanged(descriptor);
         });
-        ColumnViewerToolTipSupport.enableFor(viewer, ToolTip.NO_RECREATE);
 
         return viewer;
     }
@@ -200,16 +194,6 @@ public final class AIPreferencePagePrompts extends AbstractPrefPage implements I
         public Image getImage(@NotNull Object element) {
             var descriptor = (AIPromptGeneratorDescriptor) element;
             return descriptor.getIcon() != null ? DBeaverIcons.getImage(descriptor.getIcon()) : null;
-        }
-
-        @Override
-        public String getToolTipText(Object element) {
-            var descriptor = (AIPromptGeneratorDescriptor) element;
-            String description = descriptor.getDescription();
-            if (description != null) {
-                description = StringUtils.wrap(description, 60);
-            }
-            return description;
         }
     }
 }
