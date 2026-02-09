@@ -97,7 +97,7 @@
                     webURL="https://iotdb.apache.org/UserGuide/latest/QuickStart/QuickStart_apache.html"
                     supportedPageFields="host,port,sqlDialect"
                     categories="timeseries">
-                <file type="jar" path="maven:/org.apache.iotdb:iotdb-jdbc:2.0.4"/>
+                <file type="jar" path="maven:/org.apache.iotdb:iotdb-jdbc:2.0.5"/>
                 <parameter name="supports-table-constraints" value="true"/>
                 <parameter name="supports-views" value="false"/>
                 <parameter name="supports-indexes" value="false"/>
@@ -120,7 +120,7 @@
                     webURL="https://www.timecho.com/docs/zh/UserGuide/latest/QuickStart/QuickStart_timecho.html"
                     supportedPageFields="host,port,sqlDialect"
                     categories="timeseries">
-                <file type="jar" path="maven:/org.apache.iotdb:iotdb-jdbc:2.0.4"/>
+                <file type="jar" path="maven:/org.apache.iotdb:iotdb-jdbc:2.0.5"/>
                 <parameter name="supports-table-constraints" value="true"/>
                 <parameter name="supports-views" value="false"/>
                 <parameter name="supports-indexes" value="false"/>
