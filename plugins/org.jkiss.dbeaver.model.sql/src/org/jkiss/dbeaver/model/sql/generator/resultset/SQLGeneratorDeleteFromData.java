@@ -18,7 +18,7 @@ package org.jkiss.dbeaver.model.sql.generator.resultset;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.DBDDataProvider;
+import org.jkiss.dbeaver.model.data.DBDDataProvider;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDValueRow;
