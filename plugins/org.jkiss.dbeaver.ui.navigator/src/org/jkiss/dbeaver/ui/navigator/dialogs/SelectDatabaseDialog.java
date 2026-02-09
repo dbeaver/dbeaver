@@ -196,7 +196,7 @@ public class SelectDatabaseDialog extends ObjectListDialog<DBNDatabaseNode> {
             selectedObjects.clear();
             selectedObjects.addAll(selection.toList());
             if (isDialogComplete()) {
-                okPressed();
+                UIUtils.asyncExec(this::okPressed);
             }
         });
 

@@ -131,7 +131,7 @@ public class ObjectListDialog<T extends DBPObject> extends AbstractPopupPanel {
         });
         objectList.setDoubleClickHandler(event -> {
             if (isDialogComplete()) {
-                okPressed();
+                UIUtils.asyncExec(this::okPressed);
             }
         });
 
