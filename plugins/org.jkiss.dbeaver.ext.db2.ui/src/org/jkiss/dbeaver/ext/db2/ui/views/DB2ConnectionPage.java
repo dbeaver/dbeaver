@@ -102,8 +102,7 @@ public class DB2ConnectionPage extends ConnectionPageWithAuth implements IDialog
 
             UIUtils.createControlLabel(addrGroup, UIConnectionMessages.dialog_connection_url_label);
             urlText = new Text(addrGroup, SWT.BORDER);
-            GridData gd;
-            gd = new GridData(GridData.FILL_HORIZONTAL);
+            GridData gd = new GridData(GridData.FILL_HORIZONTAL);
             gd.horizontalSpan = 3;
             gd.grabExcessHorizontalSpace = true;
             gd.widthHint = 355;
