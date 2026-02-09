@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.model.qm.filters;
 
 import org.jkiss.dbeaver.model.qm.QMEventFilter;
 
+import java.util.Collections;
 import java.util.Set;
 
 public class QMAdminCursorFilter {
@@ -33,7 +34,7 @@ public class QMAdminCursorFilter {
 
     public QMAdminCursorFilter(QMCursorFilter cursorFilter, Set<String> userNames) {
         this.sessionId = cursorFilter.getSessionId();
-        this.criteria = new QMAdminEventCriteria(cursorFilter.getCriteria(), userNames);
+        this.criteria = new QMAdminEventCriteria(cursorFilter.getCriteria(), userNames, Collections.emptySet());
         this.filter = cursorFilter.getFilter();
     }
 

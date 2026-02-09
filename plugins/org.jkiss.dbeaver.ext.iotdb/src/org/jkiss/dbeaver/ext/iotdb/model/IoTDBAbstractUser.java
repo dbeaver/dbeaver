@@ -112,29 +112,31 @@ public class IoTDBAbstractUser implements DBAUser, DBARole, DBPRefreshableObject
         try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Load Grants")) {
             String sql = String.format("list privileges of user %s", userName);
 
-            JDBCStatement stmt = session.createStatement();
-            JDBCResultSet rs = stmt.executeQuery(sql);
-            List<IoTDBGrant> globalPri = new ArrayList<>();
-            List<IoTDBGrant> schemaPri = new ArrayList<>();
+            try (JDBCStatement stmt = session.createStatement()) {
+                try (JDBCResultSet rs = stmt.executeQuery(sql)) {
+                    List<IoTDBGrant> globalPri = new ArrayList<>();
+                    List<IoTDBGrant> schemaPri = new ArrayList<>();
 
-            while (rs.next()) {
-                List<IoTDBPrivilege> privileges = new ArrayList<>();
+                    while (rs.next()) {
+                        List<IoTDBPrivilege> privileges = new ArrayList<>();
 
-                String privilegeName = rs.getString("Privileges");
-                IoTDBPrivilege pri = dataSource.getPrivilege(monitor, privilegeName);
-                privileges.add(pri);
-                String role = rs.getString("Role");
-                String scope = rs.getString("Scope");
-                boolean grantOption = rs.getBoolean("GrantOption");
+                        String privilegeName = rs.getString("Privileges");
+                        IoTDBPrivilege pri = dataSource.getPrivilege(monitor, privilegeName);
+                        privileges.add(pri);
+                        String role = rs.getString("Role");
+                        String scope = rs.getString("Scope");
+                        boolean grantOption = rs.getBoolean("GrantOption");
 
-                if (pri.kind == IoTDBPrivilegeInfo.Kind.GLOBAL) {
-                    globalPri.add(new IoTDBGrant(this, privileges, role, scope, grantOption));
-                } else {
-                    schemaPri.add(new IoTDBGrant(this, privileges, role, scope, grantOption));
+                        if (pri.kind == IoTDBPrivilegeInfo.Kind.GLOBAL) {
+                            globalPri.add(new IoTDBGrant(this, privileges, role, scope, grantOption));
+                        } else {
+                            schemaPri.add(new IoTDBGrant(this, privileges, role, scope, grantOption));
+                        }
+                    }
+                    this.globalPrivileges = globalPri;
+                    this.schemaPrivileges = schemaPri;
                 }
             }
-            this.globalPrivileges = globalPri;
-            this.schemaPrivileges = schemaPri;
         } catch (Exception e) {
             log.error("Error loading grants", e);
             throw new DBDatabaseException(e, this.getDataSource());
