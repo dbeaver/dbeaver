@@ -41,6 +41,7 @@ public class AISettings implements DBPAdaptable {
     private boolean functionsEnabled = true;
     private final Set<String> enabledFunctionCategories = new LinkedHashSet<>();
     private final Set<String> enabledFunctions = new LinkedHashSet<>();
+    private final Set<String> initializedDefaultCategories = new LinkedHashSet<>();
     private final Map<String, String> customInstructions = new LinkedHashMap<>();
 
     public AISettings() {
@@ -139,6 +140,26 @@ public class AISettings implements DBPAdaptable {
 
     public void disableFunctionCategory(@NotNull String category) {
         enabledFunctionCategories.remove(category);
+    }
+
+    @NotNull
+    public Set<String> getInitializedDefaultCategories() {
+        return new HashSet<>(initializedDefaultCategories);
+    }
+
+    public void setInitializedDefaultCategories(@Nullable Set<String> categories) {
+        this.initializedDefaultCategories.clear();
+        if (categories != null) {
+            this.initializedDefaultCategories.addAll(categories);
+        }
+    }
+
+    public void markCategoryAsInitialized(@NotNull String categoryId) {
+        this.initializedDefaultCategories.add(categoryId);
+    }
+
+    public boolean isCategoryInitialized(@NotNull String categoryId) {
+        return initializedDefaultCategories.contains(categoryId);
     }
 
     public boolean isAiDisabled() {

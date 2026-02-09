@@ -48,6 +48,7 @@ public class AISettingsManager {
     private static final String FUNCTIONS_ENABLED_KEY = "functionsEnabled";
     private static final String ENABLED_FUNCTION_CATEGORIES_KEY = "enabledFunctionCategories";
     private static final String ENABLED_FUNCTIONS_KEY = "enabledFunctions";
+    private static final String INITIALIZED_DEFAULT_CATEGORIES_KEY = "initializedDefaultCategories";
     private static final String CUSTOM_INSTRUCTIONS_KEY = "customInstructions";
     public static final String ENGINE_PROPERTIES = "properties";
 
@@ -132,6 +133,11 @@ public class AISettingsManager {
                     settings.setEnabledFunctions(new HashSet<>(enabledFunctions));
                 }
 
+                List<String> initializedCategories = JSONUtils.getStringList(configMap, INITIALIZED_DEFAULT_CATEGORIES_KEY);
+                if (!initializedCategories.isEmpty()) {
+                    settings.setInitializedDefaultCategories(new HashSet<>(initializedCategories));
+                }
+
                 @SuppressWarnings("unchecked")
                 Map<String, String> customInstructions = (Map<String, String>) configMap.get(CUSTOM_INSTRUCTIONS_KEY);
                 if (!CommonUtils.isEmpty(customInstructions)) {
@@ -162,10 +168,22 @@ public class AISettingsManager {
                 }
             }
 
-            if (settings.getEnabledFunctionCategories().isEmpty()) {
-                settings.setEnabledFunctionCategories(
-                    AIFunctionRegistry.getInstance().getDefaultEnabledCategoryIds()
-                );
+            AIFunctionRegistry functionRegistry = AIFunctionRegistry.getInstance();
+            Map<AIFunctionCategoryDescriptor, List<AIFunctionDescriptor>> functionsByCategory =
+                functionRegistry.getFunctionsByCategory();
+
+            for (Map.Entry<AIFunctionCategoryDescriptor, List<AIFunctionDescriptor>> entry :
+                    functionsByCategory.entrySet()) {
+                AIFunctionCategoryDescriptor category = entry.getKey();
+                List<AIFunctionDescriptor> functions = entry.getValue();
+
+                if (category.isEnabledByDefault() && !settings.isCategoryInitialized(category.getId())) {
+                    settings.enableFunctionCategory(category.getId());
+                    for (AIFunctionDescriptor function : functions) {
+                        settings.enableFunction(function.getId());
+                    }
+                    settings.markCategoryAsInitialized(category.getId());
+                }
             }
 
             settings.setEngineConfigurations(engineConfigurationMap);
@@ -223,6 +241,15 @@ public class AISettingsManager {
                     functionsArray.add(function);
                 }
                 json.add(ENABLED_FUNCTIONS_KEY, functionsArray);
+            }
+
+            Set<String> initializedCategories = settings.getInitializedDefaultCategories();
+            if (!initializedCategories.isEmpty()) {
+                JsonArray initializedArray = new JsonArray();
+                for (String category : initializedCategories) {
+                    initializedArray.add(category);
+                }
+                json.add(INITIALIZED_DEFAULT_CATEGORIES_KEY, initializedArray);
             }
 
             Map<String, String> customInstructions = settings.getCustomInstructions();
