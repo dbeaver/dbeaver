@@ -44,15 +44,20 @@ public class DatabaseObjectsSelectorPanel extends Composite {
     private final DatabaseNavigatorTree dataSourceTree;
     private DatabaseObjectsTreeManager checkboxTreeManager;
 
-    public DatabaseObjectsSelectorPanel(Composite parent, boolean multiSelector, DBRRunnableContext runnableContext) {
+    public DatabaseObjectsSelectorPanel(@NotNull Composite parent, boolean multiSelector, @NotNull DBRRunnableContext runnableContext) {
         this(parent, runnableContext, SWT.SINGLE | SWT.BORDER | (multiSelector ? SWT.CHECK : SWT.NONE), false);
     }
 
-    public DatabaseObjectsSelectorPanel(Composite parent, DBRRunnableContext runnableContext, int style) {
+    public DatabaseObjectsSelectorPanel(@NotNull Composite parent, @NotNull DBRRunnableContext runnableContext, int style) {
         this(parent, runnableContext, style, false);
     }
 
-    public DatabaseObjectsSelectorPanel(Composite parent, DBRRunnableContext runnableContext, int style, boolean enableFilter) {
+    public DatabaseObjectsSelectorPanel(
+        @NotNull Composite parent,
+        @NotNull DBRRunnableContext runnableContext,
+        int style,
+        boolean enableFilter
+    ) {
         super(parent, SWT.NONE);
         if (parent.getLayout() instanceof GridLayout) {
             setLayoutData(new GridData(GridData.FILL_BOTH));
@@ -199,7 +204,7 @@ public class DatabaseObjectsSelectorPanel extends Composite {
         return true;
     }
 
-    protected boolean isElementAccepted(Object element) {
+    protected boolean isElementAccepted(@Nullable Object element) {
         if (element instanceof TreeNodeSpecial) {
             return true;
         }
@@ -208,7 +213,7 @@ public class DatabaseObjectsSelectorPanel extends Composite {
                 case DBNDatabaseFolder folder -> {
                     return isDatabaseFolderVisible(folder);
                 }
-                case DBNProjectDatabases dbnProjectDatabases -> {
+                case DBNProjectDatabases ignored -> {
                     return true;
                 }
                 case DBNLocalFolder localFolder -> {
@@ -227,6 +232,7 @@ public class DatabaseObjectsSelectorPanel extends Composite {
         return false;
     }
 
+    @NotNull
     protected INavigatorFilter createNavigatorFilter() {
         return new INavigatorFilter() {
             @Override
