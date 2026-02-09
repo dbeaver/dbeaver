@@ -79,8 +79,8 @@ public class AIFunctionCall {
         return messageMetadata;
     }
 
-    public void setAdditionalProperties(Map<String, String> additionalProperties) {
-        this.messageMetadata = additionalProperties;
+    public void setMessageMetadata(@NotNull Map<String, String> additionalProperties) {
+        this.messageMetadata = Map.copyOf(additionalProperties);
     }
 
     @Nullable
