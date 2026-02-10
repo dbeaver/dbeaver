@@ -116,7 +116,7 @@ public class TaskConfigurationWizardDialog extends MultiPageWizardDialog {
         if (getWizard().isCurrentTaskSaved()) {
             return EnumSet.noneOf(PageCompletionMark.class);
         } else {
-            return EnumSet.of(PageCompletionMark.COMPLETE);
+            return EnumSet.of(PageCompletionMark.COMPLETE, PageCompletionMark.ERROR);
         }
     }
 

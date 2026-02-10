@@ -35,8 +35,8 @@
                     <replace provider="athena" driver="aws_athena_jdbc_simba"/>
                     <replace provider="generic" driver="aws_athena_42"/>
 
-                    <file type="jar" path="https://downloads.athena.us-east-1.amazonaws.com/drivers/JDBC/3.6.0/athena-jdbc-3.6.0-lean-jar-and-separate-dependencies-jars.zip" bundle="!drivers.athena"/>
-                    <file type="license" path="https://downloads.athena.us-east-1.amazonaws.com/drivers/JDBC/3.6.0/LICENSE.txt" bundle="!drivers.athena"/>
+                    <file type="jar" path="https://downloads.athena.us-east-1.amazonaws.com/drivers/JDBC/3.7.0/athena-jdbc-3.7.0-lean-jar-and-separate-dependencies-jars.zip" bundle="!drivers.athena"/>
+                    <file type="license" path="https://downloads.athena.us-east-1.amazonaws.com/drivers/JDBC/3.7.0/LICENSE.txt" bundle="!drivers.athena"/>
 
                     <file type="jar" path="drivers/athena" bundle="drivers.athena"/>
                     <file type="license" path="drivers/athena/LICENSE.txt" bundle="drivers.athena"/>
