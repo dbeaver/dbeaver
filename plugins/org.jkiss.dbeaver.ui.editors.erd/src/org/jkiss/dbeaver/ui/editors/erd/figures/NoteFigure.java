@@ -24,6 +24,7 @@ import org.eclipse.draw2d.CompoundBorder;
 import org.eclipse.draw2d.LineBorder;
 import org.eclipse.draw2d.MarginBorder;
 import org.eclipse.draw2d.geometry.Dimension;
+import org.eclipse.draw2d.geometry.Insets;
 import org.eclipse.draw2d.text.FlowPage;
 import org.eclipse.draw2d.text.TextFlow;
 import org.jkiss.dbeaver.model.erd.ERDNote;
@@ -66,10 +67,22 @@ public class NoteFigure extends FlowPage {
     }
 
     @Override
-    public Dimension getPreferredSize(int width, int h) {
+    public Dimension getPreferredSize(int wHint, int hHint) {
+        Insets insets = getInsets();
+        int widthLimit = wHint;
+        if (widthLimit > -1) {
+            widthLimit -= insets.getWidth();
+        }
+        int heightLimit = hHint;
+        if (heightLimit > -1) {
+            heightLimit -= insets.getHeight();
+        }
+
+        Dimension textPrefSize = textFlow.getPreferredSize(widthLimit, heightLimit).getCopy();
+        textPrefSize.expand(insets.getWidth(), insets.getHeight());
+
         // Return current size if it is bigger than text (means it was changed manually)
         Dimension currentSize = getSize();
-        Dimension textPrefSize = textFlow.getPreferredSize(width, h);
         if (currentSize.width >= textPrefSize.width && currentSize.height >= textPrefSize.height) {
             return currentSize;
         }
@@ -78,8 +91,12 @@ public class NoteFigure extends FlowPage {
 
     @Override
     public void setPreferredSize(Dimension size) {
-        textFlow.setSize(size);
-        textFlow.setPreferredSize(size);
+        if (size != null) {
+            Insets insets = getInsets();
+            Dimension innerSize = size.getCopy().shrink(insets.getWidth(), insets.getHeight());
+            textFlow.setSize(innerSize);
+            textFlow.setPreferredSize(innerSize);
+        }
         super.setPreferredSize(size);
     }
 
