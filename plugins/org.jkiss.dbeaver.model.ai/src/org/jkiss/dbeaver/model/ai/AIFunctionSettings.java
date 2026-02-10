@@ -28,13 +28,13 @@ import java.util.Set;
  * Stores function-related configuration: enabled/disabled states,
  * initialized categories tracking.
  */
-public class AIFunctionSettings {
+public final class AIFunctionSettings {
     private boolean functionsEnabled = true;
     private final Set<String> enabledFunctionCategories = new LinkedHashSet<>();
     private final Set<String> enabledFunctions = new LinkedHashSet<>();
     private final Set<String> initializedDefaultCategories = new LinkedHashSet<>();
 
-    public AIFunctionSettings() {
+    AIFunctionSettings() {
     }
 
     public boolean isFunctionsEnabled() {
