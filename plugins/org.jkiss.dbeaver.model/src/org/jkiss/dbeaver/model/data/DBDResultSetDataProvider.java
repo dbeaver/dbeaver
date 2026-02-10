@@ -14,30 +14,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.jkiss.dbeaver.model.data;
 
-package org.jkiss.dbeaver.ui.data;
-
-import org.eclipse.swt.graphics.Point;
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ui.controls.resultset.IResultSetController;
+
+import java.util.List;
 
 /**
- * Value hint action handler
+ * Provides additional data about result set.
  */
-public interface DBDValueHintActionHandler {
+public interface DBDResultSetDataProvider extends DBDResultSetModel {
 
     @NotNull
-    String getActionText();
-
-    /**
-     * Perform hint action
-     *
-     * @param controller result set  controller
-     * @param location   cell location in screen coordinates
-     * @param state      modifier state
-     * @throws DBException on any DB error
-     */
-    void performAction(@NotNull IResultSetController controller, @NotNull Point location, long state) throws DBException;
+    List<? extends DBDValueRow> getSelectedRows();
 
 }

@@ -20,6 +20,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.navigator.fs.DBNPathBase;
 
 import java.nio.file.Path;
 import java.util.List;
@@ -31,6 +32,13 @@ import java.util.Set;
  * based on the provided parameters, including the action type and optional data source context.
  */
 public interface FileOpenHandler {
+    /**
+     * Sets the source node from which files are being opened.
+     * This node represents the navigation tree element (file or folder) that triggered the file opening action.
+     *
+     * @param sourceNode the source navigation node, or null if there is no specific source node
+     */
+    void setSourceNode(@Nullable DBNPathBase sourceNode);
 
     /**
      * Open NIO files in associated handlers
