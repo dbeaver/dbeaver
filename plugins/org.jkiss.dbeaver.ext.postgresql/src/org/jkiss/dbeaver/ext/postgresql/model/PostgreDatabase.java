@@ -43,7 +43,6 @@ import org.jkiss.dbeaver.model.sql.SQLState;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
-import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.LongKeyMap;
 
@@ -668,7 +667,6 @@ public class PostgreDatabase extends JDBCRemoteInstance
         if (monitor != null) {
             checkInstanceConnection(monitor);
         }
-        RuntimeUtils.pause(500);
         // Get all schemas
         return monitor == null ? schemaCache.getCachedObjects() : schemaCache.getAllObjects(monitor, this);
     }

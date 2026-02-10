@@ -125,6 +125,9 @@ public class ObjectListDialog<T extends DBPObject> extends AbstractPopupPanel {
         objectList.setLayoutData(gd);
         objectList.getSelectionProvider().addSelectionChangedListener(event -> {
             IStructuredSelection selection = (IStructuredSelection) event.getSelection();
+            if (selection.isEmpty()) {
+                return;
+            }
             selectedObjects.clear();
             selectedObjects.addAll(selection.toList());
             updateButtons();

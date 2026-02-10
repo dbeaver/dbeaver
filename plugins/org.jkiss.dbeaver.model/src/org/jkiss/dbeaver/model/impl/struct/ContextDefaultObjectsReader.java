@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -108,22 +108,24 @@ public class ContextDefaultObjectsReader implements DBRRunnableWithProgress {
                 DBSObjectContainer defObject = null;
                 if (DBSCatalog.class.isAssignableFrom(childType)) {
                     defObject = contextDefaults.getDefaultCatalog();
-                }
-                if (defObject != null) {
-                    Class<? extends DBSObject> catalogChildrenType = defObject.getPrimaryChildType(monitor);
-                    if (DBSSchema.class.isAssignableFrom(catalogChildrenType)) {
-                        currentDatabaseInstanceName = defObject.getName();
-                        if (contextDefaults.supportsSchemaChange()) {
-                            objectContainer = defObject;
-                        } else if (!contextDefaults.supportsCatalogChange()) {
-                            // Nothing can be changed
-                            objectContainer = null;
-                        }
-                        DBSSchema defaultSchema = contextDefaults.getDefaultSchema();
-                        if (defaultSchema != null) {
-                            defObject = defaultSchema;
+                    if (defObject != null) {
+                        Class<? extends DBSObject> catalogChildrenType = defObject.getPrimaryChildType(monitor);
+                        if (DBSSchema.class.isAssignableFrom(catalogChildrenType)) {
+                            currentDatabaseInstanceName = defObject.getName();
+                            if (contextDefaults.supportsSchemaChange()) {
+                                objectContainer = defObject;
+                            } else if (!contextDefaults.supportsCatalogChange()) {
+                                // Nothing can be changed
+                                objectContainer = null;
+                            }
+                            DBSSchema defaultSchema = contextDefaults.getDefaultSchema();
+                            if (defaultSchema != null) {
+                                defObject = defaultSchema;
+                            }
                         }
                     }
+                } else if (DBSSchema.class.isAssignableFrom(childType)) {
+                    defObject = contextDefaults.getDefaultSchema();
                 }
                 objectList = objectContainer == null ?
                     Collections.singletonList(defObject) :

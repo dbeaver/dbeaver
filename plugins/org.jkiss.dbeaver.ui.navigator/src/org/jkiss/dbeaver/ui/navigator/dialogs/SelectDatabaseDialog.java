@@ -121,16 +121,15 @@ public class SelectDatabaseDialog extends ObjectListDialog<DBNDatabaseNode> {
         if (selectedInstances.isEmpty()) {
             return;
         }
-        List<Object> selObjects = new ArrayList<>();
-        Collection<?> schemas = (Collection<?>) objectList.getItemsViewer().getInput();
-        if (schemas != null) {
-            for (Object node : schemas) {
+        if (objectList.getSelectionProvider().getSelection().isEmpty()) {
+            List<Object> selObjects = new ArrayList<>();
+            for (DBNDatabaseNode  node : items) {
                 if (DBNUtils.isDefaultElement(node)) {
                     selObjects.add(node);
                 }
             }
+            objectList.getSelectionProvider().setSelection(new StructuredSelection(selObjects));
         }
-        objectList.getSelectionProvider().setSelection(new StructuredSelection(selObjects));
     }
 
     @Nullable
@@ -180,18 +179,18 @@ public class SelectDatabaseDialog extends ObjectListDialog<DBNDatabaseNode> {
         instanceList.setLayoutData(gd);
         instanceList.getSelectionProvider().addSelectionChangedListener(event -> {
             IStructuredSelection selection = (IStructuredSelection) event.getSelection();
-            selectedInstances.clear();
-            selectedInstances.addAll(selection.toList());
-            // Clear schemas too
-            selectedObjects.clear();
+            List<DBNDatabaseNode> newInstances = selection.toList();
+            if (!newInstances.equals(selectedInstances)) {
+                selectedInstances.clear();
+                selectedInstances.addAll(newInstances);
+                // Clear schemas too
+                selectedObjects.clear();
+            }
             DBNDatabaseNode instance = selectedInstances.isEmpty() ? null : selectedInstances.getFirst();
             if (instance != null && !CommonUtils.equalObjects(instance.getNodeDisplayName(), currentInstanceName)) {
                 currentInstanceName = instance.getNodeDisplayName();
                 enableButton(IDialogConstants.OK_ID, false);
                 objectList.loadData();
-//                if (instance.getObject() instanceof DBSInstance ins) {
-//                    ins.getDefaultContext()
-//                }
             }
             updateButtons();
         });
@@ -211,7 +210,7 @@ public class SelectDatabaseDialog extends ObjectListDialog<DBNDatabaseNode> {
 
     @Override
     protected boolean isDialogComplete() {
-        return !selectedInstances.isEmpty();
+        return currentInstanceName == null ? super.isDialogComplete() : !selectedInstances.isEmpty();
     }
 
     protected List<DBNDatabaseNode> getObjects(@NotNull DBRProgressMonitor monitor) {
