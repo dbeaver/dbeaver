@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,34 +14,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.jkiss.dbeaver.model.data;
 
-package org.jkiss.dbeaver.model.rcp;
-
-import org.eclipse.core.resources.IContainer;
-import org.eclipse.core.resources.IProject;
-import org.eclipse.core.resources.IResource;
 import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.model.app.DBPProject;
+
+import java.util.List;
 
 /**
- * RCP project
+ * Provides additional data about result set.
  */
-public interface RCPProject extends DBPProject {
+public interface DBDResultSetDataProvider extends DBDResultSetModel {
 
-//    @NotNull
-//    DBPWorkspaceDesktop getWorkspace();
-
-    @Nullable
-    IProject getEclipseProject();
-
-    @Nullable
-    IContainer getRootResource();
-
-    /**
-     * Returns logical resource path
-     */
     @NotNull
-    String getResourcePath(@NotNull IResource resource);
+    List<? extends DBDValueRow> getSelectedRows();
 
 }

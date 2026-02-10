@@ -46,7 +46,6 @@ import org.jkiss.dbeaver.registry.task.TaskManagerImpl;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
-import org.jkiss.utils.IOUtils;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -60,19 +59,6 @@ public class DesktopProjectImpl extends BaseProjectImpl implements RCPProject, D
     private static final Log log = Log.getLog(DesktopProjectImpl.class);
 
     private static final String SETTINGS_FOLDER = ".settings";
-
-    private static final String EMPTY_PROJECT_TEMPLATE = """
-        <?xml version="1.0" encoding="UTF-8"?>
-        <projectDescription>
-        <name>${project-name}</name>
-        <comment></comment>
-        <projects>
-        </projects>
-        <buildSpec>
-        </buildSpec>
-        <natures>
-        </natures>
-        </projectDescription>""";
 
     @NotNull
     private final IProject project;
@@ -105,16 +91,16 @@ public class DesktopProjectImpl extends BaseProjectImpl implements RCPProject, D
         return project.getLocation().toFile().toPath();
     }
 
-    @NotNull
+    @Nullable
     @Override
     public IProject getEclipseProject() {
         return project;
     }
 
-    @NotNull
+    @Nullable
     @Override
     public IContainer getRootResource() {
-        return project;
+        return getEclipseProject();
     }
 
     @Override
@@ -344,12 +330,8 @@ public class DesktopProjectImpl extends BaseProjectImpl implements RCPProject, D
 
     public void recoverProjectDescription() throws IOException {
         // .project file missing. Let's try to create an empty project config
-        Path mdFile = getAbsolutePath().resolve(IProjectDescription.DESCRIPTION_FILE_NAME);
-        log.debug("Recovering project '" + project.getName() + "' metadata " + mdFile.toAbsolutePath());
-
-        IOUtils.writeFileFromString(
-            mdFile.toFile(),
-            EMPTY_PROJECT_TEMPLATE.replace("${project-name}", project.getName()));
+        log.debug("Recovering project '" + project.getName() + "' metadata " + getAbsolutePath().toAbsolutePath());
+        BaseProjectImpl.updateProjectFile(getAbsolutePath(), project.getName());
     }
 
     @NotNull
