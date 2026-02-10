@@ -92,13 +92,17 @@ public class DataSourcePreferenceStore extends SimplePreferenceStore implements 
         }
     }
 
-    @NotNull
-    public Map<String, String> getUserSettings() {
-        return new LinkedHashMap<>(userSettings);
-    }
-
     public void putUserSettings(String key, String value) {
         userSettings.put(key, value);
+    }
+
+    @Override
+    public void setValue(@NotNull String name, @Nullable String value) {
+        if (value == null) {
+            getProperties().remove(name);
+            return;
+        }
+        super.setValue(name, value);
     }
 
     @Override
