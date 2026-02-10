@@ -182,19 +182,23 @@ public class SelectDatabaseDialog extends ObjectListDialog<DBNDatabaseNode> {
             IStructuredSelection selection = (IStructuredSelection) event.getSelection();
             selectedInstances.clear();
             selectedInstances.addAll(selection.toList());
+            // Clear schemas too
+            selectedObjects.clear();
             DBNDatabaseNode instance = selectedInstances.isEmpty() ? null : selectedInstances.getFirst();
             if (instance != null && !CommonUtils.equalObjects(instance.getNodeDisplayName(), currentInstanceName)) {
                 currentInstanceName = instance.getNodeDisplayName();
-                selectedObjects.clear();
                 enableButton(IDialogConstants.OK_ID, false);
                 objectList.loadData();
+//                if (instance.getObject() instanceof DBSInstance ins) {
+//                    ins.getDefaultContext()
+//                }
             }
             updateButtons();
         });
         instanceList.setDoubleClickHandler(event -> {
             IStructuredSelection selection = (IStructuredSelection) event.getSelection();
-            selectedObjects.clear();
-            selectedObjects.addAll(selection.toList());
+            selectedInstances.clear();
+            selectedInstances.addAll(selection.toList());
             if (isDialogComplete()) {
                 UIUtils.asyncExec(this::okPressed);
             }
@@ -207,7 +211,7 @@ public class SelectDatabaseDialog extends ObjectListDialog<DBNDatabaseNode> {
 
     @Override
     protected boolean isDialogComplete() {
-        return super.isDialogComplete();
+        return !selectedInstances.isEmpty();
     }
 
     protected List<DBNDatabaseNode> getObjects(@NotNull DBRProgressMonitor monitor) {
