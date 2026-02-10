@@ -54,15 +54,16 @@ public class CSmartCombo<ITEM_TYPE> extends Composite {
     protected final List<ITEM_TYPE> items = new ArrayList<>();
     private TableFilter<ITEM_TYPE> tableFilter = null;
     private ITEM_TYPE selectedItem;
-    private Label imageLabel;
-    private StyledText text;
+    private final Label imageLabel;
+    private final StyledText text;
     private Tree dropDownControl;
     private int visibleItemCount = 10;
     private Shell popup;
     private long disposeTime = -1;
     private Label arrow;
     private boolean hasFocus;
-    private Listener listener, filter;
+    private final Listener listener;
+    private final Listener filter;
     private Point sizeHint;
 
     public CSmartCombo(@NotNull Composite parent, int style, @NotNull ILabelProvider labelProvider) {
@@ -96,7 +97,9 @@ public class CSmartCombo<ITEM_TYPE> extends Composite {
         gd = new GridData(GridData.FILL_VERTICAL | GridData.HORIZONTAL_ALIGN_END | GridData.VERTICAL_ALIGN_CENTER);
         this.arrow.setLayoutData(gd);
 
-        this.setCursor(getDisplay().getSystemCursor(SWT.CURSOR_ARROW));
+        Cursor arrowCursor = getDisplay().getSystemCursor(SWT.CURSOR_ARROW);
+        this.setCursor(arrowCursor);
+        this.text.setCursor(arrowCursor);
         this.setEnabled(true, true);
         this.setForeground(UIStyles.getDefaultTextForeground());
 
@@ -304,8 +307,6 @@ public class CSmartCombo<ITEM_TYPE> extends Composite {
         if (index < 0) {
             selectedItem = null;
             itemText = "";
-            itemImage = null;
-            itemBackground = null;
         } else {
             selectedItem = this.items.get(index);
             itemText = labelProvider.getText(selectedItem);
