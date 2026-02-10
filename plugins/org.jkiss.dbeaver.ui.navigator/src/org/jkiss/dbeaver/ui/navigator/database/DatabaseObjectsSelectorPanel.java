@@ -27,9 +27,6 @@ import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.navigator.*;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.model.struct.*;
-import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
-import org.jkiss.dbeaver.model.struct.rdb.DBSProcedure;
-import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
 import org.jkiss.dbeaver.ui.navigator.INavigatorFilter;
 import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 import org.jkiss.dbeaver.ui.navigator.database.load.TreeNodeSpecial;
@@ -238,34 +235,6 @@ public class DatabaseObjectsSelectorPanel extends Composite {
             @Override
             public boolean select(Object element) {
                 return isElementAccepted(element);
-            }
-
-            @Override
-            public boolean isLeafObject(Object object) {
-                if (object instanceof DBNDatabaseNode dbn) {
-                    DBSObject dbObject = dbn.getObject();
-                    return dbObject instanceof DBSEntity;
-                }
-                return false;
-            }
-
-            @Override
-            public boolean filterObjectByPattern(Object object) {
-                if (object instanceof DBNDatabaseFolder) {
-                    return false;
-                }
-
-                if (object instanceof DBNDatabaseNode dbn) {
-                    DBSObject dbObject = dbn.getObject();
-                    if (dbObject instanceof DBSInstance ||
-                        dbObject instanceof DBSCatalog) {
-                        return false;
-                    }
-                    return dbObject instanceof DBSSchema ||
-                           dbObject instanceof DBSEntity ||
-                           dbObject instanceof DBSProcedure;
-                }
-                return false;
             }
         };
     }
