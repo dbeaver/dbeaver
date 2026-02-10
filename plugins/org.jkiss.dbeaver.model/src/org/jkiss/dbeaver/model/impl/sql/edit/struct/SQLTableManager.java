@@ -284,10 +284,9 @@ public abstract class SQLTableManager<OBJECT_TYPE extends DBSEntity, CONTAINER_T
 
         StructCreateCommand command = makeCreateCommand(table, options);
         if (tcm != null) {
-            final boolean skipNonPersisted = CommonUtils.getOption(options, DBPScriptObject.OPTION_DDL_ONLY_PERSISTED_ATTRIBUTES);
             // Aggregate nested column, constraint and index commands
             for (DBSEntityAttribute column : CommonUtils.safeCollection(table.getAttributes(monitor))) {
-                if (skipObject(column) || (skipNonPersisted && !column.isPersisted())) {
+                if (skipObject(column)) {
                     // Do not include hidden (pseudo?) and inherited columns in DDL
                     continue;
                 }

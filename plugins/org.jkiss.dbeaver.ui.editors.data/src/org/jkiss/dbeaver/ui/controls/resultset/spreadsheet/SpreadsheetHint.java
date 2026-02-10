@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ui.controls.resultset.spreadsheet;
 
+import org.eclipse.swt.graphics.Point;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -76,10 +77,10 @@ public class SpreadsheetHint implements IGridHint {
     }
 
     @Override
-    public void performAction(@NotNull IGridController grid, long state) {
+    public void performAction(@NotNull IGridController grid, @NotNull Point location, long state) {
         try {
             if (valueHint instanceof DBDValueHintActionHandler actionHandler) {
-                actionHandler.performAction(controller, state);
+                actionHandler.performAction(controller, location, state);
             } else {
                 throw new DBCException("Hint doesn't support action");
             }

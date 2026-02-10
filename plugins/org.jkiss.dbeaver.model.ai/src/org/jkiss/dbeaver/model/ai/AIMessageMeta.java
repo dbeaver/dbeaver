@@ -25,7 +25,7 @@ public record AIMessageMeta(
     @NotNull String type,
     @NotNull String engineId,
     @Nullable String modelId,
-    @NotNull AIUsage usage,
+    @Nullable AIUsage usage,
     @NotNull Duration timeSpent,
     int systemPromptLength
 ) {
