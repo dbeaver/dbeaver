@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,7 +31,6 @@ import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
 import java.util.EnumSet;
-import java.util.List;
 
 /**
  * Reference hint provider.
@@ -52,33 +51,22 @@ public class ReferenceCellHintProvider implements DBDCellHintProvider {
         if (DBUtils.isNullValue(value)) {
             return null;
         }
-        List<DBSEntityReferrer> referrers = attribute.getReferrers();
-        if (!CommonUtils.isEmpty(referrers)) {
-            List<ValueHintReference> refHints = new ArrayList<>();
-            for (DBSEntityReferrer referrer : referrers) {
-                if (referrer instanceof DBSEntityAssociation ea && !isTableReferenceExists(ea, refHints)) {
-                    DBSEntityConstraint refConstr = ea.getReferencedConstraint();
-                    if (refConstr != null) {
-                        refHints.add(
-                            new ValueHintReference(
-                                attribute,
-                                row,
-                                ea));
-                    }
+        var referrers = attribute.getReferrers();
+        if (CommonUtils.isEmpty(referrers)) {
+            return null;
+        }
+        var references = new ArrayList<ValueHintReference.Reference>();
+        for (DBSEntityReferrer referrer : referrers) {
+            if (referrer instanceof DBSEntityAssociation association) {
+                DBSEntityConstraint constraint = association.getReferencedConstraint();
+                if (constraint != null) {
+                    references.add(new ValueHintReference.Reference(row, association));
                 }
             }
-            return refHints.toArray(new DBDValueHint[0]);
         }
-        return null;
-    }
-
-    private boolean isTableReferenceExists(DBSEntityAssociation assoc, List<ValueHintReference> hints) {
-        for (ValueHintReference hr : hints) {
-            if (assoc.getAssociatedEntity() == hr.getAssociation().getAssociatedEntity()) {
-                return true;
-            }
+        if (references.isEmpty()) {
+            return null;
         }
-        return false;
+        return new DBDValueHint[]{new ValueHintReference(references)};
     }
-
 }

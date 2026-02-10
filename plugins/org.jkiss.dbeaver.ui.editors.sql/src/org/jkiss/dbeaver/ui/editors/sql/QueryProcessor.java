@@ -310,7 +310,8 @@ abstract class QueryProcessor implements SQLResultsConsumer, ISmartTransactionMa
             owner.getSite().getWorkbenchWindow(),
             producers,
             null,
-            new StructuredSelection(this)
+            new StructuredSelection(this),
+            true
         );
     }
 
