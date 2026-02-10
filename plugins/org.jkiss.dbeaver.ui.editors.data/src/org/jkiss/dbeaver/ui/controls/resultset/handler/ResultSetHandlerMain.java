@@ -538,7 +538,8 @@ public class ResultSetHandlerMain extends AbstractHandler implements IElementUpd
                         Collections.singletonList(
                             new DatabaseTransferProducer(dataContainer, rsv.getModel().getDataFilter())),
                         null,
-                        rsv.getSelection());
+                        rsv.getSelection(),
+                        true);
                 }
                 break;
             }
