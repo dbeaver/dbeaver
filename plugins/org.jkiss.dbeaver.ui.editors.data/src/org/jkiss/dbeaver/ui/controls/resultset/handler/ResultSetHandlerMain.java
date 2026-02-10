@@ -88,8 +88,8 @@ import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.Pair;
 
-import java.util.List;
 import java.util.*;
+import java.util.List;
 import java.util.stream.Collectors;
 
 /**
@@ -407,6 +407,7 @@ public class ResultSetHandlerMain extends AbstractHandler implements IElementUpd
                 action.run();
                 break;
             case IResultSetCommands.CMD_NAVIGATE_LINK: {
+                // FIXME: Should probably rely on hints; see org.jkiss.dbeaver.ui.data.DBDValueHintActionHandler
                 final DBDAttributeBinding attr = rsv.getActivePresentation().getCurrentAttribute();
                 if (attr != null) {
                     new AbstractJob("Navigate association") {
