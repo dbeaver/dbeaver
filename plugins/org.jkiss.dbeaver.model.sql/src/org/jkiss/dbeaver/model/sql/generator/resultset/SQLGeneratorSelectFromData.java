@@ -21,7 +21,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
-import org.jkiss.dbeaver.model.data.DBDDataProvider;
+import org.jkiss.dbeaver.model.data.DBDResultSetDataProvider;
 import org.jkiss.dbeaver.model.data.DBDValueRow;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
@@ -34,7 +34,7 @@ public class SQLGeneratorSelectFromData extends SQLGeneratorResultSet {
     protected void generateSQL(
         @NotNull DBRProgressMonitor monitor,
         @NotNull StringBuilder sql,
-        @NotNull DBDDataProvider dataProvider
+        @NotNull DBDResultSetDataProvider dataProvider
     ) throws DBException {
         for (DBDValueRow firstRow : dataProvider.getSelectedRows()) {
             sql.append("SELECT ");
@@ -44,7 +44,7 @@ public class SQLGeneratorSelectFromData extends SQLGeneratorResultSet {
                 sql.append(DBUtils.getObjectFullName(attr, DBPEvaluationContext.DML));
                 hasAttr = true;
             }
-            sql.append(getLineSeparator()).append("FROM ").append(getEntityName(dataProvider.getSingleEntity()));
+            sql.append(getLineSeparator()).append("FROM ").append(getEntityName(dataProvider.getSingleSource()));
             sql.append(getLineSeparator()).append("WHERE ");
             Collection<DBDAttributeBinding> keyAttributes = getKeyAttributes(monitor, dataProvider);
             appendKeyConditions(sql, keyAttributes, firstRow);

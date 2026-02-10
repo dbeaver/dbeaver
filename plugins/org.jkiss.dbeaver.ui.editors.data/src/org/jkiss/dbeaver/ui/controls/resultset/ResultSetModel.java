@@ -137,14 +137,18 @@ public class ResultSetModel implements DBDResultSetModel {
         return hintContext;
     }
 
+    @Nullable
     @Override
-    public String getReadOnlyStatus(DBPDataSourceContainer dataSourceContainer) {
+    public String getReadOnlyStatus(@Nullable DBPDataSourceContainer dataSourceContainer) {
         if (isUpdateInProgress()) {
             return "Update in progress";
         }
         String containerReadOnlyStatus = DBExecUtils.getResultSetReadOnlyStatus(dataSourceContainer);
         if (containerReadOnlyStatus != null) {
             return containerReadOnlyStatus;
+        }
+        if (dataSourceContainer == null) {
+            return null;
         }
         if (isUniqueKeyUndefinedButRequired(dataSourceContainer)) {
             return "No unique key defined";
@@ -200,6 +204,7 @@ public class ResultSetModel implements DBDResultSetModel {
      * @return single source entity
      */
     @Nullable
+    @Override
     public DBSEntity getSingleSource() {
         return singleSourceEntity;
     }
@@ -219,8 +224,8 @@ public class ResultSetModel implements DBDResultSetModel {
         return documentAttribute;
     }
 
-    @Override
     @NotNull
+    @Override
     public DBDAttributeBinding[] getAttributes() {
         return attributes;
     }

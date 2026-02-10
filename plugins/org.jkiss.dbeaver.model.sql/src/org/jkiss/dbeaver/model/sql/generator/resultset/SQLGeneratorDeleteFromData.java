@@ -20,7 +20,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
-import org.jkiss.dbeaver.model.data.DBDDataProvider;
+import org.jkiss.dbeaver.model.data.DBDResultSetDataProvider;
 import org.jkiss.dbeaver.model.data.DBDValueRow;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLQueryGeneratorUpdate;
@@ -36,9 +36,9 @@ public class SQLGeneratorDeleteFromData extends SQLGeneratorResultSet {
     protected void generateSQL(
         @NotNull DBRProgressMonitor monitor,
         @NotNull StringBuilder sql,
-        @NotNull DBDDataProvider dataProvider
+        @NotNull DBDResultSetDataProvider dataProvider
     ) throws DBException {
-        DBSEntity dbsEntity = dataProvider.getSingleEntity();
+        DBSEntity dbsEntity = dataProvider.getSingleSource();
         String entityName = getEntityName(dbsEntity);
         for (DBDValueRow firstRow : dataProvider.getSelectedRows()) {
             Collection<DBDAttributeBinding> keyAttributes = getKeyAttributes(monitor, dataProvider);
@@ -55,7 +55,7 @@ public class SQLGeneratorDeleteFromData extends SQLGeneratorResultSet {
                     if (DBUtils.isPseudoAttribute(attr) || DBUtils.isHiddenObject(attr)) {
                         continue;
                     }
-                    DBDAttributeBinding binding = DBUtils.findBinding(dataProvider.getAllAttributes(), attr);
+                    DBDAttributeBinding binding = DBUtils.findBinding(dataProvider.getAttributes(), attr);
                     if (binding != null) {
                         keyAttributes.add(binding);
                     }

@@ -29,29 +29,30 @@ import org.jkiss.dbeaver.model.sql.generator.SQLGeneratorBase;
 import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
 import org.jkiss.utils.ArrayUtils;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
-public abstract class SQLGeneratorResultSet extends SQLGeneratorBase<DBDDataProvider> {
+public abstract class SQLGeneratorResultSet extends SQLGeneratorBase<DBDResultSetDataProvider> {
 
     @NotNull
-    public DBDDataProvider getDataProvider() {
+    public DBDResultSetDataProvider getDataProvider() {
         return objects.getFirst();
     }
 
     protected abstract void generateSQL(
         @NotNull DBRProgressMonitor monitor,
         @NotNull StringBuilder sql,
-        @NotNull DBDDataProvider dataProvider
+        @NotNull DBDResultSetDataProvider dataProvider
     ) throws DBException;
 
     @NotNull
     protected Collection<? extends DBSAttributeBase> getAllAttributes(
         @NotNull DBRProgressMonitor monitor,
-        @NotNull DBDDataProvider dataProvider
+        @NotNull DBDResultSetDataProvider dataProvider
     ) throws DBException {
-        return dataProvider.getAllAttributes();
+        return Arrays.asList(dataProvider.getAttributes());
     }
 
     void appendKeyConditions(
@@ -67,7 +68,7 @@ public abstract class SQLGeneratorResultSet extends SQLGeneratorBase<DBDDataProv
                 Object documentId = document.getDocumentId();
                 if (idName != null && documentId != null) {
                     sql.append(idName).append(" = ").append(
-                        SQLUtils.quoteString(getDataProvider().getSingleEntity(), documentId.toString())
+                        SQLUtils.quoteString(getDataProvider().getSingleSource(), documentId.toString())
                     );
                     return;
                 }
@@ -86,7 +87,7 @@ public abstract class SQLGeneratorResultSet extends SQLGeneratorBase<DBDDataProv
     @Override
     protected List<DBDAttributeBinding> getKeyAttributes(
         @NotNull DBRProgressMonitor monitor,
-        @NotNull DBDDataProvider dataProvider
+        @NotNull DBDResultSetDataProvider dataProvider
     ) throws DBException {
         final DBDRowIdentifier rowIdentifier = dataProvider.getDefaultRowIdentifier();
         if (rowIdentifier == null) {
@@ -96,7 +97,7 @@ public abstract class SQLGeneratorResultSet extends SQLGeneratorBase<DBDDataProv
     }
 
     private void appendValueCondition(
-        @NotNull DBDDataProvider dataProvider,
+        @NotNull DBDResultSetDataProvider dataProvider,
         @NotNull StringBuilder sql,
         @NotNull DBDAttributeBinding binding,
         @NotNull DBDValueRow firstRow
@@ -112,7 +113,7 @@ public abstract class SQLGeneratorResultSet extends SQLGeneratorBase<DBDDataProv
     }
 
     protected void appendAttributeValue(
-        @NotNull DBDDataProvider dataProvider,
+        @NotNull DBDResultSetDataProvider dataProvider,
         @NotNull StringBuilder sql,
         @NotNull DBDAttributeBinding binding,
         @NotNull DBDValueRow row,

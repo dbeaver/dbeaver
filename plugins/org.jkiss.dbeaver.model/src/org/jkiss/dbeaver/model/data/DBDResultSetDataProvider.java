@@ -19,29 +19,18 @@ package org.jkiss.dbeaver.model.data;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.struct.DBSEntity;
 
-import java.util.Collection;
 import java.util.List;
 
 /**
- * Represents the context for SQL generation from a result set.
+ * Provides additional data about result set.
  */
-public interface DBDDataProvider {
+public interface DBDResultSetDataProvider extends DBDResultSetModel {
 
     @NotNull
     List<? extends DBDValueRow> getSelectedRows();
 
     @Nullable
-    DBSEntity getSingleEntity() throws DBException;
-
-    @NotNull
-    Collection<DBDAttributeBinding> getAllAttributes() throws DBException;
-
-    @Nullable
-    Object getCellValue(@NotNull DBDAttributeBinding binding, @NotNull DBDValueRow row) throws DBException;
-
-    @Nullable
-    DBDRowIdentifier getDefaultRowIdentifier() throws DBException;
+    Object getCellValue(@NotNull DBDAttributeBinding attribute, @NotNull DBDValueRow row) throws DBException;
 
 }

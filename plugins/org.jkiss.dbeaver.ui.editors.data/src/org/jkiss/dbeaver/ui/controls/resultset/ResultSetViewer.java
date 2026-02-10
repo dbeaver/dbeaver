@@ -481,27 +481,21 @@ public class ResultSetViewer extends Viewer
 
     @Nullable
     @Override
-    public DBSEntity getSingleEntity() {
-        return getModel().getSingleSource();
-    }
-
-    @NotNull
-    @Override
-    public Collection<DBDAttributeBinding> getAllAttributes() {
-        return getModel().getVisibleAttributes();
-    }
-
-    @Nullable
-    @Override
-    public Object getCellValue(@NotNull DBDAttributeBinding binding, @NotNull DBDValueRow row) {
-        return getModel().getCellValue(binding, row);
+    public Object getCellValue(
+        @NotNull DBDAttributeBinding attribute,
+        @NotNull DBDValueRow row,
+        @Nullable int[] rowIndexes,
+        boolean retrieveDeepestCollectionElement
+    ) throws DBException {
+        return model.getCellValue(attribute, row, rowIndexes, retrieveDeepestCollectionElement);
     }
 
     @Nullable
     @Override
-    public DBDRowIdentifier getDefaultRowIdentifier() {
-        return getModel().getDefaultRowIdentifier();
+    public Object getCellValue(@NotNull DBDAttributeBinding attribute, @NotNull DBDValueRow row) throws DBException {
+        return model.getCellValue(attribute, row);
     }
+
 
     private void applyCurrentPresentationThemeSettings() {
         if (panelFolder != null) {
@@ -1742,8 +1736,32 @@ public class ResultSetViewer extends Viewer
 
     @NotNull
     @Override
+    public DBDAttributeBinding[] getAttributes() throws DBException {
+        return model.getAttributes();
+    }
+
+    @NotNull
+    @Override
+    public List<? extends DBDValueRow> getAllRows() {
+        return model.getAllRows();
+    }
+
+    @Nullable
+    @Override
+    public DBDRowIdentifier getDefaultRowIdentifier() {
+        return model.getDefaultRowIdentifier();
+    }
+
+    @Nullable
+    @Override
     public DBDValueHintContext getHintContext() {
         return model.getHintContext();
+    }
+
+    @Nullable
+    @Override
+    public DBSEntity getSingleSource() throws DBException {
+        return model.getSingleSource();
     }
 
     public void redrawData(boolean attributesChanged, boolean rowsChanged) {
@@ -2787,6 +2805,13 @@ public class ResultSetViewer extends Viewer
             model.isUniqueKeyUndefinedButRequired(executionContext.getDataSource().getContainer());
     }
 
+    @Nullable
+    @Override
+    public String getReadOnlyStatus(@Nullable DBPDataSourceContainer dataSourceContainer) {
+        return model.getReadOnlyStatus(dataSourceContainer);
+    }
+
+    @Nullable
     @Override
     public String getReadOnlyStatus() {
         if (!(activePresentation instanceof IResultSetEditor) || !supportsDecoratorFeature(IResultSetDecorator.FEATURE_EDIT)) {

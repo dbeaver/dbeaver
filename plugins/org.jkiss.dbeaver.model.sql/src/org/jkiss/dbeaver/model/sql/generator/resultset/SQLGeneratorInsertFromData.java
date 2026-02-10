@@ -21,7 +21,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
-import org.jkiss.dbeaver.model.data.DBDDataProvider;
+import org.jkiss.dbeaver.model.data.DBDResultSetDataProvider;
 import org.jkiss.dbeaver.model.data.DBDValueRow;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
@@ -44,11 +44,11 @@ public class SQLGeneratorInsertFromData extends SQLGeneratorResultSet {
     protected void generateSQL(
         @NotNull DBRProgressMonitor monitor,
         @NotNull StringBuilder sql,
-        @NotNull DBDDataProvider dataProvider
+        @NotNull DBDResultSetDataProvider dataProvider
     ) throws DBException {
         for (DBDValueRow firstRow : dataProvider.getSelectedRows()) {
             Collection<? extends DBSAttributeBase> allAttributes = getAllAttributes(monitor, dataProvider);
-            sql.append("INSERT INTO ").append(getEntityName(dataProvider.getSingleEntity()));
+            sql.append("INSERT INTO ").append(getEntityName(dataProvider.getSingleSource()));
             sql.append(getLineSeparator()).append("(");
             boolean hasAttr = false;
             for (DBSAttributeBase attr : allAttributes) {
@@ -72,7 +72,7 @@ public class SQLGeneratorInsertFromData extends SQLGeneratorResultSet {
                     continue;
                 }
                 if (hasAttr) sql.append(", ");
-                DBDAttributeBinding binding = DBUtils.findBinding(dataProvider.getAllAttributes(), attr);
+                DBDAttributeBinding binding = DBUtils.findBinding(dataProvider.getAttributes(), attr);
                 if (binding == null) {
                     appendDefaultValue(sql, attr);
                 } else {
