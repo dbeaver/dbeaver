@@ -48,6 +48,9 @@ public interface DBDResultSetModel {
     ) throws DBException;
 
     @Nullable
+    Object getCellValue(@NotNull DBDAttributeBinding attribute, @NotNull DBDValueRow row) throws DBException;
+
+    @Nullable
     DBDValueHintContext getHintContext();
 
     @Nullable

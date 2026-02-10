@@ -17,8 +17,6 @@
 package org.jkiss.dbeaver.model.data;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.DBException;
 
 import java.util.List;
 
@@ -29,8 +27,5 @@ public interface DBDResultSetDataProvider extends DBDResultSetModel {
 
     @NotNull
     List<? extends DBDValueRow> getSelectedRows();
-
-    @Nullable
-    Object getCellValue(@NotNull DBDAttributeBinding attribute, @NotNull DBDValueRow row) throws DBException;
 
 }

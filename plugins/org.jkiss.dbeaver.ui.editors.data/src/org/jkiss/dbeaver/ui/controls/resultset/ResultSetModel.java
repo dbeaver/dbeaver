@@ -416,11 +416,13 @@ public class ResultSetModel implements DBDResultSetModel {
     }
 
     @Nullable
+    @Override
     public Object getCellValue(@NotNull DBDAttributeBinding attribute, @NotNull DBDValueRow row) {
         return getCellValue(attribute, row, null, false);
     }
 
     @Nullable
+    @Override
     public Object getCellValue(
         @NotNull DBDAttributeBinding attribute,
         @NotNull DBDValueRow row,
