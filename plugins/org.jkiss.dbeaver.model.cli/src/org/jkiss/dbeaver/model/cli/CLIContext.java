@@ -17,19 +17,29 @@
 package org.jkiss.dbeaver.model.cli;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.model.cli.command.AbstractTopLevelCommand;
-import picocli.CommandLine;
+import org.jkiss.code.Nullable;
 
-// Base class for first level commands, which use AbstractTopLevelCommand as parent
-public abstract class AbstractRootCommandLineParameterHandler extends AbstractCommandLineParameterHandler {
-    /**
-     * Root command uses as context
-     */
-    @CommandLine.ParentCommand
-    private AbstractTopLevelCommand parent;
+import java.util.List;
+import java.util.Map;
+
+public interface CLIContext {
+    @NotNull
+    Map<String, Object> getContextParameters();
+
+    @Nullable
+    <T> T getContextParameter(String name);
+
+    void setContextParameter(@NotNull String name, @NotNull Object value);
+
+    void addResult(@NotNull String result);
 
     @NotNull
-    public CLIContext context() {
-        return parent.getContext();
-    }
+    List<String> getResults();
+
+    void addCloseHandler(@NotNull Runnable closeHandler);
+
+    @Nullable
+    CLIProcessResult.PostAction getPostAction();
+
+    void setPostAction(@Nullable CLIProcessResult.PostAction postAction);
 }

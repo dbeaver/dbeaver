@@ -62,8 +62,8 @@ import org.jkiss.utils.IOUtils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Path;
-import java.util.List;
 import java.util.*;
+import java.util.List;
 
 /**
  * SQL task settings page
