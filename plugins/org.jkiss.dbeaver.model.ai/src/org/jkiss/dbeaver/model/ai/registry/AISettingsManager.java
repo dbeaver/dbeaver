@@ -125,17 +125,17 @@ public class AISettingsManager {
 
                 List<String> enabledCategories = JSONUtils.getStringList(configMap, ENABLED_FUNCTION_CATEGORIES_KEY);
                 if (!enabledCategories.isEmpty()) {
-                    settings.setEnabledFunctionCategories(new HashSet<>(enabledCategories));
+                    settings.getFunctionSettings().setEnabledFunctionCategories(new HashSet<>(enabledCategories));
                 }
-                settings.setFunctionsEnabled(JSONUtils.getBoolean(configMap, FUNCTIONS_ENABLED_KEY, true));
+                settings.getFunctionSettings().setFunctionsEnabled(JSONUtils.getBoolean(configMap, FUNCTIONS_ENABLED_KEY, true));
                 List<String> enabledFunctions = JSONUtils.getStringList(configMap, ENABLED_FUNCTIONS_KEY);
                 if (!enabledFunctions.isEmpty()) {
-                    settings.setEnabledFunctions(new HashSet<>(enabledFunctions));
+                    settings.getFunctionSettings().setEnabledFunctions(new HashSet<>(enabledFunctions));
                 }
 
                 List<String> initializedCategories = JSONUtils.getStringList(configMap, INITIALIZED_DEFAULT_CATEGORIES_KEY);
                 if (!initializedCategories.isEmpty()) {
-                    settings.setInitializedDefaultCategories(new HashSet<>(initializedCategories));
+                    settings.getFunctionSettings().setInitializedDefaultCategories(new HashSet<>(initializedCategories));
                 }
 
                 @SuppressWarnings("unchecked")
@@ -177,12 +177,12 @@ public class AISettingsManager {
                 AIFunctionCategoryDescriptor category = entry.getKey();
                 List<AIFunctionDescriptor> functions = entry.getValue();
 
-                if (category.isEnabledByDefault() && !settings.isCategoryInitialized(category.getId())) {
-                    settings.enableFunctionCategory(category.getId());
+                if (category.isEnabledByDefault() && !settings.getFunctionSettings().isCategoryInitialized(category.getId())) {
+                    settings.getFunctionSettings().enableFunctionCategory(category.getId());
                     for (AIFunctionDescriptor function : functions) {
-                        settings.enableFunction(function.getId());
+                        settings.getFunctionSettings().enableFunction(function.getId());
                     }
-                    settings.markCategoryAsInitialized(category.getId());
+                    settings.getFunctionSettings().markCategoryAsInitialized(category.getId());
                 }
             }
 
@@ -224,8 +224,8 @@ public class AISettingsManager {
             }
             json.add(PROPERTIES_KEY, propertiesObject);
 
-            json.add(FUNCTIONS_ENABLED_KEY, new JsonPrimitive(settings.isFunctionsEnabled()));
-            Set<String> enabledCategories = settings.getEnabledFunctionCategories();
+            json.add(FUNCTIONS_ENABLED_KEY, new JsonPrimitive(settings.getFunctionSettings().isFunctionsEnabled()));
+            Set<String> enabledCategories = settings.getFunctionSettings().getEnabledFunctionCategories();
             if (!enabledCategories.isEmpty()) {
                 JsonArray categoriesArray = new JsonArray();
                 for (String category : enabledCategories) {
@@ -234,7 +234,7 @@ public class AISettingsManager {
                 json.add(ENABLED_FUNCTION_CATEGORIES_KEY, categoriesArray);
             }
 
-            Set<String> enabledFunctions = settings.getEnabledFunctions();
+            Set<String> enabledFunctions = settings.getFunctionSettings().getEnabledFunctions();
             if (!enabledFunctions.isEmpty()) {
                 JsonArray functionsArray = new JsonArray();
                 for (String function : enabledFunctions) {
@@ -243,7 +243,7 @@ public class AISettingsManager {
                 json.add(ENABLED_FUNCTIONS_KEY, functionsArray);
             }
 
-            Set<String> initializedCategories = settings.getInitializedDefaultCategories();
+            Set<String> initializedCategories = settings.getFunctionSettings().getInitializedDefaultCategories();
             if (!initializedCategories.isEmpty()) {
                 JsonArray initializedArray = new JsonArray();
                 for (String category : initializedCategories) {
