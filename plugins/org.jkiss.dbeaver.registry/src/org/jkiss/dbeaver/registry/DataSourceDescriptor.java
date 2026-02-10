@@ -224,7 +224,7 @@ public class DataSourceDescriptor
         this.connectionInfo = connectionInfo;
         this.tags = new LinkedHashMap<>();
         this.extensions = new LinkedHashMap<>();
-        this.preferenceStore = getNewDataSourcePreferenceStore(registry.getPreferenceStore());
+        this.preferenceStore = new DataSourcePreferenceStore(registry.getPreferenceStore(), this);
         this.virtualModel = new DBVModel(this);
         this.navigatorSettings = new DataSourceNavigatorSettings(DataSourceNavigatorSettings.getDefaultSettings());
         this.forceUseSingleConnection = driver.isSingleConnection();
@@ -276,7 +276,7 @@ public class DataSourceDescriptor
 
         this.tags = new LinkedHashMap<>(source.tags);
         this.extensions = new LinkedHashMap<>(source.extensions);
-        this.preferenceStore = getNewDataSourcePreferenceStore(source.getPreferenceStore().getParentStore());
+        this.preferenceStore = new DataSourcePreferenceStore(this);
         this.preferenceStore.setProperties(source.preferenceStore.getProperties());
         this.preferenceStore.setDefaultProperties(source.preferenceStore.getDefaultProperties());
 

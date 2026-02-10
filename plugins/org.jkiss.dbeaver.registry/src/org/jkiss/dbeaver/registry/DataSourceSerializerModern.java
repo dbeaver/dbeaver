@@ -860,10 +860,10 @@ public class DataSourceSerializerModern<T extends DataSourceDescriptor> implemen
         dataSource.setLockPasswordHash(CommonUtils.toString(conObject.get(RegistryConstants.ATTR_LOCK_PASSWORD)));
     }
 
-    protected  <T extends DataSourceDescriptor> void readDataSourcePreference(
+    protected <T extends DataSourceDescriptor> void readDataSourcePreference(
         @NotNull T dataSource,
         @NotNull Map<String, Object> conObject,
-        Map<String, String> userSettings
+        @Nullable Map<String, String> userSettings
     ) {
         // Preferences
         DataSourcePreferenceStore preferenceStore = dataSource.getPreferenceStore();
@@ -872,6 +872,12 @@ public class DataSourceSerializerModern<T extends DataSourceDescriptor> implemen
         preferenceProperties.putAll(
             JSONUtils.deserializeStringMap(conObject, RegistryConstants.TAG_CUSTOM_PROPERTIES)
         );
+
+        if (userSettings != null) {
+            userSettings.entrySet().stream()
+                .filter(setting -> !DataSourceNavigatorSettings.NAVIGATOR_SETTINGS.contains(setting.getKey()))
+                .forEach(setting -> preferenceStore.putUserSettings(setting.getKey(), setting.getValue()));
+        }
     }
 
     /**

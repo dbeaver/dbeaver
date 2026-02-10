@@ -29,6 +29,8 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
@@ -38,6 +40,9 @@ public class DataSourcePreferenceStore extends SimplePreferenceStore implements 
 {
     private static final Log log = Log.getLog(DataSourcePreferenceStore.class);
     private final DataSourceDescriptor dataSourceDescriptor;
+    @NotNull
+    private final Map<String, String> userSettings = new LinkedHashMap<>();
+
 
     protected DataSourcePreferenceStore(
         @NotNull DBPPreferenceStore parentStore,
@@ -70,11 +75,6 @@ public class DataSourcePreferenceStore extends SimplePreferenceStore implements 
         dataSourceDescriptor.getRegistry().flushConfig();
     }
 
-    @Override
-    public Map<String, String> getProperties() {
-        return super.getProperties();
-    }
-
     @Nullable
     @Override
     public DBPDataSourceContainer getDataSourceContainer() {
@@ -90,5 +90,31 @@ public class DataSourcePreferenceStore extends SimplePreferenceStore implements 
         if (gps instanceof AbstractPreferenceStore) {
             ((AbstractPreferenceStore) gps).firePropertyChangeEvent(this, name, oldValue, newValue);
         }
+    }
+
+    @NotNull
+    public Map<String, String> getUserSettings() {
+        return new LinkedHashMap<>(userSettings);
+    }
+
+    public void putUserSettings(String key, String value) {
+        userSettings.put(key, value);
+    }
+
+    @Override
+    public Map<String, String> getProperties() {
+        Map<String, String> properties = super.getProperties();
+        properties.putAll(userSettings);
+        return properties;
+    }
+
+    @Override
+    public String[] preferenceNames(){
+        String[] preferenceNames = super.preferenceNames();
+        return Arrays.stream(preferenceNames)
+            // User settings are not stored in the datasource's, so we need to filter them out from the list of preferences
+            .filter(name -> !userSettings.containsKey(name))
+            .toList()
+            .toArray(new String[0]);
     }
 }
