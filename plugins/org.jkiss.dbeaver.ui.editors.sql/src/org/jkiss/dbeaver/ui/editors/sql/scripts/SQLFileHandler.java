@@ -25,6 +25,7 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.EditorUtils;
 import org.jkiss.dbeaver.ui.editors.file.AbstractFileHandler;
 import org.jkiss.dbeaver.ui.editors.sql.handlers.SQLNavigatorContext;
+import org.jkiss.utils.IOUtils;
 
 import java.io.File;
 import java.nio.file.Path;
@@ -34,7 +35,6 @@ import java.util.List;
  * SQL file handler
  */
 public class SQLFileHandler extends AbstractFileHandler {
-
     /**
      * Handles SQL files. Local sql files are processed by resource handlers.
      * Here we track remote ones (usually from DBNPath)
@@ -47,6 +47,12 @@ public class SQLFileHandler extends AbstractFileHandler {
     ) throws DBException {
         if (action == FileTypeAction.INTERNAL_EDITOR) {
             for (Path path : fileList) {
+                if (!IOUtils.isLocalPath(path) && sourceNode != null) {
+                    if (tryOpenViaResourceAdapter(path, sourceNode)) {
+                        continue;
+                    }
+                    throw new DBException("Cannot open remote file: " + path);
+                }
                 if (dataSource != null) {
                     File file = path.toFile();
                     EditorUtils.setFileDataSource(file, new SQLNavigatorContext(dataSource));

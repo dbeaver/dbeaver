@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,10 +17,8 @@
 package org.jkiss.dbeaver.ui.navigator;
 
 import org.eclipse.core.commands.ExecutionEvent;
-import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IResource;
-import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.action.*;
 import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.dnd.*;
@@ -43,7 +41,6 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.*;
-import org.jkiss.dbeaver.model.app.DBPPlatformDesktop;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.app.DBPResourceHandler;
 import org.jkiss.dbeaver.model.exec.DBCException;
@@ -569,14 +566,8 @@ public class NavigatorUtils {
                 DBPResourceHandler resourceHandler = resource.getHandler();
                 resourceHandler.openResource(resource.getResource());
             } else if (node instanceof DBNPathBase dbnPath) {
-                if (!EditorUtils.openExternalFiles(new Path[]{ dbnPath.getPath() }, null, false)) {
-                    // Try resource handler
-                    IResource resource = dbnPath.getAdapter(IResource.class);
-                    if (resource instanceof IFile file) {
-                        openResourceWithHandler(file);
-                    } else {
-                        openEntityEditor(node, window, parameters);
-                    }
+                if (!EditorUtils.openExternalFiles(new Path[]{ dbnPath.getPath() }, null, false, dbnPath)) {
+                    openEntityEditor(node, window, parameters);
                 }
             } else if (node instanceof DBNNode baseNode && baseNode.allowsOpen()) {
                 openEntityEditor(node, window, parameters);
@@ -591,14 +582,6 @@ public class NavigatorUtils {
         }
     }
 
-    private static void openResourceWithHandler(IFile file) throws CoreException, DBException {
-        DBPResourceHandler handler = DBPPlatformDesktop.getInstance().getWorkspace().getResourceHandler(file);
-        if (handler != null) {
-            handler.openResource(file);
-        } else {
-            throw new DBException("Cannot find resource handler for " + file);
-        }
-    }
 
     private static void openEntityEditor(Object node, IWorkbenchWindow window, Map<?, ?> parameters) throws DBException {
         if (node instanceof DBNObjectNode objectNode) {

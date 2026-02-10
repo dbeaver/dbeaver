@@ -87,7 +87,7 @@ public class AIPromptUtils {
     public static String[] createGenerateQueryInstructions(@Nullable DBSLogicalDataSource dataSource) {
         List<String> instructions = new ArrayList<>();
         instructions.add("Stick strictly to SQL dialect syntax.");
-        instructions.add("Do not invent columns, tables, or data that aren’t explicitly defined.");
+        instructions.add("Do not invent columns, tables, or data that aren't explicitly defined.");
 
         SQLDialect dialect = dataSource == null ? BasicSQLDialect.INSTANCE :
             SQLUtils.getDialectFromDataSource(dataSource.getDataSourceContainer().getDataSource());
