@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -43,7 +43,7 @@ import java.util.stream.Stream;
  */
 public class AIDatabaseSnapshotService {
 
-    private static final Log LOG = Log.getLog(AIDatabaseSnapshotService.class);
+    private static final Log log = Log.getLog(AIDatabaseSnapshotService.class);
     private AISchemaGenerator schemaGenerator;
 
     public AIDatabaseSnapshotService() {
@@ -76,7 +76,7 @@ public class AIDatabaseSnapshotService {
             return prompt;
         }
 
-        LOG.warn("Context description is too long, generating partial description");
+        log.debug("Context description is too long, generating partial description");
 
         var partialPrompt = new TokenBoundedStringBuilder(options.maxDbSnapshotTokens(), true);
         appendContext(monitor, aiDatabaseContext, fallback, partialPrompt, false);
@@ -149,7 +149,7 @@ public class AIDatabaseSnapshotService {
                 String ddl = schemaGenerator.generateSchema(monitor, entity, execCtx, options, useFqn) + "\n";
                 return out.append(ddl);
             } catch (DBException e) {
-                LOG.warn("Failed to read metadata for entity '" + entity.getName() + "'", e);
+                log.warn("Failed to read metadata for entity '" + entity.getName() + "'", e);
                 return true;
             }
         }
@@ -168,8 +168,7 @@ public class AIDatabaseSnapshotService {
         @Nullable DBCExecutionContext execCtx,
         @NotNull AISchemaGenerationOptions options,
         boolean refreshCache
-    ) throws DBException {
-
+    ) {
         if (refreshCache) {
             try {
                 container.cacheStructure(
@@ -177,7 +176,7 @@ public class AIDatabaseSnapshotService {
                     DBSObjectContainer.STRUCT_ENTITIES | DBSObjectContainer.STRUCT_ATTRIBUTES
                 );
             } catch (DBException e) {
-                LOG.warn("Failed to cache for '" + container.getName() + "'. Proceeding.", e);
+                log.warn("Failed to cache for '" + container.getName() + "'. Proceeding.", e);
             }
         }
 
@@ -200,11 +199,11 @@ public class AIDatabaseSnapshotService {
                         requiresFqn(child, execCtx),
                         refreshCache
                     )) {
-                        LOG.warn("Object description is too long, truncated at: " + child.getName());
+                        log.debug("Object description is too long, truncated at: " + child.getName());
                         return false;
                     }
                 } catch (DBException e) {
-                    LOG.warn(
+                    log.warn(
                         "Failed to read metadata for child '" + child.getName()
                             + "' of container '" + container.getName() + "'",
                         e
@@ -212,7 +211,7 @@ public class AIDatabaseSnapshotService {
                 }
             }
         } catch (DBException e) {
-            LOG.warn("Failed to children for '" + container.getName() + "'", e);
+            log.warn("Failed to children for '" + container.getName() + "'", e);
             return true;
         }
 
@@ -274,7 +273,7 @@ public class AIDatabaseSnapshotService {
                             DBSObjectContainer.STRUCT_ENTITIES | DBSObjectContainer.STRUCT_ATTRIBUTES
                         );
                     } catch (DBException e) {
-                        LOG.error("Failed to cache structure for " + container.getName(), e);
+                        log.error("Failed to cache structure for " + container.getName(), e);
                     }
                 }
             });

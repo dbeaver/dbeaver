@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -193,6 +193,20 @@ public class DBNProject extends DBNNode implements DBNNodeWithCache, DBNNodeExte
     public DBNNode refreshNode(@NotNull DBRProgressMonitor monitor, @Nullable Object source) throws DBException {
         project.getDataSourceRegistry().refreshConfig();
         return this;
+    }
+
+    @Nullable
+    public DBNNode findResource(@NotNull DBRProgressMonitor monitor, @NotNull String path) throws DBException {
+        // Let's assume it's delimited by slash
+        String[] parts = path.split("/");
+        DBNNode node = this;
+        for (String part : parts) {
+            node = DBUtils.findObject(node.getChildren(monitor), part);
+            if (node == null) {
+                return null;
+            }
+        }
+        return node;
     }
 
     public DBNNode findResource(DBRProgressMonitor monitor, Path path) throws DBException {

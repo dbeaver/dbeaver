@@ -150,7 +150,7 @@ public class AIMessage {
         this(role, content, content, LocalDateTime.now(), meta);
     }
 
-    public static AIMessage functionMessage(String id, String payload, AIMessageType type) {
+    public static AIMessage functionMessage(@NotNull String id, @NotNull String payload, @NotNull AIMessageType type) {
         return new AIMessage(
             type,
             payload,
