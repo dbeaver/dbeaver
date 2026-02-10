@@ -25,7 +25,6 @@ Require-Bundle: org.eclipse.core.expressions,
  org.objectweb.asm,
  com.google.gson,
  org.jkiss.dbeaver.model;visibility:=reexport,
- com.sun.jna.platform,
- org.jkiss.dbeaver.model.sm
+ com.sun.jna.platform
 Bundle-Localization: OSGI-INF/l10n/bundle
 Automatic-Module-Name: org.jkiss.dbeaver.registry
