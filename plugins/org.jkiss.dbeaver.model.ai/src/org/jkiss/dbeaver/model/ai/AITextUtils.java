@@ -61,7 +61,7 @@ public class AITextUtils {
 
     /**
      * Extracts the contents of the first Markdown code block in the input.
-     * If the code ends with a semicolon, it’s removed.
+     * If the code ends with a semicolon, it's removed.
      *
      * @param markdown the full Markdown string
      * @return the inner code without trailing semicolon, or an empty string if none found
