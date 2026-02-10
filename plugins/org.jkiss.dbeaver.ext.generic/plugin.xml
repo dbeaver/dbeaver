@@ -1273,16 +1273,16 @@
                     <parameter name="use-search-string-escape" value="true"/>
                 </driver>
 
-                <!-- Salesforce Data Cloud (Legacy) -->
+                <!-- Salesforce Data 360 (Legacy) -->
                 <driver
                         id="salesforce_datacloud_jdbc"
-                        label="Salesforce Data Cloud (Legacy)"
+                        label="Salesforce Data 360 (Legacy)"
                         class="com.salesforce.cdp.queryservice.QueryServiceDriver"
                         icon="icons/salesforce_icon.png"
                         iconBig="icons/salesforce_icon_big.png"
                         sampleURL="jdbc:queryService-jdbc:{database}"
                         defaultDatabase="https://login.salesforce.com"
-                        description="Legacy Salesforce Data Cloud JDBC driver"
+                        description="Legacy Salesforce Data 360 JDBC driver"
                         webURL="https://github.com/forcedotcom/Salesforce-CDP-jdbc"
                         databaseDocumentationSuffixURL="Database-driver-Salesforce"
                         categories="sql">
@@ -1292,16 +1292,16 @@
                     <parameter name="read-only-meta-data" value="true"/>
                 </driver>
 
-                <!-- Salesforce Data Cloud -->
+                <!-- Salesforce Data 360 -->
                 <driver
                         id="salesforce_datacloud"
-                        label="Salesforce Data Cloud"
+                        label="Salesforce Data 360"
                         class="com.salesforce.datacloud.jdbc.DataCloudJDBCDriver"
                         icon="icons/salesforce_icon.png"
                         iconBig="icons/salesforce_icon_big.png"
                         sampleURL="jdbc:salesforce-datacloud://{database}"
                         defaultDatabase="login.salesforce.com"
-                        description="Salesforce Data Cloud JDBC driver"
+                        description="Salesforce Data 360 JDBC driver"
                         webURL="https://github.com/forcedotcom/datacloud-jdbc"
                         databaseDocumentationSuffixURL="Database-driver-Salesforce"
                         categories="sql">
