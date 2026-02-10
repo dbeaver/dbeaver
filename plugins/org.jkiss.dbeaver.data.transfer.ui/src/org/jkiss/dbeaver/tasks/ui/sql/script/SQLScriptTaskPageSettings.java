@@ -471,30 +471,27 @@ class SQLScriptTaskPageSettings extends ActiveWizardPage<SQLScriptTaskConfigurat
             List<String> scriptFiles = settings.getScriptFiles();
             for (String filePath : scriptFiles) {
                 if (IOUtils.isLocalFile(filePath)) {
-                    DBNNode resource = projectNode.findResource(monitor, filePath);
-                    if (resource == null) {
-                        Path workspaceFile;
-                        RMControllerProvider rmControllerProvider = DBUtils.getAdapter(RMControllerProvider.class, project);
-                        try {
-                            if (rmControllerProvider != null) {
-                                workspaceFile = project.getAbsolutePath().resolve(filePath);
-                            } else {
-                                workspaceFile = DTUtils.findProjectFile(project, filePath);
-                            }
-                        } catch (Exception e) {
-                            log.error(e);
-                            continue;
+                    Path workspaceFile;
+                    RMControllerProvider rmControllerProvider = DBUtils.getAdapter(RMControllerProvider.class, project);
+                    try {
+                        if (rmControllerProvider != null) {
+                            workspaceFile = project.getAbsolutePath().resolve(filePath);
+                        } else {
+                            workspaceFile = DTUtils.findProjectFile(project, filePath);
                         }
-                        if (workspaceFile != null) {
-                            resource = projectNode.findResource(monitor, workspaceFile);
-                        }
+                    } catch (Exception e) {
+                        log.error(e);
+                        continue;
                     }
-                    if (resource == null) {
+                    if (workspaceFile == null) {
                         UIUtils.syncExec(() -> setMessage("Script file '" + filePath + "' not found", WARNING));
                         log.error("Script file '" + filePath + "' not found");
                         continue;
                     }
-                    selectedScripts.add(resource);
+                    DBNNode resource = projectNode.findResource(monitor, workspaceFile);
+                    if (resource != null) {
+                        selectedScripts.add(resource);
+                    }
                 } else {
                     DBNFileSystems fsNode = projectNode.getExtraNode(DBNFileSystems.class);
                     if (fsNode != null) {
