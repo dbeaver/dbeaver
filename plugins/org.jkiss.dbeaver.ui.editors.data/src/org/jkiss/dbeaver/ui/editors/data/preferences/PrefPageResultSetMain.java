@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ui.editors.data.preferences;
 
 import org.eclipse.core.commands.Command;
+import org.eclipse.jface.layout.GridDataFactory;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.FocusAdapter;
 import org.eclipse.swt.events.FocusEvent;
@@ -48,8 +49,7 @@ import java.util.Locale;
 /**
  * PrefPageResultSetMain
  */
-public class PrefPageResultSetMain extends TargetPrefPage
-{
+public class PrefPageResultSetMain extends TargetPrefPage {
     static final Log log = Log.getLog(PrefPageResultSetMain.class);
 
     public static final String PAGE_ID = "org.jkiss.dbeaver.preferences.main.resultset"; //$NON-NLS-1$
@@ -123,14 +123,14 @@ public class PrefPageResultSetMain extends TargetPrefPage
     @NotNull
     @Override
     protected Control createPreferenceContent(@NotNull Composite parent) {
-        Composite composite = UIUtils.createPlaceholder(parent, 2, 5);
+        Composite composite = UIUtils.createPlaceholder(parent, 2, 10);
         Composite leftPane = UIUtils.createComposite(composite, 1);
         leftPane.setLayoutData(new GridData(GridData.VERTICAL_ALIGN_BEGINNING));
         Composite rightPane = UIUtils.createComposite(composite, 1);
         rightPane.setLayoutData(new GridData(GridData.VERTICAL_ALIGN_BEGINNING));
 
         {
-            Group queriesGroup = UIUtils.createControlGroup(leftPane, ResultSetMessages.pref_page_database_general_group_queries, 2, SWT.NONE, 0);
+            Composite queriesGroup = UIUtils.createTitledComposite(leftPane, ResultSetMessages.pref_page_database_general_group_queries, 2, SWT.NONE, 0);
             queriesGroup.setLayoutData(new GridData(GridData.VERTICAL_ALIGN_BEGINNING));
 
             resultSetSize = UIUtils.createLabelText(queriesGroup, ResultSetMessages.pref_page_database_general_label_result_set_max_size, "0", SWT.BORDER);
@@ -144,11 +144,11 @@ public class PrefPageResultSetMain extends TargetPrefPage
                     }
                 }
             });
+            resultSetSize.setLayoutData(GridDataFactory.create(GridData.HORIZONTAL_ALIGN_BEGINNING).hint(100, SWT.DEFAULT).create());
 
             autoFetchNextSegmentCheck = UIUtils.createCheckbox(queriesGroup, ResultSetMessages.pref_page_database_resultsets_label_auto_fetch_segment, ResultSetMessages.pref_page_database_resultsets_label_auto_fetch_segment_tip, true, 2);
             rereadOnScrollingCheck = UIUtils.createCheckbox(queriesGroup, ResultSetMessages.pref_page_database_resultsets_label_reread_on_scrolling, ResultSetMessages.pref_page_database_resultsets_label_reread_on_scrolling_tip, true, 2);
             resultSetUseSQLCheck = UIUtils.createCheckbox(queriesGroup, ResultSetMessages.pref_page_database_resultsets_label_use_sql, ResultSetMessages.pref_page_database_resultsets_label_use_sql_tip, false, 2);
-            automaticRowCountCheck = UIUtils.createCheckbox(queriesGroup, ResultSetMessages.pref_page_database_resultsets_label_automatic_row_count, ResultSetMessages.pref_page_database_resultsets_label_automatic_row_count_tip, false, 2);
 
             orderingStrategyCombo = UIUtils.createLabelCombo(
                 queriesGroup,
@@ -169,26 +169,51 @@ public class PrefPageResultSetMain extends TargetPrefPage
             for (OrderingPolicy policy : OrderingPolicy.values()) {
                 orderingPolicyCombo.add(policy.getText());
             }
-
-            queryCancelTimeout = UIUtils.createLabelText(queriesGroup, ResultSetMessages.pref_page_database_general_label_result_set_cancel_timeout + UIMessages.label_ms, "0");
-            queryCancelTimeout.addVerifyListener(UIUtils.getIntegerVerifyListener(Locale.getDefault()));
-            queryCancelTimeout.setToolTipText(ResultSetMessages.pref_page_database_general_label_result_set_cancel_timeout_tip);
-            queryCancelTimeout.setEnabled(false);
-
-            filterForceSubselect = UIUtils.createCheckbox(queriesGroup, ResultSetMessages.pref_page_database_resultsets_label_filter_force_subselect,
-                ResultSetMessages.pref_page_database_resultsets_label_filter_force_subselect_tip, false, 2);
         }
         {
-            Group advGroup = UIUtils.createControlGroup(leftPane, ResultSetMessages.pref_page_results_group_advanced, 1, GridData.VERTICAL_ALIGN_BEGINNING, 0);
+            Composite group = UIUtils.createTitledComposite(leftPane,
+                ResultSetMessages.pref_page_content_editor_group_editing,
+                1,
+                GridData.VERTICAL_ALIGN_BEGINNING
+            );
 
-            ignoreColumnLabelCheck = UIUtils.createCheckbox(advGroup, ResultSetMessages.pref_page_database_general_use_column_names, ResultSetMessages.pref_page_database_general_use_column_names_tip, false, 1);
-            advUseFetchSize = UIUtils.createCheckbox(advGroup, ResultSetMessages.pref_page_database_resultsets_label_fetch_size, ResultSetMessages.pref_page_database_resultsets_label_fetch_size_tip, false, 1);
+            alwaysUseAllColumns = UIUtils.createCheckbox(
+                group,
+                ResultSetMessages.pref_page_content_editor_checkbox_keys_always_use_all_columns,
+                false
+            );
+
+            disableEditingOnMissingKey = UIUtils.createCheckbox(
+                group,
+                ResultSetMessages.pref_page_content_editor_checkbox_disable_editing_if_key_missing,
+                false
+            );
+
+            alwaysUseAllColumns.addSelectionListener(new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    updateOptionsEnablement();
+                }
+            });
         }
 
+        {
+            Composite advGroup = UIUtils.createTitledComposite(leftPane, ResultSetMessages.pref_page_results_group_advanced, 2, GridData.VERTICAL_ALIGN_BEGINNING);
+
+            queryCancelTimeout = UIUtils.createLabelText(advGroup, ResultSetMessages.pref_page_database_general_label_result_set_cancel_timeout + UIMessages.label_ms, "0");
+            queryCancelTimeout.addVerifyListener(UIUtils.getIntegerVerifyListener(Locale.getDefault()));
+            queryCancelTimeout.setToolTipText(ResultSetMessages.pref_page_database_general_label_result_set_cancel_timeout_tip);
+
+            filterForceSubselect = UIUtils.createCheckbox(advGroup, ResultSetMessages.pref_page_database_resultsets_label_filter_force_subselect,
+                ResultSetMessages.pref_page_database_resultsets_label_filter_force_subselect_tip, false, 2);
+
+            ignoreColumnLabelCheck = UIUtils.createCheckbox(advGroup, ResultSetMessages.pref_page_database_general_use_column_names, ResultSetMessages.pref_page_database_general_use_column_names_tip, false, 2);
+            advUseFetchSize = UIUtils.createCheckbox(advGroup, ResultSetMessages.pref_page_database_resultsets_label_fetch_size, ResultSetMessages.pref_page_database_resultsets_label_fetch_size_tip, false, 2);
+        }
 
         // Misc settings
         {
-            Group miscGroup = UIUtils.createControlGroup(rightPane, ResultSetMessages.pref_page_sql_editor_group_misc, 1, GridData.VERTICAL_ALIGN_BEGINNING, 0);
+            Composite miscGroup = UIUtils.createTitledComposite(rightPane, ResultSetMessages.pref_page_sql_editor_group_misc, 1, GridData.VERTICAL_ALIGN_BEGINNING, 0);
             miscGroup.setLayoutData(new GridData(GridData.VERTICAL_ALIGN_BEGINNING));
 
             keepStatementOpenCheck = UIUtils.createCheckbox(miscGroup, ResultSetMessages.pref_page_database_general_checkbox_keep_cursor, false);
@@ -196,10 +221,11 @@ public class PrefPageResultSetMain extends TargetPrefPage
             refreshAfterUpdate = UIUtils.createCheckbox(miscGroup, ResultSetMessages.pref_page_content_editor_checkbox_refresh_after_update, false);
             useNavigatorFilters = UIUtils.createCheckbox(miscGroup, ResultSetMessages.pref_page_content_editor_checkbox_use_navigator_filters, ResultSetMessages.pref_page_content_editor_checkbox_use_navigator_filters_tip, false, 1);
             useDateTimeEditor = UIUtils.createCheckbox(miscGroup, ResultSetMessages.pref_page_content_editor_checkbox_string_editor_for_datetime, ResultSetMessages.pref_page_content_editor_checkbox_string_editor_for_datetime_tip, false, 1);
+            automaticRowCountCheck = UIUtils.createCheckbox(miscGroup, ResultSetMessages.pref_page_database_resultsets_label_automatic_row_count, ResultSetMessages.pref_page_database_resultsets_label_automatic_row_count_tip, false, 2);
         }
 
         {
-            Group uiGroup = UIUtils.createControlGroup(rightPane, "UI", 1, GridData.VERTICAL_ALIGN_BEGINNING, 0);
+            Composite uiGroup = UIUtils.createTitledComposite(rightPane, "UI", 1, GridData.VERTICAL_ALIGN_BEGINNING, 0);
             uiGroup.setLayoutData(new GridData(GridData.VERTICAL_ALIGN_BEGINNING));
 
             ICommandService commandService = UIUtils.getActiveWorkbenchWindow().getService(ICommandService.class);
@@ -222,35 +248,7 @@ public class PrefPageResultSetMain extends TargetPrefPage
             useBrowserCheckbox.setToolTipText(DataEditorsMessages.pref_page_database_resultsets_label_image_browser_tip);
 
         }
-        {
-            final Group group = UIUtils.createControlGroup(
-                leftPane,
-                ResultSetMessages.pref_page_content_editor_group_editing,
-                1,
-                GridData.VERTICAL_ALIGN_BEGINNING,
-                0
-            );
 
-            alwaysUseAllColumns = UIUtils.createCheckbox(
-                group,
-                ResultSetMessages.pref_page_content_editor_checkbox_keys_always_use_all_columns,
-                false
-            );
-
-            disableEditingOnMissingKey = UIUtils.createCheckbox(
-                group,
-                ResultSetMessages.pref_page_content_editor_checkbox_disable_editing_if_key_missing,
-                false
-            );
-
-            alwaysUseAllColumns.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
-                    updateOptionsEnablement();
-                }
-            });
-        }
-       
         return composite;
     }
 

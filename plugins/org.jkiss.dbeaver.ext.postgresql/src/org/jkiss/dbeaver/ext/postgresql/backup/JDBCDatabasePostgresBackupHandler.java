@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,6 +24,7 @@ import org.jkiss.dbeaver.model.sql.backup.JDBCDatabaseBackupHandler;
 import org.jkiss.dbeaver.model.sql.backup.SQLBackupConstants;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.IOUtils;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -47,6 +48,10 @@ public class JDBCDatabasePostgresBackupHandler implements JDBCDatabaseBackupHand
         try {
             URI uri = new URI(databaseConfig.getUrl().replace("jdbc:", ""));
             Path workspace = DBWorkbench.getPlatform().getWorkspace().getAbsolutePath().resolve(SQLBackupConstants.BACKUP_FOLDER);
+            if (!IOUtils.isFileFromDefaultFS(workspace)) {
+                log.warn("Backup to an external workspace is not supported");
+                return;
+            }
             Path backupFile = workspace.resolve(uri.getPath().replace("/", "") + "_"
                 + SQLBackupConstants.BACKUP_FILE_NAME + databaseConfig.getSchema()
                 + currentSchemaVersion + SQLBackupConstants.BACKUP_FILE_TYPE);
@@ -99,7 +104,6 @@ public class JDBCDatabasePostgresBackupHandler implements JDBCDatabaseBackupHand
 
         ProcessBuilder processBuilder = new ProcessBuilder(
             "pg_dump",
-            databaseName,
             "--host", uri.getHost(),
             "--port", String.valueOf(uri.getPort()),
             "--blobs",
@@ -117,6 +121,8 @@ public class JDBCDatabasePostgresBackupHandler implements JDBCDatabaseBackupHand
 
         processBuilder.command().add("--username");
         processBuilder.command().add(databaseConfig.getUser());
+
+        processBuilder.command().add(databaseName);
 
         if (CommonUtils.isNotEmpty(databaseConfig.getPassword())) {
             processBuilder.environment().put("PGPASSWORD", databaseConfig.getPassword());

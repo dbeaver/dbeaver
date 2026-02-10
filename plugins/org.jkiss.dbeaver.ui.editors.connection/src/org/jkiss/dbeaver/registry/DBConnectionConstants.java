@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,5 +26,4 @@ public class DBConnectionConstants {
 
     public static final String PRODUCT_FEATURE_SIMPLE_TRUSTSTORE = "connection/simpleTruststore";
 
-    public static final String POLICY_RESTRICT_PASSWORD_SAVE = "connection.credentials.save.restricted"; //$NON-NLS-1$
 }

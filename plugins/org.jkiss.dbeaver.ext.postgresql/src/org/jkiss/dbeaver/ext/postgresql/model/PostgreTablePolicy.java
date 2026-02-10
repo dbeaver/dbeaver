@@ -20,10 +20,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.DBPNamedObject;
-import org.jkiss.dbeaver.model.DBPNamedObject2;
-import org.jkiss.dbeaver.model.DBPSaveableObject;
+import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.IPropertyValueListProvider;
 import org.jkiss.dbeaver.model.meta.Property;
@@ -36,6 +33,7 @@ import org.jkiss.utils.CommonUtils;
 import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 /**
@@ -43,7 +41,7 @@ import java.util.Objects;
  *
  * @see <a href="5.8. Row Security Policies">https://www.postgresql.org/docs/current/ddl-rowsecurity.html</a>
  */
-public class PostgreTablePolicy implements DBSObject, DBPNamedObject2, DBPSaveableObject {
+public class PostgreTablePolicy implements DBSObject, DBPNamedObject2, DBPSaveableObject, DBPScriptObject {
     private static final Log log = Log.getLog(PostgreTablePolicy.class);
 
     private final PostgreTable table;
@@ -173,6 +171,31 @@ public class PostgreTablePolicy implements DBSObject, DBPNamedObject2, DBPSaveab
     @Override
     public DBPDataSource getDataSource() {
         return table.getDataSource();
+    }
+
+    @Override
+    public String getObjectDefinitionText(DBRProgressMonitor monitor, Map<String, Object> options) throws DBException {
+        StringBuilder sql = new StringBuilder();
+        sql.append("CREATE POLICY ")
+            .append(DBUtils.getQuotedIdentifier(this))
+            .append(" ON ")
+            .append(table.getFullyQualifiedName(DBPEvaluationContext.DDL))
+            .append("\n AS ").append(type)
+            .append("\n FOR ").append(event);
+
+        if (role != null) {
+            sql.append("\n TO ").append(DBUtils.getQuotedIdentifier(role));
+        }
+
+        if (CommonUtils.isNotEmpty(using)) {
+            sql.append("\n USING (").append(using).append(")");
+        }
+
+        if (CommonUtils.isNotEmpty(check)) {
+            sql.append("\n WITH CHECK (").append(check).append(")");
+        }
+
+        return sql.toString();
     }
 
     public enum PolicyType implements DBPNamedObject {

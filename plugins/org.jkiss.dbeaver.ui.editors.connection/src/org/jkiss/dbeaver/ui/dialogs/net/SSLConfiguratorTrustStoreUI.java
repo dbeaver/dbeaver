@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,7 +21,10 @@ import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.*;
+import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Text;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.impl.net.SSLConfigurationMethod;
 import org.jkiss.dbeaver.model.impl.net.SSLHandlerTrustStoreImpl;
@@ -62,13 +65,18 @@ public class SSLConfiguratorTrustStoreUI extends SSLConfiguratorAbstractUI {
         createTrustStoreConfigGroup(composite);
     }
 
-    protected Group createTrustStoreConfigGroup(Composite composite) {
+    protected Composite createTrustStoreConfigGroup(Composite composite) {
         final boolean certificatesSupported = isCertificatesSupported();
         final boolean keyStoreSupported = isKeystoreSupported();
 
         assert certificatesSupported || keyStoreSupported;
 
-        Group sslParameters = UIUtils.createControlGroup(composite, UIConnectionMessages.dialog_setting_ssl_configurator_legend_parameters, 1, GridData.FILL_HORIZONTAL, SWT.DEFAULT);
+        Composite sslParameters = UIUtils.createTitledComposite(
+            composite,
+            UIConnectionMessages.dialog_setting_ssl_configurator_legend_parameters,
+            1,
+            GridData.FILL_HORIZONTAL
+        );
 
         if (certificatesSupported && keyStoreSupported) {
             final SelectionAdapter methodSwitcher = new SelectionAdapter() {
@@ -81,8 +89,18 @@ public class SSLConfiguratorTrustStoreUI extends SSLConfiguratorAbstractUI {
             Composite sslMethodComposite = UIUtils.createComposite(sslParameters, 3);
 
             UIUtils.createControlLabel(sslMethodComposite, UIConnectionMessages.dialog_setting_ssl_configurator_method);
-            certRadioButton = UIUtils.createRadioButton(sslMethodComposite, UIConnectionMessages.dialog_setting_ssl_configurator_method_certs, SSLConfigurationMethod.CERTIFICATES, methodSwitcher);
-            keyStoreRadioButton = UIUtils.createRadioButton(sslMethodComposite, UIConnectionMessages.dialog_setting_ssl_configurator_method_keystore, SSLConfigurationMethod.KEYSTORE, methodSwitcher);
+            certRadioButton = UIUtils.createRadioButton(
+                sslMethodComposite,
+                UIConnectionMessages.dialog_setting_ssl_configurator_method_certs,
+                SSLConfigurationMethod.CERTIFICATES,
+                methodSwitcher
+            );
+            keyStoreRadioButton = UIUtils.createRadioButton(
+                sslMethodComposite,
+                UIConnectionMessages.dialog_setting_ssl_configurator_method_keystore,
+                SSLConfigurationMethod.KEYSTORE,
+                methodSwitcher
+            );
         }
 
         {
@@ -91,16 +109,28 @@ public class SSLConfiguratorTrustStoreUI extends SSLConfiguratorAbstractUI {
 
             if (useCACertificate()) {
                 UIUtils.createControlLabel(sslCertComposite, UIConnectionMessages.dialog_setting_ssl_configurator_certs_ca_name);
-                caCertPath = new ConfigurationFileSelector(sslCertComposite, UIConnectionMessages.dialog_setting_ssl_configurator_certs_ca_title, new String[]{"*.*", "*.crt", "*"});
+                caCertPath = new ConfigurationFileSelector(
+                    sslCertComposite,
+                    UIConnectionMessages.dialog_setting_ssl_configurator_certs_ca_title,
+                    new String[]{"*.*", "*.crt", "*"}
+                );
                 caCertPath.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
             }
 
             UIUtils.createControlLabel(sslCertComposite, UIConnectionMessages.dialog_setting_ssl_configurator_certs_client_name);
-            clientCertPath = new ConfigurationFileSelector(sslCertComposite, UIConnectionMessages.dialog_setting_ssl_configurator_certs_client_title, new String[]{"*.*", "*.crt", "*"});
+            clientCertPath = new ConfigurationFileSelector(
+                sslCertComposite,
+                UIConnectionMessages.dialog_setting_ssl_configurator_certs_client_title,
+                new String[]{"*.*", "*.crt", "*"}
+            );
             clientCertPath.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
             UIUtils.createControlLabel(sslCertComposite, UIConnectionMessages.dialog_setting_ssl_configurator_certs_client_key_name);
-            clientKeyPath = new ConfigurationFileSelector(sslCertComposite, UIConnectionMessages.dialog_setting_ssl_configurator_certs_client_key_title, new String[]{"*.*", "*.key", "*"});
+            clientKeyPath = new ConfigurationFileSelector(
+                sslCertComposite,
+                UIConnectionMessages.dialog_setting_ssl_configurator_certs_client_key_title,
+                new String[]{"*.*", "*.key", "*"}
+            );
             clientKeyPath.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         }
 
@@ -109,7 +139,12 @@ public class SSLConfiguratorTrustStoreUI extends SSLConfiguratorAbstractUI {
             sslKeyStoreComposite.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
             UIUtils.createControlLabel(sslKeyStoreComposite, UIConnectionMessages.dialog_setting_ssl_configurator_keystore_name);
-            keyStorePath = new ConfigurationFileSelector(sslKeyStoreComposite, UIConnectionMessages.dialog_setting_ssl_configurator_keystore_title, new String[]{"*.jks;*.pfx", "*.*"}, true);
+            keyStorePath = new ConfigurationFileSelector(
+                sslKeyStoreComposite,
+                UIConnectionMessages.dialog_setting_ssl_configurator_keystore_title,
+                new String[]{"*.jks;*.pfx", "*.*"},
+                true
+            );
             keyStorePath.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
             UIUtils.createControlLabel(sslKeyStoreComposite, UIConnectionMessages.dialog_setting_ssl_configurator_keystore_password_name);

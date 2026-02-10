@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,10 +16,10 @@
  */
 package org.jkiss.dbeaver.model.ai;
 
-import org.eclipse.core.runtime.IAdaptable;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.DBPAdaptable;
 import org.jkiss.dbeaver.model.ai.engine.AIEngineProperties;
 import org.jkiss.dbeaver.model.ai.registry.AIEngineDescriptor;
 import org.jkiss.dbeaver.model.ai.registry.AIEngineRegistry;
@@ -31,24 +31,35 @@ import java.util.*;
  * AI global settings.
  * Keeps global parameters and configuration of all AI engines
  */
-public class AISettings implements IAdaptable {
+public class AISettings implements DBPAdaptable {
     private boolean aiDisabled;
     private String activeEngine;
     private final Map<String, AIEngineProperties> engineConfigurations = new LinkedHashMap<>();
     private final Map<String, Object> properties = new LinkedHashMap<>();
     private final Set<String> resolvedSecrets = new HashSet<>();
+
+    private boolean functionsEnabled = true;
     private final Set<String> enabledFunctionCategories = new LinkedHashSet<>();
     private final Set<String> enabledFunctions = new LinkedHashSet<>();
+    private final Map<String, String> customInstructions = new LinkedHashMap<>();
 
     public AISettings() {
     }
 
+    @NotNull
     public Map<String, Object> getAllProperties() {
         return properties;
     }
 
-    public <T> T getProperty(@NotNull String name, @Nullable T defaultValue) {
-        return (T) properties.getOrDefault(name, defaultValue);
+    @Nullable
+    @SuppressWarnings("unchecked")
+    public <T> T getProperty(@NotNull String name) {
+        return (T) properties.get(name);
+    }
+
+    @NotNull
+    public <T> T getProperty(@NotNull String name, @NotNull T defaultValue) {
+        return Objects.requireNonNullElse(getProperty(name), defaultValue);
     }
 
     public void setProperty(@NotNull String name, @Nullable Object value) {
@@ -59,9 +70,17 @@ public class AISettings implements IAdaptable {
         }
     }
 
+    public boolean isFunctionsEnabled() {
+        return functionsEnabled;
+    }
+
+    public void setFunctionsEnabled(boolean functionsEnabled) {
+        this.functionsEnabled = functionsEnabled;
+    }
+
     @NotNull
     public Set<String> getEnabledFunctions() {
-        return new HashSet<>(enabledFunctions);
+        return Set.copyOf(enabledFunctions);
     }
 
     public void setEnabledFunctions(@Nullable Set<String> functions) {
@@ -69,6 +88,21 @@ public class AISettings implements IAdaptable {
         if (functions != null) {
             this.enabledFunctions.addAll(functions);
         }
+    }
+
+    @NotNull
+    public Map<String, String> getCustomInstructions() {
+        return Map.copyOf(customInstructions);
+    }
+
+    @Nullable
+    public String getCustomInstructions(@NotNull String promptGeneratorId) {
+        return customInstructions.get(promptGeneratorId);
+    }
+
+    public void setCustomInstructions(@NotNull Map<String, String> instructions) {
+        customInstructions.clear();
+        customInstructions.putAll(instructions);
     }
 
     public boolean isFunctionEnabled(@NotNull String functionId) {

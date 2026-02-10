@@ -19,13 +19,10 @@ package org.jkiss.dbeaver.ui.ai.model;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Event;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -51,25 +48,30 @@ public class ModelSelectorField {
     private final ModelListProvider modelListProvider;
 
     private volatile String selectedModel;
+    private boolean disableModifyListener = false;
 
     private ModelSelectorField(
         @NotNull Combo combo,
         @NotNull ModelListProvider modelListProvider,
-        @NotNull Runnable onModelSelected
+        @Nullable Runnable onModelModify
     ) {
         this.combo = combo;
-        this.combo.addModifyListener(e -> selectedModel = combo.getText());
-        this.combo.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                selectedModel = combo.getText();
-                onModelSelected.run();
-            }
-        });
+        if (onModelModify != null) {
+            this.combo.addModifyListener(e -> {
+                String newText = combo.getText();
+                if (!newText.equals(selectedModel) && !disableModifyListener) {
+                    selectedModel = newText;
+                    onModelModify.run();
+                }
+            });
+        } else {
+            this.combo.addModifyListener(e -> selectedModel = combo.getText());
+        }
 
         this.modelListProvider = modelListProvider;
     }
 
+    @NotNull
     public static Builder builder() {
         return new Builder();
     }
@@ -83,18 +85,7 @@ public class ModelSelectorField {
         if (model == null || model.isBlank()) {
             return;
         }
-
-        for (String o : combo.getItems()) {
-            if (o.equals(model)) {
-                combo.setText(model);
-                return;
-            }
-        }
-
-        // If the model is not in the list, add it
-        combo.add(model);
-        combo.select(combo.getItemCount() - 1);
-        selectedModel = model;
+        combo.setText(model);
     }
 
     public void refreshModelListSilently(boolean refresh) {
@@ -131,7 +122,9 @@ public class ModelSelectorField {
                 .sorted(String::compareToIgnoreCase)
                 .toList();
 
+            disableModifyListener = true;
             combo.setItems(sortedModels.toArray(new String[0]));
+            disableModifyListener = false;
             combo.select(sortedModels.indexOf(selectedItem));
         });
     }
@@ -144,7 +137,7 @@ public class ModelSelectorField {
         private GridData gridData;
 
         @Nullable
-        private SelectionListener selectionListener;
+        private Runnable onModify;
 
         @NotNull
         private ModelListProvider modelListSupplier;
@@ -160,8 +153,8 @@ public class ModelSelectorField {
             return this;
         }
 
-        public Builder withSelectionListener(@NotNull SelectionListener selectionListener) {
-            this.selectionListener = selectionListener;
+        public Builder withModifyListener(@NotNull Runnable onModify) {
+            this.onModify = onModify;
             return this;
         }
 
@@ -175,6 +168,7 @@ public class ModelSelectorField {
             return this;
         }
 
+        @NotNull
         public ModelSelectorField build() {
             Combo combo = UIUtils.createLabelCombo(
                 parent,
@@ -183,20 +177,7 @@ public class ModelSelectorField {
             );
             combo.setLayoutData(gridData);
 
-            ModelSelectorField modelSelectorField = new ModelSelectorField(
-                combo,
-                modelListSupplier,
-                () -> {
-                    if (selectionListener != null) {
-                        Event event = new Event();
-                        event.widget = combo;
-                        event.type = SWT.Selection;
-
-                        selectionListener.widgetSelected(new SelectionEvent(event));
-                    }
-                }
-
-            );
+            ModelSelectorField modelSelectorField = new ModelSelectorField(combo, modelListSupplier, onModify);
 
             UIUtils.createPushButton(
                 parent,
@@ -230,6 +211,7 @@ public class ModelSelectorField {
     }
 
     public interface ModelListProvider {
-        List<String> getModels(DBRProgressMonitor monitor, boolean forceRefresh) throws DBException;
+        @NotNull
+        List<String> getModels(@NotNull DBRProgressMonitor monitor, boolean forceRefresh) throws DBException;
     }
 }

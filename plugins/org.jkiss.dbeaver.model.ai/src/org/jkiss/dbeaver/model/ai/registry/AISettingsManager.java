@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,6 +34,7 @@ import org.jkiss.utils.CommonUtils;
 
 import java.io.StringReader;
 import java.util.*;
+import java.util.function.Consumer;
 
 public class AISettingsManager {
     private static final Log log = Log.getLog(AISettingsManager.class);
@@ -44,14 +45,16 @@ public class AISettingsManager {
     private static final String ACTIVE_ENGINE_KEY = "activeEngine";
     private static final String PROPERTIES_KEY = "properties";
     private static final String ENGINE_CONFIGURATIONS_KEY = "engineConfigurations";
+    private static final String FUNCTIONS_ENABLED_KEY = "functionsEnabled";
     private static final String ENABLED_FUNCTION_CATEGORIES_KEY = "enabledFunctionCategories";
     private static final String ENABLED_FUNCTIONS_KEY = "enabledFunctions";
+    private static final String CUSTOM_INSTRUCTIONS_KEY = "customInstructions";
     public static final String ENGINE_PROPERTIES = "properties";
 
     private static AISettingsManager instance = null;
 
-    private static final Gson readPropsGson = createPropertiesLoadGson();
-    private static final Gson savePropsGson = createPropertiesSaveGson();
+    public static final Gson READ_PROPS_GSON = createPropertiesLoadGson();
+    public static final Gson SAVE_PROPS_GSON = createPropertiesSaveGson();
 
     private final Set<AISettingsEventListener> settingsChangedListeners = Collections.synchronizedSet(new HashSet<>());
 
@@ -100,7 +103,7 @@ public class AISettingsManager {
         try {
             String content = loadConfig();
             if (!CommonUtils.isEmpty(content)) {
-                configMap = readPropsGson.fromJson(new StringReader(content), JSONUtils.MAP_TYPE_TOKEN);
+                configMap = READ_PROPS_GSON.fromJson(new StringReader(content), JSONUtils.MAP_TYPE_TOKEN);
             }
         } catch (Exception e) {
             log.error("Error loading AI settings, falling back to defaults.", e);
@@ -123,12 +126,17 @@ public class AISettingsManager {
                 if (!enabledCategories.isEmpty()) {
                     settings.setEnabledFunctionCategories(new HashSet<>(enabledCategories));
                 }
-
+                settings.setFunctionsEnabled(JSONUtils.getBoolean(configMap, FUNCTIONS_ENABLED_KEY, true));
                 List<String> enabledFunctions = JSONUtils.getStringList(configMap, ENABLED_FUNCTIONS_KEY);
                 if (!enabledFunctions.isEmpty()) {
                     settings.setEnabledFunctions(new HashSet<>(enabledFunctions));
                 }
 
+                @SuppressWarnings("unchecked")
+                Map<String, String> customInstructions = (Map<String, String>) configMap.get(CUSTOM_INSTRUCTIONS_KEY);
+                if (!CommonUtils.isEmpty(customInstructions)) {
+                    settings.setCustomInstructions(customInstructions);
+                }
 
                 Map<String, Object> ecRoot = JSONUtils.getObject(configMap, ENGINE_CONFIGURATIONS_KEY);
 
@@ -142,8 +150,8 @@ public class AISettingsManager {
                     if (entry.getValue() instanceof Map map) {
                         try {
                             Map<String, Object> properties = JSONUtils.getObject(map, ENGINE_PROPERTIES);
-                            JsonElement engineConfigTree = readPropsGson.toJsonTree(properties, Map.class);
-                            AIEngineProperties engineSettings = readPropsGson.fromJson(
+                            JsonElement engineConfigTree = READ_PROPS_GSON.toJsonTree(properties, Map.class);
+                            AIEngineProperties engineSettings = READ_PROPS_GSON.fromJson(
                                 engineConfigTree, engineDescriptor.getPropertiesType());
 
                             engineConfigurationMap.put(engineDescriptor.getId(), engineSettings);
@@ -166,19 +174,18 @@ public class AISettingsManager {
             settings.setActiveEngine(OpenAIConstants.OPENAI_ENGINE);
         }
 
-        // Fill missing settings
-        Map<String, AIEngineProperties> configurations = settings.getEngineConfigurations();
-        for (AIEngineDescriptor aed : AIEngineRegistry.getInstance().getCompletionEngines()) {
-            if (!configurations.containsKey(aed.getId())) {
-                try {
-                    configurations.put(aed.getId(), aed.createPropertiesInstance());
-                } catch (DBException e) {
-                    log.error(e);
-                }
-            }
-        }
-
         return settings;
+    }
+
+    /**
+     * Modify settings with given consumer and save them.
+     *
+     * @param consumer consumer to modify settings
+     */
+    public void modifySettings(@NotNull Consumer<AISettings> consumer) {
+        AISettings settings = this.getSettings();
+        consumer.accept(settings);
+        this.saveSettings(settings);
     }
 
     public void saveSettings(@NotNull AISettings settings) {
@@ -194,11 +201,12 @@ public class AISettingsManager {
 
             JsonObject propertiesObject = new JsonObject();
             for (Map.Entry<String, Object> property : settings.getAllProperties().entrySet()) {
-                JsonElement propValue = savePropsGson.toJsonTree(property.getValue());
+                JsonElement propValue = SAVE_PROPS_GSON.toJsonTree(property.getValue());
                 propertiesObject.add(property.getKey(), propValue);
             }
             json.add(PROPERTIES_KEY, propertiesObject);
 
+            json.add(FUNCTIONS_ENABLED_KEY, new JsonPrimitive(settings.isFunctionsEnabled()));
             Set<String> enabledCategories = settings.getEnabledFunctionCategories();
             if (!enabledCategories.isEmpty()) {
                 JsonArray categoriesArray = new JsonArray();
@@ -217,10 +225,19 @@ public class AISettingsManager {
                 json.add(ENABLED_FUNCTIONS_KEY, functionsArray);
             }
 
+            Map<String, String> customInstructions = settings.getCustomInstructions();
+            if (!customInstructions.isEmpty()) {
+                JsonObject object = new JsonObject();
+
+                for (Map.Entry<String, String> entry : customInstructions.entrySet()) {
+                    object.addProperty(entry.getKey(), entry.getValue());
+                }
+                json.add(CUSTOM_INSTRUCTIONS_KEY, object);
+            }
 
             JsonObject engineConfigurations = new JsonObject();
             for (Map.Entry<String, AIEngineProperties> configuration : settings.getEngineConfigurations().entrySet()) {
-                JsonElement savedProps = savePropsGson.toJsonTree(configuration.getValue());
+                JsonElement savedProps = SAVE_PROPS_GSON.toJsonTree(configuration.getValue());
                 if (savedProps instanceof JsonObject jo && !jo.isEmpty()) {
                     JsonObject props = new JsonObject();
                     props.add(ENGINE_PROPERTIES, savedProps);
@@ -229,7 +246,7 @@ public class AISettingsManager {
             }
             json.add(ENGINE_CONFIGURATIONS_KEY, engineConfigurations);
 
-            String content = savePropsGson.toJson(json);
+            String content = SAVE_PROPS_GSON.toJson(json);
 
             DBWorkbench.getPlatform().getConfigurationController().saveConfigurationFile(AI_CONFIGURATION_FILE_NAME, content);
 

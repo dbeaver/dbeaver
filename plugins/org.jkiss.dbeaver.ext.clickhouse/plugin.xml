@@ -69,7 +69,6 @@
                     <!-- Disable server timezone as it confuses during timestamp edit -->
                     <property name="@dbeaver-default-dataformat.type.timestamp.pattern" value="yyyy-MM-dd HH:mm:ss[.fffffffff]"/>
                     <property name="@dbeaver-default-resultset.maxrows.sql" value="true"/>
-                    <property name="use_server_time_zone" value="false"/>
 
                     <parameter name="supports-references" value="false"/>
                     <parameter name="supports-truncate" value="false"/>
@@ -95,6 +94,7 @@
                 type="config"
                 id="clickhouse-ssl"
                 codeName="SSL"
+                prefix="ssl"
                 label="SSL"
                 description="SSL settings"
                 secured="false"
@@ -135,6 +135,14 @@
             <type name="IPV6"/>
             <type name="TUPLE*"/>
             <type name="MAP*"/>
+
+            <!-- https://clickhouse.com/docs/sql-reference/data-types/geo -->
+            <type name="POINT"/>
+            <type name="RING"/>
+            <type name="LINESTRING"/>
+            <type name="MULTILINESTRING"/>
+            <type name="POLYGON"/>
+            <type name="MULTIPOLYGON"/>
         </provider>
     </extension>
 

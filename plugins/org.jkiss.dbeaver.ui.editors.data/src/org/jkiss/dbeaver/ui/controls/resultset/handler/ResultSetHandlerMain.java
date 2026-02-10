@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -88,8 +88,8 @@ import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.Pair;
 
-import java.util.List;
 import java.util.*;
+import java.util.List;
 import java.util.stream.Collectors;
 
 /**
@@ -407,6 +407,7 @@ public class ResultSetHandlerMain extends AbstractHandler implements IElementUpd
                 action.run();
                 break;
             case IResultSetCommands.CMD_NAVIGATE_LINK: {
+                // FIXME: Should probably rely on hints; see org.jkiss.dbeaver.ui.data.DBDValueHintActionHandler
                 final DBDAttributeBinding attr = rsv.getActivePresentation().getCurrentAttribute();
                 if (attr != null) {
                     new AbstractJob("Navigate association") {
@@ -425,7 +426,7 @@ public class ResultSetHandlerMain extends AbstractHandler implements IElementUpd
                 break;
             }
             case IResultSetCommands.CMD_COUNT:
-                rsv.updateRowCount();
+                rsv.updateRowCount(true);
                 break;
             case IWorkbenchCommandConstants.NAVIGATE_BACKWARD_HISTORY: {
                 final int hp = rsv.getHistoryPosition();
@@ -538,7 +539,8 @@ public class ResultSetHandlerMain extends AbstractHandler implements IElementUpd
                         Collections.singletonList(
                             new DatabaseTransferProducer(dataContainer, rsv.getModel().getDataFilter())),
                         null,
-                        rsv.getSelection());
+                        rsv.getSelection(),
+                        true);
                 }
                 break;
             }
