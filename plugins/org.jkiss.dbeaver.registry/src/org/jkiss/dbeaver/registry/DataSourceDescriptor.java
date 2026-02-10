@@ -43,7 +43,6 @@ import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.meta.PropertyLength;
 import org.jkiss.dbeaver.model.navigator.DBNBrowseSettings;
 import org.jkiss.dbeaver.model.net.*;
-import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.preferences.DBPPropertySource;
 import org.jkiss.dbeaver.model.rm.RMProjectType;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
@@ -289,10 +288,6 @@ public class DataSourceDescriptor
         this.virtualModel = new DBVModel(this, source.virtualModel);
     }
 
-
-    protected DataSourcePreferenceStore getNewDataSourcePreferenceStore(DBPPreferenceStore parentStore) {
-        return new DataSourcePreferenceStore(parentStore, this);
-    }
 
     public boolean isDisposed() {
         return disposed;

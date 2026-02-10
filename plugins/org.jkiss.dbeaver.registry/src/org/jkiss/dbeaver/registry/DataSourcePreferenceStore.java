@@ -18,7 +18,6 @@ package org.jkiss.dbeaver.registry;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPDataSourceContainerProvider;
@@ -38,7 +37,6 @@ import java.util.Map;
  */
 public class DataSourcePreferenceStore extends SimplePreferenceStore implements DBPDataSourceContainerProvider
 {
-    private static final Log log = Log.getLog(DataSourcePreferenceStore.class);
     private final DataSourceDescriptor dataSourceDescriptor;
     @NotNull
     private final Map<String, String> userSettings = new LinkedHashMap<>();
@@ -92,7 +90,7 @@ public class DataSourcePreferenceStore extends SimplePreferenceStore implements 
         }
     }
 
-    public void putUserSettings(String key, String value) {
+    public void putUserSettings(@NotNull String key, @Nullable String value) {
         userSettings.put(key, value);
     }
 
@@ -113,7 +111,7 @@ public class DataSourcePreferenceStore extends SimplePreferenceStore implements 
     }
 
     @Override
-    public String[] preferenceNames(){
+    public String[] preferenceNames() {
         String[] preferenceNames = super.preferenceNames();
         return Arrays.stream(preferenceNames)
             // User settings are not stored in the datasource's, so we need to filter them out from the list of preferences
