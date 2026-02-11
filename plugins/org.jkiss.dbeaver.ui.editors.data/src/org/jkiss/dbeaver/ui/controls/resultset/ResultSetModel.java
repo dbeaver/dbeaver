@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -137,14 +137,18 @@ public class ResultSetModel implements DBDResultSetModel {
         return hintContext;
     }
 
+    @Nullable
     @Override
-    public String getReadOnlyStatus(DBPDataSourceContainer dataSourceContainer) {
+    public String getReadOnlyStatus(@Nullable DBPDataSourceContainer dataSourceContainer) {
         if (isUpdateInProgress()) {
             return "Update in progress";
         }
         String containerReadOnlyStatus = DBExecUtils.getResultSetReadOnlyStatus(dataSourceContainer);
         if (containerReadOnlyStatus != null) {
             return containerReadOnlyStatus;
+        }
+        if (dataSourceContainer == null) {
+            return null;
         }
         if (isUniqueKeyUndefinedButRequired(dataSourceContainer)) {
             return "No unique key defined";
@@ -200,6 +204,7 @@ public class ResultSetModel implements DBDResultSetModel {
      * @return single source entity
      */
     @Nullable
+    @Override
     public DBSEntity getSingleSource() {
         return singleSourceEntity;
     }
@@ -219,8 +224,8 @@ public class ResultSetModel implements DBDResultSetModel {
         return documentAttribute;
     }
 
-    @Override
     @NotNull
+    @Override
     public DBDAttributeBinding[] getAttributes() {
         return attributes;
     }
@@ -411,11 +416,13 @@ public class ResultSetModel implements DBDResultSetModel {
     }
 
     @Nullable
-    public Object getCellValue(@NotNull DBDAttributeBinding attribute, @NotNull ResultSetRow row) {
+    @Override
+    public Object getCellValue(@NotNull DBDAttributeBinding attribute, @NotNull DBDValueRow row) {
         return getCellValue(attribute, row, null, false);
     }
 
     @Nullable
+    @Override
     public Object getCellValue(
         @NotNull DBDAttributeBinding attribute,
         @NotNull DBDValueRow row,

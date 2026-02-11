@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,16 +14,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ui.controls.resultset.generator;
+package org.jkiss.dbeaver.model.sql.generator.resultset;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
+import org.jkiss.dbeaver.model.data.DBDResultSetDataProvider;
+import org.jkiss.dbeaver.model.data.DBDValueRow;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLQueryGeneratorUpdate;
 import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
-import org.jkiss.dbeaver.ui.controls.resultset.IResultSetController;
-import org.jkiss.dbeaver.ui.controls.resultset.ResultSetRow;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.Collection;
@@ -31,11 +33,15 @@ import java.util.Collection;
 public class SQLGeneratorDeleteFromData extends SQLGeneratorResultSet {
 
     @Override
-    public void generateSQL(DBRProgressMonitor monitor, StringBuilder sql, IResultSetController object) {
-        DBSEntity dbsEntity = getSingleEntity();
+    protected void generateSQL(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull StringBuilder sql,
+        @NotNull DBDResultSetDataProvider dataProvider
+    ) throws DBException {
+        DBSEntity dbsEntity = dataProvider.getSingleSource();
         String entityName = getEntityName(dbsEntity);
-        for (ResultSetRow firstRow : getSelectedRows()) {
-            Collection<DBDAttributeBinding> keyAttributes = getKeyAttributes(monitor, object);
+        for (DBDValueRow firstRow : dataProvider.getSelectedRows()) {
+            Collection<DBDAttributeBinding> keyAttributes = getKeyAttributes(monitor, dataProvider);
             if (dbsEntity instanceof SQLQueryGeneratorUpdate) {
                 sql.append(((SQLQueryGeneratorUpdate) dbsEntity).generateTableDeleteFrom(entityName));
             } else {
@@ -44,12 +50,12 @@ public class SQLGeneratorDeleteFromData extends SQLGeneratorResultSet {
             sql.append(getLineSeparator()).append("WHERE ");
             if (CommonUtils.isEmpty(keyAttributes)) {
                 // For tables without keys including virtual
-                Collection<? extends DBSAttributeBase> allAttributes = getAllAttributes(monitor, object);
+                Collection<? extends DBSAttributeBase> allAttributes = getAllAttributes(monitor, dataProvider);
                 for (DBSAttributeBase attr : allAttributes) {
                     if (DBUtils.isPseudoAttribute(attr) || DBUtils.isHiddenObject(attr)) {
                         continue;
                     }
-                    DBDAttributeBinding binding = getController().getModel().getAttributeBinding(attr);
+                    DBDAttributeBinding binding = DBUtils.findBinding(dataProvider.getAttributes(), attr);
                     if (binding != null) {
                         keyAttributes.add(binding);
                     }
