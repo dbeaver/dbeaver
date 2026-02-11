@@ -358,6 +358,9 @@ public class ProgressPageControl extends ConComposite implements ISearchContextP
         if (searchText != null) {
             return;
         }
+        if (searchControlsComposite.isDisposed()) {
+            return;
+        }
         hideControls(false);
         ((GridLayout) searchControlsComposite.getLayout()).numColumns = 2;
 
@@ -530,7 +533,10 @@ public class ProgressPageControl extends ConComposite implements ISearchContextP
         if (hide) {
             hideControls(true);
         } else {
-            getProgressControl().searchText.setBackground(getProgressControl().defaultBackgroundColor);
+            ProgressPageControl progressControl = getProgressControl();
+            if (!progressControl.isDisposed()) {
+                progressControl.searchText.setBackground(progressControl.defaultBackgroundColor);
+            }
         }
     }
 

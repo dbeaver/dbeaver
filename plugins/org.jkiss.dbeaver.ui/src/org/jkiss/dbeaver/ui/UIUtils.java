@@ -623,6 +623,22 @@ public class UIUtils {
         return new Font(normalFont.getDevice(), data);
     }
 
+    /**
+     * Scales the font size of the provided font by the specified modifier.
+     *
+     * @param normalFont the original font to be scaled; must not be null
+     * @param modifier the scaling factor by which the font size will be multiplied
+     * @return a new Font instance with the scaled size, based on the original font
+     */
+    @NotNull
+    public static Font scaleFontSize(@NotNull Font normalFont, double modifier) {
+        FontData[] data = normalFont.getFontData();
+        for (FontData fd : data) {
+            fd.setHeight((int) Math.round(fd.getHeight() * modifier));
+        }
+        return new Font(normalFont.getDevice(), data);
+    }
+
     public static Group createControlGroup(Composite parent, String label, int columns, int layoutStyle, int widthHint) {
         Group group = new Group(parent, SWT.NONE);
         group.setText(label);
