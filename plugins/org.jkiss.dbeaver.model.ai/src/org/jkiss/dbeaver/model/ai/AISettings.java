@@ -38,12 +38,15 @@ public class AISettings implements DBPAdaptable {
     private final Map<String, Object> properties = new LinkedHashMap<>();
     private final Set<String> resolvedSecrets = new HashSet<>();
 
-    private boolean functionsEnabled = true;
-    private final Set<String> enabledFunctionCategories = new LinkedHashSet<>();
-    private final Set<String> enabledFunctions = new LinkedHashSet<>();
+    private final AIFunctionSettings functionSettings = new AIFunctionSettings();
     private final Map<String, String> customInstructions = new LinkedHashMap<>();
 
     public AISettings() {
+    }
+
+    @NotNull
+    public AIFunctionSettings getFunctionSettings() {
+        return functionSettings;
     }
 
     @NotNull
@@ -70,26 +73,6 @@ public class AISettings implements DBPAdaptable {
         }
     }
 
-    public boolean isFunctionsEnabled() {
-        return functionsEnabled;
-    }
-
-    public void setFunctionsEnabled(boolean functionsEnabled) {
-        this.functionsEnabled = functionsEnabled;
-    }
-
-    @NotNull
-    public Set<String> getEnabledFunctions() {
-        return Set.copyOf(enabledFunctions);
-    }
-
-    public void setEnabledFunctions(@Nullable Set<String> functions) {
-        this.enabledFunctions.clear();
-        if (functions != null) {
-            this.enabledFunctions.addAll(functions);
-        }
-    }
-
     @NotNull
     public Map<String, String> getCustomInstructions() {
         return Map.copyOf(customInstructions);
@@ -105,41 +88,6 @@ public class AISettings implements DBPAdaptable {
         customInstructions.putAll(instructions);
     }
 
-    public boolean isFunctionEnabled(@NotNull String functionId) {
-        return enabledFunctions.contains(functionId);
-    }
-
-    public void enableFunction(@NotNull String functionId) {
-        enabledFunctions.add(functionId);
-    }
-
-    public void disableFunction(@NotNull String functionId) {
-        enabledFunctions.remove(functionId);
-    }
-
-    @NotNull
-    public Set<String> getEnabledFunctionCategories() {
-        return new HashSet<>(enabledFunctionCategories);
-    }
-
-    public void setEnabledFunctionCategories(@Nullable Set<String> categories) {
-        this.enabledFunctionCategories.clear();
-        if (categories != null) {
-            this.enabledFunctionCategories.addAll(categories);
-        }
-    }
-
-    public boolean isFunctionCategoryEnabled(String category) {
-        return enabledFunctionCategories.contains(category);
-    }
-
-    public void enableFunctionCategory(@NotNull String category) {
-        enabledFunctionCategories.add(category);
-    }
-
-    public void disableFunctionCategory(@NotNull String category) {
-        enabledFunctionCategories.remove(category);
-    }
 
     public boolean isAiDisabled() {
         return aiDisabled;

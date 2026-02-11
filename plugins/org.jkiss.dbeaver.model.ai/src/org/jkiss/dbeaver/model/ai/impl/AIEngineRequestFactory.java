@@ -146,7 +146,7 @@ public class AIEngineRequestFactory {
     ) {
         AISettings aiSettings = AISettingsManager.getInstance().getSettings();
         if (!engineDescriptor.isSupportsFunctions()
-            || !aiSettings.isFunctionsEnabled()
+            || !aiSettings.getFunctionSettings().isFunctionsEnabled()
             || DBWorkbench.getPlatform().getApplication().isMultiuser() // FIXME: For now disabled for server apps
         ) {
             return;
@@ -158,7 +158,7 @@ public class AIEngineRequestFactory {
             }
         }
 
-        Set<String> enabledFunctions = aiSettings.getEnabledFunctions();
+        Set<String> enabledFunctions = aiSettings.getFunctionSettings().getEnabledFunctions();
 
         List<AIFunctionDescriptor> selectedFunctions = new ArrayList<>(functions);
         selectedFunctions.removeIf(aiFunctionDescriptor ->
