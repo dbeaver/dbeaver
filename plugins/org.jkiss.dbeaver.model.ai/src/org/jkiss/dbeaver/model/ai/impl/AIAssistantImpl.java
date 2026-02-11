@@ -100,12 +100,15 @@ public class AIAssistantImpl implements AIAssistant {
                 Instant now = Instant.now();
                 AIEngineResponse completionResponse = requestCompletion(engine, monitor, request);
                 int systemPromptLength = AIPromptUtils.calcSystemPromptLength(completionRequest.getMessages());
+                AIUsage usage = completionResponse.getUsage() != null ?
+                    completionResponse.getUsage() :
+                    new AIUsage(0, 0, 0, 0);
 
                 AIMessageMeta requestMeta = new AIMessageMeta(
                     AIMetaTypes.PROMPT,
                     engineDescriptor.getId(),
                     engine.getProperties().getModel(),
-                    completionResponse.getUsage(),
+                    usage,
                     Duration.between(now, Instant.now()),
                     systemPromptLength
                 );

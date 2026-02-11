@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,6 +22,7 @@ import org.eclipse.ui.internal.ide.IDEInternalPreferences;
 import org.eclipse.ui.internal.ide.IDEWorkbenchPlugin;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.IOUtils;
 
@@ -52,13 +53,22 @@ public final class ShellUtils {
     public static boolean openExternalFile(@NotNull Path path) {
         try {
             if (RuntimeUtils.isMacOS()) {
-                executeWithReturnCodeCheck("open", "-a", "Finder.app", path.toAbsolutePath().toString());
+                try {
+                    // In recent versions of macOS, open -a Finder.app <path> no longer works for known file associations,
+                    // so we have to rely on open <path>, but we can't use it for unknown associations either,
+                    // as it doesn't know how to deal with them. So probe the latter first, and fall back to the former. If both fail, show an error.
+                    executeWithReturnCodeCheck("open", path.toAbsolutePath().toString());
+                } catch (IOException e) {
+                    executeWithReturnCodeCheck("open", "-a", "Finder.app", path.toAbsolutePath().toString());
+                }
                 return true;
             } else if (RuntimeUtils.isLinux()) {
                 executeWithReturnCodeCheck("xdg-open", path.toAbsolutePath().toString());
                 return true;
             }
         } catch (IOException | InterruptedException e) {
+            DBWorkbench.getPlatformUI()
+                .showError("Unable to open external program", "Unable to open external program in a platform-specific way", e);
             log.debug("Unable to open external program in a platform-specific way: " + e.getMessage());
         }
 
