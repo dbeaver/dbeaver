@@ -50,6 +50,7 @@ public class AITextUtils {
 
     private static final Pattern MARKDOWN_LINK_PARSER = Pattern.compile("\\[([^]]+)]\\(([^)]+)\\)");
     private static final Pattern URL_PARSER = Pattern.compile("\\b(https?://|ftp://)[^\\s<>\"{}|\\\\^`\\[\\]]+");
+    public static final String CODE_BLOCK_MARK = "```";
 
     private AITextUtils() {
         // prevents instantiation
@@ -116,7 +117,10 @@ public class AITextUtils {
         String codeBlockTag = null;
 
         for (String line : text.lines().toArray(String[]::new)) {
-            if (line.startsWith("```")) {
+            if (line.contains(CODE_BLOCK_MARK)) {
+                line = line.trim();
+            }
+            if (line.startsWith(CODE_BLOCK_MARK)) {
                 // Add pending chunk
                 if (!buffer.isEmpty()) {
                     if (codeBlockTag != null) {
