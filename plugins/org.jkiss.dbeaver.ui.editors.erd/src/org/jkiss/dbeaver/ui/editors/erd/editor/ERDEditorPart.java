@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -795,8 +795,8 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
             LinkedList<String> parts = new LinkedList<>();
             EntityDiagram diagram = this.getDiagram(); 
             DBSObject obj = diagram.getRootObjectContainer();
-            if (obj == null && diagram.getEntities().size() > 0) {
-                obj = diagram.getEntities().get(0).getObject();
+            if (obj == null && !diagram.getEntities().isEmpty()) {
+                obj = diagram.getEntities().getFirst().getObject();
             }
             while (obj != null && !(obj instanceof DBPDataSourceContainer)) {
                 parts.addFirst(obj.getName());
@@ -811,7 +811,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
         saveDialog.setFileName(proposedFileName);
 
         String filePath = DialogUtils.openFileDialog(saveDialog);
-        if (filePath == null || filePath.trim().length() == 0) {
+        if (CommonUtils.isEmptyTrimmed(filePath)) {
             return;
         }
 
