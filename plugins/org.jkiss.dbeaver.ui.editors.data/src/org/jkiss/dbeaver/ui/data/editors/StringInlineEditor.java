@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,10 +25,10 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 import org.jkiss.dbeaver.model.exec.DBCException;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
-import org.jkiss.dbeaver.ui.UIStyles;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.StyledTextUtils;
 import org.jkiss.dbeaver.ui.data.IValueController;
@@ -46,8 +46,7 @@ public class StringInlineEditor extends BaseValueEditor<Control> {
     }
 
     @Override
-    protected Control createControl(Composite editPlaceholder)
-    {
+    protected Control createControl(Composite editPlaceholder) {
         final boolean inline = valueController.getEditType() == IValueController.EditType.INLINE;
         if (inline) {
             final Text editor = new Text(editPlaceholder, SWT.BORDER);
@@ -56,13 +55,10 @@ public class StringInlineEditor extends BaseValueEditor<Control> {
             editor.setEditable(!valueController.isReadOnly());
             return editor;
         } else {
-            final StyledText editor = new StyledText(editPlaceholder,
-                SWT.MULTI | SWT.WRAP | SWT.V_SCROLL);
+            final StyledText editor = new StyledText(editPlaceholder, SWT.MULTI | SWT.WRAP | SWT.V_SCROLL);
             //editor.setTextLimit(MAX_STRING_LENGTH);
             editor.setEditable(!valueController.isReadOnly());
             editor.setFont(UIUtils.getMonospaceFont());
-            editor.setBackground(UIStyles.getDefaultTextBackground());
-            editor.setForeground(UIStyles.getDefaultTextForeground());
             StyledTextUtils.fillDefaultStyledTextContextMenu(editor);
             return editor;
         }
@@ -71,34 +67,49 @@ public class StringInlineEditor extends BaseValueEditor<Control> {
     @Override
     public void primeEditorValue(@Nullable Object value) throws DBException
     {
-        final String strValue = valueController.getValueHandler().getValueDisplayString(valueController.getValueType(), value, DBDDisplayFormat.EDIT);
-        if (control instanceof Text) {
-            ((Text)control).setText(strValue);
+        final String strValue = valueController.getValueHandler().getValueDisplayString(
+            valueController.getValueType(),
+            value,
+            DBDDisplayFormat.EDIT
+        );
+        if (control instanceof Text text) {
+            text.setText(strValue);
             if (valueController.getEditType() == IValueController.EditType.INLINE) {
-                ((Text)control).selectAll();
+                text.selectAll();
             }
-        } else {
-            ((StyledText)control).setText(strValue);
+        } else if (control instanceof StyledText styledText) {
+            styledText.setText(strValue);
             if (valueController.getEditType() == IValueController.EditType.INLINE) {
-                ((StyledText)control).selectAll();
+                styledText.selectAll();
             }
         }
     }
 
     @Override
     public Object extractEditorValue() throws DBCException {
-        try (DBCSession session = valueController.getExecutionContext().openSession(new VoidProgressMonitor(), DBCExecutionPurpose.UTIL, "Make string value from editor")) {
-            String text;
-            if (control instanceof Text) {
-                text = ((Text) control).getText();
+        DBCExecutionContext executionContext = valueController.getExecutionContext();
+        if (executionContext == null) {
+            return null;
+        }
+        try (DBCSession session = executionContext.openSession(
+            new VoidProgressMonitor(),
+            DBCExecutionPurpose.UTIL,
+            "Make string value from editor"
+        )) {
+            String strValue;
+            if (control instanceof Text text) {
+                strValue = text.getText();
+            } else if (control instanceof StyledText styledText){
+                strValue = styledText.getText();
             } else {
-                text = ((StyledText) control).getText();
+                return null;
             }
             return valueController.getValueHandler().getValueFromObject(
                 session,
                 valueController.getValueType(),
-                text,
-                false, false);
+                strValue,
+                false,
+                false);
         }
     }
 }

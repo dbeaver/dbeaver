@@ -100,11 +100,15 @@ public class AIAssistantImpl implements AIAssistant {
                 Instant now = Instant.now();
                 AIEngineResponse completionResponse = requestCompletion(engine, monitor, request);
                 int systemPromptLength = AIPromptUtils.calcSystemPromptLength(completionRequest.getMessages());
+                AIUsage usage = completionResponse.getUsage() != null ?
+                    completionResponse.getUsage() :
+                    new AIUsage(0, 0, 0, 0);
 
                 AIMessageMeta requestMeta = new AIMessageMeta(
+                    AIMetaTypes.PROMPT,
                     engineDescriptor.getId(),
                     engine.getProperties().getModel(),
-                    completionResponse.getUsage(),
+                    usage,
                     Duration.between(now, Instant.now()),
                     systemPromptLength
                 );
@@ -119,7 +123,7 @@ public class AIAssistantImpl implements AIAssistant {
                             return new AIAssistantResponse(
                                 AIAssistantResponse.Type.FUNCTION,
                                 stringValue,
-                                requestMeta
+                                List.of(requestMeta)
                             );
                         } else {
                             List<AIMessage> newMessages = new ArrayList<>(request.getMessages());
@@ -137,14 +141,14 @@ public class AIAssistantImpl implements AIAssistant {
                         return new AIAssistantResponse(
                             AIAssistantResponse.Type.TEXT,
                             variants.getFirst(),
-                            requestMeta
+                            List.of(requestMeta)
                         );
                     }
                 }
                 return new AIAssistantResponse(
                     AIAssistantResponse.Type.ERROR,
                     AIMessages.ai_empty_engine_response,
-                    requestMeta
+                    List.of(requestMeta)
                 );
             }
             throw new DBException("Too many AI function calls (" + MAX_FUNCTION_CALLS + ")");

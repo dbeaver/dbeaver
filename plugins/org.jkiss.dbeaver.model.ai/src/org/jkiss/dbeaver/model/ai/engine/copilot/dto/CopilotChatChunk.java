@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.model.ai.engine.copilot.dto;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.ai.AIUsage;
 
 import java.util.List;
 
@@ -28,4 +29,17 @@ public record CopilotChatChunk(
     CopilotUsage usage
 ) {
 
+    @Nullable
+    public AIUsage getAIUsage() {
+        if (usage == null) {
+            return null;
+        }
+
+        return new AIUsage(
+            usage.promptTokens(),
+            usage.promptTokensDetails() != null ? usage.promptTokensDetails().cachedTokens() : 0,
+            usage.completionTokens(),
+            0
+        );
+    }
 }

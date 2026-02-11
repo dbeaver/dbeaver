@@ -984,6 +984,14 @@
     </extension>
 
     <extension point="org.eclipse.ui.themes">
+        <!-- General colors -->
+        <colorDefinition
+            label="%colorDefinition.org.jkiss.dbeaver.ui.general.accent.label"
+            categoryId="org.eclipse.ui.workbenchMisc"
+            id="org.jkiss.dbeaver.ui.general.accent"
+            value="51, 135, 197">
+            <description>%colorDefinition.org.jkiss.dbeaver.ui.general.accent.description</description>
+        </colorDefinition>
 
         <!-- Colors for transactions -->
         <themeElementCategory label="%themeElementCategory.org.jkiss.dbeaver.ui.presentation.txn.label" id="org.jkiss.dbeaver.ui.presentation.qm">

@@ -21,9 +21,12 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.generic.edit.GenericForeignKeyManager;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableForeignKey;
 import org.jkiss.dbeaver.ext.sqlite.SQLiteUtils;
+import org.jkiss.dbeaver.ext.sqlite.model.SQLiteTable;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 import java.util.List;
@@ -44,34 +47,39 @@ public class SQLiteTableForeignKeyManager extends GenericForeignKeyManager {
     public boolean canDeleteObject(@NotNull GenericTableForeignKey object) {
         return true;
     }
-
+ 
     @Override
     protected void addObjectCreateActions(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext executionContext, @NotNull List<DBEPersistAction> actions, @NotNull ObjectCreateCommand command, @NotNull Map<String, Object> options) throws DBException {
-        SQLiteUtils.createTableAlterActions(
-            monitor,
-            "Create foreign key " + DBUtils.getQuotedIdentifier(command.getObject()),
-            command.getObject().getTable(),
-            actions
-        );
+        throw new DBException("Forein key creation needs table recreation");
     }
 
     @Override
     protected void addObjectModifyActions(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext executionContext, @NotNull List<DBEPersistAction> actions, @NotNull ObjectChangeCommand command, @NotNull Map<String, Object> options) throws DBException {
-        SQLiteUtils.createTableAlterActions(
-            monitor,
-            "Alter foreign key " + DBUtils.getQuotedIdentifier(command.getObject()),
-            command.getObject().getTable(),
-            actions
-        );
+        throw new DBException("Forein key modification needs table recreation");
     }
 
     @Override
     protected void addObjectDeleteActions(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext executionContext, @NotNull List<DBEPersistAction> actions, @NotNull ObjectDeleteCommand command, @NotNull Map<String, Object> options) throws DBException {
-        SQLiteUtils.createTableAlterActions(
-            monitor,
-            "Drop foreign key " + DBUtils.getQuotedIdentifier(command.getObject()),
-            command.getObject().getTable(),
-            actions
-        );
+        throw new DBException("Forein key deletion needs table recreation");
     }
+
+    @Override
+    public void deleteObject(@NotNull DBECommandContext commandContext, @NotNull GenericTableForeignKey object, @NotNull Map<String, Object> options) throws DBException {
+        ObjectDeleteCommand deleteCommand = new ObjectDeleteCommand(object, ModelMessages.model_jdbc_delete_object);
+        commandContext.addCommand(
+            deleteCommand,
+            new DeleteObjectReflector<>(this),
+            true);
+        if (object.getTable() instanceof SQLiteTable table && table.isPersisted()) {
+            SQLiteUtils.makeRecreateTableCommand(commandContext, table, deleteCommand);
+        }
+    }
+
+    @Override
+    protected void createObjectReferences(DBRProgressMonitor monitor, DBECommandContext commandContext, ObjectCreateCommand createCommand) throws DBException {
+        if (createCommand.getObject().getTable() instanceof SQLiteTable table && table.isPersisted()) {
+            SQLiteUtils.makeRecreateTableCommand(commandContext, table, createCommand);
+        }
+    }
+
 }
