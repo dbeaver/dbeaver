@@ -27,79 +27,72 @@ import org.eclipse.draw2d.geometry.Rectangle;
 import org.jkiss.dbeaver.ui.editors.erd.editor.ERDThemeSettings;
 
 /**
- * A customized Label based on the label used in the flow example. 
- * Primary selection is denoted by highlight and focus rectangle. 
+ * A customized Label based on the label used in the flow example.
+ * Primary selection is denoted by highlight and focus rectangle.
  * Normal selection is denoted by highlight only. Borrowed from the Flow Editor example
+ *
  * @author Daniel Lee
  */
-public class EditableLabel extends Label
-{
+public class EditableLabel extends Label {
 
-	private boolean selected;
-	
-	public EditableLabel(String text)
-	{
-		super(text);
-	}
-	
-	private Rectangle getSelectionRectangle()
-	{
-		Rectangle bounds = getTextBounds().getCopy();
-		bounds.expand(new Insets(2, 2, 0, 0));
-		translateToParent(bounds);
-		bounds.intersect(getBounds());
-		return bounds;
-	}
+    private boolean selected;
 
-	
-	/**
-	 * sets the text of the label
-	 */
-	@Override
-    public void setText(String s)
-	{
-		super.setText(s);
-	}
-	
-	
-	/**
-	 * paints figure differently depends on the whether the figure has focus or is selected 
-	 */
-	@Override
-    protected void paintFigure(Graphics graphics)
-	{
-		if (selected)
-		{
-			graphics.pushState();
-			graphics.setBackgroundColor(ERDThemeSettings.instance.attrForeground);
-			graphics.fillRoundRectangle(getSelectionRectangle(), 3, 3);
-			graphics.popState();
-			graphics.setForegroundColor(ERDThemeSettings.instance.diagramBackground);
-		}
-		super.paintFigure(graphics);
-	}
+    public EditableLabel(String text) {
+        super(text);
+    }
 
-	@Override
-	public Dimension getPreferredSize(int wHint, int hHint) {
-		return super.getPreferredSize(wHint, hHint);
-	}
+    private Rectangle getSelectionRectangle() {
+        Rectangle bounds = getTextBounds().getCopy();
+        bounds.expand(new Insets(2, 2, 0, 0));
+        translateToParent(bounds);
+        bounds.intersect(getBounds());
+        return bounds;
+    }
 
-	@Override
-	public Rectangle getTextBounds() {
-		return super.getTextBounds();
-	}
 
-	/**
-	 * Sets the selection state of this SimpleActivityLabel
-	 * 
-	 * @param b
-	 *            true will cause the label to appear selected
-	 */
-	public void setSelected(boolean b)
-	{
-		selected = b;
-		repaint();
-	}
+    /**
+     * sets the text of the label
+     */
+    @Override
+    public void setText(String s) {
+        super.setText(s);
+    }
+
+
+    /**
+     * paints figure differently depends on the whether the figure has focus or is selected
+     */
+    @Override
+    protected void paintFigure(Graphics graphics) {
+        if (selected) {
+            graphics.pushState();
+            graphics.setBackgroundColor(ERDThemeSettings.instance.attrForeground);
+            graphics.fillRoundRectangle(getSelectionRectangle(), 3, 3);
+            graphics.popState();
+            graphics.setForegroundColor(ERDThemeSettings.instance.diagramBackground);
+        }
+        super.paintFigure(graphics);
+    }
+
+    @Override
+    public Dimension getPreferredSize(int wHint, int hHint) {
+        return super.getPreferredSize(wHint, hHint);
+    }
+
+    @Override
+    public Rectangle getTextBounds() {
+        return super.getTextBounds();
+    }
+
+    /**
+     * Sets the selection state of this SimpleActivityLabel
+     *
+     * @param b true will cause the label to appear selected
+     */
+    public void setSelected(boolean b) {
+        selected = b;
+        repaint();
+    }
 
 
 }
