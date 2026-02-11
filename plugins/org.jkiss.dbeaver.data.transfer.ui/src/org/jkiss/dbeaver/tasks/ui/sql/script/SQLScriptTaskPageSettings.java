@@ -477,7 +477,7 @@ class SQLScriptTaskPageSettings extends ActiveWizardPage<SQLScriptTaskConfigurat
             List<String> scriptFiles = settings.getScriptFiles();
             for (String filePath : scriptFiles) {
                 if (IOUtils.isLocalFile(filePath)) {
-                    DBNNode resource = projectNode.findResource(monitor, filePath);
+                    DBNNode resource = projectNode.findNodeByRelativePath(monitor, filePath);
                     if (resource == null) {
                         Path workspaceFile;
                         RMControllerProvider rmControllerProvider = DBUtils.getAdapter(RMControllerProvider.class, project);

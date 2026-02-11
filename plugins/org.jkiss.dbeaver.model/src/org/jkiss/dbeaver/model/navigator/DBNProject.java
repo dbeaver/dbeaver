@@ -196,17 +196,13 @@ public class DBNProject extends DBNNode implements DBNNodeWithCache, DBNNodeExte
     }
 
     @Nullable
-    public DBNNode findResource(@NotNull DBRProgressMonitor monitor, @NotNull String path) throws DBException {
-        // Let's assume it's delimited by slash
-        String[] parts = path.split("/");
-        DBNNode node = this;
-        for (String part : parts) {
-            node = DBUtils.findObject(node.getChildren(monitor), part);
-            if (node == null) {
-                return null;
-            }
+    public DBNNode findNodeByRelativePath(@NotNull DBRProgressMonitor monitor, @NotNull String path) throws DBException {
+        var model = getModel();
+        var projectPath = model.toProjectPath(project, path);
+        if (projectPath != null) {
+            return model.getNodeByPath(monitor, project, projectPath);
         }
-        return node;
+        return null;
     }
 
     public DBNNode findResource(DBRProgressMonitor monitor, Path path) throws DBException {

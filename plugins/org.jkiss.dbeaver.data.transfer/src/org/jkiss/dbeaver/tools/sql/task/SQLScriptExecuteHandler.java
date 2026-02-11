@@ -176,7 +176,7 @@ public class SQLScriptExecuteHandler implements DBTTaskHandler {
     ) throws DBException, IOException {
         DBNProject projectNode = project.getNavigatorModel().getRoot().getProjectNode(project);
         if (projectNode != null) {
-            DBNNode fileNode = projectNode.findResource(monitor, filePath);
+            DBNNode fileNode = projectNode.findNodeByRelativePath(monitor, filePath);
             if (fileNode instanceof DBNStreamData sd) {
                 try (Reader reader = new InputStreamReader(sd.openInputStream())) {
                     return IOUtils.readToString(reader);
