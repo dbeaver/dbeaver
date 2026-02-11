@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,10 +33,8 @@ import org.jkiss.utils.ByteNumberFormat;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.file.CopyOption;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.StandardCopyOption;
+import java.nio.file.*;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.nio.file.attribute.FileTime;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -308,49 +306,19 @@ public abstract class DBNPathBase extends DBNNode implements DBNLazyNode {
                     log.debug("Resource " + resource + " doesn't not exists");
                     continue;
                 }
-                if (!Files.isRegularFile(resource)) {
-                    log.debug("Resource " + resource + " is not a file");
-                    continue;
-                }
+
                 if (resource.getParent().equals(folder)) {
                     // Already in this container
                     continue;
                 }
+
                 boolean doCopy = !isTheSameFileSystem(node);
-                boolean doDelete = false;
                 monitor.subTask((doCopy ? "Copy" : "Move") + " file " + resource);
                 try {
-
-                    Path targetFile = folder.resolve(resource.getFileName().toString());
-
-                    if (!doCopy) {
-                        // Try to move first
-                        // Note that move is not supported by some file systems
-                        boolean wasMoved = false;
-                        try {
-                            Files.move(resource, targetFile);
-                            wasMoved = true;
-                        } catch (Exception e) {
-                            log.debug("Underlying FS doesn't support file move. Do copy instead");
-                        }
-                        if (!wasMoved) {
-                            doCopy = true;
-                            doDelete = true;
-                        }
-                    }
-
-                    // Copy files
-                    if (doCopy) {
-                        CopyOption[] options = new CopyOption[0];
-                        if (Files.exists(targetFile)) {
-                            options = new CopyOption[] { StandardCopyOption.REPLACE_EXISTING };
-                        }
-                        Files.copy(resource, targetFile, options);
-                    }
-                    if (doDelete) {
-                        // Delete source file after copy
-                        Files.delete(resource);
-                    }
+                    FileAction moveOrCopy = doCopy
+                        ? (file, targetFile) -> Files.copy(file, targetFile, StandardCopyOption.REPLACE_EXISTING)
+                        : this::moveFile;
+                    walkFileTree(resource, folder, moveOrCopy);
                 } finally {
                     monitor.worked(1);
                 }
@@ -466,6 +434,42 @@ public abstract class DBNPathBase extends DBNNode implements DBNLazyNode {
     @Override
     public boolean needsInitialization() {
         return children == null;
+    }
+
+    private void walkFileTree(@NotNull Path resource, @NotNull Path targetDir, @NotNull FileAction action) throws IOException {
+        Path parentResource = Objects.requireNonNullElse(resource.getParent(), resource);
+        Files.walkFileTree(
+            resource, new SimpleFileVisitor<>() {
+
+                @NotNull
+                @Override
+                public FileVisitResult visitFile(@NotNull Path file, @NotNull BasicFileAttributes attrs) throws IOException {
+                    Path targetFile = targetDir.resolve(parentResource.relativize(file));
+                    action.accept(file, targetFile);
+                    return FileVisitResult.CONTINUE;
+                }
+            }
+        );
+    }
+
+    private void moveFile(@NotNull Path file, @NotNull Path targetFile) throws IOException {
+        try {
+            // Try to move first
+            // Note that move is not supported by some file systems
+            Files.move(file, targetFile);
+        } catch (Exception e) {
+            log.debug("Underlying FS doesn't support file move. Do copy instead");
+            Files.copy(file, targetFile, StandardCopyOption.REPLACE_EXISTING);
+            log.debug("Copy of file [%s] is done. Deleting old file".formatted(file));
+            Files.delete(file);
+        }
+    }
+
+    @FunctionalInterface
+    private interface FileAction {
+
+        void accept(@NotNull Path file, @NotNull Path targetFile) throws IOException;
+
     }
 
 }
