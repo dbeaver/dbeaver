@@ -993,13 +993,11 @@ public class EntityEditor extends MultiPageDatabaseEditor
                 //force = true;
             }
             Object source2 = event.getSource();
-            if (source2 instanceof DBPEvent event2) {
-                if (event2.getData() == DBPEvent.RENAME) {
-                    Map<String, Object> options = event2.getOptions();
-                    Object uiSource = options.get(DBEObjectManager.OPTION_UI_SOURCE);
-                    if (uiSource != null && !(uiSource instanceof CustomFormEditor)) {
-                        isRename = true;
-                    }
+            if (source2 instanceof DBPEvent event2 && event2.getData() == DBPEvent.RENAME) {
+                Map<String, Object> options = event2.getOptions();
+                Object uiSource = options.get(DBEObjectManager.OPTION_UI_SOURCE);
+                if (uiSource != null && !(uiSource instanceof CustomFormEditor)) {
+                    isRename = true;
                 }
             }
         }
