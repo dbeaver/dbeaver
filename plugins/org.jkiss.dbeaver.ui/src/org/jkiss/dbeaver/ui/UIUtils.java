@@ -2501,12 +2501,7 @@ public class UIUtils {
             return;
         }
         if (widget instanceof Combo || widget instanceof CCombo) {
-            widget.addListener(SWT.Selection, new TypedListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
-                    onFocusLost.run();
-                }
-            }));
+            widget.addListener(SWT.Selection, event -> onFocusLost.run());
         } else {
             widget.addDisposeListener(e -> onFocusLost.run());
         }
