@@ -493,9 +493,9 @@ public abstract class DBNPathBase extends DBNNode implements DBNLazyNode {
 
     private static class NodeContentWrapperComposite {
 
+        private final DBNNode node;
         private final Path nodeParentRelativePath;
         private final NodeContentWrapperComposite[] children;
-        private final InputStream inputStream;
 
         public NodeContentWrapperComposite(@NotNull DBRProgressMonitor monitor, @NotNull DBNNode node) throws DBException {
             this(monitor, node, null);
@@ -503,6 +503,7 @@ public abstract class DBNPathBase extends DBNNode implements DBNLazyNode {
 
         public NodeContentWrapperComposite(@NotNull DBRProgressMonitor monitor, @NotNull DBNNode node, @Nullable Path parentPath)
         throws DBException {
+            this.node = node;
             nodeParentRelativePath = parentPath == null ? Path.of(node.getName()) : parentPath.resolve(node.getName());
             DBNNode[] localChildren = node.getChildren(monitor);
             if (localChildren != null) {
@@ -514,16 +515,15 @@ public abstract class DBNPathBase extends DBNNode implements DBNLazyNode {
             } else {
                 children = new NodeContentWrapperComposite[]{};
             }
-            inputStream = node.getAdapter(InputStream.class);
         }
 
-        public boolean hasContent() {
-            return inputStream != null;
-        }
 
         public void copyRecursivelyToFolder(@NotNull Path folder) throws IOException {
-            if (hasContent()) {
-                Files.copy(inputStream, folder.resolve(nodeParentRelativePath), StandardCopyOption.REPLACE_EXISTING);
+            InputStream inputStream = node.getAdapter(InputStream.class);
+            if (inputStream != null) {
+                try (inputStream) {
+                    Files.copy(inputStream, folder.resolve(nodeParentRelativePath), StandardCopyOption.REPLACE_EXISTING);
+                }
             }
             for (NodeContentWrapperComposite child : children) {
                 child.copyRecursivelyToFolder(folder);

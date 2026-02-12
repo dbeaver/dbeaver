@@ -341,7 +341,7 @@ public class DBNResource extends DBNNode implements DBNStreamData, DBNNodeWithCa
                                 monitor.getNestedMonitor());
                         }
                         NavigatorResources.refreshFileStore(monitor, resource);
-                        resource.refreshLocal(IResource.DEPTH_ONE, monitor.getNestedMonitor());
+                        resource.refreshLocal(IResource.DEPTH_INFINITE, monitor.getNestedMonitor());
                     } catch (CoreException e) {
                         throw new DBException("Can't copy " + otherResource.getName() + " to " + resource.getName(), e);
                     }
