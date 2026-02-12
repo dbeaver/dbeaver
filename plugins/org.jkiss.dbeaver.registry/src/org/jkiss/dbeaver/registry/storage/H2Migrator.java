@@ -83,6 +83,38 @@ public class H2Migrator {
      */
     public void migrateDatabaseIfNeeded(@NotNull String dbNameV1, @NotNull String dbNameV2) {
         String resolvedDbUrl = databaseConfiguration.getResolvedUrl();
+        if (!resolvedDbUrl.endsWith(dbNameV1) ||
+            !V1_DRIVER_NAME.equals(databaseConfiguration.getDriver()) ||
+            resolvedDbUrl.startsWith("jdbc:h2:mem:")
+        ) {
+            log.trace("No migration needed");
+            return;
+        }
+
+        var workspacePaths = new WorkspacePaths(resolvedDbUrl, dbNameV1, dbNameV2);
+
+        // the changed config is not written to disk immediately, so it is possible that the database is migrated,
+        // but the config on disk remains old
+        if (workspacePaths.v2Paths.dbDataFile.toFile().exists() &&
+            (resolvedDbUrl.endsWith(dbNameV1) || V1_DRIVER_NAME.equals(databaseConfiguration.getDriver()))
+        ) {
+            updateConfig(workspacePaths);
+            return;
+        }
+
+        var oldUrl = databaseConfiguration.getUrl();
+        var oldDriver = databaseConfiguration.getDriver();
+        try {
+            migrateDatabase(workspacePaths);
+            log.debug("H2 v1->v2 migration was successful");
+        } catch (Exception e) {
+            log.error("Migration H2 v1->v2 failed", e);
+            rollback(workspacePaths, oldUrl, oldDriver);
+        }
+    }
+
+    public void migrateDatabaseIfNeededByFiles(@NotNull String dbNameV1, @NotNull String dbNameV2) {
+        String resolvedDbUrl = databaseConfiguration.getResolvedUrl();
 
         var workspacePaths = new WorkspacePaths(resolvedDbUrl, dbNameV1, dbNameV2);
 
