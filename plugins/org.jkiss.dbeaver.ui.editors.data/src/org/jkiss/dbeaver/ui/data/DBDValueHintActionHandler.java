@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
 
 package org.jkiss.dbeaver.ui.data;
 
+import org.eclipse.swt.graphics.Point;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ui.controls.resultset.IResultSetController;
@@ -26,8 +27,17 @@ import org.jkiss.dbeaver.ui.controls.resultset.IResultSetController;
  */
 public interface DBDValueHintActionHandler {
 
+    @NotNull
     String getActionText();
 
-    void performAction(@NotNull IResultSetController controller, long state) throws DBException;
+    /**
+     * Perform hint action
+     *
+     * @param controller result set  controller
+     * @param location   cell location in screen coordinates
+     * @param state      modifier state
+     * @throws DBException on any DB error
+     */
+    void performAction(@NotNull IResultSetController controller, @NotNull Point location, long state) throws DBException;
 
 }

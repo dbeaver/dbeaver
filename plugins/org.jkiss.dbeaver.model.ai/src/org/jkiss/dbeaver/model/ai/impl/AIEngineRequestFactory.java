@@ -146,19 +146,19 @@ public class AIEngineRequestFactory {
     ) {
         AISettings aiSettings = AISettingsManager.getInstance().getSettings();
         if (!engineDescriptor.isSupportsFunctions()
-            || !aiSettings.isFunctionsEnabled()
+            || !aiSettings.getFunctionSettings().isFunctionsEnabled()
             || DBWorkbench.getPlatform().getApplication().isMultiuser() // FIXME: For now disabled for server apps
         ) {
             return;
         }
         List<AIFunctionDescriptor> functions = new ArrayList<>();
-        for (AIFunctionDescriptor fd : AIFunctionRegistry.getInstance().getAllFunctions()) {
+        for (AIFunctionDescriptor fd : AIFunctionRegistry.getInstance().getAllFunctions(AIFunctionPurpose.TOOL)) {
             if (fd.isGlobal() || fd.isApplicable(engineDescriptor, systemPromptGenerator)) {
                 functions.add(fd);
             }
         }
 
-        Set<String> enabledFunctions = aiSettings.getEnabledFunctions();
+        Set<String> enabledFunctions = aiSettings.getFunctionSettings().getEnabledFunctions();
 
         List<AIFunctionDescriptor> selectedFunctions = new ArrayList<>(functions);
         selectedFunctions.removeIf(aiFunctionDescriptor ->

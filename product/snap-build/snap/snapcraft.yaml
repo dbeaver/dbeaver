@@ -8,7 +8,10 @@ adopt-info: dbeaver-ce
 base: core22
 confinement: classic
 architectures:
-- amd64
+- build-on: [amd64]
+  build-for: [amd64]
+- build-on: [amd64]
+  build-for: [arm64]
 
 apps:
   dbeaver-ce:
@@ -22,7 +25,9 @@ apps:
 
 parts:
   dbeaver-ce:
-    source: dbeaver-ce_latest_amd64.deb
+    source: 
+      - on amd64 to amd64: dbeaver-ce_latest_amd64.deb
+      - on amd64 to arm64: dbeaver-ce_latest_arm64.deb
     plugin: dump
     build-packages:
       - ca-certificates

@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.model.cli.model.option.DataSourceOptions;
 import org.jkiss.dbeaver.model.cli.model.option.InputFileOption;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
+import org.jkiss.dbeaver.model.fs.DBFPath;
 import org.jkiss.dbeaver.model.meta.IPropertyValueListProvider;
 import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.model.runtime.LoggingProgressMonitor;
@@ -41,6 +42,7 @@ import org.jkiss.utils.CommonUtils;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -48,30 +50,38 @@ import java.util.Map;
 
 public class CLIUtils {
     private static final Log log = Log.getLog(CLIUtils.class);
+    public static final int STRING_FORMAT_PADDING = 3;
 
     @Nullable
     public static String readValueFromFileOrSystemIn(@Nullable InputFileOption filesOptions) throws CLIException {
-        String value = null;
-        if (filesOptions == null || filesOptions.getInputFile() == null) {
-            value = tryReadFromSystemIn();
-        } else if (filesOptions.getInputFile() != null) {
-            if (Files.notExists(filesOptions.getInputFile())) {
+
+        if (filesOptions == null) {
+            return tryReadFromSystemIn();
+        }
+
+        DBFPath inputFile = filesOptions.getInputFile();
+        if (inputFile == null) {
+            return tryReadFromSystemIn();
+        }
+
+        try (inputFile) {
+            Path path = inputFile.path();
+            if (Files.notExists(path)) {
                 throw new CLIException(
-                    "Input file does not exist: " + filesOptions.getInputFile(),
+                    "Input file does not exist: " + inputFile,
                     CLIConstants.EXIT_CODE_ILLEGAL_ARGUMENTS
                 );
             }
-            try {
-                value = Files.readString(filesOptions.getInputFile());
-            } catch (IOException e) {
-                throw new CLIException(
-                    "Error reading GQL from input file: " + filesOptions.getInputFile(),
-                    e,
-                    CLIConstants.EXIT_CODE_ERROR
-                );
-            }
+
+            return Files.readString(path);
+
+        } catch (IOException e) {
+            throw new CLIException(
+                "Error reading GQL from input file: " + inputFile,
+                e,
+                CLIConstants.EXIT_CODE_ERROR
+            );
         }
-        return value;
     }
 
     @Nullable
@@ -89,7 +99,7 @@ public class CLIUtils {
 
 
     @NotNull
-    public static DBPProject findProject(@Nullable String projectIdOrName, @NotNull CommandLineContext context) throws CLIException {
+    public static DBPProject findProject(@Nullable String projectIdOrName, @NotNull CLIContext context) throws CLIException {
         DBPProject project;
         DBPWorkspace workspace = context.getContextParameter(DBPWorkspace.class.getName());
         if (workspace == null) {
@@ -169,7 +179,7 @@ public class CLIUtils {
         try {
             registry.addDataSource(dataSource);
         } catch (Exception e) {
-            log.error("Error adding datasource", e);
+            throw new CLIException("Error adding datasource: " + e.getMessage(), e, CLIConstants.EXIT_CODE_ERROR);
         }
         return dataSource;
     }
@@ -357,5 +367,40 @@ public class CLIUtils {
         helpText.append("\n");
 
         return helpText.toString();
+    }
+
+    @NotNull
+    public static String formatAsTable(@NotNull List<Map<String, String>> data) {
+        if (data.isEmpty()) {
+            return "";
+        }
+        Map<String, Integer> columnWidths = new LinkedHashMap<>();
+        for (String key : data.getFirst().keySet()) {
+            columnWidths.put(key, key.length());
+        }
+        for (Map<String, String> row : data) {
+            for (Map.Entry<String, String> entry : row.entrySet()) {
+                String value = entry.getValue();
+                columnWidths.put(entry.getKey(), Math.max(columnWidths.get(entry.getKey()), value == null ? 0 : value.length()));
+            }
+        }
+
+        StringBuilder sb = new StringBuilder();
+        // header
+        for (Map.Entry<String, Integer> entry : columnWidths.entrySet()) {
+            sb.append(String.format("%-" + (entry.getValue() + STRING_FORMAT_PADDING) + "s", entry.getKey()));
+        }
+        sb.append("\n");
+        // rows
+        for (Map<String, String> row : data) {
+            for (Map.Entry<String, Integer> entry : columnWidths.entrySet()) {
+                sb.append(String.format(
+                    "%-" + (entry.getValue() + STRING_FORMAT_PADDING) + "s",
+                    CommonUtils.notNull(row.get(entry.getKey()), "")
+                ));
+            }
+            sb.append("\n");
+        }
+        return sb.toString().trim();
     }
 }
