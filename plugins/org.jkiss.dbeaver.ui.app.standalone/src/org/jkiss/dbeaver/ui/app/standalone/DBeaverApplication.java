@@ -221,6 +221,8 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
         // Custom parameters
         try {
             headlessMode = true;
+            boolean shutdown = false;
+            int exitCode = IApplication.EXIT_OK;
             try {
                 CLIProcessResult cliProcessResult = DBeaverCommandLine.getInstance()
                     .executeCommandLineCommands(null, false, false, args);
@@ -230,11 +232,20 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
                             System.out.println(res);
                         }
                     }
-                    return IApplication.EXIT_OK;
+                    shutdown = true;
+                    exitCode = cliProcessResult.getExitCode();
                 }
             } catch (Exception e) {
                 log.error("Error processing command line parameters", e);
-                return IApplication.EXIT_OK;
+                shutdown = true;
+                exitCode = CLIConstants.EXIT_CODE_ERROR;
+            }
+            if (shutdown) {
+                // hide standard Eclipse exit message if exit code is not OK (otherwise it may be confusing)
+                if (!EXIT_OK.equals(exitCode)) {
+                    System.setProperty(DBConstants.ECLIPSE_EXIT_DATA, "");
+                }
+                return exitCode;
             }
         } finally {
             headlessMode = false;

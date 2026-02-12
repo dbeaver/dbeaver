@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -173,4 +173,9 @@ public class DBConstants {
     public static final String CERTIFICATE_STORAGE_FOLDER = "security";
 
     public static final String PROP_RESOURCE_DEFAULT_DATASOURCE = "default-datasource"; //$NON-NLS-1$
+
+
+    /// //////////////////////////////
+    // Eclipse
+    public static final String ECLIPSE_EXIT_DATA = "eclipse.exitdata";
 }
