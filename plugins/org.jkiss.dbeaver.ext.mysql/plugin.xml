@@ -261,9 +261,7 @@
                 <driver
                         id="starRocks"
                         label="StarRocks (Legacy)"
-                        icon="icons/starRocks_icon.png"
-                        iconBig="icons/starRocks_icon_big.png"
-                        logoImage="icons/starRocks_logo.png"
+                        icon="icons/starRocks_icon.svg"
                         class="com.mysql.cj.jdbc.Driver"
                         sampleURL="jdbc:mysql://{host}[:{port}]/[{database}]"
                         useURL="false"
