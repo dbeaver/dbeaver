@@ -21,11 +21,11 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPDataSourceFolder;
 import org.jkiss.dbeaver.model.cli.CLIException;
-import org.jkiss.dbeaver.model.cli.CLIUtils;
+import org.jkiss.dbeaver.model.cli.model.DataSourceUpdater;
 import org.jkiss.utils.CommonUtils;
 import picocli.CommandLine;
 
-public class DataSourceOptions implements CLIUtils.DataSourceUpdater {
+public class DataSourceOptions implements DataSourceUpdater {
     @Nullable
     @CommandLine.Option(names = {"--host"}, arity = "1", description = "Database host")
     private String host;
@@ -113,7 +113,7 @@ public class DataSourceOptions implements CLIUtils.DataSourceUpdater {
     public void updateDataSource(@NotNull DBPDataSourceContainer dataSource) throws CLIException {
         String dsName = getDatasourceName();
         if (CommonUtils.isEmpty(dsName)) {
-            dsName = "Ext: " + dataSource.getDriver().getName();
+            dsName = dataSource.getDriver().getName();
             if (CommonUtils.isNotEmpty(getDbName())) {
                 dsName += " - " + getDbName();
             } else if (CommonUtils.isNotEmpty(getServer())) {

@@ -19,10 +19,10 @@ package org.jkiss.dbeaver.model.cli.model.option;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.cli.CLIException;
-import org.jkiss.dbeaver.model.cli.CLIUtils;
+import org.jkiss.dbeaver.model.cli.model.DataSourceUpdater;
 import picocli.CommandLine;
 
-public class CreateDataSourceOptions implements CLIUtils.DataSourceUpdater {
+public class CreateDataSourceOptions implements DataSourceUpdater {
     @NotNull
     @CommandLine.Option(names = {"--driver"}, required = true, arity = "1", description = "Database driver")
     private String driver;

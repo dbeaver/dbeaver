@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.access.DBAAuthCredentials;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.app.DBPWorkspace;
+import org.jkiss.dbeaver.model.cli.model.DataSourceUpdater;
 import org.jkiss.dbeaver.model.cli.model.option.DataSourceAuthOptions;
 import org.jkiss.dbeaver.model.cli.model.option.DataSourceOptions;
 import org.jkiss.dbeaver.model.cli.model.option.InputFileOption;
@@ -63,11 +64,6 @@ public class CLIUtils {
             return name.substring(1);
         }
         return name;
-    }
-
-    @FunctionalInterface
-    public interface DataSourceUpdater {
-        void updateDataSource(@NotNull DBPDataSourceContainer dataSource) throws CLIException;
     }
 
     @Nullable

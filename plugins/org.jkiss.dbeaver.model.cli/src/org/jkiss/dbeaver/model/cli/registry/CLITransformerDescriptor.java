@@ -17,38 +17,35 @@
 package org.jkiss.dbeaver.model.cli.registry;
 
 import org.eclipse.core.runtime.IConfigurationElement;
-import org.eclipse.core.runtime.Platform;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
-import org.osgi.framework.Bundle;
 import picocli.CommandLine;
 
 public class CLITransformerDescriptor extends AbstractDescriptor {
     @NotNull
-    private final AbstractDescriptor.ObjectType transformerClass;
+    private final AbstractDescriptor.ObjectType transformer;
     @NotNull
-    private final Class<?> commandClass;
+    private final AbstractDescriptor.ObjectType command;
 
 
     public CLITransformerDescriptor(IConfigurationElement config) throws Exception {
         super(config);
-        Bundle cBundle = Platform.getBundle(config.getContributor().getName());
-        this.transformerClass = new AbstractDescriptor.ObjectType(config, "transformer");
-        this.commandClass = cBundle.loadClass(config.getAttribute("command"));
+        this.transformer = new ObjectType(config, "transformer");
+        this.command = new ObjectType(config, "command");
     }
 
     @NotNull
     public Class<?> getCommandClass() {
-        return commandClass;
+        return command.getImplClass();
     }
 
     @NotNull
     public CommandLine.IModelTransformer getTransformer() {
         try {
-            return transformerClass.createInstance(CommandLine.IModelTransformer.class);
+            return transformer.createInstance(CommandLine.IModelTransformer.class);
         } catch (DBException e) {
-            throw new IllegalStateException("Can not create transformer '" + transformerClass.getImplName() + "'", e);
+            throw new IllegalStateException("Can not create transformer '" + transformer.getImplName() + "'", e);
         }
     }
 }
