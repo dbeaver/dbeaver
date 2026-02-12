@@ -109,12 +109,12 @@ public class NavigatorDropTargetListener implements DropTargetListener {
         if (TreeNodeTransfer.getInstance().isSupportedType(event.currentDataType)) {
             @SuppressWarnings("unchecked")
             Collection<DBNNode> nodesToDrop = (Collection<DBNNode>) event.data;
-            if (curObject instanceof DBNNode currentObjectdbnNode) {
+            if (curObject instanceof DBNNode currentObjectDbnNode) {
                 if (!CommonUtils.isEmpty(nodesToDrop)) {
                     return nodesToDrop.stream()
-                        .allMatch(n -> nodeSupportsDrop(currentObjectdbnNode, n));
+                        .allMatch(n -> nodeSupportsDrop(currentObjectDbnNode, n));
                 } else {
-                    return currentObjectdbnNode.supportsDrop(null);
+                    return currentObjectDbnNode.supportsDrop(null);
                 }
             } else if (curObject == null) {
                 // Drop to empty area
@@ -154,7 +154,7 @@ public class NavigatorDropTargetListener implements DropTargetListener {
         try {
             return UIUtils.runWithMonitor(monitor -> dbnPathBase.hasDataInTree(monitor, otherNode));
         } catch (DBException e) {
-            log.warn("Exception occurred while supports drop function", e);
+            log.warn("Exception occurred while checking drop support for node [%s] on target [%s]".formatted(otherNode, dbnPathBase), e);
             return false;
         }
     }

@@ -306,7 +306,7 @@ public abstract class DBNPathBase extends DBNNode implements DBNLazyNode {
                     continue;
                 }
                 if (Files.notExists(resource)) {
-                    log.debug("Resource " + resource + " doesn't not exists");
+                    log.debug("Resource " + resource + " does not exist");
                     continue;
                 }
 
@@ -467,6 +467,14 @@ public abstract class DBNPathBase extends DBNNode implements DBNLazyNode {
                     action.accept(file, targetFile);
                     return FileVisitResult.CONTINUE;
                 }
+
+                @NotNull
+                @Override
+                public FileVisitResult preVisitDirectory(@NotNull Path dir, @NotNull BasicFileAttributes attrs) throws IOException {
+                    Path targetDirPath = targetDir.resolve(parentResource.relativize(dir));
+                    Files.createDirectories(targetDirPath);
+                    return FileVisitResult.CONTINUE;
+                }
             }
         );
     }
@@ -522,7 +530,12 @@ public abstract class DBNPathBase extends DBNNode implements DBNLazyNode {
             InputStream inputStream = node.getAdapter(InputStream.class);
             if (inputStream != null) {
                 try (inputStream) {
-                    Files.copy(inputStream, folder.resolve(nodeParentRelativePath), StandardCopyOption.REPLACE_EXISTING);
+                    Path targetFile = folder.resolve(nodeParentRelativePath);
+                    Path parentDir = targetFile.getParent();
+                    if (parentDir != null) {
+                        Files.createDirectories(parentDir);
+                    }
+                    Files.copy(inputStream, targetFile, StandardCopyOption.REPLACE_EXISTING);
                 }
             }
             for (NodeContentWrapperComposite child : children) {
