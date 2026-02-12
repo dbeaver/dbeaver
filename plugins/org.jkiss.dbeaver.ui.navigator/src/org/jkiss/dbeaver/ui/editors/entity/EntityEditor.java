@@ -36,7 +36,6 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.*;
-import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.data.json.JSONUtils;
 import org.jkiss.dbeaver.model.edit.DBECommand;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
@@ -246,10 +245,8 @@ public class EntityEditor extends MultiPageDatabaseEditor
         if (navigatorNode == null) {
             return;
         }
-        DBPProject ownerProject = navigatorNode.getOwnerProject();
 
-        if (
-            DBUtils.isReadOnly(getDatabaseObject()) ||
+        if (DBUtils.isReadOnly(getDatabaseObject()) ||
             !DBWorkbench.getPlatform().getWorkspace().hasRealmPermission(RMConstants.PERMISSION_METADATA_EDITOR)
         ) {
             DBWorkbench.getPlatformUI().showNotification(

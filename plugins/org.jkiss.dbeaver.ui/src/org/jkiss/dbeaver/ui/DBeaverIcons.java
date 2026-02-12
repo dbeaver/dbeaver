@@ -139,14 +139,18 @@ public class DBeaverIcons {
         IconDescriptor icon = useCache ? compositeMap.get(compositeId) : null;
         if (icon == null) {
             OverlayImageDescriptor ovrImage = new OverlayImageDescriptor(mainIcon.imageDescriptor);
-            if (image.getTopLeft() != null)
+            if (image.getTopLeft() != null) {
                 ovrImage.setTopLeft(accumulateDecorations(image, DBIconComposite::getTopLeft));
-            if (image.getTopRight() != null)
+            }
+            if (image.getTopRight() != null) {
                 ovrImage.setTopRight(accumulateDecorations(image, DBIconComposite::getTopRight));
-            if (image.getBottomLeft() != null)
+            }
+            if (image.getBottomLeft() != null) {
                 ovrImage.setBottomLeft(accumulateDecorations(image, DBIconComposite::getBottomLeft));
-            if (image.getBottomRight() != null)
+            }
+            if (image.getBottomRight() != null) {
                 ovrImage.setBottomRight(accumulateDecorations(image, DBIconComposite::getBottomRight));
+            }
             Image resultImage = ovrImage.createImage();
             icon = new IconDescriptor(compositeId, resultImage);
             if (useCache) {

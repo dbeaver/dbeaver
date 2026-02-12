@@ -173,8 +173,7 @@ public abstract class ObjectContainerSelectorPanel extends Composite {
         updateToolTips();
     }
 
-    public void checkValidContainerNode(DBNNode node) throws DBException
-    {
+    public void checkValidContainerNode(DBNNode node) throws DBException {
         if (node instanceof DBNDatabaseNode) {
             DBPObject nodeObject = DBUtils.getPublicObject(((DBNDatabaseNode) node).getObject());
             if (nodeObject instanceof DBSObjectContainer objectContainer) {

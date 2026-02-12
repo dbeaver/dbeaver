@@ -715,13 +715,13 @@ public class UIUtils {
         }
         titleLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
 
-        Composite group = new Composite(composite, SWT.NONE);
         GridLayout layout = new GridLayout(columns, false);
         layout.marginHeight = 0;
         layout.marginWidth = 0;
         layout.marginTop = 0;
         layout.marginLeft = 7;
         layout.marginBottom = 3;
+        Composite group = new Composite(composite, SWT.NONE);
         group.setLayout(layout);
         group.setLayoutData(new GridData(GridData.FILL_BOTH));
 
@@ -1979,7 +1979,9 @@ public class UIUtils {
      * Runs task in Eclipse progress service.
      * NOTE: this call can't be canceled if it will block in IO
      */
-    public static void runInProgressService(@NotNull DBRRunnableWithProgress runnable) throws InvocationTargetException, InterruptedException {
+    public static void runInProgressService(
+        @NotNull DBRRunnableWithProgress runnable
+    ) throws InvocationTargetException, InterruptedException {
         getDefaultRunnableContext().run(true, true, runnable);
     }
 
