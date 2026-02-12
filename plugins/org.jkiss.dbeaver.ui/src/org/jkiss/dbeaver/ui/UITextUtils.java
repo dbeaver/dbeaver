@@ -34,7 +34,7 @@ public class UITextUtils {
      * {@link org.eclipse.swt.graphics.GC#textExtent(String)}.
      * <p>
      * This method creates a new {@link GC} from a given {@code drawable} object
-     * and then disposes it afterwards.
+     * and then disposes it afterward.
      * <p>
      * This method should not be used for real-time rendering.
      *
@@ -94,7 +94,7 @@ public class UITextUtils {
         }
 
         if (s == 0 || e == l) {
-            text = text.substring(0, 1) + "..." + text.substring(l - 1, l);
+            text = text.charAt(0) + "..." + text.charAt(l - 1);
         }
 
         return text;
