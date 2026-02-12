@@ -439,6 +439,22 @@ public abstract class DBNPathBase extends DBNNode implements DBNLazyNode {
         return children == null;
     }
 
+    public boolean hasDataInTree(@NotNull DBRProgressMonitor monitor, @NotNull DBNNode otherNode) throws DBException {
+        if (otherNode.getAdapter(InputStream.class) != null) {
+            return true;
+        } else {
+            DBNNode[] localChildren = otherNode.getChildren(monitor);
+            if (localChildren != null) {
+                for (DBNNode child : localChildren) {
+                    if (hasDataInTree(monitor, child)) {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+    }
+
     private void walkFileTree(@NotNull Path resource, @NotNull Path targetDir, @NotNull FileAction action) throws IOException {
         Path parentResource = Objects.requireNonNullElse(resource.getParent(), resource);
         Files.walkFileTree(
@@ -478,7 +494,7 @@ public abstract class DBNPathBase extends DBNNode implements DBNLazyNode {
     private static class NodeContentWrapperComposite {
 
         private final Path nodeParentRelativePath;
-        private final List<NodeContentWrapperComposite> children = new ArrayList<>();
+        private final NodeContentWrapperComposite[] children;
         private final InputStream inputStream;
 
         public NodeContentWrapperComposite(@NotNull DBRProgressMonitor monitor, @NotNull DBNNode node) throws DBException {
@@ -490,9 +506,13 @@ public abstract class DBNPathBase extends DBNNode implements DBNLazyNode {
             nodeParentRelativePath = parentPath == null ? Path.of(node.getName()) : parentPath.resolve(node.getName());
             DBNNode[] localChildren = node.getChildren(monitor);
             if (localChildren != null) {
+                children = new NodeContentWrapperComposite[localChildren.length];
+                int i = 0;
                 for (DBNNode child : localChildren) {
-                    children.add(new NodeContentWrapperComposite(monitor, child, nodeParentRelativePath));
+                    children[i++] = new NodeContentWrapperComposite(monitor, child, nodeParentRelativePath);
                 }
+            } else {
+                children = new NodeContentWrapperComposite[]{};
             }
             inputStream = node.getAdapter(InputStream.class);
         }
@@ -509,7 +529,5 @@ public abstract class DBNPathBase extends DBNNode implements DBNLazyNode {
                 child.copyRecursivelyToFolder(folder);
             }
         }
-
     }
-
 }
