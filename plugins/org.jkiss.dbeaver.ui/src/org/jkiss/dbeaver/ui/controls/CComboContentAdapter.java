@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,6 @@ package org.jkiss.dbeaver.ui.controls;
 
 import org.eclipse.jface.fieldassist.IControlContentAdapter;
 import org.eclipse.jface.fieldassist.IControlContentAdapter2;
-import org.eclipse.jface.util.Util;
 import org.eclipse.swt.custom.CCombo;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
@@ -26,16 +25,6 @@ import org.eclipse.swt.widgets.Control;
 import org.jkiss.dbeaver.ui.UIUtils;
 
 public class CComboContentAdapter implements IControlContentAdapter, IControlContentAdapter2 {
-
-    /*
-     * Set to <code>true</code> if we should compute the text
-     * vertical bounds rather than just use the field size.
-     * Workaround for https://bugs.eclipse.org/bugs/show_bug.cgi?id=164748
-     * The corresponding SWT bug is
-     * https://bugs.eclipse.org/bugs/show_bug.cgi?id=44072
-     */
-    private static final boolean COMPUTE_TEXT_USING_CLIENTAREA = !Util.isCarbon();
-
 
     @Override
     public String getControlContents(Control control) {
@@ -73,11 +62,8 @@ public class CComboContentAdapter implements IControlContentAdapter, IControlCon
         Point extent = UIUtils.getTextSize(combo,
             contents.substring(0, Math.min(position,
                 contents.length())));
-        if (COMPUTE_TEXT_USING_CLIENTAREA) {
-            return new Rectangle(combo.getClientArea().x + extent.x, combo
-                .getClientArea().y, 1, combo.getClientArea().height);
-        }
-        return new Rectangle(extent.x, 0, 1, combo.getSize().y);
+        return new Rectangle(combo.getClientArea().x + extent.x, combo
+            .getClientArea().y, 1, combo.getClientArea().height);
     }
 
     @Override

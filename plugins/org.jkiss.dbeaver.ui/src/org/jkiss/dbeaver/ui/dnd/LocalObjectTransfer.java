@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -50,7 +50,8 @@ public abstract class LocalObjectTransfer<OBJECT_TYPE> extends ByteArrayTransfer
 	 */
 	@Override
     public void javaToNative(Object object, TransferData transferData) {
-		setObject((OBJECT_TYPE)object);
+        //noinspection unchecked
+        setObject((OBJECT_TYPE)object);
 		startTime = System.currentTimeMillis();
 		if (transferData != null)
 			super.javaToNative(String.valueOf(startTime).getBytes(Charset.defaultCharset()),
@@ -66,7 +67,7 @@ public abstract class LocalObjectTransfer<OBJECT_TYPE> extends ByteArrayTransfer
 	 */
 	@Override
     public Object nativeToJava(TransferData transferData) {
-		byte bytes[] = (byte[]) super.nativeToJava(transferData);
+		byte[] bytes = (byte[]) super.nativeToJava(transferData);
 		if (bytes == null) {
 			return null;
 		}
