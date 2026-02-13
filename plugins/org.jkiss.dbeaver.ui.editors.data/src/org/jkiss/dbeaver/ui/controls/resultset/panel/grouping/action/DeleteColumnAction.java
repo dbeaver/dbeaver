@@ -39,7 +39,8 @@ public class DeleteColumnAction extends GroupingAction {
 
     private final PercentFromTotalAction percentFromTotalAction;
 
-    private RemoveColumnStrategy removeColumnStrategy = getEmptyStrategy();
+    @NotNull
+    private RemoveColumnStrategy removeColumnStrategy;
 
     public DeleteColumnAction(@NotNull GroupingResultsContainer resultsContainer) {
         super(resultsContainer, ResultSetMessages.controls_resultset_grouping_remove_column, DBeaverIcons.getImageDescriptor(UIIcon.CLOSE));
@@ -47,11 +48,15 @@ public class DeleteColumnAction extends GroupingAction {
         groupingResultsContainer.getResultSetController().addListener(new ResultSetListenerAdapter() {
             @Override
             public void handleResultSetSelectionChange(SelectionChangedEvent event) {
-                removeColumnStrategy = defineRemoveStrategy();
-                setEnabled(isEnabled());
+                defineStrategyAndCheckEnable();
             }
         });
-        setEnabled(false);
+        defineStrategyAndCheckEnable();
+    }
+
+    private void defineStrategyAndCheckEnable() {
+        removeColumnStrategy = defineRemoveStrategy();
+        setEnabled(isEnabled());
     }
 
     @Override
@@ -112,9 +117,8 @@ public class DeleteColumnAction extends GroupingAction {
 
     private class RemoveColumnStrategy {
 
-        @NotNull
         private final InstanceType instanceType;
-        @NotNull
+
         private final Supplier<Boolean> removingColumnFunction;
 
         public RemoveColumnStrategy(@NotNull InstanceType instanceType, @NotNull Supplier<Boolean> removingColumnFunction) {
