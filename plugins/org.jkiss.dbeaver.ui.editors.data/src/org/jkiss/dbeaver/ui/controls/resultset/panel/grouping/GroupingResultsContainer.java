@@ -81,9 +81,8 @@ public class GroupingResultsContainer implements IResultSetContainer {
     }
 
     private void initDefaultSettings() {
-        this.groupAttributes.clear();
-        this.groupFunctions.clear();
-        this.functionAliases = new String[]{};
+        clearGroupingAttributes();
+        clearGroupingFunctions();
         removePercentColumn();
         addGroupingFunctions(Collections.singletonList(getDefaultFunction()));
     }
@@ -154,6 +153,11 @@ public class GroupingResultsContainer implements IResultSetContainer {
         groupAttributes.clear();
     }
 
+    public void clearGroupingFunctions() {
+        this.groupFunctions.clear();
+        this.functionAliases = new String[]{};
+    }
+
     void addGroupingAttributes(List<SQLGroupingAttribute> attributes) {
         for (SQLGroupingAttribute attr : attributes) {
             if (!groupAttributes.contains(attr)) {
@@ -181,14 +185,12 @@ public class GroupingResultsContainer implements IResultSetContainer {
             DBPDataSource dataSource = getDataContainer().getDataSource();
             if (dataSource != null) {
                 func = DBUtils.getUnQuotedIdentifier(dataSource, func);
-                if (!groupFunctions.contains(func)) {
-                    groupFunctions.add(func);
-                }
+                groupFunctions.add(func);
             }
         }
     }
 
-    public boolean removeGroupingFunction(List<String> attributes) {
+    public boolean removeGroupingFunctionByAlias(List<String> attributes) {
         boolean changed = false;
         DBPDataSource dataSource = getDataContainer().getDataSource();
         if (dataSource != null) {
@@ -357,7 +359,7 @@ public class GroupingResultsContainer implements IResultSetContainer {
         return newFilter;
     }
 
-    private int searchFunctionIndexByAlias(@NotNull String functionAlias) {
+    public int searchFunctionIndexByAlias(@NotNull String functionAlias) {
         return ArrayUtils.indexOf(functionAliases, functionAlias);
     }
 

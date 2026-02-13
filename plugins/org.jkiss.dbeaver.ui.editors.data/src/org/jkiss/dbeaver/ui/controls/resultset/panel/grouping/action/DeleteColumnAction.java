@@ -100,18 +100,13 @@ public class DeleteColumnAction extends GroupingAction {
                     };
                     return new RemoveColumnStrategy(InstanceType.PERCENT_GROUPING_FUNCTION, removeFunction);
                 } else {
-                    removeFunction = () -> groupingResultsContainer.removeGroupingFunction(
+                    removeFunction = () -> groupingResultsContainer.removeGroupingFunctionByAlias(
                         List.of(currentBinding.getFullyQualifiedName(DBPEvaluationContext.UI))
                     );
                     return new RemoveColumnStrategy(InstanceType.GROUPING_FUNCTION, removeFunction);
                 }
             }
         }
-        return getEmptyStrategy();
-    }
-
-    @NotNull
-    private RemoveColumnStrategy getEmptyStrategy() {
         return new RemoveColumnStrategy(InstanceType.NONE, () -> false);
     }
 
