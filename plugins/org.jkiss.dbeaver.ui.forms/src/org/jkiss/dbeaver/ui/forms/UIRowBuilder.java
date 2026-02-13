@@ -103,7 +103,17 @@ public sealed interface UIRowBuilder permits UIRowBuilderImpl {
     UIRowBuilder radioButton(@NotNull String text, @NotNull Consumer<? super UIControlBuilder.ButtonBuilder> handler);
 
     @NotNull
+    default UIRowBuilder radioButton(@NotNull String text, @NotNull UIObservable<Boolean> selected) {
+        return radioButton(text, bb -> bb.selected(selected));
+    }
+
+    @NotNull
     UIRowBuilder checkBox(@NotNull String text, @NotNull Consumer<? super UIControlBuilder.ButtonBuilder> handler);
+
+    @NotNull
+    default UIRowBuilder checkBox(@NotNull String text, @NotNull UIObservable<Boolean> selected) {
+        return checkBox(text, bb -> bb.selected(selected));
+    }
 
     @NotNull
     <T> UIRowBuilder textField(@NotNull UIObservable<T> binding, @NotNull Consumer<? super UIControlBuilder.TextBuilder<T>> handler);

@@ -111,8 +111,8 @@ public class DatabaseProducerPageExtractSettings extends DataTransferPageNodeSet
 
         return pb -> pb
             .row(rb -> rb
-                .radioButton("Query the database", bb -> bb.selected(queryDatabase))
-                .radioButton("Use fetched rows", bb -> bb.selected(useFetchedData)))
+                .radioButton("Query the database", queryDatabase)
+                .radioButton("Use fetched rows", useFetchedData))
             .row(rb -> rb
                 .panel(buildQueryDatabasePanel(queryDatabase))
                 .panel(buildUseFetchedRowsPanel(useFetchedData)))
@@ -141,10 +141,10 @@ public class DatabaseProducerPageExtractSettings extends DataTransferPageNodeSet
         return pb -> pb
             .row(rb -> rb
                 .enabled(UIObservables.and(enabled, canExportSelection))
-                .checkBox("Selected rows only", bb -> bb.selected(selectedRowsOnly)))
+                .checkBox("Selected rows only", selectedRowsOnly))
             .row(rb -> rb
                 .enabled(UIObservables.and(enabled, canExportSelection))
-                .checkBox("Selected columns only", bb -> bb.selected(selectedColumnsOnly)));
+                .checkBox("Selected columns only", selectedColumnsOnly));
     }
 
     @NotNull
