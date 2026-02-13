@@ -52,6 +52,7 @@ public class GroupingResultsContainer implements IResultSetContainer {
     private final ResultSetViewer groupingViewer;
     private final List<SQLGroupingAttribute> groupAttributes = new ArrayList<>();
     private final List<String> groupFunctions = new ArrayList<>();
+    private String[] functionAliases = new String[]{};
     private final AtomicReference<DBDDataFilter> currentFiler = new AtomicReference<>();
 
     public GroupingResultsContainer(Composite parent, IResultSetPresentation presentation) {
@@ -185,8 +186,10 @@ public class GroupingResultsContainer implements IResultSetContainer {
         if (dataSource != null) {
             for (String func : attributes) {
                 func = DBUtils.getUnQuotedIdentifier(dataSource, func);
-                if (groupFunctions.contains(func)) {
-                    groupFunctions.remove(func);
+                int index = searchFunctionIndexByAlias(func);
+                if (index >= 0) {
+                    // clear alias, clear func
+                    groupFunctions.remove(index);
                     changed = true;
                 }
             }
@@ -266,6 +269,7 @@ public class GroupingResultsContainer implements IResultSetContainer {
             "dups", isShowDuplicatesOnly
         ));
         groupingViewer.setDataFilter(dataFilter, true);
+        this.functionAliases = groupingQueryGenerator.getFuncAliases();
     }
 
     @NotNull
@@ -330,6 +334,15 @@ public class GroupingResultsContainer implements IResultSetContainer {
         DBDDataFilter newFilter = new DBDDataFilter(attributeConstraints);
         newFilter.setWhere(dataFilter.getWhere());
         return newFilter;
+    }
+
+    private int searchFunctionIndexByAlias(@NotNull String functionAlias) {
+        for (int i = 0; i < functionAliases.length; i++) {
+            if (functionAliases[i].equals(functionAlias)) {
+                return i;
+            }
+        }
+        return -1;
     }
 
     private void resetDataFilters() {
