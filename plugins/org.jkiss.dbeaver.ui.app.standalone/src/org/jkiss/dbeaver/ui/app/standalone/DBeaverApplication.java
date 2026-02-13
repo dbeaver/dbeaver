@@ -224,7 +224,14 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
         initDebugWriter();
 
         try {
-            DBWorkbench.addInitializeHook((platform) -> initializeApplication());
+            DBWorkbench.addInitializeHook((platform) -> {
+                try {
+                    initializeApplication();
+                } catch (Exception e) {
+                    showMessageBox("Error initializing application", e.getMessage(), SWT.ICON_ERROR);
+                    throw e;
+                }
+            });
         } catch (DBException e) {
             log.error("Error initializing application", e);
             return IApplication.EXIT_OK;
