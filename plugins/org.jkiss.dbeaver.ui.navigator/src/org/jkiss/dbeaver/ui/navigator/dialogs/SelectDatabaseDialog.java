@@ -115,8 +115,18 @@ public class SelectDatabaseDialog extends ObjectListDialog<DBNDatabaseNode> {
         }
     }
 
+    @Nullable
     @Override
-    protected void handleObjectsLoaded(Collection<DBNDatabaseNode> items, boolean append) {
+    public DBNDatabaseNode getSelectedObject() {
+        DBNDatabaseNode object = super.getSelectedObject();
+        if (object == null && !CommonUtils.isEmpty(selectedInstances)) {
+            return selectedInstances.getFirst();
+        }
+        return object;
+    }
+
+    @Override
+    protected void handleObjectsLoaded(@NotNull Collection<DBNDatabaseNode> items, boolean append) {
         // Now select the default object
         if (selectedInstances.isEmpty()) {
             return;
@@ -143,7 +153,7 @@ public class SelectDatabaseDialog extends ObjectListDialog<DBNDatabaseNode> {
         return defaultContext.getContextDefaults();
     }
 
-    private void createInstanceSelector(Composite group, DBSObjectContainer instanceContainer) {
+    private void createInstanceSelector(@NotNull Composite group, @NotNull DBSObjectContainer instanceContainer) {
         ((GridLayout)group.getLayout()).numColumns++;
         DatabaseObjectListControl<DBNDatabaseNode> instanceList = createObjectSelector(
             group,
@@ -213,6 +223,7 @@ public class SelectDatabaseDialog extends ObjectListDialog<DBNDatabaseNode> {
         return currentInstanceName == null ? super.isDialogComplete() : !selectedInstances.isEmpty();
     }
 
+    @NotNull
     protected List<DBNDatabaseNode> getObjects(@NotNull DBRProgressMonitor monitor) {
         DBSObject rootObject;
         if (selectedInstances != null && currentInstanceName != null && getContextDefaults() != null
@@ -264,9 +275,10 @@ public class SelectDatabaseDialog extends ObjectListDialog<DBNDatabaseNode> {
         return nodeList;
     }
 
+    @Nullable
     public String getCurrentInstanceName() {
         DBNDatabaseNode selectedObject = getSelectedObject();
-        if (selectedObject.getObject() instanceof DBSCatalog) {
+        if (selectedObject != null && selectedObject.getObject() instanceof DBSCatalog) {
             return selectedObject.getObject().getName();
         }
         return currentInstanceName;

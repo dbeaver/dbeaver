@@ -198,13 +198,14 @@ public class ObjectListDialog<T extends DBPObject> extends AbstractPopupPanel {
         return ctl;
     }
 
+    @NotNull
     public List<T> getSelectedObjects()
     {
         return selectedObjects;
     }
 
-    public T getSelectedObject()
-    {
+    @Nullable
+    public T getSelectedObject() {
         return selectedObjects.isEmpty() ? null : selectedObjects.getFirst();
     }
 
@@ -361,7 +362,7 @@ public class ObjectListDialog<T extends DBPObject> extends AbstractPopupPanel {
         }
     }
 
-    protected  void handleObjectsLoaded(Collection<T> items, boolean append) {
+    protected  void handleObjectsLoaded(@NotNull Collection<T> items, boolean append) {
         // Just a listener
     }
 }
