@@ -55,6 +55,9 @@ public class GroupingResultsContainer implements IResultSetContainer {
     private String[] functionAliases = new String[]{};
     private final AtomicReference<DBDDataFilter> currentFiler = new AtomicReference<>();
 
+    //-1 if percent function is not present
+    private int percentFunctionOrderInStatement = -1;
+
     public GroupingResultsContainer(Composite parent, IResultSetPresentation presentation) {
         this.presentation = presentation;
         this.dataContainer = new GroupingDataContainer(presentation.getController());
@@ -79,6 +82,8 @@ public class GroupingResultsContainer implements IResultSetContainer {
     private void initDefaultSettings() {
         this.groupAttributes.clear();
         this.groupFunctions.clear();
+        this.functionAliases = new String[]{};
+        removePercentColumn();
         addGroupingFunctions(Collections.singletonList(getDefaultFunction()));
     }
 
@@ -272,6 +277,15 @@ public class GroupingResultsContainer implements IResultSetContainer {
         this.functionAliases = groupingQueryGenerator.getFuncAliases();
     }
 
+    public void removePercentColumn() {
+        dataContainer.removeAttributeTransformer();
+        percentFunctionOrderInStatement = -1;
+    }
+
+    public int getPercentFunctionOrderInStatement() {
+        return percentFunctionOrderInStatement;
+    }
+
     @NotNull
     private DBDDataFilter getDataFilter() {
         return presentation.getController().getModel().isMetadataChanged()
@@ -301,12 +315,16 @@ public class GroupingResultsContainer implements IResultSetContainer {
         List<String> allGroupFunctions = new ArrayList<>(getGroupFunctions());
         String function = getDefaultFunction();
         allGroupFunctions.add(function);
-        int percentFunctionOrderInStatement = getGroupAttributes().size() + allGroupFunctions.size() - 1;
+        definePercentColumnIndex(allGroupFunctions);
         dataContainer.setAttributeTransformer(
             percentFunctionOrderInStatement,
             new PercentOfTotalGroupingAttributeTransformer(this::getTotalRowCount)
         );
         return allGroupFunctions;
+    }
+
+    private void definePercentColumnIndex(@NotNull List<String> allGroupFunctions) {
+        percentFunctionOrderInStatement = getGroupAttributes().size() + allGroupFunctions.size() - 1;
     }
 
     private long getTotalRowCount(@NotNull DBRProgressMonitor monitor) throws DBException {
