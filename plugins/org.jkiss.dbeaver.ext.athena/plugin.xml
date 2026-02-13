@@ -63,11 +63,8 @@
                     singleConnection="true">
                     <replace provider="generic" driver="aws_athena_42"/>
                     <replace provider="athena" driver="aws_athena_jdbc_simba"/>
-                    <file type="jar" path="https://s3.amazonaws.com/athena-downloads/drivers/JDBC/SimbaAthenaJDBC-2.0.34.1000/AthenaJDBC42-2.0.34.1000.jar" bundle="!drivers.athena"/>
-                    <file type="license" path="https://s3.amazonaws.com/athena-downloads/drivers/JDBC/SimbaAthenaJDBC-2.0.34.1000/docs/LICENSE.txt" bundle="!drivers.athena"/>
-
-                    <file type="jar" path="drivers/athena" bundle="drivers.athena"/>
-                    <file type="license" path="drivers/athena/LICENSE.txt" bundle="drivers.athena"/>
+                    <file type="jar" path="https://s3.amazonaws.com/athena-downloads/drivers/JDBC/SimbaAthenaJDBC-2.0.34.1000/AthenaJDBC42-2.0.34.1000.jar"/>
+                    <file type="license" path="https://s3.amazonaws.com/athena-downloads/drivers/JDBC/SimbaAthenaJDBC-2.0.34.1000/docs/LICENSE.txt"/>
 
                     <parameter name="supports-references" value="false"/>
                     <parameter name="supports-indexes" value="false"/>
