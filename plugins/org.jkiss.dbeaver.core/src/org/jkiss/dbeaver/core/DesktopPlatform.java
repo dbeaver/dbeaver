@@ -35,19 +35,18 @@ import org.jkiss.dbeaver.model.qm.QMRegistry;
 import org.jkiss.dbeaver.model.qm.QMUtils;
 import org.jkiss.dbeaver.model.runtime.LoggingProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.features.DBRFeatureRegistry;
-import org.jkiss.dbeaver.registry.BaseLocalPlatform;
+import org.jkiss.dbeaver.registry.BasePlatformImpl;
 import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
 import org.jkiss.dbeaver.registry.GlobalEventManagerImpl;
 import org.jkiss.dbeaver.runtime.SecurityProviderUtils;
 import org.jkiss.dbeaver.runtime.qm.QMLogFileWriter;
 import org.jkiss.dbeaver.runtime.qm.QMRegistryImpl;
-import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 
 /**
  * DesktopPlatform
  */
-public class DesktopPlatform extends BaseLocalPlatform implements DBPPlatformDesktop {
+public class DesktopPlatform extends BasePlatformImpl implements DBPPlatformDesktop {
 
     // The plug-in ID
     public static final String PLUGIN_ID = "org.jkiss.dbeaver.core"; //$NON-NLS-1$
@@ -164,14 +163,6 @@ public class DesktopPlatform extends BaseLocalPlatform implements DBPPlatformDes
             } catch (DBException ex) {
                 log.error("Can not save workspace", ex); //$NON-NLS-1$
             }
-        }
-
-        // Remove temp folder
-        if (tempFolder != null) {
-            if (!ContentUtils.deleteFileRecursive(tempFolder)) {
-                log.warn("Can not delete temp folder '" + tempFolder + "'");
-            }
-            tempFolder = null;
         }
 
         DesktopPlatform.instance = null;
