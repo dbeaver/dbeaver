@@ -667,16 +667,18 @@ public class DataTransferWizard extends TaskConfigurationWizard<DataTransferSett
     public static void openWizard(
         @NotNull IWorkbenchWindow workbenchWindow,
         @Nullable Collection<IDataTransferProducer<?>> producers,
-        @Nullable Collection<IDataTransferConsumer<?, ?>> consumers
+        @Nullable Collection<IDataTransferConsumer<?, ?>> consumers,
+        boolean includePipesConfigurationPage
     ) {
-        openWizard(workbenchWindow, producers, consumers, StructuredSelection.EMPTY);
+        openWizard(workbenchWindow, producers, consumers, StructuredSelection.EMPTY, includePipesConfigurationPage);
     }
 
     public static void openWizard(
         @NotNull IWorkbenchWindow workbenchWindow,
         @Nullable Collection<IDataTransferProducer<?>> producers,
         @Nullable Collection<IDataTransferConsumer<?,?>> consumers,
-        @NotNull IStructuredSelection selection
+        @NotNull IStructuredSelection selection,
+        boolean includePipesConfigurationPage
     ) {
         DataTransferSettings settings = new DataTransferSettings(
             producers,
@@ -688,7 +690,13 @@ public class DataTransferWizard extends TaskConfigurationWizard<DataTransferSett
             false,
             false);
 
-        DataTransferWizard wizard = new DataTransferWizard(null, settings, true);
+        DataTransferWizard wizard = new DataTransferWizard(null, settings, true) {
+            @Override
+            protected boolean includePipesConfigurationPage() {
+                return includePipesConfigurationPage;
+            }
+        };
+
         TaskConfigurationWizardDialog dialog = new TaskConfigurationWizardDialog(workbenchWindow, wizard, selection, Map.of());
         dialog.open();
     }

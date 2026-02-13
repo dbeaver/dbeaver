@@ -36,12 +36,24 @@ public class AIFunctionCall {
     @Nullable
     private AIFunctionDescriptor function;
 
+    /**
+     * Properties received from AI engine. Can be required to pass down for further messages
+     * Example: Anthropic requires passing tool_use_id for function results to work properly
+     */
+    @Nullable
+    private Map<String, String> messageMetadata;
+
     public AIFunctionCall() {
     }
 
-    public AIFunctionCall(@NotNull String functionName, @Nullable Map<String, Object> arguments) {
+    public AIFunctionCall(@NotNull String functionName, @Nullable Map<String, Object> arguments, @Nullable Map<String, String> messageMetadata) {
         this.functionName = functionName;
         this.arguments = arguments;
+        this.messageMetadata = messageMetadata;
+    }
+
+    public AIFunctionCall(@NotNull String functionName, @Nullable Map<String, Object> arguments) {
+        this(functionName, arguments, null);
     }
 
     @Nullable
@@ -60,6 +72,15 @@ public class AIFunctionCall {
 
     public void setArguments(@NotNull Map<String, Object> arguments) {
         this.arguments = arguments;
+    }
+
+    @Nullable
+    public Map<String, String> getAdditionalProperties() {
+        return messageMetadata;
+    }
+
+    public void setMessageMetadata(@NotNull Map<String, String> additionalProperties) {
+        this.messageMetadata = Map.copyOf(additionalProperties);
     }
 
     @Nullable
@@ -84,5 +105,6 @@ public class AIFunctionCall {
     public String toString() {
         return functionName + "(" + arguments + ")";
     }
+
 
 }

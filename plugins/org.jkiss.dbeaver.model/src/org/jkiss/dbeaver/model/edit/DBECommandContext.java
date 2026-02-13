@@ -65,6 +65,8 @@ public interface DBECommandContext extends DBPContextProvider {
 
     void addCommand(@NotNull DBECommand<?> command, @Nullable DBECommandReflector reflector, boolean execute);
 
+    void addCommand(@NotNull DBECommand<?> command, @Nullable DBECommandReflector reflector, boolean execute, @Nullable DBECommand<?> linkedCommand);
+
     //void addCommandBatch(List<DBECommand> commands, DBECommandReflector reflector, boolean execute);
 
     void removeCommand(@NotNull DBECommand<?> command);
