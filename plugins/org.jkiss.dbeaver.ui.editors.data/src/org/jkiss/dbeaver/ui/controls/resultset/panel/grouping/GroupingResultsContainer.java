@@ -36,6 +36,7 @@ import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.ui.DataEditorFeatures;
 import org.jkiss.dbeaver.ui.controls.resultset.*;
 import org.jkiss.dbeaver.ui.controls.resultset.view.EmptyPresentation;
+import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.*;
@@ -91,10 +92,12 @@ public class GroupingResultsContainer implements IResultSetContainer {
         return presentation;
     }
 
+    @NotNull
     public List<SQLGroupingAttribute> getGroupAttributes() {
         return groupAttributes;
     }
 
+    @NotNull
     public List<String> getGroupFunctions() {
         return groupFunctions;
     }
@@ -355,12 +358,7 @@ public class GroupingResultsContainer implements IResultSetContainer {
     }
 
     private int searchFunctionIndexByAlias(@NotNull String functionAlias) {
-        for (int i = 0; i < functionAliases.length; i++) {
-            if (functionAliases[i].equals(functionAlias)) {
-                return i;
-            }
-        }
-        return -1;
+        return ArrayUtils.indexOf(functionAliases, functionAlias);
     }
 
     private void resetDataFilters() {

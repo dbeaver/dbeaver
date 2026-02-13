@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ui.controls.resultset.panel.grouping.action;
 
+import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
@@ -25,58 +26,128 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.controls.resultset.IResultSetController;
+import org.jkiss.dbeaver.ui.controls.resultset.ResultSetListenerAdapter;
 import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
 import org.jkiss.dbeaver.ui.controls.resultset.panel.grouping.GroupingDataContainer;
 import org.jkiss.dbeaver.ui.controls.resultset.panel.grouping.GroupingResultsContainer;
 import org.jkiss.utils.ArrayUtils;
 
 import java.util.List;
+import java.util.function.Supplier;
 
 public class DeleteColumnAction extends GroupingAction {
 
     private final PercentFromTotalAction percentFromTotalAction;
 
+    private RemoveColumnStrategy removeColumnStrategy = getEmptyStrategy();
+
     public DeleteColumnAction(@NotNull GroupingResultsContainer resultsContainer) {
         super(resultsContainer, ResultSetMessages.controls_resultset_grouping_remove_column, DBeaverIcons.getImageDescriptor(UIIcon.CLOSE));
         this.percentFromTotalAction = new PercentFromTotalAction(resultsContainer);
+        groupingResultsContainer.getResultSetController().addListener(new ResultSetListenerAdapter() {
+            @Override
+            public void handleResultSetSelectionChange(SelectionChangedEvent event) {
+                removeColumnStrategy = defineRemoveStrategy();
+                setEnabled(isEnabled());
+            }
+        });
+        setEnabled(false);
     }
 
     @Override
     public boolean isEnabled() {
-        return !groupingResultsContainer.getResultSetController().getSelection().isEmpty();
+        return removeColumnStrategy.isColumnPossibleToRemove();
     }
 
     @Override
     public void run() {
+        boolean removed = removeColumnStrategy.deleteColumn();
+        if (removed) {
+            try {
+                groupingResultsContainer.rebuildGrouping();
+            } catch (DBException e) {
+                DBWorkbench.getPlatformUI().showError(
+                    ResultSetMessages.grouping_panel_error_title,
+                    ResultSetMessages.grouping_panel_error_change_grouping_query_message, e
+                );
+            }
+        }
+    }
+
+
+    @NotNull
+    private RemoveColumnStrategy defineRemoveStrategy() {
         IResultSetController resultSetController = groupingResultsContainer.getResultSetController();
         DBDAttributeBinding currentBinding = resultSetController.getActivePresentation().getCurrentAttribute();
         if (currentBinding != null) {
             int attrBindingIndex = ArrayUtils.indexOf(resultSetController.getModel().getAttributes(), currentBinding);
             if (attrBindingIndex >= 0 && currentBinding.getDataContainer() instanceof GroupingDataContainer dataContainer) {
                 SQLGroupingAttribute[] currAttrs = dataContainer.getGroupingAttributes();
-                boolean removed;
+                Supplier<Boolean> removeFunction;
                 if (currAttrs != null && attrBindingIndex < currAttrs.length) {
-                    removed = groupingResultsContainer.removeGroupingAttribute(List.of(currAttrs[attrBindingIndex]));
+                    removeFunction = () -> groupingResultsContainer.removeGroupingAttribute(List.of(currAttrs[attrBindingIndex]));
+                    return new RemoveColumnStrategy(InstanceType.ATTRIBUTE, removeFunction);
                 } else if (attrBindingIndex == groupingResultsContainer.getPercentFunctionOrderInStatement()) {
-                    percentFromTotalAction.setChecked(false);
-                    percentFromTotalAction.run();
-                    removed = true;
+                    removeFunction = () -> {
+                        percentFromTotalAction.setChecked(false);
+                        percentFromTotalAction.run();
+                        return true;
+                    };
+                    return new RemoveColumnStrategy(InstanceType.PERCENT_GROUPING_FUNCTION, removeFunction);
                 } else {
-                    removed = groupingResultsContainer.removeGroupingFunction(
+                    removeFunction = () -> groupingResultsContainer.removeGroupingFunction(
                         List.of(currentBinding.getFullyQualifiedName(DBPEvaluationContext.UI))
                     );
-                }
-                if (removed) {
-                    try {
-                        groupingResultsContainer.rebuildGrouping();
-                    } catch (DBException e) {
-                        DBWorkbench.getPlatformUI().showError(
-                            ResultSetMessages.grouping_panel_error_title,
-                            ResultSetMessages.grouping_panel_error_change_grouping_query_message, e
-                        );
-                    }
+                    return new RemoveColumnStrategy(InstanceType.GROUPING_FUNCTION, removeFunction);
                 }
             }
         }
+        return getEmptyStrategy();
+    }
+
+    @NotNull
+    private RemoveColumnStrategy getEmptyStrategy() {
+        return new RemoveColumnStrategy(InstanceType.NONE, () -> false);
+    }
+
+    private class RemoveColumnStrategy {
+
+        @NotNull
+        private final InstanceType instanceType;
+        @NotNull
+        private final Supplier<Boolean> removingColumnFunction;
+
+        public RemoveColumnStrategy(@NotNull InstanceType instanceType, @NotNull Supplier<Boolean> removingColumnFunction) {
+            this.instanceType = instanceType;
+            this.removingColumnFunction = removingColumnFunction;
+        }
+
+        public boolean isColumnPossibleToRemove() {
+            return isColumnSelectionNotEmpty() && canStrategyTypeBeUsed();
+        }
+
+        public boolean deleteColumn() {
+            return removingColumnFunction.get();
+        }
+
+        private boolean isColumnSelectionNotEmpty() {
+            return !groupingResultsContainer.getResultSetController().getSelection().isEmpty();
+        }
+
+        private boolean canStrategyTypeBeUsed() {
+            return switch (instanceType) {
+                case ATTRIBUTE -> groupingResultsContainer.getGroupAttributes().size() > 1;
+                case GROUPING_FUNCTION -> groupingResultsContainer.getGroupFunctions().size() > 1;
+                case PERCENT_GROUPING_FUNCTION -> groupingResultsContainer.getPercentFunctionOrderInStatement() >= 0;
+                case NONE -> false;
+            };
+        }
+    }
+
+    private enum InstanceType {
+        ATTRIBUTE,
+        GROUPING_FUNCTION,
+        PERCENT_GROUPING_FUNCTION,
+        NONE;
     }
 }
