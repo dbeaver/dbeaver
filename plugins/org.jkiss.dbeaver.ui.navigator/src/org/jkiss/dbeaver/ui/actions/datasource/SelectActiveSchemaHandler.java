@@ -105,13 +105,14 @@ public class SelectActiveSchemaHandler extends AbstractDataSourceHandler impleme
                 }
             }
         }
-        DBNDatabaseNode selectedNode = selectedDB == null ? null : DBWorkbench.getPlatform().getNavigatorModel().getNodeByObject(selectedDB);
+        DBNDatabaseNode selectedNode = selectedDB == null ?
+            null : DBWorkbench.getPlatform().getNavigatorModel().getNodeByObject(selectedDB);
         SelectDatabaseDialog dialog = new SelectDatabaseDialog(
             HandlerUtil.getActiveShell(event),
             dataSourceContainer,
             contextDefaultObjectsReader.getDefaultCatalogName(),
             contextDefaultObjectsReader.getNodeList(),
-            selectedNode == null ? null : Collections.singletonList(selectedNode));
+            selectedNode == null ? Collections.emptyList() : Collections.singletonList(selectedNode));
         dialog.setModeless(true);
         if (dialog.open() == IDialogConstants.CANCEL_ID) {
             return null;
