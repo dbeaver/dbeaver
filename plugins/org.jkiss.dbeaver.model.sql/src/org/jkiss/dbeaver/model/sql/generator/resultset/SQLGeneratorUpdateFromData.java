@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,18 +14,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ui.controls.resultset.generator;
+package org.jkiss.dbeaver.model.sql.generator.resultset;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
+import org.jkiss.dbeaver.model.data.DBDResultSetDataProvider;
+import org.jkiss.dbeaver.model.data.DBDValueRow;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLQueryGeneratorUpdate;
 import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
-import org.jkiss.dbeaver.ui.controls.resultset.IResultSetController;
-import org.jkiss.dbeaver.ui.controls.resultset.ResultSetRow;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.Collection;
@@ -38,13 +39,17 @@ public class SQLGeneratorUpdateFromData extends SQLGeneratorResultSet {
     }
 
     @Override
-    public void generateSQL(DBRProgressMonitor monitor, StringBuilder sql, IResultSetController object) throws DBException {
-        DBSEntity dbsEntity = getSingleEntity();
+    protected void generateSQL(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull StringBuilder sql,
+        @NotNull DBDResultSetDataProvider dataProvider
+    ) throws DBException {
+        DBSEntity dbsEntity = dataProvider.getSingleSource();
         String entityName = getEntityName(dbsEntity);
         String separator = getLineSeparator();
-        for (ResultSetRow firstRow : getSelectedRows()) {
-            Collection<DBDAttributeBinding> keyAttributes = getKeyAttributes(monitor, object);
-            Collection<? extends DBSAttributeBase> valueAttributes = getValueAttributes(monitor, object, keyAttributes);
+        for (DBDValueRow firstRow : dataProvider.getSelectedRows()) {
+            Collection<DBDAttributeBinding> keyAttributes = getKeyAttributes(monitor, dataProvider);
+            Collection<? extends DBSAttributeBase> valueAttributes = getValueAttributes(monitor, dataProvider, keyAttributes);
             if (dbsEntity instanceof SQLQueryGeneratorUpdate dataStatement) {
                 sql.append(dataStatement.generateTableUpdateBegin(entityName));
                 String updateSet = dataStatement.generateTableUpdateSet();
@@ -65,11 +70,11 @@ public class SQLGeneratorUpdateFromData extends SQLGeneratorResultSet {
                 }
                 if (hasAttr) sql.append(", ");
                 sql.append(DBUtils.getObjectFullName(attr, DBPEvaluationContext.DML)).append("=");
-                DBDAttributeBinding binding = getController().getModel().getAttributeBinding(attr);
+                DBDAttributeBinding binding = DBUtils.findBinding(dataProvider.getAttributes(), attr);
                 if (binding == null) {
                     appendDefaultValue(sql, attr);
                 } else {
-                    appendAttributeValue(getController(), sql, binding, firstRow, true);
+                    appendAttributeValue(dataProvider, sql, binding, firstRow, true);
                 }
 
                 hasAttr = true;

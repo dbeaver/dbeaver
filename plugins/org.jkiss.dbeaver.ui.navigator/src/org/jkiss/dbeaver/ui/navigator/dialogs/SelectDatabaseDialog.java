@@ -24,6 +24,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Shell;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
@@ -87,6 +88,14 @@ public class SelectDatabaseDialog extends ObjectListDialog<DBNDatabaseNode> {
         this.currentInstanceName = currentInstanceName;
     }
 
+    @NotNull
+    @Override
+    protected Control createButtonBar(@NotNull Composite parent) {
+        Control buttonBar = super.createButtonBar(parent);
+        enableButton(IDialogConstants.OK_ID, false);
+        return buttonBar;
+    }
+
     @Override
     protected void createUpperControls(@NotNull Composite dialogArea) {
         DBPDataSource dataSource = dataSourceContainer.getDataSource();
@@ -112,16 +121,15 @@ public class SelectDatabaseDialog extends ObjectListDialog<DBNDatabaseNode> {
         if (selectedInstances.isEmpty()) {
             return;
         }
-        List<Object> selObjects = new ArrayList<>();
-        Collection<?> schemas = (Collection<?>) objectList.getItemsViewer().getInput();
-        if (schemas != null) {
-            for (Object node : schemas) {
+        if (objectList.getSelectionProvider().getSelection().isEmpty()) {
+            List<Object> selObjects = new ArrayList<>();
+            for (DBNDatabaseNode  node : items) {
                 if (DBNUtils.isDefaultElement(node)) {
                     selObjects.add(node);
                 }
             }
+            objectList.getSelectionProvider().setSelection(new StructuredSelection(selObjects));
         }
-        objectList.getSelectionProvider().setSelection(new StructuredSelection(selObjects));
     }
 
     @Nullable
@@ -171,23 +179,38 @@ public class SelectDatabaseDialog extends ObjectListDialog<DBNDatabaseNode> {
         instanceList.setLayoutData(gd);
         instanceList.getSelectionProvider().addSelectionChangedListener(event -> {
             IStructuredSelection selection = (IStructuredSelection) event.getSelection();
-            selectedInstances.clear();
-            selectedInstances.addAll(selection.toList());
+            List<DBNDatabaseNode> newInstances = selection.toList();
+            if (!newInstances.equals(selectedInstances)) {
+                selectedInstances.clear();
+                selectedInstances.addAll(newInstances);
+                // Clear schemas too
+                selectedObjects.clear();
+            }
             DBNDatabaseNode instance = selectedInstances.isEmpty() ? null : selectedInstances.getFirst();
             if (instance != null && !CommonUtils.equalObjects(instance.getNodeDisplayName(), currentInstanceName)) {
                 currentInstanceName = instance.getNodeDisplayName();
+                enableButton(IDialogConstants.OK_ID, false);
                 objectList.loadData();
             }
+            updateButtons();
         });
         instanceList.setDoubleClickHandler(event -> {
-            if (isModeless() || isButtonEnabled(IDialogConstants.OK_ID)) {
-                okPressed();
+            IStructuredSelection selection = (IStructuredSelection) event.getSelection();
+            selectedInstances.clear();
+            selectedInstances.addAll(selection.toList());
+            if (isDialogComplete()) {
+                UIUtils.asyncExec(this::okPressed);
             }
         });
 
 
         instanceList.loadData();
         closeOnFocusLost(instanceList.getItemsViewer().getControl());
+    }
+
+    @Override
+    protected boolean isDialogComplete() {
+        return currentInstanceName == null ? super.isDialogComplete() : !selectedInstances.isEmpty();
     }
 
     protected List<DBNDatabaseNode> getObjects(@NotNull DBRProgressMonitor monitor) {

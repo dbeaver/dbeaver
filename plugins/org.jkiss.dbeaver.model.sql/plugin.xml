@@ -22,6 +22,7 @@
 
     <!-- SQL Generators -->
     <extension point="org.jkiss.dbeaver.sqlGenerator">
+        <!-- Table SQL generators-->
         <generator id="tableSelect" class="org.jkiss.dbeaver.model.sql.generator.SQLGeneratorSelect" label="SELECT" description="SELECT from table" order="1">
             <objectType name="org.jkiss.dbeaver.model.struct.DBSDataContainer"/>
         </generator>
@@ -48,6 +49,22 @@
         </generator>
         <generator id="tableDDL" class="org.jkiss.dbeaver.model.sql.generator.SQLGeneratorDDL" label="DDL" description="Get table DDL" order="1001">
             <objectType name="org.jkiss.dbeaver.model.DBPScriptObject"/>
+        </generator>
+        <!-- Result set (data) SQL generators-->
+        <generator id="dataSelect" class="org.jkiss.dbeaver.model.sql.generator.resultset.SQLGeneratorSelectFromData" label="SELECT .. WHERE .. =" description="SELECT from table" order="1">
+            <objectType name="org.jkiss.dbeaver.model.data.DBDResultSetDataProvider"/>
+        </generator>
+        <generator id="dataSelectMany" class="org.jkiss.dbeaver.model.sql.generator.resultset.SQLGeneratorSelectManyFromData" label="SELECT .. WHERE .. IN" description="SELECT from table IN" order="2">
+            <objectType name="org.jkiss.dbeaver.model.data.DBDResultSetDataProvider"/>
+        </generator>
+        <generator id="dataInsert" class="org.jkiss.dbeaver.model.sql.generator.resultset.SQLGeneratorInsertFromData" label="INSERT" description="INSERT into table" order="3">
+            <objectType name="org.jkiss.dbeaver.model.data.DBDResultSetDataProvider"/>
+        </generator>
+        <generator id="dataUpdate" class="org.jkiss.dbeaver.model.sql.generator.resultset.SQLGeneratorUpdateFromData" label="UPDATE" description="UPDATE table" order="4">
+            <objectType name="org.jkiss.dbeaver.model.data.DBDResultSetDataProvider"/>
+        </generator>
+        <generator id="dataDeleteByUniqueKey" class="org.jkiss.dbeaver.model.sql.generator.resultset.SQLGeneratorDeleteFromData" label="DELETE by Unique Key" description="DELETE from table" order="5">
+            <objectType name="org.jkiss.dbeaver.model.data.DBDResultSetDataProvider"/>
         </generator>
     </extension>
 
