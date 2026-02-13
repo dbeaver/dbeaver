@@ -66,8 +66,11 @@ public class DatabaseObjectsSelectorPanel extends Composite {
 
         selectedProject = this.getSelectedProject();
         DBNNode rootNode = this.getRootNode();
-        INavigatorFilter navigatorFilter = enableFilter ? createNavigatorFilter() : null;
+        DatabaseNavigatorTreeFilter navigatorFilter = enableFilter ? createNavigatorFilter() : null;
         dataSourceTree = new DatabaseNavigatorTree(this, rootNode, style, false, navigatorFilter);
+        if (enableFilter) {
+            dataSourceTree.setFilterObjectType(DatabaseNavigatorTreeFilterObjectType.container);
+        }
         GridData gd = new GridData(GridData.FILL_BOTH);
         gd.heightHint = 300;
         dataSourceTree.setLayoutData(gd);
@@ -230,11 +233,16 @@ public class DatabaseObjectsSelectorPanel extends Composite {
     }
 
     @NotNull
-    protected INavigatorFilter createNavigatorFilter() {
+    protected DatabaseNavigatorTreeFilter createNavigatorFilter() {
         return new DatabaseNavigatorTreeFilter() {
             @Override
             public boolean select(Object element) {
                 return isElementAccepted(element);
+            }
+
+            @Override
+            public boolean isSingleConnection() {
+                return true;
             }
         };
     }

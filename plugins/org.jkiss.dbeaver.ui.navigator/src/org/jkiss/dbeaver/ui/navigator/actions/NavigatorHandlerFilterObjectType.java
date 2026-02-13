@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -50,7 +50,12 @@ public class NavigatorHandlerFilterObjectType extends AbstractHandler implements
                 // Cycle through all object types starting from the active one
                 var types = DatabaseNavigatorTreeFilterObjectType.values();
                 var selection = navigatorTree.getFilterObjectType();
-                objectType = types[(selection.ordinal() + 1) % types.length];
+                int i = 1;
+                objectType = types[(selection.ordinal() + i) % types.length];
+                while (navigatorTree.getNavigatorFilter().isSingleConnection() && !objectType.isDatabaseObjects()) {
+                    i++;
+                    objectType = types[(selection.ordinal() + i) % types.length];
+                }
             }
 
             if (objectType == navigatorTree.getFilterObjectType()) {
