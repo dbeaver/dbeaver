@@ -794,26 +794,18 @@ public final class SQLUtils {
         if (sql.indexOf('\r') == -1) {
             return sql;
         }
-        boolean hasFixes = false;
-        char[] initial = sql.toCharArray();
-        StringBuilder fixed = new StringBuilder(initial.length);
-        for (int i = 0; i < initial.length; i++) {
-            fixed.append(initial[i]);
-            if (initial[i] == '\r') {
-                if (i > 0 && initial[i - 1] == '\n') {
-                    // \n\r
-                    continue;
-                }
-                if (i == initial.length - 1 || initial[i + 1] == '\n') {
-                    // \r\n
-                    continue;
-                }
-                // Single \r - add \n after it to get \r\n sequence
-                fixed.append('\n');
-                hasFixes = true;
+        char[] sql_chars = sql.toCharArray();
+        StringBuilder fixed_sql = new StringBuilder(sql_chars.length);
+        for (int i = 0; i < sql_chars.length; i++) {
+            fixed_sql.append(sql_chars[i]);
+            boolean previous_char_is_slash = i > 0 && sql_chars[i - 1] == '\n';
+            boolean next_char_is_slash = i < sql_chars.length - 1 && sql_chars[i + 1] == '\n';
+            // Single \r - add \n after it to get \r\n sequence
+            if (sql_chars[i] == '\r' && !previous_char_is_slash && !next_char_is_slash) {
+                fixed_sql.append('\n');
             }
         }
-        return hasFixes ? fixed.toString() : sql;
+        return fixed_sql.toString();
     }
 
     /**
