@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -302,7 +302,7 @@ public class H2Migrator {
                 throw new IllegalArgumentException("No file path in URL: " + url);
             }
 
-            h2 = h2.substring(pathStart);
+            h2 = h2.substring(pathStart + 1);
         }
 
         return Paths.get(h2);
