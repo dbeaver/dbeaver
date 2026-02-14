@@ -218,6 +218,25 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
         // Register core components
         initializeApplicationServices();
 
+        final Runtime runtime = Runtime.getRuntime();
+
+        // Debug logger
+        initDebugWriter();
+
+        try {
+            DBWorkbench.addInitializeHook((platform) -> {
+                try {
+                    initializeApplication();
+                } catch (Exception e) {
+                    showMessageBox("Error initializing application", e.getMessage(), SWT.ICON_ERROR);
+                    throw e;
+                }
+            });
+        } catch (DBException e) {
+            log.error("Error initializing application", e);
+            return IApplication.EXIT_OK;
+        }
+
         // Custom parameters
         try {
             headlessMode = true;
@@ -245,19 +264,14 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
             return IApplication.EXIT_OK;
         }
 
-        final Runtime runtime = Runtime.getRuntime();
-
-        initializeConfiguration();
-
-        // Debug logger
-        initDebugWriter();
-
         log.debug(GeneralUtils.getProductName() + " " + GeneralUtils.getProductVersion() + " is starting"); //$NON-NLS-1$
         log.debug("OS: " + System.getProperty(StandardConstants.ENV_OS_NAME) + " " + System.getProperty(StandardConstants.ENV_OS_VERSION) + " (" + System.getProperty(StandardConstants.ENV_OS_ARCH) + ")");
         log.debug("Java version: " + System.getProperty(StandardConstants.ENV_JAVA_VERSION) + " by " + System.getProperty(StandardConstants.ENV_JAVA_VENDOR) + " (" + System.getProperty(StandardConstants.ENV_JAVA_ARCH) + "bit)");
         log.debug("Install path: '" + SystemVariablesResolver.getInstallPath() + "'"); //$NON-NLS-1$ //$NON-NLS-2$
         log.debug("Instance path: '" + instanceLoc.getURL() + "'"); //$NON-NLS-1$ //$NON-NLS-2$
         log.debug("Memory available " + (runtime.totalMemory() / (1024 * 1024)) + "Mb/" + (runtime.maxMemory() / (1024 * 1024)) + "Mb");
+
+        DBWorkbench.getPlatform();
 
         // Write version info
         writeWorkspaceInfo();
@@ -272,8 +286,6 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
             SWTBrowserRegistry.overrideBrowser();
         }
 
-        DBWorkbench.getPlatform();
-
         if (!isWorkspaceSwitchingAllowed() && !WORKSPACE_DIR_CURRENT.equals(defaultHomePath)) {
             log.error("Workspace switching is not allowed when participating in the early access program. Exiting "
                 + GeneralUtils.getProductName() + ".");
@@ -281,15 +293,6 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
         }
 
         WorkbenchPatcher.patchWorkbenchXmi(instanceLoc);
-        // Init application
-        // Error leads to app shutdown
-        try {
-            initializeApplication();
-        } catch (DBException e) {
-            showMessageBox("Error initializing application", e.getMessage(), SWT.ICON_ERROR);
-            log.error(e);
-            return IApplication.EXIT_OK;
-        }
 
         // Run instance server
         try {
@@ -461,7 +464,11 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
 
     }
 
-    protected void initializeConfiguration() {
+    /**
+     * May be overrided in implementors
+     */
+    protected void initializeApplication() throws DBException {
+        // Configure network
         ModelPreferences.IPType stack = ModelPreferences.IPType.getPreferredStack();
         if (stack != ModelPreferences.IPType.AUTO) {
             System.setProperty("java.net.preferIPv4Stack", String.valueOf(stack == ModelPreferences.IPType.IPV4));
@@ -474,14 +481,11 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
         if (debugNetworkConnections) {
             System.setProperty("javax.net.debug", "all");
         }
-    }
 
-    /**
-     * May be overrided in implementors
-     */
-    protected void initializeApplication() throws DBException {
+        // Configure proxy
         activateProxyService();
 
+        // Policy
         if (ApplicationPolicyProvider.getInstance().isPolicyEnabled(POLICY_WD_CHECK_SUPPRESS)) {
             try {
                 WindowsDefenderConfigurator.savePreference(
