@@ -108,7 +108,9 @@ public class DBeaverActivator extends AbstractUIPlugin {
     }
 
     private void shutdownUI() {
-        DesktopUI.disposeUI();
+        if (DesktopPlatform.instance != null) {
+            DesktopUI.disposeUI();
+        }
     }
 
     /**
