@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -73,6 +73,7 @@ public class ERDExportRasterImage implements ERDExportFormatHandler
                         gc.fillRectangle(image.getBounds());
                         //gc.setClipping(0, 0, contentBounds.width + MARGIN_X * 2, contentBounds.height + MARGIN_Y * 2);
                         graphics = new SWTGraphics(gc);
+                        graphics.setFont(figure.getFont());
                         graphics.translate(contentBounds.x * -1 + MARGIN_X, contentBounds.y * -1 + MARGIN_Y);
                         figure.paint(graphics);
                         ImageLoader imageLoader = new ImageLoader();

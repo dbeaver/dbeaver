@@ -46,8 +46,8 @@ public class AISettingsManager {
     private static final String PROPERTIES_KEY = "properties";
     private static final String ENGINE_CONFIGURATIONS_KEY = "engineConfigurations";
     private static final String FUNCTIONS_ENABLED_KEY = "functionsEnabled";
-    private static final String ENABLED_FUNCTION_CATEGORIES_KEY = "enabledFunctionCategories";
-    private static final String ENABLED_FUNCTIONS_KEY = "enabledFunctions";
+    private static final String ENABLED_FUNCTION_CATEGORIES_KEY = "aiEnabledFunctionCategories";
+    private static final String ENABLED_FUNCTIONS_KEY = "aiEnabledFunctions";
     private static final String INITIALIZED_DEFAULT_CATEGORIES_KEY = "initializedDefaultCategories";
     private static final String CUSTOM_INSTRUCTIONS_KEY = "customInstructions";
     public static final String ENGINE_PROPERTIES = "properties";
