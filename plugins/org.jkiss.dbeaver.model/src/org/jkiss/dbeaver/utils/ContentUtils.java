@@ -75,15 +75,22 @@ public class ContentUtils {
 */
     }
 
-    public static Path makeTempFile(Path folder, String name, String extension) throws IOException {
+    @NotNull
+    public static Path makeTempFile(@NotNull Path folder, @NotNull String name, @NotNull String extension) throws IOException {
         name = CommonUtils.escapeFileName(name);
+        if (name.isEmpty()) {
+            name = "tmp";
+        }
         Path tempFile = folder.resolve(name + "-" + System.currentTimeMillis() + "." + extension);  //$NON-NLS-1$ //$NON-NLS-2$
         Files.createFile(tempFile);
         return tempFile;
     }
 
-    public static void saveContentToFile(InputStream contentStream, File file, DBRProgressMonitor monitor)
-        throws IOException {
+    public static void saveContentToFile(
+        @NotNull InputStream contentStream,
+        @NotNull File file,
+        @NotNull DBRProgressMonitor monitor
+    ) throws IOException {
         try (OutputStream os = new FileOutputStream(file)) {
             copyStreams(contentStream, file.length(), os, monitor);
         }
@@ -96,8 +103,12 @@ public class ContentUtils {
         }
     }
 
-    public static void saveContentToFile(Reader contentReader, File file, String charset, DBRProgressMonitor monitor)
-        throws IOException {
+    public static void saveContentToFile(
+        @NotNull Reader contentReader,
+        @NotNull File file,
+        @NotNull String charset,
+        @NotNull DBRProgressMonitor monitor
+    ) throws IOException {
         try (Writer writer = new OutputStreamWriter(new FileOutputStream(file), charset)) {
             copyStreams(contentReader, file.length(), writer, monitor);
         }
@@ -201,7 +212,10 @@ public class ContentUtils {
         }
     }
 
-    public static void close(Closeable closeable) {
+    public static void close(@Nullable Closeable closeable) {
+        if (closeable == null) {
+            return;
+        }
         try {
             closeable.close();
         } catch (IOException e) {
@@ -213,16 +227,16 @@ public class ContentUtils {
         return IOUtils.readToString(new UnicodeReader(is, charset));
     }
 
-    public static boolean isTextContent(DBDContent content) {
+    public static boolean isTextContent(@Nullable DBDContent content) {
         String contentType = content == null ? null : content.getContentType();
         return contentType != null && contentType.toLowerCase(Locale.ENGLISH).startsWith("text");
     }
 
-    public static boolean isTextMime(String mimeType) {
+    public static boolean isTextMime(@Nullable String mimeType) {
         return mimeType != null && mimeType.toLowerCase(Locale.ENGLISH).startsWith("text");
     }
 
-    public static boolean isTextValue(Object value) {
+    public static boolean isTextValue(@Nullable Object value) {
         if (value == null) {
             return false;
         }
@@ -318,13 +332,13 @@ public class ContentUtils {
         return null;
     }
 
-    public static void deleteTempFile(File tempFile) {
+    public static void deleteTempFile(@NotNull File tempFile) {
         if (!tempFile.delete()) {
             log.warn("Can't delete temp file '" + tempFile.getAbsolutePath() + "'");
         }
     }
 
-    public static void deleteTempFile(Path tempFile) {
+    public static void deleteTempFile(@NotNull Path tempFile) {
         try {
             Files.delete(tempFile);
         } catch (IOException e) {
@@ -332,7 +346,7 @@ public class ContentUtils {
         }
     }
 
-    public static boolean deleteFileRecursive(File file) {
+    public static boolean deleteFileRecursive(@NotNull File file) {
         if (file.isDirectory()) {
             File[] files = file.listFiles();
             if (files != null) {
@@ -346,7 +360,7 @@ public class ContentUtils {
         return file.delete();
     }
 
-    public static boolean deleteFileRecursive(Path file) {
+    public static boolean deleteFileRecursive(@NotNull Path file) {
         if (Files.isDirectory(file)) {
             try (Stream<Path> list = Files.list(file)) {
                 List<Path> files = list.toList();
@@ -368,7 +382,7 @@ public class ContentUtils {
         return true;
     }
 
-    public static void makeFileBackup(Path file) {
+    public static void makeFileBackup(@NotNull Path file) {
         if (!Files.exists(file)) {
             return;
         }
