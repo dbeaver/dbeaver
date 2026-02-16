@@ -84,7 +84,7 @@ public class DeleteColumnAction extends GroupingAction {
             .mapToInt(currentBinding -> ArrayUtils.indexOf(existingBindings, currentBinding))
             .filter(i -> i >= 0)
             .boxed()
-            .sorted(Comparator.reverseOrder()) // delete starting from last index, not to cahth index out of bounds
+            .sorted(Comparator.reverseOrder()) // delete starting from last index, not to catch index out of bounds
             .map(columnsContainer::createRemoveStrategy)
             .filter(GroupingColumnsContainer.RemoveColumnStrategy::canBeRemoved)
             .toList();

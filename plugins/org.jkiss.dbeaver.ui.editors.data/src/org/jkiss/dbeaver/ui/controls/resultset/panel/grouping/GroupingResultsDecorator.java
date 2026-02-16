@@ -23,7 +23,6 @@ import org.eclipse.swt.widgets.Control;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLGroupingAttribute;
@@ -41,7 +40,6 @@ import org.jkiss.dbeaver.ui.controls.resultset.spreadsheet.Spreadsheet;
 import org.jkiss.utils.ArrayUtils;
 
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 
 /**
@@ -166,83 +164,35 @@ public class GroupingResultsDecorator extends ResultSetDecoratorBase {
                 }
                 List<Object> dropElements = (List<Object>) event.data;
                 List<SQLGroupingAttribute> newBindings = new ArrayList<>();
-                List<SQLGroupingAttribute> movedBindings = new ArrayList<>();
-                List<String> movedGroupFunctionAliases = new ArrayList<>();
+                List<Integer> movedBindingsIndexes = new ArrayList<>();
                 for (Object element : dropElements) {
                     if (element instanceof DBDAttributeBinding currentBinding) {
                         int attrBindingIndex = ArrayUtils.indexOf(
                             container.getResultSetController().getModel().getAttributes(),
                             currentBinding
                         );
-                        if (attrBindingIndex >= 0 && currentBinding.getDataContainer() instanceof GroupingDataContainer dataContainer) {
+                        if (attrBindingIndex >= 0) {
                             // It is column move, not new binding
-                            SQLGroupingAttribute[] currAttrs = dataContainer.getGroupingAttributes();
-                            if (currAttrs != null && attrBindingIndex < currAttrs.length) {
-                                movedBindings.add(currAttrs[attrBindingIndex]);
-                            } else {
-                                movedGroupFunctionAliases.add(currentBinding.getFullyQualifiedName(DBPEvaluationContext.UI));
-                            }
+                            movedBindingsIndexes.add(attrBindingIndex);
                         } else {
                             newBindings.add(SQLGroupingAttribute.makeBound(currentBinding));
                         }
                     }
                 }
-                if (movedBindings.isEmpty() && newBindings.isEmpty() && movedGroupFunctionAliases.isEmpty()) {
+                if (movedBindingsIndexes.isEmpty() && newBindings.isEmpty()) {
                     return;
                 }
-                if (!movedBindings.isEmpty()) {
+                if (!movedBindingsIndexes.isEmpty()) {
                     // Reorder columns
-                    List<SQLGroupingAttribute> curAttributes = new ArrayList<>(container.getGroupAttributes());
                     int overColumnIndex = getOverColumnIndex(event, presentation);
                     if (overColumnIndex < 0) {
                         return;
                     }
-
-                    curAttributes.removeAll(movedBindings);
-                    if (overColumnIndex >= curAttributes.size()) {
-                        curAttributes.addAll(movedBindings);
-                    } else {
-                        curAttributes.addAll(overColumnIndex, movedBindings);
-                    }
-                    container.clearGroupingAttributes();
-                    container.addGroupingAttributes(curAttributes);
+                    container.getColumnsContainer().moveColumns(overColumnIndex, movedBindingsIndexes);
                 }
 
                 if (!newBindings.isEmpty()) {
                     container.addGroupingAttributes(newBindings);
-                }
-
-                if (!movedGroupFunctionAliases.isEmpty()) {
-                    List<String> swappedGroupingFunctions = new ArrayList<>(container.getGroupFunctions());
-                    int overColumnIndex = getOverColumnIndex(event, presentation);
-                    if (overColumnIndex < 0) {
-                        return;
-                    }
-                    // for now functions can only be placed after attributes
-                    int overColumnIndexRelativeToLastAttribute = overColumnIndex - container.getGroupAttributes().size();
-                    if (overColumnIndexRelativeToLastAttribute < 0) {
-                        overColumnIndexRelativeToLastAttribute = 0;
-                        // TODO correct for percent function
-                    } else if (overColumnIndexRelativeToLastAttribute >= swappedGroupingFunctions.size()) {
-                        overColumnIndexRelativeToLastAttribute = swappedGroupingFunctions.size() - 1;
-                    }
-
-                    List<String> removedFunctions =
-                        movedGroupFunctionAliases.stream()
-                            .map(container::searchFunctionIndexByAlias)
-                            .sorted(Comparator.reverseOrder())
-                            .mapToInt(Integer::intValue)
-                            .filter(i -> i >= 0)
-                            .mapToObj(swappedGroupingFunctions::remove)
-                            .toList()
-                            .reversed();
-                    if (overColumnIndexRelativeToLastAttribute >= swappedGroupingFunctions.size()) {
-                        swappedGroupingFunctions.addAll(removedFunctions);
-                    } else {
-                        swappedGroupingFunctions.addAll(overColumnIndexRelativeToLastAttribute, removedFunctions);
-                    }
-                    container.clearGroupingFunctions();
-                    container.addGroupingFunctions(swappedGroupingFunctions);
                 }
 
                 UIUtils.asyncExec(() -> {

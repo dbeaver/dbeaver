@@ -19,9 +19,7 @@ package org.jkiss.dbeaver.ui.controls.resultset.panel.grouping;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.sql.SQLGroupingAttribute;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 import java.util.function.Supplier;
 
 public class GroupingColumnsContainer {
@@ -38,30 +36,16 @@ public class GroupingColumnsContainer {
     public void addGroupingFunction(@NotNull String function) {
         if (isPercentFunctionPresent()
             && percentFunctionInGroupingFunctionsIndex == groupingFunctionsSize() - 1) {
+            groupingFunctions.add(percentFunctionInGroupingFunctionsIndex, function);
             percentFunctionInGroupingFunctionsIndex++;
+        } else {
+            groupingFunctions.add(function);
         }
-        groupingFunctions.add(function);
-    }
-
-    public void addGroupingFunctions(@NotNull List<String> functions) {
-        addGroupingFunctions(groupingFunctions.size(), functions);
     }
 
     public void addPercentFunction(@NotNull String percentFunction) {
-        addGroupingFunctions(List.of(percentFunction));
+        addGroupingFunction(percentFunction);
         percentFunctionInGroupingFunctionsIndex = groupingFunctions.size() - 1;
-    }
-
-    public void addGroupingFunctions(int index, @NotNull List<String> functions) {
-        if (percentFunctionInGroupingFunctionsIndex >= index) {
-            percentFunctionInGroupingFunctionsIndex += functions.size();
-        }
-        groupingFunctions.addAll(index, functions);
-    }
-
-    public void movePercentFunction(int toIndex) {
-        Collections.swap(groupingFunctions, percentFunctionInGroupingFunctionsIndex, toIndex);
-        percentFunctionInGroupingFunctionsIndex = toIndex;
     }
 
     public void addAttribute(@NotNull SQLGroupingAttribute attribute) {
@@ -110,7 +94,9 @@ public class GroupingColumnsContainer {
     @NotNull
     public List<String> getUserDefinedFunctions() {
         List<String> userFunctions = new ArrayList<>(groupingFunctions);
-        userFunctions.remove(percentFunctionInGroupingFunctionsIndex);
+        if (isPercentFunctionPresent()) {
+            userFunctions.remove(percentFunctionInGroupingFunctionsIndex);
+        }
         return userFunctions;
     }
 
@@ -129,8 +115,106 @@ public class GroupingColumnsContainer {
         return percentFunctionInGroupingFunctionsIndex >= 0;
     }
 
+    public void moveColumns(int overColumnIndex, @NotNull List<Integer> indexesToMove) {
+        SortedSet<Integer> attributesToMove = new TreeSet<>(Comparator.reverseOrder());
+        SortedSet<Integer> functionsToMove = new TreeSet<>(Comparator.reverseOrder());
+        for (Integer index : indexesToMove) {
+            if (instanceTypeByIndex(index) == InstanceType.ATTRIBUTE) {
+                attributesToMove.add(index);
+            } else {
+                functionsToMove.add(fullIndexToFunctionIndex(index));
+            }
+        }
+        // for now functions can only be placed after attributes
+        if (!attributesToMove.isEmpty()) {
+            int attrOverColumn = overColumnIndex >= attributesSize() ? attributesSize() - 1 : overColumnIndex;
+            moveElements(groupAttributes, attrOverColumn, attributesToMove);
+        }
+        if (!functionsToMove.isEmpty()) {
+            int funcOverColumn = overColumnIndex >= attributesSize() ? fullIndexToFunctionIndex(overColumnIndex) : 0;
+            moveElements(groupingFunctions, funcOverColumn, functionsToMove);
+            int percentFunctionIndexInMoved = findPercentFunctionIndex(functionsToMove);
+            if (percentFunctionIndexInMoved >= 0) {
+                percentFunctionInGroupingFunctionsIndex = funcOverColumn + percentFunctionIndexInMoved;
+            } else if (funcOverColumn <= percentFunctionInGroupingFunctionsIndex) {
+                percentFunctionInGroupingFunctionsIndex += countPercentFunctionIndexDelta(functionsToMove);
+            }
+        }
+    }
+
+    private static <T> void moveElements(
+        @NotNull List<T> listToModify,
+        int toIndex,
+        @NotNull SortedSet<Integer> indexesToMoveSortedInDescOrder
+    ) {
+        List<T> removedElements = new ArrayList<>(indexesToMoveSortedInDescOrder.size());
+        for (Integer index : indexesToMoveSortedInDescOrder) {
+            removedElements.addFirst(listToModify.remove(index.intValue()));
+        }
+        if (toIndex >= listToModify.size()) {
+            listToModify.addAll(removedElements);
+        } else {
+            listToModify.addAll(toIndex, removedElements);
+        }
+    }
+
+    private int countPercentFunctionIndexDelta(@NotNull Collection<Integer> functionIndexesToMove) {
+        int countLaterIndexes = 0;
+        int countEarlierIndexes = 0;
+        for (Integer index : functionIndexesToMove) {
+            if (index > percentFunctionInGroupingFunctionsIndex) {
+                countLaterIndexes++;
+            } else if (index < percentFunctionInGroupingFunctionsIndex) {
+                countEarlierIndexes++;
+            }
+        }
+        return countLaterIndexes - countEarlierIndexes;
+    }
+
+    private InstanceType instanceTypeByIndex(int index) {
+        return index < attributesSize()
+            ? InstanceType.ATTRIBUTE
+            : index == getPercentFunctionIndex()
+                ? InstanceType.PERCENT_GROUPING_FUNCTION
+                : InstanceType.GROUPING_FUNCTION;
+
+    }
+
+    private boolean removeFunction(int functionIndex) {
+        if (percentFunctionInGroupingFunctionsIndex == functionIndex) {
+            return removePercentFunction();
+        } else {
+            boolean wasRemoved = groupingFunctions.remove(functionIndex) != null;
+            if (percentFunctionInGroupingFunctionsIndex >= functionIndex && wasRemoved) {
+                percentFunctionInGroupingFunctionsIndex--;
+            }
+            return wasRemoved;
+        }
+    }
+
+    private int fullIndexToFunctionIndex(int index) {
+        int groupingFunctionIndex = index - attributesSize();
+        if (groupingFunctionIndex < 0 || groupingFunctionIndex >= groupingFunctions.size()) {
+            throw new IndexOutOfBoundsException(
+                "Not found index in grouping func. Attributes size [%d] Grouping function size [%d] index to convert [%d]"
+                    .formatted(attributesSize(), groupingFunctionsSize(), index));
+        }
+        return groupingFunctionIndex;
+    }
+
+    private int findPercentFunctionIndex(@NotNull Collection<Integer> indexes) {
+        int foundIndex = 0;
+        for (Integer index : indexes) {
+            if (index.equals(percentFunctionInGroupingFunctionsIndex)) {
+                return foundIndex;
+            }
+            foundIndex++;
+        }
+        return -1;
+    }
+
     @NotNull
-    public RemoveColumnStrategy createRemoveStrategy(@NotNull Integer index) {
+    public RemoveColumnStrategy createRemoveStrategy(int index) {
         return new RemoveColumnStrategy(index);
     }
 
@@ -169,37 +253,6 @@ public class GroupingColumnsContainer {
             };
         }
 
-    }
-
-    private InstanceType instanceTypeByIndex(int index) {
-        return index < attributesSize()
-            ? InstanceType.ATTRIBUTE
-            : index == getPercentFunctionIndex()
-                ? InstanceType.PERCENT_GROUPING_FUNCTION
-                : InstanceType.GROUPING_FUNCTION;
-
-    }
-
-    private boolean removeFunction(int functionIndex) {
-        if (percentFunctionInGroupingFunctionsIndex == functionIndex) {
-            return removePercentFunction();
-        } else {
-            boolean wasRemoved = groupingFunctions.remove(functionIndex) != null;
-            if (percentFunctionInGroupingFunctionsIndex >= functionIndex && wasRemoved) {
-                percentFunctionInGroupingFunctionsIndex--;
-            }
-            return wasRemoved;
-        }
-    }
-
-    private int fullIndexToFunctionIndex(int index) {
-        int groupingFunctionIndex = index - attributesSize();
-        if (groupingFunctionIndex < 0 || groupingFunctionIndex >= groupingFunctions.size()) {
-            throw new IndexOutOfBoundsException(
-                "Not found index in grouping func. Attributes size [%d] Grouping function size [%d] index to convert [%d]"
-                    .formatted(attributesSize(), groupingFunctionsSize(), index));
-        }
-        return groupingFunctionIndex;
     }
 
     public enum InstanceType {
