@@ -31,7 +31,6 @@ public class GroupingColumnsContainer {
     @NotNull
     private final List<Pair<String, Boolean>> groupingFunctions = new ArrayList<>();
 
-
     public void addGroupingFunction(@NotNull String function) {
         groupingFunctions.add(Pair.of(function, false));
     }
