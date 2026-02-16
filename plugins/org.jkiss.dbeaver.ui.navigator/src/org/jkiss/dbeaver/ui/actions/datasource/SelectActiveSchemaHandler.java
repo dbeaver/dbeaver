@@ -118,15 +118,20 @@ public class SelectActiveSchemaHandler extends AbstractDataSourceHandler impleme
             return null;
         }
         DBNDatabaseNode node = dialog.getSelectedObject();
-        if (node != null && node.getObject() != defaultObject) {
-            // Change current schema
-            changeDataBaseSelection(
-                activeEditor,
-                dataSourceContainer,
-                executionContext,
-                contextDefaultObjectsReader.getDefaultCatalogName(),
-                dialog.getCurrentInstanceName(),
-                node.getNodeDisplayName());
+        if (node != null) {
+            DBSObject selObject = node.getObject();
+            if (selObject != defaultObject) {
+                String schemaName = selObject instanceof DBSSchema ? selObject.getName() : null;
+                // Change current schema
+                changeDataBaseSelection(
+                    activeEditor,
+                    dataSourceContainer,
+                    executionContext,
+                    contextDefaultObjectsReader.getDefaultCatalogName(),
+                    dialog.getCurrentInstanceName(),
+                    schemaName
+                );
+            }
         }
 
         return null;
