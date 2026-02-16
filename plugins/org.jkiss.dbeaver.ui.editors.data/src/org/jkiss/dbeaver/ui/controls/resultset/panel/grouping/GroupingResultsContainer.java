@@ -38,11 +38,9 @@ import org.jkiss.dbeaver.ui.controls.resultset.*;
 import org.jkiss.dbeaver.ui.controls.resultset.view.EmptyPresentation;
 import org.jkiss.utils.CommonUtils;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.Collectors;
 
 public class GroupingResultsContainer implements IResultSetContainer {
 
@@ -80,7 +78,6 @@ public class GroupingResultsContainer implements IResultSetContainer {
     private void initDefaultSettings() {
         columnsContainer.clear();
         removePercentColumn();
-        addGroupingFunctions(Collections.singletonList(getDefaultFunction()));
     }
 
     public IResultSetPresentation getOwnerPresentation() {
@@ -93,8 +90,8 @@ public class GroupingResultsContainer implements IResultSetContainer {
     }
 
     @NotNull
-    public List<String> getGroupFunctions() {
-        return columnsContainer.getGroupFunctions();
+    public List<String> getUserDefinedGroupFunctions() {
+        return columnsContainer.getUserDefinedFunctions();
     }
 
     @Nullable
@@ -149,21 +146,23 @@ public class GroupingResultsContainer implements IResultSetContainer {
         attributes.forEach(columnsContainer::addAttribute);
     }
 
-    public boolean removeColumns(List<GroupingColumnsContainer.RemoveStrategy> removeStrategies) {
-        boolean isAttributesChanged = false;
-        boolean anyChange = false;
-        for (GroupingColumnsContainer.RemoveStrategy removeStrategy : removeStrategies) {
-            if (removeStrategy.removeColumn()) {
-                anyChange = true;
-                if (removeStrategy.getType() == GroupingColumnsContainer.InstanceType.ATTRIBUTE) {
-                    isAttributesChanged = true;
-                }
-            }
-        }
-        if (isAttributesChanged) {
+    public boolean removeColumns(@NotNull List<GroupingColumnsContainer.RemoveColumnStrategy> removeStrategies) {
+        Set<GroupingColumnsContainer.InstanceType> executedStrategies = removeStrategies.stream()
+            .filter(GroupingColumnsContainer.RemoveColumnStrategy::removeColumn)
+            .map(GroupingColumnsContainer.RemoveColumnStrategy::getType)
+            .collect(Collectors.toSet());
+
+        if (executedStrategies.contains(GroupingColumnsContainer.InstanceType.ATTRIBUTE)) {
             resetDataFilters();
         }
-        return anyChange;
+        if (executedStrategies.contains(GroupingColumnsContainer.InstanceType.PERCENT_GROUPING_FUNCTION)) {
+            dataContainer.removeAttributeTransformer();
+            DBPDataSource dataSource = getDataContainer().getDataSource();
+            if (dataSource != null) {
+                dataSource.getContainer().getPreferenceStore().setValue(ResultSetPreferences.RS_GROUPING_SHOW_PERCENT_OF_TOTAL_ROWS, false);
+            }
+        }
+        return !executedStrategies.isEmpty();
     }
 
     public void addGroupingFunctions(List<String> functions) {
@@ -201,7 +200,7 @@ public class GroupingResultsContainer implements IResultSetContainer {
         if (dataSource == null) {
             throw new DBException("No active datasource");
         }
-        addExtraGroupFunctionsColumns(dataSource);
+        addPercentColumn(dataSource);
         if (columnsContainer.isEmpty()) {
             groupingViewer.showEmptyPresentation();
             return;
@@ -256,6 +255,14 @@ public class GroupingResultsContainer implements IResultSetContainer {
     public void removePercentColumn() {
         dataContainer.removeAttributeTransformer();
         columnsContainer.removePercentFunction();
+        if (columnsContainer.isFunctionsEmpty()) {
+            addGroupingFunctions(Collections.singletonList(getDefaultFunction()));
+        }
+    }
+
+    @NotNull
+    public GroupingColumnsContainer getColumnsContainer() {
+        return columnsContainer;
     }
 
     @NotNull
@@ -272,22 +279,19 @@ public class GroupingResultsContainer implements IResultSetContainer {
         resetDataFilters();
     }
 
-    private void addExtraGroupFunctionsColumns(@NotNull DBPDataSource dataSource) {
+    private void addPercentColumn(@NotNull DBPDataSource dataSource) {
         boolean isShowTotalPercentColumn = dataSource.getContainer().getPreferenceStore()
             .getBoolean(ResultSetPreferences.RS_GROUPING_SHOW_PERCENT_OF_TOTAL_ROWS);
         if (isShowTotalPercentColumn) {
-            addPercentageColumn();
+            if (!columnsContainer.isPercentFunctionPresent()) {
+                columnsContainer.addPercentFunction(getDefaultFunction());
+            }
+            dataContainer.setAttributeTransformer(
+                columnsContainer.getPercentFunctionIndex(),
+                new PercentOfTotalGroupingAttributeTransformer(this::getTotalRowCount)
+            );
         }
     }
-
-    private void addPercentageColumn() {
-        columnsContainer.addPercentFunction(getDefaultFunction());
-        dataContainer.setAttributeTransformer(
-            columnsContainer.getPercentFunctionIndex(),
-            new PercentOfTotalGroupingAttributeTransformer(this::getTotalRowCount)
-        );
-    }
-
 
     private long getTotalRowCount(@NotNull DBRProgressMonitor monitor) throws DBException {
         return DBUtils.readRowCount(

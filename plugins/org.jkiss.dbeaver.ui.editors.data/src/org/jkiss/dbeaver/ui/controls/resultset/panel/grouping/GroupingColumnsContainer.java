@@ -70,14 +70,6 @@ public class GroupingColumnsContainer {
         }
     }
 
-    @NotNull
-    public List<RemoveStrategy> getRemoveStrategies(@NotNull List<Integer> columnsToRemove) {
-        return columnsToRemove
-            .stream()
-            .map(RemoveStrategy::new)
-            .filter(RemoveStrategy::canBeRemoved)
-            .toList();
-    }
 
     public void clear() {
         groupAttributes.clear();
@@ -95,7 +87,11 @@ public class GroupingColumnsContainer {
     }
 
     public boolean isEmpty() {
-        return groupAttributes.isEmpty() || groupingFunctions.isEmpty();
+        return groupAttributes.isEmpty() || isFunctionsEmpty();
+    }
+
+    public boolean isFunctionsEmpty() {
+        return groupingFunctions.isEmpty();
     }
 
     public int groupingFunctionsSize() {
@@ -109,6 +105,13 @@ public class GroupingColumnsContainer {
     @NotNull
     public List<String> getGroupFunctions() {
         return new ArrayList<>(groupingFunctions);
+    }
+
+    @NotNull
+    public List<String> getUserDefinedFunctions() {
+        List<String> userFunctions = new ArrayList<>(groupingFunctions);
+        userFunctions.remove(percentFunctionInGroupingFunctionsIndex);
+        return userFunctions;
     }
 
     @NotNull
@@ -126,13 +129,18 @@ public class GroupingColumnsContainer {
         return percentFunctionInGroupingFunctionsIndex >= 0;
     }
 
-    public class RemoveStrategy {
+    @NotNull
+    public RemoveColumnStrategy createRemoveStrategy(@NotNull Integer index) {
+        return new RemoveColumnStrategy(index);
+    }
+
+    public class RemoveColumnStrategy {
 
         private final Supplier<Boolean> removeFunction;
 
         private final InstanceType type;
 
-        public RemoveStrategy(@NotNull Integer index) {
+        public RemoveColumnStrategy(int index) {
             this.type = instanceTypeByIndex(index);
             this.removeFunction = defineRemoveStrategy(index);
         }
@@ -146,26 +154,29 @@ public class GroupingColumnsContainer {
             return type;
         }
 
-        private boolean canBeRemoved() {
+        public boolean canBeRemoved() {
             return switch (type) {
                 case ATTRIBUTE -> groupAttributes.size() > 1;
                 case GROUPING_FUNCTION -> groupingFunctions.size() > 1;
+                case PERCENT_GROUPING_FUNCTION -> isPercentFunctionPresent();
             };
         }
 
-        private Supplier<Boolean> defineRemoveStrategy(@NotNull Integer index) {
+        private Supplier<Boolean> defineRemoveStrategy(int index) {
             return switch (type) {
-                case ATTRIBUTE -> () -> groupAttributes.remove(index.intValue()) != null;
-                case GROUPING_FUNCTION -> () -> removeFunction(fullIndexToFunctionIndex(index));
+                case ATTRIBUTE -> () -> groupAttributes.remove(index) != null;
+                case GROUPING_FUNCTION, PERCENT_GROUPING_FUNCTION -> () -> removeFunction(fullIndexToFunctionIndex(index));
             };
         }
 
     }
 
-    private InstanceType instanceTypeByIndex(@NotNull Integer index) {
+    private InstanceType instanceTypeByIndex(int index) {
         return index < attributesSize()
             ? InstanceType.ATTRIBUTE
-            : InstanceType.GROUPING_FUNCTION;
+            : index == getPercentFunctionIndex()
+                ? InstanceType.PERCENT_GROUPING_FUNCTION
+                : InstanceType.GROUPING_FUNCTION;
 
     }
 
@@ -193,6 +204,7 @@ public class GroupingColumnsContainer {
 
     public enum InstanceType {
         ATTRIBUTE,
-        GROUPING_FUNCTION;
+        GROUPING_FUNCTION,
+        PERCENT_GROUPING_FUNCTION;
     }
 }
