@@ -156,7 +156,7 @@ public class GroupingResultsContainer implements IResultSetContainer {
             resetDataFilters();
         }
         if (executedStrategies.contains(GroupingColumnsContainer.InstanceType.PERCENT_GROUPING_FUNCTION)) {
-            dataContainer.removeAttributeTransformer();
+            removePercentColumn();
             DBPDataSource dataSource = getDataContainer().getDataSource();
             if (dataSource != null) {
                 dataSource.getContainer().getPreferenceStore().setValue(ResultSetPreferences.RS_GROUPING_SHOW_PERCENT_OF_TOTAL_ROWS, false);
