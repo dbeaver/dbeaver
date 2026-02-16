@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
+import org.jkiss.dbeaver.ui.controls.resultset.IResultSetController;
 import org.jkiss.dbeaver.ui.controls.resultset.IResultSetSelection;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetListenerAdapter;
 import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
@@ -41,7 +42,8 @@ public class DeleteColumnAction extends GroupingAction {
 
     public DeleteColumnAction(@NotNull GroupingResultsContainer resultsContainer) {
         super(resultsContainer, ResultSetMessages.controls_resultset_grouping_remove_column, DBeaverIcons.getImageDescriptor(UIIcon.CLOSE));
-        groupingResultsContainer.getResultSetController().addListener(new ResultSetListenerAdapter() {
+        IResultSetController resultSetController = groupingResultsContainer.getResultSetController();
+        resultSetController.addListener(new ResultSetListenerAdapter() {
             @Override
             public void handleResultSetSelectionChange(SelectionChangedEvent event) {
                 if (event.getSelection() instanceof IResultSetSelection resultSetSelection) {
@@ -50,6 +52,7 @@ public class DeleteColumnAction extends GroupingAction {
                 }
             }
         });
+        removeColumnStrategies = defineRemoveStrategies(resultSetController.getSelection().getSelectedAttributes());
         setEnabled(isEnabled());
     }
 
