@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,12 +19,17 @@ package org.jkiss.dbeaver.runtime;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.app.DBPApplicationWorkbench;
 import org.jkiss.dbeaver.model.app.DBPPlatform;
 import org.jkiss.dbeaver.model.impl.app.AbstractApplication;
+import org.jkiss.dbeaver.model.runtime.DBRRunnableWithParam;
 import org.jkiss.dbeaver.runtime.ui.DBPPlatformUI;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Workbench
@@ -34,6 +39,7 @@ public class DBWorkbench {
     private static final Log log = Log.getLog(DBWorkbench.class);
 
     private static DBPApplicationWorkbench applicationWorkbench;
+    private static final List<DBRRunnableWithParam<DBPPlatform>> initHooks = new ArrayList<>();
 
     private static DBPApplicationWorkbench getApplicationWorkbench() {
         if (applicationWorkbench == null) {
@@ -43,6 +49,20 @@ public class DBWorkbench {
                 log.debug("Error checking application instance", e);
             }
             applicationWorkbench = RuntimeUtils.getBundleService(DBPApplicationWorkbench.class, true);
+            if (applicationWorkbench == null) {
+                throw new IllegalStateException("Internal error: application workbench is not instantiated");
+            }
+            DBPPlatform platform = applicationWorkbench.getPlatform();
+
+            // Run init hooks
+            for (DBRRunnableWithParam<DBPPlatform> hook : initHooks) {
+                try {
+                    hook.run(platform);
+                } catch (Throwable e) {
+                    throw new IllegalStateException("Error running platform init hook", e);
+                }
+            }
+            initHooks.clear();
         }
         return applicationWorkbench;
     }
@@ -88,6 +108,14 @@ public class DBWorkbench {
 
     public static boolean hasFeature(@NotNull String feature) {
         return getPlatform().getApplication().hasProductFeature(feature);
+    }
+
+    public static void addInitializeHook(@NotNull DBRRunnableWithParam<DBPPlatform> hook) throws DBException {
+        if (isPlatformStarted()) {
+            hook.run(getPlatform());
+            return;
+        }
+        initHooks.add(hook);
     }
 
 }
