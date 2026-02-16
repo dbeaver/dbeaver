@@ -36,10 +36,12 @@ import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.ui.DataEditorFeatures;
 import org.jkiss.dbeaver.ui.controls.resultset.*;
 import org.jkiss.dbeaver.ui.controls.resultset.view.EmptyPresentation;
-import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.atomic.AtomicReference;
 
 public class GroupingResultsContainer implements IResultSetContainer {
@@ -51,13 +53,8 @@ public class GroupingResultsContainer implements IResultSetContainer {
     private final IResultSetPresentation presentation;
     private final GroupingDataContainer dataContainer;
     private final ResultSetViewer groupingViewer;
-    private final List<SQLGroupingAttribute> groupAttributes = new ArrayList<>();
-    private final List<String> groupFunctions = new ArrayList<>();
-    private String[] functionAliases = new String[]{};
+    private final GroupingColumnsContainer columnsContainer = new GroupingColumnsContainer();
     private final AtomicReference<DBDDataFilter> currentFiler = new AtomicReference<>();
-
-    //-1 if percent function is not present
-    private int percentFunctionOrderInStatement = -1;
 
     public GroupingResultsContainer(Composite parent, IResultSetPresentation presentation) {
         this.presentation = presentation;
@@ -81,8 +78,7 @@ public class GroupingResultsContainer implements IResultSetContainer {
     }
 
     private void initDefaultSettings() {
-        clearGroupingAttributes();
-        clearGroupingFunctions();
+        columnsContainer.clear();
         removePercentColumn();
         addGroupingFunctions(Collections.singletonList(getDefaultFunction()));
     }
@@ -93,12 +89,12 @@ public class GroupingResultsContainer implements IResultSetContainer {
 
     @NotNull
     public List<SQLGroupingAttribute> getGroupAttributes() {
-        return groupAttributes;
+        return columnsContainer.getGroupAttributes();
     }
 
     @NotNull
     public List<String> getGroupFunctions() {
-        return groupFunctions;
+        return columnsContainer.getGroupFunctions();
     }
 
     @Nullable
@@ -149,35 +145,25 @@ public class GroupingResultsContainer implements IResultSetContainer {
         return presentation.getController().getContainer();
     }
 
-    void clearGroupingAttributes() {
-        groupAttributes.clear();
-    }
-
-    public void clearGroupingFunctions() {
-        this.groupFunctions.clear();
-        this.functionAliases = new String[]{};
-    }
-
     void addGroupingAttributes(List<SQLGroupingAttribute> attributes) {
-        for (SQLGroupingAttribute attr : attributes) {
-            if (!groupAttributes.contains(attr)) {
-                groupAttributes.add(attr);
-            }
-        }
+        attributes.forEach(columnsContainer::addAttribute);
     }
 
-    public boolean removeGroupingAttribute(List<SQLGroupingAttribute> attributes) {
-        boolean changed = false;
-        for (SQLGroupingAttribute attr : attributes) {
-            if (groupAttributes.contains(attr)) {
-                groupAttributes.remove(attr);
-                changed = true;
+    public boolean removeColumns(List<GroupingColumnsContainer.RemoveStrategy> removeStrategies) {
+        boolean isAttributesChanged = false;
+        boolean anyChange = false;
+        for (GroupingColumnsContainer.RemoveStrategy removeStrategy : removeStrategies) {
+            if (removeStrategy.removeColumn()) {
+                anyChange = true;
+                if (removeStrategy.getType() == GroupingColumnsContainer.InstanceType.ATTRIBUTE) {
+                    isAttributesChanged = true;
+                }
             }
         }
-        if (changed) {
+        if (isAttributesChanged) {
             resetDataFilters();
         }
-        return changed;
+        return anyChange;
     }
 
     public void addGroupingFunctions(List<String> functions) {
@@ -185,26 +171,9 @@ public class GroupingResultsContainer implements IResultSetContainer {
             DBPDataSource dataSource = getDataContainer().getDataSource();
             if (dataSource != null) {
                 func = DBUtils.getUnQuotedIdentifier(dataSource, func);
-                groupFunctions.add(func);
+                columnsContainer.addGroupingFunction(func);
             }
         }
-    }
-
-    public boolean removeGroupingFunctionByAlias(List<String> attributes) {
-        boolean changed = false;
-        DBPDataSource dataSource = getDataContainer().getDataSource();
-        if (dataSource != null) {
-            for (String func : attributes) {
-                func = DBUtils.getUnQuotedIdentifier(dataSource, func);
-                int index = searchFunctionIndexByAlias(func);
-                if (index >= 0) {
-                    // clear alias, clear func
-                    groupFunctions.remove(index);
-                    changed = true;
-                }
-            }
-        }
-        return changed;
     }
 
     public void clearGrouping() {
@@ -222,10 +191,6 @@ public class GroupingResultsContainer implements IResultSetContainer {
     }
 
     public void rebuildGrouping() throws DBException {
-        if (groupAttributes.isEmpty() || groupFunctions.isEmpty()) {
-            groupingViewer.showEmptyPresentation();
-            return;
-        }
         DBCStatistics statistics = presentation.getController().getModel().getStatistics();
         if (statistics == null) {
             throw new DBException("No main query - can't perform grouping");
@@ -236,6 +201,11 @@ public class GroupingResultsContainer implements IResultSetContainer {
         if (dataSource == null) {
             throw new DBException("No active datasource");
         }
+        addExtraGroupFunctionsColumns(dataSource);
+        if (columnsContainer.isEmpty()) {
+            groupingViewer.showEmptyPresentation();
+            return;
+        }
         SQLDialect dialect = SQLUtils.getDialectFromDataSource(dataSource);
         SQLSyntaxManager syntaxManager = new SQLSyntaxManager();
         syntaxManager.init(dialect, presentation.getController().getPreferenceStore());
@@ -244,13 +214,15 @@ public class GroupingResultsContainer implements IResultSetContainer {
             .getBoolean(ResultSetPreferences.RS_GROUPING_SHOW_DUPLICATES_ONLY);
         DBDDataFilter dataFilter = getDataFilter();
 
+        var groupAttributes = columnsContainer.getGroupAttributes();
+        var groupFunctions = columnsContainer.getGroupFunctions();
         var groupingQueryGenerator = new SQLGroupingQueryGenerator(
             dataSource,
             dbsDataContainer,
             dialect,
             syntaxManager,
             groupAttributes,
-            getGroupFunctionsWithExtraColumns(dataSource),
+            groupFunctions,
             isShowDuplicatesOnly
         );
         dataContainer.setGroupingQuery(groupingQueryGenerator.generateGroupingQuery(queryText));
@@ -279,16 +251,11 @@ public class GroupingResultsContainer implements IResultSetContainer {
             "dups", isShowDuplicatesOnly
         ));
         groupingViewer.setDataFilter(dataFilter, true);
-        this.functionAliases = groupingQueryGenerator.getFuncAliases();
     }
 
     public void removePercentColumn() {
         dataContainer.removeAttributeTransformer();
-        percentFunctionOrderInStatement = -1;
-    }
-
-    public int getPercentFunctionOrderInStatement() {
-        return percentFunctionOrderInStatement;
+        columnsContainer.removePercentFunction();
     }
 
     @NotNull
@@ -299,38 +266,28 @@ public class GroupingResultsContainer implements IResultSetContainer {
     }
 
     void setGrouping(List<SQLGroupingAttribute> attributes, List<String> functions) {
-        groupAttributes.clear();
+        columnsContainer.clear();
         addGroupingAttributes(attributes);
-
-        groupFunctions.clear();
         addGroupingFunctions(functions);
-
         resetDataFilters();
     }
 
-    private List<String> getGroupFunctionsWithExtraColumns(@NotNull DBPDataSource dataSource) {
+    private void addExtraGroupFunctionsColumns(@NotNull DBPDataSource dataSource) {
         boolean isShowTotalPercentColumn = dataSource.getContainer().getPreferenceStore()
             .getBoolean(ResultSetPreferences.RS_GROUPING_SHOW_PERCENT_OF_TOTAL_ROWS);
-        return isShowTotalPercentColumn ?
-            addPercentageColumn()
-            : getGroupFunctions();
+        if (isShowTotalPercentColumn) {
+            addPercentageColumn();
+        }
     }
 
-    private List<String> addPercentageColumn() {
-        List<String> allGroupFunctions = new ArrayList<>(getGroupFunctions());
-        String function = getDefaultFunction();
-        allGroupFunctions.add(function);
-        definePercentColumnIndex(allGroupFunctions);
+    private void addPercentageColumn() {
+        columnsContainer.addPercentFunction(getDefaultFunction());
         dataContainer.setAttributeTransformer(
-            percentFunctionOrderInStatement,
+            columnsContainer.getPercentFunctionIndex(),
             new PercentOfTotalGroupingAttributeTransformer(this::getTotalRowCount)
         );
-        return allGroupFunctions;
     }
 
-    private void definePercentColumnIndex(@NotNull List<String> allGroupFunctions) {
-        percentFunctionOrderInStatement = getGroupAttributes().size() + allGroupFunctions.size() - 1;
-    }
 
     private long getTotalRowCount(@NotNull DBRProgressMonitor monitor) throws DBException {
         return DBUtils.readRowCount(
@@ -348,7 +305,7 @@ public class GroupingResultsContainer implements IResultSetContainer {
         if (dataFilter == null) {
             return null;
         }
-        List<DBDAttributeConstraint> attributeConstraints = groupAttributes.stream()
+        List<DBDAttributeConstraint> attributeConstraints = columnsContainer.getGroupAttributes().stream()
             .map(ga -> ga instanceof SQLGroupingAttribute.BoundAttribute boundAttribute
                 ? boundAttribute.getBindingName()
                 : ga.getDisplayName())
@@ -357,10 +314,6 @@ public class GroupingResultsContainer implements IResultSetContainer {
         DBDDataFilter newFilter = new DBDDataFilter(attributeConstraints);
         newFilter.setWhere(dataFilter.getWhere());
         return newFilter;
-    }
-
-    public int searchFunctionIndexByAlias(@NotNull String functionAlias) {
-        return ArrayUtils.indexOf(functionAliases, functionAlias);
     }
 
     private void resetDataFilters() {
