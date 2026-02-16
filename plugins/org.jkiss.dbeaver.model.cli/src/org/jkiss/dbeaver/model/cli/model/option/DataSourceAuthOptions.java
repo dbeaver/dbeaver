@@ -17,7 +17,6 @@
 package org.jkiss.dbeaver.model.cli.model.option;
 
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.model.cli.command.ListAuthenticationModelParameterHandler;
 import picocli.CommandLine;
 
 import java.util.List;
@@ -33,16 +32,14 @@ public class DataSourceAuthOptions {
 
     @Nullable
     @CommandLine.Option(
-        names = {"-auth", "--authentication-property"},
+        names = {"--auth-param"},
         arity = "1",
-        description = "Authentication parameter in the form 'name=value'. May be specified multiple times. "
-            + "See '" + ListAuthenticationModelParameterHandler.COMMAND_NAME + "' command for details"
-    )
+        description = "Authentication parameter in the form 'name=value'. May be specified multiple times")
     private List<String> authParams;
 
     @Nullable
     @CommandLine.Option(
-        names = {"-ext", "--extended-property"},
+        names = {"--provider-param"},
         arity = "1",
         description = "Database provider parameter in the form 'name=value'. May be specified multiple times"
     )
@@ -50,7 +47,7 @@ public class DataSourceAuthOptions {
 
     @Nullable
     @CommandLine.Option(
-        names = {"-prop", "--property"},
+        names = {"--connection-param"},
         arity = "1",
         description = "Database connection parameter in the form 'name=value'. May be specified multiple times"
     )
