@@ -142,7 +142,7 @@ public class GroupingResultsContainer implements IResultSetContainer {
         return presentation.getController().getContainer();
     }
 
-    void addGroupingAttributes(List<SQLGroupingAttribute> attributes) {
+    void addGroupingAttributes(@NotNull List<SQLGroupingAttribute> attributes) {
         attributes.forEach(columnsContainer::addAttribute);
     }
 
@@ -165,7 +165,7 @@ public class GroupingResultsContainer implements IResultSetContainer {
         return !executedStrategies.isEmpty();
     }
 
-    public void addGroupingFunctions(List<String> functions) {
+    public void addGroupingFunctions(@NotNull List<String> functions) {
         for (String func : functions) {
             DBPDataSource dataSource = getDataContainer().getDataSource();
             if (dataSource != null) {

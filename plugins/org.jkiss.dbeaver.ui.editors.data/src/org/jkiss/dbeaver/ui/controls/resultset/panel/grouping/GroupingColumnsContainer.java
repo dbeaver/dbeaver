@@ -187,17 +187,17 @@ public class GroupingColumnsContainer {
 
     public class RemoveColumnStrategy {
 
-        private final Supplier<Boolean> removeFunction;
+        private final Supplier<Boolean> removeColumnOperation;
 
         private final InstanceType type;
 
         public RemoveColumnStrategy(int index) {
             this.type = instanceTypeByIndex(index);
-            this.removeFunction = defineRemoveStrategy(index);
+            this.removeColumnOperation = defineRemoveStrategy(index);
         }
 
         public boolean removeColumn() {
-            return canBeRemoved() && removeFunction.get();
+            return canBeRemoved() && removeColumnOperation.get();
         }
 
         @NotNull
