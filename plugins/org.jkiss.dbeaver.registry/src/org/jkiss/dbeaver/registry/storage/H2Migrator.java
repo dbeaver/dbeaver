@@ -302,7 +302,15 @@ public class H2Migrator {
                 throw new IllegalArgumentException("No file path in URL: " + url);
             }
 
-            h2 = h2.substring(pathStart + 1);
+            // skip leading slash for "/X:\..."
+            if (pathStart + 2 < h2.length()
+                && Character.isLetter(h2.charAt(pathStart + 1))
+                && h2.charAt(pathStart + 2) == ':') {
+
+                pathStart++;
+            }
+
+            h2 = h2.substring(pathStart);
         }
 
         return Paths.get(h2);
