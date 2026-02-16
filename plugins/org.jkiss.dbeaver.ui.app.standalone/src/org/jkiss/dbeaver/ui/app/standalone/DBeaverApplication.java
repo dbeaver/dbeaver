@@ -670,7 +670,7 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
 
             log.debug("DBeaver shutdown completed"); //$NON-NLS-1$
 
-            stopDebugWriter();
+            //stopDebugWriter();
         }
     }
 
