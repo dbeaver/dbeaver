@@ -30,6 +30,10 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
 
+/**
+ * OSGi-related helper utilities.
+ *
+ */
 public final class OsgiUtils {
 
 
@@ -37,6 +41,15 @@ public final class OsgiUtils {
         // no instance
     }
 
+    /**
+     * Returns filesystem paths of OSGi bundles associated with the bundle
+     * that loaded the given class.
+     *
+     * @param clazz a class from the root bundle
+     * @param excludeSystemBundle whether to exclude the OSGi system bundle
+     * @return bundle paths, or empty if the class is not loaded from OSGi
+     * @throws IOException if a bundle path cannot be resolved
+     */
     @NotNull
     public static Collection<Path> collectBundlePaths(
         @NotNull Class<?> clazz,
