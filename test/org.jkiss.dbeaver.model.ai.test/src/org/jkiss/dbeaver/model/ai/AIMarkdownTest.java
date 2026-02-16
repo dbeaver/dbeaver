@@ -65,18 +65,22 @@ public class AIMarkdownTest extends DBeaverUnitTest {
              ```
              select 4;
             ```
+            Query 5:
+             ```
+            select 5
+             union all
+            select 6
+            ```
               and some footer
             """;
         MessageChunk[] messageChunks = AITextUtils.splitIntoChunks(md, true);
-        assertEquals(messageChunks.length, 9);
-        assertTrue(messageChunks[1] instanceof MessageChunk.Code);
-        assertEquals("select 1", ((MessageChunk.Code)messageChunks[1]).text());
-        assertTrue(messageChunks[3] instanceof MessageChunk.Code);
-        assertEquals("select 2", ((MessageChunk.Code)messageChunks[3]).text());
-        assertTrue(messageChunks[5] instanceof MessageChunk.Code);
-        assertEquals("    select 3;", ((MessageChunk.Code)messageChunks[5]).text());
-        assertTrue(messageChunks[7] instanceof MessageChunk.Code);
-        assertEquals(" select 4;", ((MessageChunk.Code)messageChunks[7]).text());
+        assertEquals(messageChunks.length, 11);
+        assertTrue(messageChunks[1] instanceof MessageChunk.Code code && "select 1".equals(code.text()));
+        assertTrue(messageChunks[3] instanceof MessageChunk.Code code && "select 2".equals(code.text()));
+        assertTrue(messageChunks[5] instanceof MessageChunk.Code code && "    select 3;".equals(code.text()));
+        assertTrue(messageChunks[7] instanceof MessageChunk.Code code && " select 4;".equals(code.text()));
+        assertEquals(messageChunks[8].toRawString(), "Query 5:");
+        assertTrue(messageChunks[9] instanceof MessageChunk.Code code && "select 5\n union all\nselect 6".equals(code.text()));
     }
 
 

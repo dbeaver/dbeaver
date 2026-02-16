@@ -34,6 +34,9 @@ public interface DBDResultSetModel {
     DBDAttributeBinding[] getAttributes() throws DBException;
 
     @NotNull
+    List<DBDAttributeBinding> getVisibleAttributes() throws DBException;
+
+    @NotNull
     List<? extends DBDValueRow> getAllRows();
 
     @Nullable

@@ -122,8 +122,8 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
-import java.util.List;
 import java.util.*;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 /**
@@ -1738,6 +1738,12 @@ public class ResultSetViewer extends Viewer
     @Override
     public DBDAttributeBinding[] getAttributes() throws DBException {
         return model.getAttributes();
+    }
+
+    @NotNull
+    @Override
+    public List<DBDAttributeBinding> getVisibleAttributes() throws DBException {
+        return model.getVisibleAttributes();
     }
 
     @NotNull
