@@ -33,7 +33,7 @@ public class DataSourceAuthOptions {
 
     @Nullable
     @CommandLine.Option(
-        names = {"-auth", "--authentication-property"},
+        names = {"-auth", "--auth-property"},
         arity = "1",
         description = "Authentication property in the form 'name=value'. May be specified multiple times. "
             + "See '" + ListAuthenticationModelParameterHandler.COMMAND_NAME + "' command for details"
