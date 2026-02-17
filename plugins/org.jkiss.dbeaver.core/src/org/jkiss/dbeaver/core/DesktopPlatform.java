@@ -97,6 +97,7 @@ public class DesktopPlatform extends BasePlatformImpl implements DBPPlatformDesk
         }
 
         this.certificateStorage = new DefaultCertificateStorage(
+            this,
             RuntimeUtils.getPluginStateLocation(DBeaverActivator.getInstance())
                 .resolve(DBConstants.CERTIFICATE_STORAGE_FOLDER));
 
