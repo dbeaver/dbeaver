@@ -75,6 +75,7 @@ public abstract class TaskConfigurationWizard<SETTINGS extends DBTTaskSettings> 
     private boolean promptVariables;
     private DBTTaskContext taskContext;
     @Nullable private DBTTaskFolder currentSelectedTaskFolder;
+    private boolean taskEditorDisabled;
 
     protected TaskConfigurationWizard() {
     }
@@ -180,6 +181,10 @@ public abstract class TaskConfigurationWizard<SETTINGS extends DBTTaskSettings> 
             addPage(new TaskConfigurationWizardPageTask(getCurrentTask()));
             addPage(new TaskConfigurationWizardPageSettings(getCurrentTask()));
         }
+    }
+
+    public boolean isTaskSaveEnabled() {
+        return !taskEditorDisabled;
     }
 
     public boolean isNewTaskEditor() {
@@ -356,6 +361,7 @@ public abstract class TaskConfigurationWizard<SETTINGS extends DBTTaskSettings> 
         if (tasksViewDescriptor == null || getContainer().isSelectorMode()) {
             // Do not create save buttons
             UIUtils.createEmptyLabel(parent, hSpan, 1);
+            taskEditorDisabled = true;
         } else {
             Composite panel = new Composite(parent, SWT.NONE);
             panel.setBackground(parent.getBackground());
