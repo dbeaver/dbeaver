@@ -273,7 +273,16 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
         log.debug("Instance path: '" + instanceLoc.getURL() + "'"); //$NON-NLS-1$ //$NON-NLS-2$
         log.debug("Memory available " + (runtime.totalMemory() / (1024 * 1024)) + "Mb/" + (runtime.maxMemory() / (1024 * 1024)) + "Mb");
 
-        DBWorkbench.getPlatform();
+        try {
+            DBWorkbench.getPlatform();
+        } catch (Throwable e) {
+            if (e instanceof DBRuntimeException re) {
+                e = re.getCause();
+            }
+            log.debug(e);
+            showMessageBox("Error initializing platform", CommonUtils.getAllExceptionMessages(e), SWT.ICON_ERROR);
+            return IApplication.EXIT_OK;
+        }
 
         // Write version info
         writeWorkspaceInfo();
