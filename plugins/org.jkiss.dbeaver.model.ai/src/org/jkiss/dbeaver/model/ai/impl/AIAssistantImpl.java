@@ -28,6 +28,10 @@ import org.jkiss.dbeaver.model.ai.utils.ThrowableSupplier;
 import org.jkiss.dbeaver.model.app.DBPWorkspace;
 import org.jkiss.dbeaver.model.exec.DBCMessageException;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
+import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
+import org.jkiss.dbeaver.model.struct.rdb.DBSTable;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -36,6 +40,7 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
 
 public class AIAssistantImpl implements AIAssistant {
     private static final Log log = Log.getLog(AIAssistantImpl.class);
@@ -78,7 +83,8 @@ public class AIAssistantImpl implements AIAssistant {
         @NotNull DBRProgressMonitor monitor,
         @Nullable AIDatabaseContext context,
         @NotNull AIPromptGenerator systemGenerator,
-        @NotNull List<AIMessage> messages
+        @NotNull List<AIMessage> messages,
+        @Nullable Consumer<Map<String, String>> executionStatSink
     ) throws DBException {
         checkAiEnablement();
 
@@ -144,6 +150,9 @@ public class AIAssistantImpl implements AIAssistant {
                             List.of(requestMeta)
                         );
                     }
+                }
+                if (executionStatSink != null && context != null) {
+                    sendStatistics(executionStatSink, context);
                 }
                 return new AIAssistantResponse(
                     AIAssistantResponse.Type.ERROR,
@@ -327,6 +336,30 @@ public class AIAssistantImpl implements AIAssistant {
             listener.error(dbException);
         }
         throw new DBException("Request failed after " + MANY_REQUESTS_RETRIES + " attempts");
+    }
+
+    protected static void sendStatistics(
+        @NotNull Consumer<Map<String, String>> executionStatSink,
+        @NotNull AIDatabaseContext context
+    ) {
+        List<DBSObject> customEntities = null;
+        if (context.getCustomEntities() != null) {
+            customEntities = context.getCustomEntities();
+            long catalogCount = customEntities.stream().filter(it -> it instanceof DBSCatalog).count();
+            long schemaCount = customEntities.stream().filter((it -> it instanceof DBSSchema)).count();
+            long tableCount = customEntities.stream().filter((it -> it instanceof DBSTable)).count();
+            executionStatSink.accept(Map.of(
+                "catalog.count", String.valueOf(catalogCount),
+                "schema.count", String.valueOf(schemaCount),
+                "table.count", String.valueOf(tableCount)
+            ));
+        } else {
+            executionStatSink.accept(Map.of(
+                "catalog.count", "0",
+                "schema.count", "0",
+                "table.count", "0"
+            ));
+        }
     }
 
 }

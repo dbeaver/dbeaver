@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,6 +23,8 @@ import org.jkiss.dbeaver.model.ai.engine.AIDatabaseContext;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 import java.util.List;
+import java.util.Map;
+import java.util.function.Consumer;
 
 /**
  * AI Assistant interface.
@@ -39,11 +41,23 @@ public interface AIAssistant {
      * @return generated text
      */
     @NotNull
-    AIAssistantResponse generateText(
+    default AIAssistantResponse generateText(
         @NotNull DBRProgressMonitor monitor,
         @Nullable AIDatabaseContext context,
         @NotNull AIPromptGenerator systemGenerator,
         @NotNull List<AIMessage> messages
+    ) throws DBException {
+        return generateText(monitor, context, systemGenerator, messages, null);
+    }
+
+
+    @NotNull
+    AIAssistantResponse generateText(
+        @NotNull DBRProgressMonitor monitor,
+        @Nullable AIDatabaseContext context,
+        @NotNull AIPromptGenerator systemGenerator,
+        @NotNull List<AIMessage> messages,
+        @Nullable Consumer<Map<String, String>> executionStatSink
     ) throws DBException;
 
 }
