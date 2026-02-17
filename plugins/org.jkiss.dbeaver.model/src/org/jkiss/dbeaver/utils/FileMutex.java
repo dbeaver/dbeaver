@@ -48,19 +48,38 @@ public final class FileMutex implements AutoCloseable {
     }
 
     public static boolean isLocked(@NotNull Path path) {
-        try {
-            LockAttempt attempt = attemptLock(path);
+        FileChannel channel = null;
+        FileLock lock = null;
 
-            if (attempt.lock == null) {
-                return true;
+        try {
+            channel = FileChannel.open(
+                path,
+                StandardOpenOption.CREATE,
+                StandardOpenOption.WRITE
+            );
+
+            lock = channel.tryLock();
+
+            return lock == null;
+
+        } catch (IOException | IllegalStateException e) {
+            return true;
+        } finally {
+            try {
+                if (lock != null && lock.isValid()) {
+                    lock.release();
+                }
+            } catch (Exception ignored) {
+                // no-op
             }
 
-            attempt.lock.release();
-            attempt.channel.close();
-            return false;
-
-        } catch (IOException e) {
-            return true;
+            try {
+                if (channel != null && channel.isOpen()) {
+                    channel.close();
+                }
+            } catch (Exception ignored) {
+                // no-op
+            }
         }
     }
 
@@ -76,7 +95,7 @@ public final class FileMutex implements AutoCloseable {
         return new LockAttempt(channel, lock);
     }
 
-    private record LockAttempt(@NotNull FileChannel channel, @Nullable FileLock lock) {}
+    private record LockAttempt(@NotNull FileChannel channel, @Nullable FileLock lock) { }
 
     @Override
     public void close() throws IOException {
