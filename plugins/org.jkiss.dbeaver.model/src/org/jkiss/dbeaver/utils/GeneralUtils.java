@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,6 +26,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.bundle.ModelActivator;
 import org.jkiss.dbeaver.model.app.DBPWorkspace;
+import org.jkiss.dbeaver.model.exec.DBCConnectException;
 import org.jkiss.dbeaver.model.impl.app.ApplicationDescriptor;
 import org.jkiss.dbeaver.model.impl.app.ApplicationRegistry;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -1015,6 +1016,12 @@ public class GeneralUtils {
             return "Class not found: " + cnfe.getMessage();
         } else if (error instanceof NoClassDefFoundError ncdf) {
             return "Class definition not found: " + ncdf.getMessage();
+        } else if (error instanceof DBCConnectException dbce) {
+            String message = "Error connecting to database";
+            if (dbce.getMessage() != null) {
+                message += ": " + dbce.getMessage();
+            }
+            return message;
         }
         return error.getLocalizedMessage();
     }
