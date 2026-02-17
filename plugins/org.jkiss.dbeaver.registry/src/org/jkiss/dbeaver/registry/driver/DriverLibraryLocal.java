@@ -212,11 +212,9 @@ public class DriverLibraryLocal extends DriverLibraryAbstract {
     @NotNull
     @Override
     public DBIcon getIcon() {
-        if (DBWorkbench.isDistributed()) {
-            // for distributed application driver libraries could not be located locally
-            if (isDistributedDriverLibraryFolder()) {
-                return DBIcon.TREE_FOLDER_ADMIN;
-            }
+        // for distributed application driver libraries could not be located locally
+        if (DBWorkbench.isDistributed() && isDistributedDriverLibraryFolder()) {
+            return DBIcon.TREE_FOLDER_ADMIN;
         }
         Path localFile = getLocalFile();
         if (localFile != null && Files.isDirectory(localFile)) {
@@ -236,7 +234,11 @@ public class DriverLibraryLocal extends DriverLibraryAbstract {
             return false;
         }
         List<DriverFileInfo> fileInfos = driver.getDefaultDriverLoader().getResolvedFiles().get(this);
-        if (fileInfos.size() != 1) {
+        if (fileInfos == null || fileInfos.isEmpty()) {
+            log.error("Driver files are empty for driver %s (%s)".formatted(driver.getId(), getId()));
+            return true;
+        }
+        if (fileInfos.size() > 1) {
             return true;
         }
         // check that there are no file extensions in library, but resolved file has extension
