@@ -198,7 +198,6 @@ public abstract class ApplicationCommandLine<T extends ApplicationInstanceContro
             return new CLIProcessResult(action);
 
         } catch (Exception e) {
-            e.printStackTrace();
             log.error("Error evaluating cli:" + e.getMessage(), e);
             String output = "Error evaluating cli: " + CommonUtils.getAllExceptionMessages(e);
             if (e instanceof CLIException cliException) {

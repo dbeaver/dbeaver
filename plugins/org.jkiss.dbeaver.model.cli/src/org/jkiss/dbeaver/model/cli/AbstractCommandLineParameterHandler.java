@@ -57,7 +57,6 @@ public abstract class AbstractCommandLineParameterHandler implements Callable<Vo
     @NotNull
     protected <T> List<T> findMixins(@NotNull Class<T> implClass) {
         List<T> updaters = new ArrayList<>();
-        CommandLine.ParseResult parseResult = spec.commandLine().getParseResult();
         var curSpec = spec;
         while (curSpec != null) {
             if (!CommonUtils.isEmpty(curSpec.mixins())) {

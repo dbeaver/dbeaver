@@ -32,5 +32,5 @@ public abstract class OneTimeCLIInitializer implements CLIInitializer {
         }
     }
 
-    protected abstract void doInitialization(@NotNull CLIContext context);
+    protected abstract void doInitialization(@NotNull CLIContext context) throws CLIException;
 }
