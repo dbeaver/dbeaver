@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
 
 import java.util.Collection;
+import java.util.List;
 
 public class SQLGeneratorSelectFromData extends SQLGeneratorResultSet {
 
@@ -47,6 +48,10 @@ public class SQLGeneratorSelectFromData extends SQLGeneratorResultSet {
             sql.append(getLineSeparator()).append("FROM ").append(getEntityName(dataProvider.getSingleSource()));
             sql.append(getLineSeparator()).append("WHERE ");
             Collection<DBDAttributeBinding> keyAttributes = getKeyAttributes(monitor, dataProvider);
+            if (keyAttributes.isEmpty()) {
+                // No unique key - use all columns
+                keyAttributes = List.of(dataProvider.getAttributes());
+            }
             appendKeyConditions(sql, keyAttributes, firstRow);
             sql.append(";\n");
         }

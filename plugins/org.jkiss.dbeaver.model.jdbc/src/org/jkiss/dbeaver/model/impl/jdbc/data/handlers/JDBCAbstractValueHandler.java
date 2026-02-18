@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,6 @@ package org.jkiss.dbeaver.model.impl.jdbc.data.handlers;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCResultSet;
 import org.jkiss.dbeaver.model.exec.DBCSession;
@@ -37,12 +36,13 @@ import java.sql.SQLException;
  */
 public abstract class JDBCAbstractValueHandler extends BaseValueHandler {
 
-    private static final Log log = Log.getLog(JDBCAbstractValueHandler.class);
-
     @Override
-    public final Object fetchValueObject(@NotNull DBCSession session, @NotNull DBCResultSet resultSet, @NotNull DBSTypedObject type, int index)
-        throws DBCException
-    {
+    public final Object fetchValueObject(
+        @NotNull DBCSession session,
+        @NotNull DBCResultSet resultSet,
+        @NotNull DBSTypedObject type,
+        int index
+    ) throws DBCException {
         try {
             if (resultSet instanceof JDBCResultSet) {
                 // JDBC uses 1-based indexes
@@ -57,8 +57,13 @@ public abstract class JDBCAbstractValueHandler extends BaseValueHandler {
     }
 
     @Override
-    public final void bindValueObject(@NotNull DBCSession session, @NotNull DBCStatement statement, @NotNull DBSTypedObject columnMetaData,
-                                      int index, Object value) throws DBCException {
+    public final void bindValueObject(
+        @NotNull DBCSession session,
+        @NotNull DBCStatement statement,
+        @NotNull DBSTypedObject columnMetaData,
+        int index,
+        @Nullable Object value
+    ) throws DBCException {
         try {
             // JDBC uses 1-based indexes
             this.bindParameter((JDBCSession) session, (JDBCPreparedStatement) statement, columnMetaData, index + 1, value);
@@ -69,8 +74,12 @@ public abstract class JDBCAbstractValueHandler extends BaseValueHandler {
     }
 
     @Nullable
-    protected abstract Object fetchColumnValue(DBCSession session, JDBCResultSet resultSet, DBSTypedObject type, int index)
-        throws DBCException, SQLException;
+    protected abstract Object fetchColumnValue(
+        @NotNull DBCSession session,
+        @NotNull JDBCResultSet resultSet,
+        @NotNull DBSTypedObject type,
+        int index
+    ) throws DBCException, SQLException;
 
     /**
      * Binds parameter value
@@ -83,11 +92,11 @@ public abstract class JDBCAbstractValueHandler extends BaseValueHandler {
      * @throws SQLException
      */
     protected abstract void bindParameter(
-        JDBCSession session,
-        JDBCPreparedStatement statement,
-        DBSTypedObject paramType,
+        @NotNull JDBCSession session,
+        @NotNull JDBCPreparedStatement statement,
+        @NotNull DBSTypedObject paramType,
         int paramIndex,
-        Object value)
-        throws DBCException, SQLException;
+        @Nullable Object value
+    ) throws DBCException, SQLException;
 
 }
