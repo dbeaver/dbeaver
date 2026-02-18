@@ -210,16 +210,14 @@ public class DatabaseObjectsSelectorPanel extends Composite {
             return true;
         }
         if (element instanceof DBNNode) {
-            switch (element) {
+            return switch (element) {
                 case DBNDatabaseFolder folder -> isDatabaseFolderVisible(folder);
-                case DBNProjectDatabases ignored -> {
-                    return true;
-                }
+                case DBNProjectDatabases ignored -> true;
                 case DBNLocalFolder localFolder -> isFolderVisible(localFolder);
                 case DBNDataSource dataSource -> isDataSourceVisible(dataSource);
                 case DBSWrapper wrapper -> isDatabaseObjectVisible(wrapper.getObject());
-                default -> {}
-            }
+                default -> false;
+            };
         }
         return false;
     }
