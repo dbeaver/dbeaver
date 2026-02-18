@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,6 +34,7 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -165,6 +166,16 @@ public class PropertySourceEditable extends PropertySourceAbstract implements DB
     ) throws IllegalArgumentException {
         // Write property value
         try {
+            if (Collection.class.isAssignableFrom(prop.getDataType()) && value instanceof String str) {
+                // For collection params convert to array and use first item only.
+                // FIXME: support all array items search by enum/name (see below)
+                List<String> strings = DBUtils.convertArrayStringToList(str);
+                if (strings.isEmpty()) {
+                    value = null;
+                } else {
+                    value = strings.getFirst();
+                }
+            }
             // Check for complex object
             // If value should be a named object then try to obtain it from list provider
             if (value != null && value.getClass() == String.class) {
