@@ -37,7 +37,10 @@ import org.jkiss.dbeaver.ui.navigator.database.DatabaseNavigatorTreeFilter;
 import org.jkiss.dbeaver.ui.navigator.database.DatabaseNavigatorTreeFilterObjectType;
 import org.jkiss.utils.CommonUtils;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 
 public class NavigatorHandlerFilterObjectType extends AbstractHandler implements IElementUpdater {
 
@@ -54,14 +57,14 @@ public class NavigatorHandlerFilterObjectType extends AbstractHandler implements
 
             if (objectType == null && navigatorTree.getNavigatorFilter() instanceof DatabaseNavigatorTreeFilter navigatorFilter) {
                 // Cycle through all object types starting from the active one
-                Set<DatabaseNavigatorTreeFilterObjectType> types = navigatorFilter.getSupportedObjectTypes();
-                if (types.isEmpty()) {
+                var typesList = navigatorFilter.getSupportedObjectTypes().stream()
+                    .sorted()
+                    .toList();
+                if (typesList.isEmpty()) {
                     return null;
                 }
-                List<DatabaseNavigatorTreeFilterObjectType> typesList = new ArrayList<>(types);
-                typesList.sort(Comparator.comparing(DatabaseNavigatorTreeFilterObjectType::ordinal));
                 var selection = navigatorTree.getFilterObjectType();
-                objectType = typesList.get((typesList.indexOf(selection) + 1) % types.size());
+                objectType = typesList.get((typesList.indexOf(selection) + 1) % typesList.size());
             } else if (objectType == null) {
                 var types = List.of(DatabaseNavigatorTreeFilterObjectType.values());
                 var selection = navigatorTree.getFilterObjectType();
@@ -118,8 +121,9 @@ public class NavigatorHandlerFilterObjectType extends AbstractHandler implements
             }
 
             List<IContributionItem> menuItems = new ArrayList<>();
-            List<DatabaseNavigatorTreeFilterObjectType> typesList = new ArrayList<>(navigatorFilter.getSupportedObjectTypes());
-            typesList.sort(Comparator.comparing(DatabaseNavigatorTreeFilterObjectType::ordinal));
+            var typesList = navigatorFilter.getSupportedObjectTypes().stream()
+                .sorted()
+                .toList();
 
             for (DatabaseNavigatorTreeFilterObjectType objectType : typesList) {
                 menuItems.add(ActionUtils.makeCommandContribution(
