@@ -36,11 +36,6 @@ public class SimpleNavigatorTreeFilter implements INavigatorFilter {
     }
 
     @Override
-    public boolean isSingleConnection() {
-        return false;
-    }
-
-    @Override
     public boolean select(Object toTest) {
         return true;
     }

@@ -241,8 +241,8 @@ public class DatabaseObjectsSelectorPanel extends Composite {
             }
 
             @Override
-            public boolean isSingleConnection() {
-                return true;
+            public List<DatabaseNavigatorTreeFilterObjectType> getSupportedObjectTypes() {
+                return List.of(DatabaseNavigatorTreeFilterObjectType.container, DatabaseNavigatorTreeFilterObjectType.table);
             }
         };
     }

@@ -81,12 +81,6 @@ class SQLScriptTaskScriptSelectorDialog extends BaseDialog {
             public boolean filterObjectByPattern(Object object) {
                 return object instanceof DBNResource && ((DBNResource) object).getResource() instanceof IFile;
             }
-
-            @Override
-            public boolean isSingleConnection() {
-                return false;
-            }
-
         };
 
         scriptsTree = new DatabaseNavigatorTree(

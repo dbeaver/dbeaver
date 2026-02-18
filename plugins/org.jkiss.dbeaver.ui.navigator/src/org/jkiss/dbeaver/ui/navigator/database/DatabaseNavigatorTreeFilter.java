@@ -18,6 +18,8 @@ package org.jkiss.dbeaver.ui.navigator.database;
 
 import org.jkiss.dbeaver.ui.navigator.INavigatorFilter;
 
+import java.util.List;
+
 /**
  * Default database navigator filter
  */
@@ -47,7 +49,7 @@ public class DatabaseNavigatorTreeFilter implements INavigatorFilter {
         return false;
     }
 
-    public boolean isSingleConnection() {
-        return false;
+    public List<DatabaseNavigatorTreeFilterObjectType> getSupportedObjectTypes() {
+        return List.of(DatabaseNavigatorTreeFilterObjectType.values());
     }
 }

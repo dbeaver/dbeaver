@@ -58,6 +58,7 @@ import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.controls.ProgressPainter;
 import org.jkiss.dbeaver.ui.navigator.INavigatorFilter;
 import org.jkiss.dbeaver.ui.navigator.INavigatorItemRenderer;
+import org.jkiss.dbeaver.ui.navigator.NavigatorCommands;
 import org.jkiss.dbeaver.ui.navigator.NavigatorPreferences;
 import org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerObjectRename;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
@@ -76,7 +77,6 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
     static final String TREE_DATA_STAT_MAX_SIZE = "nav.stat.maxSize";
     private static final String FILTER_TOOLBAR_CONNECTED_CONTRIBUTION_ID = "toolbar:org.jkiss.dbeaver.navigator.filter.toolbar.connected"; //$NON-NLS-1$
     private static final String FILTER_TOOLBAR_TYPE_CONTRIBUTION_ID = "toolbar:org.jkiss.dbeaver.navigator.filter.toolbar.type"; //$NON-NLS-1$
-    private static final String FILTER_TOOLBAR_TYPE_DATABASE_CONTRIBUTION_ID = "toolbar:org.jkiss.dbeaver.navigator.filter.toolbar.type.database"; //$NON-NLS-1$
     private static final String DATA_TREE_CONTROL = DatabaseNavigatorTree.class.getSimpleName();
     private static final boolean INLINE_RENAME_ENABLED = false;
 
@@ -996,14 +996,16 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
                     workbenchWindow = UIUtils.getActiveWorkbenchWindow();
                 }
 
+                var supportedObjectTypes = dnf.getSupportedObjectTypes();
                 final IMenuService menuService = workbenchWindow.getService(IMenuService.class);
-                if (menuService != null) {
-                    if (dnf.isSingleConnection()) {
-                        menuService.populateContributionManager(filterManager, FILTER_TOOLBAR_TYPE_DATABASE_CONTRIBUTION_ID);
-                    } else {
-                        menuService.populateContributionManager(filterManager, FILTER_TOOLBAR_TYPE_CONTRIBUTION_ID);
-                        menuService.populateContributionManager(filterManager, FILTER_TOOLBAR_CONNECTED_CONTRIBUTION_ID);
+                if (menuService != null && !CommonUtils.isEmpty(supportedObjectTypes) && supportedObjectTypes.size() > 1) {
+                    menuService.populateContributionManager(filterManager, FILTER_TOOLBAR_TYPE_CONTRIBUTION_ID);
+                    if (!supportedObjectTypes.contains(filterObjectType)) {
+                        ActionUtils.fireCommandRefresh(NavigatorCommands.CMD_FILTER_OBJECT_TYPE);
                     }
+                }
+                if (menuService != null && supportedObjectTypes.contains(DatabaseNavigatorTreeFilterObjectType.connection)) {
+                    menuService.populateContributionManager(filterManager, FILTER_TOOLBAR_CONNECTED_CONTRIBUTION_ID);
                 }
 
                 filterManager.createControl(parent);

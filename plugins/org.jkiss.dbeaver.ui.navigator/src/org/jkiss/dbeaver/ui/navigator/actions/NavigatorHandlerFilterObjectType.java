@@ -19,18 +19,27 @@ package org.jkiss.dbeaver.ui.navigator.actions;
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
+import org.eclipse.jface.action.IContributionItem;
 import org.eclipse.osgi.util.NLS;
+import org.eclipse.ui.IWorkbenchWindow;
+import org.eclipse.ui.actions.CompoundContributionItem;
 import org.eclipse.ui.commands.IElementUpdater;
+import org.eclipse.ui.menus.CommandContributionItem;
 import org.eclipse.ui.menus.UIElement;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.navigator.NavigatorCommands;
 import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 import org.jkiss.dbeaver.ui.navigator.database.DatabaseNavigatorTree;
+import org.jkiss.dbeaver.ui.navigator.database.DatabaseNavigatorTreeFilter;
 import org.jkiss.dbeaver.ui.navigator.database.DatabaseNavigatorTreeFilterObjectType;
 import org.jkiss.utils.CommonUtils;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 
 public class NavigatorHandlerFilterObjectType extends AbstractHandler implements IElementUpdater {
@@ -46,16 +55,18 @@ public class NavigatorHandlerFilterObjectType extends AbstractHandler implements
                 event.getParameter("type")
             );
 
-            if (objectType == null) {
+            if (objectType == null && navigatorTree.getNavigatorFilter() instanceof DatabaseNavigatorTreeFilter navigatorFilter) {
                 // Cycle through all object types starting from the active one
-                var types = DatabaseNavigatorTreeFilterObjectType.values();
-                var selection = navigatorTree.getFilterObjectType();
-                int i = 1;
-                objectType = types[(selection.ordinal() + i) % types.length];
-                while (navigatorTree.getNavigatorFilter().isSingleConnection() && !objectType.isDatabaseObjects()) {
-                    i++;
-                    objectType = types[(selection.ordinal() + i) % types.length];
+                var types = navigatorFilter.getSupportedObjectTypes();
+                if (types.isEmpty()) {
+                    return null;
                 }
+                var selection = navigatorTree.getFilterObjectType();
+                objectType = types.get((types.indexOf(selection) + 1) % types.size());
+            } else if (objectType == null) {
+                var types = List.of(DatabaseNavigatorTreeFilterObjectType.values());
+                var selection = navigatorTree.getFilterObjectType();
+                objectType = types.get((types.indexOf(selection) + 1) % types.size());
             }
 
             if (objectType == navigatorTree.getFilterObjectType()) {
@@ -95,6 +106,32 @@ public class NavigatorHandlerFilterObjectType extends AbstractHandler implements
             element.setTooltip(objectType.getDescription());
             element.setChecked(objectType == curObjectType);
             element.setIcon(null);
+        }
+    }
+
+    public static class MenuContributor extends CompoundContributionItem {
+        @Override
+        protected IContributionItem[] getContributionItems() {
+            IWorkbenchWindow workbenchWindow = UIUtils.getActiveWorkbenchWindow();
+            DatabaseNavigatorTree navigatorTree = NavigatorUtils.getNavigatorTree(workbenchWindow);
+            if (navigatorTree == null || !(navigatorTree.getNavigatorFilter() instanceof DatabaseNavigatorTreeFilter navigatorFilter)) {
+                return new IContributionItem[0];
+            }
+
+            List<IContributionItem> menuItems = new ArrayList<>();
+            for (DatabaseNavigatorTreeFilterObjectType objectType : navigatorFilter.getSupportedObjectTypes()) {
+                menuItems.add(ActionUtils.makeCommandContribution(
+                    workbenchWindow,
+                    NavigatorCommands.CMD_FILTER_OBJECT_TYPE,
+                    CommandContributionItem.STYLE_RADIO,
+                    objectType.getName(),
+                    objectType.getIcon(),
+                    objectType.getDescription(),
+                    false,
+                    Collections.singletonMap("type", objectType.name())
+                ));
+            }
+            return menuItems.toArray(new IContributionItem[0]);
         }
     }
 }
