@@ -32,7 +32,6 @@ public abstract class CommandLineWithAuth extends AbstractRootCommandLineParamet
 
     @Override
     public void run() throws CLIException {
-        super.run();
         if (context().getContextParameter(CLIConstants.CONTEXT_PARAM_AUTHENTICATOR) != null) {
             try {
                 ((CommandLineAuthenticator) context().getContextParameter(CLIConstants.CONTEXT_PARAM_AUTHENTICATOR))

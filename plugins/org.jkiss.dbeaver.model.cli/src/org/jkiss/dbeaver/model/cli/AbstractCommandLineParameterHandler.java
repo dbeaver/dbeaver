@@ -36,6 +36,7 @@ public abstract class AbstractCommandLineParameterHandler implements Callable<Vo
 
     @Override
     public Void call() throws CLIException {
+        initialize();
         run();
         return null;
     }
@@ -43,9 +44,7 @@ public abstract class AbstractCommandLineParameterHandler implements Callable<Vo
     @NotNull
     protected abstract CLIContext context();
 
-    public void run() throws CLIException {
-        initialize();
-    }
+    public abstract void run() throws CLIException;
 
     protected void initialize() throws CLIException {
         List<CLIInitializer> initializers = findMixins(CLIInitializer.class);
