@@ -291,12 +291,14 @@ public class DataSourceSerializerModern<T extends DataSourceDescriptor> implemen
             if (authProfile.isSavePassword()) {
                 JSONUtils.field(jsonWriter, RegistryConstants.ATTR_SAVE_PASSWORD, authProfile.isSavePassword());
             }
-            SecureCredentials credentials = new SecureCredentials(authProfile);
-            if (configurationManager.isSecure()) {
-                savePlainCredentials(jsonWriter, credentials);
-            } else {
-                // Save all auth properties in secure storage
-                saveSecuredCredentials(null, authProfile, null, credentials);
+            if (configurationManager.isTrusted()) {
+                SecureCredentials credentials = new SecureCredentials(authProfile);
+                if (configurationManager.isSecure()) {
+                    savePlainCredentials(jsonWriter, credentials);
+                } else {
+                    // Save all auth properties in secure storage
+                    saveSecuredCredentials(null, authProfile, null, credentials);
+                }
             }
             jsonWriter.endObject();
         }
@@ -1146,15 +1148,18 @@ public class DataSourceSerializerModern<T extends DataSourceDescriptor> implemen
 
             if (dataSource.getProject().isUseSecretStorage()) {
                 // should be stored in secrets
-            } else if (configurationManager.isSecure()) {
-                // Secure manager == save to buffer
-                savePlainCredentials(json, new SecureCredentials(dataSource));
-            } else {
-                saveSecuredCredentials(
-                    dataSource,
-                    null,
-                    null,
-                    new SecureCredentials(dataSource));
+            } else if (configurationManager.isTrusted()) {
+                if (configurationManager.isSecure()) {
+                    // Secure manager == save to buffer
+                    savePlainCredentials(json, new SecureCredentials(dataSource));
+                } else {
+                    saveSecuredCredentials(
+                        dataSource,
+                        null,
+                        null,
+                        new SecureCredentials(dataSource)
+                    );
+                }
             }
 
             JSONUtils.fieldNE(json, RegistryConstants.ATTR_HOME, connectionInfo.getClientHomeId());
@@ -1339,17 +1344,20 @@ public class DataSourceSerializerModern<T extends DataSourceDescriptor> implemen
                 DBPProject project = dataSource != null ?
                     dataSource.getProject() : (profile != null ? profile.getProject() : null);
 
-                if (configurationManager.isSecure() ||
-                    (project != null && project.isUseSecretStorage() && profile == null && dataSource.isSharedCredentials())) {
-                    // For secured projects save only shared credentials
-                    // Others are stored in secret storage
-                    savePlainCredentials(json, credentials);
-                } else {
-                    saveSecuredCredentials(
-                        dataSource,
-                        profile,
-                        "network/" + configuration.getId() + (profile == null ? "" : "/profile/" + profile.getProfileName()),
-                        credentials);
+                if (configurationManager.isTrusted()) {
+                    if (configurationManager.isSecure() ||
+                        (project != null && project.isUseSecretStorage() && profile == null && dataSource.isSharedCredentials())) {
+                        // For secured projects save only shared credentials
+                        // Others are stored in secret storage
+                        savePlainCredentials(json, credentials);
+                    } else {
+                        saveSecuredCredentials(
+                            dataSource,
+                            profile,
+                            "network/" + configuration.getId() + (profile == null ? "" : "/profile/" + profile.getProfileName()),
+                            credentials
+                        );
+                    }
                 }
             }
             JSONUtils.serializeProperties(json, RegistryConstants.TAG_PROPERTIES, configuration.getProperties(), true);
