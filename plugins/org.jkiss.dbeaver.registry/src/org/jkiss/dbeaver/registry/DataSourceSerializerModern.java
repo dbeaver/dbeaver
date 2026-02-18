@@ -270,7 +270,8 @@ public class DataSourceSerializerModern<T extends DataSourceDescriptor> implemen
                         null,
                         np,
                         configuration,
-                        false);
+                        !configurationManager.isTrusted()
+                    );
                 }
             }
             jsonWriter.endObject();
@@ -1226,7 +1227,8 @@ public class DataSourceSerializerModern<T extends DataSourceDescriptor> implemen
                                 dataSource,
                                 null,
                                 configuration,
-                                profileConfig != null);
+                                profileConfig != null && !configurationManager.isTrusted()
+                            );
                         }
                     }
                     json.endObject();
@@ -1326,8 +1328,8 @@ public class DataSourceSerializerModern<T extends DataSourceDescriptor> implemen
         @Nullable DataSourceDescriptor dataSource,
         @Nullable DBWNetworkProfile profile,
         @NotNull DBWHandlerConfiguration configuration,
-        boolean referenceOnly) throws IOException
-    {
+        boolean referenceOnly
+    ) throws IOException {
         json.name(CommonUtils.notEmpty(configuration.getId()));
         json.beginObject();
         JSONUtils.field(json, RegistryConstants.ATTR_TYPE, configuration.getType().name());
