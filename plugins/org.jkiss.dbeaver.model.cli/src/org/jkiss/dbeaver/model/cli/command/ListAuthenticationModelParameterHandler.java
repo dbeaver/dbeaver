@@ -36,9 +36,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-@CommandLine.Command(name = "auth-models", description = "List available database authentication models")
+@CommandLine.Command(name = ListAuthenticationModelParameterHandler.COMMAND_NAME, description = "List available database authentication models")
 public class ListAuthenticationModelParameterHandler extends AbstractRootCommandLineParameterHandler {
-
+    public static final String COMMAND_NAME = "auth-models";
     @CommandLine.Mixin
     protected ProjectOption projectOption;
 

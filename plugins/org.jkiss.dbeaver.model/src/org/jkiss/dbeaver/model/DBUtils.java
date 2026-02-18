@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -2562,6 +2562,25 @@ public final class DBUtils {
                 throw new DBCException("Row count query didn't return any value");
             }
         }
+    }
+
+    // FIXME: use real parser (nested arrays, quotes escape, etc)
+    @NotNull
+    public static List<String> convertArrayStringToList(@NotNull String value) {
+        if (value.startsWith("[") && value.endsWith("]")) {
+            value = value.substring(1, value.length() - 1);
+        }
+        String arrayString = value;
+        List<String> items = new ArrayList<>();
+        StringTokenizer st = new StringTokenizer(arrayString, ",", false);
+        while (st.hasMoreTokens()) {
+            String token = st.nextToken().trim();
+            if (token.startsWith("\"") && token.endsWith("\"")) {
+                token = token.substring(1, token.length() - 1);
+            }
+            items.add(token);
+        }
+        return items;
     }
 
     public interface ChildExtractor<PARENT, CHILD> {
