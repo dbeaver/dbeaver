@@ -17,9 +17,13 @@
 package org.jkiss.dbeaver.model.cli;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.model.cli.model.CLIInitializer;
 import org.jkiss.dbeaver.model.cli.model.option.HiddenOptionsForSubcommands;
+import org.jkiss.utils.CommonUtils;
 import picocli.CommandLine;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.Callable;
 
 public abstract class AbstractCommandLineParameterHandler implements Callable<Void> {
@@ -27,14 +31,48 @@ public abstract class AbstractCommandLineParameterHandler implements Callable<Vo
     @CommandLine.Mixin
     private HiddenOptionsForSubcommands eclipseHiddenOptions;
 
+    @CommandLine.Spec
+    protected CommandLine.Model.CommandSpec spec;
+
     @Override
     public Void call() throws CLIException {
         run();
         return null;
     }
 
-    public abstract void run() throws CLIException;
-
     @NotNull
     protected abstract CLIContext context();
+
+    public void run() throws CLIException {
+        initialize();
+    }
+
+    protected void initialize() throws CLIException {
+        List<CLIInitializer> initializers = findMixins(CLIInitializer.class);
+        for (CLIInitializer initializer : initializers) {
+            initializer.initialize(context());
+        }
+    }
+
+    @NotNull
+    protected <T> List<T> findMixins(@NotNull Class<T> implClass) {
+        List<T> updaters = new ArrayList<>();
+        CommandLine.ParseResult parseResult = spec.commandLine().getParseResult();
+        var curSpec = spec;
+        while (curSpec != null) {
+            if (!CommonUtils.isEmpty(curSpec.mixins())) {
+                for (CommandLine.Model.CommandSpec mixin : curSpec.mixins().values()) {
+                    if (mixin.userObject() == null) {
+                        continue;
+                    }
+                    if (implClass.isAssignableFrom(mixin.userObject().getClass())) {
+                        updaters.add(implClass.cast(mixin.userObject()));
+                    }
+                }
+            }
+            curSpec = curSpec.parent();
+        }
+
+        return updaters;
+    }
 }

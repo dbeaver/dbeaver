@@ -14,24 +14,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.cli;
+package org.jkiss.dbeaver.model.cli.model;
+
 
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.model.cli.command.AbstractTopLevelCommand;
-import picocli.CommandLine;
+import org.jkiss.dbeaver.model.cli.CLIContext;
+import org.jkiss.dbeaver.model.cli.CLIException;
 
-// Base class for first level commands, which use AbstractTopLevelCommand as parent
-public abstract class AbstractRootCommandLineParameterHandler extends AbstractCommandLineParameterHandler {
-    /**
-     * Root command uses as context
-     */
-    @CommandLine.ParentCommand
-    private AbstractTopLevelCommand parent;
-    @CommandLine.Spec
-    protected CommandLine.Model.CommandSpec spec;
 
-    @NotNull
-    public CLIContext context() {
-        return parent.getContext();
+public abstract class OneTimeCLIInitializer implements CLIInitializer {
+    private boolean initialized = false;
+
+    public void initialize(@NotNull CLIContext context) throws CLIException {
+        if (!initialized) {
+            doInitialization(context);
+            initialized = true;
+        }
     }
+
+    protected abstract void doInitialization(@NotNull CLIContext context);
 }
