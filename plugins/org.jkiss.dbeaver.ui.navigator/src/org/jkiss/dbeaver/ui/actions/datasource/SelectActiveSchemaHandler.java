@@ -105,27 +105,33 @@ public class SelectActiveSchemaHandler extends AbstractDataSourceHandler impleme
                 }
             }
         }
-        DBNDatabaseNode selectedNode = selectedDB == null ? null : DBWorkbench.getPlatform().getNavigatorModel().getNodeByObject(selectedDB);
+        DBNDatabaseNode selectedNode = selectedDB == null ?
+            null : DBWorkbench.getPlatform().getNavigatorModel().getNodeByObject(selectedDB);
         SelectDatabaseDialog dialog = new SelectDatabaseDialog(
             HandlerUtil.getActiveShell(event),
             dataSourceContainer,
             contextDefaultObjectsReader.getDefaultCatalogName(),
             contextDefaultObjectsReader.getNodeList(),
-            selectedNode == null ? null : Collections.singletonList(selectedNode));
+            selectedNode == null ? Collections.emptyList() : Collections.singletonList(selectedNode));
         dialog.setModeless(true);
         if (dialog.open() == IDialogConstants.CANCEL_ID) {
             return null;
         }
         DBNDatabaseNode node = dialog.getSelectedObject();
-        if (node != null && node.getObject() != defaultObject) {
-            // Change current schema
-            changeDataBaseSelection(
-                activeEditor,
-                dataSourceContainer,
-                executionContext,
-                contextDefaultObjectsReader.getDefaultCatalogName(),
-                dialog.getCurrentInstanceName(),
-                node.getNodeDisplayName());
+        if (node != null) {
+            DBSObject selObject = node.getObject();
+            if (selObject != defaultObject) {
+                String schemaName = selObject instanceof DBSSchema ? selObject.getName() : null;
+                // Change current schema
+                changeDataBaseSelection(
+                    activeEditor,
+                    dataSourceContainer,
+                    executionContext,
+                    contextDefaultObjectsReader.getDefaultCatalogName(),
+                    dialog.getCurrentInstanceName(),
+                    schemaName
+                );
+            }
         }
 
         return null;

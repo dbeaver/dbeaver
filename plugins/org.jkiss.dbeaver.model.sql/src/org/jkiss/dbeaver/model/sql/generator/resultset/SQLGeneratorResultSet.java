@@ -29,7 +29,6 @@ import org.jkiss.dbeaver.model.sql.generator.SQLGeneratorBase;
 import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
 import org.jkiss.utils.ArrayUtils;
 
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -52,7 +51,7 @@ public abstract class SQLGeneratorResultSet extends SQLGeneratorBase<DBDResultSe
         @NotNull DBRProgressMonitor monitor,
         @NotNull DBDResultSetDataProvider dataProvider
     ) throws DBException {
-        return Arrays.asList(dataProvider.getAttributes());
+        return dataProvider.getVisibleAttributes();
     }
 
     void appendKeyConditions(
