@@ -210,23 +210,14 @@ public class DatabaseObjectsSelectorPanel extends Composite {
         }
         if (element instanceof DBNNode) {
             switch (element) {
-                case DBNDatabaseFolder folder -> {
-                    return isDatabaseFolderVisible(folder);
-                }
+                case DBNDatabaseFolder folder -> isDatabaseFolderVisible(folder);
                 case DBNProjectDatabases ignored -> {
                     return true;
                 }
-                case DBNLocalFolder localFolder -> {
-                    return isFolderVisible(localFolder);
-                }
-                case DBNDataSource dataSource -> {
-                    return isDataSourceVisible(dataSource);
-                }
-                case DBSWrapper wrapper -> {
-                    return isDatabaseObjectVisible(wrapper.getObject());
-                }
-                default -> {
-                }
+                case DBNLocalFolder localFolder -> isFolderVisible(localFolder);
+                case DBNDataSource dataSource -> isDataSourceVisible(dataSource);
+                case DBSWrapper wrapper -> isDatabaseObjectVisible(wrapper.getObject());
+                default -> {}
             }
         }
         return false;
@@ -240,6 +231,7 @@ public class DatabaseObjectsSelectorPanel extends Composite {
                 return isElementAccepted(element);
             }
 
+            @NotNull
             @Override
             public List<DatabaseNavigatorTreeFilterObjectType> getSupportedObjectTypes() {
                 return List.of(DatabaseNavigatorTreeFilterObjectType.container, DatabaseNavigatorTreeFilterObjectType.table);

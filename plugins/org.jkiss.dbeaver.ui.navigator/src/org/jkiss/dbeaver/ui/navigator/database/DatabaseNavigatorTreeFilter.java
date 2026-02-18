@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ui.navigator.database;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ui.navigator.INavigatorFilter;
 
 import java.util.List;
@@ -49,6 +50,7 @@ public class DatabaseNavigatorTreeFilter implements INavigatorFilter {
         return false;
     }
 
+    @NotNull
     public List<DatabaseNavigatorTreeFilterObjectType> getSupportedObjectTypes() {
         return List.of(DatabaseNavigatorTreeFilterObjectType.values());
     }
