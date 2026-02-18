@@ -118,7 +118,10 @@ public class NavigatorHandlerFilterObjectType extends AbstractHandler implements
             }
 
             List<IContributionItem> menuItems = new ArrayList<>();
-            for (DatabaseNavigatorTreeFilterObjectType objectType : navigatorFilter.getSupportedObjectTypes()) {
+            List<DatabaseNavigatorTreeFilterObjectType> typesList = new ArrayList<>(navigatorFilter.getSupportedObjectTypes());
+            typesList.sort(Comparator.comparing(DatabaseNavigatorTreeFilterObjectType::ordinal));
+
+            for (DatabaseNavigatorTreeFilterObjectType objectType : typesList) {
                 menuItems.add(ActionUtils.makeCommandContribution(
                     workbenchWindow,
                     NavigatorCommands.CMD_FILTER_OBJECT_TYPE,
