@@ -235,7 +235,7 @@ public class DriverLibraryLocal extends DriverLibraryAbstract {
         }
         List<DriverFileInfo> fileInfos = driver.getDefaultDriverLoader().getResolvedFiles().get(this);
         if (fileInfos == null || fileInfos.isEmpty()) {
-            log.error("Driver files are empty for driver %s (%s)".formatted(driver.getId(), getId()));
+            log.warn("Driver files are empty for driver %s (%s)".formatted(driver.getId(), getId()));
             return true;
         }
         if (fileInfos.size() > 1) {
