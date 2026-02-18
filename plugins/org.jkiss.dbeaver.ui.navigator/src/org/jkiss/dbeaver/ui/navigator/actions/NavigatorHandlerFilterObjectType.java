@@ -37,10 +37,7 @@ import org.jkiss.dbeaver.ui.navigator.database.DatabaseNavigatorTreeFilter;
 import org.jkiss.dbeaver.ui.navigator.database.DatabaseNavigatorTreeFilterObjectType;
 import org.jkiss.utils.CommonUtils;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class NavigatorHandlerFilterObjectType extends AbstractHandler implements IElementUpdater {
 
@@ -57,12 +54,14 @@ public class NavigatorHandlerFilterObjectType extends AbstractHandler implements
 
             if (objectType == null && navigatorTree.getNavigatorFilter() instanceof DatabaseNavigatorTreeFilter navigatorFilter) {
                 // Cycle through all object types starting from the active one
-                var types = navigatorFilter.getSupportedObjectTypes();
+                Set<DatabaseNavigatorTreeFilterObjectType> types = navigatorFilter.getSupportedObjectTypes();
                 if (types.isEmpty()) {
                     return null;
                 }
+                List<DatabaseNavigatorTreeFilterObjectType> typesList = new ArrayList<>(types);
+                typesList.sort(Comparator.comparing(DatabaseNavigatorTreeFilterObjectType::ordinal));
                 var selection = navigatorTree.getFilterObjectType();
-                objectType = types.get((types.indexOf(selection) + 1) % types.size());
+                objectType = typesList.get((typesList.indexOf(selection) + 1) % types.size());
             } else if (objectType == null) {
                 var types = List.of(DatabaseNavigatorTreeFilterObjectType.values());
                 var selection = navigatorTree.getFilterObjectType();

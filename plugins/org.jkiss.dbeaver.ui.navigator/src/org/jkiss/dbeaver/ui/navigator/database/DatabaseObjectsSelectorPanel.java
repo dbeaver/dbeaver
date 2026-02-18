@@ -34,6 +34,7 @@ import org.jkiss.dbeaver.ui.navigator.database.load.TreeNodeSpecial;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 
 public class DatabaseObjectsSelectorPanel extends Composite {
 
@@ -233,8 +234,8 @@ public class DatabaseObjectsSelectorPanel extends Composite {
 
             @NotNull
             @Override
-            public List<DatabaseNavigatorTreeFilterObjectType> getSupportedObjectTypes() {
-                return List.of(DatabaseNavigatorTreeFilterObjectType.container, DatabaseNavigatorTreeFilterObjectType.table);
+            public Set<DatabaseNavigatorTreeFilterObjectType> getSupportedObjectTypes() {
+                return Set.of(DatabaseNavigatorTreeFilterObjectType.container, DatabaseNavigatorTreeFilterObjectType.table);
             }
         };
     }
