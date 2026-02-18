@@ -58,7 +58,9 @@ public class AthenaDataSource extends GenericDataSource {
             connectionInfo.setDatabaseName(s3OutputLocation);
         }
         if (!CommonUtils.isEmpty(connectionInfo.getDatabaseName())) {
-            props.put(AthenaConstants.DRIVER_PROP_S3_OUTPUT_LOCATION, connectionInfo.getDatabaseName());
+            String s3OutPropName = isLegacyDriver() ?
+                AthenaConstants.DRIVER_PROP_S3_OUTPUT_LOCATION_OLD : AthenaConstants.DRIVER_PROP_S3_OUTPUT_LOCATION;
+            props.put(s3OutPropName, connectionInfo.getDatabaseName());
         }
 
         boolean useCatalogs = CommonUtils.toBoolean(connectionInfo.getProviderProperty(AthenaConstants.PROP_SHOW_CATALOGS));
@@ -66,17 +68,23 @@ public class AthenaDataSource extends GenericDataSource {
             props.put(AthenaConstants.DRIVER_PROP_METADATA_RETRIEVAL_METHOD, "ProxyAPI");
         }
 
-        // Hack to fix update from v2 -> v3 driver version https://github.com/dbeaver/dbeaver/issues/39947
-        // https://docs.aws.amazon.com/athena/latest/ug/jdbc-v3-driver-aws-configuration-profile-credentials.html
-        String credentialsProviderClass = connectionInfo.getProperties()
-            .get(AthenaConstants.PROP_AWS_CREDENTIALS_PROVIDER_CLASS);
-        if (AthenaConstants.PROP_OLD_VALUE_AWS_CREDENTIALS_PROVIDER_CLASS.equals(credentialsProviderClass)) {
-            connectionInfo.getProperties().put(
-                AthenaConstants.PROP_AWS_CREDENTIALS_PROVIDER_CLASS,
-                AthenaConstants.PROP_NEW_VALUE_AWS_CREDENTIALS_PROVIDER_CLASS
-            );
+        if (!isLegacyDriver()) {
+            // Hack to fix update from v2 -> v3 driver version https://github.com/dbeaver/dbeaver/issues/39947
+            // https://docs.aws.amazon.com/athena/latest/ug/jdbc-v3-driver-aws-configuration-profile-credentials.html
+            String credentialsProviderClass = connectionInfo.getProperties()
+                .get(AthenaConstants.PROP_AWS_CREDENTIALS_PROVIDER_CLASS);
+            if (AthenaConstants.PROP_OLD_VALUE_AWS_CREDENTIALS_PROVIDER_CLASS.equals(credentialsProviderClass)) {
+                connectionInfo.getProperties().put(
+                    AthenaConstants.PROP_AWS_CREDENTIALS_PROVIDER_CLASS,
+                    AthenaConstants.PROP_NEW_VALUE_AWS_CREDENTIALS_PROVIDER_CLASS
+                );
+            }
         }
         return props;
+    }
+
+    private boolean isLegacyDriver() {
+        return AthenaUtils.isLegacyDriver(getContainer().getDriver());
     }
 
     @Override

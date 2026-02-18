@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -273,9 +273,7 @@ public class EntityEditor extends MultiPageDatabaseEditor
         // Show preview
         int previewResult = IDialogConstants.PROCEED_ID;
         if (DBWorkbench.getPlatform().getPreferenceStore().getBoolean(NavigatorPreferences.NAVIGATOR_SHOW_SQL_PREVIEW)) {
-            monitor.beginTask(UINavigatorMessages.editors_entity_monitor_preview_changes, 1);
             previewResult = showChanges(true);
-            monitor.done();
         }
 
         if (previewResult == IDialogConstants.IGNORE_ID) {
