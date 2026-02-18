@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,7 +23,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.app.DBACertificateStorage;
-import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.model.app.DBPPlatform;
 import org.jkiss.utils.Base64;
 
 import java.io.*;
@@ -54,14 +54,14 @@ public class DefaultCertificateStorage implements DBACertificateStorage {
     private final Path localPath;
     private final Map<String, UserDefinedKeystore> userDefinedKeystores;
 
-    public DefaultCertificateStorage(Path localPath) {
+    public DefaultCertificateStorage(@NotNull DBPPlatform platform, @NotNull Path localPath) {
         this.localPath = localPath;
         this.userDefinedKeystores = new HashMap<>();
         if (Files.exists(localPath)) {
             // Cleanup old keystores
             // We do not cleanup key stores in non-primary instances
             // Because they may be used by another instances of the application (pro/#2998)
-            if (DBWorkbench.getPlatform().getApplication().isPrimaryInstance()) {
+            if (platform.getApplication().isPrimaryInstance()) {
                 final File[] ksFiles = localPath.toFile().listFiles();
                 if (ksFiles != null) {
                     for (File ksFile : ksFiles) {
