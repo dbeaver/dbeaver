@@ -250,6 +250,7 @@ public class ResultSetModel implements DBDResultSetModel {
     }
 
     @NotNull
+    @Override
     public List<DBDAttributeBinding> getVisibleAttributes() {
         return visibleAttributes;
     }
