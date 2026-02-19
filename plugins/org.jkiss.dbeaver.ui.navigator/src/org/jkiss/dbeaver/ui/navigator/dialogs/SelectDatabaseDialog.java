@@ -220,7 +220,10 @@ public class SelectDatabaseDialog extends ObjectListDialog<DBNDatabaseNode> {
 
     @Override
     protected boolean isDialogComplete() {
-        return currentInstanceName == null ? super.isDialogComplete() : !selectedInstances.isEmpty();
+        if (currentInstanceName == null || selectedInstances.isEmpty()) {
+            return super.isDialogComplete();
+        }
+        return true;
     }
 
     @NotNull
