@@ -4901,10 +4901,7 @@ public class ResultSetViewer extends Viewer
                     }
 
                     this.curRow = model.addNewRow(newRowIndex, cells);
-                    this.selectedRecords = ArrayUtils.add(this.selectedRecords,
-                        this.selectedRecords.length == 0 ?
-                            newRowIndex :
-                            this.selectedRecords[this.selectedRecords.length - 1] + 1);
+                    this.selectedRecords = selectedRowsIncludingNewRow(newRowIndex);
 
                     newRowIndex++;
                     srcRowIndex++;
@@ -4926,6 +4923,18 @@ public class ResultSetViewer extends Viewer
         }
 
         return curRow;
+    }
+
+    private int[] selectedRowsIncludingNewRow(int newRowIndex) {
+        int[] correctedSelectedRowsIndexes = Arrays.copyOf(this.selectedRecords, this.selectedRecords.length);
+        for (int i = 0; i < correctedSelectedRowsIndexes.length; i++) {
+            if (correctedSelectedRowsIndexes[i] >= newRowIndex) {
+                correctedSelectedRowsIndexes[i]++;
+            }
+        }
+        int[] updatedSelectedRows = ArrayUtils.add(correctedSelectedRowsIndexes, newRowIndex);
+        Arrays.sort(updatedSelectedRows);
+        return updatedSelectedRows;
     }
 
     @Override

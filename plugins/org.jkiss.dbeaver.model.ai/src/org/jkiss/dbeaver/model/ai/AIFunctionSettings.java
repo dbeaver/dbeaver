@@ -18,6 +18,8 @@ package org.jkiss.dbeaver.model.ai;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.ai.registry.AIFunctionDescriptor;
+import org.jkiss.dbeaver.model.ai.registry.AIFunctionRegistry;
 
 import java.util.HashSet;
 import java.util.LinkedHashSet;
@@ -53,20 +55,15 @@ public final class AIFunctionSettings {
     public void setEnabledFunctions(@Nullable Set<String> functions) {
         this.enabledFunctions.clear();
         if (functions != null) {
-            this.enabledFunctions.addAll(functions);
+            functions.forEach(this::enableFunction);
         }
     }
 
-    public boolean isFunctionEnabled(@NotNull String functionId) {
-        return enabledFunctions.contains(functionId);
-    }
-
     public void enableFunction(@NotNull String functionId) {
-        enabledFunctions.add(functionId);
-    }
-
-    public void disableFunction(@NotNull String functionId) {
-        enabledFunctions.remove(functionId);
+        AIFunctionDescriptor function = AIFunctionRegistry.getInstance().getFunction(functionId);
+        if (function != null && !function.isHidden()) {
+            enabledFunctions.add(functionId);
+        }
     }
 
     @NotNull
@@ -80,17 +77,8 @@ public final class AIFunctionSettings {
             this.enabledFunctionCategories.addAll(categories);
         }
     }
-
-    public boolean isFunctionCategoryEnabled(@NotNull String category) {
-        return enabledFunctionCategories.contains(category);
-    }
-
     public void enableFunctionCategory(@NotNull String category) {
         enabledFunctionCategories.add(category);
-    }
-
-    public void disableFunctionCategory(@NotNull String category) {
-        enabledFunctionCategories.remove(category);
     }
 
     @NotNull
