@@ -125,17 +125,7 @@ public abstract class ApplicationCommandLine<T extends ApplicationInstanceContro
 
             // Handle help/version before executing commands,
             // because we don't need to execute/start new instance for this cases
-            CommandLine.Model.CommandSpec commandForHelp = null;
-            if (parseResult.isUsageHelpRequested()) {
-                commandForHelp = parseResult.commandSpec();
-            } else {
-                for (var sub : parseResult.subcommands()) {
-                    if (sub.isUsageHelpRequested()) {
-                        commandForHelp = sub.commandSpec();
-                        break;
-                    }
-                }
-            }
+            CommandLine.Model.CommandSpec commandForHelp = findCommandForHelp(parseResult);
 
             if (commandForHelp != null) {
                 CommandLine.Model.UsageMessageSpec helpSpec = commandForHelp.usageMessage();
@@ -206,6 +196,21 @@ public abstract class ApplicationCommandLine<T extends ApplicationInstanceContro
 
 
         return result;
+    }
+
+    private static CommandLine.Model.CommandSpec findCommandForHelp(
+        @NotNull CommandLine.ParseResult parseResult
+    ) {
+        if (parseResult.isUsageHelpRequested()) {
+            return parseResult.commandSpec();
+        }
+        for (var sub : parseResult.subcommands()) {
+            var command = findCommandForHelp(sub);
+            if (command != null) {
+                return command;
+            }
+        }
+        return null;
     }
 
     protected void validateCommandLineParameters(@NotNull CommandLine.ParseResult parseResult) throws CLIException {
