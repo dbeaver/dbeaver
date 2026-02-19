@@ -112,7 +112,14 @@ public class SSHTunnelDefaultConfiguratorUI implements IObjectPropertyConfigurat
                 1,
                 GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING
             );
-            credentialsPanel = new CredentialsPanel(settingsGroup, propertyChangeListener, DBPConnectionEditIntention.DEFAULT);
+            credentialsPanel = new CredentialsPanel(
+                settingsGroup,
+                () -> {
+                    refreshActiveConfiguration();
+                    propertyChangeListener.run();
+                },
+                DBPConnectionEditIntention.DEFAULT
+            );
         }
 
         {
@@ -375,6 +382,16 @@ public class SSHTunnelDefaultConfiguratorUI implements IObjectPropertyConfigurat
 
         UIUtils.executeOnResize(parent, () -> parent.getParent().layout(true, true));
         UIUtils.asyncExec(() -> UIUtils.resizeShell(parent.getShell()));
+    }
+
+    private void refreshActiveConfiguration() {
+        if (credentialsPanel.lastConfiguration != null) {
+            var wrapper = (ConfigurationWrapper) hostsViewer.getStructuredSelection().getFirstElement();
+            if (wrapper != null) {
+                wrapper.configuration = credentialsPanel.saveSettings();
+                hostsViewer.refresh(wrapper);
+            }
+        }
     }
 
     private void loadConfiguration(@NotNull ConfigurationWrapper wrapper) {
@@ -690,11 +707,14 @@ public class SSHTunnelDefaultConfiguratorUI implements IObjectPropertyConfigurat
                 hostNameText = new Text(hostPortComp, SWT.BORDER);
                 hostNameText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
                 hostNameText.addModifyListener(listener);
+
                 hostPortText = UIUtils.createLabelText(hostPortComp, SSHUIMessages.model_ssh_configurator_label_port, String.valueOf(SSHConstants.DEFAULT_PORT));
+                hostPortText.addModifyListener(listener);
                 setNumberEditStyles(hostPortText);
             }
 
             userNameText = UIUtils.createLabelText(this, SSHUIMessages.model_ssh_configurator_label_user_name, null, SWT.BORDER, new GridData(GridData.FILL_HORIZONTAL));
+            userNameText.addModifyListener(listener);
 
             authMethodCombo = UIUtils.createLabelCombo(this, SSHUIMessages.model_ssh_configurator_combo_auth_method, SWT.DROP_DOWN | SWT.READ_ONLY);
             authMethodCombo.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
