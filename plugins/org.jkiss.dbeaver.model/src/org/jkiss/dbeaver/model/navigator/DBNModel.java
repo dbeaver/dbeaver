@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -309,6 +309,29 @@ public class DBNModel {
             return DBNLegacyUtils.legacyGetNodeByPath(monitor, this, nodePath);
         }
         return findNodeByPath(monitor, getRoot(), nodePath, 0);
+    }
+
+    /**
+     * Converts a project-relative path to the full node path.
+     *
+     * @param project      Project to which the path is relative
+     * @param relativePath Path relative to the project node, without path prefix.
+     * @return Full node path with prefix, or {@code null} if the project node is not found or the path is not valid.
+     */
+    @Nullable
+    public String toProjectPath(@NotNull DBPProject project, @NotNull String relativePath) {
+        DBNProject projectNode = getRoot().getProjectNode(project);
+        if (projectNode == null) {
+            log.debug("Project node not found");
+            return null;
+        }
+        NodePath path = getNodePath(relativePath);
+        if (path.type == DBNNode.NodePathType.other) {
+            return projectNode.getNodeUri() + '/' + path.pathItems.stream()
+                .map(DBNUtils::encodeNodePath)
+                .collect(Collectors.joining("/"));
+        }
+        return null;
     }
 
     @Nullable
