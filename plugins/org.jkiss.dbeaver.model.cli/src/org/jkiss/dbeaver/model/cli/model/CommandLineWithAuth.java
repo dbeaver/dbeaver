@@ -18,13 +18,13 @@ package org.jkiss.dbeaver.model.cli.model;
 
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.cli.AbstractRootCommandLineParameterHandler;
+import org.jkiss.dbeaver.model.cli.CLIAbstractSubcommand;
 import org.jkiss.dbeaver.model.cli.CLIConstants;
 import org.jkiss.dbeaver.model.cli.CLIException;
 import org.jkiss.dbeaver.model.cli.model.option.AuthenticateOptions;
 import picocli.CommandLine;
 
-public abstract class CommandLineWithAuth extends AbstractRootCommandLineParameterHandler {
+public abstract class CommandLineWithAuth extends CLIAbstractSubcommand {
 
     @Nullable
     @CommandLine.Mixin

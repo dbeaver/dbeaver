@@ -18,7 +18,6 @@ package org.jkiss.dbeaver.model.cli;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.cli.model.CLIInitializer;
-import org.jkiss.dbeaver.model.cli.model.option.HiddenOptionsForSubcommands;
 import org.jkiss.utils.CommonUtils;
 import picocli.CommandLine;
 
@@ -26,11 +25,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Callable;
 
-public abstract class AbstractCommandLineParameterHandler implements Callable<Void> {
-
-    @CommandLine.Mixin
-    private HiddenOptionsForSubcommands eclipseHiddenOptions;
-
+public abstract class CLIAbstractCommand implements Callable<Void> {
     @CommandLine.Spec
     protected CommandLine.Model.CommandSpec spec;
 
