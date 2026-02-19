@@ -134,7 +134,7 @@ public class MySQLCatalog implements
         }
     }
 
-    private final AdditionalInfo additionalInfo = new AdditionalInfo();
+    protected final AdditionalInfo additionalInfo = new AdditionalInfo();
 
     @PropertyGroup()
     @LazyProperty(cacheValidator = AdditionalInfoValidator.class)
@@ -152,7 +152,7 @@ public class MySQLCatalog implements
         return additionalInfo;
     }
 
-    private void loadAdditionalInfo(DBRProgressMonitor monitor) throws DBCException
+    protected void loadAdditionalInfo(DBRProgressMonitor monitor) throws DBCException
     {
         if (!isPersisted()) {
             additionalInfo.loaded = true;
