@@ -39,6 +39,14 @@ public interface SQLDialectDDLExtension extends SQLDialect {
      */
     boolean supportsCreateIfExists();
 
+    default String getNVarCharDataType() {
+        return "VARCHAR";
+    }
+
+    default String getTextDataType() {
+        return "TEXT";
+    }
+
     /**
      * Gets timestamp type.
      *
@@ -62,6 +70,10 @@ public interface SQLDialectDDLExtension extends SQLDialect {
      */
     @NotNull
     String getClobDataType();
+
+    default String getNClobDataType() {
+        return getTextDataType();
+    }
 
     /**
      * Gets blob data type.
@@ -104,8 +116,4 @@ public interface SQLDialectDDLExtension extends SQLDialect {
      * Checks if sql dialect supports COLUMN key word for alter column.
      */
     boolean supportsAlterHasColumn();
-
-    default String getNVarCharDataType() {
-        return "VARCHAR";
-    }
 }
