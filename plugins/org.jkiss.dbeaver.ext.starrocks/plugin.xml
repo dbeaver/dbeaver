@@ -49,6 +49,7 @@
                         id="starrocks"
                         label="StarRocks"
                         icon="icons/starrocks_icon.svg"
+                        iconBig="icons/starrocks_icon_big.svg"
                         class="com.mysql.cj.jdbc.Driver"
                         sampleURL="jdbc:mysql://{host}[:{port}]/[{database}]"
                         defaultPort="9030"
