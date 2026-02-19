@@ -118,15 +118,20 @@ public class SelectActiveSchemaHandler extends AbstractDataSourceHandler impleme
             return null;
         }
         DBNDatabaseNode node = dialog.getSelectedObject();
-        if (node != null && node.getObject() != defaultObject) {
-            // Change current schema
-            changeDataBaseSelection(
-                activeEditor,
-                dataSourceContainer,
-                executionContext,
-                contextDefaultObjectsReader.getDefaultCatalogName(),
-                dialog.getCurrentInstanceName(),
-                node.getNodeDisplayName());
+        if (node != null) {
+            DBSObject selObject = node.getObject();
+            if (selObject != defaultObject) {
+                String schemaName = selObject instanceof DBSSchema ? selObject.getName() : null;
+                // Change current schema
+                changeDataBaseSelection(
+                    activeEditor,
+                    dataSourceContainer,
+                    executionContext,
+                    contextDefaultObjectsReader.getDefaultCatalogName(),
+                    dialog.getCurrentInstanceName(),
+                    schemaName
+                );
+            }
         }
 
         return null;
@@ -149,7 +154,7 @@ public class SelectActiveSchemaHandler extends AbstractDataSourceHandler impleme
         DBPDataSourceContainer dataSource = DataSourceToolbarUtils.getCurrentDataSource(workbenchWindow);
 
         String schemaName = "< N/A >";
-        DBIcon schemaIcon = DBIcon.TREE_SCHEMA;
+        DBIcon schemaIcon = DBIcon.TYPE_OBJECT;
         String schemaTooltip = UIUtils.getCatalogSchemaTerms(dataSource, true);
 
         if (dataSource != null && dataSource.isConnected()) {
@@ -182,7 +187,7 @@ public class SelectActiveSchemaHandler extends AbstractDataSourceHandler impleme
                 }
             } else {
                 DBCExecutionContext executionContext = getExecutionContextFromPart(activeEditor);
-                DBCExecutionContextDefaults contextDefaults = null;
+                DBCExecutionContextDefaults<?, ?> contextDefaults = null;
                 if (executionContext != null) {
                     contextDefaults = executionContext.getContextDefaults();
                 }
@@ -190,8 +195,13 @@ public class SelectActiveSchemaHandler extends AbstractDataSourceHandler impleme
                     DBSCatalog defaultCatalog = contextDefaults.getDefaultCatalog();
                     DBSSchema defaultSchema = contextDefaults.getDefaultSchema();
                     if (defaultCatalog != null && (defaultSchema != null || contextDefaults.supportsSchemaChange())) {
-                        schemaName = defaultSchema == null ? "?": defaultSchema.getName() + "@" + defaultCatalog.getName();
-                        schemaIcon = DBIcon.TREE_SCHEMA;
+                        if (defaultSchema != null) {
+                            schemaName = defaultSchema.getName() + "@" + defaultCatalog.getName();
+                            schemaIcon = DBIcon.TREE_SCHEMA;
+                        } else {
+                            schemaName = defaultCatalog.getName();
+                            schemaIcon = DBIcon.TREE_DATABASE;
+                        }
                     } else if (defaultCatalog != null) {
                         schemaName = defaultCatalog.getName();
                         schemaIcon = DBIcon.TREE_DATABASE;
@@ -258,7 +268,7 @@ public class SelectActiveSchemaHandler extends AbstractDataSourceHandler impleme
 
             DBSObject[] defObjects = null;
             if (executionContext != null) {
-                DBCExecutionContextDefaults contextDefaults = executionContext.getContextDefaults();
+                DBCExecutionContextDefaults<?, ?> contextDefaults = executionContext.getContextDefaults();
                 if (contextDefaults != null) {
                     defObjects = new DBSObject[] { contextDefaults.getDefaultCatalog(), contextDefaults.getDefaultSchema() };
                 }

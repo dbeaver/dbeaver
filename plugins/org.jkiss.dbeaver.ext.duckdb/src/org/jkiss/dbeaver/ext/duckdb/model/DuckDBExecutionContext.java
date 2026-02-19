@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ext.duckdb.model;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.generic.model.GenericCatalog;
 import org.jkiss.dbeaver.ext.generic.model.GenericExecutionContext;
@@ -47,13 +48,14 @@ public class DuckDBExecutionContext extends GenericExecutionContext {
         return true;
     }
 
+    @Nullable
     @Override
     public GenericCatalog getDefaultCatalog() {
         return activeCatalogName == null ? null : getDataSource().getCatalog(activeCatalogName);
     }
 
     @Override
-    public boolean refreshDefaults(DBRProgressMonitor monitor, boolean useBootstrapSettings) throws DBException {
+    public boolean refreshDefaults(@NotNull DBRProgressMonitor monitor, boolean useBootstrapSettings) throws DBException {
         boolean changed = super.refreshDefaults(monitor, useBootstrapSettings);
 
         if (useBootstrapSettings) {
@@ -82,7 +84,7 @@ public class DuckDBExecutionContext extends GenericExecutionContext {
     }
 
     @Override
-    public void setDefaultCatalog(DBRProgressMonitor monitor, GenericCatalog catalog, GenericSchema schema) throws DBCException {
+    public void setDefaultCatalog(@NotNull DBRProgressMonitor monitor, @NotNull GenericCatalog catalog, @Nullable GenericSchema schema) throws DBCException {
         if (catalog == null) {
             return;
         }
@@ -107,7 +109,7 @@ public class DuckDBExecutionContext extends GenericExecutionContext {
     }
 
     @Override
-    public void initDefaultsFrom(DBRProgressMonitor monitor, GenericExecutionContext context) {
+    public void initDefaultsFrom(@NotNull DBRProgressMonitor monitor, @NotNull GenericExecutionContext context) {
         try {
             super.initDefaultsFrom(monitor, context);
         } catch (DBCException e) {

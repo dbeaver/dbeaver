@@ -23,6 +23,7 @@ import org.eclipse.core.runtime.NullProgressMonitor;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.DBRuntimeException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.access.DBAPermissionRealm;
@@ -88,7 +89,8 @@ public abstract class EclipseWorkspaceImpl extends BaseWorkspaceImpl implements 
         try {
             loadWorkspaceProjects();
         } catch (DBException ex) {
-            log.error("Can't load workspace projects", ex);
+            //DBWorkbench.getPlatformUI().showError("Error loading projects", "Error loading workspace projects", ex);
+            throw new DBRuntimeException(ex);
         }
         
         if (DBWorkbench.getPlatform().getApplication().isStandalone() && CommonUtils.isEmpty(projects) && isDefaultProjectNeeded() && !isReadOnly()) {

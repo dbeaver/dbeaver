@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -49,6 +49,8 @@ import java.util.regex.Pattern;
  * CSV Exporter
  */
 public class DataExporterCSV extends StreamExporterAbstract implements IAppendableDataExporter {
+
+    public static final String PROCESSOR_ID = "stream.csv";
 
     private static final String PROP_DELIMITER = "delimiter";
     private static final String PROP_ROW_DELIMITER = "rowDelimiter";
