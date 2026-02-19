@@ -84,6 +84,9 @@ public class MySQLCatalog implements
     private long dbSize;
 
     private transient String databaseDDL;
+    
+    protected final AdditionalInfo additionalInfo = new AdditionalInfo();
+
 
     public static class AdditionalInfo {
         private volatile boolean loaded = false;
@@ -133,8 +136,6 @@ public class MySQLCatalog implements
             return object.additionalInfo.loaded;
         }
     }
-
-    protected final AdditionalInfo additionalInfo = new AdditionalInfo();
 
     @PropertyGroup()
     @LazyProperty(cacheValidator = AdditionalInfoValidator.class)
