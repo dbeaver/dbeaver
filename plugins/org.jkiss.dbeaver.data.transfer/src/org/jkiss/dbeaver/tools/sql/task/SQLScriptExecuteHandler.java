@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,6 +27,9 @@ import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContextDefaults;
 import org.jkiss.dbeaver.model.exec.DBCStatistics;
 import org.jkiss.dbeaver.model.fs.DBFUtils;
+import org.jkiss.dbeaver.model.navigator.DBNNode;
+import org.jkiss.dbeaver.model.navigator.DBNProject;
+import org.jkiss.dbeaver.model.navigator.DBNStreamData;
 import org.jkiss.dbeaver.model.rm.RMControllerProvider;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
@@ -43,10 +46,7 @@ import org.jkiss.dbeaver.tools.sql.SQLScriptExecuteSettings;
 import org.jkiss.dbeaver.tools.transfer.DTUtils;
 import org.jkiss.utils.IOUtils;
 
-import java.io.IOException;
-import java.io.PrintStream;
-import java.io.PrintWriter;
-import java.io.Reader;
+import java.io.*;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -174,6 +174,16 @@ public class SQLScriptExecuteHandler implements DBTTaskHandler {
         @NotNull DBPProject project,
         @NotNull String filePath
     ) throws DBException, IOException {
+        DBNProject projectNode = project.getNavigatorModel().getRoot().getProjectNode(project);
+        if (projectNode != null) {
+            DBNNode fileNode = projectNode.findNodeByRelativePath(monitor, filePath);
+            if (fileNode instanceof DBNStreamData sd) {
+                try (Reader reader = new InputStreamReader(sd.openInputStream())) {
+                    return IOUtils.readToString(reader);
+                }
+            }
+        }
+
         Path nioPath = DBFUtils.resolvePathFromString(monitor, project, filePath);
         if (!IOUtils.isLocalPath(nioPath)) {
             // Remote file
