@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,26 +17,15 @@
 package org.jkiss.dbeaver.model.cli;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.model.cli.command.AbstractTopLevelCommand;
 import org.jkiss.dbeaver.model.cli.model.option.HiddenOptionsForSubcommands;
 import picocli.CommandLine;
 
 import java.util.concurrent.Callable;
 
 public abstract class AbstractCommandLineParameterHandler implements Callable<Void> {
-    /**
-     * Root command uses as context
-     */
-    @CommandLine.ParentCommand
-    private AbstractTopLevelCommand parent;
+
     @CommandLine.Mixin
     private HiddenOptionsForSubcommands eclipseHiddenOptions;
-
-
-    @NotNull
-    protected CommandLineContext context() {
-        return parent.getContext();
-    }
 
     @Override
     public Void call() throws CLIException {
@@ -45,4 +34,7 @@ public abstract class AbstractCommandLineParameterHandler implements Callable<Vo
     }
 
     public abstract void run() throws CLIException;
+
+    @NotNull
+    protected abstract CLIContext context();
 }

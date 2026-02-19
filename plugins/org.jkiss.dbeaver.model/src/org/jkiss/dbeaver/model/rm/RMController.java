@@ -48,11 +48,13 @@ public interface RMController extends DBPObjectController, DBPPingController {
     /**
      * Creates new shared project
      */
+    @NotNull
     RMProject createProject(@NotNull String name, @Nullable String description) throws DBException;
 
     /**
      * Update a shared project information.
      */
+    @NotNull
     RMProject updateProject(@NotNull String projectId, @NotNull RMProjectInfo projectInfo) throws DBException;
 
     /**
@@ -63,17 +65,19 @@ public interface RMController extends DBPObjectController, DBPPingController {
     /**
      * Reads project information
      */
+    @Nullable
     RMProject getProject(@NotNull String projectId, boolean readResources, boolean readProperties) throws DBException;
 
     /**
      * Reads single project property
      */
+    @Nullable
     Object getProjectProperty(@NotNull String projectId, @NotNull String propName) throws DBException;
 
     /**
      * Sets project property
      */
-    void setProjectProperty(@NotNull String projectId, @NotNull String propName, @NotNull Object propValue) throws DBException;
+    void setProjectProperty(@NotNull String projectId, @NotNull String propName, @Nullable Object propValue) throws DBException;
 
     ////////////////////////////////////////////
     // DataSources

@@ -372,6 +372,7 @@
                 type="config"
                 id="mysql_ssl"
                 codeName="SSL"
+                prefix="ssl"
                 label="SSL"
                 description="Secure socket layer"
                 desktop="false"

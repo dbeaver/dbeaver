@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -71,7 +71,7 @@ public abstract class ApplicationCommandLine<T extends ApplicationInstanceContro
 
     protected abstract AbstractTopLevelCommand createTopLevelCommand(
         @Nullable T applicationInstanceController,
-        @NotNull CommandLineContext context,
+        @NotNull CLIContextImpl context,
         @NotNull CLIRunMeta runMeta
     );
 
@@ -87,7 +87,7 @@ public abstract class ApplicationCommandLine<T extends ApplicationInstanceContro
     ) throws Exception {
         log.trace("Executing command line: " + String.join(" ", args));
         CLIProcessResult result;
-        try (var context = new CommandLineContext(controller)) {
+        try (var context = new CLIContextImpl(controller)) {
             CommandLine commandLine = initCommandLine(
                 controller,
                 context,
@@ -125,17 +125,7 @@ public abstract class ApplicationCommandLine<T extends ApplicationInstanceContro
 
             // Handle help/version before executing commands,
             // because we don't need to execute/start new instance for this cases
-            CommandLine.Model.CommandSpec commandForHelp = null;
-            if (parseResult.isUsageHelpRequested()) {
-                commandForHelp = parseResult.commandSpec();
-            } else {
-                for (var sub : parseResult.subcommands()) {
-                    if (sub.isUsageHelpRequested()) {
-                        commandForHelp = sub.commandSpec();
-                        break;
-                    }
-                }
-            }
+            CommandLine.Model.CommandSpec commandForHelp = findCommandForHelp(parseResult);
 
             if (commandForHelp != null) {
                 CommandLine.Model.UsageMessageSpec helpSpec = commandForHelp.usageMessage();
@@ -208,13 +198,28 @@ public abstract class ApplicationCommandLine<T extends ApplicationInstanceContro
         return result;
     }
 
+    private static CommandLine.Model.CommandSpec findCommandForHelp(
+        @NotNull CommandLine.ParseResult parseResult
+    ) {
+        if (parseResult.isUsageHelpRequested()) {
+            return parseResult.commandSpec();
+        }
+        for (var sub : parseResult.subcommands()) {
+            var command = findCommandForHelp(sub);
+            if (command != null) {
+                return command;
+            }
+        }
+        return null;
+    }
+
     protected void validateCommandLineParameters(@NotNull CommandLine.ParseResult parseResult) throws CLIException {
 
     }
 
     @NotNull
     public String[] preprocessCommandLine(@NotNull String[] args) throws DBException {
-        try (var context = new CommandLineContext(null)) {
+        try (var context = new CLIContextImpl(null)) {
             CommandLine commandLine = initCommandLine(
                 null,
                 context,
@@ -247,7 +252,7 @@ public abstract class ApplicationCommandLine<T extends ApplicationInstanceContro
     protected void preprocessCommandLineParameter(
         @NotNull CommandLineParameterDescriptor descriptor,
         @NotNull CommandLine.ParseResult cliCommand,
-        @NotNull CommandLineContext context,
+        @NotNull CLIContextImpl context,
         boolean uiActivated
     ) {
 
@@ -256,7 +261,7 @@ public abstract class ApplicationCommandLine<T extends ApplicationInstanceContro
     @NotNull
     protected CommandLine initCommandLine(
         @Nullable T applicationInstanceController,
-        @NotNull CommandLineContext context,
+        @NotNull CLIContextImpl context,
         @NotNull CLIRunMeta runMeta
     ) {
         var cmd = new CommandLine(createTopLevelCommand(applicationInstanceController, context, runMeta));

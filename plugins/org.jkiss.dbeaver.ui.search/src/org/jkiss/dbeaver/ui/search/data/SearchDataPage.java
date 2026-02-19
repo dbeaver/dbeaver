@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,6 +22,7 @@ import org.eclipse.swt.custom.SashForm;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
@@ -67,12 +68,12 @@ public class SearchDataPage extends AbstractSearchPage {
 
     private Combo searchText;
 
-    private SearchDataParams params = new SearchDataParams();
-    private Set<String> searchHistory = new LinkedHashSet<>();
+    private final SearchDataParams params = new SearchDataParams();
+    private final Set<String> searchHistory = new LinkedHashSet<>();
 
     private DatabaseNavigatorTree navigatorTree;
 
-    private DBPProject currentProject;
+    private final DBPProject currentProject;
     private boolean showConnected;
 
     public SearchDataPage() {
@@ -88,7 +89,8 @@ public class SearchDataPage extends AbstractSearchPage {
 
         initializeDialogUnits(parent);
 
-        Composite searchGroup = UIUtils.createComposite(parent, 1);
+        Composite searchGroup = new Composite(parent, SWT.NONE);
+        searchGroup.setLayout(new GridLayout(1, false));
         searchGroup.setLayoutData(new GridData(GridData.FILL_BOTH));
 
         searchText = new Combo(searchGroup, SWT.DROP_DOWN);
@@ -105,16 +107,15 @@ public class SearchDataPage extends AbstractSearchPage {
             updateEnablement();
         });
 
-        SashForm optionsGroup = new SashForm(parent, SWT.NONE);
+        SashForm optionsGroup = new SashForm(searchGroup, SWT.NONE);
         optionsGroup.setLayoutData(new GridData(GridData.FILL_BOTH));
 
         {
-            Group databasesGroup = UIUtils.createControlGroup(
+            Composite databasesGroup = UIUtils.createTitledComposite(
                 optionsGroup,
                 UISearchMessages.dialog_data_search_control_group_databases,
                 1,
-                GridData.FILL_BOTH,
-                0);
+                GridData.FILL_BOTH);
             databasesGroup.setLayoutData(new GridData(GridData.FILL_BOTH));
 
             DBPPlatform platform = DBWorkbench.getPlatform();
@@ -141,8 +142,7 @@ public class SearchDataPage extends AbstractSearchPage {
                         }
                     }
                     if (element instanceof DBNNode) {
-                        if (element instanceof DBNDatabaseFolder) {
-                            DBNDatabaseFolder folder = (DBNDatabaseFolder) element;
+                        if (element instanceof DBNDatabaseFolder folder) {
                             Class<? extends DBSObject> folderItemsClass = folder.getChildrenClass();
                             return folderItemsClass != null
                                 && (DBSObjectContainer.class.isAssignableFrom(folderItemsClass)
@@ -193,12 +193,11 @@ public class SearchDataPage extends AbstractSearchPage {
         }
 
         {
-            Composite optionsGroup2 = UIUtils.createControlGroup(
+            Composite optionsGroup2 = UIUtils.createTitledComposite(
                 optionsGroup,
                 UISearchMessages.dialog_data_search_control_group_settings,
                 2,
-                GridData.FILL_HORIZONTAL,
-                0);
+                GridData.FILL_HORIZONTAL);
             optionsGroup2.setLayoutData(new GridData(GridData.FILL_HORIZONTAL
                 | GridData.HORIZONTAL_ALIGN_BEGINNING
                 | GridData.VERTICAL_ALIGN_BEGINNING));
@@ -414,7 +413,7 @@ public class SearchDataPage extends AbstractSearchPage {
             if (node instanceof DBNDatabaseNode) {
                 DBSObject object = ((DBNDatabaseNode) node).getObject();
                 if (object instanceof DBSDataContainer || object instanceof DBSObjectContainer) {
-                    if (sourcesString.length() > 0) {
+                    if (!sourcesString.isEmpty()) {
                         sourcesString.append("|"); //$NON-NLS-1$
                     }
                     sourcesString.append(((DBNDatabaseNode) node).getNodeUri());
@@ -452,7 +451,7 @@ public class SearchDataPage extends AbstractSearchPage {
 
         if (!checkedNodes.isEmpty()) {
             navigatorTree.getViewer().setSelection(new StructuredSelection(checkedNodes));
-            DBNDataSource node = DBNDataSource.getDataSourceNode(checkedNodes.get(0));
+            DBNDataSource node = DBNDataSource.getDataSourceNode(checkedNodes.getFirst());
             if (node != null) {
                 navigatorTree.getViewer().reveal(node);
             }

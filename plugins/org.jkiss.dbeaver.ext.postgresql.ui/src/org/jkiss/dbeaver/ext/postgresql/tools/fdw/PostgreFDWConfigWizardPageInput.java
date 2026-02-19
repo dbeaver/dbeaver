@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,7 +22,6 @@ import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Group;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.navigator.*;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
@@ -62,7 +61,7 @@ class PostgreFDWConfigWizardPageInput extends ActiveWizardPage<PostgreFDWConfigW
         Composite composite = UIUtils.createComposite(parent, 1);
 
         {
-            Group databasesGroup = UIUtils.createControlGroup(composite, "Foreign databases", 1, GridData.FILL_BOTH, 0);
+            Composite databasesGroup = UIUtils.createTitledComposite(composite, "Foreign databases", 1, GridData.FILL_BOTH);
 
             selectorPanel = new DatabaseObjectsSelectorPanel(
                 databasesGroup,

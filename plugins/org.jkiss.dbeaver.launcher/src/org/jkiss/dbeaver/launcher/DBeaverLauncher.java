@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -877,6 +877,7 @@ public class DBeaverLauncher {
                 break;
             }
         }
+
         if (productName.isEmpty()) {
             Properties properties = loadEclipseProductProperties();
             if (debug) {
@@ -1705,28 +1706,19 @@ public class DBeaverLauncher {
             }
             return properties;
         }
-
-        Path installPath;
-        try {
-            installPath = Path.of(installURL.toURI());
-        } catch (Exception e) {
-            if (debug) {
-                System.out.println("Could not convert install location " + installURL + ": " + e.getMessage());
-            }
-            return properties;
-        }
-        Path eclipseProduct = installPath.resolve(PRODUCT_SITE_MARKER);
+        //java.io used because url may contain spaces and other non escaped chars, and Path.of(URL.toURI()) would fail
+        File eclipseProduct = new File(installURL.getFile(), PRODUCT_SITE_MARKER);
         if (debug) {
             System.out.println("Loading product properties from " + eclipseProduct);
         }
-        if (Files.notExists(eclipseProduct)) {
+        if (!eclipseProduct.exists()) {
             if (debug) {
                 System.out.println("Not exists " + eclipseProduct);
             }
             return properties;
         }
 
-        try (var in = Files.newInputStream(eclipseProduct)) {
+        try (FileInputStream in = new FileInputStream(eclipseProduct)) {
             properties.load(in);
         } catch (IOException e) {
             if (debug) {
@@ -2150,7 +2142,7 @@ public class DBeaverLauncher {
     }
 
     public static Path getDefaultSecretStorageLocation() {
-        String userHome = System.getProperty("user.home");
+        String userHome = System.getProperty(PROP_USER_HOME);
         if (userHome == null) {
             return Path.of(DEFAULT_SECURE_STORAGE_FILENAME);
         } else {
@@ -2192,16 +2184,16 @@ public class DBeaverLauncher {
         if (osName.contains("WIN")) {
             String appData = System.getenv("AppData");
             if (appData == null) {
-                appData = System.getProperty("user.home");
+                appData = System.getProperty(PROP_USER_HOME);
             }
             workingDirectory = appData + "\\" + defaultWorkspaceLocation;
         } else if (osName.contains("MAC")) {
-            workingDirectory = System.getProperty("user.home") + "/Library/" + defaultWorkspaceLocation;
+            workingDirectory = System.getProperty(PROP_USER_HOME) + "/Library/" + defaultWorkspaceLocation;
         } else {
             // Linux
             String dataHome = System.getProperty("XDG_DATA_HOME");
             if (dataHome == null) {
-                dataHome = System.getProperty("user.home") + "/.local/share";
+                dataHome = System.getProperty(PROP_USER_HOME) + "/.local/share";
             }
             String badWorkingDir = dataHome + "/." + defaultWorkspaceLocation;
             String goodWorkingDir = dataHome + "/" + defaultWorkspaceLocation;

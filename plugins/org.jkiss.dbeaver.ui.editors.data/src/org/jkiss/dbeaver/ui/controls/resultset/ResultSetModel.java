@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -137,14 +137,18 @@ public class ResultSetModel implements DBDResultSetModel {
         return hintContext;
     }
 
+    @Nullable
     @Override
-    public String getReadOnlyStatus(DBPDataSourceContainer dataSourceContainer) {
+    public String getReadOnlyStatus(@Nullable DBPDataSourceContainer dataSourceContainer) {
         if (isUpdateInProgress()) {
             return "Update in progress";
         }
         String containerReadOnlyStatus = DBExecUtils.getResultSetReadOnlyStatus(dataSourceContainer);
         if (containerReadOnlyStatus != null) {
             return containerReadOnlyStatus;
+        }
+        if (dataSourceContainer == null) {
+            return null;
         }
         if (isUniqueKeyUndefinedButRequired(dataSourceContainer)) {
             return "No unique key defined";
@@ -200,6 +204,7 @@ public class ResultSetModel implements DBDResultSetModel {
      * @return single source entity
      */
     @Nullable
+    @Override
     public DBSEntity getSingleSource() {
         return singleSourceEntity;
     }
@@ -219,8 +224,8 @@ public class ResultSetModel implements DBDResultSetModel {
         return documentAttribute;
     }
 
-    @Override
     @NotNull
+    @Override
     public DBDAttributeBinding[] getAttributes() {
         return attributes;
     }
@@ -245,6 +250,7 @@ public class ResultSetModel implements DBDResultSetModel {
     }
 
     @NotNull
+    @Override
     public List<DBDAttributeBinding> getVisibleAttributes() {
         return visibleAttributes;
     }
@@ -411,11 +417,13 @@ public class ResultSetModel implements DBDResultSetModel {
     }
 
     @Nullable
-    public Object getCellValue(@NotNull DBDAttributeBinding attribute, @NotNull ResultSetRow row) {
+    @Override
+    public Object getCellValue(@NotNull DBDAttributeBinding attribute, @NotNull DBDValueRow row) {
         return getCellValue(attribute, row, null, false);
     }
 
     @Nullable
+    @Override
     public Object getCellValue(
         @NotNull DBDAttributeBinding attribute,
         @NotNull DBDValueRow row,
@@ -545,10 +553,8 @@ public class ResultSetModel implements DBDResultSetModel {
                 log.error(e);
             }
             row.clearChange(attr);
-            if (row.getState() == ResultSetRow.STATE_NORMAL) {
-                changesCount--;
-            }
         }
+        refreshChangeCount();
     }
 
     boolean isDynamicMetadata() {
@@ -627,7 +633,7 @@ public class ResultSetModel implements DBDResultSetModel {
 
         this.metadataDynamic =
             this.attributes.length > 0 &&
-            this.attributes[0].getTopParent().getDataSource().getInfo().isDynamicMetadata();
+                this.attributes[0].getTopParent().getDataSource().getInfo().isDynamicMetadata();
 
         {
             // Detect document attribute
@@ -670,8 +676,8 @@ public class ResultSetModel implements DBDResultSetModel {
         }
         return
             CommonUtils.equalObjects(ent1.getCatalogName(), ent2.getCatalogName()) &&
-            CommonUtils.equalObjects(ent1.getSchemaName(), ent2.getSchemaName()) &&
-            CommonUtils.equalObjects(ent1.getEntityName(), ent2.getEntityName());
+                CommonUtils.equalObjects(ent1.getSchemaName(), ent2.getSchemaName()) &&
+                CommonUtils.equalObjects(ent1.getEntityName(), ent2.getEntityName());
     }
 
     void resetMetaData() {
@@ -745,7 +751,7 @@ public class ResultSetModel implements DBDResultSetModel {
                 DBDAttributeBinding binding = DBUtils.findObject(attributes, co.getAttributeName());
                 if (binding != null) {
                     List<AttributeColorSettings> cmList =
-                            colorMapping.computeIfAbsent(binding, k -> new ArrayList<>());
+                        colorMapping.computeIfAbsent(binding, k -> new ArrayList<>());
                     cmList.add(new AttributeColorSettings(co));
                 } else {
                     log.debug("Attribute '" + co.getAttributeName() + "' not found in bindings. Skip colors.");
@@ -804,8 +810,14 @@ public class ResultSetModel implements DBDResultSetModel {
                                 double value = DBExecUtils.makeNumericValue(cellValue);
                                 if (value >= minValue && value <= maxValue) {
                                     if (acs.colorBackground != null && acs.colorBackground2 != null && value >= minValue && value <= maxValue) {
-                                            RGB bgRowRGB = ResultSetUtils.makeGradientValue(acs.colorBackground.getRGB(), acs.colorBackground2.getRGB(), minValue, maxValue, value);
-                                            background = UIUtils.getSharedColor(bgRowRGB);
+                                        RGB bgRowRGB = ResultSetUtils.makeGradientValue(
+                                            acs.colorBackground.getRGB(),
+                                            acs.colorBackground2.getRGB(),
+                                            minValue,
+                                            maxValue,
+                                            value
+                                        );
+                                        background = UIUtils.getSharedColor(bgRowRGB);
 
                                         // FIXME: coloring value before and after range. Maybe we need an option for this.
                                         /* else if (value < minValue) {
@@ -946,6 +958,7 @@ public class ResultSetModel implements DBDResultSetModel {
     boolean deleteRow(@NotNull ResultSetRow row) {
         if (row.getState() == ResultSetRow.STATE_ADDED) {
             cleanupRow(row);
+            changesCount--;
             return true;
         } else {
             // Mark row as deleted
@@ -1154,9 +1167,9 @@ public class ResultSetModel implements DBDResultSetModel {
                     if (comparator != null) {
                         result = comparator.compare(cell1, cell2);
                     } else if (cell1 instanceof String && cell2 instanceof String) {
-                    	result = (cell1.toString()).compareToIgnoreCase(cell2.toString());
+                        result = (cell1.toString()).compareToIgnoreCase(cell2.toString());
                     } else {
-                    	result = DBUtils.compareDataValues(cell1, cell2);
+                        result = DBUtils.compareDataValues(cell1, cell2);
                     }
 
                     if (co.isOrderDescending()) {

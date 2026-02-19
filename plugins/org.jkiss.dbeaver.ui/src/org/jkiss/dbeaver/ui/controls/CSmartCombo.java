@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,10 +27,7 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.ui.DBeaverIcons;
-import org.jkiss.dbeaver.ui.UIIcon;
-import org.jkiss.dbeaver.ui.UIStyles;
-import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.*;
 import org.jkiss.utils.ArrayUtils;
 
 import java.util.ArrayList;
@@ -57,27 +54,31 @@ public class CSmartCombo<ITEM_TYPE> extends Composite {
     protected final List<ITEM_TYPE> items = new ArrayList<>();
     private TableFilter<ITEM_TYPE> tableFilter = null;
     private ITEM_TYPE selectedItem;
-    private Label imageLabel;
-    private StyledText text;
+    private final Label imageLabel;
+    private final StyledText text;
     private Tree dropDownControl;
     private int visibleItemCount = 10;
     private Shell popup;
     private long disposeTime = -1;
     private Label arrow;
     private boolean hasFocus;
-    private Listener listener, filter;
+    private final Listener listener;
+    private final Listener filter;
     private Point sizeHint;
 
     public CSmartCombo(@NotNull Composite parent, int style, @NotNull ILabelProvider labelProvider) {
-        super(parent, style = checkStyle(style));
+        super(parent, checkStyle(style));
         this.labelProvider = labelProvider;
         if (parent.getLayout() instanceof GridLayout) {
             this.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         }
+        if ((style & SWT.BORDER) != 0) {
+            new CompositeBorderPainter(this);
+        }
 
         GridLayout gridLayout = new GridLayout(3, false);
-        gridLayout.marginHeight = 0;
-        gridLayout.marginWidth = 0;
+        gridLayout.marginHeight = 2;
+        gridLayout.marginWidth = 2;
         gridLayout.marginTop = 0;
         gridLayout.marginBottom = 0;
         gridLayout.horizontalSpacing = 0;
@@ -96,7 +97,9 @@ public class CSmartCombo<ITEM_TYPE> extends Composite {
         gd = new GridData(GridData.FILL_VERTICAL | GridData.HORIZONTAL_ALIGN_END | GridData.VERTICAL_ALIGN_CENTER);
         this.arrow.setLayoutData(gd);
 
-        this.setCursor(getDisplay().getSystemCursor(SWT.CURSOR_ARROW));
+        Cursor arrowCursor = getDisplay().getSystemCursor(SWT.CURSOR_ARROW);
+        this.setCursor(arrowCursor);
+        this.text.setCursor(arrowCursor);
         this.setEnabled(true, true);
         this.setForeground(UIStyles.getDefaultTextForeground());
 
@@ -236,7 +239,7 @@ public class CSmartCombo<ITEM_TYPE> extends Composite {
     }
 
     private static int checkStyle(int style) {
-        int mask = SWT.BORDER | SWT.READ_ONLY | SWT.FLAT | SWT.LEFT_TO_RIGHT | SWT.RIGHT_TO_LEFT | SWT.CHECK;
+        int mask = SWT.READ_ONLY | SWT.FLAT | SWT.LEFT_TO_RIGHT | SWT.RIGHT_TO_LEFT | SWT.CHECK;
         return style & mask;
     }
 
@@ -304,8 +307,6 @@ public class CSmartCombo<ITEM_TYPE> extends Composite {
         if (index < 0) {
             selectedItem = null;
             itemText = "";
-            itemImage = null;
-            itemBackground = null;
         } else {
             selectedItem = this.items.get(index);
             itemText = labelProvider.getText(selectedItem);

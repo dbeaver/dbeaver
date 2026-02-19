@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,6 +21,8 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceInfo;
 import org.jkiss.dbeaver.model.ai.AIConstants;
+import org.jkiss.dbeaver.model.ai.AIMessage;
+import org.jkiss.dbeaver.model.ai.AIMessageType;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
 import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
@@ -37,6 +39,17 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class AIPromptUtils {
+    public static final String[] SQL_OUTPUT_FORMATS = {
+        "Place any explanation or comments before the SQL code block.",
+        "Provide the SQL query in a fenced Markdown code block."
+    };
+
+    public static int calcSystemPromptLength(@NotNull List<AIMessage> messages) {
+        return messages.stream()
+            .filter(it -> it.getRole() == AIMessageType.SYSTEM)
+            .mapToInt(it -> it.getContent().length())
+            .sum();
+    }
 
     public static String[] describeDataSourceInfo(@Nullable DBSLogicalDataSource dataSource) {
         SQLDialect dialect = dataSource == null ? BasicSQLDialect.INSTANCE :
@@ -73,9 +86,8 @@ public class AIPromptUtils {
 
     public static String[] createGenerateQueryInstructions(@Nullable DBSLogicalDataSource dataSource) {
         List<String> instructions = new ArrayList<>();
-        addGeneralRulesInstructions(dataSource, instructions);
         instructions.add("Stick strictly to SQL dialect syntax.");
-        instructions.add("Do not invent columns, tables, or data that aren’t explicitly defined.");
+        instructions.add("Do not invent columns, tables, or data that aren't explicitly defined.");
 
         SQLDialect dialect = dataSource == null ? BasicSQLDialect.INSTANCE :
             SQLUtils.getDialectFromDataSource(dataSource.getDataSourceContainer().getDataSource());
@@ -91,7 +103,8 @@ public class AIPromptUtils {
         return instructions.toArray(new String[0]);
     }
 
-    public static void addGeneralRulesInstructions(@Nullable DBSLogicalDataSource dataSource, @NotNull List<String> instructions) {
+    public static String[] createGeneralRulesInstructions() {
+        List<String> instructions = new ArrayList<>();
         instructions.add("You are the DBeaver AI assistant.");
         instructions.add("Act as a database architect and SQL expert.");
         instructions.add("Rely only on the provided schema information.");
@@ -101,6 +114,7 @@ public class AIPromptUtils {
         } else {
             instructions.add("Use the same language as the user.");
         }
+        return instructions.toArray(new String[0]);
     }
 
     @Nullable

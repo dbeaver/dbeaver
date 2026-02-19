@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -84,14 +84,15 @@ public class ResetSettingsHandler extends AbstractHandler {
             setShellStyle(SWT.DIALOG_TRIM);
         }
 
+        @NotNull
         @Override
-        protected Composite createDialogArea(Composite parent) {
+        protected Composite createDialogArea(@NotNull Composite parent) {
             final Composite composite = super.createDialogArea(parent);
 
             UIUtils.createLabel(composite, CoreApplicationMessages.reset_settings_dialog_message);
 
-            final Group group = UIUtils.createControlGroup(
-                composite, CoreApplicationMessages.reset_settings_dialog_options, 1, GridData.FILL_BOTH, 0);
+            Composite group = UIUtils.createTitledComposite(
+                composite, CoreApplicationMessages.reset_settings_dialog_options, 1, GridData.FILL_BOTH);
 
             final SelectionListener listener = SelectionListener.widgetSelectedAdapter(e -> {
                 final Button checkbox = (Button) e.widget;
@@ -128,7 +129,7 @@ public class ResetSettingsHandler extends AbstractHandler {
         }
 
         @Override
-        protected void createButtonsForButtonBar(Composite parent) {
+        protected void createButtonsForButtonBar(@NotNull Composite parent) {
             createButton(parent, IDialogConstants.OK_ID, CoreApplicationMessages.button_apply_and_restart, true)
                 .setEnabled(false);
             createButton(parent, IDialogConstants.CANCEL_ID, IDialogConstants.CANCEL_LABEL, false);
@@ -149,15 +150,10 @@ public class ResetSettingsHandler extends AbstractHandler {
         }
     }
 
-    private static class Option {
-        private final String name;
-        private final String description;
-        private final boolean checked;
-
-        public Option(@NotNull String name, @Nullable String description, boolean checked) {
-            this.name = name;
-            this.description = description;
-            this.checked = checked;
-        }
+    private record Option(
+        @NotNull String name,
+        @Nullable String description,
+        boolean checked
+    ) {
     }
 }

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -135,15 +135,32 @@ public abstract class BaseWorkspaceImpl implements DBPWorkspace {
         return null;
     }
 
+    @NotNull
+    @Override
+    public DBPProject createProject(@NotNull String name, @Nullable String description) throws DBException {
+        throw new DBException("Not supported");
+    }
+
+    @Override
+    public void deleteProject(@NotNull DBPProject project) throws DBException {
+        throw new DBException("Not supported");
+    }
+
+    @Override
+    public void renameProject(@NotNull DBPProject project, @NotNull String newName) throws DBException {
+        throw new DBException("Not supported");
+    }
+
     @Nullable
     @Override
     public DBPProject getActiveProject() {
         return activeProject;
     }
 
+    @Nullable
     public DBPProject getProjectById(@NotNull String projectId) {
         for (DBPProject project : getProjects()) {
-            if (projectId.equals(project.getId())) {
+            if (project.getId().equals(projectId)) {
                 return project;
             }
         }
