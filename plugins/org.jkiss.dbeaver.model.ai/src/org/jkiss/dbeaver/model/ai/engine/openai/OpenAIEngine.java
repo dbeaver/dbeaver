@@ -169,9 +169,18 @@ public class OpenAIEngine<PROPS extends OpenAIBaseProperties> extends BaseComple
 
     @NotNull
     private static List<OAIMessage> fromMessages(@NotNull List<AIMessage> messages) {
-        return messages.stream()
-            .map(OAIMessage::new)
-            .toList();
+        List<OAIMessage> result = new ArrayList<>(messages.size());
+        String currentToolCallId = null;
+        for (AIMessage message : messages) {
+            OAIMessage oaiMessage = new OAIMessage(message, currentToolCallId);
+            if (message.getFunctionCall() != null) {
+                currentToolCallId = oaiMessage.callId;
+            } else if (message.getFunctionCallName() == null) {
+                currentToolCallId = null;
+            }
+            result.add(oaiMessage);
+        }
+        return result;
     }
 
     @NotNull

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,13 +21,19 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.ai.AIMessage;
 import org.jkiss.dbeaver.model.ai.AIMessageType;
+import org.jkiss.dbeaver.model.ai.engine.AIFunctionCall;
+import org.jkiss.dbeaver.model.ai.engine.openai.OpenAIConstants;
+import org.jkiss.dbeaver.model.data.json.JSONUtils;
+import org.jkiss.utils.CommonUtils;
 
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 public class OAIMessage {
     public static final String TYPE_MESSAGE = "message";
     public static final String TYPE_FUNCTION_CALL = "function_call";
+    public static final String TYPE_FUNCTION_CALL_OUTPUT = "function_call_output";
     public static final String TYPE_FUNCTION_REASONING = "reasoning";
 
     public String id;
@@ -38,12 +44,28 @@ public class OAIMessage {
     public String arguments;
     @SerializedName("call_id")
     public String callId;
+    public String output;
     public List<OAIMessageContent> content;
 
     public OAIMessage() {
     }
 
     public OAIMessage(@NotNull AIMessage msg) {
+        this(msg, null);
+    }
+
+    public OAIMessage(@NotNull AIMessage msg, @Nullable String toolCallId) {
+        if (msg.getFunctionCall() != null) {
+            mapFunctionCall(msg.getFunctionCall());
+            return;
+        }
+        if (msg.getFunctionCallName() != null && !CommonUtils.isEmpty(toolCallId)) {
+            type = TYPE_FUNCTION_CALL_OUTPUT;
+            callId = toolCallId;
+            output = msg.getContent();
+            return;
+        }
+
         type = TYPE_MESSAGE;
         role = mapRole(msg.getRole());
         boolean input = switch (msg.getRole()) {
@@ -51,6 +73,19 @@ public class OAIMessage {
             default -> false;
         };
         content = List.of(new OAIMessageContent(input, msg.getContent()));
+    }
+
+    private void mapFunctionCall(@NotNull AIFunctionCall functionCall) {
+        type = TYPE_FUNCTION_CALL;
+        name = functionCall.getFunctionName();
+
+        Map<String, Object> argumentsMap = functionCall.getArguments();
+        arguments = argumentsMap == null ? "{}" : JSONUtils.GSON.toJson(argumentsMap);
+
+        Map<String, String> additionalProperties = functionCall.getAdditionalProperties();
+        if (additionalProperties != null) {
+            callId = additionalProperties.get(OpenAIConstants.TOOL_RESULT_CALL_ID);
+        }
     }
 
     @NotNull
