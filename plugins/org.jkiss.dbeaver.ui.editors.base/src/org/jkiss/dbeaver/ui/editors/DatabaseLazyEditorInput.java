@@ -294,7 +294,7 @@ public class DatabaseLazyEditorInput implements IDatabaseEditorInput, ILazyEdito
                             UIUtils.getActiveWorkbenchShell(),
                             dataSourceContainer,
                             e,
-                            IDialogConstants.OK_LABEL
+                            IDialogConstants.ABORT_LABEL
                         );
                         return clDialog.open();
                     }
