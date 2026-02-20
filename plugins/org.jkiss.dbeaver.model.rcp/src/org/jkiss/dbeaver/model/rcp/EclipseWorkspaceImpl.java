@@ -216,7 +216,8 @@ public abstract class EclipseWorkspaceImpl extends BaseWorkspaceImpl implements 
                 }
                 this.projects.put(project, projectMetadata);
 
-                if (activeProject == null || (!CommonUtils.isEmpty(activeProjectName) && project.getName().equals(activeProjectName))) {
+                if (activeProject == null || (!CommonUtils.isEmpty(activeProjectName) && projectMetadata.getName()
+                    .equals(activeProjectName))) {
                     activeProject = projectMetadata;
                 }
                 projectMetadata.hideConfigurationFiles();
