@@ -258,13 +258,9 @@ public class SQLQueryTranslator implements SQLTranslator {
         String baseDataType = colDataType.substring(0, parenthesisIndex > 0 ? parenthesisIndex : colDataType.length()).trim();
         switch (baseDataType) {
             case "CLOB" -> newDataType = (extendedDialect != null) ? extendedDialect.getClobDataType() : "varchar";
+            case "NCLOB" -> newDataType = (extendedDialect != null) ? extendedDialect.getNClobDataType() : "varchar";
             case "BLOB" -> newDataType = (extendedDialect != null) ? extendedDialect.getBlobDataType() : "blob";
-            case "TEXT" -> {
-                String dialectName = targetDialect.getDialectName().toLowerCase();
-                if (extendedDialect != null && (dialectName.equals("oracle") || dialectName.equals("sqlserver"))) {
-                    newDataType = extendedDialect.getClobDataType();
-                }
-            }
+            case "TEXT" -> newDataType = (extendedDialect != null) ? extendedDialect.getTextDataType() : "text";
             case "TIMESTAMP" -> {
                 if (extendedDialect != null) {
                     newDataType = extendedDialect.getTimestampDataType();
