@@ -184,8 +184,6 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
 
         var args = preprocessCommandLine();
         Location instanceLoc = Platform.getInstanceLocation();
-        System.out.println("Instance location: " + instanceLoc.getURL());
-        System.out.println("Instance location: " + instanceLoc.isSet());
         Path defaultHomePath = getDefaultInstanceLocation();
 
         boolean ideWorkspaceSet = setIDEWorkspace(instanceLoc);
