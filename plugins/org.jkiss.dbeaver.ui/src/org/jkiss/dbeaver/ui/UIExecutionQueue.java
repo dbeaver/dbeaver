@@ -77,8 +77,8 @@ public class UIExecutionQueue {
         try {
             nextJob.run();
         } finally {
-            nextJob = null;
             synchronized (execQueue) {
+                nextJob = null;
                 runCount--;
             }
         }
