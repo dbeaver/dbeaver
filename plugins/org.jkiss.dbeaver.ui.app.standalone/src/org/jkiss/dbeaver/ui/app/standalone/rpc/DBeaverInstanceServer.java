@@ -105,7 +105,7 @@ public class DBeaverInstanceServer extends ApplicationInstanceServer<IInstanceCo
         final IInstanceController instance = RestClient
             .builder(URI.create("http://localhost:" + serverProperties.port()), IInstanceController.class)
             .setSslContext(initCustomSslContext())
-            .setExtraHeaders(Map.of(HttpConstants.HEADER_AUTHORIZATION, HttpConstants.BEARER_PREFIX + serverProperties.password()))
+            .setHeaders(Map.of(HttpConstants.HEADER_AUTHORIZATION, HttpConstants.BEARER_PREFIX + serverProperties.password()))
             .create();
 
         try {
