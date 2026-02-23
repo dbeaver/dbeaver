@@ -33,7 +33,7 @@ import java.util.*;
 
 @CommandLine.Command(name = "network-handlers", description = "List available database network handlers.")
 
-public class ListNetworkHandlersParameterHandler extends AbstractRootCommandLineParameterHandler {
+public class ListNetworkHandlersParameterHandler extends CLIAbstractSubcommand {
     @NotNull
     @CommandLine.Option(names = {"--driver"}, arity = "1", description = "List supported handlers for the specified driver.")
     private String driverId;
