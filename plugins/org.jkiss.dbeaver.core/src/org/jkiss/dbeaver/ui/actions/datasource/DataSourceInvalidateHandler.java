@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -126,8 +126,13 @@ public class DataSourceInvalidateHandler extends AbstractDataSourceHandler
                         final DBPDataSourceContainer container = dataSource.getContainer();
                         final Throwable dialogError = error;
                         final Integer result = UITask.run(() -> {
-                                ConnectionLostDialog clDialog = new ConnectionLostDialog(null, container, dialogError, "Disconnect");
-                                return clDialog.open();
+                            ConnectionLostDialog clDialog = new ConnectionLostDialog(
+                                UIUtils.getActiveWorkbenchShell(),
+                                container,
+                                dialogError,
+                                "Disconnect"
+                            );
+                            return clDialog.open();
                         });
                         if (result == null || result == IDialogConstants.STOP_ID) {
                             // Disconnect - to notify UI and reflect model changes
