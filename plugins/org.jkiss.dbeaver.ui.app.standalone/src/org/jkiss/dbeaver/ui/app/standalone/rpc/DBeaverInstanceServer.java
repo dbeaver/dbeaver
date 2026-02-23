@@ -129,7 +129,7 @@ public class DBeaverInstanceServer extends ApplicationInstanceServer<IInstanceCo
                 throw new IllegalStateException("Invalid ping response: " + response + ", was expecting " + payload);
             }
         } catch (Throwable e) {
-            log.error("Error accessing instance server: " + e.getMessage());
+            log.debug("Error accessing instance server: " + e.getMessage());
             return null;
         }
 
