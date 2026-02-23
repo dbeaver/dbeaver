@@ -68,8 +68,7 @@ public class ListNetworkHandlersParameterHandler extends CLIAbstractSubcommand {
 
         for (var handler : networkHandlers) {
             output.append("Network Handler ID: ").append(handler.getId())
-                .append(", Name: ").append(handler.getCodeName())
-                .append(", Description: ").append(handler.getDescription());
+                .append(", Name: ").append(handler.getCodeName());
             if (!ArrayUtils.isEmpty(handler.getHandlerProperties())) {
                 output.append(", Parameters:");
             }
@@ -106,15 +105,12 @@ public class ListNetworkHandlersParameterHandler extends CLIAbstractSubcommand {
             String handlerId = entry.getKey();
             DBWHandlerDescriptor handler = networkHandlerRegistry.getDescriptor(handlerId);
             String prefix = handler.getPrefix() + ".";
-            Set<String> driverIds = entry.getValue();
             output.append("Network Handler ID: ").append(handlerId)
-                .append(", Name: ").append(handler.getCodeName())
-                .append(", Description: ").append(handler.getDescription());
+                .append(", Name: ").append(handler.getCodeName());
             if (!ArrayUtils.isEmpty(handler.getHandlerProperties())) {
                 output.append(", Parameters:");
             }
-            output.append("\n")
-                .append("Supported by drivers: ").append(String.join(", ", driverIds)).append("\n");
+            output.append("\n");
 
             for (DBPPropertyDescriptor property : handler.getHandlerProperties()) {
                 String helpText = CLIUtils.getPropertyHelpText(property, prefix);
