@@ -54,6 +54,10 @@ public class ListNetworkHandlersParameterHandler extends CLIAbstractSubcommand {
             allDriversHelp(driverRegistry, networkHandlerRegistry, output);
         }
 
+        while (!output.isEmpty() && Character.isWhitespace(output.charAt(output.length() - 1))) {
+            output.deleteCharAt(output.length() - 1);
+        }
+
         context().addResult(output.toString());
         context().setPostAction(CLIProcessResult.PostAction.SHUTDOWN);
     }
@@ -79,7 +83,6 @@ public class ListNetworkHandlersParameterHandler extends CLIAbstractSubcommand {
             }
             output.append("\n");
         }
-        output.replace(output.length() - 2, output.length(), "");
     }
 
     private void allDriversHelp(
@@ -118,6 +121,5 @@ public class ListNetworkHandlersParameterHandler extends CLIAbstractSubcommand {
             }
             output.append("\n");
         }
-        output.replace(output.length() - 2, output.length(), "");
     }
 }
