@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,7 @@ package org.jkiss.dbeaver.ui.app.standalone.cli;
 
 
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.cli.AbstractRootCommandLineParameterHandler;
+import org.jkiss.dbeaver.model.cli.CLIAbstractSubcommand;
 import org.jkiss.dbeaver.model.impl.preferences.SimplePreferenceStore;
 import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
@@ -34,7 +34,7 @@ import java.io.IOException;
 
 @CommandLine.Command(name = "translateSQL", aliases = {"-translateSQL", "-translate-sql-script"},
     description = "Translate SQL script from one dialect to another")
-public class SQLTranslatorHandler extends AbstractRootCommandLineParameterHandler {
+public class SQLTranslatorHandler extends CLIAbstractSubcommand {
     private static final Log log = Log.getLog(SQLTranslatorHandler.class);
 
     @CommandLine.Parameters(index = "0", description = "Parameter in the form dialect=filePath", arity = "1")
