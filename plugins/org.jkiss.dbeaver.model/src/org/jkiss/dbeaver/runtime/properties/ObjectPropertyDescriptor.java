@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -527,6 +527,13 @@ public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor
                     value = CommonUtils.toInt(value);
                 } else if (argType == Double.TYPE || argType == Double.class) {
                     value = CommonUtils.toDouble(value);
+                } else if (java.util.Collection.class.isAssignableFrom(argType)) {
+                    if (value == null || argType.isAssignableFrom(value.getClass())) {
+                        // Leave as is
+                    } else {
+                        // Make list from object
+                        value = List.of(value);
+                    }
                 }
             }
             setter.invoke(object, value);
@@ -541,6 +548,7 @@ public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor
         return getId() + " (" + propInfo.name() + ")";
     }
 
+    @NotNull
     @Override
     public Class<?> getDataType()
     {

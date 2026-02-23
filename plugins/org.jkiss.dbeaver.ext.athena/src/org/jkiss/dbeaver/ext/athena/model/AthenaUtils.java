@@ -14,27 +14,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.cli;
+package org.jkiss.dbeaver.ext.athena.model;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.model.cli.model.option.HiddenOptionsForSubcommands;
-import picocli.CommandLine;
+import org.jkiss.dbeaver.model.connection.DBPDriver;
 
-import java.util.concurrent.Callable;
+public class AthenaUtils {
 
-public abstract class AbstractCommandLineParameterHandler implements Callable<Void> {
-
-    @CommandLine.Mixin
-    private HiddenOptionsForSubcommands eclipseHiddenOptions;
-
-    @Override
-    public Void call() throws CLIException {
-        run();
-        return null;
+    public static boolean isLegacyDriver(@NotNull DBPDriver driver) {
+        return driver.getId().contains("legacy");
     }
 
-    public abstract void run() throws CLIException;
-
-    @NotNull
-    protected abstract CLIContext context();
 }

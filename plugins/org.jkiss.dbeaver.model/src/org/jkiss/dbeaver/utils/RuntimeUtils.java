@@ -735,7 +735,10 @@ public final class RuntimeUtils {
                         }
                     }
                 } catch (Exception e) {
-                    log.debug("Error injecting field '" + field.getName() + "' in '" + object + "'", e);
+                    if (e instanceof InvocationTargetException ite && ite.getTargetException() instanceof RuntimeException re) {
+                        throw re;
+                    }
+                    throw new IllegalStateException(e);
                 }
             }
         }

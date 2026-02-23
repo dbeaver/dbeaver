@@ -33,10 +33,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.CommonUtils;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 public class AIEngineRequestFactory {
     private static final Log log = Log.getLog(AIEngineRequestFactory.class);
@@ -160,7 +157,7 @@ public class AIEngineRequestFactory {
 
         Set<String> enabledFunctions = aiSettings.getFunctionSettings().getEnabledFunctions();
 
-        List<AIFunctionDescriptor> selectedFunctions = new ArrayList<>(functions);
+        Set<AIFunctionDescriptor> selectedFunctions = new LinkedHashSet<>(functions);
         selectedFunctions.removeIf(aiFunctionDescriptor ->
             !enabledFunctions.contains(aiFunctionDescriptor.getId())
         );
@@ -175,7 +172,7 @@ public class AIEngineRequestFactory {
             }
         }
 
-        request.setFunctions(selectedFunctions);
+        request.setFunctions(new ArrayList<>(selectedFunctions));
     }
 
 
@@ -204,7 +201,7 @@ public class AIEngineRequestFactory {
      * Resolves transitive dependencies for the given list of already selected function descriptors.
      */
     @NotNull
-    private static Set<String> resolveDependencies(@NotNull List<AIFunctionDescriptor> selected) {
+    private static Set<String> resolveDependencies(@NotNull Set<AIFunctionDescriptor> selected) {
         Set<String> result = new HashSet<>();
         for (AIFunctionDescriptor fd : selected) {
             collectDependencies(fd.getDependsOn(), result);

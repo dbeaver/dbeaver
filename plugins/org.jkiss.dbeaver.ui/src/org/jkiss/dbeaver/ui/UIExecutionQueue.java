@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,17 +16,12 @@
  */
 package org.jkiss.dbeaver.ui;
 
-import org.eclipse.core.runtime.jobs.Job;
-import org.eclipse.ui.internal.progress.JobInfo;
-import org.eclipse.ui.internal.progress.ProgressManager;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.app.DBPPlatformDesktop;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
-import org.jkiss.utils.ArrayUtils;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
-import java.util.Objects;
 
 /**
  * Similar to simple Display.asyncExec but puts all jobs in queue.
@@ -37,8 +32,9 @@ public class UIExecutionQueue {
 
     private static final List<Runnable> execQueue = new ArrayList<>();
     private static int runCount = 0;
+    private static volatile Runnable nextJob;
 
-    public static void queueExec(Runnable runnable) {
+    public static void queueExec(@NotNull Runnable runnable) {
         synchronized (execQueue) {
             execQueue.add(runnable);
         }
@@ -61,15 +57,9 @@ public class UIExecutionQueue {
     }
 
     private static void executeInUI() {
-        Runnable nextJob;
         synchronized (execQueue) {
             boolean workbenchStarted = DBWorkbench.getPlatform() instanceof DBPPlatformDesktop pd && pd.isWorkbenchStarted();
-            ProgressManager progressManager = ProgressManager.getInstance();
-            boolean isUserTaskRunning = Arrays.stream(progressManager.getJobInfos(false))
-                .map(JobInfo::getJob)
-                .filter(Objects::nonNull)
-                .anyMatch(Job::isUser);
-            if (runCount > 0 || !workbenchStarted || isUserTaskRunning) {
+            if (runCount > 0 || !workbenchStarted) {
                 // If workbench wasn't fully started or
                 // job is running or
                 // some Eclipse job is active in UI thread then retry later
@@ -82,12 +72,13 @@ public class UIExecutionQueue {
                 return;
             }
             runCount++;
-            nextJob = execQueue.remove(0);
+            nextJob = execQueue.removeFirst();
         }
         try {
             nextJob.run();
         } finally {
             synchronized (execQueue) {
+                nextJob = null;
                 runCount--;
             }
         }
