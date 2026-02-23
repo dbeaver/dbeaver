@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,39 +16,63 @@
  */
 package org.jkiss.dbeaver.ui;
 
-import org.eclipse.jface.viewers.ColumnViewerToolTipSupport;
-import org.eclipse.jface.viewers.TableViewerColumn;
-import org.eclipse.jface.viewers.Viewer;
-import org.eclipse.jface.viewers.ViewerFilter;
+import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.graphics.Image;
+import org.eclipse.ui.IEditorInput;
+import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.internal.EditorReference;
 import org.eclipse.ui.internal.WorkbenchPartReference;
 import org.eclipse.ui.internal.WorkbookEditorsHandler;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.DBPDataSourceContainerProvider;
+import org.jkiss.utils.CommonUtils;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
 
 public class CustomWorkbookEditorsHandler extends WorkbookEditorsHandler {
+    private static final Log log = Log.getLog(CustomWorkbookEditorsHandler.class);
+
+    // FIXME: this is a dirty workaround for UI freeze (dbeaver/pro#6519)
+    // Freeze happens because we may trigger master password dialog in ref.getEditorInput()
+    // We fix it by avoiding UI double entrance.
+    // Note: this flag is separate from DBeaverEditorPartUtils.isResolving (used by the tab
+    // renderer and chevron popup). Both flags operate on the SWT UI thread exclusively,
+    // so they cannot race against each other.
+    private static volatile boolean isResolving;
+
     private String pattern;
+
+    // Caches container lookups for the lifetime of a single Ctrl+E popup session.
+    // Cleared each time the dialog is opened (when setLabelProvider is called)
+    // and when the label provider is disposed.
+    private Map<EditorReference, Optional<DBPDataSourceContainer>> containerCache = new HashMap<>();
 
     @Override
     protected ViewerFilter getFilter() {
         return new ViewerFilter() {
             @Override
             public boolean select(Viewer viewer, Object parentElement, Object element) {
-                return element instanceof EditorReference
+                return element instanceof EditorReference ref
                     && pattern != null
-                    && SearchCellLabelProvider.matches(pattern, ((EditorReference) element).getTitle());
+                    && SearchCellLabelProvider.matches(pattern, getLabel(ref));
             }
         };
     }
 
     @Override
     protected void setLabelProvider(TableViewerColumn column) {
+        containerCache = new HashMap<>();
+
         column.setLabelProvider(new SearchCellLabelProvider() {
             @NotNull
             @Override
             public String getText(@NotNull Object element) {
-                return getWorkbenchPartReferenceText((WorkbenchPartReference) element);
+                return getLabel((WorkbenchPartReference) element);
             }
 
             @NotNull
@@ -67,6 +91,29 @@ public class CustomWorkbookEditorsHandler extends WorkbookEditorsHandler {
             public String getPattern() {
                 return pattern;
             }
+
+            @Override
+            public void update(@NotNull ViewerCell cell) {
+                super.update(cell);
+
+                if (!(cell.getElement() instanceof EditorReference ref)) {
+                    return;
+                }
+
+                DBPDataSourceContainer container = resolveContainer(ref);
+                if (container == null) {
+                    return;
+                }
+
+                ConnectionLabelUtils.applyConnectionBackground(cell, container);
+                ConnectionLabelUtils.applyQualifierSuffix(cell, container);
+            }
+
+            @Override
+            public void dispose() {
+                containerCache.clear();
+                super.dispose();
+            }
         });
 
         ColumnViewerToolTipSupport.enableFor(column.getViewer());
@@ -75,6 +122,62 @@ public class CustomWorkbookEditorsHandler extends WorkbookEditorsHandler {
     @Override
     protected void setMatcherString(String pattern) {
         this.pattern = pattern;
+    }
 
+    @NotNull
+    private String getLabel(@NotNull WorkbenchPartReference ref) {
+        String label = getWorkbenchPartReferenceText(ref);
+        if (ref instanceof EditorReference editorRef) {
+            DBPDataSourceContainer container = resolveContainer(editorRef);
+            if (container != null && !CommonUtils.isEmpty(container.getName())) {
+                label += ConnectionLabelUtils.CONNECTION_SEPARATOR + container.getName();
+            }
+        }
+        return label;
+    }
+
+    @Nullable
+    private DBPDataSourceContainer resolveContainer(@NotNull EditorReference ref) {
+        return containerCache.computeIfAbsent(ref,
+            r -> Optional.ofNullable(extractDataSourceContainer(r)))
+            .orElse(null);
+    }
+
+    @Nullable
+    private static DBPDataSourceContainer extractDataSourceContainer(@NotNull EditorReference ref) {
+        if (isResolving) {
+            return null;
+        }
+        isResolving = true;
+        try {
+            IEditorPart editor = ref.getEditor(false);
+            if (editor instanceof DBPDataSourceContainerProvider provider) {
+                DBPDataSourceContainer container = provider.getDataSourceContainer();
+                if (container != null) {
+                    return container;
+                }
+            }
+            if (editor != null) {
+                IEditorInput input = editor.getEditorInput();
+                if (input instanceof DBPDataSourceContainerProvider provider) {
+                    return provider.getDataSourceContainer();
+                }
+                return null;
+            }
+
+            // Editor not loaded; try editor input for lazy-loaded editors
+            try {
+                IEditorInput input = ref.getEditorInput();
+                if (input instanceof DBPDataSourceContainerProvider provider) {
+                    return provider.getDataSourceContainer();
+                }
+            } catch (Exception e) {
+                log.debug("Cannot get editor input for: " + ref.getTitle(), e);
+            }
+
+            return null;
+        } finally {
+            isResolving = false;
+        }
     }
 }
