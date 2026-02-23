@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,13 +18,13 @@ package org.jkiss.dbeaver.model.cli.model;
 
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.cli.AbstractRootCommandLineParameterHandler;
+import org.jkiss.dbeaver.model.cli.CLIAbstractSubcommand;
 import org.jkiss.dbeaver.model.cli.CLIConstants;
 import org.jkiss.dbeaver.model.cli.CLIException;
 import org.jkiss.dbeaver.model.cli.model.option.AuthenticateOptions;
 import picocli.CommandLine;
 
-public abstract class CommandLineWithAuth extends AbstractRootCommandLineParameterHandler {
+public abstract class CommandLineWithAuth extends CLIAbstractSubcommand {
 
     @Nullable
     @CommandLine.Mixin

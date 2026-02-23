@@ -26,8 +26,8 @@ apps:
 parts:
   dbeaver-ce:
     source: 
-      - on amd64 to amd64: dbeaver-ce_latest_amd64.deb
-      - on amd64 to arm64: dbeaver-ce_latest_arm64.deb
+      - on amd64 to amd64: dbeaver-ce-latest-linux-x86_64.deb
+      - on amd64 to arm64: dbeaver-ce-latest-linux-aarch64.deb
     plugin: dump
     build-packages:
       - ca-certificates
