@@ -82,6 +82,8 @@ public class SSHTunnelDefaultConfiguratorUI implements IObjectPropertyConfigurat
     private final List<ConfigurationWrapper> configurations = new ArrayList<>();
 
     private CredentialsPanel credentialsPanel;
+    private boolean loadingConfiguration;
+    private boolean switchingConfiguration;
 
     private ExpandableComposite hostsComposite;
     private TableViewer hostsViewer;
@@ -115,6 +117,9 @@ public class SSHTunnelDefaultConfiguratorUI implements IObjectPropertyConfigurat
             credentialsPanel = new CredentialsPanel(
                 settingsGroup,
                 () -> {
+                    if (loadingConfiguration || switchingConfiguration) {
+                        return;
+                    }
                     refreshActiveConfiguration();
                     propertyChangeListener.run();
                 },
@@ -184,31 +189,44 @@ public class SSHTunnelDefaultConfiguratorUI implements IObjectPropertyConfigurat
             hostsViewer.setContentProvider(ArrayContentProvider.getInstance());
             hostsViewer.setInput(configurations);
             hostsViewer.addSelectionChangedListener(e -> {
-                final ConfigurationWrapper last = credentialsPanel.lastConfiguration;
-                final ConfigurationWrapper current = (ConfigurationWrapper) e.getStructuredSelection().getFirstElement();
-
-                if (current == null) {
+                if (switchingConfiguration) {
                     return;
                 }
+                switchingConfiguration = true;
+                try {
+                    final ConfigurationWrapper last = credentialsPanel.lastConfiguration;
+                    final ConfigurationWrapper current = (ConfigurationWrapper) e.getStructuredSelection().getFirstElement();
 
-                if (last != null && last != current) {
-                    final SSHHostConfiguration updated = credentialsPanel.saveSettings();
-                    if (!last.configuration.equals(updated)) {
-                        last.configuration = updated;
-                        hostsViewer.refresh();
+                    if (current == null) {
+                        return;
                     }
+
+                    if (last != null && last != current) {
+                        final SSHHostConfiguration updated = credentialsPanel.saveSettings();
+                        if (!last.configuration.equals(updated)) {
+                            last.configuration = updated;
+                            hostsViewer.refresh(last);
+                        }
+                    }
+
+                    final int index = configurations.indexOf(current);
+                    final int count = configurations.size();
+
+                    createItem.setEnabled(count < SSHConstants.MAX_JUMP_SERVERS);
+                    deleteItem.setEnabled(count > 1);
+                    moveUpItem.setEnabled(index > 0);
+                    moveDownItem.setEnabled(index < count - 1);
+
+                    loadingConfiguration = true;
+                    try {
+                        loadConfiguration(current);
+                    } finally {
+                        loadingConfiguration = false;
+                    }
+                    propertyChangeListener.run();
+                } finally {
+                    switchingConfiguration = false;
                 }
-
-                final int index = configurations.indexOf(current);
-                final int count = configurations.size();
-
-                createItem.setEnabled(count < SSHConstants.MAX_JUMP_SERVERS);
-                deleteItem.setEnabled(count > 1);
-                moveUpItem.setEnabled(index > 0);
-                moveDownItem.setEnabled(index < count - 1);
-
-                loadConfiguration(current);
-                propertyChangeListener.run();
             });
 
             final ViewerColumnController<Object, ConfigurationWrapper> controller = new ViewerColumnController<>("ssh_hosts", hostsViewer);
@@ -387,7 +405,7 @@ public class SSHTunnelDefaultConfiguratorUI implements IObjectPropertyConfigurat
     private void refreshActiveConfiguration() {
         if (credentialsPanel.lastConfiguration != null) {
             var wrapper = (ConfigurationWrapper) hostsViewer.getStructuredSelection().getFirstElement();
-            if (wrapper != null) {
+            if (wrapper != null && wrapper == credentialsPanel.lastConfiguration) {
                 wrapper.configuration = credentialsPanel.saveSettings();
                 hostsViewer.refresh(wrapper);
             }
