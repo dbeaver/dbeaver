@@ -17,19 +17,20 @@
 package org.jkiss.dbeaver.model.cli;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.model.cli.command.AbstractTopLevelCommand;
+import org.jkiss.dbeaver.model.cli.model.option.HiddenOptionsForSubcommands;
 import picocli.CommandLine;
 
-// Base class for first level commands, which use AbstractTopLevelCommand as parent
-public abstract class AbstractRootCommandLineParameterHandler extends AbstractCommandLineParameterHandler {
+public abstract class CLIAbstractSubcommand extends CLIAbstractCommand {
+    @CommandLine.Mixin
+    private HiddenOptionsForSubcommands eclipseHiddenOptions;
     /**
      * Root command uses as context
      */
     @CommandLine.ParentCommand
-    private AbstractTopLevelCommand parent;
+    private CLIAbstractCommand parent;
 
     @NotNull
-    public CLIContext context() {
-        return parent.getContext();
+    protected CLIContext context() {
+        return parent.context();
     }
 }

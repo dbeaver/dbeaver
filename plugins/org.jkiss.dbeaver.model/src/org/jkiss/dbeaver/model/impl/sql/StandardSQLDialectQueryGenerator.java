@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -90,9 +90,13 @@ public class StandardSQLDialectQueryGenerator implements SQLQueryGenerator {
         @NotNull StringBuilder query,
         boolean inlineCriteria,
         boolean subQuery
-    ) {
+    ) throws DBException {
         if (filter.isUseDisjunctiveNormalForm() && constraints.size() > 1) {
-            // TODO: Would be nice to have some asserts here
+            for (DBDAttributeConstraint c : constraints) {
+                if (c.getOperator() != DBCLogicalOperator.IN || c.isReverseOperator()) {
+                    throw new DBException("DNF requires all constraints to be IN operator without NOT");
+                }
+            }
 
             var names = constraints.stream()
                 .map(constraint -> getConstraintAttributeName(dataSource, conditionTable, constraint, subQuery, true))
@@ -103,7 +107,13 @@ public class StandardSQLDialectQueryGenerator implements SQLQueryGenerator {
                 .map(Object[].class::cast)
                 .toList();
 
-            var count = values.get(0).length;
+            int count = values.getFirst().length;
+            for (int i = 1; i < values.size(); i++) {
+                if (values.get(i).length != count) {
+                    throw new DBException("DNF requires all constraints to have the same number of values");
+                }
+            }
+
             for (int i = 0; i < count; i++) {
                 if (i > 0) {
                     query.append(" OR ");
@@ -113,8 +123,21 @@ public class StandardSQLDialectQueryGenerator implements SQLQueryGenerator {
                     if (j > 0) {
                         query.append(" AND ");
                     }
-                    query.append(names.get(j)).append(" = ");
-                    query.append(getStringValue(dataSource, constraints.get(j), inlineCriteria, values.get(j)[i]));
+
+                    var name = names.get(j);
+                    query.append(name);
+
+                    var value = values.get(j)[i];
+                    if (DBUtils.isNullValue(value)) {
+                        if (dataSource.getSQLDialect().useEmptyStringForNulls()) {
+                            query.append(" = ''");
+                        } else {
+                            query.append(" IS NULL");
+                        }
+                    } else {
+                        query.append(" = ");
+                        query.append(getStringValue(dataSource, constraints.get(j), inlineCriteria, value));
+                    }
                 }
                 query.append(')');
             }
