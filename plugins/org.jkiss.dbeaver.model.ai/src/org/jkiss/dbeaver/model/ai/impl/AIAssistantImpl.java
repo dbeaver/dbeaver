@@ -20,8 +20,10 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.ai.*;
 import org.jkiss.dbeaver.model.ai.engine.*;
+import org.jkiss.dbeaver.model.ai.internal.AIFeatures;
 import org.jkiss.dbeaver.model.ai.internal.AIMessages;
 import org.jkiss.dbeaver.model.ai.registry.*;
 import org.jkiss.dbeaver.model.ai.utils.ThrowableSupplier;
@@ -209,6 +211,12 @@ public class AIAssistantImpl implements AIAssistant {
         if (arguments == null) {
             arguments = Map.of();
         }
+        DBPDataSourceContainer container = context.getContext() != null
+            ? context.getContext().getExecutionContext().getDataSource().getContainer() : null;
+        AIFeatures.AI_CHAT_FUNCTION_CALL.use(AIFeatures.buildFeatureParameters(
+            container,
+            Map.of(AIFeatures.FUNCTION_NAME, functionCall.getFunctionName())
+        ));
         return registry.callFunction(context, function, arguments);
     }
 
