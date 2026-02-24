@@ -49,12 +49,17 @@ public class GroupingColumnsContainer {
     }
 
     public boolean removeFunctionByName(@NotNull String name) {
+        int index = indexOfFunctionByName(name);
+        return index >= 0 && groupFunctions.remove(index).afterDeleteAction();
+    }
+
+    public int indexOfFunctionByName(@NotNull String name) {
         for (int i = 0; i < groupFunctions.size(); i++) {
             if (groupFunctions.get(i).getUniqueId().equals(name)) {
-                return groupFunctions.remove(i).afterDeleteAction();
+                return i;
             }
         }
-        return false;
+        return -1;
     }
 
     public void bindTransformers() {
@@ -136,7 +141,7 @@ public class GroupingColumnsContainer {
         }
         // for now functions can only be placed after attributes
         if (!attributesToMove.isEmpty()) {
-            int attrOverColumn = isAttributeIndex(overColumnIndex) ? overColumnIndex : groupFunctions.size() - 1;
+            int attrOverColumn = isAttributeIndex(overColumnIndex) ? overColumnIndex : attributes.size() - 1;
             moveElements(attributes, attrOverColumn, attributesToMove);
         }
         if (!functionsToMove.isEmpty()) {
@@ -162,9 +167,7 @@ public class GroupingColumnsContainer {
     }
 
     private boolean isUniqueFunctionByName(@NotNull GroupingFunctionColumn functionColumn) {
-        return groupFunctions
-            .stream()
-            .noneMatch(functionColumn::matchById);
+        return indexOfFunctionByName(functionColumn.getUniqueId()) < 0;
     }
 
     private boolean removeColumn(int index) {

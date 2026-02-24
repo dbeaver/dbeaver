@@ -58,9 +58,6 @@ public class PercentGroupingFunctionColumn extends TransformerGroupingFunctionCo
         if (dataSource != null) {
             dataSource.getContainer().getPreferenceStore().setValue(ResultSetPreferences.RS_GROUPING_SHOW_PERCENT_OF_TOTAL_ROWS, false);
         }
-        if (groupingResultsContainer.getColumnsContainer().getFunctionColumns().isEmpty()) {
-            groupingResultsContainer.addDefaultFunction();
-        }
         return true;
     }
 

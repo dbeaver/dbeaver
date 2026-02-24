@@ -34,12 +34,11 @@ import org.jkiss.utils.ArrayUtils;
 import java.util.Comparator;
 import java.util.List;
 import java.util.TreeSet;
-import java.util.stream.Collectors;
 
 public class DeleteColumnAction extends GroupingAction {
 
     @NotNull
-    private TreeSet<Integer> readyToRemoveIndexes = new TreeSet<>();
+    private final TreeSet<Integer> readyToRemoveIndexes = new TreeSet<>(Comparator.reverseOrder());
 
     public DeleteColumnAction(@NotNull GroupingResultsContainer resultsContainer) {
         super(resultsContainer, ResultSetMessages.controls_resultset_grouping_remove_column, DBeaverIcons.getImageDescriptor(UIIcon.CLOSE));
@@ -48,13 +47,11 @@ public class DeleteColumnAction extends GroupingAction {
             @Override
             public void handleResultSetSelectionChange(SelectionChangedEvent event) {
                 if (event.getSelection() instanceof IResultSetSelection resultSetSelection) {
-                    readyToRemoveIndexes = defineIndexesReadyToBeRemoved(resultSetSelection.getSelectedAttributes());
-                    setEnabled(isEnabled());
+                    updateIndexesAndIsEnabled(resultSetSelection.getSelectedAttributes());
                 }
             }
         });
-        readyToRemoveIndexes = defineIndexesReadyToBeRemoved(resultSetController.getSelection().getSelectedAttributes());
-        setEnabled(isEnabled());
+        updateIndexesAndIsEnabled(resultSetController.getSelection().getSelectedAttributes());
     }
 
     @Override
@@ -77,15 +74,20 @@ public class DeleteColumnAction extends GroupingAction {
         }
     }
 
-    @NotNull
-    private TreeSet<Integer> defineIndexesReadyToBeRemoved(@NotNull List<DBDAttributeBinding> selectedAttributes) {
+    private void updateIndexesAndIsEnabled(@NotNull List<DBDAttributeBinding> selectedAttributes) {
+        defineIndexesReadyToBeRemoved(selectedAttributes);
+        setEnabled(isEnabled());
+    }
+
+    private void defineIndexesReadyToBeRemoved(@NotNull List<DBDAttributeBinding> selectedAttributes) {
         DBDAttributeBinding[] existingBindings = groupingResultsContainer.getResultSetController().getModel().getAttributes();
         GroupingColumnsContainer columnsContainer = groupingResultsContainer.getColumnsContainer();
-        return selectedAttributes
+        readyToRemoveIndexes.clear();
+        selectedAttributes
             .stream()
             .map(currentBinding -> ArrayUtils.indexOf(existingBindings, currentBinding))
             .filter(i -> canColumnBeRemoved(i, columnsContainer))
-            .collect(Collectors.toCollection(() -> new TreeSet<Integer>(Comparator.reverseOrder())));
+            .forEach(readyToRemoveIndexes::add);
     }
 
     private boolean canColumnBeRemoved(int indexOfAttr, @NotNull GroupingColumnsContainer columnsContainer) {

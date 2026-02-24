@@ -47,7 +47,7 @@ public class GroupingResultsContainer implements IResultSetContainer {
     private static final Log log = Log.getLog(GroupingResultsContainer.class);
 
     public static final String FUNCTION_COUNT = "COUNT";
-    private static int uniqueFunctionIdCounter;
+    private int uniqueFunctionIdCounter;
 
     private final IResultSetPresentation presentation;
     private final GroupingDataContainer dataContainer;
@@ -81,7 +81,7 @@ public class GroupingResultsContainer implements IResultSetContainer {
         addDefaultFunction();
     }
 
-    public void addDefaultFunction() {
+    private void addDefaultFunction() {
         addGroupingFunctions(List.of(getDefaultFunction()));
     }
 
@@ -173,10 +173,10 @@ public class GroupingResultsContainer implements IResultSetContainer {
 
     public void addGroupingFunctions(@NotNull List<String> functions) {
         DBPDataSource dataSource = getDataContainer().getDataSource();
-        if(dataSource != null){
+        if (dataSource != null) {
             functions
                 .stream()
-                .map(func -> new GroupingFunctionColumn(String.valueOf(uniqueFunctionIdCounter++), func, dataSource))
+                .map(func -> new GroupingFunctionColumn(func + "_" + uniqueFunctionIdCounter++, func, dataSource))
                 .forEach(columnsContainer::addFunction);
         }
     }
@@ -277,15 +277,19 @@ public class GroupingResultsContainer implements IResultSetContainer {
     }
 
     private void manageSpecialFunctions(@NotNull DBPDataSource dataSource) {
-        boolean isPercentFunctionPresent = dataSource.getContainer().getPreferenceStore()
+        boolean shouldPercentFunctionPresent = dataSource.getContainer().getPreferenceStore()
             .getBoolean(ResultSetPreferences.RS_GROUPING_SHOW_PERCENT_OF_TOTAL_ROWS);
-        managePercentFunction(dataSource, isPercentFunctionPresent);
+        managePercentFunction(dataSource, shouldPercentFunctionPresent);
+        if (columnsContainer.getFunctionColumns().isEmpty()) {
+            addDefaultFunction();
+        }
     }
 
-    private void managePercentFunction(@NotNull DBPDataSource dataSource, boolean isPresent) {
-        if (isPresent) {
+    private void managePercentFunction(@NotNull DBPDataSource dataSource, boolean shouldPresent) {
+        boolean isPresent = columnsContainer.indexOfFunctionByName(PercentGroupingFunctionColumn.PERCENT_FUNCTION_ID) >= 0;
+        if (shouldPresent && !isPresent) {
             columnsContainer.addFunction(new PercentGroupingFunctionColumn(dataSource, this));
-        } else {
+        } else if (!shouldPresent && isPresent) {
             columnsContainer.removeFunctionByName(PercentGroupingFunctionColumn.PERCENT_FUNCTION_ID);
         }
     }
