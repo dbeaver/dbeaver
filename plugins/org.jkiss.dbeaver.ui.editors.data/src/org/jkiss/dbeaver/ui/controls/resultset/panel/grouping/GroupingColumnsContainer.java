@@ -51,13 +51,14 @@ public class GroupingColumnsContainer {
     public boolean removeFunctionByName(@NotNull String name) {
         for (int i = 0; i < groupFunctions.size(); i++) {
             if (groupFunctions.get(i).getUniqueId().equals(name)) {
-                return removeColumn(functionIndexToFullIndex(i));
+                return groupFunctions.remove(i).afterDeleteAction();
             }
         }
         return false;
     }
 
     public void bindTransformers() {
+        dataContainer.clearTransformers();
         for (int i = 0; i < groupFunctions.size(); i++) {
             if (groupFunctions.get(i) instanceof TransformerGroupingFunctionColumn transformerGroupingFunctionColumn) {
                 dataContainer.setAttributeTransformer(functionIndexToFullIndex(i), transformerGroupingFunctionColumn.getTransformer());
@@ -113,13 +114,8 @@ public class GroupingColumnsContainer {
     }
 
     public boolean isEmpty() {
-        return isFunctionsEmpty() || attributes.isEmpty();
+        return groupFunctions.isEmpty() || attributes.isEmpty();
     }
-
-    public boolean isFunctionsEmpty() {
-        return groupFunctions.isEmpty();
-    }
-
 
     public void moveColumns(int overColumnIndex, @NotNull List<Integer> indexesToMove) {
         TreeSet<Integer> attributesToMove = new TreeSet<>(Comparator.reverseOrder());
@@ -189,11 +185,7 @@ public class GroupingColumnsContainer {
         if (isAttributeIndex(index)) {
             return attributes.remove(index);
         } else {
-            GroupingFunctionColumn removedColumn = groupFunctions.remove(fullIndexToFunctionIndex(index));
-            if (removedColumn instanceof TransformerGroupingFunctionColumn) {
-                dataContainer.removeAttributeTransformer(index);
-            }
-            return removedColumn;
+            return groupFunctions.remove(fullIndexToFunctionIndex(index));
         }
     }
 

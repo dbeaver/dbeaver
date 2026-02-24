@@ -22,18 +22,18 @@ import org.jkiss.dbeaver.model.DBUtils;
 
 public class GroupingFunctionColumn implements GroupingColumn {
 
-    private static int idCounter;
 
     protected final String sql;
 
     private final String uniqueId;
 
     public GroupingFunctionColumn(
+        @NotNull String uniqueId,
         @NotNull String stringFunction,
         @NotNull DBPDataSource dataSource
     ) {
-        this.uniqueId = String.valueOf(idCounter++);
-        this.sql = DBUtils.getQuotedIdentifier(dataSource, stringFunction);
+        this.uniqueId = uniqueId;
+        this.sql = DBUtils.getUnQuotedIdentifier(dataSource, stringFunction);
     }
 
     @NotNull

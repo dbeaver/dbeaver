@@ -46,7 +46,7 @@ public class PercentGroupingFunctionColumn extends TransformerGroupingFunctionCo
         @NotNull DBPDataSource dataSource,
         @NotNull GroupingResultsContainer groupingResultsContainer
     ) {
-        super(getCountFunction(dataSource), dataSource);
+        super(PERCENT_FUNCTION_ID, getCountFunction(dataSource), dataSource);
         this.groupingResultsContainer = groupingResultsContainer;
     }
 
@@ -58,7 +58,7 @@ public class PercentGroupingFunctionColumn extends TransformerGroupingFunctionCo
         if (dataSource != null) {
             dataSource.getContainer().getPreferenceStore().setValue(ResultSetPreferences.RS_GROUPING_SHOW_PERCENT_OF_TOTAL_ROWS, false);
         }
-        if (groupingResultsContainer.getColumnsContainer().isFunctionsEmpty()) {
+        if (groupingResultsContainer.getColumnsContainer().getFunctionColumns().isEmpty()) {
             groupingResultsContainer.addDefaultFunction();
         }
         return true;

@@ -22,10 +22,11 @@ import org.jkiss.dbeaver.model.data.DBDAttributeTransformer;
 
 public abstract class TransformerGroupingFunctionColumn extends GroupingFunctionColumn {
     public TransformerGroupingFunctionColumn(
+        @NotNull String uniqueId,
         @NotNull String stringFunction,
         @NotNull DBPDataSource dataSource
     ) {
-        super(stringFunction, dataSource);
+        super(uniqueId, stringFunction, dataSource);
     }
 
     @NotNull
