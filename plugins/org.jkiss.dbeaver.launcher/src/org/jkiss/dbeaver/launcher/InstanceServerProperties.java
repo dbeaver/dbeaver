@@ -14,27 +14,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.cli;
+package org.jkiss.dbeaver.launcher;
 
-import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.model.cli.model.option.HiddenOptionsForSubcommands;
-import picocli.CommandLine;
+public record InstanceServerProperties(int port, String password) {
+    public static final String PROPERTY_PORT = "port";
+    public static final String PROPERTY_PASSWORD = "password";
 
-import java.util.concurrent.Callable;
-
-public abstract class AbstractCommandLineParameterHandler implements Callable<Void> {
-
-    @CommandLine.Mixin
-    private HiddenOptionsForSubcommands eclipseHiddenOptions;
-
-    @Override
-    public Void call() throws CLIException {
-        run();
-        return null;
-    }
-
-    public abstract void run() throws CLIException;
-
-    @NotNull
-    protected abstract CLIContext context();
+    public static final String HEADER_AUTHORIZATION = "Authorization";
+    public static final String BEARER_PREFIX = "Bearer ";
 }

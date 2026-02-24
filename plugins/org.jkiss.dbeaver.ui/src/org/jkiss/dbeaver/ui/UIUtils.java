@@ -692,6 +692,19 @@ public class UIUtils {
         int widthHint,
         int hSpan
     ) {
+        return createTitledComposite(parent, label, null, columns, layoutStyle, widthHint, hSpan);
+
+    }
+
+    public static Composite createTitledComposite(
+        @NotNull Composite parent,
+        @NotNull String label,
+        @Nullable String tooltip,
+        int columns,
+        int layoutStyle,
+        int widthHint,
+        int hSpan
+    ) {
         Composite composite = UIUtils.createComposite(parent, 1);
         {
             GridData gd = new GridData(layoutStyle > 0 ? layoutStyle : GridData.HORIZONTAL_ALIGN_BEGINNING);
@@ -706,6 +719,9 @@ public class UIUtils {
 
         Label titleLabel = new Label(composite, SWT.NONE);
         titleLabel.setText(label);
+        if (CommonUtils.isNotEmpty(tooltip)) {
+            titleLabel.setToolTipText(tooltip);
+        }
         if (PlatformUI.isWorkbenchRunning()) {
             titleLabel.setFont(BaseThemeSettings.instance.baseFontBold);
         }
@@ -738,6 +754,15 @@ public class UIUtils {
         Control[] children = titledComposite.getChildren();
         if (children.length > 0 && children[0] instanceof Label label) {
             label.setText(title);
+            return;
+        }
+        log.error("Composite is not titled!");
+    }
+
+    public static void updateTitledCompositeTooltip(@NotNull Composite titledComposite, @NotNull String tooltip) {
+        Control[] children = titledComposite.getChildren();
+        if (children.length > 0 && children[0] instanceof Label label) {
+            label.setToolTipText(tooltip);
             return;
         }
         log.error("Composite is not titled!");

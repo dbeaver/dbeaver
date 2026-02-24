@@ -33,6 +33,7 @@ import org.jkiss.dbeaver.model.app.DBPPlatformDesktop;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.cli.ApplicationInstanceServer;
 import org.jkiss.dbeaver.model.cli.CLIProcessResult;
+import org.jkiss.dbeaver.model.cli.InstanceServerProperties;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -46,6 +47,7 @@ import org.jkiss.dbeaver.utils.DataSourceUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.SystemVariablesResolver;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.HttpConstants;
 import org.jkiss.utils.rest.RestClient;
 
 import java.io.File;
@@ -95,30 +97,15 @@ public class DBeaverInstanceServer extends ApplicationInstanceServer<IInstanceCo
     public static IInstanceController createClient(@Nullable Path workspacePath) {
         final Path path = getConfigPath(workspacePath);
 
-        if (Files.notExists(path)) {
-            log.trace("No instance controller is available");
-            return null;
-        }
-
-        final Properties properties = new Properties();
-
-        try (Reader reader = Files.newBufferedReader(path)) {
-            properties.load(reader);
-        } catch (IOException e) {
-            log.error("Error reading instance controller configuration: " + e.getMessage());
-            return null;
-        }
-
-        final String port = properties.getProperty(portPropertyName());
-
-        if (CommonUtils.isEmptyTrimmed(port)) {
-            log.error("No port specified for the instance controller to connect to");
+        InstanceServerProperties serverProperties = deserializeProperties(path);
+        if (serverProperties == null) {
             return null;
         }
 
         final IInstanceController instance = RestClient
-            .builder(URI.create("http://localhost:" + port), IInstanceController.class)
+            .builder(URI.create("http://localhost:" + serverProperties.port()), IInstanceController.class)
             .setSslContext(initCustomSslContext())
+            .setHeaders(Map.of(HttpConstants.HEADER_AUTHORIZATION, HttpConstants.BEARER_PREFIX + serverProperties.password()))
             .create();
 
         try {
@@ -134,6 +121,36 @@ public class DBeaverInstanceServer extends ApplicationInstanceServer<IInstanceCo
         }
 
         return instance;
+    }
+
+    @Nullable
+    private static InstanceServerProperties deserializeProperties(@NotNull Path path) {
+        if (Files.notExists(path)) {
+            log.trace("No instance controller is available");
+            return null;
+        }
+
+        Properties properties = new Properties();
+
+        try (Reader reader = Files.newBufferedReader(path)) {
+            properties.load(reader);
+        } catch (IOException e) {
+            log.error("Error reading instance controller configuration: " + e.getMessage());
+            return null;
+        }
+
+        String port = properties.getProperty(InstanceServerProperties.PROPERTY_PORT);
+        String password = properties.getProperty(InstanceServerProperties.PROPERTY_PASSWORD);
+
+        if (CommonUtils.isEmptyTrimmed(port)) {
+            log.error("No port specified for the instance controller to connect to");
+            return null;
+        }
+        if (CommonUtils.isEmptyTrimmed(password)) {
+            log.error("No password specified for the instance controller to connect to");
+            return null;
+        }
+        return new InstanceServerProperties(Integer.parseInt(port), password);
     }
 
     /**
