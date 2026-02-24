@@ -19,7 +19,7 @@ package org.jkiss.dbeaver.ui.controls.resultset.panel.grouping.column;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.sql.SQLGroupingAttribute;
 
-public class SQLGroupingAttributeGroupingColumn implements GroupingColumn {
+public abstract class SQLGroupingAttributeGroupingColumn implements GroupingColumn {
 
     private final SQLGroupingAttribute sqlGroupingAttribute;
 

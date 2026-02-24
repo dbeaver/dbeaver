@@ -17,7 +17,5 @@
 package org.jkiss.dbeaver.ui.controls.resultset.panel.grouping.column;
 
 public interface GroupingColumn {
-    default boolean afterDeleteAction() {
-        return true;
-    }
+    boolean afterDeleteAction();
 }

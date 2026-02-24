@@ -155,7 +155,7 @@ public class GroupingResultsContainer implements IResultSetContainer {
     void addGroupingAttributes(@NotNull List<SQLGroupingAttribute> attributes) {
         attributes
             .stream()
-            .map(ga -> new SQLGroupingAttributeGroupingColumn(ga))
+            .map(this::toAttributeGroupColumn)
             .forEach(columnsContainer::addAttribute);
     }
 
@@ -164,7 +164,8 @@ public class GroupingResultsContainer implements IResultSetContainer {
         return new SQLGroupingAttributeGroupingColumn(attribute) {
             @Override
             public boolean afterDeleteAction() {
-                return super.afterDeleteAction();
+                resetDataFilters();
+                return true;
             }
         };
     }

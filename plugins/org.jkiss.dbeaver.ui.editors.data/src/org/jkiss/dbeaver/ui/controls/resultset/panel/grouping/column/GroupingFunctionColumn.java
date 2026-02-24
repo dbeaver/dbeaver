@@ -41,6 +41,12 @@ public class GroupingFunctionColumn implements GroupingColumn {
         return sql;
     }
 
+    @Override
+    public boolean afterDeleteAction() {
+        // do nothing
+        return true;
+    }
+
     public boolean isShowToUser() {
         return true;
     }
