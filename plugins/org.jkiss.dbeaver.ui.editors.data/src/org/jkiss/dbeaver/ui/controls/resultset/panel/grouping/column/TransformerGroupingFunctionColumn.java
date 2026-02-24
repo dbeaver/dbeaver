@@ -17,18 +17,17 @@
 package org.jkiss.dbeaver.ui.controls.resultset.panel.grouping.column;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.model.sql.SQLGroupingAttribute;
+import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.data.DBDAttributeTransformer;
 
-public class SQLGroupingAttributeGroupingColumn implements GroupingColumn {
-
-    private final SQLGroupingAttribute sqlGroupingAttribute;
-
-    public SQLGroupingAttributeGroupingColumn(@NotNull SQLGroupingAttribute sqlGroupingAttribute) {
-        this.sqlGroupingAttribute = sqlGroupingAttribute;
+public abstract class TransformerGroupingFunctionColumn extends GroupingFunctionColumn {
+    public TransformerGroupingFunctionColumn(
+        @NotNull String stringFunction,
+        @NotNull DBPDataSource dataSource
+    ) {
+        super(stringFunction, dataSource);
     }
 
     @NotNull
-    public SQLGroupingAttribute getSqlGroupingAttribute() {
-        return sqlGroupingAttribute;
-    }
+    public abstract DBDAttributeTransformer getTransformer();
 }

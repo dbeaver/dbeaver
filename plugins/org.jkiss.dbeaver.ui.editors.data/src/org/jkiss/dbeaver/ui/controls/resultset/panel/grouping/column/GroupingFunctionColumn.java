@@ -19,35 +19,25 @@ package org.jkiss.dbeaver.ui.controls.resultset.panel.grouping.column;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.ui.controls.resultset.panel.grouping.GroupingColumnsContainer;
 
 public class GroupingFunctionColumn implements GroupingColumn {
 
+    private static int idCounter;
+
     protected final String sql;
 
-    protected final GroupingColumnsContainer columnsContainer;
+    private final String uniqueId;
 
     public GroupingFunctionColumn(
         @NotNull String stringFunction,
-        @NotNull GroupingColumnsContainer columnsContainer,
         @NotNull DBPDataSource dataSource
     ) {
+        this.uniqueId = String.valueOf(idCounter++);
         this.sql = DBUtils.getQuotedIdentifier(dataSource, stringFunction);
-        this.columnsContainer = columnsContainer;
-    }
-
-    @Override
-    public boolean canBeAdded() {
-        return true;
-    }
-
-    @Override
-    public boolean canBeRemoved() {
-        return columnsContainer.getColumnsByType(GroupingFunctionColumn.class).size() > 1;
     }
 
     @NotNull
-    public String provideSqlFunction() {
+    public String getSql() {
         return sql;
     }
 
@@ -55,8 +45,16 @@ public class GroupingFunctionColumn implements GroupingColumn {
         return true;
     }
 
+    public boolean mustBeUniqueByName() {
+        return false;
+    }
+
     @NotNull
-    public String nameShownToUser() {
-        return sql;
+    public String getUniqueId() {
+        return uniqueId;
+    }
+
+    public boolean matchById(@NotNull GroupingFunctionColumn other) {
+        return uniqueId.equals(other.uniqueId);
     }
 }

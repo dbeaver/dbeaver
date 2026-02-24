@@ -51,7 +51,7 @@ public class GroupingResultsContainer implements IResultSetContainer {
     private final IResultSetPresentation presentation;
     private final GroupingDataContainer dataContainer;
     private final ResultSetViewer groupingViewer;
-    private final GroupingColumnsContainer columnsContainer = new GroupingColumnsContainer();
+    private final GroupingColumnsContainer columnsContainer;
     private final AtomicReference<DBDDataFilter> currentFilter = new AtomicReference<>();
 
     public GroupingResultsContainer(Composite parent, @NotNull IResultSetPresentation presentation) {
@@ -64,6 +64,7 @@ public class GroupingResultsContainer implements IResultSetContainer {
                 super.refreshWithFilter(filter);
             }
         };
+        this.columnsContainer = new GroupingColumnsContainer(dataContainer);
         initDefaultSettings();
     }
 
@@ -90,18 +91,15 @@ public class GroupingResultsContainer implements IResultSetContainer {
 
     @NotNull
     public List<SQLGroupingAttribute> getGroupAttributes() {
-        return columnsContainer.getColumnsByType(SQLGroupingAttributeGroupingColumn.class)
-            .stream()
-            .map(SQLGroupingAttributeGroupingColumn::getSqlGroupingAttribute)
-            .toList();
+        return columnsContainer.getSqlAttributes();
     }
 
     @NotNull
     public List<String> getUserDefinedGroupFunctions() {
-        return columnsContainer.getColumnsByType(GroupingFunctionColumn.class)
+        return columnsContainer.getFunctionColumns()
             .stream()
             .filter(GroupingFunctionColumn :: isShowToUser)
-            .map(GroupingFunctionColumn::nameShownToUser)
+            .map(GroupingFunctionColumn::getSql)
             .toList();
     }
 
@@ -156,8 +154,18 @@ public class GroupingResultsContainer implements IResultSetContainer {
     void addGroupingAttributes(@NotNull List<SQLGroupingAttribute> attributes) {
         attributes
             .stream()
-            .map(ga -> new SQLGroupingAttributeGroupingColumn(ga, columnsContainer))
-            .forEach(columnsContainer::addColumn);
+            .map(ga -> new SQLGroupingAttributeGroupingColumn(ga))
+            .forEach(columnsContainer::addAttribute);
+    }
+
+    @NotNull
+    private SQLGroupingAttributeGroupingColumn toAttributeGroupColumn(@NotNull SQLGroupingAttribute attribute) {
+        return new SQLGroupingAttributeGroupingColumn(attribute) {
+            @Override
+            public boolean afterDeleteAction() {
+                return super.afterDeleteAction();
+            }
+        };
     }
 
 
@@ -166,8 +174,8 @@ public class GroupingResultsContainer implements IResultSetContainer {
         if(dataSource != null){
             functions
                 .stream()
-                .map(func -> new GroupingFunctionColumn(func, columnsContainer, dataSource))
-                .forEach(columnsContainer::addColumn);
+                .map(func -> new GroupingFunctionColumn(func, dataSource))
+                .forEach(columnsContainer::addFunction);
         }
     }
 
@@ -195,7 +203,7 @@ public class GroupingResultsContainer implements IResultSetContainer {
         if (dataSource == null) {
             throw new DBException("No active datasource");
         }
-        addSpecialFunctions();
+        manageSpecialFunctions(dataSource);
         if (columnsContainer.isEmpty()) {
             groupingViewer.showEmptyPresentation();
             return;
@@ -209,7 +217,7 @@ public class GroupingResultsContainer implements IResultSetContainer {
         DBDDataFilter dataFilter = getDataFilter();
 
         List<SQLGroupingAttribute> groupAttributes = getGroupAttributes();
-        List<String> groupFunctions = ;
+        List<String> groupFunctions = getTransformerBindFunctions();
         var groupingQueryGenerator = new SQLGroupingQueryGenerator(
             dataSource,
             dbsDataContainer,
@@ -257,19 +265,26 @@ public class GroupingResultsContainer implements IResultSetContainer {
         return columnsContainer;
     }
 
-    private void removeSpecialFunctions(@NotNull DBPDataSource dataSource) {
-        boolean removePercentColumn = dataSource.getContainer().getPreferenceStore()
-            .getBoolean(ResultSetPreferences.RS_GROUPING_SHOW_PERCENT_OF_TOTAL_ROWS);
-        if (removePercentColumn) {
-
-        }
+    @NotNull
+    private List<String> getTransformerBindFunctions() {
+        columnsContainer.bindTransformers();
+        return columnsContainer.getFunctionColumns()
+            .stream()
+            .map(GroupingFunctionColumn::getSql)
+            .toList();
     }
 
-    private void addSpecialFunctions(@NotNull DBPDataSource dataSource) {
-        boolean addPercentColumn = dataSource.getContainer().getPreferenceStore()
+    private void manageSpecialFunctions(@NotNull DBPDataSource dataSource) {
+        boolean isPercentFunctionPresent = dataSource.getContainer().getPreferenceStore()
             .getBoolean(ResultSetPreferences.RS_GROUPING_SHOW_PERCENT_OF_TOTAL_ROWS);
-        if (addPercentColumn) {
-            columnsContainer.addSpecialFunction(new PercentGroupingFunctionColumn(columnsContainer, getDefaultFunction(), this));
+        managePercentFunction(dataSource, isPercentFunctionPresent);
+    }
+
+    private void managePercentFunction(@NotNull DBPDataSource dataSource, boolean isPresent) {
+        if (isPresent) {
+            columnsContainer.addFunction(new PercentGroupingFunctionColumn(dataSource, this));
+        } else {
+            columnsContainer.removeFunctionByName(PercentGroupingFunctionColumn.PERCENT_FUNCTION_ID);
         }
     }
 
@@ -282,7 +297,6 @@ public class GroupingResultsContainer implements IResultSetContainer {
 
     void setGrouping(List<SQLGroupingAttribute> attributes, List<String> functions) {
         columnsContainer.clear();
-        dataContainer.clearTransformers();
         addGroupingAttributes(attributes);
         addGroupingFunctions(functions);
         resetDataFilters();

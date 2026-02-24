@@ -34,6 +34,7 @@ import org.jkiss.utils.ArrayUtils;
 import java.util.Comparator;
 import java.util.List;
 import java.util.TreeSet;
+import java.util.stream.Collectors;
 
 public class DeleteColumnAction extends GroupingAction {
 
@@ -80,19 +81,14 @@ public class DeleteColumnAction extends GroupingAction {
     private TreeSet<Integer> defineIndexesReadyToBeRemoved(@NotNull List<DBDAttributeBinding> selectedAttributes) {
         DBDAttributeBinding[] existingBindings = groupingResultsContainer.getResultSetController().getModel().getAttributes();
         GroupingColumnsContainer columnsContainer = groupingResultsContainer.getColumnsContainer();
-        TreeSet<Integer> indexesToRemoveSortedDesc = new TreeSet<>(Comparator.reverseOrder());
-        for (DBDAttributeBinding currentBinding : selectedAttributes) {
-            int indexOfAttr = ArrayUtils.indexOf(existingBindings, currentBinding);
-            if (canColumnBeRemoved(indexOfAttr, columnsContainer)) {
-                indexesToRemoveSortedDesc.add(indexOfAttr);
-            }
-        }
-        return indexesToRemoveSortedDesc;
+        return selectedAttributes
+            .stream()
+            .map(currentBinding -> ArrayUtils.indexOf(existingBindings, currentBinding))
+            .filter(i -> canColumnBeRemoved(i, columnsContainer))
+            .collect(Collectors.toCollection(() -> new TreeSet<Integer>(Comparator.reverseOrder())));
     }
 
     private boolean canColumnBeRemoved(int indexOfAttr, @NotNull GroupingColumnsContainer columnsContainer) {
-        return indexOfAttr >= 0
-            && indexOfAttr < columnsContainer.size()
-            && columnsContainer.getColumn(indexOfAttr).canBeRemoved();
+        return indexOfAttr >= 0 && columnsContainer.canColumnBeRemoved(indexOfAttr);
     }
 }

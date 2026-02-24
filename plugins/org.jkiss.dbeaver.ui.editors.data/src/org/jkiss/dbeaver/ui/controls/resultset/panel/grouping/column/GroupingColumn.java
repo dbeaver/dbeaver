@@ -17,12 +17,7 @@
 package org.jkiss.dbeaver.ui.controls.resultset.panel.grouping.column;
 
 public interface GroupingColumn {
-
-    boolean canBeAdded();
-
-    boolean canBeRemoved();
-
-    default boolean afterDeleteAction(int indexInDataContainer) {
+    default boolean afterDeleteAction() {
         return true;
     }
 }

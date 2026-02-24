@@ -22,68 +22,68 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDAttributeConstraint;
+import org.jkiss.dbeaver.model.data.DBDAttributeTransformer;
 import org.jkiss.dbeaver.model.data.DBDDataFilter;
 import org.jkiss.dbeaver.model.impl.data.transformers.PercentOfTotalGroupingAttributeTransformer;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLGroupingAttribute;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetPreferences;
-import org.jkiss.dbeaver.ui.controls.resultset.panel.grouping.GroupingColumnsContainer;
 import org.jkiss.dbeaver.ui.controls.resultset.panel.grouping.GroupingDataContainer;
 import org.jkiss.dbeaver.ui.controls.resultset.panel.grouping.GroupingResultsContainer;
 
 import java.util.List;
 import java.util.Objects;
 
-public class PercentGroupingFunctionColumn extends GroupingFunctionColumn {
+public class PercentGroupingFunctionColumn extends TransformerGroupingFunctionColumn {
 
-    public static final String FUNCTION_COUNT = "COUNT";
+    public static final String PERCENT_FUNCTION_ID = "percent_func";
+
+    private static final String FUNCTION_COUNT = "COUNT";
 
     private final GroupingResultsContainer groupingResultsContainer;
 
     public PercentGroupingFunctionColumn(
-        @NotNull GroupingColumnsContainer columnsContainer,
         @NotNull DBPDataSource dataSource,
         @NotNull GroupingResultsContainer groupingResultsContainer
     ) {
-        super(getCountFunction(dataSource), columnsContainer, dataSource);
+        super(getCountFunction(dataSource), dataSource);
         this.groupingResultsContainer = groupingResultsContainer;
     }
 
-    @NotNull
-    @Override
-    public String provideSqlFunction() {
-        String sqlFunc = super.provideSqlFunction();
-        List<Integer> indexesInDataContainer = columnsContainer.getIndexesByType(PercentGroupingFunctionColumn.class);
-        if (indexesInDataContainer.size() != 1) {
-            throw new IllegalArgumentException("Percent function index is undefined. Indexes: [%s]".formatted(indexesInDataContainer));
-        }
-        GroupingDataContainer dataContainer = groupingResultsContainer.getDataContainer();
-        dataContainer.setAttributeTransformer(
-            indexesInDataContainer.getFirst(),
-            new PercentOfTotalGroupingAttributeTransformer(this::getTotalRowCount)
-        );
-        return sqlFunc;
-    }
 
     @Override
-    public boolean canBeAdded() {
-        return columnsContainer.getColumnsByType(PercentGroupingFunctionColumn.class).isEmpty();
-    }
-
-    @Override
-    public boolean afterDeleteAction(int indexInDataContainer) {
+    public boolean afterDeleteAction() {
         GroupingDataContainer dataContainer = groupingResultsContainer.getDataContainer();
         DBPDataSource dataSource = dataContainer.getDataSource();
         if (dataSource != null) {
             dataSource.getContainer().getPreferenceStore().setValue(ResultSetPreferences.RS_GROUPING_SHOW_PERCENT_OF_TOTAL_ROWS, false);
         }
-        dataContainer.removeAttributeTransformer(indexInDataContainer);
+        if (groupingResultsContainer.getColumnsContainer().isFunctionsEmpty()) {
+            groupingResultsContainer.addDefaultFunction();
+        }
         return true;
     }
 
     @Override
     public boolean isShowToUser() {
         return false;
+    }
+
+    @Override
+    public boolean mustBeUniqueByName() {
+        return true;
+    }
+
+    @NotNull
+    @Override
+    public String getUniqueId() {
+        return PERCENT_FUNCTION_ID;
+    }
+
+    @NotNull
+    @Override
+    public DBDAttributeTransformer getTransformer() {
+        return new PercentOfTotalGroupingAttributeTransformer(this::getTotalRowCount);
     }
 
     private long getTotalRowCount(@NotNull DBRProgressMonitor monitor) throws DBException {
@@ -103,9 +103,7 @@ public class PercentGroupingFunctionColumn extends GroupingFunctionColumn {
             return null;
         }
         // rows count can not be filtered with grouping functions
-        List<DBDAttributeConstraint> attributeConstraints = columnsContainer.getColumnsByType(SQLGroupingAttributeGroupingColumn.class)
-            .stream()
-            .map(SQLGroupingAttributeGroupingColumn::getSqlGroupingAttribute)
+        List<DBDAttributeConstraint> attributeConstraints = groupingResultsContainer.getGroupAttributes().stream()
             .map(ga -> ga instanceof SQLGroupingAttribute.BoundAttribute boundAttribute
                 ? boundAttribute.getBindingName()
                 : ga.getDisplayName())

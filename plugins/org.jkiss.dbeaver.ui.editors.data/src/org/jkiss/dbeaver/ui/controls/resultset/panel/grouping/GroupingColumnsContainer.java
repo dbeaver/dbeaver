@@ -17,7 +17,11 @@
 package org.jkiss.dbeaver.ui.controls.resultset.panel.grouping;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.model.sql.SQLGroupingAttribute;
 import org.jkiss.dbeaver.ui.controls.resultset.panel.grouping.column.GroupingColumn;
+import org.jkiss.dbeaver.ui.controls.resultset.panel.grouping.column.GroupingFunctionColumn;
+import org.jkiss.dbeaver.ui.controls.resultset.panel.grouping.column.SQLGroupingAttributeGroupingColumn;
+import org.jkiss.dbeaver.ui.controls.resultset.panel.grouping.column.TransformerGroupingFunctionColumn;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -27,7 +31,10 @@ import java.util.TreeSet;
 public class GroupingColumnsContainer {
 
     @NotNull
-    private final List<GroupingColumn> groupColumns = new ArrayList<>();
+    private final List<SQLGroupingAttributeGroupingColumn> attributes = new ArrayList<>();
+
+    @NotNull
+    private final List<GroupingFunctionColumn> groupFunctions = new ArrayList<>();
 
     private final GroupingDataContainer dataContainer;
 
@@ -35,44 +42,51 @@ public class GroupingColumnsContainer {
         this.dataContainer = dataContainer;
     }
 
-    public void addColumn(@NotNull GroupingColumn column) {
-        if (column.canBeAdded()) {
-            groupColumns.add(column);
+    public void addFunction(@NotNull GroupingFunctionColumn functionColumn) {
+        if (!functionColumn.mustBeUniqueByName() || isUniqueFunctionByName(functionColumn)) {
+            groupFunctions.add(functionColumn);
         }
     }
 
-    @NotNull
-    public GroupingColumn getColumn(int index) {
-        return groupColumns.get(index);
-    }
-
-    public <T extends GroupingColumn> List<T> getColumnsByType(Class<T> type) {
-        return groupColumns
-            .stream()
-            .filter(type::isInstance)
-            .map(type::cast)
-            .toList();
-    }
-
-    @NotNull
-    public List<GroupingColumn> getColumns() {
-        return new ArrayList<>(groupColumns);
-    }
-
-    public List<Integer> getIndexesByType(@NotNull Class<? extends GroupingColumn> columnType) {
-        List<Integer> columnsOfType = new ArrayList<>();
-        for (int i = 0; i < groupColumns.size(); i++) {
-            if (columnType.isInstance(groupColumns.get(i))) {
-                columnsOfType.add(i);
+    public boolean removeFunctionByName(@NotNull String name) {
+        for (int i = 0; i < groupFunctions.size(); i++) {
+            if (groupFunctions.get(i).getUniqueId().equals(name)) {
+                return removeColumn(functionIndexToFullIndex(i));
             }
         }
-        return columnsOfType;
+        return false;
     }
 
-    public boolean removeColumnsByIndexes(@NotNull List<Integer> indexesToRemove) {
-        TreeSet<Integer> indexesSortedDesc = new TreeSet<>(Comparator.reverseOrder());
-        indexesSortedDesc.addAll(indexesToRemove);
-        return removeColumnsByIndexesSortedDesc(indexesSortedDesc);
+    public void bindTransformers() {
+        for (int i = 0; i < groupFunctions.size(); i++) {
+            if (groupFunctions.get(i) instanceof TransformerGroupingFunctionColumn transformerGroupingFunctionColumn) {
+                dataContainer.setAttributeTransformer(functionIndexToFullIndex(i), transformerGroupingFunctionColumn.getTransformer());
+            }
+        }
+    }
+
+    public List<GroupingFunctionColumn> getFunctionColumns() {
+        return groupFunctions;
+    }
+
+    public boolean addAttribute(@NotNull SQLGroupingAttributeGroupingColumn sqlGroupingAttributeColumn) {
+        if (!containAttribute(sqlGroupingAttributeColumn.getSqlGroupingAttribute())) {
+            return attributes.add(sqlGroupingAttributeColumn);
+        } else {
+            return false;
+        }
+    }
+
+    public boolean containAttribute(@NotNull SQLGroupingAttribute attribute) {
+        return attributes
+            .stream()
+            .map(SQLGroupingAttributeGroupingColumn::getSqlGroupingAttribute)
+            .anyMatch(attribute::equals);
+    }
+
+    public boolean canColumnBeRemoved(int index) {
+        return isValidIndex(index)
+            && (isAttributeIndex(index) ? attributes.size() > 1 : groupFunctions.size() > 1);
     }
 
     public boolean removeColumnsByIndexesSortedDesc(@NotNull TreeSet<Integer> columnsToRemove) {
@@ -85,39 +99,110 @@ public class GroupingColumnsContainer {
         return isRemoved;
     }
 
+    public List<SQLGroupingAttribute> getSqlAttributes() {
+        return attributes
+            .stream()
+            .map(SQLGroupingAttributeGroupingColumn::getSqlGroupingAttribute)
+            .toList();
+    }
+
     public void clear() {
-        groupColumns.clear();
+        groupFunctions.clear();
+        attributes.clear();
+        dataContainer.clearTransformers();
     }
 
     public boolean isEmpty() {
-        return groupColumns.isEmpty();
+        return isFunctionsEmpty() || attributes.isEmpty();
     }
 
-    public int size() {
-        return groupColumns.size();
+    public boolean isFunctionsEmpty() {
+        return groupFunctions.isEmpty();
     }
 
 
     public void moveColumns(int overColumnIndex, @NotNull List<Integer> indexesToMove) {
-        if (overColumnIndex < 0) {
-            overColumnIndex = 0;
-        } else if (overColumnIndex >= groupColumns.size()) {
-            overColumnIndex = groupColumns.size() - 1;
+        TreeSet<Integer> attributesToMove = new TreeSet<>(Comparator.reverseOrder());
+        TreeSet<Integer> functionsToMove = new TreeSet<>(Comparator.reverseOrder());
+        for (Integer index : indexesToMove) {
+            if (!isValidIndex(index)) {
+                throw new IndexOutOfBoundsException("Illegal index [%d]. Attributes size [%d], function size [%d]".formatted(
+                    index,
+                    attributes.size(),
+                    groupFunctions.size()
+                ));
+            }
+            if (isAttributeIndex(index)) {
+                attributesToMove.add(index);
+            } else {
+                functionsToMove.add(fullIndexToFunctionIndex(index));
+            }
         }
-
-        TreeSet<Integer> indexesSortedDesc = new TreeSet<>(Comparator.reverseOrder());
-        indexesSortedDesc.addAll(indexesToMove);
-
-        List<GroupingColumn> removedElements = new ArrayList<>(indexesSortedDesc.size());
-        for (Integer index : indexesSortedDesc) {
-            removedElements.addFirst(groupColumns.get(index));
+        // for now functions can only be placed after attributes
+        if (!attributesToMove.isEmpty()) {
+            int attrOverColumn = isAttributeIndex(overColumnIndex) ? overColumnIndex : groupFunctions.size() - 1;
+            moveElements(attributes, attrOverColumn, attributesToMove);
         }
-        groupColumns.addAll(overColumnIndex, removedElements);
+        if (!functionsToMove.isEmpty()) {
+            int funcOverColumn = isAttributeIndex(overColumnIndex) ? 0 : fullIndexToFunctionIndex(overColumnIndex);
+            moveElements(groupFunctions, funcOverColumn, functionsToMove);
+        }
     }
 
+    private static <T> void moveElements(
+        @NotNull List<T> listToModify,
+        int toIndex,
+        @NotNull TreeSet<Integer> indexesToMoveSortedInDescOrder
+    ) {
+        List<T> removedElements = new ArrayList<>(indexesToMoveSortedInDescOrder.size());
+        for (Integer index : indexesToMoveSortedInDescOrder) {
+            removedElements.addFirst(listToModify.remove(index.intValue()));
+        }
+        if (toIndex >= listToModify.size()) {
+            listToModify.addAll(removedElements);
+        } else {
+            listToModify.addAll(toIndex, removedElements);
+        }
+    }
+
+    private boolean isUniqueFunctionByName(@NotNull GroupingFunctionColumn functionColumn) {
+        return groupFunctions
+            .stream()
+            .noneMatch(functionColumn::matchById);
+    }
 
     private boolean removeColumn(int index) {
-        return groupColumns.get(index).canBeRemoved()
-            && groupColumns.remove(index).afterDeleteAction(index);
+        return canColumnBeRemoved(index)
+            && removeColumnNoCheck(index).afterDeleteAction();
     }
+
+    private int functionIndexToFullIndex(int index) {
+        return attributes.size() + index;
+    }
+
+    private int fullIndexToFunctionIndex(int index) {
+        return index - attributes.size();
+    }
+
+    @NotNull
+    private GroupingColumn removeColumnNoCheck(int index) {
+        if (isAttributeIndex(index)) {
+            return attributes.remove(index);
+        } else {
+            GroupingFunctionColumn removedColumn = groupFunctions.remove(fullIndexToFunctionIndex(index));
+            if (removedColumn instanceof TransformerGroupingFunctionColumn) {
+                dataContainer.removeAttributeTransformer(index);
+            }
+            return removedColumn;
+        }
+    }
+
+    private boolean isValidIndex(int index) {
+        return index >= 0 && index < attributes.size() + groupFunctions.size();
+    }
+
+    private boolean isAttributeIndex(int index) {
+        return index < attributes.size();
+    }
+
 }
