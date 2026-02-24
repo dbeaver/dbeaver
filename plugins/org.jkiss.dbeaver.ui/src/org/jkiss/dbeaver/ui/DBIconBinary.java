@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,34 +22,36 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.ImageData;
 import org.eclipse.swt.widgets.Display;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.utils.CommonUtils;
 
 /**
  * Image with binary data
  */
-public class DBIconBinary implements DBPImage
-{
+public class DBIconBinary implements DBPImage {
     private final String location;
     private final Image image;
     private final ImageDescriptor imageDescriptor;
 
-    public DBIconBinary(final String location, final ImageData data) {
+    public DBIconBinary(@NotNull String location, @NotNull ImageData data) {
         this.location = "binary:" + location;
         this.image = new Image(Display.getCurrent(), data);
-        this.imageDescriptor = ImageDescriptor.createFromImageData(data);
+        this.imageDescriptor = ImageDescriptor.createFromImageDataProvider(zoom -> data);
     }
 
-    public DBIconBinary(final String location, final Image image) {
-        this.location = "image:" + location;
+    public DBIconBinary(@Nullable String location, @NotNull Image image) {
+        this.location = "image:" + (location != null ? location : image.hashCode());
         this.image = image;
         this.imageDescriptor = ImageDescriptor.createFromImage(image);
     }
 
+    @NotNull
     public Image getImage() {
         return image;
     }
 
+    @NotNull
     public ImageDescriptor getImageDescriptor() {
         return imageDescriptor;
     }
