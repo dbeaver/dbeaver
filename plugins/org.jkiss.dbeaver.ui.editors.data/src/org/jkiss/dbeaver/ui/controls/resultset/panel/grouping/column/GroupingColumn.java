@@ -16,9 +16,7 @@
  */
 package org.jkiss.dbeaver.ui.controls.resultset.panel.grouping.column;
 
-public interface GroupingFunctionDescriptor {
-
-    String provideSqlFunction(int indexInDataContainer);
+public interface GroupingColumn {
 
     boolean canBeAdded();
 

@@ -22,7 +22,6 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.data.DBDDataFilter;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
@@ -33,7 +32,9 @@ import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.ui.DataEditorFeatures;
 import org.jkiss.dbeaver.ui.controls.resultset.*;
-import org.jkiss.dbeaver.ui.controls.resultset.panel.grouping.column.PercentGroupingFunctionDescriptor;
+import org.jkiss.dbeaver.ui.controls.resultset.panel.grouping.column.GroupingFunctionColumn;
+import org.jkiss.dbeaver.ui.controls.resultset.panel.grouping.column.PercentGroupingFunctionColumn;
+import org.jkiss.dbeaver.ui.controls.resultset.panel.grouping.column.SQLGroupingAttributeGroupingColumn;
 import org.jkiss.dbeaver.ui.controls.resultset.view.EmptyPresentation;
 import org.jkiss.utils.CommonUtils;
 
@@ -75,7 +76,11 @@ public class GroupingResultsContainer implements IResultSetContainer {
 
     private void initDefaultSettings() {
         columnsContainer.clear();
-        columnsContainer.addGroupingFunction(getDefaultFunction());
+        addDefaultFunction();
+    }
+
+    public void addDefaultFunction() {
+        addGroupingFunctions(List.of(getDefaultFunction()));
     }
 
     @NotNull
@@ -85,12 +90,19 @@ public class GroupingResultsContainer implements IResultSetContainer {
 
     @NotNull
     public List<SQLGroupingAttribute> getGroupAttributes() {
-        return columnsContainer.getGroupAttributes();
+        return columnsContainer.getColumnsByType(SQLGroupingAttributeGroupingColumn.class)
+            .stream()
+            .map(SQLGroupingAttributeGroupingColumn::getSqlGroupingAttribute)
+            .toList();
     }
 
     @NotNull
     public List<String> getUserDefinedGroupFunctions() {
-        return columnsContainer.getUserDefinedFunctions();
+        return columnsContainer.getColumnsByType(GroupingFunctionColumn.class)
+            .stream()
+            .filter(GroupingFunctionColumn :: isShowToUser)
+            .map(GroupingFunctionColumn::nameShownToUser)
+            .toList();
     }
 
     @Nullable
@@ -142,25 +154,20 @@ public class GroupingResultsContainer implements IResultSetContainer {
     }
 
     void addGroupingAttributes(@NotNull List<SQLGroupingAttribute> attributes) {
-        attributes.forEach(columnsContainer::addAttribute);
+        attributes
+            .stream()
+            .map(ga -> new SQLGroupingAttributeGroupingColumn(ga, columnsContainer))
+            .forEach(columnsContainer::addColumn);
     }
 
-    public boolean removeColumns(@NotNull List<GroupingColumnsContainer.RemoveColumnStrategy> removeStrategies) {
-        return removeStrategies
-            .stream()
-            .map(GroupingColumnsContainer.RemoveColumnStrategy::removeColumn)
-            .filter(b -> b)
-            .findAny()
-            .isPresent();
-    }
 
     public void addGroupingFunctions(@NotNull List<String> functions) {
-        for (String func : functions) {
-            DBPDataSource dataSource = getDataContainer().getDataSource();
-            if (dataSource != null) {
-                func = DBUtils.getUnQuotedIdentifier(dataSource, func);
-                columnsContainer.addGroupingFunction(func);
-            }
+        DBPDataSource dataSource = getDataContainer().getDataSource();
+        if(dataSource != null){
+            functions
+                .stream()
+                .map(func -> new GroupingFunctionColumn(func, columnsContainer, dataSource))
+                .forEach(columnsContainer::addColumn);
         }
     }
 
@@ -201,8 +208,8 @@ public class GroupingResultsContainer implements IResultSetContainer {
             .getBoolean(ResultSetPreferences.RS_GROUPING_SHOW_DUPLICATES_ONLY);
         DBDDataFilter dataFilter = getDataFilter();
 
-        List<SQLGroupingAttribute> groupAttributes = columnsContainer.getGroupAttributes();
-        List<String> groupFunctions = columnsContainer.getGroupFunctionsSql();
+        List<SQLGroupingAttribute> groupAttributes = getGroupAttributes();
+        List<String> groupFunctions = ;
         var groupingQueryGenerator = new SQLGroupingQueryGenerator(
             dataSource,
             dbsDataContainer,
@@ -262,7 +269,7 @@ public class GroupingResultsContainer implements IResultSetContainer {
         boolean addPercentColumn = dataSource.getContainer().getPreferenceStore()
             .getBoolean(ResultSetPreferences.RS_GROUPING_SHOW_PERCENT_OF_TOTAL_ROWS);
         if (addPercentColumn) {
-            columnsContainer.addSpecialFunction(new PercentGroupingFunctionDescriptor(columnsContainer, getDefaultFunction(), this));
+            columnsContainer.addSpecialFunction(new PercentGroupingFunctionColumn(columnsContainer, getDefaultFunction(), this));
         }
     }
 
@@ -275,6 +282,7 @@ public class GroupingResultsContainer implements IResultSetContainer {
 
     void setGrouping(List<SQLGroupingAttribute> attributes, List<String> functions) {
         columnsContainer.clear();
+        dataContainer.clearTransformers();
         addGroupingAttributes(attributes);
         addGroupingFunctions(functions);
         resetDataFilters();

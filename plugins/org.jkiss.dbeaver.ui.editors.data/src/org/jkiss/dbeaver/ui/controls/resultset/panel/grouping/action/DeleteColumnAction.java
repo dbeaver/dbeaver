@@ -31,14 +31,14 @@ import org.jkiss.dbeaver.ui.controls.resultset.panel.grouping.GroupingColumnsCon
 import org.jkiss.dbeaver.ui.controls.resultset.panel.grouping.GroupingResultsContainer;
 import org.jkiss.utils.ArrayUtils;
 
-import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.TreeSet;
 
 public class DeleteColumnAction extends GroupingAction {
 
     @NotNull
-    private List<GroupingColumnsContainer.RemoveColumnStrategy> removeColumnStrategies = new ArrayList<>();
+    private TreeSet<Integer> readyToRemoveIndexes = new TreeSet<>();
 
     public DeleteColumnAction(@NotNull GroupingResultsContainer resultsContainer) {
         super(resultsContainer, ResultSetMessages.controls_resultset_grouping_remove_column, DBeaverIcons.getImageDescriptor(UIIcon.CLOSE));
@@ -47,23 +47,23 @@ public class DeleteColumnAction extends GroupingAction {
             @Override
             public void handleResultSetSelectionChange(SelectionChangedEvent event) {
                 if (event.getSelection() instanceof IResultSetSelection resultSetSelection) {
-                    removeColumnStrategies = defineRemoveStrategies(resultSetSelection.getSelectedAttributes());
+                    readyToRemoveIndexes = defineIndexesReadyToBeRemoved(resultSetSelection.getSelectedAttributes());
                     setEnabled(isEnabled());
                 }
             }
         });
-        removeColumnStrategies = defineRemoveStrategies(resultSetController.getSelection().getSelectedAttributes());
+        readyToRemoveIndexes = defineIndexesReadyToBeRemoved(resultSetController.getSelection().getSelectedAttributes());
         setEnabled(isEnabled());
     }
 
     @Override
     public boolean isEnabled() {
-        return !removeColumnStrategies.isEmpty();
+        return !readyToRemoveIndexes.isEmpty();
     }
 
     @Override
     public void run() {
-        boolean removed = groupingResultsContainer.removeColumns(removeColumnStrategies);
+        boolean removed = groupingResultsContainer.getColumnsContainer().removeColumnsByIndexesSortedDesc(readyToRemoveIndexes);
         if (removed) {
             try {
                 groupingResultsContainer.rebuildGrouping();
@@ -77,19 +77,22 @@ public class DeleteColumnAction extends GroupingAction {
     }
 
     @NotNull
-    private List<GroupingColumnsContainer.RemoveColumnStrategy> defineRemoveStrategies(
-        @NotNull List<DBDAttributeBinding> selectedAttributes
-    ) {
+    private TreeSet<Integer> defineIndexesReadyToBeRemoved(@NotNull List<DBDAttributeBinding> selectedAttributes) {
         DBDAttributeBinding[] existingBindings = groupingResultsContainer.getResultSetController().getModel().getAttributes();
         GroupingColumnsContainer columnsContainer = groupingResultsContainer.getColumnsContainer();
-        return selectedAttributes
-            .stream()
-            .mapToInt(currentBinding -> ArrayUtils.indexOf(existingBindings, currentBinding))
-            .filter(i -> i >= 0)
-            .boxed()
-            .sorted(Comparator.reverseOrder()) // delete starting from last index, not to catch index out of bounds
-            .map(columnsContainer::createRemoveStrategy)
-            .filter(GroupingColumnsContainer.RemoveColumnStrategy::canBeRemoved)
-            .toList();
+        TreeSet<Integer> indexesToRemoveSortedDesc = new TreeSet<>(Comparator.reverseOrder());
+        for (DBDAttributeBinding currentBinding : selectedAttributes) {
+            int indexOfAttr = ArrayUtils.indexOf(existingBindings, currentBinding);
+            if (canColumnBeRemoved(indexOfAttr, columnsContainer)) {
+                indexesToRemoveSortedDesc.add(indexOfAttr);
+            }
+        }
+        return indexesToRemoveSortedDesc;
+    }
+
+    private boolean canColumnBeRemoved(int indexOfAttr, @NotNull GroupingColumnsContainer columnsContainer) {
+        return indexOfAttr >= 0
+            && indexOfAttr < columnsContainer.size()
+            && columnsContainer.getColumn(indexOfAttr).canBeRemoved();
     }
 }
