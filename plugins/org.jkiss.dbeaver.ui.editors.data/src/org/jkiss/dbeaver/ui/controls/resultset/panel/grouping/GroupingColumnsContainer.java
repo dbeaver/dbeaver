@@ -18,7 +18,7 @@ package org.jkiss.dbeaver.ui.controls.resultset.panel.grouping;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.sql.SQLGroupingAttribute;
-import org.jkiss.utils.Pair;
+import org.jkiss.dbeaver.ui.controls.resultset.panel.grouping.column.GroupingFunctionDescriptor;
 
 import java.util.*;
 import java.util.function.Supplier;
@@ -29,14 +29,28 @@ public class GroupingColumnsContainer {
     private final List<SQLGroupingAttribute> groupAttributes = new ArrayList<>();
 
     @NotNull
-    private final List<Pair<String, Boolean>> groupingFunctions = new ArrayList<>();
+    private final List<GroupingFunctionDescriptor> groupingFunctions = new ArrayList<>();
 
     public void addGroupingFunction(@NotNull String function) {
-        groupingFunctions.add(Pair.of(function, false));
+        addSpecialFunction(new SimpleSQLFunctionDescriptor(function));
     }
 
-    public void addPercentFunction(@NotNull String percentFunction) {
-        groupingFunctions.add(Pair.of(percentFunction, true));
+    public void addSpecialFunction(@NotNull GroupingFunctionDescriptor specialFunction) {
+        if (specialFunction.canBeAdded()) {
+            groupingFunctions.add(specialFunction);
+        }
+    }
+
+    public boolean removeFunctionByType(Class<? extends GroupingFunctionDescriptor> functionType){
+        List<Integer> functionsToRemove =
+    }
+
+
+
+    private boolean removeFunction(int functionIndex) {
+        return groupingFunctions
+            .remove(functionIndex)
+            .afterDeleteAction(groupFunctionIndexToFullIndex(functionIndex));
     }
 
     public void addAttribute(@NotNull SQLGroupingAttribute attribute) {
@@ -48,15 +62,6 @@ public class GroupingColumnsContainer {
     public void clear() {
         groupAttributes.clear();
         groupingFunctions.clear();
-    }
-
-    public boolean removePercentFunction() {
-        return groupingFunctions.removeIf(this::isPercentFunction);
-    }
-
-    private boolean isPercentFunction(@NotNull Pair<String, Boolean> function) {
-        return function.getSecond() != null
-            && function.getSecond();
     }
 
     public boolean isEmpty() {
@@ -76,36 +81,35 @@ public class GroupingColumnsContainer {
     }
 
     @NotNull
-    public List<String> getGroupFunctions() {
-        return groupingFunctions
-            .stream()
-            .map(Pair::getFirst)
-            .toList();
+    public List<GroupingFunctionDescriptor> getGroupingFunctions() {
+        return groupingFunctions;
+    }
+
+    @NotNull
+    public List<String> getGroupFunctionsSql() {
+        List<String> groupingSqlFunctionsSql = new ArrayList<>();
+        for (int i = 0; i < groupingFunctionsSize(); i++) {
+            GroupingFunctionDescriptor desc = groupingFunctions.get(i);
+            groupingSqlFunctionsSql.add(desc.provideSqlFunction(groupFunctionIndexToFullIndex(i)));
+        }
+        return groupingSqlFunctionsSql;
     }
 
     @NotNull
     public List<String> getUserDefinedFunctions() {
-        return groupingFunctions
-            .stream()
-            .filter(p -> !isPercentFunction(p))
-            .map(Pair::getFirst)
-            .toList();
+        List<String> groupingSqlFunctionsSql = new ArrayList<>();
+        for (int i = 0; i < groupingFunctionsSize(); i++) {
+            GroupingFunctionDescriptor desc = groupingFunctions.get(i);
+            if (desc instanceof SimpleSQLFunctionDescriptor) {
+                groupingSqlFunctionsSql.add(desc.provideSqlFunction(groupFunctionIndexToFullIndex(i)));
+            }
+        }
+        return groupingSqlFunctionsSql;
     }
 
     @NotNull
     public List<SQLGroupingAttribute> getGroupAttributes() {
         return new ArrayList<>(groupAttributes);
-    }
-
-    public int getPercentFunctionIndex() {
-        int foundIndex = findPercentFunctionGroupingIndex();
-        return foundIndex >= 0
-            ? groupAttributes.size() + foundIndex
-            : -1;
-    }
-
-    public boolean isPercentFunctionPresent() {
-        return getPercentFunctionIndex() >= 0;
     }
 
     public void moveColumns(int overColumnIndex, @NotNull List<Integer> indexesToMove) {
@@ -148,35 +152,19 @@ public class GroupingColumnsContainer {
     private InstanceType instanceTypeByIndex(int index) {
         return index < attributesSize()
             ? InstanceType.ATTRIBUTE
-            : isPercentFunction(groupingFunctions.get(fullIndexToFunctionIndex(index)))
-                ? InstanceType.PERCENT_GROUPING_FUNCTION
-                : InstanceType.GROUPING_FUNCTION;
-
-    }
-
-    private boolean removeFunction(int functionIndex) {
-        return groupingFunctions.remove(functionIndex) != null;
+            : InstanceType.GROUPING_FUNCTION;
     }
 
     private int fullIndexToFunctionIndex(int index) {
         int groupingFunctionIndex = index - attributesSize();
         if (groupingFunctionIndex < 0 || groupingFunctionIndex >= groupingFunctions.size()) {
-            throw new IndexOutOfBoundsException(
-                "Not found index in grouping func. Attributes size [%d] Grouping function size [%d] index to convert [%d]"
-                    .formatted(attributesSize(), groupingFunctionsSize(), index));
+            return -1;
         }
         return groupingFunctionIndex;
     }
 
-    private int findPercentFunctionGroupingIndex() {
-        int foundIndex = 0;
-        for (Pair<String, Boolean> function : groupingFunctions) {
-            if (isPercentFunction(function)) {
-                return foundIndex;
-            }
-            foundIndex++;
-        }
-        return -1;
+    private int groupFunctionIndexToFullIndex(int groupIndex) {
+        return groupAttributes.size() + groupIndex;
     }
 
     @NotNull
@@ -190,40 +178,66 @@ public class GroupingColumnsContainer {
 
         private final InstanceType type;
 
+        private final int index;
+
         public RemoveColumnStrategy(int index) {
-            this.type = instanceTypeByIndex(index);
-            this.removeColumnOperation = defineRemoveStrategy(index);
+            this.index = index;
+            this.type = instanceTypeByIndex(this.index);
+            this.removeColumnOperation = defineRemoveStrategy();
         }
 
         public boolean removeColumn() {
             return canBeRemoved() && removeColumnOperation.get();
         }
 
-        @NotNull
-        public InstanceType getType() {
-            return type;
-        }
-
         public boolean canBeRemoved() {
             return switch (type) {
                 case ATTRIBUTE -> groupAttributes.size() > 1;
-                case GROUPING_FUNCTION -> groupingFunctions.size() > 1;
-                case PERCENT_GROUPING_FUNCTION -> isPercentFunctionPresent();
+                case GROUPING_FUNCTION -> canFunctionBeRemoved();
             };
         }
 
-        private Supplier<Boolean> defineRemoveStrategy(int index) {
+        private boolean canFunctionBeRemoved() {
+            int functionIndex = fullIndexToFunctionIndex(index);
+            return functionIndex >= 0
+                && groupingFunctions.get(functionIndex).canBeRemoved();
+        }
+
+        private Supplier<Boolean> defineRemoveStrategy() {
             return switch (type) {
                 case ATTRIBUTE -> () -> groupAttributes.remove(index) != null;
-                case GROUPING_FUNCTION, PERCENT_GROUPING_FUNCTION -> () -> removeFunction(fullIndexToFunctionIndex(index));
+                case GROUPING_FUNCTION -> () -> removeFunction(fullIndexToFunctionIndex(index));
             };
         }
 
     }
 
-    public enum InstanceType {
+    private enum InstanceType {
         ATTRIBUTE,
-        GROUPING_FUNCTION,
-        PERCENT_GROUPING_FUNCTION;
+        GROUPING_FUNCTION;
+    }
+
+    private class SimpleSQLFunctionDescriptor implements GroupingFunctionDescriptor {
+
+        private final String sql;
+
+        public SimpleSQLFunctionDescriptor(@NotNull String sql) {
+            this.sql = sql;
+        }
+
+        @Override
+        public String provideSqlFunction(int indexInDataContainer) {
+            return sql;
+        }
+
+        @Override
+        public boolean canBeAdded() {
+            return true;
+        }
+
+        @Override
+        public boolean canBeRemoved() {
+            return groupingFunctions.size() > 1;
+        }
     }
 }

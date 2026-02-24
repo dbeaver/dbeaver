@@ -32,11 +32,8 @@ import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.ui.controls.resultset.IResultSetController;
 import org.jkiss.utils.ArrayUtils;
-import org.jkiss.utils.Pair;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class GroupingDataContainer implements DBDAttributeTransformerProvider, DBSDataContainer {
@@ -46,8 +43,8 @@ public class GroupingDataContainer implements DBDAttributeTransformerProvider, D
     private IResultSetController parentController;
     private String query;
     private SQLGroupingAttribute[] attributes;
-    @Nullable
-    private Pair<Integer, DBDAttributeTransformer> attributeBindingNumberToTransformer;
+    @NotNull
+    private final Map<Integer, DBDAttributeTransformer> attributeBindingNumberToTransformer = new HashMap<>();
 
     public GroupingDataContainer(IResultSetController parentController) {
         this.parentController = parentController;
@@ -191,19 +188,20 @@ public class GroupingDataContainer implements DBDAttributeTransformerProvider, D
     @NotNull
     @Override
     public List<DBDAttributeTransformer> findTransformerForBinding(@NotNull DBDAttributeBinding attributeBinding) {
-        DBDAttributeTransformer transformer = attributeBindingNumberToTransformer != null
-            && attributeBindingNumberToTransformer.getFirst().equals(attributeBinding.getOrdinalPosition())
-            ? attributeBindingNumberToTransformer.getSecond()
-            : null;
+        DBDAttributeTransformer transformer = attributeBindingNumberToTransformer.get(attributeBinding.getOrdinalPosition());
         return transformer != null ? Collections.singletonList(transformer) : Collections.emptyList();
     }
 
     public void setAttributeTransformer(int attributeIndex, @NotNull DBDAttributeTransformer transformer) {
-        attributeBindingNumberToTransformer = Pair.of(attributeIndex, transformer);
+        attributeBindingNumberToTransformer.put(attributeIndex, transformer);
     }
 
-    public void removeAttributeTransformer() {
-        attributeBindingNumberToTransformer = null;
+    public void removeAttributeTransformer(int index) {
+        attributeBindingNumberToTransformer.remove(index);
+    }
+
+    public void clearTransformers() {
+        attributeBindingNumberToTransformer.clear();
     }
 
     @Nullable

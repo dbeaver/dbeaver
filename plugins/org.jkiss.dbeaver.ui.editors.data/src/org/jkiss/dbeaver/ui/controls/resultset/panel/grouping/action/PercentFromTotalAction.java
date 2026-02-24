@@ -50,9 +50,6 @@ public class PercentFromTotalAction extends Action {
             return;
         }
         dataSource.getContainer().getPreferenceStore().setValue(ResultSetPreferences.RS_GROUPING_SHOW_PERCENT_OF_TOTAL_ROWS, !isChecked());
-        if (!isChecked()) {
-            resultsContainer.removePercentColumn();
-        }
         try {
             resultsContainer.rebuildGrouping();
         } catch (DBException e) {
