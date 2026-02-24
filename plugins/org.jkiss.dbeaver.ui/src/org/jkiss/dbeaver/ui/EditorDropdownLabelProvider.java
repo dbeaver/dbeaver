@@ -68,6 +68,9 @@ public class EditorDropdownLabelProvider extends SearchCellLabelProvider {
     @Override
     public String getText(@NotNull Object element) {
         String base = baseTextSupplier.apply((WorkbenchPartReference) element);
+        if (base == null) {
+            base = "";
+        }
         if (!(element instanceof IEditorReference ref)) {
             return base;
         }
@@ -95,8 +98,12 @@ public class EditorDropdownLabelProvider extends SearchCellLabelProvider {
         return pattern;
     }
 
+    /**
+     * Returns the connection name for the given editor reference if the input
+     * supports it. Used by the dropdown filter so search matches the displayed text.
+     */
     @Nullable
-    private static String getConnectionName(@NotNull IEditorReference ref) {
+    public static String getConnectionNameForReference(@NotNull IEditorReference ref) {
         try {
             IEditorInput input = ref.getEditorInput();
             if (input instanceof IEditorConnectionColorProvider provider) {
@@ -106,6 +113,11 @@ public class EditorDropdownLabelProvider extends SearchCellLabelProvider {
             // Editor not restored or input not available
         }
         return null;
+    }
+
+    @Nullable
+    private static String getConnectionName(@NotNull IEditorReference ref) {
+        return getConnectionNameForReference(ref);
     }
 
     @Nullable
@@ -121,9 +133,9 @@ public class EditorDropdownLabelProvider extends SearchCellLabelProvider {
             }
             Color listBackground = UIStyles.getDefaultTextBackground();
             SharedTextColors sharedColors = UIUtils.getSharedTextColors();
-            boolean darken = listBackground.hashCode() < connectionColor.hashCode();
+            boolean listIsDark = UIUtils.isDark(listBackground.getRGB());
             RGB blended = UIUtils.blend(
-                darken ? BLACK : WHITE,
+                listIsDark ? BLACK : WHITE,
                 connectionColor.getRGB(),
                 BLEND_RATIO
             );
