@@ -28,10 +28,11 @@
             <property name="windowImages" value="/icons/dbeaver16.png,/icons/dbeaver32.png,/icons/dbeaver48.png,/icons/dbeaver64.png,/icons/dbeaver256.png"/>
             <property name="appName" value="DBeaver"/>
             <property name="appEdition" value="ce"/>
-            <property name="versionInfoCoord" value="170,55"/>
+            <property name="versionInfoCoord" value="154,53"/>
             <property name="versionInfoSize" value="8"/>
-            <property name="startupMessageRect" value="60,273,340,21"/>
-            <property name="startupProgressRect" value="0,294,600,6"/>
+            <property name="startupMessageRect" value="60,270,270,21"/>
+            <property name="startupProgressRect" value="3,291,594,6"/>
+            <property name="startupForegroundColor" value="231,231,231"/>
             <property name="cssTheme" value="org.eclipse.e4.ui.css.theme.e4_default"/>
             <property name="applicationCSSResources" value="platform:/plugin/org.eclipse.ui.themes/images/"/>
             <property name="applicationXMI" value="org.jkiss.dbeaver.ui.app.standalone/dbeaver.e4xmi"/>
@@ -49,10 +50,10 @@
             <property name="email" value="%productEmail"/>
             <property name="windowImages" value="/icons/dbeaver16.png,/icons/dbeaver32.png,/icons/dbeaver48.png,/icons/dbeaver64.png,/icons/dbeaver256.png"/>
             <property name="appName" value="DBeaver CE"/>
-            <property name="versionInfoCoord" value="170,55"/>
+            <property name="versionInfoCoord" value="154,53"/>
             <property name="versionInfoSize" value="8"/>
-            <property name="startupMessageRect" value="60,273,340,21"/>
-            <property name="startupProgressRect" value="0,294,600,6"/>
+            <property name="startupMessageRect" value="60,270,270,21"/>
+            <property name="startupProgressRect" value="3,291,594,6"/>
             <property name="cssTheme" value="org.eclipse.e4.ui.css.theme.e4_default"/>
             <property name="applicationCSSResources" value="platform:/plugin/org.eclipse.ui.themes/images/"/>
             <property name="applicationXMI" value="org.jkiss.dbeaver.ui.app.standalone/dbeaver.e4xmi"/>

@@ -25,7 +25,7 @@ import org.jkiss.dbeaver.model.cli.model.option.EclipseOptions;
 import org.jkiss.dbeaver.model.cli.model.option.HiddenOptions;
 import picocli.CommandLine;
 
-public abstract class AbstractTopLevelCommand implements Runnable, CommandLine.IExitCodeGenerator {
+public abstract class AbstractTopLevelCommand extends CLIAbstractCommand implements CommandLine.IExitCodeGenerator {
     private final Log log = Log.getLog(getClass());
 
     public static final String HELP_OPTION = "--help";
@@ -123,7 +123,7 @@ public abstract class AbstractTopLevelCommand implements Runnable, CommandLine.I
     }
 
     @NotNull
-    public CLIContext getContext() {
+    public CLIContext context() {
         return context;
     }
 
