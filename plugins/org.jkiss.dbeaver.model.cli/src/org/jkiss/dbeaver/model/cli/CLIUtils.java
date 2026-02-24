@@ -337,21 +337,15 @@ public class CLIUtils {
         @Nullable String namePrefix
     ) {
         String displayName = property.getDisplayName();
-        String description = property.getDescription();
         var helpText = new StringBuilder();
-
 
         helpText.append("  - ");
         if (CommonUtils.isNotEmpty(namePrefix) && !property.getId().startsWith(namePrefix)) {
             helpText.append(namePrefix);
         }
         helpText.append(property.getId());
-        if (!CommonUtils.equalObjects(displayName, description)) {
-            helpText.append(" (").append(displayName).append(")");
-        }
-        if (CommonUtils.isNotEmpty(description)) {
-            helpText.append(" = ").append(description);
-        }
+        helpText.append(" = ").append(displayName);
+
         if (property instanceof IPropertyValueListProvider<?> valueListProvider) {
             Object[] possibleValues = valueListProvider.getPossibleValues(null);
             if (!ArrayUtils.isEmpty(possibleValues)) {
