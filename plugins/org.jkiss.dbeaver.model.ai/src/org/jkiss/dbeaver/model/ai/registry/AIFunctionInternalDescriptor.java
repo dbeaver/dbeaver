@@ -20,71 +20,18 @@ import org.eclipse.core.runtime.IConfigurationElement;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPImage;
-import org.jkiss.dbeaver.model.ai.AIFunction;
-import org.jkiss.dbeaver.model.ai.AIFunctionPurpose;
-import org.jkiss.dbeaver.model.ai.AIFunctionResult;
-import org.jkiss.dbeaver.model.ai.AIPromptGenerator;
+import org.jkiss.dbeaver.model.ai.*;
 import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
-import org.jkiss.dbeaver.model.meta.IPropertyValueListProvider;
 import org.jkiss.dbeaver.registry.RegistryConstants;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class AIFunctionDescriptor extends AbstractDescriptor {
+public class AIFunctionInternalDescriptor extends AbstractDescriptor implements AIFunctionDescriptor {
 
     public static final String EXTENSION_ID = "com.dbeaver.ai.function";
-
-    public class Parameter {
-        private static final Log log = Log.getLog(Parameter.class);
-        private final IConfigurationElement config;
-
-        Parameter(@NotNull IConfigurationElement config) {
-            this.config = config;
-        }
-
-        @NotNull
-        public String getName() {
-            return config.getAttribute("name");
-        }
-
-        @NotNull
-        public String getType() {
-            return config.getAttribute("type");
-        }
-
-        @Nullable
-        public String getDescription() {
-            return config.getAttribute("description");
-        }
-
-        public boolean isRequired() {
-            return CommonUtils.getBoolean(config.getAttribute("required"));
-        }
-
-        public String getDefaultValue() {
-            return config.getAttribute("defaultValue");
-        }
-
-        @Nullable
-        public String[] getValidValues() {
-            String validValues = config.getAttribute("validValues");
-            if (CommonUtils.isEmpty(validValues) && CommonUtils.isNotEmpty(config.getAttribute("validValuesProvider"))) {
-                ObjectType validValuesProvider = new ObjectType(config, "validValuesProvider");
-                try {
-                    var provider = validValuesProvider.createInstance(IPropertyValueListProvider.class);
-                    Object[] validObjects = provider.getPossibleValues(this);
-                    return (String[]) validObjects;
-                } catch (DBException e) {
-                    log.error("Error on getting valid values from provider", e);
-                }
-            }
-            return CommonUtils.isEmpty(validValues) ? null : validValues.split(",");
-        }
-    }
 
     private final ObjectType objectType;
     private final String id;
@@ -99,7 +46,7 @@ public class AIFunctionDescriptor extends AbstractDescriptor {
     private final String categoryId;
     private final Parameter[] parameters;
 
-    public AIFunctionDescriptor(@NotNull IConfigurationElement config) {
+    public AIFunctionInternalDescriptor(@NotNull IConfigurationElement config) {
         super(config);
         this.objectType = new ObjectType(config, RegistryConstants.ATTR_CLASS);
         this.icon = iconToImage(config.getAttribute(RegistryConstants.ATTR_ICON));
@@ -150,6 +97,11 @@ public class AIFunctionDescriptor extends AbstractDescriptor {
     }
 
     @Nullable
+    public String getCategoryId() {
+        return categoryId;
+    }
+
+    @Nullable
     public String getDescription() {
         return description;
     }
@@ -185,11 +137,6 @@ public class AIFunctionDescriptor extends AbstractDescriptor {
 
     public boolean isApplicable(@NotNull AIEngineDescriptor engine, @NotNull AIPromptGenerator prompt) {
         return false;
-    }
-
-    @Nullable
-    public String getCategoryId() {
-        return categoryId;
     }
 
     @Override

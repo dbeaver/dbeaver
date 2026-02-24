@@ -50,13 +50,21 @@ public class AIAssistantImpl implements AIAssistant {
 
     protected final AIEngineRequestFactory requestFactory;
     protected AISqlFormatter sqlFormatter;
+    private final AIAgentManager agentManager;
 
     public AIAssistantImpl(@NotNull DBPWorkspace workspace) {
         this.workspace = workspace;
         this.requestFactory = createRequestFactory();
         this.sqlFormatter = createSqlFormatter();
+        this.agentManager = createAgentManager();
     }
 
+    @NotNull
+    protected AIAgentManager createAgentManager() {
+        return new AIAgentRegistry();
+    }
+
+    @NotNull
     protected AISqlFormatter createSqlFormatter() {
         try {
             return AIAssistantRegistry.getInstance().getDescriptor().createSqlFormatter();
@@ -66,6 +74,7 @@ public class AIAssistantImpl implements AIAssistant {
         }
     }
 
+    @NotNull
     protected AIEngineRequestFactory createRequestFactory() {
         return new AIEngineRequestFactory(
             new AIDatabaseSnapshotService(),
@@ -154,6 +163,12 @@ public class AIAssistantImpl implements AIAssistant {
             }
             throw new DBException("Too many AI function calls (" + MAX_FUNCTION_CALLS + ")");
         }
+    }
+
+    @NotNull
+    @Override
+    public AIAgentManager getAgentManager() {
+        return agentManager;
     }
 
     @NotNull

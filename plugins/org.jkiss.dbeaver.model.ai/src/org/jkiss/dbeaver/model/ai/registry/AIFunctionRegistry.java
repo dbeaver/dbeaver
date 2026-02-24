@@ -23,10 +23,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.ai.AIFunction;
-import org.jkiss.dbeaver.model.ai.AIFunctionContext;
-import org.jkiss.dbeaver.model.ai.AIFunctionPurpose;
-import org.jkiss.dbeaver.model.ai.AIFunctionResult;
+import org.jkiss.dbeaver.model.ai.*;
 
 import java.util.*;
 
@@ -49,7 +46,7 @@ public class AIFunctionRegistry {
     private final Map<String, AIFunctionCategoryDescriptor> categoriesById = new LinkedHashMap<>();
 
     public AIFunctionRegistry(@NotNull IExtensionRegistry registry) {
-        IConfigurationElement[] extElements = registry.getConfigurationElementsFor(AIFunctionDescriptor.EXTENSION_ID);
+        IConfigurationElement[] extElements = registry.getConfigurationElementsFor(AIFunctionInternalDescriptor.EXTENSION_ID);
         for (IConfigurationElement el : extElements) {
             if ("category".equals(el.getName())) {
                 var cd = new AIFunctionCategoryDescriptor(el);
@@ -58,7 +55,7 @@ public class AIFunctionRegistry {
         }
         for (IConfigurationElement ext : extElements) {
             if ("function".equals(ext.getName())) {
-                AIFunctionDescriptor fd = new AIFunctionDescriptor(ext);
+                AIFunctionInternalDescriptor fd = new AIFunctionInternalDescriptor(ext);
                 functionsById.put(fd.getId(), fd);
             }
         }

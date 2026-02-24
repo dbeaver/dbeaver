@@ -18,7 +18,6 @@ package org.jkiss.dbeaver.model.ai;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.model.ai.registry.AIFunctionDescriptor;
 import org.jkiss.dbeaver.model.ai.registry.AIFunctionRegistry;
 
 import java.util.HashSet;

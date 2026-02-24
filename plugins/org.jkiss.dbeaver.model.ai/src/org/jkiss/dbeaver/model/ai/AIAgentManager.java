@@ -17,33 +17,15 @@
 package org.jkiss.dbeaver.model.ai;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
+
+import java.util.List;
 
 /**
- * Reference to AI function.
- *
- * Can be returned in AI responses, signaling that certain AI function was used.
- * This information can be used in UI to render links which trigger some UI actions.
+ * AI agent.
  */
-public class AIFunctionReference {
+public interface AIAgentManager {
 
     @NotNull
-    private final AIFunctionDescriptor function;
-    @Nullable
-    private final String text;
+    List<AIAgent> getAllAgents();
 
-    public AIFunctionReference(@NotNull AIFunctionDescriptor function, @Nullable String text) {
-        this.function = function;
-        this.text = text;
-    }
-
-    @NotNull
-    public AIFunctionDescriptor getFunction() {
-        return function;
-    }
-
-    @Nullable
-    public String getText() {
-        return text;
-    }
 }
