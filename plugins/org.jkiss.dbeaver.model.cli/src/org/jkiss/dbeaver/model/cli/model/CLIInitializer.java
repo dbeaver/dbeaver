@@ -14,19 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.jkiss.dbeaver.model.cli.model;
 
-package org.jkiss.dbeaver.model.data;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.model.exec.DBCException;
-import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
+import org.jkiss.dbeaver.model.cli.CLIContext;
+import org.jkiss.dbeaver.model.cli.CLIException;
 
-/**
- * Provides possibility to override default SQL query binding
- */
-public interface DBDValueBinder extends DBDValueHandler
-{
-
-    String makeQueryBind(@NotNull DBSAttributeBase attribute, @NotNull Object value) throws DBCException;
-
+@FunctionalInterface
+public interface CLIInitializer {
+    void initialize(@NotNull CLIContext context) throws CLIException;
 }
