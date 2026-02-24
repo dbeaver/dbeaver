@@ -16,31 +16,7 @@
  */
 package org.jkiss.dbeaver.model.ai;
 
-import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.model.runtime.DBRRunnableWithReturn;
-
-public record AIFunctionResult<T>(
-    @NotNull AIFunctionType type,
-    @NotNull T value,
-    @Nullable DBRRunnableWithReturn<?> callback
-) {
-    public AIFunctionResult(
-        @NotNull AIFunctionType type,
-        @NotNull T value
-    ) {
-        this(type, value, null);
-    }
-
-    @Override
-    @NotNull
-    public AIFunctionType type() {
-        return type;
-    }
-
-    @Override
-    @NotNull
-    public T value() {
-        return value;
-    }
+public enum AIFunctionType {
+    INFORMATION,
+    ACTION
 }

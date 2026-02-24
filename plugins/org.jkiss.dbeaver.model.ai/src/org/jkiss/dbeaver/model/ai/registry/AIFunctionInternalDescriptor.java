@@ -40,11 +40,11 @@ public class AIFunctionInternalDescriptor extends AbstractDescriptor implements 
     private final boolean global;
     private final boolean hidden;
     private final AIFunctionPurpose purpose;
-    private final AIFunctionResult.FunctionType type;
+    private final AIFunctionType type;
     private final String[] dependsOn;
     private final String description;
     private final String categoryId;
-    private final Parameter[] parameters;
+    private final AIFunctionInternalParameter[] parameters;
 
     public AIFunctionInternalDescriptor(@NotNull IConfigurationElement config) {
         super(config);
@@ -59,16 +59,16 @@ public class AIFunctionInternalDescriptor extends AbstractDescriptor implements 
         this.description = config.getAttribute(RegistryConstants.ATTR_DESCRIPTION);
         this.dependsOn = CommonUtils.splitString(config.getAttribute("dependsOn"), ',').toArray(new String[0]);
         this.type = CommonUtils.valueOf(
-            AIFunctionResult.FunctionType.class,
+            AIFunctionType.class,
             config.getAttribute("type"),
-            AIFunctionResult.FunctionType.INFORMATION
+            AIFunctionType.INFORMATION
         );
 
-        List<Parameter> params = new ArrayList<>();
+        List<AIFunctionInternalParameter> params = new ArrayList<>();
         for (IConfigurationElement pe : config.getChildren("parameter")) {
-            params.add(new Parameter(pe));
+            params.add(new AIFunctionInternalParameter(pe));
         }
-        this.parameters = params.toArray(new Parameter[0]);
+        this.parameters = params.toArray(new AIFunctionInternalParameter[0]);
     }
 
     @NotNull
@@ -87,7 +87,7 @@ public class AIFunctionInternalDescriptor extends AbstractDescriptor implements 
     }
 
     @NotNull
-    public AIFunctionResult.FunctionType getType() {
+    public AIFunctionType getType() {
         return type;
     }
 
@@ -117,7 +117,7 @@ public class AIFunctionInternalDescriptor extends AbstractDescriptor implements 
     }
 
     @NotNull
-    public Parameter[] getParameters() {
+    public AIFunctionParameter[] getParameters() {
         return parameters;
     }
 

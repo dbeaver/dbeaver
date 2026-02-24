@@ -21,29 +21,13 @@ import org.jkiss.code.Nullable;
 
 /**
  * Reference to AI function.
- *
+ * <p>
  * Can be returned in AI responses, signaling that certain AI function was used.
  * This information can be used in UI to render links which trigger some UI actions.
  */
-public class AIFunctionReference {
+public record AIFunctionReference(
+    @NotNull AIFunctionDescriptor function,
+    @Nullable String text
+) {
 
-    @NotNull
-    private final AIFunctionDescriptor function;
-    @Nullable
-    private final String text;
-
-    public AIFunctionReference(@NotNull AIFunctionDescriptor function, @Nullable String text) {
-        this.function = function;
-        this.text = text;
-    }
-
-    @NotNull
-    public AIFunctionDescriptor getFunction() {
-        return function;
-    }
-
-    @Nullable
-    public String getText() {
-        return text;
-    }
 }

@@ -16,13 +16,11 @@
  */
 package org.jkiss.dbeaver.model.ai;
 
-import org.eclipse.core.runtime.IConfigurationElement;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.ai.registry.AIEngineDescriptor;
-import org.jkiss.utils.CommonUtils;
 
 /**
  * AI function metadata.
@@ -39,7 +37,7 @@ public interface AIFunctionDescriptor {
     DBPImage getIcon();
 
     @NotNull
-    AIFunctionResult.FunctionType getType();
+    AIFunctionType getType();
 
     @NotNull
     AIFunctionPurpose getPurpose();
@@ -58,7 +56,7 @@ public interface AIFunctionDescriptor {
     boolean isHidden();
 
     @NotNull
-    Parameter[] getParameters();
+    AIFunctionParameter[] getParameters();
 
     @NotNull
     String[] getDependsOn();
@@ -67,43 +65,6 @@ public interface AIFunctionDescriptor {
 
     @NotNull
     AIFunction createInstance() throws DBException;
-
-    class Parameter {
-        private final IConfigurationElement config;
-
-        public Parameter(@NotNull IConfigurationElement config) {
-            this.config = config;
-        }
-
-        @NotNull
-        public String getName() {
-            return config.getAttribute("name");
-        }
-
-        @NotNull
-        public String getType() {
-            return config.getAttribute("type");
-        }
-
-        @Nullable
-        public String getDescription() {
-            return config.getAttribute("description");
-        }
-
-        public boolean isRequired() {
-            return CommonUtils.getBoolean(config.getAttribute("required"));
-        }
-
-        public String getDefaultValue() {
-            return config.getAttribute("defaultValue");
-        }
-
-        @Nullable
-        public String[] getValidValues() {
-            String validValues = config.getAttribute("validValues");
-            return CommonUtils.isEmpty(validValues) ? null : validValues.split(",");
-        }
-    }
 
 
 }
