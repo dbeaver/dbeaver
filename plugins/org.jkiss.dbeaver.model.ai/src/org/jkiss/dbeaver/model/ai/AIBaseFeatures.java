@@ -19,10 +19,11 @@ package org.jkiss.dbeaver.model.ai;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.ai.registry.AIEngineDescriptor;
 import org.jkiss.dbeaver.model.ai.utils.AIUtils;
 import org.jkiss.dbeaver.model.runtime.features.DBRFeature;
 
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
@@ -47,8 +48,9 @@ public interface AIBaseFeatures {
         @Nullable DBPDataSourceContainer container,
         @NotNull Map<String, Object> additionalInfo
     ) {
-        HashMap<String, Object> featureInfoMap = new HashMap<>(Map.of(
-            PARAM_ENGINE, AIUtils.getActiveEngineDescriptor() == null ? "" : AIUtils.getActiveEngineDescriptor().getId()
+        AIEngineDescriptor activeEngineDescriptor = AIUtils.getActiveEngineDescriptor();
+        Map<String, Object> featureInfoMap = new LinkedHashMap<>(Map.of(
+            PARAM_ENGINE, activeEngineDescriptor == null ? "" : activeEngineDescriptor.getId()
         ));
         if (container != null) {
             featureInfoMap.put(PARAM_DRIVER, container.getDriver().getPreconfiguredId());
