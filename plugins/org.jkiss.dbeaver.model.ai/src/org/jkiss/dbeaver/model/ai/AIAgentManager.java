@@ -17,8 +17,11 @@
 package org.jkiss.dbeaver.model.ai;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * AI agent.
@@ -27,5 +30,15 @@ public interface AIAgentManager {
 
     @NotNull
     List<AIAgent> getAllAgents();
+
+    @Nullable
+    AIFunctionDescriptor getFunctionById(@NotNull String id);
+
+    @NotNull
+    AIFunctionResult callFunction(
+        @NotNull AIFunctionContext context,
+        @NotNull AIFunctionDescriptor descriptor,
+        @NotNull Map<String, Object> arguments
+    ) throws DBException;
 
 }

@@ -37,8 +37,15 @@ public interface AIAgent {
     @Nullable
     String getDescription();
 
+    boolean isEnabled();
+
+    boolean isAccessible();
+
     @NotNull
     List<AIFunctionDescriptor> getSupportedFunctions();
+
+    @Nullable
+    AIFunctionDescriptor getFunctionById(@NotNull String id);
 
     @NotNull
     AIFunctionResult callFunction(

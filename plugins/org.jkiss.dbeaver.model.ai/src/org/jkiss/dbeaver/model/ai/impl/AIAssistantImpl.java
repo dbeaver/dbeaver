@@ -210,12 +210,11 @@ public class AIAssistantImpl implements AIAssistant {
         @NotNull AIFunctionContext context,
         @NotNull AIFunctionCall functionCall
     ) throws DBException {
-        AIFunctionRegistry registry = AIFunctionRegistry.getInstance();
         String functionName = functionCall.getFunctionName();
         if (CommonUtils.isEmpty(functionName)) {
             throw new DBCMessageException("Function name not specified");
         }
-        AIFunctionDescriptor function = registry.getFunction(functionName);
+        AIFunctionDescriptor function = agentManager.getFunctionById(functionName);
         if (function == null) {
             throw new DBCMessageException("Function '" + functionName + "' not found");
         }
@@ -231,7 +230,7 @@ public class AIAssistantImpl implements AIAssistant {
             container,
             Map.of(AIBaseFeatures.FUNCTION_NAME, functionCall.getFunctionName())
         ));
-        return registry.callFunction(context, function, arguments);
+        return agentManager.callFunction(context, function, arguments);
     }
 
     protected void checkAiEnablement() throws DBException {

@@ -63,10 +63,26 @@ public class AIAgentInternalDescriptor extends AbstractDescriptor implements AIA
         return description;
     }
 
+    @Override
+    public boolean isEnabled() {
+        return true;
+    }
+
+    @Override
+    public boolean isAccessible() {
+        return true;
+    }
+
     @NotNull
     @Override
     public List<AIFunctionDescriptor> getSupportedFunctions() {
         return AIFunctionRegistry.getInstance().getAllFunctions(AIFunctionPurpose.ALL);
+    }
+
+    @Nullable
+    @Override
+    public AIFunctionDescriptor getFunctionById(@NotNull String id) {
+        return AIFunctionRegistry.getInstance().getFunction(id);
     }
 
     @NotNull

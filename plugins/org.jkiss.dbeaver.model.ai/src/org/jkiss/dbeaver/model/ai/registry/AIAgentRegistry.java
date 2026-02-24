@@ -19,10 +19,10 @@ package org.jkiss.dbeaver.model.ai.registry;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.Platform;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.ai.AIAgent;
-import org.jkiss.dbeaver.model.ai.AIAgentManager;
+import org.jkiss.dbeaver.model.ai.*;
 
 import java.util.*;
 
@@ -62,6 +62,22 @@ public class AIAgentRegistry implements AIAgentManager {
         List<AIAgent> agents = new ArrayList<>(internalAgents);
         agents.addAll(externalAgents.values());
         return agents;
+    }
+
+    @Nullable
+    @Override
+    public AIFunctionDescriptor getFunctionById(@NotNull String id) {
+        return null;
+    }
+
+    @NotNull
+    @Override
+    public AIFunctionResult callFunction(
+        @NotNull AIFunctionContext context,
+        @NotNull AIFunctionDescriptor descriptor,
+        @NotNull Map<String, Object> arguments
+    ) throws DBException {
+        return null;
     }
 
     @NotNull
