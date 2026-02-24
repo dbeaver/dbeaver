@@ -20,12 +20,9 @@ import org.eclipse.jface.viewers.ColumnViewerToolTipSupport;
 import org.eclipse.jface.viewers.TableViewerColumn;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.viewers.ViewerFilter;
-import org.eclipse.swt.graphics.Image;
 import org.eclipse.ui.internal.EditorReference;
 import org.eclipse.ui.internal.WorkbenchPartReference;
 import org.eclipse.ui.internal.WorkbookEditorsHandler;
-import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
 
 public class CustomWorkbookEditorsHandler extends WorkbookEditorsHandler {
     private String pattern;
@@ -44,31 +41,10 @@ public class CustomWorkbookEditorsHandler extends WorkbookEditorsHandler {
 
     @Override
     protected void setLabelProvider(TableViewerColumn column) {
-        column.setLabelProvider(new SearchCellLabelProvider() {
-            @NotNull
-            @Override
-            public String getText(@NotNull Object element) {
-                return getWorkbenchPartReferenceText((WorkbenchPartReference) element);
-            }
-
-            @NotNull
-            @Override
-            public Image getImage(@NotNull Object element) {
-                return ((WorkbenchPartReference) element).getTitleImage();
-            }
-
-            @Override
-            public String getToolTipText(@NotNull Object element) {
-                return ((WorkbenchPartReference) element).getTitleToolTip();
-            }
-
-            @Nullable
-            @Override
-            public String getPattern() {
-                return pattern;
-            }
-        });
-
+        column.setLabelProvider(new EditorDropdownLabelProvider(
+            pattern,
+            this::getWorkbenchPartReferenceText
+        ));
         ColumnViewerToolTipSupport.enableFor(column.getViewer());
     }
 

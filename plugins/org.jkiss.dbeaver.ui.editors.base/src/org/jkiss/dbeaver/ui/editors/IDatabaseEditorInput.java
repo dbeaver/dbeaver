@@ -24,13 +24,14 @@ import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.preferences.DBPPropertySource;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.ui.IEditorConnectionColorProvider;
 
 import java.util.Collection;
 
 /**
  * IDatabaseEditorInput
  */
-public interface IDatabaseEditorInput extends INavigatorEditorInput, DBPContextProvider {
+public interface IDatabaseEditorInput extends INavigatorEditorInput, DBPContextProvider, IEditorConnectionColorProvider {
 
     @Nullable
     @Override
@@ -60,6 +61,10 @@ public interface IDatabaseEditorInput extends INavigatorEditorInput, DBPContextP
      */
     @Nullable
     Color getConnectionColor();
+
+    @Nullable
+    @Override
+    String getConnectionName();
 
     /**
      * Command context

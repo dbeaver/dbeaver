@@ -217,6 +217,13 @@ public abstract class DatabaseEditorInput<NODE extends DBNDatabaseNode> implemen
 
     @Nullable
     @Override
+    public String getConnectionName() {
+        DBPDataSourceContainer container = getDataSourceContainer();
+        return container != null ? container.getName() : null;
+    }
+
+    @Nullable
+    @Override
     public DBECommandContext getCommandContext()
     {
         return commandContext;
