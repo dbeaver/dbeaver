@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,8 +34,8 @@ import java.nio.file.StandardCopyOption;
 import java.security.CodeSource;
 import java.security.KeyStore;
 import java.security.ProtectionDomain;
-import java.util.List;
 import java.util.*;
+import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.regex.Matcher;
@@ -761,13 +761,18 @@ public class DBeaverLauncher {
             }
             return new CommandLineExecuteResult(cliMode);
         }
-        Integer serverPort = readDBeaverServerPort(workspacePath);
-        if (debug) {
-            System.out.println("Detected DBeaver server port: " + serverPort);
-        }
-        if (serverPort == null) {
+        InstanceServerProperties properties = readDBeaverServerInfo(workspacePath);
+
+        if (properties == null) {
+            if (debug) {
+                System.out.println("DBeaver server properties not found in workspace: " + workspacePath);
+            }
             return new CommandLineExecuteResult(cliMode);
         }
+        if (debug) {
+            System.out.println("Detected DBeaver server port: " + properties.port());
+        }
+
 
         ExecutorService httpExecutor = Executors.newSingleThreadExecutor();
         try (
@@ -787,8 +792,9 @@ public class DBeaverLauncher {
                 .map(arg -> "\"" + LauncherUtils.escape(arg) + "\"")
                 .collect(Collectors.joining(",", "{\"args\":[", "]}"));
             HttpRequest.Builder builder = HttpRequest.newBuilder()
-                .uri(URI.create("http://localhost:" + serverPort + "/handleCommandLine"))
+                .uri(URI.create("http://localhost:" + properties.port() + "/handleCommandLine"))
                 .header("Content-Type", "application/json")
+                .header(InstanceServerProperties.HEADER_AUTHORIZATION, InstanceServerProperties.BEARER_PREFIX + properties.password())
                 .POST(HttpRequest.BodyPublishers.ofString(json));
             HttpRequest request = builder.build();
             HttpResponse<String> response = client.send(request, stringBodyHandler);
@@ -900,7 +906,7 @@ public class DBeaverLauncher {
         return dbeaverDataDir.resolve(Constants.WORKSPACE6);
     }
 
-    private Integer readDBeaverServerPort(Path workspacePath) {
+    private InstanceServerProperties readDBeaverServerInfo(Path workspacePath) {
         Path dbeaverProperties = workspacePath
             .resolve(Constants.METADATA)
             .resolve(Constants.DBEAVER_INSTANCE_PROPS);
@@ -913,11 +919,21 @@ public class DBeaverLauncher {
         Properties properties = new Properties();
         try (var is = Files.newInputStream(dbeaverProperties)) {
             properties.load(is);
-            String portProperty = properties.getProperty(Constants.PROPERTY_PORT);
+            String portProperty = properties.getProperty(InstanceServerProperties.PROPERTY_PORT);
             if (portProperty == null || portProperty.isBlank()) {
+                if (debug) {
+                    System.out.println("DBeaver server port property not found or blank in properties file: " + dbeaverProperties);
+                }
                 return null;
             }
-            return Integer.valueOf(portProperty);
+            String passwordProperty = properties.getProperty(InstanceServerProperties.PROPERTY_PASSWORD);
+            if (passwordProperty == null || passwordProperty.isBlank()) {
+                if (debug) {
+                    System.out.println("DBeaver server password property not found or blank in properties file: " + dbeaverProperties);
+                }
+                return null;
+            }
+            return new InstanceServerProperties(Integer.parseInt(portProperty), passwordProperty);
         } catch (Exception e) {
             log(e);
             return null;
@@ -2142,7 +2158,7 @@ public class DBeaverLauncher {
     }
 
     public static Path getDefaultSecretStorageLocation() {
-        String userHome = System.getProperty("user.home");
+        String userHome = System.getProperty(PROP_USER_HOME);
         if (userHome == null) {
             return Path.of(DEFAULT_SECURE_STORAGE_FILENAME);
         } else {
@@ -2184,16 +2200,16 @@ public class DBeaverLauncher {
         if (osName.contains("WIN")) {
             String appData = System.getenv("AppData");
             if (appData == null) {
-                appData = System.getProperty("user.home");
+                appData = System.getProperty(PROP_USER_HOME);
             }
             workingDirectory = appData + "\\" + defaultWorkspaceLocation;
         } else if (osName.contains("MAC")) {
-            workingDirectory = System.getProperty("user.home") + "/Library/" + defaultWorkspaceLocation;
+            workingDirectory = System.getProperty(PROP_USER_HOME) + "/Library/" + defaultWorkspaceLocation;
         } else {
             // Linux
             String dataHome = System.getProperty("XDG_DATA_HOME");
             if (dataHome == null) {
-                dataHome = System.getProperty("user.home") + "/.local/share";
+                dataHome = System.getProperty(PROP_USER_HOME) + "/.local/share";
             }
             String badWorkingDir = dataHome + "/." + defaultWorkspaceLocation;
             String goodWorkingDir = dataHome + "/" + defaultWorkspaceLocation;

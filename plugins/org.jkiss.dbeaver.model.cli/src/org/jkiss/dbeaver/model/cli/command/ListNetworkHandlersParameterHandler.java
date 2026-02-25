@@ -33,7 +33,7 @@ import java.util.*;
 
 @CommandLine.Command(name = "network-handlers", description = "List available database network handlers.")
 
-public class ListNetworkHandlersParameterHandler extends AbstractRootCommandLineParameterHandler {
+public class ListNetworkHandlersParameterHandler extends CLIAbstractSubcommand {
     @NotNull
     @CommandLine.Option(names = {"--driver"}, arity = "1", description = "List supported handlers for the specified driver.")
     private String driverId;
@@ -54,6 +54,10 @@ public class ListNetworkHandlersParameterHandler extends AbstractRootCommandLine
             allDriversHelp(driverRegistry, networkHandlerRegistry, output);
         }
 
+        while (!output.isEmpty() && Character.isWhitespace(output.charAt(output.length() - 1))) {
+            output.deleteCharAt(output.length() - 1);
+        }
+
         context().addResult(output.toString());
         context().setPostAction(CLIProcessResult.PostAction.SHUTDOWN);
     }
@@ -68,8 +72,7 @@ public class ListNetworkHandlersParameterHandler extends AbstractRootCommandLine
 
         for (var handler : networkHandlers) {
             output.append("Network Handler ID: ").append(handler.getId())
-                .append(", Name: ").append(handler.getCodeName())
-                .append(", Description: ").append(handler.getDescription());
+                .append(", Name: ").append(handler.getCodeName());
             if (!ArrayUtils.isEmpty(handler.getHandlerProperties())) {
                 output.append(", Parameters:");
             }
@@ -80,7 +83,6 @@ public class ListNetworkHandlersParameterHandler extends AbstractRootCommandLine
             }
             output.append("\n");
         }
-        output.replace(output.length() - 2, output.length(), "");
     }
 
     private void allDriversHelp(
@@ -106,15 +108,12 @@ public class ListNetworkHandlersParameterHandler extends AbstractRootCommandLine
             String handlerId = entry.getKey();
             DBWHandlerDescriptor handler = networkHandlerRegistry.getDescriptor(handlerId);
             String prefix = handler.getPrefix() + ".";
-            Set<String> driverIds = entry.getValue();
             output.append("Network Handler ID: ").append(handlerId)
-                .append(", Name: ").append(handler.getCodeName())
-                .append(", Description: ").append(handler.getDescription());
+                .append(", Name: ").append(handler.getCodeName());
             if (!ArrayUtils.isEmpty(handler.getHandlerProperties())) {
                 output.append(", Parameters:");
             }
-            output.append("\n")
-                .append("Supported by drivers: ").append(String.join(", ", driverIds)).append("\n");
+            output.append("\n");
 
             for (DBPPropertyDescriptor property : handler.getHandlerProperties()) {
                 String helpText = CLIUtils.getPropertyHelpText(property, prefix);
@@ -122,6 +121,5 @@ public class ListNetworkHandlersParameterHandler extends AbstractRootCommandLine
             }
             output.append("\n");
         }
-        output.replace(output.length() - 2, output.length(), "");
     }
 }

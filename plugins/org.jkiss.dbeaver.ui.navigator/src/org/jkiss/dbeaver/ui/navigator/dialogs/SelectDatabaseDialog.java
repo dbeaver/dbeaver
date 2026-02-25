@@ -24,6 +24,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Shell;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
@@ -87,6 +88,14 @@ public class SelectDatabaseDialog extends ObjectListDialog<DBNDatabaseNode> {
         this.currentInstanceName = currentInstanceName;
     }
 
+    @NotNull
+    @Override
+    protected Control createButtonBar(@NotNull Composite parent) {
+        Control buttonBar = super.createButtonBar(parent);
+        enableButton(IDialogConstants.OK_ID, false);
+        return buttonBar;
+    }
+
     @Override
     protected void createUpperControls(@NotNull Composite dialogArea) {
         DBPDataSource dataSource = dataSourceContainer.getDataSource();
@@ -106,22 +115,31 @@ public class SelectDatabaseDialog extends ObjectListDialog<DBNDatabaseNode> {
         }
     }
 
+    @Nullable
     @Override
-    protected void handleObjectsLoaded(Collection<DBNDatabaseNode> items, boolean append) {
+    public DBNDatabaseNode getSelectedObject() {
+        DBNDatabaseNode object = super.getSelectedObject();
+        if (object == null && !CommonUtils.isEmpty(selectedInstances)) {
+            return selectedInstances.getFirst();
+        }
+        return object;
+    }
+
+    @Override
+    protected void handleObjectsLoaded(@NotNull Collection<DBNDatabaseNode> items, boolean append) {
         // Now select the default object
         if (selectedInstances.isEmpty()) {
             return;
         }
-        List<Object> selObjects = new ArrayList<>();
-        Collection<?> schemas = (Collection<?>) objectList.getItemsViewer().getInput();
-        if (schemas != null) {
-            for (Object node : schemas) {
+        if (objectList.getSelectionProvider().getSelection().isEmpty()) {
+            List<Object> selObjects = new ArrayList<>();
+            for (DBNDatabaseNode  node : items) {
                 if (DBNUtils.isDefaultElement(node)) {
                     selObjects.add(node);
                 }
             }
+            objectList.getSelectionProvider().setSelection(new StructuredSelection(selObjects));
         }
-        objectList.getSelectionProvider().setSelection(new StructuredSelection(selObjects));
     }
 
     @Nullable
@@ -135,7 +153,7 @@ public class SelectDatabaseDialog extends ObjectListDialog<DBNDatabaseNode> {
         return defaultContext.getContextDefaults();
     }
 
-    private void createInstanceSelector(Composite group, DBSObjectContainer instanceContainer) {
+    private void createInstanceSelector(@NotNull Composite group, @NotNull DBSObjectContainer instanceContainer) {
         ((GridLayout)group.getLayout()).numColumns++;
         DatabaseObjectListControl<DBNDatabaseNode> instanceList = createObjectSelector(
             group,
@@ -171,17 +189,27 @@ public class SelectDatabaseDialog extends ObjectListDialog<DBNDatabaseNode> {
         instanceList.setLayoutData(gd);
         instanceList.getSelectionProvider().addSelectionChangedListener(event -> {
             IStructuredSelection selection = (IStructuredSelection) event.getSelection();
-            selectedInstances.clear();
-            selectedInstances.addAll(selection.toList());
+            List<DBNDatabaseNode> newInstances = selection.toList();
+            if (!newInstances.equals(selectedInstances)) {
+                selectedInstances.clear();
+                selectedInstances.addAll(newInstances);
+                // Clear schemas too
+                selectedObjects.clear();
+            }
             DBNDatabaseNode instance = selectedInstances.isEmpty() ? null : selectedInstances.getFirst();
             if (instance != null && !CommonUtils.equalObjects(instance.getNodeDisplayName(), currentInstanceName)) {
                 currentInstanceName = instance.getNodeDisplayName();
+                enableButton(IDialogConstants.OK_ID, false);
                 objectList.loadData();
             }
+            updateButtons();
         });
         instanceList.setDoubleClickHandler(event -> {
-            if (isModeless() || isButtonEnabled(IDialogConstants.OK_ID)) {
-                okPressed();
+            IStructuredSelection selection = (IStructuredSelection) event.getSelection();
+            selectedInstances.clear();
+            selectedInstances.addAll(selection.toList());
+            if (isDialogComplete()) {
+                UIUtils.asyncExec(this::okPressed);
             }
         });
 
@@ -190,6 +218,15 @@ public class SelectDatabaseDialog extends ObjectListDialog<DBNDatabaseNode> {
         closeOnFocusLost(instanceList.getItemsViewer().getControl());
     }
 
+    @Override
+    protected boolean isDialogComplete() {
+        if (currentInstanceName == null || selectedInstances.isEmpty()) {
+            return super.isDialogComplete();
+        }
+        return true;
+    }
+
+    @NotNull
     protected List<DBNDatabaseNode> getObjects(@NotNull DBRProgressMonitor monitor) {
         DBSObject rootObject;
         if (selectedInstances != null && currentInstanceName != null && getContextDefaults() != null
@@ -241,9 +278,10 @@ public class SelectDatabaseDialog extends ObjectListDialog<DBNDatabaseNode> {
         return nodeList;
     }
 
+    @Nullable
     public String getCurrentInstanceName() {
         DBNDatabaseNode selectedObject = getSelectedObject();
-        if (selectedObject.getObject() instanceof DBSCatalog) {
+        if (selectedObject != null && selectedObject.getObject() instanceof DBSCatalog) {
             return selectedObject.getObject().getName();
         }
         return currentInstanceName;

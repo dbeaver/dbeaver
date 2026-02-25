@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -173,7 +173,7 @@ public class AltibaseGeometryValueHandler extends GISGeometryValueHandler implem
     }
 
     @Override
-    public String makeQueryBind(DBSAttributeBase attribute, Object value) throws DBCException {
+    public String makeQueryBind(@NotNull DBSAttributeBase attribute, @NotNull Object value) throws DBCException {
         return "GEOMFROMTEXT(?, " + ((DBGeometry) value).getSRID() + ")";
     }
 }

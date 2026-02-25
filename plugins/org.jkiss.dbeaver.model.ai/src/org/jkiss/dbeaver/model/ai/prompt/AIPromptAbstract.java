@@ -32,7 +32,6 @@ import java.util.List;
 
 /**
  * Base class for prompt generators.
- *
  * Each prompt must implement function 'PromptClass create(DBSLogicalDataSourceSupplier)' in order to support
  * prompt usage in chat conversations. It is used on persisted conversation loading.
  */
@@ -81,9 +80,9 @@ public abstract class AIPromptAbstract implements AIPromptGenerator {
 
         // Additional function instructions
         AIPromptGeneratorDescriptor gd = AIPromptGeneratorRegistry.getInstance().getPromptGenerator(generatorId());
-        if (gd != null && settings.isFunctionsEnabled()) {
+        if (gd != null && settings.getFunctionSettings().isFunctionsEnabled()) {
             for (AIPromptGeneratorDescriptor.Uses use : gd.getUses()) {
-                if (settings.getEnabledFunctions().contains(use.function())) {
+                if (settings.getFunctionSettings().getEnabledFunctions().contains(use.function())) {
                     addInstructions(use.instructions());
                 }
             }
