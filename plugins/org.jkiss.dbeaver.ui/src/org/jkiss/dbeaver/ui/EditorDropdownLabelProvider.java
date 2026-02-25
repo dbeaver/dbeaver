@@ -25,6 +25,7 @@ import org.eclipse.ui.IEditorReference;
 import org.eclipse.ui.internal.WorkbenchPartReference;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.function.Function;
@@ -36,6 +37,7 @@ import java.util.function.Function;
  */
 class EditorDropdownLabelProvider extends SearchCellLabelProvider {
 
+    private static final Log log = Log.getLog(EditorDropdownLabelProvider.class);
     private static final RGB BLACK = new RGB(0, 0, 0);
     private static final RGB WHITE = new RGB(255, 255, 255);
     private static final int BLEND_RATIO = 15;
@@ -115,7 +117,7 @@ class EditorDropdownLabelProvider extends SearchCellLabelProvider {
                 return provider.getConnectionName();
             }
         } catch (Exception e) {
-            // Editor not restored or input not available
+            log.debug("Editor not restored or input not available", e);
         }
         return null;
     }
@@ -141,6 +143,7 @@ class EditorDropdownLabelProvider extends SearchCellLabelProvider {
             );
             return sharedColors.getColor(blended);
         } catch (Exception e) {
+            log.debug("Could not compute connection background", e);
             return null;
         }
     }

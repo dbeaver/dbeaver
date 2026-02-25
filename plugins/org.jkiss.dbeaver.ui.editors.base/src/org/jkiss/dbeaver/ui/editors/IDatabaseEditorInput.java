@@ -17,9 +17,10 @@
 
 package org.jkiss.dbeaver.ui.editors;
 
-import org.eclipse.swt.graphics.Color;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPContextProvider;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.DBPDataSourceContainerProvider;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.preferences.DBPPropertySource;
@@ -31,7 +32,7 @@ import java.util.Collection;
 /**
  * IDatabaseEditorInput
  */
-public interface IDatabaseEditorInput extends INavigatorEditorInput, DBPContextProvider, IEditorConnectionColorProvider {
+public interface IDatabaseEditorInput extends INavigatorEditorInput, DBPContextProvider, DBPDataSourceContainerProvider, IEditorConnectionColorProvider {
 
     @Nullable
     @Override
@@ -54,18 +55,12 @@ public interface IDatabaseEditorInput extends INavigatorEditorInput, DBPContextP
      */
     String getDefaultFolderId();
 
-    /**
-     * Color of the connection type used by the associated connection
-     *
-     * @return connection color or {@code null} if not defined
-     */
     @Nullable
     @Override
-    Color getConnectionColor();
-
-    @Nullable
-    @Override
-    String getConnectionName();
+    default String getConnectionName() {
+        DBPDataSourceContainer container = getDataSourceContainer();
+        return container != null ? container.getName() : null;
+    }
 
     /**
      * Command context

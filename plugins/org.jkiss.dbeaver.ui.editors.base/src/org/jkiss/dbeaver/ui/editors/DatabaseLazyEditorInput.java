@@ -215,13 +215,6 @@ public class DatabaseLazyEditorInput implements IDatabaseEditorInput, ILazyEdito
 
     @Nullable
     @Override
-    public String getConnectionName() {
-        DBPDataSourceContainer container = getDataSourceContainer();
-        return container != null ? container.getName() : null;
-    }
-
-    @Nullable
-    @Override
     public DBECommandContext getCommandContext()
     {
         return null;

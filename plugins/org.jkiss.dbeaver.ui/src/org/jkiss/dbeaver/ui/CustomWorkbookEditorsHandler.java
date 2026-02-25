@@ -20,9 +20,7 @@ import org.eclipse.jface.viewers.ColumnViewerToolTipSupport;
 import org.eclipse.jface.viewers.TableViewerColumn;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.viewers.ViewerFilter;
-import org.eclipse.ui.IEditorReference;
 import org.eclipse.ui.internal.EditorReference;
-import org.eclipse.ui.internal.WorkbenchPartReference;
 import org.eclipse.ui.internal.WorkbookEditorsHandler;
 
 public class CustomWorkbookEditorsHandler extends WorkbookEditorsHandler {
@@ -33,12 +31,11 @@ public class CustomWorkbookEditorsHandler extends WorkbookEditorsHandler {
         return new ViewerFilter() {
             @Override
             public boolean select(Viewer viewer, Object parentElement, Object element) {
-                if (!(element instanceof EditorReference) || pattern == null) {
+                if (!(element instanceof EditorReference ref) || pattern == null) {
                     return false;
                 }
-                WorkbenchPartReference ref = (WorkbenchPartReference) element;
                 String base = getWorkbenchPartReferenceText(ref);
-                String displayText = EditorDropdownLabelProvider.getDisplayText(base, (IEditorReference) ref);
+                String displayText = EditorDropdownLabelProvider.getDisplayText(base, ref);
                 return SearchCellLabelProvider.matches(pattern, displayText);
             }
         };
