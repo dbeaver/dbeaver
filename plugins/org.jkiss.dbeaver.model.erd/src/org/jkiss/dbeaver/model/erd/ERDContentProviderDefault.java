@@ -70,7 +70,7 @@ public class ERDContentProviderDefault implements ERDContentProvider {
             try {
                 ((DBPObjectWithLazyDescription) entity).getDescription(monitor);
             } catch (DBException e) {
-                log.warn("Unable to load lazy description when filling ERDEntity from object");
+                log.warn("Unable to load lazy description when filling ERDEntity from object", e);
             }
         }
         if (settings.getVisibility() != ERDAttributeVisibility.NONE) {
@@ -125,7 +125,7 @@ public class ERDContentProviderDefault implements ERDContentProvider {
                         try {
                             ((DBPObjectWithLazyDescription) attribute).getDescription(monitor);
                         } catch (DBException e) {
-                            log.warn("Unable to load lazy description for attribute '" + attribute.getName() + "'");
+                            log.warn("Unable to load lazy description for attribute '" + attribute.getName() + "'", e);
                         }
                     }
                     boolean inPrimaryKey = idColumns != null && idColumns.contains(attribute);
