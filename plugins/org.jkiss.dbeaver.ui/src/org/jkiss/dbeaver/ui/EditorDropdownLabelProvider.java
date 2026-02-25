@@ -34,7 +34,7 @@ import java.util.function.Function;
  * and optional connection name so tabs with the same title from different
  * connections can be distinguished.
  */
-public class EditorDropdownLabelProvider extends SearchCellLabelProvider {
+class EditorDropdownLabelProvider extends SearchCellLabelProvider {
 
     private static final RGB BLACK = new RGB(0, 0, 0);
     private static final RGB WHITE = new RGB(255, 255, 255);
@@ -59,26 +59,31 @@ public class EditorDropdownLabelProvider extends SearchCellLabelProvider {
             return;
         }
         Color bg = getConnectionBackground(ref);
-        if (bg != null) {
-            cell.setBackground(bg);
-        }
+        cell.setBackground(bg);
     }
 
     @NotNull
     @Override
     public String getText(@NotNull Object element) {
         String base = baseTextSupplier.apply((WorkbenchPartReference) element);
-        if (base == null) {
-            base = "";
-        }
         if (!(element instanceof IEditorReference ref)) {
+            return base != null ? base : "";
+        }
+        return getDisplayText(base, ref);
+    }
+
+    /**
+     * Builds the display text for the dropdown (base title + connection name when present).
+     * Used by both the label provider and the filter so behavior stays in sync.
+     */
+    @NotNull
+    public static String getDisplayText(@Nullable String baseText, @NotNull IEditorReference ref) {
+        String base = baseText != null ? baseText : "";
+        String conn = getConnectionNameForReference(ref);
+        if (CommonUtils.isEmpty(conn)) {
             return base;
         }
-        String connectionName = getConnectionName(ref);
-        if (CommonUtils.isEmpty(connectionName)) {
-            return base;
-        }
-        return base + " (" + connectionName + ")";
+        return base + " (" + conn + ")";
     }
 
     @NotNull

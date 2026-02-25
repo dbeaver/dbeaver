@@ -24,7 +24,6 @@ import org.eclipse.ui.IEditorReference;
 import org.eclipse.ui.internal.EditorReference;
 import org.eclipse.ui.internal.WorkbenchPartReference;
 import org.eclipse.ui.internal.WorkbookEditorsHandler;
-import org.jkiss.utils.CommonUtils;
 
 public class CustomWorkbookEditorsHandler extends WorkbookEditorsHandler {
     private String pattern;
@@ -39,11 +38,7 @@ public class CustomWorkbookEditorsHandler extends WorkbookEditorsHandler {
                 }
                 WorkbenchPartReference ref = (WorkbenchPartReference) element;
                 String base = getWorkbenchPartReferenceText(ref);
-                if (base == null) {
-                    base = "";
-                }
-                String conn = EditorDropdownLabelProvider.getConnectionNameForReference((IEditorReference) ref);
-                String displayText = CommonUtils.isEmpty(conn) ? base : base + " (" + conn + ")";
+                String displayText = EditorDropdownLabelProvider.getDisplayText(base, (IEditorReference) ref);
                 return SearchCellLabelProvider.matches(pattern, displayText);
             }
         };

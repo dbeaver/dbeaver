@@ -60,6 +60,7 @@ public interface IDatabaseEditorInput extends INavigatorEditorInput, DBPContextP
      * @return connection color or {@code null} if not defined
      */
     @Nullable
+    @Override
     Color getConnectionColor();
 
     @Nullable
