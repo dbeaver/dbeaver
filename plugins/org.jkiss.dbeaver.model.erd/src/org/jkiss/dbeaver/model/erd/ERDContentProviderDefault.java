@@ -70,7 +70,7 @@ public class ERDContentProviderDefault implements ERDContentProvider {
             try {
                 ((DBPObjectWithLazyDescription) entity).getDescription(monitor);
             } catch (DBException e) {
-                log.warn("Unable to load lazy description when filling ERDEntity from object", e);
+                log.warn("Unable to load lazy description for entity '" + entity.getName() + "'", e);
             }
         }
         if (settings.getVisibility() != ERDAttributeVisibility.NONE) {
