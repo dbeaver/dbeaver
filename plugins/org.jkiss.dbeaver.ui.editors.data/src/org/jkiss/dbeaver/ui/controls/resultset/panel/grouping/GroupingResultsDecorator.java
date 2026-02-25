@@ -197,7 +197,10 @@ public class GroupingResultsDecorator extends ResultSetDecoratorBase {
 
                 UIUtils.asyncExec(() -> {
                     if (event.detail == DND.DROP_COPY) {
-                        GroupingConfigDialog dialog = new GroupingConfigDialog(container.getResultSetController().getControl().getShell(), container);
+                        GroupingConfigDialog dialog = new GroupingConfigDialog(
+                            container.getResultSetController().getControl().getShell(),
+                            container
+                        );
                         if (dialog.open() != IDialogConstants.OK_ID) {
                             container.clearGrouping();
                             return;

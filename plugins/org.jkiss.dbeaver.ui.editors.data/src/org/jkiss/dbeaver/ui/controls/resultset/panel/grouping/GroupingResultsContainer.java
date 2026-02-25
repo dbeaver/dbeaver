@@ -98,7 +98,7 @@ public class GroupingResultsContainer implements IResultSetContainer {
     public List<String> getUserDefinedGroupFunctions() {
         return columnsContainer.getFunctionColumns()
             .stream()
-            .filter(GroupingFunctionColumn :: isShowToUser)
+            .filter(GroupingFunctionColumn::isShowToUser)
             .map(GroupingFunctionColumn::getSql)
             .toList();
     }

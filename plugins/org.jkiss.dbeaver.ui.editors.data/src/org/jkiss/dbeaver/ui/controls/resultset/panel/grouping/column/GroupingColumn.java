@@ -16,6 +16,9 @@
  */
 package org.jkiss.dbeaver.ui.controls.resultset.panel.grouping.column;
 
+/**
+ * represents grouping column of any type
+ */
 public interface GroupingColumn {
     boolean afterDeleteAction();
 }

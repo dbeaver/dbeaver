@@ -18,6 +18,9 @@ package org.jkiss.dbeaver.ui.controls.resultset.panel.grouping.column;
 
 import org.jkiss.code.NotNull;
 
+/**
+ * Unique grouping column. Id must be unique in the scope of single GroupingColumnsContainer
+ */
 public interface UniqueGroupingColumn extends GroupingColumn {
 
     @NotNull
