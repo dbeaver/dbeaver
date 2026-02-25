@@ -82,6 +82,8 @@ public class SSHTunnelDefaultConfiguratorUI implements IObjectPropertyConfigurat
     private final List<ConfigurationWrapper> configurations = new ArrayList<>();
 
     private CredentialsPanel credentialsPanel;
+    private boolean loadingConfiguration;
+    private boolean switchingConfiguration;
 
     private ExpandableComposite hostsComposite;
     private TableViewer hostsViewer;
@@ -112,7 +114,17 @@ public class SSHTunnelDefaultConfiguratorUI implements IObjectPropertyConfigurat
                 1,
                 GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING
             );
-            credentialsPanel = new CredentialsPanel(settingsGroup, propertyChangeListener, DBPConnectionEditIntention.DEFAULT);
+            credentialsPanel = new CredentialsPanel(
+                settingsGroup,
+                () -> {
+                    if (loadingConfiguration || switchingConfiguration) {
+                        return;
+                    }
+                    refreshActiveConfiguration();
+                    propertyChangeListener.run();
+                },
+                DBPConnectionEditIntention.DEFAULT
+            );
         }
 
         {
@@ -177,31 +189,44 @@ public class SSHTunnelDefaultConfiguratorUI implements IObjectPropertyConfigurat
             hostsViewer.setContentProvider(ArrayContentProvider.getInstance());
             hostsViewer.setInput(configurations);
             hostsViewer.addSelectionChangedListener(e -> {
-                final ConfigurationWrapper last = credentialsPanel.lastConfiguration;
-                final ConfigurationWrapper current = (ConfigurationWrapper) e.getStructuredSelection().getFirstElement();
-
-                if (current == null) {
+                if (switchingConfiguration) {
                     return;
                 }
+                switchingConfiguration = true;
+                try {
+                    final ConfigurationWrapper last = credentialsPanel.lastConfiguration;
+                    final ConfigurationWrapper current = (ConfigurationWrapper) e.getStructuredSelection().getFirstElement();
 
-                if (last != null && last != current) {
-                    final SSHHostConfiguration updated = credentialsPanel.saveSettings();
-                    if (!last.configuration.equals(updated)) {
-                        last.configuration = updated;
-                        hostsViewer.refresh();
+                    if (current == null) {
+                        return;
                     }
+
+                    if (last != null && last != current) {
+                        final SSHHostConfiguration updated = credentialsPanel.saveSettings();
+                        if (!last.configuration.equals(updated)) {
+                            last.configuration = updated;
+                            hostsViewer.refresh(last);
+                        }
+                    }
+
+                    final int index = configurations.indexOf(current);
+                    final int count = configurations.size();
+
+                    createItem.setEnabled(count < SSHConstants.MAX_JUMP_SERVERS);
+                    deleteItem.setEnabled(count > 1);
+                    moveUpItem.setEnabled(index > 0);
+                    moveDownItem.setEnabled(index < count - 1);
+
+                    loadingConfiguration = true;
+                    try {
+                        loadConfiguration(current);
+                    } finally {
+                        loadingConfiguration = false;
+                    }
+                    propertyChangeListener.run();
+                } finally {
+                    switchingConfiguration = false;
                 }
-
-                final int index = configurations.indexOf(current);
-                final int count = configurations.size();
-
-                createItem.setEnabled(count < SSHConstants.MAX_JUMP_SERVERS);
-                deleteItem.setEnabled(count > 1);
-                moveUpItem.setEnabled(index > 0);
-                moveDownItem.setEnabled(index < count - 1);
-
-                loadConfiguration(current);
-                propertyChangeListener.run();
             });
 
             final ViewerColumnController<Object, ConfigurationWrapper> controller = new ViewerColumnController<>("ssh_hosts", hostsViewer);
@@ -375,6 +400,16 @@ public class SSHTunnelDefaultConfiguratorUI implements IObjectPropertyConfigurat
 
         UIUtils.executeOnResize(parent, () -> parent.getParent().layout(true, true));
         UIUtils.asyncExec(() -> UIUtils.resizeShell(parent.getShell()));
+    }
+
+    private void refreshActiveConfiguration() {
+        if (credentialsPanel.lastConfiguration != null) {
+            var wrapper = (ConfigurationWrapper) hostsViewer.getStructuredSelection().getFirstElement();
+            if (wrapper != null && wrapper == credentialsPanel.lastConfiguration) {
+                wrapper.configuration = credentialsPanel.saveSettings();
+                hostsViewer.refresh(wrapper);
+            }
+        }
     }
 
     private void loadConfiguration(@NotNull ConfigurationWrapper wrapper) {
@@ -690,11 +725,14 @@ public class SSHTunnelDefaultConfiguratorUI implements IObjectPropertyConfigurat
                 hostNameText = new Text(hostPortComp, SWT.BORDER);
                 hostNameText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
                 hostNameText.addModifyListener(listener);
+
                 hostPortText = UIUtils.createLabelText(hostPortComp, SSHUIMessages.model_ssh_configurator_label_port, String.valueOf(SSHConstants.DEFAULT_PORT));
+                hostPortText.addModifyListener(listener);
                 setNumberEditStyles(hostPortText);
             }
 
             userNameText = UIUtils.createLabelText(this, SSHUIMessages.model_ssh_configurator_label_user_name, null, SWT.BORDER, new GridData(GridData.FILL_HORIZONTAL));
+            userNameText.addModifyListener(listener);
 
             authMethodCombo = UIUtils.createLabelCombo(this, SSHUIMessages.model_ssh_configurator_combo_auth_method, SWT.DROP_DOWN | SWT.READ_ONLY);
             authMethodCombo.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
