@@ -37,8 +37,6 @@ public class ERDContentProviderDefault implements ERDContentProvider {
 
     private static final Log log = Log.getLog(ERDContentProviderDefault.class);
 
-    private static final boolean READ_LAZY_DESCRIPTIONS = false;
-
     private final Map<String, Object> attributes = new HashMap<>();
 
     public ERDContentProviderDefault() {
@@ -68,7 +66,7 @@ public class ERDContentProviderDefault implements ERDContentProvider {
         @NotNull ERDAttributeSettings settings
     ) {
         DBSEntity entity = erdEntity.getObject();
-        if (READ_LAZY_DESCRIPTIONS && entity instanceof DBPObjectWithLazyDescription) {
+        if (entity instanceof DBPObjectWithLazyDescription) {
             try {
                 ((DBPObjectWithLazyDescription) entity).getDescription(monitor);
             } catch (DBException e) {
@@ -122,6 +120,13 @@ public class ERDContentProviderDefault implements ERDContentProvider {
                             break;
                         default:
                             break;
+                    }
+                    if (attribute instanceof DBPObjectWithLazyDescription) {
+                        try {
+                            ((DBPObjectWithLazyDescription) attribute).getDescription(monitor);
+                        } catch (DBException e) {
+                            log.warn("Unable to load lazy description for attribute '" + attribute.getName() + "'");
+                        }
                     }
                     boolean inPrimaryKey = idColumns != null && idColumns.contains(attribute);
                     ERDEntityAttribute c1 = new ERDEntityAttribute(attribute, inPrimaryKey);
