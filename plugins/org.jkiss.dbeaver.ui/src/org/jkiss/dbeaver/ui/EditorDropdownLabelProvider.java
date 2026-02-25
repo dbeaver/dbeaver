@@ -121,11 +121,6 @@ class EditorDropdownLabelProvider extends SearchCellLabelProvider {
     }
 
     @Nullable
-    private static String getConnectionName(@NotNull IEditorReference ref) {
-        return getConnectionNameForReference(ref);
-    }
-
-    @Nullable
     private static Color getConnectionBackground(@NotNull IEditorReference ref) {
         try {
             IEditorInput input = ref.getEditorInput();
