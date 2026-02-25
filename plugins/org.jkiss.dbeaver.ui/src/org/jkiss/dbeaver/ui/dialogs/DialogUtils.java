@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -254,13 +254,7 @@ public class DialogUtils {
     }
 
     public static TreeViewer createFilteredTree(Composite parent, int treeStyle, PatternFilter filter, String initialText) {
-        FilteredTree filteredTree;
-        try {
-            filteredTree = new FilteredTree(parent, treeStyle, filter, true, true);
-        } catch (Throwable e) {
-            // Fast hash lookup is not supported on old Eclipse versions. Use old constructor
-            filteredTree = new FilteredTree(parent, treeStyle, filter, true);
-        }
+        FilteredTree filteredTree = new FilteredTree(parent, treeStyle, filter, true, true);
         if (initialText != null) {
             filteredTree.setInitialText(initialText);
         }
