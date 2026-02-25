@@ -25,14 +25,10 @@ public class GroupingFunctionColumn implements GroupingColumn {
 
     protected final String sql;
 
-    private final String uniqueId;
-
     public GroupingFunctionColumn(
-        @NotNull String uniqueId,
         @NotNull String stringFunction,
         @NotNull DBPDataSource dataSource
     ) {
-        this.uniqueId = uniqueId;
         this.sql = DBUtils.getUnQuotedIdentifier(dataSource, stringFunction);
     }
 
@@ -51,16 +47,4 @@ public class GroupingFunctionColumn implements GroupingColumn {
         return true;
     }
 
-    public boolean mustBeUniqueByName() {
-        return false;
-    }
-
-    @NotNull
-    public String getUniqueId() {
-        return uniqueId;
-    }
-
-    public boolean matchById(@NotNull GroupingFunctionColumn other) {
-        return uniqueId.equals(other.uniqueId);
-    }
 }

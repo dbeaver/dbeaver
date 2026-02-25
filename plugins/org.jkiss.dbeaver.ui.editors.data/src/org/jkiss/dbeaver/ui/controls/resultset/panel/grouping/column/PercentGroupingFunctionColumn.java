@@ -34,7 +34,7 @@ import org.jkiss.dbeaver.ui.controls.resultset.panel.grouping.GroupingResultsCon
 import java.util.List;
 import java.util.Objects;
 
-public class PercentGroupingFunctionColumn extends TransformerGroupingFunctionColumn {
+public class PercentGroupingFunctionColumn extends TransformerGroupingFunctionColumn implements UniqueGroupingColumn {
 
     public static final String PERCENT_FUNCTION_ID = "percent_func";
 
@@ -46,7 +46,7 @@ public class PercentGroupingFunctionColumn extends TransformerGroupingFunctionCo
         @NotNull DBPDataSource dataSource,
         @NotNull GroupingResultsContainer groupingResultsContainer
     ) {
-        super(PERCENT_FUNCTION_ID, getCountFunction(dataSource), dataSource);
+        super(getCountFunction(dataSource), dataSource);
         this.groupingResultsContainer = groupingResultsContainer;
     }
 
@@ -66,14 +66,10 @@ public class PercentGroupingFunctionColumn extends TransformerGroupingFunctionCo
         return false;
     }
 
-    @Override
-    public boolean mustBeUniqueByName() {
-        return true;
-    }
 
     @NotNull
     @Override
-    public String getUniqueId() {
+    public String getId() {
         return PERCENT_FUNCTION_ID;
     }
 

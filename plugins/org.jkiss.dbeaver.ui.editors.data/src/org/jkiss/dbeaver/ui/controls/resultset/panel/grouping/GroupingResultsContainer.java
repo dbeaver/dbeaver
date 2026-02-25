@@ -47,7 +47,6 @@ public class GroupingResultsContainer implements IResultSetContainer {
     private static final Log log = Log.getLog(GroupingResultsContainer.class);
 
     public static final String FUNCTION_COUNT = "COUNT";
-    private int uniqueFunctionIdCounter;
 
     private final IResultSetPresentation presentation;
     private final GroupingDataContainer dataContainer;
@@ -176,7 +175,7 @@ public class GroupingResultsContainer implements IResultSetContainer {
         if (dataSource != null) {
             functions
                 .stream()
-                .map(func -> new GroupingFunctionColumn(func + "_" + uniqueFunctionIdCounter++, func, dataSource))
+                .map(func -> new GroupingFunctionColumn(func, dataSource))
                 .forEach(columnsContainer::addFunction);
         }
     }

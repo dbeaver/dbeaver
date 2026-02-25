@@ -18,10 +18,7 @@ package org.jkiss.dbeaver.ui.controls.resultset.panel.grouping;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.sql.SQLGroupingAttribute;
-import org.jkiss.dbeaver.ui.controls.resultset.panel.grouping.column.GroupingColumn;
-import org.jkiss.dbeaver.ui.controls.resultset.panel.grouping.column.GroupingFunctionColumn;
-import org.jkiss.dbeaver.ui.controls.resultset.panel.grouping.column.SQLGroupingAttributeGroupingColumn;
-import org.jkiss.dbeaver.ui.controls.resultset.panel.grouping.column.TransformerGroupingFunctionColumn;
+import org.jkiss.dbeaver.ui.controls.resultset.panel.grouping.column.*;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -43,7 +40,7 @@ public class GroupingColumnsContainer {
     }
 
     public void addFunction(@NotNull GroupingFunctionColumn functionColumn) {
-        if (!functionColumn.mustBeUniqueByName() || isUniqueFunctionByName(functionColumn)) {
+        if (!(functionColumn instanceof UniqueGroupingColumn uniqueColumn) || isUniqueFunctionByName(uniqueColumn)) {
             groupFunctions.add(functionColumn);
         }
     }
@@ -55,7 +52,8 @@ public class GroupingColumnsContainer {
 
     public int indexOfFunctionByName(@NotNull String name) {
         for (int i = 0; i < groupFunctions.size(); i++) {
-            if (groupFunctions.get(i).getUniqueId().equals(name)) {
+            if (groupFunctions.get(i) instanceof UniqueGroupingColumn uniqueGroupingColumn
+                && name.equals(uniqueGroupingColumn.getId())) {
                 return i;
             }
         }
@@ -166,8 +164,8 @@ public class GroupingColumnsContainer {
         }
     }
 
-    private boolean isUniqueFunctionByName(@NotNull GroupingFunctionColumn functionColumn) {
-        return indexOfFunctionByName(functionColumn.getUniqueId()) < 0;
+    private boolean isUniqueFunctionByName(@NotNull UniqueGroupingColumn uniqueColumn) {
+        return indexOfFunctionByName(uniqueColumn.getId()) < 0;
     }
 
     private boolean removeColumn(int index) {
