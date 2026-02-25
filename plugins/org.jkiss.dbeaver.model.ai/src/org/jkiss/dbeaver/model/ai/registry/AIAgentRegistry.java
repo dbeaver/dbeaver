@@ -67,7 +67,7 @@ public class AIAgentRegistry implements AIAgentManager {
     @Nullable
     @Override
     public AIFunctionDescriptor getFunctionById(@NotNull String id) {
-        return null;
+        return AIFunctionRegistry.getInstance().getFunction(id);
     }
 
     @NotNull
@@ -77,7 +77,7 @@ public class AIAgentRegistry implements AIAgentManager {
         @NotNull AIFunctionDescriptor descriptor,
         @NotNull Map<String, Object> arguments
     ) throws DBException {
-        return null;
+        return AIFunctionRegistry.getInstance().callFunction(context, descriptor, arguments);
     }
 
     @NotNull
