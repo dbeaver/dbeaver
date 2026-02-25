@@ -874,6 +874,10 @@ public class DataSourceSerializerModern<T extends DataSourceDescriptor> implemen
         } else {
             DataSourceNavigatorSettingsUtils.loadSettingsFromMap(dataSource.getNavigatorSettings(), conObject);
         }
+
+        if (!CommonUtils.isEmpty(userSettings)) {
+            UserDBSObjectFilterUtils.setUserObjectFilters(dataSource, userSettings);
+        }
     }
 
 
