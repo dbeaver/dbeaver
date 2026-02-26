@@ -19,7 +19,6 @@ package org.jkiss.dbeaver.ui;
 import org.eclipse.jface.viewers.ViewerCell;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Image;
-import org.eclipse.swt.graphics.RGB;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorReference;
 import org.eclipse.ui.internal.WorkbenchPartReference;
@@ -38,9 +37,6 @@ import java.util.function.Function;
 class EditorDropdownLabelProvider extends SearchCellLabelProvider {
 
     private static final Log log = Log.getLog(EditorDropdownLabelProvider.class);
-    private static final RGB BLACK = new RGB(0, 0, 0);
-    private static final RGB WHITE = new RGB(255, 255, 255);
-    private static final int BLEND_RATIO = 15;
 
     private final String pattern;
     private final Function<WorkbenchPartReference, String> baseTextSupplier;
@@ -113,35 +109,18 @@ class EditorDropdownLabelProvider extends SearchCellLabelProvider {
     public static String getConnectionNameForReference(@NotNull IEditorReference ref) {
         try {
             IEditorInput input = ref.getEditorInput();
-            if (input instanceof IEditorConnectionColorProvider provider) {
-                return provider.getConnectionName();
-            }
+            return EditorConnectionPresentationUtils.getConnectionName(input);
         } catch (Exception e) {
             log.debug("Editor not restored or input not available", e);
+            return null;
         }
-        return null;
     }
 
     @Nullable
     private static Color getConnectionBackground(@NotNull IEditorReference ref) {
         try {
             IEditorInput input = ref.getEditorInput();
-            if (!(input instanceof IEditorConnectionColorProvider provider)) {
-                return null;
-            }
-            Color connectionColor = provider.getConnectionColor();
-            if (connectionColor == null) {
-                return null;
-            }
-            Color listBackground = UIStyles.getDefaultTextBackground();
-            SharedTextColors sharedColors = UIUtils.getSharedTextColors();
-            boolean listIsDark = UIUtils.isDark(listBackground.getRGB());
-            RGB blended = UIUtils.blend(
-                listIsDark ? BLACK : WHITE,
-                connectionColor.getRGB(),
-                BLEND_RATIO
-            );
-            return sharedColors.getColor(blended);
+            return EditorConnectionPresentationUtils.getConnectionBackground(input);
         } catch (Exception e) {
             log.debug("Could not compute connection background", e);
             return null;

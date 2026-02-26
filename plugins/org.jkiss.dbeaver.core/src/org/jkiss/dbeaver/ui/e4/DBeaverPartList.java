@@ -28,6 +28,7 @@ import org.eclipse.e4.ui.workbench.swt.internal.copy.SearchPattern;
 import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CTabItem;
+import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
@@ -35,16 +36,29 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Table;
+import org.eclipse.ui.IEditorInput;
+import org.eclipse.ui.IEditorPart;
+import org.eclipse.ui.IEditorReference;
+import org.eclipse.ui.IWorkbenchPartReference;
+import org.eclipse.ui.internal.e4.compatibility.CompatibilityPart;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.ui.EditorConnectionPresentationUtils;
 import org.jkiss.dbeaver.ui.SearchCellLabelProvider;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.editors.EditorUtils;
+import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.Method;
+import java.util.IdentityHashMap;
+import java.util.Map;
 
 public class DBeaverPartList extends BasicPartList {
     private static final Log log = Log.getLog(DBeaverPartList.class);
+    private static final String PART_SKIP_KEY = DBeaverPartList.class.getName() + ".skipPart";
+    private static volatile boolean isResolvingConnectionInfo;
 
     private final StackRenderer renderer;
 
@@ -99,6 +113,59 @@ public class DBeaverPartList extends BasicPartList {
         return matcher.getPattern().replaceAll("^\\*|\\*$", "");
     }
 
+    @Nullable
+    private static IEditorInput getEditorInputFromPart(@NotNull MPart part) {
+        if (part.getTransientData().containsKey(PART_SKIP_KEY) || isResolvingConnectionInfo) {
+            return null;
+        }
+        isResolvingConnectionInfo = true;
+        try {
+            Object client = part.getObject();
+            if (client instanceof CompatibilityPart cp) {
+                if (cp.getPart() instanceof IEditorPart editorPart) {
+                    return editorPart.getEditorInput();
+                }
+            }
+            if (part.getTransientData().get(IWorkbenchPartReference.class.getName()) instanceof IEditorReference ref) {
+                return ref.getEditorInput();
+            }
+        } catch (Exception e) {
+            part.getTransientData().put(PART_SKIP_KEY, Boolean.TRUE);
+            log.debug("Cannot get editor input for part: " + part.getElementId(), e);
+        } finally {
+            isResolvingConnectionInfo = false;
+        }
+        return null;
+    }
+
+    @Nullable
+    private static ConnectionPresentation getConnectionPresentation(@NotNull MPart part) {
+        try {
+            IEditorInput input = getEditorInputFromPart(part);
+            if (input == null) {
+                return ConnectionPresentation.EMPTY;
+            }
+            String providerConnectionName = EditorConnectionPresentationUtils.getConnectionName(input);
+            Color providerBackground = EditorConnectionPresentationUtils.getConnectionBackground(input);
+            if (!CommonUtils.isEmpty(providerConnectionName) || providerBackground != null) {
+                return new ConnectionPresentation(providerConnectionName, providerBackground);
+            }
+            DBPDataSourceContainer container = EditorUtils.getInputDataSource(input, false);
+            if (container == null) {
+                return ConnectionPresentation.EMPTY;
+            }
+            return new ConnectionPresentation(
+                container.getName(),
+                EditorConnectionPresentationUtils.getConnectionBackground(
+                    UIUtils.getConnectionColor(container.getConnectionConfiguration())
+                )
+            );
+        } catch (Exception e) {
+            log.debug("Could not get connection info for part", e);
+            return ConnectionPresentation.EMPTY;
+        }
+    }
+
     private class NamePatternFilter extends ViewerFilter {
         @Override
         public boolean select(Viewer viewer, Object parentElement, Object element) {
@@ -115,6 +182,7 @@ public class DBeaverPartList extends BasicPartList {
     private class CellLabelProvider extends SearchCellLabelProvider {
         private final Font italicFont;
         private final Font italicBoldFont;
+        private final Map<MPart, ConnectionPresentation> presentationCache = new IdentityHashMap<>();
 
         public CellLabelProvider() {
             this.italicFont = UIUtils.modifyFont(Display.getDefault().getSystemFont(), SWT.ITALIC);
@@ -127,14 +195,35 @@ public class DBeaverPartList extends BasicPartList {
             return DBeaverPartList.this.getPattern();
         }
 
+        @Override
+        public void update(ViewerCell cell) {
+            super.update(cell);
+            if (cell.getElement() instanceof MPart part) {
+                ConnectionPresentation presentation = presentationCache.remove(part);
+                if (presentation == null) {
+                    presentation = getConnectionPresentation(part);
+                }
+                cell.setBackground(presentation.backgroundColor());
+            }
+        }
+
         @NotNull
         @Override
         public String getText(@NotNull Object element) {
+            String base;
             if (element instanceof MDirtyable && ((MDirtyable) element).isDirty()) {
-                return "*" + ((MUILabel) element).getLocalizedLabel();
+                base = "*" + ((MUILabel) element).getLocalizedLabel();
             } else {
-                return ((MUILabel) element).getLocalizedLabel();
+                base = ((MUILabel) element).getLocalizedLabel();
             }
+            if (element instanceof MPart part) {
+                ConnectionPresentation presentation = getConnectionPresentation(part);
+                presentationCache.put(part, presentation);
+                if (!CommonUtils.isEmpty(presentation.connectionName())) {
+                    return base + " (" + presentation.connectionName() + ")";
+                }
+            }
+            return base;
         }
 
         @Nullable
@@ -170,6 +259,7 @@ public class DBeaverPartList extends BasicPartList {
 
         @Override
         public void dispose() {
+            presentationCache.clear();
             italicFont.dispose();
             italicBoldFont.dispose();
             super.dispose();
@@ -179,5 +269,9 @@ public class DBeaverPartList extends BasicPartList {
             final CTabItem item = renderer.findItemForPart((MPart) element);
             return item != null && item.isShowing();
         }
+    }
+
+    private record ConnectionPresentation(@Nullable String connectionName, @Nullable Color backgroundColor) {
+        private static final ConnectionPresentation EMPTY = new ConnectionPresentation(null, null);
     }
 }
