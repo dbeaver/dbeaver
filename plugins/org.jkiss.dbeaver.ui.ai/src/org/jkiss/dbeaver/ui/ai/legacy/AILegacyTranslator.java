@@ -42,7 +42,7 @@ import org.jkiss.dbeaver.model.sql.SQLScriptElement;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.ai.AIUIUtils;
-import org.jkiss.dbeaver.ui.ai.internal.AIFeatures;
+import org.jkiss.dbeaver.ui.ai.internal.AIUIFeatures;
 import org.jkiss.dbeaver.ui.ai.internal.AIUIMessages;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditor;
 import org.jkiss.utils.CommonUtils;
@@ -57,7 +57,7 @@ public class AILegacyTranslator {
 
     public void performAiTranslation(ExecutionEvent event) {
         // CE legacy popup
-        AIFeatures.SQL_AI_POPUP.use();
+        AIUIFeatures.SQL_AI_POPUP.use();
 
         if (AISettingsManager.getInstance().getSettings().isAiDisabled()) {
             return;
@@ -135,7 +135,7 @@ public class AILegacyTranslator {
             return;
         }
 
-        AIFeatures.SQL_AI_GENERATE_PROPOSALS.use(Map.of(
+        AIUIFeatures.SQL_AI_GENERATE_PROPOSALS.use(Map.of(
             "driver", dataSource.getDataSourceContainer().getDriver().getPreconfiguredId(),
             "scope", popup.getScope().name()
         ));
