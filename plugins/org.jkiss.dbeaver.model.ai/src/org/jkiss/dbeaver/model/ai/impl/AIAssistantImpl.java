@@ -228,7 +228,10 @@ public class AIAssistantImpl implements AIAssistant {
             ? context.getContext().getExecutionContext().getDataSource().getContainer() : null;
         AIBaseFeatures.AI_CHAT_FUNCTION_CALL.use(AIBaseFeatures.buildFeatureParameters(
             container,
-            Map.of(AIBaseFeatures.FUNCTION_NAME, functionCall.getFunctionName())
+            Map.of(
+                AIBaseFeatures.FUNCTION_NAME, functionCall.getFunctionName(),
+                AIBaseFeatures.PROMPT_TYPE, context.getPrompt().generatorId()
+            )
         ));
         return agentManager.callFunction(context, function, arguments);
     }

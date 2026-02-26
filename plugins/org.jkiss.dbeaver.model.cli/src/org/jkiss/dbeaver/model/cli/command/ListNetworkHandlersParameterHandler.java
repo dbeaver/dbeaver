@@ -78,6 +78,9 @@ public class ListNetworkHandlersParameterHandler extends CLIAbstractSubcommand {
             }
             String prefix = handler.getPrefix() + ".";
             for (DBPPropertyDescriptor property : handler.getHandlerProperties()) {
+                if (property.isHidden()) {
+                    continue;
+                }
                 String helpText = CLIUtils.getPropertyHelpText(property, prefix);
                 output.append(helpText);
             }
