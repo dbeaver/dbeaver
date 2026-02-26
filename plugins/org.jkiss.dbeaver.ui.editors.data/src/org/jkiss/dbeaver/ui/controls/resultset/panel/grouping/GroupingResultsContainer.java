@@ -268,6 +268,10 @@ public class GroupingResultsContainer implements IResultSetContainer {
         groupingViewer.setDataFilter(dataFilter, true);
     }
 
+    public void removePercentColumn() {
+        dataContainer.removeAttributeTransformer();
+    }
+
     @NotNull
     private DBDDataFilter getDataFilter() {
         return presentation.getController().getModel().isMetadataChanged()

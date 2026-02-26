@@ -20,15 +20,20 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.cli.CLIException;
 import org.jkiss.dbeaver.model.cli.model.DataSourceUpdater;
+import org.jkiss.code.Nullable;
 import picocli.CommandLine;
 
 public class CreateDataSourceOptions implements DataSourceUpdater {
     @NotNull
     @CommandLine.Option(names = {"--driver"}, required = true, arity = "1", description = "Database driver")
     private String driver;
+
+    //nullable because arg group
+    @Nullable
     @CommandLine.ArgGroup(exclusive = false)
     private DataSourceOptions dataSourceOptions;
 
+    @Nullable
     public DataSourceOptions getDataSourceOptions() {
         return dataSourceOptions;
     }

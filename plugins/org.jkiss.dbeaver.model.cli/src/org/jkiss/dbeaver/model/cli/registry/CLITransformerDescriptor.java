@@ -18,26 +18,31 @@ package org.jkiss.dbeaver.model.cli.registry;
 
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
+import org.jkiss.utils.CommonUtils;
 import picocli.CommandLine;
 
 public class CLITransformerDescriptor extends AbstractDescriptor {
     @NotNull
-    private final AbstractDescriptor.ObjectType transformer;
-    @NotNull
-    private final AbstractDescriptor.ObjectType command;
-
+    private final ObjectType transformer;
+    @Nullable
+    private final ObjectType command;
 
     public CLITransformerDescriptor(IConfigurationElement config) throws Exception {
         super(config);
         this.transformer = new ObjectType(config, "transformer");
-        this.command = new ObjectType(config, "command");
+        if (CommonUtils.isNotEmpty(config.getAttribute("command"))) {
+            this.command = new ObjectType(config, "command");
+        } else {
+            this.command = null;
+        }
     }
 
-    @NotNull
+    @Nullable
     public Class<?> getCommandClass() {
-        return command.getImplClass();
+        return command != null ? command.getImplClass() : null;
     }
 
     @NotNull

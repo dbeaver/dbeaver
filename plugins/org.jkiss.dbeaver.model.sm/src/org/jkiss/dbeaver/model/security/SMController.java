@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -149,6 +149,7 @@ public interface SMController extends DBPObjectController, DBInternalDatabaseInf
      *
      * @throws DBException if the current refresh token invalid
      */
+    @NotNull
     SMTokens refreshSession(@NotNull String refreshToken) throws DBException;
 
     /**
@@ -158,7 +159,7 @@ public interface SMController extends DBPObjectController, DBInternalDatabaseInf
      * @param parameters the parameters
      * @throws DBException the db exception
      */
-    void updateSession(@NotNull String sessionId, Map<String, Object> parameters) throws DBException;
+    void updateSession(@NotNull String sessionId, @NotNull Map<String, Object> parameters) throws DBException;
 
     ///////////////////////////////////////////
     // Permissions
@@ -169,6 +170,7 @@ public interface SMController extends DBPObjectController, DBInternalDatabaseInf
      * @return the token permissions
      * @throws DBException the db exception
      */
+    @NotNull
     SMAuthPermissions getTokenPermissions() throws DBException;
 
     ///////////////////////////////////////////
@@ -237,7 +239,7 @@ public interface SMController extends DBPObjectController, DBInternalDatabaseInf
 
     /**
      * Reads user settings.
-     * IF object type and id are null then returns all project swettings
+     * IF object type and id are null then returns all project settings
      */
     @NotNull
     List<SMObjectSettings> getObjectSettings(

@@ -174,6 +174,9 @@ public class CLIUtils {
         @NotNull List<DataSourceUpdater> dataSourceUpdaters,
         boolean temporary
     ) throws CLIException {
+        if (dataSourceOptions == null) {
+            throw new CLIException("datasource options not provided", CLIConstants.EXIT_CODE_ILLEGAL_ARGUMENTS);
+        }
         DBPDriver driver = DBWorkbench.getPlatform().getDataSourceProviderRegistry().findDriver(driverId);
         if (driver == null) {
             throw new CLIException("Can't find driver '" + driverId + "'", CLIConstants.EXIT_CODE_ILLEGAL_ARGUMENTS);
@@ -332,9 +335,7 @@ public class CLIUtils {
         @Nullable String namePrefix
     ) {
         String displayName = property.getDisplayName();
-        String description = property.getDescription();
         var helpText = new StringBuilder();
-
 
         helpText.append("  - ");
         if (CommonUtils.isNotEmpty(namePrefix) && !property.getId().startsWith(namePrefix)) {

@@ -161,6 +161,11 @@ public @interface Property
     boolean required() default false;
 
     /**
+     * Property applies only for desktop products.
+     */
+    boolean desktop() default false;
+
+    /**
      * Expression for determining the visibility of a property.
      */
     String hideExpr() default "";

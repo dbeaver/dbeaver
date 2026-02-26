@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -91,12 +91,20 @@ class SnowflakeExecutionContext extends GenericExecutionContext {
     }
 
     @Override
-    public void setDefaultCatalog(DBRProgressMonitor monitor, @NotNull GenericCatalog catalog, @Nullable GenericSchema schema) throws DBCException {
+    public void setDefaultCatalog(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull GenericCatalog catalog,
+        @Nullable GenericSchema schema
+    ) throws DBCException {
         setDefaultCatalog(monitor, catalog, schema, false);
     }
 
-    void setDefaultCatalog(DBRProgressMonitor monitor, @NotNull GenericCatalog catalog, @Nullable DBSObject schema, boolean force)
-            throws DBCException {
+    void setDefaultCatalog(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull GenericCatalog catalog,
+        @Nullable DBSObject schema,
+        boolean force
+    ) throws DBCException {
         String catalogName = catalog.getName();
         if (!force && catalogName.equals(activeDatabaseName) && (schema == null || schema.getName().equals(activeSchemaName))) {
             return;
@@ -119,23 +127,34 @@ class SnowflakeExecutionContext extends GenericExecutionContext {
     }
 
     @Override
-    public void setDefaultSchema(DBRProgressMonitor monitor, @NotNull GenericSchema newActiveSchema) throws DBCException {
+    public void setDefaultSchema(
+        @NotNull DBRProgressMonitor monitor,
+        @Nullable GenericSchema newActiveSchema
+    ) throws DBCException {
         setDefaultSchema(monitor, newActiveSchema, false);
     }
 
-    void setDefaultSchema(DBRProgressMonitor monitor, @NotNull DBSObject newActiveSchema, boolean force) throws DBCException {
-        String newSchemaName = newActiveSchema.getName();
-        if (!force && newSchemaName.equals(activeSchemaName)) {
-            return;
-        }
-        setActiveSchema(monitor, newSchemaName);
+    void setDefaultSchema(
+        @NotNull DBRProgressMonitor monitor,
+        @Nullable DBSObject newActiveSchema,
+        boolean force
+    ) throws DBCException {
         GenericSchema oldActiveSchema = getDefaultSchema();
-        activeSchemaName = newSchemaName;
+        if (newActiveSchema == null) {
+            activeSchemaName = null;
+        } else {
+            String newSchemaName = newActiveSchema.getName();
+            if (!force && newSchemaName.equals(activeSchemaName)) {
+                return;
+            }
+            setActiveSchema(monitor, newSchemaName);
+            activeSchemaName = newSchemaName;
+        }
         DBUtils.fireObjectSelectionChange(oldActiveSchema, newActiveSchema, this);
     }
 
     @Override
-    public boolean refreshDefaults(DBRProgressMonitor monitor, boolean useBootstrapSettings) throws DBException {
+    public boolean refreshDefaults(@NotNull DBRProgressMonitor monitor, boolean useBootstrapSettings) throws DBException {
         boolean isRefreshed = false;
         String currentDatabase = null;
         String currentSchema = null;
@@ -157,11 +176,15 @@ class SnowflakeExecutionContext extends GenericExecutionContext {
             if (useBootstrapSettings) {
                 DBPConnectionBootstrap bootstrap = getBootstrapSettings();
                 DBPConnectionConfiguration connectionConfiguration = getDataSource().getContainer().getConnectionConfiguration();
-                if (!CommonUtils.isEmpty(bootstrap.getDefaultCatalogName()) && CommonUtils.isEmpty(connectionConfiguration.getProviderProperty(SnowflakeConstants.PROP_SCHEMA))) {
+                if (!CommonUtils.isEmpty(bootstrap.getDefaultCatalogName()) &&
+                    CommonUtils.isEmpty(connectionConfiguration.getProviderProperty(SnowflakeConstants.PROP_SCHEMA))
+                ) {
                     setActiveDatabase(monitor, bootstrap.getDefaultCatalogName());
                     currentDatabase = bootstrap.getDefaultCatalogName();
                 }
-                if (!CommonUtils.isEmpty(bootstrap.getDefaultSchemaName()) && CommonUtils.isEmpty(connectionConfiguration.getDatabaseName())) {
+                if (!CommonUtils.isEmpty(bootstrap.getDefaultSchemaName()) &&
+                    CommonUtils.isEmpty(connectionConfiguration.getDatabaseName())
+                ) {
                     setActiveSchema(monitor, bootstrap.getDefaultSchemaName());
                     currentSchema = bootstrap.getDefaultSchemaName();
                 }
