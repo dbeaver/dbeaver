@@ -154,7 +154,7 @@ public class CLIUtils {
     public static DBPDataSourceContainer createTempDataSource(
         @NotNull DBPProject project,
         @NotNull String driverId,
-        @NotNull DataSourceOptions dataSourceOptions,
+        @Nullable DataSourceOptions dataSourceOptions,
         @NotNull List<DataSourceUpdater> dataSourceUpdaters
     ) throws CLIException {
         return createDataSource(
@@ -170,7 +170,7 @@ public class CLIUtils {
     public static DBPDataSourceContainer createDataSource(
         @NotNull DBPProject project,
         @NotNull String driverId,
-        @NotNull DataSourceOptions dataSourceOptions,
+        @Nullable DataSourceOptions dataSourceOptions,
         @NotNull List<DataSourceUpdater> dataSourceUpdaters,
         boolean temporary
     ) throws CLIException {
@@ -342,12 +342,19 @@ public class CLIUtils {
             helpText.append(namePrefix);
         }
         helpText.append(property.getId());
-        if (!CommonUtils.equalObjects(displayName, description)) {
-            helpText.append(" (").append(displayName).append(")");
-        }
-        if (CommonUtils.isNotEmpty(description)) {
-            helpText.append(" = ");
-            collectPropertyHelpDescriptionText(property, helpText);
+        helpText.append(" = ").append(displayName);
+
+        if (property instanceof IPropertyValueListProvider<?> valueListProvider) {
+            Object[] possibleValues = valueListProvider.getPossibleValues(null);
+            if (!ArrayUtils.isEmpty(possibleValues)) {
+                helpText.append(", possible values: ");
+                for (int i = 0; i < possibleValues.length; i++) {
+                    helpText.append(possibleValues[i]);
+                    if (i < possibleValues.length - 1) {
+                        helpText.append(", ");
+                    }
+                }
+            }
         }
         helpText.append("\n");
 
