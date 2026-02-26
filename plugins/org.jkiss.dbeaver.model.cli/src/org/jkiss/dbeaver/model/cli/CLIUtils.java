@@ -159,10 +159,13 @@ public class CLIUtils {
     public static DBPDataSourceContainer createDataSource(
         @NotNull DBPProject project,
         @NotNull String driverId,
-        @NotNull DataSourceOptions dataSourceOptions,
+        @Nullable DataSourceOptions dataSourceOptions,
         @NotNull DataSourceAuthOptions authOptions,
         boolean temporary
     ) throws CLIException {
+        if (dataSourceOptions == null) {
+            throw new CLIException("datasource options not provided", CLIConstants.EXIT_CODE_ILLEGAL_ARGUMENTS);
+        }
         DBPDriver driver = DBWorkbench.getPlatform().getDataSourceProviderRegistry().findDriver(driverId);
         if (driver == null) {
             throw new CLIException("Can't find driver '" + driverId + "'", CLIConstants.EXIT_CODE_ILLEGAL_ARGUMENTS);
@@ -190,7 +193,7 @@ public class CLIUtils {
         @NotNull DBPDataSourceContainer dataSource
     ) throws CLIException {
         String dsName = dataSourceOptions.getDatasourceName();
-        if (CommonUtils.isEmpty(dsName)) {
+        if (CommonUtils.isEmpty(dsName) && CommonUtils.isEmpty(dataSource.getName())) {
             dsName = "Ext: " + dataSource.getDriver().getName();
             if (CommonUtils.isNotEmpty(dataSourceOptions.getDbName())) {
                 dsName += " - " + dataSourceOptions.getDbName();
@@ -198,7 +201,7 @@ public class CLIUtils {
                 dsName += " - " + dataSourceOptions.getServer();
             }
         }
-        if (CommonUtils.isNotEmpty(dataSourceOptions.getDatasourceName())) {
+        if (CommonUtils.isNotEmpty(dsName)) {
             dataSource.setName(dsName);
         }
         if (CommonUtils.isNotEmpty(dataSourceOptions.getFolder())) {
