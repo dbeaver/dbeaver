@@ -175,7 +175,7 @@ public class OpenAIEngine<PROPS extends OpenAIBaseProperties> extends BaseComple
             AIMessage message = messages.get(i);
 
             if (message.getFunctionCall() != null) {
-                OAIMessage functionCallMessage = new OAIMessage(message);
+                OAIMessage functionCallMessage = OAIMessageFactory.fromAIMessage(message);
                 boolean hasFunctionOutput = i + 1 < messages.size() && messages.get(i + 1).getFunctionCallName() != null;
                 if (hasFunctionOutput && !CommonUtils.isEmpty(functionCallMessage.callId)) {
                     currentToolCallId = functionCallMessage.callId;
@@ -190,14 +190,14 @@ public class OpenAIEngine<PROPS extends OpenAIBaseProperties> extends BaseComple
                         message.getTime(),
                         message.getMeta()
                     );
-                    result.add(new OAIMessage(plainMessage));
+                    result.add(OAIMessageFactory.fromAIMessage(plainMessage));
                     currentToolCallId = null;
                 }
             } else if (message.getFunctionCallName() != null && !CommonUtils.isEmpty(currentToolCallId)) {
-                result.add(new OAIMessage(message, currentToolCallId));
+                result.add(OAIMessageFactory.fromAIMessage(message, currentToolCallId));
                 currentToolCallId = null;
             } else {
-                result.add(new OAIMessage(message));
+                result.add(OAIMessageFactory.fromAIMessage(message));
                 if (message.getFunctionCallName() == null) {
                     currentToolCallId = null;
                 }

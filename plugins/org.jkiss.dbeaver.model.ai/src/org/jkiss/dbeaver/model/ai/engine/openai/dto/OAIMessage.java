@@ -18,16 +18,8 @@ package org.jkiss.dbeaver.model.ai.engine.openai.dto;
 
 import com.google.gson.annotations.SerializedName;
 import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.model.ai.AIMessage;
-import org.jkiss.dbeaver.model.ai.AIMessageType;
-import org.jkiss.dbeaver.model.ai.engine.AIFunctionCall;
-import org.jkiss.dbeaver.model.ai.engine.openai.OpenAIConstants;
-import org.jkiss.dbeaver.model.data.json.JSONUtils;
-import org.jkiss.utils.CommonUtils;
 
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 public class OAIMessage {
@@ -50,59 +42,11 @@ public class OAIMessage {
     public OAIMessage() {
     }
 
-    public OAIMessage(@NotNull AIMessage msg) {
-        this(msg, null);
-    }
-
-    public OAIMessage(@NotNull AIMessage msg, @Nullable String toolCallId) {
-        if (msg.getFunctionCall() != null) {
-            mapFunctionCall(msg.getFunctionCall());
-            return;
-        }
-        if (msg.getFunctionCallName() != null && !CommonUtils.isEmpty(toolCallId)) {
-            type = TYPE_FUNCTION_CALL_OUTPUT;
-            callId = toolCallId;
-            output = msg.getContent();
-            return;
-        }
-
-        type = TYPE_MESSAGE;
-        role = mapRole(msg.getRole());
-        boolean input = switch (msg.getRole()) {
-            case SYSTEM, USER -> true;
-            default -> false;
-        };
-        content = List.of(new OAIMessageContent(input, msg.getContent()));
-    }
-
-    private void mapFunctionCall(@NotNull AIFunctionCall functionCall) {
-        type = TYPE_FUNCTION_CALL;
-        name = functionCall.getFunctionName();
-
-        Map<String, Object> argumentsMap = functionCall.getArguments();
-        arguments = argumentsMap == null ? "{}" : JSONUtils.GSON.toJson(argumentsMap);
-
-        Map<String, String> additionalProperties = functionCall.getMessageMetadata();
-        if (additionalProperties != null) {
-            callId = additionalProperties.get(OpenAIConstants.TOOL_RESULT_CALL_ID);
-        }
-    }
-
     @NotNull
     public String getFullText() {
         if (content == null) {
             return "";
         }
         return content.stream().map(c -> c.text).collect(Collectors.joining());
-    }
-
-    @Nullable
-    private static String mapRole(@NotNull AIMessageType role) {
-        return switch (role) {
-            case SYSTEM -> "system";
-            case USER -> "user";
-            case ASSISTANT, FUNCTION -> "assistant";
-            default -> null;
-        };
     }
 }
