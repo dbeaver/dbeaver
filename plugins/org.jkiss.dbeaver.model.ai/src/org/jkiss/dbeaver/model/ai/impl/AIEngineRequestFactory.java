@@ -24,9 +24,7 @@ import org.jkiss.dbeaver.model.ai.*;
 import org.jkiss.dbeaver.model.ai.engine.AIDatabaseContext;
 import org.jkiss.dbeaver.model.ai.engine.AIEngine;
 import org.jkiss.dbeaver.model.ai.engine.AIEngineRequest;
-import org.jkiss.dbeaver.model.ai.registry.AIEngineDescriptor;
-import org.jkiss.dbeaver.model.ai.registry.AIFunctionRegistry;
-import org.jkiss.dbeaver.model.ai.registry.AISettingsManager;
+import org.jkiss.dbeaver.model.ai.registry.*;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -147,6 +145,14 @@ public class AIEngineRequestFactory {
         ) {
             return;
         }
+
+        AIPromptGeneratorDescriptor prompt = AIPromptGeneratorRegistry.getInstance()
+            .getPromptGenerator(systemPromptGenerator.generatorId());
+        if (prompt == null) {
+            log.error("Prompt '" + systemPromptGenerator.generatorId() + "' not found. Functions were disabled.");
+            return;
+        }
+
         List<AIFunctionDescriptor> functions = new ArrayList<>();
         for (AIFunctionDescriptor fd : AIFunctionRegistry.getInstance().getAllFunctions(AIFunctionPurpose.TOOL)) {
             if (fd.isGlobal() || fd.isApplicable(engineDescriptor, systemPromptGenerator)) {
@@ -169,6 +175,15 @@ public class AIEngineRequestFactory {
                     selectedFunctions.add(f);
                 }
             }
+        }
+
+        if (!prompt.isSupportsActions()) {
+            // Filter out actions
+            selectedFunctions.removeIf(fd -> fd.getType() == AIFunctionType.ACTION);
+        }
+        if (!prompt.isSupportsUi()) {
+            // Filter out ui functions
+            selectedFunctions.removeIf(AIFunctionDescriptor::isUI);
         }
 
         request.setFunctions(new ArrayList<>(selectedFunctions));

@@ -49,6 +49,11 @@ public interface AIFunctionDescriptor {
     String getDescription();
 
     /**
+     * Function which returns information about surrounding UI (e.g. open windows, active editor, etc)
+     */
+    boolean isUI();
+
+    /**
      * Global functions are passed in ALL requests
      */
     boolean isGlobal();
