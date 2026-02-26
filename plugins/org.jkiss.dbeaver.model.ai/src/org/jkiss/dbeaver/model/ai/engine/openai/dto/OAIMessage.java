@@ -82,7 +82,7 @@ public class OAIMessage {
         Map<String, Object> argumentsMap = functionCall.getArguments();
         arguments = argumentsMap == null ? "{}" : JSONUtils.GSON.toJson(argumentsMap);
 
-        Map<String, String> additionalProperties = functionCall.getAdditionalProperties();
+        Map<String, String> additionalProperties = functionCall.getMessageMetadata();
         if (additionalProperties != null) {
             callId = additionalProperties.get(OpenAIConstants.TOOL_RESULT_CALL_ID);
         }
