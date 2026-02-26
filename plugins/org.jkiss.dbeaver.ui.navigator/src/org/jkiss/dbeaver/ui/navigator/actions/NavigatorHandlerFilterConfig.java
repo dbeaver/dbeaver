@@ -155,6 +155,9 @@ public class NavigatorHandlerFilterConfig extends NavigatorHandlerObjectCreateBa
             switch (dialog.open()) {
                 case IDialogConstants.OK_ID -> processOKResponse(dialog);
                 case EditObjectFilterDialog.SHOW_GLOBAL_FILTERS_ID -> precessGlobalFilterResponse();
+                default -> {
+                    // do nothing
+                }
             }
         }
 
