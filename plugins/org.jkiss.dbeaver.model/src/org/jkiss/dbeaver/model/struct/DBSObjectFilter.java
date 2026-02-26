@@ -131,7 +131,7 @@ public class DBSObjectFilter {
         this.excludePatterns = null;
     }
 
-    public void setExclude(List<String> exclude) {
+    public void setExclude(@Nullable List<String> exclude) {
         this.exclude = exclude;
         this.excludePatterns = null;
     }

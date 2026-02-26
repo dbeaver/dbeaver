@@ -106,6 +106,7 @@ public class EditObjectFilterDialog extends HelpEnabledDialog {
         UIUtils.createInfoLabel(blockControl, UINavigatorMessages.dialog_filter_objects_scope_hint_text);
 
         setSfGroup(composite);
+        redrawFilterRelatedContent();
         enableFiltersContent();
 
         return composite;
@@ -139,7 +140,6 @@ public class EditObjectFilterDialog extends HelpEnabledDialog {
         });
         GridData cbGd = new GridData(SWT.LEFT, SWT.CENTER, true, false);
         enableButton.setLayoutData(cbGd);
-        enableButton.setSelection(filter.isEnabled());
     }
 
     protected void setGlobalFilterLink(@NotNull Composite topPanel) {
@@ -176,7 +176,6 @@ public class EditObjectFilterDialog extends HelpEnabledDialog {
         for (String sfName : sfNames) {
             namesCombo.add(sfName);
         }
-        namesCombo.setText(CommonUtils.notEmpty(filter.getName()));
         namesCombo.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
@@ -210,6 +209,13 @@ public class EditObjectFilterDialog extends HelpEnabledDialog {
         });
     }
 
+    protected void redrawFilterRelatedContent() {
+        StringEditorTableUtils.replaceAllStringValues(includeTable, filter.getInclude(), null);
+        StringEditorTableUtils.replaceAllStringValues(excludeTable, filter.getExclude(), null);
+        namesCombo.setText(CommonUtils.notEmpty(filter.getName()));
+        enableButton.setSelection(filter.isEnabled());
+    }
+
     private void changeSavedFilter() {
         String filterName = namesCombo.getText();
         if (CommonUtils.equalObjects(filterName, filter.getName())) {
@@ -217,17 +223,18 @@ public class EditObjectFilterDialog extends HelpEnabledDialog {
         }
         if (CommonUtils.isEmpty(filterName)) {
             // Reset filter
-            StringEditorTableUtils.replaceAllStringValues(includeTable, null, null);
-            StringEditorTableUtils.replaceAllStringValues(excludeTable, null, null);
+            filter.setInclude(null);
+            filter.setExclude(null);
         } else {
             // Find saved filter
             DBSObjectFilter savedFilter = dsRegistry.getSavedFilter(filterName);
             if (savedFilter != null) {
-                StringEditorTableUtils.replaceAllStringValues(includeTable, savedFilter.getInclude(), null);
-                StringEditorTableUtils.replaceAllStringValues(excludeTable, savedFilter.getExclude(), null);
+                filter.setInclude(savedFilter.getInclude());
+                filter.setExclude(savedFilter.getExclude());
             }
         }
         filter.setName(filterName);
+        redrawFilterRelatedContent();
     }
 
     protected void enableFiltersContent() {
