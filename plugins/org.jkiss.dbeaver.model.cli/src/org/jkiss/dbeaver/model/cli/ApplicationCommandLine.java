@@ -24,8 +24,8 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.cli.command.AbstractTopLevelCommand;
+import org.jkiss.dbeaver.model.cli.registry.CLICommandDescriptor;
 import org.jkiss.dbeaver.model.cli.registry.CLITransformerDescriptor;
-import org.jkiss.dbeaver.model.cli.registry.CommandLineParameterDescriptor;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 import picocli.CommandLine;
@@ -40,8 +40,8 @@ public abstract class ApplicationCommandLine<T extends ApplicationInstanceContro
 
     public static final String EXTENSION_ID = "org.jkiss.dbeaver.commandLine";
 
-    protected static final Map<Class<?>, CommandLineParameterDescriptor> customParameters = new LinkedHashMap<>();
-    //transformers for all commands
+    protected static final Map<Class<?>, CLICommandDescriptor> commands = new LinkedHashMap<>();
+    //transformers for top level command
     protected static final List<CLITransformerDescriptor> globalTransformers = new ArrayList<>();
     //transformers for specific command
     protected static final Map<Class<?>, List<CLITransformerDescriptor>> commandTransformer = new LinkedHashMap<>();
@@ -271,7 +271,7 @@ public abstract class ApplicationCommandLine<T extends ApplicationInstanceContro
         ExceptionHandler exceptionHandler = new ExceptionHandler();
         topLevel.setExecutionExceptionHandler(exceptionHandler);
         transformCommand(topLevel.getCommandSpec(), topLevelImp.getClass());
-        for (CommandLineParameterDescriptor param : customParameters.values()) {
+        for (CLICommandDescriptor param : commands.values()) {
             if (param.getImplClass().getAnnotation(CommandLine.Command.class) == null) {
                 log.warn("Class is not annotated '" + param.getImplClass().getName() + "'");
                 continue;
@@ -285,24 +285,6 @@ public abstract class ApplicationCommandLine<T extends ApplicationInstanceContro
             transformer.getTransformer().transform(topLevel.getCommandSpec());
         }
         return topLevel;
-    }
-
-    private void transformCommand(
-        @NotNull CommandLine.Model.CommandSpec commandSpec,
-        @NotNull Class<?> implClass
-    ) {
-        List<CLITransformerDescriptor> transformers = commandTransformer.get(implClass);
-        if (!CommonUtils.isEmpty(transformers)) {
-            for (CLITransformerDescriptor transformer : transformers) {
-                transformer.getTransformer().transform(commandSpec);
-            }
-        }
-        if (!CommonUtils.isEmpty(commandSpec.subcommands())) {
-            for (Map.Entry<String, CommandLine> stringCommandLineEntry : commandSpec.subcommands().entrySet()) {
-                CommandLine.Model.CommandSpec subCommandSpec = stringCommandLineEntry.getValue().getCommandSpec();
-                transformCommand(subCommandSpec, subCommandSpec.userObject().getClass());
-            }
-        }
     }
 
     private void transformCommand(
