@@ -121,10 +121,8 @@ public class DBeaverPartList extends BasicPartList {
         isResolvingConnectionInfo = true;
         try {
             Object client = part.getObject();
-            if (client instanceof CompatibilityPart cp) {
-                if (cp.getPart() instanceof IEditorPart editorPart) {
-                    return editorPart.getEditorInput();
-                }
+            if (client instanceof CompatibilityPart cp && cp.getPart() instanceof IEditorPart editorPart) {
+                return editorPart.getEditorInput();
             }
             if (part.getTransientData().get(IWorkbenchPartReference.class.getName()) instanceof IEditorReference ref) {
                 return ref.getEditorInput();
