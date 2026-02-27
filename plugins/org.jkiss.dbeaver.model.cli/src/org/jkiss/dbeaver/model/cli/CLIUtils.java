@@ -339,7 +339,6 @@ public class CLIUtils {
         @NotNull DBPPropertyDescriptor property,
         @Nullable String namePrefix
     ) {
-        String displayName = property.getDisplayName();
         var helpText = new StringBuilder();
 
         helpText.append("  - ");
@@ -347,16 +346,20 @@ public class CLIUtils {
             helpText.append(namePrefix);
         }
         helpText.append(property.getId());
-        helpText.append(" = ").append(displayName);
-
-        if (property instanceof IPropertyValueListProvider<?> valueListProvider) {
-            Object[] possibleValues = valueListProvider.getPossibleValues(null);
-            if (!ArrayUtils.isEmpty(possibleValues)) {
-                helpText.append(", possible values: ");
-                for (int i = 0; i < possibleValues.length; i++) {
-                    helpText.append(possibleValues[i]);
-                    if (i < possibleValues.length - 1) {
-                        helpText.append(", ");
+        Class<?> dataType = property.getDataType();
+        if (dataType == Boolean.class || dataType == boolean.class) {
+            helpText.append(" = true/false");
+        } else {
+            helpText.append(" = ").append(property.getDisplayName());
+            if (property instanceof IPropertyValueListProvider<?> valueListProvider) {
+                Object[] possibleValues = valueListProvider.getPossibleValues(null);
+                if (!ArrayUtils.isEmpty(possibleValues)) {
+                    helpText.append(", possible values: ");
+                    for (int i = 0; i < possibleValues.length; i++) {
+                        helpText.append(possibleValues[i]);
+                        if (i < possibleValues.length - 1) {
+                            helpText.append(", ");
+                        }
                     }
                 }
             }
