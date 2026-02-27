@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,8 +21,10 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.app.DBPWorkspace;
+import org.jkiss.dbeaver.model.cli.rest.BearerRequestHandler;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.SecurityUtils;
 import org.jkiss.utils.rest.RestServer;
 
 import java.io.ByteArrayOutputStream;
@@ -46,27 +48,46 @@ public abstract class ApplicationInstanceServer<T extends ApplicationInstanceCon
     private final FileChannel configFileChannel;
     private final Class<T> controllerClass;
 
+    private final InstanceServerProperties serverProperties;
+
     protected ApplicationInstanceServer(Class<T> controllerClass) throws IOException {
         this.controllerClass = controllerClass;
+        String password = SecurityUtils.generatePassword();
         server = RestServer
             .builder(controllerClass, controllerClass.cast(this))
             .setFilter(address -> address.getAddress().isLoopbackAddress())
             .setLandingPage(GeneralUtils.getProductTitle())
+            .setHandlerFactory(
+                (cls, object, gson, filter, landingPage)
+                    -> new BearerRequestHandler<>(
+                    cls, object, gson, filter, landingPage, password
+                )
+            )
             .create();
 
         configFileChannel = FileChannel.open(
             getConfigPath(),
             StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.WRITE
         );
+        serverProperties = new InstanceServerProperties(
+            server.getAddress().getPort(),
+            password
+        );
+        serializeProperties(serverProperties);
 
+        log.debug("Starting instance server at http://localhost:" + serverProperties.port());
+    }
+
+    private void serializeProperties(
+        @NotNull InstanceServerProperties serverProperties
+    ) throws IOException {
         try (ByteArrayOutputStream os = new ByteArrayOutputStream()) {
             Properties props = new Properties();
-            props.setProperty(portPropertyName(), String.valueOf(server.getAddress().getPort()));
+            props.setProperty(InstanceServerProperties.PROPERTY_PORT, String.valueOf(serverProperties.port()));
+            props.setProperty(InstanceServerProperties.PROPERTY_PASSWORD, serverProperties.password());
             props.store(os, "DBeaver instance server properties");
             configFileChannel.write(ByteBuffer.wrap(os.toByteArray()));
         }
-
-        log.debug("Starting instance server at http://localhost:" + server.getAddress().getPort());
     }
 
 
@@ -161,9 +182,5 @@ public abstract class ApplicationInstanceServer<T extends ApplicationInstanceCon
         public boolean isOpenConsole() {
             return openConsole;
         }
-    }
-
-    protected static String portPropertyName() {
-        return "port";
     }
 }

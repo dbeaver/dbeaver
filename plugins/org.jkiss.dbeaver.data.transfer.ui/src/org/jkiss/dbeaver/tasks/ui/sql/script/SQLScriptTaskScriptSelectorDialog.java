@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,7 +39,6 @@ import org.jkiss.dbeaver.ui.controls.ViewerColumnController;
 import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
 import org.jkiss.dbeaver.ui.navigator.INavigatorFilter;
 import org.jkiss.dbeaver.ui.navigator.database.DatabaseNavigatorTree;
-import org.jkiss.dbeaver.ui.navigator.database.DatabaseNavigatorTreeFilter;
 import org.jkiss.dbeaver.ui.navigator.database.load.TreeNodeSpecial;
 import org.jkiss.utils.CommonUtils;
 
@@ -62,7 +61,7 @@ class SQLScriptTaskScriptSelectorDialog extends BaseDialog {
     protected Composite createDialogArea(Composite parent) {
         Composite dialogArea = super.createDialogArea(parent);
 
-        INavigatorFilter scriptFilter = new DatabaseNavigatorTreeFilter() {
+        INavigatorFilter scriptFilter = new INavigatorFilter() {
             @Override
             public boolean filterFolders() {
                 return true;
