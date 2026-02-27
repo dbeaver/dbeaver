@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.IWorkbenchWindowInitializer;
 import org.jkiss.dbeaver.ui.preferences.PrefPageConnectionTypes;
 import org.jkiss.dbeaver.ui.preferences.PrefPageConnectionsGeneral;
+import org.jkiss.dbeaver.ui.preferences.PrefPageTransactions;
 import org.jkiss.dbeaver.ui.workbench.WorkbenchUtils;
 
 public class DBeaverCoreWorkbenchInitializer implements IWorkbenchWindowInitializer {
@@ -31,6 +32,7 @@ public class DBeaverCoreWorkbenchInitializer implements IWorkbenchWindowInitiali
     public void initializeWorkbenchWindow(@NotNull IWorkbenchWindowConfigurer configurer) {
         if (!DBWorkbench.getPlatform().getWorkspace().hasRealmPermission(RMConstants.PERMISSION_CONFIGURATION_MANAGER)) {
             WorkbenchUtils.removePreferencePages(PrefPageConnectionsGeneral.PAGE_ID + "/" + PrefPageConnectionTypes.PAGE_ID);
+            WorkbenchUtils.removePreferencePages(PrefPageConnectionsGeneral.PAGE_ID + "/" + PrefPageTransactions.PAGE_ID);
         }
     }
 }
