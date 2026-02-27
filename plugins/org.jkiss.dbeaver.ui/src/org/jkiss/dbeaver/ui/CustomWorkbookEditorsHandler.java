@@ -41,16 +41,16 @@ public class CustomWorkbookEditorsHandler extends WorkbookEditorsHandler {
     // Freeze happens because we may trigger master password dialog in ref.getEditorInput()
     // We fix it by avoiding UI double entrance.
     // Note: this flag is separate from DBeaverEditorPartUtils.isResolving (used by the tab
-    // renderer and chevron popup). Both flags operate on the SWT UI thread exclusively,
-    // so they cannot race against each other.
-    private static volatile boolean isResolving;
+    // renderer and chevron popup). Both operate on the SWT UI thread exclusively, so
+    // volatile is not needed.
+    private static boolean isResolving;
 
     private String pattern;
 
     // Caches container lookups for the lifetime of a single Ctrl+E popup session.
     // Cleared each time the dialog is opened (when setLabelProvider is called)
     // and when the label provider is disposed.
-    private Map<EditorReference, Optional<DBPDataSourceContainer>> containerCache = new HashMap<>();
+    private final Map<EditorReference, Optional<DBPDataSourceContainer>> containerCache = new HashMap<>();
 
     @Override
     protected ViewerFilter getFilter() {
@@ -66,7 +66,7 @@ public class CustomWorkbookEditorsHandler extends WorkbookEditorsHandler {
 
     @Override
     protected void setLabelProvider(TableViewerColumn column) {
-        containerCache = new HashMap<>();
+        containerCache.clear();
 
         column.setLabelProvider(new SearchCellLabelProvider() {
             @NotNull

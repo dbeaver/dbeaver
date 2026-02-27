@@ -34,8 +34,9 @@ final class DBeaverEditorPartUtils {
 
     private static final String PART_SKIP_KEY = DBeaverEditorPartUtils.class.getName() + ".skipPart";
 
-    // We fix it by avoiding UI double entrance
-    private static volatile boolean isResolving;
+    // We fix it by avoiding UI double entrance. SWT UI thread is single-threaded,
+    // so volatile is not needed here.
+    private static boolean isResolving;
 
     @Nullable
     static DBPDataSourceContainer getDataSourceContainer(@NotNull MPart part) {

@@ -53,7 +53,7 @@ public final class ConnectionLabelUtils {
         String suffix = CONNECTION_SEPARATOR + name;
         String text = cell.getText();
         int suffixStart = text.length() - suffix.length();
-        if (suffixStart <= 0) {
+        if (suffixStart < 0) {
             return;
         }
 
