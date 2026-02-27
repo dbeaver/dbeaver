@@ -29,6 +29,7 @@ import org.jkiss.utils.IOUtils;
 import java.awt.*;
 import java.io.*;
 import java.nio.file.Path;
+import java.util.StringTokenizer;
 
 /**
  * Utilities for interacting with the OS shell
@@ -101,12 +102,12 @@ public final class ShellUtils {
             final Process process;
 
             if (Util.isLinux() || Util.isMac()) {
-                process = Runtime.getRuntime().exec(new String[]{"/bin/sh", "-c", cmd}, null); //$NON-NLS-1$ //$NON-NLS-2$
+                process = Runtime.getRuntime().exec(new String[]{"/bin/sh", "-c", cmd}); //$NON-NLS-1$
             } else {
-                process = Runtime.getRuntime().exec(cmd, null);
+                process = Runtime.getRuntime().exec(splitCommand(cmd));
             }
 
-            final int code = process.waitFor();
+            int code = process.waitFor();
 
             if (code != 0 && !Util.isWindows()) {
                 log.debug("Execution of '" + cmd + "' failed with return code: " + code);
@@ -120,6 +121,16 @@ public final class ShellUtils {
                 launchProgram(file.getParent());
             }
         }
+    }
+
+    @NotNull
+    private static String[] splitCommand(@NotNull String cmd) {
+        StringTokenizer st = new StringTokenizer(cmd);
+        String[] ca = new String[st.countTokens()];
+        for (int i = 0; st.hasMoreTokens(); i++) {
+            ca[i] = st.nextToken();
+        }
+        return ca;
     }
 
     private static void executeWithReturnCodeCheck(@NotNull String... cmd) throws IOException, InterruptedException {

@@ -17,15 +17,20 @@
 package org.jkiss.dbeaver.model.cli.model.option;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import picocli.CommandLine;
 
 public class CreateDataSourceOptions {
     @NotNull
     @CommandLine.Option(names = {"--driver"}, required = true, arity = "1", description = "Database driver")
     private String driver;
+
+    //nullable because arg group
+    @Nullable
     @CommandLine.ArgGroup(exclusive = false)
     private DataSourceOptions dataSourceOptions;
 
+    @Nullable
     public DataSourceOptions getDataSourceOptions() {
         return dataSourceOptions;
     }
