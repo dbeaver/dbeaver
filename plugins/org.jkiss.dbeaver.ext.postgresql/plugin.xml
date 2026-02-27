@@ -748,6 +748,10 @@
                 secured="false"
                 order="2"
                 handlerClass="org.jkiss.dbeaver.ext.postgresql.model.net.PostgreSSLHandlerImpl">
+            <propertyGroup label="Method">
+                <property id="ssl.method" label="Method" type="string" validValues="CERTIFICATES" defaultValue="CERTIFICATES"
+                          desktop="true" hidden="true"/>
+            </propertyGroup>
             <propertyGroup label="SSL Settings">
                 <property id="ssl.ca.cert.value" label="CA Certificate" type="file" description="Choose CA certificate file" features="secured" length="MULTILINE"/>
                 <property id="ssl.client.cert.value" label="Client Certificate" type="file" description="Choose client certificate file" features="secured" length="MULTILINE"/>
@@ -758,8 +762,6 @@
                           desktop="true"/>
                 <property id="ssl.client.key" label="Client Private Key Path" type="string" description="Path to a client private key file"
                           desktop="true"/>
-                <property id="ssl.method" label="Method" type="string" validValues="CERTIFICATES" defaultValue="CERTIFICATES"
-                          desktop="true" hidden="true"/>
             </propertyGroup>
             <propertyGroup label="Advanced SSL Settings">
                 <property id="sslMode" label="SSL Mode" type="string" description="SSL Mode" validValues="disable,allow,prefer,require,verify-ca,verify-full" defaultValue=""/>
