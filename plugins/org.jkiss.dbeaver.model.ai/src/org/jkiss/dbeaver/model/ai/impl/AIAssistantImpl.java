@@ -182,6 +182,7 @@ public class AIAssistantImpl implements AIAssistant {
     ) throws DBException {
         return requestFactory.build(
             monitor,
+            this,
             engine,
             engineDescriptor,
             systemGenerator,
@@ -233,7 +234,7 @@ public class AIAssistantImpl implements AIAssistant {
                 AIBaseFeatures.PROMPT_TYPE, context.getPrompt().generatorId()
             )
         ));
-        return agentManager.callFunction(context, function, arguments);
+        return function.getAgent().callFunction(context, function, arguments);
     }
 
     protected void checkAiEnablement() throws DBException {

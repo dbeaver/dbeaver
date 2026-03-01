@@ -33,6 +33,7 @@ public class AIFunctionInternalDescriptor extends AbstractDescriptor implements 
 
     public static final String EXTENSION_ID = "com.dbeaver.ai.function";
 
+    private final AIAgentInternalDescriptor agent;
     private final ObjectType objectType;
     private final String id;
     private final String name;
@@ -40,6 +41,7 @@ public class AIFunctionInternalDescriptor extends AbstractDescriptor implements 
     private final boolean global;
     private final boolean hidden;
     private final boolean ui;
+    private boolean enabledByDefault;
     private final AIFunctionPurpose purpose;
     private final AIFunctionType type;
     private final String[] dependsOn;
@@ -47,8 +49,12 @@ public class AIFunctionInternalDescriptor extends AbstractDescriptor implements 
     private final String categoryId;
     private final AIFunctionInternalParameter[] parameters;
 
-    public AIFunctionInternalDescriptor(@NotNull IConfigurationElement config) {
+    public AIFunctionInternalDescriptor(
+        @NotNull AIAgentInternalDescriptor agent,
+        @NotNull IConfigurationElement config
+    ) {
         super(config);
+        this.agent = agent;
         this.objectType = new ObjectType(config, RegistryConstants.ATTR_CLASS);
         this.icon = iconToImage(config.getAttribute(RegistryConstants.ATTR_ICON));
         this.id = config.getAttribute(RegistryConstants.ATTR_ID);
@@ -56,6 +62,7 @@ public class AIFunctionInternalDescriptor extends AbstractDescriptor implements 
         this.ui = CommonUtils.toBoolean(config.getAttribute("ui"));
         this.global = CommonUtils.toBoolean(config.getAttribute("global"));
         this.hidden = CommonUtils.toBoolean(config.getAttribute("hidden"));
+        this.enabledByDefault = CommonUtils.toBoolean(config.getAttribute("enabledByDefault"));
         this.purpose = CommonUtils.valueOf(AIFunctionPurpose.class, config.getAttribute("purpose"), AIFunctionPurpose.TOOL);
         this.categoryId = config.getAttribute("categoryId");
         this.description = config.getAttribute(RegistryConstants.ATTR_DESCRIPTION);
@@ -71,6 +78,12 @@ public class AIFunctionInternalDescriptor extends AbstractDescriptor implements 
             params.add(new AIFunctionInternalParameter(pe));
         }
         this.parameters = params.toArray(new AIFunctionInternalParameter[0]);
+    }
+
+    @NotNull
+    @Override
+    public AIAgent getAgent() {
+        return agent;
     }
 
     @NotNull
@@ -122,6 +135,11 @@ public class AIFunctionInternalDescriptor extends AbstractDescriptor implements 
 
     public boolean isHidden() {
         return hidden;
+    }
+
+    @Override
+    public boolean isEnabledByDefault() {
+        return enabledByDefault;
     }
 
     @NotNull

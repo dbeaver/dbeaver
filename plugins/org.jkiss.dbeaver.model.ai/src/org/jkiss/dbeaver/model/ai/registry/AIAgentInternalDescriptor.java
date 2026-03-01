@@ -16,51 +16,38 @@
  */
 package org.jkiss.dbeaver.model.ai.registry;
 
-import org.eclipse.core.runtime.IConfigurationElement;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.ai.AIFunctionContext;
-import org.jkiss.dbeaver.model.ai.AIFunctionDescriptor;
-import org.jkiss.dbeaver.model.ai.AIFunctionPurpose;
-import org.jkiss.dbeaver.model.ai.AIFunctionResult;
-import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
-import org.jkiss.dbeaver.registry.RegistryConstants;
+import org.jkiss.dbeaver.model.ai.*;
 
 import java.util.List;
 import java.util.Map;
 
-public class AIAgentInternalDescriptor extends AbstractDescriptor implements AIAgentDescriptor {
+public class AIAgentInternalDescriptor implements AIAgentDescriptor {
 
-    public static final String EXTENSION_ID = "com.dbeaver.ai.agent";
+    private final AIFunctionInternalRegistry functionRegistry;
 
-    private final String id;
-    private final String name;
-    private final String description;
-
-    public AIAgentInternalDescriptor(@NotNull IConfigurationElement config) {
-        super(config);
-        this.id = config.getAttribute(RegistryConstants.ATTR_ID);
-        this.name = config.getAttribute(RegistryConstants.ATTR_NAME);
-        this.description = config.getAttribute(RegistryConstants.ATTR_DESCRIPTION);
+    public AIAgentInternalDescriptor() {
+        this.functionRegistry = new AIFunctionInternalRegistry(this);
     }
 
     @Override
     @NotNull
     public String getAgentId() {
-        return id;
+        return AIConstants.INTERNAL_AGENT_ID;
     }
 
     @Override
     @NotNull
     public String getDisplayName() {
-        return name;
+        return "DBeaver";
     }
 
     @Nullable
     @Override
     public String getDescription() {
-        return description;
+        return "DBeaver internal AI agent";
     }
 
     @Override
@@ -76,13 +63,13 @@ public class AIAgentInternalDescriptor extends AbstractDescriptor implements AIA
     @NotNull
     @Override
     public List<AIFunctionDescriptor> getSupportedFunctions() {
-        return AIFunctionRegistry.getInstance().getAllFunctions(AIFunctionPurpose.ALL);
+        return functionRegistry.getAllFunctions(AIFunctionPurpose.ALL);
     }
 
     @Nullable
     @Override
     public AIFunctionDescriptor getFunctionById(@NotNull String id) {
-        return AIFunctionRegistry.getInstance().getFunction(id);
+        return functionRegistry.getFunction(id);
     }
 
     @NotNull
@@ -92,7 +79,7 @@ public class AIAgentInternalDescriptor extends AbstractDescriptor implements AIA
         @NotNull AIFunctionDescriptor descriptor,
         @NotNull Map<String, Object> arguments
     ) throws DBException {
-        return AIFunctionRegistry.getInstance().callFunction(context, descriptor, arguments);
+        return functionRegistry.callFunction(context, descriptor, arguments);
     }
 
 }

@@ -28,6 +28,9 @@ import org.jkiss.dbeaver.model.ai.registry.AIEngineDescriptor;
 public interface AIFunctionDescriptor {
 
     @NotNull
+    AIAgent getAgent();
+
+    @NotNull
     String getId();
 
     @NotNull
@@ -60,6 +63,8 @@ public interface AIFunctionDescriptor {
 
     boolean isHidden();
 
+    boolean isEnabledByDefault();
+
     @NotNull
     AIFunctionParameter[] getParameters();
 
@@ -70,6 +75,5 @@ public interface AIFunctionDescriptor {
 
     @NotNull
     AIFunction createInstance() throws DBException;
-
 
 }

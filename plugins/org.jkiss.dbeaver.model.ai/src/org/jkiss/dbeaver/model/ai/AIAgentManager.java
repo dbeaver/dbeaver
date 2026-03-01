@@ -18,27 +18,33 @@ package org.jkiss.dbeaver.model.ai;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.ai.registry.AIFunctionCategoryDescriptor;
+import org.jkiss.dbeaver.model.exec.DBCException;
 
 import java.util.List;
-import java.util.Map;
 
 /**
  * AI agent.
  */
 public interface AIAgentManager {
 
+    @Nullable
+    AIAgent getAgent(@NotNull String id);
+
     @NotNull
     List<AIAgent> getAllAgents();
 
+    @NotNull
+    List<AIFunctionDescriptor> getAllFunctions(@NotNull AIFunctionPurpose purpose);
+
     @Nullable
-    AIFunctionDescriptor getFunctionById(@NotNull String id);
+    AIFunctionDescriptor getFunctionById(@NotNull String fullId);
 
     @NotNull
-    AIFunctionResult callFunction(
-        @NotNull AIFunctionContext context,
-        @NotNull AIFunctionDescriptor descriptor,
-        @NotNull Map<String, Object> arguments
-    ) throws DBException;
+    List<AIFunctionCategoryDescriptor> getAllCategories();
 
+    @NotNull
+    AIFunctionSettings getFunctionSettings();
+
+    void saveFunctionSettings() throws DBCException;
 }

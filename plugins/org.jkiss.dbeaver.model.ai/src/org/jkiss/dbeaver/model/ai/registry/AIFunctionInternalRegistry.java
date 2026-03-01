@@ -17,7 +17,6 @@
 package org.jkiss.dbeaver.model.ai.registry;
 
 import org.eclipse.core.runtime.IConfigurationElement;
-import org.eclipse.core.runtime.IExtensionRegistry;
 import org.eclipse.core.runtime.Platform;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
@@ -25,37 +24,26 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.ai.*;
 
-import java.util.*;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * AI function registry
  */
-public class AIFunctionRegistry {
+public class AIFunctionInternalRegistry {
 
-    private static final Log log = Log.getLog(AIFunctionRegistry.class);
-    private static AIFunctionRegistry instance;
-
-    public static synchronized AIFunctionRegistry getInstance() {
-        if (instance == null) {
-            instance = new AIFunctionRegistry(Platform.getExtensionRegistry());
-        }
-        return instance;
-    }
+    private static final Log log = Log.getLog(AIFunctionInternalRegistry.class);
+    private static AIFunctionInternalRegistry instance;
 
     private final Map<String, AIFunctionDescriptor> functionsById = new LinkedHashMap<>();
-    private final Map<String, AIFunctionCategoryDescriptor> categoriesById = new LinkedHashMap<>();
 
-    public AIFunctionRegistry(@NotNull IExtensionRegistry registry) {
-        IConfigurationElement[] extElements = registry.getConfigurationElementsFor(AIFunctionInternalDescriptor.EXTENSION_ID);
-        for (IConfigurationElement el : extElements) {
-            if ("category".equals(el.getName())) {
-                var cd = new AIFunctionCategoryDescriptor(el);
-                categoriesById.put(cd.getId(), cd);
-            }
-        }
+    public AIFunctionInternalRegistry(@NotNull AIAgentInternalDescriptor agentDescriptor) {
+        IConfigurationElement[] extElements = Platform.getExtensionRegistry()
+            .getConfigurationElementsFor(AIFunctionInternalDescriptor.EXTENSION_ID);
         for (IConfigurationElement ext : extElements) {
             if ("function".equals(ext.getName())) {
-                AIFunctionInternalDescriptor fd = new AIFunctionInternalDescriptor(ext);
+                AIFunctionInternalDescriptor fd = new AIFunctionInternalDescriptor(agentDescriptor, ext);
                 functionsById.put(fd.getId(), fd);
             }
         }
@@ -74,37 +62,6 @@ public class AIFunctionRegistry {
                     || purpose == AIFunctionPurpose.ALL
                     || f.getPurpose() == purpose)
             .toList();
-    }
-
-    @NotNull
-    public List<AIFunctionCategoryDescriptor> getAllCategories() {
-        return new ArrayList<>(categoriesById.values());
-    }
-
-    @NotNull
-    public Map<AIFunctionCategoryDescriptor, List<AIFunctionDescriptor>> getFunctionsByCategory() {
-        Map<AIFunctionCategoryDescriptor, List<AIFunctionDescriptor>> map = new LinkedHashMap<>();
-        for (var cat : categoriesById.values()) {
-            map.put(cat, new ArrayList<>());
-        }
-        for (AIFunctionDescriptor f : functionsById.values()) {
-            var cat = categoriesById.get(f.getCategoryId());
-            if (cat != null) {
-                map.get(cat).add(f);
-            }
-        }
-        return map;
-    }
-
-    @NotNull
-    public Set<String> getDefaultEnabledCategoryIds() {
-        Set<String> ids = new LinkedHashSet<>();
-        for (var c : categoriesById.values()) {
-            if (c.isEnabledByDefault()) {
-                ids.add(c.getId());
-            }
-        }
-        return ids;
     }
 
     @NotNull

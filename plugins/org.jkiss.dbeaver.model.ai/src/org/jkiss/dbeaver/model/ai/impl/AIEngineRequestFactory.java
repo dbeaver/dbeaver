@@ -24,7 +24,10 @@ import org.jkiss.dbeaver.model.ai.*;
 import org.jkiss.dbeaver.model.ai.engine.AIDatabaseContext;
 import org.jkiss.dbeaver.model.ai.engine.AIEngine;
 import org.jkiss.dbeaver.model.ai.engine.AIEngineRequest;
-import org.jkiss.dbeaver.model.ai.registry.*;
+import org.jkiss.dbeaver.model.ai.registry.AIEngineDescriptor;
+import org.jkiss.dbeaver.model.ai.registry.AIPromptGeneratorDescriptor;
+import org.jkiss.dbeaver.model.ai.registry.AIPromptGeneratorRegistry;
+import org.jkiss.dbeaver.model.ai.registry.AISettingsManager;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -60,13 +63,14 @@ public class AIEngineRequestFactory {
 
     public AIEngineRequest build(
         @NotNull DBRProgressMonitor monitor,
+        @NotNull AIAssistant assistant,
         @NotNull AIEngine<?> engine,
         @NotNull AIEngineDescriptor engineDescriptor,
         @NotNull AIPromptGenerator promptGenerator,
         @Nullable AIDatabaseContext databaseContext,
         @NotNull List<AIMessage> messages
     ) throws DBException {
-        String systemPrompt = promptGenerator.build(databaseContext);
+        String systemPrompt = promptGenerator.build(assistant, databaseContext);
 
         // Tokens available for user/system/chat history after we reserve reply + overhead
         int maxContextWindowSize = getContextWindowSize(monitor, engine);
@@ -127,20 +131,23 @@ public class AIEngineRequestFactory {
         AIEngineRequest request = new AIEngineRequest(truncated);
         request.setWasPromptTruncated(isContextTruncated);
 
-        determineRequestTools(monitor, engineDescriptor, promptGenerator, request);
+        determineRequestTools(monitor, assistant, engineDescriptor, promptGenerator, request);
 
         return request;
     }
 
     protected void determineRequestTools(
         @NotNull DBRProgressMonitor monitor,
+        @NotNull AIAssistant assistant,
         @NotNull AIEngineDescriptor engineDescriptor,
         @NotNull AIPromptGenerator systemPromptGenerator,
         @NotNull AIEngineRequest request
     ) {
+        AIAgentManager agentManager = assistant.getAgentManager();
+        AIFunctionSettings functionSettings = agentManager.getFunctionSettings();
         AISettings aiSettings = AISettingsManager.getInstance().getSettings();
         if (!engineDescriptor.isSupportsFunctions()
-            || !aiSettings.getFunctionSettings().isFunctionsEnabled()
+            || !functionSettings.isFunctionsEnabled()
             || DBWorkbench.getPlatform().getApplication().isMultiuser() // FIXME: For now disabled for server apps
         ) {
             return;
@@ -154,17 +161,28 @@ public class AIEngineRequestFactory {
         }
 
         List<AIFunctionDescriptor> functions = new ArrayList<>();
-        for (AIFunctionDescriptor fd : AIFunctionRegistry.getInstance().getAllFunctions(AIFunctionPurpose.TOOL)) {
+        for (AIFunctionDescriptor fd : agentManager.getAllFunctions(AIFunctionPurpose.TOOL)) {
             if (fd.isGlobal() || fd.isApplicable(engineDescriptor, systemPromptGenerator)) {
                 functions.add(fd);
             }
         }
 
-        Set<String> enabledFunctions = aiSettings.getFunctionSettings().getEnabledFunctions();
+        Set<AIFunctionDescriptor> enabledFunctions = new LinkedHashSet<>();
+        for (AIAgent agent : agentManager.getAllAgents()) {
+            if (!agent.isEnabled() || !agent.isAccessible()) {
+                continue;
+            }
+            AIFunctionSettings.AgentFunctions agentFunctions = functionSettings.getAgentFunctions(agent);
+            for (AIFunctionDescriptor function : agent.getSupportedFunctions()) {
+                if (agentFunctions.isEnabled(function)) {
+                    enabledFunctions.add(function);
+                }
+            }
+        }
 
         Set<AIFunctionDescriptor> selectedFunctions = new LinkedHashSet<>(functions);
         selectedFunctions.removeIf(aiFunctionDescriptor ->
-            !enabledFunctions.contains(aiFunctionDescriptor.getId())
+            !enabledFunctions.contains(aiFunctionDescriptor)
         );
 
         Set<String> requiredByDeps = resolveDependencies(selectedFunctions);
@@ -218,12 +236,13 @@ public class AIEngineRequestFactory {
     private static Set<String> resolveDependencies(@NotNull Set<AIFunctionDescriptor> selected) {
         Set<String> result = new HashSet<>();
         for (AIFunctionDescriptor fd : selected) {
-            collectDependencies(fd.getDependsOn(), result);
+            collectDependencies(fd.getAgent(), fd.getDependsOn(), result);
         }
         return result;
     }
 
     private static void collectDependencies(
+        @NotNull AIAgent agent,
         @NotNull String[] dependencies,
         @NotNull Set<String> result
     ) {
@@ -234,9 +253,9 @@ public class AIEngineRequestFactory {
             if (!result.add(depId)) {
                 continue;
             }
-            AIFunctionDescriptor dep = AIFunctionRegistry.getInstance().getFunction(depId);
+            AIFunctionDescriptor dep = agent.getFunctionById(depId);
             if (dep != null) {
-                collectDependencies(dep.getDependsOn(), result);
+                collectDependencies(agent, dep.getDependsOn(), result);
             }
         }
     }
