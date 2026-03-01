@@ -29,26 +29,37 @@ import java.util.*;
 public final class AIFunctionSettings {
     @SerializedName("enabled")
     private boolean functionsEnabled = true;
-    private final Map<String, AgentFunctions> functions = new LinkedHashMap<>();
+    private final Map<String, AgentSettings> functions = new LinkedHashMap<>();
 
     /**
      * Keeps information about function which were explicitly enabled or disabled for the particular agent.
      * User can modify enabled/disable functions set.
      */
-    public static class AgentFunctions {
+    public static class AgentSettings {
         @SerializedName("enabled")
+        private boolean enabled = true;
+        @SerializedName("ef")
         private Set<String> enabledFunctions;
-        @SerializedName("disabled")
+        @SerializedName("df")
         private Set<String> disabledFunctions;
 
-        public AgentFunctions() {
+        public AgentSettings() {
             this.enabledFunctions = new LinkedHashSet<>();
             this.disabledFunctions = new LinkedHashSet<>();
         }
 
-        public AgentFunctions(@NotNull AgentFunctions src) {
+        public AgentSettings(@NotNull AgentSettings src) {
+            this.enabled = src.enabled;
             this.enabledFunctions = new LinkedHashSet<>(src.enabledFunctions);
             this.disabledFunctions = new LinkedHashSet<>(src.disabledFunctions);
+        }
+
+        public boolean isEnabled() {
+            return enabled;
+        }
+
+        public void setEnabled(boolean enabled) {
+            this.enabled = enabled;
         }
 
         @NotNull
@@ -69,7 +80,7 @@ public final class AIFunctionSettings {
             this.disabledFunctions = new LinkedHashSet<>(disabledFunctions);
         }
 
-        public boolean isEnabled(@NotNull AIFunctionDescriptor function) {
+        public boolean isFunctionEnabled(@NotNull AIFunctionDescriptor function) {
             if (function.isEnabledByDefault()) {
                 return !disabledFunctions.contains(function.getId());
             } else {
@@ -88,8 +99,8 @@ public final class AIFunctionSettings {
     }
 
     @NotNull
-    public AgentFunctions getAgentFunctions(@NotNull AIAgent agent) {
-        return functions.computeIfAbsent(agent.getAgentId(), s -> new AgentFunctions());
+    public AgentSettings getAgentSettings(@NotNull AIAgent agent) {
+        return functions.computeIfAbsent(agent.getAgentId(), s -> new AgentSettings());
     }
 
 }

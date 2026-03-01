@@ -39,7 +39,7 @@ import java.util.*;
 public class AIAgentRegistry implements AIAgentManager {
 
     private static final Log log = Log.getLog(AIAgentRegistry.class);
-    public static final String TOOLS_CONFIG_FILE_NAME = "ai-agent-tools.json";
+    public static final String TOOLS_CONFIG_FILE_NAME = "ai-agents.json";
 
     private final AIAgentInternalDescriptor internalAgent;
     private final Map<String, AIAgentDescriptor> externalAgents = new LinkedHashMap<>();

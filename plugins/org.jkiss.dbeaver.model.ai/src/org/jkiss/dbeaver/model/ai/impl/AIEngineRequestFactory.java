@@ -172,9 +172,9 @@ public class AIEngineRequestFactory {
             if (!agent.isEnabled() || !agent.isAccessible()) {
                 continue;
             }
-            AIFunctionSettings.AgentFunctions agentFunctions = functionSettings.getAgentFunctions(agent);
+            AIFunctionSettings.AgentSettings agentSettings = functionSettings.getAgentSettings(agent);
             for (AIFunctionDescriptor function : agent.getSupportedFunctions()) {
-                if (agentFunctions.isEnabled(function)) {
+                if (agentSettings.isFunctionEnabled(function)) {
                     enabledFunctions.add(function);
                 }
             }

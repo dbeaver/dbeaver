@@ -81,10 +81,10 @@ public abstract class AIPromptAbstract implements AIPromptGenerator {
             AIFunctionSettings functionSettings = assistant.getAgentManager().getFunctionSettings();
             AIPromptGeneratorDescriptor gd = AIPromptGeneratorRegistry.getInstance().getPromptGenerator(generatorId());
             if (gd != null && functionSettings.isFunctionsEnabled()) {
-                AIFunctionSettings.AgentFunctions internalFunctions = functionSettings.getAgentFunctions(internalAgent);
+                AIFunctionSettings.AgentSettings internalFunctions = functionSettings.getAgentSettings(internalAgent);
                 for (AIPromptGeneratorDescriptor.Uses use : gd.getUses()) {
                     AIFunctionDescriptor function = internalAgent.getFunctionById(use.function());
-                    if (function != null && internalFunctions.isEnabled(function)) {
+                    if (function != null && internalFunctions.isFunctionEnabled(function)) {
                         addInstructions(use.instructions());
                     }
                 }
