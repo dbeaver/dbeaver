@@ -179,7 +179,7 @@ public class AIAssistantImpl implements AIAssistant {
         @NotNull AIEngine<?> engine,
         @NotNull AIEngineDescriptor engineDescriptor
     ) throws DBException {
-        return requestFactory.build(
+        return getRequestFactory().build(
             monitor,
             this,
             engine,
