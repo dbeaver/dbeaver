@@ -24,7 +24,10 @@ import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.ai.*;
 import org.jkiss.dbeaver.model.ai.engine.*;
 import org.jkiss.dbeaver.model.ai.internal.AIMessages;
-import org.jkiss.dbeaver.model.ai.registry.*;
+import org.jkiss.dbeaver.model.ai.registry.AIAgentRegistry;
+import org.jkiss.dbeaver.model.ai.registry.AIEngineDescriptor;
+import org.jkiss.dbeaver.model.ai.registry.AIEngineRegistry;
+import org.jkiss.dbeaver.model.ai.registry.AISettingsManager;
 import org.jkiss.dbeaver.model.ai.utils.ThrowableSupplier;
 import org.jkiss.dbeaver.model.app.DBPWorkspace;
 import org.jkiss.dbeaver.model.exec.DBCMessageException;
@@ -48,15 +51,11 @@ public class AIAssistantImpl implements AIAssistant {
 
     protected final DBPWorkspace workspace;
 
-    protected final AIEngineRequestFactory requestFactory;
-    protected AISqlFormatter sqlFormatter;
-    private final AIAgentManager agentManager;
+    private AIEngineRequestFactory requestFactory;
+    private AIAgentManager agentManager;
 
     public AIAssistantImpl(@NotNull DBPWorkspace workspace) {
         this.workspace = workspace;
-        this.requestFactory = createRequestFactory();
-        this.sqlFormatter = createSqlFormatter();
-        this.agentManager = createAgentManager();
     }
 
     @NotNull
@@ -64,14 +63,11 @@ public class AIAssistantImpl implements AIAssistant {
         return new AIAgentRegistry();
     }
 
-    @NotNull
-    protected AISqlFormatter createSqlFormatter() {
-        try {
-            return AIAssistantRegistry.getInstance().getDescriptor().createSqlFormatter();
-        } catch (DBException e) {
-            log.error("Error creating SQL formatter", e);
-            return new SimpleSqlFormatterImpl();
+    protected AIEngineRequestFactory getRequestFactory() {
+        if (requestFactory == null) {
+            requestFactory = createRequestFactory();
         }
+        return requestFactory;
     }
 
     @NotNull
@@ -168,6 +164,9 @@ public class AIAssistantImpl implements AIAssistant {
     @NotNull
     @Override
     public AIAgentManager getAgentManager() {
+        if (agentManager == null) {
+            agentManager = createAgentManager();
+        }
         return agentManager;
     }
 
@@ -215,7 +214,7 @@ public class AIAssistantImpl implements AIAssistant {
         if (CommonUtils.isEmpty(functionName)) {
             throw new DBCMessageException("Function name not specified");
         }
-        AIFunctionDescriptor function = agentManager.getFunctionById(functionName);
+        AIFunctionDescriptor function = getAgentManager().getFunctionById(functionName);
         if (function == null) {
             throw new DBCMessageException("Function '" + functionName + "' not found");
         }
