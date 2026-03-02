@@ -18,6 +18,8 @@ package org.jkiss.dbeaver.ext.mssql.model;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ext.mssql.SQLServerConstants;
+import org.jkiss.dbeaver.ext.mssql.SQLServerMessages;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.access.DBAUserPasswordManager;
 import org.jkiss.dbeaver.model.exec.DBCException;
@@ -44,7 +46,26 @@ public class SQLServerLoginPasswordManager implements DBAUserPasswordManager {
             JDBCUtils.executeSQL(session, "ALTER LOGIN " + DBUtils.getQuotedIdentifier(dataSource, loginName) + " WITH PASSWORD =" + SQLUtils.quoteString(dataSource, CommonUtils.notEmpty(newPassword)) +
                 " OLD_PASSWORD =" + SQLUtils.quoteString(dataSource, CommonUtils.notEmpty(oldPassword)));
         } catch (SQLException e) {
-            throw new DBCException("Error changing user password", e);
+            throw new DBCException(getPasswordPolicyErrorMessage(e), e);
         }
+    }
+
+    @NotNull
+    private static String getPasswordPolicyErrorMessage(@NotNull SQLException e) {
+        int code = e.getErrorCode();
+        if (code == SQLServerConstants.EC_PASSWORD_TOO_SHORT) {
+            return SQLServerMessages.password_change_error_message + ": password is too short";
+        } else if (code == SQLServerConstants.EC_PASSWORD_TOO_LONG) {
+            return SQLServerMessages.password_change_error_message + ": password is too long";
+        } else if (code == SQLServerConstants.EC_PASSWORD_NOT_COMPLEX) {
+            return SQLServerMessages.password_change_error_message + ": password is not complex enough";
+        } else if (code == SQLServerConstants.EC_PASSWORD_RECENTLY_USED) {
+            return SQLServerMessages.password_change_error_message + ": password was recently used";
+        } else if (code == SQLServerConstants.EC_PASSWORD_FILTER_REJECTED) {
+            return SQLServerMessages.password_change_error_message + ": password was rejected by a password filter";
+        } else if (code == SQLServerConstants.EC_PASSWORD_NOT_SATISFACTORY) {
+            return SQLServerMessages.password_change_error_message + ": password does not meet policy requirements";
+        }
+        return SQLServerMessages.password_change_error_message;
     }
 }
