@@ -18,7 +18,10 @@ package org.jkiss.dbeaver.ext.oracle.model;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.*;
+import org.jkiss.dbeaver.model.DBPEvaluationContext;
+import org.jkiss.dbeaver.model.DBPScriptObject;
+import org.jkiss.dbeaver.model.DBPUniqueObject;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -26,23 +29,28 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureType;
 
 import java.sql.ResultSet;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * GenericProcedure
  */
-public class OracleProcedurePackaged extends OracleProcedureBase<OraclePackage> implements DBPUniqueObject, DBPScriptObject, DBSObject,
-    DBPScriptObjectExt
+public class OracleProcedurePackaged extends OracleProcedureBase<OraclePackage> implements DBPUniqueObject, DBPScriptObject, DBSObject
 {
     private Integer overload;
 
+    @NotNull
+    private final String parentPackageName;
+
     public OracleProcedurePackaged(
-        OraclePackage ownerPackage,
-        ResultSet dbResult)
+        @NotNull OraclePackage ownerPackage,
+        @NotNull ResultSet dbResult
+    )
     {
         super(ownerPackage,
             JDBCUtils.safeGetString(dbResult, "PROCEDURE_NAME"),
             0l,
             DBSProcedureType.valueOf(JDBCUtils.safeGetString(dbResult, "PROCEDURE_TYPE")));
+        parentPackageName = defineParentPackageName(dbResult, ownerPackage);
     }
 
     @NotNull
@@ -80,14 +88,15 @@ public class OracleProcedurePackaged extends OracleProcedureBase<OraclePackage> 
     }
 
     @NotNull
-    @Override
     public String getObjectDefinitionText(@NotNull DBRProgressMonitor monitor, @NotNull Map<String, Object> options) throws DBException {
-        return "test normal definition";
+        return parent.getExtendedDefinitionText(monitor);
     }
 
     @NotNull
-    @Override
-    public String getExtendedDefinitionText(@NotNull DBRProgressMonitor monitor) throws DBException {
-        return "test extended definition";
+    private static String defineParentPackageName(@NotNull ResultSet dbResult, @NotNull OraclePackage ownerPackage) {
+        return Objects.requireNonNullElse(
+            JDBCUtils.safeGetString(dbResult, "OBJECT_NAME"),
+            ownerPackage.getName()
+        );
     }
 }
