@@ -124,8 +124,8 @@ public class AIAssistantImpl implements AIAssistant {
                     if (functionCall != null) {
                         functionContext.addFunctionCall(functionCall);
                         AIFunctionResult result = callFunction(functionContext, functionCall);
-                        String stringValue = CommonUtils.toString(result.value());
-                        if (result.type() == AIFunctionType.ACTION) {
+                        String stringValue = CommonUtils.toString(result.getValue());
+                        if (result.getType() == AIFunctionType.ACTION) {
                             return new AIAssistantResponse(
                                 AIAssistantResponse.Type.FUNCTION,
                                 stringValue,

@@ -92,11 +92,11 @@ public class AIMessage {
     ) {
         this.meta = meta;
         this.role = AIMessageType.FUNCTION;
-        this.content = CommonUtils.toString(result.value()) + " was completed";
+        this.content = CommonUtils.toString(result.getValue()) + " was completed";
         this.time = LocalDateTime.now();
         this.functionCall = functionCall;
         this.functionResult = result;
-        this.displayMessage = CommonUtils.toString(result.value());
+        this.displayMessage = CommonUtils.toString(result.getValue());
         this.functionCallName = null;
     }
 
