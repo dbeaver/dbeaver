@@ -297,10 +297,10 @@ public class SQLServerDataSource
         try {
             return super.openConnection(monitor, context, purpose);
         } catch (DBCException e) {
-            if (SQLServerUtils.isDriverSqlServer(getContainer().getDriver()) && isPasswordExpired(e)) {
-                if (changeExpiredPassword(monitor, context, purpose)) {
-                    return super.openConnection(monitor, context, purpose);
-                }
+            if (SQLServerUtils.isDriverSqlServer(getContainer().getDriver())
+                && isPasswordExpired(e)
+                && changeExpiredPassword()) {
+                return super.openConnection(monitor, context, purpose);
             }
             throw e;
         }
@@ -333,11 +333,7 @@ public class SQLServerDataSource
         return false;
     }
 
-    private boolean changeExpiredPassword(
-        @NotNull DBRProgressMonitor monitor,
-        @Nullable JDBCExecutionContext context,
-        @NotNull String purpose
-    ) {
+    private boolean changeExpiredPassword() {
         if (DBWorkbench.getPlatform().getApplication().isHeadlessMode()) {
             return false;
         }
