@@ -18,8 +18,7 @@ package org.jkiss.dbeaver.model.ai.prompt;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.model.ai.AIPromptGenerator;
-import org.jkiss.dbeaver.model.ai.AISettings;
+import org.jkiss.dbeaver.model.ai.*;
 import org.jkiss.dbeaver.model.ai.engine.AIDatabaseContext;
 import org.jkiss.dbeaver.model.ai.registry.AIPromptGeneratorDescriptor;
 import org.jkiss.dbeaver.model.ai.registry.AIPromptGeneratorRegistry;
@@ -72,23 +71,28 @@ public abstract class AIPromptAbstract implements AIPromptGenerator {
     }
 
     @NotNull
-    public String build(@Nullable AIDatabaseContext context) {
+    public String build(@NotNull AIAssistant assistant, @Nullable AIDatabaseContext context) {
         clear();
         initializePrompt(context);
 
-        AISettings settings = AISettingsManager.getInstance().getSettings();
-
         // Additional function instructions
-        AIPromptGeneratorDescriptor gd = AIPromptGeneratorRegistry.getInstance().getPromptGenerator(generatorId());
-        if (gd != null && settings.getFunctionSettings().isFunctionsEnabled()) {
-            for (AIPromptGeneratorDescriptor.Uses use : gd.getUses()) {
-                if (settings.getFunctionSettings().getEnabledFunctions().contains(use.function())) {
-                    addInstructions(use.instructions());
+        AIAgent internalAgent = assistant.getAgentManager().getAgent(AIConstants.INTERNAL_AGENT_ID);
+        if (internalAgent != null) {
+            AIFunctionSettings functionSettings = assistant.getAgentManager().getFunctionSettings();
+            AIPromptGeneratorDescriptor gd = AIPromptGeneratorRegistry.getInstance().getPromptGenerator(generatorId());
+            if (gd != null && functionSettings.isFunctionsEnabled()) {
+                AIFunctionSettings.AgentSettings internalFunctions = functionSettings.getAgentSettings(internalAgent);
+                for (AIPromptGeneratorDescriptor.Uses use : gd.getUses()) {
+                    AIFunctionDescriptor function = internalAgent.getFunctionById(use.function());
+                    if (function != null && internalFunctions.isFunctionEnabled(function)) {
+                        addInstructions(use.instructions());
+                    }
                 }
             }
         }
 
         // User custom instructions
+        AISettings settings = AISettingsManager.getInstance().getSettings();
         String customInstructions = settings.getCustomInstructions(generatorId());
         if (CommonUtils.isNotEmpty(customInstructions)) {
             addInstructions(customInstructions);

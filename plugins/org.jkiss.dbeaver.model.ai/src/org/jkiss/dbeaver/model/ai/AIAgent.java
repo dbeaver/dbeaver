@@ -18,16 +18,40 @@ package org.jkiss.dbeaver.model.ai;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
+
+import java.util.List;
+import java.util.Map;
 
 /**
- * Reference to AI function.
- * <p>
- * Can be returned in AI responses, signaling that certain AI function was used.
- * This information can be used in UI to render links which trigger some UI actions.
+ * AI agent.
  */
-public record AIFunctionReference(
-    @NotNull AIFunctionDescriptor function,
-    @Nullable String text
-) {
+public interface AIAgent {
+
+    @NotNull
+    String getAgentId();
+
+    @NotNull
+    String getDisplayName();
+
+    @Nullable
+    String getDescription();
+
+    boolean isEnabled();
+
+    boolean isAccessible();
+
+    @NotNull
+    List<AIFunctionDescriptor> getSupportedFunctions();
+
+    @Nullable
+    AIFunctionDescriptor getFunctionById(@NotNull String id);
+
+    @NotNull
+    AIFunctionResult callFunction(
+        @NotNull AIFunctionContext context,
+        @NotNull AIFunctionDescriptor descriptor,
+        @NotNull Map<String, Object> arguments
+    ) throws DBException;
 
 }
