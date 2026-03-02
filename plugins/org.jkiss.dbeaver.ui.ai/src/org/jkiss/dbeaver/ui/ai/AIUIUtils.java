@@ -24,6 +24,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.ai.AIContextSettings;
 import org.jkiss.dbeaver.model.ai.AIIcons;
 import org.jkiss.dbeaver.model.ai.registry.AISettingsManager;
+import org.jkiss.dbeaver.model.rm.RMConstants;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.ai.internal.AIUIMessages;
@@ -60,6 +61,9 @@ public class AIUIUtils {
     }
 
     public static void showPreferences(@NotNull Shell shell) {
+        if (!DBWorkbench.getPlatform().getWorkspace().hasRealmPermission(RMConstants.PERMISSION_CONFIGURATION_MANAGER)) {
+            return;
+        }
         UIUtils.showPreferencesFor(
             shell,
             AISettingsManager.getInstance().getSettings(),
