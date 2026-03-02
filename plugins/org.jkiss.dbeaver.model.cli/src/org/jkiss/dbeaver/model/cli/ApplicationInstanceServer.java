@@ -129,7 +129,7 @@ public abstract class ApplicationInstanceServer<T extends ApplicationInstanceCon
         try {
             unregisterCurrentProcess(getConfigPath());
         } catch (Exception unregisterError) {
-            log.debug("Cannot unregister InstanceServer", unregisterError);
+            log.debug("Cannot unregister instance server", unregisterError);
         }
 
     }
