@@ -45,10 +45,6 @@ public class AISettingsManager {
     private static final String ACTIVE_ENGINE_KEY = "activeEngine";
     private static final String PROPERTIES_KEY = "properties";
     private static final String ENGINE_CONFIGURATIONS_KEY = "engineConfigurations";
-    private static final String FUNCTIONS_ENABLED_KEY = "functionsEnabled";
-    private static final String ENABLED_FUNCTION_CATEGORIES_KEY = "aiEnabledFunctionCategories";
-    private static final String ENABLED_FUNCTIONS_KEY = "aiEnabledFunctions";
-    private static final String INITIALIZED_DEFAULT_CATEGORIES_KEY = "initializedDefaultCategories";
     private static final String CUSTOM_INSTRUCTIONS_KEY = "customInstructions";
     public static final String ENGINE_PROPERTIES = "properties";
 
@@ -89,6 +85,7 @@ public class AISettingsManager {
         }
     }
 
+    @NotNull
     private AISettingsHolder getSettingsHolder() {
         return AISettingsLocalHolder.INSTANCE;
     }
@@ -123,21 +120,6 @@ public class AISettingsManager {
                 settings.setActiveEngine(JSONUtils.getString(configMap, ACTIVE_ENGINE_KEY));
                 JSONUtils.getObject(configMap, PROPERTIES_KEY).forEach(settings::setProperty);
 
-                List<String> enabledCategories = JSONUtils.getStringList(configMap, ENABLED_FUNCTION_CATEGORIES_KEY);
-                if (!enabledCategories.isEmpty()) {
-                    settings.getFunctionSettings().setEnabledFunctionCategories(new HashSet<>(enabledCategories));
-                }
-                settings.getFunctionSettings().setFunctionsEnabled(JSONUtils.getBoolean(configMap, FUNCTIONS_ENABLED_KEY, true));
-                List<String> enabledFunctions = JSONUtils.getStringList(configMap, ENABLED_FUNCTIONS_KEY);
-                if (!enabledFunctions.isEmpty()) {
-                    settings.getFunctionSettings().setEnabledFunctions(new HashSet<>(enabledFunctions));
-                }
-
-                List<String> initializedCategories = JSONUtils.getStringList(configMap, INITIALIZED_DEFAULT_CATEGORIES_KEY);
-                if (!initializedCategories.isEmpty()) {
-                    settings.getFunctionSettings().setInitializedDefaultCategories(new HashSet<>(initializedCategories));
-                }
-
                 @SuppressWarnings("unchecked")
                 Map<String, String> customInstructions = (Map<String, String>) configMap.get(CUSTOM_INSTRUCTIONS_KEY);
                 if (!CommonUtils.isEmpty(customInstructions)) {
@@ -167,25 +149,6 @@ public class AISettingsManager {
                     }
                 }
             }
-
-            AIFunctionRegistry functionRegistry = AIFunctionRegistry.getInstance();
-            Map<AIFunctionCategoryDescriptor, List<AIFunctionDescriptor>> functionsByCategory =
-                functionRegistry.getFunctionsByCategory();
-
-            for (Map.Entry<AIFunctionCategoryDescriptor, List<AIFunctionDescriptor>> entry :
-                    functionsByCategory.entrySet()) {
-                AIFunctionCategoryDescriptor category = entry.getKey();
-                List<AIFunctionDescriptor> functions = entry.getValue();
-
-                if (category.isEnabledByDefault() && !settings.getFunctionSettings().isCategoryInitialized(category.getId())) {
-                    settings.getFunctionSettings().enableFunctionCategory(category.getId());
-                    for (AIFunctionDescriptor function : functions) {
-                        settings.getFunctionSettings().enableFunction(function.getId());
-                    }
-                    settings.getFunctionSettings().markCategoryAsInitialized(category.getId());
-                }
-            }
-
             settings.setEngineConfigurations(engineConfigurationMap);
         }
         if (settings.activeEngine() == null || !settings.hasConfiguration(settings.activeEngine())) {
@@ -223,34 +186,6 @@ public class AISettingsManager {
                 propertiesObject.add(property.getKey(), propValue);
             }
             json.add(PROPERTIES_KEY, propertiesObject);
-
-            json.add(FUNCTIONS_ENABLED_KEY, new JsonPrimitive(settings.getFunctionSettings().isFunctionsEnabled()));
-            Set<String> enabledCategories = settings.getFunctionSettings().getEnabledFunctionCategories();
-            if (!enabledCategories.isEmpty()) {
-                JsonArray categoriesArray = new JsonArray();
-                for (String category : enabledCategories) {
-                    categoriesArray.add(category);
-                }
-                json.add(ENABLED_FUNCTION_CATEGORIES_KEY, categoriesArray);
-            }
-
-            Set<String> enabledFunctions = settings.getFunctionSettings().getEnabledFunctions();
-            if (!enabledFunctions.isEmpty()) {
-                JsonArray functionsArray = new JsonArray();
-                for (String function : enabledFunctions) {
-                    functionsArray.add(function);
-                }
-                json.add(ENABLED_FUNCTIONS_KEY, functionsArray);
-            }
-
-            Set<String> initializedCategories = settings.getFunctionSettings().getInitializedDefaultCategories();
-            if (!initializedCategories.isEmpty()) {
-                JsonArray initializedArray = new JsonArray();
-                for (String category : initializedCategories) {
-                    initializedArray.add(category);
-                }
-                json.add(INITIALIZED_DEFAULT_CATEGORIES_KEY, initializedArray);
-            }
 
             Map<String, String> customInstructions = settings.getCustomInstructions();
             if (!customInstructions.isEmpty()) {

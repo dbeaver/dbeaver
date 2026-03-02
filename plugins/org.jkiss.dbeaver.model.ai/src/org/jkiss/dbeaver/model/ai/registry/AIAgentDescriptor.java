@@ -14,20 +14,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.ai;
+package org.jkiss.dbeaver.model.ai.registry;
 
-import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.ai.AIAgent;
 
-/**
- * Reference to AI function.
- * <p>
- * Can be returned in AI responses, signaling that certain AI function was used.
- * This information can be used in UI to render links which trigger some UI actions.
- */
-public record AIFunctionReference(
-    @NotNull AIFunctionDescriptor function,
-    @Nullable String text
-) {
+public interface AIAgentDescriptor extends AIAgent {
 
 }

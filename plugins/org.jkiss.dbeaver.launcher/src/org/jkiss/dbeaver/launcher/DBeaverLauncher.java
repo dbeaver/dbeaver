@@ -601,9 +601,6 @@ public class DBeaverLauncher {
         processConfiguration();
         processGlobalConfiguration();
         Path dbeaverDataDir = getDataDirectory();
-        if (log == null) {
-            openLogFile();
-        }
         try {
             CommandLineExecuteResult commandLineExecuteResult = processCommandLineAsClient(passThruArgs, dbeaverDataDir);
             if (commandLineExecuteResult.shutdown()) {

@@ -42,8 +42,7 @@ import java.util.*;
  * DBeaver instance controller.
  */
 public abstract class ApplicationInstanceServer<T extends ApplicationInstanceController>
-    implements ApplicationInstanceController
-{
+    implements ApplicationInstanceController {
 
     private static final Log log = Log.getLog(ApplicationInstanceServer.class);
 
