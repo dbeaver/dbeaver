@@ -22,10 +22,15 @@ import org.jkiss.code.Nullable;
 import java.io.IOException;
 import java.nio.channels.FileChannel;
 import java.nio.channels.FileLock;
+import java.nio.channels.OverlappingFileLockException;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
+import java.time.Duration;
+import java.util.concurrent.TimeUnit;
 
 public final class FileMutex implements AutoCloseable {
+
+    private static final Duration DEFAULT_RETRY_INTERVAL = Duration.ofMillis(50);
 
     private final FileChannel channel;
     private final FileLock lock;
@@ -37,49 +42,83 @@ public final class FileMutex implements AutoCloseable {
 
     @NotNull
     public static FileMutex tryLock(@NotNull Path path) throws IOException {
-        LockAttempt attempt = attemptLock(path);
-
-        if (attempt.lock == null) {
-            attempt.channel.close();
-            throw new IllegalStateException("Already locked: " + path);
+        try {
+            return tryLock(path, Duration.ZERO);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new IOException("Interrupted while acquiring file lock: " + path, e);
         }
-
-        return new FileMutex(attempt.channel, attempt.lock);
     }
 
-    public static boolean isLocked(@NotNull Path path) {
-        FileChannel channel = null;
-        FileLock lock = null;
+    @NotNull
+    public static FileMutex tryLock(
+        @NotNull Path path,
+        @NotNull Duration timeout
+    ) throws IOException, InterruptedException {
+        return tryLock0(path, timeout);
+    }
 
-        try {
-            channel = FileChannel.open(
-                path,
-                StandardOpenOption.CREATE,
-                StandardOpenOption.WRITE
-            );
+    @NotNull
+    private static FileMutex tryLock0(
+        @NotNull Path path,
+        @NotNull Duration timeout
+    ) throws IOException, InterruptedException {
+        if (timeout.isNegative()) {
+            throw new IllegalArgumentException("Timeout must be >= 0");
+        }
 
-            lock = channel.tryLock();
+        if (timeout.isZero()) {
+            LockAttempt attempt = attemptLock(path);
+            if (attempt.lock != null) {
+                return new FileMutex(attempt.channel, attempt.lock);
+            }
+            attempt.channel.close();
+            throw new IOException("File is locked: " + path);
+        }
 
-            return lock == null;
+        long timeoutNanos = timeout.toNanos();
+        long retryNanos = DEFAULT_RETRY_INTERVAL.toNanos();
+        long startedAt = System.nanoTime();
 
-        } catch (IOException | IllegalStateException e) {
-            return true;
-        } finally {
-            try {
-                if (lock != null && lock.isValid()) {
-                    lock.release();
-                }
-            } catch (Exception ignored) {
-                // no-op
+        while (true) {
+            LockAttempt attempt = attemptLock(path);
+            if (attempt.lock != null) {
+                return new FileMutex(attempt.channel, attempt.lock);
+            }
+            attempt.channel.close();
+
+            long elapsed = System.nanoTime() - startedAt;
+            if (elapsed >= timeoutNanos) {
+                throw new IOException("Timeout waiting for file lock: " + path);
             }
 
+            long remaining = timeoutNanos - elapsed;
+            long sleepNanos = Math.min(retryNanos, remaining);
+            TimeUnit.NANOSECONDS.sleep(sleepNanos);
+        }
+    }
+
+
+
+    public static boolean isLocked(@NotNull Path path) throws IOException {
+        try (FileChannel channel = FileChannel.open(
+            path,
+            StandardOpenOption.CREATE,
+            StandardOpenOption.WRITE
+        )) {
+            FileLock lock;
             try {
-                if (channel != null && channel.isOpen()) {
-                    channel.close();
-                }
-            } catch (Exception ignored) {
-                // no-op
+                lock = channel.tryLock();
+            } catch (OverlappingFileLockException e) {
+                return true;
             }
+
+            if (lock == null) {
+                return true;
+            }
+
+            lock.release();
+            return false;
         }
     }
 
@@ -91,7 +130,13 @@ public final class FileMutex implements AutoCloseable {
             StandardOpenOption.WRITE
         );
 
-        FileLock lock = channel.tryLock();
+        FileLock lock;
+        try {
+            lock = channel.tryLock();
+        } catch (OverlappingFileLockException e) {
+            lock = null;
+        }
+
         return new LockAttempt(channel, lock);
     }
 
@@ -99,7 +144,30 @@ public final class FileMutex implements AutoCloseable {
 
     @Override
     public void close() throws IOException {
-        lock.release();
-        channel.close();
+        IOException error = null;
+
+        try {
+            if (lock.isValid()) {
+                lock.release();
+            }
+        } catch (IOException e) {
+            error = e;
+        }
+
+        try {
+            if (channel.isOpen()) {
+                channel.close();
+            }
+        } catch (IOException e) {
+            if (error == null) {
+                error = e;
+            } else {
+                error.addSuppressed(e);
+            }
+        }
+
+        if (error != null) {
+            throw error;
+        }
     }
 }
