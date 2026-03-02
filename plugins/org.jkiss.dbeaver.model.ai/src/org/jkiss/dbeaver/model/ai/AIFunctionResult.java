@@ -20,19 +20,35 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithReturn;
 
-public record AIFunctionResult<T>(
-    @NotNull AIFunctionType type,
-    @NotNull T value,
-    @Nullable DBRRunnableWithReturn<?> callback
-) {
+public class AIFunctionResult {
+
+  public enum FunctionType {
+        INFORMATION,
+        ACTION
+    }
+
+    private final AIFunctionResult.FunctionType type;
+    private final Object value;
+    @Nullable
+    private final DBRRunnableWithReturn<?> callback;
+
     public AIFunctionResult(
-        @NotNull AIFunctionType type,
-        @NotNull T value
+        @NotNull AIFunctionResult.FunctionType type,
+        @NotNull Object value
     ) {
         this(type, value, null);
     }
 
-    @Override
+    public AIFunctionResult(
+        @NotNull AIFunctionResult.FunctionType type,
+        @NotNull Object value,
+        @Nullable DBRRunnableWithReturn<?> callback
+    ) {
+        this.type = type;
+        this.value = value;
+        this.callback = callback;
+    }
+
     @NotNull
     public AIFunctionType type() {
         return type;
@@ -40,7 +56,7 @@ public record AIFunctionResult<T>(
 
     @Override
     @NotNull
-    public T value() {
+    public Object getValue() {
         return value;
     }
 }
