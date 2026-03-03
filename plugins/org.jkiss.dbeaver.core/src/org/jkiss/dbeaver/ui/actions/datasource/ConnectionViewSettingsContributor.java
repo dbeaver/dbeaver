@@ -144,7 +144,7 @@ public class ConnectionViewSettingsContributor extends DataSourceMenuContributor
     }
 
     private static class SwitchToAdvancedModeAction extends SettingsAction {
-        SwitchToAdvancedModeAction(DBPDataSourceContainer dsContainer) {
+        SwitchToAdvancedModeAction(@NotNull DBPDataSourceContainer dsContainer) {
             super(dsContainer, RegistryMessages.navigator_settings_switch_to_advanced_mode, AS_PUSH_BUTTON);
             setToolTipText(RegistryMessages.navigator_settings_switch_to_advanced_mode_description);
             setImageDescriptor(DBeaverIcons.getImageDescriptor(UIIcon.SHOW_ALL_DETAILS));
