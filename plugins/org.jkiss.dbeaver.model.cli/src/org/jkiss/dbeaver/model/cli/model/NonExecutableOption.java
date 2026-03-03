@@ -14,21 +14,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.cli.model.option;
+package org.jkiss.dbeaver.model.cli.model;
 
-import org.jkiss.dbeaver.model.cli.model.NonExecutableOption;
-import picocli.CommandLine;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
 /**
- * Eclipse options, we do not process them,
- * some properties were hidden and exists to avoid unmatched options error
+ * The option does not launch the command line due to the presence of
+ * for example, it may be an external option provided and processed not by DBeaver,
+ * or a dependent option that cannot be executed without additional options
  */
-public class EclipseOptions {
-    // Eclipse options do nothing in our code
-    @NonExecutableOption
-    @CommandLine.Option(names = {"-nl"}, arity = "1", description = "Default locale")
-    private String nl;
-    @NonExecutableOption
-    @CommandLine.Option(names = {"-data"}, arity = "1", description = "Workspace location")
-    private String data;
+@Target(value = {ElementType.FIELD})
+@Retention(RetentionPolicy.RUNTIME)
+public @interface NonExecutableOption {
 }
