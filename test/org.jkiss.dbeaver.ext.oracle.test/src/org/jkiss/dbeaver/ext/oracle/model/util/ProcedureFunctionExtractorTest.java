@@ -49,11 +49,22 @@ public class ProcedureFunctionExtractorTest {
     }
 
     @Test
+    public void endIfTest() {
+        assertBodyFound(ifEndIf);
+    }
+
+    @Test
+    public void caseEndTest() {
+        assertBodyFound(caseEndCase);
+    }
+
+    @Test
     public void allProceduresBodyExtractTest() {
         // given
         List<ProcTestCase> allTestCases = new ArrayList<>();
         allTestCases.add(simpleNoArgsProc);
         allTestCases.add(simpleNoArgsNoEndProc);
+        allTestCases.add(ifEndIf);
         Collections.shuffle(allTestCases);
 
         String allProcs = allTestCases.stream().map(ptc -> ptc.procBody).collect(Collectors.joining("\n"));
@@ -99,6 +110,105 @@ public class ProcedureFunctionExtractorTest {
           NULL;
         END;"""
     );
+
+    private final ProcTestCase ifEndIf = new ProcTestCase(
+        "if_end_if", DBSProcedureType.PROCEDURE, """
+        PROCEDURE if_end_if IS
+        BEGIN
+          IF 1=1 THEN
+            NULL;
+          END IF;
+        END ;"""
+    );
+
+    private final ProcTestCase caseEndCase = new ProcTestCase(
+        "case_end_case", DBSProcedureType.PROCEDURE, """
+        PROCEDURE case_end_case IS
+        BEGIN
+          CASE 1
+            WHEN 1 THEN NULL;
+          END CASE;
+        END ;"""
+    );
+
+    private final ProcTestCase loopEndLoop = new ProcTestCase(
+        "loop_end_loop", DBSProcedureType.PROCEDURE, """
+        PROCEDURE loop_end_loop IS
+        BEGIN
+          LOOP
+            NULL;
+            EXIT;
+          END LOOP;
+        END ;"""
+    );
+
+    private final ProcTestCase forLoopEndLoop = new ProcTestCase(
+        "for_loop_end_loop", DBSProcedureType.PROCEDURE, """
+        PROCEDURE for_loop_end_loop IS
+        BEGIN
+          FOR i IN 1..1 LOOP
+            NULL;
+          END LOOP;
+        END ;"""
+    );
+
+    private final ProcTestCase whileLoopEndLoop = new ProcTestCase(
+        "while_loop_end_loop", DBSProcedureType.PROCEDURE, """
+        PROCEDURE while_loop_end_loop IS
+        BEGIN
+          DECLARE
+            i NUMBER := 0;
+          BEGIN
+            WHILE i < 1 LOOP
+              NULL;
+              i := i + 1;
+            END LOOP;
+          END;
+        END ;"""
+    );
+
+    private final ProcTestCase declareEnd = new ProcTestCase(
+        "declare_end", DBSProcedureType.PROCEDURE, """
+        PROCEDURE declare_end IS
+        BEGIN
+          DECLARE
+            l_var NUMBER;
+          BEGIN
+            l_var := 42;
+          END;
+        END ;"""
+    );
+
+    private final ProcTestCase nestedProcEnd = new ProcTestCase(
+        "nested_proc_end", DBSProcedureType.PROCEDURE, """
+        PROCEDURE nested_proc_end IS
+        BEGIN
+          DECLARE
+            PROCEDURE nested_proc IS
+            BEGIN
+              NULL;
+            END nested_proc;
+          BEGIN
+            nested_proc;
+          END;
+        END ;"""
+    );
+
+    private final ProcTestCase nestedFuncEnd = new ProcTestCase(
+        "nested_func_end", DBSProcedureType.PROCEDURE, """
+        PROCEDURE nested_func_end IS
+        BEGIN
+          DECLARE
+            FUNCTION nested_func RETURN NUMBER IS
+            BEGIN
+              RETURN 42;
+            END nested_func;
+          BEGIN
+            NULL;
+          END;
+        END ;"""
+    );
+
 
     private class ProcTestCase {
         private final String name;

@@ -22,12 +22,19 @@ import org.jkiss.dbeaver.ext.oracle.model.OracleProcedurePackaged;
 
 import java.util.ArrayDeque;
 import java.util.Deque;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class ProcedureBodyExtractor {
 
     public static final String NO_DEFINITION_FOUND = "-- no definition found";
+    private static final List<String> possibleBeginCases = List.of(
+        "begin",
+        "IF",
+        "CASE"
+    );
+
     private final OracleProcedurePackaged proc;
     private final String parentPackageBodyDefinition;
 
@@ -84,10 +91,11 @@ public class ProcedureBodyExtractor {
     }
 
     private void fillStacks() {
-        if (endMatcher.find(beginStack.peek())) {
+        Integer lastBegin = beginStack.peek();
+        if (lastBegin != null && endMatcher.find(lastBegin)) {
             endStack.addFirst(endMatcher.end());
-            boolean isBeginFound = beginMatcher.find(endMatcher.end());
-            if (isBeginFound && beginMatcher.end() < endMatcher.start()) {
+            boolean isNextBeginFound = beginMatcher.find(lastBegin);
+            if (isNextBeginFound && beginMatcher.end() < endMatcher.start()) {
                 beginStack.addFirst(beginMatcher.end());
                 fillStacks();
             }
@@ -96,13 +104,13 @@ public class ProcedureBodyExtractor {
 
     private Matcher getBeginMatcher() {
         return Pattern
-            .compile("begin", Pattern.CASE_INSENSITIVE)
+            .compile(String.join("|", possibleBeginCases), Pattern.CASE_INSENSITIVE)
             .matcher(parentPackageBodyDefinition);
     }
 
     private Matcher getEndMatcher() {
         return Pattern
-            .compile("end\\s*.*;", Pattern.CASE_INSENSITIVE)
+            .compile("end[\\s\\n]*;", Pattern.CASE_INSENSITIVE)
             .matcher(parentPackageBodyDefinition);
     }
 
