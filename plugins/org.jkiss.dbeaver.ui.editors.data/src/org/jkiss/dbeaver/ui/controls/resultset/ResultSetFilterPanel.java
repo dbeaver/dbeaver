@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -913,7 +913,7 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
             if (activeObjectImage != null) {
                 Image icon = DBeaverIcons.getImage(activeObjectImage);
                 Rectangle iconBounds = icon.getBounds();
-                e.gc.drawImage(icon, 2, 2);
+                e.gc.drawImage(icon, 2, (e.height - iconBounds.height) / 2);
                 textOffset += iconBounds.width + 2;
             }
             int textHeight = e.gc.getFontMetrics().getHeight();
@@ -1160,7 +1160,7 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
         GridData gd = (GridData) filtersText.getLayoutData();
         gd.heightHint = filtersText.getLineHeight() * (filterExpanded ? 5 : 1);
         filtersText.redraw();
-        this.getParent().layout(true);
+        this.getParent().getParent().layout(true);
     }
 
     private abstract class ToolItemPanel extends FilterPanel {
