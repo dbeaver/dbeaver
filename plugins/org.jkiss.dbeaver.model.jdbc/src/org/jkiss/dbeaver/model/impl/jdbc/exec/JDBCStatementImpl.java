@@ -23,7 +23,6 @@ import org.jkiss.dbeaver.DBRuntimeException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.exec.DBCException;
-import org.jkiss.dbeaver.model.exec.DBExecUtils;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCObjectSupplier;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
@@ -276,11 +275,6 @@ public class JDBCStatementImpl<STATEMENT extends Statement> extends AbstractStat
 
     @NotNull
     protected SQLException handleExecuteError(@NotNull Throwable ex) {
-        if (DBExecUtils.isExecutionCanceled(connection.getDataSource(), ex)) {
-            executeError = null;
-        } else {
-            executeError = ex;
-        }
         if (connection.getDataSource().getContainer().getPreferenceStore().getBoolean(ModelPreferences.QUERY_ROLLBACK_ON_ERROR)) {
             try {
                 if (!connection.isClosed() && !connection.getAutoCommit()) {

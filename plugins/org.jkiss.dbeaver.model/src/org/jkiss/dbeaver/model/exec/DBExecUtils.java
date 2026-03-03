@@ -167,10 +167,21 @@ public class DBExecUtils {
     }
 
     public static boolean isExecutionCanceled(@Nullable DBPDataSource dataSource, @NotNull Throwable error) {
-        return error instanceof InterruptedException ||
-            error instanceof DBInterruptedException ||
-            error instanceof ClosedByInterruptException ||
-            (dataSource != null && discoverErrorType(dataSource, error) == DBPErrorAssistant.ErrorType.EXECUTION_CANCELED);
+        for (Throwable t = error; t != null; t = t.getCause()) {
+            if (t instanceof InterruptedException ||
+                t instanceof DBInterruptedException ||
+                t instanceof ClosedByInterruptException) {
+                return true;
+            }
+            if (dataSource != null &&
+                discoverErrorType(dataSource, t) == DBPErrorAssistant.ErrorType.EXECUTION_CANCELED) {
+                return true;
+            }
+            if (t.getCause() == t) {
+                break;
+            }
+        }
+        return false;
     }
 
     /**
