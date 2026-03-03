@@ -30,6 +30,8 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureType;
 import java.sql.ResultSet;
 import java.util.Map;
 import java.util.Objects;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * GenericProcedure
@@ -88,6 +90,7 @@ public class OracleProcedurePackaged extends OracleProcedureBase<OraclePackage> 
     }
 
     @NotNull
+    @Override
     public String getObjectDefinitionText(@NotNull DBRProgressMonitor monitor, @NotNull Map<String, Object> options) throws DBException {
         return parent.getExtendedDefinitionText(monitor);
     }
@@ -99,4 +102,26 @@ public class OracleProcedurePackaged extends OracleProcedureBase<OraclePackage> 
             ownerPackage.getName()
         );
     }
+
+    private String extractSource(@NotNull String typeText, @NotNull String parentPackageBodyDefinition) {
+        Pattern procStartToken = Pattern.compile(typeText + " " + getUniqueName(), Pattern.CASE_INSENSITIVE);
+        Matcher matcherStart = procStartToken.matcher(parentPackageBodyDefinition);
+        if (matcherStart.find()) {
+            int beginDefinition = matcherStart.start();
+            Pattern procEndPattern = Pattern.compile(constructEndRegex(getUniqueName()), Pattern.CASE_INSENSITIVE);
+            Matcher procEndMatcher = procEndPattern.matcher(parentPackageBodyDefinition.substring(matcherStart.end()));
+            if (procEndMatcher.find()) {
+                return parentPackageBodyDefinition.substring(beginDefinition, procEndMatcher.end());
+            } else {
+                Pattern generalEndPattern = Pattern.compile(constructEndRegex(parentPackageName) + "|" + "function\\s+.+");
+            }
+        }
+        return "-- no procedure definition found";
+    }
+
+    @NotNull
+    private String constructEndRegex(@NotNull String objectName) {
+        return "end\\s++" + objectName + ";";
+    }
+
 }
