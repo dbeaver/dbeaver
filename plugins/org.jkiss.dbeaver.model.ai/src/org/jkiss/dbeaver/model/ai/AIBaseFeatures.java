@@ -37,6 +37,7 @@ public interface AIBaseFeatures {
     String PARAM_ENGINE = "engine";
     String PARAM_DRIVER = "driver";
     String FUNCTION_NAME = "functionName";
+    String PROMPT_TYPE = "promptType";
 
     DBRFeature CATEGORY_AI_CALLS = DBRFeature.createCategory("AI Calls", "AI Chat features");
 

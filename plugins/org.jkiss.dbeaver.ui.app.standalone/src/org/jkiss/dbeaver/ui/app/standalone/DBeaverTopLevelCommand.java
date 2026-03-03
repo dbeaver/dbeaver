@@ -66,7 +66,7 @@ public class DBeaverTopLevelCommand extends AbstractTopLevelCommand {
     private List<String> filesToOpen;
 
     // open files via double-click or "Open with DBeaver"
-    @CommandLine.Parameters(index = "0", arity = "0..*", description = "Open files", hidden = true)
+    @CommandLine.Parameters(index = "0", arity = "0..*", description = "Open files")
     private List<String> filesToOpenParams;
 
 

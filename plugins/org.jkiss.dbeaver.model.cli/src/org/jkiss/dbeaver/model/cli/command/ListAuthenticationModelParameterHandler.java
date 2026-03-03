@@ -122,30 +122,11 @@ public class ListAuthenticationModelParameterHandler extends CLIAbstractSubcomma
             PropertyCollector propertyCollector = new PropertyCollector(credentials, true);
             propertyCollector.collectProperties();
             for (DBPPropertyDescriptor property : propertyCollector.getProperties()) {
-                String helpText = getHelpText(property);
+                String helpText = CLIUtils.getPropertyHelpText(property);
                 outBuilder.append(helpText);
             }
             outBuilder.append("\n");
         }
         return outBuilder.toString();
-    }
-
-    private static @NotNull String getHelpText(DBPPropertyDescriptor property) {
-        String displayName = property.getDisplayName();
-        String description = property.getDescription();
-        String helpText;
-        if (CommonUtils.equalObjects(displayName, description) || CommonUtils.isEmpty(description)) {
-            helpText = "  - %s = %s%n".formatted(
-                property.getId(),
-                CommonUtils.notEmpty(displayName)
-            );
-        } else {
-            helpText = "  - %s (%s) = %s%n".formatted(
-                property.getId(),
-                property.getDisplayName(),
-                property.getDescription()
-            );
-        }
-        return helpText;
     }
 }

@@ -129,5 +129,7 @@
         <keyword id="dbeaver.ai.config" label="%keyword.org.jkiss.dbeaver.ai.config"/>
         <keyword id="dbeaver.ai.prompts" label="%keyword.org.jkiss.dbeaver.ai.prompts"/>
     </extension>
-
+    <extension point="org.jkiss.dbeaver.workbenchHandler">
+        <workbenchWindowInitializer class="org.jkiss.dbeaver.ui.ai.AIWorkbenchInitializer" order="2"/>
+    </extension>
 </plugin>

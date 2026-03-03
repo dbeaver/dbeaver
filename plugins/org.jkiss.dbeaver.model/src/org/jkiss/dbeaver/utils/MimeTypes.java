@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,17 +17,19 @@
 
 package org.jkiss.dbeaver.utils;
 
+import org.jkiss.utils.HttpConstants;
+
 public class MimeTypes {
 
     public static final String TEXT = "text";
-    public static final String TEXT_PLAIN = "text/plain";
+    public static final String TEXT_PLAIN = HttpConstants.CONTENT_TYPE_TEXT_PLAIN;
     public static final String TEXT_HTML = "text/html";
     public static final String TEXT_XML = "text/xml";
     public static final String TEXT_CSS = "text/css";
     public static final String TEXT_JSON = "text/json";
 
-    public static final String APPLICATION_JSON = "application/json";
-    public final static String OCTET_STREAM = "application/octet-stream";
+    public static final String APPLICATION_JSON = HttpConstants.CONTENT_TYPE_JSON;
+    public final static String OCTET_STREAM = HttpConstants.CONTENT_TYPE_OCTET_STREAM;
     public static final String MULTIPART_ANY = "multipart/*";
     public static final String MULTIPART_RELATED = "multipart/related";
 
