@@ -16,11 +16,9 @@
  */
 package org.jkiss.dbeaver.model.cli.model;
 
+import org.jkiss.code.NotNull;
 import picocli.CommandLine;
 
-/**
- * Abstract transformer that adds a mixin to the top-level command.
- */
 public abstract class AbstractTopLevelTransformer implements CommandLine.IModelTransformer {
     private boolean initialized = false;
 
@@ -30,14 +28,13 @@ public abstract class AbstractTopLevelTransformer implements CommandLine.IModelT
             return commandSpec;
         }
         Object mixinObj = getMixin();
-        if (mixinObj != null) {
-            CommandLine.Model.CommandSpec mixin = CommandLine.Model.CommandSpec.forAnnotatedObject(mixinObj);
-            commandSpec.addMixin(mixinObj.getClass().getSimpleName(), mixin);
-        }
+        CommandLine.Model.CommandSpec mixin = CommandLine.Model.CommandSpec.forAnnotatedObject(mixinObj);
+        commandSpec.addMixin(mixinObj.getClass().getSimpleName(), mixin);
 
         initialized = true;
         return commandSpec;
     }
 
+    @NotNull
     protected abstract Object getMixin();
 }
