@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.ext.oracle.model.OracleProcedurePackaged;
 import java.util.ArrayDeque;
 import java.util.Deque;
 import java.util.List;
+import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -32,7 +33,10 @@ public class ProcedureBodyExtractor {
     private static final List<String> possibleBeginCases = List.of(
         "begin",
         "IF",
-        "CASE"
+        "CASE",
+        "LOOP",
+        "FOR",
+        "WHILE"
     );
 
     private final OracleProcedurePackaged proc;
@@ -58,7 +62,7 @@ public class ProcedureBodyExtractor {
                 .compile(procType + "\\s+" + proc.getUniqueName(), Pattern.CASE_INSENSITIVE)
                 .matcher(parentPackageBodyDefinition);
             if (procStart.find()) {
-                int functionEndIndex = findProcEnd(procStart);
+                int functionEndIndex = findProcEnd(procStart.end());
                 return functionEndIndex >= 0
                     ? parentPackageBodyDefinition.substring(procStart.start(), functionEndIndex)
                     : parentPackageBodyDefinition.substring(procStart.start());
@@ -67,17 +71,17 @@ public class ProcedureBodyExtractor {
         return NO_DEFINITION_FOUND;
     }
 
-    private int findProcEnd(@NotNull Matcher procStart) {
-        int functionEndIndex = tryFindProcEnd(procStart.end());
+    private int findProcEnd(int startIndex) {
+        int functionEndIndex = tryFindProcEnd(startIndex);
         if (functionEndIndex >= 0) {
             return functionEndIndex;
         } else {
-            beginStack.addFirst(procStart.end());
+            beginStack.addFirst(startIndex);
             beginMatcher = getBeginMatcher();
             endMatcher = getEndMatcher();
             fillStacks();
-            Integer endIndex = endStack.getLast();
-            return endStack.getLast() != null ? endIndex : -1;
+            Integer endIndex = endStack.peek();
+            return endIndex != null ? endIndex : -1;
         }
     }
 
@@ -92,14 +96,23 @@ public class ProcedureBodyExtractor {
 
     private void fillStacks() {
         Integer lastBegin = beginStack.peek();
-        if (lastBegin != null && endMatcher.find(lastBegin)) {
-            endStack.addFirst(endMatcher.end());
-            boolean isNextBeginFound = beginMatcher.find(lastBegin);
-            if (isNextBeginFound && beginMatcher.end() < endMatcher.start()) {
-                beginStack.addFirst(beginMatcher.end());
-                fillStacks();
+        if (lastBegin != null) {
+            Integer lastEnd = Objects.requireNonNullElse(endStack.peek(), lastBegin);
+            boolean isNextEndFound = findFromIndex(endMatcher, lastEnd);
+            if (isNextEndFound && endMatcher.start() > lastBegin) {
+                endStack.addFirst(endMatcher.end());
+                boolean isNextBeginFound = findFromIndex(beginMatcher, lastBegin);
+                if (isNextBeginFound) {
+                    beginStack.addFirst(beginMatcher.end());
+                    fillStacks();
+                }
             }
         }
+    }
+
+    private boolean findFromIndex(@NotNull Matcher matcher, int index) {
+        matcher.region(index, parentPackageBodyDefinition.length());
+        return matcher.find();
     }
 
     private Matcher getBeginMatcher() {

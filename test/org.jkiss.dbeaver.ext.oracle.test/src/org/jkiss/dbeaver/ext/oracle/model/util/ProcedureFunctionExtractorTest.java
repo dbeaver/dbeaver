@@ -43,9 +43,20 @@ public class ProcedureFunctionExtractorTest {
     }
 
     @Test
-    public void simpleProcTest() {
+    public void simpleProcFuncTest() {
         assertBodyFound(simpleNoArgsProc);
         assertBodyFound(simpleNoArgsNoEndProc);
+        assertBodyFound(procWithParams);
+
+        assertBodyFound(simpleFunc);
+        assertBodyFound(simpleNoArgsNoEndProc);
+        assertBodyFound(funcWithParams);
+    }
+
+    @Test
+    public void noBeginTest() {
+        assertBodyFound(procNoBegin);
+        assertBodyFound(funcNoBegin);
     }
 
     @Test
@@ -59,12 +70,65 @@ public class ProcedureFunctionExtractorTest {
     }
 
     @Test
+    public void loopsTest() {
+        assertBodyFound(loopEndLoop);
+        assertBodyFound(forLoopEndLoop);
+    }
+
+    @Test
+    public void nestedBeginTest() {
+        assertBodyFound(tripleNestedBegins);
+    }
+
+    @Test
+    public void openClosedNestedBeginsTest() {
+        assertBodyFound(openClosedBeginsInsideMain);
+    }
+
+    @Test
+    public void combinedNestedBegins() {
+        assertBodyFound(combinedNestedBegins);
+    }
+
+    @Test
+    public void whileTest() {
+        assertBodyFound(whileLoopEndLoop);
+    }
+
+    @Test
+    public void declareTest() {
+        assertBodyFound(declareEnd);
+    }
+
+    @Test
     public void allProceduresBodyExtractTest() {
         // given
         List<ProcTestCase> allTestCases = new ArrayList<>();
         allTestCases.add(simpleNoArgsProc);
         allTestCases.add(simpleNoArgsNoEndProc);
+        allTestCases.add(procNoBegin);
+        allTestCases.add(procWithParams);
+
+        allTestCases.add(simpleFunc);
+        allTestCases.add(simpleFuncNoEnd);
+        allTestCases.add(funcNoBegin);
+        allTestCases.add(funcWithParams);
+
         allTestCases.add(ifEndIf);
+        allTestCases.add(caseEndCase);
+
+        allTestCases.add(forLoopEndLoop);
+        allTestCases.add(loopEndLoop);
+
+        allTestCases.add(tripleNestedBegins);
+        allTestCases.add(openClosedBeginsInsideMain);
+        allTestCases.add(combinedNestedBegins);
+
+        allTestCases.add(whileLoopEndLoop);
+
+        allTestCases.add(declareEnd);
+
+        // not sure if needed to shuffle
         Collections.shuffle(allTestCases);
 
         String allProcs = allTestCases.stream().map(ptc -> ptc.procBody).collect(Collectors.joining("\n"));
@@ -95,6 +159,7 @@ public class ProcedureFunctionExtractorTest {
         END TEST_PACKAGE;""";
 
     private final ProcTestCase unknownProc = new ProcTestCase("unknown", DBSProcedureType.UNKNOWN, "-- Procedure Body");
+
     private final ProcTestCase simpleNoArgsProc = new ProcTestCase(
         "simple_proc", DBSProcedureType.PROCEDURE, """
         PROCEDURE simple_proc IS
@@ -109,6 +174,66 @@ public class ProcedureFunctionExtractorTest {
         BEGIN
           NULL;
         END;"""
+    );
+
+    private final ProcTestCase procWithParams = new ProcTestCase(
+        "proc_with_params",
+        DBSProcedureType.PROCEDURE,
+        """
+            PROCEDURE proc_with_params(
+               p_id    IN     NUMBER,
+               p_name  IN OUT VARCHAR2,
+               p_flag  OUT    NUMBER
+             ) IS
+             BEGIN
+               DBMS_OUTPUT.PUT_LINE('proc_with_params');
+             END proc_with_params;"""
+    );
+
+    private final ProcTestCase procNoBegin = new ProcTestCase(
+        "proc_no_begin", DBSProcedureType.PROCEDURE, """
+        PROCEDURE proc_no_begin IS
+          l_var NUMBER := 42;
+          l_msg VARCHAR2(100);
+        END;"""
+    );
+
+
+    private final ProcTestCase simpleFunc = new ProcTestCase(
+        "simple_func", DBSProcedureType.FUNCTION, """
+        FUNCTION simple_func RETURN NUMBER IS
+          l_var NUMBER := 42;
+        BEGIN
+          RETURN l_var;
+        END simple_func;"""
+    );
+
+    private final ProcTestCase simpleFuncNoEnd = new ProcTestCase(
+        "func_no_end", DBSProcedureType.FUNCTION, """
+        FUNCTION func_no_end RETURN NUMBER IS
+          l_var NUMBER := 42;
+        BEGIN
+          RETURN l_var;
+        END ;"""
+    );
+
+    private final ProcTestCase funcNoBegin = new ProcTestCase(
+        "func_no_begin", DBSProcedureType.FUNCTION, """
+        FUNCTION func_no_begin RETURN NUMBER IS
+          l_var NUMBER := 42;
+          l_msg VARCHAR2(100);
+        END;"""
+    );
+
+    private final ProcTestCase funcWithParams = new ProcTestCase(
+        "func_with_params",
+        DBSProcedureType.FUNCTION,
+        """
+            FUNCTION func_with_params(p_qty IN NUMBER, p_price IN NUMBER DEFAULT 1)\s
+              RETURN NUMBER IS
+            BEGIN
+              RETURN p_qty * p_price;
+            END;"""
     );
 
     private final ProcTestCase ifEndIf = new ProcTestCase(
@@ -152,6 +277,53 @@ public class ProcedureFunctionExtractorTest {
         END ;"""
     );
 
+    private final ProcTestCase tripleNestedBegins = new ProcTestCase(
+        "triple_nested_begins", DBSProcedureType.PROCEDURE, """
+        PROCEDURE triple_nested_begins IS
+        BEGIN                    -- #1 Outer BEGIN
+          BEGIN                  -- #2 Middle BEGIN
+            BEGIN                -- #3 Inner BEGIN
+              NULL;
+            END;                 -- Closes #3
+          END;                   -- Closes #2
+        END;"""
+    );
+
+    private final ProcTestCase openClosedBeginsInsideMain = new ProcTestCase(
+        "two_nested_inside_main", DBSProcedureType.PROCEDURE, """
+        PROCEDURE two_nested_inside_main IS
+        BEGIN                       -- Main BEGIN
+          BEGIN                     -- Nested #1
+            NULL;
+          END;                      -- Closes nested #1
+          BEGIN                     -- Nested #2  
+            NULL;
+          END;                      -- Closes nested #2
+        END;"""
+    );
+
+    private final ProcTestCase combinedNestedBegins = new ProcTestCase(
+        "combined_nested_begins", DBSProcedureType.PROCEDURE, """
+        PROCEDURE combined_nested_begins IS
+        BEGIN                          -- Main BEGIN #1
+          BEGIN                        -- Triple nest #1
+            BEGIN                      -- Triple nest #2
+              BEGIN                    -- Triple nest #3
+                NULL;
+              END;                     -- Closes triple #3
+            END;                       -- Closes triple #2
+          END;                         -- Closes triple #1
+        
+          BEGIN                        -- Inside main #1
+            NULL;
+          END;                         -- Closes inside #1
+          BEGIN                        -- Inside main #2
+            NULL;
+          END;                         -- Closes inside #2
+        END;"""
+    );
+
+
     private final ProcTestCase whileLoopEndLoop = new ProcTestCase(
         "while_loop_end_loop", DBSProcedureType.PROCEDURE, """
         PROCEDURE while_loop_end_loop IS
@@ -194,19 +366,22 @@ public class ProcedureFunctionExtractorTest {
         END ;"""
     );
 
-    private final ProcTestCase nestedFuncEnd = new ProcTestCase(
-        "nested_func_end", DBSProcedureType.PROCEDURE, """
-        PROCEDURE nested_func_end IS
-        BEGIN
-          DECLARE
-            FUNCTION nested_func RETURN NUMBER IS
-            BEGIN
-              RETURN 42;
-            END nested_func;
+    private final ProcTestCase procWithNested = new ProcTestCase(
+        "outer_proc", DBSProcedureType.PROCEDURE, """
+        PROCEDURE outer_proc IS
+          PROCEDURE inner_proc_labeled IS
+          BEGIN
+            NULL;
+          END inner_proc;
+          PROCEDURE inner_proc_labeled IS
           BEGIN
             NULL;
           END;
-        END ;"""
+        
+        BEGIN
+          inner_proc;
+          inner_proc_labeled;
+        END;"""
     );
 
 
