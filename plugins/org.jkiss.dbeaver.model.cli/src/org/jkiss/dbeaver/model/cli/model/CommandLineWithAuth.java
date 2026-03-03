@@ -16,30 +16,13 @@
  */
 package org.jkiss.dbeaver.model.cli.model;
 
-import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.cli.CLIAbstractSubcommand;
-import org.jkiss.dbeaver.model.cli.CLIConstants;
 import org.jkiss.dbeaver.model.cli.CLIException;
-import org.jkiss.dbeaver.model.cli.model.option.AuthenticateOptions;
-import picocli.CommandLine;
 
 public abstract class CommandLineWithAuth extends CLIAbstractSubcommand {
 
-    @Nullable
-    @CommandLine.Mixin
-    private AuthenticateOptions authenticateOptions;
-
     @Override
     public void run() throws CLIException {
-        if (context().getContextParameter(CLIConstants.CONTEXT_PARAM_AUTHENTICATOR) != null) {
-            try {
-                ((CommandLineAuthenticator) context().getContextParameter(CLIConstants.CONTEXT_PARAM_AUTHENTICATOR))
-                    .authenticate(authenticateOptions, context());
-            } catch (DBException e) {
-                throw new CLIException("Authentication failed: " + e.getMessage(), e, CLIConstants.EXIT_CODE_ERROR);
-            }
-        }
     }
 
 

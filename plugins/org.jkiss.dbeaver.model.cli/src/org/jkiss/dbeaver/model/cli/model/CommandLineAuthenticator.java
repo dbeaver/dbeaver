@@ -20,8 +20,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.cli.CLIContext;
-import org.jkiss.dbeaver.model.cli.model.option.AuthenticateOptions;
 
 public interface CommandLineAuthenticator {
-    void authenticate(@Nullable AuthenticateOptions options, @NotNull CLIContext context) throws DBException;
+    void authenticate(@Nullable CLIInitializer options, @NotNull CLIContext context) throws DBException;
 }
