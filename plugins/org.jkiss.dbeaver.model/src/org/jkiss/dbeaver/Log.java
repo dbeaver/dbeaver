@@ -34,6 +34,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Log
@@ -255,6 +256,10 @@ public class Log {
         debugMessage(message, t);
     }
 
+    public void writeToConsole(int severity, Object message, Throwable t) {
+        writeExceptionStatus(severity, message, t);
+    }
+
     private void debugMessage(Object message, Throwable t) {
         PrintStream logStream = logWriter.get();
         synchronized (Log.class) {
@@ -309,21 +314,19 @@ public class Log {
         }
         if (handler != null) {
             handler.info(name, message);
-            if (getLogWriter() == null) {
-                return;
-            }
+            return;
+        }
+        int severity = Status.INFO;
+        if (writeEclipseLog(createStatus(severity, message))) {
+            return;
         }
         debugMessage(message, null);
-        int severity = Status.INFO;
-        writeEclipseLog(createStatus(severity, message));
     }
 
     public void info(Object message, Throwable t) {
         if (handler != null) {
             handler.info(name, message, t);
-            if (getLogWriter() == null) {
-                return;
-            }
+            return;
         }
         writeExceptionStatus(Status.INFO, message, t);
     }
@@ -335,21 +338,19 @@ public class Log {
         }
         if (handler != null) {
             handler.warn(name, message);
-            if (getLogWriter() == null) {
-                return;
-            }
+            return;
+        }
+        int severity = Status.WARNING;
+        if (writeEclipseLog(createStatus(severity, message))) {
+            return;
         }
         debugMessage(message, null);
-        int severity = Status.WARNING;
-        writeEclipseLog(createStatus(severity, message));
     }
 
     public void warn(Object message, Throwable t) {
         if (handler != null) {
             handler.warn(name, message, t);
-            if (getLogWriter() == null) {
-                return;
-            }
+            return;
         }
         writeExceptionStatus(Status.WARNING, message, t);
     }
@@ -364,23 +365,21 @@ public class Log {
         }
         if (handler != null) {
             handler.error(name, message);
-            if (getLogWriter() == null) {
-                return;
-            }
+            return;
+        }
+        int severity = Status.ERROR;
+        if (writeEclipseLog(createStatus(severity, message))) {
+            return;
         }
         debugMessage(message, null);
-        int severity = Status.ERROR;
-        writeEclipseLog(createStatus(severity, message));
     }
 
     public void error(Object message, Throwable t) {
         if (handler != null) {
             handler.error(name, message, t);
-            if (getLogWriter() == null) {
-                return;
-            }
+            return;
         }
-        writeExceptionStatus(Status.ERROR, message, t);
+        writeExceptionStatus(IStatus.ERROR, message, t);
     }
 
     public void fatal(Object message) {
@@ -403,6 +402,7 @@ public class Log {
         error(message, t);
     }
 
+    private AtomicInteger counter = new AtomicInteger(0);
     private void writeExceptionStatus(int severity, Object message, Throwable t) {
         boolean logWritten = false;
         if (logWriter.get() == null) {
