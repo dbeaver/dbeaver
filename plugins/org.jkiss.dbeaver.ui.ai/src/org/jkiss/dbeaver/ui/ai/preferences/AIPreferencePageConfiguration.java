@@ -115,7 +115,9 @@ public class AIPreferencePageConfiguration extends AbstractPrefPage implements I
         Composite composite = UIUtils.createComposite(parent, 1);
 
         composite.setLayoutData(new GridData(GridData.FILL_BOTH));
-        composite.setData(IWorkbenchPreferenceContainer.class.getName(), getContainer());
+        if (getContainer() instanceof IWorkbenchPreferenceContainer) {
+            composite.setData(IWorkbenchPreferenceContainer.class.getName(), getContainer());
+        }
 
         formatterConfigurator.createControl(composite, ddlGenerator, () -> {});
         Composite serviceComposite = UIUtils.createComposite(composite, 2);
