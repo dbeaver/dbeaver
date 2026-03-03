@@ -23,9 +23,9 @@ import org.jkiss.dbeaver.ext.oracle.model.OracleProcedurePackaged;
 import java.util.ArrayDeque;
 import java.util.Deque;
 import java.util.List;
-import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 public class ProcedureBodyExtractor {
 
@@ -43,11 +43,9 @@ public class ProcedureBodyExtractor {
     private final String parentPackageBodyDefinition;
 
     private final Deque<Integer> beginStack = new ArrayDeque<>();
-    private final Deque<Integer> endStack = new ArrayDeque<>();
 
     private Matcher beginMatcher;
     private Matcher endMatcher;
-
 
     public ProcedureBodyExtractor(@NotNull OracleProcedurePackaged proc, @NotNull String parentPackageBodyDefinition) {
         this.proc = proc;
@@ -72,20 +70,26 @@ public class ProcedureBodyExtractor {
     }
 
     private int findProcEnd(int startIndex) {
-        int functionEndIndex = tryFindProcEnd(startIndex);
+        int functionEndIndex = tryFindLabeledProcEnd(startIndex);
         if (functionEndIndex >= 0) {
             return functionEndIndex;
         } else {
-            beginStack.addFirst(startIndex);
             beginMatcher = getBeginMatcher();
             endMatcher = getEndMatcher();
-            fillStacks();
-            Integer endIndex = endStack.peek();
-            return endIndex != null ? endIndex : -1;
+            boolean isNextEndFound = findFromIndex(endMatcher, startIndex);
+            if (isNextEndFound) {
+                fillBeginStack(startIndex, endMatcher.start());
+                beginStack.poll();
+                return beginStack.isEmpty()
+                    ? endMatcher.end()
+                    : findFunctionEndIndex(endMatcher.end());
+            } else {
+                return -1;
+            }
         }
     }
 
-    private int tryFindProcEnd(int startIndex) {
+    private int tryFindLabeledProcEnd(int startIndex) {
         Matcher endFunctionWithName = Pattern
             .compile("end\\s*" + proc.getUniqueName() + "[\\s\\n]*;", Pattern.CASE_INSENSITIVE)
             .matcher(parentPackageBodyDefinition);
@@ -94,19 +98,23 @@ public class ProcedureBodyExtractor {
             : -1;
     }
 
-    private void fillStacks() {
-        Integer lastBegin = beginStack.peek();
-        if (lastBegin != null) {
-            Integer lastEnd = Objects.requireNonNullElse(endStack.peek(), lastBegin);
-            boolean isNextEndFound = findFromIndex(endMatcher, lastEnd);
-            if (isNextEndFound && endMatcher.start() > lastBegin) {
-                endStack.addFirst(endMatcher.end());
-                boolean isNextBeginFound = findFromIndex(beginMatcher, lastBegin);
-                if (isNextBeginFound) {
-                    beginStack.addFirst(beginMatcher.end());
-                    fillStacks();
-                }
-            }
+    private int findFunctionEndIndex(int startSearch) {
+        boolean isNextEndFound = findFromIndex(endMatcher, startSearch);
+        if (isNextEndFound) {
+            fillBeginStack(startSearch, endMatcher.start());
+            beginStack.poll();
+            return beginStack.isEmpty()
+                ? endMatcher.end()
+                : findFunctionEndIndex(endMatcher.end());
+        } else {
+            return -1;
+        }
+    }
+
+    private void fillBeginStack(int fromIndex, int toIndex) {
+        beginMatcher.region(fromIndex, toIndex);
+        while (beginMatcher.find()) {
+            beginStack.push(beginMatcher.end());
         }
     }
 
@@ -117,13 +125,18 @@ public class ProcedureBodyExtractor {
 
     private Matcher getBeginMatcher() {
         return Pattern
-            .compile(String.join("|", possibleBeginCases), Pattern.CASE_INSENSITIVE)
+            .compile(
+                possibleBeginCases.stream()
+                    .map(token -> "(?<!END\\s+)" + token)
+                    .collect(Collectors.joining("|")),
+                Pattern.CASE_INSENSITIVE
+            )
             .matcher(parentPackageBodyDefinition);
     }
 
     private Matcher getEndMatcher() {
         return Pattern
-            .compile("end[\\s\\n]*;", Pattern.CASE_INSENSITIVE)
+            .compile("END[\\s]*.*;", Pattern.CASE_INSENSITIVE)
             .matcher(parentPackageBodyDefinition);
     }
 

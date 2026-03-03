@@ -45,10 +45,14 @@ public class ProcedureFunctionExtractorTest {
     @Test
     public void simpleProcFuncTest() {
         assertBodyFound(simpleNoArgsProc);
+        assertBodyFound(simpleFunc);
+    }
+
+    @Test
+    public void simpleProcFuncNoLabeledEndTest() {
         assertBodyFound(simpleNoArgsNoEndProc);
         assertBodyFound(procWithParams);
 
-        assertBodyFound(simpleFunc);
         assertBodyFound(simpleNoArgsNoEndProc);
         assertBodyFound(funcWithParams);
     }
@@ -131,7 +135,7 @@ public class ProcedureFunctionExtractorTest {
         // not sure if needed to shuffle
         Collections.shuffle(allTestCases);
 
-        String allProcs = allTestCases.stream().map(ptc -> ptc.procBody).collect(Collectors.joining("\n"));
+        String allProcs = allTestCases.stream().map(ptc -> ptc.procBody).collect(Collectors.joining("\n\n"));
         String packageBody = packageDefinitionTemplate.formatted(allProcs);
         // then
         for (ProcTestCase testCase : allTestCases) {
@@ -386,12 +390,10 @@ public class ProcedureFunctionExtractorTest {
 
 
     private class ProcTestCase {
-        private final String name;
         private final OracleProcedurePackaged procedure;
         private final String procBody;
 
         public ProcTestCase(@NotNull String name, @NotNull DBSProcedureType procType, @NotNull String procBody) {
-            this.name = name;
             this.procedure = getProcedure(procType, name);
             this.procBody = procBody;
         }
