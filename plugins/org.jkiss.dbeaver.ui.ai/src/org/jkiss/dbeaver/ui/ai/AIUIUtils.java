@@ -28,7 +28,7 @@ import org.jkiss.dbeaver.model.rm.RMConstants;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.ai.internal.AIUIMessages;
-import org.jkiss.dbeaver.ui.ai.preferences.AIPreferencePageMain;
+import org.jkiss.dbeaver.ui.ai.preferences.AIPreferencePageConfiguration;
 
 
 public class AIUIUtils {
@@ -67,7 +67,7 @@ public class AIUIUtils {
         UIUtils.showPreferencesFor(
             shell,
             AISettingsManager.getInstance().getSettings(),
-            AIPreferencePageMain.PAGE_ID
+            AIPreferencePageConfiguration.PAGE_ID
         );
     }
 }

@@ -20,108 +20,70 @@ import org.eclipse.core.runtime.IConfigurationElement;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPImage;
-import org.jkiss.dbeaver.model.ai.AIFunction;
-import org.jkiss.dbeaver.model.ai.AIFunctionPurpose;
-import org.jkiss.dbeaver.model.ai.AIFunctionResult;
-import org.jkiss.dbeaver.model.ai.AIPromptGenerator;
+import org.jkiss.dbeaver.model.ai.*;
 import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
-import org.jkiss.dbeaver.model.meta.IPropertyValueListProvider;
 import org.jkiss.dbeaver.registry.RegistryConstants;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class AIFunctionDescriptor extends AbstractDescriptor {
+public class AIFunctionInternalDescriptor extends AbstractDescriptor implements AIFunctionDescriptor {
 
     public static final String EXTENSION_ID = "com.dbeaver.ai.function";
 
-    public class Parameter {
-        private static final Log log = Log.getLog(Parameter.class);
-        private final IConfigurationElement config;
-
-        Parameter(@NotNull IConfigurationElement config) {
-            this.config = config;
-        }
-
-        @NotNull
-        public String getName() {
-            return config.getAttribute("name");
-        }
-
-        @NotNull
-        public String getType() {
-            return config.getAttribute("type");
-        }
-
-        @Nullable
-        public String getDescription() {
-            return config.getAttribute("description");
-        }
-
-        public boolean isRequired() {
-            return CommonUtils.getBoolean(config.getAttribute("required"));
-        }
-
-        public String getDefaultValue() {
-            return config.getAttribute("defaultValue");
-        }
-
-        @Nullable
-        public String[] getValidValues() {
-            String validValues = config.getAttribute("validValues");
-            if (CommonUtils.isEmpty(validValues) && CommonUtils.isNotEmpty(config.getAttribute("validValuesProvider"))) {
-                ObjectType validValuesProvider = new ObjectType(config, "validValuesProvider");
-                try {
-                    var provider = validValuesProvider.createInstance(IPropertyValueListProvider.class);
-                    Object[] validObjects = provider.getPossibleValues(this);
-                    return (String[]) validObjects;
-                } catch (DBException e) {
-                    log.error("Error on getting valid values from provider", e);
-                }
-            }
-            return CommonUtils.isEmpty(validValues) ? null : validValues.split(",");
-        }
-    }
-
+    private final AIAgentInternalDescriptor agent;
     private final ObjectType objectType;
     private final String id;
     private final String name;
     private final DBPImage icon;
     private final boolean global;
     private final boolean hidden;
+    private final boolean ui;
+    private boolean enabledByDefault;
     private final AIFunctionPurpose purpose;
-    private final AIFunctionResult.FunctionType type;
+    private final AIFunctionType type;
     private final String[] dependsOn;
     private final String description;
     private final String categoryId;
-    private final Parameter[] parameters;
+    private final AIFunctionInternalParameter[] parameters;
 
-    public AIFunctionDescriptor(@NotNull IConfigurationElement config) {
+    public AIFunctionInternalDescriptor(
+        @NotNull AIAgentInternalDescriptor agent,
+        @NotNull IConfigurationElement config
+    ) {
         super(config);
+        this.agent = agent;
         this.objectType = new ObjectType(config, RegistryConstants.ATTR_CLASS);
         this.icon = iconToImage(config.getAttribute(RegistryConstants.ATTR_ICON));
         this.id = config.getAttribute(RegistryConstants.ATTR_ID);
         this.name = config.getAttribute(RegistryConstants.ATTR_NAME);
+        this.ui = CommonUtils.toBoolean(config.getAttribute("ui"));
         this.global = CommonUtils.toBoolean(config.getAttribute("global"));
         this.hidden = CommonUtils.toBoolean(config.getAttribute("hidden"));
+        this.enabledByDefault = CommonUtils.toBoolean(config.getAttribute("enabledByDefault"));
         this.purpose = CommonUtils.valueOf(AIFunctionPurpose.class, config.getAttribute("purpose"), AIFunctionPurpose.TOOL);
         this.categoryId = config.getAttribute("categoryId");
         this.description = config.getAttribute(RegistryConstants.ATTR_DESCRIPTION);
         this.dependsOn = CommonUtils.splitString(config.getAttribute("dependsOn"), ',').toArray(new String[0]);
         this.type = CommonUtils.valueOf(
-            AIFunctionResult.FunctionType.class,
+            AIFunctionType.class,
             config.getAttribute("type"),
-            AIFunctionResult.FunctionType.INFORMATION
+            AIFunctionType.INFORMATION
         );
 
-        List<Parameter> params = new ArrayList<>();
+        List<AIFunctionInternalParameter> params = new ArrayList<>();
         for (IConfigurationElement pe : config.getChildren("parameter")) {
-            params.add(new Parameter(pe));
+            params.add(new AIFunctionInternalParameter(pe));
         }
-        this.parameters = params.toArray(new Parameter[0]);
+        this.parameters = params.toArray(new AIFunctionInternalParameter[0]);
+    }
+
+    @NotNull
+    @Override
+    public AIAgent getAgent() {
+        return agent;
     }
 
     @NotNull
@@ -140,7 +102,7 @@ public class AIFunctionDescriptor extends AbstractDescriptor {
     }
 
     @NotNull
-    public AIFunctionResult.FunctionType getType() {
+    public AIFunctionType getType() {
         return type;
     }
 
@@ -150,9 +112,20 @@ public class AIFunctionDescriptor extends AbstractDescriptor {
     }
 
     @Nullable
+    public String getCategoryId() {
+        return categoryId;
+    }
+
+    @Nullable
     public String getDescription() {
         return description;
     }
+
+    @Override
+    public boolean isUI() {
+        return ui;
+    }
+
     /**
      * Global functions are passed in ALL requests
      */
@@ -164,8 +137,13 @@ public class AIFunctionDescriptor extends AbstractDescriptor {
         return hidden;
     }
 
+    @Override
+    public boolean isEnabledByDefault() {
+        return enabledByDefault;
+    }
+
     @NotNull
-    public Parameter[] getParameters() {
+    public AIFunctionParameter[] getParameters() {
         return parameters;
     }
 
@@ -185,11 +163,6 @@ public class AIFunctionDescriptor extends AbstractDescriptor {
 
     public boolean isApplicable(@NotNull AIEngineDescriptor engine, @NotNull AIPromptGenerator prompt) {
         return false;
-    }
-
-    @Nullable
-    public String getCategoryId() {
-        return categoryId;
     }
 
     @Override
