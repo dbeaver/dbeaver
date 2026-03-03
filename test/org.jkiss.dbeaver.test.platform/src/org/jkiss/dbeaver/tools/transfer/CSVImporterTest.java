@@ -48,6 +48,7 @@ public class CSVImporterTest  extends DBeaverUnitTest {
 
     @Before
     public void init() throws DBException {
+        properties.clear();
         importer.init(site);
         Mockito.when(site.getProcessorProperties()).thenReturn(properties);
     }
@@ -118,8 +119,82 @@ public class CSVImporterTest  extends DBeaverUnitTest {
         Assert.assertEquals(DBPDataKind.STRING, columnsInfo.get(1).getDataKind());
     }
 
+    @Test
+    public void guessColumnTypesWithCommaDecimalSeparatorConfigured() throws DBException, IOException {
+        List<StreamDataImporterColumnInfo> columnsInfo = readColumnsInfoWithCsvSettings("1;2,5;abc", false, ";", ",", null);
+        Assert.assertEquals(3, columnsInfo.size());
+        Assert.assertEquals(DBPDataKind.NUMERIC, columnsInfo.get(0).getDataKind());
+        Assert.assertEquals("INTEGER", columnsInfo.get(0).getTypeName());
+        Assert.assertEquals(DBPDataKind.NUMERIC, columnsInfo.get(1).getDataKind());
+        Assert.assertEquals("REAL", columnsInfo.get(1).getTypeName());
+        Assert.assertEquals(DBPDataKind.STRING, columnsInfo.get(2).getDataKind());
+    }
+
+    @Test
+    public void guessColumnTypesWithGroupingSeparatorConfigured() throws DBException, IOException {
+        List<StreamDataImporterColumnInfo> columnsInfo = readColumnsInfoWithCsvSettings("1;1.234,5;2.000", false, ";", ",", ".");
+        Assert.assertEquals(3, columnsInfo.size());
+        Assert.assertEquals(DBPDataKind.NUMERIC, columnsInfo.get(0).getDataKind());
+        Assert.assertEquals("INTEGER", columnsInfo.get(0).getTypeName());
+        Assert.assertEquals(DBPDataKind.NUMERIC, columnsInfo.get(1).getDataKind());
+        Assert.assertEquals("REAL", columnsInfo.get(1).getTypeName());
+        Assert.assertEquals(DBPDataKind.NUMERIC, columnsInfo.get(2).getDataKind());
+        Assert.assertEquals("INTEGER", columnsInfo.get(2).getTypeName());
+    }
+
+    @Test
+    public void guessColumnTypesWithGroupingSeparatorDisabledRejectsMixedStyle() throws DBException, IOException {
+        List<StreamDataImporterColumnInfo> columnsInfo = readColumnsInfoWithCsvSettings("1;1.234,5;2000", false, ";", ",", "");
+        Assert.assertEquals(3, columnsInfo.size());
+        Assert.assertEquals(DBPDataKind.NUMERIC, columnsInfo.get(0).getDataKind());
+        Assert.assertEquals(DBPDataKind.STRING, columnsInfo.get(1).getDataKind());
+        Assert.assertEquals(DBPDataKind.NUMERIC, columnsInfo.get(2).getDataKind());
+    }
+
+    @Test
+    public void guessColumnTypesWithExponentAndCommaDecimal() throws DBException, IOException {
+        List<StreamDataImporterColumnInfo> columnsInfo = readColumnsInfoWithCsvSettings("1;1,2e3;4,5E-2", false, ";", ",", null);
+        Assert.assertEquals(3, columnsInfo.size());
+        Assert.assertEquals(DBPDataKind.NUMERIC, columnsInfo.get(0).getDataKind());
+        Assert.assertEquals("INTEGER", columnsInfo.get(0).getTypeName());
+        Assert.assertEquals(DBPDataKind.NUMERIC, columnsInfo.get(1).getDataKind());
+        Assert.assertEquals("REAL", columnsInfo.get(1).getTypeName());
+        Assert.assertEquals(DBPDataKind.NUMERIC, columnsInfo.get(2).getDataKind());
+        Assert.assertEquals("REAL", columnsInfo.get(2).getTypeName());
+    }
+
+    @Test
+    public void guessColumnTypesRejectsInvalidFractionalPart() throws DBException, IOException {
+        List<StreamDataImporterColumnInfo> columnsInfo = readColumnsInfoWithCsvSettings("1;1,2a", false, ";", ",", null);
+        Assert.assertEquals(2, columnsInfo.size());
+        Assert.assertEquals(DBPDataKind.NUMERIC, columnsInfo.get(0).getDataKind());
+        Assert.assertEquals(DBPDataKind.STRING, columnsInfo.get(1).getDataKind());
+    }
+
+    @Test
+    public void guessColumnTypesTrimsInputDuringNumericNormalization() throws DBException, IOException {
+        List<StreamDataImporterColumnInfo> columnsInfo = readColumnsInfoWithCsvSettings("1; 1.234,56 ", false, ";", ",", ".");
+        Assert.assertEquals(2, columnsInfo.size());
+        Assert.assertEquals(DBPDataKind.NUMERIC, columnsInfo.get(0).getDataKind());
+        Assert.assertEquals(DBPDataKind.NUMERIC, columnsInfo.get(1).getDataKind());
+        Assert.assertEquals("REAL", columnsInfo.get(1).getTypeName());
+    }
+
     private List<StreamDataImporterColumnInfo> readColumnsInfo(String data, boolean isHeaderPresent) throws DBException, IOException {
+        return readColumnsInfoWithCsvSettings(data, isHeaderPresent, null, ".", ",");
+    }
+
+    private List<StreamDataImporterColumnInfo> readColumnsInfoWithCsvSettings(
+        String data,
+        boolean isHeaderPresent,
+        String delimiter,
+        String decimalSeparator,
+        String groupingSeparator
+    ) throws DBException, IOException {
         properties.put("header", isHeaderPresent ? DataImporterCSV.HeaderPosition.top : DataImporterCSV.HeaderPosition.none);
+        if (delimiter != null) properties.put("delimiter", delimiter);
+        if (decimalSeparator != null) properties.put(NumericFormatUtils.PROP_DECIMAL_SEPARATOR, decimalSeparator);
+        if (groupingSeparator != null) properties.put(NumericFormatUtils.PROP_GROUPING_SEPARATOR, groupingSeparator);
         try (ByteArrayInputStream is = new ByteArrayInputStream(data.getBytes())) {
             return importer.readColumnsInfo(mapping, is);
         }

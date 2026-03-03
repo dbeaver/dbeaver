@@ -39,6 +39,7 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.properties.ObjectPropertyDescriptor;
 import org.jkiss.dbeaver.runtime.properties.PropertySourceEditable;
+import org.jkiss.dbeaver.tools.transfer.NumericFormatUtils;
 import org.jkiss.dbeaver.tools.transfer.internal.DTActivator;
 import org.jkiss.utils.BeanUtils;
 import org.jkiss.utils.CommonUtils;
@@ -588,21 +589,38 @@ public class DatabaseTransferUtils {
         commandContext.saveChanges(monitor, options);
     }
 
+    /**
+     * Kept for backward compatibility. Uses '.' as the default decimal separator.
+     *
+     * @deprecated use {@link #getDataType(String, char, char)} to explicitly control decimal
+     * and grouping separators.
+     */
+    @Deprecated
     @NotNull
     public static Pair<DBPDataKind, String> getDataType(@Nullable String value) {
-        if (CommonUtils.isEmpty(value)) {
+        return getDataType(value, '.', Character.MIN_VALUE);
+    }
+
+    @NotNull
+    public static Pair<DBPDataKind, String> getDataType(
+        @Nullable String value,
+        char decimalSeparator,
+        char groupingSeparator
+    ) {
+        String trimmedValue = value == null ? null : value.trim();
+        if (CommonUtils.isEmpty(trimmedValue)) {
             return DATA_TYPE_UNKNOWN;
         }
 
-        char firstChar = value.charAt(0);
-        if (isNumericStart(firstChar)) {
-            Pair<DBPDataKind, String> numeric = tryClassifyNumber(value);
+        char firstChar = trimmedValue.charAt(0);
+        if (isNumericStart(firstChar, decimalSeparator)) {
+            Pair<DBPDataKind, String> numeric = tryClassifyNumber(trimmedValue, decimalSeparator, groupingSeparator);
             if (numeric != null) {
                 return numeric;
             }
         }
 
-        if (value.equalsIgnoreCase("true") || value.equalsIgnoreCase("false")) {
+        if (trimmedValue.equalsIgnoreCase("true") || trimmedValue.equalsIgnoreCase("false")) {
             return DATA_TYPE_BOOLEAN;
         }
         if (!SQLUtils.isLatinLetter(firstChar)) {
@@ -611,12 +629,41 @@ public class DatabaseTransferUtils {
         return DATA_TYPE_STRING;
     }
 
-    private static boolean isNumericStart(char c) {
-        return Character.isDigit(c) || c == '+' || c == '-' || c == '.';
+    private static boolean isNumericStart(char c, char decimalSeparator) {
+        return Character.isDigit(c) || c == '+' || c == '-' || c == '.' || c == decimalSeparator;
     }
 
     @Nullable
-    private static Pair<DBPDataKind, String> tryClassifyNumber(@NotNull String value) {
+    private static Pair<DBPDataKind, String> tryClassifyNumber(
+        @NotNull String value,
+        char decimalSeparator,
+        char groupingSeparator
+    ) {
+        Pair<DBPDataKind, String> wholeNumberType = tryClassifyWholeNumber(value);
+        if (wholeNumberType != null) {
+            return wholeNumberType;
+        }
+        String normalizedValue = NumericFormatUtils.normalizeNumberValue(value, decimalSeparator, groupingSeparator);
+        if (normalizedValue == null) {
+            return null;
+        }
+        if (!value.equals(normalizedValue)) {
+            // Re-check integer types after normalization (e.g. "1,000" -> "1000").
+            wholeNumberType = tryClassifyWholeNumber(normalizedValue);
+            if (wholeNumberType != null) {
+                return wholeNumberType;
+            }
+        }
+        try {
+            Double.parseDouble(normalizedValue);
+            return DATA_TYPE_REAL;
+        } catch (NumberFormatException ignore) {
+            return null;
+        }
+    }
+
+    @Nullable
+    private static Pair<DBPDataKind, String> tryClassifyWholeNumber(@NotNull String value) {
         try {
             Integer.parseInt(value);
             return DATA_TYPE_INTEGER;
@@ -625,11 +672,6 @@ public class DatabaseTransferUtils {
         try {
             Long.parseLong(value);
             return DATA_TYPE_BIGINT;
-        } catch (NumberFormatException ignore) {
-        }
-        try {
-            Double.parseDouble(value);
-            return DATA_TYPE_REAL;
         } catch (NumberFormatException ignore) {
             return null;
         }

@@ -30,6 +30,7 @@ import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.impl.local.LocalStatement;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferConsumer;
+import org.jkiss.dbeaver.tools.transfer.NumericFormatUtils;
 import org.jkiss.dbeaver.tools.transfer.database.DatabaseTransferUtils;
 import org.jkiss.dbeaver.tools.transfer.stream.*;
 import org.jkiss.dbeaver.utils.GeneralUtils;
@@ -81,6 +82,8 @@ public class DataImporterCSV extends StreamImporterAbstract {
         final int columnSamplesCount = Math.max(CommonUtils.toInt(processorProperties.get(PROP_COLUMN_TYPE_SAMPLES), 100), 0);
         final int columnMinimalLength = Math.max(CommonUtils.toInt(processorProperties.get(PROP_COLUMN_TYPE_LENGTH), 1), 1);
         final boolean columnIsByteLength = CommonUtils.getBoolean(processorProperties.get(PROP_COLUMN_IS_BYTE_LENGTH), false);
+        final char decimalSeparator = NumericFormatUtils.getDecimalSeparator(processorProperties);
+        final char groupingSeparator = NumericFormatUtils.getGroupingSeparator(processorProperties, decimalSeparator);
 
         try (Reader reader = openStreamReader(inputStream, processorProperties, true)) {
             try (CSVReader csvReader = openCSVReader(reader, processorProperties)) {
@@ -122,7 +125,11 @@ public class DataImporterCSV extends StreamImporterAbstract {
                     }
 
                     for (int i = 0; i < Math.min(line.length, header.length); i++) {
-                        Pair<DBPDataKind, String> dataType = DatabaseTransferUtils.getDataType(line[i]);
+                        Pair<DBPDataKind, String> dataType = DatabaseTransferUtils.getDataType(
+                            line[i],
+                            decimalSeparator,
+                            groupingSeparator
+                        );
                         StreamDataImporterColumnInfo columnInfo = columnsInfo.get(i);
 
                         switch (dataType.getFirst()) {
@@ -214,6 +221,9 @@ public class DataImporterCSV extends StreamImporterAbstract {
         boolean emptyStringNull = CommonUtils.getBoolean(properties.get(PROP_EMPTY_STRING_NULL), false);
         boolean trimWhitespaces = CommonUtils.getBoolean(properties.get(PROP_TRIM_WHITESPACES), false);
         String nullValueMark = CommonUtils.toString(properties.get(PROP_NULL_STRING));
+        char decimalSeparator = NumericFormatUtils.getDecimalSeparator(properties);
+        char groupingSeparator = NumericFormatUtils.getGroupingSeparator(properties, decimalSeparator);
+        List<StreamDataImporterColumnInfo> streamColumns = entityMapping.getStreamColumns();
 
         DBCExecutionContext context = streamDataSource.getDefaultInstance().getDefaultContext(monitor, false);
         try (DBCSession producerSession = context.openSession(monitor, DBCExecutionPurpose.UTIL, "Transfer stream data")) {
@@ -280,6 +290,7 @@ public class DataImporterCSV extends StreamImporterAbstract {
                                         }
                                     }
                                 }
+                                NumericFormatUtils.normalizeNumericValues(line, streamColumns, decimalSeparator, groupingSeparator);
 
                                 resultSet.setStreamRow(line);
                                 consumer.fetchRow(producerSession, resultSet);

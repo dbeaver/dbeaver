@@ -46,6 +46,7 @@ import org.jkiss.dbeaver.tools.transfer.database.DatabaseMappingContainer;
 import org.jkiss.dbeaver.tools.transfer.database.DatabaseTransferConsumer;
 import org.jkiss.dbeaver.tools.transfer.internal.DTMessages;
 import org.jkiss.dbeaver.tools.transfer.registry.DataTransferProcessorDescriptor;
+import org.jkiss.dbeaver.tools.transfer.NumericFormatUtils;
 import org.jkiss.dbeaver.tools.transfer.stream.StreamEntityMapping;
 import org.jkiss.dbeaver.tools.transfer.stream.StreamProducerSettings;
 import org.jkiss.dbeaver.tools.transfer.stream.StreamTransferProducer;
@@ -258,7 +259,12 @@ public class StreamProducerPageSettings extends DataTransferPageNodeSettings {
         // Initialize property editor
         DataTransferProcessorDescriptor processor = getProducerProcessor();
         DBPPropertyDescriptor[] properties = processor == null ? new DBPPropertyDescriptor[0] : processor.getProperties();
-        propertySource = new PropertySourceCustom(properties, getWizard().getSettings().getProcessorProperties());
+        Map<String, Object> processorProperties = getWizard().getSettings().getProcessorProperties();
+        propertySource = new PropertySourceCustom(properties, processorProperties);
+
+        // Apply numeric locale defaults only for processors that support these properties.
+        initializeLocaleNumericSeparatorsIfSupported(properties, processorProperties);
+
         propsEditor.loadProperties(propertySource);
 
         // Init pipes
@@ -268,6 +274,49 @@ public class StreamProducerPageSettings extends DataTransferPageNodeSettings {
 
         UIUtils.asyncExec(() -> UIUtils.packColumns(filesTable, true));
 
+    }
+
+    private void initializeLocaleNumericSeparatorsIfSupported(
+        @NotNull DBPPropertyDescriptor[] properties,
+        @NotNull Map<String, Object> processorProperties
+    ) {
+        boolean supportsDecimalSeparator = hasProperty(properties, NumericFormatUtils.PROP_DECIMAL_SEPARATOR);
+        boolean supportsGroupingSeparator = hasProperty(properties, NumericFormatUtils.PROP_GROUPING_SEPARATOR);
+        if (!supportsDecimalSeparator && !supportsGroupingSeparator) {
+            return;
+        }
+
+        char decimalSeparator = NumericFormatUtils.getLocaleDecimalSeparator();
+        // Preserve any saved user choice: if the key exists,
+        // locale defaults must not override it.
+        if (supportsDecimalSeparator && !hasStoredPropertyValue(processorProperties, NumericFormatUtils.PROP_DECIMAL_SEPARATOR)) {
+            propertySource.setPropertyValue(
+                null,
+                NumericFormatUtils.PROP_DECIMAL_SEPARATOR,
+                NumericFormatUtils.toPropertyValue(decimalSeparator)
+            );
+        }
+        if (supportsGroupingSeparator && !hasStoredPropertyValue(processorProperties, NumericFormatUtils.PROP_GROUPING_SEPARATOR)) {
+            char groupingSeparator = NumericFormatUtils.getLocaleGroupingSeparator(decimalSeparator);
+            propertySource.setPropertyValue(
+                null,
+                NumericFormatUtils.PROP_GROUPING_SEPARATOR,
+                NumericFormatUtils.toPropertyValue(groupingSeparator)
+            );
+        }
+    }
+
+    private boolean hasProperty(@NotNull DBPPropertyDescriptor[] properties, @NotNull String propertyId) {
+        for (DBPPropertyDescriptor property : properties) {
+            if (propertyId.equals(property.getId())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private boolean hasStoredPropertyValue(Map<String, Object> processorProperties, String propertyId) {
+        return processorProperties != null && processorProperties.containsKey(propertyId);
     }
 
     @NotNull
