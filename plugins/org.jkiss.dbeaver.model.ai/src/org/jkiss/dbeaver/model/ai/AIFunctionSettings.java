@@ -16,14 +16,10 @@
  */
 package org.jkiss.dbeaver.model.ai;
 
+import com.google.gson.annotations.SerializedName;
 import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.model.ai.registry.AIFunctionDescriptor;
-import org.jkiss.dbeaver.model.ai.registry.AIFunctionRegistry;
 
-import java.util.HashSet;
-import java.util.LinkedHashSet;
-import java.util.Set;
+import java.util.*;
 
 /**
  * AI function settings.
@@ -31,12 +27,67 @@ import java.util.Set;
  * initialized categories tracking.
  */
 public final class AIFunctionSettings {
+    @SerializedName("enabled")
     private boolean functionsEnabled = true;
-    private final Set<String> enabledFunctionCategories = new LinkedHashSet<>();
-    private final Set<String> enabledFunctions = new LinkedHashSet<>();
-    private final Set<String> initializedDefaultCategories = new LinkedHashSet<>();
+    private final Map<String, AgentSettings> functions = new LinkedHashMap<>();
 
-    AIFunctionSettings() {
+    /**
+     * Keeps information about function which were explicitly enabled or disabled for the particular agent.
+     * User can modify enabled/disable functions set.
+     */
+    public static class AgentSettings {
+        @SerializedName("enabled")
+        private boolean enabled = true;
+        @SerializedName("ef")
+        private Set<String> enabledFunctions;
+        @SerializedName("df")
+        private Set<String> disabledFunctions;
+
+        public AgentSettings() {
+            this.enabledFunctions = new LinkedHashSet<>();
+            this.disabledFunctions = new LinkedHashSet<>();
+        }
+
+        public AgentSettings(@NotNull AgentSettings src) {
+            this.enabled = src.enabled;
+            this.enabledFunctions = new LinkedHashSet<>(src.enabledFunctions);
+            this.disabledFunctions = new LinkedHashSet<>(src.disabledFunctions);
+        }
+
+        public boolean isEnabled() {
+            return enabled;
+        }
+
+        public void setEnabled(boolean enabled) {
+            this.enabled = enabled;
+        }
+
+        @NotNull
+        public Set<String> getEnabledFunctions() {
+            return enabledFunctions;
+        }
+
+        public void setEnabledFunctions(@NotNull Collection<String> enabledFunctions) {
+            this.enabledFunctions = new LinkedHashSet<>(enabledFunctions);
+        }
+
+        @NotNull
+        public Set<String> getDisabledFunctions() {
+            return disabledFunctions;
+        }
+
+        public void setDisabledFunctions(@NotNull Collection<String> disabledFunctions) {
+            this.disabledFunctions = new LinkedHashSet<>(disabledFunctions);
+        }
+
+        public boolean isFunctionEnabled(@NotNull AIFunctionDescriptor function) {
+            if (function.isEnabledByDefault()) {
+                return !disabledFunctions.contains(function.getId());
+            } else {
+                return enabledFunctions.contains(function.getId());
+            }
+        }
+
     }
 
     public boolean isFunctionsEnabled() {
@@ -48,57 +99,9 @@ public final class AIFunctionSettings {
     }
 
     @NotNull
-    public Set<String> getEnabledFunctions() {
-        return Set.copyOf(enabledFunctions);
+    public AgentSettings getAgentSettings(@NotNull AIAgent agent) {
+        return functions.computeIfAbsent(agent.getAgentId(), s -> new AgentSettings());
     }
 
-    public void setEnabledFunctions(@Nullable Set<String> functions) {
-        this.enabledFunctions.clear();
-        if (functions != null) {
-            functions.forEach(this::enableFunction);
-        }
-    }
-
-    public void enableFunction(@NotNull String functionId) {
-        AIFunctionDescriptor function = AIFunctionRegistry.getInstance().getFunction(functionId);
-        if (function != null && !function.isHidden()) {
-            enabledFunctions.add(functionId);
-        }
-    }
-
-    @NotNull
-    public Set<String> getEnabledFunctionCategories() {
-        return new HashSet<>(enabledFunctionCategories);
-    }
-
-    public void setEnabledFunctionCategories(@Nullable Set<String> categories) {
-        this.enabledFunctionCategories.clear();
-        if (categories != null) {
-            this.enabledFunctionCategories.addAll(categories);
-        }
-    }
-    public void enableFunctionCategory(@NotNull String category) {
-        enabledFunctionCategories.add(category);
-    }
-
-    @NotNull
-    public Set<String> getInitializedDefaultCategories() {
-        return new HashSet<>(initializedDefaultCategories);
-    }
-
-    public void setInitializedDefaultCategories(@Nullable Set<String> categories) {
-        this.initializedDefaultCategories.clear();
-        if (categories != null) {
-            this.initializedDefaultCategories.addAll(categories);
-        }
-    }
-
-    public void markCategoryAsInitialized(@NotNull String categoryId) {
-        this.initializedDefaultCategories.add(categoryId);
-    }
-
-    public boolean isCategoryInitialized(@NotNull String categoryId) {
-        return initializedDefaultCategories.contains(categoryId);
-    }
 }
 

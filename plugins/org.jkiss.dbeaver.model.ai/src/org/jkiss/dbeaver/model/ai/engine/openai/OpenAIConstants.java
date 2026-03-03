@@ -32,4 +32,5 @@ public class OpenAIConstants {
     // Legacy API endpoint
     public static final String ENDPOINT_CHAT = "chat/completions";
     public static final String TOOL_RESULT_CALL_ID = "call_id";
+    public static final String AI_LOG_QUERY = "gpt.log.query";
 }

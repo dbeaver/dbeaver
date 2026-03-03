@@ -38,15 +38,9 @@ public class AISettings implements DBPAdaptable {
     private final Map<String, Object> properties = new LinkedHashMap<>();
     private final Set<String> resolvedSecrets = new HashSet<>();
 
-    private final AIFunctionSettings functionSettings = new AIFunctionSettings();
     private final Map<String, String> customInstructions = new LinkedHashMap<>();
 
     public AISettings() {
-    }
-
-    @NotNull
-    public AIFunctionSettings getFunctionSettings() {
-        return functionSettings;
     }
 
     @NotNull

@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.WebUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.HttpConstants;
 import org.jkiss.utils.IOUtils;
 import org.jkiss.utils.StandardConstants;
 
@@ -128,7 +129,7 @@ public class StatisticsTransmitter {
         //log.debug("Sending statistics file '" + logFile.toAbsolutePath() + "'");
         try {
             Map<String, String> parametersMap = new HashMap<>();
-            parametersMap.put("Content-Type", "text/plain");
+            parametersMap.put(HttpConstants.HEADER_CONTENT_TYPE, HttpConstants.CONTENT_TYPE_TEXT_PLAIN);
             parametersMap.put("Locale", Locale.getDefault().toString());
             parametersMap.put("Country", Locale.getDefault().getISO3Country());
             parametersMap.put("Timezone", TimeZone.getDefault().getID());

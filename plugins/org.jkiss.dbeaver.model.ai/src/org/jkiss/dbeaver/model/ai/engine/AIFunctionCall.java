@@ -19,7 +19,7 @@ package org.jkiss.dbeaver.model.ai.engine;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.model.ai.registry.AIFunctionDescriptor;
+import org.jkiss.dbeaver.model.ai.AIFunctionDescriptor;
 
 import java.util.Map;
 
