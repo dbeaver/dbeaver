@@ -53,12 +53,12 @@ You can change default JDK version by replacing directory `jre` in dbeaver insta
 
 ### Community version
 
-Out of the box DBeaver supports following database drivers: 
+Out of the box DBeaver supports the following database drivers: 
 MySQL, MariaDB, Oracle, DB2, PostgreSQL, SQL Server, Sybase, Apache Hive, Drill, Presto, Trino, Phoenix, Exasol, Informix, Teradata, Vertica, Netezza, Firebird, Derby, H2, H2GIS, WMI, Snowflake, Greenplum, Redshift, Athena, SAP HANA, MaxDB, NuoDB, MS Access, SQLite, CSV, DBF, Firebird, TimescaleDB, Yellowbrick, CockroachDB, OrientDB, MonetDB, Google BigQuery, Google Spanner, Apache Hive/Impala/Spark, Apache Ignite, MapD, Azure SQL, CrateDB, Elasticsearch, Ocient, Ingres, OmniSci, Yugabyte, IRIS, Data Virtuality, Denodo, Virtuoso, Machbase, DuckDB, Babelfish, OceanBase, Salesforce, EnterpriseDB, Apache Druid, Apache Kylin, Databricks, OpenSearch, TiDB, TDEngine, Materialize, JDBCX, Dameng, Altibase, StarRocks, CUBRID, GaussDB, DolphinDB, LibSQL, GBase 8s, Databend, Cloudberry, Teiid, Kingbase.
 
 ### PRO versions
 
-<a href="https://dbeaver.com/download/">Commercial versions</a> extends functionality of many popular drivers and also support non-JDBC datasources such as:
+<a href="https://dbeaver.com/download/">Commercial versions</a> extend functionality of many popular drivers and also support non-JDBC datasources such as:
 ODBC, MongoDB, Cassandra, Couchbase, CouchDB, Redis, InfluxDB, Firestore, BigTable, DynamoDB, Kafka KSQL, Neo4j, AWS Neptune, AWS Timestream, Azure CosmosDB, Yugabyte, Salesforce, etc.  
 Also, we support flat files as databases: CSV, XLSX, Json, XML, Parquet.  
 You can find the list of all databases supported in commercial versions <a href="https://dbeaver.com/databases/">here</a>.
