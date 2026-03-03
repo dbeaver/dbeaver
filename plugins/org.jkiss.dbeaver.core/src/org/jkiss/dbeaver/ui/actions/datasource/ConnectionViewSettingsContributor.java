@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,10 +16,7 @@
  */
 package org.jkiss.dbeaver.ui.actions.datasource;
 
-import org.eclipse.jface.action.Action;
-import org.eclipse.jface.action.ActionContributionItem;
-import org.eclipse.jface.action.IContributionItem;
-import org.eclipse.jface.action.Separator;
+import org.eclipse.jface.action.*;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.osgi.util.NLS;
@@ -32,7 +29,10 @@ import org.jkiss.dbeaver.model.navigator.DBNBrowseSettings;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.registry.DataSourceNavigatorSettings;
 import org.jkiss.dbeaver.registry.DataSourceNavigatorSettingsUtils;
+import org.jkiss.dbeaver.registry.internal.RegistryMessages;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.ui.DBeaverIcons;
+import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.actions.AbstractDataSourceHandler;
 import org.jkiss.dbeaver.ui.dialogs.connection.EditConnectionNavigatorSettingsDialog;
@@ -52,25 +52,34 @@ public class ConnectionViewSettingsContributor extends DataSourceMenuContributor
         if (dsContainer == null) {
             return;
         }
+        if (DataSourceNavigatorSettings.PRESET_SIMPLE.getSettings().equals(dsContainer.getNavigatorSettings())) {
+            menuItems.add(new ActionContributionItem(new SwitchToAdvancedModeAction(dsContainer)));
+            return;
+        }
+
         boolean presetChecked = false;
+        MenuManager customizeViewMenu = new MenuManager(RegistryMessages.navigator_settings_customize_view);
+        customizeViewMenu.setImageDescriptor(DBeaverIcons.getImageDescriptor(UIIcon.SHOW_ALL_DETAILS));
+        customizeViewMenu.add(new UseSettingsPresetAction(dsContainer, DataSourceNavigatorSettings.PRESET_SIMPLE, false));
         for (DataSourceNavigatorSettings.Preset preset : DataSourceNavigatorSettings.PRESETS.values()) {
-            if (preset == DataSourceNavigatorSettings.PRESET_CUSTOM) {
+            if (preset == DataSourceNavigatorSettings.PRESET_SIMPLE || preset == DataSourceNavigatorSettings.PRESET_CUSTOM) {
                 continue;
             }
             boolean checked = preset.getSettings().equals(dsContainer.getNavigatorSettings());
             if (checked) {
                 presetChecked = checked;
             }
-            menuItems.add(new ActionContributionItem(new UseSettingsPresetAction(dsContainer, preset, checked)));
+            customizeViewMenu.add(new UseSettingsPresetAction(dsContainer, preset, checked));
         }
-        menuItems.add(new ActionContributionItem(new UseSettingsCustomAction(dsContainer, !presetChecked)));
-        menuItems.add(new Separator());
-        menuItems.add(new ActionContributionItem(new ShowSystemObjectsAction(dsContainer)));
-        menuItems.add(new Separator());
-        menuItems.add(new ActionContributionItem(new ShowHostNameAction(dsContainer)));
-        menuItems.add(new ActionContributionItem(new ShowObjectsDescriptionAction(dsContainer)));
-        menuItems.add(new ActionContributionItem(new ShowStatisticsAction(dsContainer)));
-        menuItems.add(new ActionContributionItem(new ShowStatusIconsAction(dsContainer)));
+        customizeViewMenu.add(new UseSettingsCustomAction(dsContainer, !presetChecked));
+        customizeViewMenu.add(new Separator());
+        customizeViewMenu.add(new ShowSystemObjectsAction(dsContainer));
+        customizeViewMenu.add(new Separator());
+        customizeViewMenu.add(new ShowHostNameAction(dsContainer));
+        customizeViewMenu.add(new ShowObjectsDescriptionAction(dsContainer));
+        customizeViewMenu.add(new ShowStatisticsAction(dsContainer));
+        customizeViewMenu.add(new ShowStatusIconsAction(dsContainer));
+        menuItems.add(customizeViewMenu);
     }
 
     private abstract static class SettingsAction extends Action {
@@ -120,7 +129,7 @@ public class ConnectionViewSettingsContributor extends DataSourceMenuContributor
         private final DataSourceNavigatorSettings.Preset preset;
 
         UseSettingsPresetAction(DBPDataSourceContainer dsContainer, DataSourceNavigatorSettings.Preset preset, boolean checked) {
-            super(dsContainer, preset.getName(), AS_RADIO_BUTTON);
+            super(dsContainer, preset == DataSourceNavigatorSettings.PRESET_SIMPLE ? RegistryMessages.navigator_settings_switch_to_simple_mode : preset.getName(), AS_RADIO_BUTTON);
             this.preset = preset;
             setToolTipText(preset.getDescription());
             setChecked(checked);
@@ -131,6 +140,19 @@ public class ConnectionViewSettingsContributor extends DataSourceMenuContributor
             if (isChecked()) {
                 updateSettings(preset.getSettings());
             }
+        }
+    }
+
+    private static class SwitchToAdvancedModeAction extends SettingsAction {
+        SwitchToAdvancedModeAction(DBPDataSourceContainer dsContainer) {
+            super(dsContainer, RegistryMessages.navigator_settings_switch_to_advanced_mode, AS_PUSH_BUTTON);
+            setToolTipText(RegistryMessages.navigator_settings_switch_to_advanced_mode_description);
+            setImageDescriptor(DBeaverIcons.getImageDescriptor(UIIcon.SHOW_ALL_DETAILS));
+        }
+
+        @Override
+        public void run() {
+            updateSettings(DataSourceNavigatorSettings.PRESET_FULL.getSettings());
         }
     }
 

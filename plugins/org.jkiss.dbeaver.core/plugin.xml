@@ -605,12 +605,8 @@
             <command commandId="org.jkiss.dbeaver.core.object.open">
                 <visibleWhen checkEnabled="true"/>
             </command>
-            <menu label="%menu.org.jkiss.dbeaver.core.connection.settings.label"
-                  icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/misc/show_all_details.svg">
-
-                <dynamic id="org.jkiss.dbeaver.core.connection.settings"
-                         class="org.jkiss.dbeaver.ui.actions.datasource.ConnectionViewSettingsContributor"/>
-
+            <dynamic id="org.jkiss.dbeaver.core.connection.settings"
+                     class="org.jkiss.dbeaver.ui.actions.datasource.ConnectionViewSettingsContributor">
                 <visibleWhen>
                     <with variable="selection">
                         <count value="1"/>
@@ -624,7 +620,7 @@
                         </iterate>
                     </with>
                 </visibleWhen>
-            </menu>
+            </dynamic>
             <command commandId="org.jkiss.dbeaver.core.navigator.bookmark.navigate">
                 <visibleWhen checkEnabled="true"/>
             </command>
