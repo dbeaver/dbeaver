@@ -123,8 +123,8 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
-import java.util.List;
 import java.util.*;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 /**
@@ -4938,6 +4938,10 @@ public class ResultSetViewer extends Viewer
         return updatedSelectedRows;
     }
 
+    public void removeSelectedRecord(int rowVisualNumber) {
+        selectedRecords = ArrayUtils.remove(selectedRecords, rowVisualNumber);
+    }
+
     @Override
     public void copyRowValues(boolean fromRowAbove, boolean updatePresentation) {
         final DBCExecutionContext context = getExecutionContext();
@@ -5080,6 +5084,7 @@ public class ResultSetViewer extends Viewer
         int lastRowNum = -1;
         for (ResultSetRow row : rowsToDelete) {
             if (model.deleteRow(row)) {
+                removeSelectedRecord(row.getVisualNumber());
                 rowsRemoved++;
             }
             lastRowNum = row.getVisualNumber();
