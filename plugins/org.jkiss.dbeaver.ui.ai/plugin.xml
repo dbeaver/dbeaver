@@ -18,7 +18,11 @@
     </extension>
 
     <extension point="org.eclipse.ui.preferencePages">
-        <page id="org.jkiss.dbeaver.preferences.ai" category="org.eclipse.ui.preferencePages.Workbench" class="org.jkiss.dbeaver.ui.ai.preferences.AIPreferencePageMain" name="%pref.page.ai.main.name">
+        <page id="org.jkiss.dbeaver.preferences.ai" class="org.jkiss.dbeaver.ui.ai.preferences.AIPreferencePageMain" name="%pref.page.ai.main.name">
+            <keywordReference id="org.jkiss.dbeaver.core.keyword.dbeaver"/>
+            <keywordReference id="dbeaver.ai.pref"/>
+        </page>
+        <page id="org.jkiss.dbeaver.preferences.ai.engines" category="org.jkiss.dbeaver.preferences.ai" class="org.jkiss.dbeaver.ui.ai.preferences.AIPreferencePageEngines" name="%pref.page.ai.engines.name">
             <keywordReference id="org.jkiss.dbeaver.core.keyword.dbeaver"/>
             <keywordReference id="dbeaver.ai.pref"/>
         </page>
@@ -34,7 +38,7 @@
         </page>
     </extension>
     <extension point="org.eclipse.ui.propertyPages">
-        <page id="org.jkiss.dbeaver.preferences.ai" class="org.jkiss.dbeaver.ui.ai.preferences.AIPreferencePageMain" name="%pref.page.ai.engines.name">
+        <page id="org.jkiss.dbeaver.preferences.ai.engines" class="org.jkiss.dbeaver.ui.ai.preferences.AIPreferencePageEngines" name="%pref.page.ai.engines.name">
             <enabledWhen><reference definitionId="org.jkiss.dbeaver.ai.preferences"/></enabledWhen>
         </page>
         <page id="org.jkiss.dbeaver.preferences.ai.config" class="org.jkiss.dbeaver.ui.ai.preferences.AIPreferencePageConfiguration" name="%prop.page.ai.config.name">

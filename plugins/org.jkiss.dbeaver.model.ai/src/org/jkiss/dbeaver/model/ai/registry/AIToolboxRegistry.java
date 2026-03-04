@@ -36,22 +36,22 @@ import java.util.*;
 /**
  * AI function registry
  */
-public class AIAgentRegistry implements AIAgentManager {
+public class AIToolboxRegistry implements AIToolboxManager {
 
-    private static final Log log = Log.getLog(AIAgentRegistry.class);
-    public static final String TOOLS_CONFIG_FILE_NAME = "ai-agents.json";
+    private static final Log log = Log.getLog(AIToolboxRegistry.class);
+    public static final String TOOLS_CONFIG_FILE_NAME = "ai-tools.json";
 
-    private final AIAgentInternalDescriptor internalAgent;
-    private final Map<String, AIAgentDescriptor> externalAgents = new LinkedHashMap<>();
+    private final AIToolboxInternalDescriptor internalToolbox;
+    private final Map<String, AIToolboxDescriptor> externalToolboxes = new LinkedHashMap<>();
     private AIFunctionSettings functionSettings;
     private final Map<String, AIFunctionCategoryDescriptor> categoriesById = new LinkedHashMap<>();
 
-    public AIAgentRegistry() {
-        internalAgent = new AIAgentInternalDescriptor();
+    public AIToolboxRegistry() {
+        internalToolbox = new AIToolboxInternalDescriptor();
         try {
-            List<AIAgentDescriptor> agents = readExternalAgents();
-            for (AIAgentDescriptor agent: agents) {
-                externalAgents.put(agent.getAgentId(), agent);
+            List<AIToolboxDescriptor> toolboxes = readExternalToolboxes();
+            for (AIToolboxDescriptor toolbox: toolboxes) {
+                externalToolboxes.put(toolbox.getToolboxId(), toolbox);
             }
         } catch (DBException e) {
             log.error("Error loading MCP configuration", e);
@@ -64,11 +64,11 @@ public class AIAgentRegistry implements AIAgentManager {
                 try (Reader configReader = new StringReader(mcpConfig)) {
                     functionSettings = JSONUtils.GSON.fromJson(configReader, AIFunctionSettings.class);
                 } catch (IOException e) {
-                    log.error("Error parsing agent tools configuration", e);
+                    log.error("Error parsing tools configuration", e);
                 }
             }
         } catch (DBException e) {
-            log.error("Error reading agent tools configuration", e);
+            log.error("Error reading tools configuration", e);
         }
         if (functionSettings == null) {
             functionSettings = new AIFunctionSettings();
@@ -98,26 +98,26 @@ public class AIAgentRegistry implements AIAgentManager {
             DBWorkbench.getPlatform().getConfigurationController().saveConfigurationFile(
                 TOOLS_CONFIG_FILE_NAME, config);
         } catch (DBException e) {
-            log.error("Error saving agent tools configuration", e);
+            log.error("Error saving tools configuration", e);
         }
     }
 
     @Override
     @NotNull
-    public List<AIAgent> getAllAgents() {
-        List<AIAgent> agents = new ArrayList<>(externalAgents.size() + 1);
-        agents.add(internalAgent);
-        agents.addAll(externalAgents.values());
-        return agents;
+    public List<AIToolbox> getAllToolboxes() {
+        List<AIToolbox> toolboxes = new ArrayList<>(externalToolboxes.size() + 1);
+        toolboxes.add(internalToolbox);
+        toolboxes.addAll(externalToolboxes.values());
+        return toolboxes;
     }
 
     @NotNull
     @Override
     public List<AIFunctionDescriptor> getAllFunctions(@NotNull AIFunctionPurpose purpose) {
-        List<AIFunctionDescriptor> functions = new ArrayList<>(internalAgent.getSupportedFunctions());
-        for (AIAgent agent : externalAgents.values()) {
-            if (agent.isEnabled() && agent.isAccessible()) {
-                functions.addAll(agent.getSupportedFunctions());
+        List<AIFunctionDescriptor> functions = new ArrayList<>(internalToolbox.getSupportedFunctions());
+        for (AIToolbox toolbox : externalToolboxes.values()) {
+            if (toolbox.isEnabled() && toolbox.isAccessible()) {
+                functions.addAll(toolbox.getSupportedFunctions());
             }
         }
         return functions;
@@ -125,37 +125,37 @@ public class AIAgentRegistry implements AIAgentManager {
 
     @Override
     @Nullable
-    public AIAgentDescriptor getAgent(@NotNull String agentId) {
-        if (AIConstants.INTERNAL_AGENT_ID.equals(agentId)) {
-            return internalAgent;
+    public AIToolboxDescriptor getToolbox(@NotNull String toolboxId) {
+        if (AIConstants.INTERNAL_TOOLBOX_ID.equals(toolboxId)) {
+            return internalToolbox;
         }
-        AIAgentDescriptor agent = externalAgents.get(agentId);
-        if (agent == null) {
-            log.debug("Agent '" + agentId + "' not found in registry");
+        AIToolboxDescriptor toolbox = externalToolboxes.get(toolboxId);
+        if (toolbox == null) {
+            log.debug("Toolbox '" + toolboxId + "' not found in registry");
         }
-        return agent;
+        return toolbox;
     }
 
     @Nullable
     @Override
     public AIFunctionDescriptor getFunctionById(@NotNull String id) {
-        AIFunctionDescriptor function = internalAgent.getFunctionById(id);
+        AIFunctionDescriptor function = internalToolbox.getFunctionById(id);
         if (function == null) {
-            for (AIAgent agent : externalAgents.values()) {
-                function = agent.getFunctionById(id);
+            for (AIToolbox toolbox : externalToolboxes.values()) {
+                function = toolbox.getFunctionById(id);
                 if (function != null) {
                     break;
                 }
             }
         }
         if (function == null) {
-            log.warn("AI function '" + id + "' not found in any accessible agent");
+            log.warn("AI function '" + id + "' not found in any accessible toolbox");
         }
         return function;
     }
 
     @NotNull
-    protected List<AIAgentDescriptor> readExternalAgents() throws DBException {
+    protected List<AIToolboxDescriptor> readExternalToolboxes() throws DBException {
         return Collections.emptyList();
     }
 
