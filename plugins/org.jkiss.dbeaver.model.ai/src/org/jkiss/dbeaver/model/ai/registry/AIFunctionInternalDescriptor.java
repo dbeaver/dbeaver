@@ -33,7 +33,7 @@ public class AIFunctionInternalDescriptor extends AbstractDescriptor implements 
 
     public static final String EXTENSION_ID = "com.dbeaver.ai.function";
 
-    private final AIAgentInternalDescriptor agent;
+    private final AIToolboxInternalDescriptor toolbox;
     private final ObjectType objectType;
     private final String id;
     private final String name;
@@ -50,11 +50,11 @@ public class AIFunctionInternalDescriptor extends AbstractDescriptor implements 
     private final AIFunctionInternalParameter[] parameters;
 
     public AIFunctionInternalDescriptor(
-        @NotNull AIAgentInternalDescriptor agent,
+        @NotNull AIToolboxInternalDescriptor toolbox,
         @NotNull IConfigurationElement config
     ) {
         super(config);
-        this.agent = agent;
+        this.toolbox = toolbox;
         this.objectType = new ObjectType(config, RegistryConstants.ATTR_CLASS);
         this.icon = iconToImage(config.getAttribute(RegistryConstants.ATTR_ICON));
         this.id = config.getAttribute(RegistryConstants.ATTR_ID);
@@ -82,8 +82,8 @@ public class AIFunctionInternalDescriptor extends AbstractDescriptor implements 
 
     @NotNull
     @Override
-    public AIAgent getAgent() {
-        return agent;
+    public AIToolbox getToolbox() {
+        return toolbox;
     }
 
     @NotNull

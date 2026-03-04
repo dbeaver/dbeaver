@@ -28,7 +28,7 @@ import org.jkiss.dbeaver.model.ai.registry.AIEngineDescriptor;
 public interface AIFunctionDescriptor {
 
     @NotNull
-    AIAgent getAgent();
+    AIToolbox getToolbox();
 
     @NotNull
     String getId();
