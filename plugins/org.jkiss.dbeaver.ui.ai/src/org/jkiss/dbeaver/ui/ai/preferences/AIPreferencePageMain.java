@@ -24,13 +24,11 @@ import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 import org.eclipse.ui.preferences.IWorkbenchPreferenceContainer;
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.preferences.AbstractPrefPage;
 
 public class AIPreferencePageMain extends AbstractPrefPage implements IWorkbenchPreferencePage {
-    private static final Log log = Log.getLog(AIPreferencePageMain.class);
     public static final String PAGE_ID = "org.jkiss.dbeaver.preferences.ai";
 
     @Override
@@ -47,7 +45,7 @@ public class AIPreferencePageMain extends AbstractPrefPage implements IWorkbench
             composite,
             1);
         Label descLabel = new Label(groupObjects, SWT.WRAP);
-        descLabel.setText(CoreMessages.pref_page_eclipse_ui_general_connections_group_label);
+        descLabel.setText("AI settings");
 
         // Link to secure storage config
         addLinkToSettings(groupObjects, AIPreferencePageEngines.PAGE_ID);
