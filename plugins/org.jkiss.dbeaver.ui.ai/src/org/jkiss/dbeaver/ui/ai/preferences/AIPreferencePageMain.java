@@ -16,24 +16,54 @@
  */
 package org.jkiss.dbeaver.ui.ai.preferences;
 
-import org.eclipse.swt.SWT;
+import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
-import org.eclipse.swt.widgets.Label;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 import org.eclipse.ui.preferences.IWorkbenchPreferenceContainer;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.core.CoreMessages;
+import org.jkiss.dbeaver.model.ai.AISettings;
+import org.jkiss.dbeaver.model.ai.registry.AISettingsManager;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.ai.internal.AIUIMessages;
 import org.jkiss.dbeaver.ui.preferences.AbstractPrefPage;
 
 public class AIPreferencePageMain extends AbstractPrefPage implements IWorkbenchPreferencePage {
     public static final String PAGE_ID = "org.jkiss.dbeaver.preferences.ai";
 
+    private final AISettings settings;
+    private Button enableAICheck;
+
+    public AIPreferencePageMain() {
+        this.settings = AISettingsManager.getInstance().getSettings();
+    }
+
     @Override
     public void init(IWorkbench workbench) {
 
+    }
+
+    @Override
+    protected void performDefaults() {
+        if (!hasAccessToPage()) {
+            return;
+        }
+        enableAICheck.setSelection(!this.settings.isAiDisabled());
+    }
+
+    @Override
+    public boolean performOk() {
+        if (!hasAccessToPage()) {
+            return false;
+        }
+        this.settings.setAiDisabled(!enableAICheck.getSelection());
+
+        AISettingsManager.getInstance().saveSettings(this.settings);
+
+        return true;
     }
 
     @NotNull
@@ -41,16 +71,29 @@ public class AIPreferencePageMain extends AbstractPrefPage implements IWorkbench
     protected Control createPreferenceContent(@NotNull Composite parent) {
         Composite composite = UIUtils.createComposite(parent, 1);
 
-        Composite groupObjects = UIUtils.createComposite(
+        Composite groupObjects = UIUtils.createTitledComposite(
             composite,
-            1);
-        Label descLabel = new Label(groupObjects, SWT.WRAP);
-        descLabel.setText("AI settings");
+            "AI settings",
+            2,
+            GridData.HORIZONTAL_ALIGN_BEGINNING);
+
+        enableAICheck = UIUtils.createCheckbox(
+            groupObjects,
+            AIUIMessages.gpt_preference_page_checkbox_enable_ai_label,
+            AIUIMessages.gpt_preference_page_checkbox_enable_ai_tip,
+            !this.settings.isAiDisabled(),
+            2);
+
+        Composite links = UIUtils.createTitledComposite(
+            composite,
+            "Configuration",
+            1,
+            GridData.HORIZONTAL_ALIGN_BEGINNING);
 
         // Link to secure storage config
-        addLinkToSettings(groupObjects, AIPreferencePageEngines.PAGE_ID);
-        addLinkToSettings(groupObjects, AIPreferencePageConfiguration.PAGE_ID);
-        addLinkToSettings(groupObjects, AIPreferencePagePrompts.PAGE_ID);
+        addLinkToSettings(links, AIPreferencePageEngines.PAGE_ID);
+        addLinkToSettings(links, AIPreferencePageConfiguration.PAGE_ID);
+        addLinkToSettings(links, AIPreferencePagePrompts.PAGE_ID);
 
         return composite;
     }
