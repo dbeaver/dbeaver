@@ -16,12 +16,19 @@
  */
 package org.jkiss.dbeaver.model.ai;
 
-/**
- * AI agent type.
- */
-public enum AIAgentType {
+import org.jkiss.code.NotNull;
 
-    INTERNAL,
-    EXTERNAL
+import java.util.Map;
+
+/**
+ * AI toolbox with authentication.
+ */
+public interface AIToolboxAuth {
+
+    @NotNull
+    String getUrl();
+
+    @NotNull
+    Map<String, String> getHeaders();
 
 }
