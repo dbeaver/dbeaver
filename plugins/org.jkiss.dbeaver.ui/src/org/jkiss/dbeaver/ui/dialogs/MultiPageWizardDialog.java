@@ -130,6 +130,7 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
         return EnumSet.of(PageCompletionMark.ERROR);
     }
 
+    @Nullable
     protected Tree getPagesTree() {
         return pagesTree;
     }
@@ -388,6 +389,7 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
     }
 
     @Override
+    @Nullable
     public IWizardPage getCurrentPage() {
         TreeItem[] selection = pagesTree.getSelection();
         if (ArrayUtils.isEmpty(selection)) {
@@ -798,7 +800,7 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
     private void updateSizeForPage(IWizardPage page) {
         if (isAutoLayoutAvailable() &&
             (!(page instanceof  ActiveWizardPage<?> awp) || awp.isAutoResizeEnabled())) {
-            UIUtils.asyncExec(() -> {
+            UIUtils.syncExec(() -> {
                 Point pageCompSize = page.getControl().computeSize(SWT.DEFAULT, SWT.DEFAULT);
                 for (Control parent = page.getControl().getParent(); parent != null; parent = parent.getParent()) {
                     if (parent instanceof SashForm) {
