@@ -553,7 +553,6 @@ class ResultSetPersister {
         }
 
         boolean rowsChanged = model.cleanupRows(addedRows);
-        addedRows.stream().mapToInt(ResultSetRow::getVisualNumber).forEach(viewer::removeSelectedRecord);
         // Remove deleted rows
         for (ResultSetRow row : deletedRows) {
             row.setState(ResultSetRow.STATE_NORMAL);

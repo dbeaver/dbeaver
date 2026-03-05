@@ -4902,7 +4902,7 @@ public class ResultSetViewer extends Viewer
                     }
 
                     this.curRow = model.addNewRow(newRowIndex, cells);
-                    this.selectedRecords = selectedRowsIncludingNewRow(newRowIndex);
+                    this.selectedRecords = new int[]{newRowIndex};
 
                     newRowIndex++;
                     srcRowIndex++;
@@ -4924,22 +4924,6 @@ public class ResultSetViewer extends Viewer
         }
 
         return curRow;
-    }
-
-    private int[] selectedRowsIncludingNewRow(int newRowIndex) {
-        int[] correctedSelectedRowsIndexes = Arrays.copyOf(this.selectedRecords, this.selectedRecords.length);
-        for (int i = 0; i < correctedSelectedRowsIndexes.length; i++) {
-            if (correctedSelectedRowsIndexes[i] >= newRowIndex) {
-                correctedSelectedRowsIndexes[i]++;
-            }
-        }
-        int[] updatedSelectedRows = ArrayUtils.add(correctedSelectedRowsIndexes, newRowIndex);
-        Arrays.sort(updatedSelectedRows);
-        return updatedSelectedRows;
-    }
-
-    public void removeSelectedRecord(int rowVisualNumber) {
-        selectedRecords = ArrayUtils.remove(selectedRecords, rowVisualNumber);
     }
 
     @Override
@@ -5084,7 +5068,6 @@ public class ResultSetViewer extends Viewer
         int lastRowNum = -1;
         for (ResultSetRow row : rowsToDelete) {
             if (model.deleteRow(row)) {
-                removeSelectedRecord(row.getVisualNumber());
                 rowsRemoved++;
             }
             lastRowNum = row.getVisualNumber();
