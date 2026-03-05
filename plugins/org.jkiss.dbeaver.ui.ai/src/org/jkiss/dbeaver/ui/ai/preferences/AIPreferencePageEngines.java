@@ -64,7 +64,6 @@ public class AIPreferencePageEngines extends AbstractPrefPage implements IWorkbe
     private final Map<String, String> serviceNameMappings = new HashMap<>();
     private final Map<String, EngineConfiguratorPage> engineConfiguratorMapping = new HashMap<>();
     private EngineConfiguratorPage activeEngineConfiguratorPage;
-    private Button enableAICheck;
     private Button connectionTestButton;
 
     public AIPreferencePageEngines() {
@@ -98,19 +97,10 @@ public class AIPreferencePageEngines extends AbstractPrefPage implements IWorkbe
     }
 
     @Override
-    protected void performDefaults() {
-        if (!hasAccessToPage()) {
-            return;
-        }
-        enableAICheck.setSelection(!this.settings.isAiDisabled());
-    }
-
-    @Override
     public boolean performOk() {
         if (!hasAccessToPage()) {
             return false;
         }
-        this.settings.setAiDisabled(!enableAICheck.getSelection());
         DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
         String activeEngineId = serviceNameMappings.get(serviceCombo.getText());
         this.settings.setActiveEngine(activeEngineId);
@@ -141,12 +131,6 @@ public class AIPreferencePageEngines extends AbstractPrefPage implements IWorkbe
     @Override
     protected Control createPreferenceContent(@NotNull Composite parent) {
         Composite composite = UIUtils.createComposite(parent, 1);
-        enableAICheck = UIUtils.createCheckbox(
-            composite,
-            AIUIMessages.gpt_preference_page_checkbox_enable_ai_label,
-            AIUIMessages.gpt_preference_page_checkbox_enable_ai_tip,
-            false,
-            2);
 
         composite.setLayoutData(new GridData(GridData.FILL_BOTH));
 
