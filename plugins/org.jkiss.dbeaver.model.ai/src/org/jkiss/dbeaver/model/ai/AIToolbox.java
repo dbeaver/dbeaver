@@ -18,33 +18,41 @@ package org.jkiss.dbeaver.model.ai;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.model.ai.registry.AIFunctionCategoryDescriptor;
-import org.jkiss.dbeaver.model.exec.DBCException;
+import org.jkiss.dbeaver.DBException;
 
 import java.util.List;
+import java.util.Map;
 
 /**
- * AI agent.
+ * AI toolbox. It is a provider of AI tools (functions).
+ * It may be an internal toolbox or an external MCP server.
  */
-public interface AIAgentManager {
+public interface AIToolbox {
+
+    @NotNull
+    String getToolboxId();
+
+    @NotNull
+    String getDisplayName();
 
     @Nullable
-    AIAgent getAgent(@NotNull String id);
+    String getDescription();
+
+    boolean isEnabled();
+
+    boolean isAccessible();
 
     @NotNull
-    List<AIAgent> getAllAgents();
-
-    @NotNull
-    List<AIFunctionDescriptor> getAllFunctions(@NotNull AIFunctionPurpose purpose);
+    List<AIFunctionDescriptor> getSupportedFunctions();
 
     @Nullable
     AIFunctionDescriptor getFunctionById(@NotNull String id);
 
     @NotNull
-    List<AIFunctionCategoryDescriptor> getAllCategories();
+    AIFunctionResult callFunction(
+        @NotNull AIFunctionContext context,
+        @NotNull AIFunctionDescriptor descriptor,
+        @NotNull Map<String, Object> arguments
+    ) throws DBException;
 
-    @NotNull
-    AIFunctionSettings getFunctionSettings();
-
-    void saveFunctionSettings() throws DBCException;
 }

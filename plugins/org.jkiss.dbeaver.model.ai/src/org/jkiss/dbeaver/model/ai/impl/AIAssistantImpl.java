@@ -24,10 +24,10 @@ import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.ai.*;
 import org.jkiss.dbeaver.model.ai.engine.*;
 import org.jkiss.dbeaver.model.ai.internal.AIMessages;
-import org.jkiss.dbeaver.model.ai.registry.AIAgentRegistry;
 import org.jkiss.dbeaver.model.ai.registry.AIEngineDescriptor;
 import org.jkiss.dbeaver.model.ai.registry.AIEngineRegistry;
 import org.jkiss.dbeaver.model.ai.registry.AISettingsManager;
+import org.jkiss.dbeaver.model.ai.registry.AIToolboxRegistry;
 import org.jkiss.dbeaver.model.ai.utils.ThrowableSupplier;
 import org.jkiss.dbeaver.model.app.DBPWorkspace;
 import org.jkiss.dbeaver.model.exec.DBCMessageException;
@@ -52,17 +52,18 @@ public class AIAssistantImpl implements AIAssistant {
     protected final DBPWorkspace workspace;
 
     private AIEngineRequestFactory requestFactory;
-    private AIAgentManager agentManager;
+    private AIToolboxManager toolboxManager;
 
     public AIAssistantImpl(@NotNull DBPWorkspace workspace) {
         this.workspace = workspace;
     }
 
     @NotNull
-    protected AIAgentManager createAgentManager() {
-        return new AIAgentRegistry();
+    protected AIToolboxManager createToolboxManager() {
+        return new AIToolboxRegistry();
     }
 
+    @NotNull
     protected AIEngineRequestFactory getRequestFactory() {
         if (requestFactory == null) {
             requestFactory = createRequestFactory();
@@ -163,11 +164,11 @@ public class AIAssistantImpl implements AIAssistant {
 
     @NotNull
     @Override
-    public AIAgentManager getAgentManager() {
-        if (agentManager == null) {
-            agentManager = createAgentManager();
+    public AIToolboxManager getToolboxManager() {
+        if (toolboxManager == null) {
+            toolboxManager = createToolboxManager();
         }
-        return agentManager;
+        return toolboxManager;
     }
 
     @NotNull
@@ -214,7 +215,7 @@ public class AIAssistantImpl implements AIAssistant {
         if (CommonUtils.isEmpty(functionName)) {
             throw new DBCMessageException("Function name not specified");
         }
-        AIFunctionDescriptor function = getAgentManager().getFunctionById(functionName);
+        AIFunctionDescriptor function = getToolboxManager().getFunctionById(functionName);
         if (function == null) {
             throw new DBCMessageException("Function '" + functionName + "' not found");
         }
@@ -233,7 +234,7 @@ public class AIAssistantImpl implements AIAssistant {
                 AIBaseFeatures.PROMPT_TYPE, context.getPrompt().generatorId()
             )
         ));
-        return function.getAgent().callFunction(context, function, arguments);
+        return function.getToolbox().callFunction(context, function, arguments);
     }
 
     protected void checkAiEnablement() throws DBException {
