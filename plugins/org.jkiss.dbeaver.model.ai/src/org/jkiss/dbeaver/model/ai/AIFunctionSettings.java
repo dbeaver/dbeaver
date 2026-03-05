@@ -66,6 +66,10 @@ public final class AIFunctionSettings {
         }
     }
 
+    public void forceEnableFunction(@NotNull String functionId) {
+        enabledFunctions.add(functionId);
+    }
+
     @NotNull
     public Set<String> getEnabledFunctionCategories() {
         return new HashSet<>(enabledFunctionCategories);

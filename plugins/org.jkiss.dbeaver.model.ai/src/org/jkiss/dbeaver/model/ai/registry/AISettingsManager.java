@@ -130,7 +130,15 @@ public class AISettingsManager {
                 settings.getFunctionSettings().setFunctionsEnabled(JSONUtils.getBoolean(configMap, FUNCTIONS_ENABLED_KEY, true));
                 List<String> enabledFunctions = JSONUtils.getStringList(configMap, ENABLED_FUNCTIONS_KEY);
                 if (!enabledFunctions.isEmpty()) {
-                    settings.getFunctionSettings().setEnabledFunctions(new HashSet<>(enabledFunctions));
+                    DBPApplication application = DBWorkbench.getPlatform().getApplication();
+                    // We need to keep Desktop TE config even if some functions are not supported in CB
+                    if (application.isDistributed() && application.isMultiuser()) {
+                        for (String function : enabledFunctions) {
+                            settings.getFunctionSettings().forceEnableFunction(function);
+                        }
+                    } else {
+                        settings.getFunctionSettings().setEnabledFunctions(new HashSet<>(enabledFunctions));
+                    }
                 }
 
                 List<String> initializedCategories = JSONUtils.getStringList(configMap, INITIALIZED_DEFAULT_CATEGORIES_KEY);
