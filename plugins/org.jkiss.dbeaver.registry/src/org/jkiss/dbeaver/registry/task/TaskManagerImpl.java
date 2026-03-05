@@ -37,9 +37,7 @@ import org.jkiss.dbeaver.model.impl.app.BaseProjectImpl;
 import org.jkiss.dbeaver.model.rm.RMConstants;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.task.*;
-import org.jkiss.dbeaver.registry.timezone.TimezoneRegistry;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
-import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.ByteArrayOutputStream;
@@ -48,8 +46,8 @@ import java.io.OutputStreamWriter;
 import java.io.StringReader;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
-import java.text.SimpleDateFormat;
 import java.time.Duration;
+import java.time.ZonedDateTime;
 import java.util.*;
 import java.util.concurrent.CopyOnWriteArraySet;
 
@@ -66,7 +64,6 @@ public class TaskManagerImpl implements DBTTaskManager {
         .setPrettyPrinting()
         .create();
 
-    final SimpleDateFormat systemDateFormat;
 
     private final Set<TaskRunJob> runningTasks = Collections.synchronizedSet(new HashSet<>());
     private Job serviceJob;
@@ -78,8 +75,6 @@ public class TaskManagerImpl implements DBTTaskManager {
     public TaskManagerImpl(BaseProjectImpl projectMetadata, Path statisticsFolder) {
         this.projectMetadata = projectMetadata;
         this.statisticsFolder = statisticsFolder;
-        this.systemDateFormat = new SimpleDateFormat(GeneralUtils.DEFAULT_TIMESTAMP_PATTERN, Locale.ENGLISH);
-        systemDateFormat.setTimeZone(TimeZone.getTimeZone(TimezoneRegistry.getUserDefaultTimezone()));
         loadConfiguration();
     }
 
@@ -160,10 +155,11 @@ public class TaskManagerImpl implements DBTTaskManager {
         if (getTaskByName(label) != null) {
             throw new DBException("Task with name '" + label + "' already exists");
         }
-        Date createTime = new Date();
+        ZonedDateTime createTime = ZonedDateTime.now();
         String id = UUID.randomUUID().toString();
         TaskFolderImpl taskFolder = searchTaskFolderByName(taskFolderName);
-        TaskImpl task = createTask(
+
+        return createTask(
             taskDescriptor,
             id,
             label,
@@ -173,14 +169,12 @@ public class TaskManagerImpl implements DBTTaskManager {
             taskFolder,
             properties
         );
-
-        return task;
     }
 
     @NotNull
     @Override
     public DBTTask createTemporaryTask(@NotNull DBTTaskType type, @NotNull String label) {
-        return new TaskImpl(getProject(), type, TaskConstants.TEMPORARY_ID, label, label, new Date(), null, null);
+        return new TaskImpl(getProject(), type, TaskConstants.TEMPORARY_ID, label, label, ZonedDateTime.now(), null, null);
     }
 
     @NotNull
@@ -409,8 +403,8 @@ public class TaskManagerImpl implements DBTTaskManager {
                     String label = CommonUtils.toString(JSONUtils.getString(taskJSON, TaskConstants.TAG_LABEL), id);
                     String description = JSONUtils.getString(taskJSON, TaskConstants.TAG_DESCRIPTION);
                     String taskFolderName = JSONUtils.getString(taskJSON, TaskConstants.TAG_TASK_FOLDER);
-                    Date createTime = systemDateFormat.parse(JSONUtils.getString(taskJSON, TaskConstants.TAG_CREATE_TIME));
-                    Date updateTime = systemDateFormat.parse(JSONUtils.getString(taskJSON, TaskConstants.TAG_UPDATE_TIME));
+                    ZonedDateTime createTime = TaskUtils.parseDateTime(JSONUtils.getString(taskJSON, TaskConstants.TAG_CREATE_TIME));
+                    ZonedDateTime updateTime = TaskUtils.parseDateTime(JSONUtils.getString(taskJSON, TaskConstants.TAG_UPDATE_TIME));
                     Duration maxExecutionTime = Duration.ofSeconds(JSONUtils.getInteger(taskJSON, TaskConstants.TAG_MAX_EXEC_TIME));
                     Map<String, Object> state = JSONUtils.getObject(taskJSON, TaskConstants.TAG_STATE);
 
@@ -461,8 +455,8 @@ public class TaskManagerImpl implements DBTTaskManager {
         @NotNull String id,
         @NotNull String label,
         @Nullable String description,
-        @NotNull Date createTime,
-        @NotNull Date updateTime,
+        @NotNull ZonedDateTime createTime,
+        @NotNull ZonedDateTime updateTime,
         @Nullable TaskFolderImpl taskFolder,
         @NotNull Map<String, Object> properties
     ) {
@@ -567,12 +561,12 @@ public class TaskManagerImpl implements DBTTaskManager {
             if (taskFolder != null) {
                 JSONUtils.field(jsonWriter, TaskConstants.TAG_TASK_FOLDER, taskFolder.getName());
             }
-            JSONUtils.field(jsonWriter, TaskConstants.TAG_CREATE_TIME, systemDateFormat.format(task.getCreateTime()));
-            JSONUtils.field(jsonWriter, TaskConstants.TAG_UPDATE_TIME, systemDateFormat.format(task.getUpdateTime()));
+            JSONUtils.field(jsonWriter, TaskConstants.TAG_CREATE_TIME, TaskUtils.formatDateTime(task.getCreateTime()));
+            JSONUtils.field(jsonWriter, TaskConstants.TAG_UPDATE_TIME, TaskUtils.formatDateTime(task.getUpdateTime()));
+            JSONUtils.serializeProperties(jsonWriter, TaskConstants.TAG_STATE, task.getProperties(), true);
             if (task.getMaxExecutionTime().isPositive()) {
                 JSONUtils.field(jsonWriter, TaskConstants.TAG_MAX_EXEC_TIME, task.getMaxExecutionTime().toSeconds());
             }
-            JSONUtils.serializeProperties(jsonWriter, TaskConstants.TAG_STATE, task.getProperties(), true);
             jsonWriter.endObject();
         }
         jsonWriter.endObject();

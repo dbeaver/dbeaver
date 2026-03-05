@@ -95,7 +95,17 @@ public class TimezoneRegistry {
     }
 
     @NotNull
-    public static String getUserDefaultTimezone() {
+    public static TimeZone getUserDefaultTimeZone() {
+        return TimeZone.getTimeZone(getUserDefaultTimezoneId());
+    }
+
+    @NotNull
+    public static ZoneId getUserDefaultZoneId() {
+        return ZoneId.of(getUserDefaultTimezoneId());
+    }
+
+    @NotNull
+    private static String getUserDefaultTimezoneId() {
         return "".equals(userDefaultTimezone) ? TimeZone.getDefault().getID() : userDefaultTimezone;
     }
 

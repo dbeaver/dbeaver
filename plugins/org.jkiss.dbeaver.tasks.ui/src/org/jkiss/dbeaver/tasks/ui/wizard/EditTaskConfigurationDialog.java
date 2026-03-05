@@ -43,7 +43,7 @@ import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.time.Duration;
-import java.util.Date;
+import java.time.ZonedDateTime;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -198,7 +198,7 @@ public class EditTaskConfigurationDialog extends BaseDialog
             }
             task.setName(taskLabelCombo.getText());
             task.setDescription(taskDescriptionText.getText());
-            task.setUpdateTime(new Date());
+            task.setUpdateTime(ZonedDateTime.now());
             task.setProperties(state);
             task.setMaxExecutionTime(maxExecutionTime);
             taskManager.updateTaskConfiguration(task);

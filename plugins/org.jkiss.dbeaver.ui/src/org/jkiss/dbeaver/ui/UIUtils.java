@@ -1560,6 +1560,9 @@ public class UIUtils {
     /**
      * Creates a new link that opens the given preference page either in the current
      * preference container, is present, or in a new modal dialog.
+     * <p>
+     * The message should contain a single hyperlink {@code <a>text</a>}, as well as
+     * an optional placeholder {@code {0}} that will be replaced with the name of the page.
      */
     @NotNull
     public static Link createPreferenceLink(

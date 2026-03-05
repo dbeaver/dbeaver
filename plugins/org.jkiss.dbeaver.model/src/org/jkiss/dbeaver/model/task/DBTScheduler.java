@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -46,7 +46,6 @@ public interface DBTScheduler {
     String FEATURE_FREQUENCY_MONTHLY_START_DATE = FEATURE_FREQUENCY_MONTHLY + ".startDate";
     String FEATURE_FREQUENCY_ONETIME = "frequency.onetime";
     String FEATURE_FREQUENCY_ONETIME_START_DATETIME = FEATURE_FREQUENCY_ONETIME + ".startDatetime";
-    String FEATURE_FREQUENCY_EVENT = "frequency.event";
     String FEATURE_FREQUENCY_WEEKLY_RECURRENCE = FEATURE_FREQUENCY_WEEKLY + ".recurrence";
     String FEATURE_FREQUENCY_MONTHLY_LAST_DAY = FEATURE_FREQUENCY_MONTHLY + ".last_day";
     String FEATURE_FREQUENCY_HOURLY_RECURRENCE_GREATER_THAN_23 = FEATURE_FREQUENCY_HOURLY + ".recurrence.greaterThan23";

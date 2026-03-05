@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,14 +21,14 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.task.DBTTaskRun;
 import org.jkiss.utils.CommonUtils;
 
-import java.util.Date;
+import java.time.ZonedDateTime;
 
 /**
  * TaskRunImpl
  */
 public class TaskRunImpl implements DBTTaskRun {
     private final String id;
-    private final Date startTime;
+    private final ZonedDateTime startTime;
     private final String startUser;
     private final String startedBy;
     private long duration = -1;
@@ -38,7 +38,7 @@ public class TaskRunImpl implements DBTTaskRun {
 
     protected TaskRunImpl(
         @NotNull String id,
-        @NotNull Date startTime,
+        @NotNull ZonedDateTime startTime,
         @NotNull String startUser,
         @NotNull String startedBy,
         @Nullable String errorMessage,
@@ -59,7 +59,7 @@ public class TaskRunImpl implements DBTTaskRun {
 
     @NotNull
     @Override
-    public Date getStartTime() {
+    public ZonedDateTime getStartTime() {
         return startTime;
     }
 

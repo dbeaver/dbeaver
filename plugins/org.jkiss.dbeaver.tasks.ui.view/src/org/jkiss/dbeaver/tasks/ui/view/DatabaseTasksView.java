@@ -55,6 +55,7 @@ import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.task.*;
 import org.jkiss.dbeaver.registry.task.TaskRegistry;
+import org.jkiss.dbeaver.registry.task.TaskUtils;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.tasks.ui.TaskFeatures;
 import org.jkiss.dbeaver.tasks.ui.internal.TaskUIViewMessages;
@@ -166,7 +167,7 @@ public class DatabaseTasksView extends ViewPart implements DBTTaskListener {
         taskRunColumnController.addColumn(TaskUIViewMessages.db_tasks_view_column_controller_add_name_time, TaskUIViewMessages.db_tasks_view_column_controller_add_descr_start_time, SWT.LEFT, true, true, new TaskRunLabelProvider() {
             @Override
             protected void update(ViewerCell cell, DBTTaskRun taskRun) {
-                cell.setText(tasksTree.getDateFormat().format(taskRun.getStartTime()));
+                cell.setText(TaskUtils.formatDisplayDateTime(taskRun.getStartTime()));
             }
         });
         taskRunColumnController.addColumn(TaskUIViewMessages.db_tasks_view_column_controller_add_name_duration, TaskUIViewMessages.db_tasks_view_column_controller_add_descr_task_duration, SWT.LEFT, true, false, true, null, new TaskRunLabelProviderEx() {
@@ -626,7 +627,7 @@ public class DatabaseTasksView extends ViewPart implements DBTTaskListener {
             if (task != null && taskRun != null &&
                 UIUtils.confirmAction(
                     TaskUIViewMessages.db_tasks_view_run_log_confirm_remove,
-                    NLS.bind(TaskUIViewMessages.db_tasks_view_run_log_confirm_delete_task, task.getName(), tasksTree.getDateFormat().format(taskRun.getStartTime()))))
+                    NLS.bind(TaskUIViewMessages.db_tasks_view_run_log_confirm_delete_task, task.getName(), TaskUtils.formatDisplayDateTime(taskRun.getStartTime()))))
             {
                 task.removeRun(taskRun);
             }

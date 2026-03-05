@@ -25,6 +25,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.StandardConstants;
 
 import java.io.IOException;
 import java.io.Reader;
@@ -48,18 +49,18 @@ public class JSONUtils {
 
     private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter
         .ofPattern("yyyy-MM-dd['T'HH:mm:ss['.'SSS]['Z']]")
-        .withZone(ZoneId.of("UTC"));
+        .withZone(StandardConstants.ZONE_ID_UTC);
     public static final Type MAP_TYPE_TOKEN = new TypeToken<Map<String, Object>>() {}.getType();
     public static final Gson GSON = new GsonBuilder().create();
 
     public static String formatDate(Date date) {
         try {
             if (date instanceof java.sql.Time) {
-                return DateTimeFormatter.ISO_TIME.format(Instant.ofEpochMilli(date.getTime()).atZone(ZoneId.of("UTC")));
+                return DateTimeFormatter.ISO_TIME.format(Instant.ofEpochMilli(date.getTime()).atZone(StandardConstants.ZONE_ID_UTC));
             } else if (date instanceof java.sql.Date) {
                 return DateTimeFormatter.ISO_DATE.format(((java.sql.Date) date).toLocalDate());
             } else {
-                return LocalDateTime.ofInstant(date.toInstant(), ZoneId.of("UTC")).format(DATE_TIME_FORMATTER);
+                return LocalDateTime.ofInstant(date.toInstant(), StandardConstants.ZONE_ID_UTC).format(DATE_TIME_FORMATTER);
             }
         } catch (Exception ex) {
             log.warn("Error formatting date to ISO-8601. Falling back to default string representation of " + date.getClass().getName(), ex);

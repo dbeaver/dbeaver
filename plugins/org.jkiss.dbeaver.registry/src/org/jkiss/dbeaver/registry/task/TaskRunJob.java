@@ -43,10 +43,10 @@ import java.nio.file.Path;
 import java.text.SimpleDateFormat;
 import java.time.Duration;
 import java.time.Instant;
+import java.time.ZonedDateTime;
 import java.util.Date;
 import java.util.Locale;
 import java.util.Objects;
-import java.util.TimeZone;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -86,11 +86,11 @@ public class TaskRunJob extends AbstractJob implements DBRRunnableContext {
     protected IStatus run(@NotNull DBRProgressMonitor monitor) {
         Date startTime = new Date();
         SimpleDateFormat dateFormat = new SimpleDateFormat(GeneralUtils.DEFAULT_TIMESTAMP_PATTERN, Locale.getDefault()); //$NON-NLS-1$
-        dateFormat.setTimeZone(TimeZone.getTimeZone(TimezoneRegistry.getUserDefaultTimezone()));
+        dateFormat.setTimeZone(TimezoneRegistry.getUserDefaultTimeZone());
         String taskId = dateFormat.format(startTime) + "_" + taskNumber.incrementAndGet();
         TaskRunImpl taskRun = new TaskRunImpl(
             taskId,
-            new Date(),
+            ZonedDateTime.now(),
             System.getProperty(StandardConstants.ENV_USER_NAME),
             GeneralUtils.getProductTitle(),
             null, null);

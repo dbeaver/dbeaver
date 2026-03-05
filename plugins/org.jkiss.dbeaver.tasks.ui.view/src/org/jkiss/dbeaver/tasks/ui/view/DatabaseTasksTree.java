@@ -42,7 +42,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.task.*;
 import org.jkiss.dbeaver.registry.task.TaskImpl;
 import org.jkiss.dbeaver.registry.task.TaskRegistry;
-import org.jkiss.dbeaver.registry.timezone.TimezoneRegistry;
+import org.jkiss.dbeaver.registry.task.TaskUtils;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.tasks.ui.internal.TaskUIViewMessages;
 import org.jkiss.dbeaver.ui.*;
@@ -55,8 +55,6 @@ import org.jkiss.utils.CommonUtils;
 
 import java.io.IOException;
 import java.text.Collator;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -72,12 +70,9 @@ public class DatabaseTasksTree {
     private boolean groupByType = false;
     private boolean groupByCategory = false;
 
-    private final DateFormat dateFormat;
     private final Color colorError, colorErrorForeground;
 
     public DatabaseTasksTree(Composite composite, boolean selector) {
-        dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()); //$NON-NLS-1$
-        dateFormat.setTimeZone(TimeZone.getTimeZone(TimezoneRegistry.getUserDefaultTimezone()));
         colorError = BaseThemeSettings.instance.colorError;
         colorErrorForeground = UIStyles.getContrastColor(colorError);
         
@@ -140,8 +135,8 @@ public class DatabaseTasksTree {
         taskColumnController.addColumn(TaskUIViewMessages.db_tasks_tree_column_controller_add_name_created, TaskUIViewMessages.db_tasks_tree_column_controller_add_descr_create_time, SWT.LEFT, false, false, new TaskLabelProvider() {
             @Override
             protected String getCellText(Object element) {
-                if (element instanceof DBTTask) {
-                    return dateFormat.format(((DBTTask) element).getCreateTime());
+                if (element instanceof DBTTask task) {
+                    return TaskUtils.formatDisplayDateTime(task.getCreateTime());
                 } else {
                     return null;
                 }
@@ -150,12 +145,12 @@ public class DatabaseTasksTree {
         taskColumnController.addColumn(TaskUIViewMessages.db_tasks_tree_column_controller_add_name_last_run, TaskUIViewMessages.db_tasks_tree_column_controller_add_descr_start_time, SWT.LEFT, true, false, new TaskLabelProvider() {
             @Override
             protected String getCellText(Object element) {
-                if (element instanceof DBTTask) {
-                    DBTTaskRun lastRun = ((DBTTask) element).getLastRun();
-                    if (lastRun == null || lastRun.getStartTime() == null) {
+                if (element instanceof DBTTask task) {
+                    DBTTaskRun lastRun = task.getLastRun();
+                    if (lastRun == null) {
                         return "N/A";
                     } else {
-                        return dateFormat.format(lastRun.getStartTime());
+                        return TaskUtils.formatDisplayDateTime(lastRun.getStartTime());
                     }
                 }
                 return null;
@@ -250,10 +245,6 @@ public class DatabaseTasksTree {
 
     public TreeViewer getViewer() {
         return taskViewer;
-    }
-
-    DateFormat getDateFormat() {
-        return dateFormat;
     }
 
     Color getColorError() {

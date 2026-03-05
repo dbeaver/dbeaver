@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,7 @@
  */
 package org.jkiss.dbeaver.model.task;
 
-import java.util.Date;
+import java.time.ZonedDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -32,20 +32,15 @@ public class DBTTaskScheduleConfiguration {
         DAILY,
         WEEKLY,
         MONTHLY,
-        ONE_TIME,
-        EVENT // TODO: event-based schedulers not supported yet
+        ONE_TIME
     }
 
     public static final int DAYS_LAST = 32;
     public static final int ALL_DAYS = 33;
 
-    public String taskName;
-    public String taskDescription;
-
     public Frequency frequency;
 
-    public Date startTime;
-    public Date endTime;
+    public ZonedDateTime startTime;
 
     // Refines the schedule type to allow finer control over schedule recurrence
     public int recurrence;
@@ -57,9 +52,8 @@ public class DBTTaskScheduleConfiguration {
 
     // Repetition interval in minutes
     public int repetitionInterval;
-    // Specifies the duration to run the task (in seconds)
-    public int maxDuration;
 
+    // Execution minute of an hour
     public int executionMinute;
 
     public final Map<String, Object> properties = new HashMap<>();
