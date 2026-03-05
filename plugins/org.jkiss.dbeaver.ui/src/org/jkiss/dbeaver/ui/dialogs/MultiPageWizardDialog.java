@@ -556,14 +556,14 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
     public void updateButtons() {
         Button finishButton = getButton(IDialogConstants.OK_ID);
         if (finishButton != null && !finishButton.isDisposed()) {
-            finishButton.setEnabled(wizard.canFinish());
+            finishButton.setEnabled(shouldFinishButtonBeEnabled());
         }
 
         IWizardPage currentPage = getCurrentPage();
         if (currentPage != null) {
             Button nextButton = getButton(IDialogConstants.NEXT_ID);
             if (nextButton != null) {
-                nextButton.setEnabled(getCurrentPage().isPageComplete() && wizard.getNextPage(currentPage) != null);
+                nextButton.setEnabled(canShowNext(currentPage));
             }
             Button prevButton = getButton(IDialogConstants.BACK_ID);
             if (prevButton != null) {
@@ -571,6 +571,14 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
             }
         }
         updatePageCompleteMark(null);
+    }
+
+    protected boolean shouldFinishButtonBeEnabled() {
+        return wizard.canFinish();
+    }
+
+    protected boolean canShowNext(@NotNull IWizardPage currentPage) {
+        return currentPage.isPageComplete() && wizard.getNextPage(currentPage) != null;
     }
 
     @Override

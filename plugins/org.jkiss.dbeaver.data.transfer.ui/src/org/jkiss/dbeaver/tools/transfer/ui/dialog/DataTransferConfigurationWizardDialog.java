@@ -18,17 +18,13 @@ package org.jkiss.dbeaver.tools.transfer.ui.dialog;
 
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.viewers.IStructuredSelection;
-import org.eclipse.jface.wizard.IWizard;
 import org.eclipse.jface.wizard.IWizardPage;
-import org.eclipse.swt.widgets.Widget;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.tasks.ui.wizard.TaskConfigurationWizard;
 import org.jkiss.dbeaver.tasks.ui.wizard.TaskConfigurationWizardDialog;
 
 import java.util.Map;
-import java.util.Optional;
 
 public class DataTransferConfigurationWizardDialog extends TaskConfigurationWizardDialog {
 
@@ -42,7 +38,7 @@ public class DataTransferConfigurationWizardDialog extends TaskConfigurationWiza
 
     @Override
     protected void buttonPressed(int buttonId) {
-        if (buttonId == IDialogConstants.OK_ID && !isLastPage()) {
+        if (buttonId == IDialogConstants.OK_ID && !getWizard().canFinish() && canShowNext()) {
             cycleToLastPage();
             return;
         }
@@ -55,28 +51,14 @@ public class DataTransferConfigurationWizardDialog extends TaskConfigurationWiza
         }
     }
 
+    @Override
+    protected boolean shouldFinishButtonBeEnabled() {
+        return super.shouldFinishButtonBeEnabled() || canShowNext();
+    }
+
     private boolean canShowNext() {
-        IWizard wizard = getWizard();
         IWizardPage currentPage = getCurrentPage();
         return currentPage != null
-            && currentPage.isPageComplete()
-            && wizard.getNextPage(currentPage) != null;
-    }
-
-
-    private boolean isLastPage() {
-        IWizardPage lastPage = getLastPage();
-        return lastPage != null && lastPage.equals(getCurrentPage());
-    }
-
-    @Nullable
-    private IWizardPage getLastPage() {
-        Optional<Object> data = Optional
-            .ofNullable(getPagesTree())
-            .map(t -> t.getItem(t.getItemCount() - 1))
-            .map(Widget::getData);
-        return data.isPresent() && data.get() instanceof IWizardPage
-            ? (IWizardPage) data.get()
-            : null;
+            && canShowNext(currentPage);
     }
 }
