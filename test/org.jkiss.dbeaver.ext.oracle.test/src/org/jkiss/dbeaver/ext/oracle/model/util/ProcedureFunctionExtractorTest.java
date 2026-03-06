@@ -65,6 +65,7 @@ public class ProcedureFunctionExtractorTest {
 
     @Test
     public void commentsTest() {
+        assertBodyFound(simpleOneLineComment);
         assertBodyFound(oneLineComments);
         assertBodyFound(multiLineComments);
     }
@@ -124,6 +125,7 @@ public class ProcedureFunctionExtractorTest {
         allTestCases.add(funcNoBegin);
         allTestCases.add(funcWithParams);
 
+        allTestCases.add(simpleOneLineComment);
         allTestCases.add(oneLineComments);
         allTestCases.add(multiLineComments);
 
@@ -249,6 +251,16 @@ public class ProcedureFunctionExtractorTest {
             END;"""
     );
 
+    private final ProcTestCase simpleOneLineComment = new ProcTestCase(
+        "proc_with_simple_comment",
+        DBSProcedureType.FUNCTION, """
+        FUNCTION proc_with_simple_comment RETURN NUMBER IS
+          l_var NUMBER := 42;
+          l_msg VARCHAR2(100);
+          --END proc_with_simple_comment;
+        END;"""
+    );
+
     private final ProcTestCase oneLineComments = new ProcTestCase(
         "proc_with_comment",
         DBSProcedureType.FUNCTION, """
@@ -256,7 +268,7 @@ public class ProcedureFunctionExtractorTest {
         -- extra BEGIN 
         --more BEGIN
           l_var NUMBER := 42; --some end; and another begin loop
-          l_msg VARCHAR2(100);
+          l_msg --sudden inline comment -- included comment VARCHAR2(100);
           --END proc_with_comment;
         END;"""
     );
