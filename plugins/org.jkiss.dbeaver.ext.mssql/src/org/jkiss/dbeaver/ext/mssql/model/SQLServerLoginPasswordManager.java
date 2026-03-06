@@ -52,20 +52,15 @@ public class SQLServerLoginPasswordManager implements DBAUserPasswordManager {
 
     @NotNull
     private static String getPasswordPolicyErrorMessage(@NotNull SQLException e) {
-        int code = e.getErrorCode();
-        if (code == SQLServerConstants.EC_PASSWORD_TOO_SHORT) {
-            return SQLServerMessages.password_change_error_message + ": password is too short";
-        } else if (code == SQLServerConstants.EC_PASSWORD_TOO_LONG) {
-            return SQLServerMessages.password_change_error_message + ": password is too long";
-        } else if (code == SQLServerConstants.EC_PASSWORD_NOT_COMPLEX) {
-            return SQLServerMessages.password_change_error_message + ": password is not complex enough";
-        } else if (code == SQLServerConstants.EC_PASSWORD_RECENTLY_USED) {
-            return SQLServerMessages.password_change_error_message + ": password was recently used";
-        } else if (code == SQLServerConstants.EC_PASSWORD_FILTER_REJECTED) {
-            return SQLServerMessages.password_change_error_message + ": password was rejected by a password filter";
-        } else if (code == SQLServerConstants.EC_PASSWORD_NOT_SATISFACTORY) {
-            return SQLServerMessages.password_change_error_message + ": password does not meet policy requirements";
-        }
-        return SQLServerMessages.password_change_error_message;
+        String detail = switch (e.getErrorCode()) {
+            case SQLServerConstants.EC_PASSWORD_TOO_SHORT -> ": password is too short";
+            case SQLServerConstants.EC_PASSWORD_TOO_LONG -> ": password is too long";
+            case SQLServerConstants.EC_PASSWORD_NOT_COMPLEX -> ": password is not complex enough";
+            case SQLServerConstants.EC_PASSWORD_NOT_SATISFACTORY -> ": password does not meet policy requirements";
+            case SQLServerConstants.EC_PASSWORD_RECENTLY_USED -> ": password was recently used";
+            case SQLServerConstants.EC_PASSWORD_FILTER_REJECTED -> ": password was rejected by a password filter";
+            default -> "";
+        };
+        return SQLServerMessages.password_change_error_message + detail;
     }
 }
