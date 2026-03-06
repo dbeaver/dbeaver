@@ -33,12 +33,14 @@ import org.jkiss.utils.ArrayUtils;
 
 import java.util.Comparator;
 import java.util.List;
+import java.util.SortedSet;
 import java.util.TreeSet;
 
 public class DeleteColumnAction extends GroupingAction {
 
+    // Indexes to remove must keep desc order in all cases, to correctly be removed from collection
     @NotNull
-    private final TreeSet<Integer> readyToRemoveIndexes = new TreeSet<>(Comparator.reverseOrder());
+    private final SortedSet<Integer> readyToRemoveIndexes = new TreeSet<>(Comparator.reverseOrder());
 
     public DeleteColumnAction(@NotNull GroupingResultsContainer resultsContainer) {
         super(resultsContainer, ResultSetMessages.controls_resultset_grouping_remove_column, DBeaverIcons.getImageDescriptor(UIIcon.CLOSE));

@@ -20,19 +20,15 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.sql.SQLGroupingAttribute;
 import org.jkiss.dbeaver.ui.controls.resultset.panel.grouping.column.*;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.TreeSet;
+import java.util.*;
 
 public class GroupingColumnsContainer {
 
-    @NotNull
     private final List<SQLGroupingAttributeGroupingColumn> attributes = new ArrayList<>();
 
-    @NotNull
     private final List<GroupingFunctionColumn> groupFunctions = new ArrayList<>();
 
+    @NotNull
     private final GroupingDataContainer dataContainer;
 
     public GroupingColumnsContainer(@NotNull GroupingDataContainer dataContainer) {
@@ -69,6 +65,7 @@ public class GroupingColumnsContainer {
         }
     }
 
+    @NotNull
     public List<GroupingFunctionColumn> getFunctionColumns() {
         return groupFunctions;
     }
@@ -93,7 +90,8 @@ public class GroupingColumnsContainer {
             && (isAttributeIndex(index) ? attributes.size() > 1 : groupFunctions.size() > 1);
     }
 
-    public boolean removeColumnsByIndexesSortedDesc(@NotNull TreeSet<Integer> columnsToRemove) {
+    // Indexes to remove must keep desc order in all cases, to correctly be removed from collection
+    public boolean removeColumnsByIndexesSortedDesc(@NotNull SortedSet<Integer> columnsToRemove) {
         boolean isRemoved = false;
         for (Integer index : columnsToRemove) {
             if (removeColumn(index)) {
@@ -103,6 +101,7 @@ public class GroupingColumnsContainer {
         return isRemoved;
     }
 
+    @NotNull
     public List<SQLGroupingAttribute> getSqlAttributes() {
         return attributes
             .stream()
