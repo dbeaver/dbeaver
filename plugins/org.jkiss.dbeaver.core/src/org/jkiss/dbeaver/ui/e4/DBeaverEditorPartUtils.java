@@ -17,7 +17,6 @@
 package org.jkiss.dbeaver.ui.e4;
 
 import org.eclipse.e4.ui.model.application.ui.basic.MPart;
-import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IEditorReference;
 import org.eclipse.ui.IWorkbenchPartReference;
@@ -26,7 +25,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
-import org.jkiss.dbeaver.model.DBPDataSourceContainerProvider;
+import org.jkiss.dbeaver.ui.ConnectionLabelUtils;
 import org.jkiss.dbeaver.ui.editors.EditorUtils;
 
 final class DBeaverEditorPartUtils {
@@ -37,6 +36,9 @@ final class DBeaverEditorPartUtils {
     // We fix it by avoiding UI double entrance. SWT UI thread is single-threaded,
     // so volatile is not needed here.
     private static boolean isResolving;
+
+    private DBeaverEditorPartUtils() {
+    }
 
     @Nullable
     static DBPDataSourceContainer getDataSourceContainer(@NotNull MPart part) {
@@ -60,7 +62,7 @@ final class DBeaverEditorPartUtils {
                 }
 
                 try {
-                    return getDataSourceContainer(ref.getEditorInput());
+                    return EditorUtils.getInputDataSource(ref.getEditorInput(), false);
                 } catch (Exception e) {
                     // If for whatever reason we failed to retrieve the editor input with an exception,
                     // it's likely to happen again. To avoid such scenarios, we set this key so it will
@@ -78,17 +80,11 @@ final class DBeaverEditorPartUtils {
 
     @Nullable
     private static DBPDataSourceContainer getDataSourceContainer(@NotNull IEditorPart editorPart) {
-        if (editorPart instanceof DBPDataSourceContainerProvider provider) {
-            DBPDataSourceContainer container = provider.getDataSourceContainer();
-            if (container != null) {
-                return container;
-            }
+        DBPDataSourceContainer container = ConnectionLabelUtils.getDataSourceContainer(editorPart);
+        if (container != null) {
+            return container;
         }
-        return getDataSourceContainer(editorPart.getEditorInput());
-    }
-
-    @Nullable
-    private static DBPDataSourceContainer getDataSourceContainer(@NotNull IEditorInput editorInput) {
-        return EditorUtils.getInputDataSource(editorInput, false);
+        // Additional fallback for file-based editors (e.g. SQL scripts with connection stored as file property)
+        return EditorUtils.getInputDataSource(editorPart.getEditorInput(), false);
     }
 }

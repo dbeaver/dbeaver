@@ -42,12 +42,10 @@ import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.ui.ConnectionLabelUtils;
 import org.jkiss.dbeaver.ui.SearchCellLabelProvider;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Optional;
 
 public class DBeaverPartList extends BasicPartList {
     private static final Log log = Log.getLog(DBeaverPartList.class);
@@ -112,8 +110,8 @@ public class DBeaverPartList extends BasicPartList {
             if (pattern == null) {
                 return true;
             }
-            final ILabelProvider provider = (ILabelProvider) ((ContentViewer) viewer).getLabelProvider();
-            final String name = provider.getText(element);
+            final CellLabelProvider provider = (CellLabelProvider) ((ContentViewer) viewer).getLabelProvider();
+            final String name = provider.getFilterText(element);
             return SearchCellLabelProvider.matches(pattern, name);
         }
     }
@@ -126,7 +124,7 @@ public class DBeaverPartList extends BasicPartList {
         // redundant calls through the reentrancy-guarded extraction chain.
         // The popup is short-lived (created on chevron click, destroyed on dismiss),
         // so cache invalidation is not needed.
-        private final Map<MPart, Optional<DBPDataSourceContainer>> containerCache = new HashMap<>();
+        private final Map<MPart, DBPDataSourceContainer> containerCache = new HashMap<>();
 
         public CellLabelProvider() {
             this.italicFont = UIUtils.modifyFont(Display.getDefault().getSystemFont(), SWT.ITALIC);
@@ -138,9 +136,17 @@ public class DBeaverPartList extends BasicPartList {
             if (!(element instanceof MPart part)) {
                 return null;
             }
-            return containerCache.computeIfAbsent(part,
-                p -> Optional.ofNullable(DBeaverEditorPartUtils.getDataSourceContainer(p)))
-                .orElse(null);
+            if (containerCache.containsKey(part)) {
+                return containerCache.get(part);
+            }
+            DBPDataSourceContainer container = DBeaverEditorPartUtils.getDataSourceContainer(part);
+            containerCache.put(part, container);
+            return container;
+        }
+
+        @NotNull
+        String getFilterText(@NotNull Object element) {
+            return ConnectionLabelUtils.appendConnectionSuffix(getText(element), resolveContainer(element));
         }
 
         @Nullable
@@ -152,17 +158,10 @@ public class DBeaverPartList extends BasicPartList {
         @NotNull
         @Override
         public String getText(@NotNull Object element) {
-            String label;
             if (element instanceof MDirtyable && ((MDirtyable) element).isDirty()) {
-                label = "*" + ((MUILabel) element).getLocalizedLabel();
-            } else {
-                label = ((MUILabel) element).getLocalizedLabel();
+                return "*" + ((MUILabel) element).getLocalizedLabel();
             }
-            DBPDataSourceContainer container = resolveContainer(element);
-            if (container != null && !CommonUtils.isEmpty(container.getName())) {
-                label += ConnectionLabelUtils.CONNECTION_SEPARATOR + container.getName();
-            }
-            return label;
+            return ((MUILabel) element).getLocalizedLabel();
         }
 
         @Nullable
@@ -201,12 +200,9 @@ public class DBeaverPartList extends BasicPartList {
             super.update(cell);
 
             DBPDataSourceContainer container = resolveContainer(cell.getElement());
-            if (container == null) {
-                return;
+            if (container != null) {
+                ConnectionLabelUtils.applyConnectionInfo(cell, container);
             }
-
-            ConnectionLabelUtils.applyConnectionBackground(cell, container);
-            ConnectionLabelUtils.applyQualifierSuffix(cell, container);
         }
 
         @Override

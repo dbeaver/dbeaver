@@ -19,7 +19,6 @@ package org.jkiss.dbeaver.ui;
 import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.ui.IEditorInput;
-import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.internal.EditorReference;
 import org.eclipse.ui.internal.WorkbenchPartReference;
 import org.eclipse.ui.internal.WorkbookEditorsHandler;
@@ -28,11 +27,9 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPDataSourceContainerProvider;
-import org.jkiss.utils.CommonUtils;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Optional;
 
 public class CustomWorkbookEditorsHandler extends WorkbookEditorsHandler {
     private static final Log log = Log.getLog(CustomWorkbookEditorsHandler.class);
@@ -50,7 +47,7 @@ public class CustomWorkbookEditorsHandler extends WorkbookEditorsHandler {
     // Caches container lookups for the lifetime of a single Ctrl+E popup session.
     // Cleared each time the dialog is opened (when setLabelProvider is called)
     // and when the label provider is disposed.
-    private final Map<EditorReference, Optional<DBPDataSourceContainer>> containerCache = new HashMap<>();
+    private final Map<EditorReference, DBPDataSourceContainer> containerCache = new HashMap<>();
 
     @Override
     protected ViewerFilter getFilter() {
@@ -59,7 +56,7 @@ public class CustomWorkbookEditorsHandler extends WorkbookEditorsHandler {
             public boolean select(Viewer viewer, Object parentElement, Object element) {
                 return element instanceof EditorReference ref
                     && pattern != null
-                    && SearchCellLabelProvider.matches(pattern, getLabel(ref));
+                    && SearchCellLabelProvider.matches(pattern, getFilterText(ref));
             }
         };
     }
@@ -72,7 +69,7 @@ public class CustomWorkbookEditorsHandler extends WorkbookEditorsHandler {
             @NotNull
             @Override
             public String getText(@NotNull Object element) {
-                return getLabel((WorkbenchPartReference) element);
+                return getWorkbenchPartReferenceText((WorkbenchPartReference) element);
             }
 
             @NotNull
@@ -101,12 +98,9 @@ public class CustomWorkbookEditorsHandler extends WorkbookEditorsHandler {
                 }
 
                 DBPDataSourceContainer container = resolveContainer(ref);
-                if (container == null) {
-                    return;
+                if (container != null) {
+                    ConnectionLabelUtils.applyConnectionInfo(cell, container);
                 }
-
-                ConnectionLabelUtils.applyConnectionBackground(cell, container);
-                ConnectionLabelUtils.applyQualifierSuffix(cell, container);
             }
 
             @Override
@@ -125,22 +119,19 @@ public class CustomWorkbookEditorsHandler extends WorkbookEditorsHandler {
     }
 
     @NotNull
-    private String getLabel(@NotNull WorkbenchPartReference ref) {
+    private String getFilterText(@NotNull EditorReference ref) {
         String label = getWorkbenchPartReferenceText(ref);
-        if (ref instanceof EditorReference editorRef) {
-            DBPDataSourceContainer container = resolveContainer(editorRef);
-            if (container != null && !CommonUtils.isEmpty(container.getName())) {
-                label += ConnectionLabelUtils.CONNECTION_SEPARATOR + container.getName();
-            }
-        }
-        return label;
+        return ConnectionLabelUtils.appendConnectionSuffix(label, resolveContainer(ref));
     }
 
     @Nullable
     private DBPDataSourceContainer resolveContainer(@NotNull EditorReference ref) {
-        return containerCache.computeIfAbsent(ref,
-            r -> Optional.ofNullable(extractDataSourceContainer(r)))
-            .orElse(null);
+        if (containerCache.containsKey(ref)) {
+            return containerCache.get(ref);
+        }
+        DBPDataSourceContainer container = extractDataSourceContainer(ref);
+        containerCache.put(ref, container);
+        return container;
     }
 
     @Nullable
@@ -150,19 +141,10 @@ public class CustomWorkbookEditorsHandler extends WorkbookEditorsHandler {
         }
         isResolving = true;
         try {
-            IEditorPart editor = ref.getEditor(false);
-            if (editor instanceof DBPDataSourceContainerProvider provider) {
-                DBPDataSourceContainer container = provider.getDataSourceContainer();
-                if (container != null) {
-                    return container;
-                }
-            }
-            if (editor != null) {
-                IEditorInput input = editor.getEditorInput();
-                if (input instanceof DBPDataSourceContainerProvider provider) {
-                    return provider.getDataSourceContainer();
-                }
-                return null;
+            // Use shared helper for the common IEditorPart → DBPDataSourceContainerProvider check
+            DBPDataSourceContainer container = ConnectionLabelUtils.getDataSourceContainer(ref.getEditor(false));
+            if (container != null) {
+                return container;
             }
 
             // Editor not loaded; try editor input for lazy-loaded editors

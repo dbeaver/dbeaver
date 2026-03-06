@@ -21,8 +21,12 @@ import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.viewers.ViewerCell;
 import org.eclipse.swt.custom.StyleRange;
 import org.eclipse.swt.graphics.Color;
+import org.eclipse.ui.IEditorInput;
+import org.eclipse.ui.IEditorPart;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.DBPDataSourceContainerProvider;
 import org.jkiss.utils.CommonUtils;
 
 public final class ConnectionLabelUtils {
@@ -32,28 +36,46 @@ public final class ConnectionLabelUtils {
     private ConnectionLabelUtils() {
     }
 
-    public static void applyConnectionBackground(@NotNull ViewerCell cell, @NotNull DBPDataSourceContainer container) {
-        Color connectionColor = UIUtils.getConnectionColor(container.getConnectionConfiguration());
-        if (connectionColor != null) {
-            cell.setBackground(UIStyles.mix(connectionColor, cell.getControl().getBackground(), 0.35f));
+    /**
+     * Builds a label with connection name suffix appended.
+     * Used by filters that need the full text for matching.
+     */
+    @NotNull
+    public static String appendConnectionSuffix(@NotNull String label, @Nullable DBPDataSourceContainer container) {
+        if (container != null && !CommonUtils.isEmpty(container.getName())) {
+            return label + CONNECTION_SEPARATOR + container.getName();
         }
+        return label;
     }
 
-    public static void applyQualifierSuffix(@NotNull ViewerCell cell, @NotNull DBPDataSourceContainer container) {
+    /**
+     * Single entry point: appends the connection name suffix to the current cell text,
+     * applies connection background color, and styles the suffix with qualifier color.
+     * <p>
+     * Must be called after {@code super.update(cell)} so that the cell text contains
+     * the base label and any search-highlight StyleRanges are already set.
+     */
+    public static void applyConnectionInfo(@NotNull ViewerCell cell, @NotNull DBPDataSourceContainer container) {
         String name = container.getName();
         if (CommonUtils.isEmpty(name)) {
             return;
         }
 
-        Color qualifierColor = JFaceResources.getColorRegistry().get(JFacePreferences.QUALIFIER_COLOR);
-        if (qualifierColor == null) {
-            return;
+        // Append suffix — we know exactly where it starts
+        String suffix = CONNECTION_SEPARATOR + name;
+        String baseText = cell.getText();
+        int suffixStart = baseText.length();
+        cell.setText(baseText + suffix);
+
+        // Background
+        Color connectionColor = UIUtils.getConnectionColor(container.getConnectionConfiguration());
+        if (connectionColor != null) {
+            cell.setBackground(UIStyles.mix(connectionColor, cell.getControl().getBackground(), 0.35f));
         }
 
-        String suffix = CONNECTION_SEPARATOR + name;
-        String text = cell.getText();
-        int suffixStart = text.length() - suffix.length();
-        if (suffixStart < 0) {
+        // Qualifier styling
+        Color qualifierColor = JFaceResources.getColorRegistry().get(JFacePreferences.QUALIFIER_COLOR);
+        if (qualifierColor == null) {
             return;
         }
 
@@ -65,27 +87,31 @@ public final class ConnectionLabelUtils {
             return;
         }
 
-        // truncate any that bleed into the suffix region, and append the qualifier range.
-        StyleRange[] merged = new StyleRange[existing.length + 1];
-        int count = 0;
-        for (StyleRange range : existing) {
-            if (range.start + range.length <= suffixStart) {
-                merged[count++] = range;
-            } else if (range.start < suffixStart) {
-                StyleRange truncated = (StyleRange) range.clone();
-                truncated.length = suffixStart - truncated.start;
-                merged[count++] = truncated;
-            }
-            // Ranges entirely within the suffix region are replaced by qualifierRange
-        }
-        merged[count++] = qualifierRange;
+        // Existing ranges (search highlights) are within [0, suffixStart) — just append
+        StyleRange[] result = new StyleRange[existing.length + 1];
+        System.arraycopy(existing, 0, result, 0, existing.length);
+        result[existing.length] = qualifierRange;
+        cell.setStyleRanges(result);
+    }
 
-        if (count < merged.length) {
-            StyleRange[] result = new StyleRange[count];
-            System.arraycopy(merged, 0, result, 0, count);
-            cell.setStyleRanges(result);
-        } else {
-            cell.setStyleRanges(merged);
+    /**
+     * Extracts a {@link DBPDataSourceContainer} from an already-loaded editor.
+     * Checks the editor itself and its input for {@link DBPDataSourceContainerProvider}.
+     */
+    @Nullable
+    public static DBPDataSourceContainer getDataSourceContainer(@Nullable IEditorPart editor) {
+        if (editor instanceof DBPDataSourceContainerProvider provider) {
+            DBPDataSourceContainer container = provider.getDataSourceContainer();
+            if (container != null) {
+                return container;
+            }
         }
+        if (editor != null) {
+            IEditorInput input = editor.getEditorInput();
+            if (input instanceof DBPDataSourceContainerProvider provider) {
+                return provider.getDataSourceContainer();
+            }
+        }
+        return null;
     }
 }
