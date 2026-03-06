@@ -929,17 +929,17 @@
     </extension>
 
     <extension point="org.eclipse.ui.menus">
-        <menuContribution allPopups="false" locationURI="toolbar:org.jkiss.dbeaver.navigator.filter.toolbar?after=additions">
+        <menuContribution allPopups="false" locationURI="toolbar:org.jkiss.dbeaver.navigator.filter.toolbar.connected?after=additions">
             <separator name="filters" visible="true"/>
             <command commandId="org.jkiss.dbeaver.navigator.filter.connected"/>
-            <command commandId="org.jkiss.dbeaver.navigator.filter.object.type" id="org.jkiss.dbeaver.navigator.connectionFilterMenu" style="pulldown"/>
         </menuContribution>
 
-        <!-- Connection filter menu -->
-        <menuContribution allPopups="false" locationURI="menu:org.jkiss.dbeaver.navigator.connectionFilterMenu">
-            <command commandId="org.jkiss.dbeaver.navigator.filter.object.type" style="radio"><parameter name="type" value="connection"/></command>
-            <command commandId="org.jkiss.dbeaver.navigator.filter.object.type" style="radio"><parameter name="type" value="container"/></command>
-            <command commandId="org.jkiss.dbeaver.navigator.filter.object.type" style="radio"><parameter name="type" value="table"/></command>
+        <menuContribution allPopups="false" locationURI="toolbar:org.jkiss.dbeaver.navigator.filter.toolbar.type?after=additions">
+            <command commandId="org.jkiss.dbeaver.navigator.filter.object.type" id="org.jkiss.dbeaver.navigator.filter.object.type.menu" style="pulldown"/>
+        </menuContribution>
+
+        <menuContribution allPopups="false" locationURI="menu:org.jkiss.dbeaver.navigator.filter.object.type.menu">
+            <dynamic id="org.jkiss.dbeaver.navigator.filter.object.type.dynamic" class="org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerFilterObjectType$MenuContributor"/>
         </menuContribution>
 
         <!-- Tools toolbar -->

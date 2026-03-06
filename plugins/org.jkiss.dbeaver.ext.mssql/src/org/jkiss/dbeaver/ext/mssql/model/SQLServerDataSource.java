@@ -149,7 +149,7 @@ public class SQLServerDataSource
         return super.discoverErrorType(error);
     }
 
-    public boolean isDataWarehouseServer(DBRProgressMonitor monitor) {
+    public boolean isDataWarehouseServer(@NotNull DBRProgressMonitor monitor) {
         return getServerVersion(monitor).contains(SQLServerConstants.SQL_DW_SERVER_LABEL);
     }
 

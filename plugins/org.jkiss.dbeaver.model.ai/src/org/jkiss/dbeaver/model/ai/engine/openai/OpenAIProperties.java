@@ -20,7 +20,6 @@ import com.google.gson.annotations.SerializedName;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.ai.AIConstants;
 import org.jkiss.dbeaver.model.ai.engine.AIModel;
 import org.jkiss.dbeaver.model.ai.engine.AIModelFeature;
 import org.jkiss.dbeaver.model.ai.utils.AIUtils;
@@ -148,7 +147,7 @@ public class OpenAIProperties implements OpenAIBaseProperties {
 
         return DBWorkbench.getPlatform()
             .getPreferenceStore()
-            .getBoolean(AIConstants.AI_LOG_QUERY);
+            .getBoolean(OpenAIConstants.AI_LOG_QUERY);
     }
 
     public void setLoggingEnabled(boolean loggingEnabled) {
