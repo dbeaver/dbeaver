@@ -18,16 +18,41 @@ package org.jkiss.dbeaver.model.ai;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.model.ai.engine.AIDatabaseContext;
+import org.jkiss.dbeaver.DBException;
+
+import java.util.List;
+import java.util.Map;
 
 /**
- * Generates AI prompts.
+ * AI toolbox. It is a provider of AI tools (functions).
+ * It may be an internal toolbox or an external MCP server.
  */
-public interface AIPromptGenerator {
+public interface AIToolbox {
 
     @NotNull
-    String generatorId();
+    String getToolboxId();
 
     @NotNull
-    String build(@NotNull AIAssistant assistant, @Nullable AIDatabaseContext context);
+    String getDisplayName();
+
+    @Nullable
+    String getDescription();
+
+    boolean isEnabled();
+
+    boolean isAccessible();
+
+    @NotNull
+    List<AIFunctionDescriptor> getSupportedFunctions();
+
+    @Nullable
+    AIFunctionDescriptor getFunctionById(@NotNull String id);
+
+    @NotNull
+    AIFunctionResult callFunction(
+        @NotNull AIFunctionContext context,
+        @NotNull AIFunctionDescriptor descriptor,
+        @NotNull Map<String, Object> arguments
+    ) throws DBException;
+
 }
