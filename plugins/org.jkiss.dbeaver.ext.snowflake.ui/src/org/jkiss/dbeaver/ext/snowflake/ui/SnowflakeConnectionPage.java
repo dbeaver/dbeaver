@@ -108,7 +108,6 @@ public class SnowflakeConnectionPage extends ConnectionPageWithAuth implements I
             gd = new GridData(GridData.VERTICAL_ALIGN_BEGINNING);
             gd.widthHint = UIUtils.getFontHeight(portText) * 7;
             portText.setLayoutData(gd);
-            UIUtils.setDefaultTextControlWidthHint(portText);
             portText.addVerifyListener(UIUtils.getIntegerVerifyListener(Locale.getDefault()));
             portText.addModifyListener(textListener);
 

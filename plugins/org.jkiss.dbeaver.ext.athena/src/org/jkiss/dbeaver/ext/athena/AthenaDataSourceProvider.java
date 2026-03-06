@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.athena.model.AthenaConstants;
 import org.jkiss.dbeaver.ext.athena.model.AthenaDataSource;
 import org.jkiss.dbeaver.ext.athena.model.AthenaMetaModel;
+import org.jkiss.dbeaver.ext.athena.model.AthenaUtils;
 import org.jkiss.dbeaver.ext.generic.GenericDataSourceProvider;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
@@ -70,7 +71,10 @@ public class AthenaDataSourceProvider extends GenericDataSourceProvider implemen
             }
         }
         if (CommonUtils.isEmpty(urlTemplate) || !urlTemplate.startsWith(AthenaConstants.JDBC_URL_PREFIX)) {
-            return AthenaConstants.JDBC_URL_PREFIX + AthenaConstants.DRIVER_PROP_REGION + "=" + regionName + ";";
+            String regionPropName = AthenaUtils.isLegacyDriver(driver) ?
+                AthenaConstants.DRIVER_PROP_REGION_OLD : AthenaConstants.DRIVER_PROP_REGION;
+
+            return AthenaConstants.JDBC_URL_PREFIX + regionPropName + "=" + regionName + ";";
         }
         urlTemplate = urlTemplate
             .replace("{region}", regionName)

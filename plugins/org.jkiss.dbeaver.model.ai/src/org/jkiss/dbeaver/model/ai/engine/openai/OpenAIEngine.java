@@ -19,13 +19,10 @@ package org.jkiss.dbeaver.model.ai.engine.openai;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.ai.AIMessage;
-import org.jkiss.dbeaver.model.ai.AIMessageType;
-import org.jkiss.dbeaver.model.ai.AIUsage;
+import org.jkiss.dbeaver.model.ai.*;
 import org.jkiss.dbeaver.model.ai.engine.*;
 import org.jkiss.dbeaver.model.ai.engine.openai.dto.*;
 import org.jkiss.dbeaver.model.ai.internal.AIMessages;
-import org.jkiss.dbeaver.model.ai.registry.AIFunctionDescriptor;
 import org.jkiss.dbeaver.model.ai.utils.DisposableLazyValue;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.utils.CommonUtils;
@@ -150,7 +147,7 @@ public class OpenAIEngine<PROPS extends OpenAIBaseProperties> extends BaseComple
                 tool.description = fd.getDescription();
                 tool.parameters.type = OAIToolParameters.TYPE_OBJECT;
                 List<String> requiredFields = new ArrayList<>();
-                for (AIFunctionDescriptor.Parameter param : fd.getParameters()) {
+                for (AIFunctionParameter param : fd.getParameters()) {
                     OAIToolParameter tp = new OAIToolParameter();
                     tp.type = param.getType();
                     tp.description = param.getDescription();

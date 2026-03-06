@@ -565,8 +565,13 @@
                 secured="false"
                 order="2"
                 handlerClass="org.jkiss.dbeaver.ext.mssql.model.SQLServerSSLHandlerImpl">
+            <propertyGroup label="Method">
+                <property id="ssl.method" label="Method" type="string" validValues="KEYSTORE" defaultValue="KEYSTORE"
+                          desktop="true" hidden="true"/>
+            </propertyGroup>
             <propertyGroup label="Parameters">
                 <property id="ssl.keystore.value" label="Keystore" type="file" features="secured,password,file"/>
+                <property id="ssl.keystore" label="Keystore path" type="string" desktop="true"/>
                 <property id="ssl.keystore.password" label="Keystore password" type="string" features="secured,password"/>
                 <property id="sslKeyStoreHostname" label="Certificate hostname" type="string"/>
             </propertyGroup>

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -101,7 +101,9 @@ public class SQLServerExecutionContext extends JDBCExecutionContext implements D
     @Override
     public boolean supportsCatalogChange() {
         // Azure SQL Database doesn't support changing database
-        return !SQLServerUtils.isDriverAzure(getDataSource().getContainer().getDriver());
+        return !SQLServerUtils.isDriverAzure(getDataSource().getContainer().getDriver())
+            || (dataSource instanceof SQLServerDataSource sqlServerDataSource
+            && sqlServerDataSource.isDataWarehouseServer(new VoidProgressMonitor()));
     }
 
     @Override
@@ -110,7 +112,8 @@ public class SQLServerExecutionContext extends JDBCExecutionContext implements D
     }
 
     @Override
-    public void setDefaultCatalog(DBRProgressMonitor monitor, SQLServerDatabase catalog, @Nullable SQLServerSchema schema) throws DBCException {
+    public void setDefaultCatalog(@NotNull DBRProgressMonitor monitor, @NotNull SQLServerDatabase catalog, @Nullable SQLServerSchema schema)
+    throws DBCException {
         if (activeDatabaseName != null && activeDatabaseName.equals(catalog.getName())) {
             return;
         }
@@ -162,6 +165,8 @@ public class SQLServerExecutionContext extends JDBCExecutionContext implements D
                     String query = "SELECT db_name(), schema_name(), original_login()";
                     if (SQLServerUtils.isDriverBabelfish(session.getDataSource().getContainer().getDriver())) {
                         query = "SELECT db_name(), s.name AS schema_name, session_user AS original_login FROM sys.schemas s";
+                    } else if (SQLServerUtils.isDriverAzure(session.getDataSource().getContainer().getDriver())) {
+                        query = "SELECT db_name(), schema_name(), CURRENT_USER AS original_login";
                     }
                     try (JDBCResultSet dbResult = dbStat.executeQuery(query)) {
                         dbResult.next();
