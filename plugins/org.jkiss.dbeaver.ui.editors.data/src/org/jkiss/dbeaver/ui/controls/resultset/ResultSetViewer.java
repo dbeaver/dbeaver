@@ -4902,7 +4902,7 @@ public class ResultSetViewer extends Viewer
                     }
 
                     this.curRow = model.addNewRow(newRowIndex, cells);
-                    this.selectedRecords = new int[]{newRowIndex};
+                    this.selectedRecords = recordMode ? new int[]{newRowIndex} : selectedRowsIncludingNewRow(newRowIndex);
 
                     newRowIndex++;
                     srcRowIndex++;
@@ -4924,6 +4924,18 @@ public class ResultSetViewer extends Viewer
         }
 
         return curRow;
+    }
+
+    private int[] selectedRowsIncludingNewRow(int newRowIndex) {
+        int[] correctedSelectedRowsIndexes = Arrays.copyOf(this.selectedRecords, this.selectedRecords.length);
+        for (int i = 0; i < correctedSelectedRowsIndexes.length; i++) {
+            if (correctedSelectedRowsIndexes[i] >= newRowIndex) {
+                correctedSelectedRowsIndexes[i]++;
+            }
+        }
+        int[] updatedSelectedRows = ArrayUtils.add(correctedSelectedRowsIndexes, newRowIndex);
+        Arrays.sort(updatedSelectedRows);
+        return updatedSelectedRows;
     }
 
     @Override
