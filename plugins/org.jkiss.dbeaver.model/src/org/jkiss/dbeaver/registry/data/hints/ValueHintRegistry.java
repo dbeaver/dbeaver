@@ -188,6 +188,7 @@ public class ValueHintRegistry extends AbstractValueBindingRegistry<DBDValueHint
                 return descriptor;
             }
         }
+        log.debug("Can't find descriptor for provider instance " + provider.getClass().getName());
         return null;
     }
 
