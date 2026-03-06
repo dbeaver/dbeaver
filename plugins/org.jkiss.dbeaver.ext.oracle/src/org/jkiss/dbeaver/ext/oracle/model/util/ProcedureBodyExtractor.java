@@ -20,7 +20,10 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.oracle.model.OracleProcedurePackaged;
 
-import java.util.*;
+import java.util.ArrayDeque;
+import java.util.ArrayList;
+import java.util.Deque;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -29,15 +32,17 @@ public class ProcedureBodyExtractor {
 
     public static final String NO_DEFINITION_FOUND = "-- no definition found";
     private static final List<String> possibleBeginCases = List.of(
-        "begin",
+        "BEGIN",
         "IF",
         "CASE",
         "LOOP"
     );
 
     private static final List<String> commentPatterns = List.of(
-        "--.*\n"
+        "--.*\n",
+        "/\\*[\\s\\S]*?\\*/"
     );
+    private static final String END_PATTERN = "\\b(END\\s+.*|END\\s*);";
 
     private final OracleProcedurePackaged proc;
     private final String parentPackageBodyDefinition;
@@ -45,7 +50,7 @@ public class ProcedureBodyExtractor {
     private final Deque<Integer> beginStack = new ArrayDeque<>();
 
     // must be sorted in asc to exclude properly
-    private final PriorityQueue<RegionRange> commentRanges = new PriorityQueue<>();
+    private final List<RegionRange> commentRanges = new ArrayList<>();
 
     private Matcher beginMatcher;
     private Matcher endMatcher;
@@ -89,9 +94,12 @@ public class ProcedureBodyExtractor {
             .compile(String.join("|", commentPatterns))
             .matcher(parentPackageBodyDefinition);
         while (commentsMatcher.find()) {
-            RegionRange prevRange = commentRanges.peek();
-            if (prevRange == null || commentsMatcher.start() >= prevRange.endExclusive()) {
-                commentRanges.add(new RegionRange(commentsMatcher.start(), commentsMatcher.end() + 1));
+            RegionRange prevRange = commentRanges.isEmpty() ? null : commentRanges.getLast();
+            if (prevRange != null && commentsMatcher.start() < prevRange.endExclusive()) {
+                commentRanges.removeLast();
+                commentRanges.add(new RegionRange(prevRange.startInclusive(), commentsMatcher.end()));
+            } else {
+                commentRanges.add(new RegionRange(commentsMatcher.start(), commentsMatcher.end()));
             }
         }
     }
@@ -173,7 +181,7 @@ public class ProcedureBodyExtractor {
 
     private Matcher getEndMatcher() {
         return Pattern
-            .compile("END\\s+.*;", Pattern.CASE_INSENSITIVE)
+            .compile(END_PATTERN, Pattern.CASE_INSENSITIVE)
             .matcher(parentPackageBodyDefinition);
     }
 
@@ -187,16 +195,9 @@ public class ProcedureBodyExtractor {
     }
 
 
-    private record RegionRange(int startInclusive, int endExclusive) implements Comparable<RegionRange> {
-
+    private record RegionRange(int startInclusive, int endExclusive) {
         public boolean isInsideRange(int index) {
-            return index > startInclusive && index < endExclusive;
-        }
-
-        @Override
-        public int compareTo(@NotNull RegionRange o) {
-            int diff = this.startInclusive - o.startInclusive;
-            return diff != 0 ? diff : this.endExclusive - o.endExclusive;
+            return index >= startInclusive && index < endExclusive;
         }
     }
 

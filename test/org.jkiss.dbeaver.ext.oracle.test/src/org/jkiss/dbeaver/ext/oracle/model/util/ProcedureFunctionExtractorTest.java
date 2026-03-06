@@ -67,6 +67,7 @@ public class ProcedureFunctionExtractorTest {
     public void commentsTest() {
         assertBodyFound(simpleOneLineComment);
         assertBodyFound(oneLineComments);
+        assertBodyFound(simpleMultiLineComment);
         assertBodyFound(multiLineComments);
     }
 
@@ -127,6 +128,7 @@ public class ProcedureFunctionExtractorTest {
 
         allTestCases.add(simpleOneLineComment);
         allTestCases.add(oneLineComments);
+        allTestCases.add(simpleMultiLineComment);
         allTestCases.add(multiLineComments);
 
         allTestCases.add(ifEndIf);
@@ -188,6 +190,7 @@ public class ProcedureFunctionExtractorTest {
         PROCEDURE simple_no_end_proc IS
         BEGIN
           NULL;
+          print("false_end;end_false;")
         END;"""
     );
 
@@ -273,6 +276,18 @@ public class ProcedureFunctionExtractorTest {
         END;"""
     );
 
+    private final ProcTestCase simpleMultiLineComment = new ProcTestCase(
+        "simple_with_multiline_comment",
+        DBSProcedureType.FUNCTION, """
+        FUNCTION simple_with_multiline_comment RETURN NUMBER IS
+          l_var NUMBER := 42; --some end; and another begin loop
+          /*END proc_with_multiline_comment;*/
+          /*END simple_with_multiline_comment;
+          END simple_with_multiline_comment;
+          */
+        END;"""
+    );
+
     private final ProcTestCase multiLineComments = new ProcTestCase(
         "proc_with_multiline_comment",
         DBSProcedureType.FUNCTION, """
@@ -343,7 +358,7 @@ public class ProcedureFunctionExtractorTest {
     private final ProcTestCase openClosedBeginsInsideMain = new ProcTestCase(
         "two_nested_inside_main", DBSProcedureType.PROCEDURE, """
         PROCEDURE two_nested_inside_main IS
-        BEGIN                       --
+        BEGIN                       -- first BEGIN
           BEGIN                     -- Nested #1
             NULL;
           END;                      -- Closes nested #1
@@ -356,7 +371,7 @@ public class ProcedureFunctionExtractorTest {
     private final ProcTestCase combinedNestedBegins = new ProcTestCase(
         "combined_nested_begins", DBSProcedureType.PROCEDURE, """
         PROCEDURE combined_nested_begins IS
-        BEGIN                          -- Main  #1
+        BEGIN                          -- Main  #1 BEGIN
           BEGIN                        -- Triple nest #1
             BEGIN                      -- Triple nest #2
               BEGIN                    -- Triple nest #3
@@ -424,7 +439,7 @@ public class ProcedureFunctionExtractorTest {
           BEGIN
             NULL;
           END inner_proc;
-          PROCEDURE inner_proc_labeled IS
+          PROCEDURE inner_proc_unlabeled IS
           BEGIN
             NULL;
           END;
