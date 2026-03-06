@@ -74,16 +74,7 @@ public class ProcedureBodyExtractor {
         } else {
             beginMatcher = getBeginMatcher();
             endMatcher = getEndMatcher();
-            boolean isNextEndFound = findFromIndex(endMatcher, startIndex);
-            if (isNextEndFound) {
-                fillBeginStack(startIndex, endMatcher.start());
-                beginStack.poll();
-                return beginStack.isEmpty()
-                    ? endMatcher.end()
-                    : findFunctionEndIndex(endMatcher.end());
-            } else {
-                return -1;
-            }
+            return findFunctionEndIndex(startIndex);
         }
     }
 
@@ -91,7 +82,7 @@ public class ProcedureBodyExtractor {
         Matcher endFunctionWithName = Pattern
             .compile("end\\s*" + proc.getUniqueName() + "[\\s\\n]*;", Pattern.CASE_INSENSITIVE)
             .matcher(parentPackageBodyDefinition);
-        return endFunctionWithName.find(startIndex)
+        return findFromIndex(endFunctionWithName, startIndex)
             ? endFunctionWithName.end()
             : -1;
     }
