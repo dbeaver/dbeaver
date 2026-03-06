@@ -45,15 +45,15 @@ public class DataTransferConfigurationWizardDialog extends TaskConfigurationWiza
         super.buttonPressed(buttonId);
     }
 
-    public void cycleToLastPage() {
-        while (canShowNext()) {
-            nextPressed();
-        }
-    }
-
     @Override
     protected boolean shouldFinishButtonBeEnabled() {
         return super.shouldFinishButtonBeEnabled() || canShowNext();
+    }
+
+    private void cycleToLastPage() {
+        while (canShowNext()) {
+            nextPressed();
+        }
     }
 
     private boolean canShowNext() {
