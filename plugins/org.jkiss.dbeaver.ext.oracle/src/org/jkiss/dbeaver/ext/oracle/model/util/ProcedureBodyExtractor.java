@@ -34,9 +34,7 @@ public class ProcedureBodyExtractor {
         "begin",
         "IF",
         "CASE",
-        "LOOP",
-        "FOR",
-        "WHILE"
+        "LOOP"
     );
 
     private final OracleProcedurePackaged proc;
