@@ -18,7 +18,6 @@ package org.jkiss.dbeaver.ui;
 
 import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.graphics.Image;
-import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.internal.EditorReference;
 import org.eclipse.ui.internal.WorkbenchPartReference;
 import org.eclipse.ui.internal.WorkbookEditorsHandler;
@@ -26,7 +25,6 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
-import org.jkiss.dbeaver.model.DBPDataSourceContainerProvider;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -141,22 +139,9 @@ public class CustomWorkbookEditorsHandler extends WorkbookEditorsHandler {
         }
         isResolving = true;
         try {
-            // Use shared helper for the common IEditorPart → DBPDataSourceContainerProvider check
-            DBPDataSourceContainer container = ConnectionLabelUtils.getDataSourceContainer(ref.getEditor(false));
-            if (container != null) {
-                return container;
-            }
-
-            // Editor not loaded; try editor input for lazy-loaded editors
-            try {
-                IEditorInput input = ref.getEditorInput();
-                if (input instanceof DBPDataSourceContainerProvider provider) {
-                    return provider.getDataSourceContainer();
-                }
-            } catch (Exception e) {
-                log.debug("Cannot get editor input for: " + ref.getTitle(), e);
-            }
-
+            return ConnectionLabelUtils.getDataSourceContainer(ref);
+        } catch (Exception e) {
+            log.debug("Cannot get editor input for: " + ref.getTitle(), e);
             return null;
         } finally {
             isResolving = false;

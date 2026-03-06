@@ -23,6 +23,8 @@ import org.eclipse.swt.custom.StyleRange;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
+import org.eclipse.ui.IEditorReference;
+import org.eclipse.ui.PartInitException;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
@@ -92,6 +94,23 @@ public final class ConnectionLabelUtils {
         System.arraycopy(existing, 0, result, 0, existing.length);
         result[existing.length] = qualifierRange;
         cell.setStyleRanges(result);
+    }
+
+    /**
+     * Extracts a {@link DBPDataSourceContainer} from an editor reference.
+     * Checks the loaded editor first, then falls back to editor input for lazy-loaded editors.
+     */
+    @Nullable
+    public static DBPDataSourceContainer getDataSourceContainer(@NotNull IEditorReference ref) throws PartInitException {
+        DBPDataSourceContainer container = getDataSourceContainer(ref.getEditor(false));
+        if (container != null) {
+            return container;
+        }
+        IEditorInput input = ref.getEditorInput();
+        if (input instanceof DBPDataSourceContainerProvider provider) {
+            return provider.getDataSourceContainer();
+        }
+        return null;
     }
 
     /**
