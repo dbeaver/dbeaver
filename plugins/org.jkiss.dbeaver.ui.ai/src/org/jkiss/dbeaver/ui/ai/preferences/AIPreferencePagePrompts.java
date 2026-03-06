@@ -51,6 +51,8 @@ import java.util.List;
 import java.util.Map;
 
 public final class AIPreferencePagePrompts extends AbstractPrefPage implements IWorkbenchPreferencePage, IWorkbenchPropertyPage {
+    public static final String PAGE_ID = "org.jkiss.dbeaver.preferences.ai.prompts";
+
     private final AISettingsManager settingsManager;
     private final AISettings settings;
 

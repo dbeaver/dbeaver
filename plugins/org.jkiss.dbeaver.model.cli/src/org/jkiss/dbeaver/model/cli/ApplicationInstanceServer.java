@@ -40,19 +40,15 @@ import java.util.Properties;
 /**
  * DBeaver instance controller.
  */
-public abstract class ApplicationInstanceServer<T extends ApplicationInstanceController> implements
-    ApplicationInstanceController {
-
+public abstract class ApplicationInstanceServer<T extends ApplicationInstanceController>
+    implements ApplicationInstanceController
+{
     private static final Log log = Log.getLog(ApplicationInstanceServer.class);
     private final RestServer<T> server;
     private final FileChannel configFileChannel;
-    private final Class<T> controllerClass;
-
-    private final InstanceServerProperties serverProperties;
 
     protected ApplicationInstanceServer(Class<T> controllerClass) throws IOException {
-        this.controllerClass = controllerClass;
-        String password = SecurityUtils.generatePassword();
+        String password = SecurityUtils.generatePassword(32);
         server = RestServer
             .builder(controllerClass, controllerClass.cast(this))
             .setFilter(address -> address.getAddress().isLoopbackAddress())
@@ -69,7 +65,7 @@ public abstract class ApplicationInstanceServer<T extends ApplicationInstanceCon
             getConfigPath(),
             StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.WRITE
         );
-        serverProperties = new InstanceServerProperties(
+        InstanceServerProperties serverProperties = new InstanceServerProperties(
             server.getAddress().getPort(),
             password
         );
@@ -102,7 +98,7 @@ public abstract class ApplicationInstanceServer<T extends ApplicationInstanceCon
 
         StringBuilder td = new StringBuilder();
         for (Map.Entry<Thread, StackTraceElement[]> tde : Thread.getAllStackTraces().entrySet()) {
-            td.append(tde.getKey().getId()).append(" ").append(tde.getKey().getName()).append(":\n");
+            td.append(tde.getKey().threadId()).append(" ").append(tde.getKey().getName()).append(":\n");
             for (StackTraceElement ste : tde.getValue()) {
                 td.append("\t").append(ste.toString()).append("\n");
             }
