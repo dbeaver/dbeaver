@@ -39,6 +39,7 @@ import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.SecurityUtils;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.InetAddress;
@@ -121,6 +122,64 @@ public abstract class BaseWorkspaceImpl implements DBPWorkspace {
             props.store(os, "DBeaver workspace version");
         } catch (Exception e) {
             log.error(e);
+        }
+    }
+
+    public static Path getWorkspaceConfigFolder(DBPWorkspace workspace) {
+        Path configFolder = workspace.getAbsolutePath();
+        if (!Files.exists(configFolder.resolve(DBConstants.WORKSPACE_PROPS_FILE))) {
+            configFolder = workspace.getMetadataFolder();
+        }
+        return configFolder;
+    }
+
+    @Nullable
+    public String getActiveProjectName() {
+        Properties props = readWorkspaceInfo(getWorkspaceConfigFolder(this));
+        String activeProjectName = props.getProperty(PROP_PROJECT_ACTIVE);
+        if (CommonUtils.isEmpty(activeProjectName)) {
+            activeProjectName = platform.getPreferenceStore().getString(PROP_PROJECT_ACTIVE);
+        }
+        return activeProjectName;
+    }
+
+    public boolean setActiveProjectName(@Nullable String projectName) {
+        updateWorkspaceProperties(getWorkspaceConfigFolder(this), projectName);
+        platform.getPreferenceStore().setValue(PROP_PROJECT_ACTIVE, CommonUtils.notEmpty(projectName));
+        return updateEclipsePreferences(projectName);
+    }
+
+    private void updateWorkspaceProperties(@NotNull Path configFolder, @Nullable String projectName) {
+        Properties props = readWorkspaceInfo(configFolder);
+        if (CommonUtils.isEmpty(projectName)) {
+            props.remove(PROP_PROJECT_ACTIVE);
+        } else {
+            props.setProperty(PROP_PROJECT_ACTIVE, projectName);
+        }
+        writeWorkspaceInfo(configFolder, props);
+    }
+
+    private boolean updateEclipsePreferences(@Nullable String projectName) {
+        //backward compatibility
+        Path eclipseConfigPath = getMetadataFolder().resolve(".plugins/org.eclipse.core.runtime/.settings/org.jkiss.dbeaver.core.prefs");
+        if (Files.exists(eclipseConfigPath)) {
+            try {
+                Properties eclipseProps = new Properties();
+                try (InputStream is = Files.newInputStream(eclipseConfigPath)) {
+                    eclipseProps.load(is);
+                }
+                if (CommonUtils.isEmpty(projectName)) {
+                    eclipseProps.remove(PROP_PROJECT_ACTIVE);
+                } else {
+                    eclipseProps.setProperty(PROP_PROJECT_ACTIVE, projectName);
+                }
+                try (OutputStream outputStream = Files.newOutputStream(eclipseConfigPath)) {
+                    eclipseProps.store(outputStream, null);
+                    return true;
+                }
+            } catch (IOException e) {
+                log.error("Error updating eclipse preferences", e);
+            }
         }
     }
 
