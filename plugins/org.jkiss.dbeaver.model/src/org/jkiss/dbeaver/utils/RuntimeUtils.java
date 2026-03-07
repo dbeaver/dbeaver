@@ -297,6 +297,23 @@ public final class RuntimeUtils {
         return monitoringTask.finished;
     }
 
+    public static void scheduleJob(@NotNull String task, @NotNull DBRRunnableWithProgress rwp) {
+        new AbstractJob(task) {
+            @NotNull
+            @Override
+            protected IStatus run(@NotNull DBRProgressMonitor monitor) {
+                try {
+                    rwp.run(monitor);
+                } catch (InvocationTargetException e) {
+                    return GeneralUtils.makeExceptionStatus(e);
+                } catch (InterruptedException e) {
+                    return Status.CANCEL_STATUS;
+                }
+                return Status.OK_STATUS;
+            }
+        }.schedule();
+    }
+
     @NotNull
     public static String executeProcess(@NotNull String binPath, @Nullable String... args) throws DBException {
         try {
