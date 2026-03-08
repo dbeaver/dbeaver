@@ -33,240 +33,6 @@ import static org.mockito.Mockito.when;
 
 public class ProcedureFunctionExtractorTest {
 
-
-    @Test
-    public void unknownFunctionType() {
-        // given
-        String notEmptyPackageDefinition = constructPackageBody(simpleNoArgsProc);
-        ProcedureBodyExtractor procedureBodyExtractor = new ProcedureBodyExtractor(unknownProc.procedure, notEmptyPackageDefinition);
-        // then
-        assertEquals(ProcedureBodyExtractor.NO_DEFINITION_FOUND, procedureBodyExtractor.extractProcBody());
-    }
-
-    @Test
-    public void notFoundDefinitionTest() {
-        // given
-        String notEmptyPackageDefinition = constructPackageBody(noNameMatch);
-        ProcedureBodyExtractor procedureBodyExtractor = new ProcedureBodyExtractor(noNameMatch.procedure, notEmptyPackageDefinition);
-        // then
-        assertEquals(ProcedureBodyExtractor.NO_DEFINITION_FOUND, procedureBodyExtractor.extractProcBody());
-    }
-
-    @Test
-    public void simpleProcFuncTest() {
-        assertBodyFound(simpleNoArgsProc);
-        assertBodyFound(simpleFunc);
-    }
-
-    @Test
-    public void simpleProcFuncNoLabeledEndTest() {
-        assertBodyFound(simpleNoArgsNoEndProc);
-        assertBodyFound(procWithParams);
-
-        assertBodyFound(simpleFuncNoEnd);
-        assertBodyFound(funcWithParams);
-    }
-
-    @Test
-    public void commentsTest() {
-        assertBodyFound(simpleOneLineComment);
-        assertBodyFound(oneLineComments);
-        assertBodyFound(simpleMultiLineComment);
-        assertBodyFound(multiLineComments);
-    }
-
-    @Test
-    public void functionStartInOneLineCommentLineIsIgnoredTest() {
-        // given
-        String funcBodyWithCommentFalseStart = "--PROCEDURE simple_proc IS\n" + simpleNoArgsProc.procBody;
-        ProcedureBodyExtractor extractor = new ProcedureBodyExtractor(
-            simpleNoArgsProc.procedure,
-            packageDefinitionTemplate.formatted(funcBodyWithCommentFalseStart)
-        );
-        // then
-        assertEquals(simpleNoArgsProc.procBody, extractor.extractProcBody());
-    }
-
-    @Test
-    public void functionStartInMultiLineCommentLineIsIgnoredTest() {
-        // given
-        String funcBodyWithCommentFalseStart = """
-            /*PROCEDURE simple_proc IS;
-            PROCEDURE simple_proc IS;
-            PROCEDURE simple_proc IS;*/""" + simpleNoArgsProc.procBody;
-        ProcedureBodyExtractor extractor = new ProcedureBodyExtractor(
-            simpleNoArgsProc.procedure,
-            packageDefinitionTemplate.formatted(funcBodyWithCommentFalseStart)
-        );
-        // then
-        assertEquals(simpleNoArgsProc.procBody, extractor.extractProcBody());
-    }
-
-    @Test
-    public void endIfTest() {
-        assertBodyFound(ifEndIf);
-    }
-
-    @Test
-    public void caseEndTest() {
-        assertBodyFound(caseEndCase);
-    }
-
-    @Test
-    public void loopsTest() {
-        assertBodyFound(loopEndLoop);
-        assertBodyFound(forLoopEndLoop);
-    }
-
-    @Test
-    public void nestedBeginTest() {
-        assertBodyFound(tripleNestedBegins);
-    }
-
-    @Test
-    public void openClosedNestedBeginsTest() {
-        assertBodyFound(openClosedBeginsInsideMain);
-    }
-
-    @Test
-    public void combinedNestedBegins() {
-        assertBodyFound(combinedNestedBegins);
-    }
-
-    @Test
-    public void whileTest() {
-        assertBodyFound(whileLoopEndLoop);
-    }
-
-    @Test
-    public void declareTest() {
-        assertBodyFound(declareEnd);
-    }
-
-    @Test
-    public void nestedProcedures() {
-        assertBodyFound(tripleNestedProc);
-        assertBodyFound(outerBeginEndInner);
-    }
-
-    @Test
-    public void nestedFunctions() {
-        assertBodyFound(tripleNestedFunc);
-        assertBodyFound(outerBeginEndInnerFunc);
-    }
-
-    @Test
-    public void overloadedProcsTest() {
-        // given
-        String packageDefinitionWillAllOverloadedProcs =
-            packageDefinitionTemplate
-                .formatted(String.join("\n\n", List.of(overloadedProc1.procBody, overloadedProc2.procBody, overloadedProc3.procBody)));
-
-        // then
-        assertBodyFound(overloadedProc1, packageDefinitionWillAllOverloadedProcs);
-        assertBodyFound(overloadedProc2, packageDefinitionWillAllOverloadedProcs);
-        assertBodyFound(overloadedProc3, packageDefinitionWillAllOverloadedProcs);
-    }
-
-    @Test
-    public void overloadedFucntionsTest() {
-        // given
-        String packageDefinitionWillAllOverloadedFucntions =
-            packageDefinitionTemplate
-                .formatted(String.join("\n\n", List.of(overloadedFunc1.procBody, overloadedFunc2.procBody, overloadedFunc3.procBody)));
-
-        // then
-        assertBodyFound(overloadedFunc1, packageDefinitionWillAllOverloadedFucntions);
-        assertBodyFound(overloadedFunc2, packageDefinitionWillAllOverloadedFucntions);
-        assertBodyFound(overloadedFunc3, packageDefinitionWillAllOverloadedFucntions);
-    }
-
-    @Test
-    public void allProceduresBodyExtractTest() {
-        // given
-        List<ProcTestCase> allTestCases = new ArrayList<>();
-        allTestCases.add(simpleNoArgsProc);
-        allTestCases.add(simpleNoArgsNoEndProc);
-        allTestCases.add(procWithParams);
-
-        allTestCases.add(simpleFunc);
-        allTestCases.add(simpleFuncNoEnd);
-        allTestCases.add(funcWithParams);
-
-        allTestCases.add(simpleOneLineComment);
-        allTestCases.add(oneLineComments);
-        allTestCases.add(simpleMultiLineComment);
-        allTestCases.add(multiLineComments);
-
-        allTestCases.add(ifEndIf);
-        allTestCases.add(caseEndCase);
-
-        allTestCases.add(forLoopEndLoop);
-        allTestCases.add(loopEndLoop);
-
-        allTestCases.add(tripleNestedBegins);
-        allTestCases.add(openClosedBeginsInsideMain);
-        allTestCases.add(combinedNestedBegins);
-
-        allTestCases.add(whileLoopEndLoop);
-
-        allTestCases.add(declareEnd);
-
-        allTestCases.add(tripleNestedProc);
-        allTestCases.add(outerBeginEndInner);
-
-        allTestCases.add(tripleNestedFunc);
-        allTestCases.add(outerBeginEndInnerFunc);
-
-        List<ProcTestCase> reversedAllCases = new ArrayList<>(allTestCases);
-        Collections.reverse(reversedAllCases);
-
-        // can be tested only in straight order, since overload number works sequentially
-        List<ProcTestCase> overloadedCases = List.of(
-            overloadedProc1,
-            overloadedProc2,
-            overloadedProc3,
-
-            overloadedFunc1,
-            overloadedFunc2,
-            overloadedFunc3
-        );
-        allTestCases.addAll(overloadedCases);
-
-        String allProcs = allTestCases.stream().map(ptc -> ptc.procBody).collect(Collectors.joining("\n\n"));
-        String reversedAllProcs = reversedAllCases.stream().map(ptc -> ptc.procBody).collect(Collectors.joining("\n\n"));
-
-        String packageBody = packageDefinitionTemplate.formatted(allProcs);
-        String reversedPackageBody = packageDefinitionTemplate.formatted(reversedAllProcs);
-
-        // then
-        for (ProcTestCase procToSearch : allTestCases) {
-            ProcedureBodyExtractor procedureBodyExtractor = new ProcedureBodyExtractor(procToSearch.procedure, packageBody);
-            assertEquals(procToSearch.procBody, procedureBodyExtractor.extractProcBody());
-        }
-
-        for (ProcTestCase procToSearch : reversedAllCases) {
-            ProcedureBodyExtractor procedureBodyExtractorReversed = new ProcedureBodyExtractor(procToSearch.procedure, reversedPackageBody);
-            assertEquals(procToSearch.procBody, procedureBodyExtractorReversed.extractProcBody());
-        }
-    }
-
-    private void assertBodyFound(@NotNull ProcTestCase testCase) {
-        assertBodyFound(testCase, constructPackageBody(testCase));
-    }
-
-    private void assertBodyFound(@NotNull ProcTestCase testCase, @NotNull String packageBodyDefinition) {
-        ProcedureBodyExtractor procedureBodyExtractor = new ProcedureBodyExtractor(testCase.procedure, packageBodyDefinition);
-        // then
-        assertEquals(testCase.procBody, procedureBodyExtractor.extractProcBody());
-    }
-
-    private String constructPackageBody(@NotNull ProcTestCase testCase) {
-        return packageDefinitionTemplate
-            .formatted(testCase.procBody);
-    }
-
-
     private final String packageDefinitionTemplate = """
         CREATE OR REPLACE PACKAGE BODY TEST_PACKAGE AS
         %s
@@ -658,6 +424,239 @@ public class ProcedureFunctionExtractorTest {
             END;""",
         3
     );
+
+
+    @Test
+    public void unknownFunctionType() {
+        // given
+        String notEmptyPackageDefinition = constructPackageBody(simpleNoArgsProc);
+        ProcedureBodyExtractor procedureBodyExtractor = new ProcedureBodyExtractor(unknownProc.procedure, notEmptyPackageDefinition);
+        // then
+        assertEquals(ProcedureBodyExtractor.NO_DEFINITION_FOUND, procedureBodyExtractor.extractProcBody());
+    }
+
+    @Test
+    public void notFoundDefinitionTest() {
+        // given
+        String notEmptyPackageDefinition = constructPackageBody(noNameMatch);
+        ProcedureBodyExtractor procedureBodyExtractor = new ProcedureBodyExtractor(noNameMatch.procedure, notEmptyPackageDefinition);
+        // then
+        assertEquals(ProcedureBodyExtractor.NO_DEFINITION_FOUND, procedureBodyExtractor.extractProcBody());
+    }
+
+    @Test
+    public void simpleProcFuncTest() {
+        assertBodyFound(simpleNoArgsProc);
+        assertBodyFound(simpleFunc);
+    }
+
+    @Test
+    public void simpleProcFuncNoLabeledEndTest() {
+        assertBodyFound(simpleNoArgsNoEndProc);
+        assertBodyFound(procWithParams);
+
+        assertBodyFound(simpleFuncNoEnd);
+        assertBodyFound(funcWithParams);
+    }
+
+    @Test
+    public void commentsTest() {
+        assertBodyFound(simpleOneLineComment);
+        assertBodyFound(oneLineComments);
+        assertBodyFound(simpleMultiLineComment);
+        assertBodyFound(multiLineComments);
+    }
+
+    @Test
+    public void functionStartInOneLineCommentLineIsIgnoredTest() {
+        // given
+        String funcBodyWithCommentFalseStart = "--PROCEDURE simple_proc IS\n" + simpleNoArgsProc.procBody;
+        ProcedureBodyExtractor extractor = new ProcedureBodyExtractor(
+            simpleNoArgsProc.procedure,
+            packageDefinitionTemplate.formatted(funcBodyWithCommentFalseStart)
+        );
+        // then
+        assertEquals(simpleNoArgsProc.procBody, extractor.extractProcBody());
+    }
+
+    @Test
+    public void functionStartInMultiLineCommentLineIsIgnoredTest() {
+        // given
+        String funcBodyWithCommentFalseStart = """
+            /*PROCEDURE simple_proc IS;
+            PROCEDURE simple_proc IS;
+            PROCEDURE simple_proc IS;*/""" + simpleNoArgsProc.procBody;
+        ProcedureBodyExtractor extractor = new ProcedureBodyExtractor(
+            simpleNoArgsProc.procedure,
+            packageDefinitionTemplate.formatted(funcBodyWithCommentFalseStart)
+        );
+        // then
+        assertEquals(simpleNoArgsProc.procBody, extractor.extractProcBody());
+    }
+
+    @Test
+    public void endIfTest() {
+        assertBodyFound(ifEndIf);
+    }
+
+    @Test
+    public void caseEndTest() {
+        assertBodyFound(caseEndCase);
+    }
+
+    @Test
+    public void loopsTest() {
+        assertBodyFound(loopEndLoop);
+        assertBodyFound(forLoopEndLoop);
+    }
+
+    @Test
+    public void nestedBeginTest() {
+        assertBodyFound(tripleNestedBegins);
+    }
+
+    @Test
+    public void openClosedNestedBeginsTest() {
+        assertBodyFound(openClosedBeginsInsideMain);
+    }
+
+    @Test
+    public void combinedNestedBegins() {
+        assertBodyFound(combinedNestedBegins);
+    }
+
+    @Test
+    public void whileTest() {
+        assertBodyFound(whileLoopEndLoop);
+    }
+
+    @Test
+    public void declareTest() {
+        assertBodyFound(declareEnd);
+    }
+
+    @Test
+    public void nestedProcedures() {
+        assertBodyFound(tripleNestedProc);
+        assertBodyFound(outerBeginEndInner);
+    }
+
+    @Test
+    public void nestedFunctions() {
+        assertBodyFound(tripleNestedFunc);
+        assertBodyFound(outerBeginEndInnerFunc);
+    }
+
+    @Test
+    public void overloadedProcsTest() {
+        // given
+        String packageDefinitionWillAllOverloadedProcs =
+            packageDefinitionTemplate
+                .formatted(String.join("\n\n", List.of(overloadedProc1.procBody, overloadedProc2.procBody, overloadedProc3.procBody)));
+
+        // then
+        assertBodyFound(overloadedProc1, packageDefinitionWillAllOverloadedProcs);
+        assertBodyFound(overloadedProc2, packageDefinitionWillAllOverloadedProcs);
+        assertBodyFound(overloadedProc3, packageDefinitionWillAllOverloadedProcs);
+    }
+
+    @Test
+    public void overloadedFucntionsTest() {
+        // given
+        String packageDefinitionWillAllOverloadedFucntions =
+            packageDefinitionTemplate
+                .formatted(String.join("\n\n", List.of(overloadedFunc1.procBody, overloadedFunc2.procBody, overloadedFunc3.procBody)));
+
+        // then
+        assertBodyFound(overloadedFunc1, packageDefinitionWillAllOverloadedFucntions);
+        assertBodyFound(overloadedFunc2, packageDefinitionWillAllOverloadedFucntions);
+        assertBodyFound(overloadedFunc3, packageDefinitionWillAllOverloadedFucntions);
+    }
+
+    @Test
+    public void allProceduresBodyExtractTest() {
+        // given
+        List<ProcTestCase> allTestCases = new ArrayList<>();
+        allTestCases.add(simpleNoArgsProc);
+        allTestCases.add(simpleNoArgsNoEndProc);
+        allTestCases.add(procWithParams);
+
+        allTestCases.add(simpleFunc);
+        allTestCases.add(simpleFuncNoEnd);
+        allTestCases.add(funcWithParams);
+
+        allTestCases.add(simpleOneLineComment);
+        allTestCases.add(oneLineComments);
+        allTestCases.add(simpleMultiLineComment);
+        allTestCases.add(multiLineComments);
+
+        allTestCases.add(ifEndIf);
+        allTestCases.add(caseEndCase);
+
+        allTestCases.add(forLoopEndLoop);
+        allTestCases.add(loopEndLoop);
+
+        allTestCases.add(tripleNestedBegins);
+        allTestCases.add(openClosedBeginsInsideMain);
+        allTestCases.add(combinedNestedBegins);
+
+        allTestCases.add(whileLoopEndLoop);
+
+        allTestCases.add(declareEnd);
+
+        allTestCases.add(tripleNestedProc);
+        allTestCases.add(outerBeginEndInner);
+
+        allTestCases.add(tripleNestedFunc);
+        allTestCases.add(outerBeginEndInnerFunc);
+
+        List<ProcTestCase> reversedAllCases = new ArrayList<>(allTestCases);
+        Collections.reverse(reversedAllCases);
+
+        // can be tested only in straight order, since overload number works sequentially
+        List<ProcTestCase> overloadedCases = List.of(
+            overloadedProc1,
+            overloadedProc2,
+            overloadedProc3,
+
+            overloadedFunc1,
+            overloadedFunc2,
+            overloadedFunc3
+        );
+        allTestCases.addAll(overloadedCases);
+
+        String allProcs = allTestCases.stream().map(ptc -> ptc.procBody).collect(Collectors.joining("\n\n"));
+        String reversedAllProcs = reversedAllCases.stream().map(ptc -> ptc.procBody).collect(Collectors.joining("\n\n"));
+
+        String packageBody = packageDefinitionTemplate.formatted(allProcs);
+        String reversedPackageBody = packageDefinitionTemplate.formatted(reversedAllProcs);
+
+        // then
+        for (ProcTestCase procToSearch : allTestCases) {
+            ProcedureBodyExtractor procedureBodyExtractor = new ProcedureBodyExtractor(procToSearch.procedure, packageBody);
+            assertEquals(procToSearch.procBody, procedureBodyExtractor.extractProcBody());
+        }
+
+        for (ProcTestCase procToSearch : reversedAllCases) {
+            ProcedureBodyExtractor procedureBodyExtractorReversed = new ProcedureBodyExtractor(procToSearch.procedure, reversedPackageBody);
+            assertEquals(procToSearch.procBody, procedureBodyExtractorReversed.extractProcBody());
+        }
+    }
+
+    private void assertBodyFound(@NotNull ProcTestCase testCase) {
+        assertBodyFound(testCase, constructPackageBody(testCase));
+    }
+
+    private void assertBodyFound(@NotNull ProcTestCase testCase, @NotNull String packageBodyDefinition) {
+        ProcedureBodyExtractor procedureBodyExtractor = new ProcedureBodyExtractor(testCase.procedure, packageBodyDefinition);
+        // then
+        assertEquals(testCase.procBody, procedureBodyExtractor.extractProcBody());
+    }
+
+    private String constructPackageBody(@NotNull ProcTestCase testCase) {
+        return packageDefinitionTemplate
+            .formatted(testCase.procBody);
+    }
 
 
     private class ProcTestCase {

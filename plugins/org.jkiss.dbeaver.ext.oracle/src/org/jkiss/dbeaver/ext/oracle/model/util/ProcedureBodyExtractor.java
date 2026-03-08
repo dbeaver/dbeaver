@@ -87,7 +87,7 @@ public class ProcedureBodyExtractor {
                 .compile(procType + "\\s+" + proc.getName(), Pattern.CASE_INSENSITIVE)
                 .matcher(parentPackageBodyDefinition);
             int numberOfOverloadsBefore = Objects.requireNonNullElse(proc.getOverloadNumber(), 1) - 1;
-            if (findInRangeTimesX(procStart, 0, parentPackageBodyDefinition.length(), numberOfOverloadsBefore)) {
+            if (findNthMatchInRange(procStart, 0, parentPackageBodyDefinition.length(), numberOfOverloadsBefore)) {
                 int functionEndIndex = findProcEnd(procStart.end());
                 return functionEndIndex >= 0
                     ? parentPackageBodyDefinition.substring(procStart.start(), functionEndIndex)
@@ -123,16 +123,16 @@ public class ProcedureBodyExtractor {
     }
 
     private boolean findInRange(@NotNull Matcher matcher, int startIndex, int endIndexExclusive) {
-        return findInRangeTimesX(matcher, startIndex, endIndexExclusive, 0);
+        return findNthMatchInRange(matcher, startIndex, endIndexExclusive, 0);
     }
 
-    private boolean findInRangeTimesX(@NotNull Matcher matcher, int startIndex, int endIndexExclusive, int numberOfOccurrencesToSkip) {
+    private boolean findNthMatchInRange(@NotNull Matcher matcher, int startIndex, int endIndexExclusive, int occurrencesToSkip) {
         var searchableRegions = defineSearchableRanges(startIndex, endIndexExclusive);
-        int numberOfFoundBefore = 0;
+        int matchesFound = 0;
         for (RegionRange region : searchableRegions) {
             matcher.region(region.startInclusive(), region.endExclusive());
             while (matcher.find()) {
-                if (++numberOfFoundBefore > numberOfOccurrencesToSkip) {
+                if (++matchesFound > occurrencesToSkip) {
                     return true;
                 }
             }
