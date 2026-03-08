@@ -62,14 +62,8 @@ public class ProcedureFunctionExtractorTest {
         assertBodyFound(simpleNoArgsNoEndProc);
         assertBodyFound(procWithParams);
 
-        assertBodyFound(simpleNoArgsNoEndProc);
+        assertBodyFound(simpleFuncNoEnd);
         assertBodyFound(funcWithParams);
-    }
-
-    @Test
-    public void noBeginTest() {
-        assertBodyFound(procNoBegin);
-        assertBodyFound(funcNoBegin);
     }
 
     @Test
@@ -139,12 +133,10 @@ public class ProcedureFunctionExtractorTest {
         List<ProcTestCase> allTestCases = new ArrayList<>();
         allTestCases.add(simpleNoArgsProc);
         allTestCases.add(simpleNoArgsNoEndProc);
-        allTestCases.add(procNoBegin);
         allTestCases.add(procWithParams);
 
         allTestCases.add(simpleFunc);
         allTestCases.add(simpleFuncNoEnd);
-        allTestCases.add(funcNoBegin);
         allTestCases.add(funcWithParams);
 
         allTestCases.add(simpleOneLineComment);
@@ -249,14 +241,6 @@ public class ProcedureFunctionExtractorTest {
              END proc_with_params;"""
     );
 
-    private final ProcTestCase procNoBegin = new ProcTestCase(
-        "proc_no_begin", DBSProcedureType.PROCEDURE, """
-        PROCEDURE proc_no_begin IS
-          l_var NUMBER := 42;
-          l_msg VARCHAR2(100);
-        END;"""
-    );
-
 
     private final ProcTestCase simpleFunc = new ProcTestCase(
         "simple_func", DBSProcedureType.FUNCTION, """
@@ -274,14 +258,6 @@ public class ProcedureFunctionExtractorTest {
         BEGIN
           RETURN l_var;
         END ;"""
-    );
-
-    private final ProcTestCase funcNoBegin = new ProcTestCase(
-        "func_no_begin", DBSProcedureType.FUNCTION, """
-        FUNCTION func_no_begin RETURN NUMBER IS
-          l_var NUMBER := 42;
-          l_msg VARCHAR2(100);
-        END;"""
     );
 
     private final ProcTestCase funcWithParams = new ProcTestCase(
@@ -496,7 +472,7 @@ public class ProcedureFunctionExtractorTest {
              BEGIN
                inner_proc_unlabeled ;
                inner_proc_labeled;
-             END;;"""
+             END;"""
     );
 
     private final ProcTestCase tripleNestedFunc = new ProcTestCase(

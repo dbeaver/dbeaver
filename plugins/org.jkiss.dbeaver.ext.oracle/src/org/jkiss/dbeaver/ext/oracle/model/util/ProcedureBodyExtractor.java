@@ -31,6 +31,19 @@ import java.util.stream.Collectors;
 public class ProcedureBodyExtractor {
 
     public static final String NO_DEFINITION_FOUND = "-- no definition found";
+
+    private static final List<String> commentPatterns = List.of(
+        "--.*\n",
+        "/\\*[\\s\\S]*?\\*/"
+    );
+
+    private static final String END_PATTERN = "\\b(END\\s+.*|END\\s*);";
+
+    private static final List<String> nestedProcedureStartCases = List.of(
+        "PROCEDURE",
+        "FUNCTION"
+    );
+
     private static final List<String> possibleBeginCases = List.of(
         "BEGIN",
         "IF",
@@ -38,22 +51,18 @@ public class ProcedureBodyExtractor {
         "LOOP"
     );
 
-    private static final List<String> commentPatterns = List.of(
-        "--.*\n",
-        "/\\*[\\s\\S]*?\\*/"
-    );
-    private static final String END_PATTERN = "\\b(END\\s+.*|END\\s*);";
+
 
     private final OracleProcedurePackaged proc;
     private final String parentPackageBodyDefinition;
 
-    private final Deque<Integer> beginStack = new ArrayDeque<>();
 
     // must be sorted in asc to exclude properly
     private final List<RegionRange> commentRanges = new ArrayList<>();
 
     private Matcher beginMatcher;
     private Matcher endMatcher;
+    private Matcher nestedProcedureMatcher;
 
     public ProcedureBodyExtractor(@NotNull OracleProcedurePackaged proc, @NotNull String parentPackageBodyDefinition) {
         this.proc = proc;
@@ -61,6 +70,21 @@ public class ProcedureBodyExtractor {
         defineCommentRegions();
     }
 
+
+    private void defineCommentRegions() {
+        Matcher commentsMatcher = Pattern
+            .compile(String.join("|", commentPatterns))
+            .matcher(parentPackageBodyDefinition);
+        while (commentsMatcher.find()) {
+            RegionRange prevRange = commentRanges.isEmpty() ? null : commentRanges.getLast();
+            if (prevRange != null && commentsMatcher.start() < prevRange.endExclusive()) {
+                commentRanges.removeLast();
+                commentRanges.add(new RegionRange(prevRange.startInclusive(), commentsMatcher.end()));
+            } else {
+                commentRanges.add(new RegionRange(commentsMatcher.start(), commentsMatcher.end()));
+            }
+        }
+    }
 
     public String extractProcBody() {
         String procType = procType();
@@ -85,59 +109,26 @@ public class ProcedureBodyExtractor {
         } else {
             beginMatcher = getBeginMatcher();
             endMatcher = getEndMatcher();
-            return findFunctionEndIndex(startIndex);
-        }
-    }
-
-    private void defineCommentRegions() {
-        Matcher commentsMatcher = Pattern
-            .compile(String.join("|", commentPatterns))
-            .matcher(parentPackageBodyDefinition);
-        while (commentsMatcher.find()) {
-            RegionRange prevRange = commentRanges.isEmpty() ? null : commentRanges.getLast();
-            if (prevRange != null && commentsMatcher.start() < prevRange.endExclusive()) {
-                commentRanges.removeLast();
-                commentRanges.add(new RegionRange(prevRange.startInclusive(), commentsMatcher.end()));
-            } else {
-                commentRanges.add(new RegionRange(commentsMatcher.start(), commentsMatcher.end()));
-            }
+            nestedProcedureMatcher = getNestedProcedureMatcher();
+            return new EndProcedureFinder(startIndex).findProcedureEndIndex();
         }
     }
 
     private int tryFindLabeledProcEnd(int startIndex) {
         Matcher endFunctionWithName = Pattern
-            .compile("end\\s*" + proc.getUniqueName() + "[\\s\\n]*;", Pattern.CASE_INSENSITIVE)
+            .compile("\\bend\\s+" + proc.getUniqueName() + "\\s*;", Pattern.CASE_INSENSITIVE)
             .matcher(parentPackageBodyDefinition);
         return findFromIndex(endFunctionWithName, startIndex)
             ? endFunctionWithName.end()
             : -1;
     }
 
-    private int findFunctionEndIndex(int startSearch) {
-        boolean isNextEndFound = findFromIndex(endMatcher, startSearch);
-        if (isNextEndFound) {
-            fillBeginStack(startSearch, endMatcher.start());
-            beginStack.poll();
-            return beginStack.isEmpty()
-                ? endMatcher.end()
-                : findFunctionEndIndex(endMatcher.end());
-        } else {
-            return -1;
-        }
-    }
-
-    private void fillBeginStack(int fromIndex, int toIndex) {
-        var searchableRegions = defineSearchableRanges(fromIndex, toIndex);
-        for (RegionRange region : searchableRegions) {
-            beginMatcher.region(region.startInclusive(), region.endExclusive());
-            while (beginMatcher.find()) {
-                beginStack.push(beginMatcher.end());
-            }
-        }
-    }
-
     private boolean findFromIndex(@NotNull Matcher matcher, int startIndex) {
-        var searchableRegions = defineSearchableRanges(startIndex, parentPackageBodyDefinition.length());
+        return findInRange(matcher, startIndex, parentPackageBodyDefinition.length());
+    }
+
+    private boolean findInRange(@NotNull Matcher matcher, int startIndex, int endIndexExclusive) {
+        var searchableRegions = defineSearchableRanges(startIndex, endIndexExclusive);
         for (RegionRange region : searchableRegions) {
             matcher.region(region.startInclusive(), region.endExclusive());
             if (matcher.find()) {
@@ -185,6 +176,12 @@ public class ProcedureBodyExtractor {
             .matcher(parentPackageBodyDefinition);
     }
 
+    private Matcher getNestedProcedureMatcher() {
+        return Pattern
+            .compile(String.join("|", nestedProcedureStartCases))
+            .matcher(parentPackageBodyDefinition);
+    }
+
     @Nullable
     private String procType() {
         return switch (proc.getProcedureType()) {
@@ -201,4 +198,48 @@ public class ProcedureBodyExtractor {
         }
     }
 
+    private class EndProcedureFinder {
+        private final Deque<Integer> beginStack = new ArrayDeque<>();
+
+        private final int procedureStartIndex;
+
+        public EndProcedureFinder(int procedureStartIndex) {
+            this.procedureStartIndex = procedureStartIndex;
+        }
+
+        public int findProcedureEndIndex() {
+            return findProcedureEndIndex(procedureStartIndex);
+        }
+
+        private int findProcedureEndIndex(int startSearch) {
+            boolean isNextEndFound = findFromIndex(endMatcher, startSearch);
+            if (isNextEndFound) {
+                boolean isNestedProcedureFound = findInRange(nestedProcedureMatcher, startSearch, endMatcher.start());
+                if (isNestedProcedureFound) {
+                    fillBeginStack(startSearch, nestedProcedureMatcher.start());
+                    int nestedProcEnd = new EndProcedureFinder(nestedProcedureMatcher.end()).findProcedureEndIndex();
+                    if (nestedProcEnd < 0) {
+                        return nestedProcEnd;
+                    }
+                    return findProcedureEndIndex(nestedProcEnd);
+                }
+                fillBeginStack(startSearch, endMatcher.start());
+                beginStack.poll();
+                return beginStack.isEmpty()
+                    ? endMatcher.end()
+                    : findProcedureEndIndex(endMatcher.end());
+            }
+            return -1;
+        }
+
+        private void fillBeginStack(int fromIndex, int toIndex) {
+            var searchableRegions = defineSearchableRanges(fromIndex, toIndex);
+            for (RegionRange region : searchableRegions) {
+                beginMatcher.region(region.startInclusive(), region.endExclusive());
+                while (beginMatcher.find()) {
+                    beginStack.push(beginMatcher.end());
+                }
+            }
+        }
+    }
 }
