@@ -31,7 +31,7 @@ import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-public class ProcedureFunctionExtractorTest {
+public class ProcedureBodyExtractorTest {
 
     private static final String packageDefinitionTemplate = """
         CREATE OR REPLACE PACKAGE BODY TEST_PACKAGE AS
@@ -561,16 +561,16 @@ public class ProcedureFunctionExtractorTest {
     }
 
     @Test
-    public void overloadedFucntionsTest() {
+    public void overloadedFunctionsTest() {
         // given
-        String packageDefinitionWillAllOverloadedFucntions =
+        String packageDefinitionWillAllOverloadedFunctions =
             packageDefinitionTemplate
                 .formatted(String.join("\n\n", List.of(overloadedFunc1.procBody, overloadedFunc2.procBody, overloadedFunc3.procBody)));
 
         // then
-        assertBodyFound(overloadedFunc1, packageDefinitionWillAllOverloadedFucntions);
-        assertBodyFound(overloadedFunc2, packageDefinitionWillAllOverloadedFucntions);
-        assertBodyFound(overloadedFunc3, packageDefinitionWillAllOverloadedFucntions);
+        assertBodyFound(overloadedFunc1, packageDefinitionWillAllOverloadedFunctions);
+        assertBodyFound(overloadedFunc2, packageDefinitionWillAllOverloadedFunctions);
+        assertBodyFound(overloadedFunc3, packageDefinitionWillAllOverloadedFunctions);
     }
 
     @Test

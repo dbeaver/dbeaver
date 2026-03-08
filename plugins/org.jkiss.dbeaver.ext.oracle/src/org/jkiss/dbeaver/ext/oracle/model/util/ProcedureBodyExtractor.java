@@ -84,7 +84,7 @@ public class ProcedureBodyExtractor {
         String procType = procType();
         if (procType != null) {
             Matcher procStart = Pattern
-                .compile(procType + "\\s+" + proc.getName(), Pattern.CASE_INSENSITIVE)
+                .compile(procType + "\\s+" + Pattern.quote(proc.getName()), Pattern.CASE_INSENSITIVE)
                 .matcher(parentPackageBodyDefinition);
             int numberOfOverloadsBefore = Objects.requireNonNullElse(proc.getOverloadNumber(), 1) - 1;
             if (findNthMatchInRange(procStart, 0, parentPackageBodyDefinition.length(), numberOfOverloadsBefore)) {
