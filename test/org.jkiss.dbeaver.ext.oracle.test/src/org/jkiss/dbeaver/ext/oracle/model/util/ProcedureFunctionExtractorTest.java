@@ -34,10 +34,19 @@ public class ProcedureFunctionExtractorTest {
 
 
     @Test
-    public void notFoundDefinitionTest() {
+    public void unknownFunctionType() {
         // given
         String notEmptyPackageDefinition = constructPackageBody(simpleNoArgsProc);
         ProcedureBodyExtractor procedureBodyExtractor = new ProcedureBodyExtractor(unknownProc.procedure, notEmptyPackageDefinition);
+        // then
+        assertEquals(ProcedureBodyExtractor.NO_DEFINITION_FOUND, procedureBodyExtractor.extractProcBody());
+    }
+
+    @Test
+    public void notFoundDefinitionTest() {
+        // given
+        String notEmptyPackageDefinition = constructPackageBody(noNameMatch);
+        ProcedureBodyExtractor procedureBodyExtractor = new ProcedureBodyExtractor(noNameMatch.procedure, notEmptyPackageDefinition);
         // then
         assertEquals(ProcedureBodyExtractor.NO_DEFINITION_FOUND, procedureBodyExtractor.extractProcBody());
     }
@@ -113,6 +122,18 @@ public class ProcedureFunctionExtractorTest {
     }
 
     @Test
+    public void nestedProcedures() {
+        assertBodyFound(tripleNestedProc);
+        assertBodyFound(outerBeginEndInner);
+    }
+
+    @Test
+    public void nestedFunctions() {
+        assertBodyFound(tripleNestedFunc);
+        assertBodyFound(outerBeginEndInnerFunc);
+    }
+
+    @Test
     public void allProceduresBodyExtractTest() {
         // given
         List<ProcTestCase> allTestCases = new ArrayList<>();
@@ -145,6 +166,12 @@ public class ProcedureFunctionExtractorTest {
 
         allTestCases.add(declareEnd);
 
+        allTestCases.add(tripleNestedProc);
+        allTestCases.add(outerBeginEndInner);
+
+        allTestCases.add(tripleNestedFunc);
+        allTestCases.add(outerBeginEndInnerFunc);
+
         // not sure if needed to shuffle
         Collections.shuffle(allTestCases);
 
@@ -175,7 +202,21 @@ public class ProcedureFunctionExtractorTest {
         %s
         END TEST_PACKAGE;""";
 
-    private final ProcTestCase unknownProc = new ProcTestCase("unknown", DBSProcedureType.UNKNOWN, "-- Procedure Body");
+    private final ProcTestCase unknownProc = new ProcTestCase(
+        "unknown", DBSProcedureType.UNKNOWN, """
+        PROCEDURE unknown IS
+        BEGIN
+          NULL;
+        END unknown;"""
+    );
+
+    private final ProcTestCase noNameMatch = new ProcTestCase(
+        "no_name_match", DBSProcedureType.PROCEDURE, """
+        PROCEDURE unknown IS
+        BEGIN
+          NULL;
+        END unknown;"""
+    );
 
     private final ProcTestCase simpleNoArgsProc = new ProcTestCase(
         "simple_proc", DBSProcedureType.PROCEDURE, """
@@ -417,39 +458,88 @@ public class ProcedureFunctionExtractorTest {
         END ;"""
     );
 
-    private final ProcTestCase nestedProcEnd = new ProcTestCase(
+    private final ProcTestCase tripleNestedProc = new ProcTestCase(
         "nested_proc_end", DBSProcedureType.PROCEDURE, """
         PROCEDURE nested_proc_end IS
         BEGIN
           DECLARE
-            PROCEDURE nested_proc IS
+            PROCEDURE nested_proc_1 IS
+              PROCEDURE nested_proc_2 IS
+                PROCEDURE nested_proc_3 IS
+                BEGIN
+                  NULL;
+                END ;
+              BEGIN
+                nested_proc_3;
+              END ;
             BEGIN
-              NULL;
-            END nested_proc;
+              nested_proc_2;
+            END;
           BEGIN
-            nested_proc;
+            nested_proc_1;
           END;
-        END ;"""
-    );
-
-    private final ProcTestCase procWithNested = new ProcTestCase(
-        "outer_proc", DBSProcedureType.PROCEDURE, """
-        PROCEDURE outer_proc IS
-          PROCEDURE inner_proc_labeled IS
-          BEGIN
-            NULL;
-          END inner_proc;
-          PROCEDURE inner_proc_unlabeled IS
-          BEGIN
-            NULL;
-          END;
-        
-        BEGIN
-          inner_proc;
-          inner_proc_labeled;
         END;"""
     );
 
+    private final ProcTestCase outerBeginEndInner = new ProcTestCase(
+        "outer_proc", DBSProcedureType.PROCEDURE, """
+        PROCEDURE outer_proc IS
+               PROCEDURE inner_proc_labeled IS
+               BEGIN
+                 NULL;
+               END inner_proc_labeled;
+               PROCEDURE inner_proc_unlabeled IS
+               BEGIN
+                 NULL;
+               END;
+        
+             BEGIN
+               inner_proc_unlabeled ;
+               inner_proc_labeled;
+             END;;"""
+    );
+
+    private final ProcTestCase tripleNestedFunc = new ProcTestCase(
+        "nested_func_end", DBSProcedureType.FUNCTION, """
+        FUNCTION nested_func_end RETURN NUMBER IS
+        BEGIN
+          DECLARE
+            FUNCTION nested_func_1 RETURN NUMBER IS
+              FUNCTION nested_func_2 RETURN NUMBER IS
+                FUNCTION nested_func_3 RETURN NUMBER IS
+                BEGIN
+                  RETURN 1;
+                END;
+              BEGIN
+                RETURN nested_func_3;
+              END;
+            BEGIN
+              RETURN nested_func_2;
+            END;
+          BEGIN
+            RETURN nested_func_1;
+          END;
+        END;"""
+    );
+
+
+    private final ProcTestCase outerBeginEndInnerFunc = new ProcTestCase(
+        "outer_func", DBSProcedureType.FUNCTION, """
+        FUNCTION outer_func RETURN NUMBER IS
+               FUNCTION inner_func_labeled RETURN NUMBER IS
+               BEGIN
+                 RETURN 1;
+               END inner_func_labeled;
+        
+               FUNCTION inner_func_unlabeled RETURN NUMBER IS
+               BEGIN
+                 RETURN 2;
+               END;
+        
+             BEGIN
+               RETURN inner_func_unlabeled + inner_func_labeled;
+             END;"""
+    );
 
     private class ProcTestCase {
         private final OracleProcedurePackaged procedure;
