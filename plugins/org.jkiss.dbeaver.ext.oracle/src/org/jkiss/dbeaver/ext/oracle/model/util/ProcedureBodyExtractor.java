@@ -51,11 +51,8 @@ public class ProcedureBodyExtractor {
         "LOOP"
     );
 
-
-
     private final OracleProcedurePackaged proc;
     private final String parentPackageBodyDefinition;
-
 
     // must be sorted in asc to exclude properly
     private final List<RegionRange> commentRanges = new ArrayList<>();
@@ -90,7 +87,7 @@ public class ProcedureBodyExtractor {
         String procType = procType();
         if (procType != null) {
             Matcher procStart = Pattern
-                .compile(procType + "\\s+" + proc.getUniqueName(), Pattern.CASE_INSENSITIVE)
+                .compile(procType + "\\s+" + proc.getName(), Pattern.CASE_INSENSITIVE)
                 .matcher(parentPackageBodyDefinition);
             if (procStart.find()) {
                 int functionEndIndex = findProcEnd(procStart.end());

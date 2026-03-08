@@ -536,7 +536,7 @@ public class ProcedureFunctionExtractorTest {
         private OracleProcedurePackaged getProcedure(@NotNull DBSProcedureType procType, @NotNull String procName) {
             OracleProcedurePackaged mockProc = mock(OracleProcedurePackaged.class);
             when(mockProc.getProcedureType()).thenReturn(procType);
-            when(mockProc.getUniqueName()).thenReturn(procName);
+            when(mockProc.getName()).thenReturn(procName);
             return mockProc;
         }
     }
