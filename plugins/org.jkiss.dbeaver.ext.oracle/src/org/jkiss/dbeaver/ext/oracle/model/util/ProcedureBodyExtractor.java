@@ -20,10 +20,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.oracle.model.OracleProcedurePackaged;
 
-import java.util.ArrayDeque;
-import java.util.ArrayList;
-import java.util.Deque;
-import java.util.List;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -89,7 +86,8 @@ public class ProcedureBodyExtractor {
             Matcher procStart = Pattern
                 .compile(procType + "\\s+" + proc.getName(), Pattern.CASE_INSENSITIVE)
                 .matcher(parentPackageBodyDefinition);
-            if (procStart.find()) {
+            int numberOfOverloadsBefore = Objects.requireNonNullElse(proc.getOverloadNumber(), 1) - 1;
+            if (findInRangeTimesX(procStart, 0, parentPackageBodyDefinition.length(), numberOfOverloadsBefore)) {
                 int functionEndIndex = findProcEnd(procStart.end());
                 return functionEndIndex >= 0
                     ? parentPackageBodyDefinition.substring(procStart.start(), functionEndIndex)
@@ -113,7 +111,7 @@ public class ProcedureBodyExtractor {
 
     private int tryFindLabeledProcEnd(int startIndex) {
         Matcher endFunctionWithName = Pattern
-            .compile("\\bend\\s+" + proc.getUniqueName() + "\\s*;", Pattern.CASE_INSENSITIVE)
+            .compile("\\bEND\\s+" + proc.getName() + "\\s*;", Pattern.CASE_INSENSITIVE)
             .matcher(parentPackageBodyDefinition);
         return findFromIndex(endFunctionWithName, startIndex)
             ? endFunctionWithName.end()
@@ -125,11 +123,18 @@ public class ProcedureBodyExtractor {
     }
 
     private boolean findInRange(@NotNull Matcher matcher, int startIndex, int endIndexExclusive) {
+        return findInRangeTimesX(matcher, startIndex, endIndexExclusive, 0);
+    }
+
+    private boolean findInRangeTimesX(@NotNull Matcher matcher, int startIndex, int endIndexExclusive, int numberOfOccurrencesToSkip) {
         var searchableRegions = defineSearchableRanges(startIndex, endIndexExclusive);
+        int numberOfFoundBefore = 0;
         for (RegionRange region : searchableRegions) {
             matcher.region(region.startInclusive(), region.endExclusive());
-            if (matcher.find()) {
-                return true;
+            while (matcher.find()) {
+                if (++numberOfFoundBefore > numberOfOccurrencesToSkip) {
+                    return true;
+                }
             }
         }
         return false;
@@ -196,6 +201,7 @@ public class ProcedureBodyExtractor {
     }
 
     private class EndProcedureFinder {
+
         private final Deque<Integer> beginStack = new ArrayDeque<>();
 
         private final int procedureStartIndex;

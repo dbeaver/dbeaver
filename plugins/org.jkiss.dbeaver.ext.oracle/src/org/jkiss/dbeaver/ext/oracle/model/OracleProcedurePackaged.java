@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ext.oracle.model;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.oracle.model.util.ProcedureBodyExtractor;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
@@ -68,6 +69,7 @@ public class OracleProcedurePackaged extends OracleProcedureBase<OraclePackage> 
     }
 
     @Override
+    @Nullable
     public Integer getOverloadNumber()
     {
         return overload;

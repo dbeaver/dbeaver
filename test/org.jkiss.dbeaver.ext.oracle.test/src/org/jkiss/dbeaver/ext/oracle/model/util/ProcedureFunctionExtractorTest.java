@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ext.oracle.model.util;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.oracle.model.OracleProcedurePackaged;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureType;
 import org.junit.Test;
@@ -75,6 +76,33 @@ public class ProcedureFunctionExtractorTest {
     }
 
     @Test
+    public void functionStartInOneLineCommentLineIsIgnoredTest() {
+        // given
+        String funcBodyWithCommentFalseStart = "--PROCEDURE simple_proc IS\n" + simpleNoArgsProc.procBody;
+        ProcedureBodyExtractor extractor = new ProcedureBodyExtractor(
+            simpleNoArgsProc.procedure,
+            packageDefinitionTemplate.formatted(funcBodyWithCommentFalseStart)
+        );
+        // then
+        assertEquals(simpleNoArgsProc.procBody, extractor.extractProcBody());
+    }
+
+    @Test
+    public void functionStartInMultiLineCommentLineIsIgnoredTest() {
+        // given
+        String funcBodyWithCommentFalseStart = """
+            /*PROCEDURE simple_proc IS;
+            PROCEDURE simple_proc IS;
+            PROCEDURE simple_proc IS;*/""" + simpleNoArgsProc.procBody;
+        ProcedureBodyExtractor extractor = new ProcedureBodyExtractor(
+            simpleNoArgsProc.procedure,
+            packageDefinitionTemplate.formatted(funcBodyWithCommentFalseStart)
+        );
+        // then
+        assertEquals(simpleNoArgsProc.procBody, extractor.extractProcBody());
+    }
+
+    @Test
     public void endIfTest() {
         assertBodyFound(ifEndIf);
     }
@@ -128,6 +156,32 @@ public class ProcedureFunctionExtractorTest {
     }
 
     @Test
+    public void overloadedProcsTest() {
+        // given
+        String packageDefinitionWillAllOverloadedProcs =
+            packageDefinitionTemplate
+                .formatted(String.join("\n\n", List.of(overloadedProc1.procBody, overloadedProc2.procBody, overloadedProc3.procBody)));
+
+        // then
+        assertBodyFound(overloadedProc1, packageDefinitionWillAllOverloadedProcs);
+        assertBodyFound(overloadedProc2, packageDefinitionWillAllOverloadedProcs);
+        assertBodyFound(overloadedProc3, packageDefinitionWillAllOverloadedProcs);
+    }
+
+    @Test
+    public void overloadedFucntionsTest() {
+        // given
+        String packageDefinitionWillAllOverloadedFucntions =
+            packageDefinitionTemplate
+                .formatted(String.join("\n\n", List.of(overloadedFunc1.procBody, overloadedFunc2.procBody, overloadedFunc3.procBody)));
+
+        // then
+        assertBodyFound(overloadedFunc1, packageDefinitionWillAllOverloadedFucntions);
+        assertBodyFound(overloadedFunc2, packageDefinitionWillAllOverloadedFucntions);
+        assertBodyFound(overloadedFunc3, packageDefinitionWillAllOverloadedFucntions);
+    }
+
+    @Test
     public void allProceduresBodyExtractTest() {
         // given
         List<ProcTestCase> allTestCases = new ArrayList<>();
@@ -167,24 +221,42 @@ public class ProcedureFunctionExtractorTest {
         List<ProcTestCase> reversedAllCases = new ArrayList<>(allTestCases);
         Collections.reverse(reversedAllCases);
 
+        // can be tested only in straight order, since overload number works sequentially
+        List<ProcTestCase> overloadedCases = List.of(
+            overloadedProc1,
+            overloadedProc2,
+            overloadedProc3,
+
+            overloadedFunc1,
+            overloadedFunc2,
+            overloadedFunc3
+        );
+        allTestCases.addAll(overloadedCases);
 
         String allProcs = allTestCases.stream().map(ptc -> ptc.procBody).collect(Collectors.joining("\n\n"));
         String reversedAllProcs = reversedAllCases.stream().map(ptc -> ptc.procBody).collect(Collectors.joining("\n\n"));
+
         String packageBody = packageDefinitionTemplate.formatted(allProcs);
         String reversedPackageBody = packageDefinitionTemplate.formatted(reversedAllProcs);
 
         // then
         for (ProcTestCase procToSearch : allTestCases) {
             ProcedureBodyExtractor procedureBodyExtractor = new ProcedureBodyExtractor(procToSearch.procedure, packageBody);
-            ProcedureBodyExtractor procedureBodyExtractorReversed = new ProcedureBodyExtractor(procToSearch.procedure, reversedPackageBody);
             assertEquals(procToSearch.procBody, procedureBodyExtractor.extractProcBody());
+        }
+
+        for (ProcTestCase procToSearch : reversedAllCases) {
+            ProcedureBodyExtractor procedureBodyExtractorReversed = new ProcedureBodyExtractor(procToSearch.procedure, reversedPackageBody);
             assertEquals(procToSearch.procBody, procedureBodyExtractorReversed.extractProcBody());
         }
     }
 
     private void assertBodyFound(@NotNull ProcTestCase testCase) {
-        String packageDefinition = constructPackageBody(testCase);
-        ProcedureBodyExtractor procedureBodyExtractor = new ProcedureBodyExtractor(testCase.procedure, packageDefinition);
+        assertBodyFound(testCase, constructPackageBody(testCase));
+    }
+
+    private void assertBodyFound(@NotNull ProcTestCase testCase, @NotNull String packageBodyDefinition) {
+        ProcedureBodyExtractor procedureBodyExtractor = new ProcedureBodyExtractor(testCase.procedure, packageBodyDefinition);
         // then
         assertEquals(testCase.procBody, procedureBodyExtractor.extractProcBody());
     }
@@ -523,20 +595,99 @@ public class ProcedureFunctionExtractorTest {
              END;"""
     );
 
+    // overloads
+    private final String overLoadProcName = "overloaded_proc";
+    private final ProcTestCase overloadedProc1 = new ProcTestCase(
+        overLoadProcName, DBSProcedureType.PROCEDURE,
+        """
+            PROCEDURE overloaded_proc(p_id NUMBER) IS
+              BEGIN
+                DBMS_OUTPUT.PUT_LINE('Single parameter: ' || p_id);
+              END;""",
+        1
+    );
+
+    private final ProcTestCase overloadedProc2 = new ProcTestCase(
+        overLoadProcName, DBSProcedureType.PROCEDURE,
+        """
+            PROCEDURE overloaded_proc(p_id NUMBER, p_name VARCHAR2) IS
+            BEGIN
+             DBMS_OUTPUT.PUT_LINE('Two parameters: ' || p_id || ', ' || p_name);
+            END;""",
+        2
+    );
+
+    private final ProcTestCase overloadedProc3 = new ProcTestCase(
+        overLoadProcName, DBSProcedureType.PROCEDURE,
+        """
+            
+            PROCEDURE overloaded_proc(p_flag CHAR) IS
+            BEGIN
+             DBMS_OUTPUT.PUT_LINE('Flag parameter: ' || p_flag);
+            END;""",
+        3
+    );
+
+    private final String overLoadFuncName = "overloaded_func";
+    private final ProcTestCase overloadedFunc1 = new ProcTestCase(
+        overLoadFuncName, DBSProcedureType.FUNCTION,
+        """
+            FUNCTION overloaded_func(p_id NUMBER) RETURN VARCHAR2 IS
+            BEGIN
+              RETURN 'Single parameter: ' || p_id;
+            END;""",
+        1
+    );
+
+    private final ProcTestCase overloadedFunc2 = new ProcTestCase(
+        overLoadFuncName, DBSProcedureType.FUNCTION,
+        """
+            FUNCTION overloaded_func(p_id NUMBER, p_name VARCHAR2) RETURN VARCHAR2 IS
+            BEGIN
+             RETURN 'Two parameters: ' || p_id || ', ' || p_name;
+            END;""",
+        2
+    );
+
+    private final ProcTestCase overloadedFunc3 = new ProcTestCase(
+        overLoadFuncName, DBSProcedureType.FUNCTION,
+        """
+            FUNCTION overloaded_func(p_flag CHAR) RETURN VARCHAR2 IS
+            BEGIN
+             RETURN 'Flag parameter: ' || p_flag;
+            END;""",
+        3
+    );
+
+
     private class ProcTestCase {
         private final OracleProcedurePackaged procedure;
         private final String procBody;
 
         public ProcTestCase(@NotNull String name, @NotNull DBSProcedureType procType, @NotNull String procBody) {
-            this.procedure = getProcedure(procType, name);
-            this.procBody = procBody;
+            this(name, procType, procBody, null);
+        }
+
+        public ProcTestCase(
+            @NotNull String name,
+            @NotNull DBSProcedureType procType,
+            @NotNull String procBody,
+            @Nullable Integer overloadNumber
+        ) {
+            this.procedure = getProcedure(procType, name, overloadNumber);
+            this.procBody = procBody.trim();
         }
 
         @NotNull
-        private OracleProcedurePackaged getProcedure(@NotNull DBSProcedureType procType, @NotNull String procName) {
+        private OracleProcedurePackaged getProcedure(
+            @NotNull DBSProcedureType procType,
+            @NotNull String procName,
+            @Nullable Integer overloadNumber
+        ) {
             OracleProcedurePackaged mockProc = mock(OracleProcedurePackaged.class);
             when(mockProc.getProcedureType()).thenReturn(procType);
             when(mockProc.getName()).thenReturn(procName);
+            when(mockProc.getOverloadNumber()).thenReturn(overloadNumber);
             return mockProc;
         }
     }
