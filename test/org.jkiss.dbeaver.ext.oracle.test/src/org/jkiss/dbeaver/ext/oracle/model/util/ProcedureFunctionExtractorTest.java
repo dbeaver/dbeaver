@@ -33,7 +33,7 @@ import static org.mockito.Mockito.when;
 
 public class ProcedureFunctionExtractorTest {
 
-    private final String packageDefinitionTemplate = """
+    private static final String packageDefinitionTemplate = """
         CREATE OR REPLACE PACKAGE BODY TEST_PACKAGE AS
         %s
         END TEST_PACKAGE;""";
@@ -362,7 +362,7 @@ public class ProcedureFunctionExtractorTest {
     );
 
     // overloads
-    private final String overLoadProcName = "overloaded_proc";
+    private static final String overLoadProcName = "overloaded_proc";
     private final ProcTestCase overloadedProc1 = new ProcTestCase(
         overLoadProcName, DBSProcedureType.PROCEDURE,
         """
@@ -394,7 +394,7 @@ public class ProcedureFunctionExtractorTest {
         3
     );
 
-    private final String overLoadFuncName = "overloaded_func";
+    private static final String overLoadFuncName = "overloaded_func";
     private final ProcTestCase overloadedFunc1 = new ProcTestCase(
         overLoadFuncName, DBSProcedureType.FUNCTION,
         """
