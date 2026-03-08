@@ -205,7 +205,8 @@ public class DBNProject extends DBNNode implements DBNNodeWithCache, DBNNodeExte
         return null;
     }
 
-    public DBNNode findResource(DBRProgressMonitor monitor, Path path) throws DBException {
+    @Nullable
+    public DBNNode findResource(@NotNull DBRProgressMonitor monitor, @NotNull Path path) throws DBException {
         Path relativePath = getProject().getAbsolutePath().relativize(path);
 
         DBNNode resNode = this;
@@ -227,7 +228,8 @@ public class DBNProject extends DBNNode implements DBNNodeWithCache, DBNNodeExte
         return extraNodes;
     }
 
-    public <T> T getExtraNode(Class<T> nodeType) {
+    @Nullable
+    public <T> T getExtraNode(@NotNull Class<T> nodeType) {
         if (extraNodes != null) {
             for (DBNNode node : extraNodes) {
                 if (nodeType.isAssignableFrom(node.getClass())) {

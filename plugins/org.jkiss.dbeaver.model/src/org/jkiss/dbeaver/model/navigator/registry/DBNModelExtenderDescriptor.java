@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,36 +17,65 @@
 package org.jkiss.dbeaver.model.navigator.registry;
 
 import org.eclipse.core.runtime.IConfigurationElement;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
 import org.jkiss.dbeaver.model.navigator.DBNModelExtender;
 import org.jkiss.utils.CommonUtils;
+
+import java.util.Objects;
 
 /**
  * Model extender descriptor
  */
 public class DBNModelExtenderDescriptor extends AbstractDescriptor {
 
-    private String id;
-    private ObjectType implType;
-    private final boolean isRoot;
+    private final IConfigurationElement config;
+    private final ObjectType implType;
     private DBNModelExtender instance;
 
-    DBNModelExtenderDescriptor(IConfigurationElement config) {
+    DBNModelExtenderDescriptor(@NotNull IConfigurationElement config) {
         super(config);
-        this.id = config.getAttribute("id");
+        this.config = config;
         this.implType = new ObjectType(config, "class");
-        this.isRoot = CommonUtils.toBoolean(config.getAttribute("root"));
     }
 
+    @NotNull
     public String getId() {
-        return id;
+        return Objects.requireNonNull(config.getAttribute("id"), "id not specified");
+    }
+
+    @NotNull
+    public String getNodeType() {
+        return Objects.requireNonNull(config.getAttribute("nodeType"), "nodeType not specified");
+    }
+
+    @NotNull
+    public String getNodeDisplayName() {
+        return Objects.requireNonNull(config.getAttribute("nodeDisplayName"), "displayName not specified");
+    }
+
+    @Nullable
+    public String getNodeDescription() {
+        return config.getAttribute("nodeDescription");
+    }
+
+    @Nullable
+    public DBPImage getNodeIcon() {
+        return iconToImage(config.getAttribute("nodeIcon"));
+    }
+
+    public boolean isRoot() {
+        return CommonUtils.toBoolean(config.getAttribute("root"));
     }
 
     public ObjectType getImplType() {
         return implType;
     }
 
+    @NotNull
     public DBNModelExtender getInstance() throws DBException {
         if (instance == null) {
             instance = implType.createInstance(DBNModelExtender.class);
@@ -54,12 +83,8 @@ public class DBNModelExtenderDescriptor extends AbstractDescriptor {
         return instance;
     }
 
-    public boolean isRoot() {
-        return isRoot;
-    }
-
     @Override
     public String toString() {
-        return id;
+        return getId();
     }
 }
