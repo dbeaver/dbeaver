@@ -164,15 +164,21 @@ public class ProcedureFunctionExtractorTest {
         allTestCases.add(tripleNestedFunc);
         allTestCases.add(outerBeginEndInnerFunc);
 
-        // not sure if needed to shuffle
-        Collections.shuffle(allTestCases);
+        List<ProcTestCase> reversedAllCases = new ArrayList<>(allTestCases);
+        Collections.reverse(reversedAllCases);
+
 
         String allProcs = allTestCases.stream().map(ptc -> ptc.procBody).collect(Collectors.joining("\n\n"));
+        String reversedAllProcs = reversedAllCases.stream().map(ptc -> ptc.procBody).collect(Collectors.joining("\n\n"));
         String packageBody = packageDefinitionTemplate.formatted(allProcs);
+        String reversedPackageBody = packageDefinitionTemplate.formatted(reversedAllProcs);
+
         // then
-        for (ProcTestCase testCase : allTestCases) {
-            ProcedureBodyExtractor procedureBodyExtractor = new ProcedureBodyExtractor(testCase.procedure, packageBody);
-            assertEquals(testCase.procBody, procedureBodyExtractor.extractProcBody());
+        for (ProcTestCase procToSearch : allTestCases) {
+            ProcedureBodyExtractor procedureBodyExtractor = new ProcedureBodyExtractor(procToSearch.procedure, packageBody);
+            ProcedureBodyExtractor procedureBodyExtractorReversed = new ProcedureBodyExtractor(procToSearch.procedure, reversedPackageBody);
+            assertEquals(procToSearch.procBody, procedureBodyExtractor.extractProcBody());
+            assertEquals(procToSearch.procBody, procedureBodyExtractorReversed.extractProcBody());
         }
     }
 
