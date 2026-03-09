@@ -178,7 +178,7 @@ public class DataTransferRegistry {
                 }
             }
         }
-        return Collections.emptyList();
+        return List.of();
     }
 
     @NotNull
