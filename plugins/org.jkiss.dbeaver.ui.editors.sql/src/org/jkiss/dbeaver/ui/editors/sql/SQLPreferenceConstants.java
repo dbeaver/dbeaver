@@ -223,8 +223,8 @@ public class SQLPreferenceConstants {
 
     public static final String SCRIPT_DELETE_EMPTY                      = "script.delete.empty"; //$NON-NLS-1$
     public static final String SCRIPT_AUTO_FOLDERS                      = "script.auto.folders"; //$NON-NLS-1$
-    public static final String SCRIPT_CREATE_CONNECTION_FOLDERS = "script.auto.connection.folders"; //$NON-NLS-1$'
-    public static final String SCRIPT_ATTACH_SCRIPTS_TO_CONNECTIONS = "script.auto.connection.attach"; //$NON-NLS-1$'
+    public static final String SCRIPT_CREATE_CONNECTION_FOLDERS = "script.auto.connection.folders"; //$NON-NLS-1$
+    public static final String SCRIPT_ATTACH_SCRIPTS_TO_CONNECTIONS = "script.auto.connection.attach"; //$NON-NLS-1$
     public static final String SCRIPT_TITLE_PATTERN                     = "script.title.pattern"; //$NON-NLS-1$
     public static final String SCRIPT_FILE_NAME_PATTERN                 = "script.file.name.pattern";
 
